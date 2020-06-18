@@ -145,7 +145,7 @@ class MuseApplication : public QApplication {
       MuseApplication(int& argc, char** argv)
          : QApplication(argc, argv)
             {
-            muse = 0;
+            muse = nullptr;
             }
 
 

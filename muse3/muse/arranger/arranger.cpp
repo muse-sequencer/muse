@@ -359,19 +359,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Track Info
       //---------------------------------------------------
 
-      trackInfoButton  = new CompactToolButton(this);
-      trackInfoButton->setContentsMargins(0, 0, 0, 0);
-      trackInfoButton->setIcon(*mixerstripSVGIcon);
-      trackInfoButton->setHasFixedIconSize(false);
-      trackInfoButton->setToolTip(tr("Show mixer strip for current track"));
-      trackInfoButton->setCheckable(true);
-      trackInfoButton->setChecked(showTrackinfoFlag);
-      trackInfoButton->setFocusPolicy(Qt::NoFocus);
-      trackInfoButton->setFixedSize(20, 14);
-      trackInfoButton->setDrawFlat(true);
-      trackInfoButton->setCursor(QCursor(Qt::PointingHandCursor));
-      connect(trackInfoButton, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
-
       genTrackInfo(trackInfoWidget);
 
       // set up the header
@@ -452,9 +439,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       
-      bottomHLayout = new ArrangerHScrollLayout(nullptr, trackInfoButton, hscroll, editor);
-      
-      box->addLayout(bottomHLayout);
+      bottomHLayout = new QHBoxLayout();
+      bottomHLayout->addWidget(hscroll);
       bottomHLayout->setContentsMargins(0, 0, 0, 0);
       bottomHLayout->setSpacing(0);
       
@@ -468,7 +454,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       list->setScroll(vscroll);
 
-      egrid  = new ArrangerCanvasLayout(editor, bottomHLayout);
+      egrid  = new QGridLayout(editor);
       egrid->setColumnStretch(0, 50);
       egrid->setRowStretch(2, 50);
       egrid->setContentsMargins(0, 0, 0, 0);  
@@ -508,9 +494,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       egrid->addWidget(time, 0, 0, 1, 2);
       egrid->addWidget(MusECore::hLine(editor), 1, 0, 1, 2);
-
       egrid->addWidget(canvas,  2, 0);
       egrid->addWidget(vscroll, 2, 1);
+      egrid->addLayout(bottomHLayout, 3, 0);
 
       connect(vscroll, SIGNAL(valueChanged(int)), canvas, SLOT(setYPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
@@ -799,7 +785,7 @@ void Arranger::writeStatus(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arranger");
       xml.intTag(level, "raster", _raster);
-      xml.intTag(level, "info", trackInfoButton->isChecked());
+      xml.intTag(level, "info", showTrackinfoFlag);
       split->writeStatus(level, xml);
 
       xml.intTag(level, "xmag", hscroll->mag());
@@ -886,7 +872,6 @@ void Arranger::readStatus(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "arranger") {
-                              trackInfoButton->setChecked(showTrackinfoFlag);
                               if(rast != -1)
                                 setRasterVal(rast);
                               return;
@@ -1090,16 +1075,24 @@ void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
 }
 
 //---------------------------------------------------------
+//   toggleTrackInfo
+//---------------------------------------------------------
+
+void Arranger::toggleTrackInfo()
+{
+    showTrackInfo(showTrackinfoFlag ^ true);
+}
+
+//---------------------------------------------------------
 //   showTrackInfo
 //---------------------------------------------------------
 
 void Arranger::showTrackInfo(bool flag)
-      {
-      trackInfoButton->setToolTip(flag ? tr("Hide mixer strip for current track") : tr("Show mixer strip for current track"));
-      showTrackinfoFlag = flag;
-      trackInfoWidget->setVisible(flag);
-      updateTrackInfo(-1);
-      }
+{
+    showTrackinfoFlag = flag;
+    trackInfoWidget->setVisible(flag);
+    updateTrackInfo(-1);
+}
 
 //---------------------------------------------------------
 //   genTrackInfo
@@ -1274,6 +1267,10 @@ void Arranger::keyPressEvent(QKeyEvent* event)
         horizontalZoom(false, QCursor::pos());
         return;
         }
+  else if (key == shortcuts[SHRT_HIDE_MIXER_STRIP].key) {
+      showTrackInfo(!showTrackinfoFlag);
+      return;
+  }
 
   QWidget::keyPressEvent(event);
 }
