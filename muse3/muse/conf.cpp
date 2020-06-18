@@ -1867,14 +1867,15 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   if(file.isEmpty())
     return false;
 
+// redundant, this is already done by the file dialog itself (kybos)
+//  if(QFile::exists(file))
+//  {
+//    if(QMessageBox::question(parent, QString("MusE"),
+//        tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
+//        QString(), 0, 1 ) == 1)
+//      return false;
+//  }
 
-  if(QFile::exists(file))
-  {
-    if(QMessageBox::question(parent, QString("MusE"),
-        tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
-        QString(), 0, 1 ) == 1)
-      return false;
-  }
   FILE* f = fopen(file.toLatin1().constData(), "w");
   if (f == 0) 
   {
