@@ -1,6 +1,9 @@
 18.06.2010
     - Mixer + strips: Replace hard-coded shortcuts with configurable ones. Several weren't working. (Tim)
       New mixer shortcut category.
+    - Updated Simpledrums so all parameters update a status field, previously
+      it was impossible to know what the dials were set to. Changing the look
+      of the dials would also be a good idea, left to do. (rj)
 17.06.2010
     - Fix main window being too small on large screens when MusE is started for the first time. 
       The size and position are now adjusted dynamically for the current screen size. (kybos)
