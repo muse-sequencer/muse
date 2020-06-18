@@ -688,8 +688,9 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                         // REMOVE Tim. automation. Removed.
                         // Deprecated. MusEGlobal::automation is now fixed TRUE
                         //  for now until we decide what to do with it.
-                        //else if (tag == "automation")
+                        else if (tag == "automation")
                         //      MusEGlobal::automation = xml.parseInt();
+                              xml.parseInt();
                         else if (tag == "cpos") {
                               int pos = xml.parseInt();
                               Pos p(pos, true);

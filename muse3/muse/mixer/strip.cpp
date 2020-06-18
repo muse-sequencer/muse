@@ -1716,6 +1716,8 @@ bool Strip::handleForwardedKeyPress(QKeyEvent* event)
 
 void Strip::keyPressEvent(QKeyEvent* ev)
 {
+  // Set to accept by default.
+  ev->accept();
   if (ev->key() == Qt::Key_Escape)
   {
     if(_focusYieldWidget)
@@ -1727,11 +1729,49 @@ void Strip::keyPressEvent(QKeyEvent* ev)
       {
         _focusYieldWidget->activateWindow();
       }
-      ev->accept();
+      // Yield the focus to the given widget.
+      _focusYieldWidget->setFocus();
+      // Activate the window.
+      if(!_focusYieldWidget->isActiveWindow())
+        _focusYieldWidget->activateWindow();
       return;
     }
   }
-
+    
+  const int kb_code = ev->key() | ev->modifiers();
+  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN].key) {
+        incVolume(-1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP].key) {
+        incVolume(1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN].key) {
+        incPan(-1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP].key) {
+        incPan(1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key) {
+        incVolume(-5);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP_PAGE].key) {
+        incVolume(5);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN_PAGE].key) {
+        incPan(-5);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP_PAGE].key) {
+        incPan(5);
+        return;
+  }
+  
   // Let mixer window or other higher up handle it.
   ev->ignore();
   QFrame::keyPressEvent(ev);

@@ -140,6 +140,7 @@ void initShortCuts()
       defShrt(SHRT_OPEN_TRANSPORT,        Qt::Key_F11, QT_TRANSLATE_NOOP("shortcuts", "View: Toggle transport window"), ARRANG_SHRT, "toggle_transport");
       defShrt(SHRT_OPEN_BIGTIME,          Qt::Key_F12, QT_TRANSLATE_NOOP("shortcuts", "View: Toggle bigtime window"), ARRANG_SHRT,   "toggle_bigtime");
       defShrt(SHRT_OPEN_MARKER,           Qt::Key_F9, QT_TRANSLATE_NOOP("shortcuts", "View: Open marker window"), ARRANG_SHRT,   "marker_window");
+      defShrt(SHRT_HIDE_MIXER_STRIP,      Qt::Key_F3, QT_TRANSLATE_NOOP("shortcuts", "View: Toggle mixer strip display"), ARRANG_SHRT, "toggle_mixer_strip");
 
       defShrt(SHRT_FOLLOW_JUMP,           0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Follow song by page"), ARRANG_SHRT, "follow_jump");
       defShrt(SHRT_FOLLOW_NO,             0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Follow song off"), ARRANG_SHRT, "follow_no");
@@ -375,6 +376,34 @@ void initShortCuts()
 
       defShrt(SHRT_PART_NORMALIZE,  Qt::ALT + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Normalize"), ARRANG_SHRT, "wave_part_normalize");
 
+      //-----------------------------------------------------------
+      // Mixer:
+      //-----------------------------------------------------------
+      defShrt(SHRT_MIXER_SELECT_STRIP_LEFT, Qt::CTRL + Qt::Key_Home,
+        QT_TRANSLATE_NOOP("shortcuts", "Select strip to the left"), MIXER_SHRT, "mixer_select_left");
+      defShrt(SHRT_MIXER_SELECT_STRIP_RIGHT, Qt::CTRL + Qt::Key_End,
+        QT_TRANSLATE_NOOP("shortcuts", "Select strip to the right"), MIXER_SHRT, "mixer_select_right");
+      // TODO Feature marked as todo in AudioMixerApp::selectNextStrip().
+      //defShrt(SHRT_MIXER_MULTI_SELECT_STRIP_LEFT, Qt::CTRL + Qt::SHIFT + Qt::Key_Home,
+      //  QT_TRANSLATE_NOOP("shortcuts", "Select multiple strips to the left"), MIXER_SHRT, "mixer_multi_select_left");
+      //defShrt(SHRT_MIXER_MULTI_SELECT_STRIP_RIGHT, Qt::CTRL + Qt::SHIFT + Qt::Key_End,
+      //  QT_TRANSLATE_NOOP("shortcuts", "Select multiple strips to the right"), MIXER_SHRT, "mixer_multi_select_right");
+      defShrt(SHRT_MIXER_STRIP_VOL_DOWN, Qt::CTRL + Qt::Key_U,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume down"), MIXER_SHRT, "mixer_strip_vol_dn");
+      defShrt(SHRT_MIXER_STRIP_VOL_UP, Qt::CTRL + Qt::Key_I,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume up"), MIXER_SHRT, "mixer_strip_vol_up");
+      defShrt(SHRT_MIXER_STRIP_PAN_DOWN, Qt::CTRL + Qt::Key_O,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan left"), MIXER_SHRT, "mixer_strip_pan_dn");
+      defShrt(SHRT_MIXER_STRIP_PAN_UP, Qt::CTRL + Qt::Key_P,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan right"), MIXER_SHRT, "mixer_strip_pan_right");
+      defShrt(SHRT_MIXER_STRIP_VOL_DOWN_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_U,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume down page"), MIXER_SHRT, "mixer_strip_vol_dn_pg");
+      defShrt(SHRT_MIXER_STRIP_VOL_UP_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_I,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume up page"), MIXER_SHRT, "mixer_strip_vol_up_pg");
+      defShrt(SHRT_MIXER_STRIP_PAN_DOWN_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_O,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan left page"), MIXER_SHRT, "mixer_strip_pan_dn_pg");
+      defShrt(SHRT_MIXER_STRIP_PAN_UP_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_P,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan right page"), MIXER_SHRT, "mixer_strip_pan_right_pg");
       }
 
  const shortcut_cg shortcut_category[SHRT_NUM_OF_CATEGORIES] = {
@@ -386,6 +415,7 @@ void initShortCuts()
       { LMEDIT_SHRT, "List Mastertrack" },
       { SCORE_SHRT,  "Score editor" },
       { WAVE_SHRT,   "Wave editor" },
+      { MIXER_SHRT,  "Mixer" },
       { ALL_SHRT  ,  "All categories" }
  };
 

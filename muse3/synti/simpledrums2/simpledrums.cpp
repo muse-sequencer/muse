@@ -602,7 +602,7 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
    const unsigned char* data = d + 2;
    SS_TRACE_IN
          int cmd = data[0];
-   printf("Got sysex %d %d\n", len, cmd );
+   //printf("Got sysex %d %d\n", len, cmd );
    switch (cmd) {
 
    case SS_SYSEX_LOAD_SAMPLE:
@@ -621,7 +621,7 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
       int channel = data[1];
       channels[channel].pitchInt = data[2];
 
-      printf("SS_SYSEX_PITCH_SAMPLE %d\n", channels[channel].pitchInt);
+      //printf("SS_SYSEX_PITCH_SAMPLE %d\n", channels[channel].pitchInt);
 
       //if (strlen(channels[channel].name) > 0)
       //    loadSample(channel, channels[channel].name);

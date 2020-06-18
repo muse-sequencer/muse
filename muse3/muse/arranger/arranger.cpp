@@ -341,12 +341,15 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       tipolicy.setVerticalStretch(100);
       trackInfoWidget->setSizePolicy(tipolicy);
       
-      tracklist = new QWidget(split);
-      split->setStretchFactor(split->indexOf(tracklist), 0);
+      tracklistScroll = new QScrollArea(split);
+      split->setStretchFactor(split->indexOf(tracklistScroll), 0);
       QSizePolicy tpolicy = QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
       tpolicy.setHorizontalStretch(0);
       tpolicy.setVerticalStretch(100);
-      tracklist->setSizePolicy(tpolicy);
+      tracklistScroll->setSizePolicy(tpolicy);
+      tracklistScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+      tracklistScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      tracklistScroll->setWidgetResizable(true);
 
       editor = new QWidget(split);
       split->setStretchFactor(split->indexOf(editor), 1);
@@ -359,75 +362,22 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //    Track Info
       //---------------------------------------------------
 
-      trackInfoButton  = new CompactToolButton(this);
-      trackInfoButton->setContentsMargins(0, 0, 0, 0);
-      trackInfoButton->setIcon(*mixerstripSVGIcon);
-      trackInfoButton->setHasFixedIconSize(false);
-      trackInfoButton->setToolTip(tr("Show mixer strip for current track"));
-      trackInfoButton->setCheckable(true);
-      trackInfoButton->setChecked(showTrackinfoFlag);
-      trackInfoButton->setFocusPolicy(Qt::NoFocus);
-      trackInfoButton->setFixedSize(20, 14);
-      trackInfoButton->setDrawFlat(true);
-      trackInfoButton->setCursor(QCursor(Qt::PointingHandCursor));
-      connect(trackInfoButton, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
-
       genTrackInfo(trackInfoWidget);
 
-      // set up the header
-      header = new Header(tracklist, "TrackListHeader");
-      header->setFixedHeight(31);
-
-      header->setColumnLabel(tr("#"), COL_TRACK_IDX);
-      header->setColumnIcon(*monitorOnSVGIcon, COL_INPUT_MONITOR);
-      header->setColumnIcon(*recArmOnSVGIcon, COL_RECORD);
-      header->setColumnIcon(*muteOnSVGIcon, COL_MUTE);
-      header->setColumnIcon(*soloOnAloneSVGIcon, COL_SOLO);
-      header->setColumnIcon(*tracktypeSVGIcon, COL_CLASS);
-      header->setColumnLabel(tr("Track"), COL_NAME);
-      header->setColumnLabel(tr("Port"), COL_OPORT);
-      //: Channel
-      header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
-      //: Time lock
-      header->setColumnLabel(tr("T"), COL_TIMELOCK);
-      header->setColumnLabel(tr("Automation"), COL_AUTOMATION);
-      header->setColumnLabel(tr("Clef"), COL_CLEF);
-      for (unsigned i = 0; i < custom_columns.size(); i++)
-         header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
-
-      header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
-      header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
-      header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
-      header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
-      header->setSectionResizeMode(COL_SOLO, QHeaderView::Fixed);
-      header->setSectionResizeMode(COL_CLASS, QHeaderView::Fixed);
-      header->setSectionResizeMode(COL_NAME, QHeaderView::Interactive);
-      header->setSectionResizeMode(COL_OPORT, QHeaderView::Interactive);
-      header->setSectionResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
-      header->setSectionResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
-      header->setSectionResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
-      header->setSectionResizeMode(COL_CLEF, QHeaderView::Interactive);
-      for (unsigned i = 0; i < custom_columns.size(); i++)
-        header->setSectionResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
-
-      // 04/18/17 Time lock remains unused. Disabled until a use is found.
-      // Plans were to use it (or not) when time stretching / pitch shifting work is done.
-      header->setSectionHidden(COL_TIMELOCK, true);
-
-      setHeaderToolTips();
-      setHeaderWhatsThis();
-      header->setSectionsMovable (true);
-      header->restoreState(header_state);
-
-      list = new TList(header, tracklist, "tracklist");
+      tracklist = new QWidget(tracklistScroll);
+      initTracklistHeader();
+      list = new TList(header, tracklist, "TrackList");
 
       tlistLayout = new QVBoxLayout(tracklist);
       tlistLayout->setContentsMargins(0, 0, 0, 0);
       tlistLayout->setSpacing(0);
       tlistLayout->addWidget(header);
       tlistLayout->addWidget(list);
-      
-      connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
+
+      tracklist->setMinimumWidth(header->length());
+      tracklistScroll->setWidget(tracklist);
+
+      connect(header, SIGNAL(sectionResized(int,int,int)), this, SLOT(updateTracklist()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
 
       //  tracklist:
@@ -452,9 +402,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       
-      bottomHLayout = new ArrangerHScrollLayout(nullptr, trackInfoButton, hscroll, editor);
-      
-      box->addLayout(bottomHLayout);
+      bottomHLayout = new QHBoxLayout();
+      bottomHLayout->addWidget(hscroll);
       bottomHLayout->setContentsMargins(0, 0, 0, 0);
       bottomHLayout->setSpacing(0);
       
@@ -468,7 +417,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
       list->setScroll(vscroll);
 
-      egrid  = new ArrangerCanvasLayout(editor, bottomHLayout);
+      egrid  = new QGridLayout(editor);
       egrid->setColumnStretch(0, 50);
       egrid->setRowStretch(2, 50);
       egrid->setContentsMargins(0, 0, 0, 0);  
@@ -511,9 +460,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       egrid->addWidget(time, 0, 0, 1, 2);
       egrid->addWidget(MusECore::hLine(editor), 1, 0, 1, 2);
-
       egrid->addWidget(canvas,  2, 0);
       egrid->addWidget(vscroll, 2, 1);
+      egrid->addLayout(bottomHLayout, 3, 0);
 
       connect(vscroll, SIGNAL(valueChanged(int)), canvas, SLOT(setYPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
@@ -563,6 +512,53 @@ void Arranger::setDefaultSplitterSizes()
   vallist.append(tlistLayout->sizeHint().width());
   vallist.append(1);
   split->setSizes(vallist);
+}
+
+void Arranger::initTracklistHeader()
+{
+    header = new Header(tracklist, "TrackListHeader");
+    header->setFixedHeight(31);
+
+    header->setColumnLabel(tr("#"), COL_TRACK_IDX);
+    header->setColumnIcon(*monitorOnSVGIcon, COL_INPUT_MONITOR);
+    header->setColumnIcon(*recArmOnSVGIcon, COL_RECORD);
+    header->setColumnIcon(*muteOnSVGIcon, COL_MUTE);
+    header->setColumnIcon(*soloOnAloneSVGIcon, COL_SOLO);
+    header->setColumnIcon(*tracktypeSVGIcon, COL_CLASS);
+    header->setColumnLabel(tr("Track"), COL_NAME);
+    header->setColumnLabel(tr("Port"), COL_OPORT);
+    //: Channel
+    header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
+    //: Time lock
+    header->setColumnLabel(tr("T"), COL_TIMELOCK);
+    header->setColumnLabel(tr("Automation"), COL_AUTOMATION);
+    header->setColumnLabel(tr("Clef"), COL_CLEF);
+    for (unsigned i = 0; i < custom_columns.size(); i++)
+        header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
+
+    header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
+    header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_SOLO, QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_CLASS, QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_NAME, QHeaderView::Interactive);
+    header->setSectionResizeMode(COL_OPORT, QHeaderView::Interactive);
+    header->setSectionResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
+    header->setSectionResizeMode(COL_CLEF, QHeaderView::Interactive);
+    for (unsigned i = 0; i < custom_columns.size(); i++)
+        header->setSectionResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
+
+    // 04/18/17 Time lock remains unused. Disabled until a use is found.
+    // Plans were to use it (or not) when time stretching / pitch shifting work is done.
+    header->setSectionHidden(COL_TIMELOCK, true);
+
+    setHeaderToolTips();
+    setHeaderWhatsThis();
+    header->setSectionsMovable (true);
+    header->restoreState(header_state);
 }
 
 //---------------------------------------------------------
@@ -802,7 +798,7 @@ void Arranger::writeStatus(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arranger");
       xml.intTag(level, "raster", _raster);
-      xml.intTag(level, "info", trackInfoButton->isChecked());
+      xml.intTag(level, "info", showTrackinfoFlag);
       split->writeStatus(level, xml);
 
       xml.intTag(level, "xmag", hscroll->mag());
@@ -889,7 +885,6 @@ void Arranger::readStatus(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "arranger") {
-                              trackInfoButton->setChecked(showTrackinfoFlag);
                               if(rast != -1)
                                 setRasterVal(rast);
                               return;
@@ -1093,16 +1088,24 @@ void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
 }
 
 //---------------------------------------------------------
+//   toggleTrackInfo
+//---------------------------------------------------------
+
+void Arranger::toggleTrackInfo()
+{
+    showTrackInfo(showTrackinfoFlag ^ true);
+}
+
+//---------------------------------------------------------
 //   showTrackInfo
 //---------------------------------------------------------
 
 void Arranger::showTrackInfo(bool flag)
-      {
-      trackInfoButton->setToolTip(flag ? tr("Hide mixer strip for current track") : tr("Show mixer strip for current track"));
-      showTrackinfoFlag = flag;
-      trackInfoWidget->setVisible(flag);
-      updateTrackInfo(-1);
-      }
+{
+    showTrackinfoFlag = flag;
+    trackInfoWidget->setVisible(flag);
+    updateTrackInfo(-1);
+}
 
 //---------------------------------------------------------
 //   genTrackInfo
@@ -1277,6 +1280,10 @@ void Arranger::keyPressEvent(QKeyEvent* event)
         horizontalZoom(false, QCursor::pos());
         return;
         }
+  else if (key == shortcuts[SHRT_HIDE_MIXER_STRIP].key) {
+      showTrackInfo(!showTrackinfoFlag);
+      return;
+  }
 
   QWidget::keyPressEvent(event);
 }
@@ -1324,6 +1331,12 @@ void Arranger::updateHeaderCustomColumns()
     }
 
     setHeaderSizes();
+    list->redraw();
+}
+
+void Arranger::updateTracklist()
+{
+    tracklist->setMinimumWidth(header->length());
     list->redraw();
 }
 

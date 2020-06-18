@@ -27,6 +27,7 @@
 #include <QMenuBar>
 #include <QPaintEvent>
 #include <QActionGroup>
+#include <QSpacerItem>
 
 #include "amixer.h"
 #include "app.h"
@@ -34,12 +35,11 @@
 #include "icons.h"
 #include "song.h"
 #include "audio.h"
-
 #include "astrip.h"
 #include "mstrip.h"
 #include "track.h"
-
 #include "xml.h"
+#include "shortcuts.h"
 
 #define __WIDTH_COMPENSATION 4
 
@@ -80,6 +80,15 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding));
       setWindowTitle(cfg->name);
       setWindowIcon(*museIcon);
+      
+      // Due to issues with certain window managers, such as maximize IGNORING
+      //  our maximum size imposed on the window, maximizing is disabled.
+      // Several attempts to allow maximizing were unsuccessful.
+      // The window is full screen width but the scroll area is cut off at our maximum width.
+      // Seems internally some layer IS respecting our maximum width imposed, cutting it off.
+      // Tried end spacers, blank widgets autoFillBackground etc. No luck.
+      // Might be possible but more work needed. Easier to do this:
+      setWindowFlags(windowFlags() & ~Qt::WindowFlags(Qt::WindowMaximizeButtonHint));
 
       //cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW;
 
@@ -157,7 +166,14 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       view->setWidget(central);
       //view->setWidget(splitter);
       view->setWidgetResizable(true);
-      
+
+      // Ensure the rightmost item is always a spacer.
+      // Although this does not have any effect because we disabled the maximize button, just in case
+      //  the maximize button is ever re-added and/or the maximum width imposed on the mixer window
+      //  is ever removed, keep this - it will be required. No harm so far in leaving it in.
+      QSpacerItem* right_spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+      mixerLayout->addSpacerItem(right_spacer);
+
       // FIXME: Neither of these two replacement functor version work. What's wrong here?
       connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       //connect(view, &ScrollArea::layoutRequest, [this]() { setSizing(); } );
@@ -172,7 +188,6 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       central->installEventFilter(this);
       mixerLayout->installEventFilter(this);
       view ->installEventFilter(this);
-
 }
 
 void AudioMixerApp::stripsMenu()
@@ -289,8 +304,21 @@ void AudioMixerApp::redrawMixer()
 {
   DEBUG_MIXER(stderr, "redrawMixer type %d, mixerLayout count %d\n", cfg->displayOrder, mixerLayout->count());
   // empty layout
-  while (mixerLayout->count() > 0) {
-    mixerLayout->removeItem(mixerLayout->itemAt(0));
+  const int lc = mixerLayout->count();
+  if(lc > 0)
+  {
+    // Count down from second last item. Last item should be a spacer or blank widget.
+    for (int i = lc - 2; i >= 0; --i)
+    {
+      // Remove only widgets from the layout, not spacers/stretchers etc.
+      QLayoutItem* li = mixerLayout->itemAt(i);
+      if(!li)
+        continue;
+      QWidget* w = li->widget();
+      if(!w)
+        continue;
+      mixerLayout->takeAt(i);
+    }
   }
 
   switch (cfg->displayOrder) {
@@ -472,7 +500,16 @@ void AudioMixerApp::addStripToLayoutIfVisible(Strip *s)
   if (stripIsVisible(s)) {
     s->setVisible(true);
     stripVisibleChanged(s, true);
-    mixerLayout->addWidget(s);
+    // Ensure that if a right spacer or blank widget item exits, we insert
+    //  at that position, otherwise just append.
+    const int lc = mixerLayout->count();
+    if(lc == 0) {
+      mixerLayout->addWidget(s/*, 0, Qt::AlignLeft*/);
+    }
+    else {
+      mixerLayout->insertWidget(lc - 1, s/*, 0, Qt::AlignLeft*/);
+    }
+
   } else {
     s->setVisible(false);
     stripVisibleChanged(s, false);
@@ -601,7 +638,6 @@ void AudioMixerApp::setSizing()
       
       setUpdatesEnabled(true);
       view->setUpdatesEnabled(true);
-
 }
 
 //---------------------------------------------------------
@@ -666,6 +702,7 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
 void AudioMixerApp::clearAndDelete()
 {
   DEBUG_MIXER(stderr, "clearAndDelete\n");
+  // Remove and delete only strip widgets from the layout, not spacers/stretchers etc.
   StripList::iterator si = stripList.begin();
   for (; si != stripList.end(); ++si)
   {
@@ -1070,6 +1107,9 @@ void AudioMixerApp::showSyntiTracksChanged(bool v)
 
 void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
 {
+  // Set to accept by default.
+  ev->accept();
+
   const bool ctl = ev->modifiers() & Qt::ControlModifier;
   const bool shift = ev->modifiers() & Qt::ShiftModifier;
 

@@ -1,9 +1,16 @@
+18.06.2010
+    - Mixer + strips: Replace hard-coded shortcuts with configurable ones. Several weren't working. (Tim)
+      New mixer shortcut category.
+    - Updated Simpledrums so all parameters update a status field, previously
+      it was impossible to know what the dials were set to. Changing the look
+      of the dials would also be a good idea, left to do. (rj)
 17.06.2010
     - Fix main window being too small on large screens when MusE is started for the first time. 
       The size and position are now adjusted dynamically for the current screen size. (kybos)
     - Fix main window size/position set to random values when a project or template is opened.
       The window is now only resized if the file contains explicit geometry information. (kybos)
     - Fix progress bar not being displayed when opening files. (kybos)
+    - Mixers: Maximize button removed. Certain window managers ignore a set maximum size. (Tim)
 16.06.2010
     - Replace invisible icons in file dialogs in new dark theme. (kybos)
     - Unify colour configuration file naming. (kybos)
@@ -21,6 +28,9 @@
       Was problem near end of WaveTrack::getData(), what constitutes "have data" or not.
       Said "have data" when there was none when muted, causing AudioTrack::copyData()
        to build up feedback data in the buffers instead of clearing them.
+10.06.2020
+	- Arranger: Removed the small toggle button for mixer strip display/hide and cleaned up the layouts.
+	  Function is now accessible from menu (Display->Toggle Mixer Strip) or by pressing F3.
 09.06.2020
     - Fix regression from 07.06: Qt::endl and Qt::dec only from Qt >= 5.14 (Tim)
 07.06.2020
@@ -30,6 +40,8 @@
       QWheelEvent::globalPos > QWheelEvent::globalPosition::toPoint, QWheelEvent::pos > QWheelEvent::position.toPoint.
 06.06.2020
     - Fixed regression at 23.05.2020: Crash in viewMouseReleaseEvent. Copy/paste typo. (Tim)
+    - Many new customizing features implemented, internal colors, css properties.
+	  New theme created (Dark Flat) as a showcase/proof of concept. (kybos)
 04.06.2020
     - Fixed blank mixers upon auto-restart. (Tim)
     - Make MusE QMainWindow own the mixers. They had no owner, no deletion. Leak? Test OK so far.
