@@ -128,6 +128,7 @@ class ArrangerView : public TopWin
         void addNewTrack(QAction* action);
         void insertNewTrack(QAction* action);
         void configCustomColumns();
+        void toggleMixerStrip();
 
 	signals:
 		void isDeleting(MusEGui::TopWin*);

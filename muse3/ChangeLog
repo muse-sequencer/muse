@@ -28,6 +28,9 @@
       Was problem near end of WaveTrack::getData(), what constitutes "have data" or not.
       Said "have data" when there was none when muted, causing AudioTrack::copyData()
        to build up feedback data in the buffers instead of clearing them.
+10.06.2020
+	- Arranger: Removed the small toggle button for mixer strip display/hide and cleaned up the layouts.
+	  Function is now accessible from menu (Display->Toggle Mixer Strip) or by pressing F3.
 09.06.2020
     - Fix regression from 07.06: Qt::endl and Qt::dec only from Qt >= 5.14 (Tim)
 07.06.2020
@@ -37,6 +40,8 @@
       QWheelEvent::globalPos > QWheelEvent::globalPosition::toPoint, QWheelEvent::pos > QWheelEvent::position.toPoint.
 06.06.2020
     - Fixed regression at 23.05.2020: Crash in viewMouseReleaseEvent. Copy/paste typo. (Tim)
+    - Many new customizing features implemented, internal colors, css properties.
+	  New theme created (Dark Flat) as a showcase/proof of concept. (kybos)
 04.06.2020
     - Fixed blank mixers upon auto-restart. (Tim)
     - Make MusE QMainWindow own the mixers. They had no owner, no deletion. Leak? Test OK so far.

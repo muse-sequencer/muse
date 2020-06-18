@@ -155,6 +155,7 @@ enum {
       SHRT_OPEN_MIXER, //Ctrl+*
       SHRT_OPEN_MIXER2, //Ctrl+*
       SHRT_OPEN_MARKER, // F9
+      SHRT_HIDE_MIXER_STRIP, // F3
       SHRT_OPEN_CLIPS, //Default: undefined
 
       SHRT_FOLLOW_JUMP, //Default: undefined

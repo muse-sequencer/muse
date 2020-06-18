@@ -81,8 +81,10 @@ class Arranger : public QWidget {
       ScrollScale* hscroll;
       QScrollBar* vscroll;
       QVBoxLayout* tlistLayout;
-      ArrangerCanvasLayout* egrid;
-      ArrangerHScrollLayout* bottomHLayout;
+      QGridLayout* egrid;
+//      ArrangerCanvasLayout* egrid;
+      QHBoxLayout* bottomHLayout;
+//      ArrangerHScrollLayout* bottomHLayout;
       TList* list;
       Header* header;
       MTScale* time;
@@ -90,11 +92,11 @@ class Arranger : public QWidget {
       bool showTrackinfoFlag;
       TrackInfoWidget* trackInfoWidget;
       AudioStrip* waveTrackInfo;
+      QScrollArea* tracklistScroll;
       QWidget* tracklist;
 
       MusECore::Track* selected;
 
-      CompactToolButton* trackInfoButton;
       int trackInfoType;
       Splitter* split;
       int songType;
@@ -111,6 +113,7 @@ class Arranger : public QWidget {
       void setHeaderToolTips();
       void setHeaderWhatsThis();
       void setHeaderSizes();
+      void initTracklistHeader();
 
    private slots:
       void rasterChanged(int);
@@ -127,6 +130,7 @@ class Arranger : public QWidget {
       void verticalScrollSetYpos(unsigned);
       void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
       void horizontalZoom(int mag, const QPoint& glob_pos);
+      void updateTracklist();
       
    signals:
       void editPart(MusECore::Track*);
@@ -192,6 +196,7 @@ class Arranger : public QWidget {
       void songIsClearing() { canvas->songIsClearing(); }
       void setDefaultSplitterSizes();
       void updateHeaderCustomColumns();
+      void toggleTrackInfo();
       
       unsigned cursorValue() { return cursVal; }
       

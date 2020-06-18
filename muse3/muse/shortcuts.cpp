@@ -140,6 +140,7 @@ void initShortCuts()
       defShrt(SHRT_OPEN_TRANSPORT,        Qt::Key_F11, QT_TRANSLATE_NOOP("shortcuts", "View: Toggle transport window"), ARRANG_SHRT, "toggle_transport");
       defShrt(SHRT_OPEN_BIGTIME,          Qt::Key_F12, QT_TRANSLATE_NOOP("shortcuts", "View: Toggle bigtime window"), ARRANG_SHRT,   "toggle_bigtime");
       defShrt(SHRT_OPEN_MARKER,           Qt::Key_F9, QT_TRANSLATE_NOOP("shortcuts", "View: Open marker window"), ARRANG_SHRT,   "marker_window");
+      defShrt(SHRT_HIDE_MIXER_STRIP,      Qt::Key_F3, QT_TRANSLATE_NOOP("shortcuts", "View: Toggle mixer strip display"), ARRANG_SHRT, "toggle_mixer_strip");
 
       defShrt(SHRT_FOLLOW_JUMP,           0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Follow song by page"), ARRANG_SHRT, "follow_jump");
       defShrt(SHRT_FOLLOW_NO,             0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Follow song off"), ARRANG_SHRT, "follow_no");
