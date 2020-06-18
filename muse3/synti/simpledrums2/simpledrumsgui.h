@@ -57,48 +57,17 @@ class QChannelSlider: public QSlider
       int getChannel();
       void setChannel(int ch);
 
-   ///public slots:
-   ///   virtual void setValue(int val);
+   public slots:
+      void updateStatusField();
 
    signals:
       void valueChanged(int channel, int value);
-   
+      void updateInformationField(QString info);
+
    protected:
       int channel;
       virtual void sliderChange(SliderChange change);   
-   };
-
-//--------------------------------------
-// QInvertedSlider
-//--------------------------------------
-class QInvertedSlider : public QSlider
-   {
-   Q_OBJECT
-   public:
-      QInvertedSlider(Qt::Orientation o, QWidget* parent = 0);
-         ///: QSlider(o, parent) {}
-
-   ///public slots:
-   ///   virtual void setValue(int val);
-
-   signals:
-      void invertedValueChanged(int value);
-   
-   protected:
-      virtual void sliderChange(SliderChange change);    
-   };
-
-//--------------------------------------
-// QInvertedChannelSlider
-//--------------------------------------
-class QInvertedChannelSlider : public QChannelSlider
-   {
-   Q_OBJECT
-   public:
-      QInvertedChannelSlider(Qt::Orientation o, int channel, QWidget* parent = 0);
-
-   ///public slots:
-   ///   virtual void setValue(int val);
+      virtual void mouseMoveEvent(QMouseEvent *e);
    };
 
 
@@ -157,14 +126,16 @@ class QChannelDial : public QDial
    signals:
       void valueChanged(int channel, int fxid, int val);
       void sliderMoved(int channel, int val);
+      void updateInformationField(QString info);
 
-   ///public slots:
-   ///   virtual void setValue(int val);
+   public slots:
+      void updateStatusField();
 
    protected:
       int channel;
       int sendfxid;
       virtual void sliderChange(SliderChange change);
+      virtual void mouseMoveEvent(QMouseEvent *e);
    private slots:
       void forwardSliderMoved();
    };

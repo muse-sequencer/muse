@@ -122,6 +122,9 @@ QChannelSlider::QChannelSlider(Qt::Orientation orientation, int ch, QWidget* par
 {
    channel = ch;
    setMinimumHeight(50);
+   setMouseTracking(true);
+   setTracking(true);
+   connect(this, SIGNAL(valueChanged(int)), SLOT(updateStatusField()));
 }
 
 void QChannelSlider::sliderChange(SliderChange change)
@@ -129,6 +132,18 @@ void QChannelSlider::sliderChange(SliderChange change)
    QSlider::sliderChange(change);
    if(change == QAbstractSlider::SliderValueChange)
       emit valueChanged(channel, value());
+}
+
+void QChannelSlider::updateStatusField()
+{
+    auto infoString = QString("%1 : %2").arg(toolTip()).arg(value());
+    emit updateInformationField(infoString);
+}
+
+void QChannelSlider::mouseMoveEvent(QMouseEvent *e)
+{
+    QSlider::mouseMoveEvent(e);
+    updateStatusField();
 }
 
 /*!
@@ -147,67 +162,6 @@ void QChannelSlider::setChannel(int ch)
 {
    channel = ch;
 }
-
-/*!
-    \fn QChannelSlider::setValue(int val)
- */
-/*
-void QChannelSlider::setValue(int val)
-      {
-      val = (val > 127 ? 127 : val);
-      val = (val < 0 ? 0 : val);
-      QSlider::setValue(val);
-      emit valueChanged(channel, val);
-      }
-*/
-
-QInvertedSlider::QInvertedSlider(Qt::Orientation o, QWidget* parent)
-   : QSlider(o, parent)
-{
-   setInvertedAppearance(true);    // p4.0.27
-}
-
-void QInvertedSlider::sliderChange(SliderChange change)
-{
-   QSlider::sliderChange(change);
-   if(change == QAbstractSlider::SliderValueChange)
-      emit invertedValueChanged(value());
-}
-
-QInvertedChannelSlider::QInvertedChannelSlider(Qt::Orientation o, int channel, QWidget* parent)
-   : QChannelSlider(o, channel, parent)
-{
-   setInvertedAppearance(true);    // p4.0.27
-   //setInvertedControls(true);
-}
-
-/*!
-    \fn QInvertedChannelSlider::setValue(int val)
- */
-/*
-void QInvertedChannelSlider::setValue(int val)
-      {
-      int inverted = this->maximum() - val;
-      inverted = (inverted > 127 ? 127 : inverted);
-      inverted = (inverted < 0 ? 0 : inverted);
-      QSlider::setValue(val);
-      emit valueChanged(channel, inverted);
-      }
-*/
-
-/*!
-    \fn QInvertedSlider::setValue(int val)
- */
-/*
-void QInvertedSlider::setValue(int val)
-      {
-      int inverted = this->maximum() - val;
-      inverted = (inverted > 127 ? 127 : inverted);
-      inverted = (inverted < 0 ? 0 : inverted);
-      emit invertedValueChanged(inverted);
-      QSlider::setValue(val);
-      }
-*/
 
 /*!
     \fn QChannelCheckbox::QChannelCheckbox(QWidget* parent, int ch)
@@ -253,21 +207,17 @@ QChannelDial::QChannelDial(QWidget* parent, int ch, int fxid)
    : QDial(parent)
 {
    setTracking(true);
+   setMouseTracking(true);
    channel = ch;
    sendfxid = fxid;
    connect(this, SIGNAL(sliderReleased()), SLOT(forwardSliderMoved()));
+   connect(this, SIGNAL(valueChanged(int)), SLOT(updateStatusField()));
 }
-
-/*!
-    \fn QChannelSlider::setValue(int val)
- */
-/*
-void QChannelDial::setValue(int val)
-      {
-      QDial::setValue(val);
-      emit valueChanged(channel, sendfxid, val);
-      }
-*/
+void QChannelDial::updateStatusField()
+{
+    auto infoString = QString("%1 : %2").arg(toolTip()).arg(value());
+    emit updateInformationField(infoString);
+}
 
 void QChannelDial::sliderChange(SliderChange change)
 {
@@ -276,9 +226,15 @@ void QChannelDial::sliderChange(SliderChange change)
       emit valueChanged(channel, sendfxid, value());
 }
 
+void QChannelDial::mouseMoveEvent(QMouseEvent *e)
+{
+    QDial::mouseMoveEvent(e);
+    updateStatusField();
+}
+
+
 void QChannelDial::forwardSliderMoved()
 {
-   printf("forwardSliderMoved();\n");
    emit sliderMoved(channel, value());
 }
 
@@ -317,8 +273,6 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       inchnlLayout->addWidget(onOff[i]);
       connect(onOff[i], SIGNAL(channelState(int, bool)), SLOT(channelOnOff(int, bool)));
 
-      ///volumeSliders[i] = new QInvertedChannelSlider(Qt::Vertical, i, channelButtonGroups[i]);
-      // By Tim. p4.0.27 Inverted was not correct type. Maybe was work in progress, rest of code was not converted yet?
       QHBoxLayout *volLayout = new QHBoxLayout(channelButtonGroups[i]);
 
       volumeSliders[i] = new QChannelSlider(Qt::Vertical, i, channelButtonGroups[i]);
@@ -343,7 +297,8 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       volLayout->addWidget(chnMeter[i]);
 
       inchnlLayout->addLayout(volLayout);
-      //inchnlLayout->addWidget(volumeSliders[i]);
+
+      connect(volumeSliders[i], SIGNAL(updateInformationField(QString)), widgetStatusInfo, SLOT(setText(QString)));
       connect(volumeSliders[i], SIGNAL(valueChanged(int, int)), SLOT(volumeChanged(int, int)));
 
       pitchKnobs[i] = new QChannelDial(channelButtonGroups[i], i, 0);
@@ -352,6 +307,7 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       pitchKnobs[i]->setToolTip("Pitch, channel " + QString::number(i + 1));
       pitchKnobs[i]->setFixedSize(30,30);
       inchnlLayout->addWidget(pitchKnobs[i]);
+      connect(pitchKnobs[i], SIGNAL(updateInformationField(QString)), widgetStatusInfo, SLOT(setText(QString)));
       connect(pitchKnobs[i], SIGNAL(valueChanged(int,int,int)), SLOT(pitchChanged(int,int, int)));
 
 
@@ -369,6 +325,7 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       panSliders[i]->setValue(SS_PANSLDR_DEFAULT_VALUE);
       panSliders[i]->setToolTip("Pan, channel " + QString::number(i + 1));
       inchnlLayout->addWidget(panSliders[i]);
+      connect(panSliders[i], SIGNAL(updateInformationField(QString)), widgetStatusInfo, SLOT(setText(QString)));
       connect(panSliders[i], SIGNAL(valueChanged(int, int)), SLOT(panChanged(int, int)));
 
       QGridLayout* dialGrid = new QGridLayout;
@@ -377,8 +334,10 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       sendFxDial[i][0]->setRange(0, 127);
       sendFxDial[i][0]->setMaximumSize(SS_SENDFX_WIDTH, SS_SENDFX_HEIGHT);
       sendFxDial[i][0]->setToolTip("Fx 1 send amount");
+
       dialGrid->addWidget(sendFxDial[i][0], 0, 0, Qt::AlignCenter | Qt::AlignTop);
 
+      connect(sendFxDial[i][0], SIGNAL(updateInformationField(QString)), widgetStatusInfo, SLOT(setText(QString)));
       connect(sendFxDial[i][0], SIGNAL(valueChanged(int, int, int)), SLOT(sendFxChanged(int, int, int)));
 
       sendFxDial[i][1] = new QChannelDial(channelButtonGroups[i], i, 1);
@@ -387,6 +346,7 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       sendFxDial[i][1]->setMaximumSize(SS_SENDFX_WIDTH, SS_SENDFX_HEIGHT);
       sendFxDial[i][1]->setToolTip("Fx 2 send amount");
 
+      connect(sendFxDial[i][1], SIGNAL(updateInformationField(QString)), widgetStatusInfo, SLOT(setText(QString)));
       connect(sendFxDial[i][1], SIGNAL(valueChanged(int, int, int)), SLOT(sendFxChanged(int, int, int)));
 
       sendFxDial[i][2] = new QChannelDial(channelButtonGroups[i], i, 2);
@@ -394,14 +354,17 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
       sendFxDial[i][2]->setMaximumSize(SS_SENDFX_WIDTH, SS_SENDFX_HEIGHT);
       dialGrid->addWidget(sendFxDial[i][2], 1, 0, Qt::AlignCenter | Qt::AlignTop);
       sendFxDial[i][2]->setToolTip("Fx 3 send amount");
+
+      connect(sendFxDial[i][2], SIGNAL(updateInformationField(QString)), widgetStatusInfo, SLOT(setText(QString)));
       connect(sendFxDial[i][2], SIGNAL(valueChanged(int, int, int)), SLOT(sendFxChanged(int, int, int)));
 
       sendFxDial[i][3] = new QChannelDial(channelButtonGroups[i], i, 3);
       sendFxDial[i][3]->setRange(0, 127);
       sendFxDial[i][3]->setMaximumSize(SS_SENDFX_WIDTH, SS_SENDFX_HEIGHT);
       sendFxDial[i][3]->setToolTip("Fx 4 send amount");
-
       dialGrid->addWidget(sendFxDial[i][3], 1, 1, Qt::AlignCenter | Qt::AlignTop);
+
+      connect(sendFxDial[i][3], SIGNAL(updateInformationField(QString)), widgetStatusInfo, SLOT(setText(QString)));
       connect(sendFxDial[i][3], SIGNAL(valueChanged(int, int, int)), SLOT(sendFxChanged(int, int, int)));
 
       chnRoutingCb[i] = new QComboBox(channelButtonGroups[i]);
@@ -750,7 +713,6 @@ void SimpleSynthGui::volumeChanged(int channel, int val)
  */
 void SimpleSynthGui::pitchChanged(int channel, int, int val)
 {
-   printf("Gui::pitchChanged %d %d\n", channel, val);
    setChannelPitch(channel, -val+63);
 }
 
