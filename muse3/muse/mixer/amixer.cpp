@@ -505,10 +505,10 @@ void AudioMixerApp::addStripToLayoutIfVisible(Strip *s)
     //  at that position, otherwise just append.
     const int lc = mixerLayout->count();
     if(lc == 0) {
-      mixerLayout->addWidget(s, 0, Qt::AlignLeft);
+      mixerLayout->addWidget(s/*, 0, Qt::AlignLeft*/);
     }
     else {
-      mixerLayout->insertWidget(lc - 1, s, 0, Qt::AlignLeft);
+      mixerLayout->insertWidget(lc - 1, s/*, 0, Qt::AlignLeft*/);
     }
 
   } else {
