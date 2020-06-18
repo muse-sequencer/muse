@@ -1862,19 +1862,20 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   if(!parent)
     parent = this;
   QString file = MusEGui::getSaveFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
-                                               tr("Save configuration colors"));
+                                               tr("Save configuration colors"), NULL, MusEGui::MFileDialog::USER_VIEW);
 
   if(file.isEmpty())
     return false;
 
+// redundant, this is already done by the file dialog itself (kybos)
+//  if(QFile::exists(file))
+//  {
+//    if(QMessageBox::question(parent, QString("MusE"),
+//        tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
+//        QString(), 0, 1 ) == 1)
+//      return false;
+//  }
 
-  if(QFile::exists(file))
-  {
-    if(QMessageBox::question(parent, QString("MusE"),
-        tr("File exists.\nDo you want to overwrite it?"), tr("&Ok"), tr("&Cancel"),
-        QString(), 0, 1 ) == 1)
-      return false;
-  }
   FILE* f = fopen(file.toLatin1().constData(), "w");
   if (f == 0) 
   {

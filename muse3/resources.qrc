@@ -117,5 +117,11 @@
         <file>svg/midi_controller_remove.svg</file>
         <file>svg/down_arrow.svg</file>
         <file>svg/up_arrow.svg</file>
+        <file>xpm/viewdetailed-128.png</file>
+        <file>xpm/viewlist-128.png</file>
+        <file>xpm/left-128.png</file>
+        <file>xpm/newdirectory-128.png</file>
+        <file>xpm/right-128.png</file>
+        <file>xpm/up-128.png</file>
     </qresource>
 </RCC>

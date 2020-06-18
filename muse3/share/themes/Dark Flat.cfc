@@ -44,13 +44,13 @@
     <selectTrackFg r="0" g="0" b="0"></selectTrackFg>
     <selectTrackCurBg r="255" g="255" b="0"></selectTrackCurBg>
     <trackSectionDividerColor r="48" g="49" b="50"></trackSectionDividerColor>
-    <midiTrackLabelBg r="71" g="151" b="220"></midiTrackLabelBg>
-    <newDrumTrackLabelBg2 r="62" g="189" b="189"></newDrumTrackLabelBg2>
+    <midiTrackLabelBg r="81" g="180" b="255"></midiTrackLabelBg>
+    <newDrumTrackLabelBg2 r="69" g="220" b="220"></newDrumTrackLabelBg2>
     <waveTrackLabelBg r="177" g="166" b="255"></waveTrackLabelBg>
-    <outputTrackLabelBg r="61" g="200" b="124"></outputTrackLabelBg>
+    <outputTrackLabelBg r="66" g="220" b="133"></outputTrackLabelBg>
     <inputTrackLabelBg r="255" g="104" b="104"></inputTrackLabelBg>
-    <groupTrackLabelBg r="170" g="170" b="53"></groupTrackLabelBg>
-    <auxTrackLabelBg2 r="150" g="177" b="127"></auxTrackLabelBg2>
+    <groupTrackLabelBg r="200" g="200" b="61"></groupTrackLabelBg>
+    <auxTrackLabelBg2 r="170" g="200" b="144"></auxTrackLabelBg2>
     <synthTrackLabelBg r="255" g="149" b="63"></synthTrackLabelBg>
     <midiTrackBg r="63" g="127" b="190"></midiTrackBg>
     <ctrlGraphFg r="0" g="85" b="255"></ctrlGraphFg>
@@ -65,9 +65,9 @@
     <synthTrackBg r="241" g="142" b="60"></synthTrackBg>
     <sliderBarDefaultColor r="0" g="90" b="160"></sliderBarDefaultColor>
     <sliderDefaultColor2 r="40" g="40" b="40"></sliderDefaultColor2>
-    <panSliderColor2 r="153" g="102" b="51"></panSliderColor2>
+    <panSliderColor2 r="170" g="62" b="150"></panSliderColor2>
     <gainSliderColor2 r="51" g="153" b="102"></gainSliderColor2>
-    <auxSliderColor2 r="170" g="85" b="127"></auxSliderColor2>
+    <auxSliderColor2 r="241" g="153" b="0"></auxSliderColor2>
     <audioVolumeSliderColor2 r="21" g="21" b="21"></audioVolumeSliderColor2>
     <midiVolumeSliderColor2 r="21" g="21" b="21"></midiVolumeSliderColor2>
     <audioVolumeHandleColor r="90" g="90" b="90"></audioVolumeHandleColor>
@@ -123,7 +123,7 @@
     <midiControllerViewBackgroundColor r="48" g="49" b="50"></midiControllerViewBackgroundColor>
     <drumListBackgroundColor r="40" g="40" b="40"></drumListBackgroundColor>
     <drumListFont r="200" g="200" b="200"></drumListFont>
-    <drumListSel r="0" g="255" b="0"></drumListSel>
+    <drumListSel r="0" g="230" b="0"></drumListSel>
     <drumListSelFont r="0" g="0" b="0"></drumListSelFont>
   </configuration>
 </muse>

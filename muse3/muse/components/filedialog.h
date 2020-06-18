@@ -76,7 +76,7 @@ class MFileDialog : public QFileDialog {
       };
 
 QString getSaveFileName(const QString& startWith, const char** filters,
-         QWidget* parent, const QString& name, bool* writeWinState=NULL);
+         QWidget* parent, const QString& name, bool* writeWinState=NULL, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
 QString getOpenFileName(const QString& startWith, const char** filters,
                         QWidget* parent, const QString& name, bool* doReadMidiPorts, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
 QString getImageFileName(const QString& startWith, const char** filters, 
