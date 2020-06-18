@@ -51,10 +51,11 @@
 #define GLOBAL_SHRT    128  // Global shortcuts
 #define LMEDIT_SHRT    256  // List masteredit
 #define MEDIT_SHRT     512  // Master editor
-#define ALL_SHRT      1023  // All shortcuts
-#define INVIS_SHRT    1024  // Shortcuts not shown in the config-dialog. Hard-coded. To avoid conflicts
+#define MIXER_SHRT    1024  // Master editor
+#define ALL_SHRT      2047  // All shortcuts
+#define INVIS_SHRT    2048  // Shortcuts not shown in the config-dialog. Hard-coded. To avoid conflicts
 
-#define SHRT_NUM_OF_CATEGORIES   9 //Number of shortcut categories
+#define SHRT_NUM_OF_CATEGORIES   10 //Number of shortcut categories
 
 namespace MusEGui {
 
@@ -383,12 +384,27 @@ enum {
       SHRT_NEXT_MARKER,
       SHRT_PREV_MARKER,
 
-      //arragner
+      // Arranger
       SHRT_PART_NORMALIZE, // Alt+N
 
       SHRT_TOOL_STRETCH,
       SHRT_TOOL_SAMPLERATE,
-      
+
+      // Mixer
+      SHRT_MIXER_SELECT_STRIP_LEFT,
+      SHRT_MIXER_SELECT_STRIP_RIGHT,
+      // TODO Feature marked as todo in AudioMixerApp::selectNextStrip().
+      //SHRT_MIXER_MULTI_SELECT_STRIP_LEFT,
+      //SHRT_MIXER_MULTI_SELECT_STRIP_RIGHT,
+      SHRT_MIXER_STRIP_VOL_DOWN,
+      SHRT_MIXER_STRIP_VOL_UP,
+      SHRT_MIXER_STRIP_PAN_DOWN,
+      SHRT_MIXER_STRIP_PAN_UP,
+      SHRT_MIXER_STRIP_VOL_DOWN_PAGE,
+      SHRT_MIXER_STRIP_VOL_UP_PAGE,
+      SHRT_MIXER_STRIP_PAN_DOWN_PAGE,
+      SHRT_MIXER_STRIP_PAN_UP_PAGE,
+
       //Last item:
       SHRT_NUM_OF_ELEMENTS        // must be last
       };

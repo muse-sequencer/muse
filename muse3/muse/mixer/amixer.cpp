@@ -35,12 +35,11 @@
 #include "icons.h"
 #include "song.h"
 #include "audio.h"
-
 #include "astrip.h"
 #include "mstrip.h"
 #include "track.h"
-
 #include "xml.h"
+#include "shortcuts.h"
 
 #define __WIDTH_COMPENSATION 4
 
@@ -1108,37 +1107,28 @@ void AudioMixerApp::showSyntiTracksChanged(bool v)
 
 void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
 {
-  bool moveEnabled=false;
-  const bool shift = ev->modifiers() & Qt::ShiftModifier;
-  const bool alt = ev->modifiers() & Qt::AltModifier;
-  const bool ctl = ev->modifiers() & Qt::ControlModifier;
-  if (ctl && alt) {
-    moveEnabled=true;
-  }
+  const int kb_code = ev->key() | ev->modifiers();
 
-  switch (ev->key()) {
-    case Qt::Key_Left:
-      if (moveEnabled)
-      {
-        selectNextStrip(false, !shift);
-        ev->accept();
+  // Set to accept by default.
+  ev->accept();
+  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_SELECT_STRIP_LEFT].key) {
+        selectNextStrip(false, true);
         return;
-      }
-      break;
-
-    case Qt::Key_Right:
-      if (moveEnabled)
-      {
-        selectNextStrip(true, !shift);
-        ev->accept();
-        return;
-      }
-      break;
-
-    default:
-      break;
   }
-
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_SELECT_STRIP_RIGHT].key) {
+        selectNextStrip(true, true);
+        return;
+  }
+  // TODO Feature marked as todo in AudioMixerApp::selectNextStrip().
+  //else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_MULTI_SELECT_STRIP_LEFT].key) {
+  //      selectNextStrip(false, false);
+  //      return;
+  //}
+  //else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_MULTI_SELECT_STRIP_RIGHT].key) {
+  //      selectNextStrip(true, false);
+  //      return;
+  //}
+  
   ev->ignore();
   return QMainWindow::keyPressEvent(ev);
 }

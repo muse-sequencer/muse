@@ -57,6 +57,7 @@
 #include "compact_slider.h"
 #include "menutitleitem.h"
 #include "pixmap_button.h"
+#include "shortcuts.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
@@ -1668,68 +1669,58 @@ void Strip::mouseMoveEvent(QMouseEvent* e)
 
 void Strip::keyPressEvent(QKeyEvent* ev)
 {
-  const bool shift = ev->modifiers() & Qt::ShiftModifier;
-  const bool alt = ev->modifiers() & Qt::AltModifier;
-  const bool ctl = ev->modifiers() & Qt::ControlModifier;
-  const bool meta = ev->modifiers() & Qt::MetaModifier;
-  const int val = shift ? 5 : 1;
+  // Set to accept by default.
+  ev->accept();
 
-  switch (ev->key())
+  if(ev->key() == Qt::Key_Escape)
   {
-    case Qt::Key_Escape:
-      //if(hasFocus() && _focusYieldWidget)
-      if(_focusYieldWidget)
-      {
-        ev->accept();
-        // Yield the focus to the given widget.
-        _focusYieldWidget->setFocus();
-        // Activate the window.
-        if(!_focusYieldWidget->isActiveWindow())
-          _focusYieldWidget->activateWindow();
-        return;
-      }
-    break;
-
-    case Qt::Key_Up:
-    if(alt && !ctl && !meta)
+    //if(hasFocus() && _focusYieldWidget)
+    if(_focusYieldWidget)
     {
-      incVolume(val);
       ev->accept();
+      // Yield the focus to the given widget.
+      _focusYieldWidget->setFocus();
+      // Activate the window.
+      if(!_focusYieldWidget->isActiveWindow())
+        _focusYieldWidget->activateWindow();
       return;
     }
-    break;
-
-    case Qt::Key_Down:
-    if(alt && !ctl && !meta)
-    {
-      incVolume(-val);
-      ev->accept();
-      return;
-    }
-    break;
-
-    case Qt::Key_Left:
-    if(alt && !ctl && !meta)
-    {
-      incPan(-val);
-      ev->accept();
-      return;
-    }
-    break;
-
-    case Qt::Key_Right:
-    if(alt && !ctl && !meta)
-    {
-      incPan(val);
-      ev->accept();
-      return;
-    }
-    break;
-
-    default:
-    break;
   }
-
+    
+  const int kb_code = ev->key() | ev->modifiers();
+  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN].key) {
+        incVolume(-1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP].key) {
+        incVolume(1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN].key) {
+        incPan(-1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP].key) {
+        incPan(1);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key) {
+        incVolume(-5);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP_PAGE].key) {
+        incVolume(5);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN_PAGE].key) {
+        incPan(-5);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP_PAGE].key) {
+        incPan(5);
+        return;
+  }
+  
   // Let mixer window or other higher up handle it.
   ev->ignore();
   QFrame::keyPressEvent(ev);
