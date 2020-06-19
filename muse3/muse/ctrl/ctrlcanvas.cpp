@@ -246,6 +246,12 @@ MusECore::Event CEvent::eventWithLength() const
 CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
       {
+      // Reset these since our parent will typically turn them on for speed.
+      // Definitely not static contents. Full repaint desired upon resize
+      //  because the contents need to scale. Without this, contents were not
+      //  updating on Mint Cinnamon when adjusting the vertical splitters.
+      setAttribute(Qt::WA_StaticContents, false);
+
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
           setBg(MusEGlobal::config.midiControllerViewBg);
           setBg(QPixmap());

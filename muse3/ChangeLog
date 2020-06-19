@@ -1,5 +1,7 @@
 19.06.2010
     - Fixed long-time meter and slider scale mis-alignment. New stylesheet property meterSpacing. (Tim)
+    - Midi controller graphs: Fixed no repaint when adjusting vertical splitters.
+      Clear WA_StaticContents in CtrlCanvas ctor - need full update because contents scale.
 18.06.2010
     - Mixer + strips: Replace hard-coded shortcuts with configurable ones. Several weren't working. (Tim)
       New mixer shortcut category.
