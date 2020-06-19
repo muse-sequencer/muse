@@ -172,7 +172,10 @@ void initShortCuts()
       defShrt(SHRT_AUDIO_BOUNCE_TO_FILE,  0, QT_TRANSLATE_NOOP("shortcuts", "Audio: Bounce audio to file"), ARRANG_SHRT, "audio_bounce_to_file");
       defShrt(SHRT_AUDIO_RESTART,         0, QT_TRANSLATE_NOOP("shortcuts", "Audio: Restart audio"), ARRANG_SHRT, "audio_restart");
 
-      defShrt(SHRT_MIXER_AUTOMATION,      0, QT_TRANSLATE_NOOP("shortcuts", "Automation: Mixer automation"), ARRANG_SHRT, "mixer_automation");
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//  for now until we decide what to do with it.
+//       defShrt(SHRT_MIXER_AUTOMATION,      0, QT_TRANSLATE_NOOP("shortcuts", "Automation: Mixer automation"), ARRANG_SHRT, "mixer_automation");
       defShrt(SHRT_MIXER_SNAPSHOT,        0, QT_TRANSLATE_NOOP("shortcuts", "Automation: Take mixer snapshot"), ARRANG_SHRT, "mixer_snapshot");
       defShrt(SHRT_MIXER_AUTOMATION_CLEAR,0, QT_TRANSLATE_NOOP("shortcuts", "Automation: Clear mixer automation"), ARRANG_SHRT, "mixer_automation_clear");
 

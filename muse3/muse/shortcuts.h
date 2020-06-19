@@ -186,7 +186,12 @@ enum {
       SHRT_AUDIO_BOUNCE_TO_FILE, //Default: undefined
       SHRT_AUDIO_RESTART, //Default: undefined
 
+      // REMOVE Tim. automation.
+      // Deprecated. MusEGlobal::automation is now fixed TRUE
+      //  for now until we decide what to do with it.
+      // Must keep this enum for proper ordering.
       SHRT_MIXER_AUTOMATION, //Default: undefined
+
       SHRT_MIXER_SNAPSHOT, //Default: undefined
       SHRT_MIXER_AUTOMATION_CLEAR, //Default: undefined
 
