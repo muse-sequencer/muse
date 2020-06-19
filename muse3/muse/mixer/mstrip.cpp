@@ -44,7 +44,6 @@
 #include "slider.h"
 #include "knob.h"
 #include "combobox.h"
-#include "meter.h"
 #include "track.h"
 #include "doublelabel.h"
 #include "rack.h"
@@ -1409,6 +1408,7 @@ MidiStripProperties::MidiStripProperties()
     _sliderGrooveWidth = 14;
     _sliderScalePos = Slider::InsideVertical;
     _meterWidth = Strip::FIXED_METER_WIDTH;
+    _meterSpacing = 2;
     ensurePolished();
 }
 
@@ -1447,6 +1447,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _sliderBackbone = props.sliderBackbone();
       _sliderScalePos = props.sliderScalePos();
       _meterWidth = props.meterWidth();
+      _meterSpacing = props.meterSpacing();
       
       // Set the whole strip's font, except for the label.
       setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
@@ -1606,6 +1607,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
+      _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
+      _meterLayout->setMargin(0);
+      _meterLayout->setSpacing(_meterSpacing);
+
       meter[0] = new Meter(nullptr, Meter::LinMeter, Qt::Vertical, 0.0, 127.0);
       meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
       meter[0]->setContentsMargins(0, 0, 0, 0);
@@ -1614,13 +1619,14 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor,
                                 MusEGlobal::config.meterBackgroundColor);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
+      _meterLayout->hlayout()->addWidget(meter[0], Qt::AlignHCenter);
       
       sliderGrid = new QGridLayout(); 
       sliderGrid->setSpacing(0);
       sliderGrid->setHorizontalSpacing(2);
       sliderGrid->setContentsMargins(2, 2, 4, 2);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
-      sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignHCenter);
+      sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
       
       addGridLayout(sliderGrid, _sliderPos);
 
@@ -2316,6 +2322,12 @@ void MidiStrip::configChanged()
   // Special for midi volume slider and label: Setup midi volume as decibel preference.
   setupMidiVolume();
 
+  // REMOVE Tim. mixer. Added.
+  // In case something in the slider changed, update the meter layout.
+  // TODO This is somewhat crude, might miss automatic changes.
+  // Later link up MeterLayout and Slider better.
+  _meterLayout->setMeterEndsMargin(slider->scaleEndpointsMargin());
+  
   _upperRack->configChanged();
   _infoRack->configChanged();
   _lowerRack->configChanged();

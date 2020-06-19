@@ -28,6 +28,7 @@
 #include "type_defs.h"
 #include "strip.h"
 #include "clipper_label.h"
+#include "meter.h"
 
 class QButton;
 class QHBoxLayout;
@@ -132,6 +133,7 @@ class AudioStripProperties : QWidget {
     Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
     Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
     Q_PROPERTY(bool meterWidthPerChannel READ meterWidthPerChannel WRITE setMeterWidthPerChannel)
+    Q_PROPERTY(int meterSpacing READ meterSpacing WRITE setMeterSpacing)
 
 //    QColor _bgColor;
     int _sliderRadius;
@@ -145,6 +147,7 @@ class AudioStripProperties : QWidget {
     int _sliderScalePos;
     int _meterWidth;
     bool _meterWidthPerChannel;
+    int _meterSpacing;
 
 public:
     AudioStripProperties();
@@ -178,6 +181,8 @@ public:
     void setMeterWidth(int w) { _meterWidth = w; }
     bool meterWidthPerChannel() const { return _meterWidthPerChannel; }
     void setMeterWidthPerChannel(bool b) { _meterWidthPerChannel = b; }
+    int meterSpacing() const { return _meterSpacing; }
+    void setMeterSpacing(int s) { _meterSpacing = s; }
 };
 
 //---------------------------------------------------------
@@ -227,11 +232,13 @@ class AudioStrip : public Strip {
       int _sliderScalePos;
       int _meterWidth;
       bool _meterWidthPerChannel;
+      int _meterSpacing;
 
       int channel;
       MusEGui::Slider* slider;
       MusEGui::DoubleLabel* sl;
       EffectRack* rack;
+      MeterLayout* _meterLayout;
 
       AudioComponentRack* _upperRack;
       AudioComponentRack* _lowerRack;

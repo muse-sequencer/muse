@@ -27,6 +27,7 @@
 
 #include "type_defs.h"
 #include "strip.h"
+#include "meter.h"
 
 class QWidget;
 class QAction;
@@ -200,6 +201,7 @@ class MidiStripProperties : QWidget {
     Q_PROPERTY(bool sliderBackbone READ sliderBackbone WRITE setSliderBackbone)
     Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
     Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
+    Q_PROPERTY(int meterSpacing READ meterSpacing WRITE setMeterSpacing)
 
 //    QColor _bgColor;
     int _sliderRadius;
@@ -212,6 +214,7 @@ class MidiStripProperties : QWidget {
     bool _sliderBackbone;
     int _sliderScalePos;
     int _meterWidth;
+    int _meterSpacing;
 
 public:
     MidiStripProperties();
@@ -243,6 +246,9 @@ public:
 
     int meterWidth() const { return _meterWidth; }
     void setMeterWidth(int w) { _meterWidth = w; }
+
+    int meterSpacing() const { return _meterSpacing; }
+    void setMeterSpacing(int s) { _meterSpacing = s; }
 };
 
 
@@ -263,6 +269,7 @@ class MidiStrip : public Strip {
     Q_PROPERTY(bool sliderUseGradient READ sliderUseGradient WRITE setSliderUseGradient)
     Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
     Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
+    Q_PROPERTY(int meterSpacing READ meterSpacing WRITE setMeterSpacing)
 
     QColor _bgColor;
     int _sliderRadius;
@@ -275,6 +282,7 @@ class MidiStrip : public Strip {
     bool _sliderBackbone;
     int _sliderScalePos;
     int _meterWidth;
+    int _meterSpacing;
 
   public:      
       // ID numbers for each rack in this strip.
@@ -306,6 +314,9 @@ class MidiStrip : public Strip {
       int meterWidth() const { return _meterWidth; }
       void setMeterWidth(int w) { _meterWidth = w; }
 
+      int meterSpacing() const { return _meterSpacing; }
+      void setMeterSpacing(int s) { _meterSpacing = s; }
+
   private:
       GridPosStruct _upperStackTabPos;
       GridPosStruct _preScrollAreaPos_A;
@@ -332,6 +343,7 @@ class MidiStrip : public Strip {
       DoubleLabel* sl;
       IconButton* off;
       IconButton* _recMonitor;
+      MeterLayout* _meterLayout;
 
       PaletteSwitcher* _upperStackTabButtonA;
       PaletteSwitcher* _upperStackTabButtonB;

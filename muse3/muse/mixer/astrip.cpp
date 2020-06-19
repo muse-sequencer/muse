@@ -51,7 +51,6 @@
 #include "compact_knob.h"
 #include "compact_slider.h"
 #include "combobox.h"
-#include "meter.h"
 #include "astrip.h"
 #include "track.h"
 #include "synth.h"
@@ -802,6 +801,7 @@ AudioStripProperties::AudioStripProperties()
     _sliderScalePos = Slider::InsideVertical;
     _meterWidth = Strip::FIXED_METER_WIDTH;
     _meterWidthPerChannel = false;
+    _meterSpacing = 4;
     ensurePolished();
 }
 
@@ -932,6 +932,12 @@ void AudioStrip::configChanged()
   if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
     sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
+  // REMOVE Tim. mixer. Added.
+  // In case something in the slider changed, update the meter layout.
+  // TODO This is somewhat crude, might miss automatic changes.
+  // Later link up MeterLayout and Slider better.
+  _meterLayout->setMeterEndsMargin(slider->scaleEndpointsMargin());
+  
   // Possible, but leave it to the background painter for now.
   //rack->setActiveColor(MusEGlobal::config.rackItemBackgroundColor);
 
@@ -1345,7 +1351,7 @@ void AudioStrip::updateChannels()
                   meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
                                              MusEGlobal::config.meterBackgroundColor);
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
-                  sliderGrid->addWidget(meter[cc], 2, cc+1, Qt::AlignLeft);
+                  _meterLayout->hlayout()->addWidget(meter[cc], Qt::AlignLeft);
 //                  meter[cc]->show();
                   }
             }
@@ -1417,6 +1423,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _sliderScalePos = props.sliderScalePos();
       _meterWidth = props.meterWidth();
       _meterWidthPerChannel = props.meterWidthPerChannel();
+      _meterSpacing = props.meterSpacing();
 
       // Set the whole strip's font, except for the label.
       // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
@@ -1642,6 +1649,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       sliderGrid->addWidget(slider, 2, 0, Qt::AlignHCenter);
 
+      _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
+      _meterLayout->setMargin(0);
+      _meterLayout->setSpacing(_meterSpacing);
+      sliderGrid->addLayout(_meterLayout, 2, 1, Qt::AlignHCenter);
+
       for (int i = 0; i < channel; ++i) {
           meter[i] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
           meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
@@ -1656,7 +1668,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
                                     MusEGlobal::config.meterBackgroundColor);
           connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
-          sliderGrid->addWidget(meter[i], 2, i+1, Qt::AlignHCenter);
+          _meterLayout->hlayout()->addWidget(meter[i], Qt::AlignHCenter);
       }
 
       addGridLayout(sliderGrid, _sliderPos);

@@ -1,3 +1,5 @@
+19.06.2010
+    - Fixed long-time meter and slider scale mis-alignment. New stylesheet property meterSpacing. (Tim)
 18.06.2010
     - Mixer + strips: Replace hard-coded shortcuts with configurable ones. Several weren't working. (Tim)
       New mixer shortcut category.

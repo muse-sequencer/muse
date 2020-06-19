@@ -97,13 +97,18 @@ Slider::Slider(QWidget *parent, const char *name,
 
       horizontal_hint = 40;
       vertical_hint = 40;
-      
+
       // set to sane values to avoid erratic size hint
       //  calculation -> drawing problems (kybos)
       if (orient == Qt::Vertical)
+      {
           d_sliderRect.setRect(0, 0, 20, 100);
+      }
       else
+      {
           d_sliderRect.setRect(0, 0, 100, 20);
+      }
+
       setOrientation(orient);
       d_scale.setTextHighlightMode(textHighlightMode);
       }
@@ -787,6 +792,7 @@ void Slider::adjustSize(const QSize& s)
             break;
 
         case Right:
+        {
             d_sliderRect.setRect(this->rect().x() + d_xMargin,
               this->rect().y() + d_yMargin,
               sliderWidth,
@@ -797,6 +803,7 @@ void Slider::adjustSize(const QSize& s)
               s.height() - d_thumbLength,
               ScaleDraw::Right);
             break;
+        }
 
         case InsideVertical:
         {
@@ -1156,6 +1163,7 @@ QSize Slider::sizeHint() const
                 break;
         }
       }
+
       return QSize(w, h);
       }
 
@@ -1210,9 +1218,13 @@ void Slider::setOrientation(Qt::Orientation o)
 
       d_scale.setGeometry(0, 0, 40, so);
       if (d_orient == Qt::Vertical)
+      {
             setMinimumSize(10,20);
+      }
       else
+      {
             setMinimumSize(20,10);
+      }
       QRect r = geometry();
       setGeometry(r.x(), r.y(), r.height(), r.width());
       update();
@@ -1222,6 +1234,15 @@ Qt::Orientation Slider::orientation() const
       {
       return d_orient;
       }
+
+int Slider::scaleEndpointsMargin() const
+{
+  const QFontMetrics fm = fontMetrics();
+  const int fh = fm.ascent() + 2;
+  const int fh2 = fh / 2;
+  const int margin2 = d_thumbHalf > fh2 ? d_thumbHalf : fh2;
+  return d_yMargin + margin2;
+}
 
 double Slider::lineStep() const
       {
