@@ -325,6 +325,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       addControllerMenu->setIcon(*midiControllerSelectSVGIcon);
       settingsMenu->addMenu(addControllerMenu);
       connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
+      connect(addControllerMenu, &QMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
       connect(addControllerMenu, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
       
       //---------------------------------------------------
@@ -1551,6 +1552,20 @@ void DrumEdit::ctrlMenuAboutToShow()
   //       Should try to fix this situation - two different values exist. Tim.
   cur_instr = (cur_instr & ~0xff) | get_instrument_map()[cur_instr].pitch;
   /*int est_width =*/ populateMidiCtrlMenu(addControllerMenu, parts(), curCanvasPart(), cur_instr);
+}
+
+//---------------------------------------------------------
+//   ctrlMenuAboutToHide
+//---------------------------------------------------------
+
+void DrumEdit::ctrlMenuAboutToHide()
+{
+  // Clear the menu and delete the contents, since it's going to be cleared
+  //  and refilled anyway next time opened, so we can save memory.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+// FIXME: This crashes, of course...
+//   addControllerMenu->clear();
 }
 
 //---------------------------------------------------------

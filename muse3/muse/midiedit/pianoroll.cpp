@@ -269,6 +269,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       addControllerMenu->setIcon(*midiControllerSelectSVGIcon);
       menuConfig->addMenu(addControllerMenu);
       connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
+      connect(addControllerMenu, &QMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
       connect(addControllerMenu, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
       
       //---------ToolBar----------------------------------
@@ -1121,6 +1122,20 @@ void PianoRoll::ctrlMenuAboutToShow()
   //  in any other widget are deleted."
   addControllerMenu->clear();
   populateMidiCtrlMenu(addControllerMenu, parts(), curCanvasPart(), curDrumInstrument());
+}
+
+//---------------------------------------------------------
+//   ctrlMenuAboutToHide
+//---------------------------------------------------------
+
+void PianoRoll::ctrlMenuAboutToHide()
+{
+  // Clear the menu and delete the contents, since it's going to be cleared
+  //  and refilled anyway next time opened, so we can save memory.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+// FIXME: This crashes, of course...
+//   addControllerMenu->clear();
 }
 
 //---------------------------------------------------------

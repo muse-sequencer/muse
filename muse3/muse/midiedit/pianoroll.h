@@ -180,6 +180,7 @@ class PianoRoll : public MidiEditor {
       void deltaModeChanged(bool);
       void ctrlPopupTriggered(QAction* act);
       void ctrlMenuAboutToShow();
+      void ctrlMenuAboutToHide();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

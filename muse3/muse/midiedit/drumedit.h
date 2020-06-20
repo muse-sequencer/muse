@@ -162,6 +162,7 @@ class DrumEdit : public MidiEditor {
       void setSpeaker(bool);
       void ctrlPopupTriggered(QAction* act);
       void ctrlMenuAboutToShow();
+      void ctrlMenuAboutToHide();
 
       void updateGroupingActions();
       void set_ignore_hide(bool);
