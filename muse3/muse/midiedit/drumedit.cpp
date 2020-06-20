@@ -57,7 +57,6 @@
 #include "gconfig.h"
 #include "functions.h"
 #include "helper.h"
-#include "popupmenu.h"
 #include "menutitleitem.h"
 #include "operations.h"
 // #include "function_dialogs/quantize.h"
@@ -321,6 +320,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
 
+      settingsMenu->addSeparator();
+      addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
+      addControllerMenu->setIcon(*midiControllerSelectSVGIcon);
+      settingsMenu->addMenu(addControllerMenu);
+      connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
+      connect(addControllerMenu, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
+      
       //---------------------------------------------------
       //    Toolbars
       //---------------------------------------------------
@@ -340,6 +346,14 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       tools = addToolBar(tr("Drum tools"));
       tools->setObjectName("Drum tools");
+
+      addctrl = new QToolButton();
+      addctrl->setMenu(addControllerMenu);
+      addctrl->setPopupMode(QToolButton::InstantPopup);
+      addctrl->setToolTip(tr("Add controller view"));
+      addctrl->setIcon(*midiControllerSelectSVGIcon);
+      addctrl->setFocusPolicy(Qt::NoFocus);
+      tools->addWidget(addctrl);
 
       srec  = new QToolButton();
       srec->setToolTip(tr("Step record"));
@@ -410,28 +424,17 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       genTrackInfo(trackInfoWidget);
       
       split1            = new MusEGui::Splitter(Qt::Vertical, mainw, "split1");
-      ctrl = new CompactToolButton(mainw);
-      ctrl->setIcon(*midiControllerNewSVGIcon);
-      ctrl->setIconSize(QSize(14, 14));
-      ctrl->setHasFixedIconSize(true);
-      ctrl->setContentsMargins(4, 4, 4, 4);
-      ctrl->setObjectName("Ctrl");
-      ctrl->setFocusPolicy(Qt::NoFocus);
-      //ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
-      ctrl->setToolTip(tr("Add controller view"));
 
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-      ctrl->setFixedSize(40, hscroll->sizeHint().height());
-
       QSizeGrip* corner = new QSizeGrip(mainw);
       corner->setFixedHeight(hscroll->sizeHint().height());
       
       MidiEditorHScrollLayout* gridSplit1 = 
-        new MidiEditorHScrollLayout(nullptr, ctrl, nullptr, hscroll, corner, nullptr);
+        new MidiEditorHScrollLayout(nullptr, nullptr, nullptr, hscroll, corner, nullptr);
       gridSplit1->setContentsMargins(0, 0, 0, 0);
       gridSplit1->setSpacing(0);  
 
@@ -624,8 +627,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(info, SIGNAL(returnPressed()), SLOT(focusCanvas()));
       connect(info, SIGNAL(escapePressed()), SLOT(focusCanvas()));
       
-      connect(ctrl, SIGNAL(clicked()), SLOT(addCtrlClicked()));
-
       connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
 
       QClipboard* cb = QApplication::clipboard();
@@ -1535,31 +1536,21 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
 }
 
 //---------------------------------------------------------
-//   addCtrlClicked
+//   ctrlMenuAboutToShow
 //---------------------------------------------------------
 
-void DrumEdit::addCtrlClicked()
+void DrumEdit::ctrlMenuAboutToShow()
 {
-  PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
-  connect(pup, SIGNAL(triggered(QAction*)), SLOT(ctrlPopupTriggered(QAction*)));
-
+  // Clear the menu and delete the contents.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+  addControllerMenu->clear();
+  // Grab the current drum instrument so the menu can use it.
   int cur_instr = curDrumInstrument();
   // HACK! New drum ctrl canvas current drum index is not the same as the editor current drum index.
   //       Should try to fix this situation - two different values exist. Tim.
   cur_instr = (cur_instr & ~0xff) | get_instrument_map()[cur_instr].pitch;
-  
-  int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), cur_instr);
-  
-  QPoint ep = ctrl->mapToGlobal(QPoint(0,0));
-  //int newx = ep.x() - pup->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .
-  int newx = ep.x() - est_width;  
-  if(newx < 0)
-    newx = 0;
-  ep.setX(newx);
-  pup->exec(ep);
-  delete pup;
-
-  ctrl->setDown(false);
+  /*int est_width =*/ populateMidiCtrlMenu(addControllerMenu, parts(), curCanvasPart(), cur_instr);
 }
 
 //---------------------------------------------------------

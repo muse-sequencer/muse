@@ -48,7 +48,7 @@
 #include "dcanvas.h"
 #include "midictrl.h"
 #include "part.h"
-#include "ttoolbutton.h"
+#include "popupmenu.h"
 
 namespace MusECore {
 class SNode;
@@ -82,6 +82,7 @@ class DrumEdit : public MidiEditor {
       bool _ignore_hide;
       
       QMenu* menuEdit, *menuFunctions, *menuSelect;
+      PopupMenu* addControllerMenu;
 
       int tickValue;
       int lenValue;
@@ -98,6 +99,7 @@ class DrumEdit : public MidiEditor {
       int lastSelections;
 
       MusEGui::NoteInfo* info;
+      QToolButton* addctrl;
       QToolButton* srec;
       QToolButton* midiin;
       QToolButton* speaker;
@@ -113,7 +115,6 @@ class DrumEdit : public MidiEditor {
       MusEGui::Header* header;
       QToolBar* tools;
       QComboBox *stepLenWidget;
-      CompactToolButton* ctrl;
 
       static int _rasterInit;
       static int _trackInfoWidthInit;
@@ -130,6 +131,7 @@ class DrumEdit : public MidiEditor {
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
       QAction *groupNoneAction, *groupChanAction, *groupMaxAction;
+      QAction *addControllerAction;
       
       void initShortcuts();
       void setupNewCtrl(CtrlEdit* ctrlEdit);
@@ -158,8 +160,8 @@ class DrumEdit : public MidiEditor {
       void songChanged1(MusECore::SongChangedStruct_t);
       void setStep(QString);
       void setSpeaker(bool);
-      void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);
+      void ctrlMenuAboutToShow();
 
       void updateGroupingActions();
       void set_ignore_hide(bool);

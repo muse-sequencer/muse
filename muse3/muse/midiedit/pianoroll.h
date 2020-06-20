@@ -43,7 +43,7 @@
 #include "midictrl.h"
 #include "part.h"
 #include "ecanvas.h"
-#include "ttoolbutton.h"
+#include "popupmenu.h"
 
 namespace MusECore {
 class Track;
@@ -70,6 +70,7 @@ class PianoRoll : public MidiEditor {
       Q_OBJECT
     
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
+      PopupMenu* addControllerMenu;
       
       QAction* editCutAction; 
       QAction* editCopyAction; 
@@ -104,6 +105,8 @@ class PianoRoll : public MidiEditor {
       QAction* speakerSingleNote;
       QAction* speakerChords;
 
+      QAction *addControllerAction;
+
       int tickValue;
       int lenValue;
       int pitchValue;
@@ -119,6 +122,7 @@ class PianoRoll : public MidiEditor {
       int lastSelections;
 
       MusEGui::NoteInfo* info;
+      QToolButton* addctrl;
       QToolButton* srec;
       QToolButton* midiin;
 
@@ -126,7 +130,6 @@ class PianoRoll : public MidiEditor {
       MusEGui::Toolbar1* toolbar;
       MusEGui::Splitter* splitter;
       MusEGui::Splitter* hsplitter;
-      CompactToolButton* ctrl;
       
       QToolButton* speaker;
       QToolBar* tools;
@@ -175,8 +178,8 @@ class PianoRoll : public MidiEditor {
       void configChanged();
       void newCanvasWidth(int);
       void deltaModeChanged(bool);
-      void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);
+      void ctrlMenuAboutToShow();
 
    signals:
       void isDeleting(MusEGui::TopWin*);

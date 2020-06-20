@@ -63,7 +63,8 @@ MidiEditorHScrollLayout::MidiEditorHScrollLayout(QWidget *parent,
     _cornerLi(nullptr)
 { 
   _spacerLi = new QSpacerItem(0, 0);
-  _button1Li = new QWidgetItem(_button1);
+  if(_button1)
+    _button1Li = new QWidgetItem(_button1);
   if(_button2)
     _button2Li = new QWidgetItem(_button2);
   _sbLi = new QWidgetItem(_sb);
@@ -71,7 +72,8 @@ MidiEditorHScrollLayout::MidiEditorHScrollLayout(QWidget *parent,
     _cornerLi = new QWidgetItem(_corner);
   
   addItem(_spacerLi);
-  addItem(_button1Li);
+  if(_button1Li)
+    addItem(_button1Li);
   if(_button2Li)
     addItem(_button2Li);
   addItem(_sbLi);
@@ -94,7 +96,7 @@ void MidiEditorHScrollLayout::setGeometry(const QRect &rect)
 //                    (_button2Li ? (_button2Li->sizeHint().width() + spacing()) : 0);
                    
   // The buttons use a fixed width! sizeHint and minimumSizeHint are no help here!
-  const int ti_w = _button1->width() + spacing() + 
+  const int ti_w = (_button1 ? (_button1->width() + spacing()) : 0) + 
                    (_button2 ? (_button2->width() + spacing()) : 0);
 
   const int corner_w = (_corner ? (_corner->sizeHint().width() + spacing()) : 0);
@@ -113,20 +115,21 @@ void MidiEditorHScrollLayout::setGeometry(const QRect &rect)
   //fprintf(stderr, "spacing:%d x:%d button minimumSizeHint width:%d button sizeHint width:%d\n",
   //        spacing(), x, _button1->minimumSizeHint().width(), _button1->sizeHint().width());
   
-//   int b1x = b2x - (_button1->sizeHint().width() + spacing());
-  int b1x = b2x - (_button1->width() + spacing());
+  //int b1x = b2x - (_button1 ? (_button1->sizeHint().width() + spacing()) : 0);
+  int b1x = b2x - (_button1 ? (_button1->width() + spacing()) : 0);
   if(b1x < 0)
     b1x = 0;
   if(b1x > rect.width() - (_sb->minimumSizeHint().width() + corner_w))
     b1x = rect.width() - (_sb->minimumSizeHint().width() + corner_w);
   
-  _button1Li->setGeometry(
-    QRect(
-      b1x,
-      rect.y(),
-      _button1->width() + spacing(),
-      rect.height()
-    ));
+  if(_button1Li)
+    _button1Li->setGeometry(
+      QRect(
+        b1x,
+        rect.y(),
+        _button1->width() + spacing(),
+        rect.height()
+      ));
   
   if(_button2Li)
     _button2Li->setGeometry(
