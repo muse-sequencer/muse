@@ -462,6 +462,7 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
+      void setViewArrangerActionVisible(bool visible);
       
       const ToplevelList* getToplevels() { return &toplevels; }
       
