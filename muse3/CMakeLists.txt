@@ -160,22 +160,45 @@ option ( ENABLE_LASH         "Enable LASH Audio Session Handler (or LADISH compa
 option ( ENABLE_LRDF         "Enable LADSPA RDF (lrdf) Provides extra info for LADSPA plugins"  ON)
 option ( ENABLE_OSC          "Enable Lightweight Open Sound Control (liblo) (DSSI also recommended)"  ON)
 option ( ENABLE_DSSI         "Enable Disposable Soft Synth Interface (dssi) (OSC also needed)" ON)
-option ( ENABLE_VST          "Enable VST/win support (deprecated)"                                OFF)
+
+# Disabled but kept in case anyone really wants it. To tempting for users to set it.
+# This is soooo old. The code is unlikely to work. It involved fst.
+# option ( ENABLE_VST          "Enable VST/win support (deprecated)"                                OFF)
+
 option ( ENABLE_VST_NATIVE   "Enable Native VST support (see ENABLE_VST_VESTIGE and VST_HEADER_PATH)" ON)
 option ( ENABLE_VST_VESTIGE  "Set VST header type is Vestige"                                         ON)
 option ( ENABLE_LV2          "Enable LV2 plugins and synths support" ON)
 option ( ENABLE_LV2_GTK2     "Enable LV2 user interface GTK2 support" ON)
-option ( ENABLE_LV2_MAKE_PATH "Enable LV2 makePath support. Stores plugin config files separate from song. NOT RECOMMENDED." OFF)
+
+# Disabled but kept in case anyone really wants it.
+# It's just too undesirable for most users, and some packagers were trying to turn it on.
+# Even if we were to hide the option but make it still valid, these older package scripts would set it.
+# The thing is, the code is (was) a fine working example of how to implement makepath especially for MusE,
+#  so it is of importance. But very tedious and radically disruptive to a configuration to test and
+#  maintain switching back and forth between set and clear. And it is most desirable to leave it off.
+# So let's just really hide it for now. Tim.
+## option ( ENABLE_LV2_MAKE_PATH "Enable LV2 makePath support. Stores plugin config files separate from song. NOT RECOMMENDED." OFF)
+
 option ( ENABLE_LV2_DEBUG    "Enable LV2 debugging messages" OFF)
 option ( ENABLE_FLUID        "Enable fluidsynth softsynth plugins."                                ON)
 option ( ENABLE_RUBBERBAND   "Enable RubberBand Audio Stretcher/Pitch Shifter/Sample Rate Converter" ON)
 #option ( ENABLE_ZITA_RESAMPLER "Enable Zita Resampler Audio Sample Rate Converter" ON)  # TODO See below...
 option ( ENABLE_MIDNAM       "Enable MIDI Name support (MidNam). Official MMA instrument spec. Also for LV2 plugins." ON)
 option ( ENABLE_INSTPATCH    "Enable Instrument Patch Library support (enhances soundfont support)." ON)
-option ( ENABLE_EXPERIMENTAL "Enable various experimental features (not recommended)."              OFF)
-option ( ENABLE_PYTHON       "Enable experimental python control support (not recommended)."         OFF)
+
+# Disabled but kept in case anyone really wants it.
+## option ( ENABLE_EXPERIMENTAL "Enable various experimental features (not recommended)."              OFF)
+
+# This was recently extensively overhauled, modernized, and tested. It used to be marked as experimental.
+# But lest users feel cheated out of the full experience by a default build, let's set it.
+# If security is of concern, users must start with a command-line option anyway for it to
+#  even attempt to connect to a server. If Python is not found, no big deal.
+option ( ENABLE_PYTHON       "Enable python control support."         ON)
+
 option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files (WARNING: This will modify the .ts files in the source tree!!)" OFF)
 option ( MODULES_BUILD_STATIC "Build type of internal modules"                                   OFF)
+
+
 
 if ( MODULES_BUILD_STATIC )
       SET(MODULES_BUILD STATIC )
