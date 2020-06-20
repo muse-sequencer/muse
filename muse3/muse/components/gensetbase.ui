@@ -2701,7 +2701,7 @@ Disable to use an alternate standard
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string>MDI-subwindowness and sharing menus</string>
+          <string>MDI-subwindowness and sharing menus (may require restart)</string>
          </property>
          <property name="checkable">
           <bool>false</bool>

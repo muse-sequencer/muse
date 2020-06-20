@@ -58,6 +58,9 @@ void MdiSettings::apply_settings()
   TopWin::_defaultSubwin[_type] = isSubwinCheckbox->isChecked();
   TopWin::_sharesWhenSubwin[_type] = shareSubwinCheckbox->isChecked();
   TopWin::_sharesWhenFree[_type] = shareFreeCheckbox->isChecked();
+
+  if (_type == TopWin::ARRANGER)
+    MusEGlobal::muse->setViewArrangerActionVisible(!isSubwinCheckbox->isChecked());
 }
 
 } // namespace MusEGui
