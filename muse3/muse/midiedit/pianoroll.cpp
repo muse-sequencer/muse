@@ -266,7 +266,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       menuConfig->addSeparator();
       addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
-      addControllerMenu->setIcon(*midiControllerSelectSVGIcon);
+      addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       menuConfig->addMenu(addControllerMenu);
       connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
       connect(addControllerMenu, &QMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
@@ -291,11 +291,10 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       tools->setObjectName("Pianoroll tools");
 
       addctrl = new QToolButton();
-      addctrl->setMenu(addControllerMenu);
-      addctrl->setPopupMode(QToolButton::InstantPopup);
       addctrl->setToolTip(tr("Add controller view"));
-      addctrl->setIcon(*midiControllerSelectSVGIcon);
+      addctrl->setIcon(*midiControllerNewSVGIcon);
       addctrl->setFocusPolicy(Qt::NoFocus);
+      connect(addctrl, &QToolButton::pressed, [this]() { addCtrlClicked(); } );
       tools->addWidget(addctrl);
 
       srec  = new QToolButton();
@@ -1109,6 +1108,29 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
     ctrlEdit->setController(newCtlNum);
     setupNewCtrl(ctrlEdit);
   }
+}
+
+//---------------------------------------------------------
+//   addCtrlClicked
+//---------------------------------------------------------
+
+void PianoRoll::addCtrlClicked()
+{
+  PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
+  connect(pup, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
+  
+  /*int est_width =*/ populateMidiCtrlMenu(pup, parts(), curCanvasPart(), curDrumInstrument());
+  
+  QPoint ep = addctrl->mapToGlobal(QPoint(0,0));
+  //int newx = ep.x() - ctrlMainPop->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .
+//   int newx = ep.x() - est_width;  
+//   if(newx < 0)
+//     newx = 0;
+//   ep.setX(newx);
+  pup->exec(ep);
+  delete pup;
+  
+  addctrl->setDown(false);
 }
 
 //---------------------------------------------------------

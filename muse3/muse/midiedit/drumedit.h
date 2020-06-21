@@ -160,6 +160,7 @@ class DrumEdit : public MidiEditor {
       void songChanged1(MusECore::SongChangedStruct_t);
       void setStep(QString);
       void setSpeaker(bool);
+      void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);
       void ctrlMenuAboutToShow();
       void ctrlMenuAboutToHide();

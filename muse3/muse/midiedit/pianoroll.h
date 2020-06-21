@@ -178,6 +178,7 @@ class PianoRoll : public MidiEditor {
       void configChanged();
       void newCanvasWidth(int);
       void deltaModeChanged(bool);
+      void addCtrlClicked();
       void ctrlPopupTriggered(QAction* act);
       void ctrlMenuAboutToShow();
       void ctrlMenuAboutToHide();

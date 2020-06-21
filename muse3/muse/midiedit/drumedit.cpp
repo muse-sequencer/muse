@@ -322,7 +322,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       settingsMenu->addSeparator();
       addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
-      addControllerMenu->setIcon(*midiControllerSelectSVGIcon);
+      addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       settingsMenu->addMenu(addControllerMenu);
       connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
       connect(addControllerMenu, &QMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
@@ -349,11 +349,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tools->setObjectName("Drum tools");
 
       addctrl = new QToolButton();
-      addctrl->setMenu(addControllerMenu);
-      addctrl->setPopupMode(QToolButton::InstantPopup);
       addctrl->setToolTip(tr("Add controller view"));
-      addctrl->setIcon(*midiControllerSelectSVGIcon);
+      addctrl->setIcon(*midiControllerNewSVGIcon);
       addctrl->setFocusPolicy(Qt::NoFocus);
+      connect(addctrl, &QToolButton::pressed, [this]() { addCtrlClicked(); } );
       tools->addWidget(addctrl);
 
       srec  = new QToolButton();
@@ -1534,6 +1533,34 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
     ctrlEdit->setController(newCtlNum);
     setupNewCtrl(ctrlEdit);
   }
+}
+
+//---------------------------------------------------------
+//   addCtrlClicked
+//---------------------------------------------------------
+
+void DrumEdit::addCtrlClicked()
+{
+  PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
+  connect(pup, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
+
+  int cur_instr = curDrumInstrument();
+  // HACK! New drum ctrl canvas current drum index is not the same as the editor current drum index.
+  //       Should try to fix this situation - two different values exist. Tim.
+  cur_instr = (cur_instr & ~0xff) | get_instrument_map()[cur_instr].pitch;
+  
+  /*int est_width =*/ populateMidiCtrlMenu(pup, parts(), curCanvasPart(), cur_instr);
+  
+  QPoint ep = addctrl->mapToGlobal(QPoint(0,0));
+  //int newx = ep.x() - pup->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .
+//   int newx = ep.x() - est_width;  
+//   if(newx < 0)
+//     newx = 0;
+//   ep.setX(newx);
+  pup->exec(ep);
+  delete pup;
+
+  addctrl->setDown(false);
 }
 
 //---------------------------------------------------------
