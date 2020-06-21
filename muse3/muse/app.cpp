@@ -1974,19 +1974,10 @@ void MusE::markerClosed()
 //   toggleArranger
 //---------------------------------------------------------
 
-void MusE::setViewArrangerActionVisible(bool visible)
-{
-    viewArrangerAction->setVisible(visible);
-}
-
-//---------------------------------------------------------
-//   toggleArranger
-//---------------------------------------------------------
-
 void MusE::toggleArranger(bool checked)
-{
-    showArranger(checked);
-}
+      {
+      showArranger(checked);
+      }
 
 //---------------------------------------------------------
 //   showArranger
@@ -2000,7 +1991,7 @@ void MusE::showArranger(bool flag)
         viewArrangerAction->setChecked(flag);
       if (!flag)
         if (currentMenuSharingTopwin == arrangerView)
-          setCurrentMenuSharingTopwin(nullptr);
+          setCurrentMenuSharingTopwin(NULL);
       updateWindowMenu();
       }
 
