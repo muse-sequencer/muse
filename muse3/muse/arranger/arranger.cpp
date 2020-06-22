@@ -1328,7 +1328,7 @@ void Arranger::updateHeaderCustomColumns()
     }
 
     setHeaderSizes();
-    list->redraw();
+    updateTracklist();
 }
 
 void Arranger::updateTracklist()
