@@ -1,3 +1,5 @@
+22.06.2010
+	- Fix slider/meter groove misalignment in mixer strip. (kybos)
 20.06.2010
     - Cmake option changes (Tim): Removed ancient ENABLE_VST and ENABLE_EXPERIMENTAL,
        and dangerous ENABLE_LV2_MAKE_PATH, and enabled ENABLE_PYTHON by default since
