@@ -797,6 +797,7 @@ AudioStripProperties::AudioStripProperties()
     _sliderFillOver = true;
     _sliderUseGradient = true;
     _sliderBackbone = false;
+    _sliderFillHandle = true;
     _sliderGrooveWidth = 14;
     _sliderScalePos = Slider::InsideVertical;
     _meterWidth = Strip::FIXED_METER_WIDTH;
@@ -1420,6 +1421,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _sliderFillOver = props.sliderFillOver();
       _sliderUseGradient = props.sliderUseGradient();
       _sliderBackbone = props.sliderBackbone();
+      _sliderFillHandle = props.sliderFillHandle();
       _sliderScalePos = props.sliderScalePos();
       _meterWidth = props.meterWidth();
       _meterWidthPerChannel = props.meterWidthPerChannel();
@@ -1628,6 +1630,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       slider->setRadiusHandle(_sliderRadiusHandle);
       slider->setHandleHeight(_sliderHandleHeight);
       slider->setHandleWidth(_sliderHandleWidth);
+      slider->setFillThumb(_sliderFillHandle);
       slider->setGrooveWidth(_sliderGrooveWidth);
       slider->setFillEmptySide(_sliderFillOver);
       slider->setUseGradient(_sliderUseGradient);

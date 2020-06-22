@@ -153,27 +153,27 @@ class Slider : public SliderBase, public ScaleIf
 
   void setMargins(int x, int y);
   int grooveWidth() const { return d_grooveWidth; }
-  void setGrooveWidth(int w) { d_grooveWidth = w; update(); }
+  void setGrooveWidth(int w) { d_grooveWidth = w; }
   
 //  QColor fillColor() const { return d_fillColor; }
   void setFillColor(const QColor& color) { d_fillColor = color; update(); }
   void setHandleColor(const QColor& color) { d_handleColor = color; update(); }
   
   bool fillThumb() const { return d_fillThumb; }
-  void setFillThumb(bool v) { d_fillThumb = v; update(); }
+  void setFillThumb(bool v) { d_fillThumb = v; }
   
   bool fillEmptySide() const { return d_fillEmptySide; }
-  void setFillEmptySide(bool v) { d_fillEmptySide = v; update(); }
+  void setFillEmptySide(bool v) { d_fillEmptySide = v; }
   
   virtual QSize sizeHint() const;
   void setSizeHint(uint w, uint h);
 
-  void setRadius(int r) { d_radius = r; update(); }
-  void setRadiusHandle(int r) { d_radiusHandle = r; update(); }
-  void setHandleHeight(int h) { d_thumbLength = h; update(); }
-  void setHandleWidth(int w) { d_thumbWidth = w; d_thumbHalf = d_thumbLength / 2; update(); }
-  void setUseGradient(bool b) { d_useGradient = b; update(); }
-  void setScalePos(ScalePos s) { d_scalePos = s; update(); }
+  void setRadius(int r) { d_radius = r; }
+  void setRadiusHandle(int r) { d_radiusHandle = r; }
+  void setHandleHeight(int h) { d_thumbLength = h; }
+  void setHandleWidth(int w) { d_thumbWidth = w; d_thumbHalf = d_thumbLength / 2; }
+  void setUseGradient(bool b) { d_useGradient = b; }
+  void setScalePos(ScalePos s) { d_scalePos = s; }
       };
 
 } // namespace MusEGui

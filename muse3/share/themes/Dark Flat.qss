@@ -218,6 +218,9 @@ MusEGui--AudioStripProperties {
 /* draw vertical line in slider scale
     qproperty-sliderBackbone: true; 
 */
+/* fill slider handle with color
+    qproperty-sliderFillHandle: false; 
+*/
     qproperty-meterWidth: 10;
 /* apply meterWidth for each channel
     qproperty-meterWidthPerChannel: true;
@@ -240,6 +243,9 @@ MusEGui--MidiStripProperties {
     qproperty-sliderScalePos: 2; 
 /* draw vertical line in slider scale
     qproperty-sliderBackbone: true;
+*/
+/* fill slider handle with color
+    qproperty-sliderFillHandle: false; 
 */
     qproperty-meterWidth: 10;
 }
