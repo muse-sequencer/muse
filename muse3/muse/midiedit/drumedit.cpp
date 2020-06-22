@@ -251,7 +251,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       // Functions
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
       
-      menuFunctions->setTearOffEnabled(true);
+//      menuFunctions->setTearOffEnabled(true);
 
       fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
