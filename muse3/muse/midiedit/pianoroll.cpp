@@ -191,7 +191,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
-      menuFunctions->setTearOffEnabled(true);
+//      menuFunctions->setTearOffEnabled(true);
       
       funcQuantizeAction = menuFunctions->addAction(tr("Quantize"));
       connect(funcQuantizeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_QUANTIZE); } );
