@@ -199,6 +199,7 @@ class MidiStripProperties : QWidget {
     Q_PROPERTY(bool sliderFillOver READ sliderFillOver WRITE setSliderFillOver)
     Q_PROPERTY(bool sliderUseGradient READ sliderUseGradient WRITE setSliderUseGradient)
     Q_PROPERTY(bool sliderBackbone READ sliderBackbone WRITE setSliderBackbone)
+    Q_PROPERTY(bool sliderFillHandle READ sliderFillHandle WRITE setSliderFillHandle)
     Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
     Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
     Q_PROPERTY(int meterSpacing READ meterSpacing WRITE setMeterSpacing)
@@ -212,6 +213,7 @@ class MidiStripProperties : QWidget {
     bool _sliderFillOver;
     bool _sliderUseGradient;
     bool _sliderBackbone;
+    bool _sliderFillHandle;
     int _sliderScalePos;
     int _meterWidth;
     int _meterSpacing;
@@ -240,6 +242,8 @@ public:
     void setSliderUseGradient(bool b) { _sliderUseGradient = b; }
     bool sliderBackbone() const { return _sliderBackbone; }
     void setSliderBackbone(bool b) { _sliderBackbone = b; }
+    bool sliderFillHandle() const { return _sliderFillHandle; }
+    void setSliderFillHandle(bool b) { _sliderFillHandle = b; }
 
     int sliderScalePos() const { return _sliderScalePos; }
     void setSliderScalePos(int p) { _sliderScalePos = p; }
@@ -280,6 +284,7 @@ class MidiStrip : public Strip {
     bool _sliderFillOver;
     bool _sliderUseGradient;
     bool _sliderBackbone;
+    bool _sliderFillHandle;
     int _sliderScalePos;
     int _meterWidth;
     int _meterSpacing;

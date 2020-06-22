@@ -40,7 +40,7 @@
 
 namespace MusECore {
 
-enum Corner { UpperLeft = 0x1, UpperRight = 0x2, LowerLeft = 0x4, LowerRight = 0x8 };
+enum Corner { UpperLeft = 0x1, UpperRight = 0x2, LowerLeft = 0x4, LowerRight = 0x8, All = 0xF };
 
 extern QString bitmap2String(int bm);
 extern int string2bitmap(const QString& str);
