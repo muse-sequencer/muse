@@ -832,7 +832,7 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   
   QPainterPath onPath;
   MusECore::addRoundedPath(&onPath, QRect (x1, y, w1, h), _radius, _radius,
-    (MusECore::Corner) (MusECore::UpperRight | MusECore::LowerRight) );
+    (MusECore::Corner) (MusECore::CornerUpperRight | MusECore::CornerLowerRight) );
   if(!onPath.isEmpty())
     p.fillPath(onPath, linearGrad_a);
 
