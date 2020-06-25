@@ -1,35 +1,35 @@
-22.06.2010
+22.06.2020
 	- Fix slider/meter groove misalignment in mixer strip. (kybos)
-20.06.2010
+20.06.2020
     - Cmake option changes (Tim): Removed ancient ENABLE_VST and ENABLE_EXPERIMENTAL,
        and dangerous ENABLE_LV2_MAKE_PATH, and enabled ENABLE_PYTHON by default since
        it has been thoroughly updated. No code removed. PLEASE REBUILD your MusE !
-19.06.2010
+19.06.2020
     - Fixed long-time meter and slider scale mis-alignment. New stylesheet property meterSpacing. (Tim)
     - Midi controller graphs: Fixed no repaint when adjusting vertical splitters.
       Clear WA_StaticContents in CtrlCanvas ctor - need full update because contents scale.
     - Midi controller graphs: Moved 'Add ctrl' button from bottom area to menu and toolbar as well.
-18.06.2010
+18.06.2020
     - Mixer + strips: Replace hard-coded shortcuts with configurable ones. Several weren't working. (Tim)
       New mixer shortcut category.
     - Updated Simpledrums so all parameters update a status field, previously
       it was impossible to know what the dials were set to. Changing the look
       of the dials would also be a good idea, left to do. (rj)
-17.06.2010
+17.06.2020
     - Fix main window being too small on large screens when MusE is started for the first time. 
       The size and position are now adjusted dynamically for the current screen size. (kybos)
     - Fix main window size/position set to random values when a project or template is opened.
       The window is now only resized if the file contains explicit geometry information. (kybos)
     - Fix progress bar not being displayed when opening files. (kybos)
     - Mixers: Maximize button removed. Certain window managers ignore a set maximum size. (Tim)
-16.06.2010
+16.06.2020
     - Replace invisible icons in file dialogs in new dark theme. (kybos)
     - Unify colour configuration file naming. (kybos)
     - Fix invalid Global area default in file save dialog. (kybos)
     - Fixed some bugs with Cursor mode in drum editor (rj)
     - Effects rack: Ensure updateGeometry is called if number of rack items changed. (Tim)
       Was not required for at least suse, but required for at least mint cinnamon.
-13.06.2010
+13.06.2020
     - Add option to hide menu icons. (kybos)
 12.06.2020
     - Menu: 'Mixer Automation' is deprecated, MusEGlobal::automation now fixed TRUE
