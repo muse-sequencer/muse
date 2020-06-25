@@ -1304,19 +1304,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
           return;
       }
 
-      const int incrementValue = 1; //(event->modifiers() &  Qt::ShiftModifier) ? 5 : 1;
-                                    // ran into an issue, basically too many shortcuts
-                                    // so it's hard to find sensible shortcuts to allow
-                                    // the shift accelerator.. hard coding for now.
-
-      if (event->modifiers() &  Qt::ShiftModifier)
-            key +=  Qt::SHIFT;
-      if (event->modifiers() &  Qt::AltModifier)
-            key +=  Qt::ALT;
-      if (event->modifiers() &  Qt::ControlModifier)
-            key +=  Qt::CTRL;
-      if (event->modifiers() &  Qt::MetaModifier)
-            key +=  Qt::META;
+      key = key | event->modifiers();
 
       if (key == shortcuts[SHRT_DELETE].key) {
             if (getCurrentDrag())
@@ -1413,24 +1401,44 @@ void PartCanvas::keyPress(QKeyEvent* event)
             emit soloSelectedTracks();
             return;
       }
-      if (key ==  shortcuts[SHRT_VOL_UP_CURRENT_TRACKS].key)
+      if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_UP].key)
       {
-          emit volumeSelectedTracks(incrementValue);
+          emit volumeSelectedTracks(1);
           return;
       }
-      else if (key ==  shortcuts[SHRT_VOL_DOWN_CURRENT_TRACKS].key)
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_DOWN].key)
       {
-          emit volumeSelectedTracks(-incrementValue);
+          emit volumeSelectedTracks(-1);
           return;
       }
-      else if (key ==  shortcuts[SHRT_PAN_LEFT_CURRENT_TRACKS].key)
+      if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_UP_PAGE].key)
       {
-          emit panSelectedTracks(-incrementValue);
+          emit volumeSelectedTracks(5);
           return;
       }
-      else if (key ==  shortcuts[SHRT_PAN_RIGHT_CURRENT_TRACKS].key)
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key)
       {
-          emit panSelectedTracks(incrementValue);
+          emit volumeSelectedTracks(-5);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_LEFT].key)
+      {
+          emit panSelectedTracks(-1);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_RIGHT].key)
+      {
+          emit panSelectedTracks(1);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_LEFT_PAGE].key)
+      {
+          emit panSelectedTracks(-5);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_RIGHT_PAGE].key)
+      {
+          emit panSelectedTracks(5);
           return;
       }
 

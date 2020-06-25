@@ -1668,45 +1668,47 @@ void Strip::mouseMoveEvent(QMouseEvent* e)
   }
 }
 bool Strip::handleForwardedKeyPress(QKeyEvent* event)
-{
-  int key = event->key();
-  if (event->modifiers() &  Qt::ShiftModifier)
-        key +=  Qt::SHIFT;
-  if (event->modifiers() &  Qt::AltModifier)
-        key +=  Qt::ALT;
-  if (event->modifiers() &  Qt::ControlModifier)
-        key +=  Qt::CTRL;
-  if (event->modifiers() &  Qt::MetaModifier)
-        key +=  Qt::META;
+{  
+  const int kb_code = event->key() | event->modifiers();
 
-  const int incrementValue = 1;
-
-  if (key ==  shortcuts[SHRT_VOL_UP_CURRENT_TRACKS].key)
-  {
-    incVolume(incrementValue);
-    return true;
+  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN].key) {
+        incVolume(-1);
+        return true;
   }
-  else if (key ==  shortcuts[SHRT_VOL_DOWN_CURRENT_TRACKS].key)
-  {
-    incVolume(-incrementValue);
-    return true;
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP].key) {
+        incVolume(1);
+        return true;
   }
-  else if (key ==  shortcuts[SHRT_PAN_LEFT_CURRENT_TRACKS].key)
-  {
-    incPan(-incrementValue);
-    return true;
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_LEFT].key) {
+        incPan(-1);
+        return true;
   }
-  else if (key ==  shortcuts[SHRT_PAN_RIGHT_CURRENT_TRACKS].key)
-  {
-      incPan(incrementValue);
-      return true;
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_RIGHT].key) {
+        incPan(1);
+        return true;
   }
-  else if (key ==  shortcuts[SHRT_MUTE_CURRENT_TRACKS].key)
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key) {
+        incVolume(-5);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP_PAGE].key) {
+        incVolume(5);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_LEFT_PAGE].key) {
+        incPan(-5);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_RIGHT_PAGE].key) {
+        incPan(5);
+        return true;
+  }
+  else if (kb_code ==  MusEGui::shortcuts[MusEGui::SHRT_MUTE_CURRENT_TRACKS].key)
   {
       mute->setChecked(!mute->isChecked());
       return true;
   }
-  else if (key == shortcuts[SHRT_SOLO_CURRENT_TRACKS].key)
+  else if (kb_code == MusEGui::shortcuts[MusEGui::SHRT_SOLO_CURRENT_TRACKS].key)
   {
       solo->setChecked(!solo->isChecked());
       return true;
@@ -1718,12 +1720,14 @@ void Strip::keyPressEvent(QKeyEvent* ev)
 {
   // Set to accept by default.
   ev->accept();
+
   if (ev->key() == Qt::Key_Escape)
   {
     if(_focusYieldWidget)
     {
       // Yield the focus to the given widget.
       _focusYieldWidget->setFocus();
+
       // Activate the window.
       if(!_focusYieldWidget->isActiveWindow())
       {
@@ -1737,41 +1741,11 @@ void Strip::keyPressEvent(QKeyEvent* ev)
       return;
     }
   }
-    
-  const int kb_code = ev->key() | ev->modifiers();
-  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN].key) {
-        incVolume(-1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP].key) {
-        incVolume(1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN].key) {
-        incPan(-1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP].key) {
-        incPan(1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key) {
-        incVolume(-5);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP_PAGE].key) {
-        incVolume(5);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN_PAGE].key) {
-        incPan(-5);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP_PAGE].key) {
-        incPan(5);
-        return;
-  }
-  
+
+  bool handled = handleForwardedKeyPress(ev);
+  if (handled)
+      return;
+
   // Let mixer window or other higher up handle it.
   ev->ignore();
   QFrame::keyPressEvent(ev);

@@ -196,11 +196,6 @@ void initShortCuts()
       defShrt(SHRT_MUTE_CURRENT_TRACKS,   Qt::META + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Mute all currently selected tracks"), ARRANG_SHRT, "mute_curren_tracks");
       defShrt(SHRT_SOLO_CURRENT_TRACKS,   Qt::META + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Solo all currently selected tracks"), ARRANG_SHRT, "solo_curren_tracks");
 
-      defShrt(SHRT_VOL_UP_CURRENT_TRACKS,   Qt::CTRL + Qt::SHIFT + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Volume up on all currently selected tracks"), ARRANG_SHRT, "vol_up_current_tracks");
-      defShrt(SHRT_VOL_DOWN_CURRENT_TRACKS, Qt::CTRL + Qt::SHIFT + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Volume down on all currently selected tracks"), ARRANG_SHRT, "vol_down_current_tracks");
-      defShrt(SHRT_PAN_LEFT_CURRENT_TRACKS, Qt::CTRL + Qt::SHIFT + Qt::Key_Left, QT_TRANSLATE_NOOP("shortcuts", "Pan left on all currently selected tracks"), ARRANG_SHRT, "pan_left_current_tracks");
-      defShrt(SHRT_PAN_RIGHT_CURRENT_TRACKS,Qt::CTRL + Qt::SHIFT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Pan right on all currently selected tracks"), ARRANG_SHRT, "pan_right_current_tracks");
-
       //-----------------------------------------------------------
 
       defShrt(SHRT_TRANSPOSE,       0, QT_TRANSLATE_NOOP("shortcuts", "Midi: Transpose"), ARRANG_SHRT + PROLL_SHRT + SCORE_SHRT, "midi_transpose");
@@ -388,22 +383,23 @@ void initShortCuts()
       //  QT_TRANSLATE_NOOP("shortcuts", "Select multiple strips to the left"), MIXER_SHRT, "mixer_multi_select_left");
       //defShrt(SHRT_MIXER_MULTI_SELECT_STRIP_RIGHT, Qt::CTRL + Qt::SHIFT + Qt::Key_End,
       //  QT_TRANSLATE_NOOP("shortcuts", "Select multiple strips to the right"), MIXER_SHRT, "mixer_multi_select_right");
-      defShrt(SHRT_MIXER_STRIP_VOL_DOWN, Qt::CTRL + Qt::Key_U,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume down"), MIXER_SHRT, "mixer_strip_vol_dn");
-      defShrt(SHRT_MIXER_STRIP_VOL_UP, Qt::CTRL + Qt::Key_I,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume up"), MIXER_SHRT, "mixer_strip_vol_up");
-      defShrt(SHRT_MIXER_STRIP_PAN_DOWN, Qt::CTRL + Qt::Key_O,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan left"), MIXER_SHRT, "mixer_strip_pan_dn");
-      defShrt(SHRT_MIXER_STRIP_PAN_UP, Qt::CTRL + Qt::Key_P,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan right"), MIXER_SHRT, "mixer_strip_pan_right");
-      defShrt(SHRT_MIXER_STRIP_VOL_DOWN_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_U,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume down page"), MIXER_SHRT, "mixer_strip_vol_dn_pg");
-      defShrt(SHRT_MIXER_STRIP_VOL_UP_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_I,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume up page"), MIXER_SHRT, "mixer_strip_vol_up_pg");
-      defShrt(SHRT_MIXER_STRIP_PAN_DOWN_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_O,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan left page"), MIXER_SHRT, "mixer_strip_pan_dn_pg");
-      defShrt(SHRT_MIXER_STRIP_PAN_UP_PAGE, Qt::CTRL + Qt::SHIFT + Qt::Key_P,
-        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan right page"), MIXER_SHRT, "mixer_strip_pan_right_pg");
+
+      defShrt(SHRT_MIXER_STRIP_VOL_DOWN, Qt::ALT + Qt::Key_Down,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume down"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_vol_dn");
+      defShrt(SHRT_MIXER_STRIP_VOL_UP, Qt::ALT + Qt::Key_Up,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume up"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_vol_up");
+      defShrt(SHRT_MIXER_STRIP_PAN_LEFT, Qt::ALT + Qt::Key_Left,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan left"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_pan_left");
+      defShrt(SHRT_MIXER_STRIP_PAN_RIGHT, Qt::ALT + Qt::Key_Right,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan right"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_pan_right");
+      defShrt(SHRT_MIXER_STRIP_VOL_DOWN_PAGE, Qt::ALT + Qt::SHIFT + Qt::Key_Down,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume down page"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_vol_dn_pg");
+      defShrt(SHRT_MIXER_STRIP_VOL_UP_PAGE, Qt::ALT + Qt::SHIFT + Qt::Key_Up,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip volume up page"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_vol_up_pg");
+      defShrt(SHRT_MIXER_STRIP_PAN_LEFT_PAGE, Qt::ALT + Qt::SHIFT + Qt::Key_Left,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan left page"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_pan_left_pg");
+      defShrt(SHRT_MIXER_STRIP_PAN_RIGHT_PAGE, Qt::ALT + Qt::SHIFT + Qt::Key_Right,
+        QT_TRANSLATE_NOOP("shortcuts", "Mixer strip pan right page"), ARRANG_SHRT + MIXER_SHRT, "mixer_strip_pan_right_pg");
       }
 
  const shortcut_cg shortcut_category[SHRT_NUM_OF_CATEGORIES] = {

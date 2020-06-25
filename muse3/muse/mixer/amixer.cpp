@@ -662,7 +662,6 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     if(MusEGlobal::config.smartFocus)
     {
       strip->setFocusYieldWidget(this);
-      //strip->setFocusPolicy(Qt::WheelFocus);
     }
 
     connect(strip, &Strip::clearStripSelection, [this]() { clearStripSelection(); } );
@@ -1122,7 +1121,6 @@ void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
       case Qt::Key_Left:
       case Qt::Key_Up:
           selectNextStrip(false);
-          ev->accept();
           setFocus();
           return;
         break;
@@ -1131,7 +1129,6 @@ void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
       case Qt::Key_Right:
           selectNextStrip(true);
           setFocus();
-          ev->accept();
           return;
         break;
 

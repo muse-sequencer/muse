@@ -1,3 +1,6 @@
+25.06.2020
+    - Some rework of mixer strip shortcuts. They now work in both Arranger and Mixer.
+      Default shortcuts are Alt + Arrow keys to affect selected strip(s) (rj)
 18.06.2010
     - Mixer + strips: Replace hard-coded shortcuts with configurable ones. Several weren't working. (Tim)
       New mixer shortcut category.
