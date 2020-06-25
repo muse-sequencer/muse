@@ -62,6 +62,7 @@ class Slider : public SliderBase, public ScaleIf
  private:
   Qt::Orientation d_orient;
   ScalePos d_scalePos;
+
   int d_grooveWidth;
   QColor d_fillColor;
   QColor d_handleColor;
@@ -134,6 +135,8 @@ class Slider : public SliderBase, public ScaleIf
 
   void setOrientation(Qt::Orientation o);
   Qt::Orientation orientation() const;
+
+  int scaleEndpointsMargin() const;
 
   void setScale (double vmin, double vmax, int logarithmic = 0);
   void setScale (double vmin, double vmax, double step, int logarithmic = 0);

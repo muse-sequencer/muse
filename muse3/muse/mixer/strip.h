@@ -36,6 +36,7 @@
 #include "globaldefs.h"
 #include "drange.h"
 #include "elided_label.h"
+#include "meter.h"
 
 class QMouseEvent;
 class QResizeEvent;
@@ -49,7 +50,6 @@ class Track;
 
 namespace MusEGui {
 class CompactComboBox;
-class Meter;
 class CompactKnob;
 class CompactSlider;
 class CompactToolButton;

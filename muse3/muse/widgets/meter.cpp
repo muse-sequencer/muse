@@ -41,6 +41,39 @@
 namespace MusEGui {
 
 //---------------------------------------------------------
+//   MeterLayout
+//---------------------------------------------------------
+
+MeterLayout::MeterLayout(int endsMargin, QWidget* parent)
+  : QVBoxLayout(parent), _endsMargin(endsMargin)
+{
+  _spacer1 = new QSpacerItem(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
+  _spacer2 = new QSpacerItem(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
+  _hlayout = new QHBoxLayout();
+  addSpacerItem(_spacer1);
+  addLayout(_hlayout);
+  addSpacerItem(_spacer2);
+}
+
+int MeterLayout::meterEndsMargin() const
+{
+  return _endsMargin;
+}
+
+void MeterLayout::setMeterEndsMargin(int m)
+{
+  _endsMargin = m;
+  _spacer1->changeSize(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
+  _spacer2->changeSize(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
+  invalidate();
+}
+
+QHBoxLayout* MeterLayout::hlayout()
+{ 
+  return _hlayout;
+}
+
+//---------------------------------------------------------
 //   Meter
 //---------------------------------------------------------
 

@@ -40,6 +40,10 @@
 #include <QStringList>
 #include <QPushButton>
 #include <QDir>
+#if QT_VERSION >= 0x050b00
+#include <QScreen>
+#endif
+
 #include <samplerate.h>
 
 #include <errno.h>
@@ -1074,18 +1078,24 @@ void MusE::centerAndResize() {
 
     // set sensible initial sizes/positions for mainwin/transport (kybos)
 
-    QSize screenSize = qApp->desktop()->availableGeometry().size();
+// Class QDesktopWidget deprecated as of Qt 5.11
+#if QT_VERSION >= 0x050b00
+    const QRect screenRect = qApp->primaryScreen()->availableGeometry();
+#else
+    const QRect screenRect = qApp->desktop()->availableGeometry();
+#endif
+    const QSize screenSize = screenRect.size();
     int width = screenSize.width();
     int height = screenSize.height();
     width *= 0.9; // 90% of the screen size
     height *= 0.9; // 90% of the screen size
-    QSize newSize( width, height );
+    const QSize newSize( width, height );
 
     setGeometry( QStyle::alignedRect(
                      Qt::LeftToRight,
                      Qt::AlignCenter,
                      newSize,
-                     qApp->desktop()->availableGeometry()
+                     screenRect
                      )
                );
 

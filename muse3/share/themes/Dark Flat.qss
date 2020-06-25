@@ -222,6 +222,9 @@ MusEGui--AudioStripProperties {
 /* apply meterWidth for each channel
     qproperty-meterWidthPerChannel: true;
 */
+/* Spacing between meters
+    qproperty-meterSpacing: 4;
+*/
 }
 
 MusEGui--MidiStripProperties {

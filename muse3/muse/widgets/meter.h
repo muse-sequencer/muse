@@ -34,11 +34,44 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QBitmap>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QSpacerItem>
 
 #include "sclif.h"
 #include "scldraw.h"
 
 namespace MusEGui {
+
+// -----------------------------------------------
+//   MeterLayout:
+//   Convenience class that can align the ends of meters
+//    with class Slider scale end points, for example.
+// -----------------------------------------------
+
+class MeterLayout : public QVBoxLayout {
+    Q_OBJECT
+
+    Q_PROPERTY(int endsMargin READ meterEndsMargin WRITE setMeterEndsMargin)
+    
+    int _endsMargin;
+    QHBoxLayout* _hlayout;
+    QSpacerItem* _spacer1;
+    QSpacerItem* _spacer2;
+    
+  public:
+    MeterLayout(int endsMargin = 0, QWidget* parent = nullptr);
+    int meterEndsMargin() const;
+    void setMeterEndsMargin(int m);
+    // This is the horizontal layout where meters can be added.
+    QHBoxLayout* hlayout();
+};
+
+// -----------------------------------------------
+//   Meter:
+//   Convenience class that can align the ends of meters
+//    with class Slider scale end points, for example.
+// -----------------------------------------------
 
 class Meter : public QFrame, public ScaleIf {
     Q_OBJECT
