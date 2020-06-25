@@ -1,10 +1,17 @@
 25.06.2020
     - Some rework of mixer strip shortcuts. They now work in both Arranger and Mixer.
       Default shortcuts are Alt + Arrow keys to affect selected strip(s) (rj)
+22.06.2020
+    - Fix slider/meter groove misalignment in mixer strip. (kybos)
+20.06.2020
+    - Cmake option changes (Tim): Removed ancient ENABLE_VST and ENABLE_EXPERIMENTAL,
+       and dangerous ENABLE_LV2_MAKE_PATH, and enabled ENABLE_PYTHON by default since
+       it has been thoroughly updated. No code removed. PLEASE REBUILD your MusE !
 19.06.2020
     - Fixed long-time meter and slider scale mis-alignment. New stylesheet property meterSpacing. (Tim)
     - Midi controller graphs: Fixed no repaint when adjusting vertical splitters.
       Clear WA_StaticContents in CtrlCanvas ctor - need full update because contents scale.
+    - Midi controller graphs: Moved 'Add ctrl' button from bottom area to menu and toolbar as well.
 18.06.2020
     - Mixer + strips: Replace hard-coded shortcuts with configurable ones. Several weren't working. (Tim)
       New mixer shortcut category.

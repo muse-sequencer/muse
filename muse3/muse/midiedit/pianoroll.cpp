@@ -59,7 +59,6 @@
 #include "audio.h"
 #include "functions.h"
 #include "helper.h"
-#include "popupmenu.h"
 #include "menutitleitem.h"
 #include "operations.h"
 
@@ -192,7 +191,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
-      menuFunctions->setTearOffEnabled(true);
+//      menuFunctions->setTearOffEnabled(true);
       
       funcQuantizeAction = menuFunctions->addAction(tr("Quantize"));
       connect(funcQuantizeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_QUANTIZE); } );
@@ -265,6 +264,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       menuConfig->addAction(shareAction);
       menuConfig->addAction(fullscreenAction);
 
+      menuConfig->addSeparator();
+      addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
+      addControllerMenu->setIcon(*midiControllerNewSVGIcon);
+      menuConfig->addMenu(addControllerMenu);
+      connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
+      connect(addControllerMenu, &QMenu::aboutToHide, [this]() { ctrlMenuAboutToHide(); } );
+      connect(addControllerMenu, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
       
       //---------ToolBar----------------------------------
 
@@ -283,6 +289,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       tools = addToolBar(tr("Pianoroll tools"));
       tools->setObjectName("Pianoroll tools");
+
+      addctrl = new QToolButton();
+      addctrl->setToolTip(tr("Add controller view"));
+      addctrl->setIcon(*midiControllerNewSVGIcon);
+      addctrl->setFocusPolicy(Qt::NoFocus);
+      connect(addctrl, &QToolButton::pressed, [this]() { addCtrlClicked(); } );
+      tools->addWidget(addctrl);
 
       srec  = new QToolButton();
       srec->setToolTip(tr("Step record"));
@@ -342,19 +355,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->setChildrenCollapsible(true);
       //hsplitter->setHandleWidth(4);
 
-      ctrl = new CompactToolButton(mainw);
-      ctrl->setIcon(*midiControllerNewSVGIcon);
-      ctrl->setIconSize(QSize(14, 14));
-      ctrl->setHasFixedIconSize(true);
-      ctrl->setContentsMargins(4, 4, 4, 4);
-      ctrl->setObjectName("Ctrl");
-      ctrl->setFocusPolicy(Qt::NoFocus);
-      //ctrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
-      ctrl->setToolTip(tr("Add controller view"));
-      
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
       hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
-      ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
 
       QSizeGrip* corner = new QSizeGrip(mainw);
 
@@ -369,7 +371,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS2->setSpacing(0);  
       gridS2->setRowStretch(0, 100);
       gridS2->setColumnStretch(1, 100);
-      gridS2->addWidget(ctrl,    0, 0);
+      gridS2->addItem(new QSpacerItem(pianoWidth, 0),    0, 0);
       gridS2->addWidget(hscroll, 0, 1);
       gridS2->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
       gridS2_w->setMaximumHeight(hscroll->sizeHint().height());
@@ -440,7 +442,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
-      connect(ctrl, SIGNAL(clicked()), SLOT(addCtrlClicked()));
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
 
@@ -1116,20 +1117,47 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
 void PianoRoll::addCtrlClicked()
 {
   PopupMenu* pup = new PopupMenu(true);  // true = enable stay open. Don't bother with parent. 
-  connect(pup, SIGNAL(triggered(QAction*)), SLOT(ctrlPopupTriggered(QAction*)));
+  connect(pup, &QMenu::triggered, [this](QAction* act) { ctrlPopupTriggered(act); } );
   
-  int est_width = populateMidiCtrlMenu(pup, parts(), curCanvasPart(), curDrumInstrument());
+  /*int est_width =*/ populateMidiCtrlMenu(pup, parts(), curCanvasPart(), curDrumInstrument());
   
-  QPoint ep = ctrl->mapToGlobal(QPoint(0,0));
+  QPoint ep = addctrl->mapToGlobal(QPoint(0,0));
   //int newx = ep.x() - ctrlMainPop->width();  // Too much! Width says 640. Maybe because it hasn't been shown yet  .
-  int newx = ep.x() - est_width;  
-  if(newx < 0)
-    newx = 0;
-  ep.setX(newx);
+//   int newx = ep.x() - est_width;  
+//   if(newx < 0)
+//     newx = 0;
+//   ep.setX(newx);
   pup->exec(ep);
   delete pup;
+  
+  addctrl->setDown(false);
+}
 
-  ctrl->setDown(false);
+//---------------------------------------------------------
+//   ctrlMenuAboutToShow
+//---------------------------------------------------------
+
+void PianoRoll::ctrlMenuAboutToShow()
+{
+  // Clear the menu and delete the contents.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+  addControllerMenu->clear();
+  populateMidiCtrlMenu(addControllerMenu, parts(), curCanvasPart(), curDrumInstrument());
+}
+
+//---------------------------------------------------------
+//   ctrlMenuAboutToHide
+//---------------------------------------------------------
+
+void PianoRoll::ctrlMenuAboutToHide()
+{
+  // Clear the menu and delete the contents, since it's going to be cleared
+  //  and refilled anyway next time opened, so we can save memory.
+  // "Removes all the menu's actions. Actions owned by the menu and not shown
+  //  in any other widget are deleted."
+// FIXME: This crashes, of course...
+//   addControllerMenu->clear();
 }
 
 //---------------------------------------------------------

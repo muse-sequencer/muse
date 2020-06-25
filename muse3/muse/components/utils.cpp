@@ -753,7 +753,7 @@ QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner 
   QPainterPath rounded_rect;
   rounded_rect.addRect(x, y, w, h);
 
-   if (roundCorner & UpperLeft)
+   if (roundCorner & CornerUpperLeft)
     {
       QPainterPath top_left_corner;
       top_left_corner.addRect(x, y, xrad, yrad);
@@ -762,7 +762,7 @@ QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner 
       rounded_rect = rounded_rect.subtracted(top_left_corner);
     }
 
-  if (roundCorner & UpperRight)
+  if (roundCorner & CornerUpperRight)
     {
       QPainterPath top_right_corner;
       top_right_corner.addRect(x + w - xrad, y, xrad, yrad);
@@ -771,7 +771,7 @@ QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner 
       rounded_rect = rounded_rect.subtracted(top_right_corner);
     }
 
-  if (roundCorner & LowerLeft)
+  if (roundCorner & CornerLowerLeft)
     {
       QPainterPath bottom_left_corner;
       bottom_left_corner.addRect(x, y + h - yrad, xrad, yrad);
@@ -780,7 +780,7 @@ QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner 
       rounded_rect = rounded_rect.subtracted(bottom_left_corner);
     }
 
-  if (roundCorner & LowerRight)
+  if (roundCorner & CornerLowerRight)
     {
       QPainterPath bottom_right_corner;
       bottom_right_corner.addRect(x + w - xrad, y + h - yrad, xrad, yrad);
@@ -805,7 +805,7 @@ void addRoundedPath(QPainterPath* path, int x, int y, int w, int h, int xrad, in
   QPainterPath& pp = *path;
   pp.addRect(x, y, w, h);
 
-  if (roundCorner & UpperLeft)
+  if (roundCorner & CornerUpperLeft)
   {
     QPainterPath top_left_corner;
     top_left_corner.addRect(x, y, xrad, yrad);
@@ -814,7 +814,7 @@ void addRoundedPath(QPainterPath* path, int x, int y, int w, int h, int xrad, in
     pp -= top_left_corner;
   }
 
-  if (roundCorner & UpperRight)
+  if (roundCorner & CornerUpperRight)
   {
     QPainterPath top_right_corner;
     top_right_corner.addRect(x + w - xrad, y, xrad, yrad);
@@ -823,7 +823,7 @@ void addRoundedPath(QPainterPath* path, int x, int y, int w, int h, int xrad, in
     pp -= top_right_corner;
   }
 
-  if (roundCorner & LowerLeft)
+  if (roundCorner & CornerLowerLeft)
   {
     QPainterPath bottom_left_corner;
     bottom_left_corner.addRect(x, y + h - yrad, xrad, yrad);
@@ -832,7 +832,7 @@ void addRoundedPath(QPainterPath* path, int x, int y, int w, int h, int xrad, in
     pp -= bottom_left_corner;
   }
 
-  if (roundCorner & LowerRight)
+  if (roundCorner & CornerLowerRight)
   {
     QPainterPath bottom_right_corner;
     bottom_right_corner.addRect(x + w - xrad, y + h - yrad, xrad, yrad);

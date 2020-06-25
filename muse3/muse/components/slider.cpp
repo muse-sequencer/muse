@@ -69,16 +69,16 @@ namespace MusEGui {
 
 Slider::Slider(QWidget *parent, const char *name,
                Qt::Orientation orient,
-               ScalePos scalePos, 
-               int grooveWidth, 
-               QColor fillColor, 
+               ScalePos scalePos,
+               int grooveWidth,
+               QColor fillColor,
                ScaleDraw::TextHighlightMode textHighlightMode,
                QColor handleColor)
       : SliderBase(parent,name), d_scalePos(scalePos), d_grooveWidth(grooveWidth),
         d_fillColor(fillColor), d_handleColor(handleColor)
       {
       setPagingButtons(Qt::RightButton);
-      
+
       d_thumbLength = 16;
       d_thumbHalf = 8;
       d_thumbWidth = 16;
@@ -175,7 +175,7 @@ void Slider::setThumbWidth(int w)
 
 
 //------------------------------------------------------------
-//.-  
+//.-
 //.F  Slider::scaleChange
 //  Notify changed scale
 //
@@ -198,7 +198,7 @@ void Slider::scaleChange()
 //.-
 //.F  Slider::fontChange
 //  Notify change in font
-//  
+//
 //.u  Syntax
 //.f   Slider::fontChange(const QFont &oldFont)
 //
@@ -227,7 +227,7 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
   thumbGrad.setColorAt(0, thumb_edge);
   thumbGrad.setColorAt(0.5, thumb_center);
   thumbGrad.setColorAt(1, thumb_edge);
-  
+
   const double rpos = (value(ConvertNone) - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
 
   if(d_orient == Qt::Horizontal)
@@ -243,32 +243,32 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
       crh = r.height() - 2 * d_mMargin;
       thh = r.height();
     }
-    
+
     const QRect cr(r.x(),
                    r.y() + d_mMargin,
                    r.width(),
                    //r.height() - 2*d_mMargin);
                    crh);
-    
+
     const int dist1 = int(double(cr.width() - d_thumbLength) * rpos);
     const int ipos =  cr.x() + dist1;
     markerPos = ipos + d_thumbHalf;
-    
+
     //
     //  Draw thumb
     //
-        
-    QPainterPath thumb_rect = MusECore::roundedPath(ipos, r.y(), 
-                                          //d_thumbLength, r.height(), 
-                                          d_thumbLength, thh, 
+
+    QPainterPath thumb_rect = MusECore::roundedPath(ipos, r.y(),
+                                          //d_thumbLength, r.height(),
+                                          d_thumbLength, thh,
                                           d_radiusHandle, d_radiusHandle,
-                                          (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
+                                          (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight | MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
 
 //     thumbGrad.setStart(QPointF(0, cr.y()));
 //     thumbGrad.setFinalStop(QPointF(0, cr.y() + cr.height()));
     thumbGrad.setStart(QPointF(ipos, 0));
     thumbGrad.setFinalStop(QPointF(ipos + d_thumbLength, 0));
-        
+
     if(d_fillThumb)
       p->fillPath(thumb_rect, QBrush(thumbGrad));
     else
@@ -276,7 +276,7 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
       p->setPen(pal.shadow().color());
       p->drawPath(thumb_rect);
     }
-        
+
     // center line
     p->fillRect(ipos + d_thumbHalf, cr.y(), 1, cr.height(), pal.dark().color());
   }
@@ -293,32 +293,32 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
       crw = r.width() - 2 * d_mMargin;
       thw = r.width();
     }
-    
+
     const QRect cr(r.x() + d_mMargin,
                    r.y(),
                    //r.width() - 2*d_mMargin,
                    crw,
                    r.height());
-    
+
     const int dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
     const int ipos = cr.y() + dist1;
     markerPos = ipos + d_thumbHalf;
-    
+
     //
     //  Draw thumb
     //
-        
-    QPainterPath thumb_rect = MusECore::roundedPath(r.x(), ipos, 
+
+    QPainterPath thumb_rect = MusECore::roundedPath(r.x(), ipos,
                                           //r.width(), d_thumbLength,
                                           thw, d_thumbLength,
                                           d_radiusHandle, d_radiusHandle,
-                                          (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight) );
-        
+                                          (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight | MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
+
 //     thumbGrad.setStart(QPointF(cr.x(), 0));
 //     thumbGrad.setFinalStop(QPointF(cr.x() + cr.width(), 0));
     thumbGrad.setStart(QPointF(0, ipos));
     thumbGrad.setFinalStop(QPointF(0, ipos + d_thumbLength));
-        
+
     if(d_fillThumb)
       p->fillPath(thumb_rect, QBrush(thumbGrad));
     else
@@ -326,16 +326,16 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
       p->setPen(pal.shadow().color());
       p->drawPath(thumb_rect);
     }
-        
+
     // center line
     p->fillRect(cr.x(), ipos + d_thumbHalf, cr.width(), 1, pal.dark().color());
   }
-  
+
 }
 
 //------------------------------------------------------------
 //    drawSlider
-//     Draw the slider into the specified rectangle.  
+//     Draw the slider into the specified rectangle.
 //------------------------------------------------------------
 
 void Slider::drawSlider(QPainter *p, const QRect &r)
@@ -346,7 +346,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 
     // for the full side
     const double rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
-    
+
     QColor f_mask_min(d_fillColor.isValid() ? d_fillColor : pal.highlight().color());
     QColor f_mask_max(f_mask_min);
     if (d_useGradient) {
@@ -355,7 +355,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         f_mask_max.setAlpha(255);
     }
     QLinearGradient f_mask;
-	   
+
     if (d_orient == Qt::Horizontal)
         {
 
@@ -368,38 +368,38 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         //
         // Draw background
         //
-        
+
         const int dist1 = int(double(cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * rpos);
         const int ipos =  cr.x() + dist1;
         markerPos = ipos + d_thumbHalf;
 
         //
         // Draw groove empty right side
-        // 
-	   
+        //
+
         if(d_fillEmptySide)
         {
-          QPainterPath e_rect = MusECore::roundedPath(ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), cr.y(), 
-                                            cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1, cr.height(), 
-                                            d_radius, d_radius, (MusECore::Corner) (MusECore::UpperRight | MusECore::LowerRight) );
-    
+          QPainterPath e_rect = MusECore::roundedPath(ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), cr.y(),
+                                            cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1, cr.height(),
+                                            d_radius, d_radius, (MusECore::Corner) (MusECore::CornerUpperRight | MusECore::CornerLowerRight) );
+
           p->fillPath(e_rect, f_mask_min);
         }
-   
-   
+
+
         //
         // Draw groove full left side
         //
-           
+
         f_mask.setColorAt(0, f_mask_min);
         f_mask.setColorAt(1, f_mask_max);
         f_mask.setStart(QPointF(cr.x(), cr.y()));
         f_mask.setFinalStop(QPointF(cr.x() + ipos + (d_fillThumb ? 0 : d_thumbHalf), cr.y()));
-          
-        QPainterPath f_rect = MusECore::roundedPath(cr.x(), cr.y(), 
+
+        QPainterPath f_rect = MusECore::roundedPath(cr.x(), cr.y(),
                                           ipos + (d_fillThumb ? 0 : d_thumbHalf), cr.height(),
                                           d_radius, d_radius,
-                                          (MusECore::Corner) (MusECore::LowerLeft | MusECore::UpperLeft) );
+                                          (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerUpperLeft) );
 
         p->fillPath(f_rect, QBrush(f_mask));
         }
@@ -410,28 +410,34 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
                        d_grooveWidth,
                        r.height());
 
+        QPainterPath clip_path = MusECore::roundedPath(cr.x(), cr.y() + d_thumbHalf,
+                                          cr.width(), r.height() - d_thumbLength,
+                                          d_radius, d_radius,
+                                          (MusECore::Corner) (MusECore::CornerAll) );
+        p->setClipPath(clip_path);
+
         //
         // Draw background
         //
-        
+
         const int dist1 = int(double(cr.height() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * (1.0 - rpos));
         const int ipos = cr.y() + dist1;
         markerPos = ipos + d_thumbHalf;
 
         //
         // Draw groove empty upper filling
-        // 
+        //
 
         if(d_fillEmptySide)
         {
-          QPainterPath e_rect = MusECore::roundedPath(cr.x(), cr.y(), 
+          QPainterPath e_rect = MusECore::roundedPath(cr.x(), cr.y(),
                                             cr.width(), ipos + (d_fillThumb ? 0 : d_thumbHalf),
                                             d_radius, d_radius,
-                                            (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight) );
-              
+                                            (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight) );
+
           p->fillPath(e_rect, QBrush(f_mask_min));
-        }            
-            
+        }
+
         //
         // Draw groove lower filling mask
         //
@@ -440,12 +446,14 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         f_mask.setColorAt(1, f_mask_min);
         f_mask.setStart(QPointF(cr.x(), markerPos));
         f_mask.setFinalStop(QPointF(cr.x(), cr.y() + cr.height()));
-            
-        QPainterPath f_rect = MusECore::roundedPath(cr.x(), ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), 
+
+        QPainterPath f_rect = MusECore::roundedPath(cr.x(), ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf),
                                           cr.width(), cr.height() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1,
-                                          d_radius, d_radius, (MusECore::Corner) (MusECore::LowerLeft | MusECore::LowerRight) );
-	    
+                                          d_radius, d_radius, (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
+
         p->fillPath(f_rect, QBrush(f_mask));
+
+        p->setClipPath(QPainterPath(), Qt::NoClip);
         }
 
 }
@@ -473,18 +481,18 @@ double Slider::getValue( const QPoint &p)
 
   if(borderlessMouse() && d_scrollMode != ScrDirect)
   {
-    DEBUG_SLIDER(stderr, "Slider::getValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n", 
+    DEBUG_SLIDER(stderr, "Slider::getValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n",
                          val, p.x(), p.y(), step(), p.x() * step());
     if(d_orient == Qt::Horizontal)
       return val + p.x() * step();
     else
       return val - p.y() * step();
   }
-  
+
   const double min = minValue(ConvertNone);
   const double max = maxValue(ConvertNone);
   const double drange = max - min;
-  
+
   if(d_orient == Qt::Horizontal)
   {
     if(r.width() <= d_thumbLength)
@@ -536,9 +544,9 @@ double Slider::moveValue(const QPoint &deltaP, bool fineMode)
 
   if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
   {
-    DEBUG_SLIDER(stderr, "Slider::moveValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n", 
+    DEBUG_SLIDER(stderr, "Slider::moveValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n",
                          val, deltaP.x(), deltaP.y(), step(), deltaP.x() * step());
-    
+
     double newval;
     if(d_orient == Qt::Horizontal)
       newval = val + deltaP.x() * step();
@@ -547,7 +555,7 @@ double Slider::moveValue(const QPoint &deltaP, bool fineMode)
     d_valAccum = newval; // Reset.
     return newval;
   }
-  
+
   const double min = minValue(ConvertNone);
   const double max = maxValue(ConvertNone);
   const double drange = max - min;
@@ -563,8 +571,8 @@ double Slider::moveValue(const QPoint &deltaP, bool fineMode)
       const double dval_diff = (drange * dpos) / dwidth;
       d_valAccum += dval_diff;
       rv = rint(d_valAccum / step()) * step();
-      
-      DEBUG_SLIDER(stderr, "Slider::moveValue Horizontal value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n", 
+
+      DEBUG_SLIDER(stderr, "Slider::moveValue Horizontal value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
                        val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
     }
   }
@@ -579,8 +587,8 @@ double Slider::moveValue(const QPoint &deltaP, bool fineMode)
       const double dval_diff = (drange * dpos) / dheight;
       d_valAccum += dval_diff;
       rv = rint(d_valAccum / step()) * step();
-      
-      DEBUG_SLIDER(stderr, "Slider::moveValue Vertical value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n", 
+
+      DEBUG_SLIDER(stderr, "Slider::moveValue Vertical value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
                        val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
     }
   }
@@ -612,7 +620,7 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
     direction = 0;
     return;
   }
-  
+
   if(borderlessMouse())
   {
     if(button != Qt::NoButton && d_sliderRect.contains(p))
@@ -639,18 +647,18 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
         double rpos;
 
         cr = d_sliderRect;
-  
+
         rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
-  
+
         if(d_orient == Qt::Horizontal)
         {
           dist1 = int(double(cr.width() - d_thumbLength) * rpos);
           ipos =  cr.x() + dist1;
           mp = ipos + d_thumbHalf;
-        
+
           p.setX(mp);
           cp = mapToGlobal( QPoint(mp, p.y()) );
-        }  
+        }
         else
         {
           dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
@@ -658,7 +666,7 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
           mp = ipos + d_thumbHalf;
           p.setY(mp);
           cp = mapToGlobal( QPoint(p.x(), mp) );
-        }  
+        }
         cursor().setPos(cp.x(), cp.y());
         return;
       }
@@ -670,10 +678,10 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
        currentPos = p.x();
       else
        currentPos = p.y();
-      
+
       if(d_sliderRect.contains(p))
       {
-        if((currentPos > markerPos - d_thumbHalf)  
+        if((currentPos > markerPos - d_thumbHalf)
             && (currentPos < markerPos + d_thumbHalf))
         {
           DEBUG_SLIDER(stderr, "Slider::getScrollMode ScrMouse\n");
@@ -695,7 +703,7 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
       }
     }
   }
-  
+
   scrollMode = ScrNone;
   direction = 0;
 }
@@ -716,7 +724,7 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
 
   if(d_thumbLength != 0)
     drawThumb(&p, d_sliderRect);
-  if(d_scalePos != None) 
+  if(d_scalePos != None)
   {
 //     p.fillRect(rect(), palette().window());
     p.setRenderHint(QPainter::Antialiasing, false);
@@ -1011,9 +1019,9 @@ void Slider::setScaleBackBone(bool v)
 void Slider::valueChange()
       {
       update();
-      
+
       // HACK
-      // In direct mode let the inherited classes (this) call these in their valueChange() methods, 
+      // In direct mode let the inherited classes (this) call these in their valueChange() methods,
       //  so that they may be called BEFORE valueChanged signal is emitted by the setPosition() call above.
       // ScrDirect mode only happens once upon press with a modifier. After that, another mode is set.
       // Hack: Since valueChange() is NOT called if nothing changed, in that case these are called for us by the SliderBase.
@@ -1022,13 +1030,13 @@ void Slider::valueChange()
         processSliderPressed(id());
         emit sliderPressed(value(), id());
       }
-      
+
       // Emits valueChanged if tracking enabled.
       SliderBase::valueChange();
       }
 
 //------------------------------------------------------------
-//.-  
+//.-
 //.F  Slider::rangeChange
 //  Notify change of range
 //
@@ -1087,12 +1095,12 @@ QSize Slider::sizeHint() const
       const QFontMetrics fm = fontMetrics();
       int msWidth = 0, msHeight = 0;
 
-      if (d_scalePos != None) 
+      if (d_scalePos != None)
       {
         msWidth = d_scale.maxWidth(fm, false);
         msHeight = d_scale.maxHeight(fm);
 
-        switch(d_orient) 
+        switch(d_orient)
         {
           case Qt::Vertical:
           {
@@ -1104,14 +1112,14 @@ QSize Slider::sizeHint() const
               case Right:
                 w = 2*d_xMargin + d_thumbWidth + smw + 2;
               break;
-              
+
               case InsideVertical:
               {
                 const int aw = smw > d_thumbWidth ? smw : d_thumbWidth;
                 w = 2*d_xMargin + aw + 2;
               }
               break;
-              
+
               case Top:
               case Bottom:
               case InsideHorizontal:
@@ -1120,7 +1128,7 @@ QSize Slider::sizeHint() const
             }
           }
           break;
-            
+
           case Qt::Horizontal:
           {
             w = horizontal_hint;
@@ -1131,14 +1139,14 @@ QSize Slider::sizeHint() const
               case Bottom:
                 h = 2*d_yMargin + d_thumbWidth + smh;
               break;
-              
+
               case InsideHorizontal:
               {
                 const int ah = smh > d_thumbWidth ? smh : d_thumbWidth;
                 h = 2*d_yMargin + ah;
               }
               break;
-              
+
               case Left:
               case Right:
               case InsideVertical:
@@ -1151,7 +1159,7 @@ QSize Slider::sizeHint() const
       }
       else
       {      // no scale
-        switch(d_orient) 
+        switch(d_orient)
         {
           case Qt::Vertical:
                 w = 16;
