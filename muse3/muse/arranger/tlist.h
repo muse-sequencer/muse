@@ -134,6 +134,7 @@ class TList : public QWidget {
       void changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType);
       void editTrackName(MusECore::Track *t);
       void setTrackChannel(MusECore::Track *t, bool isDelta, int channel, int delta, bool doAllTracks = false);
+      void incrementController(MusECore::Track* t, int controllerType, int incrementValue);
 
 
    protected:
@@ -168,6 +169,9 @@ class TList : public QWidget {
       void editTrackNameSlot();
       void muteSelectedTracksSlot();
       void soloSelectedTracksSlot();
+      void volumeSelectedTracksSlot(int);
+      void panSelectedTracksSlot(int);
+
       void setHeader(Header*);
 
    public:

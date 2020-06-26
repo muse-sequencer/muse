@@ -131,7 +131,7 @@ class AudioMixerApp : public QMainWindow {
       void initMixer();
       void addStripsTraditionalLayout();
       void addStripToLayoutIfVisible(Strip *s);
-      void selectNextStrip(bool isRight, bool clearAll = true);
+      void selectNextStrip(bool isRight);
 
       bool eventFilter(QObject *obj,QEvent *event);
 

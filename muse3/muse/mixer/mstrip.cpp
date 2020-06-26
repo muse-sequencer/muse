@@ -2809,7 +2809,7 @@ void MidiStrip::oRoutePressed()
   oR->setDown(false);     
 }
 
-void MidiStrip::incVolume(int v)
+void MidiStrip::incVolume(int incrementValue)
 {
   if(!track || !track->isMidiTrack())
     return;
@@ -2832,7 +2832,7 @@ void MidiStrip::incVolume(int v)
 
     // Increment the slider. Do not allow signalling.
     slider->blockSignals(true);
-    slider->incValue(v);
+    slider->incValue(incrementValue * 2);
     slider->blockSignals(false);
     // Now grab the control's new value.
     const double new_val = slider->value();

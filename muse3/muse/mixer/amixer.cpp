@@ -662,7 +662,6 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     if(MusEGlobal::config.smartFocus)
     {
       strip->setFocusYieldWidget(this);
-      //strip->setFocusPolicy(Qt::WheelFocus);
     }
 
     connect(strip, &Strip::clearStripSelection, [this]() { clearStripSelection(); } );
@@ -1107,30 +1106,60 @@ void AudioMixerApp::showSyntiTracksChanged(bool v)
 
 void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
 {
-  const int kb_code = ev->key() | ev->modifiers();
-
   // Set to accept by default.
   ev->accept();
-  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_SELECT_STRIP_LEFT].key) {
-        selectNextStrip(false, true);
-        return;
+
+  const bool ctl = ev->modifiers() & Qt::ControlModifier;
+  const bool shift = ev->modifiers() & Qt::ShiftModifier;
+
+  if (ctl && !shift)
+  {
+    // handle moving between strips
+    // currently that is all we do in this handler all
+    // other keys are passed on to the strip (see below)
+    switch (ev->key()) {
+      case Qt::Key_Left:
+      case Qt::Key_Up:
+          selectNextStrip(false);
+          setFocus();
+          return;
+        break;
+
+      case Qt::Key_Down:
+      case Qt::Key_Right:
+          selectNextStrip(true);
+          setFocus();
+          return;
+        break;
+
+      default:
+        break;
+    }
   }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_SELECT_STRIP_RIGHT].key) {
-        selectNextStrip(true, true);
-        return;
+
+  bool keyHandled = false;
+  // forward keypresses to all selected strips
+  for (int i = 0; i < mixerLayout->count(); i++)
+  {
+    QWidget *widget = mixerLayout->itemAt(i)->widget();
+    if (widget)
+    {
+      Strip* strip = static_cast<Strip*>(widget);
+      if (strip && strip->isSelected())
+      {
+        if (strip->handleForwardedKeyPress(ev) == true)
+        {
+          keyHandled = true;
+        }
+      }
+    }
   }
-  // TODO Feature marked as todo in AudioMixerApp::selectNextStrip().
-  //else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_MULTI_SELECT_STRIP_LEFT].key) {
-  //      selectNextStrip(false, false);
-  //      return;
-  //}
-  //else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_MULTI_SELECT_STRIP_RIGHT].key) {
-  //      selectNextStrip(true, false);
-  //      return;
-  //}
-  
-  ev->ignore();
-  return QMainWindow::keyPressEvent(ev);
+
+  if (!keyHandled)
+  {
+    ev->ignore();
+    return QMainWindow::keyPressEvent(ev);
+  }
 }
 
 void AudioMixerApp::resizeEvent(QResizeEvent* e)
@@ -1158,7 +1187,7 @@ void AudioMixerApp::clearStripSelection()
     s->setSelected(false);
 }
 
-void AudioMixerApp::selectNextStrip(bool isRight, bool /*clearAll*/)
+void AudioMixerApp::selectNextStrip(bool isRight)
 {
   Strip *prev = NULL;
 
@@ -1170,11 +1199,8 @@ void AudioMixerApp::selectNextStrip(bool isRight, bool /*clearAll*/)
       if (prev && !prev->isEmbedded() && prev->isSelected() && isRight) // got it
       {
         Strip* st = static_cast<Strip*>(w);
-        //if(clearAll)  // TODO
-        {
-          MusEGlobal::song->selectAllTracks(false);
-          clearStripSelection();
-        }
+        MusEGlobal::song->selectAllTracks(false);
+        clearStripSelection();
         st->setSelected(true);
         if(st->getTrack())
           st->getTrack()->setSelected(true);
@@ -1183,11 +1209,8 @@ void AudioMixerApp::selectNextStrip(bool isRight, bool /*clearAll*/)
       }
       else if( !static_cast<Strip*>(w)->isEmbedded() && static_cast<Strip*>(w)->isSelected() && prev && !prev->isEmbedded() && !isRight)
       {
-        //if(clearAll) // TODO
-        {
-          MusEGlobal::song->selectAllTracks(false);
-          clearStripSelection();
-        }
+        MusEGlobal::song->selectAllTracks(false);
+        clearStripSelection();
         prev->setSelected(true);
         if(prev->getTrack())
           prev->getTrack()->setSelected(true);
@@ -1208,11 +1231,8 @@ void AudioMixerApp::selectNextStrip(bool isRight, bool /*clearAll*/)
   Strip* st = static_cast<Strip*>(w);
   if(st && !st->isEmbedded())
   {
-    //if(clearAll) // TODO
-    {
-      MusEGlobal::song->selectAllTracks(false);
-      clearStripSelection();
-    }
+    MusEGlobal::song->selectAllTracks(false);
+    clearStripSelection();
     st->setSelected(true);
     if(st->getTrack())
       st->getTrack()->setSelected(true);
