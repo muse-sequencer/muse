@@ -212,6 +212,8 @@ class PartCanvas : public Canvas {
       void editTrackNameSig();
       void muteSelectedTracks();
       void soloSelectedTracks();
+      void volumeSelectedTracks(int);
+      void panSelectedTracks(int);
 
       void startEditor(MusECore::PartList*, int);
 

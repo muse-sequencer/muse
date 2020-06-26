@@ -1304,12 +1304,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
           return;
       }
 
-      if (event->modifiers() &  Qt::ShiftModifier)
-            key +=  Qt::SHIFT;
-      if (event->modifiers() &  Qt::AltModifier)
-            key +=  Qt::ALT;
-      if (event->modifiers() &  Qt::ControlModifier)
-            key +=  Qt::CTRL;
+      key = key | event->modifiers();
 
       if (key == shortcuts[SHRT_DELETE].key) {
             if (getCurrentDrag())
@@ -1405,6 +1400,46 @@ void PartCanvas::keyPress(QKeyEvent* event)
       else if (key == shortcuts[SHRT_SOLO_CURRENT_TRACKS].key) {
             emit soloSelectedTracks();
             return;
+      }
+      if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_UP].key)
+      {
+          emit volumeSelectedTracks(1);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_DOWN].key)
+      {
+          emit volumeSelectedTracks(-1);
+          return;
+      }
+      if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_UP_PAGE].key)
+      {
+          emit volumeSelectedTracks(5);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key)
+      {
+          emit volumeSelectedTracks(-5);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_LEFT].key)
+      {
+          emit panSelectedTracks(-1);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_RIGHT].key)
+      {
+          emit panSelectedTracks(1);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_LEFT_PAGE].key)
+      {
+          emit panSelectedTracks(-5);
+          return;
+      }
+      else if (key ==  shortcuts[SHRT_MIXER_STRIP_PAN_RIGHT_PAGE].key)
+      {
+          emit panSelectedTracks(5);
+          return;
       }
 
       // Shortcuts that require selected parts from here

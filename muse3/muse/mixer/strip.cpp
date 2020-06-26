@@ -362,6 +362,8 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
     break;
   }
   
+  cw._widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+
   if(cw._widget)
     addComponentWidget(cw, before);
 }
@@ -1664,7 +1666,54 @@ void Strip::mouseMoveEvent(QMouseEvent* e)
       }
     }
   }
-  //QFrame::mouseMoveEvent(ev);
+}
+bool Strip::handleForwardedKeyPress(QKeyEvent* event)
+{  
+  const int kb_code = event->key() | event->modifiers();
+
+  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN].key) {
+        incVolume(-1);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP].key) {
+        incVolume(1);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_LEFT].key) {
+        incPan(-1);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_RIGHT].key) {
+        incPan(1);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key) {
+        incVolume(-5);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP_PAGE].key) {
+        incVolume(5);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_LEFT_PAGE].key) {
+        incPan(-5);
+        return true;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_RIGHT_PAGE].key) {
+        incPan(5);
+        return true;
+  }
+  else if (kb_code ==  MusEGui::shortcuts[MusEGui::SHRT_MUTE_CURRENT_TRACKS].key)
+  {
+      mute->setChecked(!mute->isChecked());
+      return true;
+  }
+  else if (kb_code == MusEGui::shortcuts[MusEGui::SHRT_SOLO_CURRENT_TRACKS].key)
+  {
+      solo->setChecked(!solo->isChecked());
+      return true;
+  }
+  return false;
 }
 
 void Strip::keyPressEvent(QKeyEvent* ev)
@@ -1672,12 +1721,18 @@ void Strip::keyPressEvent(QKeyEvent* ev)
   // Set to accept by default.
   ev->accept();
 
-  if(ev->key() == Qt::Key_Escape)
+  if (ev->key() == Qt::Key_Escape)
   {
-    //if(hasFocus() && _focusYieldWidget)
     if(_focusYieldWidget)
     {
-      ev->accept();
+      // Yield the focus to the given widget.
+      _focusYieldWidget->setFocus();
+
+      // Activate the window.
+      if(!_focusYieldWidget->isActiveWindow())
+      {
+        _focusYieldWidget->activateWindow();
+      }
       // Yield the focus to the given widget.
       _focusYieldWidget->setFocus();
       // Activate the window.
@@ -1686,41 +1741,11 @@ void Strip::keyPressEvent(QKeyEvent* ev)
       return;
     }
   }
-    
-  const int kb_code = ev->key() | ev->modifiers();
-  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN].key) {
-        incVolume(-1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP].key) {
-        incVolume(1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN].key) {
-        incPan(-1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP].key) {
-        incPan(1);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_DOWN_PAGE].key) {
-        incVolume(-5);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_VOL_UP_PAGE].key) {
-        incVolume(5);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_DOWN_PAGE].key) {
-        incPan(-5);
-        return;
-  }
-  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_STRIP_PAN_UP_PAGE].key) {
-        incPan(5);
-        return;
-  }
-  
+
+  bool handled = handleForwardedKeyPress(ev);
+  if (handled)
+      return;
+
   // Let mixer window or other higher up handle it.
   ev->ignore();
   QFrame::keyPressEvent(ev);
