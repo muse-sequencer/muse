@@ -756,11 +756,28 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             fprintf(stderr, "MusE error: Undo::insert(): Double AddEvent. Ignoring.\n");
             return;  
           }
-          else if(uo.type == UndoOp::DeleteEvent && uo.nEvent == n_op.nEvent && uo.part == n_op.part)  
+          else if(uo.type == UndoOp::DeleteEvent && uo.part == n_op.part)  
           {
-            // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
-            erase(iuo);
-            return;  
+            if(uo.nEvent == n_op.nEvent)
+            {
+              // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
+              erase(iuo);
+              return;
+            }
+            else
+
+            // To allow for easy DeleteEvent + AddEvent of a given controller number at a given time,
+            //  instead of demanding ModifyEvent. Automatically transform the operations.
+            if(uo.nEvent.type() == Controller && n_op.nEvent.type() == Controller &&
+               uo.nEvent.dataA() == n_op.nEvent.dataA() &&
+               uo.nEvent.posValue() == n_op.nEvent.posValue())
+            {
+              // Transform the DeleteEvent operation into a ModifyEvent operation.
+              uo.type = UndoOp::ModifyEvent;
+              uo.oEvent = uo.nEvent;
+              uo.nEvent = n_op.nEvent;
+              return;  
+            }
           }
           else if(uo.type == UndoOp::ModifyEvent && uo.part == n_op.part)
           {
@@ -3448,7 +3465,11 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifyEvent ** calling changeEvent\n");
 #endif                        
-                        changeEventOperation(i->oEvent, i->nEvent, editable_part, i->doCtrls, i->doClones);
+                        // Special: Replace the undo item's old event with the real actual event found in the event lists.
+                        // This way even a modified old event can be passed in to the ModifyEvent operation constructor,
+                        //  and as long as the ID AND position values match it will find and use the ORIGINAL event.
+                        // (It's safe, the = operator quickly returns if the two events have the same base pointer.)
+                        i->oEvent = changeEventOperation(i->oEvent, i->nEvent, editable_part, i->doCtrls, i->doClones);
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
 

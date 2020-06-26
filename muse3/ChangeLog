@@ -1,3 +1,6 @@
+26.06.2020
+    - Midi controller graphs: Fixed bug left over from 21.01.2019: Drag n drop broken. (Tim)
+      Items were wrongly being erased after dropping.
 25.06.2020
     - Some rework of mixer strip shortcuts. They now work in both Arranger and Mixer.
       Default shortcuts are Alt + Arrow keys to affect selected strip(s) (rj)

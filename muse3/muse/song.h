@@ -179,15 +179,15 @@ class Song : public QObject {
       bool adjustMarkerListOperation(MarkerList* markerlist, unsigned int startPos, int diff, PendingOperationList& ops);
       void removeTrackOperation(Track* track, PendingOperationList& ops);
       bool addEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
-      void changeEventOperation(const Event& oldEvent, const Event& newEvent,
-                                Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
-      // Special: Returns the real actual event found in the event lists.
+      // Special: Returns the real actual event to be deleted found in the event lists.
       // This way even a modified event can be passed in, and as long as
       //  the ID AND position values match it will find and return the ORIGINAL event.
-      // Useful for example for passing a pre-modified event to a DeleteEvent operation
+      // Useful for example for passing a pre-modified event to a DeleteEvent or ModyfyEvent operation
       //  in the Undo system, and it will automatically replace the Undo item's event with
       //  the real one returned here. (Otherwise when the user hits 'undo' it would restore
       //  that modified passed-in event sitting in the Undo item. That's not the right event!)
+      Event changeEventOperation(const Event& oldEvent, const Event& newEvent,
+                                Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
 
       void checkSongSampleRate();
