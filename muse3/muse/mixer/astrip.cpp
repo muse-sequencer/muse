@@ -800,9 +800,13 @@ AudioStripProperties::AudioStripProperties()
     _sliderFillHandle = true;
     _sliderGrooveWidth = 14;
     _sliderScalePos = Slider::InsideVertical;
+    _sliderFrame = false;
+    _sliderFrameColor = Qt::darkGray;
     _meterWidth = Strip::FIXED_METER_WIDTH;
     _meterWidthPerChannel = false;
     _meterSpacing = 4;
+    _meterFrame = false;
+    _meterFrameColor = Qt::darkGray;
     ensurePolished();
 }
 
@@ -1347,7 +1351,7 @@ void AudioStrip::updateChannels()
 
                   meter[cc] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
                   meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
-                  meter[cc]->setFixedWidth(_meterWidth);
+                  meter[cc]->setFixedWidth(props.meterWidth());
                   meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
                   meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
                                              MusEGlobal::config.meterBackgroundColor);
@@ -1368,9 +1372,9 @@ void AudioStrip::updateChannels()
                   }
             }
 
-      if (meter[0] && !meter[0]->vu3d() && !_meterWidthPerChannel) {
+      if (meter[0] && !meter[0]->vu3d() && !props.meterWidthPerChannel()) {
            for (int ch = 0; ch < c; ++ch) {
-               meter[ch]->setFixedWidth(_meterWidth / c);
+               meter[ch]->setFixedWidth(props.meterWidth() / c);
            }
       }
 
@@ -1411,27 +1415,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
 
-      AudioStripProperties props;
-      //      _bgColor = props.bgColor();
-      _sliderRadius = props.sliderRadius();
-      _sliderRadiusHandle = props.sliderRadiusHandle();
-      _sliderHandleHeight = props.sliderHandleHeight();
-      _sliderHandleWidth = props.sliderHandleWidth();
-      _sliderGrooveWidth = props.sliderGrooveWidth();
-      _sliderFillOver = props.sliderFillOver();
-      _sliderUseGradient = props.sliderUseGradient();
-      _sliderBackbone = props.sliderBackbone();
-      _sliderFillHandle = props.sliderFillHandle();
-      _sliderScalePos = props.sliderScalePos();
-      _meterWidth = props.meterWidth();
-      _meterWidthPerChannel = props.meterWidthPerChannel();
-      _meterSpacing = props.meterSpacing();
-
       // Set the whole strip's font, except for the label.
       // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
       setFont(MusEGlobal::config.fonts[1]);
-//      if (!_bgColor.isValid())
-//          _bgColor = palette().window().color();
       setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
 //                    + "QWidget {background-color: " + _bgColor.name() + "}");
 
@@ -1505,34 +1491,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
       _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
       _upperRack->setFocusPolicy(Qt::NoFocus);
-
-//      {
-//          int ch = 0;
-//          for (; ch < channel; ++ch)
-//          {
-//              //            meter[ch] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
-//              //            meter[ch]->setRefreshRate(MusEGlobal::config.guiRefresh);
-//              ////            meter[ch]->setFixedWidth(_meterWidth);
-//              //            if (meter[ch]->vu3d()) {
-//              //                meter[ch]->setFixedWidth(_meterWidth);
-//              //            }
-//              //            else {
-//              //                meter[ch]->setContentsMargins(0,0,0,0);
-//              //                meter[ch]->setFixedWidth(_meterWidth / channel);
-//              //            }
-//              //            meter[ch]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-//              _clipperLabel[ch] = new ClipperLabel(this);
-//              _clipperLabel[ch]->setContentsMargins(0, 0, 0, 0);
-//              _clipperLabel[ch]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-//              setClipperTooltip(ch);
-//              connect(_clipperLabel[ch], SIGNAL(clicked()), SLOT(resetClipper()));
-//          }
-//          for (; ch < MusECore::MAX_CHANNELS; ++ch)
-//          {
-//              meter[ch] = nullptr;
-//              _clipperLabel[ch] = nullptr;
-//          }
-//      }
 
       //---------------------------------------------------
       //    plugin rack
@@ -1617,24 +1575,24 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       slider->setFocusPolicy(Qt::NoFocus);
       slider->setContentsMargins(0, 0, 0, 0);
       slider->setCursorHoming(true);
-      //slider->setThumbLength(1);
       DEBUG_AUDIO_STRIP(stderr, "AudioStrip::AudioStrip new slider: step:%.20f\n", volSliderStep);
       slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
       //slider->setScaleMaxMinor(5);
       slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
       slider->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-      slider->setScaleBackBone(_sliderBackbone);
-      //slider->setFillThumb(false);
+      slider->setScaleBackBone(props.sliderBackbone());
 
-      slider->setRadius(_sliderRadius);
-      slider->setRadiusHandle(_sliderRadiusHandle);
-      slider->setHandleHeight(_sliderHandleHeight);
-      slider->setHandleWidth(_sliderHandleWidth);
-      slider->setFillThumb(_sliderFillHandle);
-      slider->setGrooveWidth(_sliderGrooveWidth);
-      slider->setFillEmptySide(_sliderFillOver);
-      slider->setUseGradient(_sliderUseGradient);
-      slider->setScalePos(static_cast<Slider::ScalePos>(_sliderScalePos));
+      slider->setRadius(props.sliderRadius());
+      slider->setRadiusHandle(props.sliderRadiusHandle());
+      slider->setHandleHeight(props.sliderHandleHeight());
+      slider->setHandleWidth(props.sliderHandleWidth());
+      slider->setFillThumb(props.sliderFillHandle());
+      slider->setGrooveWidth(props.sliderGrooveWidth());
+      slider->setFillEmptySide(props.sliderFillOver());
+      slider->setUseGradient(props.sliderUseGradient());
+      slider->setScalePos(static_cast<Slider::ScalePos>(props.sliderScalePos()));
+      slider->setFrame(props.sliderFrame());
+      slider->setFrameColor(props.sliderFrameColor());
 
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -1654,22 +1612,23 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
       _meterLayout->setMargin(0);
-      _meterLayout->setSpacing(_meterSpacing);
+      _meterLayout->setSpacing(props.meterSpacing());
       sliderGrid->addLayout(_meterLayout, 2, 1, Qt::AlignHCenter);
 
       for (int i = 0; i < channel; ++i) {
           meter[i] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
           meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
-          if (meter[i]->vu3d() || _meterWidthPerChannel) {
-              meter[i]->setFixedWidth(_meterWidth);
+          if (meter[i]->vu3d() || props.meterWidthPerChannel()) {
+              meter[i]->setFixedWidth(props.meterWidth());
           }
           else {
-              meter[i]->setFixedWidth(_meterWidth / channel);
+              meter[i]->setFixedWidth(props.meterWidth() / channel);
           }
           meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
           meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
           meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
                                     MusEGlobal::config.meterBackgroundColor);
+          meter[i]->setFrame(props.meterFrame(), props.meterFrameColor());
           connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
           _meterLayout->hlayout()->addWidget(meter[i], Qt::AlignHCenter);
       }

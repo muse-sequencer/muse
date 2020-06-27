@@ -84,6 +84,7 @@ Slider::Slider(QWidget *parent, const char *name,
       d_thumbWidth = 16;
       d_fillThumb = true;
       d_fillEmptySide = true;
+      d_frame = false;
 
       d_radius = 4;
       d_radiusHandle = 2;
@@ -410,10 +411,14 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
                        d_grooveWidth,
                        r.height());
 
-        QPainterPath clip_path = MusECore::roundedPath(cr.x(), cr.y() + d_thumbHalf,
-                                          cr.width(), r.height() - d_thumbLength,
-                                          d_radius, d_radius,
-                                          (MusECore::Corner) (MusECore::CornerAll) );
+        QPainterPath clip_path;
+        clip_path.addRoundedRect(cr.x(), cr.y() + d_thumbHalf,
+                                 cr.width(), r.height() - d_thumbLength,
+                                 d_radius, d_radius);
+//        QPainterPath clip_path = MusECore::roundedPath(cr.x(), cr.y() + d_thumbHalf,
+//                                                       cr.width(), r.height() - d_thumbLength,
+//                                                       d_radius, d_radius,
+//                                                       (MusECore::Corner) (MusECore::CornerAll) );
         p->setClipPath(clip_path);
 
         //
@@ -453,9 +458,14 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 
         p->fillPath(f_rect, QBrush(f_mask));
 
-        p->setClipPath(QPainterPath(), Qt::NoClip);
-        }
+//        p->setClipPath(QPainterPath(), Qt::NoClip);
+        p->setClipping(false);
 
+    if (d_frame) {
+        p->setPen(QColor(70,70,70));
+        p->drawPath(clip_path);
+    }
+    }
 }
 
 //------------------------------------------------------------

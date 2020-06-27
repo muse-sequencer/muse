@@ -132,9 +132,13 @@ class AudioStripProperties : QWidget {
     Q_PROPERTY(bool sliderBackbone READ sliderBackbone WRITE setSliderBackbone)
     Q_PROPERTY(bool sliderFillHandle READ sliderFillHandle WRITE setSliderFillHandle)
     Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
+    Q_PROPERTY(bool sliderFrame READ sliderFrame WRITE setSliderFrame)
+    Q_PROPERTY(QColor sliderFrameColor READ sliderFrameColor WRITE setSliderFrameColor)
     Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
     Q_PROPERTY(bool meterWidthPerChannel READ meterWidthPerChannel WRITE setMeterWidthPerChannel)
     Q_PROPERTY(int meterSpacing READ meterSpacing WRITE setMeterSpacing)
+    Q_PROPERTY(bool meterFrame READ meterFrame WRITE setMeterFrame)
+    Q_PROPERTY(QColor meterFrameColor READ meterFrameColor WRITE setMeterFrameColor)
 
 //    QColor _bgColor;
     int _sliderRadius;
@@ -147,9 +151,13 @@ class AudioStripProperties : QWidget {
     bool _sliderBackbone;
     bool _sliderFillHandle;
     int _sliderScalePos;
+    bool _sliderFrame;
+    QColor _sliderFrameColor;
     int _meterWidth;
     bool _meterWidthPerChannel;
     int _meterSpacing;
+    bool _meterFrame;
+    QColor _meterFrameColor;
 
 public:
     AudioStripProperties();
@@ -181,12 +189,22 @@ public:
     int sliderScalePos() const { return _sliderScalePos; }
     void setSliderScalePos(int p) { _sliderScalePos = p; }
 
+    bool sliderFrame() const { return _sliderFrame; }
+    void setSliderFrame(bool b) { _sliderFrame = b; }
+    QColor sliderFrameColor() const { return _sliderFrameColor; }
+    void setSliderFrameColor(const QColor c) { _sliderFrameColor = c; }
+
     int meterWidth() const { return _meterWidth; }
     void setMeterWidth(int w) { _meterWidth = w; }
     bool meterWidthPerChannel() const { return _meterWidthPerChannel; }
     void setMeterWidthPerChannel(bool b) { _meterWidthPerChannel = b; }
     int meterSpacing() const { return _meterSpacing; }
     void setMeterSpacing(int s) { _meterSpacing = s; }
+
+    bool meterFrame() const { return _meterFrame; }
+    void setMeterFrame(bool b) { _meterFrame = b; }
+    QColor meterFrameColor() const { return _meterFrameColor; }
+    void setMeterFrameColor(const QColor c) { _meterFrameColor = c; }
 };
 
 //---------------------------------------------------------
@@ -225,19 +243,7 @@ class AudioStrip : public Strip {
       //GridPosStruct _rightSpacerPos;
       GridPosStruct _offMonRecPos;
 
-      int _sliderRadius;
-      int _sliderRadiusHandle;
-      int _sliderHandleHeight;
-      int _sliderHandleWidth;
-      int _sliderGrooveWidth;
-      bool _sliderFillOver;
-      bool _sliderUseGradient;
-      bool _sliderBackbone;
-      bool _sliderFillHandle;
-      int _sliderScalePos;
-      int _meterWidth;
-      bool _meterWidthPerChannel;
-      int _meterSpacing;
+      AudioStripProperties props;
 
       int channel;
       MusEGui::Slider* slider;

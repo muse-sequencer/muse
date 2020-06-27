@@ -132,6 +132,8 @@ Meter::Meter(QWidget* parent,
 
       _radius = 4;
       _vu3d = true;
+      _frame = false;
+      _frameColor = Qt::darkGray;
 
       ensurePolished();
 
@@ -658,6 +660,7 @@ void Meter::paintEvent(QPaintEvent* ev)
     else
       updatePath.addRect(rect.x(), rect.y(), rect.width(), rect.height());  // Update only the requested rectangle
     
+
     drawingPath.addRoundedRect(fw, fw, w, h, _radius, _radius);  // The actual desired shape of the meter
     finalPath = drawingPath & updatePath;
 
@@ -669,7 +672,7 @@ void Meter::paintEvent(QPaintEvent* ev)
 #ifdef _USE_CLIPPER
     p.setClipPath(finalPath);       //  Meh, nice but not so good. Clips at edge so antialising has no effect! Can it be done ?
 #endif
-    
+
     // Draw the red, green, and yellow sections.
     drawVU(p, rect, finalPath, cur_pixv);
 
@@ -707,7 +710,17 @@ void Meter::paintEvent(QPaintEvent* ev)
         //QPainterPath path; path.addRect(fw, fw, w);
         //p.fillPath(finalPath & path, QBrush(maskGrad));
         p.fillPath(finalPath, QBrush(maskGrad));
+
 #endif      
+    }
+
+    if (_frame) {
+        p.setPen(_frameColor);
+        QPainterPath framePath;
+        framePath.addRoundedRect(fw, fw, w, h, _radius, _radius);
+        p.setClipPath(finalPath);
+        p.drawPath(framePath);
+        p.setClipping(false);
     }
 
     if(_showText)

@@ -68,6 +68,8 @@ class Slider : public SliderBase, public ScaleIf
   QColor d_handleColor;
   bool d_fillThumb;
   bool d_fillEmptySide;
+  bool d_frame;
+  QColor d_frameColor;
 
   int d_radius;
   int d_radiusHandle;
@@ -174,6 +176,8 @@ class Slider : public SliderBase, public ScaleIf
   void setHandleWidth(int w) { d_thumbWidth = w; d_thumbHalf = d_thumbLength / 2; }
   void setUseGradient(bool b) { d_useGradient = b; }
   void setScalePos(ScalePos s) { d_scalePos = s; }
+  void setFrame(bool b) { d_frame = b; }
+  void setFrameColor(QColor c) { d_frameColor = c; }
       };
 
 } // namespace MusEGui
