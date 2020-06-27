@@ -178,6 +178,7 @@ class SndFile {
       void remove();
 
       bool isOpen() const;
+      // Whether the file was opened with write mode.
       bool isWritable() const;
 
       void update(bool showProgress = true);
@@ -188,6 +189,8 @@ class SndFile {
       QString path() const;         //!< path with filename
       QString canonicalPath() const; //!< path with filename, resolved (no symlinks or . .. etc)
       QString name() const;         //!< filename
+      // Whether the file itself is writable (ie also in a writable directory etc.)
+      bool isFileWritable() const;
 
       // Ratio of the file's sample rate to the current audio sample rate.
       double sampleRateRatio() const;
@@ -314,6 +317,7 @@ class SndFileR {
       void remove()           { if(sf) sf->remove();    }
 
       bool isOpen() const     { return sf ? sf->isOpen() : false; }
+      // Whether the file was opened with write mode.
       bool isWritable() const { return sf ? sf->isWritable() : false; }
       void update(bool showProgress = true) { if(sf) sf->update(showProgress); }
 
@@ -323,6 +327,8 @@ class SndFileR {
       QString path() const     { return sf ? sf->path() : QString(); }
       QString canonicalPath() const  { return sf ? sf->canonicalPath() : QString(); }
       QString name() const     { return sf ? sf->name() : QString(); }
+      // Whether the file itself is writable (ie also in a writable directory etc.)
+      bool isFileWritable() const { return sf ? sf->isFileWritable() : false; }
 
       // Ratio of the file's sample rate to the current audio sample rate.
       inline double sampleRateRatio() const { return sf ? sf->sampleRateRatio() : 1.0; };

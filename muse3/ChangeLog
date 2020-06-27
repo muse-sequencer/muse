@@ -1,7 +1,8 @@
 26.06.2020
-    - Midi controller graphs: Fixed bug left over from 21.01.2019: Drag n drop broken. (Tim)
+    - Fixed bug left over from 21.01.2019: Midi controller graphs: Drag n drop broken. (Tim)
       Items were wrongly being erased after dropping.
-    - Compressed song files (.gz,.bz2): Fixed issue 831: Blank song on load. Error from 01.01.
+    - Fixed issue 830: Wave Editor: Copy-on-write always triggered. Error from 01.01.2020
+    - Fixed issue 831: Compressed song files (.gz,.bz2): Blank song on load. Error from 01.01.2020
 25.06.2020
     - Some rework of mixer strip shortcuts. They now work in both Arranger and Mixer.
       Default shortcuts are Alt + Arrow keys to affect selected strip(s) (rj)

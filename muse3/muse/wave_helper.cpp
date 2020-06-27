@@ -46,7 +46,7 @@ bool sndFileCheckCopyOnWrite(const SndFileR sndFile)
   if(path_this.isEmpty())
     return false;
 
-  bool fwrite = sndFile.isWritable();
+  bool fwrite = sndFile.isFileWritable();
 
   // No exceptions: Even if this wave event is a clone, if it ain't writeable we gotta copy the wave.
   if(!fwrite)
