@@ -120,6 +120,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
 
       _sel3d = true;
       _curSelBorder = false;
+      _curSelBorderColor = Qt::red;
 
       //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME. DELETETHIS?
       //setAttribute(Qt::WA_OpaquePaintEvent);
@@ -349,6 +350,15 @@ void TList::paint(const QRect& r)
                 mask.setStart(QPointF(0, yy));
                 mask.setFinalStop(QPointF(0, yy + trackHeight));
                 p.fillRect(x1, yy, w, trackHeight, mask);
+            }
+
+            if (track == cur_sel_track && _curSelBorder) {
+                p.save();
+                p.setPen(_curSelBorderColor);
+                p.setClipRect(x1 - 1, yy, w + 2, trackHeight);
+                p.drawRect(0, yy + 1, header->length() - 2, trackHeight - 2);
+                p.setClipping(false);
+                p.restore();
             }
 
             int x = 0;

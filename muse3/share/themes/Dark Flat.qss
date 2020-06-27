@@ -201,7 +201,10 @@ MusEGui--SnooperDialog {
 
 MusEGui--TList {
     qproperty-sel3d: false;
+/*
     qproperty-curSelBorder: true;
+    qproperty-curSelBorderColor: Red;
+*/
 }
 
 MusEGui--AudioStripProperties {

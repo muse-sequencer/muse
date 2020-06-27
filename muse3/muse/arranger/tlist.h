@@ -77,9 +77,11 @@ class TList : public QWidget {
 
     Q_PROPERTY(bool sel3d READ sel3d WRITE setSel3d)
     Q_PROPERTY(bool curSelBorder READ curSelBorder WRITE setCurSelBorder)
+    Q_PROPERTY(QColor curSelBorderColor READ curSelBorderColor WRITE setCurSelBorderColor)
 
     bool _sel3d;
     bool _curSelBorder;
+    QColor _curSelBorderColor;
 
       int ypos;
       bool editMode;
@@ -179,6 +181,8 @@ class TList : public QWidget {
       void setSel3d(bool sel3d) { _sel3d = sel3d; }
       bool curSelBorder() const { return _curSelBorder; }
       void setCurSelBorder(bool curSelBorder) { _curSelBorder = curSelBorder; }
+      QColor curSelBorderColor() const { return _curSelBorderColor; }
+      void setCurSelBorderColor(const QColor c) { _curSelBorderColor = c; }
       };
 
 } // namespace MusEGui
