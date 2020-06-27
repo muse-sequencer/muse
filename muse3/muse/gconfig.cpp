@@ -179,7 +179,7 @@ GlobalConfigValues config = {
       Qt::black,                    // midiCanvasBarColor
       Qt::blue,                     // midiItemColor
       QColor(255, 170, 0),          // midiItemSelectedColor
-      Qt::gray,                     // dummyPartColor
+      Qt::lightGray,                // dummyPartColor
       Qt::gray,                     // midiDividerColor
 
       Qt::lightGray,                // waveNonselectedPart
