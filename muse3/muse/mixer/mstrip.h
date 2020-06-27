@@ -201,8 +201,12 @@ class MidiStripProperties : QWidget {
     Q_PROPERTY(bool sliderBackbone READ sliderBackbone WRITE setSliderBackbone)
     Q_PROPERTY(bool sliderFillHandle READ sliderFillHandle WRITE setSliderFillHandle)
     Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
+    Q_PROPERTY(bool sliderFrame READ sliderFrame WRITE setSliderFrame)
+    Q_PROPERTY(QColor sliderFrameColor READ sliderFrameColor WRITE setSliderFrameColor)
     Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
     Q_PROPERTY(int meterSpacing READ meterSpacing WRITE setMeterSpacing)
+    Q_PROPERTY(bool meterFrame READ meterFrame WRITE setMeterFrame)
+    Q_PROPERTY(QColor meterFrameColor READ meterFrameColor WRITE setMeterFrameColor)
 
 //    QColor _bgColor;
     int _sliderRadius;
@@ -215,8 +219,12 @@ class MidiStripProperties : QWidget {
     bool _sliderBackbone;
     bool _sliderFillHandle;
     int _sliderScalePos;
+    bool _sliderFrame;
+    QColor _sliderFrameColor;
     int _meterWidth;
     int _meterSpacing;
+    bool _meterFrame;
+    QColor _meterFrameColor;
 
 public:
     MidiStripProperties();
@@ -248,13 +256,21 @@ public:
     int sliderScalePos() const { return _sliderScalePos; }
     void setSliderScalePos(int p) { _sliderScalePos = p; }
 
+    bool sliderFrame() const { return _sliderFrame; }
+    void setSliderFrame(bool b) { _sliderFrame = b; }
+    QColor sliderFrameColor() const { return _sliderFrameColor; }
+    void setSliderFrameColor(const QColor c) { _sliderFrameColor = c; }
+
     int meterWidth() const { return _meterWidth; }
     void setMeterWidth(int w) { _meterWidth = w; }
-
     int meterSpacing() const { return _meterSpacing; }
     void setMeterSpacing(int s) { _meterSpacing = s; }
-};
 
+    bool meterFrame() const { return _meterFrame; }
+    void setMeterFrame(bool b) { _meterFrame = b; }
+    QColor meterFrameColor() const { return _meterFrameColor; }
+    void setMeterFrameColor(const QColor c) { _meterFrameColor = c; }
+};
 
 //---------------------------------------------------------
 //   MidiStrip
@@ -263,65 +279,10 @@ public:
 class MidiStrip : public Strip {
       Q_OBJECT
 
-    Q_PROPERTY(QColor bgColor READ bgColor WRITE setBgColor)
-    Q_PROPERTY(int sliderRadius READ sliderRadius WRITE setSliderRadius)
-    Q_PROPERTY(int sliderRadiusHandle READ sliderRadiusHandle WRITE setSliderRadiusHandle)
-    Q_PROPERTY(int sliderHandleHeight READ sliderHandleHeight WRITE setSliderHandleHeight)
-    Q_PROPERTY(int sliderHandleWidth READ sliderHandleWidth WRITE setSliderHandleWidth)
-    Q_PROPERTY(int sliderGrooveWidth READ sliderGrooveWidth WRITE setSliderGrooveWidth)
-    Q_PROPERTY(bool sliderFillOver READ sliderFillOver WRITE setSliderFillOver)
-    Q_PROPERTY(bool sliderUseGradient READ sliderUseGradient WRITE setSliderUseGradient)
-    Q_PROPERTY(int sliderScalePos READ sliderScalePos WRITE setSliderScalePos)
-    Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
-    Q_PROPERTY(int meterSpacing READ meterSpacing WRITE setMeterSpacing)
-
-    QColor _bgColor;
-    int _sliderRadius;
-    int _sliderRadiusHandle;
-    int _sliderHandleHeight;
-    int _sliderHandleWidth;
-    int _sliderGrooveWidth;
-    bool _sliderFillOver;
-    bool _sliderUseGradient;
-    bool _sliderBackbone;
-    bool _sliderFillHandle;
-    int _sliderScalePos;
-    int _meterWidth;
-    int _meterSpacing;
-
   public:      
       // ID numbers for each rack in this strip.
       enum MStripRacks { mStripUpperRack = 0, mStripInfoRack = 1, mStripLowerRack = 2 };
       
-      QColor bgColor() const { return _bgColor; }
-      void setBgColor(const QColor c) { _bgColor = c; }
-
-      int sliderRadius() const { return _sliderRadius; }
-      void setSliderRadius(int radius) { _sliderRadius = radius; }
-      int sliderRadiusHandle() const { return _sliderRadiusHandle; }
-      void setSliderRadiusHandle(int radiusHandle) { _sliderRadiusHandle = radiusHandle; }
-
-      int sliderHandleHeight() const { return _sliderHandleHeight; }
-      void setSliderHandleHeight(int h) { _sliderHandleHeight = h; }
-      int sliderHandleWidth() const { return _sliderHandleWidth; }
-      void setSliderHandleWidth(int w) { _sliderHandleWidth = w; }
-      int sliderGrooveWidth() const { return _sliderGrooveWidth; }
-      void setSliderGrooveWidth(int w) { _sliderGrooveWidth = w; }
-
-      bool sliderFillOver() const { return _sliderFillOver; }
-      void setSliderFillOver(bool b) { _sliderFillOver = b; }
-      bool sliderUseGradient() const { return _sliderUseGradient; }
-      void setSliderUseGradient(bool b) { _sliderUseGradient = b; }
-
-      int sliderScalePos() const { return _sliderScalePos; }
-      void setSliderScalePos(int p) { _sliderScalePos = p; }
-
-      int meterWidth() const { return _meterWidth; }
-      void setMeterWidth(int w) { _meterWidth = w; }
-
-      int meterSpacing() const { return _meterSpacing; }
-      void setMeterSpacing(int s) { _meterSpacing = s; }
-
   private:
       GridPosStruct _upperStackTabPos;
       GridPosStruct _preScrollAreaPos_A;
@@ -343,6 +304,8 @@ class MidiStrip : public Strip {
       GridPosStruct _automationPos;
       //GridPosStruct _rightSpacerPos;
       GridPosStruct _offMonRecPos;
+
+      MidiStripProperties props;
 
       Slider* slider;
       DoubleLabel* sl;

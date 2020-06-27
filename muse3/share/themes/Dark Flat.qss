@@ -201,7 +201,10 @@ MusEGui--SnooperDialog {
 
 MusEGui--TList {
     qproperty-sel3d: false;
+/*
     qproperty-curSelBorder: true;
+    qproperty-curSelBorderColor: Red;
+*/
 }
 
 MusEGui--AudioStripProperties {
@@ -221,10 +224,14 @@ MusEGui--AudioStripProperties {
 /* fill slider handle with color
     qproperty-sliderFillHandle: false; 
 */
+	qproperty-sliderFrame: true;
+	qproperty-sliderFrameColor: rgb(70,70,70);
     qproperty-meterWidth: 10;
-/* apply meterWidth for each channel
+/* apply meterWidth for each channel separately
     qproperty-meterWidthPerChannel: true;
 */
+	qproperty-meterFrame: true;
+	qproperty-meterFrameColor: rgb(70,70,70);
 /* Spacing between meters
     qproperty-meterSpacing: 4;
 */
@@ -247,7 +254,11 @@ MusEGui--MidiStripProperties {
 /* fill slider handle with color
     qproperty-sliderFillHandle: false; 
 */
+	qproperty-sliderFrame: true;
+	qproperty-sliderFrameColor: rgb(70,70,70);
     qproperty-meterWidth: 10;
+	qproperty-meterFrame: true;
+	qproperty-meterFrameColor: rgb(70,70,70);
 }
 
 MusEGui--Meter {

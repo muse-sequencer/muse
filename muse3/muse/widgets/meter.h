@@ -89,6 +89,8 @@ class Meter : public QFrame, public ScaleIf {
    private:
      QColor _primaryColor;
      QColor _bgColor;
+     bool _frame;
+     QColor _frameColor;
      
    protected:
       QLinearGradient darkGradRed;
@@ -176,7 +178,7 @@ class Meter : public QFrame, public ScaleIf {
             ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone,
             int refreshRate = 20);
       
-      QColor primaryColor() const { return _primaryColor; }
+//      QColor primaryColor() const { return _primaryColor; }
       void setPrimaryColor(const QColor& color, const QColor& bgColor = Qt::black);
       
       void setRange(double min, double max);
@@ -195,6 +197,8 @@ class Meter : public QFrame, public ScaleIf {
       void setRadius(int radius) { _radius = radius; }
       int vu3d() const { return _vu3d; }
       void setVu3d(int vu3d) { _vu3d = vu3d; }
+
+      void setFrame(bool frame, const QColor& color) { _frame = frame; _frameColor = color; }
       };
 
 } // namespace MusEGui

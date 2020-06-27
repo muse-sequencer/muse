@@ -1408,8 +1408,12 @@ MidiStripProperties::MidiStripProperties()
     _sliderFillHandle = true;
     _sliderGrooveWidth = 14;
     _sliderScalePos = Slider::InsideVertical;
+    _sliderFrame = false;
+    _sliderFrameColor = Qt::darkGray;
     _meterWidth = Strip::FIXED_METER_WIDTH;
     _meterSpacing = 2;
+    _meterFrame = false;
+    _meterFrameColor = Qt::darkGray;
     ensurePolished();
 }
 
@@ -1436,21 +1440,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
 
-      MidiStripProperties props;
-      //      _bgColor = props.bgColor();
-      _sliderRadius = props.sliderRadius();
-      _sliderRadiusHandle = props.sliderRadiusHandle();
-      _sliderHandleHeight = props.sliderHandleHeight();
-      _sliderHandleWidth = props.sliderHandleWidth();
-      _sliderGrooveWidth = props.sliderGrooveWidth();
-      _sliderFillOver = props.sliderFillOver();
-      _sliderUseGradient = props.sliderUseGradient();
-      _sliderBackbone = props.sliderBackbone();
-      _sliderFillHandle = props.sliderFillHandle();
-      _sliderScalePos = props.sliderScalePos();
-      _meterWidth = props.meterWidth();
-      _meterSpacing = props.meterSpacing();
-      
       // Set the whole strip's font, except for the label.
       setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
 //      ensurePolished();
@@ -1595,32 +1584,34 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       slider->setContentsMargins(0, 0, 0, 0);
       slider->setCursorHoming(true);
       slider->setSpecialText(tr("off"));
-      slider->setScaleBackBone(_sliderBackbone);
-      //slider->setFillThumb(false);
+      slider->setScaleBackBone(props.sliderBackbone());
 
-      slider->setRadius(_sliderRadius);
-      slider->setRadiusHandle(_sliderRadiusHandle);
-      slider->setHandleHeight(_sliderHandleHeight);
-      slider->setHandleWidth(_sliderHandleWidth);
-      slider->setFillThumb(_sliderFillHandle);
-      slider->setGrooveWidth(_sliderGrooveWidth);
-      slider->setFillEmptySide(_sliderFillOver);
-      slider->setUseGradient(_sliderUseGradient);
-      slider->setScalePos(static_cast<Slider::ScalePos>(_sliderScalePos));
+      slider->setRadius(props.sliderRadius());
+      slider->setRadiusHandle(props.sliderRadiusHandle());
+      slider->setHandleHeight(props.sliderHandleHeight());
+      slider->setHandleWidth(props.sliderHandleWidth());
+      slider->setFillThumb(props.sliderFillHandle());
+      slider->setGrooveWidth(props.sliderGrooveWidth());
+      slider->setFillEmptySide(props.sliderFillOver());
+      slider->setUseGradient(props.sliderUseGradient());
+      slider->setScalePos(static_cast<Slider::ScalePos>(props.sliderScalePos()));
+      slider->setFrame(props.sliderFrame());
+      slider->setFrameColor(props.sliderFrameColor());
 
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
       _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
       _meterLayout->setMargin(0);
-      _meterLayout->setSpacing(_meterSpacing);
+      _meterLayout->setSpacing(props.meterSpacing());
 
       meter[0] = new Meter(nullptr, Meter::LinMeter, Qt::Vertical, 0.0, 127.0);
       meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
       meter[0]->setContentsMargins(0, 0, 0, 0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-      meter[0]->setFixedWidth(_meterWidth);
+      meter[0]->setFixedWidth(props.meterWidth());
       meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor,
                                 MusEGlobal::config.meterBackgroundColor);
+      meter[0]->setFrame(props.meterFrame(), props.meterFrameColor());
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       _meterLayout->hlayout()->addWidget(meter[0], Qt::AlignHCenter);
       
