@@ -1261,9 +1261,29 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, 
                                 menu->addMenu(pm);
                                 pm->setFont(qApp->font());
                               }
-                              int id = ((mp->hbank & 0xff) << 16)
-                                         + ((mp->lbank & 0xff) << 8) + (mp->program & 0xff);
-                              QAction* act = pm->addAction(mp->name);
+                              const int hb = mp->hbank & 0xff;
+                              const int lb = mp->lbank & 0xff;
+                              const int pr = mp->program & 0xff;
+                              const int id = (hb << 16) | (lb << 8) | pr;
+                              const bool vhb = hb != 0xff;
+                              const bool vlb = lb != 0xff;
+                              const bool vpr = pr != 0xff;
+                              QString astr;
+                              if(vhb || vlb || vpr) {
+                                if(vhb)
+                                  astr += QString::number(hb + 1) + QString(":");
+                                if(vlb)
+                                  astr += QString::number(lb + 1) + QString(":");
+                                else if(vhb)
+                                  astr += QString("--:");
+                                if(vpr)
+                                  astr += QString::number(pr + 1);
+                                else if(vhb && vlb)
+                                  astr += QString("--");
+                                astr += QString(" ");
+                              }
+                              astr += mp->name;
+                              QAction* act = pm->addAction(astr);
                               act->setData(id);
                             }
                         }
@@ -1275,9 +1295,29 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, 
             for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                   const Patch* mp = *ipl;
                   //if (mp->typ & mask) {
-                        int id = ((mp->hbank & 0xff) << 16)
-                                 + ((mp->lbank & 0xff) << 8) + (mp->program & 0xff);
-                        QAction* act = menu->addAction(mp->name);
+                        const int hb = mp->hbank & 0xff;
+                        const int lb = mp->lbank & 0xff;
+                        const int pr = mp->program & 0xff;
+                        const int id = (hb << 16) | (lb << 8) | pr;
+                        const bool vhb = hb != 0xff;
+                        const bool vlb = lb != 0xff;
+                        const bool vpr = pr != 0xff;
+                        QString astr;
+                        if(vhb || vlb || vpr) {
+                          if(vhb)
+                            astr += QString::number(hb + 1) + QString(":");
+                          if(vlb)
+                            astr += QString::number(lb + 1) + QString(":");
+                          else if(vhb)
+                            astr += QString("--:");
+                          if(vpr)
+                            astr += QString::number(pr + 1);
+                          else if(vhb && vlb)
+                            astr += QString("--");
+                          astr += QString(" ");
+                        }
+                        astr += mp->name;
+                        QAction* act = menu->addAction(astr);
                         act->setData(id);
                         //}
                   }

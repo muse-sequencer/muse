@@ -2289,7 +2289,14 @@ void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, bool 
             hb &= 0x7f;
             lb &= 0x7f;
 
-            QAction *act = menu->addAction(QString(i->Name));
+            QString astr;
+            astr += QString::number(hb + 1) + QString(":");
+            astr += QString::number(lb + 1) + QString(":");
+            astr += QString::number(i->Program + 1);
+            astr += QString(" ");
+            astr += QString(i->Name);
+
+            QAction *act = menu->addAction(astr);
             act->setData((hb << 16) | (lb << 8) | (int)i->Program);
             }
       }

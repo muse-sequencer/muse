@@ -1858,7 +1858,29 @@ void VstNativeSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/
         int prog = i->program;
         //int id   = (bank << 7) + prog;
 
-        QAction *act = menu->addAction(i->name);
+        const int hb   = (prog >> 16) & 0xff;
+        const int lb   = (prog >> 8) & 0xff;
+        const int pr = prog & 0xff;
+        const bool vhb = hb != 0xff;
+        const bool vlb = lb != 0xff;
+        const bool vpr = pr != 0xff;
+        QString astr;
+        if(vhb || vlb || vpr) {
+          if(vhb)
+            astr += QString::number(hb + 1) + QString(":");
+          if(vlb)
+            astr += QString::number(lb + 1) + QString(":");
+          else if(vhb)
+            astr += QString("--:");
+          if(vpr)
+            astr += QString::number(pr + 1);
+          else if(vhb && vlb)
+            astr += QString("--");
+          astr += QString(" ");
+        }
+        astr += i->name;
+        
+        QAction *act = menu->addAction(astr);
         //act->setData(id);
         act->setData(prog);
         }

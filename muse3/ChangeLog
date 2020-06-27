@@ -1,3 +1,5 @@
+27.06.2020
+    - Midi patch popup menu: Include patch number in the items' text. (Tim)
 26.06.2020
     - Fixed bug left over from 21.01.2019: Midi controller graphs: Drag n drop broken. (Tim)
       Items were wrongly being erased after dropping.

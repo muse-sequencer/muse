@@ -4953,6 +4953,25 @@ void LV2SynthIF::populatePatchPopupMidNam(MusEGui::PopupMenu *menu, int channel,
 
           const int fin_mnp_bankHL = (mnp_bankH << 8) | mnp_bankL;
 
+          const bool vhb = mnp_bankH != 0xff;
+          const bool vlb = mnp_bankL != 0xff;
+          const bool vpr = mnp_prog != 0xff;
+          QString astr;
+          if(vhb || vlb || vpr) {
+            if(vhb)
+              astr += QString::number(mnp_bankH + 1) + QString(":");
+            if(vlb)
+              astr += QString::number(mnp_bankL + 1) + QString(":");
+            else if(vhb)
+              astr += QString("--:");
+            if(vpr)
+              astr += QString::number(mnp_prog + 1);
+            else if(vhb && vlb)
+              astr += QString("--");
+            astr += QString(" ");
+          }
+          astr += mnp->name();
+
           std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(fin_mnp_bankHL);
           MusEGui::PopupMenu *submenu= NULL;
           if(itS != submenus.end())
@@ -4975,7 +4994,7 @@ void LV2SynthIF::populatePatchPopupMidNam(MusEGui::PopupMenu *menu, int channel,
           }
 
           const int fin_mnp_patch = (fin_mnp_bankHL << 8) | mnp_prog;
-          QAction *act = submenu->addAction(mnp->name());
+          QAction *act = submenu->addAction(astr);
           act->setData(fin_mnp_patch);
         }
     }
@@ -5023,6 +5042,13 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int channel, bool 
           const uint32_t patch_bank = (hb << 8) | lb;
           const uint32_t patch = (patch_bank << 8) | extPrg.prog;
 
+          QString astr;
+          astr += QString::number(hb + 1) + QString(":");
+          astr += QString::number(lb + 1) + QString(":");
+          astr += QString::number(extPrg.prog + 1);
+          astr += QString(" ");
+          astr += QString(extPrg.name);
+
           std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(patch_bank);
           MusEGui::PopupMenu *submenu= NULL;
           if(itS != submenus.end())
@@ -5038,7 +5064,7 @@ void LV2SynthIF::populatePatchPopup(MusEGui::PopupMenu *menu, int channel, bool 
               submenus.insert(std::make_pair(patch_bank, submenu));
           }
 
-          QAction *act = submenu->addAction(extPrg.name);
+          QAction *act = submenu->addAction(astr);
           act->setData(patch);
       }
     }
