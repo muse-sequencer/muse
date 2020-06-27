@@ -564,16 +564,14 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
       FILE* fp = 0;
       if (popenFlag) {
             if (strcmp(mode, "r") == 0)
-                  //zip += QString(" -d < ");
-                  zip += QString(" -d < \"");    // p4.0.40
+                  zip += QString(" -d < \"");
             else
                   zip += QString(" > \"");
-            //zip += name;
-            zip = zip + name + QString("\"");    // p4.0.40
-            fp  = popen(zip.toLocal8Bit().data(), mode);
+            zip = zip + name + QString("\"");
+            fp  = popen(zip.toLocal8Bit().constData(), mode);
             }
       else {
-            fp = fopen(name.toLocal8Bit().data(), mode);
+            fp = fopen(name.toLocal8Bit().constData(), mode);
             }
       if (fp == 0 && !noError) {
             QString s(QWidget::tr("Open File\n%1\nfailed: %2").arg(name).arg(strerror(errno)));

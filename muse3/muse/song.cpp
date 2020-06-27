@@ -638,8 +638,10 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
   return added;
 }
 
-void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
+Event Song::changeEventOperation(const Event& oldEvent, const Event& newEvent,
+                                Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
+  Event p_res, res;
   // If position is changed we need to reinsert into the list, and all clone lists.
   Part* p = part;
   do
@@ -664,6 +666,12 @@ void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Pa
     {
       // Use the actual old found event, not the given oldEvent.
       const Event& e = ie->second;
+      // Prefer to return the event found in the given part's event list, not a clone part's.
+      if(p == part)
+        p_res = e;
+      if(res.empty())
+        res = e;
+
       // Go ahead and include deletion of the old event.
       if(pendingOperations.add(PendingOperationItem(p, ie, PendingOperationItem::DeleteEvent)))
       {
@@ -691,6 +699,12 @@ void Song::changeEventOperation(const Event& oldEvent, const Event& newEvent, Pa
     p = p->nextClone();
   }
   while(p != part);
+  
+  // Prefer to return the event found in the given part's event list, not a clone part's.
+  if(!p_res.empty())
+    return p_res;
+  
+  return res;
 }
 
 //---------------------------------------------------------

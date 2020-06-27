@@ -1062,6 +1062,14 @@ QString SndFile::name() const
       return finfo ? finfo->fileName() : QString();
       }
 
+//---------------------------------------------------------
+//   isFileWritable
+//---------------------------------------------------------
+
+bool SndFile::isFileWritable() const
+      {
+      return finfo ? finfo->isWritable() : false;
+      }
       
 //---------------------------------------------------------
 //   sampleRateRatio

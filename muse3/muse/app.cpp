@@ -1405,8 +1405,28 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                     MusECore::SongfileDiscovery d_list(MusEGlobal::museProject);
                     d_list.readSongfile(d_xml);
 
-                    // Be kind. Rewind.
-                    fseek(f, 0, SEEK_SET);
+                    // If it is a compressed file we cannot seek the stream, we must reopen it.
+                    if(popenFlag)
+                    {
+                      pclose(f);
+                      f = 0;
+                      f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
+                      if (f == 0) {
+                            if (errno != ENOENT) {
+                                  QMessageBox::critical(this, QString("MusE"),
+                                    tr("File open error"));
+                                  setUntitledProject();
+                                  _lastProjectFilePath = QString();
+                                  }
+                            else
+                                  setConfigDefaults();
+                            }
+                    }
+                    else
+                    {
+                      // Be kind. Rewind.
+                      fseek(f, 0, SEEK_SET);
+                    }
 
                     // Is there a project sample rate setting in the song? (Setting added circa 2011).
                     if(d_list._waveList._projectSampleRateValid)
@@ -1469,16 +1489,17 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                     }
                   }
                   
-
-                  MusECore::Xml xml(f);
-                  read(xml, doReadMidiPorts, songTemplate);
-                  bool fileError = ferror(f);
-                  popenFlag ? pclose(f) : fclose(f);
-                  if (fileError) {
-                        QMessageBox::critical(this, QString("MusE"),
-                           tr("File read error"));
-                        setUntitledProject();
-                        _lastProjectFilePath = QString();
+                  if(f) {
+                        MusECore::Xml xml(f);
+                        read(xml, doReadMidiPorts, songTemplate);
+                        bool fileError = ferror(f);
+                        popenFlag ? pclose(f) : fclose(f);
+                        if (fileError) {
+                              QMessageBox::critical(this, QString("MusE"),
+                                tr("File read error"));
+                              setUntitledProject();
+                              _lastProjectFilePath = QString();
+                              }
                         }
                   }
             }

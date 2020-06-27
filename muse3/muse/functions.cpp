@@ -2458,6 +2458,11 @@ void pasteEventList(
   Undo& add_operations,
   expand_map_t& expand_map,
   new_part_map_t& new_part_map,
+  // The source part where the event list came from, in case
+  //  the erase_source argument is true.
+  const Part* source_part = nullptr,
+  // Whether to erase ('cut') the source events after pasting.
+  bool erase_source = false,
   const Pos& start_pos = Pos(),
   int max_distance=3072,
   // Options. Default is erase target existing controllers first + erase wysiwyg.
@@ -2643,13 +2648,13 @@ void pasteEventList(
             }
             else
             {
-              EventList el;
+              EventList s_el;
               // Compare time, and wave position, path, and start position.
-              dest_part->events().findSimilarType(e, el, true, false, false, false,
+              dest_part->events().findSimilarType(e, s_el, true, false, false, false,
                                                   true, true, true);
               // Do NOT add the new wave event if it already exists at the position.
               // Don't event bother replacing it using DeletEvent or ModifyEvent.
-              if(el.empty())
+              if(s_el.empty())
               {
                 add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
               }
@@ -2658,17 +2663,21 @@ void pasteEventList(
                 // Delete all but one of them. There shouldn't be more than one wave event
                 //  at a time for a given wave event anyway.
                 ciEvent nie;
-                for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+                for(ciEvent ie = s_el.cbegin(); ie != s_el.cend(); ++ie)
                 {
                   // Break on the second-last one, to leave one item intact.
                   nie = ie;
                   ++nie;
-                  if(nie == el.end())
+                  if(nie == s_el.end())
                   {
                     break;
                   }
                   
-                  operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+                  // If we are 'cutting' the source events, and the source and destination parts
+                  //  are the same, and the cut and erase events are the same, don't push the
+                  //  deletes here. Let the cutting section at the end of the routine take do it.
+                  if(!erase_source || source_part != dest_part || el.findId(ie->second) == el.end())
+                    operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
                 }
               }
             }
@@ -2703,18 +2712,21 @@ void pasteEventList(
             // Here we are not specifically erasing first. But we still MUST erase any
             //  existing controller values found at that exact time value.
             {
-              EventList el;
+              EventList s_el;
               // Compare time and controller number (data A) only.
-              dest_part->events().findSimilarType(e, el, true, true);
+              dest_part->events().findSimilarType(e, s_el, true, true);
               // Delete them all. There shouldn't be more than one controller event
               //  at a time for a given controller number anyway.
-              for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+              for(ciEvent ie = s_el.cbegin(); ie != s_el.cend(); ++ie)
               {
-                // Do port controller values and clone parts. 
-                operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
+                // If we are 'cutting' the source events, and the source and destination parts
+                //  are the same, and the cut and erase events are the same, don't push the
+                //  deletes here. Let the cutting section at the end of the routine take do it.
+                if(!erase_source || source_part != dest_part || el.findId(ie->second) == el.end())
+                  // Do port controller values and clone parts. 
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, true, true));
               }
             }
-            
             // Do port controller values and clone parts. 
             add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, true, true));
           }
@@ -2731,12 +2743,12 @@ void pasteEventList(
           }
           else
           {
-            EventList el;
+            EventList s_el;
             // Compare time and sysex data only.
-            dest_part->events().findSimilarType(e, el, true);
+            dest_part->events().findSimilarType(e, s_el, true);
             // Do NOT add the new sysex if it already exists at the position.
             // Don't event bother replacing it using DeletEvent or ModifyEvent.
-            if(el.empty())
+            if(s_el.empty())
             {
               add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
             }
@@ -2745,17 +2757,21 @@ void pasteEventList(
               // Delete all but one of them. There shouldn't be more than one sysex event
               //  at a time for a given sysex anyway.
               ciEvent nie;
-              for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+              for(ciEvent ie = s_el.cbegin(); ie != s_el.cend(); ++ie)
               {
                 // Break on the second-last one, to leave one item intact.
                 nie = ie;
                 ++nie;
-                if(nie == el.end())
+                if(nie == s_el.end())
                 {
                   break;
                 }
                 
-                operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+                // If we are 'cutting' the source events, and the source and destination parts
+                //  are the same, and the cut and erase events are the same, don't push the
+                //  deletes here. Let the cutting section at the end of the routine take do it.
+                if(!erase_source || source_part != dest_part || el.findId(ie->second) == el.end())
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
               }
             }
           }
@@ -2772,12 +2788,12 @@ void pasteEventList(
           }
           else
           {
-            EventList el;
+            EventList s_el;
             // Compare time and meta data only.
-            dest_part->events().findSimilarType(e, el, true);
+            dest_part->events().findSimilarType(e, s_el, true);
             // Do NOT add the new meta if it already exists at the position.
             // Don't event bother replacing it using DeletEvent or ModifyEvent.
-            if(el.empty())
+            if(s_el.empty())
             {
               add_operations.push_back(UndoOp(UndoOp::AddEvent, e, dest_part, false, false));
             }
@@ -2786,17 +2802,21 @@ void pasteEventList(
               // Delete all but one of them. There shouldn't be more than one meta event
               //  at a time for a given meta anyway.
               ciEvent nie;
-              for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+              for(ciEvent ie = s_el.cbegin(); ie != s_el.cend(); ++ie)
               {
                 // Break on the second-last one, to leave one item intact.
                 nie = ie;
                 ++nie;
-                if(nie == el.end())
+                if(nie == s_el.end())
                 {
                   break;
                 }
                 
-                operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
+                // If we are 'cutting' the source events, and the source and destination parts
+                //  are the same, and the cut and erase events are the same, don't push the
+                //  deletes here. Let the cutting section at the end of the routine take do it.
+                if(!erase_source || source_part != dest_part || el.findId(ie->second) == el.end())
+                  operations.push_back(UndoOp(UndoOp::DeleteEvent, ie->second, dest_part, false, false));
               }
             }
           }
@@ -2813,27 +2833,43 @@ void pasteEventList(
       ctl_map.tidy();
       
       unsigned e_pos;
-      const EventList& el = dest_part->events();
-      for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+      const EventList& er_el = dest_part->events();
+      for(ciEvent ie = er_el.cbegin(); ie != er_el.cend(); ++ie)
       {
-        const Event& e = ie->second;
-        if(e.type() != Controller)
+        const Event& er_e = ie->second;
+        if(er_e.type() != Controller)
           continue;
         
-        ciPasteEraseCtlMap icm = ctl_map.find(e.dataA());
+        ciPasteEraseCtlMap icm = ctl_map.find(er_e.dataA());
         if(icm == ctl_map.end())
           continue;
         
         const PasteEraseMap_t& tmap = icm->second;
-        e_pos = e.posValue();
+        e_pos = er_e.posValue();
         ciPasteEraseMap itm = tmap.upper_bound(e_pos);
         if(itm == tmap.begin())
           continue;
         
         --itm;
         if(e_pos >= itm->first && e_pos < itm->second)
-          operations.push_back(UndoOp(UndoOp::DeleteEvent, e, dest_part, true, true));
+        {
+          // If we are 'cutting' the source events, and the source and destination parts
+          //  are the same, and the cut and erase events are the same, don't push the
+          //  deletes here. Let the cutting section at the end of the routine take do it.
+          if(!erase_source || source_part != dest_part || el.findId(er_e) == el.end())
+            operations.push_back(UndoOp(UndoOp::DeleteEvent, er_e, dest_part, true, true));
+        }
       }
+    }
+  }
+
+  // Do we want to cut the items as well?
+  if(erase_source && source_part)
+  {
+    for(ciEvent i = el.cbegin(); i != el.cend(); ++i)
+    {
+      const Event& old_e = i->second;
+      operations.push_back(UndoOp(UndoOp::DeleteEvent, old_e, source_part, true, true));
     }
   }
 }
@@ -2909,7 +2945,8 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
 
           pasteEventList(
             el, pos, ((Part*)dest_part), operations, add_operations,
-            expand_map, new_part_map, Pos(), max_distance, options, amount, raster, relevant, paste_to_ctrl_num);
+            expand_map, new_part_map, nullptr, false,
+            Pos(), max_distance, options, amount, raster, relevant, paste_to_ctrl_num);
         }
         else
           xml.unknown("paste_items_at");
@@ -3017,18 +3054,8 @@ void paste_items_at(
 
       pasteEventList(
         el, pos, ((Part*)dest_part), operations, add_operations,
-        expand_map, new_part_map, start_pos, max_distance, options,
+        expand_map, new_part_map, src_part, cut_mode, start_pos, max_distance, options,
         amount, raster, relevant, paste_to_ctrl_num);
-      
-      // Do we want to cut the items as well?
-      if(cut_mode && src_part)
-      {
-        for (ciEvent i = el.cbegin(); i != el.cend(); ++i)
-        {
-          const Event& old_e = i->second;
-          operations.push_back(UndoOp(UndoOp::DeleteEvent, old_e, src_part, true, true));
-        }
-      }
     }
 
     // Push any part resizing operations onto the operations list now, before merging
