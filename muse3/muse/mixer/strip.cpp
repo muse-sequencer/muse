@@ -834,6 +834,7 @@ TrackNameLabel::TrackNameLabel(QWidget* parent, const char* name, Qt::WindowFlag
 {
     _style3d = true;
     _hasExpandIcon = false;
+    _expandIconPressed = false;
 }
 
 TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
@@ -841,6 +842,7 @@ TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char*
 {
     _style3d = true;
     _hasExpandIcon = false;
+    _expandIconPressed = false;
 }
 
 void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
@@ -881,6 +883,7 @@ void TrackNameLabel::mousePressEvent(QMouseEvent* ev)
 {
   if(hasExpandIcon() && hovered() && ev->pos().x() < _expandIconWidth)
   {
+    _expandIconPressed = true;
     ev->accept();
     emit expandClicked();
   }
@@ -888,6 +891,33 @@ void TrackNameLabel::mousePressEvent(QMouseEvent* ev)
   {
     ev->ignore();
     ElidedTextLabel::mousePressEvent(ev);
+  }
+}
+
+void TrackNameLabel::mouseReleaseEvent(QMouseEvent* ev)
+{
+  if(_expandIconPressed)
+  {
+    _expandIconPressed = false;
+    ev->accept();
+  }
+  else
+  {
+    ev->ignore();
+    ElidedTextLabel::mouseReleaseEvent(ev);
+  }
+}
+
+void TrackNameLabel::mouseMoveEvent(QMouseEvent* ev)
+{
+  if(_expandIconPressed)
+  {
+    ev->accept();
+  }
+  else
+  {
+    ev->ignore();
+    ElidedTextLabel::mouseMoveEvent(ev);
   }
 }
 
@@ -1524,7 +1554,7 @@ void Strip::setExpanded(bool v)
     return;
   _isExpanded = v;
   if(_isExpanded && _userWidth <= 0)
-    _userWidth = 80;
+    _userWidth = 60;
   updateGeometry();
 }
 

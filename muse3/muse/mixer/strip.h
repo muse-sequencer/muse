@@ -618,10 +618,13 @@ class TrackNameLabel : public ElidedTextLabel
   protected:
     static const int _expandIconWidth;
     bool _hasExpandIcon;
+    bool _expandIconPressed;
     
     virtual void mouseDoubleClickEvent(QMouseEvent*);
     virtual void paintEvent(QPaintEvent*);
     virtual void mousePressEvent(QMouseEvent*);
+    virtual void mouseReleaseEvent(QMouseEvent*);
+    virtual void mouseMoveEvent(QMouseEvent*);
 
   signals:
     void doubleClicked();
