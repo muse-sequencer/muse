@@ -295,6 +295,7 @@ QPixmap* routerViewSplitterIcon;
 //----------------------------------
 
 QIcon* dropDownTriangleSVGIcon;
+QIcon* expandLeftRightSVGIcon;
 
 QIcon* routingInputSVGIcon;
 QIcon* routingOutputSVGIcon;
@@ -589,6 +590,7 @@ void initIcons(int cursorSize)
       //----------------------------------
 
       dropDownTriangleSVGIcon  = new QIcon(":/svg/drop_down_triangle.svg");
+      expandLeftRightSVGIcon  = new QIcon(":/svg/expand_left_right.svg");
       
       routingInputSVGIcon = new QIcon(":/svg/routing_input.svg");
       routingOutputSVGIcon = new QIcon(":/svg/routing_output.svg");
@@ -904,6 +906,7 @@ void deleteIcons()
       //----------------------------------
 
       delete dropDownTriangleSVGIcon;
+      delete expandLeftRightSVGIcon;
 
       delete routingInputSVGIcon;
       delete routingOutputSVGIcon;

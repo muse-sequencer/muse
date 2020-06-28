@@ -227,6 +227,9 @@ class ElidedTextLabel : public QFrame
     // This tooltip text is appened to the normal text, to form a compound tooltip.
     QString tooltipText() const { return _tooltipText; }
     void setTooltipText(const QString& txt);
+    
+    // Whether the mouse is over the entire control.
+    bool hovered() const { return _hovered; }
 };
 
 

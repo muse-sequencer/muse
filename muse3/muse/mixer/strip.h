@@ -29,20 +29,17 @@
 
 #include <QFrame>
 #include <QVBoxLayout>
-#include <QWidgetItem>
-#include <QLabel>
+#include <QMouseEvent>
+#include <QResizeEvent>
+#include <QGridLayout>
+#include <QLayout>
+#include <QSize>
 
 #include "type_defs.h"
 #include "globaldefs.h"
 #include "drange.h"
 #include "elided_label.h"
 #include "meter.h"
-
-class QMouseEvent;
-class QResizeEvent;
-class QGridLayout;
-class QLayout;
-class QSize;
 
 namespace MusECore {
 class Track;
@@ -619,10 +616,16 @@ class TrackNameLabel : public ElidedTextLabel
     bool _style3d;
 
   protected:
+    static const int _expandIconWidth;
+    bool _hasExpandIcon;
+    
     virtual void mouseDoubleClickEvent(QMouseEvent*);
+    virtual void paintEvent(QPaintEvent*);
+    virtual void mousePressEvent(QMouseEvent*);
 
   signals:
     void doubleClicked();
+    void expandClicked();
 
   public:
     TrackNameLabel(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = Qt::Widget);
@@ -630,6 +633,9 @@ class TrackNameLabel : public ElidedTextLabel
 
     int style3d() const { return _style3d; }
     void setStyle3d(int style3d) { _style3d = style3d; }
+
+    bool hasExpandIcon() const { return _hasExpandIcon; }
+    void setHasExpandIcon(bool v)  { _hasExpandIcon = v; }
 };
 
 
@@ -709,6 +715,8 @@ class Strip : public QFrame {
       Meter* meter[MusECore::MAX_CHANNELS];
       // Extra width applied to the sizeHint, from user expanding the strip.
       int _userWidth;
+      // Whether the strip is currently expanded with the user width.
+      bool _isExpanded;
       ExpanderHandle* _handle;
 
       // The widget that will receive focus when we want to clear focus.
@@ -747,6 +755,7 @@ class Strip : public QFrame {
       virtual void heartBeat();
       void setAutomationType(int t);
       virtual void changeTrackName();
+      virtual void trackNameLabelExpandClicked();
 
    public slots:
       void resetPeaks();
@@ -802,15 +811,17 @@ class Strip : public QFrame {
       
       int userWidth() const { return _userWidth; }
       void setUserWidth(int w);
-      bool handleForwardedKeyPress(QKeyEvent* ev);
+      bool isExpanded() const { return _isExpanded; }
+      void setExpanded(bool v);
 
+      bool handleForwardedKeyPress(QKeyEvent* ev);
       
       virtual QSize sizeHint() const;
       bool isSelected() { return _selected; }
       void setSelected(bool s);
 
       bool isEmbedded() const { return _isEmbedded; }
-      void setEmbedded(bool embed) { _isEmbedded = embed; }
+      void setEmbedded(bool embed);
 
       bool broadcastChanges() const { return _broadcastChanges; }
       void setBroadcastChanges(bool v) { _broadcastChanges = v; }

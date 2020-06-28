@@ -176,6 +176,7 @@ extern QPixmap* routerViewSplitterIcon;
 //----------------------------------
 
 extern QIcon* dropDownTriangleSVGIcon;
+extern QIcon* expandLeftRightSVGIcon;
 
 extern QIcon* routingInputSVGIcon;
 extern QIcon* routingOutputSVGIcon;

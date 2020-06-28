@@ -24,11 +24,8 @@
 
 #include "muse_math.h"
 
-#include <QLayout>
 #include <QPalette>
 #include <QColor>
-#include <QFrame>
-#include <QMouseEvent>
 #include <QMenu>
 #include <QString>
 #include <QPainter>
@@ -830,22 +827,68 @@ void ComponentRack::configChanged()
 //   TrackNameLabel
 //---------------------------------------------------------
 
+const int TrackNameLabel::_expandIconWidth = 14;
+
 TrackNameLabel::TrackNameLabel(QWidget* parent, const char* name, Qt::WindowFlags f)
  : ElidedTextLabel(parent, name, f)
 {
     _style3d = true;
+    _hasExpandIcon = false;
 }
 
 TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
  : ElidedTextLabel(text, parent, name, f)
 {
     _style3d = true;
+    _hasExpandIcon = false;
 }
 
 void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
 {
   ev->accept();
+  if(hasExpandIcon() && hovered() && ev->pos().x() < _expandIconWidth)
+    return;
+  
   emit doubleClicked();
+}
+
+void TrackNameLabel::paintEvent(QPaintEvent* ev)
+{
+  ev->ignore();
+  ElidedTextLabel::paintEvent(ev);
+
+  if(!hasExpandIcon() || !hovered())
+    return;
+
+  if(rect().width() <= 0 || rect().height() <= 0)
+    return;
+
+  QPainter p(this);
+
+  p.save();
+    
+  const QRect r = rect();
+
+  p.fillRect(r.x(), r.y(), _expandIconWidth, r.height(), palette().mid());
+
+  //expandLeftRightSVGIcon->paint(&p, r.x() + r.width() - _expandIconWidth, r.y(), _expandIconWidth, r.height());
+  expandLeftRightSVGIcon->paint(&p, r.x(), r.y(), _expandIconWidth, r.height());
+  
+  p.restore();
+}
+
+void TrackNameLabel::mousePressEvent(QMouseEvent* ev)
+{
+  if(hasExpandIcon() && hovered() && ev->pos().x() < _expandIconWidth)
+  {
+    ev->accept();
+    emit expandClicked();
+  }
+  else
+  {
+    ev->ignore();
+    ElidedTextLabel::mousePressEvent(ev);
+  }
 }
 
 //---------------------------------------------------------
@@ -947,6 +990,15 @@ void Strip::changeTrackName()
 
   MusEGlobal::song->applyOperation(
     MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, track, oldname, newname));
+}
+
+//---------------------------------------------------------
+//   trackNameLabelExpandClicked
+//---------------------------------------------------------
+
+void Strip::trackNameLabelExpandClicked()
+{
+  setExpanded(!isExpanded());
 }
 
 //---------------------------------------------------------
@@ -1098,6 +1150,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
 
       _curGridRow = 0;
       _userWidth = 0;
+      _isExpanded = false;
       _visible = true;
       dragOn=false;
 
@@ -1124,7 +1177,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
         _expanderWidth = 4;
         ensurePolished();
         _handle = new ExpanderHandle(nullptr, _expanderWidth);
-        connect(_handle, SIGNAL(moved(int)), SLOT(changeUserWidth(int)));
+        connect(_handle, &ExpanderHandle::moved, [this](int d) { changeUserWidth(d); } );
         QHBoxLayout* hlayout = new QHBoxLayout(this);
         hlayout->setContentsMargins(0, 0, 0, 0);
         hlayout->setSpacing(0);
@@ -1167,12 +1220,14 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
           label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed));
           label->setFixedHeight(16);
       }
+      label->setHasExpandIcon(!_isEmbedded);
 
       setLabelText();
 
       grid->addWidget(label, _curGridRow++, 0, 1, 3);
 
-      connect(label, SIGNAL(doubleClicked()), SLOT(changeTrackName()));
+      connect(label, &TrackNameLabel::doubleClicked, [this]() { changeTrackName(); } );
+      connect(label, &TrackNameLabel::expandClicked, [this]() { trackNameLabelExpandClicked(); } );
       }
 
 //---------------------------------------------------------
@@ -1432,8 +1487,8 @@ QSize Strip::sizeHint() const
 //  printf("*** Strip size hint width: %d ***\n", sz.width());
 //  const QSize szm = QFrame::minimumSizeHint();
 //  printf("*** Strip size minimum hint width: %d ***\n", szm.width());
-  return QSize(sz.width() + _userWidth, sz.height());
-//   return QSize(_userWidth, sz.height());
+  return QSize(sz.width() + (_isExpanded ? _userWidth : 0), sz.height());
+//   return QSize(_isExpanded ? _userWidth : 0, sz.height());
 }
 
 void Strip::setUserWidth(int w)
@@ -1441,6 +1496,8 @@ void Strip::setUserWidth(int w)
   _userWidth = w;
   if(_userWidth < 0)
     _userWidth = 0;
+  
+  _isExpanded = _userWidth > 0;
   
 //   grid->invalidate();
 //   grid->activate();
@@ -1451,11 +1508,30 @@ void Strip::setUserWidth(int w)
 
 void Strip::changeUserWidth(int delta)
 {
+  if(!_isExpanded)
+    _userWidth = 0;
   _userWidth += delta;
   if(_userWidth < 0)
     _userWidth = 0;
+  _isExpanded = _userWidth > 0;
   updateGeometry();
   emit userWidthChanged(this, _userWidth);
+}
+
+void Strip::setExpanded(bool v)
+{
+  if(_isExpanded == v)
+    return;
+  _isExpanded = v;
+  if(_isExpanded && _userWidth <= 0)
+    _userWidth = 80;
+  updateGeometry();
+}
+
+void Strip::setEmbedded(bool embed)
+{ 
+  _isEmbedded = embed;
+  label->setHasExpandIcon(!embed);
 }
 
 
