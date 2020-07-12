@@ -1109,53 +1109,38 @@ void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
   // Set to accept by default.
   ev->accept();
 
-  const bool ctl = ev->modifiers() & Qt::ControlModifier;
-  const bool shift = ev->modifiers() & Qt::ShiftModifier;
+  const int kb_code = ev->key() | ev->modifiers();
 
-  if (ctl && !shift)
+  if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_SELECT_STRIP_LEFT].key)
   {
-    // handle moving between strips
-    // currently that is all we do in this handler all
-    // other keys are passed on to the strip (see below)
-    switch (ev->key()) {
-      case Qt::Key_Left:
-      case Qt::Key_Up:
-          selectNextStrip(false);
-          setFocus();
-          return;
-        break;
-
-      case Qt::Key_Down:
-      case Qt::Key_Right:
-          selectNextStrip(true);
-          setFocus();
-          return;
-        break;
-
-      default:
-        break;
-    }
+        selectNextStrip(false);
+        return;
+  }
+  else if(kb_code == MusEGui::shortcuts[MusEGui::SHRT_MIXER_SELECT_STRIP_RIGHT].key)
+  {
+    selectNextStrip(true);
+    return;
   }
 
-  bool keyHandled = false;
-  // forward keypresses to all selected strips
-  for (int i = 0; i < mixerLayout->count(); i++)
-  {
-    QWidget *widget = mixerLayout->itemAt(i)->widget();
-    if (widget)
-    {
-      Strip* strip = static_cast<Strip*>(widget);
-      if (strip && strip->isSelected())
-      {
-        if (strip->handleForwardedKeyPress(ev) == true)
-        {
-          keyHandled = true;
-        }
-      }
-    }
-  }
+//  bool keyHandled = false;
+//  // forward keypresses to all selected strips
+//  for (int i = 0; i < mixerLayout->count(); i++)
+//  {
+//    QWidget *widget = mixerLayout->itemAt(i)->widget();
+//    if (widget)
+//    {
+//      Strip* strip = static_cast<Strip*>(widget);
+//      if (strip && strip->isSelected())
+//      {
+//        if (strip->handleForwardedKeyPress(ev) == true)
+//        {
+//          keyHandled = true;
+//        }
+//      }
+//    }
+//  }
 
-  if (!keyHandled)
+//  if (!keyHandled)
   {
     ev->ignore();
     return QMainWindow::keyPressEvent(ev);

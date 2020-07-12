@@ -359,7 +359,7 @@ void ComponentRack::newComponentWidget( ComponentDescriptor* desc, const Compone
     break;
   }
   
-  cw._widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+//  cw._widget->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
   if(cw._widget)
     addComponentWidget(cw, before);
