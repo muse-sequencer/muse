@@ -1122,29 +1122,8 @@ void AudioMixerApp::keyPressEvent(QKeyEvent *ev)
     return;
   }
 
-//  bool keyHandled = false;
-//  // forward keypresses to all selected strips
-//  for (int i = 0; i < mixerLayout->count(); i++)
-//  {
-//    QWidget *widget = mixerLayout->itemAt(i)->widget();
-//    if (widget)
-//    {
-//      Strip* strip = static_cast<Strip*>(widget);
-//      if (strip && strip->isSelected())
-//      {
-//        if (strip->handleForwardedKeyPress(ev) == true)
-//        {
-//          keyHandled = true;
-//        }
-//      }
-//    }
-//  }
-
-//  if (!keyHandled)
-  {
-    ev->ignore();
-    return QMainWindow::keyPressEvent(ev);
-  }
+  ev->ignore();
+  return QMainWindow::keyPressEvent(ev);
 }
 
 void AudioMixerApp::resizeEvent(QResizeEvent* e)
