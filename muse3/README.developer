@@ -48,10 +48,15 @@ packaging consistent and traceable.
 7. create a releasenote
 
 8. upload both releasenote and tarball to the sourceforge page (or whatever is in fashion when 
-   it's time)
+   it's time).
+   Update: Currently we upload to both sourceforge (because we always have and it's not a lot of work)
+   and to the Releases page on github.
 
-9. Update the frontpage and news page at muse-sequencer.org (the front page requires access 
-   to the html pages) 
+9. Update the frontpage and news page at https://muse-sequencer.github.io/.
+   The frontpage is html and resides a specific git repo.
+   The news page is in the muse github wiki.
 
-10. send out a release mail
+10.Update wikipedia to reflect the new release.
+
+11. send out a release mail
 
