@@ -51,6 +51,8 @@ extern QString midiMetaName(int meta);
 
 class MPEventList;
 class MidiTrack;
+// Division can be zero meaning the event times are to be taken verbosely
+//  (as ticks already), no conversion is to be applied.
 extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);
 
 } // namespace MusECore

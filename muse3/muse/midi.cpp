@@ -75,7 +75,9 @@ unsigned _lastEvTime = 0;
   
 extern void dump(const unsigned char* p, int n);
 
-#define CALC_TICK(the_tick) lrintf((float(the_tick) * float(MusEGlobal::config.division) + float(div/2)) / float(div));
+// Division can be zero meaning the event times are to be taken verbosely
+//  (as ticks already), no conversion is to be applied.
+#define CALC_TICK(the_tick) (div > 0 ? lrintf((float(the_tick) * float(MusEGlobal::config.division) + float(div/2)) / float(div)) : the_tick);
 
 /*---------------------------------------------------------
  *    midi_meta_name

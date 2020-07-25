@@ -30,6 +30,7 @@ namespace MusECore {
 
 typedef int64_t MuseFrame_t;
 typedef int64_t MuseCount_t;
+typedef int64_t MuseTick_t;
 
 }   // namespace MusECore
 

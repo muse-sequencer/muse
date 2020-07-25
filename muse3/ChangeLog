@@ -1,3 +1,8 @@
+25.07.2020
+    - Midi import: Fixed importation of SMPTE/MTC division midi files. (Tim)
+      Converts linear time to ticks. Ignores existing MusE tempo map so that
+       it plays at original speed - this allows the tempo map to be set up beforehand
+       without actually affecting the song.
 27.06.2020
     - Midi patch popup menu: Include patch number in the items' text. (Tim)
     - Mixer strip labels: Added popup 'expand' button, to expand/close the strips.

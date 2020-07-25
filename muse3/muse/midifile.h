@@ -88,6 +88,8 @@ class MidiFile {
       int format;       // smf file format
       int ntracks;      // number of midi tracks
       int _division;
+      // False: division is standard ticks based musical time. True: division is SMPTE/MTC linear time.
+      bool _divisionIsLinearTime;
       //MType _mtype;
       MidiFileTrackList* _tracks;
 
@@ -133,6 +135,7 @@ class MidiFile {
       void setTrackList(MidiFileTrackList* tr, int n);
       void setDivision(int d)         { _division = d; }
       int division() const            { return _division; }
+      bool divisionIsLinearTime() const { return _divisionIsLinearTime; }
       };
 
 } // namespace MusECore

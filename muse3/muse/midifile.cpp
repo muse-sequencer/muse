@@ -36,6 +36,8 @@
 #include "midictrl.h"
 #include "mpevent.h"
 #include "gconfig.h"
+#include "tempo.h"
+#include "muse_time.h"
 
 namespace MusECore {
 
@@ -64,6 +66,38 @@ enum ERROR {
       MF_FORMAT
       };
 
+MuseTick_t linearTime2tick(uint64_t time, uint64_t time_div, LargeIntRoundMode round_mode = LargeIntRoundDown)
+      {
+      const uint64_t ft = ((uint64_t)MusEGlobal::sampleRate * time);
+      MuseTick_t tick;
+
+      // Didn't want to include global tempo percent here, but found that I had to, I think the reason is because
+      //  when global tempo is changed, it causes a re-normalization of the tempo map.
+      const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)MusEGlobal::tempomap.globalTempo() * 10000UL;
+      //const uint64_t numer = (uint64_t)MusEGlobal::config.division * 1000000UL;
+
+      const uint64_t denom = (uint64_t)MusEGlobal::sampleRate * time_div;
+      if (MusEGlobal::tempomap.masterFlag()) {
+            ciTEvent e;
+            for (e = MusEGlobal::tempomap.cbegin(); e != MusEGlobal::tempomap.cend();) {
+                  ciTEvent ee = e;
+                  ++ee;
+                  if (ee == MusEGlobal::tempomap.cend())
+                        break;
+                  if (ft < (uint64_t)ee->second->frame * time_div)
+                        break;
+                  e = ee;
+                  }
+            // Normally do not round up here since (audio) frame resolution is higher than tick resolution.
+            tick = e->second->tick + muse_multiply_64_div_64_to_64(
+              numer, ft - (uint64_t)e->second->frame * time_div, denom * (uint64_t)e->second->tempo, round_mode);
+            }
+      else
+            // Normally do not round up here since (audio) frame resolution is higher than tick resolution.
+            tick = muse_multiply_64_div_64_to_64(numer, ft, denom * (uint64_t)MusEGlobal::tempomap.staticTempo(), round_mode);
+      return tick;
+      }
+
 //---------------------------------------------------------
 //   error
 //---------------------------------------------------------
@@ -85,6 +119,7 @@ MidiFile::MidiFile(FILE* f)
       _error    = MF_NO_ERROR;
       _tracks   = new MidiFileTrackList;
       _usedPortMap = new MidiFilePortMap;
+      _divisionIsLinearTime = false;
       }
 
 MidiFile::~MidiFile()
@@ -371,6 +406,8 @@ bool MidiFile::readTrack(MidiFileTrack* t)
             el->add(event);
             }
       
+      //fprintf(stderr, "MidiFile::readTrack(): division:%d last click:%d\n", _division, click);
+              
       int end = curPos;
       if (end != endPos) {
             printf("MidiFile::readTrack(): TRACKLEN does not fit %d+%d != %d, %d too much\n",
@@ -410,7 +447,11 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                   break;
             }
 
-      event->setTime(click);
+      if(divisionIsLinearTime())
+        event->setTime(linearTime2tick(click, division()));
+      else
+        event->setTime(click);
+
       int len;
       unsigned char* buffer;
 
@@ -789,10 +830,18 @@ bool MidiFile::read()
             }
       format   = readShort();
       ntracks  = readShort();
-      _division = readShort();
+      short div = readShort();
 
-      if (_division < 0)
-            _division = (-(_division/256)) * (_division & 0xff);
+      //fprintf(stderr, "MidiFile::read(): div:%d\n", div);
+      _divisionIsLinearTime = false;
+      if (div < 0)
+      {
+            _divisionIsLinearTime = true;
+            char fps = -((char)(div >> 8));
+            div = fps * (div & 0xff);
+      }
+      _division = div;
+      
       if (len > 6)
             skip(len-6); // skip excess bytes
 

@@ -135,6 +135,11 @@ bool MusE::importMidi(const QString name, bool merge)
             
       MusECore::MidiFileTrackList* etl = mf.trackList();
       int division     = mf.division();
+      // If the division is linear time, pass zero division to buildMidiEventList() to signify
+      //  that the event times are to be taken verbosely - we have already done the entire conversion
+      //  from time to ticks, don't let buildMidiEventList() convert it further.
+      if(mf.divisionIsLinearTime())
+        division = 0;
 
       // Find the default instrument, we may need it later...
       MusECore::MidiInstrument* def_instr = 0;
