@@ -21,10 +21,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-file (GLOB templates_files *.med
-      MusE-seq.cfg
-      MusE.conf
-      )
+file (GLOB templates_files *.med)
 
 install( FILES ${templates_files}
       DESTINATION ${MusE_SHARE_DIR}/templates

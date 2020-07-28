@@ -21,7 +21,7 @@
 //=============================================================================
 
 #include "muse_math.h"
-#include "knob.h"
+#include "awl/knob.h"
 
 #include <QMouseEvent>
 #include <QPainter>
