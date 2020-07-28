@@ -1350,6 +1350,7 @@ void AudioStrip::updateChannels()
                   meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
                   meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
                                              MusEGlobal::config.meterBackgroundColor);
+                  meter[cc]->setFrame(props.meterFrame(), props.meterFrameColor());
                   connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
                   _meterLayout->hlayout()->addWidget(meter[cc], Qt::AlignLeft);
 //                  meter[cc]->show();
