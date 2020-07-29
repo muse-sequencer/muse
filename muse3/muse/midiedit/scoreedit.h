@@ -269,7 +269,7 @@ class FloEvent
 		int denom;
 		
 		MusECore::key_enum key;
-		
+		bool minor;    
 		
 		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, const MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
 		{
@@ -283,6 +283,7 @@ class FloEvent
 			
 			num=denom=0xdeadbeef; //unused, but valgrind complains if uninited
 			key=MusECore::KEY_C;
+			minor = false;
 		}
 		FloEvent(unsigned ti, typeEnum t, int num_, int denom_)
 		{
@@ -295,11 +296,13 @@ class FloEvent
 			
 			len=vel=pitch=0xdeadbeef; //unused, but valgrind complains if uninited
 			key=MusECore::KEY_C;
+			minor = false;
 		}
-		FloEvent(unsigned ti, typeEnum t, MusECore::key_enum k)
+		FloEvent(unsigned ti, typeEnum t, MusECore::key_enum k, bool isMinor)
 		{
 			type=t;
 			key=k;
+			minor = isMinor;
 			tick=ti;
 			source_event=NULL;
 			source_part=NULL;
@@ -326,6 +329,7 @@ class FloItem
 		int denom;
 		
 		MusECore::key_enum key;
+		bool minor;
 		
 		mutable stem_t stem;
 		mutable int shift;
@@ -371,10 +375,11 @@ class FloItem
 			source_part=NULL;
 		}
 		
-		FloItem(typeEnum t, MusECore::key_enum k)
+		FloItem(typeEnum t, MusECore::key_enum k, bool isMinor)
 		{
 			type=t;
 			key=k;
+			minor = isMinor;
 			begin_tick=-1;
 			source_event=NULL;
 			source_part=NULL;
@@ -872,7 +877,7 @@ class ScoreCanvas : public MusEGui::View
 		void write_staves(int level, MusECore::Xml& xml) const;
 
 		timesig_t timesig_at_tick(int t);
-		MusECore::key_enum key_at_tick(int t);
+		MusECore::KeyEvent key_at_tick(int t);
 		int tick_to_x(int t);
 		int delta_tick_to_delta_x(int t);
 		int x_to_tick(int x);

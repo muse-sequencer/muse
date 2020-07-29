@@ -49,6 +49,9 @@
 #include "ticksynth.h"
 #include "mpevent.h"
 #include "metronome_class.h"
+#include "tempo.h"
+#include "sig.h"
+#include "keyevent.h"
 
 // REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_MIDI_ROUTE_PER_CHANNEL_
@@ -517,11 +520,11 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                               case ME_META_TEXT_C:
                               case ME_META_TEXT_D:
                               case ME_META_TEXT_E:
-                              // We don't specifically support key signature metas yet, so just allow them 'wherever' for now.
-                              case ME_META_KEY_SIGNATURE:
+                                    {
                                     e.setType(Meta);
                                     e.setA(ev.dataA());
                                     e.setData(ev.constData(), ev.len());
+                                    }
                                     break;
                               // Instrument and device name metas are already handled by the midi importing code.
                               case ME_META_TEXT_4_INSTRUMENT_NAME:
@@ -548,6 +551,56 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                                           timesig_n *= 2;
                                     int ltick  = CALC_TICK(tick);
                                     MusEGlobal::sigmap.add(ltick, MusECore::TimeSignature(timesig_z, timesig_n));
+                                    }
+                                    break;
+                              case ME_META_KEY_SIGNATURE:
+                                    {
+                                    char kc = data[0];
+                                    bool minor = data[1];
+                                    key_enum key = KEY_SHARP_BEGIN;
+                                    switch(kc)
+                                    {
+                                      case -5:
+                                        key = KEY_DES;
+                                      break;
+                                      case -4:
+                                        key = KEY_AS;
+                                      break;
+                                      case -3:
+                                        key = KEY_ES;
+                                      break;
+                                      case -2:
+                                        key = KEY_BES;
+                                      break;
+                                      case -1:
+                                        key = KEY_F;
+                                      break;
+                                      case 0:
+                                        key = KEY_C;
+                                      break;
+                                      case 1:
+                                        key = KEY_G;
+                                      break;
+                                      case 2:
+                                        key = KEY_D;
+                                      break;
+                                      case 3:
+                                        key = KEY_A;
+                                      break;
+                                      case 4:
+                                        key = KEY_E;
+                                      break;
+                                      case 5:
+                                        key = KEY_B;
+                                      break;
+                                      default:
+                                      break;
+                                    }
+                                    if(key != KEY_SHARP_BEGIN)
+                                    {
+                                      unsigned ltick  = CALC_TICK(tick);
+                                      MusEGlobal::keymap.addKey(ltick, key, minor);
+                                    }
                                     }
                                     break;
                               default:

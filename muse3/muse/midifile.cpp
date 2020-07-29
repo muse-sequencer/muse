@@ -421,6 +421,7 @@ bool MidiFile::readTrack(MidiFileTrack* t)
 //---------------------------------------------------------
 //   readEvent
 //    returns:
+//          3     OK
 //          0     End of track
 //          -1    Event filtered
 //          -2    Error

@@ -119,6 +119,11 @@ class MidiFile {
       bool readTrack(MidiFileTrack*);
       bool writeTrack(const MidiFileTrack*);
 
+      // returns:
+      //  3    OK
+      //  0    End of track
+      // -1    Event filtered
+      // -2    Error
       int readEvent(MidiPlayEvent*, MidiFileTrack*);
       void writeEvent(const MidiPlayEvent*);
 

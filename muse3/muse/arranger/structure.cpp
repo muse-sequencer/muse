@@ -66,7 +66,7 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
     const unsigned int tick = ev.tick;
     if (tick < startPos )
       continue;
-    operations.push_back(UndoOp(UndoOp::DeleteKey, tick, ev.key));
+    operations.push_back(UndoOp(UndoOp::DeleteKey, tick, ev.key, (int)ev.minor));
   }
   // What needs to be added?
   for (ciKeyEvent ik = k->cbegin(); ik != k->cend(); ++ik) {
@@ -75,7 +75,7 @@ void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff)
     if (tick < startPos )
       continue;
     if (!is_cut || tick >= startPos - diff)
-      operations.push_back(UndoOp(UndoOp::AddKey, tick + diff, ev.key));
+      operations.push_back(UndoOp(UndoOp::AddKey, tick + diff, ev.key, (int)ev.minor));
   }
 
   // tempo

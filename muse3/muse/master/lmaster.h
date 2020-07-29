@@ -30,11 +30,20 @@
 #include "tempo.h"
 #include "keyevent.h"
 #include "sig.h"
+#include "posedit.h"
+#include "sigedit.h"
 
+#include <QWidget>
+#include <QTreeWidget>
 #include <QTreeWidgetItem>
-
-class QLineEdit;
-class QComboBox;
+#include <QLineEdit>
+#include <QComboBox>
+#include <QToolBar>
+#include <QMenu>
+#include <QTimer>
+#include <QKeyEvent>
+#include <QCloseEvent>
+#include <QAction>
 
 namespace MusECore {
 struct SigEvent;
@@ -42,9 +51,6 @@ struct SigEvent;
 
 namespace MusEGui {
 
-class PosEdit;
-class SigEdit;
-  
 enum LMASTER_LVTYPE
    {
       LMASTER_TEMPO = 0,
@@ -100,8 +106,9 @@ class LMasterKeyEventItem : public LMasterLViewItem {
       virtual LMASTER_LVTYPE getType() { return LMASTER_KEYEVENT; }
       const MusECore::KeyEvent& getEvent() { return keyEvent; }
       virtual unsigned tick() { return keyEvent.tick; }
-      MusECore::key_enum key() { return keyEvent.key; }
-      };
+      MusECore::key_enum key() const { return keyEvent.key; }
+      bool minor() const { return keyEvent.minor; }
+     };
 //---------------------------------------------------------
 //   LMasterTempoItem
 //!  QListViewItem which holds data for a SigEvent

@@ -268,7 +268,7 @@ bool MusE::importMidi(const QString name, bool merge)
       //    - combine note on/off events
       //    - calculate tick value for internal resolution
       //
-      for (MusECore::iMidiFileTrack t = etl->begin(); t != etl->end(); ++t) {
+      for (MusECore::ciMidiFileTrack t = etl->cbegin(); t != etl->cend(); ++t) {
             MusECore::MPEventList& el  = ((*t)->events);
             if (el.empty())
                   continue;
@@ -293,8 +293,6 @@ bool MusE::importMidi(const QString name, bool merge)
                 
                 if (already_processed.find(pair<int,int>(channel, port)) == already_processed.end())
                 {
-                        already_processed.insert(pair<int,int>(channel, port));
-                        
                         MusECore::MidiTrack* track = new MusECore::MidiTrack();
                         if ((*t)->_isDrumTrack)
                         {
@@ -310,43 +308,64 @@ bool MusE::importMidi(const QString name, bool merge)
 
 //                         MusECore::MidiPort* mport = &MusEGlobal::midiPorts[port];
                         buildMidiEventList(&track->events, el, track, division, first, false); // Don't do loops.
-                        first = false;
-
-                        // Comment Added by T356.
-                        // Hmm. buildMidiEventList already takes care of this. 
-                        // But it seems to work. How? Must test. 
-                        //if (channel == 9 && instr->midiType() != MT_UNKNOWN) {
-                        MusECore::ciMidiFilePort imp = usedPortMap->find(port);
-                        if(imp != usedPortMap->end() && imp->second._isStandardDrums && channel == 9) { // A bit HACKISH, see above
-// Obsolete. There is only 'New' drum tracks now.
-//                            if (MusEGlobal::config.importMidiNewStyleDrum)
-                              track->setType(MusECore::Track::DRUM);
-//                            else
-//                            {
-//                               track->setType(MusECore::Track::DRUM);
-//                               // remap drum pitch with drumOutmap (was: Inmap. flo93 thought this was wrong)
-//                               for (MusECore::iEvent i = track->events.begin(); i != track->events.end(); ++i) {
-//                                     MusECore::Event ev  = i->second;
-//                                     if (ev.isNote()) {
-//                                           int pitch = MusEGlobal::drumOutmap[ev.pitch()];
-//                                           ev.setPitch(pitch);
-//                                           }
-//                                     else
-//                                     if(ev.type() == MusECore::Controller)
-//                                     {
-//                                       int ctl = ev.dataA();
-//                                       MusECore::MidiController *mc = mport->drumController(ctl);
-//                                       if(mc)
-//                                         ev.setA((ctl & ~0xff) | MusEGlobal::drumOutmap[ctl & 0x7f]);
-//                                     }
-//                               }
-//                            }
-                        }
-                              
-                        processTrack(track);
                         
-                        MusEGlobal::song->insertTrack0(track, -1);
-                        MusECore::addPortCtrlEvents(track);
+                        // The first track of a format 1 file is special by convention.
+                        // It is SUPPOSED to contain only timing (tempo/sig/marker etc.) events, no notes.
+                        // Those are handled and stripped out by the builder.
+                        // Don't create a track if there's nothing else of value to be found in the event list
+                        //  after the build - even if the track has a name and comment.
+                        // Do the same even for a format 0 track.
+                        // For other tracks after the first one, it is OK if they are blank
+                        //  because the creator wanted it that way. Sometimes they are used as separators.
+                        if(t == etl->begin() && track->events.empty()/* &&
+                           track->name().simplified().isEmpty() &&
+                           track->comment().simplified().isEmpty()*/)
+                        {
+                          delete track;
+                        }
+                        else
+                        {
+                        
+                          already_processed.insert(pair<int,int>(channel, port));
+
+                          first = false;
+
+                          // Comment Added by T356.
+                          // Hmm. buildMidiEventList already takes care of this. 
+                          // But it seems to work. How? Must test. 
+                          //if (channel == 9 && instr->midiType() != MT_UNKNOWN) {
+                          MusECore::ciMidiFilePort imp = usedPortMap->find(port);
+                          if(imp != usedPortMap->end() && imp->second._isStandardDrums && channel == 9) { // A bit HACKISH, see above
+  // Obsolete. There is only 'New' drum tracks now.
+  //                            if (MusEGlobal::config.importMidiNewStyleDrum)
+                                track->setType(MusECore::Track::DRUM);
+  //                            else
+  //                            {
+  //                               track->setType(MusECore::Track::DRUM);
+  //                               // remap drum pitch with drumOutmap (was: Inmap. flo93 thought this was wrong)
+  //                               for (MusECore::iEvent i = track->events.begin(); i != track->events.end(); ++i) {
+  //                                     MusECore::Event ev  = i->second;
+  //                                     if (ev.isNote()) {
+  //                                           int pitch = MusEGlobal::drumOutmap[ev.pitch()];
+  //                                           ev.setPitch(pitch);
+  //                                           }
+  //                                     else
+  //                                     if(ev.type() == MusECore::Controller)
+  //                                     {
+  //                                       int ctl = ev.dataA();
+  //                                       MusECore::MidiController *mc = mport->drumController(ctl);
+  //                                       if(mc)
+  //                                         ev.setA((ctl & ~0xff) | MusEGlobal::drumOutmap[ctl & 0x7f]);
+  //                                     }
+  //                               }
+  //                            }
+                          }
+                                
+                          processTrack(track);
+                          
+                          MusEGlobal::song->insertTrack0(track, -1);
+                          MusECore::addPortCtrlEvents(track);
+                        }
                 }
               }
 						}
@@ -360,9 +379,27 @@ bool MusE::importMidi(const QString name, bool merge)
                   track->setOutChannel(0);
                   track->setOutPort(0);
                   buildMidiEventList(&track->events, el, track, division, true, false); // Do SysexMeta. Don't do loops.
-                  processTrack(track);
-                  MusEGlobal::song->insertTrack0(track, -1);
-                  MusECore::addPortCtrlEvents(track);
+                  // The first track of a format 1 file is special by convention.
+                  // It is SUPPOSED to contain only timing (tempo/sig/marker etc.) events, no notes.
+                  // Those are handled and stripped out by the builder.
+                  // Don't create a track if there's nothing else of value to be found in the event list
+                  //  after the build - even if the track has a name and comment.
+                  // Do the same even for a format 0 track.
+                  // For other tracks after the first one, it is OK if they are blank
+                  //  because the creator wanted it that way. Sometimes they are used as separators.
+                  if(t == etl->begin() && track->events.empty()/* &&
+                     track->name().simplified().isEmpty() &&
+                     track->comment().simplified().isEmpty()*/)
+                  {
+                    delete track;
+                  }
+                  else
+                  {
+
+                    processTrack(track);
+                    MusEGlobal::song->insertTrack0(track, -1);
+                    MusECore::addPortCtrlEvents(track);
+                  }
                   }
             }
             

@@ -20,9 +20,6 @@
 //
 //=========================================================
 
-#include "posedit.h"
-#include "sigedit.h"
-
 #include "lmaster.h"
 #include "xml.h"
 #include "song.h"
@@ -53,65 +50,6 @@
 #define LMASTER_VAL_COL  3
 
 #define LMASTER_MSGBOX_STRING          "MusE: List Editor"
-
-namespace MusECore {
-
-//don't remove or insert new elements in keyStrs.
-//only renaming (keeping the semantic sense) is allowed! (flo)
-QStringList keyStrs = QStringList()
-                      << "C (sharps)" << "G" << "D" << "A"<< "E" << "B" << "F#"
-                      << "C (flats)"<< "F"<< "Bb" << "Eb"<< "Ab"<< "Db"<< "Gb";
-
-//don't change this function (except when renaming stuff)
-key_enum stringToKey(QString input) //flo
-{
-	int index = keyStrs.indexOf(input);
-	key_enum map[]={KEY_C, KEY_G, KEY_D, KEY_A, KEY_E, KEY_B, KEY_FIS, KEY_C_B, KEY_F, KEY_BES, KEY_ES, KEY_AS, KEY_DES, KEY_GES};
-	return map[index];
-}
-
-//don't change the below two functions (except when renaming stuff)
-int keyToIndex(key_enum key)
-{
-  int index=0;
-	switch(key)
-	{
-		case KEY_C:   index= 0; break;
-		case KEY_G:   index= 1; break;
-		case KEY_D:   index= 2; break;
-		case KEY_A:   index= 3; break;
-		case KEY_E:   index= 4; break;
-		case KEY_B:   index= 5; break;
-		case KEY_FIS: index= 6; break;
-		case KEY_C_B: index= 7; break;
-		case KEY_F:   index= 8; break;
-		case KEY_BES: index= 9; break;
-		case KEY_ES:  index=10; break;
-		case KEY_AS:  index=11; break;
-		case KEY_DES: index=12; break;
-		case KEY_GES: index=13; break;
-
-		case KEY_SHARP_BEGIN:
-		case KEY_SHARP_END:
-		case KEY_B_BEGIN:
-		case KEY_B_END:
-			printf("ILLEGAL FUNCTION CALL: keyToIndex called with key_sharp_begin etc.\n");
-      return 0;
-			break;
-		
-		default:
-			printf("ILLEGAL FUNCTION CALL: keyToIndex called with illegal key value (not in enum)\n");
-      return 0;
-	}
-	return index;
-}
-
-QString keyToString(key_enum key)
-{
-	return keyStrs[keyToIndex(key)];
-}
-
-} // namespace MusECore
 
 namespace MusEGui {
 
@@ -276,7 +214,7 @@ LMaster::LMaster(QWidget* parent, const char* name)
       connect(pos_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
       key_editor = new QComboBox(view->viewport());
       key_editor->setFrame(false);
-      key_editor->addItems(MusECore::keyStrs);
+      key_editor->addItems(MusECore::KeyEvent::keyStrs);
       key_editor->hide();
       connect(key_editor, SIGNAL(activated(int)), SLOT(returnPressed()));
 
@@ -548,7 +486,7 @@ void LMaster::cmd(int cmd)
                                     {
                                     LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
                                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                              k->tick(), k->key()));
+                                              k->tick(), k->key(), (int)k->minor()));
                                     break;
                                     }
                               default:
@@ -644,7 +582,8 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   }
             else if (editedItem->getType() == LMASTER_KEYEVENT) {
                   key_editor->setGeometry(itemRect);
-                  key_editor->setCurrentIndex(keyToIndex(dynamic_cast<LMasterKeyEventItem*>(editedItem)->key()));
+                  LMasterKeyEventItem* kei = static_cast<LMasterKeyEventItem*>(editedItem);
+                  key_editor->setCurrentIndex(MusECore::KeyEvent::keyToIndex(kei->key(), kei->minor()));
                   key_editor->show();
                   key_editor->setFocus();
                   comboboxTimer->start();
@@ -789,14 +728,13 @@ void LMaster::returnPressed()
                         }
                   else if (editedItem->getType() == LMASTER_KEYEVENT) {
                         LMasterKeyEventItem* k = (LMasterKeyEventItem*) editedItem;
-                        MusECore::key_enum key = k->key();
                         MusEGlobal::song->startUndo();
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                  oldtick, key),  MusECore::Song::OperationUndoable);
+                                  oldtick, k->key(), (int)k->minor()),  MusECore::Song::OperationUndoable);
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
-                                  newtick, key), MusECore::Song::OperationUndoable);
+                                  newtick, k->key(), (int)k->minor()), MusECore::Song::OperationUndoable);
                         MusEGlobal::song->endUndo(SC_KEY);
 
                         // Select the item:
@@ -856,23 +794,23 @@ void LMaster::returnPressed()
           LMasterKeyEventItem* e = (LMasterKeyEventItem*) editedItem;
           const MusECore::KeyEvent& t = e->getEvent();
           unsigned tick = t.tick;
-          MusECore::key_enum key = MusECore::stringToKey(input);
+          const MusECore::KeyEvent key = MusECore::KeyEvent::stringToKey(input);
 
           if (!editingNewItem) {
                       MusEGlobal::song->startUndo();
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                  tick, e->key()),  MusECore::Song::OperationUndoable);
+                                  tick, e->key(), (int)e->minor()),  MusECore::Song::OperationUndoable);
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
-                                  tick, key), MusECore::Song::OperationUndoable);
+                                  tick, key.key, (int)key.minor), MusECore::Song::OperationUndoable);
                       MusEGlobal::song->endUndo(SC_KEY);
                     }
               //
               // New item edited:
               //
               else {
-                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey, tick, key));
+                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey, tick, key.key, (int)key.minor));
                     }
           }
       updateList();
@@ -938,7 +876,7 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const MusECore::Ke
           .arg(sec,  2, 10, QLatin1Char('0'))
           .arg(msec, 3, 10, QLatin1Char('0'));
       c3 = "Key";
-      c4 = keyToString(ev.key);
+      c4 = ev.keyString();
       setText(0, c1);
       setText(1, c2);
       setText(2, c3);
@@ -1080,7 +1018,8 @@ void LMaster::insertKey()
       //m++; //Next bar
 
       int newTick = MusEGlobal::song->cpos();
-      new LMasterKeyEventItem(view, MusECore::KeyEvent(lastKey->key(), newTick));
+      new LMasterKeyEventItem(view, MusECore::KeyEvent(
+        lastKey ? lastKey->key() : MusECore::KEY_C, newTick, lastKey ? lastKey->minor() : false));
       QTreeWidgetItem* newKeyItem = view->topLevelItem(0);
 
       editingNewItem = true; // State
