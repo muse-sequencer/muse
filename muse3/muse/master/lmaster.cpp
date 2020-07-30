@@ -486,7 +486,7 @@ void LMaster::cmd(int cmd)
                                     {
                                     LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
                                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                              k->tick(), k->key(), (int)k->minor()));
+                                              k->tick(), k->key(), (int)k->isMinor()));
                                     break;
                                     }
                               default:
@@ -583,7 +583,7 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
             else if (editedItem->getType() == LMASTER_KEYEVENT) {
                   key_editor->setGeometry(itemRect);
                   LMasterKeyEventItem* kei = static_cast<LMasterKeyEventItem*>(editedItem);
-                  key_editor->setCurrentIndex(MusECore::KeyEvent::keyToIndex(kei->key(), kei->minor()));
+                  key_editor->setCurrentIndex(MusECore::KeyEvent::keyToIndex(kei->key(), kei->isMinor()));
                   key_editor->show();
                   key_editor->setFocus();
                   comboboxTimer->start();
@@ -731,10 +731,10 @@ void LMaster::returnPressed()
                         MusEGlobal::song->startUndo();
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                  oldtick, k->key(), (int)k->minor()),  MusECore::Song::OperationUndoable);
+                                  oldtick, k->key(), (int)k->isMinor()),  MusECore::Song::OperationUndoable);
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
-                                  newtick, k->key(), (int)k->minor()), MusECore::Song::OperationUndoable);
+                                  newtick, k->key(), (int)k->isMinor()), MusECore::Song::OperationUndoable);
                         MusEGlobal::song->endUndo(SC_KEY);
 
                         // Select the item:
@@ -800,7 +800,7 @@ void LMaster::returnPressed()
                       MusEGlobal::song->startUndo();
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                  tick, e->key(), (int)e->minor()),  MusECore::Song::OperationUndoable);
+                                  tick, e->key(), (int)e->isMinor()),  MusECore::Song::OperationUndoable);
                       // Operation is undoable but do not start/end undo.
                       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
                                   tick, key.key, (int)key.minor), MusECore::Song::OperationUndoable);
@@ -1019,7 +1019,7 @@ void LMaster::insertKey()
 
       int newTick = MusEGlobal::song->cpos();
       new LMasterKeyEventItem(view, MusECore::KeyEvent(
-        lastKey ? lastKey->key() : MusECore::KEY_C, newTick, lastKey ? lastKey->minor() : false));
+        lastKey ? lastKey->key() : MusECore::KEY_C, newTick, lastKey ? lastKey->isMinor() : false));
       QTreeWidgetItem* newKeyItem = view->topLevelItem(0);
 
       editingNewItem = true; // State

@@ -107,7 +107,7 @@ class LMasterKeyEventItem : public LMasterLViewItem {
       const MusECore::KeyEvent& getEvent() { return keyEvent; }
       virtual unsigned tick() { return keyEvent.tick; }
       MusECore::key_enum key() const { return keyEvent.key; }
-      bool minor() const { return keyEvent.minor; }
+      bool isMinor() const { return keyEvent.minor; }
      };
 //---------------------------------------------------------
 //   LMasterTempoItem

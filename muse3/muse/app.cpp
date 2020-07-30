@@ -2583,7 +2583,7 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
       }
 
 //---------------------------------------------------------
-//   kbAccel
+//   kbAccel - Global keyboard accelerators
 //---------------------------------------------------------
 
 void MusE::kbAccel(int key)
@@ -2715,6 +2715,9 @@ void MusE::kbAccel(int key)
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PART_NORMALIZE].key) {
             MusEGlobal::song->normalizeWaveParts();
+            }
+      else if (key == MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key) {
+            rewindOnStopAction->activate(QAction::Trigger);
             }
       else {
             if (MusEGlobal::debugMsg)
@@ -3518,7 +3521,7 @@ void MusE::updateConfiguration()
 
       helpManualAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_HELP].key);
       fullscreenAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_FULLSCREEN].key);
-      rewindOnStopAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key);
+      //rewindOnStopAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key); moved to global shortcuts in MusE::kbAccel
 
       //arrangerView->updateMusEGui::Shortcuts(); //commented out by flo: is done via signal
       }
