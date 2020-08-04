@@ -196,4 +196,9 @@ void CtrlEdit::curPartHasChanged(MusECore::Part* p)
   canvas->curPartHasChanged(p);
 }
 
+void CtrlEdit::setPanelWidth(int w)
+{
+    panel->setFixedWidth(w);
+}
+
 } // namespace MusEGui

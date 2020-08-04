@@ -35,6 +35,7 @@
 #include "midieditor.h"
 #include "midictrl.h"
 #include "icons.h"
+#include "utils.h"
 
 namespace MusEGui {
   
@@ -196,19 +197,20 @@ static const char *mk3_xpm[] = {
 };
 
 static const char *mk4_xpm[] = {
-    "40 13 2 1",
+    "40 13 3 1",
     "# c #ff0000",
     ". c none",
+    "- c #000000",
     "........................................",
     "........................................",
     "........................................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
+    "------------------------................",
+    "#######################-................",
+    "#######################-................",
+    "#######################-................",
+    "#######################-................",
+    "#######################-................",
+    "------------------------................",
     "........................................",
     "........................................",
     "........................................",
@@ -272,19 +274,20 @@ static const char *mk7_xpm[] = {
 };
 
 static const char *mk8_xpm[] = {
-    "40 13 2 1",
+    "40 13 3 1",
     "# c #ffff00",
     ". c none",
+    "- c #000000",
     "........................................",
     "........................................",
     "........................................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
+    "------------------------................",
+    "#######################-................",
+    "#######################-................",
+    "#######################-................",
+    "#######################-................",
+    "#######################-................",
+    "------------------------................",
     "........................................",
     "........................................",
     "........................................",
@@ -339,8 +342,9 @@ static const char *mke_xpm[] = {
 //   Piano
 //---------------------------------------------------------
 
-Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
-   : View(parent, 1, ymag)
+Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
+   : View(parent, 1, ymag),
+     pianoWidth(width)
       {
       setMouseTracking(true);
       _midiEditor = editor;
@@ -368,22 +372,99 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
 //   draw
 //---------------------------------------------------------
 
-void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
+void Piano::draw(QPainter& p, const QRect&, const QRegion&)
       {
       const int octaveSize = 91;
       const int pianoHeight = octaveSize * 10 + KH * 5 + 3;
 
-      QRect ur = mapDev(mr);
-      if (ur.height() > pianoHeight)
-          ur.setHeight(pianoHeight);
-      // FIXME: For some reason need the expansion otherwise drawing
-      //        artifacts (incomplete drawing). Can't figure out why.
-      ur.adjust(0, -4, 0, 4);
+//      QRect ur = mapDev(mr);
+//      if (ur.height() > pianoHeight)
+//          ur.setHeight(pianoHeight);
+//      // FIXME: For some reason need the expansion otherwise drawing
+//      //        artifacts (incomplete drawing). Can't figure out why.
+//      ur.adjust(0, -4, 0, 4);
 
-      p.drawPixmap(0, -KH * 2, *octave);
-      for (int i = 0; i < 10; i++)
-          p.drawPixmap(0, (KH * 5) + (octaveSize * i), *octave);
-      p.drawPixmap(0, (KH * 5) + (octaveSize * 10), *mke);
+//      p.drawPixmap(0, -KH * 2, pianoWidth, octaveSize, *octave);
+//      for (int i = 0; i < 10; i++)
+//          p.drawPixmap(0, (KH * 5) + (octaveSize * i), pianoWidth, octaveSize, *octave);
+//      p.drawPixmap(0, (KH * 5) + (octaveSize * 10), pianoWidth, octaveSize, *mke);
+
+
+
+      p.setRenderHint(QPainter::Antialiasing);
+      p.setPen(Qt::black);
+
+      {
+//          QLinearGradient g(0, 0, 0, 1);
+//          g.setCoordinateMode(QGradient::ObjectMode);
+//          g.setColorAt(0, Qt::black);
+//          g.setColorAt(.1, Qt::white);
+//          g.setColorAt(.9, Qt::white);
+//          g.setColorAt(1, Qt::black);
+
+//          p.setBrush(QBrush(g));
+          p.setBrush(QBrush(QColor("Ivory")));
+
+
+          for (int i = 0; i < 75; i++) {
+//              QPainterPath path = MusECore::roundedPath(0, i * KH, pianoWidth, KH, 2, 2,
+//                                   (MusECore::Corner)(MusECore::CornerLowerRight | MusECore::CornerUpperRight));
+//              p.fillRect(0, i * KH, pianoWidth, KH, QColor("Cornsilk"));
+//              p.fillRect(0, i * KH, pianoWidth, KH, QColor("Ivory"));
+//              p.setPen(QColor("#555"));
+//              p.drawLine(0, i * KH, pianoWidth, i * KH);
+//              p.setPen(Qt::white);
+//              p.drawLine(0, i * KH + KH - 1, pianoWidth, i * KH + KH - 1);
+              p.drawRoundedRect(0, i * KH, pianoWidth, KH, 1, 1);
+//              p.fillPath(path, QBrush(QColor("Ivory")));
+//              p.fillPath(path, QBrush(Qt::white));
+//              p.drawPath(path);
+          }
+      }
+
+      {
+          QLinearGradient g(0, 0, 1, 0);
+          g.setCoordinateMode(QGradient::ObjectBoundingMode);
+          g.setColorAt(0, QColor("#777"));
+          g.setColorAt(.8, QColor("#444"));
+          g.setColorAt(.81, QColor("#111"));
+          g.setColorAt(1, QColor("#111"));
+          p.setBrush(QBrush(g));
+          p.setPen(Qt::black);
+
+          int cnt = 2;
+          bool big = true;
+          int y = 10;
+          int wb = pianoWidth / 10 * 6;
+          for (int i = 0; i < 53; i++) {
+//              QPainterPath path = MusECore::roundedPath(0, y, wb, 7, 1, 1,
+//                                   (MusECore::Corner)(MusECore::CornerLowerRight | MusECore::CornerUpperRight));
+//              p.fillPath(path, g);
+//              p.drawPath(path);
+              p.fillRect(0, y, wb, 7, g);
+              p.drawRect(0, y, wb, 7);
+//              p.drawRoundedRect(0, y, wb, 7, 2, 2);
+              if ((big && ++cnt == 3) || (!big && ++cnt == 2)) {
+                  y = y + 19 + 7;
+                  big = !big;
+                  cnt = 0;
+              }
+              else
+                  y = y + 6 + 7;
+          }
+      }
+
+      {
+          QLinearGradient g(0, 0, 1, 0);
+          g.setCoordinateMode(QGradient::ObjectBoundingMode);
+          g.setColorAt(0, QColor("#000"));
+          g.setColorAt(1, QColor(127, 127, 127, 0));
+          p.setBrush(QBrush(g));
+          p.fillRect(0, 1, pianoWidth / 10, pianoHeight - 2, g);
+      }
+
+
+
 
       if (_curSelectedPitch != -1 && _curSelectedPitch != curPitch)
       {
@@ -407,32 +488,37 @@ void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
                     pm = mk8;
                     break;
               }
-        p.drawPixmap(0, y, *pm);
+        p.drawPixmap(0, y, pianoWidth, pm->height(), *pm);
+//        p.setBrush(QBrush(Qt::blue));
+//        p.drawRoundRect(pianoWidth - 15, y, 10, 10);
       }
       
       if (curPitch != -1)
       {
         int y = pitch2y(curPitch);
-        QPixmap* pm;
-        switch(curPitch % 12) {
-              case 0:
-              case 5:
-                    pm = mk3;
-                    break;
-              case 2:
-              case 7:
-              case 9:
-                    pm = mk2;
-                    break;
-              case 4:
-              case 11:
-                    pm = mk1;
-                    break;
-              default:
-                    pm = mk4;
-                    break;
-              }
-        p.drawPixmap(0, y, *pm);
+//        QPixmap* pm;
+//        switch(curPitch % 12) {
+//              case 0:
+//              case 5:
+//                    pm = mk3;
+//                    break;
+//              case 2:
+//              case 7:
+//              case 9:
+//                    pm = mk2;
+//                    break;
+//              case 4:
+//              case 11:
+//                    pm = mk1;
+//                    break;
+//              default:
+//                    pm = mk4;
+//                    break;
+//              }
+//        p.drawPixmap(0, y, pianoWidth, pm->height(), *pm);
+        p.setBrush(QBrush(Qt::blue));
+        p.setPen(Qt::NoPen);
+        p.drawRoundRect(pianoWidth - 16, y + 1, 15, 9);
       }
       
       // draw C notes    
@@ -442,7 +528,7 @@ void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
 
       for (int drawKey = 0; drawKey < 11; drawKey++) {
           int drawY = octaveSize * drawKey + 82 - KH*2;
-          p.drawText(23, drawY + 7, "C" + QString::number(8 - drawKey));
+          p.drawText(pianoWidth - 16, drawY + 7, "C" + QString::number(8 - drawKey));
       }
 
 

@@ -63,6 +63,7 @@ class Piano : public View
       int keyDown;
       bool shift;
       int button;
+      int pianoWidth;
 
       
       int y2pitch(int) const;
@@ -89,7 +90,7 @@ class Piano : public View
       void setPitch(int);
 
    public:
-      Piano(QWidget* parent, int ymag, MidiEditor* editor = 0);
+      Piano(QWidget* parent, int ymag, int width, MidiEditor* editor = 0);
       int curSelectedPitch() const { return _curSelectedPitch; } 
       void setCurSelectedPitch(int pitch);
       };
