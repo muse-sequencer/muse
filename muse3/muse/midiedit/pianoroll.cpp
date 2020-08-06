@@ -108,6 +108,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       _pianoWidth = 40;
       ensurePolished();
+      if (_pianoWidth < 40)
+          _pianoWidth = 40;
 
       const MusECore::PartList* part_list = parts();
       // Default initial pianoroll view state.
