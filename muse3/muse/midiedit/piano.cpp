@@ -214,9 +214,13 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
     const QColor colKeyCur = MusEGlobal::config.pianoCurrentKey;
     const QColor colKeyCurP = MusEGlobal::config.pianoPressedKey;
     const QColor colKeySel = MusEGlobal::config.pianoSelectedKey;
+    const qreal rad = 1.0;
 
+    QPen pen(QColor(80,80,80));
+    pen.setCosmetic(true);
+    pen.setWidth(2);
+    p.setPen(pen);
     p.setRenderHint(QPainter::Antialiasing);
-    p.setPen(Qt::black);
 
     // draw white keys
     {
@@ -224,13 +228,15 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 
         p.setBrush(colKeyW);
 
-        int y = 0.;
+        int y = 0;
         for (int i = 0; i < 75; i++) {
             y = i * KH;
             if (y + 1 == selPitchY)
                 p.setBrush(colKeySel);
 
-            p.drawRect(0, y, pianoWidth, KH + 1);
+            p.fillRect(0, y, pianoWidth, KH, p.brush());
+            p.drawLine(0, y, pianoWidth, y);
+            p.drawLine(pianoWidth, y, pianoWidth, y + KH);
 
             if (y + 1 == selPitchY)
                 p.setBrush(colKeyW);
@@ -242,10 +248,12 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
                 else
                     p.setBrush(colKeyCur);
                 p.setPen(Qt::NoPen);
-                p.drawRoundedRect(pianoWidth * 0.65, y + 2, pianoWidth * 0.3, 9, 1.0, 1.0);
+                p.drawRoundedRect(pianoWidth * 0.65, y + 2, pianoWidth * 0.3, 9, rad, rad);
                 p.restore();
             }
         }
+        y = 75 * KH;
+        p.drawLine(0, y, pianoWidth, y);
     }
 
     // draw black keys
@@ -257,10 +265,11 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 
         QLinearGradient g(0.0, 0.0, 1.0, 0.0);
         g.setCoordinateMode(QGradient::ObjectBoundingMode);
-        g.setColorAt(0.0, QColor(119, 119, 119));
-        g.setColorAt(0.8, QColor(68, 68, 68));
-        g.setColorAt(0.81, QColor(17, 17, 17));
-        g.setColorAt(1.0, QColor(17, 17, 17));
+        g.setColorAt(0.0, QColor(120, 120, 120));
+        g.setColorAt(0.79, QColor(70, 70, 70));
+        g.setColorAt(0.8, QColor(40, 40, 40));
+        g.setColorAt(0.83, QColor(20, 20, 20));
+        g.setColorAt(1.0, QColor(20, 20, 20));
         p.setBrush(g);
 
         int cnt = 2;
@@ -270,11 +279,11 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
         for (int i = 0; i < 53; i++) {
             if ((y - 3) == selPitchY) {
                 p.setBrush(colKeySel);
-                p.drawRect(0, y, wb, keyHeightB);
+                p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
                 p.setBrush(g);
             }
             else
-                p.drawRect(0, y, wb, keyHeightB);
+                p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
 
             if ((y - 3) == curPitchY) {
                 p.save();
@@ -283,7 +292,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
                 else
                     p.setBrush(colKeyCur);
                 p.setPen(Qt::NoPen);
-                p.drawRoundedRect(pianoWidth * .2, y + 1, pianoWidth * .3, 5, 1., 1.);
+                p.drawRoundedRect(pianoWidth * 0.2, y + 1, pianoWidth * 0.3, 5, rad, rad);
                 p.restore();
             }
 
@@ -314,6 +323,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
         QFont f("Arial", 7);
         QFontMetrics fm(f);
         p.setFont(f);
+        p.setPen(Qt::black);
         int y = 5 * KH;
         for (int i = 0; i < 11; i++) {
             QString s("C" + QString::number(8 - i));
