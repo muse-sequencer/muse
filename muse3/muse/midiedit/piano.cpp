@@ -201,19 +201,6 @@ Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
 
 void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 {
-    const qreal keyHeightW = KH;
-    const qreal keyHeightB = 7.;
-    const qreal distSmallB = 6.;
-    const qreal distLargeB = 19.;
-    const qreal topOffsetB = 10.;
-    const qreal octaveSize = 7. * keyHeightW;
-    const qreal pianoHeight = octaveSize * 10. + keyHeightW * 5. + 1.;
-
-    const QColor colKeyW("Ivory");
-    const QColor colKeyCur = QColor("DeepSkyBlue");
-    const QColor colKeyCurP = QColor("OrangeRed");
-    const QColor colKeySel = QColor("PeachPuff");
-
     //      QRect ur = mapDev(mr);
     //      if (ur.height() > pianoHeight)
     //          ur.setHeight(pianoHeight);
@@ -221,24 +208,30 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
     //      //        artifacts (incomplete drawing). Can't figure out why.
     //      ur.adjust(0, -4, 0, 4);
 
-    const qreal w = pianoWidth;
     const int selPitchY = pitch2y(selectedPitch);
     const int curPitchY = pitch2y(curPitch);
+
+    const QColor colKeyCur = QColor("DeepSkyBlue");
+    const QColor colKeyCurP = QColor("OrangeRed");
+    const QColor colKeySel = QColor("PeachPuff");
 
     p.setRenderHint(QPainter::Antialiasing);
     p.setPen(Qt::black);
 
     // draw white keys
     {
+        const QColor colKeyW("Ivory");
+
         p.setBrush(colKeyW);
 
-        qreal y = 0.;
+        int y = 0.;
         for (int i = 0; i < 75; i++) {
-            y = i * keyHeightW;
+            y = i * KH;
             if (y + 1 == selPitchY)
                 p.setBrush(colKeySel);
 
-            p.drawRect(QRectF(0., y, w, keyHeightW + 1.));
+            p.drawRect(0, y, pianoWidth, KH + 1);
+
             if (y + 1 == selPitchY)
                 p.setBrush(colKeyW);
 
@@ -249,7 +242,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
                 else
                     p.setBrush(colKeyCur);
                 p.setPen(Qt::NoPen);
-                p.drawRoundedRect(w * .65, y + 2., w * .3, 9., 1., 1.);
+                p.drawRoundedRect(pianoWidth * 0.65, y + 2, pianoWidth * 0.3, 9, 1.0, 1.0);
                 p.restore();
             }
         }
@@ -257,35 +250,40 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 
     // draw black keys
     {
-        QLinearGradient g(0., 0., 1., .0);
+        const int keyHeightB = 7;
+        const int distSmallB = 6;
+        const int distLargeB = 19;
+        const int topOffsetB = 10;
+
+        QLinearGradient g(0.0, 0.0, 1.0, 0.0);
         g.setCoordinateMode(QGradient::ObjectBoundingMode);
-        g.setColorAt(0., QColor("#777"));
-        g.setColorAt(.8, QColor("#444"));
-        g.setColorAt(.81, QColor("#111"));
-        g.setColorAt(1., QColor("#111"));
+        g.setColorAt(0.0, QColor(119, 119, 119));
+        g.setColorAt(0.8, QColor(68, 68, 68));
+        g.setColorAt(0.81, QColor(17, 17, 17));
+        g.setColorAt(1.0, QColor(17, 17, 17));
         p.setBrush(g);
 
         int cnt = 2;
         bool flag = true;
-        qreal y = topOffsetB;
-        qreal wb = w * .6;
+        int y = topOffsetB;
+        int wb = pianoWidth * .6;
         for (int i = 0; i < 53; i++) {
-            if ((int(y) - 3) == selPitchY) {
+            if ((y - 3) == selPitchY) {
                 p.setBrush(colKeySel);
-                p.drawRect(QRectF(0., y, wb, keyHeightB));
+                p.drawRect(0, y, wb, keyHeightB);
                 p.setBrush(g);
             }
             else
-                p.drawRect(QRectF(0., y, wb, keyHeightB));
+                p.drawRect(0, y, wb, keyHeightB);
 
-            if ((int(y) - 3) == curPitchY) {
+            if ((y - 3) == curPitchY) {
                 p.save();
                 if (curPitch == keyDown)
                     p.setBrush(colKeyCurP);
                 else
                     p.setBrush(colKeyCur);
                 p.setPen(Qt::NoPen);
-                p.drawRoundedRect(w * .2, y + 1., w * .3, 5., 1., 1.);
+                p.drawRoundedRect(pianoWidth * .2, y + 1, pianoWidth * .3, 5, 1., 1.);
                 p.restore();
             }
 
@@ -301,24 +299,26 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 
     // draw shadow
     {
-        QLinearGradient g(0., 0., 1., 0.);
+        const int pianoHeight = (7 * KH * 10) + (KH * 5) + 1;
+        QLinearGradient g(0.0, 0.0, 1.0, 0.0);
         g.setCoordinateMode(QGradient::ObjectBoundingMode);
-        g.setColorAt(0., Qt::black);
-        g.setColorAt(1., QColor(127, 127, 127, 0));
+        g.setColorAt(0.0, Qt::black);
+        g.setColorAt(1.0, QColor(127, 127, 127, 0));
         p.setBrush(g);
-        p.fillRect(QRectF(0., 0., w * .1, pianoHeight), g);
+        p.fillRect(0, 0, pianoWidth * .1, pianoHeight, g);
     }
 
     // draw C notes
     {
+        const int octaveHeight = 7 * KH;
         QFont f("Arial", 7);
         QFontMetrics fm(f);
         p.setFont(f);
-        qreal y = 5. * keyHeightW;
+        int y = 5 * KH;
         for (int i = 0; i < 11; i++) {
             QString s("C" + QString::number(8 - i));
-            p.drawText(w - fm.size(0, s).width() - (w / 10 - 3), y - 3., s);
-            y += octaveSize;
+            p.drawText(pianoWidth - fm.size(0, s).width() - (pianoWidth / 10 - 3), y - 3, s);
+            y += octaveHeight;
         }
     }
 
@@ -363,30 +363,28 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 
         bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
 
-
-        qreal y = pitch2y(pitch) + 4.;
-
-        if(used)
+        if (used)
         {
-            if(off)
+            if (off)
                 p.setBrush(QColor("MediumSeaGreen"));
             else
                 p.setBrush(QColor("OrangeRed"));
         }
         else
         {
-            if(off)
-                p.setBrush(QColor("#b3b3b3")); // Gray
+            if (off)
+                p.setBrush(QColor(179, 179,179)); // Gray
             else
                 p.setBrush(QColor("DodgerBlue"));
         }
 
+        qreal y = pitch2y(pitch) + 4.;
+        qreal w = pianoWidth;
         QPainterPath path;
-        path.moveTo(w * .1, y);
-        path.lineTo(w * .1, y + 5);
-        path.lineTo(w * .2, y + 3);
-        path.lineTo(w * .1, y);
-
+        path.moveTo(w * 0.1, y);
+        path.lineTo(w * 0.1, y + 5.0);
+        path.lineTo(w * 0.2, y + 3.0);
+        path.lineTo(w * 0.1, y);
         p.fillPath(path, p.brush());
     }
 
