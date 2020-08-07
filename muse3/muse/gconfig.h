@@ -240,6 +240,9 @@ struct GlobalConfigValues {
       QColor midiItemSelectedColor;
       QColor dummyPartColor;
       QColor midiDividerColor;
+      QColor pianoCurrentKey;
+      QColor pianoPressedKey;
+      QColor pianoSelectedKey;
 
       QColor waveNonselectedPart;
       QColor wavePeakColor;

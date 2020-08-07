@@ -211,9 +211,9 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
     const int selPitchY = pitch2y(selectedPitch);
     const int curPitchY = pitch2y(curPitch);
 
-    const QColor colKeyCur = QColor("DeepSkyBlue");
-    const QColor colKeyCurP = QColor("OrangeRed");
-    const QColor colKeySel = QColor("PeachPuff");
+    const QColor colKeyCur = MusEGlobal::config.pianoCurrentKey;
+    const QColor colKeyCurP = MusEGlobal::config.pianoPressedKey;
+    const QColor colKeySel = MusEGlobal::config.pianoSelectedKey;
 
     p.setRenderHint(QPainter::Antialiasing);
     p.setPen(Qt::black);

@@ -181,6 +181,9 @@ GlobalConfigValues config = {
       QColor(255, 170, 0),          // midiItemSelectedColor
       Qt::lightGray,                // dummyPartColor
       Qt::gray,                     // midiDividerColor
+      QColor(0, 191, 255),          // pianoCurrentKey;
+      QColor(255, 69, 0),           // pianoPressedKey;
+      QColor(255, 218, 185),        // pianoSelectedKey
 
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
