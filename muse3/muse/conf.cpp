@@ -1162,6 +1162,13 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "drumListSelFont")
                             MusEGlobal::config.drumListSelFont = readColor(xml);
 
+                        else if (tag == "pianoCurrentKey")
+                            MusEGlobal::config.pianoCurrentKey = readColor(xml);
+                        else if (tag == "pianoPressedKey")
+                            MusEGlobal::config.pianoPressedKey = readColor(xml);
+                        else if (tag == "pianoSelectedKey")
+                            MusEGlobal::config.pianoSelectedKey = readColor(xml);
+
                         else if (tag == "maxAliasedPointSize")
 
                               MusEGlobal::config.maxAliasedPointSize = xml.parseInt();
@@ -1802,6 +1809,10 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "drumListFont", MusEGlobal::config.drumListFont);
       xml.colorTag(level, "drumListSel", MusEGlobal::config.drumListSel);
       xml.colorTag(level, "drumListSelFont", MusEGlobal::config.drumListSelFont);
+
+      xml.colorTag(level, "pianoCurrentKey", MusEGlobal::config.pianoCurrentKey);
+      xml.colorTag(level, "pianoPressedKey", MusEGlobal::config.pianoPressedKey);
+      xml.colorTag(level, "pianoSelectedKey", MusEGlobal::config.pianoSelectedKey);
 }
       
 

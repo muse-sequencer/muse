@@ -48,21 +48,11 @@ class Piano : public View
 
       MidiEditor* _midiEditor;
       int curPitch;
-      int _curSelectedPitch;
-      QPixmap* octave;
-      QPixmap* c_keys[10];
-      QPixmap* mk1;
-      QPixmap* mk2;
-      QPixmap* mk3;
-      QPixmap* mk4;
-      QPixmap* mk5;
-      QPixmap* mk6;
-      QPixmap* mk7;
-      QPixmap* mk8;
-      QPixmap* mke;
+      int selectedPitch;
       int keyDown;
       bool shift;
       int button;
+      int pianoWidth;
 
       
       int y2pitch(int) const;
@@ -89,8 +79,8 @@ class Piano : public View
       void setPitch(int);
 
    public:
-      Piano(QWidget* parent, int ymag, MidiEditor* editor = 0);
-      int curSelectedPitch() const { return _curSelectedPitch; } 
+      Piano(QWidget* parent, int ymag, int width, MidiEditor* editor = 0);
+      int curSelectedPitch() const { return selectedPitch; }
       void setCurSelectedPitch(int pitch);
       };
 

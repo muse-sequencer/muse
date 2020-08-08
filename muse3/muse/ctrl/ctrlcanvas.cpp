@@ -3333,7 +3333,7 @@ void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
       //p.setFont(MusEGlobal::config.fonts[3]);  // Use widget font instead. 
       p.setFont(font());
       
-      p.setPen(Qt::black);
+      p.setPen(palette().color(QPalette::WindowText));
       
       //QFontMetrics fm(MusEGlobal::config.fonts[3]);  // Use widget font metrics instead. 
       //int y = fm.lineSpacing() + 2;

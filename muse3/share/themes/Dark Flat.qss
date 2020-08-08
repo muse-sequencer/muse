@@ -323,3 +323,7 @@ MusEGui--CtrlCanvas {
 MusEGui--Strip {
     qproperty-expanderWidth: 1;
 }
+
+MusEGui--PianoRoll {
+  qproperty-pianoWidth: 60;
+}

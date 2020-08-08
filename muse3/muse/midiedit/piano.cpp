@@ -23,6 +23,7 @@
 
 #include <QMouseEvent>
 #include <QPainter>
+#include <QToolTip>
 
 #include <stdio.h>
 
@@ -35,9 +36,12 @@
 #include "midieditor.h"
 #include "midictrl.h"
 #include "icons.h"
+#include "utils.h"
+#include "gconfig.h"
 
 namespace MusEGui {
   
+/*
 static const char *oct_xpm[] = {
     // w h colors
     "40 91 2 1",
@@ -136,173 +140,13 @@ static const char *oct_xpm[] = {
     ".......................................#",
     ".......................................#",
 };
-
-
-static const char *mk1_xpm[] = {
-    "40 13 2 1",
-    ". c #ff0000",
-    "# c none",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    "########################...............#",
-    "########################...............#",
-    "########################...............#",
-    "########################################",
-};
-
-static const char *mk2_xpm[] = {
-    "40 13 2 1",
-    ". c #ff0000",
-    "# c none",
-    "########################...............#",
-    "########################...............#",
-    "########################...............#", //------------------------
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",     // 6
-    ".......................................#",
-    ".......................................#",
-    ".......................................#", //--------------------------
-    "########################...............#",
-    "########################...............#",
-    "########################...............#",     // 7
-    "########################################",
-};
-
-static const char *mk3_xpm[] = {
-    "40 13 2 1",
-    ". c #ff0000",
-    "# c none",
-    "########################...............#",
-    "########################...............#",
-    "########################...............#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    "########################################",
-};
-
-static const char *mk4_xpm[] = {
-    "40 13 2 1",
-    "# c #ff0000",
-    ". c none",
-    "........................................",
-    "........................................",
-    "........................................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "........................................",
-    "........................................",
-    "........................................",
-};
-
-static const char *mk5_xpm[] = {
-    "40 13 2 1",
-    ". c #ffff00",
-    "# c none",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    "########################...............#",
-    "########################...............#",
-    "########################...............#",
-    "########################################",
-};
-
-static const char *mk6_xpm[] = {
-    "40 13 2 1",
-    ". c #ffff00",
-    "# c none",
-    "########################...............#",
-    "########################...............#",
-    "########################...............#", //------------------------
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",     // 6
-    ".......................................#",
-    ".......................................#",
-    ".......................................#", //--------------------------
-    "########################...............#",
-    "########################...............#",
-    "########################...............#",     // 7
-    "########################################",
-};
-
-static const char *mk7_xpm[] = {
-    "40 13 2 1",
-    ". c #ffff00",
-    "# c none",
-    "########################...............#",
-    "########################...............#",
-    "########################...............#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    ".......................................#",
-    "########################################",
-};
-
-static const char *mk8_xpm[] = {
-    "40 13 2 1",
-    "# c #ffff00",
-    ". c none",
-    "........................................",
-    "........................................",
-    "........................................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "########################................",
-    "........................................",
-    "........................................",
-    "........................................",
-};
-
-static const char *mke_xpm[] = {
-    "40 3 1 1",
-    "# c #000000",
-    "########################################",
-    "########################################",
-    "########################################",
-};
+*/
 
 /*
       0   1   2  3  4  5  6  7  8  9  10
       c-2 c-1 C0 C1 C2 C3 C4 C5 C6 C7 C8 - G8
 
-      Grid ьber Oktave:
+      Grid über Oktave:
 
            +------------+ ------------------------------
        11  |            |
@@ -339,27 +183,14 @@ static const char *mke_xpm[] = {
 //   Piano
 //---------------------------------------------------------
 
-Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
-   : View(parent, 1, ymag)
+Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
+   : View(parent, 1, ymag),
+     pianoWidth(width)
       {
       setMouseTracking(true);
       _midiEditor = editor;
       curPitch = -1;
-      _curSelectedPitch = 60;  // Start with 'C3"
-      octave = new QPixmap(oct_xpm);
-
-      mk1 = new QPixmap(mk1_xpm);
-      mk2 = new QPixmap(mk2_xpm);
-      mk3 = new QPixmap(mk3_xpm);
-      mk4 = new QPixmap(mk4_xpm);
-      
-      mk5 = new QPixmap(mk5_xpm);
-      mk6 = new QPixmap(mk6_xpm);
-      mk7 = new QPixmap(mk7_xpm);
-      mk8 = new QPixmap(mk8_xpm);
-
-      mke = new QPixmap(mke_xpm);
-      
+      selectedPitch = 60;  // Start with 'C3"
       keyDown = -1;
       button = Qt::NoButton;
       }
@@ -368,142 +199,206 @@ Piano::Piano(QWidget* parent, int ymag, MidiEditor* editor)
 //   draw
 //---------------------------------------------------------
 
-void Piano::draw(QPainter& p, const QRect& mr, const QRegion&)
-      {
-      const int octaveSize = 91;
-      const int pianoHeight = octaveSize * 10 + KH * 5 + 3;
+void Piano::draw(QPainter& p, const QRect&, const QRegion&)
+{
+    //      QRect ur = mapDev(mr);
+    //      if (ur.height() > pianoHeight)
+    //          ur.setHeight(pianoHeight);
+    //      // FIXME: For some reason need the expansion otherwise drawing
+    //      //        artifacts (incomplete drawing). Can't figure out why.
+    //      ur.adjust(0, -4, 0, 4);
 
-      QRect ur = mapDev(mr);
-      if (ur.height() > pianoHeight)
-          ur.setHeight(pianoHeight);
-      // FIXME: For some reason need the expansion otherwise drawing
-      //        artifacts (incomplete drawing). Can't figure out why.
-      ur.adjust(0, -4, 0, 4);
+    const int selPitchY = pitch2y(selectedPitch);
+    const int curPitchY = pitch2y(curPitch);
 
-      p.drawPixmap(0, -KH * 2, *octave);
-      for (int i = 0; i < 10; i++)
-          p.drawPixmap(0, (KH * 5) + (octaveSize * i), *octave);
-      p.drawPixmap(0, (KH * 5) + (octaveSize * 10), *mke);
+    const QColor colKeyCur = MusEGlobal::config.pianoCurrentKey;
+    const QColor colKeyCurP = MusEGlobal::config.pianoPressedKey;
+    const QColor colKeySel = MusEGlobal::config.pianoSelectedKey;
+    const qreal rad = 1.0;
 
-      if (_curSelectedPitch != -1 && _curSelectedPitch != curPitch)
-      {
-        int y = pitch2y(_curSelectedPitch);
-        QPixmap* pm;
-        switch(_curSelectedPitch % 12) {
-              case 0:
-              case 5:
-                    pm = mk7;
-                    break;
-              case 2:
-              case 7:
-              case 9:
-                    pm = mk6;
-                    break;
-              case 4:
-              case 11:
-                    pm = mk5;
-                    break;
-              default:
-                    pm = mk8;
-                    break;
-              }
-        p.drawPixmap(0, y, *pm);
-      }
-      
-      if (curPitch != -1)
-      {
-        int y = pitch2y(curPitch);
-        QPixmap* pm;
-        switch(curPitch % 12) {
-              case 0:
-              case 5:
-                    pm = mk3;
-                    break;
-              case 2:
-              case 7:
-              case 9:
-                    pm = mk2;
-                    break;
-              case 4:
-              case 11:
-                    pm = mk1;
-                    break;
-              default:
-                    pm = mk4;
-                    break;
-              }
-        p.drawPixmap(0, y, *pm);
-      }
-      
-      // draw C notes    
-      p.setRenderHint(QPainter::Antialiasing);
-      p.setPen(Qt::black);
-      p.setFont(QFont("Arial", 7));
+    QPen pen(QColor(80,80,80));
+    pen.setCosmetic(true);
+    pen.setWidth(2);
+    p.setPen(pen);
+    p.setRenderHint(QPainter::Antialiasing);
 
-      for (int drawKey = 0; drawKey < 11; drawKey++) {
-          int drawY = octaveSize * drawKey + 82 - KH*2;
-          p.drawText(23, drawY + 7, "C" + QString::number(8 - drawKey));
-      }
+    // draw white keys
+    {
+        const QColor colKeyW("Ivory");
+
+        p.setBrush(colKeyW);
+
+        int y = 0;
+        for (int i = 0; i < 75; i++) {
+            y = i * KH;
+            if (y + 1 == selPitchY)
+                p.setBrush(colKeySel);
+
+            p.fillRect(0, y, pianoWidth, KH, p.brush());
+            p.drawLine(0, y, pianoWidth, y);
+            p.drawLine(pianoWidth, y, pianoWidth, y + KH);
+
+            if (y + 1 == selPitchY)
+                p.setBrush(colKeyW);
+
+            if (y + 1 == curPitchY) {
+                p.save();
+                if (curPitch == keyDown)
+                    p.setBrush(colKeyCurP);
+                else
+                    p.setBrush(colKeyCur);
+                p.setPen(Qt::NoPen);
+                p.drawRoundedRect(pianoWidth * 0.65, y + 2, pianoWidth * 0.3, 9, rad, rad);
+                p.restore();
+            }
+        }
+        y = 75 * KH;
+        p.drawLine(0, y, pianoWidth, y);
+    }
+
+    // draw black keys
+    {
+        const int keyHeightB = 7;
+        const int distSmallB = 6;
+        const int distLargeB = 19;
+        const int topOffsetB = 10;
+
+        QLinearGradient g(0.0, 0.0, 1.0, 0.0);
+        g.setCoordinateMode(QGradient::ObjectBoundingMode);
+        g.setColorAt(0.0, QColor(120, 120, 120));
+        g.setColorAt(0.79, QColor(70, 70, 70));
+        g.setColorAt(0.8, QColor(40, 40, 40));
+        g.setColorAt(0.83, QColor(20, 20, 20));
+        g.setColorAt(1.0, QColor(20, 20, 20));
+        p.setBrush(g);
+
+        int cnt = 2;
+        bool flag = true;
+        int y = topOffsetB;
+        int wb = pianoWidth * .6;
+        for (int i = 0; i < 53; i++) {
+            if ((y - 3) == selPitchY) {
+                p.setBrush(colKeySel);
+                p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
+                p.setBrush(g);
+            }
+            else
+                p.drawRoundedRect(0, y, wb, keyHeightB, rad, rad);
+
+            if ((y - 3) == curPitchY) {
+                p.save();
+                if (curPitch == keyDown)
+                    p.setBrush(colKeyCurP);
+                else
+                    p.setBrush(colKeyCur);
+                p.setPen(Qt::NoPen);
+                p.drawRoundedRect(pianoWidth * 0.2, y + 1, pianoWidth * 0.3, 5, rad, rad);
+                p.restore();
+            }
+
+            if ((flag && ++cnt == 3) || (!flag && ++cnt == 2)) {
+                y = y + distLargeB + keyHeightB;
+                flag = !flag;
+                cnt = 0;
+            }
+            else
+                y = y + distSmallB + keyHeightB;
+        }
+    }
+
+    // draw shadow
+    {
+        const int pianoHeight = (7 * KH * 10) + (KH * 5) + 1;
+        QLinearGradient g(0.0, 0.0, 1.0, 0.0);
+        g.setCoordinateMode(QGradient::ObjectBoundingMode);
+        g.setColorAt(0.0, Qt::black);
+        g.setColorAt(1.0, QColor(127, 127, 127, 0));
+        p.setBrush(g);
+        p.fillRect(0, 0, pianoWidth * .1, pianoHeight, g);
+    }
+
+    // draw C notes
+    {
+        const int octaveHeight = 7 * KH;
+        QFont f("Arial", 7);
+        QFontMetrics fm(f);
+        p.setFont(f);
+        p.setPen(Qt::black);
+        int y = 5 * KH;
+        for (int i = 0; i < 11; i++) {
+            QString s("C" + QString::number(8 - i));
+            p.drawText(pianoWidth - fm.size(0, s).width() - (pianoWidth / 10 - 3), y - 3, s);
+            y += octaveHeight;
+        }
+    }
 
 
-
-      if(!_midiEditor)
+    if(!_midiEditor)
         return;
-      MusECore::PartList* part_list = _midiEditor->parts();
-      MusECore::Part* cur_part = _midiEditor->curCanvasPart();
-      if(!part_list || !cur_part || !cur_part->track()->isMidiTrack())
-        return;
-      
-      MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
-      int channel      = track->outChannel();
-      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
-      MusECore::MidiCtrlValListList* cll = port->controller();
-      const int min = channel << 24;
-      const int max = min + 0x1000000;
 
-      for(MusECore::ciMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it)
-      {
+    MusECore::PartList* part_list = _midiEditor->parts();
+    MusECore::Part* cur_part = _midiEditor->curCanvasPart();
+    if(!part_list || !cur_part || !cur_part->track()->isMidiTrack())
+        return;
+
+    MusECore::MidiTrack* track = (MusECore::MidiTrack*)(cur_part->track());
+    int channel      = track->outChannel();
+    MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
+    MusECore::MidiCtrlValListList* cll = port->controller();
+    const int min = channel << 24;
+    const int max = min + 0x1000000;
+
+    for(MusECore::ciMidiCtrlValList it = cll->lower_bound(min); it != cll->lower_bound(max); ++it)
+    {
         MusECore::MidiCtrlValList* cl = it->second;
         MusECore::MidiController* c   = port->midiController(cl->num(), channel);
         if(!c->isPerNoteController())
-          continue;
+            continue;
         int cnum = c->num();
         int num = cl->num();
         int pitch = num & 0x7f;
         bool used = false;
         for (MusECore::ciEvent ie = cur_part->events().begin(); ie != cur_part->events().end(); ++ie)
         {
-          MusECore::Event e = ie->second;
-          if(e.type() != MusECore::Controller)
-            continue;
-          int ctl_num = e.dataA();
-          if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == pitch)
-          {
-            used = true;
-            break;
-          }
+            MusECore::Event e = ie->second;
+            if(e.type() != MusECore::Controller)
+                continue;
+            int ctl_num = e.dataA();
+            if((ctl_num | 0xff) == cnum && (ctl_num & 0x7f) == pitch)
+            {
+                used = true;
+                break;
+            }
         }
 
         bool off = cl->hwVal() == MusECore::CTRL_VAL_UNKNOWN;  // Does it have a value or is it 'off'?
 
-        int y = pitch2y(pitch) + 3;
-        if(used)
+        if (used)
         {
-          if(off)
-            p.drawPixmap(0, y, 6, 6, *greendot12x12Icon);
-          else
-            p.drawPixmap(0, y, 6, 6, *orangedot12x12Icon);
+            if (off)
+                p.setBrush(QColor("MediumSeaGreen"));
+            else
+                p.setBrush(QColor("OrangeRed"));
         }
         else
         {
-          if(off)
-            p.drawPixmap(0, y, 6, 6, *graydot12x12Icon);
-          else
-            p.drawPixmap(0, y, 6, 6, *bluedot12x12Icon);
+            if (off)
+                p.setBrush(QColor(179, 179,179)); // Gray
+            else
+                p.setBrush(QColor("DodgerBlue"));
         }
-      }
-      
-      }
+
+        qreal y = pitch2y(pitch) + 4.;
+        qreal w = pianoWidth;
+        QPainterPath path;
+        path.moveTo(w * 0.1, y);
+        path.lineTo(w * 0.1, y + 5.0);
+        path.lineTo(w * 0.2, y + 3.0);
+        path.lineTo(w * 0.1, y);
+        p.fillPath(path, p.brush());
+    }
+
+}
       
 //---------------------------------------------------------
 //   pitch2y
@@ -581,76 +476,96 @@ void Piano::setPitch(int pitch)
 //---------------------------------------------------------
 
 void Piano::viewMouseMoveEvent(QMouseEvent* event)
-      {
-      int pitch = y2pitch(event->y());
-      emit pitchChanged(pitch);
-      setPitch(pitch);
+{
+    int pitch = y2pitch(event->y());
+    emit pitchChanged(pitch);
+    setPitch(pitch);
 
-      if (button != Qt::NoButton) {
-            int nk = y2pitch(event->y());
-            if (nk < 0 || nk > 127)
-                  nk = -1;
-            if (nk != keyDown) {
-                  if (keyDown != -1) {
-                        emit keyReleased(keyDown, shift);
-                        }
-                  keyDown = nk;
-                  if (keyDown != -1) {
-                        int velocity = event->x()*127/40;
-                        emit keyPressed(keyDown, velocity>127 ? 127 : velocity, shift);
-                        }
-                  }
+    if (button == Qt::LeftButton) {
+        int nk = y2pitch(event->y());
+        if (nk < 0 || nk > 127)
+            nk = -1;
+        if (nk != keyDown) {
+            if (keyDown != -1) {
+                emit keyReleased(keyDown, shift);
             }
-      }
+            keyDown = nk;
+            if (keyDown != -1) {
+                int velocity = (event->x() + 1) * 127 / pianoWidth;
+                if(velocity > 127)
+                    velocity = 127;
+                else if(velocity <= 0)
+                    velocity = 1;
+                emit keyPressed(keyDown, velocity, shift);
+            }
+            redraw();
+        }
+    }
+
+    if (!MusEGlobal::config.showNoteTooltips)
+        return;
+
+    int v = qMax(1, qMin(127, (event->x() + 1) * 127 / pianoWidth));
+    QString str = tr("Left click: Play") + " (Vel: " + QString::number(v) + ")\n"
+            + tr("Right click: Select key");
+    QToolTip::showText(event->globalPos(), str);
+}
 
 //---------------------------------------------------------
 //   viewMousePressEvent
 //---------------------------------------------------------
 
 void Piano::viewMousePressEvent(QMouseEvent* event)
-      {
-      button = event->button();
-      shift  = event->modifiers() & Qt::ShiftModifier;
-      if (keyDown != -1) {
+{
+    button = event->button();
+    shift  = event->modifiers() & Qt::ShiftModifier;
+
+    if (button == Qt::LeftButton) {
+        if (keyDown != -1) {
             emit keyReleased(keyDown, shift);
             keyDown = -1;
-            }
-      keyDown = y2pitch(event->y());
-      if (keyDown < 0 || keyDown > 127) {
+        }
+        keyDown = y2pitch(event->y());
+        if (keyDown < 0 || keyDown > 127) {
             keyDown = -1;
-            }
-      else {
-            int velocity = event->x()*127/40;
-            // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//             emit keyPressed(keyDown, velocity>127 ? 127 : velocity, shift); //emit keyPressed(keyDown, shift);
+        }
+        else {
+            int velocity = (event->x() + 1) * 127 / pianoWidth;
             if(velocity > 127)
-              velocity = 127;
+                velocity = 127;
             else if(velocity <= 0)
-              velocity = 1;  // Zero note on vel is not allowed.
-            emit keyPressed(keyDown, velocity, shift); //emit keyPressed(keyDown, shift);
-            }
-            
-      if (keyDown != -1 && keyDown != _curSelectedPitch) {
-            _curSelectedPitch = keyDown;
-            emit curSelectedPitchChanged(_curSelectedPitch);
-            redraw(); 
-            MusEGlobal::song->update(SC_DRUMMAP);
-            }
-      }
+                velocity = 1;
+            emit keyPressed(keyDown, velocity, shift);
+        }
+    }
+
+    if (button == Qt::RightButton) {
+        selectedPitch = y2pitch(event->y());
+        emit curSelectedPitchChanged(selectedPitch);
+        redraw();
+        MusEGlobal::song->update(SC_DRUMMAP);
+    }
+
+    redraw();
+}
 
 //---------------------------------------------------------
 //   viewMouseReleaseEvent
 //---------------------------------------------------------
 
 void Piano::viewMouseReleaseEvent(QMouseEvent* event)
-      {
-      button = Qt::NoButton;
-      shift = event->modifiers() & Qt::ShiftModifier;
-      if (keyDown != -1) {
+{
+    if (button == Qt::LeftButton) {
+        shift = event->modifiers() & Qt::ShiftModifier;
+        if (keyDown != -1) {
             emit keyReleased(keyDown, shift);
             keyDown = -1;
-            }
-      }
+        }
+        redraw();
+    }
+
+    button = Qt::NoButton;
+}
 
 //---------------------------------------------------------
 //   setCurSelectedPitch
@@ -660,9 +575,9 @@ void Piano::setCurSelectedPitch(int pitch)
       {
       if (pitch < 0 || pitch >= 128)
         return; 
-      if (pitch != _curSelectedPitch) {
-            _curSelectedPitch = pitch;
-            emit curSelectedPitchChanged(_curSelectedPitch);
+      if (pitch != selectedPitch) {
+            selectedPitch = pitch;
+            emit curSelectedPitchChanged(selectedPitch);
             redraw(); 
             }
       }

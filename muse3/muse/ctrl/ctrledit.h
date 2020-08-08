@@ -83,6 +83,7 @@ class CtrlEdit : public QWidget {
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
       { if(canvas) canvas->tagItems(tag_list, options); }
       void redrawCanvas() {canvas->redraw();}
+      void setPanelWidth(int w);
       };
 
       
