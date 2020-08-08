@@ -40,9 +40,9 @@
     <partCanvasCoarseRaster r="80" g="80" b="80"></partCanvasCoarseRaster>
     <partCanvasFineRaster r="60" g="60" b="65"></partCanvasFineRaster>
     <trackBg r="40" g="50" b="60"></trackBg>
-    <selectTrackBg r="120" g="255" b="255"></selectTrackBg>
+    <selectTrackBg r="100" g="180" b="255"></selectTrackBg>
     <selectTrackFg r="0" g="0" b="0"></selectTrackFg>
-    <selectTrackCurBg r="0" g="255" b="255"></selectTrackCurBg>
+    <selectTrackCurBg r="130" g="210" b="255"></selectTrackCurBg>
     <trackSectionDividerColor r="40" g="50" b="60"></trackSectionDividerColor>
     <midiTrackLabelBg r="81" g="180" b="255"></midiTrackLabelBg>
     <newDrumTrackLabelBg2 r="69" g="220" b="220"></newDrumTrackLabelBg2>
