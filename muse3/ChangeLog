@@ -6,6 +6,7 @@
     - Piano: Made piano width changeable from stylesheet. (kybos)
     - Piano: Added tooltip showing current playback velocity. (kybos)
     - Fixed dark text on dark background in midi control canvas. (kybos)
+    - Create new theme - Deep Ocean. (kybos)
     
 30.07.2020
     - Moved rewind on stop shortcut from arranger to global, fixes issue #839 (rj)
