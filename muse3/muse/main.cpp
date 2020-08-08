@@ -171,12 +171,6 @@ class MuseApplication : public QApplication {
             QKeyEvent* ke = (QKeyEvent*)event;
             MusEGlobal::globalKeyState = ke->modifiers();
 
-            // rj - removing this test as it causes some keys to never be processed by the
-            // shortcut engine. The documentation is somewhat vague (to me) how
-            // this value should be used and that it is not always reliable
-            //
-            // aaand, reinstated as it -of course- had draw backs. Need to find another solution.
-            // to be continued
             bool accepted = ke->isAccepted();
               if (!accepted) {
                int key = ke->key();

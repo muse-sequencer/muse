@@ -1,3 +1,11 @@
+30.07.2020
+    - Moved rewind on stop shortcut from arranger to global, fixes issue #839 (rj)
+29.07.2020
+    - Midi export: Format 1: First track must have only timing/marker events etc, no notes. (Tim)
+    - Midi import: Don't create a first track if no events left once stripped of recognized/absorbed
+       events. In format 1, first file track is supposed to be reserved for timing/markers.
+    - Midi import/export: New! Key signatures supported - supports 'minor' keys as well.
+    - Score editor: New! Key signature names shown at top of staff. Minor keys supported.
 25.07.2020
     - Midi import: Fixed importation of SMPTE/MTC division midi files. (Tim)
       Converts linear time to ticks. Ignores existing MusE tempo map so that

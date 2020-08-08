@@ -1334,21 +1334,24 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           {
             // Simply replace the value. 
             uo.b = n_op.b;
+            uo.c = n_op.c;
             return;  
           }
           else if(uo.type == UndoOp::DeleteKey && uo.a == n_op.a)  
           {
             // Delete followed by add. Transform the existing DeleteKey operation into a ModifyKey.
             uo.type = UndoOp::ModifyKey;
-            // a is already the tick, b is already the existing value from DeleteKey, c is the new value.
-            uo.c = n_op.b;
+            // a is already the tick, b + c is already the existing value from DeleteKey, d + e is the new value.
+            uo.d = n_op.b;
+            uo.e = n_op.c;
             return;  
           }
           else if(uo.type == UndoOp::ModifyKey && uo.a == n_op.a)  
           {
             // Modify followed by add. Simply replace the value.
-            // a is already the tick, b is already the existing value from ModifyKey, c is the new value.
-            uo.c = n_op.b;
+            // a is already the tick, b + c is already the existing value from ModifyKey, d + e is the new value.
+            uo.d = n_op.b;
+            uo.e = n_op.c;
             return;  
           }
         break;
@@ -1369,7 +1372,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           {
             // Modify followed by delete. Equivalent to delete. Transform existing ModifyKey operation into a DeleteKey.
             uo.type = UndoOp::DeleteKey;
-            // a is already the tick, b is already the existing old value from ModifyKey.
+            // a is already the tick, b + c is already the existing old value from ModifyKey.
             return;  
           }
         break;
@@ -1377,22 +1380,25 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
         case UndoOp::ModifyKey:
           if(uo.type == UndoOp::ModifyKey && uo.a == n_op.a)  
           {
-            // Simply replace c with the new value.
-            uo.c = n_op.c;
+            // Simply replace d + e with the new value.
+            uo.d = n_op.d;
+            uo.e = n_op.e;
             return;  
           }
           else if(uo.type == UndoOp::AddKey && uo.a == n_op.a)  
           {
             // Add followed by modify. Simply replace the add value.
-            uo.b = n_op.c;
+            uo.b = n_op.d;
+            uo.c = n_op.e;
             return;  
           }
           else if(uo.type == UndoOp::DeleteKey && uo.a == n_op.a)  
           {
             // Delete followed by modify. Equivalent to modify. Transform existing DeleteSig operation into a ModifySig.
             uo.type = UndoOp::ModifyKey;
-            // a is already the tick, b is already the existing value from DeleteKey. c is the new value from ModifyKey.
-            uo.c = n_op.c;
+            // a is already the tick, b + c is already the existing value from DeleteKey. d + e is the new value from ModifyKey.
+            uo.d = n_op.d;
+            uo.e = n_op.e;
             return;  
           }
         break;
@@ -1842,10 +1848,12 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
           if((int)ike->second.tick == t)
           {
             // Transform the AddKey operation into a ModifyKey.
-            // a is already the tick, b is the existing value, c is the new value.
+            // a is already the tick, b + c is the existing value, d + e is the new value.
             type = UndoOp::ModifyKey;
-            c = b;
+            d = b;
+            e = c;
             b = ike->second.key;
+            c = ike->second.minor;
           }
         }
         break;
@@ -2841,7 +2849,7 @@ void Song::revertOperationGroup1(Undo& operations)
                           new_key_list = new KeyList();
                           new_key_list->copy(MusEGlobal::keymap);
                         }
-                        new_key_list->addKey(i->a, key_enum(i->b));
+                        new_key_list->addKey(i->a, key_enum(i->b), i->c);
 
                         updateFlags |= SC_KEY;
                         break;
@@ -2873,7 +2881,8 @@ void Song::revertOperationGroup1(Undo& operations)
                           new_key_list = new KeyList();
                           new_key_list->copy(MusEGlobal::keymap);
                         }
-                        new_key_list->addKey(i->a, key_enum(i->b));
+                        // TODO: Hm should that be ->d and ->e like in executeOperationGroup1?
+                        new_key_list->addKey(i->a, key_enum(i->b), i->c);
 
                         updateFlags |= SC_KEY;
                         break;
@@ -3744,7 +3753,7 @@ void Song::executeOperationGroup1(Undo& operations)
                           new_key_list = new KeyList();
                           new_key_list->copy(MusEGlobal::keymap);
                         }
-                        new_key_list->addKey(i->a, key_enum(i->b));
+                        new_key_list->addKey(i->a, key_enum(i->b), i->c);
 
                         updateFlags |= SC_KEY;
                         break;
@@ -3776,7 +3785,7 @@ void Song::executeOperationGroup1(Undo& operations)
                           new_key_list = new KeyList();
                           new_key_list->copy(MusEGlobal::keymap);
                         }
-                        new_key_list->addKey(i->a, key_enum(i->c));
+                        new_key_list->addKey(i->a, key_enum(i->d), i->e);
 
                         updateFlags |= SC_KEY;
                         break;

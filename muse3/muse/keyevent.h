@@ -25,6 +25,9 @@
 
 #include <map>
 
+#include <QString>
+#include <QStringList>
+
 #ifndef MAX_TICK
 #define MAX_TICK (0x7fffffff/100)
 #endif
@@ -73,15 +76,22 @@ enum key_enum
 struct KeyEvent {
       key_enum key;
       unsigned tick;
+      bool minor;
+
 
       int read(Xml&);
       void write(int, Xml&, int) const;
 
-      KeyEvent() { }
-      KeyEvent(key_enum k, unsigned tk) {
-            key = k;
-            tick  = tk;
-            }
+      KeyEvent();
+      KeyEvent(key_enum k, unsigned tk, bool isMinor);
+      
+      static const QStringList keyStrs;
+      static KeyEvent stringToKey(QString input);
+      static int keyToIndex(key_enum key, bool isMinor);
+      static QString keyToString(key_enum key, bool isMinor);
+      
+      int keyIndex() const;
+      QString keyString() const;
       };
 
 //---------------------------------------------------------
@@ -99,7 +109,7 @@ typedef KEYLIST::const_reverse_iterator criKeyEvent;
 class KeyList : public KEYLIST {
    friend struct PendingOperationItem;
    
-      void add(unsigned tick, key_enum tempo);
+      void add(unsigned tick, key_enum tempo, bool isMinor);
       void add(KeyEvent e);
       void del(iKeyEvent);
       void del(unsigned tick);
@@ -117,12 +127,11 @@ class KeyList : public KEYLIST {
       void write(int, Xml&) const;
       void dump() const;
 
-      key_enum keyAtTick(unsigned tick) const;
+      KeyEvent keyAtTick(unsigned tick) const;
 
-      void addKey(unsigned t, key_enum newKey);
+      void addKey(unsigned t, key_enum newKey, bool isMinor);
       void delKey(unsigned tick);
       };
-
 } // namespace MusECore
 
 namespace MusEGlobal {

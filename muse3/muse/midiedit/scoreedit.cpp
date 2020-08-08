@@ -2087,8 +2087,8 @@ void staff_t::create_appropriate_eventlist()
 
     //insert key changes
     for (MusECore::iKeyEvent it=MusEGlobal::keymap.begin(); it!=MusEGlobal::keymap.end(); it++)
-        eventlist.insert(pair<unsigned, FloEvent>(it->second.tick,  FloEvent(it->second.tick,FloEvent::KEY_CHANGE, it->second.key ) ) );
-
+        eventlist.insert(pair<unsigned, FloEvent>(
+          it->second.tick, FloEvent(it->second.tick,FloEvent::KEY_CHANGE, it->second.key, it->second.minor ) ) );
 
     // phase two: deal with overlapping notes ---------------------------
     ScoreEventList::iterator it, it2;
@@ -2670,7 +2670,7 @@ void staff_t::create_itemlist()
         else if (type==FloEvent::KEY_CHANGE)
         {
             if (heavyDebugMsg) cout << "inserting KEY CHANGE ("<<it->second.key<<") at "<<t<<endl;
-            itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.key) );
+            itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.key, it->second.minor) );
             tmp_key=it->second.key;
         }
     }
@@ -3333,7 +3333,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
     vorzeichen_t default_accidential[7];
     MusECore::key_enum curr_key;
 
-    curr_key=key_at_tick(from_it->first);
+    curr_key=key_at_tick(from_it->first).key;
     list<int> new_acc_list=calc_accidentials(curr_key, staff.clef);
     vorzeichen_t new_accidential = is_sharp_key(curr_key) ? SHARP : B;
 
@@ -3553,6 +3553,16 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
                 MusECore::key_enum new_key=it->key;
                 if (heavyDebugMsg) cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
 
+                const bool is_minor = it->minor;
+                const int str_y_coord = -4 * YLEN + 2 /* margin */;
+                const QString kstr = MusECore::KeyEvent::keyToString(new_key, is_minor);
+                const int x_1 = -x_pos + x_left;
+                const int kstrx = x_1 + it->x + KEYCHANGE_ACC_LEFTDIST;
+                // Don't bother drawing the string if it would begin just before the left edge
+                //  because the preamble will already change to show the new key.
+                if(!preamble_contains_timesig || kstrx >= x_1)
+                  p.drawText(kstrx, y_offset + str_y_coord, kstr);
+
                 list<int> aufloes_list=calc_accidentials(curr_key, staff.clef, new_key);
                 list<int> new_acc_list=calc_accidentials(new_key, staff.clef);
 
@@ -3696,11 +3706,23 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef, bool res
     // draw accidentials ------------------------------------------------
     if (preamble_contains_keysig)
     {
-        x_left+=KEYCHANGE_ACC_LEFTDIST;
+        MusECore::KeyEvent key=key_at_tick(tick);
+        QPixmap* pix_acc=is_sharp_key(key.key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
+        list<int> acclist=calc_accidentials(key.key,clef);
 
-        MusECore::key_enum key=key_at_tick(tick);
-        QPixmap* pix_acc=is_sharp_key(key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
-        list<int> acclist=calc_accidentials(key,clef);
+        const int str_y_coord = -4 * YLEN + 2 /* margin */;
+        const QString kstr = key.keyString();
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+        const int ksw = fontMetrics().horizontalAdvance(kstr);
+#else
+        const int ksw = fontMetrics().width(kstr);
+#endif
+        int kstrx = x_left - ksw / 2;
+        if(kstrx < 0)
+          kstrx = 0;
+        p.drawText(kstrx, y_offset + str_y_coord, kstr);
+        x_left+=KEYCHANGE_ACC_LEFTDIST;
 
         draw_accidentials(p,x_left, y_offset, acclist ,*pix_acc);
 
@@ -3887,7 +3909,7 @@ int ScoreCanvas::x_to_tick(int x)
     return t > min_t ? t : min_t;
 }
 
-MusECore::key_enum ScoreCanvas::key_at_tick(int t_)
+MusECore::KeyEvent ScoreCanvas::key_at_tick(int t_)
 {
     unsigned int t= (t_>=0) ? t_ : 0;
 
@@ -3943,7 +3965,7 @@ int ScoreCanvas::y_to_height(int y)
 
 int ScoreCanvas::y_to_pitch(int y, int t, clef_t clef)
 {
-    return height_to_pitch(y_to_height(y), clef, key_at_tick(t));
+    return height_to_pitch(y_to_height(y), clef, key_at_tick(t).key);
 }
 
 

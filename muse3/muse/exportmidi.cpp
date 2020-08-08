@@ -44,6 +44,185 @@
 namespace MusECore {
 
 //---------------------------------------------------------
+//   addMarkerList
+//---------------------------------------------------------
+
+static void addMarkerList(MPEventList* l, int port = 0)
+{
+  MusECore::MarkerList* ml = MusEGlobal::song->marker();
+  for (MusECore::ciMarker m = ml->begin(); m != ml->end(); ++m) {
+        QByteArray ba = m->second.name().toLatin1();
+        const char* name = ba.constData();
+        int len = ba.length();
+        MusECore::MidiPlayEvent ev(m->first, port, MusECore::ME_META, (const unsigned char*)name, len);
+        ev.setA(MusECore::ME_META_TEXT_6_MARKER);
+        l->add(ev);
+        }
+};
+
+//---------------------------------------------------------
+//   addCopyright
+//---------------------------------------------------------
+
+static void addCopyright(MPEventList* l, int port = 0)
+{
+  QByteArray ba = MusEGlobal::config.copyright.toLatin1();
+  const char* copyright = ba.constData();
+  if (copyright && *copyright) {
+        int len = ba.length();
+        MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)copyright, len);
+        ev.setA(MusECore::ME_META_TEXT_2_COPYRIGHT);
+        l->add(ev);
+        }
+}
+
+//---------------------------------------------------------
+//   addComment
+//---------------------------------------------------------
+
+static void addComment(MPEventList* l, const Track* track, int port = 0)
+{
+    if (!track->comment().isEmpty()) {
+          QByteArray ba = track->comment().toLatin1();
+          const char* comment = ba.constData();
+          int len = ba.length();
+          MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)comment, len);
+          ev.setA(MusECore::ME_META_TEXT_1_COMMENT);
+          l->add(ev);
+          }
+}
+  
+//---------------------------------------------------------
+//   addTempomap
+//---------------------------------------------------------
+
+static void addTempomap(MPEventList* l, int port = 0)
+{
+  MusECore::TempoList* tl = &MusEGlobal::tempomap;
+  for (MusECore::ciTEvent e = tl->begin(); e != tl->end(); ++e) {
+        MusECore::TEvent* event = e->second;
+        unsigned char data[3];
+        int tempo = event->tempo;
+        data[2] = tempo & 0xff;
+        data[1] = (tempo >> 8) & 0xff;
+        data[0] = (tempo >> 16) & 0xff;
+        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, 3);
+        ev.setA(MusECore::ME_META_SET_TEMPO);
+        l->add(ev);
+        }
+}
+
+//---------------------------------------------------------
+//   addTimeSignatures
+//---------------------------------------------------------
+
+static void addTimeSignatures(MPEventList* l, int port = 0)
+{
+  const MusECore::SigList* sl = &MusEGlobal::sigmap;
+  for (MusECore::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
+        MusECore::SigEvent* event = e->second;
+        int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
+        unsigned char data[sz];
+        data[0] = event->sig.z;
+        switch(event->sig.n) {
+              case 1:  data[1] = 0; break;
+              case 2:  data[1] = 1; break;
+              case 4:  data[1] = 2; break;
+              case 8:  data[1] = 3; break;
+              case 16: data[1] = 4; break;
+              case 32: data[1] = 5; break;
+              case 64: data[1] = 6; break;
+              default:
+                    fprintf(stderr, "wrong Signature; denominator is %d\n", event->sig.n);
+                    break;
+              }
+        // By T356. In muse the metronome pulse is fixed at 24 (once per quarter-note).
+        // The number of 32nd notes per 24 MIDI clock signals (per quarter-note) is 8.
+        if(!MusEGlobal::config.exp2ByteTimeSigs)
+        {
+          data[2] = 24;
+          data[3] = 8;
+        }  
+        
+        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, sz);
+          
+        ev.setA(MusECore::ME_META_TIME_SIGNATURE);
+        l->add(ev);
+        }
+}
+                        
+//---------------------------------------------------------
+//   addKeySignatures
+//---------------------------------------------------------
+
+static void addKeySignatures(MPEventList* l, int port = 0)
+{
+  MusECore::KeyList* kl = &MusEGlobal::keymap;
+  for (MusECore::ciKeyEvent e = kl->cbegin(); e != kl->cend(); ++e) {
+        const MusECore::KeyEvent& event = e->second;
+        char kc = 0;
+        switch(event.key)
+        {
+          case KEY_SHARP_BEGIN:
+          case KEY_SHARP_END:
+          case KEY_B_BEGIN:
+          case KEY_B_END:
+            continue;
+          break;
+          case KEY_C:   // C or am: uses # for "black keys"
+            kc = 0;
+          break;
+          case KEY_G:
+            kc = 1;
+          break;
+          case KEY_D:
+            kc = 2;
+          break;
+          case KEY_A:
+            kc = 3;
+          break;
+          case KEY_E:
+            kc = 4;
+          break;
+          case KEY_B: // or H in german.
+            kc = 5;
+          break;
+          case KEY_FIS: //replaces F with E#
+            kc = 5;
+          break;
+          case KEY_C_B:  // the same as C: but uses b for "black keys"
+            kc = 0;
+          break;
+          case KEY_F:
+            kc = -1;
+          break;
+          case KEY_BES: // or B in german
+            kc = -2;
+          break;
+          case KEY_ES:
+            kc = -3;
+          break;
+          case KEY_AS:
+            kc = -4;
+          break;
+          case KEY_DES:
+            kc = -5;
+          break;
+          case KEY_GES: //sounds like FIS: but uses b instead of #
+            kc = -5;
+          break;
+          
+        };
+        unsigned char data[2];
+        data[1] = event.minor;
+        data[0] = kc;
+        MusECore::MidiPlayEvent ev(event.tick, port, MusECore::ME_META, data, 2);
+        ev.setA(MusECore::ME_META_KEY_SIGNATURE);
+        l->add(ev);
+        }
+}
+
+//---------------------------------------------------------
 //   addController
 //---------------------------------------------------------
 
@@ -141,10 +320,11 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
 //     track can be NULL meaning no concept of drum notes is allowed in init sequences.
 //---------------------------------------------------------
 
-static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventList* mpevlist, MusECore::MidiTrack* track, MusECore::Part* part, int port, int channel)
+static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventList* mpevlist,
+                         const MusECore::MidiTrack* track, const MusECore::Part* part, int port, int channel)
 {      
   DrumMap dm;
-  for (MusECore::ciEvent i = evlist.begin(); i != evlist.end(); ++i) 
+  for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) 
   {
     const MusECore::Event& ev = i->second;
     int tick = ev.tick();
@@ -291,6 +471,23 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
     }
 }
 
+//---------------------------------------------------------
+//   addTrackEvents
+//---------------------------------------------------------
+
+static void addTrackEvents(MPEventList* l, int port, int channel, const MidiTrack* track)
+{
+  //---------------------------------------------------
+  //    Write all track events.
+  //---------------------------------------------------
+
+  const MusECore::PartList* parts = track->cparts();
+  for (MusECore::ciPart p = parts->cbegin(); p != parts->cend(); ++p) {
+        const MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
+        MusECore::addEventList(part->events(), l, track, part, port, channel); 
+        }
+}
+
 static void writeDeviceOrPortMeta(int port, MPEventList* mpel)
 {
   if(port >= 0 && port < MusECore::MIDI_PORTS)
@@ -423,190 +620,70 @@ void MusE::exportMidi()
       MusECore::DrumMap dm;
       std::set<int> used_ports;
       
-      int track_count = 0;
-      MusECore::MidiFileTrack* mft = 0;
-      for (MusECore::ciTrack im = tl->begin(); im != tl->end(); ++im) {
-        
-            if(!(*im)->isMidiTrack())
-              continue;
-              
-            MusECore::MidiTrack* track = (MusECore::MidiTrack*)(*im);
+      // There will always be at least one track, regardless of format.
+      int track_count = 1;
+      MusECore::MidiFileTrack* mft = new MusECore::MidiFileTrack;
+      mtl->push_back(mft);
+      MusECore::MPEventList* l = &(mft->events);
+      // Write track marker
+      addMarkerList(l);
+      // Write copyright
+      addCopyright(l);
+      // Write comment // TODO Remove?
+      //addComment(l, track);
+      // Write tempomap
+      addTempomap(l);
+      // Write time signatures
+      addTimeSignatures(l);
+      // Write key signatures
+      addKeySignatures(l);
 
-            if (track_count == 0 || MusEGlobal::config.smfFormat != 0)    // Changed to single track. Tim
-            {  
-              mft = new MusECore::MidiFileTrack;
-              mtl->push_back(mft);
-            }
-            
-            MusECore::MPEventList* l   = &(mft->events);
-            int port         = track->outPort();
-            int channel      = track->outChannel();
-            
-            //---------------------------------------------------
-            //    only first midi track contains
-            //          - Track Marker
-            //          - copyright
-            //          - time signature
-            //          - tempo map
-            //          - cue points
-            //---------------------------------------------------
+        int tr_cnt = 0;
+        for(MusECore::ciTrack im = tl->cbegin(); im != tl->cend(); ++im)
+        {
+          if(!(*im)->isMidiTrack())
+            continue;
 
-            if (track_count == 0) {
-                  //---------------------------------------------------
-                  //    Write Track Marker
-                  //
-                  MusECore::MarkerList* ml = MusEGlobal::song->marker();
-                  for (MusECore::ciMarker m = ml->begin(); m != ml->end(); ++m) {
-                        QByteArray ba = m->second.name().toLatin1();
-                        const char* name = ba.constData();
-                        int len = ba.length();
-                        MusECore::MidiPlayEvent ev(m->first, port, MusECore::ME_META, (const unsigned char*)name, len);
-                        ev.setA(MusECore::ME_META_TEXT_6_MARKER);
-                        l->add(ev);
-                        }
-
-                  //---------------------------------------------------
-                  //    Write Copyright
-                  //
-                  QByteArray ba = MusEGlobal::config.copyright.toLatin1();
-                  const char* copyright = ba.constData();
-                  if (copyright && *copyright) {
-                        int len = ba.length();
-                        MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)copyright, len);
-                        ev.setA(MusECore::ME_META_TEXT_2_COPYRIGHT);
-                        l->add(ev);
-                        }
-
-                  //---------------------------------------------------
-                  //    Write Comment
-                  //
-                  //if (MusEGlobal::config.smfFormat == 0)  // Only for smf 0 added by Tim. FIXME: Is this correct? See below.
-                  {
-                    //QString comment = track->comment();
-                    //if (!comment.isEmpty()) {
-                    if (!track->comment().isEmpty()) {
-                          //int len = comment.length();
-                          QByteArray ba = track->comment().toLatin1();
-                          const char* comment = ba.constData();
-                          int len = ba.length();
-                          //MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)(comment.toLatin1().constData()), len);
-                          MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)comment, len);
-                          ev.setA(MusECore::ME_META_TEXT_1_COMMENT);
-                          l->add(ev);
-                          }
-                  }
-                  
-                  //---------------------------------------------------
-                  //    Write Tempomap
-                  //
-                  MusECore::TempoList* tl = &MusEGlobal::tempomap;
-                  for (MusECore::ciTEvent e = tl->begin(); e != tl->end(); ++e) {
-                        MusECore::TEvent* event = e->second;
-                        unsigned char data[3];
-                        int tempo = event->tempo;
-                        data[2] = tempo & 0xff;
-                        data[1] = (tempo >> 8) & 0xff;
-                        data[0] = (tempo >> 16) & 0xff;
-                        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, 3);
-                        ev.setA(MusECore::ME_META_SET_TEMPO);
-                        l->add(ev);
-                        }
-
-                  //---------------------------------------------------
-                  //    Write Signatures
-                  //
-                  const MusECore::SigList* sl = &MusEGlobal::sigmap;
-                  for (MusECore::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
-                        MusECore::SigEvent* event = e->second;
-                        int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
-                        unsigned char data[sz];
-                        data[0] = event->sig.z;
-                        switch(event->sig.n) {
-                              case 1:  data[1] = 0; break;
-                              case 2:  data[1] = 1; break;
-                              case 4:  data[1] = 2; break;
-                              case 8:  data[1] = 3; break;
-                              case 16: data[1] = 4; break;
-                              case 32: data[1] = 5; break;
-                              case 64: data[1] = 6; break;
-                              default:
-                                    fprintf(stderr, "wrong Signature; denominator is %d\n", event->sig.n);
-                                    break;
-                              }
-                        // By T356. In muse the metronome pulse is fixed at 24 (once per quarter-note).
-                        // The number of 32nd notes per 24 MIDI clock signals (per quarter-note) is 8.
-                        if(!MusEGlobal::config.exp2ByteTimeSigs)
-                        {
-                          data[2] = 24;
-                          data[3] = 8;
-                        }  
-                        
-                        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, sz);
-                          
-                        ev.setA(MusECore::ME_META_TIME_SIGNATURE);
-                        l->add(ev);
-                        }
-                  }
-
-            //-----------------------------------
-            //   track name
-            //-----------------------------------
-
-            if (track_count == 0 || MusEGlobal::config.smfFormat != 0)
-              MusECore::writeTrackNameMeta(port, track, l);
-            
-            //-----------------------------------
-            //   track comment
-            //-----------------------------------
-
-            if (MusEGlobal::config.smfFormat != 0)
-            {
-              if (!track->comment().isEmpty()) {
-                    QByteArray ba = track->comment().toLatin1();
-                    const char* comment = ba.constData();
-                    int len = ba.length();
-                    MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)comment, len);
-                    ev.setA(MusECore::ME_META_TEXT_F_TRACK_COMMENT);    // Meta Text
-                    //ev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
-                    l->add(ev);
-                    }
-            }
-            
-            //-----------------------------------------
-            //    Write device name or port change meta
-            //-----------------------------------------
-            
-            if((track_count == 0 && MusEGlobal::config.exportPortDeviceSMF0) || (MusEGlobal::config.smfFormat != 0))
-              MusECore::writeDeviceOrPortMeta(port, l);
-            
-            //---------------------------------------------------
-            //    Write midi port init sequence: GM/GS/XG etc. 
-            //     and Instrument Name meta.
-            //---------------------------------------------------
-
-            std::set<int>::iterator iup = used_ports.find(port);
-            if(iup == used_ports.end())
-            {
-              if(port >= 0 && port < MusECore::MIDI_PORTS)
-              {
-                if(track_count == 0 || MusEGlobal::config.smfFormat != 0)
-                  MusECore::writeInitSeqOrInstrNameMeta(port, channel, l);
-                used_ports.insert(port);
-              }
-            }
-            
-            //---------------------------------------------------
-            //    Write all track events.
-            //---------------------------------------------------
-
-            MusECore::PartList* parts = track->parts();
-            for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
-                  MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
-                  MusECore::addEventList(part->events(), l, track, part, port, channel); 
-                  }
-                  
+          if(MusEGlobal::config.smfFormat != 0)
+          {  
+            mft = new MusECore::MidiFileTrack;
+            mtl->push_back(mft);
+            l = &(mft->events);
             ++track_count;
+          }
+
+          MusECore::MidiTrack* track = (MusECore::MidiTrack*)(*im);
+          const int port         = track->outPort();
+          const int channel      = track->outChannel();
+
+          if(tr_cnt == 0 || MusEGlobal::config.smfFormat != 0)
+          {
+            // Write comment
+            addComment(l, track, port);
+            // Write track name
+            writeTrackNameMeta(port, track, l);
+            // Write device name or port change meta
+            if(MusEGlobal::config.exportPortDeviceSMF0)
+              writeDeviceOrPortMeta(port, l);
+            //writeInitSeqOrInstrNameMeta(port, channel, l);
+          }
+          // Write midi port init sequence: GM/GS/XG etc. 
+          //  and Instrument Name meta.
+          std::set<int>::iterator iup = used_ports.find(port);
+          if(iup == used_ports.end())
+          {
+            if(port >= 0 && port < MusECore::MIDI_PORTS)
+            {
+              if(tr_cnt == 0 || MusEGlobal::config.smfFormat != 0)
+                MusECore::writeInitSeqOrInstrNameMeta(port, channel, l);
+              used_ports.insert(port);
             }
+          }
+          // Write all track events.
+          addTrackEvents(l, port, channel, track);
+
+          ++tr_cnt;
+        }
 
       // For drum tracks with drum map port overrides, we may need to add extra tracks.
       // But we can can only do that if multi-track format is chosen.
