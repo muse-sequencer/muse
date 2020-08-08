@@ -1,3 +1,12 @@
+08.08.2020
+    - Piano: Reimplemented drawing, changed from pixmaps puzzle to vector-based drawing. (kybos)
+    - Piano: Separated key selection from playback. Made markers/selections better visible
+        and independent of each other. (kybos)
+    - Piano: Made selection/current/pressed marker colors customizable. (kybos)
+    - Piano: Made piano width changeable from stylesheet. (kybos)
+    - Piano: Added tooltip showing current playback velocity. (kybos)
+    - Fixed dark text on dark background in midi control canvas. (kybos)
+    
 30.07.2020
     - Moved rewind on stop shortcut from arranger to global, fixes issue #839 (rj)
 29.07.2020
