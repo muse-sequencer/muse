@@ -462,7 +462,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         p->setClipping(false);
 
     if (d_frame) {
-        p->setPen(QColor(70,70,70));
+        p->setPen(d_frameColor);
         p->drawPath(clip_path);
     }
     }
