@@ -238,7 +238,7 @@ void EffectRack::updateContents()
             const QString uri = pipe->uri(i);
             item(i)->setText(name);
             const QString ttname = name + (uri.isEmpty() ? QString() : QString(" \n") + uri);
-            item(i)->setToolTip(pipe->empty(i) ? tr("Effect rack") : ttname );
+            item(i)->setToolTip(pipe->empty(i) ? tr("Effect rack\nDouble-click a slot to insert FX") : ttname );
             //item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             if(viewport())
             {
