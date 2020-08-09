@@ -17,12 +17,12 @@ QWidget:!enabled {
 }
 
 QToolButton {
-    border: 1px solid rgb(90,100,110);
+    border: 1px solid rgb(0,90,160);
     border-radius: 2px;
 }
 
 QPushButton {
-    border: 1px solid rgb(90,100,110);
+    border: 1px solid rgb(0,90,160);
     border-radius: 2px;
     padding: 3px;
 }
@@ -30,6 +30,7 @@ QPushButton {
 QToolButton:pressed, QToolButton:checked, 
 QPushButton:pressed, QPushButton:checked {
     background-color: rgb(0,90,160);
+    border: 1px solid rgb(0,127,255);
 }
 
 /*
@@ -54,18 +55,14 @@ QMenu::item:selected, QMenuBar::item:selected {
 QToolBar QToolButton {
     background-color: rgb(70,80,90);
 	margin-right: 1px;
-    border-color: rgb(0,90,160);
-    border-style: solid;
-    border-width: 1px;
+    border: 1px solid rgb(0,90,160);
     border-radius: 2px;
     padding: 2px;
 }
 
 QToolBar QToolButton:checked {
     background-color: rgb(0,90,160);
-    border-color: rgb(0,127,255);
-    border-style: solid;
-    border-width: 1px;
+    border: 1px solid rgb(0,127,255);
     border-radius: 2px;
     padding: 2px;
 }
