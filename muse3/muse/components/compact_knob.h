@@ -58,6 +58,7 @@ class CompactKnob : public SliderBase, public ScaleIf
    public:
       enum KnobLabelPos { None, Left, Right, Top, Bottom };
       enum Symbol { Line, Dot };
+      Q_ENUM(Symbol)
 
       Q_PROPERTY( QSize margins READ margins WRITE setMargins )
       Q_PROPERTY( int xMargin READ xMargin WRITE setXMargin )
@@ -82,6 +83,8 @@ class CompactKnob : public SliderBase, public ScaleIf
 
       Q_PROPERTY( bool style3d READ style3d WRITE setStyle3d )
       Q_PROPERTY( int radius READ radius WRITE setRadius )
+      Q_PROPERTY( Symbol symbol READ symbol WRITE setSymbol )
+      Q_PROPERTY( bool drawChord READ drawChord WRITE setDrawChord )
 
    private:
       KnobLabelPos d_labelPos;
@@ -102,6 +105,7 @@ class CompactKnob : public SliderBase, public ScaleIf
 
       bool _style3d;
       int _radius;
+      bool _drawChord;
 
       PopupDoubleSpinBox* _editor;
       bool _editMode;
@@ -273,6 +277,10 @@ class CompactKnob : public SliderBase, public ScaleIf
       void setStyle3d(const bool style3d) { _style3d = style3d; }
       int radius() const { return _radius; }
       void setRadius(const int radius) { _radius = radius; }
+      Symbol symbol() const { return d_symbol; }
+      void setSymbol(const Symbol s) { d_symbol = s; }
+      bool drawChord() const { return _drawChord; }
+      void setDrawChord(const bool draw) { _drawChord = draw; }
 
       virtual QSize sizeHint() const;
       };

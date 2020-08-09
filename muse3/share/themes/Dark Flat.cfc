@@ -54,7 +54,7 @@
     <synthTrackLabelBg r="255" g="149" b="63"></synthTrackLabelBg>
     <midiTrackBg r="63" g="127" b="190"></midiTrackBg>
     <ctrlGraphFg r="0" g="85" b="255"></ctrlGraphFg>
-    <ctrlGraphSel r="255" g="170" b="0"></ctrlGraphSel>
+    <ctrlGraphSel r="255" g="85" b="0"></ctrlGraphSel>
     <drumTrackBg r="49" g="71" b="90"></drumTrackBg>
     <newDrumTrackBg r="61" g="135" b="135"></newDrumTrackBg>
     <waveTrackBg r="126" g="111" b="212"></waveTrackBg>
@@ -82,11 +82,11 @@
     <midiMeterPrimaryColor r="0" g="255" b="0"></midiMeterPrimaryColor>
     <meterBackgroundColor r="21" g="21" b="21"></meterBackgroundColor>
     <rackItemBackgroundColor r="90" g="90" b="90"></rackItemBackgroundColor>
-    <rackItemBgActiveColor r="0" g="120" b="200"></rackItemBgActiveColor>
-    <rackItemFontColor r="40" g="40" b="40"></rackItemFontColor>
+    <rackItemBgActiveColor r="0" g="100" b="167"></rackItemBgActiveColor>
+    <rackItemFontColor r="15" g="15" b="15"></rackItemFontColor>
     <rackItemFontActiveColor r="255" g="255" b="255"></rackItemFontActiveColor>
     <rackItemBorderColor r="40" g="40" b="40"></rackItemBorderColor>
-    <rackItemFontColorHover r="255" g="255" b="127"></rackItemFontColorHover>
+    <rackItemFontColorHover r="190" g="190" b="190"></rackItemFontColorHover>
     <palSwitchBackgroundColor r="90" g="90" b="90"></palSwitchBackgroundColor>
     <palSwitchBgActiveColor r="0" g="120" b="200"></palSwitchBgActiveColor>
     <palSwitchFontColor r="0" g="0" b="0"></palSwitchFontColor>
@@ -119,11 +119,14 @@
     <midiCanvasBarColor r="80" g="80" b="80"></midiCanvasBarColor>
     <midiDividerColor r="70" g="70" b="72"></midiDividerColor>
     <midiItemColor r="0" g="0" b="255"></midiItemColor>
-    <midiItemSelectedColor r="255" g="170" b="0"></midiItemSelectedColor>
+    <midiItemSelectedColor r="255" g="85" b="0"></midiItemSelectedColor>
     <midiControllerViewBackgroundColor r="48" g="49" b="50"></midiControllerViewBackgroundColor>
     <drumListBackgroundColor r="40" g="40" b="40"></drumListBackgroundColor>
     <drumListFont r="200" g="200" b="200"></drumListFont>
     <drumListSel r="0" g="230" b="0"></drumListSel>
     <drumListSelFont r="0" g="0" b="0"></drumListSelFont>
+    <pianoCurrentKey r="0" g="191" b="255"></pianoCurrentKey>
+    <pianoPressedKey r="255" g="85" b="0"></pianoPressedKey>
+    <pianoSelectedKey r="255" g="255" b="127"></pianoSelectedKey>
   </configuration>
 </muse>

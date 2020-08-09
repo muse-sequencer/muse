@@ -54,7 +54,7 @@ QMenu::item:selected, QMenuBar::item:selected {
 QToolBar QToolButton {
     background-color: rgb(70,80,90);
 	margin-right: 1px;
-    border-color: rgb(15,82,148);
+    border-color: rgb(0,90,160);
     border-style: solid;
     border-width: 1px;
     border-radius: 2px;
@@ -63,7 +63,7 @@ QToolBar QToolButton {
 
 QToolBar QToolButton:checked {
     background-color: rgb(0,90,160);
-    border-color: rgb(0,120,230);
+    border-color: rgb(0,127,255);
     border-style: solid;
     border-width: 1px;
     border-radius: 2px;
@@ -71,16 +71,16 @@ QToolBar QToolButton:checked {
 }
 
 QToolBar QToolButton:hover {
-    background-color: rgb(0,130,200);
+    background-color: rgb(0,127,255);
     border-width: 1px;
     border-radius: 2px;
-    padding-top: 0px;
+    padding: 2px;
 }
 
 QToolBar QToolButton:pressed {
     border-width: 1px;
     border-radius: 2px;
-    padding-top: 0px;
+    padding: 2px;
 }
 
 QToolBar QToolButton[popupMode="1"] {
@@ -100,7 +100,7 @@ QToolBar QAbstractSpinBox {
 */
     border-radius: 2px;
     height: 20px;    
-    border: 1px solid rgb(0,120,230);
+    border: 1px solid rgb(0,100,210);
 }
 
 QToolBar QAbstractSpinBox::up-button { 
@@ -133,7 +133,7 @@ QToolBar QComboBox {
 /*
     color: rgb(152, 251, 152);
 */
-    border: 1px solid rgb(0,120,230);
+    border: 1px solid rgb(0,100,210);
     border-radius: 2px;
     padding: 1px;
     height: 20px;
@@ -160,7 +160,7 @@ QToolBar QLabel#PitchLabel,
 QToolBar QLabel#TempoLabel,
 QToolBar QLabel#PaddedValueLabel {
     background-color: rgb(40,50,60);
-    border: 1px solid rgb(0,120,230);
+    border: 1px solid rgb(0,100,210);
     border-radius: 2px;
     height: 20px;
 }
@@ -296,12 +296,14 @@ MusEGui--CompactPatchEdit {
 
 MusEGui--CompactKnob {
     qproperty-style3d: false;
-    qproperty-radius: 2;
+    qproperty-xMargin: 2;
+    qproperty-yMargin: 2;
+    qproperty-symbol: Dot;
 /*
-    qproperty-xMargin: 5;
-    qproperty-yMargin: 5;
-    qproperty-borderWidth: 0;
-    qproperty-knobWidth: 50;
+    qproperty-drawChord: true;
+    qproperty-totalAngle: 270;
+    qproperty-radius: 2;
+    qproperty-borderWidth: 4;
 */
 }
 

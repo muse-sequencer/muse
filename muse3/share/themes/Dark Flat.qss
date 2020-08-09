@@ -301,12 +301,14 @@ MusEGui--CompactPatchEdit {
 
 MusEGui--CompactKnob {
     qproperty-style3d: false;
-    qproperty-radius: 0;
+    qproperty-drawChord: true;
+    qproperty-xMargin: 2;
+    qproperty-yMargin: 2;
 /*
-    qproperty-xMargin: 5;
-    qproperty-yMargin: 5;
-    qproperty-borderWidth: 0;
-    qproperty-knobWidth: 50;
+    qproperty-totalAngle: 270;
+    qproperty-radius: 2;
+    qproperty-symbol: Dot;
+    qproperty-borderWidth: 4;
 */
 }
 
