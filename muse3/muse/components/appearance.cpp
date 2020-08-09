@@ -777,8 +777,8 @@ bool Appearance::changeTheme()
 
     QString currentTheme = colorSchemeComboBox->currentText();
     QString lastTheme = QFileInfo(config->styleSheetFile).baseName();
-    if (lastTheme.isEmpty()) // default theme has not stylesheet
-        lastTheme = "Light Theme";
+    if (lastTheme.isEmpty())
+        lastTheme = "Dark Flat";
 
     if (lastTheme == currentTheme)
         return false;
