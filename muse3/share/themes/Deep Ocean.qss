@@ -51,7 +51,24 @@ QToolTip, QWhatsThat {
     color: rgb(30,30,30);
     font-size: 10pt;
 }   
-    
+
+QMenu {
+    border: 1px solid rgb(0,90,160);
+}
+
+QMenu::separator {
+	background-color: rgb(0,90,160);
+	height: 1px;
+}
+
+QMenu::item, QMenu::icon {
+	padding: 4px 6px;
+}
+
+QMenu::indicator {
+    left: 6px;
+}
+
 QMenu::item:selected, QMenuBar::item:selected {
     background-color: rgb(0,90,160);
 }
