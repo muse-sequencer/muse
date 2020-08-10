@@ -445,42 +445,48 @@ QCursor* pencilMoveHorizCursor;
 QCursor* pencilMoveVertCursor;
 
 
+//---------------------------------------------------------
+//   class Icons
+//---------------------------------------------------------
 
 class Icons {
-    QString _path;
-    bool _user = false;
+    QStringList _global, _user;
+    QString _path_global, _path_user;
+    bool _global_on, _user_on;
 
 public:
-    Icons(const QString & path)
-        : _path(path)
+    Icons(const QString & path_global, const QString & path_user)
+        : _path_global(path_global),
+          _path_user(path_user)
     {
-        QDir dir(path);
-        if (dir.exists())
-            _user = true;
+        QDir dir(path_global, "*.svg");
+        _global = dir.entryList(QDir::Files);
+        _global_on = !_global.isEmpty();
+        dir.setPath(path_user);
+        _user = dir.entryList(QDir::Files);
+        _user_on = !_user.isEmpty();
     }
 
-    QIcon * getSVG(const QString & name) {
-        if (_user) {
-            QString fpath(_path + "/" + name);
-            if (QFile::exists(fpath))
-                return new QIcon(fpath);
-        }
+    QIcon* getSVG(const QString & name) {
+        if (_user_on && _user.contains(name))
+            return new QIcon(_path_user + "/" + name);
+        if (_global_on && _global.contains(name))
+            return new QIcon(_path_global + "/" + name);
 
         return new QIcon(":/svg/" + name);
     }
 };
 
 
-
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
 
-void initIcons(int cursorSize, const QString &ipath)
+void initIcons(int cursorSize, const QString& gpath, const QString& upath)
       {
       const qreal dpr = qApp->devicePixelRatio();
 
-      Icons icons(ipath);
+      Icons icons(gpath, upath);
         
       track_commentIcon = new QPixmap(track_comment_xpm);
       deleteIcon        = new QPixmap(delete_xpm);
