@@ -16,6 +16,10 @@ QWidget:!enabled {
 	filedialog-listview-icon: url(":/xpm/viewlist-128.png");
 }
 
+QDialogButtonBox {
+	button-layout: 2;
+}
+
 QToolButton {
     border: 1px solid rgb(0,90,160);
     border-radius: 2px;
