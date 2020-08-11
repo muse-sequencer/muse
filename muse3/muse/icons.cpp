@@ -27,6 +27,7 @@
 
 #include <QIcon>
 #include <QCursor>
+#include <QDir>
 
 #include "xpm/track_comment.xpm"
 #include "xpm/audio_bounce_to_file.xpm"
@@ -443,13 +444,49 @@ QCursor* pencilMove4WayCursor;
 QCursor* pencilMoveHorizCursor;
 QCursor* pencilMoveVertCursor;
 
+
+//---------------------------------------------------------
+//   class Icons
+//---------------------------------------------------------
+
+class Icons {
+    QStringList _global, _user;
+    QString _path_global, _path_user;
+    bool _global_on, _user_on;
+
+public:
+    Icons(const QString & path_global, const QString & path_user)
+        : _path_global(path_global),
+          _path_user(path_user)
+    {
+        QDir dir(path_global, "*.svg");
+        _global = dir.entryList(QDir::Files);
+        _global_on = !_global.isEmpty();
+        dir.setPath(path_user);
+        _user = dir.entryList(QDir::Files);
+        _user_on = !_user.isEmpty();
+    }
+
+    QIcon* getSVG(const QString & name) {
+        if (_user_on && _user.contains(name))
+            return new QIcon(_path_user + "/" + name);
+        if (_global_on && _global.contains(name))
+            return new QIcon(_path_global + "/" + name);
+
+        return new QIcon(":/svg/" + name);
+    }
+};
+
+
 //---------------------------------------------------------
 //   initIcons
 //---------------------------------------------------------
 
-void initIcons(int cursorSize)
+void initIcons(int cursorSize, const QString& gpath, const QString& upath)
       {
       const qreal dpr = qApp->devicePixelRatio();
+
+      Icons icons(gpath, upath);
         
       track_commentIcon = new QPixmap(track_comment_xpm);
       deleteIcon        = new QPixmap(delete_xpm);
@@ -589,159 +626,159 @@ void initIcons(int cursorSize)
       //   SVG...
       //----------------------------------
 
-      dropDownTriangleSVGIcon  = new QIcon(":/svg/drop_down_triangle.svg");
-      expandLeftRightSVGIcon  = new QIcon(":/svg/expand_left_right.svg");
+      dropDownTriangleSVGIcon  = icons.getSVG("drop_down_triangle.svg");
+      expandLeftRightSVGIcon  = icons.getSVG("expand_left_right.svg");
       
-      routingInputSVGIcon = new QIcon(":/svg/routing_input.svg");
-      routingOutputSVGIcon = new QIcon(":/svg/routing_output.svg");
-      routingInputUnconnectedSVGIcon = new QIcon(":/svg/routing_input_unconnected.svg");
-      routingOutputUnconnectedSVGIcon = new QIcon(":/svg/routing_output_unconnected.svg");
+      routingInputSVGIcon = icons.getSVG("routing_input.svg");
+      routingOutputSVGIcon = icons.getSVG("routing_output.svg");
+      routingInputUnconnectedSVGIcon = icons.getSVG("routing_input_unconnected.svg");
+      routingOutputUnconnectedSVGIcon = icons.getSVG("routing_output_unconnected.svg");
 
-      headphonesOffSVGIcon = new QIcon(":/svg/headphones_off.svg");
-      headphonesOnSVGIcon = new QIcon(":/svg/headphones_on.svg");
+      headphonesOffSVGIcon = icons.getSVG("headphones_off.svg");
+      headphonesOnSVGIcon = icons.getSVG("headphones_on.svg");
 
-      muteOffSVGIcon = new QIcon(":/svg/mute_off.svg");
-      muteOnSVGIcon = new QIcon(":/svg/mute_on.svg");
-      muteOnXSVGIcon = new QIcon(":/svg/mute_on_X.svg");
-      muteProxyOnSVGIcon = new QIcon(":/svg/mute_proxy_on.svg");
-      muteAndProxyOnSVGIcon = new QIcon(":/svg/mute_and_proxy_on.svg");
+      muteOffSVGIcon = icons.getSVG("mute_off.svg");
+      muteOnSVGIcon = icons.getSVG("mute_on.svg");
+      muteOnXSVGIcon = icons.getSVG("mute_on_X.svg");
+      muteProxyOnSVGIcon = icons.getSVG("mute_proxy_on.svg");
+      muteAndProxyOnSVGIcon = icons.getSVG("mute_and_proxy_on.svg");
 
-      soloOffSVGIcon = new QIcon(":/svg/solo_spotlight_off.svg");
-      soloOnSVGIcon = new QIcon(":/svg/solo_spotlight_on.svg");
-      soloOnAloneSVGIcon = new QIcon(":/svg/solo_spotlight_on_alone.svg");
-      soloProxyOnSVGIcon = new QIcon(":/svg/solo_proxy_spotlight_on.svg");
-      soloProxyOnAloneSVGIcon = new QIcon(":/svg/solo_proxy_spotlight_on_alone.svg");
-      soloAndProxyOnSVGIcon = new QIcon(":/svg/solo_and_proxy_spotlight_on.svg");
+      soloOffSVGIcon = icons.getSVG("solo_spotlight_off.svg");
+      soloOnSVGIcon = icons.getSVG("solo_spotlight_on.svg");
+      soloOnAloneSVGIcon = icons.getSVG("solo_spotlight_on_alone.svg");
+      soloProxyOnSVGIcon = icons.getSVG("solo_proxy_spotlight_on.svg");
+      soloProxyOnAloneSVGIcon = icons.getSVG("solo_proxy_spotlight_on_alone.svg");
+      soloAndProxyOnSVGIcon = icons.getSVG("solo_and_proxy_spotlight_on.svg");
 
-      trackOffSVGIcon  = new QIcon(":/svg/track_off.svg");
-      trackOnSVGIcon = new QIcon(":/svg/track_on.svg");
+      trackOffSVGIcon  = icons.getSVG("track_off.svg");
+      trackOnSVGIcon = icons.getSVG("track_on.svg");
 
-      stereoOffSVGIcon  = new QIcon(":/svg/stereo_off.svg");
-      stereoOnSVGIcon = new QIcon(":/svg/stereo_on.svg");
+      stereoOffSVGIcon  = icons.getSVG("stereo_off.svg");
+      stereoOnSVGIcon = icons.getSVG("stereo_on.svg");
 
-      preFaderOffSVGIcon  = new QIcon(":/svg/pre_fader_off.svg");
-      preFaderOnSVGIcon = new QIcon(":/svg/pre_fader_on.svg");
+      preFaderOffSVGIcon  = icons.getSVG("pre_fader_off.svg");
+      preFaderOnSVGIcon = icons.getSVG("pre_fader_on.svg");
 
-      recArmOffSVGIcon = new QIcon(":/svg/rec_arm_off_default_col.svg");
-      recArmOnSVGIcon = new QIcon(":/svg/rec_arm_on.svg");
+      recArmOffSVGIcon = icons.getSVG("rec_arm_off_default_col.svg");
+      recArmOnSVGIcon = icons.getSVG("rec_arm_on.svg");
 
-      monitorOffSVGIcon = new QIcon(":/svg/monitor_off_default_col.svg");
-      monitorOnSVGIcon = new QIcon(":/svg/monitor_on.svg");
+      monitorOffSVGIcon = icons.getSVG("monitor_off_default_col.svg");
+      monitorOnSVGIcon = icons.getSVG("monitor_on.svg");
 
-      velocityPerNoteSVGIcon = new QIcon(":/svg/velocity_all_notes.svg");
+      velocityPerNoteSVGIcon = icons.getSVG("velocity_all_notes.svg");
       velocityPerNoteSVGIcon->addFile(":/svg/velocity_per_note.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      midiControllerNewSVGIcon = new QIcon(":/svg/midi_controller_new.svg");
-      midiControllerSelectSVGIcon = new QIcon(":/svg/midi_controller_select.svg");
-      midiControllerRemoveSVGIcon = new QIcon(":/svg/midi_controller_remove.svg");
+      midiControllerNewSVGIcon = icons.getSVG("midi_controller_new.svg");
+      midiControllerSelectSVGIcon = icons.getSVG("midi_controller_select.svg");
+      midiControllerRemoveSVGIcon = icons.getSVG("midi_controller_remove.svg");
 
       
-      soloSVGIcon = new QIcon(":/svg/headphones_off.svg");
+      soloSVGIcon = icons.getSVG("headphones_off.svg");
       soloSVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
       // TODO
-      soloProxySVGIcon = new QIcon(":/svg/headphones_off.svg");
+      soloProxySVGIcon = icons.getSVG("headphones_off.svg");
       soloProxySVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      muteSVGIcon = new QIcon(":/svg/mute_off.svg");
+      muteSVGIcon = icons.getSVG("mute_off.svg");
       muteSVGIcon->addFile(":/svg/mute_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      trackEnableSVGIcon = new QIcon(":/svg/track_on.svg");
+      trackEnableSVGIcon = icons.getSVG("track_on.svg");
       trackEnableSVGIcon->addFile(":/svg/track_off.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      //recArmSVGIcon = new QIcon(":/svg/rec_arm_off_default_col.svg");
-      recArmSVGIcon = new QIcon(":/svg/rec_arm_off.svg");
+      //recArmSVGIcon = icons.getSVG("rec_arm_off_default_col.svg");
+      recArmSVGIcon = icons.getSVG("rec_arm_off.svg");
       recArmSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      //recMasterSVGIcon = new QIcon(":/svg/rec_arm_off_default_col.svg");
-      recMasterSVGIcon = new QIcon(":/svg/rec_arm_off.svg");
+      //recMasterSVGIcon = icons.getSVG("rec_arm_off_default_col.svg");
+      recMasterSVGIcon = icons.getSVG("rec_arm_off.svg");
       recMasterSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
 
-      stopSVGIcon = new QIcon(":/svg/stop.svg");
+      stopSVGIcon = icons.getSVG("stop.svg");
 
-      playSVGIcon = new QIcon(":/svg/play_off.svg");
+      playSVGIcon = icons.getSVG("play_off.svg");
       playSVGIcon->addFile(":/svg/play_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      fastForwardSVGIcon = new QIcon(":/svg/fast_forward.svg");
+      fastForwardSVGIcon = icons.getSVG("fast_forward.svg");
 
-      rewindSVGIcon = new QIcon(":/svg/rewind.svg");
+      rewindSVGIcon = icons.getSVG("rewind.svg");
 
-      rewindToStartSVGIcon = new QIcon(":/svg/rewind_to_start.svg");
+      rewindToStartSVGIcon = icons.getSVG("rewind_to_start.svg");
       
-      externSyncOffSVGIcon = new QIcon(":/svg/extern_sync_off.svg");
-      externSyncOnSVGIcon = new QIcon(":/svg/extern_sync_on.svg");
+      externSyncOffSVGIcon = icons.getSVG("extern_sync_off.svg");
+      externSyncOnSVGIcon = icons.getSVG("extern_sync_on.svg");
       
-      masterTrackOffSVGIcon = new QIcon(":/svg/master_track_off.svg");
-      masterTrackOnSVGIcon = new QIcon(":/svg/master_track_on.svg");
+      masterTrackOffSVGIcon = icons.getSVG("master_track_off.svg");
+      masterTrackOnSVGIcon = icons.getSVG("master_track_on.svg");
       
-      jackTransportOffSVGIcon = new QIcon(":/svg/jack_transport_off.svg");
-      jackTransportOnSVGIcon = new QIcon(":/svg/jack_transport_on.svg");
+      jackTransportOffSVGIcon = icons.getSVG("jack_transport_off.svg");
+      jackTransportOnSVGIcon = icons.getSVG("jack_transport_on.svg");
       
-      timebaseMasterOffSVGIcon = new QIcon(":/svg/timebase_master_off.svg");
-      timebaseMasterOnSVGIcon = new QIcon(":/svg/timebase_master_on.svg");
+      timebaseMasterOffSVGIcon = icons.getSVG("timebase_master_off.svg");
+      timebaseMasterOnSVGIcon = icons.getSVG("timebase_master_on.svg");
       
-      metronomeOffSVGIcon = new QIcon(":/svg/metronome_off.svg");
-      metronomeOnSVGIcon = new QIcon(":/svg/metronome_on.svg");
+      metronomeOffSVGIcon = icons.getSVG("metronome_off.svg");
+      metronomeOnSVGIcon = icons.getSVG("metronome_on.svg");
       
-      fixedSpeedSVGIcon = new QIcon(":/svg/speed_off.svg");
+      fixedSpeedSVGIcon = icons.getSVG("speed_off.svg");
       fixedSpeedSVGIcon->addFile(":/svg/speed_on.svg", QSize(), QIcon::Normal, QIcon::On);
-      transportAffectsLatencySVGIcon = new QIcon(":/svg/transport_affects_latency_off.svg");
+      transportAffectsLatencySVGIcon = icons.getSVG("transport_affects_latency_off.svg");
       transportAffectsLatencySVGIcon->addFile(":/svg/transport_affects_latency_on.svg", QSize(), QIcon::Normal, QIcon::On);
-      overrideLatencySVGIcon = new QIcon(":/svg/override_latency_off.svg");
+      overrideLatencySVGIcon = icons.getSVG("override_latency_off.svg");
       overrideLatencySVGIcon->addFile(":/svg/override_latency_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
-      panicSVGIcon      = new QIcon(":/svg/panic.svg");
-      loopSVGIcon       = new QIcon(":/svg/loop.svg");
-      punchinSVGIcon    = new QIcon(":/svg/punchin.svg");
-      punchoutSVGIcon   = new QIcon(":/svg/punchout.svg");
-      undoSVGIcon       = new QIcon(":/svg/undo.svg");
-      redoSVGIcon       = new QIcon(":/svg/redo.svg");
-      midiinSVGIcon     = new QIcon(":/svg/midiin.svg");
-      steprecSVGIcon    = new QIcon(":/svg/steprec.svg");
-      speakerSVGIcon    = new QIcon(":/svg/speaker.svg");
-      speakerSingleNoteSVGIcon = new QIcon(":/svg/speaker_single_note.svg");
-      speakerChordsSVGIcon     = new QIcon(":/svg/speaker_chords.svg");
-      whatsthisSVGIcon  = new QIcon(":/svg/whatsthis.svg");
-      exitSVGIcon       = new QIcon(":/svg/exit.svg");
-      noteSVGIcon       = new QIcon(":/svg/note.svg");
-      metaSVGIcon       = new QIcon(":/svg/meta.svg");
-      ctrlSVGIcon       = new QIcon(":/svg/ctrl.svg");
-      sysexSVGIcon      = new QIcon(":/svg/sysex.svg");
-      tracktypeSVGIcon  = new QIcon(":/svg/tracktype.svg");
-      mixerstripSVGIcon = new QIcon(":/svg/mixerstrip.svg");
+      panicSVGIcon      = icons.getSVG("panic.svg");
+      loopSVGIcon       = icons.getSVG("loop.svg");
+      punchinSVGIcon    = icons.getSVG("punchin.svg");
+      punchoutSVGIcon   = icons.getSVG("punchout.svg");
+      undoSVGIcon       = icons.getSVG("undo.svg");
+      redoSVGIcon       = icons.getSVG("redo.svg");
+      midiinSVGIcon     = icons.getSVG("midiin.svg");
+      steprecSVGIcon    = icons.getSVG("steprec.svg");
+      speakerSVGIcon    = icons.getSVG("speaker.svg");
+      speakerSingleNoteSVGIcon = icons.getSVG("speaker_single_note.svg");
+      speakerChordsSVGIcon     = icons.getSVG("speaker_chords.svg");
+      whatsthisSVGIcon  = icons.getSVG("whatsthis.svg");
+      exitSVGIcon       = icons.getSVG("exit.svg");
+      noteSVGIcon       = icons.getSVG("note.svg");
+      metaSVGIcon       = icons.getSVG("meta.svg");
+      ctrlSVGIcon       = icons.getSVG("ctrl.svg");
+      sysexSVGIcon      = icons.getSVG("sysex.svg");
+      tracktypeSVGIcon  = icons.getSVG("tracktype.svg");
+      mixerstripSVGIcon = icons.getSVG("mixerstrip.svg");
 
-      filenewSVGIcon     = new QIcon(":/svg/filenew.svg");
-      filetemplateSVGIcon = new QIcon(":/svg/filefromtemplate.svg");
-      fileopenSVGIcon    = new QIcon(":/svg/fileopen.svg");
-      filesaveSVGIcon    = new QIcon(":/svg/filesave.svg");
-      filesaveasSVGIcon  = new QIcon(":/svg/filesaveas.svg");
-      filecloseSVGIcon   = new QIcon(":/svg/fileclose.svg");
-      appexitSVGIcon     = new QIcon(":/svg/appexit.svg");
+      filenewSVGIcon     = icons.getSVG("filenew.svg");
+      filetemplateSVGIcon = icons.getSVG("filefromtemplate.svg");
+      fileopenSVGIcon    = icons.getSVG("fileopen.svg");
+      filesaveSVGIcon    = icons.getSVG("filesave.svg");
+      filesaveasSVGIcon  = icons.getSVG("filesaveas.svg");
+      filecloseSVGIcon   = icons.getSVG("fileclose.svg");
+      appexitSVGIcon     = icons.getSVG("appexit.svg");
 
 
       // tool icons
-      pencilIconSVG     = new QIcon(":/svg/pencil.svg");
-      glueIconSVG       = new QIcon(":/svg/glue.svg");
-      cutterIconSVG     = new QIcon(":/svg/cutter.svg");
-      zoomIconSVG       = new QIcon(":/svg/zoom.svg");
-      zoomAtIconSVG     = new QIcon(":/svg/zoomAt.svg");
-      deleteIconSVG     = new QIcon(":/svg/eraser.svg");
-      drawIconSVG       = new QIcon(":/svg/draw.svg");
-      pointerIconSVG    = new QIcon(":/svg/pointer.svg");
-      mutePartsIconSVG  = new QIcon(":/svg/mute_parts.svg");
-      handIconSVG       = new QIcon(":/svg/hand.svg");
-      closedHandIconSVG = new QIcon(":/svg/closed_hand.svg");
-      cursorIconSVG     = new QIcon(":/svg/cursor.svg");
-      //magnetIconSVG     = new QIcon(":/svg/magnet.svg");
-      //customMoveIconSVG = new QIcon(":/svg/cursor_move.svg");
-      pencilMove4WayIconSVG = new QIcon(":/svg/pencil_move_4_way.svg");
-      pencilMoveHorizIconSVG = new QIcon(":/svg/pencil_move_horiz.svg");
-      pencilMoveVertIconSVG = new QIcon(":/svg/pencil_move_vert.svg");
-      audioStretchIconSVG = new QIcon(":/svg/audio_stretch.svg");
-      audioResampleIconSVG = new QIcon(":/svg/audio_resample.svg");
+      pencilIconSVG     = icons.getSVG("pencil.svg");
+      glueIconSVG       = icons.getSVG("glue.svg");
+      cutterIconSVG     = icons.getSVG("cutter.svg");
+      zoomIconSVG       = icons.getSVG("zoom.svg");
+      zoomAtIconSVG     = icons.getSVG("zoomAt.svg");
+      deleteIconSVG     = icons.getSVG("eraser.svg");
+      drawIconSVG       = icons.getSVG("draw.svg");
+      pointerIconSVG    = icons.getSVG("pointer.svg");
+      mutePartsIconSVG  = icons.getSVG("mute_parts.svg");
+      handIconSVG       = icons.getSVG("hand.svg");
+      closedHandIconSVG = icons.getSVG("closed_hand.svg");
+      cursorIconSVG     = icons.getSVG("cursor.svg");
+      //magnetIconSVG     = icons.getSVG("magnet.svg");
+      //customMoveIconSVG = icons.getSVG("cursor_move.svg");
+      pencilMove4WayIconSVG = icons.getSVG("pencil_move_4_way.svg");
+      pencilMoveHorizIconSVG = icons.getSVG("pencil_move_horiz.svg");
+      pencilMoveVertIconSVG = icons.getSVG("pencil_move_vert.svg");
+      audioStretchIconSVG = icons.getSVG("audio_stretch.svg");
+      audioResampleIconSVG = icons.getSVG("audio_resample.svg");
 
-      noscaleSVGIcon[0] = new QIcon(":/svg/noscale1.svg");
-      noscaleSVGIcon[1] = new QIcon(":/svg/noscale2.svg");
+      noscaleSVGIcon[0] = icons.getSVG("noscale1.svg");
+      noscaleSVGIcon[1] = icons.getSVG("noscale2.svg");
       noscaleSVGIcon[2] = new QIcon(":/svg/noscale3.svg");
 
       //----------------------------------

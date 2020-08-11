@@ -116,7 +116,7 @@ extern void setAlsaClientName(const char*);
 }
 
 namespace MusEGui {
-void initIcons(int cursorSize);
+void initIcons(int cursorSize, const QString& gpath, const QString& upath);
 void initShortCuts();
 #ifdef HAVE_LASH
 extern lash_client_t * lash_client;
@@ -1234,7 +1234,12 @@ int main(int argc, char* argv[])
         
         MusECore::initAudio();
 
-        MusEGui::initIcons(MusEGlobal::config.cursorSize);
+        {
+            QString theme = QFileInfo(MusEGlobal::config.styleSheetFile).baseName();
+            MusEGui::initIcons(MusEGlobal::config.cursorSize,
+                               MusEGlobal::museGlobalShare + "/themes/" + theme,
+                               MusEGlobal::configPath + "/themes/" + theme);
+        }
 
         if (MusEGlobal::loadMESS)
           MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
