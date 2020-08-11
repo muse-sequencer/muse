@@ -28,3 +28,5 @@ install( FILES ${theme_files}
       DESTINATION ${MusE_SHARE_DIR}/themes
       )
 
+install(DIRECTORY "Deep Ocean" 
+        DESTINATION ${MusE_SHARE_DIR}/themes/)
