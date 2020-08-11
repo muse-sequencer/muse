@@ -16,13 +16,17 @@ QWidget:!enabled {
 	filedialog-listview-icon: url(":/xpm/viewlist-128.png");
 }
 
+QDialogButtonBox {
+	button-layout: 2;
+}
+
 QToolButton {
-    border: 1px solid rgb(90,100,110);
+    border: 1px solid rgb(0,90,160);
     border-radius: 2px;
 }
 
 QPushButton {
-    border: 1px solid rgb(90,100,110);
+    border: 1px solid rgb(0,90,160);
     border-radius: 2px;
     padding: 3px;
 }
@@ -30,6 +34,7 @@ QPushButton {
 QToolButton:pressed, QToolButton:checked, 
 QPushButton:pressed, QPushButton:checked {
     background-color: rgb(0,90,160);
+    border: 1px solid rgb(0,127,255);
 }
 
 /*
@@ -46,7 +51,24 @@ QToolTip, QWhatsThat {
     color: rgb(30,30,30);
     font-size: 10pt;
 }   
-    
+
+QMenu {
+    border: 1px solid rgb(0,90,160);
+}
+
+QMenu::separator {
+	background-color: rgb(0,90,160);
+	height: 1px;
+}
+
+QMenu::item, QMenu::icon {
+	padding: 4px 6px;
+}
+
+QMenu::indicator {
+    left: 6px;
+}
+
 QMenu::item:selected, QMenuBar::item:selected {
     background-color: rgb(0,90,160);
 }
@@ -54,18 +76,14 @@ QMenu::item:selected, QMenuBar::item:selected {
 QToolBar QToolButton {
     background-color: rgb(70,80,90);
 	margin-right: 1px;
-    border-color: rgb(0,90,160);
-    border-style: solid;
-    border-width: 1px;
+    border: 1px solid rgb(0,90,160);
     border-radius: 2px;
     padding: 2px;
 }
 
 QToolBar QToolButton:checked {
     background-color: rgb(0,90,160);
-    border-color: rgb(0,127,255);
-    border-style: solid;
-    border-width: 1px;
+    border: 1px solid rgb(0,127,255);
     border-radius: 2px;
     padding: 2px;
 }
