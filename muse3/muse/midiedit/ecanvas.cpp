@@ -686,6 +686,9 @@ void EventCanvas::startPlayEvent(int note, int velocity)
 
 void EventCanvas::stopPlayEvents()
       {
+      if (!MusEGlobal::audioDevice)
+          return;
+
       // Stop all currently playing notes.
       unsigned int frame = MusEGlobal::audio->curFrame();
       int port;
