@@ -202,16 +202,16 @@ QTreeView, QListView {
  
 /* The title header background colour in popup and routing menus: */
 MusEGui--MenuTitleLabel {
-    background-color: Maroon;
+    background-color: SeaGreen;
 }
 
 /* The category item background colour in the advanced router trees: */
 MusEGui--RouteTreeWidget {
-    qproperty-categoryColor: Maroon;
+    qproperty-categoryColor: SeaGreen;
 }
 
 MusEGui--SnooperDialog {
-    qproperty-flashColor: Maroon;
+    qproperty-flashColor: SeaGreen;
 }
 
 MusEGui--TList {
