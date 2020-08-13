@@ -365,6 +365,11 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
                        r.width(),
                        d_grooveWidth);
 
+        QPainterPath clip_path;
+        clip_path.addRoundedRect(cr.x() + d_thumbHalf, cr.y(),
+                                 cr.width() - d_thumbLength, r.height(),
+                                 d_radius, d_radius);
+        p->setClipPath(clip_path);
 
         //
         // Draw background
@@ -403,6 +408,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
                                           (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerUpperLeft) );
 
         p->fillPath(f_rect, QBrush(f_mask));
+        p->setClipping(false);
         }
     else // (d_orient == Qt::Vertical)
         {
@@ -415,10 +421,6 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         clip_path.addRoundedRect(cr.x(), cr.y() + d_thumbHalf,
                                  cr.width(), r.height() - d_thumbLength,
                                  d_radius, d_radius);
-//        QPainterPath clip_path = MusECore::roundedPath(cr.x(), cr.y() + d_thumbHalf,
-//                                                       cr.width(), r.height() - d_thumbLength,
-//                                                       d_radius, d_radius,
-//                                                       (MusECore::Corner) (MusECore::CornerAll) );
         p->setClipPath(clip_path);
 
         //
@@ -457,8 +459,6 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
                                           d_radius, d_radius, (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
 
         p->fillPath(f_rect, QBrush(f_mask));
-
-//        p->setClipPath(QPainterPath(), Qt::NoClip);
         p->setClipping(false);
 
     if (d_frame) {
