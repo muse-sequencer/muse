@@ -165,7 +165,7 @@ void MarkerView::closeEvent(QCloseEvent* e)
 MarkerView::MarkerView(QWidget* parent)
    : TopWin(TopWin::MARKER, parent, "markerview", Qt::Window)
       {
-      setWindowTitle(tr("MusE: Marker"));
+      isMdiWin() ? setWindowTitle(tr("Markers")) : setWindowTitle(tr("MusE: Markers"));
 
       QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("Add marker"), this);
       connect(markerAdd, SIGNAL(triggered()), SLOT(addMarker()));

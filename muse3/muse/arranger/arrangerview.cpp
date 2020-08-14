@@ -78,7 +78,7 @@ namespace MusEGui {
 ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
-  setWindowTitle(tr("MusE: Arranger"));
+  isMdiWin() ? setWindowTitle(tr("Arranger")) : setWindowTitle(tr("MusE: Arranger"));
   setFocusPolicy(Qt::NoFocus);  
 
   // Already has an object name.

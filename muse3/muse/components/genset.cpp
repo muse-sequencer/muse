@@ -282,6 +282,7 @@ void GlobalSettingsConfig::updateSettings()
       setTransportCurrent->setEnabled(MusEGlobal::muse->transportWindow());
 
       fixFrozenMDISubWindowsCheckBox->setChecked(MusEGlobal::config.fixFrozenMDISubWindows);
+      cbTabbedMDI->setChecked(MusEGlobal::config.tabbedMDI);
       showSplash->setChecked(MusEGlobal::config.showSplashScreen);
       showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
       externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
@@ -444,6 +445,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.mixer2.geometry.setHeight(mixer2H->value());
 
       MusEGlobal::config.fixFrozenMDISubWindows = fixFrozenMDISubWindowsCheckBox->isChecked();
+      MusEGlobal::config.tabbedMDI = cbTabbedMDI->isChecked();
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
       MusEGlobal::config.liveWaveUpdate = liveWaveUpdateCheckBox->isChecked();

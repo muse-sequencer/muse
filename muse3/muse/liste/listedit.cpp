@@ -628,7 +628,8 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       initShortcuts();
       
-      setWindowTitle(tr("MusE: List Editor"));
+      isMdiWin() ? setWindowTitle(tr("List Editor")) : setWindowTitle(tr("MusE: List Editor"));
+
       
       finalizeInit();
       }

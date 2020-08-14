@@ -2740,6 +2740,13 @@ Disable to use an alternate standard
            </layout>
           </item>
           <item>
+           <widget class="QCheckBox" name="cbTabbedMDI">
+            <property name="text">
+             <string>Use tabbed mode for MDI subwindows (restart required)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QScrollArea" name="scrollArea">
             <property name="widgetResizable">
              <bool>true</bool>
@@ -2750,12 +2757,16 @@ Disable to use an alternate standard
                <x>0</x>
                <y>0</y>
                <width>541</width>
-               <height>469</height>
+               <height>441</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
-               <layout class="QVBoxLayout" name="layoutMdiSettings"/>
+               <layout class="QVBoxLayout" name="layoutMdiSettings">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+               </layout>
               </item>
              </layout>
             </widget>

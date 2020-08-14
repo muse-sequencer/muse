@@ -46,7 +46,7 @@ PluginDialog::PluginDialog(QWidget* parent)
     this->setStyleSheet("font-size:" + QString::number(qApp->font().pointSize()) + "pt");
 
       group_info=NULL;
-      setWindowTitle(tr("MusE: select plugin"));
+      setWindowTitle(tr("MusE: Select Plugin"));
 
       if(!geometrySave.isNull())
         setGeometry(geometrySave);

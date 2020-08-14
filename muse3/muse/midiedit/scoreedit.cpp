@@ -612,7 +612,7 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 
         name=newname;
 
-        setWindowTitle("MusE: Score \""+name+"\"");
+        isMdiWin() ? setWindowTitle("MusE: Score \"" + name + "\"") : setWindowTitle("MusE: Score \"" + name + "\"");
 
         if (emit_signal)
             emit name_changed();

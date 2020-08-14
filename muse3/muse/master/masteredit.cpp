@@ -102,7 +102,8 @@ void MasterEdit::songChanged(MusECore::SongChangedStruct_t type)
 MasterEdit::MasterEdit(QWidget* parent, const char* name)
    : MidiEditor(TopWin::MASTER, _rasterInit, 0, parent, name)
       {
-      setWindowTitle(tr("MusE: Mastertrack"));
+      isMdiWin() ? setWindowTitle(tr("Mastertrack")) : setWindowTitle(tr("MusE: Mastertrack"));
+
       setFocusPolicy(Qt::NoFocus);
       _raster = 0;      // measure
 

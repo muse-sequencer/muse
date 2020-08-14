@@ -127,7 +127,7 @@ QString ClipItem::text(int col) const
 ClipListEdit::ClipListEdit(QWidget* parent)
    : TopWin(TopWin::CLIPLIST, parent, "cliplist", Qt::Window)
       {
-      setWindowTitle(tr("MusE: Clip List Editor"));
+      isMdiWin() ? setWindowTitle(tr("Clip List")) : setWindowTitle(tr("MusE: Clip List"));
 
       editor = new ClipListEditorBaseWidget;
       setCentralWidget(editor);

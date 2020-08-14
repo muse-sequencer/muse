@@ -107,7 +107,8 @@ LMaster::LMaster(QWidget* parent, const char* name)
       key_editor = 0;
       editedItem = 0;
       editingNewItem = false;
-      setWindowTitle(tr("MusE: Mastertrack"));
+      isMdiWin() ? setWindowTitle(tr("Mastertrack List")) : setWindowTitle(tr("MusE: Mastertrack List"));
+
       setMinimumHeight(100);
       //setFixedWidth(400);            // FIXME: Arbitrary. But without this, sig editor is too wide. Must fix sig editor width...
       setFocusPolicy(Qt::NoFocus);

@@ -997,18 +997,30 @@ MusE::MusE() : QMainWindow()
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-      mdiArea->setViewMode(QMdiArea::TabbedView);
-      setCentralWidget(mdiArea);
-      connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
-      connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));
-      connect(windowsColumnsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsColumns()));
-      connect(windowsCascadeAction, SIGNAL(triggered()), mdiArea, SLOT(cascadeSubWindows()));
 
+      if (MusEGlobal::config.tabbedMDI) {
+          mdiArea->setViewMode(QMdiArea::TabbedView);
+          mdiArea->setTabsClosable(true);
+          mdiArea->setTabsMovable(true);
+          mdiArea->setTabPosition(QTabWidget::South);
+          QTabBar* tb = mdiArea->findChild<QTabBar*>();
+          if (tb)
+              tb->setExpanding(false);
+      }
+
+      setCentralWidget(mdiArea);
+
+      if (!MusEGlobal::config.tabbedMDI) {
+          connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
+          connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));
+          connect(windowsColumnsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsColumns()));
+          connect(windowsCascadeAction, SIGNAL(triggered()), mdiArea, SLOT(cascadeSubWindows()));
+      }
 
       arrangerView = new MusEGui::ArrangerView(this);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
-//      arrangerView->hide();
+      arrangerView->hide();
       _arranger=arrangerView->getArranger();
 
       connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
@@ -1949,8 +1961,9 @@ void MusE::showMarker(bool flag)
 {
     if (markerView == nullptr) {
         markerView = new MusEGui::MarkerView(this);
-        connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
+//        connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
         toplevels.push_back(markerView);
+        connect(markerView, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     }
 
     if(markerView->isVisible() != flag)
@@ -1968,30 +1981,33 @@ void MusE::showMarker(bool flag)
 //   markerClosed
 //---------------------------------------------------------
 
-void MusE::markerClosed()
-      {
-      if(viewMarkerAction->isChecked())
-        viewMarkerAction->setChecked(false); // ??? TEST: Recursion? Does this call toggleMarker? Yes. REMOVE Tim. Or keep.
-      if (currentMenuSharingTopwin == markerView)
-        setCurrentMenuSharingTopwin(NULL);
+//void MusE::markerClosed()
+//      {
+//      if(viewMarkerAction->isChecked())
+//        viewMarkerAction->setChecked(false); // ??? TEST: Recursion? Does this call toggleMarker? Yes. REMOVE Tim. Or keep.
+//      if (currentMenuSharingTopwin == markerView)
+//        setCurrentMenuSharingTopwin(nullptr);
 
-      updateWindowMenu();
+//      if (markerView->isMdiWin()) {
+//          markerView = nullptr;
+//      }
 
-      // focus the last activated topwin which is not the marker view
-      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
-        if ((*lit)->isVisible() && (*lit)->widget() != markerView)
-        {
-          if (MusEGlobal::debugMsg)
-            fprintf(stderr, "bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+//      updateWindowMenu();
 
-          bringToFront((*lit)->widget());
+//      // focus the last activated topwin which is not the marker view
+//      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
+//      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
+//        if ((*lit)->isVisible() && (*lit)->widget() != markerView)
+//        {
+//          if (MusEGlobal::debugMsg)
+//            fprintf(stderr, "bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
-          break;
-        }
+//          bringToFront((*lit)->widget());
 
-      markerView = nullptr;
-      }
+//          break;
+//        }
+
+//      }
 
 //---------------------------------------------------------
 //   toggleArranger
@@ -2470,8 +2486,18 @@ void MusE::startClipList(bool checked)
             toplevels.push_back(clipListEdit);
             connect(clipListEdit, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
             }
-      clipListEdit->show();
-      viewCliplistAction->setChecked(checked);
+
+      if(clipListEdit->isVisible() != checked)
+          clipListEdit->setVisible(checked);
+      if(viewCliplistAction->isChecked() != checked)
+          viewCliplistAction->setChecked(checked);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
+      if (!checked)
+          if (currentMenuSharingTopwin == clipListEdit)
+              setCurrentMenuSharingTopwin(nullptr);
+
+
+//      clipListEdit->show();
+//      viewCliplistAction->setChecked(checked);
       updateWindowMenu();
       }
 
@@ -2518,71 +2544,77 @@ void MusE::selectProject(QAction* act)
 //---------------------------------------------------------
 
 void MusE::toplevelDeleting(MusEGui::TopWin* tl)
-      {
-      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            if (*i == tl) {
+{
+    for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
+        if (*i == tl) {
 
-                  tl->storeInitialState();
-               
-                  if (tl == activeTopWin)
-                  {
-                    activeTopWin=NULL;
-                    emit activeTopWinChanged(NULL);
+            tl->storeInitialState();
 
-                    // focus the last activated topwin which is not the deleting one
-                    QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-                    for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
-                      if ((*lit)->isVisible() && (*lit)->widget() != tl)
-                      {
+            if (tl == activeTopWin)
+            {
+                activeTopWin=NULL;
+                emit activeTopWinChanged(NULL);
+
+                // focus the last activated topwin which is not the deleting one
+                QList<QMdiSubWindow*> list = mdiArea->subWindowList(QMdiArea::StackingOrder);
+                for (QList<QMdiSubWindow*>::const_reverse_iterator lit=list.rbegin(); lit!=list.rend(); lit++)
+                    if ((*lit)->isVisible() && (*lit)->widget() != tl)
+                    {
                         if (MusEGlobal::debugMsg)
-                          fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+                            fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
                         bringToFront((*lit)->widget());
 
                         break;
-                      }
-                  }
-
-                  if (tl == currentMenuSharingTopwin)
-                    setCurrentMenuSharingTopwin(NULL);
-
-
-                  bool mustUpdateScoreMenus=false;
-                  switch(tl->type()) {
-                        case MusEGui::TopWin::MARKER:
-                        case MusEGui::TopWin::ARRANGER:
-                              break;
-                        case MusEGui::TopWin::CLIPLIST:
-                              viewCliplistAction->setChecked(false);
-                              if (currentMenuSharingTopwin == clipListEdit)
-                                setCurrentMenuSharingTopwin(NULL);
-                              updateWindowMenu();
-                              return;
-
-                        // the following editors can exist in more than
-                        // one instantiation:
-                        case MusEGui::TopWin::PIANO_ROLL:
-                        case MusEGui::TopWin::LISTE:
-                        case MusEGui::TopWin::DRUM:
-                        case MusEGui::TopWin::MASTER:
-                        case MusEGui::TopWin::WAVE:
-                        case MusEGui::TopWin::LMASTER:
-                              break;
-                        case MusEGui::TopWin::SCORE:
-                              mustUpdateScoreMenus=true;
-
-                        case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
-                          break;
-                        }
-                  toplevels.erase(i);
-                  if (mustUpdateScoreMenus)
-                        arrangerView->updateScoreMenus();
-                  updateWindowMenu();
-                  return;
-                  }
+                    }
             }
-      fprintf(stderr, "topLevelDeleting: top level %p not found\n", tl);
-      }
+
+            if (tl == currentMenuSharingTopwin)
+                setCurrentMenuSharingTopwin(NULL);
+
+
+            bool mustUpdateScoreMenus=false;
+            switch(tl->type()) {
+            case MusEGui::TopWin::ARRANGER:
+                break;
+            case MusEGui::TopWin::MARKER:
+                viewMarkerAction->setChecked(false);
+                if (currentMenuSharingTopwin == markerView)
+                    setCurrentMenuSharingTopwin(NULL);
+                if (tl->isMdiWin())
+                    markerView = nullptr;
+                break;
+            case MusEGui::TopWin::CLIPLIST:
+                viewCliplistAction->setChecked(false);
+                if (currentMenuSharingTopwin == clipListEdit)
+                    setCurrentMenuSharingTopwin(NULL);
+                if (tl->isMdiWin())
+                    clipListEdit = nullptr;
+                break;
+
+            // the following editors can exist in more than one instantiation:
+            case MusEGui::TopWin::PIANO_ROLL:
+            case MusEGui::TopWin::LISTE:
+            case MusEGui::TopWin::DRUM:
+            case MusEGui::TopWin::MASTER:
+            case MusEGui::TopWin::WAVE:
+            case MusEGui::TopWin::LMASTER:
+                break;
+            case MusEGui::TopWin::SCORE:
+                mustUpdateScoreMenus=true;
+
+            case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+                break;
+            }
+            toplevels.erase(i);
+            if (mustUpdateScoreMenus)
+                arrangerView->updateScoreMenus();
+            updateWindowMenu();
+            return;
+        }
+    }
+    fprintf(stderr, "topLevelDeleting: top level %p not found\n", tl);
+}
 
 //---------------------------------------------------------
 //   kbAccel - Global keyboard accelerators
@@ -4035,53 +4067,59 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
 
 void MusE::updateWindowMenu()
 {
-    return;
-  bool sep;
-  bool there_are_subwins=false;
+    bool sep;
+    bool there_are_subwins=false;
 
-  menuWindows->clear(); // frees memory automatically
+    menuWindows->clear(); // frees memory automatically
 
-  menuWindows->addAction(windowsCascadeAction);
-  menuWindows->addAction(windowsTileAction);
-  menuWindows->addAction(windowsRowsAction);
-  menuWindows->addAction(windowsColumnsAction);
+    menuWindows->addAction(windowsCascadeAction);
+    menuWindows->addAction(windowsTileAction);
+    menuWindows->addAction(windowsRowsAction);
+    menuWindows->addAction(windowsColumnsAction);
 
-  sep=false;
-  for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
-    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
-    // the isVisibleTo check is necessary because isVisible returns false if a
-    // MdiSubWin is actually visible, but the muse main window is hidden for some reason
-    {
-      if (!sep)
-      {
-        menuWindows->addSeparator();
-        sep=true;
-      }
-      QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      QWidget* tlw = static_cast<QWidget*>(*it);
-      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
+//    if (!MusEGlobal::config.tabbedMDI) {
+        sep=false;
+        for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
+            if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
+                // the isVisibleTo check is necessary because isVisible returns false if a
+                // MdiSubWin is actually visible, but the muse main window is hidden for some reason
+            {
+                if (!sep)
+                {
+                    menuWindows->addSeparator();
+                    sep=true;
+                }
+                QAction* temp=menuWindows->addAction((*it)->windowTitle());
+                QWidget* tlw = static_cast<QWidget*>(*it);
+                connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
 
-      there_are_subwins=true;
+                there_are_subwins=true;
+            }
+        }
+//    }
+
+    sep=false;
+    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
+        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
+        {
+            if (!sep)
+            {
+                menuWindows->addSeparator();
+                sep=true;
+            }
+            QAction* temp=menuWindows->addAction((*it)->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(*it);
+            connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
+        }
     }
 
-  sep=false;
-  for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
-    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
-    {
-      if (!sep)
-      {
-        menuWindows->addSeparator();
-        sep=true;
-      }
-      QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      QWidget* tlw = static_cast<QWidget*>(*it);
-      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
-    }
+    if (MusEGlobal::config.tabbedMDI)
+        there_are_subwins = false;
 
-  windowsCascadeAction->setEnabled(there_are_subwins);
-  windowsTileAction->setEnabled(there_are_subwins);
-  windowsRowsAction->setEnabled(there_are_subwins);
-  windowsColumnsAction->setEnabled(there_are_subwins);
+    windowsCascadeAction->setEnabled(there_are_subwins);
+    windowsTileAction->setEnabled(there_are_subwins);
+    windowsRowsAction->setEnabled(there_are_subwins);
+    windowsColumnsAction->setEnabled(there_are_subwins);
 }
 
 void MusE::resetXrunsCounter()

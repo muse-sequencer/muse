@@ -336,7 +336,7 @@ class MusE : public QMainWindow
       void bigtimeClosed();
       void mixer1Closed();
       void mixer2Closed();
-      void markerClosed();
+//      void markerClosed();
       void arrangerClosed();
 
       void execDeliveredScript(int);

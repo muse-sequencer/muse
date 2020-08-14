@@ -361,12 +361,13 @@ void TopWin::hide()
 void TopWin::show()
 {
     if (mdisubwin) {
-        if (MusEGlobal::config.openMDIWinMaximized)
+        if (MusEGlobal::config.openMDIWinMaximized || MusEGlobal::config.tabbedMDI)
             mdisubwin->setWindowState(Qt::WindowMaximized);
-		mdisubwin->show();
+
+        mdisubwin->show();
     }
-	
-	QMainWindow::show();
+
+    QMainWindow::show();
 }
 
 void TopWin::setVisible(bool param)
@@ -404,33 +405,40 @@ void TopWin::setIsMdiWin(bool val)
 		if (!isMdiWin())
 		{
 			_savedToolbarState = saveState();
-			int width_temp=width();
-			int height_temp=height();
+            int width_temp=width();
+            int height_temp=height();
 			bool vis=isVisible();
 			
-			QMdiSubWindow* subwin = createMdiWrapper();
-			muse->addMdiSubWindow(subwin);
-			subwin->resize(width_temp, height_temp);
-			subwin->move(0,0);
-			subwin->setVisible(vis);
-			this->QMainWindow::show(); //bypass the delegation to the subwin
-			
-			// Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
-			//  force the style and stylesheet again. Otherwise the window freezes.
-			if(MusEGlobal::config.fixFrozenMDISubWindows)
-			{
-				if(MusEGlobal::debugMsg)
-				  fprintf(stderr, "TopWin::setIsMdiWin Calling updateThemeAndStyle()\n");
-				MusEGui::updateThemeAndStyle(true);
-			}
+            QMdiSubWindow* subwin = createMdiWrapper();
+            muse->addMdiSubWindow(subwin);
+            subwin->resize(width_temp, height_temp);
+            subwin->move(0,0);
 
-			if (_sharesToolsAndMenu == _sharesWhenFree[_type])
-				shareToolsAndMenu(_sharesWhenSubwin[_type]);
-			
-			fullscreenAction->setEnabled(false);
-			fullscreenAction->setChecked(false);
-			subwinAction->setChecked(true);
-			muse->updateWindowMenu();
+            if (windowTitle().startsWith("MusE: "))
+                setWindowTitle(windowTitle().mid(6));
+
+            subwin->setVisible(vis);
+            this->QMainWindow::show(); //bypass the delegation to the subwin
+
+            if (MusEGlobal::config.openMDIWinMaximized || MusEGlobal::config.tabbedMDI)
+                subwin->showMaximized();
+
+            // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
+            //  force the style and stylesheet again. Otherwise the window freezes.
+            if(MusEGlobal::config.fixFrozenMDISubWindows)
+            {
+                if(MusEGlobal::debugMsg)
+                  fprintf(stderr, "TopWin::setIsMdiWin Calling updateThemeAndStyle()\n");
+                MusEGui::updateThemeAndStyle(true);
+            }
+
+            if (_sharesToolsAndMenu == _sharesWhenFree[_type])
+                shareToolsAndMenu(_sharesWhenSubwin[_type]);
+
+            fullscreenAction->setEnabled(false);
+            fullscreenAction->setChecked(false);
+            subwinAction->setChecked(true);
+            muse->updateWindowMenu();
 			
 			if(MusEGlobal::config.fixFrozenMDISubWindows)
 				connect(subwin, SIGNAL(windowStateChanged(Qt::WindowStates,Qt::WindowStates)),
@@ -457,6 +465,9 @@ void TopWin::setIsMdiWin(bool val)
 			
 			resize(width_temp, height_temp);
 			setVisible(vis);
+
+            if (!windowTitle().startsWith("MusE: "))
+                setWindowTitle(windowTitle().insert(0, "MusE: "));
 
 			if (_sharesToolsAndMenu == _sharesWhenSubwin[_type])
 				shareToolsAndMenu(_sharesWhenFree[_type]);
