@@ -681,6 +681,7 @@ void Appearance::resetValues()
 
       cascadeStylesheetsCheckBox->setChecked(config->cascadeStylesheets);
       cbShowIconsInMenus->setChecked(config->showIconsInMenus);
+      cbUseNativeStandardDialogs->setChecked(config->useNativeStandardDialogs);
 
       // Grab all the colours.
       updateColorItems();
@@ -958,6 +959,11 @@ bool Appearance::apply()
       if (config->showIconsInMenus != cbShowIconsInMenus->isChecked()) {
           restart_required = true;
           config->showIconsInMenus = cbShowIconsInMenus->isChecked();
+      }
+
+      if (config->useNativeStandardDialogs != cbUseNativeStandardDialogs->isChecked()) {
+          restart_required = true;
+          config->useNativeStandardDialogs = cbUseNativeStandardDialogs->isChecked();
       }
 
       if (radioButtonDrawOutline->isChecked())
