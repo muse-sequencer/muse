@@ -307,6 +307,7 @@ struct GlobalConfigValues {
       int cursorSize;
       bool cascadeStylesheets;
       bool showIconsInMenus;
+      bool useNativeStandardDialogs;
 
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;

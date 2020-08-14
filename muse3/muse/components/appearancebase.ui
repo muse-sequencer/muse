@@ -1313,6 +1313,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="cbUseNativeStandardDialogs">
+            <property name="text">
+             <string>Use native standard dialogs</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

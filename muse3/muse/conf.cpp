@@ -1184,6 +1184,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         else if (tag == "showIconsInMenus")
                             MusEGlobal::config.showIconsInMenus = xml.parseInt();
+
+                        else if (tag == "useNativeStandardDialogs")
+                            MusEGlobal::config.useNativeStandardDialogs = xml.parseInt();
                         
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
@@ -2087,6 +2090,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "cursorSize", MusEGlobal::config.cursorSize);
       xml.intTag(level, "cascadeStylesheets", MusEGlobal::config.cascadeStylesheets);
       xml.intTag(level, "showIconsInMenus", MusEGlobal::config.showIconsInMenus);
+      xml.intTag(level, "useNativeStandardDialogs", MusEGlobal::config.useNativeStandardDialogs);
       
       MusEGlobal::writePluginGroupConfiguration(level, xml);
 
