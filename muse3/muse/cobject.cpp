@@ -350,10 +350,12 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 
 void TopWin::hide()
 {
-	if (mdisubwin)
-		mdisubwin->close();
-	
-	QMainWindow::hide();
+    if (mdisubwin) {
+        mdisubwin->close();
+    }
+
+
+    QMainWindow::hide();
 }
 
 void TopWin::show()
@@ -381,10 +383,12 @@ void TopWin::setVisible(bool param)
 
 QMdiSubWindow* TopWin::createMdiWrapper()
 {
-	if (mdisubwin==NULL)
+    if (mdisubwin == nullptr)
 	{
 		mdisubwin = new QMdiSubWindow();
 		mdisubwin->setWidget(this);
+        if(_type != ARRANGER)
+            mdisubwin->setAttribute(Qt::WA_DeleteOnClose);
 	}
 	
 	return mdisubwin;

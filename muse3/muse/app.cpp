@@ -997,6 +997,7 @@ MusE::MusE() : QMainWindow()
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+      mdiArea->setViewMode(QMdiArea::TabbedView);
       setCentralWidget(mdiArea);
       connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
       connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));
@@ -1007,7 +1008,7 @@ MusE::MusE() : QMainWindow()
       arrangerView = new MusEGui::ArrangerView(this);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
-      arrangerView->hide();
+//      arrangerView->hide();
       _arranger=arrangerView->getArranger();
 
       connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
@@ -1945,23 +1946,23 @@ void MusE::toggleMarker(bool checked)
 //---------------------------------------------------------
 
 void MusE::showMarker(bool flag)
-      {
-      if (markerView == nullptr) {
-            markerView = new MusEGui::MarkerView(this);
+{
+    if (markerView == nullptr) {
+        markerView = new MusEGui::MarkerView(this);
+        connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
+        toplevels.push_back(markerView);
+    }
 
-            connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            toplevels.push_back(markerView);
-            }
-      if(markerView->isVisible() != flag)
+    if(markerView->isVisible() != flag)
         markerView->setVisible(flag);
-      if(viewMarkerAction->isChecked() != flag)
+    if(viewMarkerAction->isChecked() != flag)
         viewMarkerAction->setChecked(flag);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
-      if (!flag)
+    if (!flag)
         if (currentMenuSharingTopwin == markerView)
-          setCurrentMenuSharingTopwin(nullptr);
+            setCurrentMenuSharingTopwin(nullptr);
 
-      updateWindowMenu();
-      }
+    updateWindowMenu();
+}
 
 //---------------------------------------------------------
 //   markerClosed
@@ -1989,6 +1990,7 @@ void MusE::markerClosed()
           break;
         }
 
+      markerView = nullptr;
       }
 
 //---------------------------------------------------------
@@ -2463,7 +2465,7 @@ void MusE::showDidYouKnowDialog()
 
 void MusE::startClipList(bool checked)
       {
-      if (clipListEdit == 0) {
+      if (clipListEdit == nullptr) {
             clipListEdit = new MusEGui::ClipListEdit(this);
             toplevels.push_back(clipListEdit);
             connect(clipListEdit, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
@@ -4033,6 +4035,7 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
 
 void MusE::updateWindowMenu()
 {
+    return;
   bool sep;
   bool there_are_subwins=false;
 
