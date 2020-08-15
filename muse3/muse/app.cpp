@@ -1004,13 +1004,15 @@ MusE::MusE() : QMainWindow()
           mdiArea->setTabsMovable(true);
           mdiArea->setTabPosition(QTabWidget::South);
           QTabBar* tb = mdiArea->findChild<QTabBar*>();
-          if (tb)
+          if (tb) {
               tb->setExpanding(false);
+              tb->setAutoHide(true);
+          }
       }
 
       setCentralWidget(mdiArea);
 
-      if (!MusEGlobal::config.tabbedMDI) {
+      if (mdiArea->viewMode() == QMdiArea::SubWindowView) {
           connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
           connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));
           connect(windowsColumnsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsColumns()));
@@ -2030,7 +2032,7 @@ void MusE::showArranger(bool flag)
         viewArrangerAction->setChecked(flag);
       if (!flag)
         if (currentMenuSharingTopwin == arrangerView)
-          setCurrentMenuSharingTopwin(NULL);
+          setCurrentMenuSharingTopwin(nullptr);
       updateWindowMenu();
       }
 
@@ -2044,9 +2046,18 @@ void MusE::arrangerClosed()
         viewArrangerAction->setChecked(false);
       updateWindowMenu();
 
+      if (mdiArea->viewMode() == QMdiArea::TabbedView) {
+          QTabBar* tb = mdiArea->findChild<QTabBar*>();
+          if (tb) {
+              int i = tb->currentIndex();
+              tb->setTabEnabled(i, false);
+              tb->setTabButton(i, QTabBar::RightSide, nullptr);
+          }
+      }
+
       // focus the last activated topwin which is not the arranger view
       QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
+      for (QList<QMdiSubWindow*>::const_reverse_iterator lit=l.rbegin(); lit!=l.rend(); lit++)
         if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
         {
           if (MusEGlobal::debugMsg)
@@ -2056,7 +2067,6 @@ void MusE::arrangerClosed()
 
           break;
         }
-
       }
 
 //---------------------------------------------------------
@@ -2552,8 +2562,8 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
 
             if (tl == activeTopWin)
             {
-                activeTopWin=NULL;
-                emit activeTopWinChanged(NULL);
+                activeTopWin=nullptr;
+                emit activeTopWinChanged(nullptr);
 
                 // focus the last activated topwin which is not the deleting one
                 QList<QMdiSubWindow*> list = mdiArea->subWindowList(QMdiArea::StackingOrder);
@@ -2570,7 +2580,7 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
             }
 
             if (tl == currentMenuSharingTopwin)
-                setCurrentMenuSharingTopwin(NULL);
+                setCurrentMenuSharingTopwin(nullptr);
 
 
             bool mustUpdateScoreMenus=false;
@@ -2580,14 +2590,14 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
             case MusEGui::TopWin::MARKER:
                 viewMarkerAction->setChecked(false);
                 if (currentMenuSharingTopwin == markerView)
-                    setCurrentMenuSharingTopwin(NULL);
+                    setCurrentMenuSharingTopwin(nullptr);
                 if (tl->isMdiWin())
                     markerView = nullptr;
                 break;
             case MusEGui::TopWin::CLIPLIST:
                 viewCliplistAction->setChecked(false);
                 if (currentMenuSharingTopwin == clipListEdit)
-                    setCurrentMenuSharingTopwin(NULL);
+                    setCurrentMenuSharingTopwin(nullptr);
                 if (tl->isMdiWin())
                     clipListEdit = nullptr;
                 break;

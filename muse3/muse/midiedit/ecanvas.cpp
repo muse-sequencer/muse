@@ -94,7 +94,7 @@ QString EventCanvas::getCaption() const
       MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
       MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
-      return QString("MusE: Part <") + curPart->name()
+      return QString("Part <") + curPart->name()
          + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
       }
 

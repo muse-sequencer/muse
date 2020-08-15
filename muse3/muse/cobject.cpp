@@ -385,14 +385,16 @@ void TopWin::setVisible(bool param)
 QMdiSubWindow* TopWin::createMdiWrapper()
 {
     if (mdisubwin == nullptr)
-	{
-		mdisubwin = new QMdiSubWindow();
-		mdisubwin->setWidget(this);
+    {
+        mdisubwin = new QMdiSubWindow();
+        mdisubwin->setWidget(this);
         if(_type != ARRANGER)
             mdisubwin->setAttribute(Qt::WA_DeleteOnClose);
-	}
-	
-	return mdisubwin;
+        else
+            mdisubwin->setWindowFlags(Qt::SubWindow | Qt::CustomizeWindowHint);
+    }
+
+    return mdisubwin;
 }
 
 void TopWin::setIsMdiWin(bool val)
@@ -458,8 +460,8 @@ void TopWin::setIsMdiWin(bool val)
 			bool vis=isVisible();
 
 			QMdiSubWindow* mdisubwin_temp=mdisubwin;
-			mdisubwin=NULL;
-			setParent(NULL);
+            mdisubwin=nullptr;
+            setParent(nullptr);
 			mdisubwin_temp->hide();
 			delete mdisubwin_temp;
 			
