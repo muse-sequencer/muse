@@ -548,17 +548,17 @@ MusE::MusE() : QMainWindow()
       editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info..."), this);
 
       //-------- View Actions
-      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel..."), this);
+      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel"), this);
       viewTransportAction->setCheckable(true);
-      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window..."),  this);
+      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window"),  this);
       viewBigtimeAction->setCheckable(true);
-      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A..."), this);
+      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A"), this);
       viewMixerAAction->setCheckable(true);
-      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B..."), this);
+      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B"), this);
       viewMixerBAction->setCheckable(true);
-      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist..."), this);
+      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist"), this);
       viewCliplistAction->setCheckable(true);
-      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View..."),  this);
+      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View"),  this);
       viewMarkerAction->setCheckable(true);
       viewArrangerAction = new QAction(tr("Arranger View"),  this);
       viewArrangerAction->setCheckable(true);
