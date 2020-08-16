@@ -1000,14 +1000,15 @@ MusE::MusE() : QMainWindow()
 
       if (MusEGlobal::config.tabbedMDI) {
           mdiArea->setViewMode(QMdiArea::TabbedView);
-          mdiArea->setTabsClosable(true);
-          mdiArea->setTabsMovable(true);
+//          mdiArea->setTabsClosable(true);
+//          mdiArea->setTabsMovable(true);
           mdiArea->setTabPosition(QTabWidget::South);
           QTabBar* tb = mdiArea->findChild<QTabBar*>();
           if (tb) {
               tb->setExpanding(false);
-              tb->setAutoHide(true);
+//              tb->setAutoHide(true);
           }
+          viewArrangerAction->setEnabled(false);
       }
 
       setCentralWidget(mdiArea);
@@ -2046,14 +2047,14 @@ void MusE::arrangerClosed()
         viewArrangerAction->setChecked(false);
       updateWindowMenu();
 
-      if (mdiArea->viewMode() == QMdiArea::TabbedView) {
-          QTabBar* tb = mdiArea->findChild<QTabBar*>();
-          if (tb) {
-              int i = tb->currentIndex();
-              tb->setTabEnabled(i, false);
-              tb->setTabButton(i, QTabBar::RightSide, nullptr);
-          }
-      }
+//      if (mdiArea->viewMode() == QMdiArea::TabbedView) {
+//          QTabBar* tb = mdiArea->findChild<QTabBar*>();
+//          if (tb) {
+//              int i = tb->currentIndex();
+//              tb->setTabEnabled(i, false);
+//              tb->setTabButton(i, QTabBar::RightSide, nullptr);
+//          }
+//      }
 
       // focus the last activated topwin which is not the arranger view
       QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
@@ -2591,14 +2592,14 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                 viewMarkerAction->setChecked(false);
                 if (currentMenuSharingTopwin == markerView)
                     setCurrentMenuSharingTopwin(nullptr);
-                if (tl->isMdiWin())
+//                if (tl->isMdiWin())
                     markerView = nullptr;
                 break;
             case MusEGui::TopWin::CLIPLIST:
                 viewCliplistAction->setChecked(false);
                 if (currentMenuSharingTopwin == clipListEdit)
                     setCurrentMenuSharingTopwin(nullptr);
-                if (tl->isMdiWin())
+//                if (tl->isMdiWin())
                     clipListEdit = nullptr;
                 break;
 

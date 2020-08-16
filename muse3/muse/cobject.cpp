@@ -87,7 +87,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
 	connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
-	mdisubwin=NULL;
+    mdisubwin=nullptr;
 	if (!MusEGlobal::unityWorkaround)
 		_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
 	else
@@ -111,15 +111,20 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	}
 	fullscreenAction->setEnabled(!isMdiWin());
 	
-	if (mdisubwin)
- {
-    mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
-    if(_type == ARRANGER)
-      mdisubwin->setWindowState(Qt::WindowMaximized);
- }
-	else
-		resize(_widthInit[_type], _heightInit[_type]);
-	
+    if (mdisubwin)
+    {
+        mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
+        if(_type == ARRANGER) {
+            mdisubwin->setWindowState(Qt::WindowMaximized);
+            if (MusEGlobal::config.tabbedMDI) {
+                shareAction->setEnabled(false);
+                subwinAction->setEnabled(false);
+            }
+        }
+    }
+    else
+        resize(_widthInit[_type], _heightInit[_type]);
+
 
       //--------------------------------------------------
       //    Toolbar
@@ -182,9 +187,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
  /* to make editor windows not stay on top */
  if(!isMdiWin())
  {
-    setParent(0);
+    setParent(nullptr);
  }
 
+ if(_type != ARRANGER)
+     setAttribute(Qt::WA_DeleteOnClose);
 }
 
 TopWin::~TopWin()
