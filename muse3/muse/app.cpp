@@ -2592,15 +2592,11 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                 viewMarkerAction->setChecked(false);
                 if (currentMenuSharingTopwin == markerView)
                     setCurrentMenuSharingTopwin(nullptr);
-//                if (tl->isMdiWin())
-                    markerView = nullptr;
                 break;
             case MusEGui::TopWin::CLIPLIST:
                 viewCliplistAction->setChecked(false);
                 if (currentMenuSharingTopwin == clipListEdit)
                     setCurrentMenuSharingTopwin(nullptr);
-//                if (tl->isMdiWin())
-                    clipListEdit = nullptr;
                 break;
 
             // the following editors can exist in more than one instantiation:
@@ -4124,7 +4120,7 @@ void MusE::updateWindowMenu()
         }
     }
 
-    if (MusEGlobal::config.tabbedMDI)
+    if (mdiArea->viewMode() == QMdiArea::TabbedView)
         there_are_subwins = false;
 
     windowsCascadeAction->setEnabled(there_are_subwins);
@@ -4740,6 +4736,10 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 void MusE::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
     MusEGlobal::config.geometryMain = geometry();
+}
+
+bool MusE::isTabbedMDI() {
+    return (mdiArea->viewMode() == QMdiArea::TabbedView);
 }
 
 } //namespace MusEGui

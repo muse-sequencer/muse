@@ -116,7 +116,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
         if(_type == ARRANGER) {
             mdisubwin->setWindowState(Qt::WindowMaximized);
-            if (MusEGlobal::config.tabbedMDI) {
+            if (muse->isTabbedMDI()) {
                 shareAction->setEnabled(false);
                 subwinAction->setEnabled(false);
             }
@@ -361,14 +361,13 @@ void TopWin::hide()
         mdisubwin->close();
     }
 
-
     QMainWindow::hide();
 }
 
 void TopWin::show()
 {
     if (mdisubwin) {
-        if (MusEGlobal::config.openMDIWinMaximized || MusEGlobal::config.tabbedMDI)
+        if (MusEGlobal::config.openMDIWinMaximized || muse->isTabbedMDI())
             mdisubwin->setWindowState(Qt::WindowMaximized);
 
         mdisubwin->show();
@@ -382,7 +381,7 @@ void TopWin::setVisible(bool param)
 	if (mdisubwin)
 	{
 		if (param)
-			mdisubwin->show();
+            mdisubwin->show();
 		else
 			mdisubwin->close();
 	}
@@ -398,7 +397,8 @@ QMdiSubWindow* TopWin::createMdiWrapper()
         if(_type != ARRANGER)
             mdisubwin->setAttribute(Qt::WA_DeleteOnClose);
         else
-            mdisubwin->setWindowFlags(Qt::SubWindow | Qt::CustomizeWindowHint);
+            if (muse->isTabbedMDI())
+                mdisubwin->setWindowFlags(Qt::SubWindow | Qt::CustomizeWindowHint);
     }
 
     return mdisubwin;
@@ -429,7 +429,7 @@ void TopWin::setIsMdiWin(bool val)
             subwin->setVisible(vis);
             this->QMainWindow::show(); //bypass the delegation to the subwin
 
-            if (MusEGlobal::config.openMDIWinMaximized || MusEGlobal::config.tabbedMDI)
+            if (MusEGlobal::config.openMDIWinMaximized || muse->isTabbedMDI())
                 subwin->showMaximized();
 
             // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
@@ -795,7 +795,7 @@ TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
 		if((*i)->type() == type) 
 			return (*i);
 	}  
-	return 0;
+    return nullptr;
 }
 
 } // namespace MusEGui

@@ -40,6 +40,7 @@
 #include <QToolButton>
 #include <QProgressDialog>
 #include <QTimer>
+#include <QPointer>
 
 #include <list>
 #include <time.h>
@@ -224,8 +225,8 @@ class MusE : public QMainWindow
       
       Arranger* _arranger;
       ToplevelList toplevels;
-      ClipListEdit* clipListEdit;
-      MarkerView* markerView;
+      QPointer<ClipListEdit> clipListEdit;
+      QPointer<MarkerView> markerView;
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
@@ -462,6 +463,7 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
+      bool isTabbedMDI();
       
       const ToplevelList* getToplevels() { return &toplevels; }
       
