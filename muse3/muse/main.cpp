@@ -786,6 +786,7 @@ int main(int argc, char* argv[])
         }
 
         app.instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !MusEGlobal::config.showIconsInMenus);
+        app.instance()->setAttribute(Qt::AA_DontUseNativeDialogs, !MusEGlobal::config.useNativeStandardDialogs);
 
         //=================
         //  LADSPA paths:
