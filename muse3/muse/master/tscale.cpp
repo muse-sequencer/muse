@@ -27,6 +27,7 @@
 
 #include <QMouseEvent>
 #include <QPainter>
+#include <QStyleOption>
 
 namespace MusEGui {
 
@@ -54,10 +55,14 @@ TScale::TScale(QWidget* parent, int ymag)
 
 void TScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
+    QStyleOption opt;
+    opt.init(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+
       int y = r.y();
       int h = r.height();
       QString s;
-      p.setPen(Qt::black);
+      p.setPen(palette().color(QPalette::WindowText));
       for (int i = 30000; i <= 250000; i += 10000) {
             int yy =  mapy(280000 - i);
             if (yy < y)
