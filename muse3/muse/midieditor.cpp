@@ -56,7 +56,6 @@ namespace MusEGui {
 MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
    QWidget* parent, const char* name) : TopWin(t, parent, name)
       {
-      setAttribute(Qt::WA_DeleteOnClose);
       _pl = pl;
       if (_pl)
             for (MusECore::iPart i = _pl->begin(); i != _pl->end(); ++i)

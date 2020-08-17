@@ -177,7 +177,6 @@ bool ScoreCanvas::preamble_contains_keysig_init=true;
 ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(TopWin::SCORE, parent, name)
 {
-    setAttribute(Qt::WA_DeleteOnClose);
     setFocusPolicy(Qt::NoFocus);
 
     mainw    = new QWidget(this);

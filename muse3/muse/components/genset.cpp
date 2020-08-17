@@ -113,12 +113,12 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       connect(deviceAudioBackendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(updateBackendDeviceSettings()));
 
-      addMdiSettings(TopWin::ARRANGER);
-      addMdiSettings(TopWin::SCORE);
+//      addMdiSettings(TopWin::ARRANGER);
       addMdiSettings(TopWin::PIANO_ROLL);
       addMdiSettings(TopWin::DRUM);
-      addMdiSettings(TopWin::LISTE);
+      addMdiSettings(TopWin::SCORE);
       addMdiSettings(TopWin::WAVE);
+      addMdiSettings(TopWin::LISTE);
       addMdiSettings(TopWin::MASTER);
       addMdiSettings(TopWin::LMASTER);
       addMdiSettings(TopWin::CLIPLIST);
@@ -341,14 +341,14 @@ void GlobalSettingsConfig::updateSettings()
 
 void GlobalSettingsConfig::updateMdiSettings()
 {
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
-    (*it)->update_settings();
+    for (auto it : mdisettings)
+        it->update_settings();
 }
 
 void GlobalSettingsConfig::applyMdiSettings()
 {
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
-    (*it)->apply_settings();
+    for (auto it : mdisettings)
+        it->apply_settings();
 }
 
 //---------------------------------------------------------
@@ -658,34 +658,34 @@ void GlobalSettingsConfig::transportCurrent()
 
 void GlobalSettingsConfig::traditionalPreset()
 {
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  for (auto it : mdisettings)
   {
-    TopWin::ToplevelType type = (*it)->type();
+    TopWin::ToplevelType type = it->type();
     TopWin::_sharesWhenFree[type]=false;
     TopWin::_defaultSubwin[type]=false;
   }
-  TopWin::_defaultSubwin[TopWin::ARRANGER]=true;
-  
+//  TopWin::_defaultSubwin[TopWin::ARRANGER]=true;
+
   updateMdiSettings();
 }
 
 void GlobalSettingsConfig::mdiPreset()
 {
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  for (auto it : mdisettings)
   {
-    TopWin::ToplevelType type = (*it)->type();
+    TopWin::ToplevelType type = it->type();
     TopWin::_sharesWhenSubwin[type]=true;
     TopWin::_defaultSubwin[type]=true;
   }
-  
+
   updateMdiSettings();
 }
 
 void GlobalSettingsConfig::borlandPreset()
 {
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  for (auto it : mdisettings)
   {
-    TopWin::ToplevelType type = (*it)->type();
+    TopWin::ToplevelType type = it->type();
     TopWin::_sharesWhenFree[type]=true;
     TopWin::_defaultSubwin[type]=false;
   }
