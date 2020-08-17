@@ -139,6 +139,11 @@ void SigScale::leaveEvent(QEvent*)
 
 void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       {
+    // seems the only way to draw the correct background...
+    QStyleOption opt;
+    opt.init(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+
       int x = r.x();
       int w = r.width();
       int h = height();
@@ -146,7 +151,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r, const QRegion&)
       if (x < 0)
             x = 0;
       p.setFont(MusEGlobal::config.fonts[3]);
-      p.setPen(Qt::black);
+      p.setPen(palette().color(QPalette::WindowText));
       for (MusECore::ciSigEvent si = MusEGlobal::sigmap.begin(); si != MusEGlobal::sigmap.end(); ++si) {
             MusECore::SigEvent* e = si->second;
             int xp = mapx(e->tick);
