@@ -53,6 +53,7 @@ QMenu::separator {
 	height: 1px;
 }
 
+/* breaks the menu with older Qt versions
 QMenu::item, QMenu::icon {
 	padding: 4px 6px;
 }
@@ -60,6 +61,7 @@ QMenu::item, QMenu::icon {
 QMenu::indicator {
     left: 6px;
 }
+*/
 
 QMenu::item:selected, QMenuBar::item:selected {
     background-color: rgb(0,90,160);
