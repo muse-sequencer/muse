@@ -1057,11 +1057,6 @@ void MusE::readToplevels(MusECore::Xml& xml)
                               }
                         else if (tag == "marker") {
                               showMarker(true);
-                              TopWin* tw = toplevels.findType(TopWin::MARKER);
-                              if(!tw)
-                                xml.skip("marker");
-                              else
-                                tw->readStatus(xml);
                               }
                         else if (tag == "arrangerview") {
                               showArranger(true);

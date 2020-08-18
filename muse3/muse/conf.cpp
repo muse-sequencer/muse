@@ -1216,8 +1216,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGui::ClipListEdit::readConfiguration(xml);
                         else if (tag == "lmaster")
                               MusEGui::LMaster::readConfiguration(xml);
-                        else if (tag == "marker")
-                              MusEGui::MarkerView::readConfiguration(xml);
+//                        else if (tag == "marker")
+//                              MusEGui::MarkerView::readConfiguration(xml);
                         else if (tag == "arrangerview")
                               MusEGui::ArrangerView::readConfiguration(xml);
                         
@@ -2107,7 +2107,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       MusEGui::ListEdit::writeConfiguration(level, xml);
       MusEGui::ClipListEdit::writeConfiguration(level, xml);
       MusEGui::LMaster::writeConfiguration(level, xml);
-      MusEGui::MarkerView::writeConfiguration(level, xml);
+//      MusEGui::MarkerView::writeConfiguration(level, xml);
       arrangerView->writeConfiguration(level, xml);
       
       MusEGui::write_function_dialog_config(level, xml);

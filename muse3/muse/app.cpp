@@ -329,7 +329,7 @@ MusE::MusE() : QMainWindow()
       midiInputTransform    = nullptr;
       midiRhythmGenerator   = nullptr;
       globalSettingsConfig  = nullptr;
-      markerView            = nullptr;
+//      markerView            = nullptr;
       arrangerView          = nullptr;
       softSynthesizerConfig = nullptr;
       midiTransformerDialog = nullptr;
@@ -558,8 +558,8 @@ MusE::MusE() : QMainWindow()
       viewMixerBAction->setCheckable(true);
       viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist"), this);
       viewCliplistAction->setCheckable(true);
-      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View"),  this);
-      viewMarkerAction->setCheckable(true);
+//      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View"),  this);
+//      viewMarkerAction->setCheckable(true);
       viewArrangerAction = new QAction(tr("Arranger View"),  this);
       viewArrangerAction->setCheckable(true);
       fullscreenAction=new QAction(tr("Fullscreen"), this);
@@ -671,7 +671,7 @@ MusE::MusE() : QMainWindow()
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
-      connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
+//      connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
       connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
       connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
       connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
@@ -861,7 +861,19 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewMixerAAction);
       menuView->addAction(viewMixerBAction);
       menuView->addAction(viewCliplistAction);
+
+      markerDock = new QDockWidget("Markers", this);
+      markerDock->setObjectName("markerDock");
+      markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      markerView = new MusEGui::MarkerView(markerDock);
+      markerDock->setWidget(markerView);
+      addDockWidget(Qt::RightDockWidgetArea, markerDock);
+      markerDock->hide();
+      viewMarkerAction = markerDock->toggleViewAction();
+      viewMarkerAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key);
       menuView->addAction(viewMarkerAction);
+//      menuView->addAction(viewMarkerAction);
+
       menuView->addAction(viewArrangerAction);
       menuView->addSeparator();
       menuView->addMenu(master);
@@ -1947,14 +1959,6 @@ void MusE::closeEvent(QCloseEvent* event)
       qApp->quit();
       }
 
-//---------------------------------------------------------
-//   toggleMarker
-//---------------------------------------------------------
-
-void MusE::toggleMarker(bool checked)
-      {
-      showMarker(checked);
-      }
 
 //---------------------------------------------------------
 //   showMarker
@@ -1962,22 +1966,7 @@ void MusE::toggleMarker(bool checked)
 
 void MusE::showMarker(bool flag)
 {
-    if (markerView == nullptr) {
-        markerView = new MusEGui::MarkerView(this);
-//        connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-        toplevels.push_back(markerView);
-        connect(markerView, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-    }
-
-    if(markerView->isVisible() != flag)
-        markerView->setVisible(flag);
-    if(viewMarkerAction->isChecked() != flag)
-        viewMarkerAction->setChecked(flag);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
-    if (!flag)
-        if (currentMenuSharingTopwin == markerView)
-            setCurrentMenuSharingTopwin(nullptr);
-
-    updateWindowMenu();
+    markerDock->setVisible(flag);
 }
 
 //---------------------------------------------------------
@@ -2589,15 +2578,16 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
             case MusEGui::TopWin::ARRANGER:
                 break;
             case MusEGui::TopWin::MARKER:
-                viewMarkerAction->setChecked(false);
-                if (currentMenuSharingTopwin == markerView)
-                    setCurrentMenuSharingTopwin(nullptr);
-                break;
+//                viewMarkerAction->setChecked(false);
+//                if (currentMenuSharingTopwin == markerView)
+//                    setCurrentMenuSharingTopwin(nullptr);
+//                break;
             case MusEGui::TopWin::CLIPLIST:
-                viewCliplistAction->setChecked(false);
-                if (currentMenuSharingTopwin == clipListEdit)
-                    setCurrentMenuSharingTopwin(nullptr);
-                break;
+//                viewCliplistAction->setChecked(false);
+//                if (currentMenuSharingTopwin == clipListEdit)
+//                    setCurrentMenuSharingTopwin(nullptr);
+//                break;
+                return; // will be never called
 
             // the following editors can exist in more than one instantiation:
             case MusEGui::TopWin::PIANO_ROLL:
@@ -2731,9 +2721,9 @@ void MusE::kbAccel(int key)
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_TRANSPORT].key) {
             toggleTransport(!viewTransportAction->isChecked());
             }
-      else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key) {
-            toggleMarker(!viewMarkerAction->isChecked());
-            }
+//      else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key) {
+//            toggleMarker(!viewMarkerAction->isChecked());
+//            }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_BIGTIME].key) {
             toggleBigTime(!viewBigtimeAction->isChecked());
             }
@@ -3521,7 +3511,7 @@ void MusE::updateConfiguration()
       //viewCliplistAction has no acceleration
       masterGraphicAction->setShortcut(shortcuts[MusEGui::SHRT_OPEN_GRAPHIC_MASTER].key);
       masterListAction->setShortcut(shortcuts[MusEGui::SHRT_OPEN_LIST_MASTER].key);
-      viewMarkerAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key);
+//      viewMarkerAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key);
 
 
       // midiEditInstAction does not have acceleration
