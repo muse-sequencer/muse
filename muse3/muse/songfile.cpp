@@ -992,116 +992,106 @@ MusECore::Part* MusE::readPart(MusECore::Xml& xml)
 //---------------------------------------------------------
 
 void MusE::readToplevels(MusECore::Xml& xml)
-      {
-      MusECore::PartList* pl = new MusECore::PartList;
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "part") {
-                              MusECore::Part* part = readPart(xml);
-                              if (part)
-                                    pl->add(part);
-                              }
-                        else if (tag == "pianoroll") {
-                              // p3.3.34
-                              // Do not open if there are no parts.
-                              // Had bogus '-1' part index for list edit in med file,
-                              //  causing list edit to segfault on song load.
-                              // Somehow that -1 was put there on write, because the
-                              //  current part didn't exist anymore, so no index number
-                              //  could be found for it on write. Watching... may be fixed.
-                              // But for now be safe for all the top levels...
-                              if(!pl->empty())
-                              {
-                                startPianoroll(pl);
-                                toplevels.back()->readStatus(xml);
-                                pl = new MusECore::PartList;
-                              }
-                              }
-                        else if (tag == "scoreedit") {
-                                MusEGui::ScoreEdit* score = new MusEGui::ScoreEdit(this, 0, _arranger->cursorValue());
-                                toplevels.push_back(score);
-                                connect(score, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-                                connect(score, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
-                                score->show();
-                                score->readStatus(xml);
-                              }
-                        else if (tag == "drumedit") {
-                              if(!pl->empty())
-                              {
-                                startDrumEditor(pl);
-                                toplevels.back()->readStatus(xml);
-                                pl = new MusECore::PartList;
-                              }
-                              }
-                        else if (tag == "listeditor") {
-                              if(!pl->empty())
-                              {
-                                startListEditor(pl);
-                                toplevels.back()->readStatus(xml);
-                                pl = new MusECore::PartList;
-                              }
-                              }
-                        else if (tag == "master") {
-                              startMasterEditor();
-                              toplevels.back()->readStatus(xml);
-                              }
-                        else if (tag == "lmaster") {
-                              startLMasterEditor();
-                              toplevels.back()->readStatus(xml);
-                              }
-                        else if (tag == "marker") {
-                              showMarker(true);
-                              TopWin* tw = toplevels.findType(TopWin::MARKER);
-                              if(!tw)
-                                xml.skip("marker");
-                              else
-                                tw->readStatus(xml);
-                              }
-                        else if (tag == "arrangerview") {
-                              showArranger(true);
-                              TopWin* tw = toplevels.findType(TopWin::ARRANGER);
-                              if(!tw)
-                                xml.skip("arrangerview");
-                              else
-                                tw->readStatus(xml);
-                              }
-                        else if (tag == "waveedit") {
-                              if(!pl->empty())
-                              {
-                                startWaveEditor(pl);
-                                toplevels.back()->readStatus(xml);
-                                pl = new MusECore::PartList;
-                              }
-                              }
-                        else if (tag == "cliplist") {
-                              startClipList(true);
-                              TopWin* tw = toplevels.findType(TopWin::CLIPLIST);
-                              if(!tw)
-                                xml.skip("cliplist");
-                              else
-                                tw->readStatus(xml);
-                              }
-                        else
-                              xml.unknown("MusE");
-                        break;
-                  case MusECore::Xml::Attribut:
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "toplevels") {
-                              delete pl;
-                              return;
-                              }
-                  default:
-                        break;
-                  }
+{
+    MusECore::PartList* pl = new MusECore::PartList;
+    for (;;) {
+        MusECore::Xml::Token token = xml.parse();
+        const QString& tag = xml.s1();
+        switch (token) {
+        case MusECore::Xml::Error:
+        case MusECore::Xml::End:
+            return;
+        case MusECore::Xml::TagStart:
+            if (tag == "part") {
+                MusECore::Part* part = readPart(xml);
+                if (part)
+                    pl->add(part);
             }
-      }
+            else if (tag == "pianoroll") {
+                // p3.3.34
+                // Do not open if there are no parts.
+                // Had bogus '-1' part index for list edit in med file,
+                //  causing list edit to segfault on song load.
+                // Somehow that -1 was put there on write, because the
+                //  current part didn't exist anymore, so no index number
+                //  could be found for it on write. Watching... may be fixed.
+                // But for now be safe for all the top levels...
+                if(!pl->empty())
+                {
+                    startPianoroll(pl);
+                    toplevels.back()->readStatus(xml);
+                    pl = new MusECore::PartList;
+                }
+            }
+            else if (tag == "scoreedit") {
+                MusEGui::ScoreEdit* score = new MusEGui::ScoreEdit(this, 0, _arranger->cursorValue());
+                toplevels.push_back(score);
+                connect(score, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+                connect(score, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
+                score->show();
+                score->readStatus(xml);
+            }
+            else if (tag == "drumedit") {
+                if(!pl->empty())
+                {
+                    startDrumEditor(pl);
+                    toplevels.back()->readStatus(xml);
+                    pl = new MusECore::PartList;
+                }
+            }
+            else if (tag == "listeditor") {
+                if(!pl->empty())
+                {
+                    startListEditor(pl);
+                    toplevels.back()->readStatus(xml);
+                    pl = new MusECore::PartList;
+                }
+            }
+            else if (tag == "master") {
+                startMasterEditor();
+                toplevels.back()->readStatus(xml);
+            }
+            else if (tag == "lmaster") {
+                startLMasterEditor();
+                toplevels.back()->readStatus(xml);
+            }
+            else if (tag == "marker") {
+                showMarker(true);
+            }
+            else if (tag == "arrangerview") {
+                showArranger(true);
+                TopWin* tw = toplevels.findType(TopWin::ARRANGER);
+                if(!tw)
+                    xml.skip("arrangerview");
+                else
+                    tw->readStatus(xml);
+            }
+            else if (tag == "waveedit") {
+                if(!pl->empty())
+                {
+                    startWaveEditor(pl);
+                    toplevels.back()->readStatus(xml);
+                    pl = new MusECore::PartList;
+                }
+            }
+            else if (tag == "cliplist") {
+                startClipList(true);
+            }
+            else
+                xml.unknown("MusE");
+            break;
+        case MusECore::Xml::Attribut:
+            break;
+        case MusECore::Xml::TagEnd:
+            if (tag == "toplevels") {
+                delete pl;
+                return;
+            }
+        default:
+            break;
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   read

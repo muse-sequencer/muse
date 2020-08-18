@@ -40,7 +40,7 @@
 #include <QToolButton>
 #include <QProgressDialog>
 #include <QTimer>
-#include <QPointer>
+#include <QDockWidget>
 
 #include <list>
 #include <time.h>
@@ -225,8 +225,10 @@ class MusE : public QMainWindow
       
       Arranger* _arranger;
       ToplevelList toplevels;
-      QPointer<ClipListEdit> clipListEdit;
-      QPointer<MarkerView> markerView;
+      ClipListEdit* clipListEdit;
+      QDockWidget* clipListDock;
+      MarkerView* markerView;
+      QDockWidget* markerDock;
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
@@ -297,7 +299,7 @@ class MusE : public QMainWindow
       void findUnusedWaveFiles();
 
       void toggleTransport(bool);
-      void toggleMarker(bool);
+//      void toggleMarker(bool);
       void toggleArranger(bool);
       void toggleBigTime(bool);
       void toggleMixer1(bool);

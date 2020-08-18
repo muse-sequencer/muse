@@ -319,7 +319,6 @@ MusE::MusE() : QMainWindow()
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
       _isRestartingApp      = false;
-      clipListEdit          = nullptr;
       midiSyncConfig        = nullptr;
       midiRemoteConfig      = nullptr;
       midiPortConfig        = nullptr;
@@ -329,7 +328,6 @@ MusE::MusE() : QMainWindow()
       midiInputTransform    = nullptr;
       midiRhythmGenerator   = nullptr;
       globalSettingsConfig  = nullptr;
-      markerView            = nullptr;
       arrangerView          = nullptr;
       softSynthesizerConfig = nullptr;
       midiTransformerDialog = nullptr;
@@ -401,6 +399,22 @@ MusE::MusE() : QMainWindow()
                   }
             }
 #endif
+
+      clipListDock = new QDockWidget("Clip List", this);
+//      clipListDock->setObjectName("clipListDock");
+      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      clipListEdit = new MusEGui::ClipListEdit(clipListDock);
+      clipListDock->setWidget(clipListEdit);
+      addDockWidget(Qt::RightDockWidgetArea, clipListDock);
+      clipListDock->hide();
+
+      markerDock = new QDockWidget("Markers", this);
+//      markerDock->setObjectName("markerDock");
+      markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      markerView = new MusEGui::MarkerView(markerDock);
+      markerDock->setWidget(markerView);
+      addDockWidget(Qt::RightDockWidgetArea, markerDock);
+      markerDock->hide();
 
       //---------------------------------------------------
       //    undo/redo
@@ -556,10 +570,10 @@ MusE::MusE() : QMainWindow()
       viewMixerAAction->setCheckable(true);
       viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B"), this);
       viewMixerBAction->setCheckable(true);
-      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist"), this);
-      viewCliplistAction->setCheckable(true);
-      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View"),  this);
-      viewMarkerAction->setCheckable(true);
+
+      viewMarkerAction = markerDock->toggleViewAction();
+      viewCliplistAction = clipListDock->toggleViewAction();
+
       viewArrangerAction = new QAction(tr("Arranger View"),  this);
       viewArrangerAction->setCheckable(true);
       fullscreenAction=new QAction(tr("Fullscreen"), this);
@@ -670,8 +684,6 @@ MusE::MusE() : QMainWindow()
       connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleBigTime(bool)));
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
-      connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
-      connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
       connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
       connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
       connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
@@ -1947,14 +1959,6 @@ void MusE::closeEvent(QCloseEvent* event)
       qApp->quit();
       }
 
-//---------------------------------------------------------
-//   toggleMarker
-//---------------------------------------------------------
-
-void MusE::toggleMarker(bool checked)
-      {
-      showMarker(checked);
-      }
 
 //---------------------------------------------------------
 //   showMarker
@@ -1962,22 +1966,7 @@ void MusE::toggleMarker(bool checked)
 
 void MusE::showMarker(bool flag)
 {
-    if (markerView == nullptr) {
-        markerView = new MusEGui::MarkerView(this);
-//        connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-        toplevels.push_back(markerView);
-        connect(markerView, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-    }
-
-    if(markerView->isVisible() != flag)
-        markerView->setVisible(flag);
-    if(viewMarkerAction->isChecked() != flag)
-        viewMarkerAction->setChecked(flag);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
-    if (!flag)
-        if (currentMenuSharingTopwin == markerView)
-            setCurrentMenuSharingTopwin(nullptr);
-
-    updateWindowMenu();
+    markerDock->setVisible(flag);
 }
 
 //---------------------------------------------------------
@@ -2491,26 +2480,9 @@ void MusE::showDidYouKnowDialog()
 //---------------------------------------------------------
 
 void MusE::startClipList(bool checked)
-      {
-      if (clipListEdit == nullptr) {
-            clipListEdit = new MusEGui::ClipListEdit(this);
-            toplevels.push_back(clipListEdit);
-            connect(clipListEdit, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-            }
-
-      if(clipListEdit->isVisible() != checked)
-          clipListEdit->setVisible(checked);
-      if(viewCliplistAction->isChecked() != checked)
-          viewCliplistAction->setChecked(checked);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
-      if (!checked)
-          if (currentMenuSharingTopwin == clipListEdit)
-              setCurrentMenuSharingTopwin(nullptr);
-
-
-//      clipListEdit->show();
-//      viewCliplistAction->setChecked(checked);
-      updateWindowMenu();
-      }
+{
+    clipListDock->setEnabled(checked);
+}
 
 //---------------------------------------------------------
 //   fileMenu
@@ -2588,17 +2560,6 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
             switch(tl->type()) {
             case MusEGui::TopWin::ARRANGER:
                 break;
-            case MusEGui::TopWin::MARKER:
-                viewMarkerAction->setChecked(false);
-                if (currentMenuSharingTopwin == markerView)
-                    setCurrentMenuSharingTopwin(nullptr);
-                break;
-            case MusEGui::TopWin::CLIPLIST:
-                viewCliplistAction->setChecked(false);
-                if (currentMenuSharingTopwin == clipListEdit)
-                    setCurrentMenuSharingTopwin(nullptr);
-                break;
-
             // the following editors can exist in more than one instantiation:
             case MusEGui::TopWin::PIANO_ROLL:
             case MusEGui::TopWin::LISTE:
@@ -2730,9 +2691,6 @@ void MusE::kbAccel(int key)
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_TRANSPORT].key) {
             toggleTransport(!viewTransportAction->isChecked());
-            }
-      else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key) {
-            toggleMarker(!viewMarkerAction->isChecked());
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_BIGTIME].key) {
             toggleBigTime(!viewBigtimeAction->isChecked());
@@ -3331,8 +3289,6 @@ again:
       for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             MusEGui::TopWin* tl = *i;
             switch (tl->type()) {
-                  case MusEGui::TopWin::CLIPLIST:
-                  case MusEGui::TopWin::MARKER:
                   case MusEGui::TopWin::ARRANGER:
                         break;
                   case MusEGui::TopWin::PIANO_ROLL:

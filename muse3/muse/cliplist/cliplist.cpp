@@ -125,18 +125,12 @@ QString ClipItem::text(int col) const
 //---------------------------------------------------------
 
 ClipListEdit::ClipListEdit(QWidget* parent)
-   : TopWin(TopWin::CLIPLIST, parent, "cliplist", Qt::Window)
+   : QWidget(parent)
       {
-      isMdiWin() ? setWindowTitle(tr("Clip List")) : setWindowTitle(tr("MusE: Clip List"));
 
+      QVBoxLayout* vbox = new QVBoxLayout(this);
       editor = new ClipListEditorBaseWidget;
-      setCentralWidget(editor);
-
-            
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      settingsMenu->addAction(subwinAction);      
-      settingsMenu->addAction(shareAction);      
-      settingsMenu->addAction(fullscreenAction);      
+      vbox->addWidget(editor);
       
       // NOTICE: Please ensure that any tool bar object names here match the names assigned 
       //          to identical or similar toolbars in class MusE or other TopWin classes. 
@@ -164,7 +158,6 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
       updateList();
-      finalizeInit();
       }
 
 ClipListEdit::~ClipListEdit()
@@ -185,16 +178,6 @@ void ClipListEdit::updateList()
       }
 
 //---------------------------------------------------------
-//   closeEvent
-//---------------------------------------------------------
-
-void ClipListEdit::closeEvent(QCloseEvent* e)
-      {
-      emit isDeleting(static_cast<TopWin*>(this));
-      e->accept();
-      }
-
-//---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
@@ -202,83 +185,6 @@ void ClipListEdit::songChanged(MusECore::SongChangedStruct_t type)
       {
       if(type & (SC_CLIP_MODIFIED | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
         updateList();
-      }
-
-//---------------------------------------------------------
-//   readStatus
-//---------------------------------------------------------
-
-void ClipListEdit::readStatus(MusECore::Xml& xml)
-      {
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-                  break;
-            switch (token) {
-                  case MusECore::Xml::TagStart:
-                        if (tag == "topwin")
-                              TopWin::readStatus(xml);
-                        else
-                              xml.unknown("CliplistEdit");
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "cliplist")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   writeStatus
-//---------------------------------------------------------
-
-void ClipListEdit::writeStatus(int level, MusECore::Xml& xml) const
-      {
-      xml.tag(level++, "cliplist");
-      TopWin::writeStatus(level, xml);
-      xml.etag(level, "cliplist");
-      }
-
-//---------------------------------------------------------
-//   readConfiguration
-//---------------------------------------------------------
-
-void ClipListEdit::readConfiguration(MusECore::Xml& xml)
-      {
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "topwin")
-                              TopWin::readConfiguration(CLIPLIST, xml);
-                        else
-                              xml.unknown("ClipListEdit");
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "cliplistedit")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   writeConfiguration
-//---------------------------------------------------------
-
-void ClipListEdit::writeConfiguration(int level, MusECore::Xml& xml)
-      {
-      xml.tag(level++, "cliplistedit");
-      TopWin::writeConfiguration(CLIPLIST, level, xml);
-      xml.tag(level, "/cliplistedit");
       }
 
 //---------------------------------------------------------
