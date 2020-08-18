@@ -54,7 +54,7 @@ class TopWin : public QMainWindow
 
    public:
       enum ToplevelType { PIANO_ROLL=0, LISTE, DRUM, MASTER, WAVE, //there shall be no
-         LMASTER, CLIPLIST, MARKER, SCORE, ARRANGER,               //gaps in the enum!
+         LMASTER, SCORE, ARRANGER,               //gaps in the enum!
 #ifdef PATCHBAY
          M_PATCHBAY,
 #endif /* PATCHBAY */

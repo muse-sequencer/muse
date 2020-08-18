@@ -121,8 +121,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       addMdiSettings(TopWin::LISTE);
       addMdiSettings(TopWin::MASTER);
       addMdiSettings(TopWin::LMASTER);
-      addMdiSettings(TopWin::CLIPLIST);
-      addMdiSettings(TopWin::MARKER);
 
       for (int i = 0; i < MusEGlobal::numRtAudioDevices; i++){
         deviceAudioBackendComboBox->addItem(MusEGlobal::selectableAudioBackendDevices[i],i);

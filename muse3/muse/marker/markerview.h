@@ -29,7 +29,6 @@
 
 #include <QTreeWidgetItem>
 
-//class QCloseEvent;
 class QLineEdit;
 class QToolBar;
 class QToolButton;
@@ -77,10 +76,7 @@ class MarkerView : public QWidget {
       PosEdit* editTick;
       QToolButton* lock;
       QToolBar* tools;
-      
-      
-//      virtual void closeEvent(QCloseEvent*);
-
+           
    private slots:
       void addMarker();
       void addMarker(unsigned);
@@ -95,17 +91,9 @@ class MarkerView : public QWidget {
       void updateList();
       void songChanged(MusECore::SongChangedStruct_t);
       
-//   signals:
-//      void isDeleting(MusEGui::TopWin*);
-//      void closed();
-
    public:
       MarkerView(QWidget* parent);
       ~MarkerView();
-//      virtual void readStatus(MusECore::Xml&);
-//      virtual void writeStatus(int, MusECore::Xml&) const;
-//      static void readConfiguration(MusECore::Xml&);
-//      static void writeConfiguration(int, MusECore::Xml&);
       void nextMarker();
       void prevMarker();
 

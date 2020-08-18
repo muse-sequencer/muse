@@ -226,6 +226,7 @@ class MusE : public QMainWindow
       Arranger* _arranger;
       ToplevelList toplevels;
       ClipListEdit* clipListEdit;
+      QDockWidget* clipListDock;
       MarkerView* markerView;
       QDockWidget* markerDock;
       ArrangerView* arrangerView;

@@ -31,10 +31,10 @@
 #include "song.h"
 #include "posedit.h"
 #include "audio.h"
+#include "gconfig.h"
 
 #include <cstdint>
 
-//#include <QCloseEvent>
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QLineEdit>
@@ -147,16 +147,6 @@ void MarkerItem::setPos(const MusECore::Pos& v)
       setText(COL_SMPTE, s);
       }
 
-//---------------------------------------------------------
-//   closeEvent
-//---------------------------------------------------------
-
-//void MarkerView::closeEvent(QCloseEvent* e)
-//      {
-//      emit isDeleting(static_cast<TopWin*>(this));
-//      emit closed();
-//      e->accept();
-//      }
 
 //---------------------------------------------------------
 //   MarkerView
@@ -164,39 +154,17 @@ void MarkerItem::setPos(const MusECore::Pos& v)
 
 MarkerView::MarkerView(QWidget* parent)
    : QWidget(parent)
-//   : TopWin(TopWin::MARKER, parent, "markerview", Qt::Window)
       {
-//      isMdiWin() ? setWindowTitle(tr("Markers")) : setWindowTitle(tr("MusE: Markers"));
 
       QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("Add marker"), this);
       connect(markerAdd, SIGNAL(triggered()), SLOT(addMarker()));
 
       QAction* markerDelete = new QAction(QIcon(*deleteIcon), tr("Delete marker"), this);
-      connect(markerDelete, SIGNAL(triggered()), SLOT(deleteMarker()));
-
-      //---------Pulldown Menu----------------------------
-//      QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
-      
-//      editMenu->addAction(markerAdd);
-//      editMenu->addAction(markerDelete);
-      
-      
-//      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-//      settingsMenu->addAction(subwinAction);
-//      settingsMenu->addAction(shareAction);
-//      settingsMenu->addAction(fullscreenAction);
-      
+      connect(markerDelete, SIGNAL(triggered()), SLOT(deleteMarker()));    
       
       // Toolbars ---------------------------------------------------------
-      
-      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
-      //          to identical or similar toolbars in class MusE or other TopWin classes. 
-      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
-      //          to retain the original toolbar layout. If it finds an existing
-      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
-      //          instead of /appending/ with addToolBar().
-
       QToolBar* edit = new QToolBar(tr("Edit tools"));
+      edit->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
       edit->setObjectName("marker edit tools");
       edit->addAction(markerAdd);
       edit->addAction(markerDelete);
@@ -205,8 +173,6 @@ MarkerView::MarkerView(QWidget* parent)
       //    master
       //---------------------------------------------------
 
-//      QWidget* w = new QWidget;
-//      setCentralWidget(w);
       QVBoxLayout* vbox = new QVBoxLayout(this);
 
       table = new QTreeWidget(this);
@@ -282,8 +248,6 @@ MarkerView::MarkerView(QWidget* parent)
       
       updateList();
 
-//      finalizeInit();
-
       // work around for probable QT/WM interaction bug.
       // for certain window managers, e.g xfce, this window is
       // is displayed although not specifically set to show();
@@ -301,83 +265,6 @@ MarkerView::MarkerView(QWidget* parent)
 MarkerView::~MarkerView()
       {
       }
-
-//---------------------------------------------------------
-//   readStatus
-//---------------------------------------------------------
-
-//void MarkerView::readStatus(MusECore::Xml& xml)
-//      {
-//      for (;;) {
-//            MusECore::Xml::Token token = xml.parse();
-//            const QString& tag = xml.s1();
-//            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-//                  break;
-//            switch (token) {
-//                  case MusECore::Xml::TagStart:
-//                        if (tag=="topwin")
-//                            TopWin::readStatus(xml);
-//                        else
-//                            xml.unknown("Marker");
-//                        break;
-//                  case MusECore::Xml::TagEnd:
-//                        if (tag == "marker")
-//                              return;
-//                  default:
-//                        break;
-//                  }
-//            }
-//      }
-
-//---------------------------------------------------------
-//   writeStatus
-//---------------------------------------------------------
-
-//void MarkerView::writeStatus(int level, MusECore::Xml& xml) const
-//      {
-//      xml.tag(level++, "marker");
-//      TopWin::writeStatus(level, xml);
-//      xml.tag(level, "/marker");
-//      }
-
-//---------------------------------------------------------
-//   readConfiguration
-//---------------------------------------------------------
-
-//void MarkerView::readConfiguration(MusECore::Xml& xml)
-//      {
-//      for (;;) {
-//            MusECore::Xml::Token token = xml.parse();
-//            const QString& tag = xml.s1();
-//            switch (token) {
-//                  case MusECore::Xml::Error:
-//                  case MusECore::Xml::End:
-//                        return;
-//                  case MusECore::Xml::TagStart:
-//                        if (tag == "topwin")
-////                              TopWin::readConfiguration(MARKER, xml);
-////                        else
-//                              xml.unknown("MarkerView");
-//                        break;
-//                  case MusECore::Xml::TagEnd:
-//                        if (tag == "marker")
-//                              return;
-//                  default:
-//                        break;
-//                  }
-//            }
-//      }
-
-//---------------------------------------------------------
-//   writeConfiguration
-//---------------------------------------------------------
-
-//void MarkerView::writeConfiguration(int level, MusECore::Xml& xml)
-//      {
-//      xml.tag(level++, "marker");
-////      TopWin::writeConfiguration(MARKER, level, xml);
-//      xml.tag(level, "/marker");
-//      }
 
 //---------------------------------------------------------
 //   addMarker
