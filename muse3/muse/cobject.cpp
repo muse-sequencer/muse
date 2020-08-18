@@ -69,12 +69,12 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
     _type=t;
 
-    if (_type != ARRANGER)
-        setAttribute(Qt::WA_DeleteOnClose);
-
     setObjectName(QString(name));
     //setDockNestingEnabled(true); // Allow multiple rows.	Tim.
     setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
+
+    if (_type != ARRANGER)
+        setAttribute(Qt::WA_DeleteOnClose);
 
     subwinAction=new QAction(tr("As Subwindow"), this);
     subwinAction->setCheckable(true);
@@ -89,6 +89,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     fullscreenAction->setChecked(false);
     fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
     connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
+
 
     mdisubwin = nullptr;
 

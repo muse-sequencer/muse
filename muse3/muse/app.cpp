@@ -1970,38 +1970,6 @@ void MusE::showMarker(bool flag)
 }
 
 //---------------------------------------------------------
-//   markerClosed
-//---------------------------------------------------------
-
-//void MusE::markerClosed()
-//      {
-//      if(viewMarkerAction->isChecked())
-//        viewMarkerAction->setChecked(false); // ??? TEST: Recursion? Does this call toggleMarker? Yes. REMOVE Tim. Or keep.
-//      if (currentMenuSharingTopwin == markerView)
-//        setCurrentMenuSharingTopwin(nullptr);
-
-//      if (markerView->isMdiWin()) {
-//          markerView = nullptr;
-//      }
-
-//      updateWindowMenu();
-
-//      // focus the last activated topwin which is not the marker view
-//      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-//      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
-//        if ((*lit)->isVisible() && (*lit)->widget() != markerView)
-//        {
-//          if (MusEGlobal::debugMsg)
-//            fprintf(stderr, "bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toLatin1().data());
-
-//          bringToFront((*lit)->widget());
-
-//          break;
-//        }
-
-//      }
-
-//---------------------------------------------------------
 //   toggleArranger
 //---------------------------------------------------------
 

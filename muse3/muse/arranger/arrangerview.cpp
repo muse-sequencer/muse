@@ -272,10 +272,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
-  menuSettings->addSeparator();
-  menuSettings->addAction(subwinAction);
-  menuSettings->addAction(shareAction);
-  menuSettings->addAction(fullscreenAction);
+//  menuSettings->addSeparator();
+//  menuSettings->addAction(subwinAction);
+//  menuSettings->addAction(shareAction);
+//  menuSettings->addAction(fullscreenAction);
 
 
   //-------- Edit connections
