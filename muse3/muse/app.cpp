@@ -2541,8 +2541,6 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
             case MusEGui::TopWin::DRUM:
             case MusEGui::TopWin::MASTER:
             case MusEGui::TopWin::WAVE:
-            case MusEGui::TopWin::LMASTER:
-                break;
             case MusEGui::TopWin::SCORE:
                 mustUpdateScoreMenus=true;
 
@@ -3272,7 +3270,6 @@ again:
                   case MusEGui::TopWin::DRUM:
                   case MusEGui::TopWin::MASTER:
                   case MusEGui::TopWin::WAVE:
-                  case MusEGui::TopWin::LMASTER:
                   {
                         if(tl->isVisible())   // Don't keep trying to close, only if visible.
                         {

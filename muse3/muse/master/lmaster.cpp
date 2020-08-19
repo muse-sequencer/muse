@@ -43,43 +43,18 @@
 #include <QTreeWidget>
 #include <QComboBox>
 #include <QTimer>
+#include <QShortcut>
+#include <QDebug>
+#include <QApplication>
 
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1
 #define LMASTER_TYPE_COL 2
 #define LMASTER_VAL_COL  3
 
-#define LMASTER_MSGBOX_STRING          "MusE: List Editor"
+#define LMASTER_MSGBOX_STRING "Mastertrack List Editor"
 
 namespace MusEGui {
-
-//---------------------------------------------------------
-//   keyPressEvent
-//---------------------------------------------------------
-
-void LMaster::keyPressEvent(QKeyEvent* e)
-{
-    if (e->key() == Qt::Key_Escape) {
-          close();
-          return;
-          }
-    else {
-        e->ignore();
-        return;
-    }
-}
-
-//---------------------------------------------------------
-//   closeEvent
-//---------------------------------------------------------
-
-//void LMaster::closeEvent(QCloseEvent* e)
-//      {
-//      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
-      
-//      emit isDeleting(static_cast<TopWin*>(this));
-//      e->accept();
-//      }
 
 //---------------------------------------------------------
 //   songChanged
@@ -121,30 +96,21 @@ LMaster::LMaster(QWidget* parent)
       connect(comboboxTimer, SIGNAL(timeout()), this, SLOT(comboboxTimerSlot()));
 
 
-      //---------Pulldown Menu----------------------------
-//      menuEdit = new QMenu(tr("&Edit"), this);
-////      menuEdit = menuBar()->addMenu(tr("&Edit"));
-//      menuEdit->addActions(MusEGlobal::undoRedo->actions());
-//      menuEdit->addSeparator();
-      tempoAction = new QAction(tr("Insert Tempo"));
-      signAction  = new QAction(tr("Insert Signature"));
-      keyAction   = new QAction(tr("Insert Key"));
-      posAction   = new QAction(tr("Edit Position"));
-      valAction   = new QAction(tr("Edit Value"));
-      delAction   = new QAction(tr("Delete Event"));
-      delAction->setShortcut(Qt::Key_Delete);
-//      tempoAction = menuEdit->addAction(tr("Insert Tempo"));
-//      signAction = menuEdit->addAction(tr("Insert Signature"));
-//      keyAction = menuEdit->addAction(tr("Insert Key"));
-//      posAction = menuEdit->addAction(tr("Edit Position"));
-//      valAction = menuEdit->addAction(tr("Edit Value"));
-//      delAction = menuEdit->addAction(tr("Delete Event"));
-//      delAction->setShortcut(Qt::Key_Delete);
+      tempoAction = new QAction(tr("Tempo"), this);
+      signAction  = new QAction(tr("Signature"), this);
+      keyAction   = new QAction(tr("Key"), this);
+      posAction   = new QAction(tr("Position"), this);
+      valAction   = new QAction(tr("Value"), this);
+      delAction   = new QAction(tr("Delete"), this);
 
-////      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-////      settingsMenu->addAction(subwinAction);
-////      settingsMenu->addAction(shareAction);
-////      settingsMenu->addAction(fullscreenAction);
+      delAction->setShortcut(Qt::Key_Delete);
+
+      addAction(tempoAction);
+      addAction(signAction);
+      addAction(keyAction);
+      addAction(posAction);
+      addAction(valAction);
+      addAction(delAction);
 
       connect(tempoAction, &QAction::triggered, [this]() { cmd(CMD_INSERT_TEMPO); } );
       connect(signAction,  &QAction::triggered, [this]() { cmd(CMD_INSERT_SIG); } );
@@ -152,7 +118,6 @@ LMaster::LMaster(QWidget* parent)
       connect(posAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_BEAT); } );
       connect(valAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_VALUE); } );
       connect(delAction,   &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
-      
       
       
       // Toolbars ---------------------------------------------------------
@@ -164,43 +129,14 @@ LMaster::LMaster(QWidget* parent)
       //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
       //          instead of /appending/ with addToolBar().
 
-//      addToolBarBreak();
-      
       QToolBar* edit = new QToolBar(tr("Edit tools"), this);
-//      QToolBar* edit = addToolBar(tr("Edit tools"));
-      edit->setObjectName("Master List Edit Tools");
-      QToolButton* tempoButton = new QToolButton();
-      QToolButton* timeSigButton = new QToolButton();
-      QToolButton* keyButton = new QToolButton();
-      tempoButton->setFocusPolicy(Qt::NoFocus);
-      timeSigButton->setFocusPolicy(Qt::NoFocus);
-      keyButton->setFocusPolicy(Qt::NoFocus);
-      tempoButton->setText(tr("Tempo"));
-      timeSigButton->setText(tr("Time Signature"));
-      keyButton->setText(tr("Key"));
-      tempoButton->setToolTip(tr("Insert new tempo"));
-      timeSigButton->setToolTip(tr("Insert new time signature"));
-      keyButton->setToolTip(tr("Insert new key"));
-      edit->addWidget(tempoButton);
-      edit->addWidget(timeSigButton);
-      edit->addWidget(keyButton);
+      edit->addAction(tempoAction);
+      edit->addAction(signAction);
+      edit->addAction(keyAction);
+      edit->addAction(posAction);
+      edit->addAction(valAction);
+      edit->addAction(delAction);
 
-      QToolButton* editBeatButton = new QToolButton();
-      QToolButton* editValueButton = new QToolButton();
-      QToolButton* deleteButton = new QToolButton();
-      editBeatButton->setFocusPolicy(Qt::NoFocus);
-      editValueButton->setFocusPolicy(Qt::NoFocus);
-      deleteButton->setFocusPolicy(Qt::NoFocus);
-      editBeatButton->setText(tr("Edit Position"));
-      editValueButton->setText(tr("Edit Value"));
-      deleteButton->setText(tr("Delete Event"));
-//      editBeatButton->setToolTip(tr("Insert new tempo"));
-//      timeSigButton->setToolTip(tr("Insert new time signature"));
-//      keyButton->setToolTip(tr("Insert new key"));
-      edit->addWidget(editBeatButton);
-      edit->addWidget(editValueButton);
-      edit->addWidget(deleteButton);
-      
       //---------------------------------------------------
       //    master
       //---------------------------------------------------
@@ -209,13 +145,15 @@ LMaster::LMaster(QWidget* parent)
       view->setAllColumnsShowFocus(true);
       view->setSelectionMode(QAbstractItemView::SingleSelection);
       QStringList columnnames;
-      columnnames << tr("Meter")
+      columnnames << tr("Position")
                   << tr("Time")
                   << tr("Type")
                   << tr("Value");
       view->setHeaderLabels(columnnames);
-      view->setColumnWidth(2,80);
-      view->header()->setStretchLastSection(true);
+      view->setColumnWidth(2,70);
+      view->setIndentation(0);
+      // seems to cause artefacts when editing last column
+//      view->header()->setStretchLastSection(true);
 
       //---------------------------------------------------
       //    Rest
@@ -225,7 +163,6 @@ LMaster::LMaster(QWidget* parent)
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColumnStretch(0, 100);
 
-//      mainGrid->addWidget(menuEdit, 0, 0);
       mainGrid->addWidget(edit,  0, 0);
       mainGrid->addWidget(view,  1, 0);
       updateList();
@@ -253,23 +190,24 @@ LMaster::LMaster(QWidget* parent)
       connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(this, SIGNAL(seekTo(int)), MusEGlobal::song, SLOT(seekTo(int)));
-      connect(tempoButton, SIGNAL(clicked()), SLOT(tempoButtonClicked()));
-      connect(timeSigButton, SIGNAL(clicked()), SLOT(timeSigButtonClicked()));
-      connect(keyButton, SIGNAL(clicked()), SLOT(insertKey()));
-
-      connect(editBeatButton, &QToolButton::pressed, [this]() { cmd(CMD_EDIT_BEAT); } );
-      connect(editValueButton, &QToolButton::pressed, [this]() { cmd(CMD_EDIT_VALUE); } );
-      connect(deleteButton, &QToolButton::pressed, [this]() { cmd(CMD_DELETE); } );
 
       initShortcuts();
-//      finalizeInit();
 
-      tempoButton->setToolTip(tr("Insert new tempo") + " " + tempoAction->shortcut().toString());
-      timeSigButton->setToolTip(tr("Insert new time signature")  + " " + signAction->shortcut().toString());
-      keyButton->setToolTip(tr("Insert new key") + " " + keyAction->shortcut().toString());
-      editBeatButton->setToolTip(tr("Edit position") + " " + posAction->shortcut().toString());
-      editValueButton->setToolTip(tr("Edit value") + " " + valAction->shortcut().toString());
-      deleteButton->setToolTip(tr("Delete event") + " " + delAction->shortcut().toString());
+      tempoAction->setShortcutContext(Qt::ApplicationShortcut);
+      signAction->setShortcutContext(Qt::ApplicationShortcut);
+      keyAction->setShortcutContext(Qt::ApplicationShortcut);
+      posAction->setShortcutContext(Qt::ApplicationShortcut);
+      valAction->setShortcutContext(Qt::ApplicationShortcut);
+      delAction->setShortcutContext(Qt::ApplicationShortcut);
+
+      tempoAction->setToolTip(tr("Insert tempo change") + " (" + tempoAction->shortcut().toString() + ")");
+      signAction->setToolTip(tr("Insert time signature change")  + " (" + signAction->shortcut().toString() + ")");
+      keyAction->setToolTip(tr("Insert key change") + " (" + keyAction->shortcut().toString() + ")");
+      posAction->setToolTip(tr("Edit position") + " (" + posAction->shortcut().toString() + ")");
+      valAction->setToolTip(tr("Edit value") + " (" + valAction->shortcut().toString() + ")");
+      delAction->setToolTip(tr("Delete event") + " (" + delAction->shortcut().toString() + ")");
+
+      qApp->installEventFilter(this);
       }
 
 //---------------------------------------------------------
@@ -1125,5 +1063,23 @@ void LMaster::comboboxTimerSlot()
 {
     key_editor->showPopup();
 }
+
+
+bool LMaster::eventFilter(QObject*, QEvent *e)
+{
+    if (e->type() == QEvent::Shortcut) {
+        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
+        if (sev->isAmbiguous()) {
+            for (const auto& action : actions()) {
+                if (action->shortcut() == sev->key()) {
+                    action->trigger();
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 
 } // namespace MusEGui

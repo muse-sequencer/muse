@@ -143,8 +143,6 @@ class LMaster : public QWidget {
       enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE, CMD_INSERT_KEY };
 
       
-      virtual void keyPressEvent(QKeyEvent*);
-//      virtual void closeEvent(QCloseEvent*);
       void updateList();
       void insertTempo(const MusECore::TEvent*);
       void insertSig(const MusECore::SigEvent*);
@@ -159,6 +157,8 @@ class LMaster : public QWidget {
       SigEdit* sig_editor;
       int editorColumn;
       bool editingNewItem;
+
+      bool eventFilter(QObject *, QEvent *event) override;
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 

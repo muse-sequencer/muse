@@ -120,7 +120,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       addMdiSettings(TopWin::WAVE);
       addMdiSettings(TopWin::LISTE);
       addMdiSettings(TopWin::MASTER);
-      addMdiSettings(TopWin::LMASTER);
 
       for (int i = 0; i < MusEGlobal::numRtAudioDevices; i++){
         deviceAudioBackendComboBox->addItem(MusEGlobal::selectableAudioBackendDevices[i],i);
@@ -339,13 +338,13 @@ void GlobalSettingsConfig::updateSettings()
 
 void GlobalSettingsConfig::updateMdiSettings()
 {
-    for (auto it : mdisettings)
+    for (const auto& it : mdisettings)
         it->update_settings();
 }
 
 void GlobalSettingsConfig::applyMdiSettings()
 {
-    for (auto it : mdisettings)
+    for (const auto& it : mdisettings)
         it->apply_settings();
 }
 
@@ -656,7 +655,7 @@ void GlobalSettingsConfig::transportCurrent()
 
 void GlobalSettingsConfig::traditionalPreset()
 {
-  for (auto it : mdisettings)
+  for (const auto& it : mdisettings)
   {
     TopWin::ToplevelType type = it->type();
     TopWin::_sharesWhenFree[type]=false;
@@ -669,7 +668,7 @@ void GlobalSettingsConfig::traditionalPreset()
 
 void GlobalSettingsConfig::mdiPreset()
 {
-  for (auto it : mdisettings)
+  for (const auto& it : mdisettings)
   {
     TopWin::ToplevelType type = it->type();
     TopWin::_sharesWhenSubwin[type]=true;
@@ -681,7 +680,7 @@ void GlobalSettingsConfig::mdiPreset()
 
 void GlobalSettingsConfig::borlandPreset()
 {
-  for (auto it : mdisettings)
+  for (const auto& it : mdisettings)
   {
     TopWin::ToplevelType type = it->type();
     TopWin::_sharesWhenFree[type]=true;

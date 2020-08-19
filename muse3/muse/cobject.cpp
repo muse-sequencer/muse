@@ -753,7 +753,6 @@ QString TopWin::typeName(ToplevelType t)
     case LISTE: return tr("List editor");
     case DRUM: return tr("Drum editor");
     case MASTER: return tr("Master track editor");
-    case LMASTER: return tr("Master track list editor");
     case WAVE: return tr("Wave editor");
     case SCORE: return tr("Score editor");
     case ARRANGER: return tr("Arranger");
