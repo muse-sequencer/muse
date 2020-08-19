@@ -2314,14 +2314,21 @@ void MusE::startMasterEditor()
 //---------------------------------------------------------
 
 void MusE::startLMasterEditor()
-      {
-      MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
-      toplevels.push_back(lmaster);
-      lmaster->show();
-      connect(lmaster, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+{
+
+    QDockWidget* dock = new QDockWidget("Mastertrack List", this);
+    //      markerDock->setObjectName("markerDock");
+    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+    MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
+    dock->setWidget(lmaster);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    //      toplevels.push_back(lmaster);
+    //      lmaster->show();
+    //      connect(lmaster, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
+    //      updateWindowMenu();
+}
 
 //---------------------------------------------------------
 //   startDrumEditor
