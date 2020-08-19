@@ -1650,7 +1650,7 @@ bool MidiPort::updateDrumMaps(int chan, int patch)
 bool MidiPort::updateDrumMaps()
 {
   int port;
-  bool map_changed;
+  bool map_changed = false;
   MidiTrack* mt;
   for(iMidiTrack t = MusEGlobal::song->midis()->begin(); t != MusEGlobal::song->midis()->end(); ++t)
   {
