@@ -467,6 +467,8 @@ QString EventListItem::text(int col) const
 ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
    : MidiEditor(TopWin::LISTE, 0, pl, parent, name)
       {
+      setObjectName("ListEdit");
+
       selectedTick=0;
       
       insertItems = new QActionGroup(this);

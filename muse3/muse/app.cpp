@@ -400,13 +400,8 @@ MusE::MusE() : QMainWindow()
             }
 #endif
 
-      clipListDock = new QDockWidget("Clip List", this);
-//      clipListDock->setObjectName("clipListDock");
-      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
-      clipListEdit = new MusEGui::ClipListEdit(clipListDock);
-      clipListDock->setWidget(clipListEdit);
-      addDockWidget(Qt::RightDockWidgetArea, clipListDock);
-      clipListDock->hide();
+      // does not work... (Qt 5.15)
+      setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
       markerDock = new QDockWidget("Markers", this);
 //      markerDock->setObjectName("markerDock");
@@ -415,6 +410,14 @@ MusE::MusE() : QMainWindow()
       markerDock->setWidget(markerView);
       addDockWidget(Qt::RightDockWidgetArea, markerDock);
       markerDock->hide();
+
+      clipListDock = new QDockWidget("Clip List", this);
+//      clipListDock->setObjectName("clipListDock");
+      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      clipListEdit = new MusEGui::ClipListEdit(clipListDock);
+      clipListDock->setWidget(clipListEdit);
+      addDockWidget(Qt::RightDockWidgetArea, clipListDock);
+      clipListDock->hide();
 
       //---------------------------------------------------
       //    undo/redo
@@ -2315,7 +2318,6 @@ void MusE::startMasterEditor()
 
 void MusE::startLMasterEditor()
 {
-
     QDockWidget* dock = new QDockWidget("Mastertrack List", this);
     //      markerDock->setObjectName("lmasterDock");
     dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
@@ -2325,11 +2327,7 @@ void MusE::startLMasterEditor()
 
     dock->setAttribute(Qt::WA_DeleteOnClose);
 
-    //      toplevels.push_back(lmaster);
-    //      lmaster->show();
-    //      connect(lmaster, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
-    //      updateWindowMenu();
 }
 
 //---------------------------------------------------------

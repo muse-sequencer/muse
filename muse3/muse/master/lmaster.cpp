@@ -77,6 +77,8 @@ LMaster::LMaster(QWidget* parent)
    : QWidget(parent)
 //   : MidiEditor(TopWin::LMASTER, 0, 0, parent, name)
       {
+      setObjectName("MasterTrackList");
+
       pos_editor = 0;
       tempo_editor = 0;
       sig_editor = 0;

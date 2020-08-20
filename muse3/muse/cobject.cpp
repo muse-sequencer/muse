@@ -69,7 +69,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
     _type=t;
 
-    setObjectName(QString(name));
+    setObjectName(name ? QString(name) : "TopWin");
     //setDockNestingEnabled(true); // Allow multiple rows.	Tim.
     setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 

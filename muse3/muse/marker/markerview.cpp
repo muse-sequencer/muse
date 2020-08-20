@@ -155,6 +155,7 @@ void MarkerItem::setPos(const MusECore::Pos& v)
 MarkerView::MarkerView(QWidget* parent)
    : QWidget(parent)
       {
+      setObjectName("MarkerView");
 
       QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("Add marker"), this);
       connect(markerAdd, SIGNAL(triggered()), SLOT(addMarker()));
@@ -178,6 +179,8 @@ MarkerView::MarkerView(QWidget* parent)
       table = new QTreeWidget(this);
       table->setAllColumnsShowFocus(true);
       table->setSelectionMode(QAbstractItemView::SingleSelection);
+
+      table->setIndentation(2);
       
       QStringList columnnames;
       columnnames << tr("Bar:Beat:Tick")

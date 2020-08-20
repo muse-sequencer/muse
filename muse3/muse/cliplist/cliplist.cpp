@@ -127,6 +127,7 @@ QString ClipItem::text(int col) const
 ClipListEdit::ClipListEdit(QWidget* parent)
    : QWidget(parent)
       {
+      setObjectName("ClipList");
 
       QVBoxLayout* vbox = new QVBoxLayout(this);
       editor = new ClipListEditorBaseWidget;
