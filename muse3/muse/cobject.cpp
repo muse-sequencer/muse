@@ -750,7 +750,7 @@ QString TopWin::typeName(ToplevelType t)
     switch (t)
     {
     case PIANO_ROLL: return tr("Piano roll");
-    case LISTE: return tr("List editor");
+//    case LISTE: return tr("List editor");
     case DRUM: return tr("Drum editor");
     case MASTER: return tr("Master track editor");
     case WAVE: return tr("Wave editor");

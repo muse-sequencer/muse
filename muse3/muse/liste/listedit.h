@@ -50,7 +50,7 @@ namespace MusEGui {
 //   ListEdit
 //---------------------------------------------------------
 
-class ListEdit : public MidiEditor {
+class ListEdit : public QWidget {
       Q_OBJECT
     
       QTreeWidget* liste;
@@ -61,13 +61,18 @@ class ListEdit : public MidiEditor {
       MusECore::MidiPart* curPart;
       int selectedTick;
       int curPartId;
+      bool _isDeleting;
+      std::set<int> _pidSet;
+      MusECore::PartList* _pl;
 
       enum { CMD_DELETE, CMD_INC, CMD_DEC };
 
       
       virtual void closeEvent(QCloseEvent*);
-      virtual void keyPressEvent(QKeyEvent*);
+//      virtual void keyPressEvent(QKeyEvent*);
       void initShortcuts();
+      void genPartlist();
+
       QAction *insertNote, *insertSysEx, *insertCtrl, *insertMeta; 
 
    private slots:
@@ -85,16 +90,16 @@ class ListEdit : public MidiEditor {
       void songChanged(MusECore::SongChangedStruct_t);
       void focusCanvas();
 
-   signals:
-      void isDeleting(MusEGui::TopWin*);
+//   signals:
+//      void isDeleting(MusEGui::TopWin*);
 
    public:
-      ListEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
+      ListEdit(MusECore::PartList*, QWidget* parent = 0);
       ~ListEdit();
-      virtual void readStatus(MusECore::Xml&);
-      virtual void writeStatus(int, MusECore::Xml&) const;
-      static void readConfiguration(MusECore::Xml&);
-      static void writeConfiguration(int, MusECore::Xml&);
+//      virtual void readStatus(MusECore::Xml&);
+//      virtual void writeStatus(int, MusECore::Xml&) const;
+//      static void readConfiguration(MusECore::Xml&);
+//      static void writeConfiguration(int, MusECore::Xml&);
       };
 
 } // namespace MusEGui

@@ -198,12 +198,18 @@ QToolBar QLabel#PaddedValueLabel {
     height: 20px;
 }
 
+QTreeView {
+    background-color: rgb(40,50,60);
+}
+
+/*
 QWidget#MarkerView QTreeView,
 QWidget#ClipList QTreeView,
 QWidget#MasterTrackList QTreeView,
 QWidget#ListEdit QTreeView {
     background-color: rgb(40,50,60);
 }
+*/
 
 QWidget#Rack {
     border: 1px solid rgb(24,151,255);

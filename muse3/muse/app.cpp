@@ -2290,14 +2290,19 @@ void MusE::startListEditor()
       }
 
 void MusE::startListEditor(MusECore::PartList* pl)
-      {
-      MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
-      toplevels.push_back(listEditor);
-      listEditor->show();
-      connect(listEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+{
+    QDockWidget* dock = new QDockWidget("List Editor", this);
+    //      markerDock->setObjectName("listeditDock");
+    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+    MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
+    dock->setWidget(listEditor);
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+
+    dock->setAttribute(Qt::WA_DeleteOnClose);
+
+//    connect(listEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+}
 
 //---------------------------------------------------------
 //   startMasterEditor
@@ -2537,7 +2542,7 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                 break;
             // the following editors can exist in more than one instantiation:
             case MusEGui::TopWin::PIANO_ROLL:
-            case MusEGui::TopWin::LISTE:
+//            case MusEGui::TopWin::LISTE:
             case MusEGui::TopWin::DRUM:
             case MusEGui::TopWin::MASTER:
             case MusEGui::TopWin::WAVE:
@@ -3266,7 +3271,7 @@ again:
                         break;
                   case MusEGui::TopWin::PIANO_ROLL:
                   case MusEGui::TopWin::SCORE:
-                  case MusEGui::TopWin::LISTE:
+//                  case MusEGui::TopWin::LISTE:
                   case MusEGui::TopWin::DRUM:
                   case MusEGui::TopWin::MASTER:
                   case MusEGui::TopWin::WAVE:

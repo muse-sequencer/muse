@@ -1210,8 +1210,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGui::MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
                               MusEGui::WaveEdit::readConfiguration(xml);
-                        else if (tag == "listedit")
-                              MusEGui::ListEdit::readConfiguration(xml);
+//                        else if (tag == "listedit")
+//                              MusEGui::ListEdit::readConfiguration(xml);
 //                        else if (tag == "lmaster")
 //                              MusEGui::LMaster::readConfiguration(xml);
                         else if (tag == "arrangerview")
@@ -2100,7 +2100,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       MusEGui::ScoreEdit::write_configuration(level, xml);
       MusEGui::MasterEdit::writeConfiguration(level, xml);
       MusEGui::WaveEdit::writeConfiguration(level, xml);
-      MusEGui::ListEdit::writeConfiguration(level, xml);
+//      MusEGui::ListEdit::writeConfiguration(level, xml);
 //      MusEGui::LMaster::writeConfiguration(level, xml);
       arrangerView->writeConfiguration(level, xml);
       

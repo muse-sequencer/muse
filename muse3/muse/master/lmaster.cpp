@@ -57,13 +57,23 @@
 namespace MusEGui {
 
 //---------------------------------------------------------
+//   closeEvent
+//---------------------------------------------------------
+
+void LMaster::closeEvent(QCloseEvent* e)
+{
+    _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+    e->accept();
+}
+
+//---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
 void LMaster::songChanged(MusECore::SongChangedStruct_t type)
       {
-//      if(_isDeleting)  // Ignore while while deleting to prevent crash.
-//        return;
+      if(_isDeleting)  // Ignore while while deleting to prevent crash.
+        return;
       
       if (type & (SC_SIG | SC_TEMPO | SC_KEY ))
             updateList();
@@ -78,6 +88,7 @@ LMaster::LMaster(QWidget* parent)
 //   : MidiEditor(TopWin::LMASTER, 0, 0, parent, name)
       {
       setObjectName("MasterTrackList");
+      _isDeleting = false;
 
       pos_editor = 0;
       tempo_editor = 0;

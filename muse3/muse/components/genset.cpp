@@ -118,7 +118,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       addMdiSettings(TopWin::DRUM);
       addMdiSettings(TopWin::SCORE);
       addMdiSettings(TopWin::WAVE);
-      addMdiSettings(TopWin::LISTE);
+//      addMdiSettings(TopWin::LISTE);
       addMdiSettings(TopWin::MASTER);
 
       for (int i = 0; i < MusEGlobal::numRtAudioDevices; i++){

@@ -139,6 +139,7 @@ class LMaster : public QWidget {
       QToolBar* tools;
       QMenu* menuEdit;
       QTimer* comboboxTimer;
+      bool _isDeleting;
 
       enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE, CMD_INSERT_KEY };
 
@@ -158,6 +159,7 @@ class LMaster : public QWidget {
       int editorColumn;
       bool editingNewItem;
 
+      virtual void closeEvent(QCloseEvent*);
       bool eventFilter(QObject *, QEvent *event) override;
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
