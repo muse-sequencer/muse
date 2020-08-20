@@ -2317,11 +2317,13 @@ void MusE::startLMasterEditor()
 {
 
     QDockWidget* dock = new QDockWidget("Mastertrack List", this);
-    //      markerDock->setObjectName("markerDock");
+    //      markerDock->setObjectName("lmasterDock");
     dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
     dock->setWidget(lmaster);
     addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    dock->setAttribute(Qt::WA_DeleteOnClose);
 
     //      toplevels.push_back(lmaster);
     //      lmaster->show();
