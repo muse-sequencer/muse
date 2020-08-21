@@ -372,12 +372,13 @@ enum {
 
 
       //Listeditor:
-      SHRT_LE_INS_NOTES, //Ctrl+N
-      SHRT_LE_INS_SYSEX, //Ctrl+S
-      SHRT_LE_INS_CTRL, //Ctrl+T
-      SHRT_LE_INS_META, //Default: undefined
-      SHRT_LE_INS_CHAN_AFTERTOUCH,//Ctrl+A
-      SHRT_LE_INS_POLY_AFTERTOUCH,//Ctrl+P
+      SHRT_LE_INS_NOTES, // N
+      SHRT_LE_INS_SYSEX, // S
+      SHRT_LE_INS_CTRL, // C
+      SHRT_LE_INS_META, // M
+// unused
+//      SHRT_LE_INS_CHAN_AFTERTOUCH,//Ctrl+A
+//      SHRT_LE_INS_POLY_AFTERTOUCH,//Ctrl+P
 
       //List master editor:
       SHRT_LM_INS_TEMPO, // Ctrl+T

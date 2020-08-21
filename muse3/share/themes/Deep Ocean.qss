@@ -198,7 +198,7 @@ QToolBar QLabel#PaddedValueLabel {
     height: 20px;
 }
 
-QTreeView {
+QWidget QTreeView, QTreeWidget {
     background-color: rgb(40,50,60);
 }
 

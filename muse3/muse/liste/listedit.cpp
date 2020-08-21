@@ -498,29 +498,25 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
 
       selectedTick=0;
       
-      insertItems = new QActionGroup(this);
-      insertItems->setExclusive(false);
-      insertNote = new QAction(tr("Note"), insertItems);
-      insertSysEx = new QAction(tr("SysEx"), insertItems);
-      insertCtrl = new QAction(tr("Ctrl"), insertItems);
-      insertMeta = new QAction(tr("Meta"), insertItems);
-//      insertNote = new QAction(*noteSVGIcon, tr("Insert Note"), insertItems);
-//      insertSysEx = new QAction(*sysexSVGIcon, tr("Insert SysEx"), insertItems);
-//      insertCtrl = new QAction(*ctrlSVGIcon, tr("Insert Ctrl"), insertItems);
-//      insertMeta = new QAction(*metaSVGIcon, tr("Insert Meta"), insertItems);
+      noteAction = new QAction(tr("Note"));
+      sysexAction = new QAction(tr("SysEx"));
+      ctrlAction = new QAction(tr("Ctrl"));
+      metaAction = new QAction(tr("Meta"));
+////      insertNote = new QAction(*noteSVGIcon, tr("Insert Note"), insertItems);
+////      insertSysEx = new QAction(*sysexSVGIcon, tr("Insert SysEx"), insertItems);
+////      insertCtrl = new QAction(*ctrlSVGIcon, tr("Insert Ctrl"), insertItems);
+////      insertMeta = new QAction(*metaSVGIcon, tr("Insert Meta"), insertItems);
 
-      connect(insertNote,    SIGNAL(triggered()), SLOT(editInsertNote()));
-      connect(insertSysEx,   SIGNAL(triggered()), SLOT(editInsertSysEx()));
-      connect(insertCtrl,    SIGNAL(triggered()), SLOT(editInsertCtrl()));
-      connect(insertMeta,    SIGNAL(triggered()), SLOT(editInsertMeta()));
+      addAction(noteAction);
+      addAction(sysexAction);
+      addAction(ctrlAction);
+      addAction(metaAction);
 
-      //---------Pulldown Menu----------------------------
-      
-//      menuEdit = new QMenu(tr("&Edit"));
-//      menuEdit = menuBar()->addMenu(tr("&Edit"));
-//      menuEdit->addActions(MusEGlobal::undoRedo->actions());
+      connect(noteAction,    SIGNAL(triggered()), SLOT(editInsertNote()));
+      connect(sysexAction,   SIGNAL(triggered()), SLOT(editInsertSysEx()));
+      connect(ctrlAction,    SIGNAL(triggered()), SLOT(editInsertCtrl()));
+      connect(metaAction,    SIGNAL(triggered()), SLOT(editInsertMeta()));
 
-//      menuEdit->addSeparator();
 #if 0 // DELETETHIS or implement?
       QAction *cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       connect(cutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -536,47 +532,39 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
       pasteAction->setShortcut(Qt::CTRL+Qt::Key_V);
       menuEdit->insertSeparator();
 #endif
-//      QAction *deleteAction = menuEdit->addAction(tr("Delete Events"));
-//      deleteAction->setShortcut(Qt::Key_Delete);
-//      menuEdit->addSeparator();
-//      QAction *incAction = menuEdit->addAction(tr("Increase Tick"));
-//      QAction *decAction = menuEdit->addAction(tr("Decrease Tick"));
-      //      menuEdit->addSeparator();
 
       QAction *incAction = new QAction(tr("Tick+"));
       QAction *decAction = new QAction(tr("Tick-"));
       QAction *deleteAction = new QAction(tr("Delete"));
-      incAction->setToolTip(tr("Increase tick"));
-      decAction->setToolTip(tr("Decrease tick"));
-      deleteAction->setToolTip(tr("Delete events"));
       deleteAction->setShortcut(Qt::Key_Delete);
 
-//      menuEdit->addActions(insertItems->actions());
+//      addAction(incAction);
+//      addAction(decAction);
+//      addAction(deleteAction);
 
       connect(deleteAction, &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
       connect(incAction,    &QAction::triggered, [this]() { cmd(CMD_INC); } );
       connect(decAction,    &QAction::triggered, [this]() { cmd(CMD_DEC); } );
 
 
-      // Toolbars ---------------------------------------------------------
-
-      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
-      //          to identical or similar toolbars in class MusE or other TopWin classes. 
-      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
-      //          to retain the original toolbar layout. If it finds an existing
-      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
-      //          instead of /appending/ with addToolBar().
-
-//      addToolBarBreak();
-      
-      QToolBar* insertTools = new QToolBar(tr("Insert tools"));
+      QToolBar* tb = new QToolBar(tr("Insert tools"));
 //      insertTools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
-      insertTools->setObjectName("list insert tools");
-      insertTools->addActions(insertItems->actions());
-      insertTools->addAction(incAction);
-      insertTools->addAction(decAction);
-      insertTools->addAction(deleteAction);
+      tb->addAction(noteAction);
+      tb->addAction(sysexAction);
+      tb->addAction(ctrlAction);
+      tb->addAction(metaAction);
+      tb->addAction(incAction);
+      tb->addAction(decAction);
+      tb->addAction(deleteAction);
       
+      noteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      sysexAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      ctrlAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      metaAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      incAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      decAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
       //
       //---------------------------------------------------
       //    liste
@@ -648,7 +636,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
       QGridLayout* mainGrid = new QGridLayout(this);
       mainGrid->setRowStretch(1, 100);
       mainGrid->setColumnStretch(0, 100);
-      mainGrid->addWidget(insertTools, 0, 0);
+      mainGrid->addWidget(tb, 0, 0);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
@@ -673,15 +661,16 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
       
       initShortcuts();
 
-      insertNote->setToolTip(tr("Insert note event") + " (" + insertNote->shortcut().toString() + ")");
-      insertSysEx->setToolTip(tr("Insert system exclusive event") + " (" + insertSysEx->shortcut().toString() + ")");
-      insertCtrl->setToolTip(tr("Insert controller event") + " (" + insertCtrl->shortcut().toString() + ")");
-      insertMeta->setToolTip(tr("Insert meta event") + " (" + insertMeta->shortcut().toString() + ")");
+      noteAction->setToolTip(tr("Insert note event") + " (" + noteAction->shortcut().toString() + ")");
+      sysexAction->setToolTip(tr("Insert system exclusive event") + " (" + sysexAction->shortcut().toString() + ")");
+      ctrlAction->setToolTip(tr("Insert controller event") + " (" + ctrlAction->shortcut().toString() + ")");
+      metaAction->setToolTip(tr("Insert meta event") + " (" + metaAction->shortcut().toString() + ")");
       
 //      isMdiWin() ? setWindowTitle(tr("List Editor")) : setWindowTitle(tr("MusE: List Editor"));
 
-      
 //      finalizeInit();
+
+//      qApp->installEventFilter(this);
       }
 
 //---------------------------------------------------------
@@ -1052,10 +1041,10 @@ void ListEdit::configChanged()
 
 void ListEdit::initShortcuts()
       {
-      insertNote->setShortcut(shortcuts[SHRT_LE_INS_NOTES].key);
-      insertSysEx->setShortcut(shortcuts[SHRT_LE_INS_SYSEX].key);
-      insertCtrl->setShortcut(shortcuts[SHRT_LE_INS_CTRL].key);
-      insertMeta->setShortcut(shortcuts[SHRT_LE_INS_META].key);
+      noteAction->setShortcut(shortcuts[SHRT_LE_INS_NOTES].key);
+      sysexAction->setShortcut(shortcuts[SHRT_LE_INS_SYSEX].key);
+      ctrlAction->setShortcut(shortcuts[SHRT_LE_INS_CTRL].key);
+      metaAction->setShortcut(shortcuts[SHRT_LE_INS_META].key);
       }
 
 //---------------------------------------------------------
@@ -1083,5 +1072,21 @@ void ListEdit::focusCanvas()
     liste->activateWindow();
   }
 }
+
+//bool ListEdit::eventFilter(QObject*, QEvent *e)
+//{
+//    if (e->type() == QEvent::Shortcut) {
+//        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
+//        if (sev->isAmbiguous()) {
+//            for (const auto& action : actions()) {
+//                if (action->shortcut() == sev->key()) {
+//                    action->trigger();
+//                    return true;
+//                }
+//            }
+//        }
+//    }
+//    return false;
+//}
 
 } // namespace MusEGui

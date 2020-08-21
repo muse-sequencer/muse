@@ -351,12 +351,12 @@ void initShortCuts()
       // List edit:
       //-----------------------------------------------------------
 
-      defShrt(SHRT_LE_INS_NOTES, Qt::CTRL + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Insert Note"), LEDIT_SHRT,  "le_ins_note");
-      defShrt(SHRT_LE_INS_SYSEX, Qt::CTRL + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Insert SysEx"), LEDIT_SHRT, "le_ins_sysex");
-      defShrt(SHRT_LE_INS_CTRL,  Qt::CTRL + Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Insert Ctrl"), LEDIT_SHRT,  "le_ins_ctrl");
-      defShrt(SHRT_LE_INS_META,                     0, QT_TRANSLATE_NOOP("shortcuts", "Insert Meta"), LEDIT_SHRT, "le_ins_meta");
-      defShrt(SHRT_LE_INS_CHAN_AFTERTOUCH, Qt::CTRL + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Insert Channel Aftertouch"), LEDIT_SHRT, "le_ins_afttouch");
-      defShrt(SHRT_LE_INS_POLY_AFTERTOUCH, Qt::CTRL + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Insert Key Aftertouch"), LEDIT_SHRT, "le_ins_poly");
+      defShrt(SHRT_LE_INS_NOTES, Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Insert Note"), LEDIT_SHRT,  "le_ins_note");
+      defShrt(SHRT_LE_INS_SYSEX, Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Insert SysEx"), LEDIT_SHRT, "le_ins_sysex");
+      defShrt(SHRT_LE_INS_CTRL,  Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Insert Ctrl"), LEDIT_SHRT,  "le_ins_ctrl");
+      defShrt(SHRT_LE_INS_META,  Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Insert Meta"), LEDIT_SHRT, "le_ins_meta");
+//      defShrt(SHRT_LE_INS_CHAN_AFTERTOUCH, Qt::CTRL + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Insert Channel Aftertouch"), LEDIT_SHRT, "le_ins_afttouch");
+//      defShrt(SHRT_LE_INS_POLY_AFTERTOUCH, Qt::CTRL + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Insert Key Aftertouch"), LEDIT_SHRT, "le_ins_poly");
 
       //-----------------------------------------------------------
       // List masteredit:

@@ -54,9 +54,9 @@ class ListEdit : public QWidget {
       Q_OBJECT
     
       QTreeWidget* liste;
-      QMenu* menuEdit;
-      QActionGroup* insertItems;
-      QToolBar* listTools;
+//      QMenu* menuEdit;
+//      QActionGroup* insertItems;
+//      QToolBar* listTools;
       MusECore::MidiTrack* curTrack;
       MusECore::MidiPart* curPart;
       int selectedTick;
@@ -69,11 +69,12 @@ class ListEdit : public QWidget {
 
       
       virtual void closeEvent(QCloseEvent*);
+//      bool eventFilter(QObject *, QEvent *event) override;
 //      virtual void keyPressEvent(QKeyEvent*);
       void initShortcuts();
       void genPartlist();
 
-      QAction *insertNote, *insertSysEx, *insertCtrl, *insertMeta; 
+      QAction *noteAction, *sysexAction, *ctrlAction, *metaAction;
 
    private slots:
       void editInsertNote();

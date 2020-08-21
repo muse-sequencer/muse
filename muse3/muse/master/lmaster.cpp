@@ -118,6 +118,13 @@ LMaster::LMaster(QWidget* parent)
 
       delAction->setShortcut(Qt::Key_Delete);
 
+      tempoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      signAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      keyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      posAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      valAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      delAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
       addAction(tempoAction);
       addAction(signAction);
       addAction(keyAction);
@@ -206,13 +213,6 @@ LMaster::LMaster(QWidget* parent)
 
       initShortcuts();
 
-      tempoAction->setShortcutContext(Qt::ApplicationShortcut);
-      signAction->setShortcutContext(Qt::ApplicationShortcut);
-      keyAction->setShortcutContext(Qt::ApplicationShortcut);
-      posAction->setShortcutContext(Qt::ApplicationShortcut);
-      valAction->setShortcutContext(Qt::ApplicationShortcut);
-      delAction->setShortcutContext(Qt::ApplicationShortcut);
-
       tempoAction->setToolTip(tr("Insert tempo change") + " (" + tempoAction->shortcut().toString() + ")");
       signAction->setToolTip(tr("Insert time signature change")  + " (" + signAction->shortcut().toString() + ")");
       keyAction->setToolTip(tr("Insert key change") + " (" + keyAction->shortcut().toString() + ")");
@@ -220,7 +220,7 @@ LMaster::LMaster(QWidget* parent)
       valAction->setToolTip(tr("Edit value") + " (" + valAction->shortcut().toString() + ")");
       delAction->setToolTip(tr("Delete event") + " (" + delAction->shortcut().toString() + ")");
 
-      qApp->installEventFilter(this);
+//      qApp->installEventFilter(this);
       }
 
 //---------------------------------------------------------
