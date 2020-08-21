@@ -400,9 +400,6 @@ MusE::MusE() : QMainWindow()
             }
 #endif
 
-      // does not work... (Qt 5.15)
-      setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
       markerDock = new QDockWidget("Markers", this);
 //      markerDock->setObjectName("markerDock");
       markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
@@ -2291,6 +2288,8 @@ void MusE::startListEditor()
 
 void MusE::startListEditor(MusECore::PartList* pl)
 {
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
     QDockWidget* dock = new QDockWidget("List Editor", this);
     //      markerDock->setObjectName("listeditDock");
     dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
