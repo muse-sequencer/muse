@@ -210,7 +210,7 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
                   genPartlist();
             // close window if editor has no parts anymore
             if (_pl->empty()) {
-                  close();
+                  parentWidget()->close();
                   return;
                   }
             liste->setSortingEnabled(false);
@@ -536,7 +536,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
       QAction *incAction = new QAction(tr("Tick+"));
       QAction *decAction = new QAction(tr("Tick-"));
       QAction *deleteAction = new QAction(tr("Delete"));
-      deleteAction->setShortcut(Qt::Key_Delete);
+      deleteAction->setShortcut(Qt::Key_D);
 
 //      addAction(incAction);
 //      addAction(decAction);
@@ -642,7 +642,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
 
       if(pl->empty())
       {
-        curPart = 0;
+        curPart = nullptr;
         curPartId = -1;
       }
       else
@@ -652,7 +652,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
           curPartId = curPart->sn();
         else
         {
-          curPart = 0;
+          curPart = nullptr;
           curPartId = -1;
         }
       }
@@ -665,13 +665,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
       sysexAction->setToolTip(tr("Insert system exclusive event") + " (" + sysexAction->shortcut().toString() + ")");
       ctrlAction->setToolTip(tr("Insert controller event") + " (" + ctrlAction->shortcut().toString() + ")");
       metaAction->setToolTip(tr("Insert meta event") + " (" + metaAction->shortcut().toString() + ")");
-      
-//      isMdiWin() ? setWindowTitle(tr("List Editor")) : setWindowTitle(tr("MusE: List Editor"));
-
-//      finalizeInit();
-
-//      qApp->installEventFilter(this);
-      }
+}
 
 //---------------------------------------------------------
 //   ~ListEdit
@@ -829,84 +823,6 @@ void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
             }      
           }
       }
-
-////---------------------------------------------------------
-////   readStatus
-////---------------------------------------------------------
-
-//void ListEdit::readStatus(MusECore::Xml& xml)
-//      {
-//      for (;;) {
-//            MusECore::Xml::Token token = xml.parse();
-//            const QString& tag = xml.s1();
-//            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-//                  break;
-//            switch (token) {
-//                  case MusECore::Xml::TagStart:
-//                        if (tag == "midieditor")
-//                              MidiEditor::readStatus(xml);
-//                        else
-//                              xml.unknown("ListEdit");
-//                        break;
-//                  case MusECore::Xml::TagEnd:
-//                        if (tag == "listeditor")
-//                              return;
-//                  default:
-//                        break;
-//                  }
-//            }
-//      }
-
-////---------------------------------------------------------
-////   writeStatus
-////---------------------------------------------------------
-
-//void ListEdit::writeStatus(int level, MusECore::Xml& xml) const
-//      {
-//      writePartList(level, xml);
-//      xml.tag(level++, "listeditor");
-//      MidiEditor::writeStatus(level, xml);
-//      xml.tag(level, "/listeditor");
-//      }
-
-////---------------------------------------------------------
-////   readConfiguration
-////---------------------------------------------------------
-
-//void ListEdit::readConfiguration(MusECore::Xml& xml)
-//      {
-//      for (;;) {
-//            MusECore::Xml::Token token = xml.parse();
-//            const QString& tag = xml.s1();
-//            switch (token) {
-//                  case MusECore::Xml::Error:
-//                  case MusECore::Xml::End:
-//                        return;
-//                  case MusECore::Xml::TagStart:
-//                        if (tag == "topwin")
-//                              TopWin::readConfiguration(LISTE, xml);
-//                        else
-//                              xml.unknown("ListEdit");
-//                        break;
-//                  case MusECore::Xml::TagEnd:
-//                        if (tag == "listedit")
-//                              return;
-//                  default:
-//                        break;
-//                  }
-//            }
-//      }
-
-////---------------------------------------------------------
-////   writeConfiguration
-////---------------------------------------------------------
-
-//void ListEdit::writeConfiguration(int level, MusECore::Xml& xml)
-//      {
-//      xml.tag(level++, "listedit");
-//      TopWin::writeConfiguration(LISTE, level, xml);
-//      xml.tag(level, "/listedit");
-//      }
 
 //---------------------------------------------------------
 //   selectionChanged
@@ -1072,21 +988,5 @@ void ListEdit::focusCanvas()
     liste->activateWindow();
   }
 }
-
-//bool ListEdit::eventFilter(QObject*, QEvent *e)
-//{
-//    if (e->type() == QEvent::Shortcut) {
-//        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
-//        if (sev->isAmbiguous()) {
-//            for (const auto& action : actions()) {
-//                if (action->shortcut() == sev->key()) {
-//                    action->trigger();
-//                    return true;
-//                }
-//            }
-//        }
-//    }
-//    return false;
-//}
 
 } // namespace MusEGui

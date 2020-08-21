@@ -361,11 +361,11 @@ void initShortCuts()
       //-----------------------------------------------------------
       // List masteredit:
       //-----------------------------------------------------------
-      defShrt(SHRT_LM_INS_TEMPO,  Qt::CTRL + Qt::Key_T,            QT_TRANSLATE_NOOP("shortcuts", "Insert Tempo"),     LMEDIT_SHRT,  "lm_ins_tempo");
-      defShrt(SHRT_LM_INS_SIG  ,  Qt::CTRL + Qt::Key_R,            QT_TRANSLATE_NOOP("shortcuts", "Insert Signature"), LMEDIT_SHRT,  "lm_ins_sig");
-      defShrt(SHRT_LM_EDIT_BEAT,  Qt::CTRL + Qt::SHIFT+ Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Change Event Position"),  LMEDIT_SHRT,  "lm_edit_beat");
-      defShrt(SHRT_LM_EDIT_VALUE, Qt::CTRL + Qt::Key_E,            QT_TRANSLATE_NOOP("shortcuts", "Edit Event Value"),       LMEDIT_SHRT,  "lm_edit_val");
-      defShrt(SHRT_LM_INS_KEY, Qt::CTRL + Qt::Key_K,            QT_TRANSLATE_NOOP("shortcuts", "Insert Key"),       LMEDIT_SHRT,  "lm_ins_key");
+      defShrt(SHRT_LM_INS_TEMPO,  Qt::Key_T,    QT_TRANSLATE_NOOP("shortcuts", "Insert Tempo"),     LMEDIT_SHRT,  "lm_ins_tempo");
+      defShrt(SHRT_LM_INS_SIG  ,  Qt::Key_S,    QT_TRANSLATE_NOOP("shortcuts", "Insert Signature"), LMEDIT_SHRT,  "lm_ins_sig");
+      defShrt(SHRT_LM_INS_KEY,    Qt::Key_K,    QT_TRANSLATE_NOOP("shortcuts", "Insert Key"),       LMEDIT_SHRT,  "lm_ins_key");
+      defShrt(SHRT_LM_EDIT_BEAT,  Qt::Key_P,    QT_TRANSLATE_NOOP("shortcuts", "Change Event Position"),  LMEDIT_SHRT,  "lm_edit_beat");
+      defShrt(SHRT_LM_EDIT_VALUE, Qt::Key_V,    QT_TRANSLATE_NOOP("shortcuts", "Edit Event Value"),       LMEDIT_SHRT,  "lm_edit_val");
 
       // Since the marker window is always created at start, these are actually global
       //  because they are handled there, and affect the whole app.

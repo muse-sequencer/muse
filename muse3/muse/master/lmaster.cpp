@@ -115,8 +115,7 @@ LMaster::LMaster(QWidget* parent)
       posAction   = new QAction(tr("Position"), this);
       valAction   = new QAction(tr("Value"), this);
       delAction   = new QAction(tr("Delete"), this);
-
-      delAction->setShortcut(Qt::Key_Delete);
+      delAction->setShortcut(Qt::Key_D);
 
       tempoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
       signAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -1078,21 +1077,21 @@ void LMaster::comboboxTimerSlot()
 }
 
 
-bool LMaster::eventFilter(QObject*, QEvent *e)
-{
-    if (e->type() == QEvent::Shortcut) {
-        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
-        if (sev->isAmbiguous()) {
-            for (const auto& action : actions()) {
-                if (action->shortcut() == sev->key()) {
-                    action->trigger();
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
+//bool LMaster::eventFilter(QObject*, QEvent *e)
+//{
+//    if (e->type() == QEvent::Shortcut) {
+//        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
+//        if (sev->isAmbiguous()) {
+//            for (const auto& action : actions()) {
+//                if (action->shortcut() == sev->key()) {
+//                    action->trigger();
+//                    return true;
+//                }
+//            }
+//        }
+//    }
+//    return false;
+//}
 
 
 } // namespace MusEGui

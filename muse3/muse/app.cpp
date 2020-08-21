@@ -2284,7 +2284,7 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
 void MusE::startListEditor()
       {
       MusECore::PartList* pl = getMidiPartsToEdit();
-      if (pl == 0)
+      if (pl == nullptr)
             return;
       startListEditor(pl);
       }
@@ -2296,11 +2296,21 @@ void MusE::startListEditor(MusECore::PartList* pl)
     dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
     dock->setWidget(listEditor);
+
+    {
+        int bar1, bar2, xx;
+        unsigned x;
+        const auto p = pl->begin()->second;
+        MusEGlobal::sigmap.tickValues(p->tick(), &bar1, &xx, &x);
+        MusEGlobal::sigmap.tickValues(p->tick() + p->lenTick(), &bar2, &xx, &x);
+
+        dock->setWindowTitle("Part <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
+    }
+
     addDockWidget(Qt::BottomDockWidgetArea, dock);
 
     dock->setAttribute(Qt::WA_DeleteOnClose);
 
-//    connect(listEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
 }
 

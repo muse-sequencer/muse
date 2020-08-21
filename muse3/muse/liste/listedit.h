@@ -54,9 +54,6 @@ class ListEdit : public QWidget {
       Q_OBJECT
     
       QTreeWidget* liste;
-//      QMenu* menuEdit;
-//      QActionGroup* insertItems;
-//      QToolBar* listTools;
       MusECore::MidiTrack* curTrack;
       MusECore::MidiPart* curPart;
       int selectedTick;
@@ -69,7 +66,6 @@ class ListEdit : public QWidget {
 
       
       virtual void closeEvent(QCloseEvent*);
-//      bool eventFilter(QObject *, QEvent *event) override;
 //      virtual void keyPressEvent(QKeyEvent*);
       void initShortcuts();
       void genPartlist();
@@ -91,16 +87,9 @@ class ListEdit : public QWidget {
       void songChanged(MusECore::SongChangedStruct_t);
       void focusCanvas();
 
-//   signals:
-//      void isDeleting(MusEGui::TopWin*);
-
    public:
       ListEdit(MusECore::PartList*, QWidget* parent = 0);
       ~ListEdit();
-//      virtual void readStatus(MusECore::Xml&);
-//      virtual void writeStatus(int, MusECore::Xml&) const;
-//      static void readConfiguration(MusECore::Xml&);
-//      static void writeConfiguration(int, MusECore::Xml&);
       };
 
 } // namespace MusEGui

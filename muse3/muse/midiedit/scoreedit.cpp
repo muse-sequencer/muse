@@ -541,7 +541,7 @@ void ScoreEdit::init_shortcuts()
     select_iloop_action->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
     select_oloop_action->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
 
-    color_menu->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
+//    color_menu->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
 
     func_quantize_action->setShortcut(shortcuts[SHRT_QUANTIZE].key);
     func_notelen_action->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
@@ -4967,6 +4967,16 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
     else if (key == shortcuts[SHRT_TOOL_RUBBER].key)
     {
         edit_tools->set(MusEGui::RubberTool);
+        return;
+    }
+    else if (key == shortcuts[SHRT_EVENT_COLOR].key)
+    {
+        if (score_canvas->coloring_mode_init == score_canvas->COLOR_MODE_BLACK)
+            color_velo_action->trigger();
+        else if (score_canvas->coloring_mode_init == score_canvas->COLOR_MODE_VELO)
+            color_part_action->trigger();
+        else
+            color_black_action->trigger();
         return;
     }
     else //Default:

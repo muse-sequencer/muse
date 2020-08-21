@@ -1785,7 +1785,7 @@ void PianoRoll::initShortcuts()
       selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
       selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
       
-      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
+//      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
       //evColorBlueAction->setShortcut(shortcuts[  ].key);
       //evColorPitchAction->setShortcut(shortcuts[  ].key);
       //evColorVelAction->setShortcut(shortcuts[  ].key);
