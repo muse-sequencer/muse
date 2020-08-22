@@ -68,6 +68,7 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    connect(textFileButton, SIGNAL(pressed()), this, SLOT(textFileClicked()));
    connect(applyButton,  SIGNAL(pressed()), this, SLOT(applyAll()));
    connect(okButton,     SIGNAL(pressed()), this, SLOT(okClicked()));
+   connect(resetButton,  SIGNAL(pressed()), this, SLOT(resetAllClicked()));
 
    current_category = ALL_SHRT;
    cgListView->sortItems(SHRT_CATEGORY_COL, Qt::AscendingOrder);
@@ -124,7 +125,6 @@ void ShortcutConfig::assignShortcut()
             _config_changed = true;
             clearButton->setEnabled(true);
             }
-      defineButton->setDown(false);
       }
 
 void ShortcutConfig::clearShortcut()
@@ -133,7 +133,6 @@ void ShortcutConfig::clearShortcut()
       int shortcutindex = active->getIndex();
       shortcuts[shortcutindex].key = 0; //Cleared
       active->setText(SHRT_SHRTCUT_COL,"");
-      clearButton->setDown(false);
       clearButton->setEnabled(false);
       _config_changed = true;
       }
@@ -186,20 +185,25 @@ void ShortcutConfig::closing()
       
 void ShortcutConfig::applyAll()
       {
-      applyButton->setDown(false);
       closing(); // Just call closing to store everything, and don't close.
       }
 
 void ShortcutConfig::okClicked()
       {
-      okButton->setDown(false);
       close();
       }
 
+void ShortcutConfig::resetAllClicked()
+{
+    initShortCuts();
+    updateSCListView();
+    _config_changed = true;
+    defineButton->setEnabled(false);
+    clearButton->setEnabled(false);
+}
+
 void ShortcutConfig::textFileClicked()
 {
-  textFileButton->setDown(false);
-
   QString fname = QFileDialog::getSaveFileName(this,
                                                tr("Save printable text file"),
                                                QDir::homePath() + "/shortcuts.txt",
