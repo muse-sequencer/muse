@@ -110,7 +110,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       //---------Pulldown Menu----------------------------
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->addAction(subwinAction);
-      settingsMenu->addAction(shareAction);
+//      settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
 
       // Toolbars ---------------------------------------------------------

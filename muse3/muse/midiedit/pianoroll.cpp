@@ -231,20 +231,26 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       //----------------------
       // Scripts:
       //----------------------
-
-      menuPlugins = menuBar()->addMenu(tr("&Plugins"));
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
-              [this](int id) { execDeliveredScript(id); } );
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execUserScriptReceived,
-              [this](int id) { execUserScript(id); } );
-      MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
+// duplicated in midi menu
+//      menuPlugins = menuBar()->addMenu(tr("&Plugins"));
+//      connect(&_scriptReceiver,
+//              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+//              [this](int id) { execDeliveredScript(id); } );
+//      connect(&_scriptReceiver,
+//              &MusECore::ScriptReceiver::execUserScriptReceived,
+//              [this](int id) { execUserScript(id); } );
+//      MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
 
       menuConfig = menuBar()->addMenu(tr("&Display"));
       
-      eventColor = menuConfig->addMenu(tr("&Event Color"));      
+      menuConfig->addAction(subwinAction);
+//      menuConfig->addAction(shareAction);
+      menuConfig->addAction(fullscreenAction);
+
+      menuConfig->addSeparator();
+
+      eventColor = menuConfig->addMenu(tr("&Event Color"));
       
       QActionGroup* actgrp = new QActionGroup(this);
       actgrp->setExclusive(true);
@@ -263,12 +269,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       eventColor->addActions(actgrp->actions());
       
-      menuConfig->addSeparator();
-      menuConfig->addAction(subwinAction);
-      menuConfig->addAction(shareAction);
-      menuConfig->addAction(fullscreenAction);
-
-      menuConfig->addSeparator();
+//      menuConfig->addSeparator();
       addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       menuConfig->addMenu(addControllerMenu);

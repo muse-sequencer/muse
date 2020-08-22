@@ -144,7 +144,7 @@ class MusE : public QMainWindow
       std::list<QMenu*> trailingMenus;
    
       // View Menu actions
-      QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction, *viewArrangerAction;
+      QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction;
       QAction* fullscreenAction;
       QAction *masterGraphicAction, *masterListAction;
 
@@ -165,12 +165,6 @@ class MusE : public QMainWindow
 //       QAction *autoMixerAction;
       QAction *autoSnapshotAction, *autoClearAction;
 
-      // Window Menu Actions
-      QAction* windowsCascadeAction;
-      QAction* windowsTileAction;
-      QAction* windowsRowsAction;
-      QAction* windowsColumnsAction;
-      
       // Settings Menu Actions
       QAction *settingsGlobalAction, *settingsShortcutsAction, *settingsMetronomeAction, *settingsMidiSyncAction;
       QAction *settingsMidiIOAction, *settingsAppearanceAction, *settingsMidiPortAction;
@@ -300,7 +294,7 @@ class MusE : public QMainWindow
 
       void toggleTransport(bool);
 //      void toggleMarker(bool);
-      void toggleArranger(bool);
+//      void toggleArranger(bool);
       void toggleBigTime(bool);
       void toggleMixer1(bool);
       void toggleMixer2(bool);
@@ -340,7 +334,7 @@ class MusE : public QMainWindow
       void mixer1Closed();
       void mixer2Closed();
 //      void markerClosed();
-      void arrangerClosed();
+//      void arrangerClosed();
 
       void execDeliveredScript(int);
       void execUserScript(int);
@@ -350,10 +344,6 @@ class MusE : public QMainWindow
       
       void bringToFront(QWidget* win);
       void setFullscreen(bool);
-      
-      void arrangeSubWindowsRows();
-      void arrangeSubWindowsColumns();
-      void tileSubWindows();
       void setDirty();
       void toggleRewindOnStop(bool);
 
@@ -373,7 +363,7 @@ class MusE : public QMainWindow
       void showMixer2(bool);
       void startRouteDialog();
       void showMarker(bool);
-      void showArranger(bool);
+//      void showArranger(bool);
       void importMidi(const QString &file);
       void showDidYouKnowDialogIfEnabled();
       void showDidYouKnowDialog();
@@ -465,7 +455,7 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
-      bool isTabbedMDI();
+//      bool isTabbedMDI();
       
       const ToplevelList* getToplevels() { return &toplevels; }
       

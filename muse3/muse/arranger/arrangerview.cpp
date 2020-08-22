@@ -339,9 +339,12 @@ ArrangerView::~ArrangerView()
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-  emit isDeleting(static_cast<TopWin*>(this));
-  emit closed();
-  e->accept();
+//  emit isDeleting(static_cast<TopWin*>(this));
+//  emit closed();
+
+// keep just in case the arranger still can get closed somehow...
+    fprintf(stderr, "*** Arranger closed event caught ***\n");
+    e->accept();
 }
 
 void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const

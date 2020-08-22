@@ -443,7 +443,13 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     QMenu* settings_menu = menuBar()->addMenu(tr("&Display"));
 
-        color_menu = settings_menu->addMenu(tr("Note head &colors"));
+    settings_menu->addAction(subwinAction);
+//    settings_menu->addAction(shareAction);
+    settings_menu->addAction(fullscreenAction);
+
+    settings_menu->addSeparator();
+
+    color_menu = settings_menu->addMenu(tr("Note head &colors"));
             color_actions = new QActionGroup(this);
             color_black_action = color_menu->addAction(tr("&Black"));
             color_velo_action =  color_menu->addAction(tr("&Velocity"));
@@ -485,11 +491,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
         QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"));
         connect(set_name_action, &QAction::triggered, [this]() { menu_command(CMD_SET_NAME); } );
-
-    settings_menu->addSeparator();
-    settings_menu->addAction(subwinAction);
-    settings_menu->addAction(shareAction);
-    settings_menu->addAction(fullscreenAction);
 
     config_changed();  // set configuration values, initialize shortcuts
     connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));

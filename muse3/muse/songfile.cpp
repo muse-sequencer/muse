@@ -1058,14 +1058,6 @@ void MusE::readToplevels(MusECore::Xml& xml)
             else if (tag == "marker") {
                 showMarker(true);
             }
-            else if (tag == "arrangerview") {
-                showArranger(true);
-                TopWin* tw = toplevels.findType(TopWin::ARRANGER);
-                if(!tw)
-                    xml.skip("arrangerview");
-                else
-                    tw->readStatus(xml);
-            }
             else if (tag == "waveedit") {
                 if(!pl->empty())
                 {

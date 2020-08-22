@@ -574,8 +574,8 @@ MusE::MusE() : QMainWindow()
       viewMarkerAction = markerDock->toggleViewAction();
       viewCliplistAction = clipListDock->toggleViewAction();
 
-      viewArrangerAction = new QAction(tr("Arranger View"),  this);
-      viewArrangerAction->setCheckable(true);
+//      viewArrangerAction = new QAction(tr("Arranger View"),  this);
+//      viewArrangerAction->setCheckable(true);
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
@@ -616,14 +616,7 @@ MusE::MusE() : QMainWindow()
       autoSnapshotAction = new QAction(QIcon(*MusEGui::automation_take_snapshotIcon), tr("Take Automation Snapshot"), this);
       autoClearAction = new QAction(QIcon(*MusEGui::automation_clear_dataIcon), tr("Clear Automation Data"), this);
 
-      //-------- Windows Actions
-      windowsCascadeAction = new QAction(tr("Cascade"), this);
-      windowsTileAction = new QAction(tr("Tile"), this);
-      windowsRowsAction = new QAction(tr("In Rows"), this);
-      windowsColumnsAction = new QAction(tr("In Columns"), this);
-
-
-      //-------- Settings Actions
+       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings..."), this);
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
       settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts..."), this);
@@ -684,7 +677,7 @@ MusE::MusE() : QMainWindow()
       connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleBigTime(bool)));
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
-      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
+//      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
       connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
       connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
@@ -874,7 +867,7 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewMixerBAction);
       menuView->addAction(viewCliplistAction);
       menuView->addAction(viewMarkerAction);
-      menuView->addAction(viewArrangerAction);
+//      menuView->addAction(viewArrangerAction);
       menuView->addSeparator();
       menuView->addMenu(master);
 //       menuView->addAction(masterGraphicAction);
@@ -952,11 +945,6 @@ MusE::MusE() : QMainWindow()
       menuBar()->addMenu(menuWindows);
       trailingMenus.push_back(menuWindows);
 
-      menuWindows->addAction(windowsCascadeAction);
-      menuWindows->addAction(windowsTileAction);
-      menuWindows->addAction(windowsRowsAction);
-      menuWindows->addAction(windowsColumnsAction);
-
       //-------------------------------------------------------------
       //    popup Settings
       //-------------------------------------------------------------
@@ -1010,32 +998,22 @@ MusE::MusE() : QMainWindow()
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-      if (MusEGlobal::config.tabbedMDI) {
-          mdiArea->setViewMode(QMdiArea::TabbedView);
-//          mdiArea->setTabsClosable(true);
-//          mdiArea->setTabsMovable(true);
-          mdiArea->setTabPosition(QTabWidget::South);
-          QTabBar* tb = mdiArea->findChild<QTabBar*>();
-          if (tb) {
-              tb->setExpanding(false);
-//              tb->setAutoHide(true);
-          }
-          viewArrangerAction->setEnabled(false);
+      mdiArea->setViewMode(QMdiArea::TabbedView);
+      mdiArea->setTabsMovable(true);
+      mdiArea->setTabPosition(QTabWidget::South);
+      QTabBar* tb = mdiArea->findChild<QTabBar*>();
+      if (tb) {
+          tb->setExpanding(false);
+          //              tb->setAutoHide(true);
       }
+//      viewArrangerAction->setEnabled(false);
 
       setCentralWidget(mdiArea);
 
-      if (mdiArea->viewMode() == QMdiArea::SubWindowView) {
-          connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
-          connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));
-          connect(windowsColumnsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsColumns()));
-          connect(windowsCascadeAction, SIGNAL(triggered()), mdiArea, SLOT(cascadeSubWindows()));
-      }
-
       arrangerView = new MusEGui::ArrangerView(this);
-      connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
+//      connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
-      arrangerView->hide();
+//      arrangerView->hide();
       _arranger=arrangerView->getArranger();
 
       connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
@@ -1556,7 +1534,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       viewTransportAction->setChecked(MusEGlobal::config.transportVisible);
       viewBigtimeAction->setChecked(MusEGlobal::config.bigTimeVisible);
       viewMarkerAction->setChecked(MusEGlobal::config.markerVisible);
-      viewArrangerAction->setChecked(MusEGlobal::config.arrangerVisible);
+//      viewArrangerAction->setChecked(MusEGlobal::config.arrangerVisible);
 
 // REMOVE Tim. automation. Removed.
 // Deprecated. MusEGlobal::automation is now fixed TRUE
@@ -1973,59 +1951,59 @@ void MusE::showMarker(bool flag)
 //   toggleArranger
 //---------------------------------------------------------
 
-void MusE::toggleArranger(bool checked)
-      {
-      showArranger(checked);
-      }
+//void MusE::toggleArranger(bool checked)
+//      {
+//      showArranger(checked);
+//      }
 
 //---------------------------------------------------------
 //   showArranger
 //---------------------------------------------------------
 
-void MusE::showArranger(bool flag)
-      {
-      if(arrangerView->isVisible() != flag)
-        arrangerView->setVisible(flag);
-      if(viewArrangerAction->isChecked() != flag)
-        viewArrangerAction->setChecked(flag);
-      if (!flag)
-        if (currentMenuSharingTopwin == arrangerView)
-          setCurrentMenuSharingTopwin(nullptr);
-      updateWindowMenu();
-      }
+//void MusE::showArranger(bool flag)
+//      {
+//      if(arrangerView->isVisible() != flag)
+//        arrangerView->setVisible(flag);
+//      if(viewArrangerAction->isChecked() != flag)
+//        viewArrangerAction->setChecked(flag);
+//      if (!flag)
+//        if (currentMenuSharingTopwin == arrangerView)
+//          setCurrentMenuSharingTopwin(nullptr);
+//      updateWindowMenu();
+//      }
 
 //---------------------------------------------------------
 //   arrangerClosed
 //---------------------------------------------------------
 
-void MusE::arrangerClosed()
-      {
-      if(viewArrangerAction->isChecked())
-        viewArrangerAction->setChecked(false);
-      updateWindowMenu();
+//void MusE::arrangerClosed()
+//{
+    //      if(viewArrangerAction->isChecked())
+    //        viewArrangerAction->setChecked(false);
+    //      updateWindowMenu();
 
-//      if (mdiArea->viewMode() == QMdiArea::TabbedView) {
-//          QTabBar* tb = mdiArea->findChild<QTabBar*>();
-//          if (tb) {
-//              int i = tb->currentIndex();
-//              tb->setTabEnabled(i, false);
-//              tb->setTabButton(i, QTabBar::RightSide, nullptr);
-//          }
-//      }
+    ////      if (mdiArea->viewMode() == QMdiArea::TabbedView) {
+    ////          QTabBar* tb = mdiArea->findChild<QTabBar*>();
+    ////          if (tb) {
+    ////              int i = tb->currentIndex();
+    ////              tb->setTabEnabled(i, false);
+    ////              tb->setTabButton(i, QTabBar::RightSide, nullptr);
+    ////          }
+    ////      }
 
-      // focus the last activated topwin which is not the arranger view
-      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-      for (QList<QMdiSubWindow*>::const_reverse_iterator lit=l.rbegin(); lit!=l.rend(); lit++)
-        if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
-        {
-          if (MusEGlobal::debugMsg)
-            fprintf(stderr, "bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+    //      // focus the last activated topwin which is not the arranger view
+    //      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
+    //      for (QList<QMdiSubWindow*>::const_reverse_iterator lit=l.rbegin(); lit!=l.rend(); lit++)
+    //        if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
+    //        {
+    //          if (MusEGlobal::debugMsg)
+    //            fprintf(stderr, "bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
-          bringToFront((*lit)->widget());
+    //          bringToFront((*lit)->widget());
 
-          break;
-        }
-      }
+    //          break;
+    //        }
+//}
 
 //---------------------------------------------------------
 //   toggleTransport
@@ -4017,35 +3995,25 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
 void MusE::updateWindowMenu()
 {
     bool sep;
-    bool there_are_subwins=false;
 
     menuWindows->clear(); // frees memory automatically
 
-    menuWindows->addAction(windowsCascadeAction);
-    menuWindows->addAction(windowsTileAction);
-    menuWindows->addAction(windowsRowsAction);
-    menuWindows->addAction(windowsColumnsAction);
-
-//    if (!MusEGlobal::config.tabbedMDI) {
-        sep=false;
-        for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
-            if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
-                // the isVisibleTo check is necessary because isVisible returns false if a
-                // MdiSubWin is actually visible, but the muse main window is hidden for some reason
+    sep=false;
+    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
+        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
+            // the isVisibleTo check is necessary because isVisible returns false if a
+            // MdiSubWin is actually visible, but the muse main window is hidden for some reason
+        {
+            if (!sep)
             {
-                if (!sep)
-                {
-                    menuWindows->addSeparator();
-                    sep=true;
-                }
-                QAction* temp=menuWindows->addAction((*it)->windowTitle());
-                QWidget* tlw = static_cast<QWidget*>(*it);
-                connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
-
-                there_are_subwins=true;
+                menuWindows->addSeparator();
+                sep=true;
             }
+            QAction* temp=menuWindows->addAction((*it)->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(*it);
+            connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
         }
-//    }
+    }
 
     sep=false;
     for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
@@ -4061,14 +4029,6 @@ void MusE::updateWindowMenu()
             connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
         }
     }
-
-    if (mdiArea->viewMode() == QMdiArea::TabbedView)
-        there_are_subwins = false;
-
-    windowsCascadeAction->setEnabled(there_are_subwins);
-    windowsTileAction->setEnabled(there_are_subwins);
-    windowsRowsAction->setEnabled(there_are_subwins);
-    windowsColumnsAction->setEnabled(there_are_subwins);
 }
 
 void MusE::resetXrunsCounter()
@@ -4145,124 +4105,6 @@ list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
         result.push_back(*it);
 
   return result;
-}
-
-void MusE::arrangeSubWindowsColumns()
-{
-  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
-  int n=wins.size();
-
-  if (n==0)
-    return;
-  //else if (n==1)
-  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
-  else
-  {
-    int width = mdiArea->width();
-    int height = mdiArea->height();
-    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
-    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
-    int width_per_win = width/n;
-
-    if (x_add >= width_per_win)
-    {
-      fprintf(stderr, "ERROR: tried to arrange subwins in columns, but there's too few space.\n");
-      return;
-    }
-
-    int i=0;
-    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
-    {
-      int left = (float) width*i/n;
-      int right = (float) width*(i+1.0)/n;
-
-      (*it)->move(left,0);
-      (*it)->resize(right-left-x_add, height-y_add);
-    }
-  }
-}
-
-void MusE::arrangeSubWindowsRows()
-{
-  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
-  int n=wins.size();
-
-  if (n==0)
-    return;
-  //else if (n==1)
-  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
-  else
-  {
-    int width = mdiArea->width();
-    int height = mdiArea->height();
-    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
-    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
-    int height_per_win = height/n;
-
-    if (y_add >= height_per_win)
-    {
-      fprintf(stderr, "ERROR: tried to arrange subwins in rows, but there's too few space.\n");
-      return;
-    }
-
-    int i=0;
-    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
-    {
-      int top = (float) height*i/n;
-      int bottom = (float) height*(i+1.0)/n;
-
-      (*it)->move(0,top);
-      (*it)->resize(width-x_add, bottom-top-y_add);
-    }
-  }
-}
-
-void MusE::tileSubWindows()
-{
-  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
-  int n=wins.size();
-
-  if (n==0)
-    return;
-  //else if (n==1)
-  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
-  else
-  {
-    int nx,ny;
-    nx=ceil(sqrt(n));
-    ny=ceil((double)n/nx);
-
-    int width = mdiArea->width();
-    int height = mdiArea->height();
-    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
-    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
-    int height_per_win = height/ny;
-    int width_per_win = height/nx;
-
-    if ((x_add >= width_per_win) || (y_add >= height_per_win))
-    {
-      fprintf(stderr, "ERROR: tried to tile subwins, but there's too few space.\n");
-      return;
-    }
-
-    int i=0, j=0;
-    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
-    {
-      if (i>=nx)
-      {
-        i=0;
-        j++;
-      }
-
-      int top = (float) height*j/ny;
-      int bottom = (float) height*(j+1.0)/ny;
-      int left = (float) width*i/nx;
-      int right = (float) width*(i+1.0)/nx;
-
-      (*it)->move(left,top);
-      (*it)->resize(right-left-x_add, bottom-top-y_add);
-    }
-  }
 }
 
 QString MusE::projectTitle(QString name)
@@ -4680,8 +4522,8 @@ void MusE::resizeEvent(QResizeEvent* event) {
     MusEGlobal::config.geometryMain = geometry();
 }
 
-bool MusE::isTabbedMDI() {
-    return (mdiArea->viewMode() == QMdiArea::TabbedView);
-}
+//bool MusE::isTabbedMDI() {
+//    return (mdiArea->viewMode() == QMdiArea::TabbedView);
+//}
 
 } //namespace MusEGui

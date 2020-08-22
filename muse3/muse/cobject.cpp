@@ -53,9 +53,7 @@ int TopWin::_widthInit[TOPLEVELTYPE_LAST_ENTRY];
 int TopWin::_heightInit[TOPLEVELTYPE_LAST_ENTRY];
 QByteArray TopWin::_toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
 QByteArray TopWin::_toolbarNonsharedInit[TOPLEVELTYPE_LAST_ENTRY];
-bool TopWin::_sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
-bool TopWin::_sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
-bool TopWin::_defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
+bool TopWin::_openTabbed[TOPLEVELTYPE_LAST_ENTRY];
 bool TopWin::initInited=false;
 
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
@@ -76,13 +74,13 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     if (_type != ARRANGER)
         setAttribute(Qt::WA_DeleteOnClose);
 
-    subwinAction=new QAction(tr("As Subwindow"), this);
+    subwinAction=new QAction(tr("Tabbed/Detached window"), this);
     subwinAction->setCheckable(true);
     connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
 
-    shareAction=new QAction(tr("Shares Tools and Menu"), this);
-    shareAction->setCheckable(true);
-    connect(shareAction, SIGNAL(toggled(bool)), SLOT(shareToolsAndMenu(bool)));
+//    shareAction=new QAction(tr("Shares Tools and Menu"), this);
+//    shareAction->setCheckable(true);
+//    connect(shareAction, SIGNAL(toggled(bool)), SLOT(shareToolsAndMenu(bool)));
 
     fullscreenAction=new QAction(tr("Fullscreen"), this);
     fullscreenAction->setCheckable(true);
@@ -94,11 +92,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     mdisubwin = nullptr;
 
     if (!MusEGlobal::unityWorkaround)
-        _sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
+        _sharesToolsAndMenu=_openTabbed[_type];
     else
         _sharesToolsAndMenu=false;
 
-    if (_defaultSubwin[_type] && !MusEGlobal::unityWorkaround)
+    if (_openTabbed[_type] && !MusEGlobal::unityWorkaround)
     {
         setIsMdiWin(true);
         _savedToolbarState=_toolbarNonsharedInit[_type];
@@ -108,10 +106,10 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         menuBar()->hide();
 
     subwinAction->setChecked(isMdiWin());
-    shareAction->setChecked(_sharesToolsAndMenu);
+//    shareAction->setChecked(_sharesToolsAndMenu);
     if (MusEGlobal::unityWorkaround)
     {
-        shareAction->setEnabled(false);
+//        shareAction->setEnabled(false);
         subwinAction->setEnabled(false);
     }
     fullscreenAction->setEnabled(!isMdiWin());
@@ -121,10 +119,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
         if(_type == ARRANGER) {
             mdisubwin->setWindowState(Qt::WindowMaximized);
-            //            if (muse->isTabbedMDI()) {
-            shareAction->setEnabled(false);
+//            shareAction->setEnabled(false);
             subwinAction->setEnabled(false);
-            //            }
         }
     }
     else
@@ -257,10 +253,10 @@ void TopWin::readStatus(MusECore::Xml& xml)
                         _savedToolbarState=_toolbarNonsharedInit[_type];
                 }
             }
-            else if (tag == "shares_menu")
-            {
-                shareToolsAndMenu(xml.parseInt());
-            }
+//            else if (tag == "shares_menu")
+//            {
+//                shareToolsAndMenu(xml.parseInt());
+//            }
             else if (tag == "is_subwin")
             {
                 setIsMdiWin(xml.parseInt());
@@ -369,9 +365,7 @@ void TopWin::hide()
 void TopWin::show()
 {
     if (mdisubwin) {
-        if (MusEGlobal::config.openMDIWinMaximized || muse->isTabbedMDI())
-            mdisubwin->setWindowState(Qt::WindowMaximized);
-
+        mdisubwin->setWindowState(Qt::WindowMaximized);
         mdisubwin->show();
     }
 
@@ -396,25 +390,14 @@ QMdiSubWindow* TopWin::createMdiWrapper()
     {
         mdisubwin = new QMdiSubWindow();
         mdisubwin->setWidget(this);
-        if (_type != ARRANGER)
-            mdisubwin->setAttribute(Qt::WA_DeleteOnClose);
 
-        if (muse->isTabbedMDI()) {
-            if (_type == ARRANGER)
-                mdisubwin->setWindowFlags(Qt::CustomizeWindowHint);
-            else
-                mdisubwin->setWindowFlags(Qt::CustomizeWindowHint
-                                          | Qt::WindowCloseButtonHint);
+        if (_type == ARRANGER) {
+            mdisubwin->setWindowFlags(Qt::CustomizeWindowHint);
+        } else {
+            mdisubwin->setAttribute(Qt::WA_DeleteOnClose);
+            mdisubwin->setWindowFlags(Qt::CustomizeWindowHint
+                                      | Qt::WindowCloseButtonHint);
         }
-        else // remove minimize button, causes undefined behaviour/crashes
-            if (_type == ARRANGER) {
-                mdisubwin->setWindowFlags(Qt::CustomizeWindowHint
-                                          | Qt::WindowTitleHint | Qt::WindowMaximizeButtonHint);
-            }
-            else
-                mdisubwin->setWindowFlags(Qt::CustomizeWindowHint
-                                          | Qt::WindowTitleHint | Qt::WindowMaximizeButtonHint
-                                          | Qt::WindowCloseButtonHint);
     }
 
     return mdisubwin;
@@ -445,8 +428,7 @@ void TopWin::setIsMdiWin(bool val)
             subwin->setVisible(vis);
             this->QMainWindow::show(); //bypass the delegation to the subwin
 
-            if (MusEGlobal::config.openMDIWinMaximized || muse->isTabbedMDI())
-                subwin->showMaximized();
+            subwin->showMaximized();
 
             // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
             //  force the style and stylesheet again. Otherwise the window freezes.
@@ -457,8 +439,7 @@ void TopWin::setIsMdiWin(bool val)
                 MusEGui::updateThemeAndStyle(true);
             }
 
-            if (_sharesToolsAndMenu == _sharesWhenFree[_type])
-                shareToolsAndMenu(_sharesWhenSubwin[_type]);
+            shareToolsAndMenu(true);
 
             fullscreenAction->setEnabled(false);
             fullscreenAction->setChecked(false);
@@ -494,8 +475,7 @@ void TopWin::setIsMdiWin(bool val)
             if (!windowTitle().startsWith("MusE: "))
                 setWindowTitle(windowTitle().insert(0, "MusE: "));
 
-            if (_sharesToolsAndMenu == _sharesWhenSubwin[_type])
-                shareToolsAndMenu(_sharesWhenFree[_type]);
+            shareToolsAndMenu(false);
 
             fullscreenAction->setEnabled(true);
             subwinAction->setChecked(false);
@@ -595,7 +575,7 @@ void TopWin::shareToolsAndMenu(bool val)
         muse->shareMenuAndToolbarChanged(this, true);
     }
 
-    shareAction->setChecked(val);
+//    shareAction->setChecked(val);
 }
 
 
@@ -631,7 +611,7 @@ void TopWin::storeInitialState() const
 
 
 
-//initConfiguration() restores default "traditional muse" configuration
+//initConfiguration() restores default tabbed configuration
 void TopWin::initConfiguration()
 {
     if (initInited==false)
@@ -640,12 +620,10 @@ void TopWin::initConfiguration()
         {
             _widthInit[i]=800;
             _heightInit[i]=600;
-            _sharesWhenFree[i]=false;
-            _sharesWhenSubwin[i]=true;
-            _defaultSubwin[i]=false;
+            _openTabbed[i]=true;
         }
 
-        _defaultSubwin[ARRANGER]=true;
+//        _openTabbed[ARRANGER]=true;
 
         initInited=true;
     }
@@ -678,12 +656,8 @@ void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
                 _toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
             else if (tag == "shared_toolbars")
                 _toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
-            else if (tag == "shares_when_free")
-                _sharesWhenFree[t] = xml.parseInt();
-            else if (tag == "shares_when_subwin")
-                _sharesWhenSubwin[t] = xml.parseInt();
             else if (tag == "default_subwin")
-                _defaultSubwin[t] = xml.parseInt();
+                _openTabbed[t] = xml.parseInt();
             else
                 xml.unknown("TopWin");
             break;
@@ -716,9 +690,7 @@ void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
     xml.intTag(level, "height", _heightInit[t]);
     xml.strTag(level, "nonshared_toolbars", _toolbarNonsharedInit[t].toHex().data());
     xml.strTag(level, "shared_toolbars", _toolbarSharedInit[t].toHex().data());
-    xml.intTag(level, "shares_when_free", _sharesWhenFree[t]);
-    xml.intTag(level, "shares_when_subwin", _sharesWhenSubwin[t]);
-    xml.intTag(level, "default_subwin", _defaultSubwin[t]);
+    xml.intTag(level, "default_subwin", _openTabbed[t]);
     xml.etag(level, "topwin");
 }
 

@@ -95,9 +95,9 @@ class TopWin : public QMainWindow
       void resize(int w, int h);
       void resize(const QSize&);
  
-      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
-      static bool _sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
-      static bool _defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
+//      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
+//      static bool _sharesMenusToolbars[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _openTabbed[TOPLEVELTYPE_LAST_ENTRY];
  
   private:
       QMdiSubWindow* mdisubwin;
@@ -111,7 +111,7 @@ class TopWin : public QMainWindow
 
   protected:
       QAction* subwinAction;
-      QAction* shareAction;
+//      QAction* shareAction;
       QAction* fullscreenAction;
 
       ToplevelType _type;

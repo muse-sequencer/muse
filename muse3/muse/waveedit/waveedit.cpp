@@ -201,6 +201,12 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
 
+      settingsMenu->addAction(subwinAction);
+//      settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
+
+      settingsMenu->addSeparator();
+
       eventColor = settingsMenu->addMenu(tr("&Event Color"));      
       
       QActionGroup* actgrp = new QActionGroup(this);
@@ -216,11 +222,6 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       eventColor->addActions(actgrp->actions());
       
-      settingsMenu->addSeparator();
-      settingsMenu->addAction(subwinAction);
-      settingsMenu->addAction(shareAction);
-      settingsMenu->addAction(fullscreenAction);
-
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
 
