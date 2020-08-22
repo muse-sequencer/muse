@@ -80,7 +80,7 @@ class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
       void clearShortcut();
       void applyAll();
       void okClicked();
-      void resetClicked();
+      void resetAllClicked();
       void textFileClicked();
       void filterChanged(QString);
 
