@@ -171,8 +171,6 @@ LMaster::LMaster(QWidget* parent)
       view->setHeaderLabels(columnnames);
       view->setColumnWidth(2,70);
       view->setIndentation(2);
-      // seems to cause artefacts when editing last column
-//      view->header()->setStretchLastSection(true);
 
       //---------------------------------------------------
       //    Rest

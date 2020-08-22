@@ -1043,7 +1043,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
                 if(!pl->empty())
                 {
                     startListEditor(pl);
-                    toplevels.back()->readStatus(xml);
+//                    toplevels.back()->readStatus(xml);
                     pl = new MusECore::PartList;
                 }
             }
@@ -1053,7 +1053,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
             }
             else if (tag == "lmaster") {
                 startLMasterEditor();
-                toplevels.back()->readStatus(xml);
+//                toplevels.back()->readStatus(xml);
             }
             else if (tag == "marker") {
                 showMarker(true);
