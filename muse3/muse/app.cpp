@@ -3493,7 +3493,7 @@ void MusE::updateConfiguration()
 
 void MusE::showBigtime(bool on)
       {
-      if (on && bigtime == 0) {
+      if (on && bigtime == nullptr) {
             bigtime = new MusEGui::BigTime(this);
             bigtime->setPos(0, MusEGlobal::song->cpos(), false);
             connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));

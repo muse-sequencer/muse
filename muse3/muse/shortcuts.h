@@ -98,6 +98,7 @@ enum {
       SHRT_REC_ARM_TRACK, // Shift+A
       SHRT_REC_CLEAR, // backspace
       SHRT_FULLSCREEN,
+      SHRT_TABBED_WIN,
       SHRT_TOGGLE_REWINDONSTOP,
 
       //Main + Drumeditor

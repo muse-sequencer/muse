@@ -343,7 +343,7 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Views</string>
+          <string>State and geometry</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
           <property name="topMargin">
@@ -353,7 +353,7 @@
            <number>10</number>
           </property>
           <property name="verticalSpacing">
-           <number>16</number>
+           <number>12</number>
           </property>
           <item row="1" column="3">
            <widget class="QSpinBox" name="transportY">
@@ -612,10 +612,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -668,10 +668,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -684,10 +684,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -700,10 +700,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -716,10 +716,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -736,8 +736,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>20</width>
-           <height>20</height>
+           <width>0</width>
+           <height>12</height>
           </size>
          </property>
         </spacer>
@@ -745,11 +745,11 @@
        <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
-          <string>Open editors in tabs (else in separate top level window)</string>
+          <string>Open editors in tabs (else in separate window)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_24">
           <property name="spacing">
-           <number>9</number>
+           <number>12</number>
           </property>
           <property name="topMargin">
            <number>9</number>

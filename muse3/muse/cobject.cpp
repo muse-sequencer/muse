@@ -74,8 +74,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     if (_type != ARRANGER)
         setAttribute(Qt::WA_DeleteOnClose);
 
-    subwinAction=new QAction(tr("Tabbed/Detached window"), this);
+    subwinAction=new QAction(tr("Tabbed/Floating"), this);
     subwinAction->setCheckable(true);
+    subwinAction->setShortcut(shortcuts[SHRT_TABBED_WIN].key);
     connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
 
 //    shareAction=new QAction(tr("Shares Tools and Menu"), this);
@@ -429,6 +430,7 @@ void TopWin::setIsMdiWin(bool val)
             this->QMainWindow::show(); //bypass the delegation to the subwin
 
             subwin->showMaximized();
+            subwin->raise();
 
             // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
             //  force the style and stylesheet again. Otherwise the window freezes.
