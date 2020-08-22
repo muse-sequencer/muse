@@ -68,6 +68,7 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    connect(textFileButton, SIGNAL(pressed()), this, SLOT(textFileClicked()));
    connect(applyButton,  SIGNAL(pressed()), this, SLOT(applyAll()));
    connect(okButton,     SIGNAL(pressed()), this, SLOT(okClicked()));
+   connect(resetButton,  SIGNAL(pressed()), this, SLOT(resetClicked()));
 
    current_category = ALL_SHRT;
    cgListView->sortItems(SHRT_CATEGORY_COL, Qt::AscendingOrder);
@@ -195,6 +196,12 @@ void ShortcutConfig::okClicked()
       okButton->setDown(false);
       close();
       }
+
+void ShortcutConfig::resetClicked()
+{
+    initShortCuts();
+    updateSCListView();
+}
 
 void ShortcutConfig::textFileClicked()
 {

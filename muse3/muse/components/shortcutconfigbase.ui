@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
-    <height>452</height>
+    <width>993</width>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -80,6 +80,16 @@
    </item>
    <item row="2" column="0" colspan="2">
     <layout class="QHBoxLayout">
+     <item>
+      <widget class="QPushButton" name="resetButton">
+       <property name="toolTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>&amp;Reset all</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="spacer3">
        <property name="orientation">
