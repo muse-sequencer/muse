@@ -431,6 +431,7 @@ void TopWin::setIsMdiWin(bool val)
 
             subwin->showMaximized();
             subwin->raise();
+            subwin->setFocus();
 
             // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
             //  force the style and stylesheet again. Otherwise the window freezes.

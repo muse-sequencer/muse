@@ -400,9 +400,11 @@ MusE::MusE() : QMainWindow()
             }
 #endif
 
+      setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
       markerDock = new QDockWidget("Markers", this);
 //      markerDock->setObjectName("markerDock");
-      markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+//      markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
       markerView = new MusEGui::MarkerView(markerDock);
       markerDock->setWidget(markerView);
       addDockWidget(Qt::RightDockWidgetArea, markerDock);
@@ -410,7 +412,7 @@ MusE::MusE() : QMainWindow()
 
       clipListDock = new QDockWidget("Clip List", this);
 //      clipListDock->setObjectName("clipListDock");
-      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+//      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
       clipListEdit = new MusEGui::ClipListEdit(clipListDock);
       clipListDock->setWidget(clipListEdit);
       addDockWidget(Qt::RightDockWidgetArea, clipListDock);
@@ -2270,7 +2272,7 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
     QDockWidget* dock = new QDockWidget("List Editor", this);
     //      markerDock->setObjectName("listeditDock");
-    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+//    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
     dock->setWidget(listEditor);
 
@@ -2312,7 +2314,7 @@ void MusE::startLMasterEditor()
 {
     QDockWidget* dock = new QDockWidget("Mastertrack List", this);
     //      markerDock->setObjectName("lmasterDock");
-    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+//    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
     dock->setWidget(lmaster);
     addDockWidget(Qt::RightDockWidgetArea, dock);
