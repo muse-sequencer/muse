@@ -1137,6 +1137,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
               }
               waveEvent.setSpos(waveEvent.spos() - startPosChange);
               waveEvent.setLenFrame(waveEvent.lenFrame() + startPosChange);
+
+              eventsToMove.add(waveEvent);
           }
           else // all other events are treated equally
           {
@@ -1144,13 +1146,13 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
               auto posValue = event.posValue();
               event.setPosValue(posValue + startPosChange);
               eventsToMove.add(event);
-              eventList.erase(eventIterator);
           }
       }
+
+      // recreate event list
+      eventList.clear();
       for (auto& eventToMove : eventsToMove)
       {
-        // if there are events to move we do it here
-        // doing it above will mess up the for loop
         eventList.add(eventToMove.second);
       }
 
