@@ -1,3 +1,10 @@
+04.09.2020
+    - Reused snap/quantize shortcuts in midieditors (1-6) as snap shortcuts in arranger
+      as I discovered it was missing, and it's pretty much the same thing. Also
+      added a shortcut for setting quantize to off (8). Execution slightly
+      annoying as changing the quantize in the midi editors after having it
+      at off will always give triplets (which can be turned of by pressing T).
+      Fixing that would require a more extensive rewrite. (rj)
 03.09.2020
     - Fixed crash in #842 extending parts to the left often caused a crash (rj)
 14.08.2020
