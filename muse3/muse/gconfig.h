@@ -298,6 +298,7 @@ struct GlobalConfigValues {
 
       // Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
       bool fixFrozenMDISubWindows;
+//      bool tabbedMDI;
       
       // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. 
       // For certain widgets that use it. May be more later.
@@ -363,7 +364,7 @@ struct GlobalConfigValues {
       bool mixer1Visible;
       bool mixer2Visible;
       bool markerVisible;
-      bool arrangerVisible;
+//      bool arrangerVisible;
 
       bool showSplashScreen;
       int canvasShowPartType;       // 1 - names, 2 events
@@ -442,7 +443,7 @@ struct GlobalConfigValues {
       // Revert native GUI scaling on HiDPI
       bool noPluginScaling;
       // Open MDI windows maximized
-      bool openMDIWinMaximized;
+//      bool openMDIWinMaximized;
       bool keepTransportWindowOnTop;
       };
 

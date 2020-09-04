@@ -578,9 +578,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               // I thought this was obsolete (done by song's toplevel list), but
                               // it's obviously needed. (flo)
                               MusEGlobal::config.markerVisible = xml.parseInt();
-                        else if (tag == "arrangerVisible")
-                              // same here.
-                              MusEGlobal::config.arrangerVisible = xml.parseInt();
+//                        else if (tag == "arrangerVisible")
+//                              // same here.
+//                              MusEGlobal::config.arrangerVisible = xml.parseInt();
                         else if (tag == "geometryTransport")
                               MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
                         else if (tag == "geometryBigTime")
@@ -749,6 +749,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         }
                         else if (tag == "fixFrozenMDISubWindows")
                               MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
+//                        else if (tag == "tabbedMDI")
+//                            MusEGlobal::config.tabbedMDI = xml.parseInt();
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
@@ -1208,14 +1210,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGui::MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
                               MusEGui::WaveEdit::readConfiguration(xml);
-                        else if (tag == "listedit")
-                              MusEGui::ListEdit::readConfiguration(xml);
-                        else if (tag == "cliplistedit")
-                              MusEGui::ClipListEdit::readConfiguration(xml);
-                        else if (tag == "lmaster")
-                              MusEGui::LMaster::readConfiguration(xml);
-                        else if (tag == "marker")
-                              MusEGui::MarkerView::readConfiguration(xml);
+//                        else if (tag == "listedit")
+//                              MusEGui::ListEdit::readConfiguration(xml);
+//                        else if (tag == "lmaster")
+//                              MusEGui::LMaster::readConfiguration(xml);
                         else if (tag == "arrangerview")
                               MusEGui::ArrangerView::readConfiguration(xml);
                         
@@ -1344,8 +1342,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                             MusEGlobal::config.showNoteTooltips = xml.parseInt();
                         else if (tag == "noPluginScaling")
                               MusEGlobal::config.noPluginScaling = xml.parseInt();
-                        else if (tag == "openMDIWinMaximized")
-                            MusEGlobal::config.openMDIWinMaximized = xml.parseInt();
+//                        else if (tag == "openMDIWinMaximized")
+//                            MusEGlobal::config.openMDIWinMaximized = xml.parseInt();
                         else if (tag == "keepTransportWindowOnTop")
                             MusEGlobal::config.keepTransportWindowOnTop = xml.parseInt();
 
@@ -1994,6 +1992,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
       xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
+//      xml.intTag(level, "tabbedMDI", MusEGlobal::config.tabbedMDI);
       xml.strTag(level, "theme", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
@@ -2043,7 +2042,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "showNoteNamesInPianoRoll", MusEGlobal::config.showNoteNamesInPianoRoll);
       xml.intTag(level, "showNoteTooltips", MusEGlobal::config.showNoteTooltips);
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
-      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
+//      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
       xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
 
       for (int i = 1; i < NUM_FONTS; ++i) {
@@ -2101,10 +2100,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       MusEGui::ScoreEdit::write_configuration(level, xml);
       MusEGui::MasterEdit::writeConfiguration(level, xml);
       MusEGui::WaveEdit::writeConfiguration(level, xml);
-      MusEGui::ListEdit::writeConfiguration(level, xml);
-      MusEGui::ClipListEdit::writeConfiguration(level, xml);
-      MusEGui::LMaster::writeConfiguration(level, xml);
-      MusEGui::MarkerView::writeConfiguration(level, xml);
+//      MusEGui::ListEdit::writeConfiguration(level, xml);
+//      MusEGui::LMaster::writeConfiguration(level, xml);
       arrangerView->writeConfiguration(level, xml);
       
       MusEGui::write_function_dialog_config(level, xml);
@@ -2153,7 +2150,6 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
             xml.geometryTag(level, "geometryBigTime", bigtime);
       
       // i thought this was obsolete, but it seems to be necessary (flo)
-      xml.intTag(level, "arrangerVisible", viewArrangerAction->isChecked());
       xml.intTag(level, "markerVisible", viewMarkerAction->isChecked());
       // but storing the geometry IS obsolete. this is really
       // done by TopLevel::writeConfiguration

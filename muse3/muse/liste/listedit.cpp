@@ -186,7 +186,7 @@ static QString midiMetaComment(const MusECore::Event& ev)
 void ListEdit::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
-      emit isDeleting(static_cast<TopWin*>(this));
+//      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -196,7 +196,7 @@ void ListEdit::closeEvent(QCloseEvent* e)
 
 void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
       {
-      if(_isDeleting)  // Ignore while while deleting to prevent crash.
+      if(_isDeleting)  // Ignore while deleting to prevent crash.
         return;
        
       if (!type)
@@ -209,8 +209,8 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
             if (type & (SC_PART_REMOVED | SC_PART_INSERTED | SC_PART_MODIFIED | SC_SIG))
                   genPartlist();
             // close window if editor has no parts anymore
-            if (parts()->empty()) {
-                  close();
+            if (_pl->empty()) {
+                  parentWidget()->close();
                   return;
                   }
             liste->setSortingEnabled(false);
@@ -245,7 +245,7 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
                   curTrack = 0;
                   liste->blockSignals(true);
                   liste->clear();
-                  for (MusECore::iPart p = parts()->begin(); p != parts()->end(); ++p) {
+                  for (MusECore::iPart p = _pl->begin(); p != _pl->end(); ++p) {
                         MusECore::MidiPart* part = (MusECore::MidiPart*) (p->second);
                         if (part->sn() == curPartId)
                               curPart  = part;
@@ -267,9 +267,9 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
             
             if(!curPart)
             {
-              if(!parts()->empty())
+              if(!_pl->empty())
               {
-                curPart  = (MusECore::MidiPart*)(parts()->begin()->second);
+                curPart  = (MusECore::MidiPart*)(_pl->begin()->second);
                 if(curPart)
                   curTrack = curPart->track();
                 else  
@@ -279,6 +279,27 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
           }  
       liste->setSortingEnabled(true);
       }
+
+
+void ListEdit::genPartlist()
+{
+    _pl->clear();
+    for (const auto& i : _pidSet) {
+        MusECore::TrackList* tl = MusEGlobal::song->tracks();
+        for (const auto& it : *tl) {
+            MusECore::PartList* pl = it->parts();
+            MusECore::iPart ip;
+            for (ip = pl->begin(); ip != pl->end(); ++ip) {
+                if (ip->second->sn() == i) {
+                    _pl->add(ip->second);
+                    break;
+                }
+            }
+            if (ip != pl->end())
+                break;
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   text
@@ -464,29 +485,38 @@ QString EventListItem::text(int col) const
 //   ListEdit
 //---------------------------------------------------------
 
-ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
-   : MidiEditor(TopWin::LISTE, 0, pl, parent, name)
+ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
+    : QWidget(parent)
+//   : MidiEditor(TopWin::LISTE, 0, pl, parent, name)
       {
+      setObjectName("ListEdit");
+      _isDeleting = false;
+
+      _pl = pl;
+      for (const auto& i : *_pl)
+            _pidSet.insert(i.second->sn());
+
       selectedTick=0;
       
-      insertItems = new QActionGroup(this);
-      insertItems->setExclusive(false);
-      insertNote = new QAction(*noteSVGIcon, tr("Insert Note"), insertItems);
-      insertSysEx = new QAction(*sysexSVGIcon, tr("Insert SysEx"), insertItems);
-      insertCtrl = new QAction(*ctrlSVGIcon, tr("Insert Ctrl"), insertItems);
-      insertMeta = new QAction(*metaSVGIcon, tr("Insert Meta"), insertItems);
+      noteAction = new QAction(tr("Note"));
+      sysexAction = new QAction(tr("SysEx"));
+      ctrlAction = new QAction(tr("Ctrl"));
+      metaAction = new QAction(tr("Meta"));
+////      insertNote = new QAction(*noteSVGIcon, tr("Insert Note"), insertItems);
+////      insertSysEx = new QAction(*sysexSVGIcon, tr("Insert SysEx"), insertItems);
+////      insertCtrl = new QAction(*ctrlSVGIcon, tr("Insert Ctrl"), insertItems);
+////      insertMeta = new QAction(*metaSVGIcon, tr("Insert Meta"), insertItems);
 
-      connect(insertNote,    SIGNAL(triggered()), SLOT(editInsertNote()));
-      connect(insertSysEx,   SIGNAL(triggered()), SLOT(editInsertSysEx()));
-      connect(insertCtrl,    SIGNAL(triggered()), SLOT(editInsertCtrl()));
-      connect(insertMeta,    SIGNAL(triggered()), SLOT(editInsertMeta()));
+      addAction(noteAction);
+      addAction(sysexAction);
+      addAction(ctrlAction);
+      addAction(metaAction);
 
-      //---------Pulldown Menu----------------------------
-      
-      menuEdit = menuBar()->addMenu(tr("&Edit"));
-      menuEdit->addActions(MusEGlobal::undoRedo->actions());
+      connect(noteAction,    SIGNAL(triggered()), SLOT(editInsertNote()));
+      connect(sysexAction,   SIGNAL(triggered()), SLOT(editInsertSysEx()));
+      connect(ctrlAction,    SIGNAL(triggered()), SLOT(editInsertCtrl()));
+      connect(metaAction,    SIGNAL(triggered()), SLOT(editInsertMeta()));
 
-      menuEdit->addSeparator();
 #if 0 // DELETETHIS or implement?
       QAction *cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       connect(cutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -502,46 +532,46 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       pasteAction->setShortcut(Qt::CTRL+Qt::Key_V);
       menuEdit->insertSeparator();
 #endif
-      QAction *deleteAction = menuEdit->addAction(tr("Delete Events"));
-      deleteAction->setShortcut(Qt::Key_Delete);
-      menuEdit->addSeparator();
-      QAction *incAction = menuEdit->addAction(tr("Increase Tick"));
-      QAction *decAction = menuEdit->addAction(tr("Decrease Tick"));
 
-      menuEdit->addActions(insertItems->actions());
+      QAction *incAction = new QAction(tr("Tick+"));
+      QAction *decAction = new QAction(tr("Tick-"));
+      QAction *deleteAction = new QAction(tr("Delete"));
+      deleteAction->setShortcut(Qt::Key_D);
+
+//      addAction(incAction);
+//      addAction(decAction);
+//      addAction(deleteAction);
 
       connect(deleteAction, &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
       connect(incAction,    &QAction::triggered, [this]() { cmd(CMD_INC); } );
       connect(decAction,    &QAction::triggered, [this]() { cmd(CMD_DEC); } );
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      settingsMenu->addAction(subwinAction);
-      settingsMenu->addAction(shareAction);
-      settingsMenu->addAction(fullscreenAction);
 
-
-      // Toolbars ---------------------------------------------------------
-
-      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
-      //          to identical or similar toolbars in class MusE or other TopWin classes. 
-      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
-      //          to retain the original toolbar layout. If it finds an existing
-      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
-      //          instead of /appending/ with addToolBar().
-
-      addToolBarBreak();
+      QToolBar* tb = new QToolBar(tr("Insert tools"));
+//      insertTools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
+      tb->addAction(noteAction);
+      tb->addAction(sysexAction);
+      tb->addAction(ctrlAction);
+      tb->addAction(metaAction);
+      tb->addAction(incAction);
+      tb->addAction(decAction);
+      tb->addAction(deleteAction);
       
-      QToolBar* insertTools = addToolBar(tr("Insert tools"));
-      insertTools->setObjectName("list insert tools");
-      insertTools->addActions(insertItems->actions());
-      
+      noteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      sysexAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      ctrlAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      metaAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      incAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      decAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
       //
       //---------------------------------------------------
       //    liste
       //---------------------------------------------------
       //
 
-      liste = new QTreeWidget(mainw);
+      liste = new QTreeWidget(this);
       QFontMetrics fm(liste->font());
 // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
@@ -561,6 +591,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       liste->sortByColumn(0, Qt::AscendingOrder);
 
       liste->setSelectionMode(QAbstractItemView::ExtendedSelection);
+      liste->setIndentation(2);
 
       QStringList columnnames;
       columnnames << tr("Tick")
@@ -602,14 +633,16 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       //    Rest
       //---------------------------------------------------
 
+      QGridLayout* mainGrid = new QGridLayout(this);
       mainGrid->setRowStretch(1, 100);
       mainGrid->setColumnStretch(0, 100);
+      mainGrid->addWidget(tb, 0, 0);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
       if(pl->empty())
       {
-        curPart = 0;
+        curPart = nullptr;
         curPartId = -1;
       }
       else
@@ -619,7 +652,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
           curPartId = curPart->sn();
         else
         {
-          curPart = 0;
+          curPart = nullptr;
           curPartId = -1;
         }
       }
@@ -627,11 +660,12 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       songChanged(-1);
       
       initShortcuts();
-      
-      setWindowTitle(tr("MusE: List Editor"));
-      
-      finalizeInit();
-      }
+
+      noteAction->setToolTip(tr("Insert note event") + " (" + noteAction->shortcut().toString() + ")");
+      sysexAction->setToolTip(tr("Insert system exclusive event") + " (" + sysexAction->shortcut().toString() + ")");
+      ctrlAction->setToolTip(tr("Insert controller event") + " (" + ctrlAction->shortcut().toString() + ")");
+      metaAction->setToolTip(tr("Insert meta event") + " (" + metaAction->shortcut().toString() + ")");
+}
 
 //---------------------------------------------------------
 //   ~ListEdit
@@ -791,84 +825,6 @@ void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
       }
 
 //---------------------------------------------------------
-//   readStatus
-//---------------------------------------------------------
-
-void ListEdit::readStatus(MusECore::Xml& xml)
-      {
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-                  break;
-            switch (token) {
-                  case MusECore::Xml::TagStart:
-                        if (tag == "midieditor")
-                              MidiEditor::readStatus(xml);
-                        else
-                              xml.unknown("ListEdit");
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "listeditor")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   writeStatus
-//---------------------------------------------------------
-
-void ListEdit::writeStatus(int level, MusECore::Xml& xml) const
-      {
-      writePartList(level, xml);
-      xml.tag(level++, "listeditor");
-      MidiEditor::writeStatus(level, xml);
-      xml.tag(level, "/listeditor");
-      }
-
-//---------------------------------------------------------
-//   readConfiguration
-//---------------------------------------------------------
-
-void ListEdit::readConfiguration(MusECore::Xml& xml)
-      {
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "topwin")
-                              TopWin::readConfiguration(LISTE, xml);
-                        else
-                              xml.unknown("ListEdit");
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "listedit")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   writeConfiguration
-//---------------------------------------------------------
-
-void ListEdit::writeConfiguration(int level, MusECore::Xml& xml)
-      {
-      xml.tag(level++, "listedit");
-      TopWin::writeConfiguration(LISTE, level, xml);
-      xml.tag(level, "/listedit");
-      }
-
-//---------------------------------------------------------
 //   selectionChanged
 //---------------------------------------------------------
 
@@ -1001,24 +957,24 @@ void ListEdit::configChanged()
 
 void ListEdit::initShortcuts()
       {
-      insertNote->setShortcut(shortcuts[SHRT_LE_INS_NOTES].key);
-      insertSysEx->setShortcut(shortcuts[SHRT_LE_INS_SYSEX].key);
-      insertCtrl->setShortcut(shortcuts[SHRT_LE_INS_CTRL].key);
-      insertMeta->setShortcut(shortcuts[SHRT_LE_INS_META].key);
+      noteAction->setShortcut(shortcuts[SHRT_LE_INS_NOTES].key);
+      sysexAction->setShortcut(shortcuts[SHRT_LE_INS_SYSEX].key);
+      ctrlAction->setShortcut(shortcuts[SHRT_LE_INS_CTRL].key);
+      metaAction->setShortcut(shortcuts[SHRT_LE_INS_META].key);
       }
 
 //---------------------------------------------------------
 //   viewKeyPressEvent
 //---------------------------------------------------------
 
-void ListEdit::keyPressEvent(QKeyEvent* event)
-      {
-      int key = event->key();
-      if (key == Qt::Key_Escape) {
-            close();
-            return;
-            }
-      }
+//void ListEdit::keyPressEvent(QKeyEvent* event)
+//      {
+//      int key = event->key();
+//      if (key == Qt::Key_Escape) {
+//            close();
+//            return;
+//            }
+//      }
 
 //---------------------------------------------------------
 //   focusCanvas

@@ -319,7 +319,6 @@ MusE::MusE() : QMainWindow()
       setFocusPolicy(Qt::NoFocus);
       MusEGlobal::muse      = this;    // hack
       _isRestartingApp      = false;
-      clipListEdit          = nullptr;
       midiSyncConfig        = nullptr;
       midiRemoteConfig      = nullptr;
       midiPortConfig        = nullptr;
@@ -329,7 +328,6 @@ MusE::MusE() : QMainWindow()
       midiInputTransform    = nullptr;
       midiRhythmGenerator   = nullptr;
       globalSettingsConfig  = nullptr;
-      markerView            = nullptr;
       arrangerView          = nullptr;
       softSynthesizerConfig = nullptr;
       midiTransformerDialog = nullptr;
@@ -401,6 +399,24 @@ MusE::MusE() : QMainWindow()
                   }
             }
 #endif
+
+      setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+      markerDock = new QDockWidget("Markers", this);
+//      markerDock->setObjectName("markerDock");
+//      markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      markerView = new MusEGui::MarkerView(markerDock);
+      markerDock->setWidget(markerView);
+      addDockWidget(Qt::RightDockWidgetArea, markerDock);
+      markerDock->hide();
+
+      clipListDock = new QDockWidget("Clip List", this);
+//      clipListDock->setObjectName("clipListDock");
+//      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      clipListEdit = new MusEGui::ClipListEdit(clipListDock);
+      clipListDock->setWidget(clipListEdit);
+      addDockWidget(Qt::RightDockWidgetArea, clipListDock);
+      clipListDock->hide();
 
       //---------------------------------------------------
       //    undo/redo
@@ -556,12 +572,12 @@ MusE::MusE() : QMainWindow()
       viewMixerAAction->setCheckable(true);
       viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B"), this);
       viewMixerBAction->setCheckable(true);
-      viewCliplistAction = new QAction(QIcon(*MusEGui::cliplistSIcon), tr("Cliplist"), this);
-      viewCliplistAction->setCheckable(true);
-      viewMarkerAction = new QAction(QIcon(*MusEGui::view_markerIcon), tr("Marker View"),  this);
-      viewMarkerAction->setCheckable(true);
-      viewArrangerAction = new QAction(tr("Arranger View"),  this);
-      viewArrangerAction->setCheckable(true);
+
+      viewMarkerAction = markerDock->toggleViewAction();
+      viewCliplistAction = clipListDock->toggleViewAction();
+
+//      viewArrangerAction = new QAction(tr("Arranger View"),  this);
+//      viewArrangerAction->setCheckable(true);
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
@@ -602,14 +618,7 @@ MusE::MusE() : QMainWindow()
       autoSnapshotAction = new QAction(QIcon(*MusEGui::automation_take_snapshotIcon), tr("Take Automation Snapshot"), this);
       autoClearAction = new QAction(QIcon(*MusEGui::automation_clear_dataIcon), tr("Clear Automation Data"), this);
 
-      //-------- Windows Actions
-      windowsCascadeAction = new QAction(tr("Cascade"), this);
-      windowsTileAction = new QAction(tr("Tile"), this);
-      windowsRowsAction = new QAction(tr("In Rows"), this);
-      windowsColumnsAction = new QAction(tr("In Columns"), this);
-
-
-      //-------- Settings Actions
+       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings..."), this);
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
       settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts..."), this);
@@ -670,9 +679,7 @@ MusE::MusE() : QMainWindow()
       connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleBigTime(bool)));
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
-      connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
-      connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
-      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
+//      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
       connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
       connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
@@ -862,7 +869,7 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewMixerBAction);
       menuView->addAction(viewCliplistAction);
       menuView->addAction(viewMarkerAction);
-      menuView->addAction(viewArrangerAction);
+//      menuView->addAction(viewArrangerAction);
       menuView->addSeparator();
       menuView->addMenu(master);
 //       menuView->addAction(masterGraphicAction);
@@ -940,11 +947,6 @@ MusE::MusE() : QMainWindow()
       menuBar()->addMenu(menuWindows);
       trailingMenus.push_back(menuWindows);
 
-      menuWindows->addAction(windowsCascadeAction);
-      menuWindows->addAction(windowsTileAction);
-      menuWindows->addAction(windowsRowsAction);
-      menuWindows->addAction(windowsColumnsAction);
-
       //-------------------------------------------------------------
       //    popup Settings
       //-------------------------------------------------------------
@@ -997,17 +999,23 @@ MusE::MusE() : QMainWindow()
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-      setCentralWidget(mdiArea);
-      connect(windowsTileAction, SIGNAL(triggered()), this, SLOT(tileSubWindows()));
-      connect(windowsRowsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsRows()));
-      connect(windowsColumnsAction, SIGNAL(triggered()), this, SLOT(arrangeSubWindowsColumns()));
-      connect(windowsCascadeAction, SIGNAL(triggered()), mdiArea, SLOT(cascadeSubWindows()));
 
+      mdiArea->setViewMode(QMdiArea::TabbedView);
+      mdiArea->setTabsMovable(true);
+      mdiArea->setTabPosition(QTabWidget::South);
+      QTabBar* tb = mdiArea->findChild<QTabBar*>();
+      if (tb) {
+          tb->setExpanding(false);
+          //              tb->setAutoHide(true);
+      }
+//      viewArrangerAction->setEnabled(false);
+
+      setCentralWidget(mdiArea);
 
       arrangerView = new MusEGui::ArrangerView(this);
-      connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
+//      connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
-      arrangerView->hide();
+//      arrangerView->hide();
       _arranger=arrangerView->getArranger();
 
       connect(tempo_tb, SIGNAL(returnPressed()), arrangerView, SLOT(focusCanvas()));
@@ -1528,7 +1536,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       viewTransportAction->setChecked(MusEGlobal::config.transportVisible);
       viewBigtimeAction->setChecked(MusEGlobal::config.bigTimeVisible);
       viewMarkerAction->setChecked(MusEGlobal::config.markerVisible);
-      viewArrangerAction->setChecked(MusEGlobal::config.arrangerVisible);
+//      viewArrangerAction->setChecked(MusEGlobal::config.arrangerVisible);
 
 // REMOVE Tim. automation. Removed.
 // Deprecated. MusEGlobal::automation is now fixed TRUE
@@ -1931,115 +1939,73 @@ void MusE::closeEvent(QCloseEvent* event)
       qApp->quit();
       }
 
-//---------------------------------------------------------
-//   toggleMarker
-//---------------------------------------------------------
-
-void MusE::toggleMarker(bool checked)
-      {
-      showMarker(checked);
-      }
 
 //---------------------------------------------------------
 //   showMarker
 //---------------------------------------------------------
 
 void MusE::showMarker(bool flag)
-      {
-      if (markerView == nullptr) {
-            markerView = new MusEGui::MarkerView(this);
-
-            connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            toplevels.push_back(markerView);
-            }
-      if(markerView->isVisible() != flag)
-        markerView->setVisible(flag);
-      if(viewMarkerAction->isChecked() != flag)
-        viewMarkerAction->setChecked(flag);   // ??? TEST: Recursion? Does this call toggleMarker if called from menu?  No. Why? It should. REMOVE Tim. Or keep.
-      if (!flag)
-        if (currentMenuSharingTopwin == markerView)
-          setCurrentMenuSharingTopwin(nullptr);
-
-      updateWindowMenu();
-      }
-
-//---------------------------------------------------------
-//   markerClosed
-//---------------------------------------------------------
-
-void MusE::markerClosed()
-      {
-      if(viewMarkerAction->isChecked())
-        viewMarkerAction->setChecked(false); // ??? TEST: Recursion? Does this call toggleMarker? Yes. REMOVE Tim. Or keep.
-      if (currentMenuSharingTopwin == markerView)
-        setCurrentMenuSharingTopwin(NULL);
-
-      updateWindowMenu();
-
-      // focus the last activated topwin which is not the marker view
-      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
-        if ((*lit)->isVisible() && (*lit)->widget() != markerView)
-        {
-          if (MusEGlobal::debugMsg)
-            fprintf(stderr, "bringing '%s' to front instead of closed marker window\n",(*lit)->widget()->windowTitle().toLatin1().data());
-
-          bringToFront((*lit)->widget());
-
-          break;
-        }
-
-      }
+{
+    markerDock->setVisible(flag);
+}
 
 //---------------------------------------------------------
 //   toggleArranger
 //---------------------------------------------------------
 
-void MusE::toggleArranger(bool checked)
-      {
-      showArranger(checked);
-      }
+//void MusE::toggleArranger(bool checked)
+//      {
+//      showArranger(checked);
+//      }
 
 //---------------------------------------------------------
 //   showArranger
 //---------------------------------------------------------
 
-void MusE::showArranger(bool flag)
-      {
-      if(arrangerView->isVisible() != flag)
-        arrangerView->setVisible(flag);
-      if(viewArrangerAction->isChecked() != flag)
-        viewArrangerAction->setChecked(flag);
-      if (!flag)
-        if (currentMenuSharingTopwin == arrangerView)
-          setCurrentMenuSharingTopwin(NULL);
-      updateWindowMenu();
-      }
+//void MusE::showArranger(bool flag)
+//      {
+//      if(arrangerView->isVisible() != flag)
+//        arrangerView->setVisible(flag);
+//      if(viewArrangerAction->isChecked() != flag)
+//        viewArrangerAction->setChecked(flag);
+//      if (!flag)
+//        if (currentMenuSharingTopwin == arrangerView)
+//          setCurrentMenuSharingTopwin(nullptr);
+//      updateWindowMenu();
+//      }
 
 //---------------------------------------------------------
 //   arrangerClosed
 //---------------------------------------------------------
 
-void MusE::arrangerClosed()
-      {
-      if(viewArrangerAction->isChecked())
-        viewArrangerAction->setChecked(false);
-      updateWindowMenu();
+//void MusE::arrangerClosed()
+//{
+    //      if(viewArrangerAction->isChecked())
+    //        viewArrangerAction->setChecked(false);
+    //      updateWindowMenu();
 
-      // focus the last activated topwin which is not the arranger view
-      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
-        if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
-        {
-          if (MusEGlobal::debugMsg)
-            fprintf(stderr, "bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+    ////      if (mdiArea->viewMode() == QMdiArea::TabbedView) {
+    ////          QTabBar* tb = mdiArea->findChild<QTabBar*>();
+    ////          if (tb) {
+    ////              int i = tb->currentIndex();
+    ////              tb->setTabEnabled(i, false);
+    ////              tb->setTabButton(i, QTabBar::RightSide, nullptr);
+    ////          }
+    ////      }
 
-          bringToFront((*lit)->widget());
+    //      // focus the last activated topwin which is not the arranger view
+    //      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
+    //      for (QList<QMdiSubWindow*>::const_reverse_iterator lit=l.rbegin(); lit!=l.rend(); lit++)
+    //        if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
+    //        {
+    //          if (MusEGlobal::debugMsg)
+    //            fprintf(stderr, "bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
-          break;
-        }
+    //          bringToFront((*lit)->widget());
 
-      }
+    //          break;
+    //        }
+//}
 
 //---------------------------------------------------------
 //   toggleTransport
@@ -2295,20 +2261,37 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
 void MusE::startListEditor()
       {
       MusECore::PartList* pl = getMidiPartsToEdit();
-      if (pl == 0)
+      if (pl == nullptr)
             return;
       startListEditor(pl);
       }
 
 void MusE::startListEditor(MusECore::PartList* pl)
-      {
-      MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
-      toplevels.push_back(listEditor);
-      listEditor->show();
-      connect(listEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+{
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+
+    QDockWidget* dock = new QDockWidget("List Editor", this);
+    //      markerDock->setObjectName("listeditDock");
+//    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+    MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
+    dock->setWidget(listEditor);
+
+    {
+        int bar1, bar2, xx;
+        unsigned x;
+        const auto p = pl->begin()->second;
+        MusEGlobal::sigmap.tickValues(p->tick(), &bar1, &xx, &x);
+        MusEGlobal::sigmap.tickValues(p->tick() + p->lenTick(), &bar2, &xx, &x);
+
+        dock->setWindowTitle("Part <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
+    }
+
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+
+    dock->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+}
 
 //---------------------------------------------------------
 //   startMasterEditor
@@ -2328,14 +2311,18 @@ void MusE::startMasterEditor()
 //---------------------------------------------------------
 
 void MusE::startLMasterEditor()
-      {
-      MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
-      toplevels.push_back(lmaster);
-      lmaster->show();
-      connect(lmaster, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+{
+    QDockWidget* dock = new QDockWidget("Mastertrack List", this);
+    //      markerDock->setObjectName("lmasterDock");
+//    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+    MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
+    dock->setWidget(lmaster);
+    addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    dock->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
+}
 
 //---------------------------------------------------------
 //   startDrumEditor
@@ -2462,16 +2449,9 @@ void MusE::showDidYouKnowDialog()
 //---------------------------------------------------------
 
 void MusE::startClipList(bool checked)
-      {
-      if (clipListEdit == 0) {
-            clipListEdit = new MusEGui::ClipListEdit(this);
-            toplevels.push_back(clipListEdit);
-            connect(clipListEdit, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-            }
-      clipListEdit->show();
-      viewCliplistAction->setChecked(checked);
-      updateWindowMenu();
-      }
+{
+    clipListDock->setEnabled(checked);
+}
 
 //---------------------------------------------------------
 //   fileMenu
@@ -2516,71 +2496,60 @@ void MusE::selectProject(QAction* act)
 //---------------------------------------------------------
 
 void MusE::toplevelDeleting(MusEGui::TopWin* tl)
-      {
-      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            if (*i == tl) {
+{
+    for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
+        if (*i == tl) {
 
-                  tl->storeInitialState();
-               
-                  if (tl == activeTopWin)
-                  {
-                    activeTopWin=NULL;
-                    emit activeTopWinChanged(NULL);
+            tl->storeInitialState();
 
-                    // focus the last activated topwin which is not the deleting one
-                    QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
-                    for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
-                      if ((*lit)->isVisible() && (*lit)->widget() != tl)
-                      {
+            if (tl == activeTopWin)
+            {
+                activeTopWin=nullptr;
+                emit activeTopWinChanged(nullptr);
+
+                // focus the last activated topwin which is not the deleting one
+                QList<QMdiSubWindow*> list = mdiArea->subWindowList(QMdiArea::StackingOrder);
+                for (QList<QMdiSubWindow*>::const_reverse_iterator lit=list.rbegin(); lit!=list.rend(); lit++)
+                    if ((*lit)->isVisible() && (*lit)->widget() != tl)
+                    {
                         if (MusEGlobal::debugMsg)
-                          fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+                            fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
 
                         bringToFront((*lit)->widget());
 
                         break;
-                      }
-                  }
-
-                  if (tl == currentMenuSharingTopwin)
-                    setCurrentMenuSharingTopwin(NULL);
-
-
-                  bool mustUpdateScoreMenus=false;
-                  switch(tl->type()) {
-                        case MusEGui::TopWin::MARKER:
-                        case MusEGui::TopWin::ARRANGER:
-                              break;
-                        case MusEGui::TopWin::CLIPLIST:
-                              viewCliplistAction->setChecked(false);
-                              if (currentMenuSharingTopwin == clipListEdit)
-                                setCurrentMenuSharingTopwin(NULL);
-                              updateWindowMenu();
-                              return;
-
-                        // the following editors can exist in more than
-                        // one instantiation:
-                        case MusEGui::TopWin::PIANO_ROLL:
-                        case MusEGui::TopWin::LISTE:
-                        case MusEGui::TopWin::DRUM:
-                        case MusEGui::TopWin::MASTER:
-                        case MusEGui::TopWin::WAVE:
-                        case MusEGui::TopWin::LMASTER:
-                              break;
-                        case MusEGui::TopWin::SCORE:
-                              mustUpdateScoreMenus=true;
-
-                        case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
-                          break;
-                        }
-                  toplevels.erase(i);
-                  if (mustUpdateScoreMenus)
-                        arrangerView->updateScoreMenus();
-                  updateWindowMenu();
-                  return;
-                  }
+                    }
             }
-      fprintf(stderr, "topLevelDeleting: top level %p not found\n", tl);
-      }
+
+            if (tl == currentMenuSharingTopwin)
+                setCurrentMenuSharingTopwin(nullptr);
+
+
+            bool mustUpdateScoreMenus=false;
+            switch(tl->type()) {
+            case MusEGui::TopWin::ARRANGER:
+                break;
+            // the following editors can exist in more than one instantiation:
+            case MusEGui::TopWin::PIANO_ROLL:
+//            case MusEGui::TopWin::LISTE:
+            case MusEGui::TopWin::DRUM:
+            case MusEGui::TopWin::MASTER:
+            case MusEGui::TopWin::WAVE:
+            case MusEGui::TopWin::SCORE:
+                mustUpdateScoreMenus=true;
+
+            case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+                break;
+            }
+            toplevels.erase(i);
+            if (mustUpdateScoreMenus)
+                arrangerView->updateScoreMenus();
+            updateWindowMenu();
+            return;
+        }
+    }
+    fprintf(stderr, "topLevelDeleting: top level %p not found\n", tl);
+}
 
 //---------------------------------------------------------
 //   kbAccel - Global keyboard accelerators
@@ -2689,9 +2658,6 @@ void MusE::kbAccel(int key)
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_TRANSPORT].key) {
             toggleTransport(!viewTransportAction->isChecked());
-            }
-      else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_MARKER].key) {
-            toggleMarker(!viewMarkerAction->isChecked());
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_OPEN_BIGTIME].key) {
             toggleBigTime(!viewBigtimeAction->isChecked());
@@ -3290,17 +3256,14 @@ again:
       for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             MusEGui::TopWin* tl = *i;
             switch (tl->type()) {
-                  case MusEGui::TopWin::CLIPLIST:
-                  case MusEGui::TopWin::MARKER:
                   case MusEGui::TopWin::ARRANGER:
                         break;
                   case MusEGui::TopWin::PIANO_ROLL:
                   case MusEGui::TopWin::SCORE:
-                  case MusEGui::TopWin::LISTE:
+//                  case MusEGui::TopWin::LISTE:
                   case MusEGui::TopWin::DRUM:
                   case MusEGui::TopWin::MASTER:
                   case MusEGui::TopWin::WAVE:
-                  case MusEGui::TopWin::LMASTER:
                   {
                         if(tl->isVisible())   // Don't keep trying to close, only if visible.
                         {
@@ -3532,7 +3495,7 @@ void MusE::updateConfiguration()
 
 void MusE::showBigtime(bool on)
       {
-      if (on && bigtime == 0) {
+      if (on && bigtime == nullptr) {
             bigtime = new MusEGui::BigTime(this);
             bigtime->setPos(0, MusEGlobal::song->cpos(), false);
             connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
@@ -4033,52 +3996,41 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
 
 void MusE::updateWindowMenu()
 {
-  bool sep;
-  bool there_are_subwins=false;
+    bool sep;
 
-  menuWindows->clear(); // frees memory automatically
+    menuWindows->clear(); // frees memory automatically
 
-  menuWindows->addAction(windowsCascadeAction);
-  menuWindows->addAction(windowsTileAction);
-  menuWindows->addAction(windowsRowsAction);
-  menuWindows->addAction(windowsColumnsAction);
-
-  sep=false;
-  for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
-    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
-    // the isVisibleTo check is necessary because isVisible returns false if a
-    // MdiSubWin is actually visible, but the muse main window is hidden for some reason
-    {
-      if (!sep)
-      {
-        menuWindows->addSeparator();
-        sep=true;
-      }
-      QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      QWidget* tlw = static_cast<QWidget*>(*it);
-      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
-
-      there_are_subwins=true;
+    sep=false;
+    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
+        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
+            // the isVisibleTo check is necessary because isVisible returns false if a
+            // MdiSubWin is actually visible, but the muse main window is hidden for some reason
+        {
+            if (!sep)
+            {
+                menuWindows->addSeparator();
+                sep=true;
+            }
+            QAction* temp=menuWindows->addAction((*it)->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(*it);
+            connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
+        }
     }
 
-  sep=false;
-  for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
-    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
-    {
-      if (!sep)
-      {
-        menuWindows->addSeparator();
-        sep=true;
-      }
-      QAction* temp=menuWindows->addAction((*it)->windowTitle());
-      QWidget* tlw = static_cast<QWidget*>(*it);
-      connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
+    sep=false;
+    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
+        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
+        {
+            if (!sep)
+            {
+                menuWindows->addSeparator();
+                sep=true;
+            }
+            QAction* temp=menuWindows->addAction((*it)->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(*it);
+            connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
+        }
     }
-
-  windowsCascadeAction->setEnabled(there_are_subwins);
-  windowsTileAction->setEnabled(there_are_subwins);
-  windowsRowsAction->setEnabled(there_are_subwins);
-  windowsColumnsAction->setEnabled(there_are_subwins);
 }
 
 void MusE::resetXrunsCounter()
@@ -4155,124 +4107,6 @@ list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
         result.push_back(*it);
 
   return result;
-}
-
-void MusE::arrangeSubWindowsColumns()
-{
-  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
-  int n=wins.size();
-
-  if (n==0)
-    return;
-  //else if (n==1)
-  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
-  else
-  {
-    int width = mdiArea->width();
-    int height = mdiArea->height();
-    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
-    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
-    int width_per_win = width/n;
-
-    if (x_add >= width_per_win)
-    {
-      fprintf(stderr, "ERROR: tried to arrange subwins in columns, but there's too few space.\n");
-      return;
-    }
-
-    int i=0;
-    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
-    {
-      int left = (float) width*i/n;
-      int right = (float) width*(i+1.0)/n;
-
-      (*it)->move(left,0);
-      (*it)->resize(right-left-x_add, height-y_add);
-    }
-  }
-}
-
-void MusE::arrangeSubWindowsRows()
-{
-  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
-  int n=wins.size();
-
-  if (n==0)
-    return;
-  //else if (n==1)
-  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
-  else
-  {
-    int width = mdiArea->width();
-    int height = mdiArea->height();
-    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
-    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
-    int height_per_win = height/n;
-
-    if (y_add >= height_per_win)
-    {
-      fprintf(stderr, "ERROR: tried to arrange subwins in rows, but there's too few space.\n");
-      return;
-    }
-
-    int i=0;
-    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
-    {
-      int top = (float) height*i/n;
-      int bottom = (float) height*(i+1.0)/n;
-
-      (*it)->move(0,top);
-      (*it)->resize(width-x_add, bottom-top-y_add);
-    }
-  }
-}
-
-void MusE::tileSubWindows()
-{
-  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
-  int n=wins.size();
-
-  if (n==0)
-    return;
-  //else if (n==1)
-  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
-  else
-  {
-    int nx,ny;
-    nx=ceil(sqrt(n));
-    ny=ceil((double)n/nx);
-
-    int width = mdiArea->width();
-    int height = mdiArea->height();
-    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
-    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
-    int height_per_win = height/ny;
-    int width_per_win = height/nx;
-
-    if ((x_add >= width_per_win) || (y_add >= height_per_win))
-    {
-      fprintf(stderr, "ERROR: tried to tile subwins, but there's too few space.\n");
-      return;
-    }
-
-    int i=0, j=0;
-    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
-    {
-      if (i>=nx)
-      {
-        i=0;
-        j++;
-      }
-
-      int top = (float) height*j/ny;
-      int bottom = (float) height*(j+1.0)/ny;
-      int left = (float) width*i/nx;
-      int right = (float) width*(i+1.0)/nx;
-
-      (*it)->move(left,top);
-      (*it)->resize(right-left-x_add, bottom-top-y_add);
-    }
-  }
 }
 
 QString MusE::projectTitle(QString name)
@@ -4689,5 +4523,9 @@ void MusE::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event);
     MusEGlobal::config.geometryMain = geometry();
 }
+
+//bool MusE::isTabbedMDI() {
+//    return (mdiArea->viewMode() == QMdiArea::TabbedView);
+//}
 
 } //namespace MusEGui

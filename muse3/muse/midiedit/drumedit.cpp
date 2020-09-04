@@ -286,6 +286,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
 
+      settingsMenu->addAction(subwinAction);
+//      settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
+
+      settingsMenu->addSeparator();
+
       QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
       groupNoneAction = menuGrouping->addAction(tr("Don't group"));
       groupChanAction = menuGrouping->addAction(tr("Group by channel"));
@@ -316,11 +322,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(groupMaxAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_MAX); } );
 
       updateGroupingActions();
-      settingsMenu->addAction(subwinAction);
-      settingsMenu->addAction(shareAction);
-      settingsMenu->addAction(fullscreenAction);
 
-      settingsMenu->addSeparator();
       addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       settingsMenu->addMenu(addControllerMenu);

@@ -74,9 +74,18 @@ QMenu::icon:checked {
 }
 */
 
-
 QMenu::item:selected, QMenuBar::item:selected {
     background-color: rgb(0,90,160);
+}
+
+QDockWidget {
+    border: 1px solid rgb(0,90,160);
+}
+
+QDockWidget::title {
+    text-align: center;
+    border: 1px solid rgb(0,90,160);
+    border-radius: 2px;
 }
 
 QToolBar QToolButton {
@@ -188,6 +197,19 @@ QToolBar QLabel#PaddedValueLabel {
     border-radius: 2px;
     height: 20px;
 }
+
+QWidget QTreeView, QTreeWidget {
+    background-color: rgb(40,50,60);
+}
+
+/*
+QWidget#MarkerView QTreeView,
+QWidget#ClipList QTreeView,
+QWidget#MasterTrackList QTreeView,
+QWidget#ListEdit QTreeView {
+    background-color: rgb(40,50,60);
+}
+*/
 
 QWidget#Rack {
     border: 1px solid rgb(24,151,255);

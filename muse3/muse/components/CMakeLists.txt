@@ -77,7 +77,6 @@ QT5_WRAP_CPP (components_mocs
       elided_label.h
       filedialog.h  
       genset.h  
-      mdisettings.h  
       header.h  
       hitscale.h  
       intlabel.h  
@@ -169,7 +168,6 @@ file (GLOB components_ui_files
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
       gensetbase.ui  
-      mdisettings_base.ui  
       metronomebase.ui  
       midisync.ui  
       midi_warn_init_pending.ui
@@ -230,7 +228,6 @@ file (GLOB components_source_files
       elided_label.cpp
       filedialog.cpp 
       genset.cpp 
-      mdisettings.cpp 
       header.cpp 
       hitscale.cpp 
       intlabel.cpp 
