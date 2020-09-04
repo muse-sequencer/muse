@@ -1747,14 +1747,23 @@ static int rasterTable[] = {
 void DrumEdit::keyPressEvent(QKeyEvent* event)
       {
       DrumCanvas* dc = (DrumCanvas*)canvas;
+
       int index = 0;
-      int n = sizeof(rasterTable);
-      for (; index < n; ++index)
+      int n = sizeof(rasterTable)/sizeof(*rasterTable);
+
+      for (index = 0; index < n; ++index)
             if (rasterTable[index] == raster())
                   break;
+
+      if (index == n) {
+            index = 0;
+            // raster 1 is not in table
+            }
+
       int off = (index / 9) * 9;
       index   = index % 9;
-      int val;
+
+      int val = 0;
       int key = event->key();
 
       if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
@@ -1770,7 +1779,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_CURSOR_STEP_DOWN].key) {
             int newIndex=stepLenWidget->currentIndex()-1;
-            if (newIndex<0)
+            if (newIndex < 0)
               newIndex=0;
             stepLenWidget->setCurrentIndex(newIndex);
             return;
@@ -1802,7 +1811,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             ((DrumCanvas*)canvas)->keyPressed(dlist->getSelectedInstrument(),100);
             MusEGlobal::song->update(SC_DRUMMAP);
             return;
-            }
+      }
 
       else if (key == shortcuts[SHRT_POS_INC].key) {
             dc->cmd(DrumCanvas::CMD_RIGHT);
@@ -1871,6 +1880,8 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             hscroll->setPos(pos);
             return;
             }
+      else if (key == shortcuts[SHRT_SET_QUANT_OFF].key)
+            val = 1; //this hack has the downside that the next shortcut will use triols, but it's better than not having it, I think...
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
             val = rasterTable[8 + off];
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)

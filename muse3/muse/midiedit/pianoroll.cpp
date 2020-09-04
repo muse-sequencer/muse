@@ -73,7 +73,7 @@ namespace MusEGui {
 int PianoRoll::_rasterInit = 96;
 int PianoRoll::_trackInfoWidthInit = 50;
 int PianoRoll::_canvasWidthInit = 300;
-int PianoRoll::colorModeInit = 0;
+MidiEventColorMode PianoRoll::colorModeInit = MidiEventColorMode::blueEvents;
 
 // Initial zoom levels:
 static const int xscale = -10;
@@ -247,15 +247,15 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       evColorBlueAction = actgrp->addAction(tr("&Blue"));
       evColorBlueAction->setCheckable(true);
-      connect(evColorBlueAction, &QAction::triggered, [this]() { eventColorModeChanged(0); } );
+      connect(evColorBlueAction, &QAction::triggered, [this]() { eventColorModeChanged(MidiEventColorMode::blueEvents); } );
       
       evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
       evColorPitchAction->setCheckable(true);
-      connect(evColorPitchAction, &QAction::triggered, [this]() { eventColorModeChanged(1); } );
+      connect(evColorPitchAction, &QAction::triggered, [this]() { eventColorModeChanged(MidiEventColorMode::pitchColorEvents); } );
       
       evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
       evColorVelAction->setCheckable(true);
-      connect(evColorVelAction, &QAction::triggered, [this]() { eventColorModeChanged(2); } );
+      connect(evColorVelAction, &QAction::triggered, [this]() { eventColorModeChanged(MidiEventColorMode::velocityColorEvents); } );
       
       eventColor->addActions(actgrp->actions());
       
@@ -1288,7 +1288,7 @@ void PianoRoll::readConfiguration(MusECore::Xml& xml)
                         else if (tag == "canvaswidth")
                               _canvasWidthInit = xml.parseInt();
                         else if (tag == "colormode")
-                              colorModeInit = xml.parseInt();
+                              colorModeInit = (MidiEventColorMode) xml.parseInt();
                         else if (tag == "topwin")
                               TopWin::readConfiguration(PIANO_ROLL,xml);
                         else
@@ -1313,7 +1313,7 @@ void PianoRoll::writeConfiguration(int level, MusECore::Xml& xml)
       xml.intTag(level, "raster", _rasterInit);
       xml.intTag(level, "trackinfowidth", _trackInfoWidthInit);
       xml.intTag(level, "canvaswidth", _canvasWidthInit);
-      xml.intTag(level, "colormode", colorModeInit);
+      xml.intTag(level, "colormode", (int)colorModeInit);
       TopWin::writeConfiguration(PIANO_ROLL, level, xml);
       xml.etag(level, "pianoroll");
       }
@@ -1458,7 +1458,6 @@ static int rasterTable[] = {
 //---------------------------------------------------------
 //   viewKeyPressEvent
 //---------------------------------------------------------
-
 void PianoRoll::keyPressEvent(QKeyEvent* event)
       {
       if (info->hasFocus()) {
@@ -1466,21 +1465,24 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
 
-      int index;
+      PianoCanvas* pc = (PianoCanvas*)canvas;
+
+      int index = 0;
       int n = sizeof(rasterTable)/sizeof(*rasterTable);
+
       for (index = 0; index < n; ++index)
             if (rasterTable[index] == raster())
                   break;
+
       if (index == n) {
             index = 0;
             // raster 1 is not in table
             }
+
       int off = (index / 9) * 9;
       index   = index % 9;
 
       int val = 0;
-
-      PianoCanvas* pc = (PianoCanvas*)canvas;
       int key = event->key();
 
       if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
@@ -1579,6 +1581,8 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             hscroll->setPos(pos);
             return;
             }
+      else if (key == shortcuts[SHRT_SET_QUANT_OFF].key)
+            val = 1; //this hack has the downside that the next shortcut will use triols, but it's better than not having it, I think...
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
             val = rasterTable[8 + off];
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
@@ -1595,13 +1599,14 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             val = rasterTable[2 + off];
       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
             val = rasterTable[index + ((off == 0) ? 9 : 0)];
-      else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
-            if (colorMode == 0)
-                  colorMode = 1;
-            else if (colorMode == 1)
-                  colorMode = 2;
-            else
-                  colorMode = 0;
+
+      else if (key == shortcuts[SHRT_EVENT_COLOR].key)
+            {
+            colorMode = MidiEventColorMode(int(colorMode) + 1);
+
+            if (colorMode == MidiEventColorMode::lastInList)
+                    colorMode = MidiEventColorMode::blueEvents;
+
             setEventColorMode(colorMode);
             return;
             }
@@ -1673,7 +1678,7 @@ void PianoRoll::setSteprec(bool flag)
 //   eventColorModeChanged
 //---------------------------------------------------------
 
-void PianoRoll::eventColorModeChanged(int mode)
+void PianoRoll::eventColorModeChanged(MidiEventColorMode mode)
       {
       colorMode = mode;
       colorModeInit = colorMode;
@@ -1685,14 +1690,14 @@ void PianoRoll::eventColorModeChanged(int mode)
 //   setEventColorMode
 //---------------------------------------------------------
 
-void PianoRoll::setEventColorMode(int mode)
+void PianoRoll::setEventColorMode(MidiEventColorMode mode)
       {
       colorMode = mode;
       colorModeInit = colorMode;
       
-      evColorBlueAction->setChecked(mode == 0);
-      evColorPitchAction->setChecked(mode == 1);
-      evColorVelAction->setChecked(mode == 2);
+      evColorBlueAction->setChecked(mode == MidiEventColorMode::blueEvents);
+      evColorPitchAction->setChecked(mode == MidiEventColorMode::pitchColorEvents);
+      evColorVelAction->setChecked(mode == MidiEventColorMode::velocityColorEvents);
       
       ((PianoCanvas*)(canvas))->setColorMode(colorMode);
       }
@@ -1779,7 +1784,7 @@ void PianoRoll::initShortcuts()
       selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
       selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
       
-      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
+//      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
       //evColorBlueAction->setShortcut(shortcuts[  ].key);
       //evColorPitchAction->setShortcut(shortcuts[  ].key);
       //evColorVelAction->setShortcut(shortcuts[  ].key);

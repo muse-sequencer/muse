@@ -62,12 +62,20 @@ class TimeLabel;
 class Toolbar1;
 class Piano;
 
+enum class MidiEventColorMode {
+  blueEvents,
+  pitchColorEvents,
+  velocityColorEvents,
+  lastInList
+};
+
 //---------------------------------------------------------
 //   PianoRoll
 //---------------------------------------------------------
 
 class PianoRoll : public MidiEditor {
       Q_OBJECT
+
     
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       PopupMenu* addControllerMenu;
@@ -135,12 +143,12 @@ class PianoRoll : public MidiEditor {
       QToolBar* tools;
       MusEGui::EditToolBar* tools2;
 
-      int colorMode;
+      MidiEventColorMode colorMode;
 
       static int _rasterInit;
       static int _trackInfoWidthInit;
       static int _canvasWidthInit;
-      static int colorModeInit;
+      static MidiEventColorMode colorModeInit;
 
       // Initial view state.
       MusECore::MidiPartViewState _viewState;
@@ -150,7 +158,7 @@ class PianoRoll : public MidiEditor {
 
       void initShortcuts();
       void setupNewCtrl(CtrlEdit* ctrlEdit);
-      void setEventColorMode(int);
+      void setEventColorMode(MidiEventColorMode);
       QWidget* genToolbar(QWidget* parent);
 
       virtual void closeEvent(QCloseEvent*);
@@ -166,7 +174,7 @@ class PianoRoll : public MidiEditor {
       void setRaster(int);
       void cmd(int);
       void setSteprec(bool);
-      void eventColorModeChanged(int);
+      void eventColorModeChanged(MidiEventColorMode);
       void clipboardChanged(); // enable/disable "Paste"
       void selectionChanged(); // enable/disable "Copy" & "Paste"
       void setSpeaker(bool);

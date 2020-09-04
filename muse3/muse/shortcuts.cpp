@@ -331,13 +331,14 @@ void initShortCuts()
       */
       
       
-      defShrt(SHRT_SET_QUANT_1,      Qt::Key_1, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/1 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_1");
-      defShrt(SHRT_SET_QUANT_2,      Qt::Key_2, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/2 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_2");
-      defShrt(SHRT_SET_QUANT_3,      Qt::Key_3, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/4 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_3");
-      defShrt(SHRT_SET_QUANT_4,      Qt::Key_4, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/8 note"),  PROLL_SHRT + DEDIT_SHRT, "midi_quant_4");
-      defShrt(SHRT_SET_QUANT_5,      Qt::Key_5, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/16 note"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_5");
-      defShrt(SHRT_SET_QUANT_6,      Qt::Key_6, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/32 note"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_6");
-      defShrt(SHRT_SET_QUANT_7,      Qt::Key_7, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/64 note"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_7");
+      defShrt(SHRT_SET_QUANT_OFF,    Qt::Key_8, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to off"),  ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_off");
+      defShrt(SHRT_SET_QUANT_1,      Qt::Key_1, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/1 note"),  ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_1");
+      defShrt(SHRT_SET_QUANT_2,      Qt::Key_2, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/2 note"),  ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_2");
+      defShrt(SHRT_SET_QUANT_3,      Qt::Key_3, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/4 note"),  ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_3");
+      defShrt(SHRT_SET_QUANT_4,      Qt::Key_4, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/8 note"),  ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_4");
+      defShrt(SHRT_SET_QUANT_5,      Qt::Key_5, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/16 note"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_5");
+      defShrt(SHRT_SET_QUANT_6,      Qt::Key_6, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/32 note"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_6");
+      defShrt(SHRT_SET_QUANT_7,      Qt::Key_7, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Set quantize to 1/64 note"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "midi_quant_7");
 
       defShrt(SHRT_TOGGLE_TRIOL,       Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle triol quantization"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_triol");
       defShrt(SHRT_TOGGLE_PUNCT,       Qt::Key_Period, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle punctuation quantization"), PROLL_SHRT + DEDIT_SHRT, "midi_quant_punct");

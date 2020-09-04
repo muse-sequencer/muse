@@ -100,7 +100,7 @@ CItem* PianoCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
 PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
    : EventCanvas(pr, parent, sx, sy)
       {
-      colorMode = 0;
+      colorMode = MidiEventColorMode::blueEvents;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
       supportsMultipleResize = true;
@@ -374,27 +374,28 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
           }
           else if (item->isSelected()) {
               color = MusEGlobal::config.midiItemSelectedColor;
-              //                  color = Qt::black;
           }
           else {
               color = MusEGlobal::config.midiItemColor;
               switch(colorMode) {
-              case 0:
+              case MidiEventColorMode::blueEvents:
                   break;
-              case 1:     // pitch
-              {
+              case MidiEventColorMode::pitchColorEvents:
+                  {
                   Triple* c = &myColors[event.pitch() % 12];
                   color.setRgb(c->r, c->g, c->b);
-              }
+                  }
                   break;
-              case 2:     // velocity
-              {
+              case MidiEventColorMode::velocityColorEvents:
+                  {
                   int velo = event.velo();
                   if (velo < 64)
                       color.setRgb(velo*4, 0, 0xff);
                   else
                       color.setRgb(0xff, 0, (127-velo) * 4);
-              }
+                  break;
+                  }
+              default:
                   break;
               }
           }

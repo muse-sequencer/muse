@@ -1284,6 +1284,40 @@ void Arranger::keyPressEvent(QKeyEvent* event)
       showTrackInfo(!showTrackinfoFlag);
       return;
   }
+  // QUANTIZE shortcuts from midi editors is reused for SNAP in Arranger
+  //    `does not work exactly the same but close enough I think.
+  else if (key == shortcuts[SHRT_SET_QUANT_OFF].key) {
+      setRasterVal(gArrangerRasterTable[0]);
+      return;
+  }
+  else if (key == shortcuts[SHRT_SET_QUANT_1].key) {
+      setRasterVal(gArrangerRasterTable[1]);
+      return;
+  }
+  else if (key == shortcuts[SHRT_SET_QUANT_2].key) {
+      setRasterVal(gArrangerRasterTable[2]);
+      return;
+  }
+  else if (key == shortcuts[SHRT_SET_QUANT_3].key) {
+      setRasterVal(gArrangerRasterTable[3]);
+      return;
+  }
+  else if (key == shortcuts[SHRT_SET_QUANT_4].key) {
+      setRasterVal(gArrangerRasterTable[4]);
+      return;
+  }
+  else if (key == shortcuts[SHRT_SET_QUANT_5].key) {
+      setRasterVal(gArrangerRasterTable[5]);
+      return;
+  }
+  else if (key == shortcuts[SHRT_SET_QUANT_6].key) {
+      //      setRasterVal(gArrangerRasterTable[6]); // this value is not actually defined, adding for completeness but commented out.
+      return;
+  }
+  else if (key == shortcuts[SHRT_SET_QUANT_7].key) {
+//      setRasterVal(gArrangerRasterTable[7]); // this value is not actually defined, adding for completeness but commented out.
+      return;
+  }
 
   QWidget::keyPressEvent(event);
 }

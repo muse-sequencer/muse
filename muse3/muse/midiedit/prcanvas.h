@@ -59,7 +59,7 @@ class PianoRoll;
 class PianoCanvas : public EventCanvas {
       Q_OBJECT
     
-      int colorMode;
+      MidiEventColorMode colorMode;
       
       bool noteHeldDown[128];
       
@@ -125,7 +125,7 @@ class PianoCanvas : public EventCanvas {
       PianoCanvas(MidiEditor*, QWidget*, int, int);
       virtual ~PianoCanvas();
       void cmd(int cmd);
-      void setColorMode(int mode) {
+      void setColorMode(MidiEventColorMode mode) {
             colorMode = mode;
             redraw();
             }

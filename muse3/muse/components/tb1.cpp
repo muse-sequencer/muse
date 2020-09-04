@@ -42,6 +42,7 @@ static int gArrangerRasterTable[] = {
       1, 6, 12, 24, 48,  96, 192, 384,  768, 1536,
       1, 9, 18, 36, 72, 144, 288, 576, 1152, 2304
       };
+static unsigned int gArrangerRasterTableLen = sizeof(gArrangerRasterTable) / sizeof(*gArrangerRasterTable);
 
 static const char* rasterStrings[] = {
       QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "2pp", "5pp", "64T", "32T", "16T", "8T", "4T", "2T", "1T",
@@ -180,7 +181,7 @@ void Toolbar1::setTime(unsigned val)
 
 void Toolbar1::setRaster(int val)
       {
-      for (unsigned i = 0; i < sizeof(gArrangerRasterTable)/sizeof(*gArrangerRasterTable); i++) {
+      for (unsigned i = 0; i < gArrangerRasterTableLen; i++) {
             if (val == gArrangerRasterTable[i]) {
                   raster->setCurrentIndex(i);
                   return;
