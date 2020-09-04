@@ -99,10 +99,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(setMainCurrent, SIGNAL(clicked()), SLOT(mainCurrent()));
       connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
       
-      connect(buttonTraditionalPreset, SIGNAL(clicked()), SLOT(traditionalPreset()));
-      connect(buttonMDIPreset, SIGNAL(clicked()), SLOT(mdiPreset()));
-      connect(buttonBorlandPreset, SIGNAL(clicked()), SLOT(borlandPreset()));
-
       connect(pluginPathAdd, SIGNAL(clicked()), SLOT(addPluginPath()));
       connect(pluginPathEdit, SIGNAL(clicked()), SLOT(editPluginPath()));
       connect(pluginPathRemove, SIGNAL(clicked()), SLOT(removePluginPath()));
@@ -112,17 +108,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(audioConvertersButton, SIGNAL(clicked()), SLOT(showAudioConverterSettings()));
       
       connect(deviceAudioBackendComboBox, SIGNAL(currentIndexChanged(int)), SLOT(updateBackendDeviceSettings()));
-
-      addMdiSettings(TopWin::ARRANGER);
-      addMdiSettings(TopWin::SCORE);
-      addMdiSettings(TopWin::PIANO_ROLL);
-      addMdiSettings(TopWin::DRUM);
-      addMdiSettings(TopWin::LISTE);
-      addMdiSettings(TopWin::WAVE);
-      addMdiSettings(TopWin::MASTER);
-      addMdiSettings(TopWin::LMASTER);
-      addMdiSettings(TopWin::CLIPLIST);
-      addMdiSettings(TopWin::MARKER);
 
       for (int i = 0; i < MusEGlobal::numRtAudioDevices; i++){
         deviceAudioBackendComboBox->addItem(MusEGlobal::selectableAudioBackendDevices[i],i);
@@ -151,13 +136,6 @@ void GlobalSettingsConfig::updateBackendDeviceSettings()
         deviceAudioRate->setDisabled(false);
 
     }
-}
-
-void GlobalSettingsConfig::addMdiSettings(TopWin::ToplevelType t)
-{
-  MdiSettings* temp = new MdiSettings(t, this);
-  layoutMdiSettings->addWidget(temp);
-  mdisettings.push_back(temp);
 }
 
 //---------------------------------------------------------
@@ -229,7 +207,7 @@ void GlobalSettingsConfig::updateSettings()
       outputLimiterCheckBox->setChecked(MusEGlobal::config.useOutputLimiter);
       vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
       revertPluginNativeGUIScalingCheckBox->setChecked(MusEGlobal::config.noPluginScaling);
-      openMDIWinMaximizedCheckBox->setChecked(MusEGlobal::config.openMDIWinMaximized);
+//      openMDIWinMaximizedCheckBox->setChecked(MusEGlobal::config.openMDIWinMaximized);
       keepTransportWindowOnTopCheckBox->setChecked(MusEGlobal::config.keepTransportWindowOnTop);
 
       deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
@@ -282,6 +260,7 @@ void GlobalSettingsConfig::updateSettings()
       setTransportCurrent->setEnabled(MusEGlobal::muse->transportWindow());
 
       fixFrozenMDISubWindowsCheckBox->setChecked(MusEGlobal::config.fixFrozenMDISubWindows);
+//      cbTabbedMDI->setChecked(MusEGlobal::config.tabbedMDI);
       showSplash->setChecked(MusEGlobal::config.showSplashScreen);
       showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
       externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
@@ -305,16 +284,6 @@ void GlobalSettingsConfig::updateSettings()
       case MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT: rangeMarkers3RadioButton->setChecked(true); break;
       }
 
-// Obsolete. There is only 'New' drum tracks now.
-// drumTrackPreference is fixed until it is removed some day...
-//       switch (MusEGlobal::config.drumTrackPreference)
-//       {
-//         case MusEGlobal::ONLY_NEW: onlyNewDrumBtn->setChecked(true); break;
-//         case MusEGlobal::ONLY_OLD: onlyOldDrumBtn->setChecked(true); break;
-//         case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
-//         case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
-//       }
-
       trackHeight->setValue(MusEGlobal::config.trackHeight);
 
       lv2UiBehaviorComboBox->setCurrentIndex(static_cast<int>(MusEGlobal::config.lv2UiBehavior));
@@ -335,19 +304,12 @@ void GlobalSettingsConfig::updateSettings()
       pluginLv2PathList->addItems(MusEGlobal::config.pluginLv2PathList);
 
       pluginRescanButton->setChecked(MusEGlobal::config.pluginCacheTriggerRescan);
-      updateMdiSettings();
-}
 
-void GlobalSettingsConfig::updateMdiSettings()
-{
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
-    (*it)->update_settings();
-}
-
-void GlobalSettingsConfig::applyMdiSettings()
-{
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
-    (*it)->apply_settings();
+      cbTabPianoroll->setChecked(TopWin::_openTabbed[TopWin::PIANO_ROLL]);
+      cbTabDrum->setChecked(TopWin::_openTabbed[TopWin::DRUM]);
+      cbTabWave->setChecked(TopWin::_openTabbed[TopWin::WAVE]);
+      cbTabScore->setChecked(TopWin::_openTabbed[TopWin::SCORE]);
+      cbTabMaster->setChecked(TopWin::_openTabbed[TopWin::MASTER]);
 }
 
 //---------------------------------------------------------
@@ -444,6 +406,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.mixer2.geometry.setHeight(mixer2H->value());
 
       MusEGlobal::config.fixFrozenMDISubWindows = fixFrozenMDISubWindowsCheckBox->isChecked();
+//      MusEGlobal::config.tabbedMDI = cbTabbedMDI->isChecked();
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
       MusEGlobal::config.liveWaveUpdate = liveWaveUpdateCheckBox->isChecked();
@@ -467,7 +430,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
       MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();
-      MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
+//      MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
       MusEGlobal::config.keepTransportWindowOnTop = keepTransportWindowOnTopCheckBox->isChecked();
 
       if (rangeMarkers1RadioButton->isChecked())
@@ -515,17 +478,6 @@ void GlobalSettingsConfig::apply()
       if(MusEGlobal::midiSeq)
         MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
       
-      // Obsolete. There is only 'New' drum tracks now.
-      // drumTrackPreference is fixed until it is removed some day...
-//       if (onlyNewDrumBtn->isChecked())
-//         MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_NEW;
-//       else if (onlyOldDrumBtn->isChecked())
-//         MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_OLD;
-//       else if (preferOldDrumBtn->isChecked())
-//         MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_OLD;
-//       else if (preferNewDrumBtn->isChecked())
-//         MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
-
       MusEGlobal::config.trackHeight = trackHeight->value();
 
       MusEGlobal::config.lv2UiBehavior = static_cast<MusEGlobal::CONF_LV2_UI_BEHAVIOR>(lv2UiBehaviorComboBox->currentIndex());
@@ -553,7 +505,12 @@ void GlobalSettingsConfig::apply()
       
       MusEGlobal::config.pluginCacheTriggerRescan = pluginRescanButton->isChecked();
       
-      applyMdiSettings();
+//      applyMdiSettings();
+      TopWin::_openTabbed[TopWin::PIANO_ROLL] = cbTabPianoroll->isChecked();
+      TopWin::_openTabbed[TopWin::DRUM] = cbTabDrum->isChecked();
+      TopWin::_openTabbed[TopWin::WAVE] = cbTabWave->isChecked();
+      TopWin::_openTabbed[TopWin::SCORE] = cbTabScore->isChecked();
+      TopWin::_openTabbed[TopWin::MASTER] = cbTabMaster->isChecked();
       
       // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
       MusEGlobal::muse->changeConfig(true);
@@ -653,43 +610,6 @@ void GlobalSettingsConfig::transportCurrent()
       transportX->setValue(r.x());
       transportY->setValue(r.y());
       }
-
-void GlobalSettingsConfig::traditionalPreset()
-{
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
-  {
-    TopWin::ToplevelType type = (*it)->type();
-    TopWin::_sharesWhenFree[type]=false;
-    TopWin::_defaultSubwin[type]=false;
-  }
-  TopWin::_defaultSubwin[TopWin::ARRANGER]=true;
-  
-  updateMdiSettings();
-}
-
-void GlobalSettingsConfig::mdiPreset()
-{
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
-  {
-    TopWin::ToplevelType type = (*it)->type();
-    TopWin::_sharesWhenSubwin[type]=true;
-    TopWin::_defaultSubwin[type]=true;
-  }
-  
-  updateMdiSettings();
-}
-
-void GlobalSettingsConfig::borlandPreset()
-{
-  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
-  {
-    TopWin::ToplevelType type = (*it)->type();
-    TopWin::_sharesWhenFree[type]=true;
-    TopWin::_defaultSubwin[type]=false;
-  }
-  
-  updateMdiSettings();
-}
 
 void GlobalSettingsConfig::showAudioConverterSettings()
 {

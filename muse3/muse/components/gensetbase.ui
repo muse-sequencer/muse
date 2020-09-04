@@ -63,6 +63,9 @@
    </item>
    <item row="0" column="0">
     <widget class="QTabWidget" name="TabWidget2">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -340,7 +343,7 @@
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Views</string>
+          <string>State and geometry</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
           <property name="topMargin">
@@ -350,7 +353,7 @@
            <number>10</number>
           </property>
           <property name="verticalSpacing">
-           <number>16</number>
+           <number>12</number>
           </property>
           <item row="1" column="3">
            <widget class="QSpinBox" name="transportY">
@@ -609,10 +612,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -665,10 +668,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -681,10 +684,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -697,10 +700,10 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
@@ -713,10 +716,91 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>set current values</string>
+             <string>Set current values</string>
             </property>
             <property name="text">
-             <string>Cur</string>
+             <string>Current</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_14">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>12</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Open editors in tabs (else in separate window)</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_24">
+          <property name="spacing">
+           <number>12</number>
+          </property>
+          <property name="topMargin">
+           <number>9</number>
+          </property>
+          <item>
+           <widget class="QCheckBox" name="cbTabPianoroll">
+            <property name="text">
+             <string>Piano roll</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbTabDrum">
+            <property name="text">
+             <string>Drum editor</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbTabWave">
+            <property name="text">
+             <string>Wave editor</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbTabScore">
+            <property name="text">
+             <string>Score editor</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbTabMaster">
+            <property name="text">
+             <string>Master track editor</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -2693,79 +2777,6 @@ Disable to use an alternate standard
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>GUI Style</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayoutTab2">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>MDI-subwindowness and sharing menus</string>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_9">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Presets:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="buttonTraditionalPreset">
-              <property name="text">
-               <string>Traditional MusE SDI</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="buttonMDIPreset">
-              <property name="text">
-               <string>Cakewalk-like MDI</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="buttonBorlandPreset">
-              <property name="text">
-               <string>Borland-/Mac-like MDI</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QScrollArea" name="scrollArea">
-            <property name="widgetResizable">
-             <bool>true</bool>
-            </property>
-            <widget class="QWidget" name="scrollAreaWidgetContents_2">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>541</width>
-               <height>469</height>
-              </rect>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <layout class="QVBoxLayout" name="layoutMdiSettings"/>
-              </item>
-             </layout>
-            </widget>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>
@@ -2889,10 +2900,6 @@ Disable to use an alternate standard
   <tabstop>revertPluginNativeGUIScalingCheckBox</tabstop>
   <tabstop>openMDIWinMaximizedCheckBox</tabstop>
   <tabstop>keepTransportWindowOnTopCheckBox</tabstop>
-  <tabstop>scrollArea</tabstop>
-  <tabstop>buttonTraditionalPreset</tabstop>
-  <tabstop>buttonMDIPreset</tabstop>
-  <tabstop>buttonBorlandPreset</tabstop>
  </tabstops>
  <resources/>
  <connections/>

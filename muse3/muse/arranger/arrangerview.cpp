@@ -78,7 +78,7 @@ namespace MusEGui {
 ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
-  setWindowTitle(tr("MusE: Arranger"));
+  isMdiWin() ? setWindowTitle(tr("Arranger")) : setWindowTitle(tr("MusE: Arranger"));
   setFocusPolicy(Qt::NoFocus);  
 
   // Already has an object name.
@@ -272,10 +272,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
-  menuSettings->addSeparator();
-  menuSettings->addAction(subwinAction);
-  menuSettings->addAction(shareAction);
-  menuSettings->addAction(fullscreenAction);
+//  menuSettings->addSeparator();
+//  menuSettings->addAction(subwinAction);
+//  menuSettings->addAction(shareAction);
+//  menuSettings->addAction(fullscreenAction);
 
 
   //-------- Edit connections
@@ -339,9 +339,12 @@ ArrangerView::~ArrangerView()
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-  emit isDeleting(static_cast<TopWin*>(this));
-  emit closed();
-  e->accept();
+//  emit isDeleting(static_cast<TopWin*>(this));
+//  emit closed();
+
+// keep just in case the arranger still can get closed somehow...
+    fprintf(stderr, "*** Arranger closed event caught ***\n");
+    e->accept();
 }
 
 void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const

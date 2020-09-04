@@ -79,7 +79,6 @@ MidiEventColorMode PianoRoll::colorModeInit = MidiEventColorMode::blueEvents;
 static const int xscale = -10;
 static const int yscale = 2;
 
-static const int pianoWidth = 40;
 static int pianorollTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::DrawTool | PanTool | ZoomTool;
 
 
@@ -107,6 +106,11 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       _playEventsMode = EventCanvas::PlayEventsSingleNote;
       colorMode      = colorModeInit;
       
+      _pianoWidth = 40;
+      ensurePolished();
+      if (_pianoWidth < 40)
+          _pianoWidth = 40;
+
       const MusECore::PartList* part_list = parts();
       // Default initial pianoroll view state.
       _viewState = MusECore::MidiPartViewState (0, KH * 30, xscale, yscale);
@@ -237,10 +241,15 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
               [this](int id) { execUserScript(id); } );
       MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
-
       menuConfig = menuBar()->addMenu(tr("&Display"));
       
-      eventColor = menuConfig->addMenu(tr("&Event Color"));      
+      menuConfig->addAction(subwinAction);
+//      menuConfig->addAction(shareAction);
+      menuConfig->addAction(fullscreenAction);
+
+      menuConfig->addSeparator();
+
+      eventColor = menuConfig->addMenu(tr("&Event Color"));
       
       QActionGroup* actgrp = new QActionGroup(this);
       actgrp->setExclusive(true);
@@ -259,12 +268,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       eventColor->addActions(actgrp->actions());
       
-      menuConfig->addSeparator();
-      menuConfig->addAction(subwinAction);
-      menuConfig->addAction(shareAction);
-      menuConfig->addAction(fullscreenAction);
-
-      menuConfig->addSeparator();
+//      menuConfig->addSeparator();
       addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       menuConfig->addMenu(addControllerMenu);
@@ -349,7 +353,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       //---------------------------------------------------
 
       splitter = new MusEGui::Splitter(Qt::Vertical, mainw, "splitter");
-      //splitter->setHandleWidth(2);  
+      //splitter->setHandleWidth(2);
       
       hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
@@ -371,7 +375,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS2->setSpacing(0);  
       gridS2->setRowStretch(0, 100);
       gridS2->setColumnStretch(1, 100);
-      gridS2->addItem(new QSpacerItem(pianoWidth, 0),    0, 0);
+      gridS2->addItem(new QSpacerItem(_pianoWidth, 0),    0, 0);
       gridS2->addWidget(hscroll, 0, 1);
       gridS2->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
       gridS2_w->setMaximumHeight(hscroll->sizeHint().height());
@@ -414,7 +418,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->setSpacing(0);  
 
       time                = new MusEGui::MTScale(&_raster, split1, _viewState.xscale());
-      piano               = new Piano(split1, _viewState.yscale(), this);
+      piano               = new Piano(split1, _viewState.yscale(), _pianoWidth, this);
       canvas              = new PianoCanvas(this, split1, _viewState.xscale(), _viewState.yscale());
       vscroll             = new MusEGui::ScrollScale(-2, 6, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
       setCurDrumInstrument(piano->curSelectedPitch());
@@ -438,7 +442,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->addWidget(canvas,                 2,    1);
       gridS1->addWidget(vscroll,                2,    2);
 
-      piano->setFixedWidth(pianoWidth);
+      piano->setFixedWidth(_pianoWidth);
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
@@ -659,7 +663,7 @@ void PianoRoll::updateHScrollRange()
       // Show another quarter measure due to imprecise drawing at canvas end point.
       e += MusEGlobal::sigmap.ticksMeasure(e) / 4;
       // Compensate for the fixed piano and vscroll widths. 
-      e += canvas->rmapxDev(pianoWidth - vscroll->width()); 
+      e += canvas->rmapxDev(_pianoWidth - vscroll->width());
       int s1, e1;
       hscroll->range(&s1, &e1);
       if(s != s1 || e != e1) 
@@ -1168,6 +1172,7 @@ CtrlEdit* PianoRoll::addCtrl(int ctl_num)
       {
       CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, _viewState.xscale(), false, "pianoCtrlEdit");  // ccharrett
       ctrlEdit->setController(ctl_num);
+      ctrlEdit->setPanelWidth(_pianoWidth);
       setupNewCtrl(ctrlEdit);
       return ctrlEdit;
       }
@@ -1194,6 +1199,7 @@ void PianoRoll::setupNewCtrl(CtrlEdit* ctrlEdit)
   ctrlEdit->setTool(tools2->curTool());
   ctrlEdit->setXPos(hscroll->pos());
   ctrlEdit->setXMag(hscroll->getScaleValue());
+  ctrlEdit->setPanelWidth(_pianoWidth);
 
   ctrlEdit->show();
   ctrlEditList.push_back(ctrlEdit);

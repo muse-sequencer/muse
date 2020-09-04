@@ -77,6 +77,10 @@ class PianoRoll : public MidiEditor {
       Q_OBJECT
 
     
+    Q_PROPERTY(int pianoWidth READ pianoWidth WRITE setPianoWidth)
+
+    int _pianoWidth;
+
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
       PopupMenu* addControllerMenu;
       
@@ -212,6 +216,9 @@ class PianoRoll : public MidiEditor {
       static void writeConfiguration(int, MusECore::Xml&);
       CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
       MusECore::MidiPartViewState getViewState() const;
+
+      int pianoWidth() const { return _pianoWidth; }
+      void setPianoWidth(int w) { _pianoWidth = w; }
       };
 
 } // namespace MusEGui

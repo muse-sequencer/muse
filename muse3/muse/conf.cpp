@@ -578,9 +578,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               // I thought this was obsolete (done by song's toplevel list), but
                               // it's obviously needed. (flo)
                               MusEGlobal::config.markerVisible = xml.parseInt();
-                        else if (tag == "arrangerVisible")
-                              // same here.
-                              MusEGlobal::config.arrangerVisible = xml.parseInt();
+//                        else if (tag == "arrangerVisible")
+//                              // same here.
+//                              MusEGlobal::config.arrangerVisible = xml.parseInt();
                         else if (tag == "geometryTransport")
                               MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
                         else if (tag == "geometryBigTime")
@@ -749,6 +749,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         }
                         else if (tag == "fixFrozenMDISubWindows")
                               MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
+//                        else if (tag == "tabbedMDI")
+//                            MusEGlobal::config.tabbedMDI = xml.parseInt();
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
@@ -1162,6 +1164,13 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "drumListSelFont")
                             MusEGlobal::config.drumListSelFont = readColor(xml);
 
+                        else if (tag == "pianoCurrentKey")
+                            MusEGlobal::config.pianoCurrentKey = readColor(xml);
+                        else if (tag == "pianoPressedKey")
+                            MusEGlobal::config.pianoPressedKey = readColor(xml);
+                        else if (tag == "pianoSelectedKey")
+                            MusEGlobal::config.pianoSelectedKey = readColor(xml);
+
                         else if (tag == "maxAliasedPointSize")
 
                               MusEGlobal::config.maxAliasedPointSize = xml.parseInt();
@@ -1177,6 +1186,9 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 
                         else if (tag == "showIconsInMenus")
                             MusEGlobal::config.showIconsInMenus = xml.parseInt();
+
+                        else if (tag == "useNativeStandardDialogs")
+                            MusEGlobal::config.useNativeStandardDialogs = xml.parseInt();
                         
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
@@ -1198,14 +1210,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGui::MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
                               MusEGui::WaveEdit::readConfiguration(xml);
-                        else if (tag == "listedit")
-                              MusEGui::ListEdit::readConfiguration(xml);
-                        else if (tag == "cliplistedit")
-                              MusEGui::ClipListEdit::readConfiguration(xml);
-                        else if (tag == "lmaster")
-                              MusEGui::LMaster::readConfiguration(xml);
-                        else if (tag == "marker")
-                              MusEGui::MarkerView::readConfiguration(xml);
+//                        else if (tag == "listedit")
+//                              MusEGui::ListEdit::readConfiguration(xml);
+//                        else if (tag == "lmaster")
+//                              MusEGui::LMaster::readConfiguration(xml);
                         else if (tag == "arrangerview")
                               MusEGui::ArrangerView::readConfiguration(xml);
                         
@@ -1334,8 +1342,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                             MusEGlobal::config.showNoteTooltips = xml.parseInt();
                         else if (tag == "noPluginScaling")
                               MusEGlobal::config.noPluginScaling = xml.parseInt();
-                        else if (tag == "openMDIWinMaximized")
-                            MusEGlobal::config.openMDIWinMaximized = xml.parseInt();
+//                        else if (tag == "openMDIWinMaximized")
+//                            MusEGlobal::config.openMDIWinMaximized = xml.parseInt();
                         else if (tag == "keepTransportWindowOnTop")
                             MusEGlobal::config.keepTransportWindowOnTop = xml.parseInt();
 
@@ -1802,6 +1810,10 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "drumListFont", MusEGlobal::config.drumListFont);
       xml.colorTag(level, "drumListSel", MusEGlobal::config.drumListSel);
       xml.colorTag(level, "drumListSelFont", MusEGlobal::config.drumListSelFont);
+
+      xml.colorTag(level, "pianoCurrentKey", MusEGlobal::config.pianoCurrentKey);
+      xml.colorTag(level, "pianoPressedKey", MusEGlobal::config.pianoPressedKey);
+      xml.colorTag(level, "pianoSelectedKey", MusEGlobal::config.pianoSelectedKey);
 }
       
 
@@ -1980,6 +1992,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
       xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
+//      xml.intTag(level, "tabbedMDI", MusEGlobal::config.tabbedMDI);
       xml.strTag(level, "theme", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
@@ -2029,7 +2042,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "showNoteNamesInPianoRoll", MusEGlobal::config.showNoteNamesInPianoRoll);
       xml.intTag(level, "showNoteTooltips", MusEGlobal::config.showNoteTooltips);
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
-      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
+//      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
       xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
 
       for (int i = 1; i < NUM_FONTS; ++i) {
@@ -2076,6 +2089,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "cursorSize", MusEGlobal::config.cursorSize);
       xml.intTag(level, "cascadeStylesheets", MusEGlobal::config.cascadeStylesheets);
       xml.intTag(level, "showIconsInMenus", MusEGlobal::config.showIconsInMenus);
+      xml.intTag(level, "useNativeStandardDialogs", MusEGlobal::config.useNativeStandardDialogs);
       
       MusEGlobal::writePluginGroupConfiguration(level, xml);
 
@@ -2086,10 +2100,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       MusEGui::ScoreEdit::write_configuration(level, xml);
       MusEGui::MasterEdit::writeConfiguration(level, xml);
       MusEGui::WaveEdit::writeConfiguration(level, xml);
-      MusEGui::ListEdit::writeConfiguration(level, xml);
-      MusEGui::ClipListEdit::writeConfiguration(level, xml);
-      MusEGui::LMaster::writeConfiguration(level, xml);
-      MusEGui::MarkerView::writeConfiguration(level, xml);
+//      MusEGui::ListEdit::writeConfiguration(level, xml);
+//      MusEGui::LMaster::writeConfiguration(level, xml);
       arrangerView->writeConfiguration(level, xml);
       
       MusEGui::write_function_dialog_config(level, xml);
@@ -2138,7 +2150,6 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
             xml.geometryTag(level, "geometryBigTime", bigtime);
       
       // i thought this was obsolete, but it seems to be necessary (flo)
-      xml.intTag(level, "arrangerVisible", viewArrangerAction->isChecked());
       xml.intTag(level, "markerVisible", viewMarkerAction->isChecked());
       // but storing the geometry IS obsolete. this is really
       // done by TopLevel::writeConfiguration

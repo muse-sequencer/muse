@@ -110,8 +110,9 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       d_totalAngle    = 270.0;
       d_scaleDist     = 1;
       d_symbol        = Line;
+      d_dotWidth      = 4;
       d_maxScaleTicks = 11;
-      d_knobWidth     = 30;
+      d_knobWidth     = 30; // unused?
       _faceColSel     = false;
       //d_faceColor     = palette().color(QPalette::Window);
       //d_rimColor      = rimColor;
@@ -124,7 +125,6 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       d_curFaceColor  = d_faceColor;
       d_altFaceColor  = d_faceColor;
       d_markerColor   = palette().dark().color().darker(125);
-      d_dotWidth      = 8;
 
       l_slope = 0;
       l_const = 100;
@@ -144,6 +144,7 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
 
       _style3d = true;
       _radius = 2;
+      _drawChord = false;
 
       setUpdateTime(50);
       }
@@ -805,7 +806,7 @@ void CompactKnob::drawBackground(QPainter* painter)
                                   palette(),
                                   d_xMargin,
                                   d_yMargin,
-                                  hasOffMode() && ! isOff() ? _labelRect : QRect(), 
+                                  hasOffMode() && ! isOff() ? _labelRect : QRect(),
                                   2);
     }
     break;
@@ -818,79 +819,85 @@ void CompactKnob::drawBackground(QPainter* painter)
 //------------------------------------------------------------
 
 void CompactKnob::drawKnob(QPainter* p, const QRect& r)
-      {
-      const QPalette& pal = palette();
+{
+    const QPalette& pal = palette();
 
-      QRect aRect;
-      aRect.setRect(r.x() + d_borderWidth,
-            r.y() + d_borderWidth,
-            r.width()  - 2*d_borderWidth,
-            r.height() - 2*d_borderWidth);
+    QRect aRect;
+    aRect.setRect(r.x() + d_borderWidth,
+                  r.y() + d_borderWidth,
+                  r.width()  - 2*d_borderWidth,
+                  r.height() - 2*d_borderWidth);
 
-      int width = r.width() - 2 * d_xMargin;
-      int height = r.height() - 2 * d_yMargin;
-      int size = qMin(width, height);
+    int width = r.width() - 2 * d_xMargin;
+    int height = r.height() - 2 * d_yMargin;
+    int size = qMin(width, height);
 
-      p->setRenderHint(QPainter::Antialiasing, true);
-
-      //
-      // draw the rim
-      //
-
-      if (_style3d) {
-          QLinearGradient linearg(QPoint(r.x() + d_xMargin,r.y() + d_yMargin), QPoint(size, size));
-          linearg.setColorAt(1 - M_PI_4, d_faceColor.lighter(125));
-          linearg.setColorAt(M_PI_4, d_faceColor.darker(175));
-          p->setBrush(linearg);
-      } else
-          p->setBrush(d_faceColor);
-
-      p->setPen(Qt::NoPen);
-      p->drawEllipse(r.x() + d_xMargin,r.y() + d_yMargin,size,size);
+    p->setRenderHint(QPainter::Antialiasing, true);
 
 
-      //
-      // draw shiny surrounding
-      //
-      if (_style3d) {
-          QPen pn;
-          pn.setCapStyle(Qt::FlatCap);
+    if (_style3d) {
+        //
+        // draw the rim
+        //
+        QLinearGradient linearg(QPoint(r.x() + d_xMargin,r.y() + d_yMargin), QPoint(size, size));
+        linearg.setColorAt(1 - M_PI_4, d_faceColor.lighter(125));
+        linearg.setColorAt(M_PI_4, d_faceColor.darker(175));
+        p->setBrush(linearg);
+        p->setPen(Qt::NoPen);
+        p->drawEllipse(r.x() + d_xMargin,r.y() + d_yMargin ,size, size);
 
-          pn.setColor(d_shinyColor.lighter(l_const + fabs(value() * l_slope)));
-          pn.setWidth(d_shineWidth * 2);
-          p->setPen(pn);
-          p->drawArc(aRect, 0, 360 * 16);
-      }
+        //
+        // draw shiny surrounding
+        //
+        QPen pn;
+        pn.setCapStyle(Qt::FlatCap);
 
-      //
-      // draw button face
-      //
+        pn.setColor(d_shinyColor.lighter(l_const + fabs(value() * l_slope)));
+        pn.setWidth(d_shineWidth * 2);
+        p->setPen(pn);
+        p->drawArc(aRect, 0, 360 * 16);
 
-      if (_style3d) {
-          QRadialGradient gradient(//aRect.x() + size/2,
-                                   //aRect.y() + size/2,
-                                   aRect.x(),
-                                   aRect.y(),
-                                   size-d_borderWidth,
-                                   aRect.x() + size/2-d_borderWidth,
-                                   aRect.y() + size/2-d_borderWidth);
-          gradient.setColorAt(0, d_curFaceColor.lighter(150));
-          gradient.setColorAt(1, d_curFaceColor.darker(150));
-          p->setBrush(gradient);
-      } else
-          p->setBrush(MusEGlobal::config.sliderBackgroundColor);
+        //
+        // draw button face
+        //
+        QRadialGradient gradient(//aRect.x() + size/2,
+                                 //aRect.y() + size/2,
+                                 aRect.x(),
+                                 aRect.y(),
+                                 size-d_borderWidth,
+                                 aRect.x() + size/2-d_borderWidth,
+                                 aRect.y() + size/2-d_borderWidth);
+        gradient.setColorAt(0, d_curFaceColor.lighter(150));
+        gradient.setColorAt(1, d_curFaceColor.darker(150));
+        p->setBrush(gradient);
 
-      p->setPen(Qt::NoPen);
-      p->drawEllipse(aRect);
+        p->setPen(Qt::NoPen);
+        p->drawEllipse(aRect);
 
-      //
-      // draw marker
-      //
-      if (_style3d)
-          drawMarker(p, d_angle, pal.currentColorGroup() == QPalette::Disabled ?
-                         pal.color(QPalette::Disabled, QPalette::WindowText) : d_markerColor);
-      else
-          drawMarker(p, d_angle, d_faceColor);
+        //
+        // draw marker
+        //
+        if (_style3d)
+            drawMarker(p, d_angle, pal.currentColorGroup() == QPalette::Disabled ?
+                           pal.color(QPalette::Disabled, QPalette::WindowText) : d_markerColor);
+    } else {
+
+        QPen pen(d_faceColor);
+        pen.setWidth(3);
+        p->setPen(pen);
+        p->setBrush(MusEGlobal::config.sliderBackgroundColor);
+        p->drawEllipse(r.x() + d_xMargin, r.y() + d_yMargin, size, size);
+
+        if (_drawChord) {
+            const int angle = static_cast<int>(d_totalAngle);
+            const int degsubdiv = 16;
+            p->setBrush(d_faceColor);
+            p->drawChord(r.x() + d_xMargin, r.y() + d_yMargin, size, size,
+                         (angle / 2 + 90) * degsubdiv, (360 - angle) * degsubdiv);
+        }
+
+        drawMarker(p, d_angle, d_faceColor);
+    }
 }
 
 //------------------------------------------------------------
@@ -926,12 +933,13 @@ void CompactKnob::drawMarker(QPainter *p, double arc, const QColor &c)
   switch (d_symbol)
   {
     case Dot:
+  {
+      qreal dothalf = d_dotWidth / 2.0;
       p->setBrush(c);
       p->setPen(Qt::NoPen);
-      rb = double(MusECore::qwtMax(radius - 4 - d_dotWidth / 2, 0));
-      p->drawEllipse(xm - int(rint(sa * rb)) - d_dotWidth / 2,
-              ym - int(rint(ca * rb)) - d_dotWidth / 2,
-              d_dotWidth, d_dotWidth);
+      rb = qMax(radius - 4.0 - dothalf, 0.0);
+      p->drawEllipse(QPointF(xm - (sa * rb), ym - (ca * rb)), dothalf, dothalf);
+  }
     break;
 
     case Line:
@@ -941,7 +949,7 @@ void CompactKnob::drawMarker(QPainter *p, double arc, const QColor &c)
 
 //       rb = MusECore::qwtMax(double((radius - 1) / 3.0), 0.0);
 //       re = MusECore::qwtMax(double(radius - 1), 0.0);
-      rb = MusECore::qwtMax(((double(radius) - 0.5) / 3.0), 0.0);
+//      rb = MusECore::qwtMax(((double(radius) - 0.5) / 3.0), 0.0);
       re = MusECore::qwtMax(double(radius) - 0.5, 0.0);
 
       p->setRenderHint(QPainter::Antialiasing, true);
@@ -949,6 +957,10 @@ void CompactKnob::drawMarker(QPainter *p, double arc, const QColor &c)
                   ym,
                   xm - int(rint(sa * re)),
                   ym - int(rint(ca * re)));
+
+      if (!_style3d)
+          p->drawEllipse(QPoint(xm, ym), 1, 1);
+
     break;
   }
 }

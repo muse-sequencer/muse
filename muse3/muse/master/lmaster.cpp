@@ -43,43 +43,28 @@
 #include <QTreeWidget>
 #include <QComboBox>
 #include <QTimer>
+#include <QShortcut>
+#include <QDebug>
+#include <QApplication>
 
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1
 #define LMASTER_TYPE_COL 2
 #define LMASTER_VAL_COL  3
 
-#define LMASTER_MSGBOX_STRING          "MusE: List Editor"
+#define LMASTER_MSGBOX_STRING "Mastertrack List Editor"
 
 namespace MusEGui {
-
-//---------------------------------------------------------
-//   keyPressEvent
-//---------------------------------------------------------
-
-void LMaster::keyPressEvent(QKeyEvent* e)
-{
-    if (e->key() == Qt::Key_Escape) {
-          close();
-          return;
-          }
-    else {
-        e->ignore();
-        return;
-    }
-}
 
 //---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
 
 void LMaster::closeEvent(QCloseEvent* e)
-      {
-      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
-      
-      emit isDeleting(static_cast<TopWin*>(this));
-      e->accept();
-      }
+{
+    _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+    e->accept();
+}
 
 //---------------------------------------------------------
 //   songChanged
@@ -98,16 +83,21 @@ void LMaster::songChanged(MusECore::SongChangedStruct_t type)
 //   LMaster
 //---------------------------------------------------------
 
-LMaster::LMaster(QWidget* parent, const char* name)
-   : MidiEditor(TopWin::LMASTER, 0, 0, parent, name)
+LMaster::LMaster(QWidget* parent)
+   : QWidget(parent)
+//   : MidiEditor(TopWin::LMASTER, 0, 0, parent, name)
       {
+      setObjectName("MasterTrackList");
+      _isDeleting = false;
+
       pos_editor = 0;
       tempo_editor = 0;
       sig_editor = 0;
       key_editor = 0;
       editedItem = 0;
       editingNewItem = false;
-      setWindowTitle(tr("MusE: Mastertrack"));
+//      isMdiWin() ? setWindowTitle(tr("Mastertrack List")) : setWindowTitle(tr("MusE: Mastertrack List"));
+
       setMinimumHeight(100);
       //setFixedWidth(400);            // FIXME: Arbitrary. But without this, sig editor is too wide. Must fix sig editor width...
       setFocusPolicy(Qt::NoFocus);
@@ -119,22 +109,27 @@ LMaster::LMaster(QWidget* parent, const char* name)
       connect(comboboxTimer, SIGNAL(timeout()), this, SLOT(comboboxTimerSlot()));
 
 
-      //---------Pulldown Menu----------------------------
-      menuEdit = menuBar()->addMenu(tr("&Edit"));
-      menuEdit->addActions(MusEGlobal::undoRedo->actions());
-      menuEdit->addSeparator();
-      tempoAction = menuEdit->addAction(tr("Insert Tempo"));
-      signAction = menuEdit->addAction(tr("Insert Signature"));
-      keyAction = menuEdit->addAction(tr("Insert Key"));
-      posAction = menuEdit->addAction(tr("Edit Position"));
-      valAction = menuEdit->addAction(tr("Edit Value"));
-      delAction = menuEdit->addAction(tr("Delete Event"));
-      delAction->setShortcut(Qt::Key_Delete);
+      tempoAction = new QAction(tr("Tempo"), this);
+      signAction  = new QAction(tr("Signature"), this);
+      keyAction   = new QAction(tr("Key"), this);
+      posAction   = new QAction(tr("Position"), this);
+      valAction   = new QAction(tr("Value"), this);
+      delAction   = new QAction(tr("Delete"), this);
+      delAction->setShortcut(Qt::Key_D);
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      settingsMenu->addAction(subwinAction);
-      settingsMenu->addAction(shareAction);
-      settingsMenu->addAction(fullscreenAction);
+      tempoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      signAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      keyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      posAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      valAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+      delAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+      addAction(tempoAction);
+      addAction(signAction);
+      addAction(keyAction);
+      addAction(posAction);
+      addAction(valAction);
+      addAction(delAction);
 
       connect(tempoAction, &QAction::triggered, [this]() { cmd(CMD_INSERT_TEMPO); } );
       connect(signAction,  &QAction::triggered, [this]() { cmd(CMD_INSERT_SIG); } );
@@ -142,7 +137,6 @@ LMaster::LMaster(QWidget* parent, const char* name)
       connect(posAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_BEAT); } );
       connect(valAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_VALUE); } );
       connect(delAction,   &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
-      
       
       
       // Toolbars ---------------------------------------------------------
@@ -154,26 +148,14 @@ LMaster::LMaster(QWidget* parent, const char* name)
       //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
       //          instead of /appending/ with addToolBar().
 
-      addToolBarBreak();
-      
-      QToolBar* edit = addToolBar(tr("Edit tools"));
-      edit->setObjectName("Master List Edit Tools");
-      QToolButton* tempoButton = new QToolButton();
-      QToolButton* timeSigButton = new QToolButton();
-      QToolButton* keyButton = new QToolButton();
-      tempoButton->setFocusPolicy(Qt::NoFocus);
-      timeSigButton->setFocusPolicy(Qt::NoFocus);
-      keyButton->setFocusPolicy(Qt::NoFocus);
-      tempoButton->setText(tr("Tempo"));
-      timeSigButton->setText(tr("Timesig"));
-      keyButton->setText(tr("Key"));
-      tempoButton->setToolTip(tr("New tempo"));
-      timeSigButton->setToolTip(tr("New signature"));
-      keyButton->setToolTip(tr("New key"));
-      edit->addWidget(tempoButton);
-      edit->addWidget(timeSigButton);
-      edit->addWidget(keyButton);
-      
+      QToolBar* edit = new QToolBar(tr("Edit tools"), this);
+      edit->addAction(tempoAction);
+      edit->addAction(signAction);
+      edit->addAction(keyAction);
+      edit->addAction(posAction);
+      edit->addAction(valAction);
+      edit->addAction(delAction);
+
       //---------------------------------------------------
       //    master
       //---------------------------------------------------
@@ -182,22 +164,24 @@ LMaster::LMaster(QWidget* parent, const char* name)
       view->setAllColumnsShowFocus(true);
       view->setSelectionMode(QAbstractItemView::SingleSelection);
       QStringList columnnames;
-      columnnames << tr("Meter")
+      columnnames << tr("Position")
                   << tr("Time")
                   << tr("Type")
                   << tr("Value");
       view->setHeaderLabels(columnnames);
-      view->setColumnWidth(2,80);
-      view->header()->setStretchLastSection(true);
+      view->setColumnWidth(2,70);
+      view->setIndentation(2);
 
       //---------------------------------------------------
       //    Rest
       //---------------------------------------------------
 
+      QGridLayout* mainGrid = new QGridLayout(this);
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColumnStretch(0, 100);
 
-      mainGrid->addWidget(view,  0, 0);
+      mainGrid->addWidget(edit,  0, 0);
+      mainGrid->addWidget(view,  1, 0);
       updateList();
 
       tempo_editor = new QLineEdit(view->viewport());
@@ -223,12 +207,17 @@ LMaster::LMaster(QWidget* parent, const char* name)
       connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
       connect(this, SIGNAL(seekTo(int)), MusEGlobal::song, SLOT(seekTo(int)));
-      connect(tempoButton, SIGNAL(clicked()), SLOT(tempoButtonClicked()));
-      connect(timeSigButton, SIGNAL(clicked()), SLOT(timeSigButtonClicked()));
-      connect(keyButton, SIGNAL(clicked()), SLOT(insertKey()));
 
       initShortcuts();
-      finalizeInit();
+
+      tempoAction->setToolTip(tr("Insert tempo change") + " (" + tempoAction->shortcut().toString() + ")");
+      signAction->setToolTip(tr("Insert time signature change")  + " (" + signAction->shortcut().toString() + ")");
+      keyAction->setToolTip(tr("Insert key change") + " (" + keyAction->shortcut().toString() + ")");
+      posAction->setToolTip(tr("Edit position") + " (" + posAction->shortcut().toString() + ")");
+      valAction->setToolTip(tr("Edit value") + " (" + valAction->shortcut().toString() + ")");
+      delAction->setToolTip(tr("Delete event") + " (" + delAction->shortcut().toString() + ")");
+
+//      qApp->installEventFilter(this);
       }
 
 //---------------------------------------------------------
@@ -363,82 +352,82 @@ void LMaster::updateList()
       }     
     }
 
-//---------------------------------------------------------
-//   readStatus
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   readStatus
+////---------------------------------------------------------
 
-void LMaster::readStatus(MusECore::Xml& xml)
-      {
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-                  break;
-            switch (token) {
-                  case MusECore::Xml::TagStart:
-                        if (tag == "midieditor")
-                              MidiEditor::readStatus(xml);
-                        else
-                              xml.unknown("LMaster");
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "lmaster")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
+//void LMaster::readStatus(MusECore::Xml& xml)
+//      {
+//      for (;;) {
+//            MusECore::Xml::Token token = xml.parse();
+//            const QString& tag = xml.s1();
+//            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+//                  break;
+//            switch (token) {
+//                  case MusECore::Xml::TagStart:
+//                        if (tag == "midieditor")
+//                              MidiEditor::readStatus(xml);
+//                        else
+//                              xml.unknown("LMaster");
+//                        break;
+//                  case MusECore::Xml::TagEnd:
+//                        if (tag == "lmaster")
+//                              return;
+//                  default:
+//                        break;
+//                  }
+//            }
+//      }
 
-//---------------------------------------------------------
-//   writeStatus
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   writeStatus
+////---------------------------------------------------------
 
-void LMaster::writeStatus(int level, MusECore::Xml& xml) const
-      {
-      xml.tag(level++, "lmaster");
-      MidiEditor::writeStatus(level, xml);
-      xml.tag(level, "/lmaster");
-      }
+//void LMaster::writeStatus(int level, MusECore::Xml& xml) const
+//      {
+//      xml.tag(level++, "lmaster");
+//      MidiEditor::writeStatus(level, xml);
+//      xml.tag(level, "/lmaster");
+//      }
 
-//---------------------------------------------------------
-//   readConfiguration
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   readConfiguration
+////---------------------------------------------------------
 
-void LMaster::readConfiguration(MusECore::Xml& xml)
-      {
-      for (;;) {
-            MusECore::Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case MusECore::Xml::Error:
-                  case MusECore::Xml::End:
-                        return;
-                  case MusECore::Xml::TagStart:
-                        if (tag == "topwin")
-                              TopWin::readConfiguration(LMASTER, xml);
-                        else
-                              xml.unknown("LMaster");
-                        break;
-                  case MusECore::Xml::TagEnd:
-                        if (tag == "lmaster")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
+//void LMaster::readConfiguration(MusECore::Xml& xml)
+//      {
+//      for (;;) {
+//            MusECore::Xml::Token token = xml.parse();
+//            const QString& tag = xml.s1();
+//            switch (token) {
+//                  case MusECore::Xml::Error:
+//                  case MusECore::Xml::End:
+//                        return;
+//                  case MusECore::Xml::TagStart:
+//                        if (tag == "topwin")
+//                              TopWin::readConfiguration(LMASTER, xml);
+//                        else
+//                              xml.unknown("LMaster");
+//                        break;
+//                  case MusECore::Xml::TagEnd:
+//                        if (tag == "lmaster")
+//                              return;
+//                  default:
+//                        break;
+//                  }
+//            }
+//      }
 
-//---------------------------------------------------------
-//   writeConfiguration
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   writeConfiguration
+////---------------------------------------------------------
 
-void LMaster::writeConfiguration(int level, MusECore::Xml& xml)
-      {
-      xml.tag(level++, "lmaster");
-      TopWin::writeConfiguration(LMASTER, level, xml);
-      xml.tag(level, "/lmaster");
-      }
+//void LMaster::writeConfiguration(int level, MusECore::Xml& xml)
+//      {
+//      xml.tag(level++, "lmaster");
+//      TopWin::writeConfiguration(LMASTER, level, xml);
+//      xml.tag(level, "/lmaster");
+//      }
 
 //---------------------------------------------------------
 //   select
@@ -1084,5 +1073,23 @@ void LMaster::comboboxTimerSlot()
 {
     key_editor->showPopup();
 }
+
+
+//bool LMaster::eventFilter(QObject*, QEvent *e)
+//{
+//    if (e->type() == QEvent::Shortcut) {
+//        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
+//        if (sev->isAmbiguous()) {
+//            for (const auto& action : actions()) {
+//                if (action->shortcut() == sev->key()) {
+//                    action->trigger();
+//                    return true;
+//                }
+//            }
+//        }
+//    }
+//    return false;
+//}
+
 
 } // namespace MusEGui

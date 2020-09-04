@@ -132,19 +132,18 @@ class LMasterSigEventItem : public LMasterLViewItem {
 //   LMaster
 //---------------------------------------------------------
 
-class LMaster : public MidiEditor {
+class LMaster : public QWidget {
       Q_OBJECT
     
       QTreeWidget* view;
       QToolBar* tools;
       QMenu* menuEdit;
       QTimer* comboboxTimer;
+      bool _isDeleting;
 
       enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE, CMD_INSERT_KEY };
 
       
-      virtual void keyPressEvent(QKeyEvent*);
-      virtual void closeEvent(QCloseEvent*);
       void updateList();
       void insertTempo(const MusECore::TEvent*);
       void insertSig(const MusECore::SigEvent*);
@@ -159,6 +158,9 @@ class LMaster : public MidiEditor {
       SigEdit* sig_editor;
       int editorColumn;
       bool editingNewItem;
+
+      virtual void closeEvent(QCloseEvent*);
+//      bool eventFilter(QObject *, QEvent *event) override;
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 
@@ -179,16 +181,16 @@ class LMaster : public MidiEditor {
       void focusCanvas();
 
    signals:
-      void isDeleting(MusEGui::TopWin*);
+//      void isDeleting(MusEGui::TopWin*);
       void seekTo(int tick);
 
    public:
-      LMaster(QWidget* parent = 0, const char* name = 0);
+      LMaster(QWidget* parent = 0);
       ~LMaster();
-      virtual void readStatus(MusECore::Xml&);
-      virtual void writeStatus(int, MusECore::Xml&) const;
-      static void readConfiguration(MusECore::Xml&);
-      static void writeConfiguration(int, MusECore::Xml&);
+//      virtual void readStatus(MusECore::Xml&);
+//      virtual void writeStatus(int, MusECore::Xml&) const;
+//      static void readConfiguration(MusECore::Xml&);
+//      static void writeConfiguration(int, MusECore::Xml&);
       LMasterLViewItem* getLastOfType(LMASTER_LVTYPE t);
       };
 

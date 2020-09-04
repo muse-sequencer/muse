@@ -220,22 +220,29 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       id = new IdListViewItem(0, itemList, "Transport");
            new IdListViewItem(0x200, id, "Handle");
 
-      id = new IdListViewItem(0, itemList, "Midi Editor");
-           new IdListViewItem(0x421, id, "Background");
-           new IdListViewItem(0x431, id, "Item");
-           new IdListViewItem(0x432, id, "Item selected");
-           new IdListViewItem(0x42a, id, "Raster bar");
-           new IdListViewItem(0x429, id, "Raster beat");
-           new IdListViewItem(0x42e, id, "Raster fine");
-           new IdListViewItem(0x41d, id, "Controller graph");
-           new IdListViewItem(0x41e, id, "Controller graph selected");
-           new IdListViewItem(0x423, id, "Controller graph background");
+      aid = new IdListViewItem(0, itemList, "Midi Editor");
+      id = new IdListViewItem(0, aid, "Piano");
+      new IdListViewItem(0x450, id, "Current key");
+      new IdListViewItem(0x451, id, "Pressed key");
+      new IdListViewItem(0x452, id, "Selected key");
 
-           new IdListViewItem(0x42f, id, "Divider line");
-           new IdListViewItem(0x422, id, "Drum list background");
-           new IdListViewItem(0x440, id, "Drum list font");
-           new IdListViewItem(0x441, id, "Drum list selection");
-           new IdListViewItem(0x442, id, "Drum list selection font");
+      id = new IdListViewItem(0, aid, "Drum list");
+      new IdListViewItem(0x422, id, "Drum list background");
+      new IdListViewItem(0x440, id, "Drum list font");
+      new IdListViewItem(0x441, id, "Drum list selection");
+      new IdListViewItem(0x442, id, "Drum list selection font");
+
+           new IdListViewItem(0x421, aid, "Background");
+           new IdListViewItem(0x431, aid, "Item");
+           new IdListViewItem(0x432, aid, "Item selected");
+           new IdListViewItem(0x42a, aid, "Raster bar");
+           new IdListViewItem(0x429, aid, "Raster beat");
+           new IdListViewItem(0x42e, aid, "Raster fine");
+           new IdListViewItem(0x41d, aid, "Controller graph");
+           new IdListViewItem(0x41e, aid, "Controller graph selected");
+           new IdListViewItem(0x423, aid, "Controller graph background");
+           new IdListViewItem(0x42f, aid, "Divider line");
+
 
       id = new IdListViewItem(0, itemList, "Wave Editor");
            new IdListViewItem(0x300, id, "Background");
@@ -454,6 +461,10 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x441: return &MusEGlobal::config.drumListSel;
       case 0x442: return &MusEGlobal::config.drumListSelFont;
 
+      case 0x450: return &MusEGlobal::config.pianoCurrentKey;
+      case 0x451: return &MusEGlobal::config.pianoPressedKey;
+      case 0x452: return &MusEGlobal::config.pianoSelectedKey;
+
 //      case 0x500: return &MusEGlobal::config.mixerBg;
       case 0x501: return &MusEGlobal::config.midiTrackLabelBg;
       // Obsolete. There is only 'New' drum tracks now.
@@ -670,6 +681,7 @@ void Appearance::resetValues()
 
       cascadeStylesheetsCheckBox->setChecked(config->cascadeStylesheets);
       cbShowIconsInMenus->setChecked(config->showIconsInMenus);
+      cbUseNativeStandardDialogs->setChecked(config->useNativeStandardDialogs);
 
       // Grab all the colours.
       updateColorItems();
@@ -766,8 +778,8 @@ bool Appearance::changeTheme()
 
     QString currentTheme = colorSchemeComboBox->currentText();
     QString lastTheme = QFileInfo(config->styleSheetFile).baseName();
-    if (lastTheme.isEmpty()) // default theme has not stylesheet
-        lastTheme = "Light Theme";
+    if (lastTheme.isEmpty())
+        lastTheme = "Dark Flat";
 
     if (lastTheme == currentTheme)
         return false;
@@ -947,6 +959,11 @@ bool Appearance::apply()
       if (config->showIconsInMenus != cbShowIconsInMenus->isChecked()) {
           restart_required = true;
           config->showIconsInMenus = cbShowIconsInMenus->isChecked();
+      }
+
+      if (config->useNativeStandardDialogs != cbUseNativeStandardDialogs->isChecked()) {
+          restart_required = true;
+          config->useNativeStandardDialogs = cbUseNativeStandardDialogs->isChecked();
       }
 
       if (radioButtonDrawOutline->isChecked())

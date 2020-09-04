@@ -116,7 +116,7 @@ extern void setAlsaClientName(const char*);
 }
 
 namespace MusEGui {
-void initIcons(int cursorSize);
+void initIcons(int cursorSize, const QString& gpath, const QString& upath);
 void initShortCuts();
 #ifdef HAVE_LASH
 extern lash_client_t * lash_client;
@@ -750,47 +750,11 @@ int main(int argc, char* argv[])
           cConfExists = cConf.exists();
         }
 
-// NOTE: This section was meant to provide a sane way for devs to easily
-//        change default settings of all kinds.
-//       But this scheme causes some problems. See the comments at the top
-//        of gconfig.cpp for details.
-#if 0
-        if (!cConfExists)
-        {
-          QFile cConfTempl (MusEGlobal::museGlobalShare + QString("/templates/MusE-seq.cfg"));
-          fprintf(stderr, "creating new config...\n");
-          if (cConfTempl.copy(MusEGlobal::configName))
-            fprintf(stderr, "  success.\n");
-          else
-            fprintf(stderr, "  FAILED!\n");
-        }
-#endif
-
         {
           QFile oldQtConfigFile(old_qtconfig_name);
           if(oldQtConfigFile.exists())
             oldQtConfigFile.rename(new_qtconfig_name);
         }
-
-// NOTE: This section was meant to provide some sane defaults for
-//        some of the window sizes and visibility.
-//       But it's a risky thing - what if Qt's binary format changes?
-//       Then new versions of the file have to be created and it's
-//        just too much for an 'unaware' coder to have to remember.
-//       We should be able to make the classes do whatever is being
-//        done here to provide default sizes, positions, and visiblilty.
-#if 0
-        QFile cConfQt (new_qtconfig_name);
-        if (! cConfQt.exists())
-        {
-          QFile cConfTemplQt (MusEGlobal::museGlobalShare + QString("/templates/MusE.conf"));
-          fprintf(stderr, "creating new qt config...\n");
-          if (cConfTemplQt.copy(cConfQt.fileName()))
-            fprintf(stderr, "  success.\n");
-          else
-            fprintf(stderr, "  FAILED!\n");
-        }
-#endif
 
         // User instruments dir:
         MusEGlobal::museUserInstruments = MusEGlobal::configPath + "/instruments";
@@ -822,6 +786,7 @@ int main(int argc, char* argv[])
         }
 
         app.instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !MusEGlobal::config.showIconsInMenus);
+        app.instance()->setAttribute(Qt::AA_DontUseNativeDialogs, !MusEGlobal::config.useNativeStandardDialogs);
 
         //=================
         //  LADSPA paths:
@@ -1234,7 +1199,12 @@ int main(int argc, char* argv[])
         
         MusECore::initAudio();
 
-        MusEGui::initIcons(MusEGlobal::config.cursorSize);
+        {
+            QString theme = QFileInfo(MusEGlobal::config.styleSheetFile).baseName();
+            MusEGui::initIcons(MusEGlobal::config.cursorSize,
+                               MusEGlobal::museGlobalShare + "/themes/" + theme,
+                               MusEGlobal::configPath + "/themes/" + theme);
+        }
 
         if (MusEGlobal::loadMESS)
           MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.

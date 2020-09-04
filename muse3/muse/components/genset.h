@@ -27,7 +27,6 @@
 
 #include "ui_gensetbase.h"
 #include "cobject.h"
-#include "mdisettings.h"
 
 #include <QButtonGroup>
 #include <QShowEvent>
@@ -46,9 +45,6 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       
    private slots:
       void updateSettings();
-      void updateMdiSettings();
-      void addMdiSettings(TopWin::ToplevelType t);
-      void applyMdiSettings();
       void apply();
       void ok();
       void cancel();
@@ -65,9 +61,6 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void browseProjDir();
       void browseStartSongFile();
       void startSongReset();
-      void traditionalPreset();
-      void mdiPreset();
-      void borlandPreset();
       void showAudioConverterSettings();
       void updateBackendDeviceSettings();
 
@@ -75,7 +68,6 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void showEvent(QShowEvent*);
       QButtonGroup *startSongGroup;
       QButtonGroup *recDrumGroup;
-      std::list<MdiSettings*> mdisettings;
       
       QString browsePluginPath(const QString& path);
       

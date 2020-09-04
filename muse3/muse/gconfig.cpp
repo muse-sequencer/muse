@@ -181,6 +181,9 @@ GlobalConfigValues config = {
       QColor(255, 170, 0),          // midiItemSelectedColor
       Qt::lightGray,                // dummyPartColor
       Qt::gray,                     // midiDividerColor
+      QColor(0, 191, 255),          // pianoCurrentKey;
+      QColor(255, 69, 0),           // pianoPressedKey;
+      QColor(255, 218, 185),        // pianoSelectedKey
 
       Qt::lightGray,                // waveNonselectedPart
       Qt::darkGray,                 // wavePeakColor
@@ -235,7 +238,8 @@ GlobalConfigValues config = {
       MusEGlobal::WaveOutLine,      // waveDrawing
 
       false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
-      
+//      false,                        // tabbedMDI
+
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
       // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
       8, 
@@ -244,6 +248,7 @@ GlobalConfigValues config = {
       18,                           // cursorSize (for custom cursors)
       false,                        // cascadeStylesheets
       true,                         // showIconsInMenus
+      true,                         // useNativeStandardDialogs
       
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;
@@ -312,7 +317,7 @@ GlobalConfigValues config = {
       false,                        // mixer1Visible;
       false,                        // mixer2Visible;
       false,                        // markerVisible;
-      true,                         // arrangerVisible;
+//      true,                         // arrangerVisible;
       true,                         // showSplashScreen
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
@@ -377,7 +382,7 @@ GlobalConfigValues config = {
       true,                         // showNoteTooltipsCheckBox
       false,                        // selectionsUndoable Whether selecting parts or events is undoable.
       false,                        // noPluginScaling
-      false,                        // openMDIWinMaximized
+//      false,                        // openMDIWinMaximized
       true                          // keepTransportWindowOnTop
     };
 

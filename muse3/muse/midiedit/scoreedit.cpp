@@ -177,7 +177,6 @@ bool ScoreCanvas::preamble_contains_keysig_init=true;
 ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(TopWin::SCORE, parent, name)
 {
-    setAttribute(Qt::WA_DeleteOnClose);
     setFocusPolicy(Qt::NoFocus);
 
     mainw    = new QWidget(this);
@@ -444,7 +443,13 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     QMenu* settings_menu = menuBar()->addMenu(tr("&Display"));
 
-        color_menu = settings_menu->addMenu(tr("Note head &colors"));
+    settings_menu->addAction(subwinAction);
+//    settings_menu->addAction(shareAction);
+    settings_menu->addAction(fullscreenAction);
+
+    settings_menu->addSeparator();
+
+    color_menu = settings_menu->addMenu(tr("Note head &colors"));
             color_actions = new QActionGroup(this);
             color_black_action = color_menu->addAction(tr("&Black"));
             color_velo_action =  color_menu->addAction(tr("&Velocity"));
@@ -486,11 +491,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
         QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"));
         connect(set_name_action, &QAction::triggered, [this]() { menu_command(CMD_SET_NAME); } );
-
-    settings_menu->addSeparator();
-    settings_menu->addAction(subwinAction);
-    settings_menu->addAction(shareAction);
-    settings_menu->addAction(fullscreenAction);
 
     config_changed();  // set configuration values, initialize shortcuts
     connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
@@ -542,7 +542,7 @@ void ScoreEdit::init_shortcuts()
     select_iloop_action->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
     select_oloop_action->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
 
-    color_menu->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
+//    color_menu->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
 
     func_quantize_action->setShortcut(shortcuts[SHRT_QUANTIZE].key);
     func_notelen_action->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
@@ -612,7 +612,7 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 
         name=newname;
 
-        setWindowTitle("MusE: Score \""+name+"\"");
+        isMdiWin() ? setWindowTitle("MusE: Score \"" + name + "\"") : setWindowTitle("MusE: Score \"" + name + "\"");
 
         if (emit_signal)
             emit name_changed();
@@ -4968,6 +4968,16 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
     else if (key == shortcuts[SHRT_TOOL_RUBBER].key)
     {
         edit_tools->set(MusEGui::RubberTool);
+        return;
+    }
+    else if (key == shortcuts[SHRT_EVENT_COLOR].key)
+    {
+        if (score_canvas->coloring_mode_init == score_canvas->COLOR_MODE_BLACK)
+            color_velo_action->trigger();
+        else if (score_canvas->coloring_mode_init == score_canvas->COLOR_MODE_VELO)
+            color_part_action->trigger();
+        else
+            color_black_action->trigger();
         return;
     }
     else //Default:

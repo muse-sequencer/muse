@@ -59,11 +59,10 @@ class ClipListEditorBaseWidget : public QWidget, public Ui::ClipListEditorBase
 //   ClipListEdit
 //---------------------------------------------------------
 
-class ClipListEdit : public TopWin {
+class ClipListEdit : public QWidget {
       Q_OBJECT
       ClipListEditorBaseWidget* editor;
 
-      virtual void closeEvent(QCloseEvent*);
       void updateList();
 
    private slots:
@@ -73,16 +72,9 @@ class ClipListEdit : public TopWin {
       void clipSelectionChanged();
       void clicked(QTreeWidgetItem*, int);
 
-   signals:
-      void isDeleting(MusEGui::TopWin*);
-
    public:
       ClipListEdit(QWidget* parent);
       ~ClipListEdit();
-      virtual void readStatus(MusECore::Xml&);
-      virtual void writeStatus(int, MusECore::Xml&) const;
-      static void readConfiguration(MusECore::Xml&);
-      static void writeConfiguration(int, MusECore::Xml&);
       };
 
 } // namespace MusEGui

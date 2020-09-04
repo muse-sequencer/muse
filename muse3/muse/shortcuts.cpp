@@ -65,7 +65,8 @@ void initShortCuts()
       defShrt(SHRT_START_REC,     Qt::Key_Asterisk, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Record"),    GLOBAL_SHRT, "toggle_rec");
       defShrt(SHRT_REC_ARM_TRACK, Qt::CTRL + Qt::Key_Return, QT_TRANSLATE_NOOP("shortcuts", "Transport: Arm current track"),    GLOBAL_SHRT, "rec_arm_track");
       defShrt(SHRT_REC_CLEAR,     Qt::Key_Backspace, QT_TRANSLATE_NOOP("shortcuts", "Transport: Clear all rec enabled tracks"),    GLOBAL_SHRT, "rec_clear");
-      defShrt(SHRT_FULLSCREEN,       Qt::CTRL + Qt::Key_F, QT_TRANSLATE_NOOP("shortcuts", "Toggle fullscreen"), GLOBAL_SHRT, "fullscreen");
+      defShrt(SHRT_FULLSCREEN,    Qt::CTRL + Qt::Key_F, QT_TRANSLATE_NOOP("shortcuts", "Toggle fullscreen"), GLOBAL_SHRT, "fullscreen");
+      defShrt(SHRT_TABBED_WIN,    Qt::Key_F4, QT_TRANSLATE_NOOP("shortcuts", "Toggle tabbed/floating editor window"), GLOBAL_SHRT, "tabbed_win");
       defShrt(SHRT_TOGGLE_REWINDONSTOP,       Qt::CTRL + Qt::SHIFT + Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Toggle rewind on stop"), GLOBAL_SHRT, "rewindonstop");
 
       defShrt(SHRT_CONFIG_SHORTCUTS, Qt::CTRL + Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), GLOBAL_SHRT, "configure_key_shortcuts");
@@ -352,21 +353,21 @@ void initShortCuts()
       // List edit:
       //-----------------------------------------------------------
 
-      defShrt(SHRT_LE_INS_NOTES, Qt::CTRL + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Insert Note"), LEDIT_SHRT,  "le_ins_note");
-      defShrt(SHRT_LE_INS_SYSEX, Qt::CTRL + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Insert SysEx"), LEDIT_SHRT, "le_ins_sysex");
-      defShrt(SHRT_LE_INS_CTRL,  Qt::CTRL + Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Insert Ctrl"), LEDIT_SHRT,  "le_ins_ctrl");
-      defShrt(SHRT_LE_INS_META,                     0, QT_TRANSLATE_NOOP("shortcuts", "Insert Meta"), LEDIT_SHRT, "le_ins_meta");
-      defShrt(SHRT_LE_INS_CHAN_AFTERTOUCH, Qt::CTRL + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Insert Channel Aftertouch"), LEDIT_SHRT, "le_ins_afttouch");
-      defShrt(SHRT_LE_INS_POLY_AFTERTOUCH, Qt::CTRL + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Insert Key Aftertouch"), LEDIT_SHRT, "le_ins_poly");
+      defShrt(SHRT_LE_INS_NOTES, Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Insert Note"), LEDIT_SHRT,  "le_ins_note");
+      defShrt(SHRT_LE_INS_SYSEX, Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Insert SysEx"), LEDIT_SHRT, "le_ins_sysex");
+      defShrt(SHRT_LE_INS_CTRL,  Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Insert Ctrl"), LEDIT_SHRT,  "le_ins_ctrl");
+      defShrt(SHRT_LE_INS_META,  Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Insert Meta"), LEDIT_SHRT, "le_ins_meta");
+//      defShrt(SHRT_LE_INS_CHAN_AFTERTOUCH, Qt::CTRL + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Insert Channel Aftertouch"), LEDIT_SHRT, "le_ins_afttouch");
+//      defShrt(SHRT_LE_INS_POLY_AFTERTOUCH, Qt::CTRL + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Insert Key Aftertouch"), LEDIT_SHRT, "le_ins_poly");
 
       //-----------------------------------------------------------
       // List masteredit:
       //-----------------------------------------------------------
-      defShrt(SHRT_LM_INS_TEMPO,  Qt::CTRL + Qt::Key_T,            QT_TRANSLATE_NOOP("shortcuts", "Insert Tempo"),     LMEDIT_SHRT,  "lm_ins_tempo");
-      defShrt(SHRT_LM_INS_SIG  ,  Qt::CTRL + Qt::Key_R,            QT_TRANSLATE_NOOP("shortcuts", "Insert Signature"), LMEDIT_SHRT,  "lm_ins_sig");
-      defShrt(SHRT_LM_EDIT_BEAT,  Qt::CTRL + Qt::SHIFT+ Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Change Event Position"),  LMEDIT_SHRT,  "lm_edit_beat");
-      defShrt(SHRT_LM_EDIT_VALUE, Qt::CTRL + Qt::Key_E,            QT_TRANSLATE_NOOP("shortcuts", "Edit Event Value"),       LMEDIT_SHRT,  "lm_edit_val");
-      defShrt(SHRT_LM_INS_KEY, Qt::CTRL + Qt::Key_K,            QT_TRANSLATE_NOOP("shortcuts", "Insert Key"),       LMEDIT_SHRT,  "lm_ins_key");
+      defShrt(SHRT_LM_INS_TEMPO,  Qt::Key_T,    QT_TRANSLATE_NOOP("shortcuts", "Insert Tempo"),     LMEDIT_SHRT,  "lm_ins_tempo");
+      defShrt(SHRT_LM_INS_SIG  ,  Qt::Key_S,    QT_TRANSLATE_NOOP("shortcuts", "Insert Signature"), LMEDIT_SHRT,  "lm_ins_sig");
+      defShrt(SHRT_LM_INS_KEY,    Qt::Key_K,    QT_TRANSLATE_NOOP("shortcuts", "Insert Key"),       LMEDIT_SHRT,  "lm_ins_key");
+      defShrt(SHRT_LM_EDIT_BEAT,  Qt::Key_P,    QT_TRANSLATE_NOOP("shortcuts", "Change Event Position"),  LMEDIT_SHRT,  "lm_edit_beat");
+      defShrt(SHRT_LM_EDIT_VALUE, Qt::Key_V,    QT_TRANSLATE_NOOP("shortcuts", "Edit Event Value"),       LMEDIT_SHRT,  "lm_edit_val");
 
       // Since the marker window is always created at start, these are actually global
       //  because they are handled there, and affect the whole app.

@@ -53,8 +53,7 @@ class TopWin : public QMainWindow
       Q_OBJECT
 
    public:
-      enum ToplevelType { PIANO_ROLL=0, LISTE, DRUM, MASTER, WAVE, //there shall be no
-         LMASTER, CLIPLIST, MARKER, SCORE, ARRANGER,               //gaps in the enum!
+      enum ToplevelType { PIANO_ROLL=0, DRUM, MASTER, WAVE, SCORE, ARRANGER, // no gaps in the enum!
 #ifdef PATCHBAY
          M_PATCHBAY,
 #endif /* PATCHBAY */
@@ -96,9 +95,9 @@ class TopWin : public QMainWindow
       void resize(int w, int h);
       void resize(const QSize&);
  
-      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
-      static bool _sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
-      static bool _defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
+//      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
+//      static bool _sharesMenusToolbars[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _openTabbed[TOPLEVELTYPE_LAST_ENTRY];
  
   private:
       QMdiSubWindow* mdisubwin;
@@ -112,7 +111,7 @@ class TopWin : public QMainWindow
 
   protected:
       QAction* subwinAction;
-      QAction* shareAction;
+//      QAction* shareAction;
       QAction* fullscreenAction;
 
       ToplevelType _type;
