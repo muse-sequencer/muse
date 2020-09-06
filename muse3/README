@@ -143,22 +143,48 @@ details.
   
   
   =================================
-      Building MusE under Ubuntu:
+      Building MusE under Debian/Ubuntu:
   =================================
 
-    1. Open terminal and type (either on one line or with several 'sudo apt-get install <packages'):
-        sudo apt-get install build-essential cmake libsndfile1-dev libsamplerate0-dev\
-            libjack-jackd2-dev ladspa-sdk qt5-default qttools5-dev qttools5-dev-tools\
-            liblo-dev dssi-dev lv2-dev libsamplerate0-dev libsndfile1-dev git\
-            libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev libqt5svg5-dev\
-            libinstpatch-dev liblilv-dev liblrdf0-dev
-    2. Clone muse source with command: 
-     'git clone https://github.com/muse-sequencer/muse.git'
-    3. Type 'cd muse/muse3'
-    4. Type './compile_muse.sh' and wait until it is finished
-    5. Type 'cd build'
-    6. Type `sudo make install` - this will install muse3 to /usr/local
-    7. Run it by typing `muse3`
+    1. Install tools:
+	sudo apt-get install\
+         git build-essential cmake
+    2. Clone muse source:
+	git clone https://github.com/muse-sequencer/muse.git
+    3. Install libraries:
+	sudo apt-get install\
+         libsndfile1-dev\
+         libsamplerate0-dev\
+         libjack-jackd2-dev\
+         ladspa-sdk\
+         qt5-default\
+         qttools5-dev\
+         qttools5-dev-tools\
+         liblo-dev\
+         dssi-dev\
+         lv2-dev\
+         libsamplerate0-dev\
+         libsndfile1-dev\
+         libfluidsynth-dev\
+         libgtkmm-2.4-dev\
+         librtaudio-dev\
+         libqt5svg5-dev\
+         libinstpatch-dev\
+         liblilv-dev\
+         liblrdf0-dev\
+         liblash-compat-dev\
+         librubberband-dev\
+         python3-dev
+    4. Change directory:
+        cd muse/muse3
+    5. Compile:
+        ./compile_muse.sh
+    6. Change directory:
+        cd build
+    7. Install in /usr/local:
+        sudo make install
+    8. Run:
+        muse3
   
   =============================
       Generic building MusE:
