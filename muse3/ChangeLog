@@ -1,4 +1,10 @@
 04.09.2020
+    - New streamlined GUI: 
+      Tabbed MDI as default, with the option to detach/float the graphical editor 
+      windows, per preset or dynamically (mainly for use with multi-monitor setups). 
+      List based editors (markers, clips, master list, midi events) changed to docks.
+      Arranger as the central point is fixed to the main window, 
+      not longer detachable/closeable. (kybos) 
     - Reused snap/quantize shortcuts in midieditors (1-6) as snap shortcuts in arranger
       as I discovered it was missing, and it's pretty much the same thing. Also
       added a shortcut for setting quantize to off (8). Execution slightly
