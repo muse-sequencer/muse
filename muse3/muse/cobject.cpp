@@ -446,7 +446,10 @@ void TopWin::setIsMdiWin(bool val)
 
             fullscreenAction->setEnabled(false);
             fullscreenAction->setChecked(false);
-            subwinAction->setChecked(true);
+            {
+                const QSignalBlocker blocker(subwinAction);
+                subwinAction->setChecked(true);
+            }
             muse->updateWindowMenu();
 
             if(MusEGlobal::config.fixFrozenMDISubWindows)

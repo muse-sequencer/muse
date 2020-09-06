@@ -995,7 +995,7 @@ MusE::MusE() : QMainWindow()
 
 
       mdiArea=new MuseMdiArea(this);
-      mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
+//      mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -1006,7 +1006,7 @@ MusE::MusE() : QMainWindow()
       QTabBar* tb = mdiArea->findChild<QTabBar*>();
       if (tb) {
           tb->setExpanding(false);
-          //              tb->setAutoHide(true);
+//          tb->setAutoHide(true);
       }
 //      viewArrangerAction->setEnabled(false);
 
@@ -2268,10 +2268,10 @@ void MusE::startListEditor()
 
 void MusE::startListEditor(MusECore::PartList* pl)
 {
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+//    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
     QDockWidget* dock = new QDockWidget("List Editor", this);
-    //      markerDock->setObjectName("listeditDock");
+    //      dock->setObjectName("listeditDock");
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
     dock->setWidget(listEditor);
@@ -2285,6 +2285,8 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
         dock->setWindowTitle("Part <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
     }
+
+//    dock->setObjectName(dock->windowTitle());
 
     addDockWidget(Qt::BottomDockWidgetArea, dock);
 
