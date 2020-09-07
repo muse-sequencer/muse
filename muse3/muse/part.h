@@ -37,11 +37,12 @@
 
 namespace MusECore {
 
-class MidiTrack;
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class Track;
-class Part;
+class MidiTrack;
 class WaveTrack;
-class PendingOperationList;
+class Xml;
 
 //---------------------------------------------------------
 //   MidiCtrlViewState
@@ -113,18 +114,6 @@ public:
   void read(Xml&);
   void write(int, Xml&) const;
 };
-
-
-struct ClonePart {
-      const Part* cp;
-      int id;
-      QUuid _uuid;
-      bool is_deleted;
-      ClonePart(const Part*, int i = -1);
-      };
-
-typedef std::list<ClonePart> CloneList;
-typedef CloneList::iterator iClone;
 
 //---------------------------------------------------------
 //   Part
@@ -274,6 +263,16 @@ class WavePart : public Part {
       virtual void dump(int n = 0) const;
       };
 
+struct ClonePart {
+      const Part* cp;
+      int id;
+      QUuid _uuid;
+      bool is_deleted;
+      ClonePart(const Part*, int i = -1);
+      };
+
+typedef std::list<ClonePart> CloneList;
+typedef CloneList::iterator iClone;
 
 //---------------------------------------------------------
 //   PartList
@@ -294,10 +293,6 @@ class PartList : public PartList_t {
                   delete i->second;
             clear();
             }
-            
-      void addOperation(Part* part, PendingOperationList& ops); 
-      void delOperation(Part* part, PendingOperationList& ops);
-      void movePartOperation(Part* part, unsigned int new_pos, PendingOperationList& ops, Track* track = 0);
       };
 
 typedef PartList_t::iterator iPart;
@@ -308,12 +303,7 @@ extern void chainCheckErr(Part* p);
 extern void unchainTrackParts(Track* t);
 extern void chainTrackParts(Track* t);
 extern void addPortCtrlEvents(Part* part, bool doClones);
-extern void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
-extern void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops);
 extern void removePortCtrlEvents(Part* part, bool doClones);
-extern void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops);
-extern bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops);
-extern void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops);
 
 } // namespace MusECore
 

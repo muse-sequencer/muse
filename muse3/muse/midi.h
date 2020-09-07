@@ -25,32 +25,25 @@
 #ifndef __MIDI_H__
 #define __MIDI_H__
 
+#include <QString>
+
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "midi_consts.h"
 
-class QString;
-
 namespace MusECore {
 
 class EventList;
-
-enum AudioTickSound {
-    beatSound,
-    measureSound,
-    accent1Sound,
-    accent2Sound
-};
-
+class MPEventList;
+class MidiTrack;
 class MidiInstrument;
+
 extern QString nameSysex(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
 extern QString sysexComment(unsigned int len, const unsigned char* buf, MidiInstrument* instr = 0);
 extern QString midiMetaName(int meta);
 
-class MPEventList;
-class MidiTrack;
 // Division can be zero meaning the event times are to be taken verbosely
 //  (as ticks already), no conversion is to be applied.
 extern void buildMidiEventList(EventList* mel, const MPEventList& el, MidiTrack* track, int division, bool addSysexMeta, bool doLoops);

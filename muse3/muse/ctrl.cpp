@@ -28,7 +28,6 @@
 //#define _CTRL_DEBUG_
 
 #include <QLocale>
-#include <QColor>
 #include <map>
 
 #include "muse_math.h"
@@ -37,6 +36,8 @@
 #include "globals.h"
 #include "ctrl.h"
 #include "midictrl.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
 #include "xml.h"
 
 namespace MusECore {

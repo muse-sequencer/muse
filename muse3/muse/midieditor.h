@@ -47,7 +47,7 @@ class EventCanvas;
 class MTScale;
 class ScrollScale;
 class TrackInfoWidget;
-//class WaveView;
+class RasterizerModel;
 
 //---------------------------------------------------------
 //   MidiEditor
@@ -72,6 +72,15 @@ class MidiEditor : public TopWin  {
 
       CtrlEditList ctrlEditList;
       int _raster;
+      RasterizerModel *_rasterizerModel;
+      // The X origin that is applied to any canvases.
+      int _canvasXOrigin;
+      // The X mag minimum that is applied to any ScrollScale controls.
+      // Note that global midi division will also be taken into account.
+      int _minXMag;
+      // The X mag maximum that is applied to any ScrollScale controls.
+      int _maxXMag;
+
       QGridLayout* mainGrid;
       QWidget* mainw;
       virtual void readStatus(MusECore::Xml&);
@@ -110,7 +119,7 @@ class MidiEditor : public TopWin  {
       unsigned rasterVal1(unsigned v) const;
       unsigned rasterVal2(unsigned v) const;
       int raster() const           { return _raster; }
-      void setRaster(int val)      { _raster = val; }
+      virtual void setRaster(int val)      { _raster = val; }
       MusECore::PartList* parts()            { return _pl;  }
       const MusECore::PartList* parts() const { return _pl;  }
       int curDrumInstrument() const  { return _curDrumInstrument; }

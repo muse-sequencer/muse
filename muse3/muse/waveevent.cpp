@@ -32,6 +32,7 @@
 #include "wave.h"
 #include "part.h"
 #include "wave_helper.h"
+#include "audio_fifo.h"
 
 #include <iostream>
 #include "muse_math.h"

@@ -39,6 +39,7 @@
 #include "helper.h"
 #include "filedialog.h"
 #include "al/al.h"
+#include "undo.h"
 
 #include "song.h"
 #include "operations.h"
@@ -46,6 +47,12 @@
 #include "audio_converter_settings.h"
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QButtonGroup>
+#include <QShowEvent>
+#include <QWidget>
+#include "mdisettings.h"
 
 namespace MusEGui {
 
@@ -408,9 +415,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.minControlProcessPeriod = minControlProcessPeriods[mcp];
 
       int div            = midiDivisionSelect->currentIndex();
-      MusEGlobal::config.division    = divisions[div];
-      // Make sure the AL namespace variable mirrors our variable.
-      AL::division = MusEGlobal::config.division;
+      const int new_div  = divisions[div];
       div                = guiDivisionSelect->currentIndex();
       MusEGlobal::config.guiDivision = divisions[div];
       
@@ -554,6 +559,13 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.pluginCacheTriggerRescan = pluginRescanButton->isChecked();
       
       applyMdiSettings();
+
+      // If the division is to be changed, this will RE-NORMALIZE things like the tempo and signature lists,
+      //  and RE-FILL the various editor rasterization (snap) table values.
+      // The various editors will respond and deal with changing each of their local raster values.
+      if(new_div != MusEGlobal::config.division)
+        // True = Operation is non-undoable here.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMidiDivision, new_div, 0, 0, true));
       
       // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
       MusEGlobal::muse->changeConfig(true);

@@ -24,12 +24,20 @@
 #define __COMBOBOX_H__
 
 #include <QToolButton>
-#include <QAction>
+#include <QIcon>
+#include <QList>
 
 #include "ttoolbutton.h"
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QWidget;
 class QMenu;
 class QIcon;
+class QAction;
+class QString;
+class QMouseEvent;
+class QWheelEvent;
 
 namespace MusEGui {
 

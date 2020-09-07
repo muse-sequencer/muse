@@ -40,6 +40,7 @@
 #include "globals.h"
 #include "xml.h"
 #include "drummap.h"
+#include "drum_ordering.h"
 #include "event.h"
 #include "marker/marker.h"
 #include "midiport.h"

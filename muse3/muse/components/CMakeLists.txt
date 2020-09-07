@@ -73,7 +73,8 @@ QT5_WRAP_CPP (components_mocs
       didyouknow.h
       doublelabel.h  
 #       doublespinbox.h  
-      editevent.h      
+      editevent.h
+      editinstrument.h
       elided_label.h
       filedialog.h  
       genset.h  
@@ -111,6 +112,7 @@ QT5_WRAP_CPP (components_mocs
       posedit.h  
       poslabel.h  
       projectcreateimpl.h
+      routedialog.h
       routepopup.h  
       #rubberband_settings.h
       scroll_area.h
@@ -165,6 +167,7 @@ file (GLOB components_ui_files
       copy_on_write_base.ui
       didyouknow.ui  
       editctrlbase.ui  
+      editinstrumentbase.ui
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
@@ -180,6 +183,7 @@ file (GLOB components_ui_files
       pasteeventsdialogbase.ui
       plugindialogbase.ui
       projectcreate.ui
+      routedialogbase.ui
       #rubberband_settings_base.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
@@ -227,6 +231,7 @@ file (GLOB components_source_files
 #       doublespinbox.cpp
 #       drange.cpp
       editevent.cpp
+      editinstrument.cpp
       elided_label.cpp
       filedialog.cpp 
       genset.cpp 
@@ -265,6 +270,7 @@ file (GLOB components_source_files
       posedit.cpp 
       poslabel.cpp
       projectcreateimpl.cpp
+      routedialog.cpp
       routepopup.cpp 
       #rubberband_settings.cpp
 #       scldiv.cpp

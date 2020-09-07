@@ -30,19 +30,20 @@
 #include <QListWidgetItem>
 
 #include "spinboxFP.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midictrl.h"
-#include "event.h"
-#include "mpevent.h"
 #include "midiitransform.h"
 #include "track.h"
 #include "song.h"
-#include "xml.h"
 #include "globals.h"
 #include "gconfig.h"
-//#include "comboQuant.h"
-//#include "pitchedit.h"
 #include "helper.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QCloseEvent>
+#include <QButtonGroup>
+#include "xml.h"
+#include "mpevent.h"
 
 #define MIDITRANSFORM_NOTE        0
 #define MIDITRANSFORM_POLY        1

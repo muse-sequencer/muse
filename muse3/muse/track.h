@@ -26,6 +26,8 @@
 #define __TRACK_H__
 
 #include <QString>
+#include <QPixmap>
+#include <QColor>
 
 #include <vector>
 #include <algorithm>
@@ -42,24 +44,19 @@
 #include "controlfifo.h"
 #include "latency_info.h"
 #include "transport_obj.h"
-#include "midiport.h"
+#include "plugin.h"
+#include "latency_compensator.h"
 
-class QPixmap;
-class QColor;
-
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 namespace MusECore {
 class Pipeline;
 class PluginI;
-class SynthI;
+class MidiPort;
 class Xml;
 struct DrumMap;
-struct ControlEvent;
-struct Port;
-class PendingOperationList;
-class Undo;
 class WorkingDrumMapList;
 class WorkingDrumMapPatchList;
-struct MidiCtrlValRemapOperation;
 class LatencyCompensator;
 
 typedef std::vector<double> AuxSendValueList;
@@ -597,8 +594,6 @@ class MidiTrack : public Track {
       void set_drummap_ordering_tied_to_patch(bool);
       bool drummap_ordering_tied_to_patch() { return _drummap_ordering_tied_to_patch; }
 
-      void MidiCtrlRemapOperation(int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop);
-
       // Prints a handy debug table of drum map values and overrides etc.
       void dumpMap();
       };
@@ -756,7 +751,6 @@ class AudioTrack : public Track {
       double auxSend(int idx) const;
       void setAuxSend(int idx, double v);
       void addAuxSend(int n);
-      void addAuxSendOperation(int n, PendingOperationList& ops);
 
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
@@ -827,8 +821,6 @@ class AudioTrack : public Track {
       // automation
       virtual AutomationType automationType() const    { return _automationType; }
       virtual void setAutomationType(AutomationType t);
-      // Fills operations if given, otherwise creates and executes its own operations list.
-      void processAutomationEvents(Undo* operations = 0);
       CtrlRecList* recEvents()                         { return &_recEvents; }
       bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // return true if event cannot be delivered
       void enableController(int track_ctrl_id, bool en);
@@ -846,7 +838,7 @@ class AudioTrack : public Track {
       void eraseRangeACEvents(int, int, int);
       void addACEvent(int, int, double);
       void changeACEvent(int id, int frame, int newframe, double newval);
-      const AuxSendValueList &getAuxSendValueList() { return _auxSend; }      
+      AuxSendValueList *getAuxSendValueList() { return &_auxSend; }
       };
 
 //---------------------------------------------------------
@@ -1259,14 +1251,12 @@ typedef tracklist<AudioAux*>::iterator iAudioAux;
 typedef tracklist<AudioAux*>::const_iterator ciAudioAux;
 typedef tracklist<AudioAux*> AuxList;
 
-typedef tracklist<SynthI*>::iterator iSynthI;
-typedef tracklist<SynthI*>::const_iterator ciSynthI;
-typedef tracklist<SynthI*> SynthIList;
+// NOTE: There is also a tracklist for SynthI* found in synth.h
+
 
 extern void addPortCtrlEvents(MidiTrack* t, bool drum_ctls = true, bool non_drum_ctls = true);
 extern void removePortCtrlEvents(MidiTrack* t, bool drum_ctls = true, bool non_drum_ctls = true);
-extern void addPortCtrlEvents(Track* track, PendingOperationList& ops);
-extern void removePortCtrlEvents(Track* track, PendingOperationList& ops);
+
 } // namespace MusECore
 
 #endif

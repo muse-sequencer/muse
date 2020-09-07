@@ -25,32 +25,30 @@
 #define __ARRANGER_H__
 
 #include <vector>
+#include <QWidget>
 #include <QString>
-#include <QAction>
-#include <QCheckBox>
-#include <QMainWindow>
-#include <QMenu>
-#include <QWheelEvent>
-#include <QKeyEvent>
-#include <QPoint>
-#include <QComboBox>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 
 #include "type_defs.h"
-#include "midieditor.h"
-#include "pcanvas.h"
-#include "trackautomationview.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QKeyEvent;
+class QPoint;
+class QComboBox;
+class QScrollBar;
+class QVBoxLayout;
+class QHBoxLayout;
+class QScrollArea;
+class QGridLayout;
 
 namespace MusECore {
 class Track;
 class Xml;
+class PartList;
 }
 
 namespace MusEGui {
 class ArrangerView;
-class AudioStrip;
 class Header;
 class LabelCombo;
 class MTScale;
@@ -62,7 +60,10 @@ class TrackInfoWidget;
 class TList;
 class ArrangerCanvasLayout;
 class ArrangerHScrollLayout;
+class PartCanvas;
 class CompactToolButton;
+class RasterizerModel;
+class RasterLabelCombo;
 
 //---------------------------------------------------------
 //   Arranger
@@ -76,30 +77,33 @@ class Arranger : public QWidget {
       ArrangerView* _parentWin;
       QWidget* editor;
       int _quant, _raster;
-      QComboBox* _rasterCombo;
+      RasterizerModel *_rasterizerModel;
+      RasterLabelCombo* _rasterCombo;
       PartCanvas* canvas;
       ScrollScale* hscroll;
       QScrollBar* vscroll;
       QVBoxLayout* tlistLayout;
       QGridLayout* egrid;
-//      ArrangerCanvasLayout* egrid;
       QHBoxLayout* bottomHLayout;
-//      ArrangerHScrollLayout* bottomHLayout;
       TList* list;
       Header* header;
       MTScale* time;
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       TrackInfoWidget* trackInfoWidget;
-      AudioStrip* waveTrackInfo;
       QScrollArea* tracklistScroll;
       QWidget* tracklist;
+      // The X origin that is applied to any canvases.
+      int _canvasXOrigin;
+      // The X mag minimum that is applied to any ScrollScale controls.
+      // Note that global midi division will also be taken into account.
+      int _minXMag;
+      // The X mag maximum that is applied to any ScrollScale controls.
+      int _maxXMag;
 
       MusECore::Track* selected;
 
-      int trackInfoType;
       Splitter* split;
-      int songType;
       PosLabel* cursorPos;
       SpinBox* globalTempoSpinBox;
       SpinBox* globalPitchSpinBox;
@@ -115,8 +119,14 @@ class Arranger : public QWidget {
       void setHeaderSizes();
       void initTracklistHeader();
 
+      // Sets up a reasonable zoom minimum and/or maximum based on
+      //  the current global midi division (ticks per quarter note)
+      //  which has a very wide range (48 - 12288).
+      // Also sets the canvas and time scale offsets accordingly.
+      void setupHZoomRange();
+
    private slots:
-      void rasterChanged(int);
+      void rasterChanged(int raster);
       void songlenChanged(int);
       void showTrackInfo(bool);
       void trackSelectionChanged();
@@ -188,12 +198,12 @@ class Arranger : public QWidget {
 
       MusECore::Track* curTrack() const { return selected; }
       void cmd(int);
-      bool isSingleSelection() const { return canvas->isSingleSelection(); }
-      int selectionSize() const { return canvas->selectionSize(); }
-      bool itemsAreSelected() const { return canvas->itemsAreSelected(); }
+      bool isSingleSelection() const;
+      int selectionSize() const;
+      bool itemsAreSelected() const;
       void setGlobalTempo(int);
       void clear();
-      void songIsClearing() { canvas->songIsClearing(); }
+      void songIsClearing() const;
       void setDefaultSplitterSizes();
       void updateHeaderCustomColumns();
       void toggleTrackInfo();
@@ -201,6 +211,8 @@ class Arranger : public QWidget {
       unsigned cursorValue() { return cursVal; }
       
       ArrangerView* parentWin() const { return _parentWin; }
+
+      int rasterVal() const;
 
       bool setRasterVal(int);
 

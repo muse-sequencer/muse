@@ -51,7 +51,7 @@
 #include "gconfig.h"
 #include "route.h"
 
-#include "midi.h"
+#include "midi_consts.h"
 #include "mididev.h"
 #include "mpevent.h"
 

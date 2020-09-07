@@ -30,17 +30,16 @@
 #include "type_defs.h"
 #include "thread.h"
 #include "pos.h"
-#include "mpevent.h"
 #include "route.h"
 #include "event.h"
-#include "minstrument.h"
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 namespace MusECore {
 class AudioDevice;
 class AudioTrack;
-class Event;
-class EventList;
 class MidiDevice;
+class MidiInstrument;
 class MidiPlayEvent;
 class MidiPort;
 class MidiTrack;

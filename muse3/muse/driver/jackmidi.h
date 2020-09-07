@@ -24,6 +24,8 @@
 #ifndef __JACKMIDI_H__
 #define __JACKMIDI_H__
 
+#include <QString>
+
 #include <map>
 
 #include <jack/jack.h>
@@ -33,11 +35,9 @@
 #include "route.h"
 #include "mpevent.h"
 
-class QString;
-
 namespace MusECore {
-class MidiRecordEvent;
-class MidiPlayEvent;
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class Xml;
 
 // It appears one client port per remote port will be necessary.
@@ -57,8 +57,6 @@ class MidiJackDevice : public MidiDevice {
       MPEventList _outPlaybackEvents;
       MPEventList _outUserEvents;
       
-      //RouteList _routes;
-      
       virtual QString open();
       virtual void close();
       //bool putEvent(int*);
@@ -69,9 +67,6 @@ class MidiJackDevice : public MidiDevice {
       // Port is not midi port, it is the port(s) created for MusE.
       // evBuffer is the Jack buffer.
       bool queueEvent(const MidiPlayEvent&, void* evBuffer);
-      
-      //virtual bool putMidiEvent(const MidiPlayEvent&);  // REMOVE Tim.
-      //bool sendEvent(const MidiPlayEvent&);
       
       void eventReceived(jack_midi_event_t*);
 
@@ -88,8 +83,6 @@ class MidiJackDevice : public MidiDevice {
       virtual inline MidiDeviceType deviceType() const { return JACK_MIDI; } 
       virtual void setName(const QString&);
       
-      //virtual void handleStop();  
-      //virtual void handleSeek();
       virtual void processMidi(unsigned int curFrame = 0);
       
       virtual void recordEvent(MidiRecordEvent&);

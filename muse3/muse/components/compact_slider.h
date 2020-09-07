@@ -37,7 +37,7 @@ class QEvent;
 namespace MusEGui {
 
 class PopupDoubleSpinBox;
-//class LCDPainter;
+// //class LCDPainter;
 
 //---------------------------------------------------------
 //   CompactSlider

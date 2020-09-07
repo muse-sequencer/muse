@@ -29,10 +29,11 @@
 #include "midictrl.h"
 #include "globals.h"
 #include "audio.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midiport.h"
 #include "minstrument.h"
 #include "track.h"
+#include "mpevent.h"
 
 namespace MusECore {
 
@@ -724,7 +725,7 @@ MidiEncoder::MidiEncoder()
 void MidiEncoder::encodeEvent(const MidiRecordEvent& ev, int port, int channel)
 {
   const int type = ev.type();
-  if(type != ME_PITCHBEND || type != ME_AFTERTOUCH || type != ME_POLYAFTER || type != ME_PROGRAM || type != ME_CONTROLLER)
+  if(type != ME_PITCHBEND && type != ME_AFTERTOUCH && type != ME_POLYAFTER && type != ME_PROGRAM && type != ME_CONTROLLER)
     return;
 
   MidiPort* mp = &MusEGlobal::midiPorts[port];

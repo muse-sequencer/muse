@@ -31,6 +31,8 @@
 #include <vector>
 #include <string>
 #include <QString>
+#include <QList>
+
 #include "midiedit/drummap.h"
 
 #include "config.h"
@@ -47,6 +49,8 @@
 //  already allow modifying an instrument.
 //#define _USE_INSTRUMENT_OVERRIDES_
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 namespace MusEGui {
 class PopupMenu;
 }
@@ -54,10 +58,8 @@ class PopupMenu;
 namespace MusECore {
 class EventList;
 class MidiControllerList;
-class MidiPort;
 class MidiPlayEvent;
 class Xml;
-
 
 //---------------------------------------------------------
 //   Patch

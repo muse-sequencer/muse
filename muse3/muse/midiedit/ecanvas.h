@@ -28,26 +28,25 @@
 #include "noteinfo.h"
 #include "mpevent.h"
 
-#include "midieditor.h"
-
-#include "helper.h"
-
-#include <QEvent>
-#include <QKeyEvent>
 #include <QVector>
-#include <QToolTip>
+#include <QString>
+
+#include <map>
 
 #define KH        13
 
-class QMimeData;
-class QDrag;
-class QString;
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QDropEvent;
+class QEvent;
+class QKeyEvent;
+class QToolTip;
 
 namespace MusECore {
 class MidiPart;
 class MidiTrack;
 class Part;
+class Event;
 class Undo;
 
 struct PartToChange
@@ -62,6 +61,8 @@ typedef std::map<Part*, PartToChange>::iterator iPartToChange;
 
 namespace MusEGui {
 
+class CItem;
+class MidiEditor;
 
 //---------------------------------------------------------
 //   EventCanvas

@@ -22,8 +22,11 @@
 //=========================================================
 
 #include <QAbstractButton>
-#include <QButtonGroup>
 #include "function_dialog_base.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QWidget>
+#include <QButtonGroup>
 #include "xml.h"
 
 namespace MusEGui {

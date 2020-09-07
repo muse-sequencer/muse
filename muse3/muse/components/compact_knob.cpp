@@ -40,6 +40,13 @@
 #include <QFlags>
 #include <QToolTip>
 #include <QString>
+#include <QFontMetrics>
+#include <QResizeEvent>
+#include <QPainter>
+#include <QEvent>
+#include <QPaintEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_KNOB(dev, format, args...)  //fprintf(dev, format, ##args);

@@ -37,6 +37,7 @@
 #include "app.h"
 #include "gconfig.h"
 #include "audio.h"
+#include "song.h"
 
 #include <limits.h>
 
@@ -48,6 +49,22 @@
 #include <QToolButton>
 #include <QMenuBar>
 #include <QMenu>
+#include <QList>
+#include <QHeaderView>
+#include <QListView>
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QCloseEvent>
+#include <QToolBar>
+#include "master.h"
+#include "mtscale.h"
+#include "poslabel.h"
+#include "scrollscale.h"
+#include "sigscale.h"
+#include "tempolabel.h"
+#include "tscale.h"
+#include "raster_widgets.h"
+#include "xml.h"
 
 namespace MusEGui {
 
@@ -90,6 +107,23 @@ void MasterEdit::songChanged(MusECore::SongChangedStruct_t type)
       if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
         
+      if (type & SC_DIVISION_CHANGED)
+      {
+        // The division has changed. The raster table and raster model will have been
+        //  cleared and re-filled, so any views on the model will no longer have a
+        //  current item and our current raster value will be invalid. They WILL NOT
+        //  emit an activated signal. So we must manually select a current item and
+        //  raster value here. We could do something fancy to try to keep the current
+        //  index - for example stay on quarter note - by taking the ratio of the new
+        //  division to old division and apply that to the old raster value and try
+        //  to select that index, but the division has already changed.
+        // So instead, simply try to select the current raster value. The index in the box may change.
+        changeRaster(_raster);
+
+        // Now set a reasonable zoom (mag) range.
+        setupHZoomRange();
+      }
+        
       if (type & SC_SIG) {
             sign->redraw();
             }
@@ -104,7 +138,21 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       {
       setWindowTitle(tr("MusE: Mastertrack"));
       setFocusPolicy(Qt::NoFocus);
-      _raster = 0;      // measure
+
+      _canvasXOrigin = 0;
+//       _minXMag = -100;
+      _minXMag = -500;
+      _maxXMag = 2;
+      _rasterizerModel->setDisplayFormat(RasterizerModel::FractionFormat);
+      _rasterizerModel->setMaxRows(6);
+      QList<Rasterizer::Column> rast_cols;
+      rast_cols << 
+        Rasterizer::NormalColumn;
+      _rasterizerModel->setVisibleColumns(rast_cols);
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      _rasterInit = _rasterizerModel->checkRaster(_rasterInit);
+      _raster = _rasterInit;
 
       //---------Pulldown Menu----------------------------
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
@@ -143,16 +191,9 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       tempo->setToolTip(tr("Tempo at cursor position"));
       info->addWidget(tempo);
 
-      const char* rastval[] = {
-            QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Off"), QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Bar"), "1/2", "1/4", "1/8", "1/16"
-            };
-      rasterLabel = new MusEGui::LabelCombo(tr("Snap"), nullptr);
+      rasterLabel = new RasterLabelCombo(RasterLabelCombo::ListView, _rasterizerModel, this, "RasterLabelCombo");
       rasterLabel->setFocusPolicy(Qt::TabFocus);
-      for (int i = 0; i < 6; i++)
-            rasterLabel->insertItem(i, tr(rastval[i]));
-      rasterLabel->setCurrentIndex(1);
       info->addWidget(rasterLabel);
-      connect(rasterLabel, SIGNAL(activated(int)), SLOT(_setRaster(int)));
 
       //---------------------------------------------------
       //    master
@@ -160,17 +201,28 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
 
       int xscale = -20;
       int yscale = -500;
-      hscroll   = new MusEGui::ScrollScale(-100, -2, xscale, MusEGlobal::song->len(), Qt::Horizontal, mainw);
+      hscroll   = new MusEGui::ScrollScale(
+        (_minXMag * MusEGlobal::config.division) / 384,
+        _maxXMag,
+        xscale,
+        MusEGlobal::song->len(),
+        Qt::Horizontal,
+        mainw);
       vscroll   = new MusEGui::ScrollScale(-1000, -100, yscale, 120000, Qt::Vertical, mainw);
       vscroll->setRange(30000, 250000);
-      time1     = new MusEGui::MTScale(&_raster, mainw, xscale);
+      time1     = new MusEGui::MTScale(_raster, mainw, xscale);
       sign      = new MusEGui::SigScale(&_raster, mainw, xscale);
 
       canvas    = new Master(this, mainw, xscale, yscale);
 
-      time2     = new MusEGui::MTScale(&_raster, mainw, xscale);
+      time2     = new MusEGui::MTScale(_raster, mainw, xscale);
       tscale    = new TScale(mainw, yscale);
       time2->setBarLocator(true);
+
+      canvas->setOrigin(_canvasXOrigin, 0);
+      time1->setOrigin(_canvasXOrigin, 0);
+
+      changeRaster(_raster);
 
       //---------------------------------------------------
       //    Rest
@@ -220,6 +272,8 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
+      connect(rasterLabel, &RasterLabelCombo::rasterChanged, [this](int raster) { _setRaster(raster); } );
+
       initTopwinState();
       finalizeInit();
       }
@@ -262,17 +316,7 @@ void MasterEdit::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::TagEnd:
                         if (tag == "master") {
                               // set raster
-                              int item = 0;
-                              switch(_raster) {
-                                    case 1:   item = 0; break;
-                                    case 0:   item = 1; break;
-                                    case 768: item = 2; break;
-                                    case 384: item = 3; break;
-                                    case 192: item = 4; break;
-                                    case 96:  item = 5; break;
-                                    }
-                              _rasterInit = _raster;
-                              rasterLabel->setCurrentIndex(item);
+                              changeRaster(_raster);
                               return;
                               }
                   default:
@@ -355,14 +399,39 @@ void MasterEdit::focusCanvas()
 //   _setRaster
 //---------------------------------------------------------
 
-void MasterEdit::_setRaster(int index)
+void MasterEdit::_setRaster(int raster)
       {
-      static int rasterTable[] = {
-            1, 0, 768, 384, 192, 96
-            };
-      _raster = rasterTable[index];
+      MidiEditor::setRaster(raster);
       _rasterInit = _raster;
+      time1->setRaster(_raster);
+      time2->setRaster(_raster);
+      canvas->redrawGrid();
+      for (auto it : ctrlEditList)
+          it->redrawCanvas();
       focusCanvas();
+      }
+
+//---------------------------------------------------------
+//   changeRaster
+//---------------------------------------------------------
+
+int MasterEdit::changeRaster(int val)
+      {
+        const RasterizerModel* rast_mdl = rasterLabel->rasterizerModel();
+        MidiEditor::setRaster(rast_mdl->checkRaster(val));
+        _rasterInit = _raster;
+        time1->setRaster(_raster);
+        time2->setRaster(_raster);
+        const QModelIndex mdl_idx = rast_mdl->modelIndexOfRaster(_raster);
+        if(mdl_idx.isValid())
+          rasterLabel->setCurrentModelIndex(mdl_idx);
+        else
+          fprintf(stderr, "MasterEdit::changeRaster: _raster %d not found in box!\n", _raster);
+
+        canvas->redrawGrid();
+        for (auto it : ctrlEditList)
+            it->redrawCanvas();
+        return _raster;
       }
 
 //---------------------------------------------------------
@@ -395,4 +464,14 @@ void MasterEdit::setTempo(int val)
             }
       }
       
+//---------------------------------------------------------
+//   setupHZoomRange
+//---------------------------------------------------------
+
+void MasterEdit::setupHZoomRange()
+{
+  const int min = (_minXMag * MusEGlobal::config.division) / 384;
+  hscroll->setScaleRange(min, _maxXMag);
+}
+
 } // namespace MusEGui

@@ -20,17 +20,17 @@
 //
 //=========================================================
 
-#include "sig.h"  // Tim.
+#include "sig.h"
 
 #include "markerview.h"
 #include "xml.h"
 #include "globals.h"
-#include "app.h"
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
 #include "posedit.h"
 #include "audio.h"
+#include "pos.h"
 
 #include <cstdint>
 
@@ -44,6 +44,8 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QTreeWidget>
+#include <QString>
 
 namespace MusEGui {
 
@@ -75,6 +77,8 @@ bool MarkerItem::lock() const
       {
       return _marker.type() == MusECore::Pos::FRAMES;
       }
+
+MusECore::Marker MarkerItem::marker() const { return _marker; }
 
 void MarkerItem::setMarker(const MusECore::Marker& m)
 {

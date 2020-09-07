@@ -28,14 +28,7 @@
 
 #include <QApplication>
 #include <QDesktopWidget>
-#include <QMenu>
-#include <QPainter>
 #include <QCursor>
-#include <QTimer>
-#include <QKeyEvent>
-#include <QMouseEvent>
-#include <QWheelEvent>
-#include <QRect>
 #include <QScreen>
 
 #include <vector>
@@ -43,7 +36,6 @@
 #include "gconfig.h"
 #include "song.h"
 #include "event.h"
-#include "citem.h"
 #include "icons.h"
 #include "../marker/marker.h"
 #include "part.h"
@@ -51,6 +43,14 @@
 #include "menutitleitem.h"
 #include "shortcuts.h"
 #include "helper.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QPainter>
+#include <QMenu>
+#include <QTimer>
+#include <QWheelEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 

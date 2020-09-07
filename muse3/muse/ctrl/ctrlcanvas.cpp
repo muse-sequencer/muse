@@ -29,6 +29,7 @@
 #include <QMouseEvent>
 #include <QAction>
 
+#include "ctrlcanvas.h"
 #include "app.h"
 #include "globals.h"
 #include "ctrledit.h"
@@ -3386,7 +3387,7 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       drawTickRaster(p, rect, rg, editor->raster(),
                      false, false, false,
-                     Qt::red, // dummy color, very visual so it can be detected if it is drawn.
+                     MusEGlobal::config.midiCanvasBeatColor,
                      MusEGlobal::config.midiCanvasBeatColor,
                      MusEGlobal::config.midiCanvasFineColor,
                      MusEGlobal::config.midiCanvasBarColor

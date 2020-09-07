@@ -30,6 +30,7 @@
 #include <QSizePolicy>
 #include <QTimer>
 #include <QColor>
+#include <QStyle>
 
 #include "muse_math.h"
 
@@ -38,27 +39,34 @@
 #include "globals.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
-#include "midiport.h"
 #include "mididev.h"
-#include "xml.h"
 #include "icons.h"
 #include "event.h"
-#include "midieditor.h"
-#include "track.h"
 #include "part.h"
 #include "midiedit/drummap.h"
 #include "gconfig.h"
 #include "song.h"
-#include "compact_knob.h"
-#include "compact_slider.h"
-#include "lcd_widgets.h"
 #include "utils.h"
 
 #include "audio.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "menutitleitem.h"
 #include "popupmenu.h"
 #include "helper.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QSpacerItem>
+#include <QAction>
+#include "midieditor.h"
+#include "midi_controller.h"
+#include "midiport.h"
+#include "track.h"
+#include "ctrlcanvas.h"
+#include "compact_knob.h"
+#include "compact_slider.h"
+#include "lcd_widgets.h"
 
 namespace MusEGui {
 

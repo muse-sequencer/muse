@@ -43,7 +43,6 @@
 #include "arranger.h"
 #include "midiport.h"
 #include "mididev.h"
-#include "xml.h"
 #include "midisyncimpl.h"
 #include "midifilterimpl.h"
 #include "ctrlcombo.h"
@@ -56,10 +55,21 @@
 #include "audiodev.h"
 #include "menutitleitem.h"
 #include "utils.h"
-#include "popupmenu.h"
 #include "routepopup.h"
 #include "operations.h"
 #include "gconfig.h"
+#include "song.h"
+#include "undo.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QWidget>
+#include <QTreeWidget>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QMenu>
+#include <QAction>
+#include "popupmenu.h"
+#include "xml.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);

@@ -26,7 +26,6 @@
 #include "mitplugin.h"
 #include "app.h"
 #include "event.h"
-#include "xml.h"
 
 #include "midiitransform.h"
 #include "mittranspose.h"
@@ -36,6 +35,10 @@
 #ifdef BUILD_EXPERIMENTAL
 #include "rhythm.h"
 #endif
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "xml.h"
+#include "mpevent.h"
 
 namespace MusEGui {
 
@@ -151,6 +154,10 @@ void MusE::startMidiTransformer()
 namespace MusECore {
 
 MITPluginList mitPlugins;
+
+MITPlugin::~MITPlugin(){}
+void MITPlugin::readStatus(Xml&) {}
+void MITPlugin::writeStatus(int, Xml&) const {}
 
 //---------------------------------------------------------
 //   processMidiInputTransformPlugins

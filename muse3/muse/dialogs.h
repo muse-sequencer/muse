@@ -23,8 +23,8 @@
 #ifndef __DIALOGS_H__
 #define __DIALOGS_H__
 
-class QWidget;
-
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 namespace MusECore {
 class Xml;
 }

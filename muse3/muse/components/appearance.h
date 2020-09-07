@@ -26,16 +26,21 @@
 
 #include "ui_appearancebase.h"
 
-#include <QColor>
 #include <QDialog>
-#include <QTimer>
-#include <QColorDialog>
-#include <QCloseEvent>
-#include <QButtonGroup>
+#include <QTreeWidgetItem>
 
-#include "gconfig.h"
-#include "arranger.h"
-#include "app.h"
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QTimer;
+class QColorDialog;
+class QCloseEvent;
+class QButtonGroup;
+class QTreeWidget;
+class QColor;
+
+namespace MusEGlobal {
+struct GlobalConfigValues;
+}
 
 namespace MusEGui {
 
@@ -48,19 +53,9 @@ class IdListViewItem : public QTreeWidgetItem {
       int _id;
 
    public:
-      
-   public:
-      IdListViewItem(int id, QTreeWidgetItem* parent, QString s)
-         : QTreeWidgetItem(parent, QStringList(s))
-            {
-            _id = id;
-            }
-      IdListViewItem(int id, QTreeWidget* parent, QString s)
-         : QTreeWidgetItem(parent, QStringList(s))
-            {
-            _id = id;
-            }
-      int id() const { return _id; }
+      IdListViewItem(int id, QTreeWidgetItem* parent, QString s);
+      IdListViewItem(int id, QTreeWidget* parent, QString s);
+      int id() const;
       };
 
 //---------------------------------------------------------
@@ -76,7 +71,6 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       
  private:
       QTimer* _configChangedTimer;
-      Arranger* arr;
       QColor* color;
       MusEGlobal::GlobalConfigValues* backupConfig;
       MusEGlobal::GlobalConfigValues* config;
@@ -154,7 +148,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void colorListCustomContextMenuReq(const QPoint&);
 
    public:
-      Appearance(Arranger*, QWidget* parent=0);
+      Appearance(QWidget* parent=0);
       ~Appearance();
       void resetValues();
       static QString& getSetDefaultStyle(const QString *newStyle = NULL);

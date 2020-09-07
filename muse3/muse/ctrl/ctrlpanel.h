@@ -25,13 +25,16 @@
 #define __CTRL_PANEL_H__
 
 #include <QWidget>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QSpacerItem>
-#include <QAction>
 
 #include "ttoolbutton.h"
 #include "type_defs.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QHBoxLayout;
+class QVBoxLayout;
+class QSpacerItem;
+class QAction;
 
 namespace MusECore {
 class MidiController;

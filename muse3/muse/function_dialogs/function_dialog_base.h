@@ -27,7 +27,10 @@
 #include "function_dialog_consts.h"
 #include <QDialog>
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QButtonGroup;
+class QWidget;
 
 namespace MusECore {
 class Xml;

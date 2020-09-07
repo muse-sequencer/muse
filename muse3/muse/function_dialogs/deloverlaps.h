@@ -26,8 +26,8 @@
 #include "ui_deloverlapsbase.h"
 #include "function_dialog_base.h"
 
-class QButtonGroup;
-
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 namespace MusECore {
 class Xml;
 }

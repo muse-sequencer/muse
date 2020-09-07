@@ -50,10 +50,8 @@ using namespace std;
 
 #include "app.h"
 #include "xml.h"
-#include "mtscale.h"
 #include "sig.h"
 #include "scoreedit.h"
-#include "tools.h"
 #include "ttoolbar.h"
 #include "tb1.h"
 #include "globals.h"
@@ -66,6 +64,24 @@ using namespace std;
 #include "song.h"
 #include "shortcuts.h"
 #include "menutitleitem.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QCloseEvent>
+#include <QResizeEvent>
+#include <QKeyEvent>
+#include <QPainter>
+#include <QPixmap>
+#include <QScrollBar>
+#include <QComboBox>
+#include <QAction>
+#include <QActionGroup>
+#include <QGridLayout>
+#include <QToolButton>
+#include "part.h"
+#include "mtscale_flo.h"
+#include "steprec.h"
+#include "spinbox.h"
+#include "tools.h"
 
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;

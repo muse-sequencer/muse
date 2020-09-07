@@ -25,22 +25,25 @@
 #ifndef __MIDIPORT_H__
 #define __MIDIPORT_H__
 
+#include <QString>
+
 #include "globaldefs.h"
 #include "sync.h"
 #include "route.h"
-#include "mpevent.h"
-#include "mididev.h"
-#include "minstrument.h"
-
-class QString;
 
 namespace MusECore {
 
-class Part;
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class MidiDevice;
+class MidiInstrument;
 class MidiController;
 class MidiControllerList;
 class MidiCtrlValListList;
 class MidiCtrlValList;
+class Part;
+class MidiPlayEvent;
+class Xml;
 
 //---------------------------------------------------------
 //   MidiPort

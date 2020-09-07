@@ -21,7 +21,10 @@
 //=========================================================
 
 #include <QButtonGroup>
+
 #include "crescendo.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
 #include "xml.h"
 
 namespace MusEGui {

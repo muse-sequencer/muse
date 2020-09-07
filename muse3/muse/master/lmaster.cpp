@@ -21,14 +21,12 @@
 //=========================================================
 
 #include "lmaster.h"
-#include "xml.h"
 #include "song.h"
 #include "globals.h"
-#include "app.h"
-#include "audio.h"
 #include "shortcuts.h"
 #include "debug.h"
 #include "gconfig.h"
+#include "undo.h"
 
 #include <QCloseEvent>
 #include <QGridLayout>
@@ -44,6 +42,24 @@
 #include <QComboBox>
 #include <QTimer>
 
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QWidget>
+#include <QTreeWidget>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QToolBar>
+#include <QMenu>
+#include <QTimer>
+#include <QKeyEvent>
+#include <QCloseEvent>
+#include <QAction>
+#include "cobject.h"
+#include "tempo.h"
+#include "sig.h"
+#include "posedit.h"
+#include "sigedit.h"
+#include "xml.h"
+
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1
 #define LMASTER_TYPE_COL 2
@@ -52,6 +68,12 @@
 #define LMASTER_MSGBOX_STRING          "MusE: List Editor"
 
 namespace MusEGui {
+
+LMasterLViewItem::LMasterLViewItem(QTreeWidget* parent)
+  : QTreeWidgetItem(QTreeWidgetItem::UserType)
+{
+  parent->insertTopLevelItem(0, this);
+}
 
 //---------------------------------------------------------
 //   keyPressEvent
@@ -885,6 +907,12 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const MusECore::Ke
       }
 
 
+LMASTER_LVTYPE LMasterKeyEventItem::getType() const { return LMASTER_KEYEVENT; }
+const MusECore::KeyEvent& LMasterKeyEventItem::getEvent() const { return keyEvent; }
+unsigned LMasterKeyEventItem::tick() const { return keyEvent.tick; }
+MusECore::key_enum LMasterKeyEventItem::key() const { return keyEvent.key; }
+bool LMasterKeyEventItem::isMinor() const { return keyEvent.minor; }
+
 //---------------------------------------------------------
 //   LMasterTempoItem
 //!  Initializes a LMasterTempoItem with a TEvent
@@ -919,6 +947,11 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const MusECore::TEvent* 
       setText(3, c4);
       }
 
+LMASTER_LVTYPE LMasterTempoItem::getType() const { return LMASTER_TEMPO; }
+const MusECore::TEvent* LMasterTempoItem::getEvent() const { return tempoEvent; }
+unsigned LMasterTempoItem::tick() const { return tempoEvent->tick; }
+int LMasterTempoItem::tempo() const { return tempoEvent->tempo; }
+
 //---------------------------------------------------------
 //   LMasterSigEventItem
 //!  Initializes a ListView item with a SigEvent
@@ -951,6 +984,12 @@ LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const MusECore::Si
       setText(2, c3);
       setText(3, c4);
       }
+
+LMASTER_LVTYPE LMasterSigEventItem::getType() const { return LMASTER_SIGEVENT; }
+const MusECore::SigEvent* LMasterSigEventItem::getEvent() const { return sigEvent; }
+unsigned LMasterSigEventItem::tick() const { return sigEvent->tick; }
+int LMasterSigEventItem::z() const { return sigEvent->sig.z; }
+int LMasterSigEventItem::n() const { return sigEvent->sig.n; }
 
 //---------------------------------------------------------
 //   tempoButtonClicked()

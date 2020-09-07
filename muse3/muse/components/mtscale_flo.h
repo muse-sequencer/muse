@@ -23,12 +23,19 @@
 #ifndef __MTSCALE_FLO_H__
 #define __MTSCALE_FLO_H__
 
+#include <QRect>
+#include <QRegion>
+
 #include "type_defs.h"
 #include "view.h"
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QWidget;
+class QPainter;
+class QMouseEvent;
 
 namespace MusEGui {
-
 class ScoreCanvas;
 
 //---------------------------------------------------------

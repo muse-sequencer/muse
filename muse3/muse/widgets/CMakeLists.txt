@@ -109,6 +109,7 @@ QT5_WRAP_CPP (widget_mocs
 #       posedit.h  
 #       poslabel.h  
 #       projectcreateimpl.h
+      raster_widgets.h
 #       routepopup.h  
 #       scroll_area.h
       scrollbar.h
@@ -256,6 +257,7 @@ file (GLOB widgets_source_files
 #       posedit.cpp 
 #       poslabel.cpp
 #       projectcreateimpl.cpp
+      raster_widgets.cpp
 #       routepopup.cpp 
       scldiv.cpp
       scldraw.cpp

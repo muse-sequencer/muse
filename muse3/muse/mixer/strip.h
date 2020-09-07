@@ -29,17 +29,19 @@
 
 #include <QFrame>
 #include <QVBoxLayout>
-#include <QMouseEvent>
-#include <QResizeEvent>
-#include <QGridLayout>
-#include <QLayout>
 #include <QSize>
 
 #include "type_defs.h"
 #include "globaldefs.h"
 #include "drange.h"
 #include "elided_label.h"
-#include "meter.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QMouseEvent;
+class QResizeEvent;
+class QGridLayout;
+class QLayout;
 
 namespace MusECore {
 class Track;
@@ -51,6 +53,7 @@ class CompactKnob;
 class CompactSlider;
 class CompactToolButton;
 class IconButton;
+class Meter;
 
 //---------------------------------------------
 // ComponentWidget

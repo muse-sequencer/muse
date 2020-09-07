@@ -30,7 +30,6 @@
 #include "gconfig.h"
 #include "xml.h"
 #include "keyevent.h"
-#include "operations.h"
 
 namespace MusEGlobal {
   MusECore::KeyList keymap;

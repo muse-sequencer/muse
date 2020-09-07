@@ -92,6 +92,11 @@ class ScrollScale : public QWidget {
       int mag() const;
       int getScaleValue() const { return scaleVal; }
       void range(int* b, int* e) const { *b = minVal; *e = maxVal; }
+      int scaleMinimum() const;
+      int scaleMaximum() const;
+      void setScaleMinimum(int min);
+      void setScaleMaximum(int max);
+      void setScaleRange(int min, int max);
       
       int offset() const;
       int pos2offset(int pos) const;

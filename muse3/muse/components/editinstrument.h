@@ -27,18 +27,26 @@
 
 #include "ui_editinstrumentbase.h"
 
+#include <QString>
+#include <QMainWindow>
+
 #include "globaldefs.h"
 
-class QDialog;
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QMenu;
 class QCloseEvent;
+class QKeyEvent;
 class QGridLayout;
 class QStringListModel;
 class QString;
 class QAction;
+class QListWidgetItem;
+class QTreeWidgetItem;
+class QMainWindow;
+class QScrollBar;
 
 namespace MusECore {
-
 class MidiInstrument;
 class MidiController;
 struct Patch;

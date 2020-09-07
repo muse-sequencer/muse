@@ -22,7 +22,6 @@
 //=========================================================
 
 #include "cobject.h"
-#include "xml.h"
 #include "gui.h"
 #include "globals.h"
 #include "app.h"
@@ -33,12 +32,17 @@
 #include "helper.h"
 #include "song.h"
 
-#include <QMdiSubWindow>
-#include <QToolBar>
 #include <QMenuBar>
-#include <QAction>
 #include <QWidgetAction>
 #include <QLabel>
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QMdiSubWindow>
+#include <QFocusEvent>
+#include <QCloseEvent>
+#include <QToolBar>
+#include <QAction>
+#include "xml.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_COBJECT(dev, format, args...)  fprintf(dev, format, ##args)

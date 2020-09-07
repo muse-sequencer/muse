@@ -25,16 +25,16 @@
 #ifndef __ASTRIP_H__
 #define __ASTRIP_H__
 
+#include <QColor>
+#include <QWidget>
+
 #include "type_defs.h"
 #include "strip.h"
-#include "clipper_label.h"
 #include "meter.h"
 
-class QButton;
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QHBoxLayout;
-class QVBoxLayout;
-class QColor;
-class QWidget;
 
 namespace MusECore {
 class AudioTrack;
@@ -47,6 +47,7 @@ class Knob;
 class Slider;
 class CompactSlider;
 class IconButton;
+class ClipperLabel;
 
 //---------------------------------------------------------
 //   AudioComponentRack

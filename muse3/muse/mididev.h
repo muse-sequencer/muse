@@ -42,8 +42,9 @@
 
 namespace MusECore {
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class Xml;
-class PendingOperationList;
 
 struct MidiOutputParams {
       int BANKH;
@@ -395,8 +396,6 @@ class MidiDeviceList : public std::list<MidiDevice*>
             return true;
         return false;
       }
-      
-      void addOperation(MidiDevice* dev, PendingOperationList& ops);
 };
 
 extern void initMidiDevices();

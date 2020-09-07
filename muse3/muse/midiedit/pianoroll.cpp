@@ -39,21 +39,16 @@
 
 #include <stdio.h>
 
+#include "pianoroll.h"
 #include "globaldefs.h"
-#include "xml.h"
 #include "mtscale.h"
 #include "prcanvas.h"
-#include "pianoroll.h"
-#include "scrollscale.h"
 #include "scrollbar.h"
-#include "piano.h"
-#include "../ctrl/ctrledit.h"
-#include "splitter.h"
-#include "ttoolbar.h"
-#include "tb1.h"
 #include "utils.h"
 #include "globals.h"
 #include "app.h"
+#include "song.h"
+#include "midiport.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
@@ -67,6 +62,27 @@
 
 #include "trackinfo_layout.h"
 #include "midi_editor_layout.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QAction>
+#include <QMenu>
+#include <QToolBar>
+#include <QToolButton>
+#include <QWidget>
+#include <QPoint>
+#include <QCloseEvent>
+#include <QKeyEvent>
+#include "cobject.h"
+#include "event.h"
+#include "xml.h"
+#include "ctrl/ctrledit.h"
+#include "pitchlabel.h"
+#include "scrollscale.h"
+#include "splitter.h"
+#include "tb1.h"
+#include "piano.h"
+#include "popupmenu.h"
+#include "tools.h"
 
 namespace MusEGui {
 
@@ -106,7 +122,15 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       _playEvents    = true;
       _playEventsMode = EventCanvas::PlayEventsSingleNote;
       colorMode      = colorModeInit;
+      _canvasXOrigin = -96;
+      _minXMag = -25;
+      _maxXMag = 2;
       
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      _rasterInit = _rasterizerModel->checkRaster(_rasterInit);
+      _raster = _rasterInit;
+
       const MusECore::PartList* part_list = parts();
       // Default initial pianoroll view state.
       _viewState = MusECore::MidiPartViewState (0, KH * 30, xscale, yscale);
@@ -334,7 +358,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       whatsthis->setIcon(*whatsthisSVGIcon);
       tools->addAction(whatsthis);
       
-      toolbar = new MusEGui::Toolbar1(this, _rasterInit);
+      toolbar = new MusEGui::Toolbar1(_rasterizerModel, this, _rasterInit);
       toolbar->setObjectName("Pianoroll Pos/Snap/Solo-tools");
       addToolBar(toolbar);
 
@@ -355,8 +379,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       hsplitter->setChildrenCollapsible(true);
       //hsplitter->setHandleWidth(4);
 
-      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
-      hscroll = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
+      hscroll = new MusEGui::ScrollScale(
+        (_minXMag * MusEGlobal::config.division) / 384,
+        _maxXMag,
+        _viewState.xscale(),
+        20000,
+        Qt::Horizontal,
+        mainw);
 
       QSizeGrip* corner = new QSizeGrip(mainw);
 
@@ -413,21 +442,20 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       gridS1->setContentsMargins(0, 0, 0, 0);
       gridS1->setSpacing(0);  
 
-      time                = new MusEGui::MTScale(&_raster, split1, _viewState.xscale());
+      time                = new MusEGui::MTScale(_raster, split1, _viewState.xscale());
       piano               = new Piano(split1, _viewState.yscale(), this);
       canvas              = new PianoCanvas(this, split1, _viewState.xscale(), _viewState.yscale());
       vscroll             = new MusEGui::ScrollScale(-2, 6, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
       setCurDrumInstrument(piano->curSelectedPitch());
 
-      int offset = -(MusEGlobal::config.division/4);
-      canvas->setOrigin(offset, 0);
+      canvas->setOrigin(_canvasXOrigin, 0);
       canvas->setCanvasTools(pianorollTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
       connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(curPartHasChanged(MusECore::Part*)), SLOT(updateTrackInfo()));
-      time->setOrigin(offset, 0);
+      time->setOrigin(_canvasXOrigin, 0);
 
       gridS1->setRowStretch(2, 100);
       gridS1->setColumnStretch(1, 100);     
@@ -495,7 +523,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(canvas,   SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(piano,    SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
       connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
+      connect(toolbar, &Toolbar1::rasterChanged, [this](int raster) { setRaster(raster); } );
       connect(toolbar,  SIGNAL(soloChanged(bool)), SLOT(soloChanged(bool)));
 
       setFocusPolicy(Qt::NoFocus);
@@ -526,7 +554,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
         if(pos > INT_MAX)
           pos = INT_MAX;
         //if (pos)
-          hscroll->setOffset((int)pos);
+        hscroll->setOffset((int)pos);
       }
 
       if(canvas->track())
@@ -571,6 +599,24 @@ void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
         if(bits & SC_TRACK_REMOVED)
         {
           checkTrackInfoTrack();
+        }
+        
+        if (bits & SC_DIVISION_CHANGED)
+        {
+          // The division has changed. The raster table and raster model will have been
+          //  cleared and re-filled, so any views on the model will no longer have a
+          //  current item and our current raster value will be invalid. They WILL NOT
+          //  emit an activated signal. So we must manually select a current item and
+          //  raster value here. We could do something fancy to try to keep the current
+          //  index - for example stay on quarter note - by taking the ratio of the new
+          //  division to old division and apply that to the old raster value and try
+          //  to select that index, but the division has already changed.
+          // So instead, simply try to select the current raster value. The index in the box may change.
+          // Be sure to use what it chooses.
+          changeRaster(_raster);
+
+          // Now set a reasonable zoom (mag) range.
+          setupHZoomRange();
         }
         
         if (bits & SC_SOLO)
@@ -1104,7 +1150,7 @@ void PianoRoll::ctrlPopupTriggered(QAction* act)
 
   if(newCtlNum != -1)
   {
-    CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, _viewState.xscale(), false, "pianoCtrlEdit");  
+    CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, _viewState.xscale(), _canvasXOrigin, 0, false, "pianoCtrlEdit");  
     ctrlEdit->setController(newCtlNum);
     setupNewCtrl(ctrlEdit);
   }
@@ -1166,7 +1212,7 @@ void PianoRoll::ctrlMenuAboutToHide()
 
 CtrlEdit* PianoRoll::addCtrl(int ctl_num)
       {
-      CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, _viewState.xscale(), false, "pianoCtrlEdit");  // ccharrett
+      CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, _viewState.xscale(), _canvasXOrigin, 0, false, "pianoCtrlEdit");
       ctrlEdit->setController(ctl_num);
       setupNewCtrl(ctrlEdit);
       return ctrlEdit;
@@ -1340,12 +1386,32 @@ void PianoRoll::soloChanged(bool flag)
 
 void PianoRoll::setRaster(int val)
       {
-      _rasterInit = val;
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      val = _rasterizerModel->checkRaster(val);
       MidiEditor::setRaster(val);
+      _rasterInit = _raster;
+      time->setRaster(_raster);
       canvas->redrawGrid();
       for (auto it : ctrlEditList)
           it->redrawCanvas();
       focusCanvas();     // give back focus after kb input
+      }
+
+//---------------------------------------------------------
+//   changeRaster
+//---------------------------------------------------------
+
+int PianoRoll::changeRaster(int val)
+      {
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      MidiEditor::setRaster(toolbar->changeRaster(val));
+      time->setRaster(_raster);
+      canvas->redrawGrid();
+      for (auto it : ctrlEditList)
+          it->redrawCanvas();
+      return _raster;
       }
 
 //---------------------------------------------------------
@@ -1437,9 +1503,7 @@ void PianoRoll::readStatus(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "pianoroll") {
-                              _rasterInit = _raster;
-                              toolbar->setRaster(_raster);
-                              canvas->redrawGrid();
+                              changeRaster(_raster);
                               return;
                               }
                   default:
@@ -1447,13 +1511,6 @@ void PianoRoll::readStatus(MusECore::Xml& xml)
                   }
             }
       }
-
-static int rasterTable[] = {
-      //-9----8-  7    6     5     4    3(1/4)     2   1
-      4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
-      6, 12, 24, 48,  96, 192, 384,  768, 1536,
-      9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
-      };
 
 //---------------------------------------------------------
 //   viewKeyPressEvent
@@ -1466,19 +1523,8 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
 
-      int index;
-      int n = sizeof(rasterTable)/sizeof(*rasterTable);
-      for (index = 0; index < n; ++index)
-            if (rasterTable[index] == raster())
-                  break;
-      if (index == n) {
-            index = 0;
-            // raster 1 is not in table
-            }
-      int off = (index / 9) * 9;
-      index   = index % 9;
-
-      int val = 0;
+      RasterizerModel::RasterPick rast_pick = RasterizerModel::NoPick;
+      const int cur_rast = raster();
 
       PianoCanvas* pc = (PianoCanvas*)canvas;
       int key = event->key();
@@ -1580,21 +1626,25 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
-            val = rasterTable[8 + off];
+            rast_pick = RasterizerModel::Goto1;
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
-            val = rasterTable[7 + off];
+            rast_pick = RasterizerModel::Goto2;
       else if (key == shortcuts[SHRT_SET_QUANT_3].key)
-            val = rasterTable[6 + off];
+            rast_pick = RasterizerModel::Goto4;
       else if (key == shortcuts[SHRT_SET_QUANT_4].key)
-            val = rasterTable[5 + off];
+            rast_pick = RasterizerModel::Goto8;
       else if (key == shortcuts[SHRT_SET_QUANT_5].key)
-            val = rasterTable[4 + off];
+            rast_pick = RasterizerModel::Goto16;
       else if (key == shortcuts[SHRT_SET_QUANT_6].key)
-            val = rasterTable[3 + off];
+            rast_pick = RasterizerModel::Goto32;
       else if (key == shortcuts[SHRT_SET_QUANT_7].key)
-            val = rasterTable[2 + off];
+            rast_pick = RasterizerModel::Goto64;
       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
-            val = rasterTable[index + ((off == 0) ? 9 : 0)];
+            rast_pick = RasterizerModel::ToggleTriple;
+      else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
+            rast_pick = RasterizerModel::ToggleDotted;
+      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key)
+            rast_pick = RasterizerModel::ToggleHigherDotted;
       else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
             if (colorMode == 0)
                   colorMode = 1;
@@ -1604,19 +1654,6 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
                   colorMode = 0;
             setEventColorMode(colorMode);
             return;
-            }
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
-            val = rasterTable[index + ((off == 18) ? 9 : 18)];
-
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {//CDW
-            if ((off == 18) && (index > 2)) {
-                  val = rasterTable[index + 9 - 1];
-                  }
-            else if ((off == 9) && (index < 8)) {
-                  val = rasterTable[index + 18 + 1];
-                  }
-            else
-                  return;
             }
       else if (key == shortcuts[SHRT_MOVE_PLAY_TO_NOTE].key){
         movePlayPointerToSelectedEvent();
@@ -1654,8 +1691,17 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             event->ignore();
             return;
             }
-      setRaster(val);
-      toolbar->setRaster(_raster);
+
+      if(rast_pick != RasterizerModel::NoPick)
+      {
+        const int new_rast = _rasterizerModel->pickRaster(cur_rast, rast_pick);
+        if(new_rast != cur_rast)
+        {
+          setRaster(new_rast);
+          toolbar->setRaster(_raster);
+        }
+      }
+
       }
 
 //---------------------------------------------------------
@@ -1755,6 +1801,16 @@ void PianoRoll::setSpeakerMode(EventCanvas::PlayEventsMode mode)
       speaker->setIcon(*speakerChordsSVGIcon);
     break;
   }
+}
+
+//---------------------------------------------------------
+//   setupHZoomRange
+//---------------------------------------------------------
+
+void PianoRoll::setupHZoomRange()
+{
+  const int min = (_minXMag * MusEGlobal::config.division) / 384;
+  hscroll->setScaleRange(min, _maxXMag);
 }
 
 //---------------------------------------------------------

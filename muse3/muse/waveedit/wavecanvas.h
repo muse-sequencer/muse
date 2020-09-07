@@ -29,26 +29,28 @@
 
 #include "type_defs.h"
 #include "ecanvas.h"
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
-#include <QDragMoveEvent>
-#include <QDragLeaveEvent>
-#include <QWheelEvent>
-#include <QResizeEvent>
-#include <QTimer>
 #include <QList>
 #include <QRect>
 #include <QMenu>
-#include <QPainter>
 #include <QPoint>
 
 #include <map>
 #include "muse_time.h"
 #include "time_stretch.h"
+#include "wave.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QDragEnterEvent;
+class QDropEvent;
+class QMouseEvent;
+class QDragMoveEvent;
+class QDragLeaveEvent;
+class QWheelEvent;
+class QResizeEvent;
+class QPainter;
 
 namespace MusECore {
-class SndFileR;
 class WavePart;
 class WaveTrack;
 

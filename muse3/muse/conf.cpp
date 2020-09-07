@@ -56,7 +56,7 @@
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
 #include "waveedit.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midisyncimpl.h"
 #include "midifilterimpl.h"
 #include "midictrl.h"
@@ -74,6 +74,7 @@
 #include "audio_convert/audio_converter_settings_group.h"
 #include "filedialog.h"
 #include "al/al.h"
+#include "shortcuts.h"
 
 namespace MusECore {
 

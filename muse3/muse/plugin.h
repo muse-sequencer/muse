@@ -30,27 +30,18 @@
 #include <QSet>
 #include <QMap>
 #include <QPair>
-
-#include <QMouseEvent>
 #include <QFileInfo>
 #include <QMainWindow>
+#include <QMouseEvent>
 #include <QUiLoader>
-#include <QScrollArea>
-#include <QComboBox>
 #include <QRect>
-#include <QShowEvent>
-#include <QHideEvent>
-#include <QAction>
-#include <QSpinBox>
-//#include <QToolButton>
+#include <QList>
 
 #include <ladspa.h>
 
 #include "globaldefs.h"
-#include "globals.h"
 #include "ctrl.h"
 #include "controlfifo.h"
-#include "plugin_list.h"
 
 #include "config.h"
 
@@ -71,16 +62,28 @@
 //  become version-sensitive.         2017/11/28 Tim.
 #define QT_SHOW_POS_BUG_WORKAROUND 1;
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QScrollArea;
+class QShowEvent;
+class QHideEvent;
+class QAction;
+class QSpinBox;
+class QToolButton;
+
 namespace MusEGui {
 class PluginGui;
+class DoubleLabel;
 }
 
+namespace MusEPlugin {
+class PluginScanInfoStruct;
+}
 
 namespace MusECore {
 class AudioTrack;
 class Xml;
 
-class MidiController;
 class PluginI;
 
 //---------------------------------------------------------

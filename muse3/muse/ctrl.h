@@ -30,7 +30,8 @@
 #include <map>
 #include <list>
 #include <vector>
-#include <qcolor.h>
+#include <QColor>
+#include <QString>
 
 #ifdef OSC_SUPPORT
 #include <lo/lo_osc_types.h>
@@ -44,6 +45,8 @@
 
 namespace MusECore {
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class Xml;
 
 const int AC_VOLUME = 0;

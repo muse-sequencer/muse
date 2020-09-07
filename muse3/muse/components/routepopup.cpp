@@ -37,15 +37,21 @@
 #include "audio.h"
 #include "driver/audiodev.h"
 #include "song.h"
-#include "track.h"
 #include "synth.h"
 #include "icons.h"
 #include "menutitleitem.h"
-#include "popupmenu.h"
-#include "operations.h"
 
 #include "globaldefs.h"
 #include "gconfig.h"
+#include "globals.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QWidget>
+#include <QAction>
+#include <QPoint>
+#include <QResizeEvent>
+#include "track.h"
+#include "operations.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
@@ -1209,7 +1215,7 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
   if(contextMenu() && contextMenu()->isVisible())
     return;
   
-  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent begin: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent begin: this:%p active action:%p\n", this, activeAction()); 
   
   bool activate = false;
   bool accept = false;
@@ -1312,11 +1318,11 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
             ch_hit_clk_val = !mwa->array()->value(hit._value);
             
             DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent i:%d hit._value:%d ch_hit_clk_idx_min:%d ch_hit_clk_idx_max:%d ch_hit_clk_ch_start:%d ch_hit_clk_val:%d\n",
-                                i, hit._value, ch_hit_clk_idx_min, ch_hit_clk_idx_max, ch_hit_clk_ch_start, ch_hit_clk_val); // REMOVE Tim.
+                                i, hit._value, ch_hit_clk_idx_min, ch_hit_clk_idx_max, ch_hit_clk_ch_start, ch_hit_clk_val); 
             
             if(mwa->array()->value(hit._value) != ch_hit_clk_val)
             {
-              DEBUG_PRST_ROUTES_2(stderr, "   calling mwa->array()->setValue\n"); // REMOVE Tim.
+              DEBUG_PRST_ROUTES_2(stderr, "   calling mwa->array()->setValue\n"); 
               mwa->array()->setValue(hit._value, ch_hit_clk_val);
               do_upd = true;
             }
@@ -1395,17 +1401,17 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
       //if(mwa != activeAction())
       if(mwa != action)
       {
-        DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent i:%d this:%p inactive mwa:%p\n", i, this, mwa); // REMOVE Tim.
+        DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent i:%d this:%p inactive mwa:%p\n", i, this, mwa); 
         
         if(ch_hit_clk_act_group && ch_hit_clk_act_group == mwa->actionGroup())
         {
-          DEBUG_PRST_ROUTES_2(stderr, "   ch_hit_clk_act_group && ch_hit_clk_act_group == mwa->actionGroup()\n"); // REMOVE Tim.
+          DEBUG_PRST_ROUTES_2(stderr, "   ch_hit_clk_act_group && ch_hit_clk_act_group == mwa->actionGroup()\n"); 
           if(ch_hit_clk_act_group->isExclusive())
           {
             // Reset any other switch bars besides this one which are part of a QActionGroup.
             // Since they are all part of an action group, force them to be exclusive regardless of their exclusivity settings.
             // Set any column to false, and exclusiveColumns and exclusiveToggle to true which will reset all columns.
-            DEBUG_PRST_ROUTES_2(stderr, "   calling mwa->array()->setValues (reset)\n"); // REMOVE Tim.
+            DEBUG_PRST_ROUTES_2(stderr, "   calling mwa->array()->setValues (reset)\n"); 
             mwa->array()->setValues(0, false, true, true);
             do_upd = true;
           }
@@ -1415,7 +1421,7 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
 //             mwa->array()->setValue(ch, !mwa->array()->value(ch));
             if(mwa->array()->value(ch) != ch_hit_clk_val)
             {
-              DEBUG_PRST_ROUTES_2(stderr, "   calling mwa->array()->setValue ch:%d\n", ch); // REMOVE Tim.
+              DEBUG_PRST_ROUTES_2(stderr, "   calling mwa->array()->setValue ch:%d\n", ch); 
               mwa->array()->setValue(ch, ch_hit_clk_val);
               do_upd = true;
             }
@@ -1425,7 +1431,7 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
 //             routePopupActivated(mwa);
             
             DEBUG_PRST_ROUTES_2(stderr, "   ch:%d active col:%d pressed col:%d\n", 
-                              ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min), mwa->array()->activeColumn(), mwa->array()->pressedColumn()); // REMOVE Tim.
+                              ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min), mwa->array()->activeColumn(), mwa->array()->pressedColumn()); 
           }
         }
 //         else 
@@ -1443,28 +1449,28 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
     e->ignore();
     // Defer to PopupMenu, where we handle regular actions with checkboxes.
     PopupMenu::mouseReleaseEvent(e);
-    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent defer end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent defer end: this:%p active action:%p\n", this, activeAction()); 
     return;
   }
 
   if(accept)
   {
-    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent accept\n"); // REMOVE Tim.
+    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent accept\n"); 
     e->accept();
     if(activate)
     {
-      DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent accept: directly executing trigger handler routePopupActivated(act_mwa)\n"); // REMOVE Tim.
+      DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent accept: directly executing trigger handler routePopupActivated(act_mwa)\n"); 
       // Directly execute the trigger handler.
       routePopupActivated(act_mwa);
     }
-    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent accept end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent accept end: this:%p active action:%p\n", this, activeAction()); 
     return;
   }
   
   // Check for Ctrl to stay open.
   if(!stayOpen() || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))
   {
-    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent No stay-open\n"); // REMOVE Tim.
+    DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent No stay-open\n"); 
     e->ignore();
     // If this is the active popup widget let the ancestor activate and close it, otherwise we must close this manually.
 // //     QMenu* m = qobject_cast<QMenu*>(QApplication::activePopupWidget());
@@ -1475,7 +1481,7 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
     
       if(activate)
       {
-        DEBUG_PRST_ROUTES_2(stderr, "   activate true: directly executing trigger handler routePopupActivated(act_mwa)\n"); // REMOVE Tim.
+        DEBUG_PRST_ROUTES_2(stderr, "   activate true: directly executing trigger handler routePopupActivated(act_mwa)\n"); 
         // Directly execute the trigger handler.
         routePopupActivated(act_mwa);
       }
@@ -1489,18 +1495,18 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
   e->accept();
   if(activate)
   {
-    DEBUG_PRST_ROUTES_2(stderr, "   activate true: directly executing trigger handler routePopupActivated(act_mwa)\n"); // REMOVE Tim.
+    DEBUG_PRST_ROUTES_2(stderr, "   activate true: directly executing trigger handler routePopupActivated(act_mwa)\n"); 
     routePopupActivated(act_mwa);
   }
-  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mouseReleaseEvent end: this:%p active action:%p\n", this, activeAction()); 
 }
 
 void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
 {
-  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent begin: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent begin: this:%p active action:%p\n", this, activeAction()); 
 //   e->ignore();
 //   PopupMenu::mousePressEvent(e);
-//   DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent after begin: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+//   DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent after begin: this:%p active action:%p\n", this, activeAction()); 
   
   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::mousePressEvent this:%p x:%d y:%d\n", this, e->pos().x(), e->pos().y());
 
@@ -1520,11 +1526,11 @@ void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
     {
       bool do_upd = false;
       // Sanity check: Only activate the item(s) if the action truly is the active one.
-      DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent this:%p mwa:%p activeAction:%p\n", this, mwa, activeAction()); // REMOVE Tim.
+      DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent this:%p mwa:%p activeAction:%p\n", this, mwa, activeAction()); 
       //if(mwa == activeAction())
       if(mwa == act_mwa)
       {
-        DEBUG_PRST_ROUTES_2(stderr, "  is active\n"); // REMOVE Tim.
+        DEBUG_PRST_ROUTES_2(stderr, "  is active\n"); 
         RoutePopupHit hit = mwa->hitTest(e->pos(), RoutePopupHit::HitTestClick);
         switch(hit._type)
         {
@@ -1549,7 +1555,7 @@ void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
               do_upd = true;
             ch_hit_clk_act_group = mwa->actionGroup();
             DEBUG_PRST_ROUTES_2(stderr, "   HitChannel ch:%d active col:%d pressed col:%d\n", 
-                             hit._value, mwa->array()->activeColumn(), mwa->array()->pressedColumn()); // REMOVE Tim.
+                             hit._value, mwa->array()->activeColumn(), mwa->array()->pressedColumn()); 
             accept = true;
           }
           break;
@@ -1587,7 +1593,7 @@ void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
       //if(mwa != activeAction())
       if(mwa != act_mwa)
       {
-        DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent this:%p inactive mwa:%p\n", this, mwa); // REMOVE Tim.
+        DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent this:%p inactive mwa:%p\n", this, mwa); 
         if(ch_hit_clk_act_group && 
            !ch_hit_clk_act_group->isExclusive() && 
            ch_hit_clk_act_group == mwa->actionGroup() &&
@@ -1597,7 +1603,7 @@ void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
           if(mwa->array()->setPressedColumn(ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min)))
             do_upd = true;
           DEBUG_PRST_ROUTES_2(stderr, "   ch:%d active col:%d pressed col:%d\n", 
-                             ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min), mwa->array()->activeColumn(), mwa->array()->pressedColumn()); // REMOVE Tim.
+                             ch_hit_clk_ch_start + (i - ch_hit_clk_idx_min), mwa->array()->activeColumn(), mwa->array()->pressedColumn()); 
         }
         else if(mwa->array()->setPressedColumn(-1))
           do_upd = true;
@@ -1615,10 +1621,10 @@ void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
 // //     return;
   }
 
-  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent before end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent before end: this:%p active action:%p\n", this, activeAction()); 
   e->ignore();
   PopupMenu::mousePressEvent(e);
-  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent end: this:%p active action:%p\n", this, activeAction()); // REMOVE Tim.
+  DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::mousePressEvent end: this:%p active action:%p\n", this, activeAction()); 
 }
 
 void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
@@ -2553,7 +2559,7 @@ void RoutePopupMenu::updateRouteMenus()
 
 #endif // _USE_CUSTOM_WIDGET_ACTIONS_
       
-      printf("RoutePopupMenu::updateRouteMenus other irl type:%d\n", irl->type);  // REMOVE TIm.
+      //printf("RoutePopupMenu::updateRouteMenus other irl type:%d\n", irl->type);
       if(act)
       {  
         //printf("RoutePopupMenu::updateRouteMenus found other irl type:%d\n", irl->type);  // 
@@ -3394,7 +3400,7 @@ void RoutePopupMenu::routePopupActivated(QAction* action)
   {
     QAction* act = use_act_list ? act_list.at(act_start) : action;
     DEBUG_PRST_ROUTES_2(stderr, "RoutePopupMenu::popupActivated this:%p act:%p active action:%p act_group_sz:%d act_start:%d\n", // act_count:%d\n", 
-            this, act, activeAction(), act_group_sz, act_start); //, act_count); // REMOVE Tim.
+            this, act, activeAction(), act_group_sz, act_start); //, act_count); 
     if(!act)
       break;
     MusECore::Route rem_route = act->data().value<MusECore::Route>();

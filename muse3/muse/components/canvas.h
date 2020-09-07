@@ -30,18 +30,19 @@
 #include "undo.h"
 #include "event_tag_list.h"
 
-#include <QWheelEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
+#include <QPoint>
+#include <QRegion>
+#include <QRect>
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QMenu;
-class QPoint;
+class QPainter;
+class QTimer;
+class QWheelEvent;
+class QMouseEvent;
+class QKeyEvent;
 
-namespace MusECore {
-class Undo;
-class Pos;
-}
-  
 namespace MusEGui {
 
 //---------------------------------------------------------

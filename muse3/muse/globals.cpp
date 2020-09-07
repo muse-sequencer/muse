@@ -76,6 +76,8 @@ const QString selectableAudioBackendDevices[] = {
 
 const int numRtAudioDevices = 6;
 
+MusEGui::Rasterizer *globalRasterizer = nullptr;
+
 QTimer* heartBeatTimer;
 
 bool blinkTimerPhase = false;

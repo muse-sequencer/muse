@@ -24,7 +24,11 @@
 #define __PASTEDIALOG_H__
 
 #include "ui_pastedialogbase.h"
+
 #include <QString>
+#include <QDialog>
+
+class QButtonGroup;
 
 namespace MusECore {
 class Xml;

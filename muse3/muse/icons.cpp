@@ -25,8 +25,10 @@
 //          certain styles do not support it, such as QtCurve.
 //         Therefore the separate icons must be manually set upon each state.
 
+#include <QPixmap>
 #include <QIcon>
 #include <QCursor>
+#include <QApplication>
 
 #include "xpm/track_comment.xpm"
 #include "xpm/audio_bounce_to_file.xpm"

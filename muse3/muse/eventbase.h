@@ -29,13 +29,18 @@
 
 #include "type_defs.h"
 #include "pos.h"
-#include "audio_fifo.h"
 #include "evdata.h"
 #include "wave.h" // for SndFileR
 
-namespace MusECore {
+//#include "part.h"
+//#include "audio_fifo.h"
 
+
+namespace MusECore {
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class Part;
+class Fifo;
 
 //---------------------------------------------------------
 //   EventBase

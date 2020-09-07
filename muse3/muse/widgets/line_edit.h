@@ -28,8 +28,9 @@
 #include <QLineEdit>
 
 class QPaintEvent;
+
 // class QStyleOptionFrame;
-// class QString;
+class QString;
 // class QTextLayout;
 
 namespace MusEGui {

@@ -22,20 +22,10 @@
 //=========================================================
 
 #include <QAction>
-#include <QComboBox>
-#include <QMouseEvent>
-#include <QSlider>
-#include <QToolButton>
-#include <QHBoxLayout>
 #include <QVBoxLayout>
-
-#include "posedit.h"
-#include "sigedit.h"
 
 #include "song.h"
 #include "transport.h"
-#include "doublelabel.h"
-#include "siglabel.h"
 #include "globals.h"
 #include "icons.h"
 #include "sync.h"
@@ -44,11 +34,27 @@
 #include "app.h"
 #include "audio.h"
 #include "globaldefs.h"
-#include "pixmap_button.h"
-#include "tempolabel.h"
 #include "operations.h"
 #include "tempo.h"
 #include "audiodev.h"
+#include "undo.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSlider>
+#include <QMouseEvent>
+#include <QToolButton>
+#include <QKeyEvent>
+#include "sig.h"
+#include "pos.h"
+#include "posedit.h"
+#include "doublelabel.h"
+#include "siglabel.h"
+#include "pixmap_button.h"
+#include "tempolabel.h"
+#include "sigedit.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_TRANSPORT(dev, format, args...) // fprintf(dev, format, ##args);

@@ -31,24 +31,24 @@
 
 #include "midictrl.h"
 #include "song.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midiport.h"
 #include "mididev.h"
 #include "config.h"
 #include "gconfig.h"
 #include "globals.h"
-#include "globaldefs.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "midiseq.h"
-#include "sync.h"
 #include "midiitransform.h"
 #include "mitplugin.h"
 #include "part.h"
 #include "drummap.h"
-#include "operations.h"
 #include "helper.h"
 #include "ticksynth.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "xml.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -416,54 +416,6 @@ void MidiDeviceList::add(MidiDevice* dev)
         dev->setName(newName);
       push_back(dev);
       }
-
-//---------------------------------------------------------
-//   addOperation
-//---------------------------------------------------------
-
-void MidiDeviceList::addOperation(MidiDevice* dev, PendingOperationList& ops)
-{
-  bool gotUniqueName=false;
-  int increment = 0;
-  const QString origname = dev->name();
-  QString newName = origname;
-  PendingOperationItem poi(this, dev, PendingOperationItem::AddMidiDevice);
-  // check if the name's been taken
-  while(!gotUniqueName) 
-  {
-    if(increment >= 10000)
-    {
-      fprintf(stderr, "MusE Error: MidiDeviceList::addOperation(): Out of 10000 unique midi device names!\n");
-      return;        
-    }
-    gotUniqueName = true;
-    // In the case of type AddMidiDevice, this searches for the name only.
-    iPendingOperation ipo = ops.findAllocationOp(poi);
-    if(ipo != ops.end())
-    {
-      PendingOperationItem& poif = *ipo;
-      if(poif._midi_device == poi._midi_device)
-        return;  // Device itself is already added! 
-      newName = origname + QString("_%1").arg(++increment);
-      gotUniqueName = false;
-    }    
-    
-    for(iMidiDevice i = begin(); i != end(); ++i) 
-    {
-      const QString s = (*i)->name();
-      if(s == newName)
-      {
-        newName = origname + QString("_%1").arg(++increment);
-        gotUniqueName = false;
-      }
-    }
-  }
-  
-  if(origname != newName)
-    dev->setName(newName);
-  
-  ops.add(poi);
-}
 
 //---------------------------------------------------------
 //   remove

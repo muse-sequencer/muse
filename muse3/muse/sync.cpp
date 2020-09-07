@@ -36,7 +36,7 @@
 #include "audiodev.h"
 #include "gconfig.h"
 #include "xml.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "large_int.h"
 
 namespace MusEGlobal {

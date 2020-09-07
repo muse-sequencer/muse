@@ -101,6 +101,8 @@
 
 #endif // LV2_SUPPORT
 
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "xml.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PLUGIN_SCAN(dev, format, args...)  // std::fprintf(dev, format, ##args);

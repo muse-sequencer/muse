@@ -39,7 +39,10 @@ class QDropEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 
-class DrumMap;
+namespace MusECore {
+struct DrumMap;
+}
+
 namespace MusEGui {
 
 class MidiEditor;
@@ -104,36 +107,36 @@ class DrumCanvas : public EventCanvas {
       int _stepSize;
 
       
-      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
-      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
-      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
-      virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*, bool, bool) { } // Non-virt width is meaningless, such as drums.
-      virtual void newItem(CItem*, bool);
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion()) override;
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) override;
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion()) override;
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) override;
+      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true) override;
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) override;
+      virtual CItem* newItem(const QPoint&, int) override;
+      virtual void resizeItem(CItem*, bool, bool)  override { } // Non-virt width is meaningless, such as drums.
+      virtual void newItem(CItem*, bool) override;
       virtual void newItem(CItem*, bool, bool replace );
-      virtual bool deleteItem(CItem*);
-      virtual void itemPressed(const CItem*);
-      virtual void itemReleased(const CItem*, const QPoint& /*oldpos*/);
+      virtual bool deleteItem(CItem*) override;
+      virtual void itemPressed(const CItem*) override;
+      virtual void itemReleased(const CItem*, const QPoint& /*oldpos*/) override;
       virtual void itemMoving(const CItem*, const QPoint& newMP) override;
-      virtual void itemMoved(const CItem*, const QPoint& oldMP);
+      virtual void itemMoved(const CItem*, const QPoint& oldMP) override;
 
       CItem* newItem(int tick, int instrument, int velocity);
 
       bool index2Note(int index, int* port, int* channel, int* note);
-      int y2pitch(int y) const;
-      int pitch2y(int pitch) const;
-      inline int y2height(int) const { return TH; }
-      inline int yItemOffset() const { return -TH/2; }
-      void startDrag(CItem*, DragType);
-      void dragEnterEvent(QDragEnterEvent* event);
-      void dragMoveEvent(QDragMoveEvent*);
-      void dragLeaveEvent(QDragLeaveEvent*);
-      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&);
-      virtual void resizeEvent(QResizeEvent*);
-      virtual void curPartChanged();
+      int y2pitch(int y) const override;
+      int pitch2y(int pitch) const override;
+      inline int y2height(int) const override { return TH; }
+      inline int yItemOffset() const override { return -TH/2; }
+      void startDrag(CItem*, DragType) override;
+      void dragEnterEvent(QDragEnterEvent* event) override;
+      void dragMoveEvent(QDragMoveEvent*) override;
+      void dragLeaveEvent(QDragLeaveEvent*) override;
+      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) override;
+      virtual void resizeEvent(QResizeEvent*) override;
+      virtual void curPartChanged() override;
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
       void mouseMove(QMouseEvent* event) override;
 
@@ -169,9 +172,9 @@ class DrumCanvas : public EventCanvas {
          const char* name = 0);
       virtual ~DrumCanvas();
       void cmd(int);
-      virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
-      virtual void keyPress(QKeyEvent* event);
-      virtual void keyRelease(QKeyEvent* event);
+      virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true) override;
+      virtual void keyPress(QKeyEvent* event) override;
+      virtual void keyRelease(QKeyEvent* event) override;
       const MusECore::Event* getEventAtCursorPos();
       void selectCursorEvent(const MusECore::Event* ev);
 

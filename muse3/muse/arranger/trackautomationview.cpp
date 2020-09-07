@@ -24,8 +24,9 @@
 #include "muse_math.h"
 
 #include <QPainter>
-#include <QPaintEvent>
 
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QPaintEvent>
 #include "track.h"
 
 namespace MusEGui {

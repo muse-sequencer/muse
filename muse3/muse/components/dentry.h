@@ -25,8 +25,6 @@
 
 #include "line_edit.h"
 
-#include "sliderbase.h"
-
 class QWidget;
 class QWheelEvent;
 class QMouseEvent;
@@ -36,7 +34,8 @@ class QString;
 class QTimer;
 
 namespace MusEGui {
-
+class SliderBase;
+  
 //---------------------------------------------------------
 //   Dentry
 //---------------------------------------------------------

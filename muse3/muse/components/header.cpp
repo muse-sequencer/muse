@@ -27,6 +27,8 @@
 #include <QStringList>
 #include <QStandardItemModel>
 #include <QMouseEvent>
+#include <QAction>
+#include <QWidget>
 
 namespace MusEGui {
 

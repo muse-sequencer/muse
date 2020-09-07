@@ -37,9 +37,29 @@
 #include "audio.h"
 #include "astrip.h"
 #include "mstrip.h"
-#include "track.h"
-#include "xml.h"
 #include "shortcuts.h"
+#include "globals.h"
+#include "undo.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QWidget>
+#include <QMenu>
+#include <QAction>
+#include <QHBoxLayout>
+#include <QResizeEvent>
+#include <QMoveEvent>
+#include <QCloseEvent>
+#include <QKeyEvent>
+#include <QEvent>
+#include "xml.h"
+#include "track.h"
+#include "meter.h"
+#include "combobox.h"
+#include "doublelabel.h"
+#include "knob.h"
+#include "slider.h"
+#include "strip.h"
+#include "routedialog.h"
 
 #define __WIDTH_COMPENSATION 4
 
@@ -47,6 +67,11 @@
 #define DEBUG_MIXER(dev, format, args...)  // fprintf(dev, format, ##args);
 
 namespace MusEGui {
+
+ScrollArea::ScrollArea(QWidget* parent) : QScrollArea(parent)
+{
+
+}
 
 bool ScrollArea::viewportEvent(QEvent* event)
 {

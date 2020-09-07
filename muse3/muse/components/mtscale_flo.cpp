@@ -22,15 +22,18 @@
 
 #include <limits.h>
 
-#include <QMouseEvent>
-#include <QPainter>
-
 #include "mtscale_flo.h"
 #include "song.h"
 #include "app.h"
 #include "icons.h"
 #include "gconfig.h"
 #include "scoreedit.h"
+#include "globals.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QWidget>
+#include <QPainter>
+#include <QMouseEvent>
 
 namespace MusEGui {
 

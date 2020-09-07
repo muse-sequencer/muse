@@ -24,15 +24,15 @@
 #ifndef __CLIPLIST_H__
 #define __CLIPLIST_H__
 
-#include "type_defs.h"
-#include "../cobject.h"
-#include "event.h"
-
 #include "ui_cliplisteditorbase.h"
+#include <QWidget>
 
+#include "type_defs.h"
+#include "cobject.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QCloseEvent;
-class QDialog;
-class QWidget;
 class QTreeWidgetItem;
 
 namespace MusECore {
@@ -52,7 +52,7 @@ class ClipListEditorBaseWidget : public QWidget, public Ui::ClipListEditorBase
       Q_OBJECT
 
    public:
-      ClipListEditorBaseWidget(QWidget *parent = 0) : QWidget(parent) { setupUi(this); }
+      ClipListEditorBaseWidget(QWidget *parent = nullptr);
 };
 
 //---------------------------------------------------------

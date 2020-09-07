@@ -25,8 +25,14 @@
 #include "event.h"
 #include "waveevent.h"
 #include "midievent.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "part.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "eventbase.h"
+#include "part.h"
+#include "xml.h"
+#include "audio_fifo.h"
 
 namespace MusECore {
 

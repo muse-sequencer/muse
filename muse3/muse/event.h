@@ -32,12 +32,18 @@
 #include <sndfile.h>
 
 #include "type_defs.h"
-#include "eventbase.h"
 #include "pos.h"
 #include "mpevent.h"
-#include "xml.h"
+#include "wave.h"
 
 namespace MusECore {
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class EventBase;
+class Part;
+class Xml;
+class Fifo;
 
 //---------------------------------------------------------
 //   Event

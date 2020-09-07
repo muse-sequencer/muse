@@ -23,18 +23,17 @@
 #ifndef __TB1_H__
 #define __TB1_H__
 
-#include <QToolBar>     
+#include <QToolBar>
+
+#include "rasterizer.h"
 
 class QToolButton;
-class QTableWidget;
-
-class Track;
-class LabelCombo;
 
 namespace MusEGui {
 
 class PitchLabel;
 class PosLabel;
+class RasterLabelCombo;
 
 //---------------------------------------------------------
 //   Toolbar1
@@ -46,12 +45,11 @@ class Toolbar1 : public QToolBar {
       QToolButton* solo;
       PosLabel* pos;
       PitchLabel* pitch;
-      LabelCombo* raster;
-      QTableWidget* rlist;
+      RasterLabelCombo* raster;
       bool showPitch;
-      
+
    private slots:
-      void _rasterChanged(int);
+      void _rasterChanged(int raster);
 
    public slots:
       void setTime(unsigned);
@@ -60,15 +58,20 @@ class Toolbar1 : public QToolBar {
       void setRaster(int);
 
    signals:
-      void rasterChanged(int);
+      void rasterChanged(int raster);
       void soloChanged(bool);
 
    public:
-      //Toolbar1(QMainWindow* parent = 0, int r=96,
-      Toolbar1(QWidget* parent, int r=96,     
+      Toolbar1(RasterizerModel *model, QWidget* parent, int r=96,     
          bool showPitch=true);
       void setSolo(bool val);
       void setPitchMode(bool flag);
+
+      const Rasterizer *rasterizer() const;
+      void setRasterizerModel(RasterizerModel *model);
+      int currentRaster() const;
+      // Same as setRaster() but returns the actual value used.
+      int changeRaster(int val);
       };
 
 } // namespace MusEGui

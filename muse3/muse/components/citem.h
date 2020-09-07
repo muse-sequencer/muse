@@ -31,8 +31,11 @@
 
 #include "event.h"
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 namespace MusECore {
 class Part;
+class Pos;
 }
 
 namespace MusEGui {

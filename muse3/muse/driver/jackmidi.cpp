@@ -21,20 +21,18 @@
 //
 //=========================================================
 
-#include <QString>
 #include <QByteArray>
 
 #include <stdio.h>
 #include <string.h>
 
 #include <jack/jack.h>
-//#include <jack/midiport.h>
 
 #include "jackmidi.h"
 #include "jackaudio.h"
 #include "song.h"
 #include "globals.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "mididev.h"
 #include "../midiport.h"
 #include "../midiseq.h"
@@ -46,11 +44,13 @@
 #include "audiodev.h"
 #include "../mplugins/midiitransform.h"
 #include "../mplugins/mitplugin.h"
-#include "xml.h"
 #include "gconfig.h"
 #include "track.h"
 #include "route.h"
 #include "helper.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "xml.h"
 
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG

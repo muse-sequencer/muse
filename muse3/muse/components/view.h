@@ -25,15 +25,20 @@
 #define __VIEW_H__
 
 #include <QWidget>
+#include <QRegion>
+#include <QPixmap>
+#include <QBrush>
+#include <QRect>
+#include <QPoint>
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QDropEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QPaintEvent;
 class QPainter;
-class QPixmap;
 class QResizeEvent;
-class QRegion;
 
 namespace MusEGui {
 

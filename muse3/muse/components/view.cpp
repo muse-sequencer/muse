@@ -24,20 +24,20 @@
 #include "view.h"
 #include "gconfig.h"
 #include <stdio.h>
-#include <QPainter>
-#include <QPixmap>
-#include <QResizeEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QPaintEvent>
-#include <QRegion>
 #include <QVector>
 #include "tempo.h"
 
 #include "muse_math.h"
 
 #include "sig.h"  
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QDropEvent>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QResizeEvent>
 
 // Don't use this, it was just for debugging. 
 // It's much slower than muse-1 no matter how hard I tried.
@@ -424,8 +424,8 @@ void View::paint(const QRect& r, const QRegion& rg)
       if (bgPixmap.isNull())
             p.fillRect(rr, brush);
       else
-            p.drawTiledPixmap(rr, bgPixmap, QPoint(xpos + rmapx(xorg)
-               + rr.x(), ypos + rmapy(yorg) + rr.y()));
+            p.drawTiledPixmap(rr, bgPixmap, QPoint(xpos + xorg
+               + rr.x(), ypos + yorg + rr.y()));
       
       p.setClipRegion(rg);
 
@@ -584,7 +584,7 @@ void View::setPainter(QPainter& p)
       //p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
       p.resetTransform();     // resetMatrix() is deprecated in Qt 5.13
       
-      p.translate( -(double(xpos) + rmapx_f(xorg)) , -(double(ypos) + rmapy(yorg)));
+      p.translate( -(double(xpos) + double(xorg)) , -(double(ypos) + double(yorg)));
       double xMag = (xmag < 0) ? 1.0/double(-xmag) : double(xmag);
       double yMag = (ymag < 0) ? 1.0/double(-ymag) : double(ymag);
       p.scale(xMag, yMag);
@@ -1125,19 +1125,19 @@ QRect View::map(const QRect& r) const
       int x, y, w, h;
       //printf("View::map xmag:%d xpos:%d xorg:%d\n", xmag, xpos, xorg);  
       if (xmag < 0) {
-            x = r.x()/(-xmag) - (xpos + rmapx(xorg));  // round down
+            x = r.x()/(-xmag) - (xpos + xorg);  // round down
             w = (r.width()-xmag-1)  / (-xmag);  // round up
             }
       else {
-            x = r.x()*xmag - (xpos + rmapx(xorg));
+            x = r.x()*xmag - (xpos + xorg);
             w = r.width() * xmag;
             }
       if (ymag < 0) {
-            y = r.y()/-ymag - (ypos + rmapy(yorg));
+            y = r.y()/-ymag - (ypos + yorg);
             h = (r.height()-ymag-1) / (-ymag);
             }
       else {
-            y = r.y() * ymag - (ypos + rmapy(yorg));
+            y = r.y() * ymag - (ypos + yorg);
             h = r.height() * ymag;
             }
       return QRect(x, y, w, h);
@@ -1147,16 +1147,16 @@ QPoint View::map(const QPoint& p) const
       {
       int x, y;
       if (xmag < 0) {
-            x = p.x()/(-xmag) - (xpos + rmapx(xorg));  // round down
+            x = p.x()/(-xmag) - (xpos + xorg);  // round down
             }
       else {
-            x = p.x()*xmag - (xpos + rmapx(xorg));
+            x = p.x()*xmag - (xpos + xorg);
             }
       if (ymag < 0) {
-            y = p.y()/-ymag - (ypos + rmapy(yorg));
+            y = p.y()/-ymag - (ypos + yorg);
             }
       else {
-            y = p.y() * ymag - (ypos + rmapy(yorg));
+            y = p.y() * ymag - (ypos + yorg);
             }
       return QPoint(x, y);
       }
@@ -1164,28 +1164,28 @@ QPoint View::map(const QPoint& p) const
 int View::mapx(int x) const
       {
       if (xmag < 0) {
-            return (x-xmag/2)/(-xmag) - (xpos + rmapx(xorg));  // round
+            return (x-xmag/2)/(-xmag) - (xpos + xorg);  // round
             }
       else {
-            return (x * xmag) - (xpos + rmapx(xorg));
+            return (x * xmag) - (xpos + xorg);
             }
       }
 int View::mapy(int y) const
       {
       if (ymag < 0) {
-            return (y-ymag/2)/(-ymag) - (ypos + rmapy(yorg));  // round
+            return (y-ymag/2)/(-ymag) - (ypos + yorg);  // round
             }
       else {
-            return (y * ymag) - (ypos + rmapy(yorg));
+            return (y * ymag) - (ypos + yorg);
             }
       }
 int View::mapxDev(int x) const
       {
       int val;
       if (xmag <= 0)
-            val = (x + xpos + rmapx(xorg)) * (-xmag);
+            val = (x + xpos + xorg) * (-xmag);
       else
-            val = (x + xpos + rmapx(xorg) + xmag / 2) / xmag;
+            val = (x + xpos + xorg + xmag / 2) / xmag;
       if (val < 0)            // DEBUG
             val = 0;
       return val;
@@ -1194,9 +1194,9 @@ int View::mapxDev(int x) const
 int View::mapyDev(int y) const
       {
       if (ymag <= 0)
-            return (y + ypos + rmapy(yorg)) * (-ymag);
+            return (y + ypos + yorg) * (-ymag);
       else
-            return (y + ypos + rmapy(yorg) + ymag / 2) / ymag;
+            return (y + ypos + yorg + ymag / 2) / ymag;
       }
 
 // r == relative conversion
@@ -1263,33 +1263,33 @@ void View::map(const QRegion& rg_in, QRegion& rg_out) const
 int View::mapx(int x) const
       {
       if (xmag < 0)
-            return floor(double(x - xorg) / double(-xmag)) - xpos;
+            return floor(double(x) / double(-xmag)) - xpos - xorg;
 
       else 
-            return (x - xorg) * xmag - xpos;
+            return x * xmag - xpos - xorg;
 
       }
 int View::mapy(int y) const
       {
       if (ymag < 0)
-            return floor(double(y - yorg) / double(-ymag)) - ypos;
+            return floor(double(y) / double(-ymag)) - ypos - yorg;
       else
-            return (y - yorg) * ymag - ypos;
+            return y * ymag - ypos - yorg;
       }
 int View::mapxDev(int x) const
       {
       if (xmag <= 0)
-            return  (x + xpos) * -xmag + xorg;
+            return  (x + xpos + xorg) * -xmag;
       else
-            return floor(double(x + xpos) / double(xmag)) + xorg;
+            return floor(double(x + xpos + xorg) / double(xmag));
       }
 
 int View::mapyDev(int y) const
       {
       if (ymag <= 0)
-            return (y + ypos) * -ymag + yorg;
+            return (y + ypos + yorg) * -ymag;
       else
-            return floor(double(y + ypos) / double(ymag)) + yorg;
+            return floor(double(y + ypos + yorg) / double(ymag));
       }
 
 //-----------------------------

@@ -32,8 +32,6 @@ namespace MusEGui
 	{
 		Q_OBJECT
 		
-		private:
-			int _raster;
     protected:
       virtual void paintEvent(QPaintEvent* ev);
 

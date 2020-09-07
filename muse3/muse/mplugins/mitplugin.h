@@ -28,6 +28,8 @@
 
 namespace MusECore {
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class MEvent;
 class Xml;
 
@@ -38,10 +40,10 @@ class Xml;
 
 class MITPlugin {
    public:
-      virtual ~MITPlugin(){}
+      virtual ~MITPlugin();
       virtual void process(MEvent& event) = 0;
-      virtual void readStatus(Xml&) {}
-      virtual void writeStatus(int, Xml&) const {}
+      virtual void readStatus(Xml&);
+      virtual void writeStatus(int, Xml&) const;
       };
 
 typedef std::list<MITPlugin*> MITPluginList;

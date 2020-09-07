@@ -25,12 +25,16 @@
 #define __MIDISYNCIMPL_H__
 
 #include "ui_midisync.h"
+
+#include <QCloseEvent>
+#include <QDialog>
+#include <QTreeWidgetItem>
+
 #include "type_defs.h"
 #include "sync.h"
 
 class QCloseEvent;
-class QDialog;
-class QTreeWidgetItem;
+class QTreeWidget;
 
 namespace MusEGui {
 

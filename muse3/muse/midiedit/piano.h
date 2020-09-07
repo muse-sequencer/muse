@@ -24,8 +24,13 @@
 #ifndef __PIANO_H__
 #define __PIANO_H__
 
+#include <QRect>
+#include <QRegion>
+
 #include "view.h"
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QEvent;
 class QMouseEvent;
 class QWheelEvent;

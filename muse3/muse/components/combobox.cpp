@@ -20,10 +20,15 @@
 //
 //=========================================================
 
-#include <QMenu>
-#include <QWheelEvent>
-
 #include "combobox.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QWidget>
+#include <QAction>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QString>
 
 namespace MusEGui {
 

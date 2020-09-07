@@ -36,14 +36,16 @@
   #include <QTimer>
 #endif
 
+#include <QVariant>
 #include <QPointer>
+#include <QAction>
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QWidget;
 class QMouseEvent;
 class QContextMenuEvent;
 class QHideEvent;
-class QVariant;
-class QAction;
 class QEvent;
 
 namespace MusEGui {

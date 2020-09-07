@@ -28,7 +28,6 @@
 #include <QStringList>
 
 #include "config.h"
-#include "xml.h"
 #include "plugin_scan.h"
 #include "plugin_list.h"
 

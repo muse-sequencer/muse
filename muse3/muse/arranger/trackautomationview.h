@@ -23,10 +23,16 @@
 #ifndef TRACKAUTOMATIONVIEW_H
 #define TRACKAUTOMATIONVIEW_H
 
-class QPaintEvent;
-class QWidget;
+#include <QWidget>
+#include <map>
 
-#include "track.h"
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QPaintEvent;
+
+namespace MusECore { 
+class Track;
+}
 
 namespace MusEGui { 
 

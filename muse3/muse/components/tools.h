@@ -24,11 +24,12 @@
 #define __TOOLS_H__
 
 #include <QToolBar>
-
+#include <QMap>
 
 class QAction;
 class QPixmap;
 class QWidget;
+class QIcon;
 
 namespace MusEGui {
 

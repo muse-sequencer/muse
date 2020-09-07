@@ -25,31 +25,34 @@
 
 #include "type_defs.h"
 #include "midieditor.h"
-#include "noteinfo.h"
-#include "cobject.h"
-#include "tempo.h"
 #include "keyevent.h"
-#include "sig.h"
-#include "posedit.h"
-#include "sigedit.h"
 
-#include <QWidget>
-#include <QTreeWidget>
 #include <QTreeWidgetItem>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QToolBar>
-#include <QMenu>
-#include <QTimer>
-#include <QKeyEvent>
-#include <QCloseEvent>
-#include <QAction>
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QWidget;
+class QTreeWidget;
+class QLineEdit;
+class QComboBox;
+class QToolBar;
+class QMenu;
+class QTimer;
+class QKeyEvent;
+class QCloseEvent;
+class QAction;
 
 namespace MusECore {
+class TopWin;
 struct SigEvent;
+struct TEvent;
+class Xml;
 };
 
 namespace MusEGui {
+
+class PosEdit;
+class SigEdit;
 
 enum LMASTER_LVTYPE
    {
@@ -68,11 +71,10 @@ class LMasterLViewItem : public QTreeWidgetItem {
       QString c1, c2, c3, c4;
 
    public:
-      LMasterLViewItem(QTreeWidget* parent)
-           : QTreeWidgetItem(QTreeWidgetItem::UserType) {parent->insertTopLevelItem(0, this);}
+      LMasterLViewItem(QTreeWidget* parent);
       virtual QString text(int column) const;
-      virtual LMASTER_LVTYPE getType() = 0;
-      virtual unsigned tick() = 0;
+      virtual LMASTER_LVTYPE getType() const = 0;
+      virtual unsigned tick() const = 0;
       };
 
 //---------------------------------------------------------
@@ -86,10 +88,10 @@ class LMasterTempoItem : public LMasterLViewItem {
 
    public:
       LMasterTempoItem(QTreeWidget* parent, const MusECore::TEvent* t);
-      virtual LMASTER_LVTYPE getType() { return LMASTER_TEMPO; }
-      const MusECore::TEvent* getEvent() { return tempoEvent; }
-      virtual unsigned tick() { return tempoEvent->tick; }
-      int tempo() { return tempoEvent->tempo; }
+      virtual LMASTER_LVTYPE getType() const;
+      const MusECore::TEvent* getEvent() const;
+      virtual unsigned tick() const;
+      int tempo() const;
       };
 
 //---------------------------------------------------------
@@ -103,11 +105,11 @@ class LMasterKeyEventItem : public LMasterLViewItem {
 
    public:
       LMasterKeyEventItem(QTreeWidget* parent, const MusECore::KeyEvent& t);
-      virtual LMASTER_LVTYPE getType() { return LMASTER_KEYEVENT; }
-      const MusECore::KeyEvent& getEvent() { return keyEvent; }
-      virtual unsigned tick() { return keyEvent.tick; }
-      MusECore::key_enum key() const { return keyEvent.key; }
-      bool isMinor() const { return keyEvent.minor; }
+      virtual LMASTER_LVTYPE getType() const;
+      const MusECore::KeyEvent& getEvent() const;
+      virtual unsigned tick() const;
+      MusECore::key_enum key() const;
+      bool isMinor() const;
      };
 //---------------------------------------------------------
 //   LMasterTempoItem
@@ -120,11 +122,11 @@ class LMasterSigEventItem : public LMasterLViewItem {
 
    public:
       LMasterSigEventItem(QTreeWidget* parent, const MusECore::SigEvent* s);
-      virtual LMASTER_LVTYPE getType() { return LMASTER_SIGEVENT; }
-      const MusECore::SigEvent* getEvent() { return sigEvent; }
-      virtual unsigned tick() { return sigEvent->tick; }
-      int z() { return sigEvent->sig.z; }
-      int n() { return sigEvent->sig.n; }
+      virtual LMASTER_LVTYPE getType() const;
+      const MusECore::SigEvent* getEvent() const;
+      virtual unsigned tick() const;
+      int z() const;
+      int n() const;
       };
 
 

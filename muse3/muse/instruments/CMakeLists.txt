@@ -22,27 +22,9 @@
 #=============================================================================
 
 ##
-## Expand Qt macros in source files
-##
-QT5_WRAP_CPP ( instruments_mocs
-   editinstrument.h
-   # minstrument.h
-   )
-
-##
-## UI files
-##
-file (GLOB instruments_ui_files
-      # ccontrollerbase.ui # not built. It needs to be converted to Qt5 for revival.
-      editinstrumentbase.ui
-      )
-QT5_WRAP_UI ( instruments_uis ${instruments_ui_files} )
-
-##
 ## List of source files to compile
 ##
 file (GLOB instruments_source_files
-   editinstrument.cpp
    minstrument.cpp
    )
 
@@ -52,7 +34,6 @@ file (GLOB instruments_source_files
 add_library ( instruments ${MODULES_BUILD}
    ${instruments_source_files}
    ${instruments_mocs}
-   ${instruments_uis}
    )
 
 ##
@@ -61,7 +42,6 @@ add_library ( instruments ${MODULES_BUILD}
 set (FILES_TO_TRANSLATE
       ${FILES_TO_TRANSLATE}
       ${instruments_source_files}
-      ${instruments_ui_files}
       CACHE INTERNAL ""
       )
 

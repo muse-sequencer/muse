@@ -27,7 +27,12 @@
 #include "ui_editsysexdialogbase.h"
 #include "ui_editctrlbase.h"
 
-class QDialog;
+#include <QDialog>
+
+#include "event.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QLabel;
 class QGridLayout;
 class QTextEdit;

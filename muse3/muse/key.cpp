@@ -21,9 +21,14 @@
 //
 //=========================================================
 
+#include <QPainter>
+#include <QPoint>
+
 #include <stdio.h>
+
 #include "key.h"
 #include "globals.h"
+#include "xml.h"
 
 namespace MusECore {
 

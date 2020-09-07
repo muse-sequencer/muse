@@ -26,10 +26,12 @@
 
 #include "type_defs.h"
 #include "track.h"
+
 #include <map>
 #include <QWidget>
 
-class QWidget;
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QKeyEvent;
 class QLineEdit;
 class QSpinBox;
@@ -40,9 +42,7 @@ class QWheelEvent;
 class QMenu;
 
 namespace MusECore {
-class Track;
 class Xml;
-//class PendingOperationList;
 class Undo;
 }
 
@@ -50,23 +50,6 @@ namespace MusEGui {
 class Header;
 class PopupMenu;
 class ScrollScale;
-
-enum TrackColumn {
-      COL_TRACK_IDX = 0,
-      COL_INPUT_MONITOR,
-      COL_RECORD,
-      COL_MUTE,
-      COL_SOLO,
-      COL_CLASS,
-      COL_NAME,
-      COL_OPORT,
-      COL_OCHANNEL,
-      COL_TIMELOCK,
-      COL_AUTOMATION,
-      COL_CLEF,
-      COL_CUSTOM_MIDICTRL_OFFSET,
-      COL_NONE = -1
-      };
 
 //---------------------------------------------------------
 //   TList
@@ -79,6 +62,25 @@ class TList : public QWidget {
     Q_PROPERTY(bool curSelBorder READ curSelBorder WRITE setCurSelBorder)
     Q_PROPERTY(QColor curSelBorderColor READ curSelBorderColor WRITE setCurSelBorderColor)
 
+  public:
+    enum TrackColumn {
+          COL_TRACK_IDX = 0,
+          COL_INPUT_MONITOR,
+          COL_RECORD,
+          COL_MUTE,
+          COL_SOLO,
+          COL_CLASS,
+          COL_NAME,
+          COL_OPORT,
+          COL_OCHANNEL,
+          COL_TIMELOCK,
+          COL_AUTOMATION,
+          COL_CLEF,
+          COL_CUSTOM_MIDICTRL_OFFSET,
+          COL_NONE = -1
+          };
+
+  private:
     bool _sel3d;
     bool _curSelBorder;
     QColor _curSelBorderColor;
@@ -112,15 +114,15 @@ class TList : public QWidget {
 
       enum { NORMAL, START_DRAG, DRAG, RESIZE} mode;
 
-      virtual void paintEvent(QPaintEvent*);
-      virtual void mousePressEvent(QMouseEvent* event);
-      virtual void mouseDoubleClickEvent(QMouseEvent*);
-      virtual void mouseMoveEvent(QMouseEvent*);
-      virtual void mouseReleaseEvent(QMouseEvent*);
-      virtual void keyPressEvent(QKeyEvent* e);
-      virtual void wheelEvent(QWheelEvent* e);
-      virtual QSize sizeHint() const override { return QSize(250, 100); }
-      virtual QSize minimumSizeHint() const override { return QSize(100, 100); }
+      virtual void paintEvent(QPaintEvent*) override;
+      virtual void mousePressEvent(QMouseEvent* event) override;
+      virtual void mouseDoubleClickEvent(QMouseEvent*) override;
+      virtual void mouseMoveEvent(QMouseEvent*) override;
+      virtual void mouseReleaseEvent(QMouseEvent*) override;
+      virtual void keyPressEvent(QKeyEvent* e) override;
+      virtual void wheelEvent(QWheelEvent* e) override;
+      virtual QSize sizeHint() const override;
+      virtual QSize minimumSizeHint() const override;
 
       void oportPropertyPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
@@ -140,7 +142,7 @@ class TList : public QWidget {
 
 
    protected:
-      bool event(QEvent *);
+      bool event(QEvent *) override;
 
    private slots:
       void maybeUpdateVolatileCustomColumns(); // updates AFFECT_CPOS-columns when and only when the hwState has changed

@@ -22,9 +22,15 @@
 
 #include <stdio.h>
 
+#include <QWidget>
+#include <QWheelEvent>
+#include <QMouseEvent>
 #include <QContextMenuEvent>
+#include <QKeyEvent>
+#include <QString>
 #include <QTimer>
 
+#include "sliderbase.h"
 #include "dentry.h"
 #include "globals.h"
 #include "gconfig.h"

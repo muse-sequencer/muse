@@ -26,14 +26,22 @@
 #define __GENSET_H__
 
 #include "ui_gensetbase.h"
-#include "cobject.h"
-#include "mdisettings.h"
 
-#include <QButtonGroup>
-#include <QShowEvent>
+#include <QDialog>
+#include <QString>
+
+#include "cobject.h"
+
 #include <list>
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QButtonGroup;
+class QShowEvent;
+class QWidget;
+
 namespace MusEGui {
+class MdiSettings;
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig

@@ -27,6 +27,9 @@
 #include <sys/time.h>
 #endif
 
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "pos.h"
+
 namespace MusECore {
   
 AudioDevice::AudioDevice()

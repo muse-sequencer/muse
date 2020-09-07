@@ -36,6 +36,7 @@
 #include "plugin.h"
 #include "synth.h"
 #include "audiodev.h"
+#include "midiport.h"
 #include "audio.h"
 #include "wave.h"
 #include "utils.h"      //debug

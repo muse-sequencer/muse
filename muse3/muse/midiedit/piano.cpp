@@ -21,9 +21,6 @@
 //
 //=========================================================
 
-#include <QMouseEvent>
-#include <QPainter>
-
 #include <stdio.h>
 
 #include <map>
@@ -31,10 +28,18 @@
 #include "piano.h"
 #include "globals.h"
 #include "song.h"
+#include "midiport.h"
 #include "track.h"
-#include "midieditor.h"
 #include "midictrl.h"
 #include "icons.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include <QEvent>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QPainter>
+#include <QPixmap>
+#include "midieditor.h"
 
 namespace MusEGui {
   

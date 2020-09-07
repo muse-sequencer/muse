@@ -31,6 +31,7 @@
 #include "config.h"
 #include "globaldefs.h"
 #include "plugin_cache_writer.h"
+#include "xml.h"
 
 #include <ladspa.h>
 #include "synti/libsynti/mess.h"

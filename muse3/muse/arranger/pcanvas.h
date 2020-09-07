@@ -27,12 +27,15 @@
 #include <QVector>
 #include <set>
 #include <QElapsedTimer>
+#include <QList>
 
 #include "type_defs.h"
-#include "song.h"
 #include "canvas.h"
-#include "trackautomationview.h"
+#include "undo.h"
+#include "track.h"
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QDropEvent;
 class QMouseEvent;
 class QKeyEvent;
@@ -40,17 +43,21 @@ class QEvent;
 class QDragEnterEvent;
 class QLineEdit;
 class QMenu;
+class QPainter;
 
 namespace MusECore {
-struct CtrlVal;
 class Xml;
-class Undo;
+class Track;
+class MidiTrack;
+class AudioTrack;
 class Part;
+class WavePart;
+class MidiPart;
+class PartList;
+class CItem;
 }
 
 namespace MusEGui {
-
-class MidiEditor;
 
 //---------------------------------------------------------
 //   NPart

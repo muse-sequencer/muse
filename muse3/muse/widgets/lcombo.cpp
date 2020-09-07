@@ -24,6 +24,9 @@
 
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QAbstractItemView>
+#include <QString>
+#include <QModelIndex>
 
 namespace MusEGui {
 
@@ -49,11 +52,109 @@ LabelCombo::LabelCombo(const QString& txt, QWidget* parent,
       layout->addWidget(box);
 //      layout->addSpacing(2);
       layout->setContentsMargins(0, 0, 0, 0);
-      connect(box, SIGNAL(activated(int)), SIGNAL(activated(int)));
+      connect(box, QOverload<int>::of(&QComboBox::activated), [=](int index) { box_activated(index); } );
       }
+
+void LabelCombo::addItem(const QString& txt, const QVariant &userData)
+{ 
+  box->addItem(txt, userData);
+}
+
+void LabelCombo::insertItem(int index, const QString& txt, const QVariant &userData)
+{
+  box->insertItem(index, txt, userData); 
+}
+
+QAbstractItemView *LabelCombo::view() const
+{
+  return box->view();
+}
+
+void LabelCombo::setView(QAbstractItemView* v)
+{
+  box->setModel(v->model());
+  box->setView(v);
+}
+
+void LabelCombo::setFocusPolicy (Qt::FocusPolicy fp)
+{ 
+  box->setFocusPolicy(fp);
+}
+
+void LabelCombo::box_activated(int idx)
+{
+  // HACK: Force the thing to show the right item. This hack is required because
+  //        if we are trying to show a table view in a combo box it normally wants
+  //        to show a single given column using a list view.
+  const QAbstractItemView* iv = view();
+  if(!iv)
+    return;
+  const QModelIndex mdl_idx = iv->currentIndex();
+  if(!mdl_idx.isValid())
+    return;
+  const int row = mdl_idx.row();
+  const int col = mdl_idx.column();
+  blockSignals(true);
+  if(box->modelColumn() != col)
+    box->setModelColumn(col);
+  if(box->currentIndex() != row)
+    box->setCurrentIndex(row); 
+  blockSignals(false);
+
+  emit activated(idx);
+  emit activated(mdl_idx);
+}
+
+void LabelCombo::clearFocus()
+{
+  box->clearFocus();
+}
+
+QVariant LabelCombo::itemData(int index, int role) const
+{
+  return box->itemData(index, role);
+}
+
+int LabelCombo::findData(const QVariant &data, int role, Qt::MatchFlags flags) const
+{
+  return box->findData(data, role, flags);
+}
+
+int LabelCombo::maxVisibleItems() const
+{
+  return box->maxVisibleItems();
+}
+
+void LabelCombo::setMaxVisibleItems(int maxItems)
+{
+  box->setMaxVisibleItems(maxItems);
+}
+
+QComboBox::SizeAdjustPolicy LabelCombo::sizeAdjustPolicy() const
+{
+  return box->sizeAdjustPolicy();
+}
+
+void LabelCombo::setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy policy)
+{
+  box->setSizeAdjustPolicy(policy);
+}
+
+int LabelCombo::currentIndex() const
+{
+  return box->currentIndex();
+}
+
+QModelIndex LabelCombo::currentModelIndex() const
+{
+  return view()->currentIndex();
+}
 
 void LabelCombo::setCurrentIndex(int i) 
 { 
+  // HACK: Force the thing to show the right item. This hack is required because
+  //        if we are trying to show a table view in a combo box it normally wants
+  //        to show a single given column using a list view.
   int rc = box->model()->rowCount();
   if(rc == 0)
     return;
@@ -66,5 +167,17 @@ void LabelCombo::setCurrentIndex(int i)
   if(box->currentIndex() != r)  
     box->setCurrentIndex(r); 
 } 
+
+void LabelCombo::setCurrentModelIndex(const QModelIndex& mdl_idx)
+{
+  const int row = mdl_idx.row();
+  const int col = mdl_idx.column();
+  if(col >= box->model()->columnCount())
+    return;
+  if(box->modelColumn() != col)
+    box->setModelColumn(col);
+  if(box->currentIndex() != row)  
+    box->setCurrentIndex(row); 
+}
 
 } // namespace MusEGui

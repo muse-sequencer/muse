@@ -24,43 +24,41 @@
 #ifndef __PIANOROLL_H__
 #define __PIANOROLL_H__
 
-#include <QAction>
-#include <QMenu>
-#include <QToolBar>
-#include <QToolButton>
-#include <QWidget>
-#include <QPoint>
-#include <QCloseEvent>
-#include <QKeyEvent>
-
 #include <limits.h>
 #include "type_defs.h"
-#include "noteinfo.h"
-#include "cobject.h"
-#include "midieditor.h"
-#include "tools.h"
-#include "event.h"
-#include "midictrl.h"
 #include "part.h"
+#include "midieditor.h"
 #include "ecanvas.h"
-#include "popupmenu.h"
+#include "noteinfo.h"
+#include "midictrl_consts.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QAction;
+class QMenu;
+class QToolBar;
+class QToolButton;
+class QWidget;
+class QPoint;
+class QCloseEvent;
+class QKeyEvent;
 
 namespace MusECore {
-class Track;
+class Event;
 class Xml;
 }
 
-
 namespace MusEGui {
 
+class TopWin;
 class CtrlEdit;
 class PitchLabel;
-class SNode;
 class ScrollScale;
 class Splitter;
-class TimeLabel;
 class Toolbar1;
 class Piano;
+class PopupMenu;
+class EditToolBar;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -157,6 +155,12 @@ class PianoRoll : public MidiEditor {
       virtual void keyPressEvent(QKeyEvent*);
       
       void setSpeakerMode(EventCanvas::PlayEventsMode mode);
+      
+      // Sets up a reasonable zoom minimum and/or maximum based on
+      //  the current global midi division (ticks per quarter note)
+      //  which has a very wide range (48 - 12288).
+      // Also sets the canvas and time scale offsets accordingly.
+      void setupHZoomRange();
 
    private slots:
       void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
@@ -204,6 +208,7 @@ class PianoRoll : public MidiEditor {
       static void writeConfiguration(int, MusECore::Xml&);
       CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
       MusECore::MidiPartViewState getViewState() const;
+      int changeRaster(int val);
       };
 
 } // namespace MusEGui

@@ -24,48 +24,44 @@
 #ifndef __DRUM_EDIT_H__
 #define __DRUM_EDIT_H__
 
-#include <QByteArray>
-#include <QAction>
-#include <QCloseEvent>
-#include <QLabel>
-#include <QMenu>
-#include <QKeyEvent>
-#include <QResizeEvent>
-#include <QToolButton>
-#include <QWidget>
-#include <QComboBox>
-#include <QPoint>
-
 #include <limits.h>
 #include "type_defs.h"
+#include "part.h"
 #include "midieditor.h"
 #include "noteinfo.h"
-#include "cobject.h"
-#include "tools.h"
-#include "header.h"
-#include "shortcuts.h"
-#include "event.h"
 #include "dcanvas.h"
-#include "midictrl.h"
-#include "part.h"
-#include "popupmenu.h"
+
+#include <QString>
+#include <QVector>
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QAction;
+class QCloseEvent;
+class QMenu;
+class QKeyEvent;
+class QToolButton;
+class QWidget;
+class QComboBox;
+class QPoint;
+class QToolBar;
 
 namespace MusECore {
-class SNode;
+class Event;
 class Xml;
 }
 
 namespace MusEGui {
 
-class CtrlCanvas;
+class TopWin;
 class CtrlEdit;
 class DList;
-class DrumCanvas;
 class Header;
-class ScoreConfig;
 class ScrollScale;
 class Splitter;
 class Toolbar1;
+class PopupMenu;
+class EditToolBar;
 
 //---------------------------------------------------------
 //   DrumEdit
@@ -143,6 +139,12 @@ class DrumEdit : public MidiEditor {
       void setHeaderToolTips();
       void setHeaderWhatsThis();
       
+      // Sets up a reasonable zoom minimum and/or maximum based on
+      //  the current global midi division (ticks per quarter note)
+      //  which has a very wide range (48 - 12288).
+      // Also sets the canvas and time scale offsets accordingly.
+      void setupHZoomRange();
+
    private slots:
       void setRaster(int);
       void noteinfoChanged(MusEGui::NoteInfo::ValType type, int val);
@@ -201,6 +203,8 @@ class DrumEdit : public MidiEditor {
       CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
 
       MusECore::MidiPartViewState getViewState() const;
+
+      int changeRaster(int val);
 
       group_mode_t group_mode() { return _group_mode; }
       bool ignore_hide() { return _ignore_hide; }

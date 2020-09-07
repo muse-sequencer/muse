@@ -664,6 +664,8 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/muse/function_dialogs
    ${PROJECT_SOURCE_DIR}/muse/widgets
    ${PROJECT_SOURCE_DIR}/muse/components
+   ${PROJECT_SOURCE_DIR}/muse/instruments
+
    ${PROJECT_BINARY_DIR}
    ${PROJECT_BINARY_DIR}/muse
    ${PROJECT_BINARY_DIR}/muse/function_dialogs

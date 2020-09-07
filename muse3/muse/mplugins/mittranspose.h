@@ -24,6 +24,8 @@
 #ifndef __MITTRANSPOSE_H__
 #define __MITTRANSPOSE_H__
 
+#include <QWidget>
+
 #include "mitplugin.h"
 #include "ui_mittransposebase.h"
 #include <list>

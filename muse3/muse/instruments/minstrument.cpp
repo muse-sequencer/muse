@@ -30,24 +30,27 @@
 #include <QFileInfo>
 #include <QString>
 #include <QByteArray>
+#include <QApplication>
 
 #include "minstrument.h"
-#include "midiport.h"
 #include "mididev.h"
+#include "midiport.h"
 #include "audio.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "globals.h"
-#include "xml.h"
-#include "event.h"
-#include "mpevent.h"
 #include "midictrl.h"
 #include "gconfig.h"
-#include "popupmenu.h"
-#include "drummap.h"
 #include "helper.h"
 #include "menutitleitem.h"
 #include "synth.h"
 #include "icons.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "event.h"
+#include "popupmenu.h"
+#include "midi_controller.h"
+#include "mpevent.h"
+#include "xml.h"
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
 namespace MusEGlobal {

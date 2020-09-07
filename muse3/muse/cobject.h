@@ -32,6 +32,8 @@
 #include <QByteArray>
 #include <QString>
 
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
 class QMdiSubWindow;
 class QFocusEvent;
 class QCloseEvent;
@@ -166,7 +168,6 @@ class ToplevelList : public std::list<TopWin* > {
       };
 
 } // namespace MusEGui
-
 
 #endif
 

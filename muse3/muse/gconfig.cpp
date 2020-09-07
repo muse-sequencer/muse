@@ -22,6 +22,7 @@
 //=========================================================
 
 #include "gconfig.h"
+#include "xml.h"
 
 namespace MusEGlobal {
 
@@ -50,6 +51,12 @@ namespace MusEGlobal {
  *    Therefore item 2) is no longer true. It has been disabled in main.cpp.
  *    Tim.
  */
+
+StripConfig::StripConfig()
+  { _serial = -1; _tmpFileIdx = -1; _visible = true; _width = -1; _deleted = false; }
+StripConfig::StripConfig(int trackSerial, bool visible, int width)
+  { _serial = trackSerial; _tmpFileIdx = -1; _visible = visible; _width = width; _deleted = false; }
+bool StripConfig::isNull() const { return _serial < 0; }
 
 GlobalConfigValues config = {
       QStringList(),              // pluginLadspaPathList

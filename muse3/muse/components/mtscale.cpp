@@ -30,6 +30,7 @@
 #include "app.h"
 #include "icons.h"
 #include "gconfig.h"
+#include "globals.h"
 
 namespace MusEGui {
 
@@ -38,7 +39,7 @@ namespace MusEGui {
 //    Midi Time Scale
 //---------------------------------------------------------
 
-MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
+MTScale::MTScale(int r, QWidget* parent, int xs, bool _mode)
    : View(parent, xs, 1)
       {
       waveMode = _mode;
@@ -137,6 +138,16 @@ void MTScale::setPos(int idx, unsigned val, bool)
       }
 
 //---------------------------------------------------------
+//   setRaster
+//---------------------------------------------------------
+
+void MTScale::setRaster(int rast)
+{
+  raster = rast;
+  redraw();
+}
+
+//---------------------------------------------------------
 //   viewMousePressEvent
 //---------------------------------------------------------
 
@@ -173,7 +184,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             // Normally frame to tick methods round down. But here we need it to 'snap'
             //  the frame from either side of a tick to the tick. So round to nearest.
             x = MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest);
-      x = MusEGlobal::sigmap.raster(x, *raster);
+      x = MusEGlobal::sigmap.raster(x, raster);
       //printf("MTScale::viewMouseMoveEvent\n");  
       emit timeChanged(x);
 

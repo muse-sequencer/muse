@@ -23,10 +23,10 @@
 #ifndef __INTLABEL_H__
 #define __INTLABEL_H__
 
+#include <QString>
+
 #include <limits.h>
 #include "nentry.h"
-
-class QString;
 
 namespace MusEGui {
 

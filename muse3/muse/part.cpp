@@ -28,13 +28,16 @@
 
 #include "part.h"
 #include "song.h"
-#include "track.h"
 #include "globals.h"
 #include "audio.h"
 #include "wave.h"
 #include "midiport.h"
 #include "drummap.h"
 #include "midictrl.h"
+
+// NOTE: To cure circular dependencies these includes are at the bottom.
+#include "track.h"
+#include "xml.h"
 
 namespace MusECore {
 
@@ -255,48 +258,6 @@ void chainCheckErr(Part* p)
     printf("chainCheckErr: Prev clone:%s %p next clone:%s %p != %s %p\n", p->prevClone()->name().toLatin1().constData(), p->prevClone(), p->prevClone()->nextClone()->name().toLatin1().constData(), p->prevClone()->nextClone(), p->name().toLatin1().constData(), p); 
 }
 
-void addPortCtrlEvents(const Event& event, Part* part, unsigned int tick, unsigned int /*len*/, Track* track, PendingOperationList& ops)
-{
-  if(!track || !track->isMidiTrack())
-    return;
-  
-  if(event.type() == Controller)
-  {
-    unsigned int tck  = event.tick() + tick;
-    int cntrl = event.dataA();
-    int val   = event.dataB();
-    MidiTrack* mt = (MidiTrack*)track;
-    MidiPort* mp;
-    int ch;
-    mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
-
-    MidiCtrlValListList* mcvll = mp->controller();
-    MidiCtrlValList* mcvl = NULL;
-    iMidiCtrlValList imcvll = mcvll->find(ch, cntrl);
-    if(imcvll == mcvll->end()) 
-    {
-      PendingOperationItem poi(mcvll, 0, ch, cntrl, PendingOperationItem::AddMidiCtrlValList);
-      if(ops.findAllocationOp(poi) == ops.end())
-      {
-        mcvl = new MidiCtrlValList(cntrl);
-        poi._mcvl = mcvl;
-        ops.add(poi);
-      }
-    }
-    else
-    {
-      mcvl = imcvll->second;
-    }
-
-    //assert(mcvl != NULL); //FIXME: Can this happen? (danvd). UPDATE: Yes, it can (danvd)
-    if(mcvl != NULL)
-    {
-      // The operation will catch and ignore events which are past the end of the part.
-      ops.add(PendingOperationItem(mcvl, part, tck, val, PendingOperationItem::AddMidiCtrlVal));
-    }
-  }
-}
-
 //---------------------------------------------------------
 //   addPortCtrlEvents
 //---------------------------------------------------------
@@ -342,64 +303,6 @@ void addPortCtrlEvents(Part* part, bool doClones)
     if(p == part)
       break;
   }
-}
-
-//---------------------------------------------------------
-//   addPortCtrlEvents
-//---------------------------------------------------------
-
-void addPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track, PendingOperationList& ops)
-{
-  if(!track || !track->isMidiTrack())
-    return;
-  for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
-  {
-    // The operation will catch and ignore events which are past the end of the part.
-    addPortCtrlEvents(ie->second, part, tick, len, track, ops);
-  }
-}
-
-bool removePortCtrlEvents(const Event& event, Part* part, Track* track, PendingOperationList& ops)
-{
-  if(!track || !track->isMidiTrack())
-    return false;
-  
-  if(event.type() == Controller)
-  {
-    MidiTrack* mt = (MidiTrack*)track;
-//     MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
-//     int ch = mt->outChannel();
-    
-    unsigned int tck  = event.tick() + part->tick();
-    int cntrl = event.dataA();
-    int val   = event.dataB();
-    
-    // Is it a drum controller event, according to the track port's instrument?
-    MidiPort* mp;
-    int ch;
-    mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
-
-
-    MidiCtrlValListList* mcvll = mp->controller();
-    iMidiCtrlValList cl = mcvll->find(ch, cntrl);
-    if (cl == mcvll->end()) {
-                fprintf(stderr, "removePortCtrlEvents: controller %d(0x%x) for channel %d not found size %zd\n",
-                    cntrl, cntrl, ch, mcvll->size());
-          return false;
-          }
-    MidiCtrlValList* mcvl = cl->second;
-    iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part, val);
-    if (imcv == mcvl->end()) {
-          // Let's throw up the error only if we were expecting the cache event to be there,
-          //  as is the case when the tick is inside the part. When the tick is NOT inside the part
-          //  a cache event should really not be there. But if one is found it should be deleted anyway.
-          if(tck < part->lenTick())
-            fprintf(stderr, "removePortCtrlEvents (tick: %u): not found (size %zd)\n", tck, mcvl->size());
-          return false;
-          }
-    return ops.add(PendingOperationItem(mcvl, imcv, PendingOperationItem::DeleteMidiCtrlVal));
-  }
-  return false;
 }
 
 //---------------------------------------------------------
@@ -449,125 +352,125 @@ void removePortCtrlEvents(Part* part, bool doClones)
   }
 }
 
-void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops)
-{
-  if(!track || !track->isMidiTrack())
-    return;
-  for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
-  {
-    removePortCtrlEvents(ie->second, part, track, ops);
-  }
-}
-
-void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops)
-{
-  Track* t = part->track();
-  if(!t || !t->isMidiTrack())
-    return;
-  if(old_event.type() != Controller || event.type() != Controller)
-    return;
-  MidiTrack* mt = static_cast<MidiTrack*>(t);
-  
-  unsigned int tck_erase  = old_event.tick() + part->tick();
-  int cntrl_erase = old_event.dataA();
-  int val_erase = old_event.dataB();
-  iMidiCtrlVal imcv_erase;
-  bool found_erase = false;
-
-  // Is it a drum controller old_event, according to the track port's instrument?
-  int ch_erase;
-  MidiPort* mp_erase;
-  mt->mappedPortChanCtrl(&cntrl_erase, nullptr, &mp_erase, &ch_erase);
-
-  
-  MidiCtrlValListList* mcvll_erase = mp_erase->controller();
-  MidiCtrlValList* mcvl_erase = 0;
-  iMidiCtrlValList cl_erase = mcvll_erase->find(ch_erase, cntrl_erase);
-  if(cl_erase == mcvll_erase->end()) 
-  {
-    if(MusEGlobal::debugMsg)
-      printf("deleteController: controller %d(0x%x) for channel %d not found size %zd\n",
-              cntrl_erase, cntrl_erase, ch_erase, mcvll_erase->size());
-  }
-  else
-  {
-    mcvl_erase = cl_erase->second;
-    imcv_erase = mcvl_erase->findMCtlVal(tck_erase, part, val_erase);
-    if(imcv_erase == mcvl_erase->end()) 
-    {
-      if(MusEGlobal::debugMsg)
-        printf("MidiCtrlValList::delMCtlVal(tick:%u val:%d): not found (size %zd)\n", tck_erase, val_erase, mcvl_erase->size());
-    }
-    else
-      found_erase = true;
-  }
-
-  unsigned int tck_add  = event.tick() + part->tick();
-  int cntrl_add = event.dataA();
-  int val_add   = event.dataB();
-  
-  
-  // FIXME FIXME CHECK THIS
-  //
-  //  Why wasn't 'ch' given its own 'ch_add' variable in the original code?
-  //  And why did 'mp_add' default to mp_erase above. 
-  //  That means the channel and port would have defaulted to the ones
-  //   being erased above, not the track's. That can't be right !
-  
-  
-  // Is it a drum controller event, according to the track port's instrument?
-  int ch_add;
-  MidiPort* mp_add;
-  mt->mappedPortChanCtrl(&cntrl_add, nullptr, &mp_add, &ch_add);
-
-  MidiCtrlValList* mcvl_add;
-  MidiCtrlValListList* mcvll_add = mp_add->controller();
-  iMidiCtrlValList imcvll_add = mcvll_add->find(ch_add, cntrl_add);
-  if(imcvll_add == mcvll_add->end()) 
-  {
-    if(found_erase)
-      ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
-    PendingOperationItem poi(mcvll_add, 0, ch_add, cntrl_add, PendingOperationItem::AddMidiCtrlValList);
-    if(ops.findAllocationOp(poi) == ops.end())
-    {
-      poi._mcvl = new MidiCtrlValList(cntrl_add);
-      ops.add(poi);
-    }
-    // The operation will catch and ignore events which are past the end of the part.
-    ops.add(PendingOperationItem(poi._mcvl, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
-    return;
-  }
-  else
-  {
-    mcvl_add = imcvll_add->second;
-    iMidiCtrlVal imcv_add = mcvl_add->findMCtlVal(tck_add, part, val_add);
-    if(imcv_add != mcvl_add->end()) 
-    {
-      if(tck_erase == tck_add && mcvl_erase == mcvl_add)
-      {
-        // The operation will catch and ignore events which are past the end of the part.
-        ops.add(PendingOperationItem(mcvl_add, imcv_add, val_add, PendingOperationItem::ModifyMidiCtrlVal));
-      }
-      else
-      {
-        if(found_erase)
-        {
-          ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
-        }
-        // The operation will catch and ignore events which are past the end of the part.
-        ops.add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
-      }
-      return;
-    }
-    else
-    {
-      if(found_erase)
-        ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
-      // The operation will catch and ignore events which are past the end of the part.
-      ops.add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
-    }
-  }
-}
+// void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops)
+// {
+//   if(!track || !track->isMidiTrack())
+//     return;
+//   for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
+//   {
+//     removePortCtrlEvents(ie->second, part, track, ops);
+//   }
+// }
+// 
+// void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops)
+// {
+//   Track* t = part->track();
+//   if(!t || !t->isMidiTrack())
+//     return;
+//   if(old_event.type() != Controller || event.type() != Controller)
+//     return;
+//   MidiTrack* mt = static_cast<MidiTrack*>(t);
+//   
+//   unsigned int tck_erase  = old_event.tick() + part->tick();
+//   int cntrl_erase = old_event.dataA();
+//   int val_erase = old_event.dataB();
+//   iMidiCtrlVal imcv_erase;
+//   bool found_erase = false;
+// 
+//   // Is it a drum controller old_event, according to the track port's instrument?
+//   int ch_erase;
+//   MidiPort* mp_erase;
+//   mt->mappedPortChanCtrl(&cntrl_erase, nullptr, &mp_erase, &ch_erase);
+// 
+//   
+//   MidiCtrlValListList* mcvll_erase = mp_erase->controller();
+//   MidiCtrlValList* mcvl_erase = 0;
+//   iMidiCtrlValList cl_erase = mcvll_erase->find(ch_erase, cntrl_erase);
+//   if(cl_erase == mcvll_erase->end()) 
+//   {
+//     if(MusEGlobal::debugMsg)
+//       printf("deleteController: controller %d(0x%x) for channel %d not found size %zd\n",
+//               cntrl_erase, cntrl_erase, ch_erase, mcvll_erase->size());
+//   }
+//   else
+//   {
+//     mcvl_erase = cl_erase->second;
+//     imcv_erase = mcvl_erase->findMCtlVal(tck_erase, part, val_erase);
+//     if(imcv_erase == mcvl_erase->end()) 
+//     {
+//       if(MusEGlobal::debugMsg)
+//         printf("MidiCtrlValList::delMCtlVal(tick:%u val:%d): not found (size %zd)\n", tck_erase, val_erase, mcvl_erase->size());
+//     }
+//     else
+//       found_erase = true;
+//   }
+// 
+//   unsigned int tck_add  = event.tick() + part->tick();
+//   int cntrl_add = event.dataA();
+//   int val_add   = event.dataB();
+//   
+//   
+//   // FIXME FIXME CHECK THIS
+//   //
+//   //  Why wasn't 'ch' given its own 'ch_add' variable in the original code?
+//   //  And why did 'mp_add' default to mp_erase above. 
+//   //  That means the channel and port would have defaulted to the ones
+//   //   being erased above, not the track's. That can't be right !
+//   
+//   
+//   // Is it a drum controller event, according to the track port's instrument?
+//   int ch_add;
+//   MidiPort* mp_add;
+//   mt->mappedPortChanCtrl(&cntrl_add, nullptr, &mp_add, &ch_add);
+// 
+//   MidiCtrlValList* mcvl_add;
+//   MidiCtrlValListList* mcvll_add = mp_add->controller();
+//   iMidiCtrlValList imcvll_add = mcvll_add->find(ch_add, cntrl_add);
+//   if(imcvll_add == mcvll_add->end()) 
+//   {
+//     if(found_erase)
+//       ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
+//     PendingOperationItem poi(mcvll_add, 0, ch_add, cntrl_add, PendingOperationItem::AddMidiCtrlValList);
+//     if(ops.findAllocationOp(poi) == ops.end())
+//     {
+//       poi._mcvl = new MidiCtrlValList(cntrl_add);
+//       ops.add(poi);
+//     }
+//     // The operation will catch and ignore events which are past the end of the part.
+//     ops.add(PendingOperationItem(poi._mcvl, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
+//     return;
+//   }
+//   else
+//   {
+//     mcvl_add = imcvll_add->second;
+//     iMidiCtrlVal imcv_add = mcvl_add->findMCtlVal(tck_add, part, val_add);
+//     if(imcv_add != mcvl_add->end()) 
+//     {
+//       if(tck_erase == tck_add && mcvl_erase == mcvl_add)
+//       {
+//         // The operation will catch and ignore events which are past the end of the part.
+//         ops.add(PendingOperationItem(mcvl_add, imcv_add, val_add, PendingOperationItem::ModifyMidiCtrlVal));
+//       }
+//       else
+//       {
+//         if(found_erase)
+//         {
+//           ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
+//         }
+//         // The operation will catch and ignore events which are past the end of the part.
+//         ops.add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
+//       }
+//       return;
+//     }
+//     else
+//     {
+//       if(found_erase)
+//         ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
+//       // The operation will catch and ignore events which are past the end of the part.
+//       ops.add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
+//     }
+//   }
+// }
 
 //---------------------------------------------------------
 //   addEvent
@@ -785,52 +688,6 @@ void PartList::remove(Part* part)
         printf("THIS SHOULD NEVER HAPPEN: could not find the part in PartList::remove()!\n");
       }
 
-      
-void PartList::addOperation(Part* part, PendingOperationList& ops)
-{
-  // There is protection, in the catch-all Undo::insert(), from failure here (such as double add, del + add, add + del)
-  //  which might cause addPortCtrlEvents() without parts or without corresponding removePortCtrlEvents etc.
-  ops.add(PendingOperationItem(this, part, PendingOperationItem::AddPart));
-  addPortCtrlEvents(part, part->posValue(), part->lenValue(), part->track(), ops);
-}
-
-void PartList::delOperation(Part* part, PendingOperationList& ops)
-{
-  // There is protection, in the catch-all Undo::insert(), from failure here (such as double del, del + add, add + del)
-  //  which might cause addPortCtrlEvents() without parts or without corresponding removePortCtrlEvents etc.
-  removePortCtrlEvents(part, part->track(), ops);
-  iPart i;
-  for (i = begin(); i != end(); ++i) {
-        if (i->second == part) {
-              ops.add(PendingOperationItem(this, i, PendingOperationItem::DeletePart));
-              return;
-              }
-        }
-  printf("THIS SHOULD NEVER HAPPEN: could not find the part in PartList::delOperation()!\n");
-}
-      
-void PartList::movePartOperation(Part* part, unsigned int new_pos, PendingOperationList& ops, Track* track)
-{
-  removePortCtrlEvents(part, part->track(), ops);
-  iPart i = end();
-  if(track)
-  {
-    for (i = begin(); i != end(); ++i) {
-          if (i->second == part) 
-                break;
-          }
-    if(i == end())
-      printf("THIS SHOULD NEVER HAPPEN: could not find the part in PartList::movePartOperation()!\n");
-  }
-  
-  ops.add(PendingOperationItem(i, part, new_pos, PendingOperationItem::MovePart, track));
-
-  if(!track)
-    track = part->track();
-  
-  addPortCtrlEvents(part, new_pos, part->lenValue(), track, ops);
-}
-
 //---------------------------------------------------------
 //   addPart
 //---------------------------------------------------------
@@ -858,57 +715,6 @@ void Song::removePart(Part* part)
       removePortCtrlEvents(part, false);
       Track* track = part->track();
       track->parts()->remove(part);
-      }
-
-//---------------------------------------------------------
-//   cmdResizePart
-//---------------------------------------------------------
-
-void Song::cmdResizePart(Track* track, Part* originalPart, unsigned int len, MusECore::ResizeDirection resizeDirection, unsigned int newTickPos, bool doClones)
-      {
-
-      switch(track->type()) {
-            case Track::WAVE:
-            case Track::MIDI:
-            case Track::DRUM:
-                  {
-                  Undo operations;
-                                                                        
-                  auto origLen = originalPart->lenValue();
-                  auto origPosValue = originalPart->posValue();
-                  auto newFramePos = MusEGlobal::tempomap.tick2frame(newTickPos);
-
-                  auto currentPart = originalPart;
-
-                  do
-                  {
-                      if(currentPart->lenValue() == origLen && resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
-                      {
-                        operations.push_back(UndoOp(UndoOp::ModifyPartLength, currentPart, origLen, len, Pos::TICKS));
-                      }
-                      if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
-                      {
-                          if (currentPart->type() == Pos::FRAMES)
-                          {
-                              operations.push_back(UndoOp(UndoOp::ModifyPartStart, currentPart, origPosValue, newFramePos, Pos::FRAMES));
-                          }
-                          else // MIDIs
-                          {
-                              operations.push_back(UndoOp(UndoOp::ModifyPartStart, currentPart, origPosValue, newTickPos, Pos::TICKS));
-                          }
-                      }
-
-                      currentPart = currentPart->nextClone();
-
-                  } while (doClones && (currentPart != originalPart));
-                  
-                  MusEGlobal::song->applyOperationGroup(operations);
-                  break;
-                }
-                  
-            default:
-                  break;
-            }
       }
 
 //---------------------------------------------------------

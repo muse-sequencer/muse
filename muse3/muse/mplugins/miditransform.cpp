@@ -39,6 +39,7 @@
 #include "audio.h"
 #include "gconfig.h"
 #include "midictrl.h"
+#include "undo.h"
 
 using MusECore::Undo;
 using MusECore::UndoOp;

@@ -52,6 +52,14 @@
 #include "lv2host.h"
 #endif
 
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QMouseEvent>
+#include <QEvent>
+#include "track.h"
+#include "background_painter.h"
+
 namespace MusEGui {
 
 QString MUSE_MIME_TYPE = "text/x-muse-plugin";

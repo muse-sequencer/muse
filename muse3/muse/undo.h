@@ -26,17 +26,18 @@
 
 #include <list>
 
+#include <QString>
+
 #include "event.h"
-#include "marker/marker.h"
 #include "route.h"
 #include "sig.h"
-#include "midiport.h"
-#include "minstrument.h"
-
-class QString;
 
 namespace MusECore {
-
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class Marker;
+class MidiPort;
+class MidiInstrument;
 class Track;
 class Part;
 class CtrlListList;
@@ -77,10 +78,12 @@ struct UndoOp {
             ModifySongLen, // a = new len, b = old len
             SetInstrument,
             DoNothing,
-            
-            // These operation cannot be undone. They are 'one time' operations, removed after execution.
+            ModifyMidiDivision,
+
+            // These operations cannot be undone. They are 'one time' operations, removed after execution.
             EnableAllAudioControllers,
-            GlobalSelectAllEvents
+            GlobalSelectAllEvents,
+            NormalizeMidiDivision
             };
       UndoType type;
 

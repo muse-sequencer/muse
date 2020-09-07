@@ -26,19 +26,20 @@
 
 #include "ui_itransformbase.h"
 
-#include <QCloseEvent>
+#include <QDialog>
+
 #include "type_defs.h"
-
-class QButtonGroup;
-class Xml;
-
 #include "miditransform.h"
+
+// NOTE: To cure circular dependencies, of which there are many, these are
+//        forward referenced and the corresponding headers included further down here.
+class QCloseEvent;
+class QButtonGroup;
 
 namespace MusECore {
 class MidiInputTransformation;
-class MidiPart;
+class Xml;
 class MidiRecordEvent;
-class MidiTransformation;
 
 enum InputTransformProcEventOp { KeepType, FixType };
 
