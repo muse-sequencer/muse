@@ -79,6 +79,7 @@ class EditToolBar;
 class GlobalSettingsConfig;
 class MRConfig;
 class MarkerView;
+class LMaster;
 class MetronomeConfig;
 class MidiControllerEditDialog;
 class MidiFileConfig;
@@ -223,6 +224,8 @@ class MusE : public QMainWindow
       QDockWidget* clipListDock;
       MarkerView* markerView;
       QDockWidget* markerDock;
+      LMaster* masterList;
+      QDockWidget* masterListDock;
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
@@ -309,7 +312,7 @@ class MusE : public QMainWindow
       void startSongInfo(bool editable=true);
 
       void writeGlobalConfiguration() const;
-      void startClipList(bool);
+      void showClipList(bool);
       
       void openRecentMenu();
       void selectProject(QAction* act);
@@ -381,7 +384,7 @@ class MusE : public QMainWindow
       void openInScoreEdit_allInOne(QWidget* destination);
       void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
       void startMasterEditor();
-      void startLMasterEditor();
+      void showMasterList(bool);
       void startListEditor();
       void startListEditor(MusECore::PartList*);
       void startDrumEditor();

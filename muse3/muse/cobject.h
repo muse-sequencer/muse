@@ -93,7 +93,7 @@ class TopWin : public QMainWindow
 
       
       void resize(int w, int h);
-      void resize(const QSize&);
+//      void resize(const QSize&);
  
 //      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
 //      static bool _sharesMenusToolbars[TOPLEVELTYPE_LAST_ENTRY];

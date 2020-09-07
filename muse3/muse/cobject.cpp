@@ -60,9 +60,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     : QMainWindow(parent, f)
 {
     _initalizing = true;
-
     _isDeleting = false;
-    if (initInited==false)
+
+    if (!initInited)
         initConfiguration();
 
     _type=t;
@@ -71,10 +71,10 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     //setDockNestingEnabled(true); // Allow multiple rows.	Tim.
     setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
-    if (_type != ARRANGER)
-        setAttribute(Qt::WA_DeleteOnClose);
+//    if (_type != ARRANGER)
+    setAttribute(Qt::WA_DeleteOnClose);
 
-    subwinAction=new QAction(tr("Tabbed/Floating"), this);
+    subwinAction = new QAction(tr("Tabbed/Floating"), this);
     subwinAction->setCheckable(true);
     subwinAction->setShortcut(shortcuts[SHRT_TABBED_WIN].key);
     connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
@@ -92,10 +92,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
     mdisubwin = nullptr;
 
-    if (!MusEGlobal::unityWorkaround)
-        _sharesToolsAndMenu=_openTabbed[_type];
-    else
-        _sharesToolsAndMenu=false;
+    _sharesToolsAndMenu=_openTabbed[_type];
 
     if (_openTabbed[_type] && !MusEGlobal::unityWorkaround)
     {
@@ -108,23 +105,22 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
     subwinAction->setChecked(isMdiWin());
 //    shareAction->setChecked(_sharesToolsAndMenu);
+
     if (MusEGlobal::unityWorkaround)
     {
+        _sharesToolsAndMenu=false;
 //        shareAction->setEnabled(false);
         subwinAction->setEnabled(false);
     }
+
     fullscreenAction->setEnabled(!isMdiWin());
 
-    if (mdisubwin)
-    {
-        mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
-        if(_type == ARRANGER) {
-            mdisubwin->setWindowState(Qt::WindowMaximized);
+    if (_type == ARRANGER) {
 //            shareAction->setEnabled(false);
-            subwinAction->setEnabled(false);
-        }
+        subwinAction->setEnabled(false);
     }
-    else
+
+    if (!mdisubwin)
         resize(_widthInit[_type], _heightInit[_type]);
 
 
@@ -249,7 +245,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
                 }
                 else
                 {
-                    _savedToolbarState=QByteArray::fromHex(xml.parse1().toLatin1());
+                    _savedToolbarState = QByteArray::fromHex(xml.parse1().toLatin1());
                     if (_savedToolbarState.isEmpty())
                         _savedToolbarState=_toolbarNonsharedInit[_type];
                 }
@@ -269,23 +265,24 @@ void TopWin::readStatus(MusECore::Xml& xml)
         case MusECore::Xml::TagEnd:
             if (tag == "topwin")
             {
-                const QRect geo(x, y, width, height);
-                QFlags<Qt::WindowState> wstate;
-                if(wsMinimized)
-                    wstate |= Qt::WindowMinimized;
-                if(wsMaximized)
-                    wstate |= Qt::WindowMaximized;
-                if(wsFullScreen)
-                    wstate |= Qt::WindowFullScreen;
-                if(wsActive)
-                    wstate |= Qt::WindowActive;
-                if (mdisubwin)
-                {
-                    mdisubwin->setGeometry(geo);
-                    mdisubwin->setWindowState(wstate);
+                if (mdisubwin) {
+                    QFlags<Qt::WindowState> wstate = Qt::WindowMaximized;
+                    if (wsActive)
+                        wstate |= Qt::WindowActive;
+                    setWindowState(wstate);
                 }
-                else
-                {
+                else {
+                    const QRect geo(x, y, width, height);
+                    QFlags<Qt::WindowState> wstate;
+                    if(wsMinimized)
+                        wstate |= Qt::WindowMinimized;
+                    if(wsMaximized)
+                        wstate |= Qt::WindowMaximized;
+                    if(wsFullScreen)
+                        wstate |= Qt::WindowFullScreen;
+                    if(wsActive)
+                        wstate |= Qt::WindowActive;
+
                     setGeometry(geo);
                     setWindowState(wstate);
                 }
@@ -344,31 +341,28 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
     if(wstate.testFlag(Qt::WindowActive))
         xml.intTag(level, "wsActive", 1);
 
-    xml.intTag(level, "shares_menu", sharesToolsAndMenu());
+//    xml.intTag(level, "shares_menu", sharesToolsAndMenu());
 
-    if (!sharesToolsAndMenu())
-        xml.strTag(level, "toolbars", saveState().toHex().data());
-    else
+    if (sharesToolsAndMenu())
         xml.strTag(level, "toolbars", _savedToolbarState.toHex().data());
+    else
+        xml.strTag(level, "toolbars", saveState().toHex().data());
 
     xml.tag(level, "/topwin");
 }
 
 void TopWin::hide()
 {
-    if (mdisubwin) {
+    if (mdisubwin)
         mdisubwin->close();
-    }
 
     QMainWindow::hide();
 }
 
 void TopWin::show()
 {
-    if (mdisubwin) {
-        mdisubwin->setWindowState(Qt::WindowMaximized);
-        mdisubwin->show();
-    }
+    if (mdisubwin)
+        mdisubwin->showMaximized();
 
     QMainWindow::show();
 }
@@ -382,6 +376,7 @@ void TopWin::setVisible(bool param)
         else
             mdisubwin->close();
     }
+
     QMainWindow::setVisible(param);
 }
 
@@ -414,24 +409,20 @@ void TopWin::setIsMdiWin(bool val)
         if (!isMdiWin())
         {
             _savedToolbarState = saveState();
-            int width_temp=width();
-            int height_temp=height();
-            bool vis=isVisible();
+//            bool vis=isVisible();
 
             QMdiSubWindow* subwin = createMdiWrapper();
             muse->addMdiSubWindow(subwin);
-            subwin->resize(width_temp, height_temp);
-            subwin->move(0,0);
 
             if (windowTitle().startsWith("MusE: "))
                 setWindowTitle(windowTitle().mid(6));
 
-            subwin->setVisible(vis);
-            this->QMainWindow::show(); //bypass the delegation to the subwin
+//            subwin->setVisible(vis);
+//            this->QMainWindow::show(); //bypass the delegation to the subwin
 
             subwin->showMaximized();
-            subwin->raise();
-            subwin->setFocus();
+//            subwin->raise();
+//            subwin->setFocus();
 
             // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
             //  force the style and stylesheet again. Otherwise the window freezes.
@@ -465,9 +456,9 @@ void TopWin::setIsMdiWin(bool val)
     {
         if (isMdiWin())
         {
-            int width_temp=width();
-            int height_temp=height();
-            bool vis=isVisible();
+//            int width_temp=width();
+//            int height_temp=height();
+//            bool vis=isVisible();
 
             QMdiSubWindow* mdisubwin_temp=mdisubwin;
             mdisubwin=nullptr;
@@ -475,8 +466,11 @@ void TopWin::setIsMdiWin(bool val)
             mdisubwin_temp->hide();
             delete mdisubwin_temp;
 
-            resize(width_temp, height_temp);
-            setVisible(vis);
+//            resize(width_temp, height_temp);
+//            setVisible(vis);
+
+//            setVisible(true);
+            QMainWindow::show();
 
             if (!windowTitle().startsWith("MusE: "))
                 setWindowTitle(windowTitle().insert(0, "MusE: "));
@@ -484,7 +478,10 @@ void TopWin::setIsMdiWin(bool val)
             shareToolsAndMenu(false);
 
             fullscreenAction->setEnabled(true);
-            subwinAction->setChecked(false);
+            {
+                const QSignalBlocker blocker(subwinAction);
+                subwinAction->setChecked(false);
+            }
             muse->updateWindowMenu();
         }
         else
@@ -496,7 +493,7 @@ void TopWin::setIsMdiWin(bool val)
 
 bool TopWin::isMdiWin() const
 {
-    return (mdisubwin!=NULL);
+    return (mdisubwin != nullptr);
 }
 
 void TopWin::insertToolBar(QToolBar*, QToolBar*) { printf("ERROR: THIS SHOULD NEVER HAPPEN: TopWin::insertToolBar called, but it's not implemented! ignoring it\n"); }
@@ -620,19 +617,17 @@ void TopWin::storeInitialState() const
 //initConfiguration() restores default tabbed configuration
 void TopWin::initConfiguration()
 {
-    if (initInited==false)
+    if (initInited)
+        return;
+
+    for (int i = 0; i < TOPLEVELTYPE_LAST_ENTRY; i++)
     {
-        for (int i=0;i<TOPLEVELTYPE_LAST_ENTRY;i++)
-        {
-            _widthInit[i]=800;
-            _heightInit[i]=600;
-            _openTabbed[i]=true;
-        }
-
-//        _openTabbed[ARRANGER]=true;
-
-        initInited=true;
+        _widthInit[i] = 800;
+        _heightInit[i] = 600;
+        _openTabbed[i] = true;
     }
+
+    initInited = true;
 }
 
 //---------------------------------------------------------
@@ -641,7 +636,7 @@ void TopWin::initConfiguration()
 
 void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
 {
-    if (initInited==false)
+    if (!initInited)
         initConfiguration();
 
     for (;;)
@@ -754,10 +749,10 @@ void TopWin::resize(int w, int h)
         mdisubwin->resize(w,h);
 }
 
-void TopWin::resize(const QSize& s)
-{
-    resize(s.width(), s.height());
-}
+//void TopWin::resize(const QSize& s)
+//{
+//    resize(s.width(), s.height());
+//}
 
 void TopWin::setWindowTitle (const QString& title)
 {

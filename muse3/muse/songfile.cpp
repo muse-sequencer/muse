@@ -1052,7 +1052,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
                 toplevels.back()->readStatus(xml);
             }
             else if (tag == "lmaster") {
-                startLMasterEditor();
+                showMasterList(true);
 //                toplevels.back()->readStatus(xml);
             }
             else if (tag == "marker") {
@@ -1067,7 +1067,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
                 }
             }
             else if (tag == "cliplist") {
-                startClipList(true);
+                showClipList(true);
             }
             else
                 xml.unknown("MusE");

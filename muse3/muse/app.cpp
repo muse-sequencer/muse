@@ -403,20 +403,29 @@ MusE::MusE() : QMainWindow()
       setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
       markerDock = new QDockWidget("Markers", this);
-//      markerDock->setObjectName("markerDock");
+      markerDock->setObjectName("markerDock");
 //      markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
       markerView = new MusEGui::MarkerView(markerDock);
       markerDock->setWidget(markerView);
       addDockWidget(Qt::RightDockWidgetArea, markerDock);
       markerDock->hide();
 
+      masterListDock = new QDockWidget("Master Track List", this);
+      masterListDock->setObjectName("masterListDock");
+      // listMasterDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      masterList = new MusEGui::LMaster(this);
+      masterListDock->setWidget(masterList);
+      addDockWidget(Qt::RightDockWidgetArea, masterListDock);
+      masterListDock->hide();
+
       clipListDock = new QDockWidget("Clip List", this);
-//      clipListDock->setObjectName("clipListDock");
+      clipListDock->setObjectName("clipListDock");
 //      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
       clipListEdit = new MusEGui::ClipListEdit(clipListDock);
       clipListDock->setWidget(clipListEdit);
       addDockWidget(Qt::RightDockWidgetArea, clipListDock);
       clipListDock->hide();
+      removeDockWidget(clipListDock);
 
       //---------------------------------------------------
       //    undo/redo
@@ -581,12 +590,14 @@ MusE::MusE() : QMainWindow()
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
-      QMenu* master = new QMenu(tr("Mastertrack"), this);
-      master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic..."), this);
-      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
-      master->addAction(masterGraphicAction);
-      master->addAction(masterListAction);
+
+//      QMenu* master = new QMenu(tr("Mastertrack"), this);
+//      master->setIcon(QIcon(*edit_mastertrackIcon));
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Master Track Graphic..."), this);
+      masterListAction = masterListDock->toggleViewAction();
+//      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
+//      master->addAction(masterGraphicAction);
+//      master->addAction(masterListAction);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
@@ -681,7 +692,7 @@ MusE::MusE() : QMainWindow()
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
 //      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
       connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
-      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
+//      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
@@ -867,13 +878,13 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewBigtimeAction);
       menuView->addAction(viewMixerAAction);
       menuView->addAction(viewMixerBAction);
-      menuView->addAction(viewCliplistAction);
-      menuView->addAction(viewMarkerAction);
-//      menuView->addAction(viewArrangerAction);
       menuView->addSeparator();
-      menuView->addMenu(master);
-//       menuView->addAction(masterGraphicAction);
-//       menuView->addAction(masterListAction);
+//      menuView->addAction(viewArrangerAction);
+//      menuView->addMenu(master);
+      menuView->addAction(masterGraphicAction);
+      menuView->addAction(masterListAction);
+      menuView->addAction(viewMarkerAction);
+      menuView->addAction(viewCliplistAction);
       menuView->addSeparator();
       menuView->addAction(fullscreenAction);
 
@@ -2286,7 +2297,7 @@ void MusE::startListEditor(MusECore::PartList* pl)
         dock->setWindowTitle("Part <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
     }
 
-//    dock->setObjectName(dock->windowTitle());
+    dock->setObjectName(dock->windowTitle());
 
     addDockWidget(Qt::BottomDockWidgetArea, dock);
 
@@ -2312,18 +2323,9 @@ void MusE::startMasterEditor()
 //   startLMasterEditor
 //---------------------------------------------------------
 
-void MusE::startLMasterEditor()
+void MusE::showMasterList(bool show)
 {
-    QDockWidget* dock = new QDockWidget("Mastertrack List", this);
-    //      markerDock->setObjectName("lmasterDock");
-//    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
-    MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
-    dock->setWidget(lmaster);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
-
-    dock->setAttribute(Qt::WA_DeleteOnClose);
-
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
+    masterListDock->setVisible(show);
 }
 
 //---------------------------------------------------------
@@ -2450,9 +2452,9 @@ void MusE::showDidYouKnowDialog()
 //   startClipList
 //---------------------------------------------------------
 
-void MusE::startClipList(bool checked)
+void MusE::showClipList(bool show)
 {
-    clipListDock->setEnabled(checked);
+    clipListDock->setVisible(show);
 }
 
 //---------------------------------------------------------
