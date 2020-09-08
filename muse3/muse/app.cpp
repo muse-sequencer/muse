@@ -4556,23 +4556,6 @@ int MusE::arrangerRaster() const
   return _arranger->rasterVal();
 }
 
-QByteArray MusE::saveState(int version) const {
-
-//    QList<QDockWidget *> docks_vis;
-//    for (const auto& d : findChildren<QDockWidget *>()) {
-//        if (d->isVisible() | d->isFloating()) {
-//            docks_vis.prepend(d);
-//            d->hide();
-//        }
-//    }
-    QByteArray a = QMainWindow::saveState(version);
-
-//    for (const auto& d : docks_vis) {
-//        d->show();
-//    }
-
-    return a;
-}
 
 bool MusE::restoreState(const QByteArray &state, int version) {
 

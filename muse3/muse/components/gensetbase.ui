@@ -745,7 +745,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
-          <string>Open editors in tabs (else in separate window)</string>
+          <string>Open editors in tabs (else in separate windows)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_24">
           <property name="spacing">

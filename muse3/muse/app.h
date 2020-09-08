@@ -462,8 +462,6 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
-//      bool isTabbedMDI();
-      QByteArray saveState(int version = 0) const;
       bool restoreState(const QByteArray &state, int version = 0);
       
       const ToplevelList* getToplevels() { return &toplevels; }
