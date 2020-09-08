@@ -32,25 +32,25 @@
 #include "event.h"
 #include "midictrl.h" 
 #include "ctrl.h"
-#include "tempo.h" 
-#include "sig.h" 
-#include "keyevent.h"
 #include "time_stretch.h"
 #include "part.h"
 #include "track.h"
-#include "midiedit/drummap.h"
 #include "route.h"
 #include "mididev.h"
-#include "midiport.h"
 #include "marker/marker.h"
-#include "minstrument.h"
-#include "metronome_class.h"
+#include "instruments/minstrument.h"
 #include "wave.h"
-#include "audio_convert/audio_converter_plugin.h"
-#include "audio_convert/audio_converter_settings_group.h"
 
 namespace MusECore {
 
+// Forward declarations:
+class TempoList;
+class SigList;
+class KeyList;
+class MidiPort;
+class MetroAccentsMap;
+class AudioConverterSettingsGroup;
+class AudioConverterPluginI;
 
 typedef std::list < iMidiCtrlValList > MidiCtrlValListIterators_t;
 typedef MidiCtrlValListIterators_t::iterator iMidiCtrlValListIterators_t;
@@ -566,12 +566,36 @@ class PendingOperationList : public std::list<PendingOperationItem>
     // Find an existing special allocation command (like AddMidiCtrlValList). 
     // The comparison ignores the actual allocated value, so that such commands can be found before they do their allocating.
     iterator findAllocationOp(const PendingOperationItem& op);
+
+
+    void addDeviceOperation(MidiDeviceList* devlist, MidiDevice* dev);
+
+    void addTrackPortCtrlEvents(Track* track);
+    void removeTrackPortCtrlEvents(Track* track);
+
+    void addPartPortCtrlEvents(
+      const Event& event, Part* part, unsigned int tick, unsigned int /*len*/, Track* track);
+    void addPartPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track);
+    bool removePartPortCtrlEvents(const Event& event, Part* part, Track* track);
+    void removePartPortCtrlEvents(Part* part, Track* track);
+    void modifyPartPortCtrlEvents(const Event& old_event, const Event& event, Part* part);
+
+    void addPartOperation(PartList *partlist, Part* part); 
+    void delPartOperation(PartList *partlist, Part* part);
+    void movePartOperation(PartList *partlist, Part* part, unsigned int new_pos, Track* track = 0);
+
+    void addTrackAuxSendOperation(AudioTrack *atrack, int n);
+    
+    //void TrackMidiCtrlRemapOperation(int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop);
 };
 
 typedef PendingOperationList::iterator iPendingOperation;
 typedef std::multimap<unsigned int, iPendingOperation, std::less<unsigned int> >::iterator iPendingOperationSorted;
 typedef std::multimap<unsigned int, iPendingOperation, std::less<unsigned int> >::reverse_iterator riPendingOperationSorted;
 typedef std::pair <iPendingOperationSorted, iPendingOperationSorted> iPendingOperationSortedRange;
+
+extern void TrackMidiCtrlRemapOperation(
+  MidiTrack *mtrack, int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop);
 
 } // namespace MusECore
 

@@ -26,6 +26,8 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QFont>
+
 #include "script_delivery.h"
 
 #include <map>
@@ -37,46 +39,39 @@
 #include "globaldefs.h"
 #include "tempo.h"
 #include "sig.h"
-#include "undo.h"
-#include "track.h"
 #include "synth.h"
 #include "operations.h"
 #include "lock_free_buffer.h"
-#include "canvas.h"
+#include "mpevent.h"
+#include "wave.h"
+
 
 #define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
 #include "time_stretch.h"
 #include "audio_convert/audio_converter_settings_group.h"
 
+
+// Forward declarations:
 class QAction;
-class QFont;
 class QMenu;
 
 namespace MusECore {
 
-class SynthI;
 class Event;
 class Xml;
-class Sequencer;
 class Track;
 class Part;
 class PartList;
-class MPEventList;
 class EventList;
 class MarkerList;
 class Marker;
-class SNode;
-class RouteList;
-
+class Route;
 struct AudioMsg;
-
 class MidiPart;
-class MidiPort;
-
-class MidiDevice;
-class AudioPort;
-class AudioDevice;
+class Undo;
+struct UndoOp;
+class UndoList;
 
 #define REC_NOTE_FIFO_SIZE    16
 
@@ -160,7 +155,6 @@ class Song : public QObject {
       Pos _startPlayPosition;
       bool _click;
       bool _quantize;
-      int _arrangerRaster;        // Used for audio rec new part snapping. Set by Arranger snap combo box.
       unsigned _len;         // song len in ticks
       FollowMode _follow;
       int _globalPitchShift;
@@ -193,6 +187,9 @@ class Song : public QObject {
       void checkSongSampleRate();
       
       void normalizePart(MusECore::Part *part);
+
+      // Fills operations if given, otherwise creates and executes its own operations list.
+      void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
 
    public:
       Song(const char* name = 0);
@@ -405,15 +402,9 @@ class Song : public QObject {
       //   part manipulations
       //-----------------------------------------
 
-      // called from GUI thread, calls applyOperationGroup. FIXME TODO: better move that into functions.cpp or whatever.      
-      void cmdResizePart(Track* t, Part* p, unsigned int size, MusECore::ResizeDirection resizeDirection, unsigned int newPos, bool doClones=false);
-
       void addPart(Part* part);
       void removePart(Part* part);
       void changePart(Part*, Part*);
-
-      int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
-      void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
 public:
       void normalizeWaveParts(Part *partCursor = NULL);

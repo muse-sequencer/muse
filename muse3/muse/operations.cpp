@@ -22,6 +22,18 @@
 
 #include "operations.h"
 #include "song.h"
+#include "pos.h"
+#include "globals.h"
+#include "synth.h"
+
+// Forwards from header:
+#include "tempo.h" 
+#include "sig.h" 
+#include "keyevent.h"
+#include "midiport.h"
+#include "metronome_class.h"
+#include "audio_convert/audio_converter_plugin.h"
+#include "audio_convert/audio_converter_settings_group.h"
 
 // Enable for debugging:
 //#define _PENDING_OPS_DEBUG_
@@ -2752,6 +2764,533 @@ iPendingOperation PendingOperationList::findAllocationOp(const PendingOperationI
       return ipos->second;
   }  
   return end();
+}
+
+
+//========================================================================
+
+
+//---------------------------------------------------------
+//   addDeviceOperation
+//---------------------------------------------------------
+
+void PendingOperationList::addDeviceOperation(MidiDeviceList* devlist, MidiDevice* dev)
+{
+  bool gotUniqueName=false;
+  int increment = 0;
+  const QString origname = dev->name();
+  QString newName = origname;
+  PendingOperationItem poi(devlist, dev, PendingOperationItem::AddMidiDevice);
+  // check if the name's been taken
+  while(!gotUniqueName) 
+  {
+    if(increment >= 10000)
+    {
+      fprintf(stderr, "MusE Error: PendingOperationList::addDeviceOperation(): Out of 10000 unique midi device names!\n");
+      return;        
+    }
+    gotUniqueName = true;
+    // In the case of type AddMidiDevice, this searches for the name only.
+    iPendingOperation ipo = findAllocationOp(poi);
+    if(ipo != end())
+    {
+      PendingOperationItem& poif = *ipo;
+      if(poif._midi_device == poi._midi_device)
+        return;  // Device itself is already added! 
+      newName = origname + QString("_%1").arg(++increment);
+      gotUniqueName = false;
+    }    
+    
+    for(ciMidiDevice i = devlist->cbegin(); i != devlist->cend(); ++i) 
+    {
+      const QString s = (*i)->name();
+      if(s == newName)
+      {
+        newName = origname + QString("_%1").arg(++increment);
+        gotUniqueName = false;
+      }
+    }
+  }
+  
+  if(origname != newName)
+    dev->setName(newName);
+  
+  add(poi);
+}
+
+//---------------------------------------------------------
+//   addPartPortCtrlEvents
+//---------------------------------------------------------
+
+void PendingOperationList::addPartPortCtrlEvents(
+  const Event& event, Part* part, unsigned int tick, unsigned int /*len*/, Track* track)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  
+  if(event.type() == Controller)
+  {
+    unsigned int tck  = event.tick() + tick;
+    int cntrl = event.dataA();
+    int val   = event.dataB();
+    MidiTrack* mt = (MidiTrack*)track;
+    MidiPort* mp;
+    int ch;
+    mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+
+    MidiCtrlValListList* mcvll = mp->controller();
+    MidiCtrlValList* mcvl = NULL;
+    iMidiCtrlValList imcvll = mcvll->find(ch, cntrl);
+    if(imcvll == mcvll->end()) 
+    {
+      PendingOperationItem poi(mcvll, 0, ch, cntrl, PendingOperationItem::AddMidiCtrlValList);
+      if(findAllocationOp(poi) == end())
+      {
+        mcvl = new MidiCtrlValList(cntrl);
+        poi._mcvl = mcvl;
+        add(poi);
+      }
+    }
+    else
+    {
+      mcvl = imcvll->second;
+    }
+
+    //assert(mcvl != NULL); //FIXME: Can this happen? (danvd). UPDATE: Yes, it can (danvd)
+    if(mcvl != NULL)
+    {
+      // The operation will catch and ignore events which are past the end of the part.
+      add(PendingOperationItem(mcvl, part, tck, val, PendingOperationItem::AddMidiCtrlVal));
+    }
+  }
+}
+
+void PendingOperationList::addPartPortCtrlEvents(Part* part, unsigned int tick, unsigned int len, Track* track)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
+  {
+    // The operation will catch and ignore events which are past the end of the part.
+    addPartPortCtrlEvents(ie->second, part, tick, len, track);
+  }
+}
+
+//---------------------------------------------------------
+//   removePartPortCtrlEvents
+//---------------------------------------------------------
+
+bool PendingOperationList::removePartPortCtrlEvents(const Event& event, Part* part, Track* track)
+{
+  if(!track || !track->isMidiTrack())
+    return false;
+  
+  if(event.type() == Controller)
+  {
+    MidiTrack* mt = (MidiTrack*)track;
+//     MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
+//     int ch = mt->outChannel();
+    
+    unsigned int tck  = event.tick() + part->tick();
+    int cntrl = event.dataA();
+    int val   = event.dataB();
+    
+    // Is it a drum controller event, according to the track port's instrument?
+    MidiPort* mp;
+    int ch;
+    mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
+
+
+    MidiCtrlValListList* mcvll = mp->controller();
+    iMidiCtrlValList cl = mcvll->find(ch, cntrl);
+    if (cl == mcvll->end()) {
+                fprintf(stderr, "removePartPortCtrlEvents: controller %d(0x%x) for channel %d not found size %zd\n",
+                    cntrl, cntrl, ch, mcvll->size());
+          return false;
+          }
+    MidiCtrlValList* mcvl = cl->second;
+    iMidiCtrlVal imcv = mcvl->findMCtlVal(tck, part, val);
+    if (imcv == mcvl->end()) {
+          // Let's throw up the error only if we were expecting the cache event to be there,
+          //  as is the case when the tick is inside the part. When the tick is NOT inside the part
+          //  a cache event should really not be there. But if one is found it should be deleted anyway.
+          if(tck < part->lenTick())
+            fprintf(stderr, "removePartPortCtrlEvents: (tick: %u): not found (size %zd)\n", tck, mcvl->size());
+          return false;
+          }
+    return add(PendingOperationItem(mcvl, imcv, PendingOperationItem::DeleteMidiCtrlVal));
+  }
+  return false;
+}
+
+void PendingOperationList::removePartPortCtrlEvents(Part* part, Track* track)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
+  {
+    removePartPortCtrlEvents(ie->second, part, track);
+  }
+}
+
+//---------------------------------------------------------
+//   addPortCtrlEvents
+//---------------------------------------------------------
+
+void PendingOperationList::addTrackPortCtrlEvents(Track* track)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  const PartList* pl = track->cparts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    Part* part = ip->second;
+    addPartPortCtrlEvents(part, part->tick(), part->lenTick(), track);
+  }
+}
+
+//---------------------------------------------------------
+//   removePortCtrlEvents
+//---------------------------------------------------------
+
+void PendingOperationList::removeTrackPortCtrlEvents(Track* track)
+{
+  if(!track || !track->isMidiTrack())
+    return;
+  const PartList* pl = track->cparts();
+  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
+  {
+    Part* part = ip->second;
+    removePartPortCtrlEvents(part, track);
+  }
+}
+
+void PendingOperationList::modifyPartPortCtrlEvents(const Event& old_event, const Event& event, Part* part)
+{
+  Track* t = part->track();
+  if(!t || !t->isMidiTrack())
+    return;
+  if(old_event.type() != Controller || event.type() != Controller)
+    return;
+  MidiTrack* mt = static_cast<MidiTrack*>(t);
+  
+  unsigned int tck_erase  = old_event.tick() + part->tick();
+  int cntrl_erase = old_event.dataA();
+  int val_erase = old_event.dataB();
+  iMidiCtrlVal imcv_erase;
+  bool found_erase = false;
+
+  // Is it a drum controller old_event, according to the track port's instrument?
+  int ch_erase;
+  MidiPort* mp_erase;
+  mt->mappedPortChanCtrl(&cntrl_erase, nullptr, &mp_erase, &ch_erase);
+
+  
+  MidiCtrlValListList* mcvll_erase = mp_erase->controller();
+  MidiCtrlValList* mcvl_erase = 0;
+  iMidiCtrlValList cl_erase = mcvll_erase->find(ch_erase, cntrl_erase);
+  if(cl_erase == mcvll_erase->end()) 
+  {
+    if(MusEGlobal::debugMsg)
+      printf("modifyPartPortCtrlEvents: controller %d(0x%x) for channel %d not found size %zd\n",
+              cntrl_erase, cntrl_erase, ch_erase, mcvll_erase->size());
+  }
+  else
+  {
+    mcvl_erase = cl_erase->second;
+    imcv_erase = mcvl_erase->findMCtlVal(tck_erase, part, val_erase);
+    if(imcv_erase == mcvl_erase->end()) 
+    {
+      if(MusEGlobal::debugMsg)
+        printf("modifyPartPortCtrlEvents(tick:%u val:%d): not found (size %zd)\n", tck_erase, val_erase, mcvl_erase->size());
+    }
+    else
+      found_erase = true;
+  }
+
+  unsigned int tck_add  = event.tick() + part->tick();
+  int cntrl_add = event.dataA();
+  int val_add   = event.dataB();
+  
+  
+  // FIXME FIXME CHECK THIS
+  //
+  //  Why wasn't 'ch' given its own 'ch_add' variable in the original code?
+  //  And why did 'mp_add' default to mp_erase above. 
+  //  That means the channel and port would have defaulted to the ones
+  //   being erased above, not the track's. That can't be right !
+  
+  
+  // Is it a drum controller event, according to the track port's instrument?
+  int ch_add;
+  MidiPort* mp_add;
+  mt->mappedPortChanCtrl(&cntrl_add, nullptr, &mp_add, &ch_add);
+
+  MidiCtrlValList* mcvl_add;
+  MidiCtrlValListList* mcvll_add = mp_add->controller();
+  iMidiCtrlValList imcvll_add = mcvll_add->find(ch_add, cntrl_add);
+  if(imcvll_add == mcvll_add->end()) 
+  {
+    if(found_erase)
+      add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
+    PendingOperationItem poi(mcvll_add, 0, ch_add, cntrl_add, PendingOperationItem::AddMidiCtrlValList);
+    if(findAllocationOp(poi) == end())
+    {
+      poi._mcvl = new MidiCtrlValList(cntrl_add);
+      add(poi);
+    }
+    // The operation will catch and ignore events which are past the end of the part.
+    add(PendingOperationItem(poi._mcvl, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
+    return;
+  }
+  else
+  {
+    mcvl_add = imcvll_add->second;
+    iMidiCtrlVal imcv_add = mcvl_add->findMCtlVal(tck_add, part, val_add);
+    if(imcv_add != mcvl_add->end()) 
+    {
+      if(tck_erase == tck_add && mcvl_erase == mcvl_add)
+      {
+        // The operation will catch and ignore events which are past the end of the part.
+        add(PendingOperationItem(mcvl_add, imcv_add, val_add, PendingOperationItem::ModifyMidiCtrlVal));
+      }
+      else
+      {
+        if(found_erase)
+        {
+          add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
+        }
+        // The operation will catch and ignore events which are past the end of the part.
+        add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
+      }
+      return;
+    }
+    else
+    {
+      if(found_erase)
+        add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
+      // The operation will catch and ignore events which are past the end of the part.
+      add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
+    }
+  }
+}
+
+void PendingOperationList::addPartOperation(PartList *partlist, Part* part)
+{
+  // There is protection, in the catch-all Undo::insert(), from failure here (such as double add, del + add, add + del)
+  //  which might cause addPortCtrlEvents() without parts or without corresponding removePortCtrlEvents etc.
+  add(PendingOperationItem(partlist, part, PendingOperationItem::AddPart));
+  addPartPortCtrlEvents(part, part->posValue(), part->lenValue(), part->track());
+}
+
+void PendingOperationList::delPartOperation(PartList *partlist, Part* part)
+{
+  // There is protection, in the catch-all Undo::insert(), from failure here (such as double del, del + add, add + del)
+  //  which might cause addPortCtrlEvents() without parts or without corresponding removePortCtrlEvents etc.
+  removePartPortCtrlEvents(part, part->track());
+  iPart i;
+  for (i = partlist->begin(); i != partlist->end(); ++i) {
+        if (i->second == part) {
+              add(PendingOperationItem(partlist, i, PendingOperationItem::DeletePart));
+              return;
+              }
+        }
+  printf("THIS SHOULD NEVER HAPPEN: could not find the part in PendingOperationList::delPartOperation()!\n");
+}
+      
+void PendingOperationList::movePartOperation(PartList *partlist, Part* part, unsigned int new_pos, Track* track)
+{
+  removePartPortCtrlEvents(part, part->track());
+  iPart i = partlist->end();
+  if(track)
+  {
+    for (i = partlist->begin(); i != partlist->end(); ++i) {
+          if (i->second == part) 
+                break;
+          }
+    if(i == partlist->end())
+      printf("THIS SHOULD NEVER HAPPEN: could not find the part in PendingOperationList::movePartOperation()!\n");
+  }
+  
+  add(PendingOperationItem(i, part, new_pos, PendingOperationItem::MovePart, track));
+
+  if(!track)
+    track = part->track();
+  
+  addPartPortCtrlEvents(part, new_pos, part->lenValue(), track);
+}
+
+//---------------------------------------------------------
+//   addTrackAuxSendOperation
+//---------------------------------------------------------
+
+void PendingOperationList::addTrackAuxSendOperation(AudioTrack *atrack, int n)
+      {
+      AuxSendValueList *vl = atrack->getAuxSendValueList();
+      const int nn = vl->size();
+      for (int i = nn; i < n; ++i)
+            add(PendingOperationItem(vl, 0.0, PendingOperationItem::AddAuxSendValue));
+      }
+
+//---------------------------------------------------------
+//   TrackMidiCtrlRemapOperation
+//---------------------------------------------------------
+
+void TrackMidiCtrlRemapOperation(
+  MidiTrack *mtrack, int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop)
+{
+  const int out_port = mtrack->outPort();
+  const int out_chan = mtrack->outChannel();
+
+  if(mtrack->type() != Track::DRUM || out_port < 0 || out_port >= MusECore::MIDI_PORTS)
+    return;
+
+  // Default to track port if -1 and track channel if -1.
+  if(newPort == -1)
+    newPort = out_port;
+
+  if(newChan == -1)
+    newChan = out_chan;
+
+  MidiPort* trackmp = &MusEGlobal::midiPorts[out_port];
+
+  const DrumMap *drum_map = mtrack->drummap();
+  
+  int dm_ch = drum_map[index].channel;
+  if(dm_ch == -1)
+    dm_ch = out_chan;
+  int dm_port = drum_map[index].port;
+  if(dm_port == -1)
+    dm_port = out_port;
+  MidiPort* dm_mp = &MusEGlobal::midiPorts[dm_port];
+
+  MidiCtrlValListList* dm_mcvll = dm_mp->controller();
+  MidiCtrlValList* v_mcvl;
+  int v_ch, v_ctrl, v_idx;
+  for(iMidiCtrlValList idm_mcvl = dm_mcvll->begin(); idm_mcvl != dm_mcvll->end(); ++idm_mcvl)
+  {
+    v_ch = idm_mcvl->first >> 24;
+    if(v_ch != dm_ch)
+      continue;
+    v_mcvl = idm_mcvl->second;
+    v_ctrl = v_mcvl->num();
+
+    // Is it a drum controller, according to the track port's instrument?
+    if(!trackmp->drumController(v_ctrl))
+      continue;
+
+    v_idx = v_ctrl & 0xff;
+    if(v_idx != drum_map[index].anote)
+      continue;
+
+    // Does this midi control value list need to be changed (values moved etc)?
+    iMidiCtrlVal imcv = v_mcvl->begin();
+    for( ; imcv != v_mcvl->end(); ++imcv)
+    {
+      const MidiCtrlVal& mcv = imcv->second;
+      if(mcv.part && mcv.part->track() == mtrack)
+        break;
+    }
+    if(imcv != v_mcvl->end())
+    {
+      // A contribution from a part on this track was found.
+      // We must compose a new list, or get an existing one and schedule the existing
+      //  one for iterator erasure and pointer deletion.
+      // Add the erase iterator. Add will ignore if the erase iterator already exists.
+      rmop->_midiCtrlValLists2bErased.add(dm_port, idm_mcvl);
+      // Insert the delete pointer. Insert will ignore if the delete pointer already exists.
+      rmop->_midiCtrlValLists2bDeleted.insert(v_mcvl);
+
+      MidiCtrlValListList* op_mcvll;
+      iMidiCtrlValLists2bAdded_t imcvla = rmop->_midiCtrlValLists2bAdded.find(dm_port);
+      if(imcvla == rmop->_midiCtrlValLists2bAdded.end())
+      {
+        op_mcvll = new MidiCtrlValListList();
+        rmop->_midiCtrlValLists2bAdded.insert(MidiCtrlValLists2bAddedInsertPair_t(dm_port, op_mcvll));
+      }
+      else
+        op_mcvll = imcvla->second;
+
+      MidiCtrlValList* op_mcvl;
+      iMidiCtrlValList imcvl = op_mcvll->find(dm_ch, v_ctrl);
+      if(imcvl == op_mcvll->end())
+      {
+        op_mcvl = new MidiCtrlValList(v_ctrl);
+        op_mcvll->add(dm_ch, op_mcvl);
+        // Assign the contents of the original list to the new list.
+        *op_mcvl = *v_mcvl;
+      }
+      else
+        op_mcvl = imcvl->second;
+
+      // Remove from the list any contributions from this track.
+      iMidiCtrlVal iopmcv = op_mcvl->begin();
+      for( ; iopmcv != op_mcvl->end(); )
+      {
+        const MidiCtrlVal& mcv = iopmcv->second;
+        if(mcv.part && mcv.part->track() == mtrack)
+        {
+          iMidiCtrlVal iopmcv_save = iopmcv;
+          ++iopmcv_save;
+          op_mcvl->erase(iopmcv);
+          iopmcv = iopmcv_save;
+        }
+        else
+          ++iopmcv;
+      }
+    }
+
+    // We will be making changes to the list pointed to by the new settings.
+    // We must schedule the existing one for iterator erasure and pointer deletion.
+    MidiPort* dm_mp_new = &MusEGlobal::midiPorts[newPort];
+    MidiCtrlValListList* dm_mcvll_new = dm_mp_new->controller();
+    MidiCtrlValList* v_mcvl_new = 0;
+    const int v_ctrl_new = (v_ctrl & ~0xff) | newNote;
+    iMidiCtrlValList idm_mcvl_new = dm_mcvll_new->find(newChan, v_ctrl_new);
+    if(idm_mcvl_new != dm_mcvll_new->end())
+    {
+      v_mcvl_new = idm_mcvl_new->second;
+      // Add the erase iterator. Add will ignore if the erase iterator already exists.
+      rmop->_midiCtrlValLists2bErased.add(newPort, idm_mcvl_new);
+      // Insert the delete pointer. Insert will ignore if the delete pointer already exists.
+      rmop->_midiCtrlValLists2bDeleted.insert(v_mcvl_new);
+    }
+
+    // Create a new list of lists, or get an existing one.
+    MidiCtrlValListList* op_mcvll_new;
+    iMidiCtrlValLists2bAdded_t imcvla_new = rmop->_midiCtrlValLists2bAdded.find(newPort);
+    if(imcvla_new == rmop->_midiCtrlValLists2bAdded.end())
+    {
+      op_mcvll_new = new MidiCtrlValListList();
+      rmop->_midiCtrlValLists2bAdded.insert(MidiCtrlValLists2bAddedInsertPair_t(newPort, op_mcvll_new));
+    }
+    else
+      op_mcvll_new = imcvla_new->second;
+
+    // Compose a new list for replacement, or get an existing one.
+    MidiCtrlValList* op_mcvl_new;
+    iMidiCtrlValList imcvl_new = op_mcvll_new->find(newChan, v_ctrl_new);
+    if(imcvl_new == op_mcvll_new->end())
+    {
+      op_mcvl_new = new MidiCtrlValList(v_ctrl_new);
+      op_mcvll_new->add(newChan, op_mcvl_new);
+      // Assign the contents of the original list to the new list.
+      if(v_mcvl_new)
+        *op_mcvl_new = *v_mcvl_new;
+    }
+    else
+      op_mcvl_new = imcvl_new->second;
+
+    // Add to the list any contributions from this track.
+    for(ciMidiCtrlVal imcv_new = v_mcvl->begin(); imcv_new != v_mcvl->end(); ++imcv_new)
+    {
+      const MidiCtrlVal& mcv = imcv_new->second;
+      if(mcv.part && mcv.part->track() == mtrack)
+      {
+        op_mcvl_new->addMCtlVal(imcv_new->first, mcv.val, mcv.part);
+      }
+    }
+  }
 }
 
 } // namespace MusECore

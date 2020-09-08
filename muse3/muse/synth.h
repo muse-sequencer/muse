@@ -28,11 +28,9 @@
 #include <vector>
 #include <map>
 
-#include "globals.h"
 #include "globaldefs.h"
 #include "instruments/minstrument.h"
 #include "mididev.h"
-#include "midiport.h"
 #include "track.h"
 #include "stringparam.h"
 #include "plugin.h"
@@ -42,6 +40,8 @@
 // Current version of saved midistate data.
 #define SYNTH_MIDI_STATE_SAVE_VERSION 2
 
+
+// Forward declarations:
 class Mess;
 struct MESS;
 
@@ -51,8 +51,10 @@ class PopupMenu;
 
 namespace MusECore {
 
+class MidiPort;
 class SynthI;
 class SynthIF;
+class Xml;
 
 //---------------------------------------------------------
 //   Synth
@@ -479,6 +481,11 @@ class MessSynthIF : public SynthIF {
       virtual bool getNoteSampleName(
         bool drum, int channel, int patch, int note, QString* name) const;
       };
+
+// NOTE: Moved here from track.h to avoid circular dependency.
+typedef tracklist<SynthI*>::iterator iSynthI;
+typedef tracklist<SynthI*>::const_iterator ciSynthI;
+typedef tracklist<SynthI*> SynthIList;
 
 typedef std::vector<MusECore::Synth*>::iterator iSynthList;
 typedef std::vector<MusECore::Synth*>::const_iterator ciSynthList;

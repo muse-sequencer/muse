@@ -32,6 +32,8 @@
 #include <QByteArray>
 #include <QString>
 
+
+// Forward declarations:
 class QMdiSubWindow;
 class QFocusEvent;
 class QCloseEvent;
@@ -165,7 +167,6 @@ class ToplevelList : public std::list<TopWin* > {
       };
 
 } // namespace MusEGui
-
 
 #endif
 

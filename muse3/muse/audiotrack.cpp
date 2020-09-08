@@ -29,6 +29,7 @@
 
 #include <QMessageBox>
 
+#include "globals.h"
 #include "globaldefs.h"
 #include "track.h"
 #include "event.h"
@@ -36,6 +37,7 @@
 #include "audio.h"
 #include "wave.h"
 #include "xml.h"
+#include "undo.h"
 #include "plugin.h"
 #include "audiodev.h"
 #include "synth.h"
@@ -751,17 +753,6 @@ void AudioTrack::addAuxSend(int n)
       }
 
 //---------------------------------------------------------
-//   addAuxSendOperation
-//---------------------------------------------------------
-
-void AudioTrack::addAuxSendOperation(int n, PendingOperationList& ops)
-      {
-      int nn = _auxSend.size();
-      for (int i = nn; i < n; ++i)
-            ops.add(PendingOperationItem(&_auxSend, 0.0, PendingOperationItem::AddAuxSendValue));
-      }
-
-//---------------------------------------------------------
 //   addController
 //---------------------------------------------------------
 
@@ -879,138 +870,6 @@ void AudioTrack::setAutomationType(AutomationType t)
 
   // Now set the type.
   _automationType = t;
-}
-
-//---------------------------------------------------------
-//   processAutomationEvents
-//---------------------------------------------------------
-
-void AudioTrack::processAutomationEvents(Undo* operations)
-{
-  if(_automationType != AUTO_TOUCH && _automationType != AUTO_WRITE)
-    return;
-
-  // Use either the supplied operations list or a local one.
-  Undo ops;
-  Undo& opsr = operations ? (*operations) : ops;
-
-  for(ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl)
-  {
-    CtrlList* cl = icl->second;
-    CtrlList& clr = *icl->second;
-    int id = cl->id();
-
-    // Were there any recorded events for this controller?
-    bool do_it = false;
-    for(ciCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr)
-    {
-      if(icr->id == id)
-      {
-        do_it = true;
-        break;
-      }
-    }
-    if(!do_it)
-      continue;
-
-    // The Undo system will take 'ownership' of these and delete them at the appropriate time.
-    CtrlList* erased_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
-    CtrlList* added_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
-
-    // Remove old events from record region.
-    if(_automationType == AUTO_WRITE)
-    {
-      int start = MusEGlobal::audio->getStartRecordPos().frame();
-      int end   = MusEGlobal::audio->getEndRecordPos().frame();
-      iCtrl   s = cl->lower_bound(start);
-      iCtrl   e = cl->lower_bound(end);
-      erased_list_items->insert(s, e);
-    }
-    else
-    {  // type AUTO_TOUCH
-      for(ciCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr)
-      {
-        // Don't bother looking for start, it's OK, just take the first one.
-        // Needed for mousewheel and paging etc.
-        if(icr->id != id)
-          continue;
-
-        int start = icr->frame;
-
-        if(icr == _recEvents.end())
-        {
-          int end = MusEGlobal::audio->getEndRecordPos().frame();
-          iCtrl s = cl->lower_bound(start);
-          iCtrl e = cl->lower_bound(end);
-          erased_list_items->insert(s, e);
-          break;
-        }
-
-        ciCtrlRec icrlast = icr;
-        ++icr;
-        for(; ; ++icr)
-        {
-          if(icr == _recEvents.end())
-          {
-            int end = icrlast->frame;
-            iCtrl s = cl->lower_bound(start);
-            iCtrl e = cl->lower_bound(end);
-            erased_list_items->insert(s, e);
-            break;
-          }
-
-          if(icr->id == id && icr->type == ARVT_STOP)
-          {
-            int end = icr->frame;
-            iCtrl s = cl->lower_bound(start);
-            iCtrl e = cl->lower_bound(end);
-            erased_list_items->insert(s, e);
-            break;
-          }
-
-          if(icr->id == id)
-            icrlast = icr;
-        }
-        if(icr == _recEvents.end())
-              break;
-      }
-    }
-
-    // Extract all recorded events for controller "id"
-    //  from CtrlRecList and put into new_list.
-    for(ciCtrlRec icr = _recEvents.begin(); icr != _recEvents.end(); ++icr)
-    {
-          if(icr->id == id)
-          {
-                // Must optimize these types otherwise multiple vertices appear on flat straight lines in the graphs.
-                CtrlValueType vtype = cl->valueType();
-                if(!cl->empty() && (cl->mode() == CtrlList::DISCRETE || vtype == VAL_BOOL || vtype == VAL_INT))
-                {
-                  iCtrl icl_prev = cl->lower_bound(icr->frame);
-                  if(icl_prev != cl->begin())
-                    --icl_prev;
-                  if(icl_prev->second.val == icr->val)
-                    continue;
-                }
-                // Now add the value.
-                added_list_items->add(icr->frame, icr->val);
-          }
-    }
-
-    if(erased_list_items->empty() && added_list_items->empty())
-    {
-      delete erased_list_items;
-      delete added_list_items;
-    }
-    else
-      opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, &_controller, erased_list_items, added_list_items));
-  }
-
-  // Done with the recorded automation event list. Clear it.
-  _recEvents.clear();
-
-  if(!operations)
-    MusEGlobal::song->applyOperationGroup(ops);
 }
 
 //---------------------------------------------------------

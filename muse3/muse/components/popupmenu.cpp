@@ -24,9 +24,6 @@
 //
 //=========================================================
 
-#include <QMouseEvent>
-#include <QHoverEvent>
-#include <QAction>
 #include <QPoint>
 #include <QList>
 #include <QVariant>
@@ -38,6 +35,13 @@
 #include "popupmenu.h"
 #include "gconfig.h"
 #include "route.h"
+
+// Forwards from header:
+#include <QWidget>
+#include <QMouseEvent>
+#include <QContextMenuEvent>
+#include <QHideEvent>
+#include <QEvent>
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);

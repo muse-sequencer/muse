@@ -22,8 +22,11 @@
 //=========================================================
 
 #include <QAbstractButton>
-#include <QButtonGroup>
 #include "function_dialog_base.h"
+
+// Forwards from header:
+#include <QWidget>
+#include <QButtonGroup>
 #include "xml.h"
 
 namespace MusEGui {

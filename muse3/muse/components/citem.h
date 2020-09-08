@@ -31,8 +31,11 @@
 
 #include "event.h"
 
+
+// Forward declarations:
 namespace MusECore {
 class Part;
+class Pos;
 }
 
 namespace MusEGui {

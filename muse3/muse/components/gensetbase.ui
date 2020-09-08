@@ -1574,8 +1574,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>565</width>
-            <height>544</height>
+            <width>571</width>
+            <height>539</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1606,139 +1606,8 @@ Adjusts responsiveness of audio controls and
               <property name="verticalSpacing">
                <number>2</number>
               </property>
-              <item row="1" column="0" rowspan="2">
-               <widget class="QLabel" name="TextLabel3">
-                <property name="text">
-                 <string>RTC Resolution
-(Ticks/Sec)</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="rtcResolutionSelect">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>1024</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>2048</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>4096</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>8192</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>16384</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>32768</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
               <item row="2" column="1" rowspan="2">
                <widget class="QComboBox" name="midiDivisionSelect">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="currentIndex">
-                 <number>3</number>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>48</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>96</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>192</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>384</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>768</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>1536</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>3072</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>6144</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>12288</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="midiResLabel">
-                <property name="text">
-                 <string>Midi Resolution
-(Ticks/Quarternote)</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="TextLabel4">
-                <property name="text">
-                 <string>Displayed Resolution
-(Ticks/Quarternote)</string>
-                </property>
-                <property name="wordWrap">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QComboBox" name="guiDivisionSelect">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1800,6 +1669,68 @@ Adjusts responsiveness of audio controls and
                 <property name="text">
                  <string>Warn if timer frequency is inadequate</string>
                 </property>
+               </widget>
+              </item>
+              <item row="1" column="0" rowspan="2">
+               <widget class="QLabel" name="TextLabel3">
+                <property name="text">
+                 <string>RTC Resolution
+(Ticks/Sec)</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="midiResLabel">
+                <property name="text">
+                 <string>Midi Resolution
+(Ticks/Quarternote)</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="rtcResolutionSelect">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>1024</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>2048</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>4096</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>8192</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>16384</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>32768</string>
+                 </property>
+                </item>
                </widget>
               </item>
              </layout>
@@ -2446,8 +2377,8 @@ Turn off to reduce clutter.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>543</width>
-               <height>503</height>
+               <width>393</width>
+               <height>396</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout6">
@@ -2854,7 +2785,6 @@ Disable to use an alternate standard
   <tabstop>scrollArea_3</tabstop>
   <tabstop>rtcResolutionSelect</tabstop>
   <tabstop>midiDivisionSelect</tabstop>
-  <tabstop>guiDivisionSelect</tabstop>
   <tabstop>warnIfBadTimingCheckBox</tabstop>
   <tabstop>midiSendInit</tabstop>
   <tabstop>midiWarnInitPending</tabstop>

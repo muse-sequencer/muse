@@ -24,9 +24,7 @@
 //=========================================================
 
 #include <QPainter>
-#include <QRect>
 #include <QFontMetrics>
-#include <QString>
 #include <QPalette>
 #include <QApplication>
 

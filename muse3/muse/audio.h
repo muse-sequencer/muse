@@ -30,17 +30,16 @@
 #include "type_defs.h"
 #include "thread.h"
 #include "pos.h"
-#include "mpevent.h"
 #include "route.h"
 #include "event.h"
-#include "minstrument.h"
 
+
+// Forward declarations:
 namespace MusECore {
 class AudioDevice;
 class AudioTrack;
-class Event;
-class EventList;
 class MidiDevice;
+class MidiInstrument;
 class MidiPlayEvent;
 class MidiPort;
 class MidiTrack;

@@ -26,9 +26,9 @@
 #include <QMessageBox>
 #include <QStringList>
 #include <QTimer>
-#include <QTreeWidgetItem>
 #include <QHeaderView>
 #include <QComboBox>
+#include <QTreeWidget>
 
 #include "app.h"
 #include "song.h"
@@ -36,7 +36,6 @@
 #include "midiseq.h"
 #include "mididev.h"
 #include "icons.h"
-#include "sync.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "midisyncimpl.h"

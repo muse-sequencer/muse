@@ -30,24 +30,32 @@
 #include <sys/mman.h>
 #endif
 
-#include <QKeyEvent>
-#include <QDropEvent>
-#include <QEvent>
-#include <QMimeData>
 #include <QByteArray>
-#include <QDrag>
 #include <QSet>
+#include <QMimeData>
 
 #include "xml.h"
-#include "midieditor.h"
 #include "ecanvas.h"
 #include "song.h"
-#include "event.h"
 #include "shortcuts.h"
 #include "audio.h"
 #include "functions.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "gconfig.h"
+#include "globals.h"
+#include "midiport.h"
+
+// Forwards from header:
+#include <QDropEvent>
+#include <QEvent>
+#include <QKeyEvent>
+#include <QToolTip>
+#include "track.h"
+#include "part.h"
+#include "event.h"
+#include "undo.h"
+#include "midieditor.h"
+#include "citem.h"
 
 namespace MusEGui {
 

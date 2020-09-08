@@ -32,6 +32,7 @@
 #include <QRect>
 #include <QString>
 #include <QList>
+#include <QStringList>
 
 namespace MusECore {
 class Xml;
@@ -98,12 +99,10 @@ struct StripConfig {
   int _width;
   bool _deleted;
 
-  StripConfig()
-  { _serial = -1; _tmpFileIdx = -1; _visible = true; _width = -1; _deleted = false; }
-  StripConfig(int trackSerial, bool visible, int width)
-  { _serial = trackSerial; _tmpFileIdx = -1; _visible = visible; _width = width; _deleted = false; }
+  StripConfig();
+  StripConfig(int trackSerial, bool visible, int width);
 
-  bool isNull() const { return _serial < 0; }
+  bool isNull() const;
 
   void write(int level, MusECore::Xml& xml) const;
   void read(MusECore::Xml& xml);
@@ -351,7 +350,6 @@ struct GlobalConfigValues {
                               // 2 - start with song
       QString startSong;      // path for start song
       bool startSongLoadConfig;  // Whether to load configuration with the start template or song
-      int guiDivision;        // division for tick display
 
 
       QRect geometryMain;

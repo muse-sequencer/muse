@@ -21,7 +21,6 @@
 //
 //=========================================================
 
-#include <QCloseEvent>
 #include <QMenuBar>
 #include <QMenu>
 #include <QToolBar>
@@ -30,15 +29,22 @@
 #include "song.h"
 #include "globals.h"
 #include "wave.h"
-#include "xml.h"
-//#include "ui_cliplisteditorbase.h"
-#include "app.h"
 
+// Forwards from header:
+#include <QCloseEvent>
+#include <QTreeWidgetItem>
+#include "xml.h"
+#include "pos.h"
 
 namespace MusEGui {
 
 extern int mtcType;
 enum { COL_NAME=0, COL_REFS, COL_SAMPLERATE, COL_LEN, COL_DATA, COL_STATUS };
+
+ClipListEditorBaseWidget::ClipListEditorBaseWidget(QWidget *parent) : QWidget(parent)
+{ 
+  setupUi(this);
+}
 
 //---------------------------------------------------------
 //   ClipItem

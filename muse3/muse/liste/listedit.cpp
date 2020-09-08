@@ -47,6 +47,7 @@
 #include "minstrument.h"
 #include "app.h"
 #include "gconfig.h"
+#include "undo.h"
 
 namespace MusEGui {
 

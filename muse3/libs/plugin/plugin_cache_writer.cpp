@@ -101,6 +101,8 @@
 
 #endif // LV2_SUPPORT
 
+// Forwards from header:
+#include "xml.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PLUGIN_SCAN(dev, format, args...)  // std::fprintf(dev, format, ##args);

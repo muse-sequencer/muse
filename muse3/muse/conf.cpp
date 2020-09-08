@@ -56,7 +56,7 @@
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
 #include "waveedit.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midisyncimpl.h"
 #include "midifilterimpl.h"
 #include "midictrl.h"
@@ -74,6 +74,7 @@
 #include "audio_convert/audio_converter_settings_group.h"
 #include "filedialog.h"
 #include "al/al.h"
+#include "shortcuts.h"
 
 namespace MusECore {
 
@@ -1229,8 +1230,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               // Make sure the AL namespace variable mirrors our variable.
                               AL::division = MusEGlobal::config.division;
                         }
-                        else if (tag == "guiDivision")
-                              MusEGlobal::config.guiDivision = xml.parseInt();
+                        else if (tag == "guiDivision")  // Obsolete. Was never used.
+                              xml.parseInt();
                         else if (tag == "rtcTicks")
                               MusEGlobal::config.rtcTicks = xml.parseInt();
                         else if (tag == "curMidiSyncInPort")
@@ -1956,7 +1957,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "extendedMidi", MusEGlobal::config.extendedMidi);
       xml.intTag(level, "midiExportDivision", MusEGlobal::config.midiDivision);
-      xml.intTag(level, "guiDivision", MusEGlobal::config.guiDivision);
       xml.strTag(level, "copyright", MusEGlobal::config.copyright);
       xml.intTag(level, "smfFormat", MusEGlobal::config.smfFormat);
       xml.intTag(level, "expRunningStatus", MusEGlobal::config.expRunningStatus);

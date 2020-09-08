@@ -23,9 +23,15 @@
 #ifndef __SIGSCALE_H__
 #define __SIGSCALE_H__
 
+#include <QRegion>
+
 #include "view.h"
 
-class MidiEditor;
+class QPainter;
+class QMouseEvent;
+class QEvent;
+class QWidget;
+class QRect;
 
 namespace MusEGui {
 

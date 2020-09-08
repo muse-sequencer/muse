@@ -30,11 +30,13 @@
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QTimerEvent>
+#include <QFocusEvent>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCursor>
 #include <QToolTip>
 #include <QScreen>
+
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_SLIDER_BASE(dev, format, args...)  //fprintf(dev, format, ##args);
 

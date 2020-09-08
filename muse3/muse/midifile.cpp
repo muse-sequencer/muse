@@ -25,7 +25,7 @@
 #include <errno.h>
 
 #include "song.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midifile.h"
 #include "drummap.h"
 #include "event.h"

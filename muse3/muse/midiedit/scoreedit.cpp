@@ -50,10 +50,8 @@ using namespace std;
 
 #include "app.h"
 #include "xml.h"
-#include "mtscale.h"
 #include "sig.h"
 #include "scoreedit.h"
-#include "tools.h"
 #include "ttoolbar.h"
 #include "tb1.h"
 #include "globals.h"
@@ -66,6 +64,24 @@ using namespace std;
 #include "song.h"
 #include "shortcuts.h"
 #include "menutitleitem.h"
+
+// Forwards from header:
+#include <QCloseEvent>
+#include <QResizeEvent>
+#include <QKeyEvent>
+#include <QPainter>
+#include <QPixmap>
+#include <QScrollBar>
+#include <QComboBox>
+#include <QAction>
+#include <QActionGroup>
+#include <QGridLayout>
+#include <QToolButton>
+#include "part.h"
+#include "mtscale_flo.h"
+#include "steprec.h"
+#include "spinbox.h"
+#include "tools.h"
 
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;
@@ -177,6 +193,7 @@ bool ScoreCanvas::preamble_contains_keysig_init=true;
 ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(TopWin::SCORE, parent, name)
 {
+    //setAttribute(Qt::WA_DeleteOnClose);
     setFocusPolicy(Qt::NoFocus);
 
     mainw    = new QWidget(this);

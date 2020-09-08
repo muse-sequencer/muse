@@ -48,6 +48,7 @@
 #include "xml.h"
 #include "audio.h"
 #include "gconfig.h"
+#include "undo.h"
 
 using std::set;
 using std::pair;

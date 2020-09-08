@@ -29,6 +29,7 @@
 #include <QMouseEvent>
 #include <QAction>
 
+#include "ctrlcanvas.h"
 #include "app.h"
 #include "globals.h"
 #include "ctrledit.h"
@@ -52,6 +53,13 @@
 static MusECore::MidiCtrlValList veloList(MusECore::CTRL_VELOCITY);    // dummy
 
 namespace MusEGui {
+
+// static
+const int CtrlCanvas::overlayTextOffsetFromOrg = 2;
+const QString CtrlCanvas::overlayHintSelectPart =
+  CtrlCanvas::tr("Make the current part's track match the selected drumlist entry");
+const QString CtrlCanvas::overlayHintHoldCtrl =
+  CtrlCanvas::tr("Drawing hint: Hold Ctrl to affect only existing events");
 
 //---------------------------------------------------------
 //   computeVal
@@ -3328,7 +3336,7 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
 
 void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
       {
-      QString s(_controller ? _controller->name() : QString(""));
+      const QString s = _controller ? _controller->name() : QString("");
       
       //p.setFont(MusEGlobal::config.fonts[3]);  // Use widget font instead. 
       p.setFont(font());
@@ -3339,13 +3347,15 @@ void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
       //int y = fm.lineSpacing() + 2;
       int y = fontMetrics().lineSpacing() + 2;
       
-      p.drawText(2, y, s);
+      const int txt_x = -xorg + overlayTextOffsetFromOrg;
+
+      p.drawText(txt_x, y, s);
       if (curDrumPitch==-2)
       {
-        p.drawText(2 , y * 2, tr("Make the current part's track match the selected drumlist entry"));
+        p.drawText(txt_x , y * 2, overlayHintSelectPart);
       }
       else if (noEvents)
-           p.drawText(2 , y * 2, tr("Drawing hint: Hold Ctrl to affect only existing events"));
+           p.drawText(txt_x , y * 2, overlayHintHoldCtrl);
       }
 
 //---------------------------------------------------------
@@ -3356,23 +3366,22 @@ void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
 QRect CtrlCanvas::overlayRect() const
 {
       //QFontMetrics fm(MusEGlobal::config.fonts[3]);   // Use widget font metrics instead (and set a widget font) !!! 
-      QFontMetrics fm(fontMetrics());
-      QRect r(fm.boundingRect(_controller ? _controller->name() : QString("")));
+      const QFontMetrics fm = fontMetrics();
+      QRect r = fm.boundingRect(_controller ? _controller->name() : QString(""));
       
       int y = fm.lineSpacing() + 2;
-      r.translate(2, y);   
+      const int txt_x = -xorg + overlayTextOffsetFromOrg;
+      r.translate(txt_x, y);   
       if (curDrumPitch==-2)
       {
-        QRect r2(fm.boundingRect(QString(tr("Make the current part's track match the selected drumlist entry"))));
-        //r2.translate(width()/2-100, height()/2-10);   
-        r2.translate(2, y * 2);   
+        QRect r2 = fm.boundingRect(overlayHintSelectPart);
+        r2.translate(txt_x, y * 2);   
         r |= r2;
       }
       else if (noEvents) 
       {
-        QRect r2(fm.boundingRect(QString(tr("Use pencil or line tool to draw new events"))));
-        //r2.translate(width()/2-100, height()/2-10);   
-        r2.translate(2, y * 2);   
+        QRect r2 = fm.boundingRect(overlayHintHoldCtrl);
+        r2.translate(txt_x, y * 2);   
         r |= r2;
       }
       return r;
@@ -3386,7 +3395,7 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
       drawTickRaster(p, rect, rg, editor->raster(),
                      false, false, false,
-                     Qt::red, // dummy color, very visual so it can be detected if it is drawn.
+                     MusEGlobal::config.midiCanvasBeatColor,
                      MusEGlobal::config.midiCanvasBeatColor,
                      MusEGlobal::config.midiCanvasFineColor,
                      MusEGlobal::config.midiCanvasBarColor

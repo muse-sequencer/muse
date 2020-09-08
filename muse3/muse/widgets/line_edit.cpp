@@ -31,6 +31,7 @@
 #include <QFont>
 #include <QStyleOptionFrame>
 #include <QRect>
+#include <QString>
 //#include <QStyleOption>
 //#include <QTextLayout>
 

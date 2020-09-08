@@ -27,9 +27,11 @@
 #include <QMessageBox>
 
 #include "sig.h"  // Tim.
+#include "keyevent.h"
 #include "app.h"
 #include "midifile.h"
-#include "midi.h"
+#include "midi_consts.h"
+#include "midiport.h"
 #include "midictrl.h"
 #include "globals.h"
 #include "filedialog.h"

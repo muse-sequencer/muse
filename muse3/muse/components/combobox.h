@@ -24,12 +24,20 @@
 #define __COMBOBOX_H__
 
 #include <QToolButton>
-#include <QAction>
+#include <QIcon>
+#include <QList>
 
 #include "ttoolbutton.h"
 
+
+// Forward declarations:
+class QWidget;
 class QMenu;
 class QIcon;
+class QAction;
+class QString;
+class QMouseEvent;
+class QWheelEvent;
 
 namespace MusEGui {
 

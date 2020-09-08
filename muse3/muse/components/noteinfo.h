@@ -24,6 +24,13 @@
 
 #include <QToolBar>
 
+#include "posedit.h"
+#include "pitchedit.h"
+#include "spinbox.h"
+#include "pixmap_button.h"
+
+class QWidget;
+
 namespace MusECore {
 class Pos;
 }
@@ -34,7 +41,6 @@ class PosEdit;
 class PitchEdit;
 class SpinBox;
 class PixmapButton;
-
 
 //---------------------------------------------------------
 //   NoteInfo

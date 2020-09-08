@@ -38,8 +38,10 @@
 #include "midictrl.h"
 #include "midiport.h"
 #include "plugin.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "app.h"
+#include "globals.h"
+#include "undo.h"
 
 // Steals ref: PyList_SetItem, PyTuple_SetItem
 using namespace std;

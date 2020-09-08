@@ -56,6 +56,7 @@ file (GLOB midiedit_source_files
       dlist.cpp
       drumedit.cpp
       drummap.cpp
+      drum_ordering.cpp
       ecanvas.cpp
       piano.cpp
       pianoroll.cpp

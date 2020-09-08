@@ -25,15 +25,20 @@
 #define __VIEW_H__
 
 #include <QWidget>
+#include <QRegion>
+#include <QPixmap>
+#include <QBrush>
+#include <QRect>
+#include <QPoint>
 
+
+// Forward declarations:
 class QDropEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QPaintEvent;
 class QPainter;
-class QPixmap;
 class QResizeEvent;
-class QRegion;
 
 namespace MusEGui {
 

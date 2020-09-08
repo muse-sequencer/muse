@@ -23,19 +23,17 @@
 #ifndef __MASTER_EDIT_H__
 #define __MASTER_EDIT_H__
 
-#include <QByteArray>
-#include <QResizeEvent>
-
 #include "type_defs.h"
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
 
+
+// Forward declarations:
 class QCloseEvent;
 class QToolBar;
 
 namespace MusEGui {
-class LabelCombo;
 class Master;
 class MTScale;
 class PosLabel;
@@ -44,6 +42,8 @@ class SigScale;
 class TempoEdit;
 class TempoLabel;
 class TScale;
+class Xml;
+class RasterLabelCombo;
 
 //---------------------------------------------------------
 //   MasterEdit
@@ -60,7 +60,7 @@ class MasterEdit : public MidiEditor {
       MusEGui::SigScale* sign;
       TScale* tscale;
 
-      MusEGui::LabelCombo* rasterLabel;
+      RasterLabelCombo* rasterLabel;
       QToolBar* tools;
       MusEGui::PosLabel* cursorPos;
       MusEGui::TempoLabel* tempo;
@@ -70,8 +70,14 @@ class MasterEdit : public MidiEditor {
       virtual void keyPressEvent(QKeyEvent*);
       virtual void closeEvent(QCloseEvent*);
 
+      // Sets up a reasonable zoom minimum and/or maximum based on
+      //  the current global midi division (ticks per quarter note)
+      //  which has a very wide range (48 - 12288).
+      // Also sets the canvas and time scale offsets accordingly.
+      void setupHZoomRange();
+
    private slots:
-      void _setRaster(int);
+      void _setRaster(int raster);
       void setTime(unsigned);
       void setTempo(int);
 
@@ -89,6 +95,8 @@ class MasterEdit : public MidiEditor {
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
+      // Same as setRaster() but returns the actual value used.
+      int changeRaster(int val);
       };
 
 } // namespace MusEGui

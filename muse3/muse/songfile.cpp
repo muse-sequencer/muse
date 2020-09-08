@@ -40,6 +40,7 @@
 #include "globals.h"
 #include "xml.h"
 #include "drummap.h"
+#include "drum_ordering.h"
 #include "event.h"
 #include "marker/marker.h"
 #include "midiport.h"
@@ -608,6 +609,12 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               _len  = xml.parseInt();
                         else if (tag == "follow")
                               _follow  = FollowMode(xml.parseInt());
+                        else if (tag == "midiDivision") {
+                              // TODO: Compare with current global setting and convert the
+                              //  song if required - similar to how the song vs. global
+                              //  sample rate ratio is handled. Ignore for now.
+                              xml.parseInt();
+                            }
                         else if (tag == "sampleRate") {
                               // Ignore. Sample rate setting is handled by the
                               //  song discovery mechanism (in MusE::loadProjectFile1()).
@@ -760,6 +767,9 @@ void Song::write(int level, Xml& xml) const
       xml.intTag(level, "quantize", _quantize);
       xml.intTag(level, "len", _len);
       xml.intTag(level, "follow", _follow);
+      // Save the current global midi division as well as current sample rate
+      //  so the song can be scaled properly if the values differ on reload.
+      xml.intTag(level, "midiDivision", MusEGlobal::config.division);
       xml.intTag(level, "sampleRate", MusEGlobal::sampleRate);
       if (_globalPitchShift)
             xml.intTag(level, "globalPitchShift", _globalPitchShift);

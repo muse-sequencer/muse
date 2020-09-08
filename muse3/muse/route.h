@@ -26,21 +26,22 @@
 #define __ROUTE_H__
 
 #include <QMetaType>
+#include <QString>
 
 #include <vector>
 #include "globaldefs.h"
 
 #define ROUTE_PERSISTENT_NAME_SIZE 256    // Size of char array Route::persistentName, including the terminating null character.
 
-class QString;
 class QPixmap;
 
 namespace MusECore {
 
-class Track;
+
+// Forward declarations:
 class MidiDevice;
+class Track;
 class Xml;
-class PendingOperationList;
 
 
 struct RouteChannelsDescriptor

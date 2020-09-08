@@ -21,6 +21,7 @@
 //
 //=========================================================
 
+#include <QApplication>
 #include <QClipboard>
 #include <QGridLayout>
 #include <QKeyEvent>
@@ -33,21 +34,13 @@
 #include <QCursor>
 #include <QRect>
 #include <QMimeData>
+#include <QLabel>
 
 #include "globaldefs.h"
 #include "drumedit.h"
-#include "dcanvas.h"
+#include "midiport.h"
 #include "mtscale.h"
-#include "scrollscale.h"
-#include "xml.h"
-#include "dlist.h"
-#include "ttoolbar.h"
-#include "tb1.h"
-#include "splitter.h"
 #include "utils.h"
-#include "../ctrl/ctrledit.h"
-#include "vscale.h"
-#include "swidget.h"
 #include "globals.h"
 #include "app.h"
 #include "icons.h"
@@ -59,9 +52,31 @@
 #include "helper.h"
 #include "menutitleitem.h"
 #include "operations.h"
-// #include "function_dialogs/quantize.h"
 #include "trackinfo_layout.h"
 #include "midi_editor_layout.h"
+#include "shortcuts.h"
+
+// Forwards from header:
+#include <QAction>
+#include <QCloseEvent>
+#include <QMenu>
+#include <QKeyEvent>
+#include <QToolButton>
+#include <QWidget>
+#include <QComboBox>
+#include <QPoint>
+#include <QToolBar>
+#include "event.h"
+#include "xml.h"
+#include "ctrl/ctrledit.h"
+#include "dlist.h"
+#include "scrollscale.h"
+#include "splitter.h"
+#include "tb1.h"
+#include "popupmenu.h"
+#include "cobject.h"
+#include "header.h"
+#include "tools.h"
 
 namespace MusEGui {
 
@@ -83,20 +98,20 @@ static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | Mu
 
 void DrumEdit::setHeaderWhatsThis()
       {
-      header->setWhatsThis(COL_HIDE, tr("Hide instrument"));
-      header->setWhatsThis(COL_MUTE, tr("Mute instrument"));
-      header->setWhatsThis(COL_NAME, tr("Sound name"));
-      header->setWhatsThis(COL_VOLUME, tr("Volume percent"));
-      header->setWhatsThis(COL_QUANT, tr("Quantisation"));
-      header->setWhatsThis(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
-      header->setWhatsThis(COL_NOTELENGTH, tr("Note length"));
-      header->setWhatsThis(COL_NOTE, tr("This is the note which is played"));
-      header->setWhatsThis(COL_OUTCHANNEL, tr("Override track output channel (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_OUTPORT, tr("Override track output port (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
-      header->setWhatsThis(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
-      header->setWhatsThis(COL_LEVEL3, tr("Draw default velocity level 3"));
-      header->setWhatsThis(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
+      header->setWhatsThis(DList::COL_HIDE, tr("Hide instrument"));
+      header->setWhatsThis(DList::COL_MUTE, tr("Mute instrument"));
+      header->setWhatsThis(DList::COL_NAME, tr("Sound name"));
+      header->setWhatsThis(DList::COL_VOLUME, tr("Volume percent"));
+      header->setWhatsThis(DList::COL_QUANT, tr("Quantisation"));
+      header->setWhatsThis(DList::COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setWhatsThis(DList::COL_NOTELENGTH, tr("Note length"));
+      header->setWhatsThis(DList::COL_NOTE, tr("This is the note which is played"));
+      header->setWhatsThis(DList::COL_OUTCHANNEL, tr("Override track output channel (hold ctl to affect all rows)"));
+      header->setWhatsThis(DList::COL_OUTPORT, tr("Override track output port (hold ctl to affect all rows)"));
+      header->setWhatsThis(DList::COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setWhatsThis(DList::COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setWhatsThis(DList::COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setWhatsThis(DList::COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -105,20 +120,20 @@ void DrumEdit::setHeaderWhatsThis()
 
 void DrumEdit::setHeaderToolTips()
       {
-      header->setToolTip(COL_HIDE, tr("Hide instrument"));
-      header->setToolTip(COL_MUTE, tr("Mute instrument"));
-      header->setToolTip(COL_NAME, tr("Sound name"));
-      header->setToolTip(COL_VOLUME, tr("Volume percent"));
-      header->setToolTip(COL_QUANT, tr("Quantisation"));
-      header->setToolTip(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
-      header->setToolTip(COL_NOTELENGTH, tr("Note length"));
-      header->setToolTip(COL_NOTE, tr("This is the note which is played"));
-      header->setToolTip(COL_OUTCHANNEL, tr("Override track output channel (ctl: affect all rows)"));
-      header->setToolTip(COL_OUTPORT, tr("Override track output port (ctl: affect all rows)"));
-      header->setToolTip(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
-      header->setToolTip(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
-      header->setToolTip(COL_LEVEL3, tr("Draw default velocity level 3"));
-      header->setToolTip(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
+      header->setToolTip(DList::COL_HIDE, tr("Hide instrument"));
+      header->setToolTip(DList::COL_MUTE, tr("Mute instrument"));
+      header->setToolTip(DList::COL_NAME, tr("Sound name"));
+      header->setToolTip(DList::COL_VOLUME, tr("Volume percent"));
+      header->setToolTip(DList::COL_QUANT, tr("Quantisation"));
+      header->setToolTip(DList::COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      header->setToolTip(DList::COL_NOTELENGTH, tr("Note length"));
+      header->setToolTip(DList::COL_NOTE, tr("This is the note which is played"));
+      header->setToolTip(DList::COL_OUTCHANNEL, tr("Override track output channel (ctl: affect all rows)"));
+      header->setToolTip(DList::COL_OUTPORT, tr("Override track output port (ctl: affect all rows)"));
+      header->setToolTip(DList::COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      header->setToolTip(DList::COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      header->setToolTip(DList::COL_LEVEL3, tr("Draw default velocity level 3"));
+      header->setToolTip(DList::COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -179,10 +194,18 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       split1w1 = 0;
       //selPart  = 0;
       _playEvents    = true;
+      _canvasXOrigin = DefaultCanvasXOrigin;
+      _minXMag = -25;
+      _maxXMag = 2;
       
       _group_mode = GROUP_SAME_CHANNEL;
       _ignore_hide = _ignore_hide_init;
-      
+
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      _rasterInit = _rasterizerModel->checkRaster(_rasterInit);
+      _raster = _rasterInit;
+
       const MusECore::PartList* part_list = parts();
       // Default initial pianoroll view state.
       _viewState = MusECore::MidiPartViewState (0, 0, xscale, yscale);
@@ -384,7 +407,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       tools->addAction(whatsthis);
 
       // don't show pitch value in toolbar
-      toolbar = new MusEGui::Toolbar1(this, _rasterInit, false);
+      toolbar = new MusEGui::Toolbar1(_rasterizerModel, this, _rasterInit, false);
       toolbar->setObjectName("Drum Pos/Snap/Solo-tools");
       addToolBar(toolbar);
       
@@ -427,8 +450,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       split1            = new MusEGui::Splitter(Qt::Vertical, mainw, "split1");
 
-      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. 
-      hscroll           = new MusEGui::ScrollScale(-25, -1 /* formerly -2 */, _viewState.xscale(), 20000, Qt::Horizontal, mainw);
+      hscroll = new MusEGui::ScrollScale(
+        (_minXMag * MusEGlobal::config.division) / 384,
+        _maxXMag,
+        _viewState.xscale(),
+        20000,
+        Qt::Horizontal,
+        mainw);
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
@@ -507,12 +535,11 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS1->setSpacing(0);  
       gridS2->setContentsMargins(0, 0, 0, 0);
       gridS2->setSpacing(0);  
-      time                = new MusEGui::MTScale(&_raster, split1w2, _viewState.xscale());
+      time                = new MusEGui::MTScale(_raster, split1w2, _viewState.xscale());
       canvas              = new DrumCanvas(this, split1w2, _viewState.xscale(), _viewState.yscale());
       vscroll             = new MusEGui::ScrollScale(-2, 1, _viewState.yscale(),
                             dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH, Qt::Vertical, split1w2);
-      int offset = -(MusEGlobal::config.division/4);
-      canvas->setOrigin(offset, 0);
+      canvas->setOrigin(_canvasXOrigin, 0);
       canvas->setCanvasTools(drumeditTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
@@ -520,7 +547,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
       connect(canvas, SIGNAL(curPartHasChanged(MusECore::Part*)), SLOT(updateTrackInfo()));
-      time->setOrigin(offset, 0);
+      time->setOrigin(_canvasXOrigin, 0);
 
       QList<int> mops;
       mops.append(_dlistWidthInit);
@@ -545,29 +572,29 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       header = new MusEGui::Header(split1w1, "header");
       header->setFixedHeight(31);
       //: hide
-      header->setColumnLabel(tr("H"), COL_HIDE, 20);
+      header->setColumnLabel(tr("H"), DList::COL_HIDE, 20);
       //: mute
-      header->setColumnLabel(tr("M"), COL_MUTE, 20);
-      header->setColumnLabel(tr("Sound"), COL_NAME, 120);
-      header->setColumnLabel(tr("Vol"), COL_VOLUME);
-      header->setColumnLabel(tr("QNT"), COL_QUANT, 40);
-      header->setColumnLabel(tr("E-Note"), COL_INPUTTRIGGER, 50);
-      header->setColumnLabel(tr("Len"), COL_NOTELENGTH, 40);
-      header->setColumnLabel(tr("A-Note"), COL_NOTE, 50);
-      header->setColumnLabel(tr("Ch"), COL_OUTCHANNEL);
-      header->setColumnLabel(tr("Port"), COL_OUTPORT, 70);
-      header->setColumnLabel(tr("LV1"), COL_LEVEL1);
-      header->setColumnLabel(tr("LV2"), COL_LEVEL2);
-      header->setColumnLabel(tr("LV3"), COL_LEVEL3);
-      header->setColumnLabel(tr("LV4"), COL_LEVEL4);
+      header->setColumnLabel(tr("M"), DList::COL_MUTE, 20);
+      header->setColumnLabel(tr("Sound"), DList::COL_NAME, 120);
+      header->setColumnLabel(tr("Vol"), DList::COL_VOLUME);
+      header->setColumnLabel(tr("QNT"), DList::COL_QUANT, 40);
+      header->setColumnLabel(tr("E-Note"), DList::COL_INPUTTRIGGER, 50);
+      header->setColumnLabel(tr("Len"), DList::COL_NOTELENGTH, 40);
+      header->setColumnLabel(tr("A-Note"), DList::COL_NOTE, 50);
+      header->setColumnLabel(tr("Ch"), DList::COL_OUTCHANNEL);
+      header->setColumnLabel(tr("Port"), DList::COL_OUTPORT, 70);
+      header->setColumnLabel(tr("LV1"), DList::COL_LEVEL1);
+      header->setColumnLabel(tr("LV2"), DList::COL_LEVEL2);
+      header->setColumnLabel(tr("LV3"), DList::COL_LEVEL3);
+      header->setColumnLabel(tr("LV4"), DList::COL_LEVEL4);
 
       setHeaderToolTips();
       setHeaderWhatsThis();
 
       if (_ignore_hide)
-        header->showSection(COL_HIDE);
+        header->showSection(DList::COL_HIDE);
       else
-        header->hideSection(COL_HIDE);
+        header->hideSection(DList::COL_HIDE);
 
       dlist = new DList(header, split1w1, _viewState.yscale(), (DrumCanvas*)canvas);
       setCurDrumInstrument(dlist->getSelectedInstrument());
@@ -622,7 +649,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       // connect toolbar
       connect(canvas,  SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(toolbar, SIGNAL(rasterChanged(int)),         SLOT(setRaster(int)));
+      connect(toolbar, &Toolbar1::rasterChanged, [this](int raster) { setRaster(raster); } );
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
@@ -655,7 +682,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         if(pos > INT_MAX)
           pos = INT_MAX;
         //if (pos)
-          hscroll->setOffset((int)pos);
+        hscroll->setOffset((int)pos);
       }
 
       if(canvas->track())
@@ -696,6 +723,24 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         // We must catch this first and be sure to update the strips.
         if(bits & SC_TRACK_REMOVED)
           checkTrackInfoTrack();
+        
+        if (bits & SC_DIVISION_CHANGED)
+        {
+          // The division has changed. The raster table and raster model will have been
+          //  cleared and re-filled, so any views on the model will no longer have a
+          //  current item and our current raster value will be invalid. They WILL NOT
+          //  emit an activated signal. So we must manually select a current item and
+          //  raster value here. We could do something fancy to try to keep the current
+          //  index - for example stay on quarter note - by taking the ratio of the new
+          //  division to old division and apply that to the old raster value and try
+          //  to select that index, but the division has already changed.
+          // So instead, simply try to select the current raster value. The index in the box may change.
+          // Be sure to use what it chooses.
+          changeRaster(_raster);
+
+          // Now set a reasonable zoom (mag) range.
+          setupHZoomRange();
+        }
         
         if (bits & SC_SOLO)
         {
@@ -970,12 +1015,33 @@ void DrumEdit::soloChanged(bool flag)
 
 void DrumEdit::setRaster(int val)
       {
-      _rasterInit = val;
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      val = _rasterizerModel->checkRaster(val);
       MidiEditor::setRaster(val);
+      _rasterInit = _raster;
+      time->setRaster(_raster);
       canvas->redrawGrid();
       for (auto it : ctrlEditList)
           it->redrawCanvas();
       focusCanvas();     // give back focus after kb input
+      }
+
+//---------------------------------------------------------
+//   changeRaster
+//---------------------------------------------------------
+
+int DrumEdit::changeRaster(int val)
+      {
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      MidiEditor::setRaster(toolbar->changeRaster(val));
+      _rasterInit = _raster;
+      time->setRaster(_raster);
+      canvas->redrawGrid();
+      for (auto it : ctrlEditList)
+          it->redrawCanvas();
+      return _raster;
       }
 
 //---------------------------------------------------------
@@ -1134,9 +1200,7 @@ void DrumEdit::readStatus(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "drumedit") {
-                              _rasterInit = _raster;
-                              toolbar->setRaster(_raster);
-                              canvas->redrawGrid();
+                              changeRaster(_raster);
                               return;
                               }
                   default:
@@ -1531,7 +1595,7 @@ void DrumEdit::ctrlPopupTriggered(QAction* act)
 
   if(newCtlNum != -1)
   {
-    CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), true, "drumCtrlEdit");
+    CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), _canvasXOrigin, 0, true, "drumCtrlEdit");
     ctrlEdit->setController(newCtlNum);
     setupNewCtrl(ctrlEdit);
   }
@@ -1603,7 +1667,7 @@ void DrumEdit::ctrlMenuAboutToHide()
 
 CtrlEdit* DrumEdit::addCtrl(int ctl_num)
       {
-      CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), true, "drumCtrlEdit");
+      CtrlEdit* ctrlEdit = new CtrlEdit(split1, this, _viewState.xscale(), _canvasXOrigin, 0, true, "drumCtrlEdit");
       ctrlEdit->setController(ctl_num);
       setupNewCtrl(ctrlEdit);
       return ctrlEdit;
@@ -1736,36 +1800,15 @@ void DrumEdit::configChanged()
       initShortcuts();
       }
 
-static int rasterTable[] = {
-      //-9----8-  7    6     5     4    3(1/4)     2   1
-      4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
-      6, 12, 24, 48,  96, 192, 384,  768, 1536,
-      9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
-      };
-
 //---------------------------------------------------------
 //   keyPressEvent
 //---------------------------------------------------------
 void DrumEdit::keyPressEvent(QKeyEvent* event)
       {
       DrumCanvas* dc = (DrumCanvas*)canvas;
+      RasterizerModel::RasterPick rast_pick = RasterizerModel::NoPick;
+      const int cur_rast = raster();
 
-      int index = 0;
-      int n = sizeof(rasterTable)/sizeof(*rasterTable);
-
-      for (index = 0; index < n; ++index)
-            if (rasterTable[index] == raster())
-                  break;
-
-      if (index == n) {
-            index = 0;
-            // raster 1 is not in table
-            }
-
-      int off = (index / 9) * 9;
-      index   = index % 9;
-
-      int val = 0;
       int key = event->key();
 
       if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
@@ -1794,7 +1837,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             return;
       }
       else if (key == Qt::Key_F2) {
-            dlist->lineEdit(dlist->getSelectedInstrument(),(int)COL_NAME);
+            dlist->lineEdit(dlist->getSelectedInstrument(),(int)DList::COL_NAME);
             return;
             }
       else if (key == shortcuts[SHRT_INSTRUMENT_STEP_UP].key) {
@@ -1813,7 +1856,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             ((DrumCanvas*)canvas)->keyPressed(dlist->getSelectedInstrument(),100);
             MusEGlobal::song->update(SC_DRUMMAP);
             return;
-      }
+            }
 
       else if (key == shortcuts[SHRT_POS_INC].key) {
             dc->cmd(DrumCanvas::CMD_RIGHT);
@@ -1883,36 +1926,28 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_SET_QUANT_OFF].key)
-            val = 1; //this hack has the downside that the next shortcut will use triols, but it's better than not having it, I think...
+            //this hack has the downside that the next shortcut will use triols, but it's better than not having it, I think...
+            rast_pick = RasterizerModel::GotoOff;
       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
-            val = rasterTable[8 + off];
+            rast_pick = RasterizerModel::Goto1;
       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
-            val = rasterTable[7 + off];
+            rast_pick = RasterizerModel::Goto2;
       else if (key == shortcuts[SHRT_SET_QUANT_3].key)
-            val = rasterTable[6 + off];
+            rast_pick = RasterizerModel::Goto4;
       else if (key == shortcuts[SHRT_SET_QUANT_4].key)
-            val = rasterTable[5 + off];
+            rast_pick = RasterizerModel::Goto8;
       else if (key == shortcuts[SHRT_SET_QUANT_5].key)
-            val = rasterTable[4 + off];
+            rast_pick = RasterizerModel::Goto16;
       else if (key == shortcuts[SHRT_SET_QUANT_6].key)
-            val = rasterTable[3 + off];
+            rast_pick = RasterizerModel::Goto32;
       else if (key == shortcuts[SHRT_SET_QUANT_7].key)
-            val = rasterTable[2 + off];
+            rast_pick = RasterizerModel::Goto64;
       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
-            val = rasterTable[index + ((off == 0) ? 9 : 0)];
+            rast_pick = RasterizerModel::ToggleTriple;
       else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
-            val = rasterTable[index + ((off == 18) ? 9 : 18)];
-
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {//CDW
-            if ((off == 18) && (index > 2)) {
-                  val = rasterTable[index + 9 - 1];
-                  }
-            else if ((off == 9) && (index < 8)) {
-                  val = rasterTable[index + 18 + 1];
-                  }
-            else
-                  return;
-            }
+            rast_pick = RasterizerModel::ToggleDotted;
+      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key)
+            rast_pick = RasterizerModel::ToggleHigherDotted;
       else if (key == shortcuts[SHRT_MOVE_PLAY_TO_NOTE].key){
         movePlayPointerToSelectedEvent();
         return;
@@ -1951,8 +1986,15 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             event->ignore();
             return;
             }
-      setRaster(val);
-      toolbar->setRaster(_raster);
+      if(rast_pick != RasterizerModel::NoPick)
+      {
+        const int new_rast = _rasterizerModel->pickRaster(cur_rast, rast_pick);
+        if(new_rast != cur_rast)
+        {
+          setRaster(new_rast);
+          toolbar->setRaster(_raster);
+        }
+      }
       }
 
 
@@ -2049,9 +2091,9 @@ void DrumEdit::set_ignore_hide(bool val)
   // if called otherwise, the action's checked state isn't updated!
 
   if (_ignore_hide)
-    header->showSection(COL_HIDE);
+    header->showSection(DList::COL_HIDE);
   else
-    header->hideSection(COL_HIDE);
+    header->hideSection(DList::COL_HIDE);
   
   ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
 }
@@ -2160,5 +2202,14 @@ void DrumEdit::hideEmptyInstruments()
   MusEGlobal::song->update(SC_DRUMMAP);
 }
 
+//---------------------------------------------------------
+//   setupHZoomRange
+//---------------------------------------------------------
+
+void DrumEdit::setupHZoomRange()
+{
+  const int min = (_minXMag * MusEGlobal::config.division) / 384;
+  hscroll->setScaleRange(min, _maxXMag);
+}
 
 } // namespace MusEGui

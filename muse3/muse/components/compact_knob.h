@@ -34,13 +34,14 @@
 #include <QSize>
 #include <QColor>
 #include <QFont>
-#include <QFontMetrics>
-#include <QResizeEvent>
-#include <QPainter>
-#include <QEvent>
-#include <QPaintEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
+
+class QFontMetrics;
+class QResizeEvent;
+class QPainter;
+class QEvent;
+class QPaintEvent;
+class QMouseEvent;
+class QKeyEvent;
 
 namespace MusEGui {
 

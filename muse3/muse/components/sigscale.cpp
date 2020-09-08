@@ -22,12 +22,16 @@
 
 #include <limits.h>
 
+#include <QWidget>
 #include <QMouseEvent>
+#include <QEvent>
 #include <QPainter>
+#include <QStyle>
+#include <QStyleOption>
+#include <QRect>
 
 #include "sig.h"
 #include "globals.h"
-#include "midieditor.h"
 #include "sigscale.h"
 #include "song.h"
 #include "gconfig.h"

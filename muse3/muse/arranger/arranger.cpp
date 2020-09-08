@@ -43,28 +43,17 @@
 #include <QPoint>
 #include <QRect>
 
-#include "arrangerview.h"
 #include "arranger.h"
 #include "song.h"
 #include "app.h"
-#include "mtscale.h"
-#include "scrollscale.h"
-#include "scrollbar.h"
-#include "pcanvas.h"
-#include "poslabel.h"
-#include "xml.h"
-#include "splitter.h"
-#include "lcombo.h"
 #include "midiport.h"
 #include "mididev.h"
 #include "utils.h"
 #include "globals.h"
-#include "tlist.h"
+#include "globaldefs.h"
 #include "icons.h"
-#include "header.h"
 #include "utils.h"
 #include "widget_stack.h"
-#include "trackinfo_layout.h"
 #include "audio.h"
 #include "event.h"
 #include "midiseq.h"
@@ -73,18 +62,39 @@
 #include "gconfig.h"
 #include "mixer/astrip.h"
 #include "mixer/mstrip.h"
-#include "spinbox.h"
 #include "shortcuts.h"
 #include "ttoolbutton.h"
+
+// Forwards from header:
+#include <QKeyEvent>
+#include <QPoint>
+#include <QComboBox>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QScrollArea>
+#include "track.h"
+#include "part.h"
+#include "xml.h"
+#include "rasterizer.h"
+#include "lcombo.h"
+#include "mtscale.h"
+#include "arrangerview.h"
+#include "astrip.h"
+#include "header.h"
+#include "poslabel.h"
+#include "scrollscale.h"
+#include "spinbox.h"
+#include "splitter.h"
+#include "trackinfo_layout.h"
+#include "tlist.h"
+#include "raster_widgets.h"
+#include "pcanvas.h"
 
 namespace MusEGui {
 
 std::vector<Arranger::custom_col_t> Arranger::custom_columns;
 QByteArray Arranger::header_state;
-static const char* gArrangerRasterStrings[] = {
-      QT_TRANSLATE_NOOP("MusEGui::Arranger", "Off"), QT_TRANSLATE_NOOP("MusEGui::Arranger", "Bar"), "1/2", "1/4", "1/8", "1/16"
-      };
-static int gArrangerRasterTable[] = { 1, 0, 768, 384, 192, 96 };
 
 void Arranger::writeCustomColumns(int level, MusECore::Xml& xml)
 {
@@ -167,18 +177,18 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
 
 void Arranger::setHeaderToolTips()
       {
-      header->setToolTip(COL_TRACK_IDX,  tr("Track index"));
-      header->setToolTip(COL_INPUT_MONITOR, tr("Enable input monitor"));
-      header->setToolTip(COL_RECORD,     tr("Enable recording"));
-      header->setToolTip(COL_MUTE,       tr("Mute/Off indicator"));
-      header->setToolTip(COL_SOLO,       tr("Solo indicator"));
-      header->setToolTip(COL_CLASS,      tr("Track type"));
-      header->setToolTip(COL_NAME,       tr("Track name"));
-      header->setToolTip(COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
-      header->setToolTip(COL_OPORT,      tr("Midi output port or synth midi port"));
-      header->setToolTip(COL_TIMELOCK,   tr("Time lock"));
-      header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
-      header->setToolTip(COL_CLEF,       tr("Notation clef"));
+      header->setToolTip(TList::COL_TRACK_IDX,  tr("Track index"));
+      header->setToolTip(TList::COL_INPUT_MONITOR, tr("Enable input monitor"));
+      header->setToolTip(TList::COL_RECORD,     tr("Enable recording"));
+      header->setToolTip(TList::COL_MUTE,       tr("Mute/Off indicator"));
+      header->setToolTip(TList::COL_SOLO,       tr("Solo indicator"));
+      header->setToolTip(TList::COL_CLASS,      tr("Track type"));
+      header->setToolTip(TList::COL_NAME,       tr("Track name"));
+      header->setToolTip(TList::COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
+      header->setToolTip(TList::COL_OPORT,      tr("Midi output port or synth midi port"));
+      header->setToolTip(TList::COL_TIMELOCK,   tr("Time lock"));
+      header->setToolTip(TList::COL_AUTOMATION, tr("Automation parameter selection"));
+      header->setToolTip(TList::COL_CLEF,       tr("Notation clef"));
       }
 
 
@@ -189,19 +199,19 @@ void Arranger::setHeaderToolTips()
 
 void Arranger::setHeaderWhatsThis()
       {
-      header->setWhatsThis(COL_TRACK_IDX, tr("Track index"));
-      header->setWhatsThis(COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to output for monitoring.\n"
+      header->setWhatsThis(TList::COL_TRACK_IDX, tr("Track index"));
+      header->setWhatsThis(TList::COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to output for monitoring.\n"
                                                  "See also Settings: Automatically Monitor On Record Arm."));
-      header->setWhatsThis(COL_RECORD,   tr("Enable recording. Click to toggle.\n"
+      header->setWhatsThis(TList::COL_RECORD,   tr("Enable recording. Click to toggle.\n"
                                             "See also Settings: Automatically Monitor On Record Arm."));
-      header->setWhatsThis(COL_MUTE,     tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"));
-      header->setWhatsThis(COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."));
-      header->setWhatsThis(COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
-      header->setWhatsThis(COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
-      header->setWhatsThis(COL_OCHANNEL, tr("Midi/Drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
-      header->setWhatsThis(COL_OPORT,    tr("Midi/Drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
-      header->setWhatsThis(COL_TIMELOCK, tr("Time lock"));
-      header->setWhatsThis(COL_CLEF,     tr("Notation clef. Select this tracks notation clef."));
+      header->setWhatsThis(TList::COL_MUTE,     tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"));
+      header->setWhatsThis(TList::COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."));
+      header->setWhatsThis(TList::COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
+      header->setWhatsThis(TList::COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
+      header->setWhatsThis(TList::COL_OCHANNEL, tr("Midi/Drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
+      header->setWhatsThis(TList::COL_OPORT,    tr("Midi/Drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
+      header->setWhatsThis(TList::COL_TIMELOCK, tr("Time lock"));
+      header->setWhatsThis(TList::COL_CLEF,     tr("Notation clef. Select this tracks notation clef."));
       }
 
 //---------------------------------------------------------
@@ -213,7 +223,18 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
    : QWidget(parent)
       {
       setObjectName(name);
-      _raster  = 0;      // measure
+
+      _canvasXOrigin = DefaultCanvasXOrigin;
+      //_minXMag = -2000;
+      _minXMag = -500;
+      _maxXMag = -5;
+      QList<Rasterizer::Column> rast_cols;
+      rast_cols << Rasterizer::NormalColumn;
+      _rasterizerModel = new RasterizerModel(
+        MusEGlobal::globalRasterizer, this, 6, rast_cols);
+      _rasterizerModel->setDisplayFormat(RasterizerModel::FractionFormat);
+
+      _raster = _rasterizerModel->pickRaster(0, RasterizerModel::Goto1);
       selected = 0;
       showTrackinfoFlag = true;
       
@@ -246,18 +267,9 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       cursorPos->setEnabled(false);
       toolbar->addWidget(cursorPos);
 
-      label = new QLabel(tr("Snap"));
-      label->setIndent(3);
-      toolbar->addWidget(label);
-      _rasterCombo = new QComboBox();
-      for (int i = 0; i < 6; i++)
-            _rasterCombo->insertItem(i, tr(gArrangerRasterStrings[i]), gArrangerRasterTable[i]);
-      _rasterCombo->setCurrentIndex(1);
-      // Set the audio record part snapping. Set to 0 (bar), the same as this combo box initial raster.
-      MusEGlobal::song->setArrangerRaster(0);
-      toolbar->addWidget(_rasterCombo);
-      connect(_rasterCombo, SIGNAL(activated(int)), SLOT(rasterChanged(int)));
+      _rasterCombo = new RasterLabelCombo(RasterLabelCombo::ListView, _rasterizerModel, this, "RasterLabelCombo");
       _rasterCombo->setFocusPolicy(Qt::TabFocus);
+      toolbar->addWidget(_rasterCombo);
 
       // Song len
       label = new QLabel(tr("Bars"));
@@ -398,7 +410,15 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       //---------------------------------------------------
 
       int offset = MusEGlobal::sigmap.ticksMeasure(0);
-      hscroll = new ScrollScale(-2000, -5, xscale, MusEGlobal::song->len(), Qt::Horizontal, this, -offset);
+      hscroll = new ScrollScale(
+        (_minXMag * MusEGlobal::config.division) / 384,
+        _maxXMag,
+        xscale,
+        MusEGlobal::song->len() + offset,
+        Qt::Horizontal,
+        this,
+        _canvasXOrigin);
+
       hscroll->setFocusPolicy(Qt::NoFocus);
       hscroll->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       
@@ -423,15 +443,17 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       egrid->setContentsMargins(0, 0, 0, 0);  
       egrid->setSpacing(0);  
 
-      time = new MTScale(&_raster, editor, xscale);
-      time->setOrigin(-offset, 0);
+      time = new MTScale(_raster, editor, xscale);
+      time->setOrigin(_canvasXOrigin, 0);
       canvas = new PartCanvas(&_raster, editor, xscale, yscale);
       canvas->setBg(MusEGlobal::config.partCanvasBg);
       canvas->setCanvasTools(arrangerTools);
-      canvas->setOrigin(-offset, 0);
+      canvas->setOrigin(_canvasXOrigin, 0);
       canvas->setFocus();
 
       list->setFocusProxy(canvas); // Make it easy for track list popup line editor to give focus back to canvas.
+
+      setRasterVal(_raster);
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(MusECore::Track*)), list, SLOT(selectTrack(MusECore::Track*)));
@@ -491,6 +513,8 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
       connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*, int)), SLOT(controllerChanged(MusECore::Track*, int)));
 
+      connect(_rasterCombo, &RasterLabelCombo::rasterChanged, [this](int raster) { rasterChanged(raster); } );
+
       configChanged();  // set configuration values
       showTrackInfo(showTrackinfoFlag);
       
@@ -519,41 +543,41 @@ void Arranger::initTracklistHeader()
     header = new Header(tracklist, "TrackListHeader");
     header->setFixedHeight(31);
 
-    header->setColumnLabel(tr("#"), COL_TRACK_IDX);
-    header->setColumnIcon(*monitorOnSVGIcon, COL_INPUT_MONITOR);
-    header->setColumnIcon(*recArmOnSVGIcon, COL_RECORD);
-    header->setColumnIcon(*muteOnSVGIcon, COL_MUTE);
-    header->setColumnIcon(*soloOnAloneSVGIcon, COL_SOLO);
-    header->setColumnIcon(*tracktypeSVGIcon, COL_CLASS);
-    header->setColumnLabel(tr("Track"), COL_NAME);
-    header->setColumnLabel(tr("Port"), COL_OPORT);
+    header->setColumnLabel(tr("#"), TList::COL_TRACK_IDX);
+    header->setColumnIcon(*monitorOnSVGIcon, TList::COL_INPUT_MONITOR);
+    header->setColumnIcon(*recArmOnSVGIcon, TList::COL_RECORD);
+    header->setColumnIcon(*muteOnSVGIcon, TList::COL_MUTE);
+    header->setColumnIcon(*soloOnAloneSVGIcon, TList::COL_SOLO);
+    header->setColumnIcon(*tracktypeSVGIcon, TList::COL_CLASS);
+    header->setColumnLabel(tr("Track"), TList::COL_NAME);
+    header->setColumnLabel(tr("Port"), TList::COL_OPORT);
     //: Channel
-    header->setColumnLabel(tr("Ch"), COL_OCHANNEL);
+    header->setColumnLabel(tr("Ch"), TList::COL_OCHANNEL);
     //: Time lock
-    header->setColumnLabel(tr("T"), COL_TIMELOCK);
-    header->setColumnLabel(tr("Automation"), COL_AUTOMATION);
-    header->setColumnLabel(tr("Clef"), COL_CLEF);
+    header->setColumnLabel(tr("T"), TList::COL_TIMELOCK);
+    header->setColumnLabel(tr("Automation"), TList::COL_AUTOMATION);
+    header->setColumnLabel(tr("Clef"), TList::COL_CLEF);
     for (unsigned i = 0; i < custom_columns.size(); i++)
-        header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
+        header->setColumnLabel(custom_columns[i].name, TList::COL_CUSTOM_MIDICTRL_OFFSET + i);
 
-    header->setSectionResizeMode(COL_TRACK_IDX, QHeaderView::Interactive);
-    header->setSectionResizeMode(COL_INPUT_MONITOR, QHeaderView::Fixed);
-    header->setSectionResizeMode(COL_RECORD, QHeaderView::Fixed);
-    header->setSectionResizeMode(COL_MUTE, QHeaderView::Fixed);
-    header->setSectionResizeMode(COL_SOLO, QHeaderView::Fixed);
-    header->setSectionResizeMode(COL_CLASS, QHeaderView::Fixed);
-    header->setSectionResizeMode(COL_NAME, QHeaderView::Interactive);
-    header->setSectionResizeMode(COL_OPORT, QHeaderView::Interactive);
-    header->setSectionResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
-    header->setSectionResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
-    header->setSectionResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
-    header->setSectionResizeMode(COL_CLEF, QHeaderView::Interactive);
+    header->setSectionResizeMode(TList::COL_TRACK_IDX, QHeaderView::Interactive);
+    header->setSectionResizeMode(TList::COL_INPUT_MONITOR, QHeaderView::Fixed);
+    header->setSectionResizeMode(TList::COL_RECORD, QHeaderView::Fixed);
+    header->setSectionResizeMode(TList::COL_MUTE, QHeaderView::Fixed);
+    header->setSectionResizeMode(TList::COL_SOLO, QHeaderView::Fixed);
+    header->setSectionResizeMode(TList::COL_CLASS, QHeaderView::Fixed);
+    header->setSectionResizeMode(TList::COL_NAME, QHeaderView::Interactive);
+    header->setSectionResizeMode(TList::COL_OPORT, QHeaderView::Interactive);
+    header->setSectionResizeMode(TList::COL_OCHANNEL, QHeaderView::Fixed);
+    header->setSectionResizeMode(TList::COL_TIMELOCK, QHeaderView::Fixed);
+    header->setSectionResizeMode(TList::COL_AUTOMATION, QHeaderView::Interactive);
+    header->setSectionResizeMode(TList::COL_CLEF, QHeaderView::Interactive);
     for (unsigned i = 0; i < custom_columns.size(); i++)
-        header->setSectionResizeMode(COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
+        header->setSectionResizeMode(TList::COL_CUSTOM_MIDICTRL_OFFSET+i, QHeaderView::Interactive);
 
     // 04/18/17 Time lock remains unused. Disabled until a use is found.
     // Plans were to use it (or not) when time stretching / pitch shifting work is done.
-    header->setSectionHidden(COL_TIMELOCK, true);
+    header->setSectionHidden(TList::COL_TIMELOCK, true);
 
     setHeaderToolTips();
     setHeaderWhatsThis();
@@ -603,23 +627,23 @@ void Arranger::setHeaderSizes()
 {
     const int fw = 11;
 
-    header->resizeSection(COL_TRACK_IDX, qMax(header->sectionSizeHint(COL_TRACK_IDX) + fw, 30));
+    header->resizeSection(TList::COL_TRACK_IDX, qMax(header->sectionSizeHint(TList::COL_TRACK_IDX) + fw, 30));
 
-    header->resizeSection(COL_INPUT_MONITOR, header->sectionSizeHint(COL_INPUT_MONITOR));
-    header->resizeSection(COL_RECORD, header->sectionSizeHint(COL_RECORD));
-    header->resizeSection(COL_MUTE, header->sectionSizeHint(COL_MUTE));
-    header->resizeSection(COL_SOLO, header->sectionSizeHint(COL_SOLO));
-    header->resizeSection(COL_CLASS, header->sectionSizeHint(COL_CLASS));
+    header->resizeSection(TList::COL_INPUT_MONITOR, header->sectionSizeHint(TList::COL_INPUT_MONITOR));
+    header->resizeSection(TList::COL_RECORD, header->sectionSizeHint(TList::COL_RECORD));
+    header->resizeSection(TList::COL_MUTE, header->sectionSizeHint(TList::COL_MUTE));
+    header->resizeSection(TList::COL_SOLO, header->sectionSizeHint(TList::COL_SOLO));
+    header->resizeSection(TList::COL_CLASS, header->sectionSizeHint(TList::COL_CLASS));
 
-    header->resizeSection(COL_NAME, qMax(header->sectionSizeHint(COL_NAME) + fw, 100));
-    header->resizeSection(COL_OPORT, qMax(header->sectionSizeHint(COL_OPORT) + fw, 60));
-    header->resizeSection(COL_OCHANNEL, header->sectionSizeHint(COL_OCHANNEL) + fw);
-    header->resizeSection(COL_TIMELOCK, header->sectionSizeHint(COL_TIMELOCK) + fw);
-    header->resizeSection(COL_AUTOMATION, qMax(header->sectionSizeHint(COL_AUTOMATION) + fw, 80));
-    header->resizeSection(COL_CLEF, qMax(header->sectionSizeHint(COL_CLEF) + fw, 50));
+    header->resizeSection(TList::COL_NAME, qMax(header->sectionSizeHint(TList::COL_NAME) + fw, 100));
+    header->resizeSection(TList::COL_OPORT, qMax(header->sectionSizeHint(TList::COL_OPORT) + fw, 60));
+    header->resizeSection(TList::COL_OCHANNEL, header->sectionSizeHint(TList::COL_OCHANNEL) + fw);
+    header->resizeSection(TList::COL_TIMELOCK, header->sectionSizeHint(TList::COL_TIMELOCK) + fw);
+    header->resizeSection(TList::COL_AUTOMATION, qMax(header->sectionSizeHint(TList::COL_AUTOMATION) + fw, 80));
+    header->resizeSection(TList::COL_CLEF, qMax(header->sectionSizeHint(TList::COL_CLEF) + fw, 50));
 
     for (unsigned i = 0; i < custom_columns.size(); i++)
-        header->resizeSection(COL_CUSTOM_MIDICTRL_OFFSET + i, qMax(header->sectionSizeHint(COL_CUSTOM_MIDICTRL_OFFSET + i) + fw, 30));
+        header->resizeSection(TList::COL_CUSTOM_MIDICTRL_OFFSET + i, qMax(header->sectionSizeHint(TList::COL_CUSTOM_MIDICTRL_OFFSET + i) + fw, 30));
 }
 
 //---------------------------------------------------------
@@ -715,9 +739,9 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         {
           unsigned endTick = MusEGlobal::song->len();
           int offset  = MusEGlobal::sigmap.ticksMeasure(endTick);
-          hscroll->setRange(-offset, endTick + offset);  //DEBUG
-          canvas->setOrigin(-offset, 0);
-          time->setOrigin(-offset, 0);
+          hscroll->setRange(_canvasXOrigin, endTick + offset);
+          canvas->setOrigin(_canvasXOrigin, 0);
+          time->setOrigin(_canvasXOrigin, 0);
     
           int bar, beat;
           unsigned tick;
@@ -753,6 +777,24 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         if (type & SC_TEMPO)
               setGlobalTempo(MusEGlobal::tempomap.globalTempo());
 
+        if (type & SC_DIVISION_CHANGED)
+        {
+          // The division has changed. The raster table and raster model will have been
+          //  cleared and re-filled, so any views on the model will no longer have a
+          //  current item and our current raster value will be invalid. They WILL NOT
+          //  emit an activated signal. So we must manually select a current item and
+          //  raster value here. We could do something fancy to try to keep the current
+          //  index - for example stay on quarter note - by taking the ratio of the new
+          //  division to old division and apply that to the old raster value and try
+          //  to select that index, but the division has already changed.
+          // So instead, simply try to select the current raster value. The index in the box may change.
+          // Be sure to use what it chooses.
+          setRasterVal(_raster);
+
+          // Now set a reasonable zoom (mag) range.
+          setupHZoomRange();
+        }
+        
         // Try these:
         if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
@@ -885,8 +927,7 @@ void Arranger::readStatus(MusECore::Xml& xml)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "arranger") {
-                              if(rast != -1)
-                                setRasterVal(rast);
+                              setRasterVal(rast);
                               return;
                               }
                   default:
@@ -899,14 +940,22 @@ void Arranger::readStatus(MusECore::Xml& xml)
 //   rasterChanged
 //---------------------------------------------------------
 
-void Arranger::rasterChanged(int index)
+void Arranger::rasterChanged(int raster)
       {
-      _raster = gArrangerRasterTable[index];
-      // Set the audio record part snapping.
-      MusEGlobal::song->setArrangerRaster(_raster);
+      _raster = raster;
+      time->setRaster(_raster);
       canvas->redraw();
       focusCanvas();
       }
+
+//---------------------------------------------------------
+//   rasterVal
+//---------------------------------------------------------
+
+int Arranger::rasterVal() const
+{
+  return _raster;
+}
 
 //---------------------------------------------------------
 //   setRasterVal
@@ -914,20 +963,14 @@ void Arranger::rasterChanged(int index)
 
 bool Arranger::setRasterVal(int val)
 {
-  if(_raster == val)
-    return true;
-  int idx = _rasterCombo->findData(val);
-  if(idx == -1)
-  {
-    fprintf(stderr, "Arranger::setRasterVal raster:%d not found\n", val);
-    return false;
-  }
-  _raster = val;
-  _rasterCombo->blockSignals(true);
-  _rasterCombo->setCurrentIndex(idx);
-  _rasterCombo->blockSignals(false);
-  // Set the audio record part snapping.
-  MusEGlobal::song->setArrangerRaster(_raster);
+  const RasterizerModel* rast_mdl = _rasterCombo->rasterizerModel();
+  _raster = rast_mdl->checkRaster(val);
+  time->setRaster(_raster);
+  const QModelIndex mdl_idx = rast_mdl->modelIndexOfRaster(_raster);
+  if(mdl_idx.isValid())
+    _rasterCombo->setCurrentModelIndex(mdl_idx);
+  else
+    fprintf(stderr, "Arranger::changeRaster: _raster %d not found in box!\n", _raster);
   canvas->redraw();
   return true;
 }
@@ -1272,6 +1315,9 @@ void Arranger::keyPressEvent(QKeyEvent* event)
   if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
         key+= Qt::CTRL;
 
+  RasterizerModel::RasterPick rast_pick = RasterizerModel::NoPick;
+  const int cur_rast = rasterVal();
+
   if (key == shortcuts[SHRT_ZOOM_IN].key) {
         horizontalZoom(true, QCursor::pos());
         return;
@@ -1287,36 +1333,40 @@ void Arranger::keyPressEvent(QKeyEvent* event)
   // QUANTIZE shortcuts from midi editors is reused for SNAP in Arranger
   //    `does not work exactly the same but close enough I think.
   else if (key == shortcuts[SHRT_SET_QUANT_OFF].key) {
-      setRasterVal(gArrangerRasterTable[0]);
-      return;
+      rast_pick = RasterizerModel::GotoOff;
   }
   else if (key == shortcuts[SHRT_SET_QUANT_1].key) {
-      setRasterVal(gArrangerRasterTable[1]);
-      return;
+      rast_pick = RasterizerModel::Goto1;
   }
   else if (key == shortcuts[SHRT_SET_QUANT_2].key) {
-      setRasterVal(gArrangerRasterTable[2]);
-      return;
+      rast_pick = RasterizerModel::Goto2;
   }
   else if (key == shortcuts[SHRT_SET_QUANT_3].key) {
-      setRasterVal(gArrangerRasterTable[3]);
-      return;
+      rast_pick = RasterizerModel::Goto4;
   }
   else if (key == shortcuts[SHRT_SET_QUANT_4].key) {
-      setRasterVal(gArrangerRasterTable[4]);
-      return;
+      rast_pick = RasterizerModel::Goto8;
   }
   else if (key == shortcuts[SHRT_SET_QUANT_5].key) {
-      setRasterVal(gArrangerRasterTable[5]);
-      return;
+      rast_pick = RasterizerModel::Goto16;
   }
   else if (key == shortcuts[SHRT_SET_QUANT_6].key) {
-      //      setRasterVal(gArrangerRasterTable[6]); // this value is not actually defined, adding for completeness but commented out.
+      // this value is not actually defined, adding for completeness but commented out.
       return;
+      //rast_pick = RasterizerModel::Goto32;
   }
   else if (key == shortcuts[SHRT_SET_QUANT_7].key) {
-//      setRasterVal(gArrangerRasterTable[7]); // this value is not actually defined, adding for completeness but commented out.
+      // this value is not actually defined, adding for completeness but commented out.
       return;
+      //rast_pick = RasterizerModel::Goto64;
+  }
+
+  if(rast_pick != RasterizerModel::NoPick)
+  {
+    const int new_rast = _rasterizerModel->pickRaster(cur_rast, rast_pick);
+    if(new_rast != cur_rast)
+      setRasterVal(new_rast);
+    return;
   }
 
   QWidget::keyPressEvent(event);
@@ -1354,14 +1404,14 @@ void Arranger::horizontalZoom(int mag, const QPoint& glob_pos)
 
 void Arranger::updateHeaderCustomColumns()
 {
-    for (int i = COL_CUSTOM_MIDICTRL_OFFSET; i < header->count(); i++)
+    for (int i = TList::COL_CUSTOM_MIDICTRL_OFFSET; i < header->count(); i++)
         header->removeColumn(i);
 
-    header->headerDataChanged(Qt::Horizontal, COL_CUSTOM_MIDICTRL_OFFSET, header->count());
+    header->headerDataChanged(Qt::Horizontal, TList::COL_CUSTOM_MIDICTRL_OFFSET, header->count());
 
     for (unsigned i = 0; i < custom_columns.size(); i++) {
-        header->setColumnLabel(custom_columns[i].name, COL_CUSTOM_MIDICTRL_OFFSET + i);
-        header->showSection(COL_CUSTOM_MIDICTRL_OFFSET + i);
+        header->setColumnLabel(custom_columns[i].name, TList::COL_CUSTOM_MIDICTRL_OFFSET + i);
+        header->showSection(TList::COL_CUSTOM_MIDICTRL_OFFSET + i);
     }
 
     setHeaderSizes();
@@ -1372,6 +1422,21 @@ void Arranger::updateTracklist()
 {
     tracklist->setMinimumWidth(header->length());
     list->redraw();
+}
+
+bool Arranger::isSingleSelection() const { return canvas->isSingleSelection(); }
+int Arranger::selectionSize() const { return canvas->selectionSize(); }
+bool Arranger::itemsAreSelected() const { return canvas->itemsAreSelected(); }
+void Arranger::songIsClearing() const { canvas->songIsClearing(); }
+
+//---------------------------------------------------------
+//   setupHZoomRange
+//---------------------------------------------------------
+
+void Arranger::setupHZoomRange()
+{
+  const int min = (_minXMag * MusEGlobal::config.division) / 384;
+  hscroll->setScaleRange(min, _maxXMag);
 }
 
 } // namespace MusEGui

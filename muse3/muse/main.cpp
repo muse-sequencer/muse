@@ -78,6 +78,7 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "wave.h"
+#include "conf.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -100,7 +101,7 @@ extern void initDSSI();
 extern void initLV2();
 extern void deinitLV2();
 #endif
-extern void readConfiguration();
+extern bool readConfiguration();
 
 extern void initMidiSequencer();   
 extern void exitMidiSequencer();

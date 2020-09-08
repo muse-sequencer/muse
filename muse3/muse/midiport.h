@@ -25,22 +25,25 @@
 #ifndef __MIDIPORT_H__
 #define __MIDIPORT_H__
 
+#include <QString>
+
 #include "globaldefs.h"
 #include "sync.h"
 #include "route.h"
-#include "mpevent.h"
-#include "mididev.h"
-#include "minstrument.h"
-
-class QString;
 
 namespace MusECore {
 
-class Part;
+
+// Forward declarations:
+class MidiDevice;
+class MidiInstrument;
 class MidiController;
 class MidiControllerList;
 class MidiCtrlValListList;
 class MidiCtrlValList;
+class Part;
+class MidiPlayEvent;
+class Xml;
 
 //---------------------------------------------------------
 //   MidiPort

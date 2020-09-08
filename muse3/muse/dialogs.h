@@ -23,8 +23,8 @@
 #ifndef __DIALOGS_H__
 #define __DIALOGS_H__
 
-class QWidget;
 
+// Forward declarations:
 namespace MusECore {
 class Xml;
 }

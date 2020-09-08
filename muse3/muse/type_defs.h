@@ -144,6 +144,8 @@ struct SongChangedStruct_t
 #define SC_MARKER_MODIFIED            MusECore::SongChangedStruct_t(0x800000000000)
 // The marker list was rebuilt as a result of tempo changes. NOTE: Currently signals/slots are used for add/remove/modify etc.
 #define SC_MARKERS_REBUILT            MusECore::SongChangedStruct_t(0x1000000000000)
+// The midi division changed. Re-normalization of tempo and signature lists will have already occurred.
+#define SC_DIVISION_CHANGED           MusECore::SongChangedStruct_t(0x2000000000000)
 #define SC_EVERYTHING                 MusECore::SongChangedStruct_t(-1, -1)       // global update
 
 

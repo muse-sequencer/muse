@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <QString>
+
 #include "muse_math.h"
 #include <stdint.h>
 

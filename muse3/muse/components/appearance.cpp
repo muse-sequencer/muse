@@ -40,16 +40,22 @@
 
 #include "icons.h"
 #include "appearance.h"
-#include "track.h"
 #include "app.h"
-#include "song.h"
-#include "event.h"
 #include "arranger.h"
+#include "pcanvas.h"
+#include "event.h"
 #include "components/filedialog.h"
-#include "waveedit/waveedit.h"
 #include "globals.h"
 // Specify muse here, two reports of "conf.h" pointing to ALSA conf.h !
 #include "muse/conf.h"
+
+// Forwards from header:
+#include <QTimer>
+#include <QColorDialog>
+#include <QCloseEvent>
+#include <QButtonGroup>
+#include <QTreeWidget>
+#include <QColor>
 #include "gconfig.h"
 
 // For debugging output: Uncomment the fprintf section.
@@ -105,11 +111,23 @@ class BgPreviewWidget : public QWidget {
             }
       };
 
+IdListViewItem::IdListViewItem(int id, QTreeWidgetItem* parent, QString s)
+    : QTreeWidgetItem(parent, QStringList(s))
+      {
+      _id = id;
+      }
+IdListViewItem::IdListViewItem(int id, QTreeWidget* parent, QString s)
+    : QTreeWidgetItem(parent, QStringList(s))
+      {
+      _id = id;
+      }
+int IdListViewItem::id() const { return _id; }
+
 //---------------------------------------------------------
 //   Appearance
 //---------------------------------------------------------
 
-Appearance::Appearance(Arranger* a, QWidget* parent)
+Appearance::Appearance(QWidget* parent)
    : QDialog(parent, Qt::Window)
       {
       setupUi(this);
@@ -117,10 +135,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       itemList->setContextMenuPolicy(Qt::CustomContextMenu);
       connect(itemList, SIGNAL(customContextMenuRequested(QPoint)), SLOT(colorListCustomContextMenuReq(QPoint)));
       
-      arr    = a;
       color  = 0;
       _colorDialog = 0;
-//       defaultConfig = new MusEGlobal::GlobalConfigValues;
       config = new MusEGlobal::GlobalConfigValues;
       backupConfig = new MusEGlobal::GlobalConfigValues;
 

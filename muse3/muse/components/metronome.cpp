@@ -31,7 +31,7 @@
 
 #include <stdio.h>
 #include "metronome.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "ticksynth.h"
 
 #include "globals.h"

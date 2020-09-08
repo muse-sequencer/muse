@@ -27,7 +27,10 @@
 #include "function_dialog_consts.h"
 #include <QDialog>
 
+
+// Forward declarations:
 class QButtonGroup;
+class QWidget;
 
 namespace MusECore {
 class Xml;

@@ -52,6 +52,7 @@
 #include "tempo.h"
 #include "sig.h"
 #include "keyevent.h"
+#include "track.h"
 
 // REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_MIDI_ROUTE_PER_CHANNEL_

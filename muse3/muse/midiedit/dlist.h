@@ -24,13 +24,14 @@
 #ifndef __DLIST_H__
 #define __DLIST_H__
 
-#include <QKeyEvent>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QRegion>
 
 #include "type_defs.h"
 #include "pitchedit.h"
 #include "view.h"
+#include "dcanvas.h"
 
 #define TH  18                // normal Track-hight
 
@@ -44,6 +45,7 @@
 class QHeaderView;
 class QMouseEvent;
 class QPainter;
+class QWheelEvent;
 
 namespace MusECore {
 struct DrumMap;
@@ -51,28 +53,7 @@ struct DrumMap;
 
 namespace MusEGui {
 
-class ScrollScale;
 class DrumCanvas;
-class PitchEdit;
-
-enum DrumColumn {
-  COL_HIDE = 0,
-  COL_MUTE,
-  COL_NAME,
-  COL_VOLUME,
-  COL_QUANT,
-  COL_INPUTTRIGGER,
-  COL_NOTELENGTH,
-  COL_NOTE,
-  COL_OUTCHANNEL,
-  COL_OUTPORT,
-  COL_LEVEL1,
-  COL_LEVEL2,
-  COL_LEVEL3,
-  COL_LEVEL4,
-  COL_NONE = -1
-};
-
 
 //---------------------------------------------------------
 //   DLineEdit
@@ -139,6 +120,26 @@ class DList : public View {
 
       Q_PROPERTY(quint8 alphaOverlay READ alphaOverlay WRITE setAlphaOverlay)
 
+    public:
+      enum DrumColumn {
+        COL_HIDE = 0,
+        COL_MUTE,
+        COL_NAME,
+        COL_VOLUME,
+        COL_QUANT,
+        COL_INPUTTRIGGER,
+        COL_NOTELENGTH,
+        COL_NOTE,
+        COL_OUTCHANNEL,
+        COL_OUTPORT,
+        COL_LEVEL1,
+        COL_LEVEL2,
+        COL_LEVEL3,
+        COL_LEVEL4,
+        COL_NONE = -1
+      };
+
+    private:
       int _alphaOverlay;
       MusEGui::DrumCanvas* dcanvas;
       MusECore::DrumMap* ourDrumMap;

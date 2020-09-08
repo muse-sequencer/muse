@@ -35,7 +35,7 @@
 #include "muse_math.h"
 
 #include "globaldefs.h"
-#include "plugin_cache_reader.h"
+#include "plugin_scan.h"
 
 #define SS_PLUGIN_PARAM_MIN                  0
 #define SS_PLUGIN_PARAM_MAX                127

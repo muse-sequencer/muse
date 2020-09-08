@@ -26,17 +26,11 @@
 
 #include <QString>
 
-#include "mididev.h"
 #include "midiport.h"
-#include "midictrl.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midiseq.h"
-#include "minstrument.h"
-#include "xml.h"
 #include "gconfig.h"
 #include "globals.h"
-#include "globaldefs.h"
-#include "mpevent.h"
 #include "synth.h"
 #include "app.h"
 #include "song.h"
@@ -47,6 +41,15 @@
 #include "audio.h"
 #include "muse_math.h"
 #include "sysex_helper.h"
+
+// Forwards from header:
+#include "mididev.h"
+#include "instruments/minstrument.h"
+#include "part.h"
+#include "midi_controller.h"
+#include "midictrl.h"
+#include "mpevent.h"
+#include "xml.h"
 
 namespace MusEGlobal {
 MusECore::MidiPort midiPorts[MusECore::MIDI_PORTS];

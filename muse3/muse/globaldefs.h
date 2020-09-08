@@ -97,6 +97,16 @@ enum EditInstrumentTabType {
   EditInstrumentSysex=3, 
   EditInstrumentInitSeq=4 };
 
+enum class MidiEventColorMode {
+  blueEvents,
+  pitchColorEvents,
+  velocityColorEvents,
+  lastInList
+};
+
+// The default amount of space before bar # 1 (or the start of a part).
+const int DefaultCanvasXOrigin = -16;
+
 } // namespace MusEGui
 
 

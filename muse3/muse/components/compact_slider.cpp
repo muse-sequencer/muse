@@ -36,7 +36,7 @@
 #include "utils.h"
 #include "popup_double_spinbox.h"
 #include "compact_slider.h"
-#include "slider.h"
+// #include "slider.h"
 //#include "icons.h"
 //#include "lcd_widgets.h"
 

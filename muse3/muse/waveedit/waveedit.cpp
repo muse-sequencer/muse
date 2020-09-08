@@ -23,43 +23,50 @@
 
 #include <limits.h>
 
-#include <QMenu>
-#include <QToolBar>
-#include <QToolButton>
 #include <QLayout>
 #include <QSizeGrip>
 #include <QScrollBar>
 #include <QLabel>
-#include <QSlider>
 #include <QMenuBar>
-#include <QAction>
-#include <QCloseEvent>
-#include <QResizeEvent>
-#include <QKeyEvent>
 #include <QSettings>
 #include <QCursor>
-#include <QPoint>
 #include <QRect>
 
 #include "app.h"
-#include "xml.h"
 #include "waveedit.h"
 #include "mtscale.h"
-#include "scrollscale.h"
 #include "wavecanvas.h"
-#include "ttoolbar.h"
 #include "globals.h"
+#include "globaldefs.h"
 #include "audio.h"
 #include "utils.h"
 #include "song.h"
-#include "poslabel.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "shortcuts.h"
 #include "cmd.h"
 #include "operations.h"
 #include "trackinfo_layout.h"
+
+// Forwards from header:
+#include <QMenu>
+#include <QWidget>
+#include <QKeyEvent>
+#include <QCloseEvent>
+#include <QAction>
+#include <QSlider>
+#include <QToolButton>
+#include <QPoint>
+#include <QToolBar>
+#include <QModelIndex>
+#include "part.h"
+#include "xml.h"
 #include "splitter.h"
+#include "poslabel.h"
+#include "scrollscale.h"
+#include "cobject.h"
+#include "tools.h"
+#include "raster_widgets.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_WAVEEDIT(dev, format, args...)  fprintf(dev, format, ##args)
@@ -108,10 +115,19 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
-   : MidiEditor(TopWin::WAVE, 1, pl, parent, name)
+   : MidiEditor(TopWin::WAVE, _rasterInit, pl, parent, name)
       {
       setFocusPolicy(Qt::NoFocus);
       colorMode      = colorModeInit;
+
+      // Request to set the raster, but be sure to use the one it chooses,
+      //  which may be different than the one requested.
+      _rasterInit = _rasterizerModel->checkRaster(_rasterInit);
+      _raster = _rasterInit;
+      _canvasXOrigin = DefaultCanvasXOrigin;
+      //_minXMag = -32768;
+      _minXMag = -16384;
+      _maxXMag = -1;
 
       QAction* act;
       
@@ -265,6 +281,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       pos2->setSmpte(true);
       tb1->addWidget(pos2);
 
+      rasterLabel = new RasterLabelCombo(RasterLabelCombo::TableView, _rasterizerModel, this, "RasterLabelCombo");
+      rasterLabel->setFocusPolicy(Qt::TabFocus);
+      tb1->addWidget(rasterLabel);
+
       //---------------------------------------------------
       //    Rest
       //---------------------------------------------------
@@ -280,10 +300,18 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
             xscale = -8000;
             }
 
-      hscroll = new ScrollScale(-32768, 1, xscale, 10000, Qt::Horizontal, mainw, 0, false, 10000.0);
-      //view    = new WaveView(this, mainw, xscale, yscale);
+      hscroll = new ScrollScale(
+        _minXMag,
+        _maxXMag,
+        xscale,
+        10000,
+        Qt::Horizontal,
+        mainw,
+        0,
+        false,
+        10000.0);
+
       canvas    = new WaveCanvas(this, mainw, xscale, yscale);
-      //wview   = canvas;   // HACK!
 
       QSizeGrip* corner    = new QSizeGrip(mainw);
       ymag                 = new QSlider(Qt::Vertical, mainw);
@@ -304,7 +332,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       trackInfoWidget = new TrackInfoWidget(hsplitter);
       genTrackInfo(trackInfoWidget);
 
-      time                 = new MTScale(&_raster, mainw, xscale, true);
+      time                 = new MTScale(_raster, mainw, xscale, true);
       
       //QWidget* split1     = new QWidget(splitter);
       QWidget* split1     = new QWidget();
@@ -316,17 +344,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       gridS1->setRowStretch(2, 100);
       gridS1->setColumnStretch(1, 100);     
 
-//       gridS1->addWidget(time,                   0, 1, 1, 2);
-//       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
-//       //gridS1->addWidget(piano,                  2,    0);
-//       gridS1->addWidget(canvas,                 2,    1);
-//       gridS1->addWidget(vscroll,                2,    2);
-
       gridS1->addWidget(time,   0, 0, 1, 2);
       gridS1->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
       gridS1->addWidget(canvas,    2, 0);
       gridS1->addWidget(ymag,    2, 1);
-
       
       QWidget* gridS2_w = new QWidget();
       gridS2_w->setObjectName("gridS2_w");
@@ -366,50 +387,19 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       epolicy.setVerticalStretch(100);
       //splitter->setSizePolicy(epolicy);
       
-
-
-      
       ymag->setFixedWidth(16);
+      
       connect(canvas, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), canvas, SLOT(setYScale(int)));
       connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
 
-      time->setOrigin(0, 0);
+      canvas->setOrigin(_canvasXOrigin, 0);
+      time->setOrigin(_canvasXOrigin, 0);
 
+      changeRaster(_raster);
       
       
-//       QWidget* split1     = new QWidget(splitter_w);
-//       split1->setObjectName("split1");
-//       QGridLayout* gridS1 = new QGridLayout(split1);
-//       gridS1->setContentsMargins(0, 0, 0, 0);
-//       gridS1->setSpacing(0);  
-// 
-//       gridS1->setRowStretch(2, 100);
-//       gridS1->setColumnStretch(1, 100);     
-// 
-// //       gridS1->addWidget(time,                   0, 1, 1, 2);
-// //       gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
-// //       //gridS1->addWidget(piano,                  2,    0);
-// //       gridS1->addWidget(canvas,                 2,    1);
-// //       gridS1->addWidget(vscroll,                2,    2);
-// 
-//       gridS1->addWidget(time,   0, 0, 1, 2);
-//       gridS1->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
-//       gridS1->addWidget(canvas,    2, 0);
-//       gridS1->addWidget(ymag,    2, 1);
-
-      
-//       mainGrid->setRowStretch(0, 100);
-//       mainGrid->setColumnStretch(0, 100);
-
-//       mainGrid->addWidget(time,   0, 0, 1, 2);
-//       mainGrid->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
-//       mainGrid->addWidget(canvas,    2, 0);
-//       mainGrid->addWidget(ymag,    2, 1);
-//       mainGrid->addWidget(hscroll, 3, 0);
-//       mainGrid->addWidget(corner,  3, 1, Qt::AlignBottom | Qt::AlignRight);
-
       mainGrid->addWidget(hsplitter, 0, 0, 1, 1);
 
       canvas->setFocus();  
@@ -433,6 +423,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged1(MusECore::SongChangedStruct_t)));
+
+      connect(rasterLabel, &RasterLabelCombo::rasterChanged, [this](int raster) { _setRaster(raster); } );
 
       // For the wave editor, let's start with the operation range selection tool.
       canvas->setTool(MusEGui::RangeTool);
@@ -689,14 +681,15 @@ void WaveEdit::readStatus(MusECore::Xml& xml)
                               xml.unknown("WaveEdit");
                         break;
                   case MusECore::Xml::TagEnd:
-                        if (tag == "waveedit")
+                        if (tag == "waveedit") {
+                              changeRaster(_raster);
                               return;
+                              }
                   default:
                         break;
                   }
             }
       }
-
 
 //---------------------------------------------------------
 //   songChanged1
@@ -711,6 +704,24 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         // We must catch this first and be sure to update the strips.
         if(bits & SC_TRACK_REMOVED)
           checkTrackInfoTrack();
+        
+        if (bits & SC_DIVISION_CHANGED)
+        {
+          // The division has changed. The raster table and raster model will have been
+          //  cleared and re-filled, so any views on the model will no longer have a
+          //  current item and our current raster value will be invalid. They WILL NOT
+          //  emit an activated signal. So we must manually select a current item and
+          //  raster value here. We could do something fancy to try to keep the current
+          //  index - for example stay on quarter note - by taking the ratio of the new
+          //  division to old division and apply that to the old raster value and try
+          //  to select that index, but the division has already changed.
+          // So instead, simply try to select the current raster value. The index in the box may change.
+          // Be sure to use what it chooses.
+          changeRaster(_raster);
+
+          // Now set a reasonable zoom (mag) range.
+          setupHZoomRange();
+        }
         
         if (bits & SC_SOLO)
         {
@@ -758,20 +769,10 @@ void WaveEdit::soloChanged(bool flag)
 
 void WaveEdit::keyPressEvent(QKeyEvent* event)
       {
+// REMOVE Tim. raster. Added.
 // TODO: Raster:
-//       int index;
-//       int n = sizeof(rasterTable)/sizeof(*rasterTable);
-//       for (index = 0; index < n; ++index)
-//             if (rasterTable[index] == raster())
-//                   break;
-//       if (index == n) {
-//             index = 0;
-//             // raster 1 is not in table
-//             }
-//       int off = (index / 9) * 9;
-//       index   = index % 9;
-
-//       int val = 0;
+//       RasterizerModel::RasterPick rast_pick = RasterizerModel::NoPick;
+//       const int cur_rast = raster();
 
       WaveCanvas* wc = (WaveCanvas*)canvas;
       int key = event->key();
@@ -889,42 +890,41 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             
 // TODO: Raster:            
 //       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
-//             val = rasterTable[8 + off];
+//             rast_pick = RasterizerModel::Goto1;
 //       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
-//             val = rasterTable[7 + off];
+//             rast_pick = RasterizerModel::Goto2;
 //       else if (key == shortcuts[SHRT_SET_QUANT_3].key)
-//             val = rasterTable[6 + off];
+//             rast_pick = RasterizerModel::Goto4;
 //       else if (key == shortcuts[SHRT_SET_QUANT_4].key)
-//             val = rasterTable[5 + off];
+//             rast_pick = RasterizerModel::Goto8;
 //       else if (key == shortcuts[SHRT_SET_QUANT_5].key)
-//             val = rasterTable[4 + off];
+//             rast_pick = RasterizerModel::Goto16;
 //       else if (key == shortcuts[SHRT_SET_QUANT_6].key)
-//             val = rasterTable[3 + off];
+//             rast_pick = RasterizerModel::Goto32;
 //       else if (key == shortcuts[SHRT_SET_QUANT_7].key)
-//             val = rasterTable[2 + off];
+//             rast_pick = RasterizerModel::Goto64;
 //       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
-//             val = rasterTable[index + ((off == 0) ? 9 : 0)];
+//             rast_pick = RasterizerModel::ToggleTriple;
 //       else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
-//             val = rasterTable[index + ((off == 18) ? 9 : 18)];
-//       else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {//CDW
-//             if ((off == 18) && (index > 2)) {
-//                   val = rasterTable[index + 9 - 1];
-//                   }
-//             else if ((off == 9) && (index < 8)) {
-//                   val = rasterTable[index + 18 + 1];
-//                   }
-//             else
-//                   return;
-//             }
+//             rast_pick = RasterizerModel::ToggleDotted;
+//       else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key)
+//             rast_pick = RasterizerModel::ToggleHigherDotted;
             
       else { //Default:
             event->ignore();
             return;
             }
         
-      // TODO: Raster:  
-      //setRaster(val);
-      //toolbar->setRaster(_raster);
+// TODO: Raster:  
+//       if(rast_pick != RasterizerModel::NoPick)
+//       {
+//         const int new_rast = _rasterizerModel->pickRaster(cur_rast, rast_pick);
+//         if(new_rast != cur_rast)
+//         {
+//           setRaster(new_rast);
+//           toolbar->setRaster(_raster);
+//         }
+//       }
       }
 
 //---------------------------------------------------------
@@ -980,6 +980,78 @@ void WaveEdit::focusCanvas()
 }
 
 //---------------------------------------------------------
+//   _setRaster
+//---------------------------------------------------------
+
+// void WaveEdit::_setRaster(int index)
+//       {
+//       const int rast = rasterLabel->itemData(index, RasterizerModel::RasterValueRole).toInt();
+//       MidiEditor::setRaster(rast);
+//       _rasterInit = _raster;
+//       time->setRaster(_raster);
+//       canvas->redrawGrid();
+//       for (auto it : ctrlEditList)
+//           it->redrawCanvas();
+// 
+//       focusCanvas();
+//       }
+
+void WaveEdit::_setRaster(int raster)
+{
+      MidiEditor::setRaster(raster);
+      _rasterInit = _raster;
+      time->setRaster(_raster);
+      canvas->redrawGrid();
+      for (auto it : ctrlEditList)
+          it->redrawCanvas();
+      focusCanvas();
+}
+
+//---------------------------------------------------------
+//   changeRaster
+//---------------------------------------------------------
+
+int WaveEdit::changeRaster(int val)
+      {
+//         _raster = _rasterizerModel->checkRaster(_raster);
+//         _rasterInit = _raster;
+        //const int idx = _rasterizerModel->indexOfRaster(_raster);
+//         const int idx = rasterLabel->findData(_raster, MusECore::RasterizerModel::RasterValueRole);
+//         if(idx >= 0)
+//           rasterLabel->setCurrentIndex(idx);
+        
+        
+        
+//         const int lb_val = _rlistModel->checkRaster(val);
+//         const int idx = _rlistModel->indexOfRaster(lb_val);
+//         if(idx >= 0)
+//           raster->setCurrentIndex(idx);
+//         return lb_val;
+
+//         const int lb_val = _rasterizerModel->checkRaster(val);
+        const RasterizerModel* rast_mdl = rasterLabel->rasterizerModel();
+        MidiEditor::setRaster(rast_mdl->checkRaster(val));
+        _rasterInit = _raster;
+        time->setRaster(_raster);
+//         const int idx = rasterLabel->findData(_raster, RasterizerModel::RasterValueRole);
+//         const int idx = rast_mdl->indexOfRaster(_raster);
+//         if(idx >= 0)
+//           rasterLabel->setCurrentIndex(idx);
+//         else
+//           fprintf(stderr, "WaveEdit::changeRaster: _raster %d not found in box!\n", _raster);
+        const QModelIndex mdl_idx = rast_mdl->modelIndexOfRaster(_raster);
+        if(mdl_idx.isValid())
+          rasterLabel->setCurrentModelIndex(mdl_idx);
+        else
+          fprintf(stderr, "WaveEdit::changeRaster: _raster %d not found in box!\n", _raster);
+
+        canvas->redrawGrid();
+        for (auto it : ctrlEditList)
+            it->redrawCanvas();
+        return _raster;
+      }
+
+//---------------------------------------------------------
 //   eventColorModeChanged
 //---------------------------------------------------------
 
@@ -1006,6 +1078,15 @@ void WaveEdit::setEventColorMode(int mode)
       ((WaveCanvas*)(canvas))->setColorMode(colorMode);
       }
 
+//---------------------------------------------------------
+//   setupHZoomRange
+//---------------------------------------------------------
 
+void WaveEdit::setupHZoomRange()
+{
+  //const int min = (_minXMag * MusEGlobal::config.division) / 384;
+  //hscroll->setScaleRange(min, _maxXMag);
+  hscroll->setScaleRange(_minXMag, _maxXMag);
+}
 
 } // namespace MusEGui

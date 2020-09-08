@@ -30,17 +30,22 @@
 #include "song.h"
 #include "globals.h"
 #include "audio.h"  
+#include "midiport.h"
 #include "operations.h"
 #include "tempo.h"
-#include "part.h"
 #include "audiodev.h"
-#include "track.h"
 #include "wave_helper.h"
+#include "gconfig.h"
+#include "al/al.h"
 
 #include <string.h>
 #include <QAction>
-#include <QString>
 #include <set>
+
+// Forwards from header:
+#include "track.h"
+#include "part.h"
+#include "ctrl.h"
 
 // Enable for debugging:
 //#define _UNDO_DEBUG_
@@ -73,8 +78,10 @@ const char* UndoOp::typeName()
             "MoveTrack",
             "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
             "ModifySongLen", "SetInstrument", "DoNothing",
+            "ModifyMidiDivision",
             "EnableAllAudioControllers",
-            "GlobalSelectAllEvents"
+            "GlobalSelectAllEvents",
+            "NormalizeMidiDivision"
             };
       return name[type];
       }
@@ -528,12 +535,20 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
       fprintf(stderr, "Undo::insert: DoNothing\n");
     break;
     
+    case UndoOp::ModifyMidiDivision:
+      fprintf(stderr, "Undo::insert: ModifyMidiDivision\n");
+    break;
+    
     case UndoOp::EnableAllAudioControllers:
       fprintf(stderr, "Undo::insert: EnableAllAudioControllers\n");
     break;
     
     case UndoOp::GlobalSelectAllEvents:
       fprintf(stderr, "Undo::insert: GlobalSelectAllEvents\n");
+    break;
+    
+    case UndoOp::NormalizeMidiDivision:
+      fprintf(stderr, "Undo::insert: NormalizeMidiDivision\n");
     break;
     
     default:
@@ -1413,10 +1428,27 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
         
+        case UndoOp::ModifyMidiDivision:
+          if(uo.type == UndoOp::ModifyMidiDivision)
+          {
+            // Simply replace a with the new value.
+            uo.a = n_op.a;
+            return;  
+          }
+        break;
+        
         case UndoOp::EnableAllAudioControllers:
           if(uo.type == UndoOp::EnableAllAudioControllers)
           {
             fprintf(stderr, "MusE error: Undo::insert(): Double EnableAllAudioControllers. Ignoring.\n");
+            return;  
+          }
+        break;
+        
+        case UndoOp::NormalizeMidiDivision:
+          if(uo.type == UndoOp::NormalizeMidiDivision)
+          {
+            fprintf(stderr, "MusE error: Undo::insert(): Double NormalizeMidiDivision. Ignoring.\n");
             return;  
           }
         break;
@@ -1651,9 +1683,9 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
         // Special for tempo: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
         // Normalize is not needed for SC_MASTER.
-        if(updateFlags & SC_TEMPO)
+        if(updateFlags & (SC_TEMPO | SC_DIVISION_CHANGED))
           MusEGlobal::tempomap.normalize();
-        if(updateFlags & (SC_TEMPO | SC_MASTER))
+        if(updateFlags & (SC_TEMPO | SC_MASTER | SC_DIVISION_CHANGED))
         {
           MusEGlobal::audio->reSyncAudio();
           // Must rebuild the marker list in case any markers are 'locked'.
@@ -1663,7 +1695,7 @@ void Song::revertOperationGroup2(Undo& /*operations*/)
 
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_SIG)
+        if(updateFlags & (SC_SIG | SC_DIVISION_CHANGED))
           MusEGlobal::sigmap.normalize();
 
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
@@ -1694,9 +1726,9 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
         // Special for tempo if altered: Need to normalize the tempo list, and resync audio. 
         // To save time this is done here, not item by item.
         // Normalize is not needed for SC_MASTER.
-        if(updateFlags & SC_TEMPO)
+        if(updateFlags & (SC_TEMPO | SC_DIVISION_CHANGED))
           MusEGlobal::tempomap.normalize();
-        if(updateFlags & (SC_TEMPO | SC_MASTER))
+        if(updateFlags & (SC_TEMPO | SC_MASTER | SC_DIVISION_CHANGED))
         {
           MusEGlobal::audio->reSyncAudio();
           // Must rebuild the marker list in case any markers are 'locked'.
@@ -1706,7 +1738,7 @@ void Song::executeOperationGroup2(Undo& /*operations*/)
 
         // Special for sig: Need to normalize the signature list. 
         // To save time this is done here, not item by item.
-        if(updateFlags & SC_SIG)
+        if(updateFlags & (SC_SIG | SC_DIVISION_CHANGED))
           MusEGlobal::sigmap.normalize();
         
         // Special for track inserted: If it's an aux track, need to add missing aux sends to all tracks,
@@ -1739,7 +1771,7 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
              type_==SetTempo || type_==SetStaticTempo || type_==SetGlobalTempo || type_==EnableMasterTrack ||
              type_==AddSig || type_==DeleteSig ||
              type_==ModifySongLen || type_==MoveTrack ||
-             type_==GlobalSelectAllEvents);
+             type_==GlobalSelectAllEvents || type_==ModifyMidiDivision);
       
       type = type_;
       a  = a_;
@@ -1757,6 +1789,11 @@ UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_, bool noUndo)
         case UndoOp::EnableMasterTrack:
           // a is already the new master flag, b is the existing master flag.
           b = MusEGlobal::tempomap.masterFlag();
+        break;
+        
+        case UndoOp::ModifyMidiDivision:
+          // a is already the new division, b is the existing division.
+          b = MusEGlobal::config.division;
         break;
         
         // For these operations, we must check if a value already exists and transform them into modify operations...
@@ -2175,7 +2212,7 @@ UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
 
 UndoOp::UndoOp(UndoOp::UndoType type_)
 {
-  assert(type_== EnableAllAudioControllers);
+  assert(type_== EnableAllAudioControllers || type_ == NormalizeMidiDivision);
   
   type = type_;
   // Cannot be undone. 'One-time' operation only, removed after execution.
@@ -2474,16 +2511,20 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyPartLength: 
-                        removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
+                        pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
                         pendingOperations.add(PendingOperationItem(editable_part, i->old_partlen_or_pos, PendingOperationItem::ModifyPartLength));
-                        addPortCtrlEvents(editable_part, editable_part->tick(), i->old_partlen_or_pos, editable_part->track(), pendingOperations);
+                        pendingOperations.addPartPortCtrlEvents(
+                          editable_part, editable_part->tick(),
+                          i->old_partlen_or_pos, editable_part->track());
                         updateFlags |= SC_PART_MODIFIED;
                         break;
                   case UndoOp::ModifyPartStart:
                         {
-                        removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
+                        pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
                         pendingOperations.add(PendingOperationItem(editable_part, i->old_partlen_or_pos, PendingOperationItem::ModifyPartStart));
-                        addPortCtrlEvents(editable_part, editable_part->tick(), i->old_partlen_or_pos, editable_part->track(), pendingOperations);
+                        pendingOperations.addPartPortCtrlEvents(
+                          editable_part, editable_part->tick(), i->old_partlen_or_pos,
+                          editable_part->track());
                         updateFlags |= SC_PART_MODIFIED;
                         }
                         break;
@@ -2492,7 +2533,8 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:MovePart ** calling parts->movePartOperation\n");
 #endif                        
-                        editable_part->track()->parts()->movePartOperation(editable_part, i->old_partlen_or_pos, pendingOperations, const_cast<Track*>(i->oldTrack));
+                        pendingOperations.movePartOperation(editable_part->track()->parts(),
+                          editable_part, i->old_partlen_or_pos, const_cast<Track*>(i->oldTrack));
                         if(const_cast<Track*>(i->oldTrack))
                           updateFlags |= SC_PART_INSERTED | SC_PART_REMOVED;
                         updateFlags |= SC_PART_MODIFIED;
@@ -2502,7 +2544,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddPart ** calling parts->delOperation\n");
 #endif                        
-                        editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
+                        pendingOperations.delPartOperation(editable_part->track()->parts(), editable_part);
                         updateFlags |= SC_PART_REMOVED;
                         // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
                         // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
@@ -2521,7 +2563,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         // TODO Coordinate close/open with part mute and/or track off.
                         editable_part->openAllEvents();
                         
-                        editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
+                        pendingOperations.addPartOperation(editable_part->track()->parts(), editable_part);
                         updateFlags |= SC_PART_INSERTED;
                         // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
                         // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
@@ -2896,6 +2938,17 @@ void Song::revertOperationGroup1(Undo& operations)
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
+                  case UndoOp::ModifyMidiDivision:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:ModifyMidiDivision\n");
+#endif                  
+                        MusEGlobal::config.division = i->b;
+                        // Make sure the AL namespace variable mirrors our variable.
+                        AL::division = MusEGlobal::config.division;
+                        // Defer normalize until end of stage 2.
+                        updateFlags |= SC_DIVISION_CHANGED;
+                        break;
+                        
                   case UndoOp::AddMarker:
                           // Create the new list if it doesn't already exist.
                           // Make a copy of the original list.
@@ -2996,7 +3049,7 @@ void Song::revertOperationGroup3(Undo& operations)
                                   if(!MusEGlobal::audioDevice->findPort(route_name))
                                     continue;
                                   //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-                                    MusEGlobal::audioDevice->connect(our_port_name, route_name);
+                                  MusEGlobal::audioDevice->connect(our_port_name, route_name);
                                   updateFlags |= SC_ROUTE;
                                 }
                               }
@@ -3026,7 +3079,7 @@ void Song::revertOperationGroup3(Undo& operations)
                                   if(!MusEGlobal::audioDevice->findPort(route_name))
                                     continue;
                                   //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-                                    MusEGlobal::audioDevice->connect(route_name, our_port_name);
+                                  MusEGlobal::audioDevice->connect(route_name, our_port_name);
                                   updateFlags |= SC_ROUTE;
                                 }
                               }
@@ -3056,6 +3109,10 @@ void Song::revertOperationGroup3(Undo& operations)
                         }
                         }
                         break;
+                  case UndoOp::ModifyMidiDivision:
+                        // This also tells all connected models to begin/end reset.
+                        MusEGlobal::globalRasterizer->setDivision(i->b);
+                        break;
                   default:
                         break;
                   }
@@ -3073,7 +3130,7 @@ void Song::revertOperationGroup3(Undo& operations)
 
 void Song::executeOperationGroup1(Undo& operations)
       {
-      unsigned song_len = MusEGlobal::song->len();
+      unsigned song_len = len();
       MarkerList* new_marker_list = nullptr;
       TempoList* new_tempo_list = nullptr;
       SigList* new_sig_list = nullptr;
@@ -3335,9 +3392,11 @@ void Song::executeOperationGroup1(Undo& operations)
 
                   case UndoOp::ModifyPartStart:
                       {
-                         removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
+                         pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
                          pendingOperations.add(PendingOperationItem(editable_part, i->new_partlen_or_pos, PendingOperationItem::ModifyPartStart));
-                         addPortCtrlEvents(editable_part, editable_part->posValue(), i->new_partlen_or_pos, editable_part->track(), pendingOperations);
+                         pendingOperations.addPartPortCtrlEvents(
+                           editable_part, editable_part->posValue(), i->new_partlen_or_pos,
+                                           editable_part->track());
                          updateFlags |= SC_PART_MODIFIED;
                       }
                       break;
@@ -3350,16 +3409,18 @@ void Song::executeOperationGroup1(Undo& operations)
                             song_len = p + 1; 
                             // Insert a ModifySongLen operation BEFORE this one. If insert finds an existing ModifySongLen,
                             //  possibly long before this one, it REPLACES that one's values.
-                            operations.insert(i, UndoOp(UndoOp::ModifySongLen, song_len, MusEGlobal::song->len()));
+                            operations.insert(i, UndoOp(UndoOp::ModifySongLen, song_len, len()));
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
                             updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
-                          removePortCtrlEvents(editable_part, editable_part->track(), pendingOperations);
+                          pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
                           pendingOperations.add(PendingOperationItem(editable_part, i->new_partlen_or_pos, PendingOperationItem::ModifyPartLength));
-                          addPortCtrlEvents(editable_part, editable_part->posValue(), i->new_partlen_or_pos, editable_part->track(), pendingOperations);
+                          pendingOperations.addPartPortCtrlEvents(
+                            editable_part, editable_part->posValue(), i->new_partlen_or_pos,
+                                            editable_part->track());
                           updateFlags |= SC_PART_MODIFIED;
                         }
                         break;
@@ -3373,7 +3434,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             song_len = p + 1; 
                             // Insert a ModifySongLen operation BEFORE this one. If insert finds an existing ModifySongLen,
                             //  possibly long before this one, it REPLACES that one's values.
-                            operations.insert(i, UndoOp(UndoOp::ModifySongLen, song_len, MusEGlobal::song->len()));
+                            operations.insert(i, UndoOp(UndoOp::ModifySongLen, song_len, len()));
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
@@ -3383,7 +3444,8 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                           fprintf(stderr, "Song::executeOperationGroup1:MovePart ** calling parts->movePartOperation\n");
 #endif                        
-                          editable_part->track()->parts()->movePartOperation(editable_part, i->new_partlen_or_pos, pendingOperations, editable_track);
+                          pendingOperations.movePartOperation(editable_part->track()->parts(),
+                            editable_part, i->new_partlen_or_pos, editable_track);
                           if(editable_track)
                             updateFlags |= SC_PART_INSERTED | SC_PART_REMOVED;
                           updateFlags |= SC_PART_MODIFIED;
@@ -3399,7 +3461,7 @@ void Song::executeOperationGroup1(Undo& operations)
                             song_len = p + 1; 
                             // Insert a ModifySongLen operation BEFORE this one. If insert finds an existing ModifySongLen,
                             //  possibly long before this one, it REPLACES that one's values.
-                            operations.insert(i, UndoOp(UndoOp::ModifySongLen, song_len, MusEGlobal::song->len()));
+                            operations.insert(i, UndoOp(UndoOp::ModifySongLen, song_len, len()));
                             // Since the ModifySongLen above will not be iterated now, act like the operation had just been iterated. 
                             // The same REPLACEMENT rules apply here.
                             pendingOperations.add(PendingOperationItem(song_len, PendingOperationItem::ModifySongLength));
@@ -3414,7 +3476,7 @@ void Song::executeOperationGroup1(Undo& operations)
                           // TODO Coordinate close/open with part mute and/or track off.
                           editable_part->openAllEvents();
                           
-                          editable_part->track()->parts()->addOperation(editable_part, pendingOperations);
+                          pendingOperations.addPartOperation(editable_part->track()->parts(), editable_part);
                           updateFlags |= SC_PART_INSERTED;
                           // If the part has events, then treat it as if they were inserted with separate AddEvent operations.
                           // Even if some will be inserted later in this operations group with actual separate AddEvent operations,
@@ -3428,7 +3490,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:deletePart ** calling parts->delOperation\n");
 #endif                        
-                        editable_part->track()->parts()->delOperation(editable_part, pendingOperations);
+                        pendingOperations.delPartOperation(editable_part->track()->parts(), editable_part);
                         updateFlags |= SC_PART_REMOVED;
                         // If the part had events, then treat it as if they were removed with separate DeleteEvent operations.
                         // Even if they will be deleted later in this operations group with actual separate DeleteEvent operations,
@@ -3799,12 +3861,32 @@ void Song::executeOperationGroup1(Undo& operations)
                         //updateFlags |= SC_SONG_LEN;
                         break;
                         
+                  case UndoOp::ModifyMidiDivision:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:ModifyMidiDivision\n");
+#endif                  
+                        MusEGlobal::config.division = i->a;
+                        // Make sure the AL namespace variable mirrors our variable.
+                        AL::division = MusEGlobal::config.division;
+                        // Defer normalize until end of stage 2.
+                        updateFlags |= SC_DIVISION_CHANGED;
+                        break;
+                        
                   case UndoOp::EnableAllAudioControllers:
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:EnableAllAudioControllers\n");
 #endif                        
                         pendingOperations.add(PendingOperationItem(PendingOperationItem::EnableAllAudioControllers));
                         updateFlags |= SC_AUDIO_CONTROLLER;
+                        break;
+                        
+                  case UndoOp::NormalizeMidiDivision:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:NormalizeMidiDivision\n");
+#endif                  
+                        // Nothing to do here.
+                        // Defer normalize until end of stage 2.
+                        updateFlags |= SC_DIVISION_CHANGED;
                         break;
                         
                   case UndoOp::GlobalSelectAllEvents:
@@ -3910,7 +3992,7 @@ void Song::executeOperationGroup3(Undo& operations)
                                   if(!MusEGlobal::audioDevice->findPort(route_name))
                                     continue;
                                   //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-                                    MusEGlobal::audioDevice->connect(our_port_name, route_name);
+                                  MusEGlobal::audioDevice->connect(our_port_name, route_name);
                                   updateFlags |= SC_ROUTE;
                                 }
                               }
@@ -3940,7 +4022,7 @@ void Song::executeOperationGroup3(Undo& operations)
                                   if(!MusEGlobal::audioDevice->findPort(route_name))
                                     continue;
                                   //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-                                    MusEGlobal::audioDevice->connect(route_name, our_port_name);
+                                  MusEGlobal::audioDevice->connect(route_name, our_port_name);
                                   updateFlags |= SC_ROUTE;
                                 }
                               }
@@ -3975,6 +4057,10 @@ void Song::executeOperationGroup3(Undo& operations)
                               f.close();
                           }
                         }
+                        break;
+                  case UndoOp::ModifyMidiDivision:
+                        // This also tells all connected models to begin/end reset.
+                        MusEGlobal::globalRasterizer->setDivision(i->a);
                         break;
                    default:
                         break;

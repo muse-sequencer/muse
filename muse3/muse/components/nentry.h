@@ -23,12 +23,20 @@
 #ifndef __NENTRY_H__
 #define __NENTRY_H__
 
+#include <QObject>
 #include <QFrame>
 
 class QHBoxLayout;
 class QLabel;
 class QLineEdit;
 class QTimer;
+class QString;
+class QEvent;
+class QMouseEvent;
+class QWheelEvent;
+class QKeyEvent;
+class QContextMenuEvent;
+class QWidget;
 
 namespace MusEGui {
 

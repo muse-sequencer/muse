@@ -21,6 +21,7 @@
 //=========================================================
 
 #include <QLabel>
+#include <QWidget>
 
 #include "config.h"
 #include "noteinfo.h"
@@ -28,10 +29,10 @@
 //#include "awl/pitchedit.h"
 #include "song.h"
 #include "globals.h"
-///#include "posedit.h"
 #include "pitchedit.h"
 #include "icons.h"
 #include "pixmap_button.h"
+#include "pos.h"
 
 namespace MusEGui {
 

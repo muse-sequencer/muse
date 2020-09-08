@@ -24,16 +24,13 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QCloseEvent>
 #include <QDir>
 #include <QGridLayout>
 #include <QImage>
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QKeySequence>
-#include <QLabel>
 #include <QLayout>
-#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
@@ -55,19 +52,27 @@
 #include "globals.h"
 #include "helper.h"
 #include "icons.h"
-#include "mtscale.h"
 #include "scoreedit.h"
 #include "shortcuts.h"
 #include "song.h"
 #include "structure.h"
 #include "tb1.h"
-#include "tools.h"
 #include "ttoolbar.h"
-#include "visibletracks.h"
-#include "xml.h"
 #include "arrangercolumns.h"
 #include "tlist.h"
 #include "synth.h"
+#include "pcanvas.h"
+
+// Forwards from header:
+#include <QCloseEvent>
+#include <QAction>
+#include <QGridLayout>
+#include <QMenu>
+#include "arranger.h"
+#include "visibletracks.h"
+#include "event_tag_list.h"
+#include "xml.h"
+#include "tools.h"
 
 namespace MusEGui {
 
@@ -956,6 +961,10 @@ void ArrangerView::updateVisibleTracksButtons()
 {
   visTracks->updateVisibleTracksButtons();
 }
+
+Arranger* ArrangerView::getArranger() const {return arranger;}
+
+void ArrangerView::focusCanvas() { arranger->focusCanvas(); } 
 
 void ArrangerView::globalCut() { MusECore::globalCut(); }
 void ArrangerView::globalInsert() { MusECore::globalInsert(); }
