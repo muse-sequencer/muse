@@ -401,6 +401,7 @@ MusE::MusE() : QMainWindow()
 #endif
 
       setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+      setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
       markerDock = new QDockWidget("Markers", this);
       markerDock->setObjectName("markerDock");
@@ -425,7 +426,6 @@ MusE::MusE() : QMainWindow()
       clipListDock->setWidget(clipListEdit);
       addDockWidget(Qt::RightDockWidgetArea, clipListDock);
       clipListDock->hide();
-      removeDockWidget(clipListDock);
 
       //---------------------------------------------------
       //    undo/redo
@@ -4531,5 +4531,49 @@ void MusE::resizeEvent(QResizeEvent* event) {
 //bool MusE::isTabbedMDI() {
 //    return (mdiArea->viewMode() == QMdiArea::TabbedView);
 //}
+
+QByteArray MusE::saveState(int version) const {
+printf("************** Save state\n");
+    QList<QDockWidget *> docks_vis;
+    for (const auto& d : findChildren<QDockWidget *>()) {
+        if (d->isVisible()) {
+            docks_vis.prepend(d);
+            d->hide();
+        }
+    }
+    QByteArray a = QMainWindow::saveState(version);
+
+    for (const auto& d : docks_vis) {
+        d->show();
+    }
+
+    return a;
+}
+
+bool MusE::restoreState(const QByteArray &state, int version) {
+printf("************** Restore state\n");
+    QList<QDockWidget *> docks_vis;
+    for (const auto& d : findChildren<QDockWidget *>()) {
+        if (d->isVisible()) {
+            docks_vis.prepend(d);
+            d->hide();
+        }
+    }
+
+    bool ret = QMainWindow::restoreState(state, version);
+
+    for (const auto& d : findChildren<QDockWidget *>()) {
+        if (d->isVisible()) {
+            d->hide();
+        }
+    }
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+    for (const auto& d : docks_vis) {
+        d->show();
+    }
+
+    return ret;
+}
 
 } //namespace MusEGui
