@@ -4551,35 +4551,31 @@ void MusE::resizeEvent(QResizeEvent* event) {
     MusEGlobal::config.geometryMain = geometry();
 }
 
-//bool MusE::isTabbedMDI() {
-//    return (mdiArea->viewMode() == QMdiArea::TabbedView);
-//}
-
 int MusE::arrangerRaster() const
 {
   return _arranger->rasterVal();
 }
 
 QByteArray MusE::saveState(int version) const {
-printf("************** Save state\n");
-    QList<QDockWidget *> docks_vis;
-    for (const auto& d : findChildren<QDockWidget *>()) {
-        if (d->isVisible()) {
-            docks_vis.prepend(d);
-            d->hide();
-        }
-    }
+
+//    QList<QDockWidget *> docks_vis;
+//    for (const auto& d : findChildren<QDockWidget *>()) {
+//        if (d->isVisible() | d->isFloating()) {
+//            docks_vis.prepend(d);
+//            d->hide();
+//        }
+//    }
     QByteArray a = QMainWindow::saveState(version);
 
-    for (const auto& d : docks_vis) {
-        d->show();
-    }
+//    for (const auto& d : docks_vis) {
+//        d->show();
+//    }
 
     return a;
 }
 
 bool MusE::restoreState(const QByteArray &state, int version) {
-printf("************** Restore state\n");
+
     QList<QDockWidget *> docks_vis;
     for (const auto& d : findChildren<QDockWidget *>()) {
         if (d->isVisible()) {
@@ -4591,15 +4587,15 @@ printf("************** Restore state\n");
     bool ret = QMainWindow::restoreState(state, version);
 
     for (const auto& d : findChildren<QDockWidget *>()) {
-        if (d->isVisible()) {
+        if (d->isVisible())
             d->hide();
-        }
     }
+
     setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-    for (const auto& d : docks_vis) {
+
+    for (const auto& d : docks_vis)
         d->show();
-    }
 
     return ret;
 }

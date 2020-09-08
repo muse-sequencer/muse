@@ -244,9 +244,6 @@ GlobalConfigValues config = {
 
       MusEGlobal::WaveOutLine,      // waveDrawing
 
-      false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
-//      false,                        // tabbedMDI
-
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
       // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
       8, 

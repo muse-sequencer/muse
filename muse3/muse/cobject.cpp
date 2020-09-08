@@ -425,17 +425,6 @@ void TopWin::setIsMdiWin(bool val)
 //            this->QMainWindow::show(); //bypass the delegation to the subwin
 
             subwin->showMaximized();
-//            subwin->raise();
-//            subwin->setFocus();
-
-            // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
-            //  force the style and stylesheet again. Otherwise the window freezes.
-            if(MusEGlobal::config.fixFrozenMDISubWindows)
-            {
-                if(MusEGlobal::debugMsg)
-                    fprintf(stderr, "TopWin::setIsMdiWin Calling updateThemeAndStyle()\n");
-                MusEGui::updateThemeAndStyle(true);
-            }
 
             shareToolsAndMenu(true);
 
@@ -446,10 +435,6 @@ void TopWin::setIsMdiWin(bool val)
                 subwinAction->setChecked(true);
             }
             muse->updateWindowMenu();
-
-            if(MusEGlobal::config.fixFrozenMDISubWindows)
-                connect(subwin, SIGNAL(windowStateChanged(Qt::WindowStates,Qt::WindowStates)),
-                        SLOT(windowStateChanged(Qt::WindowStates,Qt::WindowStates)));
         }
         else
         {
@@ -460,20 +445,13 @@ void TopWin::setIsMdiWin(bool val)
     {
         if (isMdiWin())
         {
-//            int width_temp=width();
-//            int height_temp=height();
-//            bool vis=isVisible();
-
             QMdiSubWindow* mdisubwin_temp=mdisubwin;
             mdisubwin=nullptr;
             setParent(nullptr);
             mdisubwin_temp->hide();
             delete mdisubwin_temp;
 
-//            resize(width_temp, height_temp);
 //            setVisible(vis);
-
-//            setVisible(true);
             QMainWindow::show();
 
             if (!windowTitle().startsWith("MusE: "))
@@ -764,19 +742,19 @@ void TopWin::setWindowTitle (const QString& title)
     muse->updateWindowMenu();
 }
 
-void TopWin::windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState)
-{
-    // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
-    //  force the style and stylesheet again. Otherwise the window freezes.
-    // Ignore the Qt::WindowActive flag.
-    if((oldState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)) !=
-            (newState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)))
-    {
-        if(MusEGlobal::debugMsg)
-            fprintf(stderr, "TopWin::windowStateChanged oldState:%d newState:%d Calling updateThemeAndStyle()\n", int(oldState), int(newState));
-        MusEGui::updateThemeAndStyle(true);
-    }
-}
+//void TopWin::windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState)
+//{
+//    // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
+//    //  force the style and stylesheet again. Otherwise the window freezes.
+//    // Ignore the Qt::WindowActive flag.
+//    if((oldState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)) !=
+//            (newState & (Qt::WindowNoState | Qt::WindowMinimized | Qt::WindowMaximized | Qt::WindowFullScreen)))
+//    {
+//        if(MusEGlobal::debugMsg)
+//            fprintf(stderr, "TopWin::windowStateChanged oldState:%d newState:%d Calling updateThemeAndStyle()\n", int(oldState), int(newState));
+//        MusEGui::updateThemeAndStyle(true);
+//    }
+//}
 
 TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
 {
