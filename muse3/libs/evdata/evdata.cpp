@@ -22,7 +22,8 @@
 //=========================================================
 
 #include "evdata.h"
-#include "midi.h"
+#include "midi_consts.h"
+
 #include "sysex_helper.h"
 
 #include <stdio.h>

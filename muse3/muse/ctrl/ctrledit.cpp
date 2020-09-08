@@ -24,12 +24,11 @@
 #include "ctrledit.h"
 #include "ctrlcanvas.h"
 #include "midieditor.h"
+#include "part.h"
 #include "xml.h"
 #include "vscale.h"
 #include "ctrlpanel.h"
 #include "globals.h"
-#include "midiport.h"
-#include "instruments/minstrument.h"
 #include "gconfig.h"
 
 #include <QHBoxLayout>
@@ -45,11 +44,14 @@ void CtrlEdit::setTool(int t)
       canvas->setTool(t);
       }
 
+void CtrlEdit::setXPos(int val)           { canvas->setXPos(val); }
+void CtrlEdit::setXMag(int val)           { canvas->setXMag(val); }
+
 //---------------------------------------------------------
 //   CtrlEdit
 //---------------------------------------------------------
 
-CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
+CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag, int xOrigin, int yOrigin,
    bool expand, const char* name) : QWidget(parent)
       {
       setObjectName(name);
@@ -64,7 +66,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       hbox->setContentsMargins(0, 0, 0, 0);
       hbox->setSpacing (0);
 
-      canvas->setOrigin(-(MusEGlobal::config.division/4), 0);
+      canvas->setOrigin(xOrigin, yOrigin);
 
       canvas->setMinimumHeight(50);
       
@@ -122,7 +124,7 @@ void CtrlEdit::setPerNoteVel(bool v)
 
 void CtrlEdit::writeStatus(int level, MusECore::Xml& xml)
       {
-      if (canvas->controller()) {
+      if (canvas && canvas->controller()) {
             xml.tag(level++, "ctrledit");
             xml.intTag(level, "ctrlnum", canvas->controller()->num());
             xml.intTag(level, "perNoteVeloMode", canvas->perNoteVeloMode());
@@ -148,11 +150,11 @@ void CtrlEdit::readStatus(MusECore::Xml& xml)
                               xml.parse1();  // Obsolete.
                         else if (tag == "ctrlnum") {
                               int num = xml.parseInt();
-                              canvas->setController(num);
+                              if(canvas) canvas->setController(num);
                               }
                         else if (tag == "perNoteVeloMode") {
                               bool v = xml.parseInt();
-                              canvas->setPerNoteVeloMode(v);
+                              if(canvas) canvas->setPerNoteVeloMode(v);
                               panel->setVeloPerNoteMode(v);
                               }
                         else
@@ -183,22 +185,34 @@ void CtrlEdit::destroy()
 
 void CtrlEdit::setCanvasWidth(int w)
 { 
-  canvas->setFixedWidth(w); 
+  if(canvas) canvas->setFixedWidth(w); 
 }
 
 void CtrlEdit::setController(int n)
 {
-  canvas->setController(n);
+  if(canvas) canvas->setController(n);
 }
 
 void CtrlEdit::curPartHasChanged(MusECore::Part* p)
 {
-  canvas->curPartHasChanged(p);
+  if(canvas) canvas->curPartHasChanged(p);
 }
 
 void CtrlEdit::setPanelWidth(int w)
 {
     panel->setFixedWidth(w);
+}
+
+bool CtrlEdit::itemsAreSelected() const { if(!canvas) return false; return canvas->itemsAreSelected(); }
+
+void CtrlEdit::tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
+{ if(canvas) canvas->tagItems(tag_list, options); }
+
+void CtrlEdit::redrawCanvas() { if(canvas) canvas->redraw();}
+
+void CtrlEdit::setCanvasOrigin(int xo, int yo)
+{
+  if(canvas) canvas->setOrigin(xo, yo);
 }
 
 } // namespace MusEGui

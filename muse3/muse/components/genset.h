@@ -26,11 +26,19 @@
 #define __GENSET_H__
 
 #include "ui_gensetbase.h"
+
+#include <QDialog>
+#include <QString>
+
 #include "cobject.h"
 
-#include <QButtonGroup>
-#include <QShowEvent>
 #include <list>
+
+
+// Forward declarations:
+class QButtonGroup;
+class QShowEvent;
+class QWidget;
 
 namespace MusEGui {
 

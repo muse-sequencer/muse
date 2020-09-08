@@ -29,9 +29,8 @@
 namespace MusEGui
 {
 	SongPosToolbarWidget::SongPosToolbarWidget(QWidget* p)
-	      : MTScale(&_raster, p, -100 /* some random scale, will be overwritten immediately */)
+	      : MTScale(0, p, -100 /* some random scale, will be overwritten immediately */)
 	{
-		_raster=0;
 		setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 		connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(song_changed(MusECore::SongChangedStruct_t)));
 		song_changed(0);

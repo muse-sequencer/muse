@@ -47,7 +47,7 @@
 #include "synth.h"
 #include "audio.h"
 #include "jackaudio.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midiport.h"
 #include "minstrument.h"
 #include "stringparam.h"

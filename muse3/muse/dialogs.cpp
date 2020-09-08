@@ -21,22 +21,23 @@
 //=========================================================
 
 #include "dialogs.h"
+
+#include <iostream>
+
+// Forwards from header:
+#include "function_dialogs/gatetime.h"
 #include "function_dialogs/velocity.h"
 #include "function_dialogs/quantize.h"
-#include "function_dialogs/crescendo.h"
-#include "function_dialogs/gatetime.h"
 #include "function_dialogs/remove.h"
-#include "function_dialogs/transpose.h"
+#include "function_dialogs/deloverlaps.h"
 #include "function_dialogs/setlen.h"
 #include "function_dialogs/move.h"
-#include "function_dialogs/deloverlaps.h"
+#include "function_dialogs/transpose.h"
+#include "function_dialogs/crescendo.h"
 #include "function_dialogs/legato.h"
 #include "components/pastedialog.h"
 #include "components/pasteeventsdialog.h"
-
 #include "xml.h"
-
-#include <iostream>
 
 using namespace std;
 

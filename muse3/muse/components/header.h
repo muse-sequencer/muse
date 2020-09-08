@@ -24,10 +24,13 @@
 #define __HEADER_H__
 
 #include <QHeaderView>
-#include <QAction>
 #include <QString>
+#include <QIcon>
 
 class QStandardItemModel;
+class QAction;
+class QWidget;
+class QMouseEvent;
 
 namespace MusECore {
 class Xml;

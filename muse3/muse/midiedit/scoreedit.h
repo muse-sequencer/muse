@@ -23,32 +23,15 @@
 #ifndef __SCOREEDIT_H__
 #define __SCOREEDIT_H__
 
-#include <QCloseEvent>
-#include <QResizeEvent>
-#include <QKeyEvent>
-#include <QPainter>
-#include <QPixmap>
-#include <QScrollBar>
-#include <QComboBox>
-#include <QAction>
-#include <QActionGroup>
-#include <QGridLayout>
-#include <QToolButton>
-
 #include <limits.h>
 #include "type_defs.h"
-#include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"
 #include "view.h"
 #include "gconfig.h"
-#include "part.h"
 #include "keyevent.h"
-#include "mtscale_flo.h"
-#include "steprec.h"
 #include "cleftypes.h"
 #include "helper.h"
-#include "spinbox.h"
 #include "event_tag_list.h"
 
 #include <set>
@@ -84,10 +67,30 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
 
 
 
+
+// Forward declarations:
+class QCloseEvent;
+class QResizeEvent;
+class QKeyEvent;
+class QPainter;
+class QPixmap;
+class QScrollBar;
+class QComboBox;
+class QAction;
+class QActionGroup;
+class QGridLayout;
+class QToolButton;
+      
+namespace MusECore {
+class Part;
+class StepRec;
+}
+
 namespace MusEGui {
 class EditToolBar;
 class ScoreCanvas;
-
+class MTScaleFlo;
+class SpinBox;
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -895,5 +898,6 @@ vector<int> create_emphasize_list(const list<int>& nums, int denom);
 vector<int> create_emphasize_list(int num, int denom);
 
 } // namespace MusEGui
+
 #endif
 

@@ -30,6 +30,7 @@
 #include "track.h"
 #include "synth.h"
 #include "app.h"
+#include "globals.h"
 
 namespace MusEGui {
 

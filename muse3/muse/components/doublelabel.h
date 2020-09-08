@@ -23,7 +23,12 @@
 #ifndef __DOUBLELABEL_H__
 #define __DOUBLELABEL_H__
 
+#include <QString>
+#include <QSize>
+
 #include "dentry.h"
+
+class QWidget;
 
 namespace MusEGui {
 

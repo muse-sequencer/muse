@@ -20,10 +20,15 @@
 //
 //=========================================================
 
-#include <QMenu>
-#include <QWheelEvent>
-
 #include "combobox.h"
+
+// Forwards from header:
+#include <QWidget>
+#include <QAction>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QString>
 
 namespace MusEGui {
 

@@ -24,6 +24,8 @@
 #ifndef __AUDIODEV_H__
 #define __AUDIODEV_H__
 
+#include <QString>
+
 #include <list>
 #ifdef _WIN32
 #include <stdlib.h>
@@ -33,10 +35,10 @@
 #endif
 #include <stdint.h>
 
-class QString;
-
 namespace MusECore {
 
+
+// Forward declarations:
 class Pos;
 
 //---------------------------------------------------------

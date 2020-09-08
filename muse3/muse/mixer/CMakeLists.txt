@@ -30,17 +30,8 @@ QT5_WRAP_CPP ( mixer_mocs
       auxknob.h
       mstrip.h
       rack.h
-      routedialog.h
       strip.h
       )
-
-##
-## UI files
-##
-file (GLOB mixer_ui_files
-      routedialogbase.ui
-      )
-QT5_WRAP_UI ( mixer_uis ${mixer_ui_files} )
 
 ##
 ## List of source files to compile
@@ -51,7 +42,6 @@ file (GLOB mixer_source_files
       auxknob.cpp 
       mstrip.cpp
       rack.cpp 
-      routedialog.cpp 
       strip.cpp
       )
 
@@ -61,7 +51,6 @@ file (GLOB mixer_source_files
 add_library ( mixer ${MODULES_BUILD}
       ${mixer_source_files}
       ${mixer_mocs}
-      ${mixer_uis}
       )
 
 ##
@@ -70,7 +59,6 @@ add_library ( mixer ${MODULES_BUILD}
 set (FILES_TO_TRANSLATE
       ${FILES_TO_TRANSLATE}
       ${mixer_source_files}
-      ${mixer_ui_files}
       CACHE INTERNAL ""
       )
 

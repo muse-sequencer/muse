@@ -34,11 +34,11 @@
 #include "xml.h"
 #include "mididev.h"
 #include "midiport.h"
-#include "operations.h"
 #include "icons.h"
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
 #include "strntcpy.h"
+#include "globals.h"
 
 //#define ROUTE_DEBUG 
 

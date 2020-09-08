@@ -24,8 +24,6 @@
 #ifndef ICONS_H
 #define ICONS_H
 
-#include <QApplication>
-
 class QPixmap;
 class QIcon;
 class QCursor;

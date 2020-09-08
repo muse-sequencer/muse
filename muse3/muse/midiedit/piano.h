@@ -24,8 +24,13 @@
 #ifndef __PIANO_H__
 #define __PIANO_H__
 
+#include <QRect>
+#include <QRegion>
+
 #include "view.h"
 
+
+// Forward declarations:
 class QEvent;
 class QMouseEvent;
 class QWheelEvent;

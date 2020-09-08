@@ -26,8 +26,6 @@
 #define __DRUMMAP_H__
 
 #include <QString>
-#include <QList>
-#include <map>
 
 namespace MusECore {
 
@@ -88,32 +86,12 @@ extern void writeDrumMap(int level, Xml& xml, bool external);
 extern void readDrumMap(Xml& xml, bool external);
 extern void resetGMDrumMap();
 
-class MidiTrack;
 } // namespace MusECore
 
 namespace MusEGlobal {
 extern char drumOutmap[DRUM_MAPSIZE];
 extern char drumInmap[DRUM_MAPSIZE];
 extern MusECore::DrumMap drumMap[DRUM_MAPSIZE];
-
-
-class global_drum_ordering_t : public QList< std::pair<MusECore::MidiTrack*,int> >
-{
-  public:
-    void cleanup();
-    void write(int level, MusECore::Xml& xml);
-    void read(MusECore::Xml& xml);
-  
-  private:
-    typedef std::pair<MusECore::MidiTrack*,int> entry_t;
-    
-    void write_single(int level, MusECore::Xml& xml, const entry_t& entry);
-    entry_t read_item(MusECore::Xml& xml);
-    // OBSOLETE. Keep for backwards compatibility.
-    entry_t read_single(MusECore::Xml& xml);
-};
-
-extern global_drum_ordering_t global_drum_ordering;
 
 }
 

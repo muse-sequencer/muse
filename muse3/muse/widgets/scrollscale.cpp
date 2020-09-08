@@ -595,4 +595,59 @@ int ScrollScale::convertQuickZoomLevelToMag(int zoomlevel)
 	return vals[zoomlevel];
 }
 
+int ScrollScale::scaleMinimum() const { return scaleMin; }
+int ScrollScale::scaleMaximum() const { return scaleMax; }
+
+void ScrollScale::setScaleMinimum(int min)
+{
+  if(scaleMin == min)
+    return;
+  scaleMin = min;
+  
+  if(scaleVal < scaleMin)
+  {
+    scaleVal = scaleMin;
+    emit scaleChanged ( scaleVal );
+    if ( !noScale )
+      setRange ( minVal, maxVal );
+  }
+  repaint();
+}
+
+void ScrollScale::setScaleMaximum(int max)
+{
+  if(scaleMax == max)
+    return;
+  scaleMax = max;
+  
+  if(scaleVal > scaleMax)
+  {
+    scaleVal = scaleMax;
+    emit scaleChanged ( scaleVal );
+    if ( !noScale )
+      setRange ( minVal, maxVal );
+  }
+  repaint();
+}
+
+void ScrollScale::setScaleRange(int min, int max)
+{
+  if(scaleMin == min && scaleMax == max)
+    return;
+  scaleMin = min;
+  scaleMax = max;
+  
+  if(scaleVal < scaleMin || scaleVal > scaleMax)
+  {
+    if(scaleVal < scaleMin)
+      scaleVal = scaleMin;
+    else if(scaleVal > scaleMax)
+      scaleVal = scaleMax;
+    emit scaleChanged ( scaleVal );
+    if ( !noScale )
+      setRange ( minVal, maxVal );
+  }
+  repaint();
+}
+
 } // namespace MusEGui

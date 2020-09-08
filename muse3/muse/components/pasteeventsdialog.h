@@ -24,7 +24,9 @@
 #define __PASTEEVENTSDIALOG_H__
 
 #include "ui_pasteeventsdialogbase.h"
+
 #include <QString>
+#include <QDialog>
 
 namespace MusECore {
 class Xml;

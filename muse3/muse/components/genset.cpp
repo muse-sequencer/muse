@@ -39,6 +39,7 @@
 #include "helper.h"
 #include "filedialog.h"
 #include "al/al.h"
+#include "undo.h"
 
 #include "song.h"
 #include "operations.h"
@@ -46,6 +47,11 @@
 #include "audio_converter_settings.h"
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
+
+// Forwards from header:
+#include <QButtonGroup>
+#include <QShowEvent>
+#include <QWidget>
 
 namespace MusEGui {
 
@@ -153,12 +159,6 @@ void GlobalSettingsConfig::updateSettings()
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
             if (divisions[i] == MusEGlobal::config.division) {
                   midiDivisionSelect->setCurrentIndex(i);
-                  break;
-                  }
-            }
-      for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
-            if (divisions[i] == MusEGlobal::config.guiDivision) {
-                  guiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
@@ -370,11 +370,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.minControlProcessPeriod = minControlProcessPeriods[mcp];
 
       int div            = midiDivisionSelect->currentIndex();
-      MusEGlobal::config.division    = divisions[div];
-      // Make sure the AL namespace variable mirrors our variable.
-      AL::division = MusEGlobal::config.division;
-      div                = guiDivisionSelect->currentIndex();
-      MusEGlobal::config.guiDivision = divisions[div];
+      const int new_div  = divisions[div];
       
       MusEGlobal::config.transportVisible = showTransport->isChecked();
       MusEGlobal::config.bigTimeVisible   = showBigtime->isChecked();
@@ -511,6 +507,13 @@ void GlobalSettingsConfig::apply()
       TopWin::_openTabbed[TopWin::WAVE] = cbTabWave->isChecked();
       TopWin::_openTabbed[TopWin::SCORE] = cbTabScore->isChecked();
       TopWin::_openTabbed[TopWin::MASTER] = cbTabMaster->isChecked();
+
+      // If the division is to be changed, this will RE-NORMALIZE things like the tempo and signature lists,
+      //  and RE-FILL the various editor rasterization (snap) table values.
+      // The various editors will respond and deal with changing each of their local raster values.
+      if(new_div != MusEGlobal::config.division)
+        // True = Operation is non-undoable here.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMidiDivision, new_div, 0, 0, true));
       
       // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
       MusEGlobal::muse->changeConfig(true);

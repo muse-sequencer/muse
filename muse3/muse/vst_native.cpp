@@ -43,7 +43,7 @@
 #include "audio.h"
 #include "synth.h"
 #include "jackaudio.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "xml.h"
 #include "plugin.h"
 #include "popupmenu.h"

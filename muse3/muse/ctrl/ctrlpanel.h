@@ -25,13 +25,16 @@
 #define __CTRL_PANEL_H__
 
 #include <QWidget>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QSpacerItem>
-#include <QAction>
 
 #include "ttoolbutton.h"
 #include "type_defs.h"
+
+
+// Forward declarations:
+class QHBoxLayout;
+class QVBoxLayout;
+class QSpacerItem;
+class QAction;
 
 namespace MusECore {
 class MidiController;

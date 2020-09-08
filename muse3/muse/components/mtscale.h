@@ -36,7 +36,7 @@ namespace MusEGui {
 
 class MTScale : public View {
       Q_OBJECT
-      int* raster;
+      int raster;
       unsigned pos[4];
       int button;
       bool barLocator;
@@ -58,9 +58,10 @@ class MTScale : public View {
 
    public slots:
       void setPos(int, unsigned, bool);
+      void setRaster(int);
 
    public:
-      MTScale(int* raster, QWidget* parent, int xscale, bool f = false);
+      MTScale(int raster, QWidget* parent, int xscale, bool f = false);
       void setBarLocator(bool f) { barLocator = f; }
       };
 

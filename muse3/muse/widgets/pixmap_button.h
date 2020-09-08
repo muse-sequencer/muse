@@ -24,12 +24,20 @@
 #define __PIXMAP_BUTTON_H__
 
 #include <QWidget>
+#include <QString>
+#include <QSize>
+
+#include <QMouseEvent>
+#include <QContextMenuEvent>
+#include <QPaintEvent>
+#include <QPixmap>
+#include <QIcon>
 
 class QMouseEvent;
+class QContextMenuEvent;
 class QPaintEvent;
 class QPixmap;
 class QIcon;
-class QString;
 
 namespace MusEGui {
 

@@ -24,34 +24,37 @@
 
 #include <QBoxLayout>
 #include <QHBoxLayout>
-#include <QGridLayout>
-#include <QLabel>
 #include <QListWidget>
-#include <QListWidgetItem>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QRadioButton>
 #include <QSlider>
 #include <QSpinBox>
-#include <QTextEdit>
-#include <QVBoxLayout>
 
 #include "posedit.h"
 
 #include "song.h"
-#include "event.h"
 #include "midictrl.h"
 #include "editevent.h"
-#include "pitchedit.h"
-#include "intlabel.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "midiport.h"
 #include "midiedit/drummap.h"
-#include "instruments/minstrument.h"
 #include "midi.h"
 #include "popupmenu.h"
 #include "choose_sysex.h"
+
+// Forwards from header:
+#include <QLabel>
+#include <QGridLayout>
+#include <QTextEdit>
+#include <QRadioButton>
+#include <QListWidgetItem>
+#include <QMenu>
+#include "part.h"
+#include "minstrument.h"
+#include "intlabel.h"
+#include "posedit.h"
+#include "pitchedit.h"
 
 namespace MusEGui {
 

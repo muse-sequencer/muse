@@ -31,16 +31,9 @@
 #include "script_delivery.h"
 
 #include <QFileInfo>
-#include <QCloseEvent>
 #include <QMainWindow>
-#include <QMenu>
 #include <QRect>
 #include <QString>
-#include <QToolBar>
-#include <QToolButton>
-#include <QProgressDialog>
-#include <QTimer>
-#include <QDockWidget>
 
 #include <list>
 #include <time.h>
@@ -49,11 +42,20 @@
 #include <unistd.h>
 #endif
 
+
+// Forward declarations:
+class QCloseEvent;
+class QMenu;
+class QToolBar;
+class QToolButton;
+class QProgressDialog;
+class QTimer;
+class QMdiSubWindow;
 class MuseMdiArea;
+class QDockWidget;
 
 namespace MusECore {
 class AudioOutput;
-class Instrument;
 class MidiInstrument;
 class MidiPort;
 class MidiTrack;
@@ -71,7 +73,6 @@ class Appearance;
 class Arranger;
 class ArrangerView;
 class AudioMixerApp;
-class AudioRecord;
 class BigTime;
 class ClipListEdit;
 class EditInstrument;
@@ -81,17 +82,16 @@ class MRConfig;
 class MarkerView;
 class LMaster;
 class MetronomeConfig;
-class MidiControllerEditDialog;
 class MidiFileConfig;
 class MidiFilterConfig;
 class MidiInputTransformDialog;
 class MidiSyncConfig;
 class MidiTransformerDialog;
-class PrinterConfig;
 class RhythmGen;
 class ScoreEdit;
 class ShortcutConfig;
 class TopWin;
+class TopLevelList;
 class Transport;
 class VisibleTracks;
 class RouteDialog;
@@ -203,7 +203,9 @@ class MusE : public QMainWindow
       QWidget* softSynthesizerConfig;
       MidiSyncConfig* midiSyncConfig;
       MRConfig* midiRemoteConfig;
+#ifdef BUILD_EXPERIMENTAL
       RhythmGen* midiRhythmGenerator;
+#endif
       MetronomeConfig* metronomeConfig;
       MidiFileConfig* midiFileConfig;
       GlobalSettingsConfig* globalSettingsConfig;
@@ -353,7 +355,7 @@ class MusE : public QMainWindow
    public slots:
       bool saveAs();
       void bounceToFile(MusECore::AudioOutput* ao = 0);
-      void closeEvent(QCloseEvent*e);
+      void closeEvent(QCloseEvent*event) override;
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
       void fileClose();
@@ -427,6 +429,8 @@ class MusE : public QMainWindow
       // Set to restart MusE (almost) from scratch before calling close().
       void setRestartingApp(bool v) { _isRestartingApp = v;}
       Arranger* arranger() const { return _arranger; }
+      int arrangerRaster() const;
+
       ArrangerView* getArrangerView() const { return arrangerView; }
       QRect configGeometryMain;
       QProgressDialog *progress;

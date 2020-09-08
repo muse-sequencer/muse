@@ -38,8 +38,6 @@
 
 namespace MusECore {
 
-class EvData;
-
 //---------------------------------------------------------
 //   MEvent
 //    baseclass for MidiPlayEvent and MidiRecordEvent

@@ -25,27 +25,18 @@
 
 #include <QAction>
 #include <QActionGroup>
-#include <QKeyEvent>
-#include <QLineEdit>
 #include <QMessageBox>
-#include <QMouseEvent>
 #include <QPainter>
-#include <QPaintEvent>
 #include <QPixmap>
 #include <QResizeEvent>
-#include <QScrollBar>
-#include <QWheelEvent>
 #include <QIcon>
-#include <QSpinBox>
 #include <QToolTip>
 #include <QList>
 
 #include "popupmenu.h"
 #include "globals.h"
 #include "icons.h"
-#include "scrollscale.h"
 #include "tlist.h"
-#include "xml.h"
 #include "mididev.h"
 #include "midiport.h"
 #include "midictrl.h"
@@ -66,7 +57,6 @@
 #include "filedialog.h"
 #include "menutitleitem.h"
 #include "arranger.h"
-#include "undo.h"
 #include "midi_audio_control.h"
 #include "ctrl.h"
 #include "plugin.h"
@@ -80,6 +70,21 @@
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
+
+// Forwards from header:
+#include <QKeyEvent>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QScrollBar>
+#include <QWheelEvent>
+#include <QMenu>
+#include "xml.h"
+#include "undo.h"
+#include "header.h"
+#include "popupmenu.h"
+#include "scrollscale.h"
 
 using MusECore::UndoOp;
 
@@ -2797,6 +2802,9 @@ void TList::wheelEvent(QWheelEvent* ev)
         emit redirectWheelEvent(ev);
       }
 
+
+QSize TList::sizeHint() const { return QSize(250, 100); }
+QSize TList::minimumSizeHint() const { return QSize(100, 100); }
 
 //---------------------------------------------------------
 //   setYPos

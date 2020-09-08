@@ -46,7 +46,7 @@
 #include "driver/rtctimer.h"
 #include "driver/posixtimer.h"
 #endif
-#include "midi.h"
+#include "midi_consts.h"
 #include "midiseq.h"
 #include "midiport.h"
 #include "mididev.h"

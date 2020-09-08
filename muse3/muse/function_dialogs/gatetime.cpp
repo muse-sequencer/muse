@@ -21,12 +21,10 @@
 //=========================================================
 
 #include <QButtonGroup>
-#include <QDialog>
 
 #include "gatetime.h"
 
 #include "xml.h"
-#include "song.h"
 
 namespace MusEGui {
 

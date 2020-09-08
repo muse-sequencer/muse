@@ -26,9 +26,7 @@
 #include <errno.h>
 #include <iostream>
 
-#include <QAction>
 #include <QDir>
-#include <QMenu>
 #include <QMessageBox>
 #include <QPoint>
 #include <QString>
@@ -42,37 +40,39 @@
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
 #include "song.h"
-#include "track.h"
-#include "part.h"
-
-#include "undo.h"
 #include "key.h"
 #include "globals.h"
-#include "event.h"
 #include "drummap.h"
-#include "marker/marker.h"
-#include "synth.h"
-#include "audio.h"
-#include "mididev.h"
 #include "amixer.h"
 #include "midiseq.h"
-#include "audiodev.h"
 #include "gconfig.h"
 #include "sync.h"
 #include "midictrl.h"
 #include "menutitleitem.h"
 #include "midi_audio_control.h"
 #include "tracks_duplicate.h"
-#include "midi.h"
-#include "sig.h"
+#include "midi_consts.h"
 #include "keyevent.h"
 #ifndef _WIN32
 #include <sys/wait.h>
 #endif
-#include "tempo.h"
-#include "route.h"
 #include "strntcpy.h"
 #include "name_factory.h"
+
+// Forwards from header:
+#include <QAction>
+#include <QMenu>
+#include "undo.h"
+#include "track.h"
+#include "event.h"
+#include "xml.h"
+#include "track.h"
+#include "part.h"
+#include "marker/marker.h"
+#include "route.h"
+#include "audio.h"
+#include "midiport.h"
+#include "audiodev.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
@@ -107,7 +107,6 @@ Song::Song(const char* name)
       _fDspLoad = 0.0;
       _xRunsCount = 0;
       
-      _arrangerRaster     = 0; // Set to measure, the same as Arranger initial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
       noteFifoRindex = 0;
@@ -625,7 +624,7 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
         //  is MUTED pick an event from a different unmuted part at that position.
         if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
   //         addPortCtrlEvents(ev, p, p->tick(), p->lenTick(), p->track(), pendingOperations);
-          addPortCtrlEvents(event, p, p->tick(), p->lenTick(), p->track(), pendingOperations);
+          pendingOperations.addPartPortCtrlEvents(event, p, p->tick(), p->lenTick(), p->track());
       }
     }
     
@@ -658,7 +657,7 @@ Event Song::changeEventOperation(const Event& oldEvent, const Event& newEvent,
         if(pendingOperations.add(PendingOperationItem(p, newEvent, PendingOperationItem::AddEvent)))
         {
           if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-            addPortCtrlEvents(newEvent, p, p->tick(), p->lenTick(), p->track(), pendingOperations);  // Port controller values.
+            pendingOperations.addPartPortCtrlEvents(newEvent, p, p->tick(), p->lenTick(), p->track());  // Port controller values.
         }
       }
     }
@@ -684,14 +683,14 @@ Event Song::changeEventOperation(const Event& oldEvent, const Event& newEvent,
            pendingOperations.add(PendingOperationItem(p, newEvent, PendingOperationItem::AddEvent)))
         {
           if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-            modifyPortCtrlEvents(e, newEvent, p, pendingOperations);  // Port controller values.
+            pendingOperations.modifyPartPortCtrlEvents(e, newEvent, p);  // Port controller values.
         }
         else
         {
           // Adding the new event failed.
           // Just go ahead and include removal of the old cached value.
           if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-            removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
+            pendingOperations.removePartPortCtrlEvents(e, p, p->track());  // Port controller values.
         }
       }
     }
@@ -739,7 +738,7 @@ Event Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ct
        // Also these following cached controller values DEPEND on finding the
        //  ORIGINAL event and cannot find a modified event.
        if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-         removePortCtrlEvents(e, p, p->track(), pendingOperations);  // Port controller values.
+         pendingOperations.removePartPortCtrlEvents(e, p, p->track());  // Port controller values.
      }
    }
     
@@ -976,9 +975,9 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             newpart      = new MidiPart(mt);
             
             // Round the start down using the Arranger part snap raster value. 
-            startTick = MusEGlobal::sigmap.raster1(startTick, arrangerRaster());
+            startTick = MusEGlobal::sigmap.raster1(startTick, MusEGlobal::muse->arrangerRaster());
             // Round the end up using the Arranger part snap raster value. 
-            endTick   = MusEGlobal::sigmap.raster2(endTick, arrangerRaster());
+            endTick   = MusEGlobal::sigmap.raster2(endTick, MusEGlobal::muse->arrangerRaster());
             
             newpart->setTick(startTick);
             newpart->setLenTick(endTick - startTick);
@@ -1009,7 +1008,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
                   }
             
             // Round the end up (again) using the Arranger part snap raster value. 
-            endTick   = MusEGlobal::sigmap.raster2(endTick, arrangerRaster());
+            endTick   = MusEGlobal::sigmap.raster2(endTick, MusEGlobal::muse->arrangerRaster());
             
             operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), endTick, Pos::TICKS));
       }
@@ -3279,7 +3278,7 @@ void Song::processAutomationEvents(Undo* operations)
   {
     if(!(*i)->isMidiTrack())
       // Process (and clear) rec events.
-      ((AudioTrack*)(*i))->processAutomationEvents(opsp);
+      processTrackAutomationEvents((AudioTrack*)*i, opsp);
   }
 
   if(!operations)
@@ -3781,7 +3780,7 @@ void Song::insertTrackOperation(Track* track, int idx, PendingOperationList& ops
             case Track::AUDIO_SOFTSYNTH:
                   {
                   SynthI* s = static_cast<SynthI*>(track);
-                  MusEGlobal::midiDevices.addOperation(s, ops);
+                  ops.addDeviceOperation(&MusEGlobal::midiDevices, s);
                   ops.add(PendingOperationItem(&midiInstruments, s, PendingOperationItem::AddMidiInstrument));
                   sec_track_list = &_synthIs;
                   }
@@ -3793,7 +3792,7 @@ void Song::insertTrackOperation(Track* track, int idx, PendingOperationList& ops
 
       ops.add(PendingOperationItem(&_tracks, track, idx, PendingOperationItem::AddTrack, sec_track_list));
       
-      addPortCtrlEvents(track, ops);
+      ops.addTrackPortCtrlEvents(track);
       
       // NOTE: Aux sends: 
       // Initializing of this track and/or others' aux sends is done at the end of Song::execute/revertOperationGroup2().
@@ -3814,7 +3813,7 @@ void writeStringToFile(FILE *filePointer, const char *writeString)
 
 void Song::removeTrackOperation(Track* track, PendingOperationList& ops)
 {
-      removePortCtrlEvents(track, ops);
+      ops.removeTrackPortCtrlEvents(track);
       void* sec_track_list = 0;
       switch(track->type()) {
             case Track::MIDI:
@@ -4697,6 +4696,141 @@ bool Song::adjustMarkerListOperation(MarkerList* markerlist, unsigned int startP
   ops.add(poi);
 
   return true;
+}
+
+//---------------------------------------------------------
+//   processTrackAutomationEvents
+//---------------------------------------------------------
+
+void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
+{
+  const AutomationType atype = atrack->automationType();
+  if(atype != AUTO_TOUCH && atype != AUTO_WRITE)
+    return;
+
+  // Use either the supplied operations list or a local one.
+  Undo ops;
+  Undo& opsr = operations ? (*operations) : ops;
+
+  CtrlListList *cll =  atrack->controller();
+  CtrlRecList *crl = atrack->recEvents();
+  for(ciCtrlList icl = cll->cbegin(); icl != cll->cend(); ++icl)
+  {
+    CtrlList* cl = icl->second;
+    CtrlList& clr = *icl->second;
+    int id = cl->id();
+
+    // Were there any recorded events for this controller?
+    bool do_it = false;
+    for(ciCtrlRec icr = crl->cbegin(); icr != crl->cend(); ++icr)
+    {
+      if(icr->id == id)
+      {
+        do_it = true;
+        break;
+      }
+    }
+    if(!do_it)
+      continue;
+
+    // The Undo system will take 'ownership' of these and delete them at the appropriate time.
+    CtrlList* erased_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
+    CtrlList* added_list_items = new CtrlList(clr, CtrlList::ASSIGN_PROPERTIES);
+
+    // Remove old events from record region.
+    if(atype == AUTO_WRITE)
+    {
+      int start = MusEGlobal::audio->getStartRecordPos().frame();
+      int end   = MusEGlobal::audio->getEndRecordPos().frame();
+      iCtrl   s = cl->lower_bound(start);
+      iCtrl   e = cl->lower_bound(end);
+      erased_list_items->insert(s, e);
+    }
+    else
+    {  // type AUTO_TOUCH
+      for(ciCtrlRec icr = crl->cbegin(); icr != crl->cend(); ++icr)
+      {
+        // Don't bother looking for start, it's OK, just take the first one.
+        // Needed for mousewheel and paging etc.
+        if(icr->id != id)
+          continue;
+
+        int start = icr->frame;
+
+        if(icr == crl->cend())
+        {
+          int end = MusEGlobal::audio->getEndRecordPos().frame();
+          iCtrl s = cl->lower_bound(start);
+          iCtrl e = cl->lower_bound(end);
+          erased_list_items->insert(s, e);
+          break;
+        }
+
+        ciCtrlRec icrlast = icr;
+        ++icr;
+        for(; ; ++icr)
+        {
+          if(icr == crl->cend())
+          {
+            int end = icrlast->frame;
+            iCtrl s = cl->lower_bound(start);
+            iCtrl e = cl->lower_bound(end);
+            erased_list_items->insert(s, e);
+            break;
+          }
+
+          if(icr->id == id && icr->type == ARVT_STOP)
+          {
+            int end = icr->frame;
+            iCtrl s = cl->lower_bound(start);
+            iCtrl e = cl->lower_bound(end);
+            erased_list_items->insert(s, e);
+            break;
+          }
+
+          if(icr->id == id)
+            icrlast = icr;
+        }
+        if(icr == crl->end())
+              break;
+      }
+    }
+
+    // Extract all recorded events for controller "id"
+    //  from CtrlRecList and put into new_list.
+    for(ciCtrlRec icr = crl->cbegin(); icr !=crl->cend(); ++icr)
+    {
+          if(icr->id == id)
+          {
+                // Must optimize these types otherwise multiple vertices appear on flat straight lines in the graphs.
+                CtrlValueType vtype = cl->valueType();
+                if(!cl->empty() && (cl->mode() == CtrlList::DISCRETE || vtype == VAL_BOOL || vtype == VAL_INT))
+                {
+                  iCtrl icl_prev = cl->lower_bound(icr->frame);
+                  if(icl_prev != cl->begin())
+                    --icl_prev;
+                  if(icl_prev->second.val == icr->val)
+                    continue;
+                }
+                // Now add the value.
+                added_list_items->add(icr->frame, icr->val);
+          }
+    }
+
+    if(erased_list_items->empty() && added_list_items->empty())
+    {
+      delete erased_list_items;
+      delete added_list_items;
+    }
+    else
+      opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, cll, erased_list_items, added_list_items));
+  }
+
+  // Done with the recorded automation event list. Clear it.
+  crl->clear();
+
+  if(!operations)
+    MusEGlobal::song->applyOperationGroup(ops);
 }
 
 

@@ -34,20 +34,26 @@
 #include "driver/jackmidi.h"
 #include "route.h"
 #include "mididev.h"
+#include "midiport.h"
 #include "globaldefs.h"
 #include "globals.h"
 #include "audio.h"
 #include "audiodev.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midiseq.h"
 #include "midictrl.h"
-#include "popupmenu.h"
 #include "menutitleitem.h"
 #include "dssihost.h"
 #include "lv2host.h"
 #include "vst_native.h"
 #include "appearance.h"
 #include "event.h"
+#include "popupmenu.h"
+#include "mpevent.h"
+#include "track.h"
+#include "part.h"
+#include "drummap.h"
+#include "xml.h"
 
 #include <strings.h>
 
@@ -61,6 +67,9 @@
 #include <QStyleFactory>
 #include <QVector>
 #include <QMessageBox>
+#include <QActionGroup>
+#include <QMenu>
+#include <QWidget>
 
 using std::set;
 

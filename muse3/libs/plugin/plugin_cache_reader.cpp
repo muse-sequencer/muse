@@ -35,6 +35,7 @@
 #include <cstdlib>
 
 #include "plugin_cache_reader.h"
+#include "xml.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PLUGIN_SCAN(dev, format, args...)  // std::fprintf(dev, format, ##args);

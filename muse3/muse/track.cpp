@@ -24,18 +24,10 @@
 
 #include "track.h"
 #include "event.h"
-#include "mpevent.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "mididev.h"
-#include "midiport.h"
 #include "song.h"
-#include "xml.h"
-#include "plugin.h"
-#include "drummap.h"
 #include "audio.h"
-#include "globaldefs.h"
-#include "route.h"
-#include "drummap.h"
 #include "midictrl.h"
 #include "helper.h"
 #include "limits.h"
@@ -43,7 +35,19 @@
 #include "gconfig.h"
 #include "operations.h"
 #include "icons.h"
+
+#include "drum_ordering.h"
+#include "globals.h"
+
 #include <QMessageBox>
+
+// Forwards from header:
+#include "midiport.h"
+#include "plugin.h"
+#include "xml.h"
+#include "midiedit/drummap.h"
+#include "minstrument.h"
+#include "latency_compensator.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -108,18 +112,6 @@ void addPortCtrlEvents(MidiTrack* t, bool drum_ctls, bool non_drum_ctls)
   }
 }
 
-void addPortCtrlEvents(Track* track, PendingOperationList& ops)
-{
-  if(!track || !track->isMidiTrack())
-    return;
-  const PartList* pl = track->cparts();
-  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-  {
-    Part* part = ip->second;
-    addPortCtrlEvents(part, part->tick(), part->lenTick(), track, ops);
-  }
-}
-
 //---------------------------------------------------------
 //   removePortCtrlEvents
 //---------------------------------------------------------
@@ -154,18 +146,6 @@ void removePortCtrlEvents(MidiTrack* t, bool drum_ctls, bool non_drum_ctls)
           mp->deleteController(ch, tick, cntrl, val, part);
       }
     }
-  }
-}
-
-void removePortCtrlEvents(Track* track, PendingOperationList& ops)
-{
-  if(!track || !track->isMidiTrack())
-    return;
-  const PartList* pl = track->cparts();
-  for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-  {
-    Part* part = ip->second;
-    removePortCtrlEvents(part, track, ops);
   }
 }
 
@@ -1944,157 +1924,6 @@ void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
   _workingDrumMapPatchList->write(level, xml);
   xml.intTag(level, "ordering_tied", _drummap_ordering_tied_to_patch);
   xml.etag(level, "our_drum_settings");
-}
-
-void MidiTrack::MidiCtrlRemapOperation(int index, int newPort, int newChan, int newNote, MidiCtrlValRemapOperation* rmop)
-{
-  if(type() != Track::DRUM || _outPort < 0 || _outPort >= MusECore::MIDI_PORTS)
-    return;
-
-  // Default to track port if -1 and track channel if -1.
-  if(newPort == -1)
-    newPort = _outPort;
-
-  if(newChan == -1)
-    newChan = _outChannel;
-
-  MidiPort* trackmp = &MusEGlobal::midiPorts[_outPort];
-
-  int dm_ch = _drummap[index].channel;
-  if(dm_ch == -1)
-    dm_ch = _outChannel;
-  int dm_port = _drummap[index].port;
-  if(dm_port == -1)
-    dm_port = _outPort;
-  MidiPort* dm_mp = &MusEGlobal::midiPorts[dm_port];
-
-  MidiCtrlValListList* dm_mcvll = dm_mp->controller();
-  MidiCtrlValList* v_mcvl;
-  int v_ch, v_ctrl, v_idx;
-  for(iMidiCtrlValList idm_mcvl = dm_mcvll->begin(); idm_mcvl != dm_mcvll->end(); ++idm_mcvl)
-  {
-    v_ch = idm_mcvl->first >> 24;
-    if(v_ch != dm_ch)
-      continue;
-    v_mcvl = idm_mcvl->second;
-    v_ctrl = v_mcvl->num();
-
-    // Is it a drum controller, according to the track port's instrument?
-    if(!trackmp->drumController(v_ctrl))
-      continue;
-
-    v_idx = v_ctrl & 0xff;
-    if(v_idx != _drummap[index].anote)
-      continue;
-
-    // Does this midi control value list need to be changed (values moved etc)?
-    iMidiCtrlVal imcv = v_mcvl->begin();
-    for( ; imcv != v_mcvl->end(); ++imcv)
-    {
-      const MidiCtrlVal& mcv = imcv->second;
-      if(mcv.part && mcv.part->track() == this)
-        break;
-    }
-    if(imcv != v_mcvl->end())
-    {
-      // A contribution from a part on this track was found.
-      // We must compose a new list, or get an existing one and schedule the existing
-      //  one for iterator erasure and pointer deletion.
-      // Add the erase iterator. Add will ignore if the erase iterator already exists.
-      rmop->_midiCtrlValLists2bErased.add(dm_port, idm_mcvl);
-      // Insert the delete pointer. Insert will ignore if the delete pointer already exists.
-      rmop->_midiCtrlValLists2bDeleted.insert(v_mcvl);
-
-      MidiCtrlValListList* op_mcvll;
-      iMidiCtrlValLists2bAdded_t imcvla = rmop->_midiCtrlValLists2bAdded.find(dm_port);
-      if(imcvla == rmop->_midiCtrlValLists2bAdded.end())
-      {
-        op_mcvll = new MidiCtrlValListList();
-        rmop->_midiCtrlValLists2bAdded.insert(MidiCtrlValLists2bAddedInsertPair_t(dm_port, op_mcvll));
-      }
-      else
-        op_mcvll = imcvla->second;
-
-      MidiCtrlValList* op_mcvl;
-      iMidiCtrlValList imcvl = op_mcvll->find(dm_ch, v_ctrl);
-      if(imcvl == op_mcvll->end())
-      {
-        op_mcvl = new MidiCtrlValList(v_ctrl);
-        op_mcvll->add(dm_ch, op_mcvl);
-        // Assign the contents of the original list to the new list.
-        *op_mcvl = *v_mcvl;
-      }
-      else
-        op_mcvl = imcvl->second;
-
-      // Remove from the list any contributions from this track.
-      iMidiCtrlVal iopmcv = op_mcvl->begin();
-      for( ; iopmcv != op_mcvl->end(); )
-      {
-        const MidiCtrlVal& mcv = iopmcv->second;
-        if(mcv.part && mcv.part->track() == this)
-        {
-          iMidiCtrlVal iopmcv_save = iopmcv;
-          ++iopmcv_save;
-          op_mcvl->erase(iopmcv);
-          iopmcv = iopmcv_save;
-        }
-        else
-          ++iopmcv;
-      }
-    }
-
-    // We will be making changes to the list pointed to by the new settings.
-    // We must schedule the existing one for iterator erasure and pointer deletion.
-    MidiPort* dm_mp_new = &MusEGlobal::midiPorts[newPort];
-    MidiCtrlValListList* dm_mcvll_new = dm_mp_new->controller();
-    MidiCtrlValList* v_mcvl_new = 0;
-    const int v_ctrl_new = (v_ctrl & ~0xff) | newNote;
-    iMidiCtrlValList idm_mcvl_new = dm_mcvll_new->find(newChan, v_ctrl_new);
-    if(idm_mcvl_new != dm_mcvll_new->end())
-    {
-      v_mcvl_new = idm_mcvl_new->second;
-      // Add the erase iterator. Add will ignore if the erase iterator already exists.
-      rmop->_midiCtrlValLists2bErased.add(newPort, idm_mcvl_new);
-      // Insert the delete pointer. Insert will ignore if the delete pointer already exists.
-      rmop->_midiCtrlValLists2bDeleted.insert(v_mcvl_new);
-    }
-
-    // Create a new list of lists, or get an existing one.
-    MidiCtrlValListList* op_mcvll_new;
-    iMidiCtrlValLists2bAdded_t imcvla_new = rmop->_midiCtrlValLists2bAdded.find(newPort);
-    if(imcvla_new == rmop->_midiCtrlValLists2bAdded.end())
-    {
-      op_mcvll_new = new MidiCtrlValListList();
-      rmop->_midiCtrlValLists2bAdded.insert(MidiCtrlValLists2bAddedInsertPair_t(newPort, op_mcvll_new));
-    }
-    else
-      op_mcvll_new = imcvla_new->second;
-
-    // Compose a new list for replacement, or get an existing one.
-    MidiCtrlValList* op_mcvl_new;
-    iMidiCtrlValList imcvl_new = op_mcvll_new->find(newChan, v_ctrl_new);
-    if(imcvl_new == op_mcvll_new->end())
-    {
-      op_mcvl_new = new MidiCtrlValList(v_ctrl_new);
-      op_mcvll_new->add(newChan, op_mcvl_new);
-      // Assign the contents of the original list to the new list.
-      if(v_mcvl_new)
-        *op_mcvl_new = *v_mcvl_new;
-    }
-    else
-      op_mcvl_new = imcvl_new->second;
-
-    // Add to the list any contributions from this track.
-    for(ciMidiCtrlVal imcv_new = v_mcvl->begin(); imcv_new != v_mcvl->end(); ++imcv_new)
-    {
-      const MidiCtrlVal& mcv = imcv_new->second;
-      if(mcv.part && mcv.part->track() == this)
-      {
-        op_mcvl_new->addMCtlVal(imcv_new->first, mcv.val, mcv.part);
-      }
-    }
-  }
 }
 
 void MidiTrack::dumpMap()

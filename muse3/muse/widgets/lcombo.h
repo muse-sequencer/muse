@@ -23,11 +23,13 @@
 #ifndef __LCOMBO_H__
 #define __LCOMBO_H__
 
-#include <QAbstractItemView>
+#include <QWidget>
 #include <QComboBox>
 #include <QVariant>
 
+class QAbstractItemView;
 class QString;
+class QModelIndex;
 
 namespace MusEGui {
 
@@ -42,19 +44,38 @@ class LabelCombo : public QWidget {
 
    signals:
       void activated(int);
+      void activated(const QModelIndex&);
 
+   private slots:
+      void box_activated(int idx);
+     
    public slots:
-      void clearFocus() { box->clearFocus(); }
+      void clearFocus();
       void setCurrentIndex(int i);
+      void setCurrentModelIndex(const QModelIndex& mdl_idx);
 
    public:
       LabelCombo(const QString& label, QWidget* parent,
          const char* name=0);
-      void addItem(const QString& txt, const QVariant & userData = QVariant()) { box->addItem(txt, userData); }
-      void insertItem(int index, const QString& txt, const QVariant & userData = QVariant()) { box->insertItem(index, txt, userData); }
-      //void setListBox(Q3ListBox* lb) { box->setListBox(lb); } // ddskrjo
-      void setView(QAbstractItemView* v) { box->setModel(v->model()); box->setView(v); } // p4.0.3
-      void setFocusPolicy ( Qt::FocusPolicy fp ) { box->setFocusPolicy(fp); }
+      void addItem(const QString& txt, const QVariant & userData = QVariant());
+      void insertItem(int index, const QString& txt, const QVariant & userData = QVariant());
+
+      QAbstractItemView *view() const;
+
+      void setView(QAbstractItemView* v);
+      void setFocusPolicy ( Qt::FocusPolicy fp );
+
+      QVariant itemData(int index, int role = Qt::UserRole) const;
+      int findData(
+        const QVariant &data, int role = Qt::UserRole,
+        Qt::MatchFlags flags = static_cast<Qt::MatchFlags>(Qt::MatchExactly|Qt::MatchCaseSensitive)) const;
+      int maxVisibleItems() const;
+      void setMaxVisibleItems(int maxItems);
+      QComboBox::SizeAdjustPolicy sizeAdjustPolicy() const;
+      void setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy policy);
+
+      int currentIndex() const;
+      QModelIndex currentModelIndex() const;
       };
 
 } // namespace MusEGui

@@ -26,8 +26,8 @@
 
 #include "type_defs.h"
 #include "view.h"
-#include "song.h"
 #include "tools.h"
+#include "undo.h"
 
 class QMouseEvent;
 class QPainter;
@@ -91,6 +91,7 @@ class Master : public MusEGui::View {
       void tempoChanged(int);
 
    public slots:
+      void redrawGrid()       { redraw(); }
       void setPos(int, unsigned, bool adjustScrollbar);
       void setTool(int t);
 

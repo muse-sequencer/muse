@@ -22,8 +22,6 @@
 //
 //=========================================================
 
-#include <typeinfo>
-
 #include <QDesktopWidget>
 #include <QClipboard>
 #include <QMessageBox>
@@ -53,78 +51,98 @@
 #include "app.h"
 #include "master/lmaster.h"
 #include "al/dsp.h"
-#include "amixer.h"
-#include "appearance.h"
-#include "arranger.h"
-#include "arrangerview.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "audioprefetch.h"
-#include "components/bigtime.h"
+// FIXME Move cliplist into components ?
 #include "cliplist/cliplist.h"
-#include "conf.h"
-#include "config.h"
 #include "debug.h"
 #include "components/didyouknow.h"
 #include "drumedit.h"
 #include "components/filedialog.h"
 #include "gconfig.h"
 #include "globals.h"
-#include "components/genset.h"
 #include "gui.h"
 #include "helper.h"
 #include "wave_helper.h"
 #include "icons.h"
-#include "instruments/editinstrument.h"
 #include "listedit.h"
-#include "marker/markerview.h"
 #include "master/masteredit.h"
-#include "components/metronome.h"
-#include "midifilterimpl.h"
-#include "midiitransform.h"
 #include "midiseq.h"
-#include "midisyncimpl.h"
-#include "miditransform.h"
 #include "mitplugin.h"
 #include "mittranspose.h"
-#include "widgets/musemdiarea.h"
 #include "components/mixdowndialog.h"
 #include "mrconfig.h"
 #include "pianoroll.h"
-#include "scoreedit.h"
 #ifdef PYTHON_SUPPORT
 #include "remote/pyapi.h"
 #endif
-#ifdef BUILD_EXPERIMENTAL
-  #include "rhythm.h"
-#endif
 #include "song.h"
 #include "components/routepopup.h"
-#include "components/shortcutconfig.h"
 #include "components/songinfo.h"
 #include "ticksynth.h"
-#include "transport.h"
 #include "tempo.h"
 #include "tlist.h"
 #include "waveedit.h"
 #include "components/projectcreateimpl.h"
 #include "widgets/menutitleitem.h"
-#include "components/tools.h"
 #include "components/unusedwavefiles.h"
 #include "functions.h"
 #include "components/songpos_toolbar.h"
 #include "components/sig_tempo_toolbar.h"
-#include "widgets/cpu_toolbar.h"
-#include "components/snooper.h"
 #include "songfile_discovery.h"
 #include "pos.h"
 #include "wave.h"
 #include "wavepreview.h"
-#include "track.h"
-#include "part.h"
+#include "shortcuts.h"
 
 #ifdef _WIN32
 #include <Windows.h>
+#endif
+
+// Forwards from header:
+#include <QCloseEvent>
+#include <QMenu>
+#include <QToolBar>
+#include <QToolButton>
+#include <QProgressDialog>
+#include <QTimer>
+#include <QMdiSubWindow>
+#include <QDockWidget>
+#include "track.h"
+#include "minstrument.h"
+#include "midiport.h"
+#include "part.h"
+#include "synth.h"
+#include "undo.h"
+#include "appearance.h"
+#include "arranger.h"
+#include "arrangerview.h"
+#include "amixer.h"
+#include "bigtime.h"
+//#include "cliplist.h"
+#include "editinstrument.h"
+#include "tools.h"
+#include "genset.h"
+#include "mrconfig.h"
+#include "marker/markerview.h"
+#include "metronome.h"
+#include "conf.h"
+#include "midifilterimpl.h"
+#include "midiitransform.h"
+#include "miditransform.h"
+#include "midisyncimpl.h"
+#include "scoreedit.h"
+#include "shortcutconfig.h"
+#include "transport.h"
+#include "visibletracks.h"
+#include "routedialog.h"
+#include "cpu_toolbar.h"
+#include "musemdiarea.h"
+#include "snooper.h"
+#include "xml.h"
+#ifdef BUILD_EXPERIMENTAL
+  #include "rhythm.h"
 #endif
 
 namespace MusECore {
@@ -326,7 +344,9 @@ MusE::MusE() : QMainWindow()
       midiFileConfig        = nullptr;
       midiFilterConfig      = nullptr;
       midiInputTransform    = nullptr;
+#ifdef BUILD_EXPERIMENTAL
       midiRhythmGenerator   = nullptr;
+#endif
       globalSettingsConfig  = nullptr;
       arrangerView          = nullptr;
       softSynthesizerConfig = nullptr;
@@ -352,6 +372,8 @@ MusE::MusE() : QMainWindow()
       appName               = PACKAGE_NAME;
       setWindowTitle(appName);
       setWindowIcon(*MusEGui::museIcon);
+
+      MusEGlobal::globalRasterizer = new Rasterizer(MusEGlobal::config.division, this);
 
       MusEGlobal::song = new MusECore::Song("song");
       MusEGlobal::song->blockSignals(true);
@@ -2279,10 +2301,8 @@ void MusE::startListEditor()
 
 void MusE::startListEditor(MusECore::PartList* pl)
 {
-//    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
     QDockWidget* dock = new QDockWidget("List Editor", this);
-    //      dock->setObjectName("listeditDock");
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
     dock->setWidget(listEditor);
@@ -2607,7 +2627,7 @@ void MusE::kbAccel(int key)
             if(spos > 0)
             {
               spos -= 1;     // Nudge by -1, then snap down with raster1.
-              spos = MusEGlobal::sigmap.raster1(spos, MusEGlobal::song->arrangerRaster());
+              spos = MusEGlobal::sigmap.raster1(spos, _arranger->rasterVal());
             }
             if(spos < 0)
               spos = 0;
@@ -2616,13 +2636,15 @@ void MusE::kbAccel(int key)
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC].key) {
-            int spos = MusEGlobal::sigmap.raster2(MusEGlobal::song->cpos() + 1, MusEGlobal::song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
+            // Nudge by +1, then snap up with raster2.
+            int spos = MusEGlobal::sigmap.raster2(MusEGlobal::song->cpos() + 1, _arranger->rasterVal());
             MusECore::Pos p(spos,true);
             MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_DEC_NOSNAP].key) {
-            int spos = MusEGlobal::song->cpos() - MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster());
+            int spos = MusEGlobal::song->cpos() - MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(),
+              _arranger->rasterVal());
             if(spos < 0)
               spos = 0;
             MusECore::Pos p(spos,true);
@@ -2630,7 +2652,8 @@ void MusE::kbAccel(int key)
             return;
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_POS_INC_NOSNAP].key) {
-            MusECore::Pos p(MusEGlobal::song->cpos() + MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(), MusEGlobal::song->arrangerRaster()), true);
+            MusECore::Pos p(MusEGlobal::song->cpos() + MusEGlobal::sigmap.rasterStep(MusEGlobal::song->cpos(),
+              _arranger->rasterVal()), true);
             MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true);
             return;
             }
@@ -2843,7 +2866,7 @@ void MusE::configAppearance()
       {
       if (!appearance)
             // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
-            appearance = new MusEGui::Appearance(_arranger, this);
+            appearance = new MusEGui::Appearance(this);
       appearance->resetValues();
       if(appearance->isVisible()) {
           appearance->raise();
@@ -4531,6 +4554,11 @@ void MusE::resizeEvent(QResizeEvent* event) {
 //bool MusE::isTabbedMDI() {
 //    return (mdiArea->viewMode() == QMdiArea::TabbedView);
 //}
+
+int MusE::arrangerRaster() const
+{
+  return _arranger->rasterVal();
+}
 
 QByteArray MusE::saveState(int version) const {
 printf("************** Save state\n");

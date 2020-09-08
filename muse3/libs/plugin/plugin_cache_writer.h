@@ -25,13 +25,11 @@
 #define __PLUGIN_CACHE_WRITER_H__
 
 #include <QString>
-#include <QStringList>
 
 #include "config.h"
 #include "globaldefs.h"
 #include "plugin_scan.h"
 #include "plugin_list.h"
-#include "xml.h"
 
 #include "synti/libsynti/mess.h"
 
@@ -99,6 +97,8 @@ typedef AEffect* (*LinuxVST_Instance_Function)(audioMasterCallback);
 
 #endif // VST_NATIVE_SUPPORT
 
+
+// Forward declarations:
 namespace MusECore {
 class Xml;
 }

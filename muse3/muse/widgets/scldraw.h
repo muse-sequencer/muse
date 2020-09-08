@@ -27,14 +27,14 @@
 #define __SCLDRAW_H__
 
 #include <QString>
+#include <QRect>
+
 #include "dimap.h"
 #include "scldiv.h"
 
 class QPalette;
 class QFontMetrics;
 class QPainter;
-class QRect;
-class QString;
 
 namespace MusEGui {
 

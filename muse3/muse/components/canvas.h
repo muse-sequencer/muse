@@ -30,18 +30,19 @@
 #include "undo.h"
 #include "event_tag_list.h"
 
-#include <QWheelEvent>
-#include <QMouseEvent>
-#include <QKeyEvent>
+#include <QPoint>
+#include <QRegion>
+#include <QRect>
 
+
+// Forward declarations:
 class QMenu;
-class QPoint;
+class QPainter;
+class QTimer;
+class QWheelEvent;
+class QMouseEvent;
+class QKeyEvent;
 
-namespace MusECore {
-class Undo;
-class Pos;
-}
-  
 namespace MusEGui {
 
 //---------------------------------------------------------

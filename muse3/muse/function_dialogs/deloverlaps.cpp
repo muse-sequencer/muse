@@ -21,7 +21,10 @@
 //=========================================================
 
 #include <QButtonGroup>
+
 #include "deloverlaps.h"
+
+// Forwards from header:
 #include "xml.h"
 
 namespace MusEGui {

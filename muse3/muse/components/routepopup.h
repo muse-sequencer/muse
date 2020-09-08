@@ -23,10 +23,19 @@
 #ifndef __ROUTEPOPUPMENU_H__
 #define __ROUTEPOPUPMENU_H__
 
+#include <QString>
+
 #include "type_defs.h"
 #include "route.h"
 #include "custom_widget_actions.h"
 #include "popupmenu.h"
+
+
+// Forward declarations:
+class QWidget;
+class QAction;
+class QPoint;
+class QResizeEvent;
 
 namespace MusECore {
 class AudioTrack;
@@ -34,15 +43,7 @@ class Track;
 class PendingOperationList;
 }
 
-class QWidget;
-class QString;
-class QAction;
-class QPoint;
-class QResizeEvent;
-
 namespace MusEGui {
-
-class RoutingMatrixWidgetAction;
 
 class RoutePopupMenu : public PopupMenu
 {

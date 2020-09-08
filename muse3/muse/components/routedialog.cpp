@@ -22,24 +22,21 @@
 //
 //=========================================================
 
-#include <QCloseEvent>
-#include <QScrollBar>
 #include <QVector>
 #include <QList>
 #include <QPalette>
-#include <Qt>
 #include <QRect>
 #include <QPoint>
 #include <QModelIndex>
 #include <QHeaderView>
-#include <QLayout>
-#include <QFlags>
 #include <QVariant>
 #include <QPainterPath>
 
 #include "routedialog.h"
 #include "globaldefs.h"
+#include "globals.h"
 #include "gconfig.h"
+#include "midiport.h"
 #include "track.h"
 #include "song.h"
 #include "audio.h"
@@ -48,6 +45,15 @@
 #include "app.h"
 #include "operations.h"
 #include "icons.h"
+
+// Forwards from header:
+#include <QCloseEvent>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QPainter>
+#include <QResizeEvent>
+#include <QPaintEvent>
+#include <QContextMenuEvent>
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);

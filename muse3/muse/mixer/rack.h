@@ -28,18 +28,21 @@
 #include <QListWidget>
 #include "type_defs.h"
 
-#include <QDragEnterEvent>
-#include <QDragLeaveEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
-#include <QEvent>
 #include <QColor>
 
-#include "track.h"
-#include "xml.h"
-#include "background_painter.h"
+class QDragEnterEvent;
+class QDragLeaveEvent;
+class QDropEvent;
+class QMouseEvent;
+class QEvent;
+
+namespace MusECore {
+class AudioTrack;
+class Xml;
+}
 
 namespace MusEGui {
+class ItemBackgroundPainter;
 
 //---------------------------------------------------------
 //   EffectRack

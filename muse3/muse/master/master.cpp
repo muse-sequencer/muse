@@ -28,14 +28,17 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPoint>
 #include <QList>
 #include <QPair>
+#include <QRect>
+#include <QToolBar>
 
 #include "globals.h"
 #include "master.h"
 #include "song.h"
 #include "scrollscale.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midieditor.h"
 #include "icons.h"
 #include "audio.h"
@@ -225,11 +228,11 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 
 void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      drawTickRaster(p, rect, rg, 0,
+      drawTickRaster(p, rect, rg, editor->raster(),
                      false, false, false,
-                     Qt::red, // dummy color - order set by trial and error..
                      MusEGlobal::config.midiCanvasBeatColor,
-                     Qt::red, // dummy color
+                     MusEGlobal::config.midiCanvasBeatColor,
+                     MusEGlobal::config.midiCanvasFineColor,
                      MusEGlobal::config.midiCanvasBarColor
                      );
 

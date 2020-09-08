@@ -34,8 +34,6 @@
 #include <assert.h>
 
 #include <QClipboard>
-#include <QLineEdit>
-#include <QMenu>
 #include <QMessageBox>
 #include <QUrl>
 #include <QPoint>
@@ -51,7 +49,6 @@
 #include "arrangerview.h"
 #include "structure.h"
 #include "pcanvas.h"
-#include "midieditor.h"
 #include "globals.h"
 #include "icons.h"
 #include "event.h"
@@ -66,7 +63,7 @@
 #include "menutitleitem.h"
 #include "mpevent.h"
 #include "midievent.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midictrl.h"
 #include "utils.h"
 #include "dialogs.h"
@@ -74,6 +71,21 @@
 #include "undo.h"
 #include "tracks_duplicate.h"
 #include "name_factory.h"
+#include "song.h"
+
+// Forwards from header:
+#include <QDropEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QEvent>
+#include <QDragEnterEvent>
+#include <QLineEdit>
+#include <QMenu>
+#include <QPainter>
+#include "ctrl.h"
+#include "xml.h"
+#include "part.h"
+#include "citem.h"
 
 using MusECore::Undo;
 using MusECore::UndoOp;
@@ -696,7 +708,7 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
         newTickPos  = i->mp().x();
       }
    }
-   MusEGlobal::song->cmdResizePart(t, p, newTickWidth, resizeDirection, newTickPos, !ctrl);
+   MusECore::resize_part(t, p, newTickWidth, resizeDirection, newTickPos, !ctrl);
 }
 
 //---------------------------------------------------------
