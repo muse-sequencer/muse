@@ -748,10 +748,6 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               if(MusEGlobal::config.routerGroupingChannels > 2)
                                 MusEGlobal::config.routerGroupingChannels = 2;
                         }
-                        else if (tag == "fixFrozenMDISubWindows")
-                              MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
-//                        else if (tag == "tabbedMDI")
-//                            MusEGlobal::config.tabbedMDI = xml.parseInt();
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
@@ -1991,8 +1987,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "routerExpandVertically", MusEGlobal::config.routerExpandVertically);
       xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
-      xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
-//      xml.intTag(level, "tabbedMDI", MusEGlobal::config.tabbedMDI);
       xml.strTag(level, "theme", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);

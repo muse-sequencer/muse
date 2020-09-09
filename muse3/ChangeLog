@@ -1,3 +1,8 @@
+09.09.2020
+    - Allow only one instance of master list editor dock. (kybos)
+    - Add menu item (View) and shortcut (F7) to show/hide all active docks. (kybos)
+    - Fix docks behaviour when editor windows are switched. (kybos)
+    - Fix potential resizing artefacts when loading older files into new tabbed GUI. (kybos)
 04.09.2020
     - New streamlined GUI: 
       Tabbed MDI as default, with the option to detach/float the graphical editor 

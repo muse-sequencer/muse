@@ -80,6 +80,7 @@ class EditToolBar;
 class GlobalSettingsConfig;
 class MRConfig;
 class MarkerView;
+class LMaster;
 class MetronomeConfig;
 class MidiFileConfig;
 class MidiFilterConfig;
@@ -142,10 +143,12 @@ class MusE : public QMainWindow
       std::list<QToolBar*> foreignToolbars;  //holds a temporary list of the toolbars of a toolbar-sharer
       std::list<QMenu*> leadingMenus;
       std::list<QMenu*> trailingMenus;
+
+      QList<QDockWidget *> hiddenDocks;
    
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction;
-      QAction* fullscreenAction;
+      QAction *fullscreenAction, *toggleDocksAction;
       QAction *masterGraphicAction, *masterListAction;
 
       // Midi Menu Actions
@@ -225,6 +228,8 @@ class MusE : public QMainWindow
       QDockWidget* clipListDock;
       MarkerView* markerView;
       QDockWidget* markerDock;
+      LMaster* masterList;
+      QDockWidget* masterListDock;
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
@@ -311,7 +316,7 @@ class MusE : public QMainWindow
       void startSongInfo(bool editable=true);
 
       void writeGlobalConfiguration() const;
-      void startClipList(bool);
+      void showClipList(bool);
       
       void openRecentMenu();
       void selectProject(QAction* act);
@@ -348,6 +353,7 @@ class MusE : public QMainWindow
       void setFullscreen(bool);
       void setDirty();
       void toggleRewindOnStop(bool);
+      void toggleDocks(bool show, bool saveState = true);
 
    public slots:
       bool saveAs();
@@ -383,7 +389,7 @@ class MusE : public QMainWindow
       void openInScoreEdit_allInOne(QWidget* destination);
       void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
       void startMasterEditor();
-      void startLMasterEditor();
+      void showMasterList(bool);
       void startListEditor();
       void startListEditor(MusECore::PartList*);
       void startDrumEditor();
@@ -459,7 +465,7 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
-//      bool isTabbedMDI();
+      bool restoreState(const QByteArray &state, int version = 0);
       
       const ToplevelList* getToplevels() { return &toplevels; }
       

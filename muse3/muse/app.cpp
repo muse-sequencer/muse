@@ -423,17 +423,26 @@ MusE::MusE() : QMainWindow()
 #endif
 
       setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+      setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 
       markerDock = new QDockWidget("Markers", this);
-//      markerDock->setObjectName("markerDock");
+      markerDock->setObjectName("markerDock");
 //      markerDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
       markerView = new MusEGui::MarkerView(markerDock);
       markerDock->setWidget(markerView);
       addDockWidget(Qt::RightDockWidgetArea, markerDock);
       markerDock->hide();
 
+      masterListDock = new QDockWidget("Master Track List", this);
+      masterListDock->setObjectName("masterListDock");
+      // listMasterDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
+      masterList = new MusEGui::LMaster(this);
+      masterListDock->setWidget(masterList);
+      addDockWidget(Qt::RightDockWidgetArea, masterListDock);
+      masterListDock->hide();
+
       clipListDock = new QDockWidget("Clip List", this);
-//      clipListDock->setObjectName("clipListDock");
+      clipListDock->setObjectName("clipListDock");
 //      clipListDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
       clipListEdit = new MusEGui::ClipListEdit(clipListDock);
       clipListDock->setWidget(clipListEdit);
@@ -600,15 +609,22 @@ MusE::MusE() : QMainWindow()
 
 //      viewArrangerAction = new QAction(tr("Arranger View"),  this);
 //      viewArrangerAction->setCheckable(true);
+
+      toggleDocksAction = new QAction(tr("Show Docks"), this);
+      toggleDocksAction->setCheckable(true);
+      toggleDocksAction->setChecked(true);
+
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
-      QMenu* master = new QMenu(tr("Mastertrack"), this);
-      master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic..."), this);
-      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
-      master->addAction(masterGraphicAction);
-      master->addAction(masterListAction);
+
+//      QMenu* master = new QMenu(tr("Mastertrack"), this);
+//      master->setIcon(QIcon(*edit_mastertrackIcon));
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Master Track Graphic..."), this);
+      masterListAction = masterListDock->toggleViewAction();
+//      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
+//      master->addAction(masterGraphicAction);
+//      master->addAction(masterListAction);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
@@ -703,7 +719,8 @@ MusE::MusE() : QMainWindow()
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
 //      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
       connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
-      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
+//      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
+      connect(toggleDocksAction, SIGNAL(toggled(bool)), SLOT(toggleDocks(bool)));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
@@ -889,14 +906,15 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewBigtimeAction);
       menuView->addAction(viewMixerAAction);
       menuView->addAction(viewMixerBAction);
-      menuView->addAction(viewCliplistAction);
-      menuView->addAction(viewMarkerAction);
+      menuView->addSeparator();
 //      menuView->addAction(viewArrangerAction);
+//      menuView->addMenu(master);
+      menuView->addAction(masterGraphicAction);
+      menuView->addAction(masterListAction);
+      menuView->addAction(viewMarkerAction);
+      menuView->addAction(viewCliplistAction);
       menuView->addSeparator();
-      menuView->addMenu(master);
-//       menuView->addAction(masterGraphicAction);
-//       menuView->addAction(masterListAction);
-      menuView->addSeparator();
+      menuView->addAction(toggleDocksAction);
       menuView->addAction(fullscreenAction);
 
 
@@ -1017,7 +1035,7 @@ MusE::MusE() : QMainWindow()
 
 
       mdiArea=new MuseMdiArea(this);
-      mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
+//      mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
@@ -1028,7 +1046,7 @@ MusE::MusE() : QMainWindow()
       QTabBar* tb = mdiArea->findChild<QTabBar*>();
       if (tb) {
           tb->setExpanding(false);
-          //              tb->setAutoHide(true);
+//          tb->setAutoHide(true);
       }
 //      viewArrangerAction->setEnabled(false);
 
@@ -1625,39 +1643,39 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 
 void MusE::fileClose()
 {
-  // For now we just don't read the ports, leaving the last setup intact.
-  const bool doReadMidiPorts = false;
-  
-//   if (mixer1)
-//         mixer1->clearAndDelete();
-//   if (mixer2)
-//         mixer2->clearAndDelete();
-//   _arranger->clear();      // clear track info
-  if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
-        return;
-  
-  //setConfigDefaults();
-  QString name(MusEGui::getUniqueUntitledName());
-  MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
-  //QDir::setCurrent(QDir::homePath());
-  QDir::setCurrent(MusEGlobal::museProject);
-  project.setFile(name);
-  _lastProjectFilePath = QString();
-  _lastProjectWasTemplate = false;
-  _lastProjectLoadedConfig = true;
+    // For now we just don't read the ports, leaving the last setup intact.
+    const bool doReadMidiPorts = false;
 
-  setWindowTitle(projectTitle(name));
-  
-  //writeTopwinState=true;
-  
-  MusEGlobal::song->dirty = false;
-  
-  // Inform the rest of the app the song changed, with all flags.
-  MusEGlobal::song->update(SC_EVERYTHING);
-  MusEGlobal::song->updatePos();
-  arrangerView->clipboardChanged(); // enable/disable "Paste"
-  arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
-  arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+    //   if (mixer1)
+    //         mixer1->clearAndDelete();
+    //   if (mixer2)
+    //         mixer2->clearAndDelete();
+    //   _arranger->clear();      // clear track info
+    if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
+        return;
+
+    //setConfigDefaults();
+    QString name(MusEGui::getUniqueUntitledName());
+    MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+    //QDir::setCurrent(QDir::homePath());
+    QDir::setCurrent(MusEGlobal::museProject);
+    project.setFile(name);
+    _lastProjectFilePath = QString();
+    _lastProjectWasTemplate = false;
+    _lastProjectLoadedConfig = true;
+
+    setWindowTitle(projectTitle(name));
+
+    //writeTopwinState=true;
+
+    MusEGlobal::song->dirty = false;
+
+    // Inform the rest of the app the song changed, with all flags.
+    MusEGlobal::song->update(SC_EVERYTHING);
+    MusEGlobal::song->updatePos();
+    arrangerView->clipboardChanged(); // enable/disable "Paste"
+    arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+    arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
 }
       
 //---------------------------------------------------------
@@ -1822,8 +1840,8 @@ void MusE::closeEvent(QCloseEvent* event)
       if (MusEGlobal::song->dirty) {
             int n = 0;
             n = QMessageBox::warning(this, appName,
-               tr("The current Project contains unsaved data\n"
-               "Save Current Project?"),
+               tr("The current project contains unsaved data.\n"
+               "Save current project?"),
                tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
             if (n == 0) {
                   if (!save())      // don't quit if save failed
@@ -2290,10 +2308,8 @@ void MusE::startListEditor()
 
 void MusE::startListEditor(MusECore::PartList* pl)
 {
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
     QDockWidget* dock = new QDockWidget("List Editor", this);
-    //      markerDock->setObjectName("listeditDock");
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
     dock->setWidget(listEditor);
@@ -2307,6 +2323,8 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
         dock->setWindowTitle("Part <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
     }
+
+    dock->setObjectName(dock->windowTitle());
 
     addDockWidget(Qt::BottomDockWidgetArea, dock);
 
@@ -2332,18 +2350,9 @@ void MusE::startMasterEditor()
 //   startLMasterEditor
 //---------------------------------------------------------
 
-void MusE::startLMasterEditor()
+void MusE::showMasterList(bool show)
 {
-    QDockWidget* dock = new QDockWidget("Mastertrack List", this);
-    //      markerDock->setObjectName("lmasterDock");
-//    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
-    MusEGui::LMaster* lmaster = new MusEGui::LMaster(this);
-    dock->setWidget(lmaster);
-    addDockWidget(Qt::RightDockWidgetArea, dock);
-
-    dock->setAttribute(Qt::WA_DeleteOnClose);
-
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
+    masterListDock->setVisible(show);
 }
 
 //---------------------------------------------------------
@@ -2470,9 +2479,9 @@ void MusE::showDidYouKnowDialog()
 //   startClipList
 //---------------------------------------------------------
 
-void MusE::startClipList(bool checked)
+void MusE::showClipList(bool show)
 {
-    clipListDock->setEnabled(checked);
+    clipListDock->setVisible(show);
 }
 
 //---------------------------------------------------------
@@ -3249,64 +3258,67 @@ MusE::lash_idle_cb ()
 //---------------------------------------------------------
 
 bool MusE::clearSong(bool clear_all)
-      {
-      if (MusEGlobal::song->dirty) {
-            int n = 0;
-            n = QMessageBox::warning(this, appName,
-               tr("The current Project contains unsaved data\n"
-               "Load overwrites current Project:\n"
-               "Save Current Project?"),
-               tr("&Save"), tr("S&kip"), tr("&Abort"), 0, 2);
-            switch (n) {
-                  case 0:
-                        if (!save())      // abort if save failed
-                              return true;
-                        break;
-                  case 1:
-                        break;
-                  case 2:
-                        return true;
-                  default:
-                        fprintf(stderr, "InternalError: gibt %d\n", n);
-                  }
-            }
-      if (MusEGlobal::audio->isPlaying()) {
-            MusEGlobal::audio->msgPlay(false);
-            while (MusEGlobal::audio->isPlaying())
-                  qApp->processEvents();
-            }
-      microSleep(100000);
+{
+    if (MusEGlobal::song->dirty) {
+        int n = 0;
+        n = QMessageBox::warning(this, appName,
+                                 tr("The current project contains unsaved data.\n"
+                                    "Load overwrites current project.\n"
+                                    "Save current project?"),
+                                 tr("&Save"), tr("S&kip"), tr("&Abort"), 0, 2);
+        switch (n) {
+        case 0:
+            if (!save())      // abort if save failed
+                return true;
+            break;
+        case 1:
+            break;
+        case 2:
+            return true;
+        default:
+            fprintf(stderr, "InternalError: gibt %d\n", n);
+        }
+    }
+    if (MusEGlobal::audio->isPlaying()) {
+        MusEGlobal::audio->msgPlay(false);
+        while (MusEGlobal::audio->isPlaying())
+            qApp->processEvents();
+    }
+    microSleep(100000);
 
 again:
-      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            MusEGui::TopWin* tl = *i;
-            switch (tl->type()) {
-                  case MusEGui::TopWin::ARRANGER:
-                        break;
-                  case MusEGui::TopWin::PIANO_ROLL:
-                  case MusEGui::TopWin::SCORE:
-//                  case MusEGui::TopWin::LISTE:
-                  case MusEGui::TopWin::DRUM:
-                  case MusEGui::TopWin::MASTER:
-                  case MusEGui::TopWin::WAVE:
-                  {
-                        if(tl->isVisible())   // Don't keep trying to close, only if visible.
-                        {
-                          if(!tl->close())
-                            fprintf(stderr, "MusE::clearSong TopWin did not close!\n");
-                          goto again;
-                        }
-                  }
-                  case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
-                    break;
-                  }
+    for (const auto& i : toplevels) {
+        MusEGui::TopWin* tl = i;
+        switch (tl->type()) {
+        case MusEGui::TopWin::ARRANGER:
+            break;
+        case MusEGui::TopWin::PIANO_ROLL:
+        case MusEGui::TopWin::SCORE:
+            //                  case MusEGui::TopWin::LISTE:
+        case MusEGui::TopWin::DRUM:
+        case MusEGui::TopWin::MASTER:
+        case MusEGui::TopWin::WAVE:
+        {
+            if(tl->isVisible())   // Don't keep trying to close, only if visible.
+            {
+                if(!tl->close())
+                    fprintf(stderr, "MusE::clearSong TopWin did not close!\n");
+                goto again;
             }
-      microSleep(100000);
-      _arranger->songIsClearing();
-      MusEGlobal::song->clear(true, clear_all);
-      microSleep(100000);
-      return false;
-      }
+        }
+        case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+            break;
+        }
+    }
+
+    toggleDocks(false, false);
+
+    microSleep(100000);
+    _arranger->songIsClearing();
+    MusEGlobal::song->clear(true, clear_all);
+    microSleep(100000);
+    return false;
+}
 
 //---------------------------------------------------------
 //   startEditInstrument
@@ -3509,6 +3521,7 @@ void MusE::updateConfiguration()
 
       helpManualAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_HELP].key);
       fullscreenAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_FULLSCREEN].key);
+      toggleDocksAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_DOCKS].key);
       //rewindOnStopAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key); moved to global shortcuts in MusE::kbAccel
 
       //arrangerView->updateMusEGui::Shortcuts(); //commented out by flo: is done via signal
@@ -4549,13 +4562,55 @@ void MusE::resizeEvent(QResizeEvent* event) {
     MusEGlobal::config.geometryMain = geometry();
 }
 
-//bool MusE::isTabbedMDI() {
-//    return (mdiArea->viewMode() == QMdiArea::TabbedView);
-//}
-
 int MusE::arrangerRaster() const
 {
   return _arranger->rasterVal();
+}
+
+
+bool MusE::restoreState(const QByteArray &state, int version) {
+
+    QList<QDockWidget *> docks_vis;
+    for (const auto& d : findChildren<QDockWidget *>()) {
+        if (d->isVisible()) {
+            docks_vis.prepend(d);
+            d->hide();
+        }
+    }
+
+    bool ret = QMainWindow::restoreState(state, version);
+
+    for (const auto& d : findChildren<QDockWidget *>()) {
+        if (d->isVisible())
+            d->hide();
+    }
+
+    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+
+    for (const auto& d : docks_vis)
+        d->show();
+
+    return ret;
+}
+
+void MusE::toggleDocks(bool show, bool saveState) {
+    if (show) {
+        if (!hiddenDocks.isEmpty()) {
+            for (const auto& d : hiddenDocks)
+                d->show();
+            hiddenDocks.clear();
+        }
+    } else {
+        hiddenDocks.clear();
+        for (const auto& d : findChildren<QDockWidget *>()) {
+            if (d->isVisible()) {
+                if (saveState)
+                    hiddenDocks.prepend(d);
+                d->hide();
+            }
+        }
+    }
 }
 
 } //namespace MusEGui

@@ -1887,9 +1887,6 @@ void loadTheme(const QString& s, bool force)
         if(force || oname.compare(Appearance::getSetDefaultStyle(), Qt::CaseInsensitive) != 0)
         {
           qApp->setStyle(Appearance::getSetDefaultStyle());
-          // Do the style again to fix a bug where the arranger is non-responsive.
-          if(MusEGlobal::config.fixFrozenMDISubWindows)
-            qApp->setStyle(Appearance::getSetDefaultStyle());
 
           if(MusEGlobal::debugMsg)
           {
@@ -1912,8 +1909,6 @@ void loadTheme(const QString& s, bool force)
       {
             qApp->setStyle(s);
             // Do the style again to fix a bug where the arranger is non-responsive.
-            if(MusEGlobal::config.fixFrozenMDISubWindows)
-              qApp->setStyle(s);
 
             if(MusEGlobal::debugMsg)
             {

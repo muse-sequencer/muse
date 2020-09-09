@@ -95,7 +95,7 @@ class TopWin : public QMainWindow
 
       
       void resize(int w, int h);
-      void resize(const QSize&);
+//      void resize(const QSize&);
  
 //      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
 //      static bool _sharesMenusToolbars[TOPLEVELTYPE_LAST_ENTRY];
@@ -150,7 +150,7 @@ class TopWin : public QMainWindow
       virtual void storeInitialViewState() const { }
       virtual void setWindowTitle (const QString&);
       virtual void focusCanvas() { }
-      virtual void windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState);
+//      virtual void windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState);
       };
 
 

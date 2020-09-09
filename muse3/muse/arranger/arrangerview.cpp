@@ -179,7 +179,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll..."), this);
   startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums..."), this);
-  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List..."), this);
+  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("Event List..."), this);
   startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave..."), this);
 
   openCurrentTrackSynthGuiAction =  new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open Synth Plugin GUI..."), this);
