@@ -1049,25 +1049,25 @@ void MusE::readToplevels(MusECore::Xml& xml)
                     pl = new MusECore::PartList;
                 }
             }
-            else if (tag == "listeditor") {
-                if(!pl->empty())
-                {
-                    startListEditor(pl);
-//                    toplevels.back()->readStatus(xml);
-                    pl = new MusECore::PartList;
-                }
-            }
+//            else if (tag == "listeditor") {
+//                if(!pl->empty())
+//                {
+//                    startListEditor(pl);
+////                    toplevels.back()->readStatus(xml);
+//                    pl = new MusECore::PartList;
+//                }
+//            }
             else if (tag == "master") {
                 startMasterEditor();
                 toplevels.back()->readStatus(xml);
             }
-            else if (tag == "lmaster") {
-                showMasterList(true);
-//                toplevels.back()->readStatus(xml);
-            }
-            else if (tag == "marker") {
-                showMarker(true);
-            }
+//            else if (tag == "lmaster") {
+//                showMasterList(true);
+////                toplevels.back()->readStatus(xml);
+//            }
+//            else if (tag == "marker") {
+//                showMarker(true);
+//            }
             else if (tag == "waveedit") {
                 if(!pl->empty())
                 {
@@ -1076,9 +1076,9 @@ void MusE::readToplevels(MusECore::Xml& xml)
                     pl = new MusECore::PartList;
                 }
             }
-            else if (tag == "cliplist") {
-                showClipList(true);
-            }
+//            else if (tag == "cliplist") {
+//                showClipList(true);
+//            }
             else
                 xml.unknown("MusE");
             break;

@@ -143,10 +143,12 @@ class MusE : public QMainWindow
       std::list<QToolBar*> foreignToolbars;  //holds a temporary list of the toolbars of a toolbar-sharer
       std::list<QMenu*> leadingMenus;
       std::list<QMenu*> trailingMenus;
+
+      QList<QDockWidget *> hiddenDocks;
    
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction;
-      QAction* fullscreenAction;
+      QAction *fullscreenAction, *toggleDocksAction;
       QAction *masterGraphicAction, *masterListAction;
 
       // Midi Menu Actions
@@ -351,6 +353,7 @@ class MusE : public QMainWindow
       void setFullscreen(bool);
       void setDirty();
       void toggleRewindOnStop(bool);
+      void toggleDocks(bool show, bool saveState = true);
 
    public slots:
       bool saveAs();

@@ -609,6 +609,11 @@ MusE::MusE() : QMainWindow()
 
 //      viewArrangerAction = new QAction(tr("Arranger View"),  this);
 //      viewArrangerAction->setCheckable(true);
+
+      toggleDocksAction = new QAction(tr("Show Docks"), this);
+      toggleDocksAction->setCheckable(true);
+      toggleDocksAction->setChecked(true);
+
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
@@ -715,6 +720,7 @@ MusE::MusE() : QMainWindow()
 //      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
       connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
 //      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
+      connect(toggleDocksAction, SIGNAL(toggled(bool)), SLOT(toggleDocks(bool)));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
@@ -908,6 +914,7 @@ MusE::MusE() : QMainWindow()
       menuView->addAction(viewMarkerAction);
       menuView->addAction(viewCliplistAction);
       menuView->addSeparator();
+      menuView->addAction(toggleDocksAction);
       menuView->addAction(fullscreenAction);
 
 
@@ -1636,39 +1643,39 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 
 void MusE::fileClose()
 {
-  // For now we just don't read the ports, leaving the last setup intact.
-  const bool doReadMidiPorts = false;
-  
-//   if (mixer1)
-//         mixer1->clearAndDelete();
-//   if (mixer2)
-//         mixer2->clearAndDelete();
-//   _arranger->clear();      // clear track info
-  if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
-        return;
-  
-  //setConfigDefaults();
-  QString name(MusEGui::getUniqueUntitledName());
-  MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
-  //QDir::setCurrent(QDir::homePath());
-  QDir::setCurrent(MusEGlobal::museProject);
-  project.setFile(name);
-  _lastProjectFilePath = QString();
-  _lastProjectWasTemplate = false;
-  _lastProjectLoadedConfig = true;
+    // For now we just don't read the ports, leaving the last setup intact.
+    const bool doReadMidiPorts = false;
 
-  setWindowTitle(projectTitle(name));
-  
-  //writeTopwinState=true;
-  
-  MusEGlobal::song->dirty = false;
-  
-  // Inform the rest of the app the song changed, with all flags.
-  MusEGlobal::song->update(SC_EVERYTHING);
-  MusEGlobal::song->updatePos();
-  arrangerView->clipboardChanged(); // enable/disable "Paste"
-  arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
-  arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+    //   if (mixer1)
+    //         mixer1->clearAndDelete();
+    //   if (mixer2)
+    //         mixer2->clearAndDelete();
+    //   _arranger->clear();      // clear track info
+    if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
+        return;
+
+    //setConfigDefaults();
+    QString name(MusEGui::getUniqueUntitledName());
+    MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+    //QDir::setCurrent(QDir::homePath());
+    QDir::setCurrent(MusEGlobal::museProject);
+    project.setFile(name);
+    _lastProjectFilePath = QString();
+    _lastProjectWasTemplate = false;
+    _lastProjectLoadedConfig = true;
+
+    setWindowTitle(projectTitle(name));
+
+    //writeTopwinState=true;
+
+    MusEGlobal::song->dirty = false;
+
+    // Inform the rest of the app the song changed, with all flags.
+    MusEGlobal::song->update(SC_EVERYTHING);
+    MusEGlobal::song->updatePos();
+    arrangerView->clipboardChanged(); // enable/disable "Paste"
+    arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+    arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
 }
       
 //---------------------------------------------------------
@@ -1833,8 +1840,8 @@ void MusE::closeEvent(QCloseEvent* event)
       if (MusEGlobal::song->dirty) {
             int n = 0;
             n = QMessageBox::warning(this, appName,
-               tr("The current Project contains unsaved data\n"
-               "Save Current Project?"),
+               tr("The current project contains unsaved data.\n"
+               "Save current project?"),
                tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
             if (n == 0) {
                   if (!save())      // don't quit if save failed
@@ -3251,64 +3258,67 @@ MusE::lash_idle_cb ()
 //---------------------------------------------------------
 
 bool MusE::clearSong(bool clear_all)
-      {
-      if (MusEGlobal::song->dirty) {
-            int n = 0;
-            n = QMessageBox::warning(this, appName,
-               tr("The current Project contains unsaved data\n"
-               "Load overwrites current Project:\n"
-               "Save Current Project?"),
-               tr("&Save"), tr("S&kip"), tr("&Abort"), 0, 2);
-            switch (n) {
-                  case 0:
-                        if (!save())      // abort if save failed
-                              return true;
-                        break;
-                  case 1:
-                        break;
-                  case 2:
-                        return true;
-                  default:
-                        fprintf(stderr, "InternalError: gibt %d\n", n);
-                  }
-            }
-      if (MusEGlobal::audio->isPlaying()) {
-            MusEGlobal::audio->msgPlay(false);
-            while (MusEGlobal::audio->isPlaying())
-                  qApp->processEvents();
-            }
-      microSleep(100000);
+{
+    if (MusEGlobal::song->dirty) {
+        int n = 0;
+        n = QMessageBox::warning(this, appName,
+                                 tr("The current project contains unsaved data.\n"
+                                    "Load overwrites current project.\n"
+                                    "Save current project?"),
+                                 tr("&Save"), tr("S&kip"), tr("&Abort"), 0, 2);
+        switch (n) {
+        case 0:
+            if (!save())      // abort if save failed
+                return true;
+            break;
+        case 1:
+            break;
+        case 2:
+            return true;
+        default:
+            fprintf(stderr, "InternalError: gibt %d\n", n);
+        }
+    }
+    if (MusEGlobal::audio->isPlaying()) {
+        MusEGlobal::audio->msgPlay(false);
+        while (MusEGlobal::audio->isPlaying())
+            qApp->processEvents();
+    }
+    microSleep(100000);
 
 again:
-      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            MusEGui::TopWin* tl = *i;
-            switch (tl->type()) {
-                  case MusEGui::TopWin::ARRANGER:
-                        break;
-                  case MusEGui::TopWin::PIANO_ROLL:
-                  case MusEGui::TopWin::SCORE:
-//                  case MusEGui::TopWin::LISTE:
-                  case MusEGui::TopWin::DRUM:
-                  case MusEGui::TopWin::MASTER:
-                  case MusEGui::TopWin::WAVE:
-                  {
-                        if(tl->isVisible())   // Don't keep trying to close, only if visible.
-                        {
-                          if(!tl->close())
-                            fprintf(stderr, "MusE::clearSong TopWin did not close!\n");
-                          goto again;
-                        }
-                  }
-                  case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
-                    break;
-                  }
+    for (const auto& i : toplevels) {
+        MusEGui::TopWin* tl = i;
+        switch (tl->type()) {
+        case MusEGui::TopWin::ARRANGER:
+            break;
+        case MusEGui::TopWin::PIANO_ROLL:
+        case MusEGui::TopWin::SCORE:
+            //                  case MusEGui::TopWin::LISTE:
+        case MusEGui::TopWin::DRUM:
+        case MusEGui::TopWin::MASTER:
+        case MusEGui::TopWin::WAVE:
+        {
+            if(tl->isVisible())   // Don't keep trying to close, only if visible.
+            {
+                if(!tl->close())
+                    fprintf(stderr, "MusE::clearSong TopWin did not close!\n");
+                goto again;
             }
-      microSleep(100000);
-      _arranger->songIsClearing();
-      MusEGlobal::song->clear(true, clear_all);
-      microSleep(100000);
-      return false;
-      }
+        }
+        case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+            break;
+        }
+    }
+
+    toggleDocks(false, false);
+
+    microSleep(100000);
+    _arranger->songIsClearing();
+    MusEGlobal::song->clear(true, clear_all);
+    microSleep(100000);
+    return false;
+}
 
 //---------------------------------------------------------
 //   startEditInstrument
@@ -3511,6 +3521,7 @@ void MusE::updateConfiguration()
 
       helpManualAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_HELP].key);
       fullscreenAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_FULLSCREEN].key);
+      toggleDocksAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_DOCKS].key);
       //rewindOnStopAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key); moved to global shortcuts in MusE::kbAccel
 
       //arrangerView->updateMusEGui::Shortcuts(); //commented out by flo: is done via signal
@@ -4581,6 +4592,25 @@ bool MusE::restoreState(const QByteArray &state, int version) {
         d->show();
 
     return ret;
+}
+
+void MusE::toggleDocks(bool show, bool saveState) {
+    if (show) {
+        if (!hiddenDocks.isEmpty()) {
+            for (const auto& d : hiddenDocks)
+                d->show();
+            hiddenDocks.clear();
+        }
+    } else {
+        hiddenDocks.clear();
+        for (const auto& d : findChildren<QDockWidget *>()) {
+            if (d->isVisible()) {
+                if (saveState)
+                    hiddenDocks.prepend(d);
+                d->hide();
+            }
+        }
+    }
 }
 
 } //namespace MusEGui

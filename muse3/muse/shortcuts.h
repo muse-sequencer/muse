@@ -99,6 +99,7 @@ enum {
       SHRT_REC_CLEAR, // backspace
       SHRT_FULLSCREEN,
       SHRT_TABBED_WIN,
+      SHRT_TOGGLE_DOCKS,
       SHRT_TOGGLE_REWINDONSTOP,
 
       //Main + Drumeditor
