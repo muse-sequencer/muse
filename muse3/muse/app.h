@@ -131,7 +131,6 @@ class MusE : public QMainWindow
       QAction *fileCloseAction;
       QAction *editSongInfoAction;
       
-   private:
       MuseMdiArea* mdiArea;
       
       TopWin* activeTopWin;
@@ -267,6 +266,7 @@ class MusE : public QMainWindow
       void toggleTrackArmSelectedTrack();
       void centerAndResize();
       void resizeEvent(QResizeEvent* event) override;
+      void closeDocks();
 
       QTimer *saveTimer;
       QTimer *blinkTimer;
@@ -353,7 +353,7 @@ class MusE : public QMainWindow
       void setFullscreen(bool);
       void setDirty();
       void toggleRewindOnStop(bool);
-      void toggleDocks(bool show, bool saveState = true);
+      void toggleDocks(bool show);
 
    public slots:
       bool saveAs();
@@ -417,6 +417,7 @@ class MusE : public QMainWindow
       float fAvrCpuLoad;
       int avrCpuLoadCounter;
       float fCurCpuLoad;
+
    public:
       MusE();
 

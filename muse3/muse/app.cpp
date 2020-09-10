@@ -3311,7 +3311,7 @@ again:
         }
     }
 
-    toggleDocks(false, false);
+    closeDocks();
 
     microSleep(100000);
     _arranger->songIsClearing();
@@ -4594,7 +4594,7 @@ bool MusE::restoreState(const QByteArray &state, int version) {
     return ret;
 }
 
-void MusE::toggleDocks(bool show, bool saveState) {
+void MusE::toggleDocks(bool show) {
     if (show) {
         if (!hiddenDocks.isEmpty()) {
             for (const auto& d : hiddenDocks)
@@ -4605,10 +4605,23 @@ void MusE::toggleDocks(bool show, bool saveState) {
         hiddenDocks.clear();
         for (const auto& d : findChildren<QDockWidget *>()) {
             if (d->isVisible()) {
-                if (saveState)
-                    hiddenDocks.prepend(d);
+                hiddenDocks.prepend(d);
                 d->hide();
             }
+        }
+    }
+}
+
+void MusE::closeDocks() {
+
+    hiddenDocks.clear();
+    toggleDocksAction->setChecked(true);
+
+    for (const auto& d : findChildren<QDockWidget *>()) {
+        if (strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") == 0)
+            d->close();
+        else if (d->isVisible()) {
+            d->hide();
         }
     }
 }
