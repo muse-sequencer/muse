@@ -433,7 +433,7 @@ MusE::MusE() : QMainWindow()
       addDockWidget(Qt::RightDockWidgetArea, markerDock);
       markerDock->hide();
 
-      masterListDock = new QDockWidget("Master Track List", this);
+      masterListDock = new QDockWidget("Mastertrack List", this);
       masterListDock->setObjectName("masterListDock");
       // listMasterDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
       masterList = new MusEGui::LMaster(this);
@@ -620,7 +620,7 @@ MusE::MusE() : QMainWindow()
 
 //      QMenu* master = new QMenu(tr("Mastertrack"), this);
 //      master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Master Track Graphic..."), this);
+      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack Graphic..."), this);
       masterListAction = masterListDock->toggleViewAction();
 //      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
 //      master->addAction(masterGraphicAction);
@@ -2321,7 +2321,7 @@ void MusE::startListEditor(MusECore::PartList* pl)
         MusEGlobal::sigmap.tickValues(p->tick(), &bar1, &xx, &x);
         MusEGlobal::sigmap.tickValues(p->tick() + p->lenTick(), &bar2, &xx, &x);
 
-        dock->setWindowTitle("Part <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
+        dock->setWindowTitle("Event List <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
     }
 
     dock->setObjectName(dock->windowTitle());
@@ -2341,7 +2341,6 @@ void MusE::startMasterEditor()
       {
       MusEGui::MasterEdit* masterEditor = new MusEGui::MasterEdit(this);
       toplevels.push_back(masterEditor);
-      masterEditor->show();
       connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       updateWindowMenu();
       }

@@ -247,7 +247,7 @@ class WaveCanvas : public EventCanvas {
             colorMode = mode;
             redraw();
             }
-      QString getCaption() const;
+//      QString getCaption() const;
       void songChanged(MusECore::SongChangedStruct_t);
       void range(int* s, int* e) const { *s = startSample; *e = endSample; }
       void selectAtTick(unsigned int tick);

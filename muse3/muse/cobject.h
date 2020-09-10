@@ -64,6 +64,7 @@ class TopWin : public QMainWindow
 
       ToplevelType type() const { return _type; }
       static QString typeName(ToplevelType t);
+      static QIcon typeIcon(ToplevelType t);
 
       bool initalizing() const { return _initalizing; }
       bool deleting() const { return _isDeleting; }

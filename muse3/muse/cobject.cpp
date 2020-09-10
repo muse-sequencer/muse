@@ -31,6 +31,7 @@
 #include "gconfig.h"
 #include "helper.h"
 #include "song.h"
+#include "icons.h"
 
 #include <QMenuBar>
 #include <QWidgetAction>
@@ -75,7 +76,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     //setDockNestingEnabled(true); // Allow multiple rows.	Tim.
     setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
-//    if (_type != ARRANGER)
+    if (_type != ARRANGER)
+       setWindowIcon(typeIcon(_type));
+
     setAttribute(Qt::WA_DeleteOnClose);
 
     subwinAction = new QAction(tr("Tabbed/Floating"), this);
@@ -394,6 +397,7 @@ QMdiSubWindow* TopWin::createMdiWrapper()
         if (_type == ARRANGER) {
             mdisubwin->setWindowFlags(Qt::CustomizeWindowHint);
         } else {
+            mdisubwin->setWindowIcon(typeIcon(_type));
             mdisubwin->setAttribute(Qt::WA_DeleteOnClose);
             mdisubwin->setWindowFlags(Qt::CustomizeWindowHint
                                       | Qt::WindowCloseButtonHint);
@@ -714,6 +718,20 @@ QString TopWin::typeName(ToplevelType t)
     default: return tr("<unknown toplevel type>");
     }
 }
+
+QIcon TopWin::typeIcon(ToplevelType t)
+{
+    switch (t)
+    {
+    case PIANO_ROLL: return QIcon(*pianoIconSet);
+    case DRUM: return QIcon(*edit_drummsIcon);
+    case MASTER: return QIcon(*mastertrack_graphicIcon);
+    case WAVE: return QIcon(*edit_waveIcon);
+    case SCORE: return QIcon(*scoreIconSet);
+    default: return QIcon();
+    }
+}
+
 
 void TopWin::setFullscreen(bool val)
 {
