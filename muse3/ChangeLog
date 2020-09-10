@@ -1,3 +1,5 @@
+10.09.2020
+    - Add editor specific icons to subwindows for better recognizability. (kybos)
 09.09.2020
     - Allow only one instance of master list editor dock. (kybos)
     - Add menu item (View) and shortcut (F7) to show/hide all active docks. (kybos)
