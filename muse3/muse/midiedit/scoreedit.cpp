@@ -398,7 +398,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         copy_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
         connect(copy_action, &QAction::triggered, [this]() { menu_command(CMD_COPY); } );
 
-        copy_range_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
+        copy_range_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("Copy Events in Range"));
         connect(copy_range_action, &QAction::triggered, [this]() { menu_command(CMD_COPY_RANGE); } );
 
         paste_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
@@ -437,8 +437,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
 
         func_quantize_action = functions_menu->addAction(tr("&Quantize"));
-        func_notelen_action = functions_menu->addAction(tr("Change note &length"));
-        func_velocity_action = functions_menu->addAction(tr("Change note &velocity"));
+        func_notelen_action = functions_menu->addAction(tr("Change Note &Length"));
+        func_velocity_action = functions_menu->addAction(tr("Change Note &Velocity"));
         func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"));
         func_transpose_action = functions_menu->addAction(tr("Transpose"));
         func_erase_action = functions_menu->addAction(tr("Erase Events"));
@@ -466,9 +466,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     settings_menu->addSeparator();
 
-    color_menu = settings_menu->addMenu(tr("Note head &colors"));
+    color_menu = settings_menu->addMenu(tr("Note Head &Colors"));
             color_actions = new QActionGroup(this);
-            color_black_action = color_menu->addAction(tr("&Black"));
+            color_black_action = color_menu->addAction(tr("&Default"));
             color_velo_action =  color_menu->addAction(tr("&Velocity"));
             color_part_action =  color_menu->addAction(tr("&Part"));
             color_black_action->setCheckable(true);
@@ -494,9 +494,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
                     menu_command(CMD_COLOR_BLACK);
             }
 
-        QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
-            preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
-            preamble_timesig_action =  preamble_menu->addAction(tr("Display &time signature"));
+        QMenu* preamble_menu = settings_menu->addMenu(tr("Set Up &Preamble"));
+            preamble_keysig_action = preamble_menu->addAction(tr("Display &Key Signature"));
+            preamble_timesig_action =  preamble_menu->addAction(tr("Display &Time Signature"));
             connect(preamble_keysig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_keysig_slot(bool)));
             connect(preamble_timesig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_timesig_slot(bool)));
 
@@ -506,7 +506,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
             preamble_keysig_action->setChecked(ScoreCanvas::preamble_contains_keysig_init);
             preamble_timesig_action->setChecked(ScoreCanvas::preamble_contains_timesig_init);
 
-        QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"));
+        QAction* set_name_action = settings_menu->addAction(tr("Set Score &Name"));
         connect(set_name_action, &QAction::triggered, [this]() { menu_command(CMD_SET_NAME); } );
 
     config_changed();  // set configuration values, initialize shortcuts
@@ -523,6 +523,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     score_canvas->fully_recalculate();
     score_canvas->goto_tick(initPos,true);
+    score_canvas->setFocus();
 
     if (name!=NULL)
         set_name(name, false, true);
@@ -1548,8 +1549,6 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 
     setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-    init_pixmaps();
-
     srec=false;
     for (int i=0;i<128;i++) held_notes[i]=false;
     steprec=new MusECore::StepRec(held_notes);
@@ -1573,7 +1572,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
     new_len=-1; // will be initialized with new_len_init by ScoreEdit::ScoreEdit();
 
     _quant_power2=_quant_power2_init; // ScoreEdit relies on this to be done!
- _pixels_per_whole = _pixels_per_whole_init;
+    _pixels_per_whole = _pixels_per_whole_init;
 
     note_velo=note_velo_init;
     note_velo_off=note_velo_off_init;
@@ -1610,6 +1609,9 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
     connect(remove_staff_action, SIGNAL(triggered()), SLOT(remove_staff_slot()));
 
     unsetCursor();
+
+    ensurePolished();
+    init_pixmaps();
 }
 
 ScoreCanvas::~ScoreCanvas()
@@ -1888,7 +1890,6 @@ QString IntToQStr(int i)
 void color_image(QImage& img, const QColor& color)
 {
     uchar* ptr=img.bits();
-    //int bytes=img.byteCount();
     int bytes=img.bytesPerLine() * img.height();   // By Tim. For older Qt versions. Tested OK on Qt4.5.
     int r,g,b;
     color.getRgb(&r,&g,&b);
@@ -1902,14 +1903,19 @@ void color_image(QImage& img, const QColor& color)
     }
 }
 
-void load_colored_pixmaps(QString file, QPixmap* array)
+void load_colored_pixmaps(QString file, QPixmap* array, bool all_colors = false)
 {
     QImage img(file);
 
-    for (int color_index=0;color_index<NUM_MYCOLORS; color_index++)
-    {
-        color_image(img, mycolors[color_index]);
-        array[color_index]=QPixmap::fromImage(img);
+    if (all_colors) {
+        for (int color_index=0;color_index<NUM_MYCOLORS; color_index++)
+        {
+            color_image(img, mycolors[color_index]);
+            array[color_index]=QPixmap::fromImage(img);
+        }
+    } else {
+        color_image(img, mycolors[DEFAULT]);
+        array[0] = QPixmap::fromImage(img);
     }
 }
 
@@ -1921,14 +1927,13 @@ void ScoreCanvas::init_pixmaps()
     {
         if (debugMsg) cout << "initalizing colors..." << endl;
 
-        mycolors=new QColor[NUM_MYCOLORS];
+        mycolors = new QColor[NUM_MYCOLORS];
 
-        mycolors[0]=Qt::black;
-        for (int i=1;i<NUM_PARTCOLORS;i++)
-            mycolors[i]=MusEGlobal::config.partColors[i];
-        mycolors[BLACK_PIXMAP]=Qt::black;
-        mycolors[HIGHLIGHTED_PIXMAP]=Qt::red;
-        mycolors[SELECTED_PIXMAP]=QColor(255,160,0);
+        mycolors[DEFAULT] = palette().color(QPalette::WindowText);;
+        for (int i = 0; i < NUM_PARTCOLORS; i++)
+            mycolors[i] = MusEGlobal::config.partColors[i];
+        mycolors[HIGHLIGHTED_PIXMAP] = Qt::red;
+        mycolors[SELECTED_PIXMAP] = QColor(255,160,0);
 
         for (int i=0; i<64; i++)
             mycolors[i+VELO_PIXMAP_BEGIN]=QColor(i*4,0,0xff);
@@ -1961,36 +1966,36 @@ void ScoreCanvas::init_pixmaps()
         pix_flag_down=new QPixmap[4];
 
 
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/whole.png", pix_whole, true);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/half.png", pix_half, true);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/quarter.png", pix_quarter, true);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/dot.png", pix_dot, true);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_none.png", pix_noacc, true);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_sharp.png", pix_sharp, true);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_b.png", pix_b, true);
 
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/rest1.png", pix_r1);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/rest2.png", pix_r2);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/rest4.png", pix_r4);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/rest8.png", pix_r8);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/rest16.png", pix_r16);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/rest32.png", pix_r32);
 
-        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/whole.png", pix_whole);
-        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/half.png", pix_half);
-        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/quarter.png", pix_quarter);
-        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/dot.png", pix_dot);
-        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_none.png", pix_noacc);
-        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_sharp.png", pix_sharp);
-        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_b.png", pix_b);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags8u.png", &pix_flag_up[0]);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags16u.png", &pix_flag_up[1]);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags32u.png", &pix_flag_up[2]);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags64u.png", &pix_flag_up[3]);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags8d.png", &pix_flag_down[0]);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags16d.png", &pix_flag_down[1]);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags32d.png", &pix_flag_down[2]);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/flags64d.png", &pix_flag_down[3]);
 
-        pix_r1->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest1.png");
-        pix_r2->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest2.png");
-        pix_r4->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest4.png");
-        pix_r8->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest8.png");
-        pix_r16->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest16.png");
-        pix_r32->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest32.png");
-        pix_flag_up[0].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags8u.png");
-        pix_flag_up[1].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags16u.png");
-        pix_flag_up[2].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags32u.png");
-        pix_flag_up[3].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags64u.png");
-        pix_flag_down[0].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags8d.png");
-        pix_flag_down[1].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags16d.png");
-        pix_flag_down[2].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags32d.png");
-        pix_flag_down[3].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags64d.png");
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/clef_violin_big.png", pix_clef_violin);
+        load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/clef_bass_big.png", pix_clef_bass);
 
-        pix_clef_violin->load(MusEGlobal::museGlobalShare + "/scoreglyphs/clef_violin_big.png");
-        pix_clef_bass->load(MusEGlobal::museGlobalShare + "/scoreglyphs/clef_bass_big.png");
+        for (int i = 0; i < 10; i++)
+            load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/" + IntToQStr(i) + ".png", &pix_num[i]);
 
-        for (int i=0;i<10;i++)
-            pix_num[i].load(MusEGlobal::museGlobalShare + "/scoreglyphs/"+IntToQStr(i)+".png");
 
         pixmaps_initalized=true;
 
@@ -2518,7 +2523,6 @@ void ScoreCanvas::draw_akkolade (QPainter& p, int x, int y_)
     path.cubicTo(x+ X1,  y+ h - h * .3359, x+ X2,  y+ h - h * .5089, x+ w, y+ 0);
     path.cubicTo(x+ X3,  y+ h - h * .5025, x+ X4,  y+ h - h * .2413, x+ 0, y+ h);
 
-    p.setBrush(Qt::black);
     p.drawPath(path);
 }
 
@@ -3161,7 +3165,7 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_spac
     int xend=width();
     // FINDMICHJETZT y is uninitialized!
 
-    p.setPen(Qt::black);
+    p.setPen(mycolors[DEFAULT]);
 
     for (int i=0;i<5;i++)
         p.drawLine(xbegin, y + i*YLEN - 2*YLEN, xend, y + i*YLEN - 2*YLEN);
@@ -3427,13 +3431,13 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 
                 if (it->pos.height <= 0) //we need auxiliary lines on the bottom?
                 {
-                    p.setPen(Qt::black);
+                    p.setPen(mycolors[DEFAULT]);
                     for (int i=0; i>=it->pos.height; i-=2)
                         p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2);
                 }
                 else if (it->pos.height >= 12) //we need auxiliary lines on the top?
                 {
-                    p.setPen(Qt::black);
+                    p.setPen(mycolors[DEFAULT]);
                     for (int i=12; i<=it->pos.height; i+=2)
                         p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2);
                 }
@@ -3446,7 +3450,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
                 switch (coloring_mode)
                 {
                     case COLOR_MODE_BLACK:
-                        color_index=BLACK_PIXMAP;
+                        color_index=DEFAULT;
                         break;
 
                     case COLOR_MODE_PART:
@@ -3459,7 +3463,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 
                     default:
                         cerr << "ERROR: THIS CANNOT HAPPEN: coloring_mode (="<<coloring_mode<<") is invalid! defaulting to black." << endl;
-                        color_index=BLACK_PIXMAP;
+                        color_index=DEFAULT;
                 }
 
                 if (it->source_event->selected())
@@ -3514,7 +3518,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
                 if (it->is_tie_dest)
                 {
                     if (heavyDebugMsg) cout << "drawing tie" << endl;
-                    draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,y_offset + it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , mycolors[color_index]);
+                    draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,y_offset + it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , mycolors[DEFAULT]);
                     // in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
                     //              stem is downwards and vice versa"
                 }
@@ -3545,7 +3549,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 
                 for (int i=0;i<it->dots;i++)
                 {
-                    draw_pixmap(p,it->x+x_dot -x_pos+x_left,y_offset + it->y+y_dot,pix_dot[BLACK_PIXMAP]);
+                    draw_pixmap(p,it->x+x_dot -x_pos+x_left,y_offset + it->y+y_dot,pix_dot[DEFAULT]);
                     x_dot+=DOT_XDIST;
                 }
             }
@@ -3553,7 +3557,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
             {
                 if (heavyDebugMsg) cout << "\tBAR" << endl;
 
-                p.setPen(Qt::black);
+                p.setPen(mycolors[DEFAULT]);
                 p.drawLine(it->x -x_pos+x_left,y_offset  -2*YLEN,it->x -x_pos+x_left,y_offset +2*YLEN);
 
                 for (int i=0;i<7;i++)
@@ -3584,10 +3588,10 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
                 list<int> new_acc_list=calc_accidentials(new_key, staff.clef);
 
                 // cancel accidentials from curr_key
-                draw_accidentials(p, it->x + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, aufloes_list, pix_noacc[BLACK_PIXMAP]);
+                draw_accidentials(p, it->x + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, aufloes_list, pix_noacc[DEFAULT]);
 
                 // draw all accidentials from new_key
-                QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
+                QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp[DEFAULT] : &pix_b[DEFAULT];
                 vorzeichen_t new_accidential = is_sharp_key(new_key) ? SHARP : B;
 
                 draw_accidentials(p, it->x + aufloes_list.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, new_acc_list, *pix);
@@ -3602,7 +3606,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
             }
         }
 
-        p.setPen(Qt::black);
+        p.setPen(mycolors[DEFAULT]);
         //note: y1 is bottom, y2 is top!
         if (upstem_x!=-1)
         {
@@ -3702,8 +3706,10 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef, bool res
     // maybe draw akkolade ----------------------------------------------
     if (reserve_akkolade_space)
     {
-        if (with_akkolade)
+        if (with_akkolade) {
+            p.setBrush(mycolors[DEFAULT]);
             draw_akkolade(p, AKKOLADE_LEFTMARGIN, y_offset+GRANDSTAFF_DISTANCE/2);
+        }
 
         x_left= AKKOLADE_LEFTMARGIN + AKKOLADE_WIDTH + AKKOLADE_RIGHTMARGIN;
     }
@@ -3724,7 +3730,7 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef, bool res
     if (preamble_contains_keysig)
     {
         MusECore::KeyEvent key=key_at_tick(tick);
-        QPixmap* pix_acc=is_sharp_key(key.key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
+        QPixmap* pix_acc=is_sharp_key(key.key) ? &pix_sharp[DEFAULT] : &pix_b[DEFAULT];
         list<int> acclist=calc_accidentials(key.key,clef);
 
         const int str_y_coord = -4 * YLEN + 2 /* margin */;
@@ -3760,7 +3766,7 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef, bool res
     }
 
     // draw bar ---------------------------------------------------------
-    p.setPen(Qt::black);
+    p.setPen(mycolors[DEFAULT]);
     p.drawLine(x_left,y_offset  -2*YLEN,x_left,y_offset +2*YLEN);
 
 
@@ -3816,8 +3822,7 @@ void ScoreCanvas::draw(QPainter& p, const QRect&, const QRegion&)
     if (debugMsg) cout <<"now in ScoreCanvas::draw"<<endl;
 
 
-
-    p.setPen(Qt::black);
+    p.setPen(mycolors[DEFAULT]);
 
     bool reserve_akkolade_space=false;
     for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
