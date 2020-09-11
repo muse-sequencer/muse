@@ -391,7 +391,7 @@ class MusE : public QMainWindow
       void openInScoreEdit(ScoreEdit* destination, bool allInOne=false);
       void openInScoreEdit_allInOne(QWidget* destination);
       void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
-      void toggleMasterEditor(bool show);
+      void startMasterEditor();
       void showMasterList(bool);
       void startListEditor();
       void startListEditor(MusECore::PartList*);

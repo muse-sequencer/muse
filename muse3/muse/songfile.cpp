@@ -1058,7 +1058,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
 //                }
 //            }
             else if (tag == "master") {
-                toggleMasterEditor(true);
+                startMasterEditor();
                 toplevels.back()->readStatus(xml);
             }
             else if (tag == "waveedit") {

@@ -361,7 +361,7 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 void TopWin::hide()
 {
     if (mdisubwin)
-        mdisubwin->close();
+        mdisubwin->hide();
 
     QMainWindow::hide();
 }
@@ -381,7 +381,7 @@ void TopWin::setVisible(bool param)
         if (param)
             mdisubwin->show();
         else
-            mdisubwin->close();
+            mdisubwin->hide();
     }
 
     QMainWindow::setVisible(param);
