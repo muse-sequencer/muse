@@ -34,6 +34,7 @@
 #include <QMainWindow>
 #include <QRect>
 #include <QString>
+#include <QPointer>
 
 #include <list>
 #include <time.h>
@@ -97,6 +98,7 @@ class VisibleTracks;
 class RouteDialog;
 class CpuToolbar;
 class SnooperDialog;
+class MasterEdit;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
 
@@ -232,6 +234,7 @@ class MusE : public QMainWindow
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
+      QPointer<MasterEdit> masterEditor;
 
       MusECore::ScriptReceiver _scriptReceiver;
 
@@ -388,7 +391,7 @@ class MusE : public QMainWindow
       void openInScoreEdit(ScoreEdit* destination, bool allInOne=false);
       void openInScoreEdit_allInOne(QWidget* destination);
       void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
-      void startMasterEditor();
+      void toggleMasterEditor(bool show);
       void showMasterList(bool);
       void startListEditor();
       void startListEditor(MusECore::PartList*);

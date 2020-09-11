@@ -357,6 +357,7 @@ MusE::MusE() : QMainWindow()
       //audioMixer            = 0;
       mixer1                = nullptr;
       mixer2                = nullptr;
+      masterEditor          = nullptr;
       routeDialog           = nullptr;
       watchdogThread        = 0;
       editInstrument        = nullptr;
@@ -620,7 +621,10 @@ MusE::MusE() : QMainWindow()
 
 //      QMenu* master = new QMenu(tr("Mastertrack"), this);
 //      master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack Graphic..."), this);
+      masterGraphicAction = new QAction(tr("Mastertrack Graphic"), this);
+      masterGraphicAction->setCheckable(true);
+      masterGraphicAction->setChecked(false);
+//      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack Graphic..."), this);
       masterListAction = masterListDock->toggleViewAction();
 //      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
 //      master->addAction(masterGraphicAction);
@@ -718,7 +722,7 @@ MusE::MusE() : QMainWindow()
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
 //      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
-      connect(masterGraphicAction, SIGNAL(triggered()), SLOT(startMasterEditor()));
+      connect(masterGraphicAction, SIGNAL(toggled(bool)), SLOT(toggleMasterEditor(bool)));
 //      connect(masterListAction, SIGNAL(triggered()), SLOT(startLMasterEditor()));
       connect(toggleDocksAction, SIGNAL(toggled(bool)), SLOT(toggleDocks(bool)));
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
@@ -2337,13 +2341,23 @@ void MusE::startListEditor(MusECore::PartList* pl)
 //   startMasterEditor
 //---------------------------------------------------------
 
-void MusE::startMasterEditor()
-      {
-      MusEGui::MasterEdit* masterEditor = new MusEGui::MasterEdit(this);
-      toplevels.push_back(masterEditor);
-      connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      updateWindowMenu();
-      }
+void MusE::toggleMasterEditor(bool show)
+{
+    if (show) {
+        if (!masterEditor) {
+            masterEditor = new MusEGui::MasterEdit(this);
+            toplevels.push_back(masterEditor);
+            connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+            updateWindowMenu();
+        }
+    } else {
+        if (masterEditor)
+            masterEditor->close();
+    }
+
+    if (masterGraphicAction->isChecked() != show)
+        masterGraphicAction->setChecked(show);
+}
 
 //---------------------------------------------------------
 //   startLMasterEditor
@@ -2554,26 +2568,29 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
             if (tl == currentMenuSharingTopwin)
                 setCurrentMenuSharingTopwin(nullptr);
 
+//            bool updateScoreMenus = tl->type == ? false;
+//            switch(tl->type()) {
+//            case MusEGui::TopWin::ARRANGER:
+//                break;
+//            // the following editors can exist in more than one instantiation:
+//            case MusEGui::TopWin::PIANO_ROLL:
+////            case MusEGui::TopWin::LISTE:
+//            case MusEGui::TopWin::DRUM:
+//            case MusEGui::TopWin::MASTER:
+//            case MusEGui::TopWin::WAVE:
+//            case MusEGui::TopWin::SCORE:
+//                updateScoreMenus=true;
 
-            bool mustUpdateScoreMenus=false;
-            switch(tl->type()) {
-            case MusEGui::TopWin::ARRANGER:
-                break;
-            // the following editors can exist in more than one instantiation:
-            case MusEGui::TopWin::PIANO_ROLL:
-//            case MusEGui::TopWin::LISTE:
-            case MusEGui::TopWin::DRUM:
-            case MusEGui::TopWin::MASTER:
-            case MusEGui::TopWin::WAVE:
-            case MusEGui::TopWin::SCORE:
-                mustUpdateScoreMenus=true;
+//            case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+//                break;
+//            }
 
-            case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
-                break;
-            }
             toplevels.erase(i);
-            if (mustUpdateScoreMenus)
+            if (tl->type() == MusEGui::TopWin::SCORE)
                 arrangerView->updateScoreMenus();
+            else if (tl->type() == MusEGui::TopWin::MASTER)
+                masterGraphicAction->setChecked(false);
+
             updateWindowMenu();
             return;
         }
