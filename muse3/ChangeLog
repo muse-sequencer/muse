@@ -1,4 +1,5 @@
 11.09.2020
+    - Master track graphic editor doesn't open multiple windows any more. (kybos)
     - Fixed several colour issues in score editor. (kybos)
 10.09.2020
     - Add editor specific icons to subwindows for better recognizability. (kybos)

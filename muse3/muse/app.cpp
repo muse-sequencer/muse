@@ -2337,17 +2337,17 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
 void MusE::startMasterEditor()
 {
-        if (!masterEditor) {
-            masterEditor = new MusEGui::MasterEdit(this);
-            toplevels.push_back(masterEditor);
-            connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-            updateWindowMenu();
-        } else {
-            if (masterEditor->isMdiWin())
-                mdiArea->setActiveSubWindow(masterEditor->getMdiWin());
-            else
-                masterEditor->activateWindow();
-        }
+    if (!masterEditor) {
+        masterEditor = new MusEGui::MasterEdit(this);
+        toplevels.push_back(masterEditor);
+        connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+        updateWindowMenu();
+    } else {
+        if (masterEditor->isMdiWin())
+            mdiArea->setActiveSubWindow(masterEditor->getMdiWin());
+        else
+            masterEditor->activateWindow();
+    }
 }
 
 //---------------------------------------------------------
