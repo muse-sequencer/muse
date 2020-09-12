@@ -59,7 +59,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void mixerCurrent();
       void mixer2Current();
       void bigtimeCurrent();
-      void mainCurrent();
+//      void mainCurrent();
       void transportCurrent();
       void editPluginPath();
       void addPluginPath();
