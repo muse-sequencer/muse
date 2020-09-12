@@ -135,7 +135,7 @@ class ArrangerView : public TopWin
 		~ArrangerView();
 
 		QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
-    QAction *openCurrentTrackSynthGuiAction;
+        QAction *openCurrentTrackSynthGuiAction;
 		QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
 
 		void populateAddTrack();

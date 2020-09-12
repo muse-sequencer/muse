@@ -233,6 +233,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
+
+  menuEdit->addSeparator();
   menuEdit->addAction(openCurrentTrackSynthGuiAction);
 
   QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));

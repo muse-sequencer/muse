@@ -215,6 +215,9 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       selectNextPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
       connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NEXT_PART); } );
 
+      menuEdit->addSeparator();
+      startListEditAction = menuEdit->addAction(QIcon(*edit_listIcon), tr("Event List..."));
+      connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
 
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
@@ -1838,7 +1841,8 @@ void PianoRoll::initShortcuts()
       selectOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
       selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
       selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
-      
+      startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
+
 //      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
       //evColorBlueAction->setShortcut(shortcuts[  ].key);
       //evColorPitchAction->setShortcut(shortcuts[  ].key);
