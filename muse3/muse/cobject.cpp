@@ -184,16 +184,18 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     connect(sig_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
     connect(sig_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
 
-    // NOTICE: It seems after the switch to Qt5, windows with a parent have stay-on-top behaviour.
-    // But with the fix below, other TopWin destructors are not called when closing the app.
-    // So there is now an additional fix in MusE::closeEvent() which deletes all parentless TopWin.
-    //
-    /* unconnect parent if window is not mdi */
-    /* to make editor windows not stay on top */
-    if(!isMdiWin())
-    {
-        setParent(nullptr);
-    }
+// this is not (longer?) the case, to be tested on KDE (kybos)
+// what about changing from MDI to top window later? then the parent remains anyway... (kybos)
+//    // NOTICE: It seems after the switch to Qt5, windows with a parent have stay-on-top behaviour.
+//    // But with the fix below, other TopWin destructors are not called when closing the app.
+//    // So there is now an additional fix in MusE::closeEvent() which deletes all parentless TopWin.
+//    //
+//    /* unconnect parent if window is not mdi */
+//    /* to make editor windows not stay on top */
+//    if(!isMdiWin())
+//    {
+//        setParent(nullptr);
+//    }
 }
 
 TopWin::~TopWin()
@@ -387,7 +389,7 @@ void TopWin::setVisible(bool param)
     QMainWindow::setVisible(param);
 }
 
-QMdiSubWindow* TopWin::createMdiWrapper()
+void TopWin::createMdiWrapper()
 {
     if (mdisubwin == nullptr)
     {
@@ -403,8 +405,6 @@ QMdiSubWindow* TopWin::createMdiWrapper()
                                       | Qt::WindowCloseButtonHint);
         }
     }
-
-    return mdisubwin;
 }
 
 void TopWin::setIsMdiWin(bool val)
@@ -419,8 +419,8 @@ void TopWin::setIsMdiWin(bool val)
             _savedToolbarState = saveState();
 //            bool vis=isVisible();
 
-            QMdiSubWindow* subwin = createMdiWrapper();
-            muse->addMdiSubWindow(subwin);
+            createMdiWrapper();
+            muse->addMdiSubWindow(mdisubwin);
 
             if (windowTitle().startsWith("MusE: "))
                 setWindowTitle(windowTitle().mid(6));
@@ -428,7 +428,7 @@ void TopWin::setIsMdiWin(bool val)
 //            subwin->setVisible(vis);
 //            this->QMainWindow::show(); //bypass the delegation to the subwin
 
-            subwin->showMaximized();
+            mdisubwin->showMaximized();
 
             shareToolsAndMenu(true);
 
@@ -449,13 +449,13 @@ void TopWin::setIsMdiWin(bool val)
     {
         if (isMdiWin())
         {
-            QMdiSubWindow* mdisubwin_temp=mdisubwin;
-            mdisubwin=nullptr;
-            setParent(nullptr);
-            mdisubwin_temp->hide();
-            delete mdisubwin_temp;
+            mdisubwin->setWidget(nullptr);
+            mdisubwin->close();
+            mdisubwin = nullptr;
 
-//            setVisible(vis);
+            setParent(muse);
+            setWindowFlags(Qt::Window);
+
             QMainWindow::show();
 
             if (!windowTitle().startsWith("MusE: "))

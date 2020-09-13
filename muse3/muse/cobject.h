@@ -108,7 +108,7 @@ class TopWin : public QMainWindow
       std::list<QToolBar*> _toolbars;
       bool _initalizing;
 
-      virtual QMdiSubWindow* createMdiWrapper();
+      void createMdiWrapper();
       
       static void initConfiguration();
 

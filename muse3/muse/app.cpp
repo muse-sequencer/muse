@@ -1859,17 +1859,18 @@ void MusE::closeEvent(QCloseEvent* event)
             }
             }
       
-      // NOTICE: In the TopWin constructor, recently all top levels were changed to parentless, 
-      //  to fix stay-on-top behaviour that seems to have been introduced in Qt5.
-      // But now, when the app closes by main mindow for example, all other top win destructors 
-      //  are not called. So we must do it here.
-      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) 
-      {
-        TopWin* tw = *i;
-        // Top win has no parent? Manually delete it.
-        if(!tw->parent())
-          delete tw;
-      }
+// redundant, top windows are properly parented now (kybos)
+////      // NOTICE: In the TopWin constructor, recently all top levels were changed to parentless,
+////      //  to fix stay-on-top behaviour that seems to have been introduced in Qt5.
+////      // But now, when the app closes by main mindow for example, all other top win destructors
+////      //  are not called. So we must do it here.
+//      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i)
+//      {
+//        TopWin* tw = *i;
+//        // Top win has no parent? Manually delete it.
+//        if(!tw->parent())
+//          delete tw;
+//      }
               
       seqStop();
 
