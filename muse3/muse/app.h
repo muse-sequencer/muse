@@ -270,6 +270,7 @@ class MusE : public QMainWindow
       void centerAndResize();
       void resizeEvent(QResizeEvent* event) override;
       void closeDocks();
+      void saveStateExtra();
 
       QTimer *saveTimer;
       QTimer *blinkTimer;

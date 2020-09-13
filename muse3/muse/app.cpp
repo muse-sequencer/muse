@@ -1885,6 +1885,8 @@ void MusE::closeEvent(QCloseEvent* event)
       QSettings settings;
       settings.setValue("MusE/geometry", saveGeometry());
 
+      saveStateExtra();
+
       writeGlobalConfiguration();
 
       // save "Open Recent" list
@@ -3563,7 +3565,7 @@ void MusE::bigtimeClosed()
 
 void MusE::showMixer1(bool on)
       {
-      if (on && mixer1 == 0) {
+      if (on && mixer1 == nullptr) {
             mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
             mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
@@ -3580,7 +3582,7 @@ void MusE::showMixer1(bool on)
 
 void MusE::showMixer2(bool on)
       {
-      if (on && mixer2 == 0) {
+      if (on && mixer2 == nullptr) {
             mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
             mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
@@ -4613,6 +4615,39 @@ void MusE::closeDocks() {
         else if (d->isVisible()) {
             d->hide();
         }
+    }
+}
+
+void MusE::saveStateExtra() {
+
+    MusEGlobal::config.transportVisible = transport->isVisible();
+    MusEGlobal::config.geometryTransport.setX(transport->frameGeometry().x());
+    MusEGlobal::config.geometryTransport.setY(transport->frameGeometry().y());
+    MusEGlobal::config.geometryTransport.setWidth(0);
+    MusEGlobal::config.geometryTransport.setHeight(0);
+
+    if (bigtime) {
+        MusEGlobal::config.bigTimeVisible = bigtime->isVisible();
+        MusEGlobal::config.geometryBigTime.setX(bigtime->frameGeometry().x());
+        MusEGlobal::config.geometryBigTime.setY(bigtime->frameGeometry().y());
+        MusEGlobal::config.geometryBigTime.setWidth(bigtime->width());
+        MusEGlobal::config.geometryBigTime.setHeight(bigtime->height());
+    }
+
+    if (mixer1) {
+        MusEGlobal::config.mixer1Visible = mixer1->isVisible();
+        MusEGlobal::config.mixer1.geometry.setX(mixer1->frameGeometry().x());
+        MusEGlobal::config.mixer1.geometry.setY(mixer1->frameGeometry().y());
+        MusEGlobal::config.mixer1.geometry.setWidth(mixer1->width());
+        MusEGlobal::config.mixer1.geometry.setHeight(mixer1->height());
+    }
+
+    if (mixer2) {
+        MusEGlobal::config.mixer2Visible = mixer2->isVisible();
+        MusEGlobal::config.mixer2.geometry.setX(mixer2->frameGeometry().x());
+        MusEGlobal::config.mixer2.geometry.setY(mixer2->frameGeometry().y());
+        MusEGlobal::config.mixer2.geometry.setWidth(mixer2->width());
+        MusEGlobal::config.mixer2.geometry.setHeight(mixer2->height());
     }
 }
 
