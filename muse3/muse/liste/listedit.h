@@ -65,8 +65,11 @@ class ListEdit : public QWidget {
       enum { CMD_DELETE, CMD_INC, CMD_DEC };
 
       
-      virtual void closeEvent(QCloseEvent*);
+      virtual void closeEvent(QCloseEvent*) override;
 //      virtual void keyPressEvent(QKeyEvent*);
+//      virtual QSize sizeHint() const override;
+      virtual QSize minimumSizeHint() const override;
+
       void initShortcuts();
       void genPartlist();
 

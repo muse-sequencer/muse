@@ -270,6 +270,7 @@ class MusE : public QMainWindow
       void centerAndResize();
       void resizeEvent(QResizeEvent* event) override;
       void closeDocks();
+      void addTabbedDock(Qt::DockWidgetArea area, QDockWidget *widget);
       void saveStateExtra();
 
       QTimer *saveTimer;

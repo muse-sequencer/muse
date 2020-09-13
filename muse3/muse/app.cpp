@@ -2327,7 +2327,7 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
     dock->setObjectName(dock->windowTitle());
 
-    addDockWidget(Qt::BottomDockWidgetArea, dock);
+    addTabbedDock(Qt::BottomDockWidgetArea, dock);
 
     dock->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -4615,6 +4615,24 @@ void MusE::closeDocks() {
         else if (d->isVisible()) {
             d->hide();
         }
+    }
+}
+
+void MusE::addTabbedDock(Qt::DockWidgetArea area, QDockWidget *dock)
+{
+    QList<QDockWidget*> allDocks = findChildren<QDockWidget*>();
+    QVector<QDockWidget*> areaDocks;
+    for(QDockWidget *w : allDocks) {
+        if(dockWidgetArea(w) == area)
+            areaDocks.append(w);
+    }
+
+    if (areaDocks.empty()) {
+        addDockWidget(area, dock);
+    } else {
+        tabifyDockWidget(areaDocks.last(), dock);
+//        dock->raise(); // doesn't work, bug in Qt (kybos)
+        QTimer::singleShot(0, [dock](){ dock->raise(); });
     }
 }
 
