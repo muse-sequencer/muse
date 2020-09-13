@@ -102,7 +102,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(setMixerCurrent, SIGNAL(clicked()), SLOT(mixerCurrent()));
       connect(setMixer2Current, SIGNAL(clicked()), SLOT(mixer2Current()));
       connect(setBigtimeCurrent, SIGNAL(clicked()), SLOT(bigtimeCurrent()));
-      connect(setMainCurrent, SIGNAL(clicked()), SLOT(mainCurrent()));
+//      connect(setMainCurrent, SIGNAL(clicked()), SLOT(mainCurrent()));
       connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
       
       connect(pluginPathAdd, SIGNAL(clicked()), SLOT(addPluginPath()));
@@ -231,10 +231,10 @@ void GlobalSettingsConfig::updateSettings()
       showMixer->setChecked(MusEGlobal::config.mixer1Visible);
       showMixer2->setChecked(MusEGlobal::config.mixer2Visible);
 
-      mainX->setValue(MusEGlobal::config.geometryMain.x());
-      mainY->setValue(MusEGlobal::config.geometryMain.y());
-      mainW->setValue(MusEGlobal::config.geometryMain.width());
-      mainH->setValue(MusEGlobal::config.geometryMain.height());
+//      mainX->setValue(MusEGlobal::config.geometryMain.x());
+//      mainY->setValue(MusEGlobal::config.geometryMain.y());
+//      mainW->setValue(MusEGlobal::config.geometryMain.width());
+//      mainH->setValue(MusEGlobal::config.geometryMain.height());
 
       transportX->setValue(MusEGlobal::config.geometryTransport.x());
       transportY->setValue(MusEGlobal::config.geometryTransport.y());
@@ -375,10 +375,10 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.mixer1Visible     = showMixer->isChecked();
       MusEGlobal::config.mixer2Visible     = showMixer2->isChecked();
 
-      MusEGlobal::config.geometryMain.setX(mainX->value());
-      MusEGlobal::config.geometryMain.setY(mainY->value());
-      MusEGlobal::config.geometryMain.setWidth(mainW->value());
-      MusEGlobal::config.geometryMain.setHeight(mainH->value());
+//      MusEGlobal::config.geometryMain.setX(mainX->value());
+//      MusEGlobal::config.geometryMain.setY(mainY->value());
+//      MusEGlobal::config.geometryMain.setWidth(mainW->value());
+//      MusEGlobal::config.geometryMain.setHeight(mainH->value());
 
       MusEGlobal::config.geometryTransport.setX(transportX->value());
       MusEGlobal::config.geometryTransport.setY(transportY->value());
@@ -460,11 +460,11 @@ void GlobalSettingsConfig::apply()
             w->resize(MusEGlobal::config.geometryBigTime.size());
             w->move(MusEGlobal::config.geometryBigTime.topLeft());
             }
-      if(!MusEGlobal::muse->isMaximized() && !MusEGlobal::muse->isMinimized())
-      {
-         MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
-         MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
-      }
+//      if(!MusEGlobal::muse->isMaximized() && !MusEGlobal::muse->isMinimized())
+//      {
+//         MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
+//         MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
+//      }
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       if(MusEGlobal::midiSeq)
@@ -587,14 +587,14 @@ void GlobalSettingsConfig::bigtimeCurrent()
 //   mainCurrent
 //---------------------------------------------------------
 
-void GlobalSettingsConfig::mainCurrent()
-      {
-      QRect r(MusEGlobal::muse->frameGeometry());
-      mainX->setValue(r.x());
-      mainY->setValue(r.y());
-      mainW->setValue(MusEGlobal::muse->width());  //this is intendedly not the frameGeometry, but
-      mainH->setValue(MusEGlobal::muse->height()); //the "non-frame-geom." to avoid a sizing bug
-      }
+//void GlobalSettingsConfig::mainCurrent()
+//      {
+//      QRect r(MusEGlobal::muse->frameGeometry());
+//      mainX->setValue(r.x());
+//      mainY->setValue(r.y());
+//      mainW->setValue(MusEGlobal::muse->width());  //this is intendedly not the frameGeometry, but
+//      mainH->setValue(MusEGlobal::muse->height()); //the "non-frame-geom." to avoid a sizing bug
+//      }
 
 //---------------------------------------------------------
 //   transportCurrent

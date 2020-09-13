@@ -355,199 +355,14 @@
           <property name="verticalSpacing">
            <number>12</number>
           </property>
-          <item row="1" column="3">
-           <widget class="QSpinBox" name="transportY">
-            <property name="toolTip">
-             <string>y-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1">
-           <widget class="QCheckBox" name="showTransport">
-            <property name="text">
-             <string>Show</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QSpinBox" name="transportX">
-            <property name="toolTip">
-             <string>x-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="5">
-           <widget class="QSpinBox" name="mainH">
-            <property name="toolTip">
-             <string>height</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QSpinBox" name="mainW">
-            <property name="toolTip">
-             <string>width</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QSpinBox" name="mainY">
-            <property name="toolTip">
-             <string>y-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QSpinBox" name="mainX">
-            <property name="toolTip">
-             <string>x-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
            <widget class="QCheckBox" name="showBigtime">
             <property name="text">
              <string>Show</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
-           <widget class="QSpinBox" name="bigtimeX">
-            <property name="toolTip">
-             <string>x-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QSpinBox" name="bigtimeY">
-            <property name="toolTip">
-             <string>y-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4">
-           <widget class="QSpinBox" name="bigtimeW">
-            <property name="toolTip">
-             <string>width</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="5">
-           <widget class="QSpinBox" name="bigtimeH">
-            <property name="toolTip">
-             <string>height</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QCheckBox" name="showMixer">
-            <property name="text">
-             <string>Show</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QCheckBox" name="showMixer2">
-            <property name="text">
-             <string>Show</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="textLabel4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Mixer A</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="textLabel4_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Mixer B</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="textLabel3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Big Time</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="textLabel1_3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Main Window</string>
-            </property>
-            <property name="wordWrap">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
            <widget class="QLabel" name="textLabel2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -563,27 +378,17 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="5">
-           <widget class="QSpinBox" name="mixerH">
+          <item row="1" column="2">
+           <widget class="QSpinBox" name="bigtimeX">
             <property name="toolTip">
-             <string>height</string>
+             <string>x-pos</string>
             </property>
             <property name="maximum">
              <number>9999</number>
             </property>
            </widget>
           </item>
-          <item row="3" column="4">
-           <widget class="QSpinBox" name="mixerW">
-            <property name="toolTip">
-             <string>width</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="3">
+          <item row="2" column="3">
            <widget class="QSpinBox" name="mixerY">
             <property name="toolTip">
              <string>y-pos</string>
@@ -593,8 +398,15 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
-           <widget class="QSpinBox" name="mixerX">
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="showMixer">
+            <property name="text">
+             <string>Show</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QSpinBox" name="transportX">
             <property name="toolTip">
              <string>x-pos</string>
             </property>
@@ -603,7 +415,76 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="6">
+          <item row="3" column="3">
+           <widget class="QSpinBox" name="mixer2Y">
+            <property name="toolTip">
+             <string>y-pos</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QSpinBox" name="transportY">
+            <property name="toolTip">
+             <string>y-pos</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="showMixer2">
+            <property name="text">
+             <string>Show</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QSpinBox" name="bigtimeW">
+            <property name="toolTip">
+             <string>width</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="6">
+           <widget class="QPushButton" name="setTransportCurrent">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Set current values</string>
+            </property>
+            <property name="text">
+             <string>Current</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="textLabel4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Mixer A</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="6">
            <widget class="QPushButton" name="setMixerCurrent">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -619,7 +500,50 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="5">
+          <item row="1" column="0">
+           <widget class="QLabel" name="textLabel3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Big Time</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5">
+           <widget class="QSpinBox" name="bigtimeH">
+            <property name="toolTip">
+             <string>height</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QSpinBox" name="mixerX">
+            <property name="toolTip">
+             <string>x-pos</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="showTransport">
+            <property name="text">
+             <string>Show</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="5">
            <widget class="QSpinBox" name="mixer2H">
             <property name="toolTip">
              <string>height</string>
@@ -629,8 +553,8 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="4">
-           <widget class="QSpinBox" name="mixer2W">
+          <item row="2" column="4">
+           <widget class="QSpinBox" name="mixerW">
             <property name="toolTip">
              <string>width</string>
             </property>
@@ -639,27 +563,7 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="3">
-           <widget class="QSpinBox" name="mixer2Y">
-            <property name="toolTip">
-             <string>y-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QSpinBox" name="mixer2X">
-            <property name="toolTip">
-             <string>x-pos</string>
-            </property>
-            <property name="maximum">
-             <number>9999</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="6">
+          <item row="3" column="6">
            <widget class="QPushButton" name="setMixer2Current">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -675,7 +579,17 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="6">
+          <item row="3" column="2">
+           <widget class="QSpinBox" name="mixer2X">
+            <property name="toolTip">
+             <string>x-pos</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="6">
            <widget class="QPushButton" name="setBigtimeCurrent">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -691,35 +605,49 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="6">
-           <widget class="QPushButton" name="setMainCurrent">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="3" column="4">
+           <widget class="QSpinBox" name="mixer2W">
             <property name="toolTip">
-             <string>Set current values</string>
+             <string>width</string>
             </property>
-            <property name="text">
-             <string>Current</string>
+            <property name="maximum">
+             <number>9999</number>
             </property>
            </widget>
           </item>
-          <item row="1" column="6">
-           <widget class="QPushButton" name="setTransportCurrent">
+          <item row="3" column="0">
+           <widget class="QLabel" name="textLabel4_2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="toolTip">
-             <string>Set current values</string>
-            </property>
             <property name="text">
-             <string>Current</string>
+             <string>Mixer B</string>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QSpinBox" name="bigtimeY">
+            <property name="toolTip">
+             <string>y-pos</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QSpinBox" name="mixerH">
+            <property name="toolTip">
+             <string>height</string>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
             </property>
            </widget>
           </item>
@@ -2680,11 +2608,6 @@ Otherwise, hold Ctrl to keep them open.</string>
   <tabstop>startSongEntry</tabstop>
   <tabstop>startSongFileOpenToolButton</tabstop>
   <tabstop>startSongResetToolButton</tabstop>
-  <tabstop>mainX</tabstop>
-  <tabstop>mainY</tabstop>
-  <tabstop>mainW</tabstop>
-  <tabstop>mainH</tabstop>
-  <tabstop>setMainCurrent</tabstop>
   <tabstop>showTransport</tabstop>
   <tabstop>transportX</tabstop>
   <tabstop>transportY</tabstop>

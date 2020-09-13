@@ -1,3 +1,6 @@
+13.09.2020
+    - Add Event list menu/shortcut to midi editors for easy access to the event list dock. (kybos)
+    - Clean up topwin/subwin parenting. (kybos)
 11.09.2020
     - Master track graphic editor doesn't open multiple windows any more. (kybos)
     - Fixed several colour issues in score editor. (kybos)

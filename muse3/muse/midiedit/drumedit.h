@@ -128,6 +128,7 @@ class DrumEdit : public MidiEditor {
       QAction *prevAction, *nextAction;
       QAction *groupNoneAction, *groupChanAction, *groupMaxAction;
       QAction *addControllerAction;
+      QAction *startListEditAction;
       
       void initShortcuts();
       void setupNewCtrl(CtrlEdit* ctrlEdit);
