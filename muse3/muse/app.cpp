@@ -2327,7 +2327,8 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
     dock->setObjectName(dock->windowTitle());
 
-    addTabbedDock(Qt::BottomDockWidgetArea, dock);
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
+//    addTabbedDock(Qt::BottomDockWidgetArea, dock);
 
     dock->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -4562,10 +4563,10 @@ int MusE::arrangerRaster() const
 
 bool MusE::restoreState(const QByteArray &state, int version) {
 
-    QList<QDockWidget *> docks_vis;
+    QList<QDockWidget *> docksVisible;
     for (const auto& d : findChildren<QDockWidget *>()) {
         if (d->isVisible()) {
-            docks_vis.prepend(d);
+            docksVisible.prepend(d);
             d->hide();
         }
     }
@@ -4573,15 +4574,40 @@ bool MusE::restoreState(const QByteArray &state, int version) {
     bool ret = QMainWindow::restoreState(state, version);
 
     for (const auto& d : findChildren<QDockWidget *>()) {
-        if (d->isVisible())
-            d->hide();
+        if (d->isVisible()) {
+            if (docksVisible.contains(d))
+                docksVisible.removeOne(d);
+            else
+                d->hide();
+        }
     }
 
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-
-    for (const auto& d : docks_vis)
+    for (const auto& d : docksVisible) {
         d->show();
+    }
+
+
+//    if (!docksVisible.isEmpty()) {
+
+//        QVector<QDockWidget*> areaDocks;
+//        for (const auto& d : findChildren<QDockWidget*>()) {
+//            if (dockWidgetArea(d) == Qt::BottomDockWidgetArea
+//                    && strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") == 0
+//                    && !docksVisible.contains(d))
+//                areaDocks.prepend(d);
+//        }
+
+//        if (!(areaDocks.isEmpty() && docksVisible.count() == 1)) {
+//            auto& cur = areaDocks.isEmpty() ? docksVisible.first() : areaDocks.last();
+//            for (const auto& d : docksVisible) {
+//                if (areaDocks.isEmpty() && d == docksVisible.first())
+//                    continue;;
+//                tabifyDockWidget(cur, d);
+//                QTimer::singleShot(0, [d](){ d->raise(); });
+//                cur = d;
+//            }
+//        }
+//    }
 
     return ret;
 }
@@ -4620,18 +4646,17 @@ void MusE::closeDocks() {
 
 void MusE::addTabbedDock(Qt::DockWidgetArea area, QDockWidget *dock)
 {
-    QList<QDockWidget*> allDocks = findChildren<QDockWidget*>();
     QVector<QDockWidget*> areaDocks;
-    for(QDockWidget *w : allDocks) {
-        if(dockWidgetArea(w) == area)
-            areaDocks.append(w);
+    for (const auto& d : findChildren<QDockWidget*>()) {
+        if (dockWidgetArea(d) == area)
+            areaDocks.append(d);
     }
 
     if (areaDocks.empty()) {
         addDockWidget(area, dock);
     } else {
         tabifyDockWidget(areaDocks.last(), dock);
-//        dock->raise(); // doesn't work, bug in Qt (kybos)
+//        dock->raise(); // doesn't work, Qt problem (kybos)
         QTimer::singleShot(0, [dock](){ dock->raise(); });
     }
 }

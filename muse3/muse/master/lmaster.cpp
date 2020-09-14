@@ -1105,6 +1105,10 @@ void LMaster::comboboxTimerSlot()
     key_editor->showPopup();
 }
 
+QSize LMaster::sizeHint() const {
+    return QSize(380, 400);
+}
+
 //bool LMaster::eventFilter(QObject*, QEvent *e)
 //{
 //    if (e->type() == QEvent::Shortcut) {

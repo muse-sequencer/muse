@@ -991,7 +991,7 @@ void ListEdit::focusCanvas()
 }
 
 QSize ListEdit::minimumSizeHint() const {
-    return QSize(400, 200);
+    return QSize(380, 200);
 }
 
 } // namespace MusEGui

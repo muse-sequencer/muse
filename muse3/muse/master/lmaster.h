@@ -162,6 +162,7 @@ class LMaster : public QWidget {
 
       virtual void closeEvent(QCloseEvent*);
 //      bool eventFilter(QObject *, QEvent *event) override;
+      virtual QSize sizeHint() const;
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 

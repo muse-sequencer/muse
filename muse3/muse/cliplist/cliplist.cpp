@@ -248,4 +248,8 @@ void ClipListEdit::clicked(QTreeWidgetItem*, int)
 //      printf("clicked\n"); DELETETHIS whole function
       }
 
+QSize ClipListEdit::sizeHint() const {
+    return QSize(minimumWidth(), 400);
+}
+
 } // namespace MusEGui
