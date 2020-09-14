@@ -1885,6 +1885,8 @@ void MusE::closeEvent(QCloseEvent* event)
       QSettings settings;
       settings.setValue("MusE/geometry", saveGeometry());
 
+      saveStateExtra();
+
       writeGlobalConfiguration();
 
       // save "Open Recent" list
@@ -2326,6 +2328,7 @@ void MusE::startListEditor(MusECore::PartList* pl)
     dock->setObjectName(dock->windowTitle());
 
     addDockWidget(Qt::BottomDockWidgetArea, dock);
+//    addTabbedDock(Qt::BottomDockWidgetArea, dock);
 
     dock->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -3563,7 +3566,7 @@ void MusE::bigtimeClosed()
 
 void MusE::showMixer1(bool on)
       {
-      if (on && mixer1 == 0) {
+      if (on && mixer1 == nullptr) {
             mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
             mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
@@ -3580,7 +3583,7 @@ void MusE::showMixer1(bool on)
 
 void MusE::showMixer2(bool on)
       {
-      if (on && mixer2 == 0) {
+      if (on && mixer2 == nullptr) {
             mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
             mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
@@ -4560,10 +4563,10 @@ int MusE::arrangerRaster() const
 
 bool MusE::restoreState(const QByteArray &state, int version) {
 
-    QList<QDockWidget *> docks_vis;
+    QList<QDockWidget *> docksVisible;
     for (const auto& d : findChildren<QDockWidget *>()) {
         if (d->isVisible()) {
-            docks_vis.prepend(d);
+            docksVisible.prepend(d);
             d->hide();
         }
     }
@@ -4571,15 +4574,40 @@ bool MusE::restoreState(const QByteArray &state, int version) {
     bool ret = QMainWindow::restoreState(state, version);
 
     for (const auto& d : findChildren<QDockWidget *>()) {
-        if (d->isVisible())
-            d->hide();
+        if (d->isVisible()) {
+            if (docksVisible.contains(d))
+                docksVisible.removeOne(d);
+            else
+                d->hide();
+        }
     }
 
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-    setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-
-    for (const auto& d : docks_vis)
+    for (const auto& d : docksVisible) {
         d->show();
+    }
+
+
+//    if (!docksVisible.isEmpty()) {
+
+//        QVector<QDockWidget*> areaDocks;
+//        for (const auto& d : findChildren<QDockWidget*>()) {
+//            if (dockWidgetArea(d) == Qt::BottomDockWidgetArea
+//                    && strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") == 0
+//                    && !docksVisible.contains(d))
+//                areaDocks.prepend(d);
+//        }
+
+//        if (!(areaDocks.isEmpty() && docksVisible.count() == 1)) {
+//            auto& cur = areaDocks.isEmpty() ? docksVisible.first() : areaDocks.last();
+//            for (const auto& d : docksVisible) {
+//                if (areaDocks.isEmpty() && d == docksVisible.first())
+//                    continue;;
+//                tabifyDockWidget(cur, d);
+//                QTimer::singleShot(0, [d](){ d->raise(); });
+//                cur = d;
+//            }
+//        }
+//    }
 
     return ret;
 }
@@ -4613,6 +4641,56 @@ void MusE::closeDocks() {
         else if (d->isVisible()) {
             d->hide();
         }
+    }
+}
+
+void MusE::addTabbedDock(Qt::DockWidgetArea area, QDockWidget *dock)
+{
+    QVector<QDockWidget*> areaDocks;
+    for (const auto& d : findChildren<QDockWidget*>()) {
+        if (dockWidgetArea(d) == area)
+            areaDocks.append(d);
+    }
+
+    if (areaDocks.empty()) {
+        addDockWidget(area, dock);
+    } else {
+        tabifyDockWidget(areaDocks.last(), dock);
+//        dock->raise(); // doesn't work, Qt problem (kybos)
+        QTimer::singleShot(0, [dock](){ dock->raise(); });
+    }
+}
+
+void MusE::saveStateExtra() {
+
+    MusEGlobal::config.transportVisible = transport->isVisible();
+    MusEGlobal::config.geometryTransport.setX(transport->frameGeometry().x());
+    MusEGlobal::config.geometryTransport.setY(transport->frameGeometry().y());
+    MusEGlobal::config.geometryTransport.setWidth(0);
+    MusEGlobal::config.geometryTransport.setHeight(0);
+
+    if (bigtime) {
+        MusEGlobal::config.bigTimeVisible = bigtime->isVisible();
+        MusEGlobal::config.geometryBigTime.setX(bigtime->frameGeometry().x());
+        MusEGlobal::config.geometryBigTime.setY(bigtime->frameGeometry().y());
+        MusEGlobal::config.geometryBigTime.setWidth(bigtime->width());
+        MusEGlobal::config.geometryBigTime.setHeight(bigtime->height());
+    }
+
+    if (mixer1) {
+        MusEGlobal::config.mixer1Visible = mixer1->isVisible();
+        MusEGlobal::config.mixer1.geometry.setX(mixer1->frameGeometry().x());
+        MusEGlobal::config.mixer1.geometry.setY(mixer1->frameGeometry().y());
+        MusEGlobal::config.mixer1.geometry.setWidth(mixer1->width());
+        MusEGlobal::config.mixer1.geometry.setHeight(mixer1->height());
+    }
+
+    if (mixer2) {
+        MusEGlobal::config.mixer2Visible = mixer2->isVisible();
+        MusEGlobal::config.mixer2.geometry.setX(mixer2->frameGeometry().x());
+        MusEGlobal::config.mixer2.geometry.setY(mixer2->frameGeometry().y());
+        MusEGlobal::config.mixer2.geometry.setWidth(mixer2->width());
+        MusEGlobal::config.mixer2.geometry.setHeight(mixer2->height());
     }
 }
 

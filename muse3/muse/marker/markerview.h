@@ -78,7 +78,9 @@ class MarkerView : public QWidget {
       PosEdit* editTick;
       QToolButton* lock;
       QToolBar* tools;
-           
+
+      virtual QSize sizeHint() const;
+
    private slots:
       void addMarker();
       void addMarker(unsigned);

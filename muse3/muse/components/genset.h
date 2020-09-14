@@ -56,11 +56,6 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void apply();
       void ok();
       void cancel();
-      void mixerCurrent();
-      void mixer2Current();
-      void bigtimeCurrent();
-//      void mainCurrent();
-      void transportCurrent();
       void editPluginPath();
       void addPluginPath();
       void removePluginPath();
@@ -80,7 +75,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       QString browsePluginPath(const QString& path);
       
    public:
-      GlobalSettingsConfig(QWidget* parent=0);
+      GlobalSettingsConfig(QWidget* parent=nullptr);
       };
 
 } // namespace MusEGui

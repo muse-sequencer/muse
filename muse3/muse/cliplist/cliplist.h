@@ -64,6 +64,7 @@ class ClipListEdit : public QWidget {
       ClipListEditorBaseWidget* editor;
 
       void updateList();
+      virtual QSize sizeHint() const;
 
    private slots:
       void songChanged(MusECore::SongChangedStruct_t);

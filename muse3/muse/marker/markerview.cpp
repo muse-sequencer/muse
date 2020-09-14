@@ -669,6 +669,10 @@ void MarkerView::prevMarker()
       MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
       }
 
+QSize MarkerView::sizeHint() const {
+    return QSize(minimumWidth(), 400);
+}
+
 MarkerItem* MarkerView::findId(MusECore::EventID_t id) const
 {
   MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
