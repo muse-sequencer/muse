@@ -99,10 +99,10 @@ QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
 //  that is NOT what we want! For example Qt normalizes (50, 50, -40, -40) to (9, 9, 42, 42),
 //  but we want (10, 10, 40, 40).
 QRect normalizeQRect(const QRect& rect);
-void loadTheme(const QString&, bool force = false);
-void loadStyleSheetFile(const QString&);
+void loadQtStyle(const QString&);
+void loadTheme(const QString&);
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
-void updateThemeAndStyle(bool forceStyle = false);
+void updateThemeAndStyle();
 } 
 
 #endif

@@ -625,7 +625,7 @@ int main(int argc, char* argv[])
         //========================
         
         MuseApplication app(argc_copy, argv_copy);
-        if(QStyle* def_style = app.style())
+        if (QStyle* def_style = app.style())
         {
           const QString appStyleObjName = def_style->objectName();
           MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
@@ -1200,12 +1200,9 @@ int main(int argc, char* argv[])
         
         MusECore::initAudio();
 
-        {
-            QString theme = QFileInfo(MusEGlobal::config.styleSheetFile).baseName();
-            MusEGui::initIcons(MusEGlobal::config.cursorSize,
-                               MusEGlobal::museGlobalShare + "/themes/" + theme,
-                               MusEGlobal::configPath + "/themes/" + theme);
-        }
+        MusEGui::initIcons(MusEGlobal::config.cursorSize,
+                           MusEGlobal::museGlobalShare + "/themes/" + MusEGlobal::config.theme,
+                           MusEGlobal::configPath + "/themes/" + MusEGlobal::config.theme);
 
         if (MusEGlobal::loadMESS)
           MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.

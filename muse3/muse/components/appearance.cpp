@@ -707,11 +707,11 @@ void Appearance::resetValues()
 
 QString &Appearance::getSetDefaultStyle(const QString *newStyle)
 {
-   static QString defaultStyle = "";
-   if(newStyle != NULL)
-   {
+   static QString defaultStyle = "Fusion";
+
+   if (newStyle)
       defaultStyle = *newStyle;
-   }
+
    return defaultStyle;
 }
 

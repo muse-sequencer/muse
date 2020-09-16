@@ -748,7 +748,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               if(MusEGlobal::config.routerGroupingChannels > 2)
                                 MusEGlobal::config.routerGroupingChannels = 2;
                         }
-                        else if (tag == "theme")
+                        else if (tag == "qtStyle")
                               MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
                               MusEGlobal::config.autoSave = xml.parseInt();
@@ -774,8 +774,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiCtrlGraphMergeEraseInclusive = xml.parseInt();
                         else if (tag == "midiCtrlGraphMergeEraseWysiwyg")
                               MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = xml.parseInt();
-                        else if (tag == "styleSheetFile")
-                              MusEGlobal::config.styleSheetFile = xml.parse1();
+                        else if (tag == "museTheme")
+                              MusEGlobal::config.theme = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
                               MusEGlobal::config.useOldStyleStopShortCut = xml.parseInt();
                         else if (tag == "useRewindOnStop")
@@ -1987,9 +1987,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "routerExpandVertically", MusEGlobal::config.routerExpandVertically);
       xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
-      xml.strTag(level, "theme", MusEGlobal::config.style);
+      xml.strTag(level, "qtStyle", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
-      xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
+      xml.strTag(level, "museTheme", MusEGlobal::config.theme);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", MusEGlobal::config.useOldStyleStopShortCut);
       xml.intTag(level, "useRewindOnStop", MusEGlobal::config.useRewindOnStop);

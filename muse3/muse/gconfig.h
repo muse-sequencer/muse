@@ -366,8 +366,9 @@ struct GlobalConfigValues {
       bool canvasShowGrid;
       QString canvasBgPixmap;
       QStringList canvasCustomBgList;
-      QString styleSheetFile;
+//      QString styleSheetFile;
       QString style;
+      QString theme;
 
       QString externalWavEditor;
       bool useOldStyleStopShortCut;
