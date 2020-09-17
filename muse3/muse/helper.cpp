@@ -54,6 +54,7 @@
 #include "part.h"
 #include "drummap.h"
 #include "xml.h"
+#include "conf.h"
 
 #include <strings.h>
 
@@ -1938,7 +1939,7 @@ QRect normalizeQRect(const QRect& rect)
 void loadTheme(const QString& theme)
 {
     if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadTheme:%s\n", theme.toLatin1().constData());
+        fprintf(stderr, "loadTheme: %s\n", theme.toLatin1().constData());
 
     QString stylePathUser = MusEGlobal::configPath + "/themes/" + theme + ".qss";
     QString stylePathDef = MusEGlobal::museGlobalShare + "/themes/" + theme + ".qss";
@@ -1973,6 +1974,26 @@ void loadTheme(const QString& theme)
     }
 
     qApp->setStyleSheet(sheet);
+
+    loadThemeColors(theme);
+}
+
+//---------------------------------------------------------
+//   loadThemeColors
+//---------------------------------------------------------
+
+void loadThemeColors(const QString& theme)
+{
+    if (MusEGlobal::debugMsg)
+        fprintf(stderr, "loadThemeColors: %s\n", theme.toLatin1().constData());
+
+    QString configColorPath = MusEGlobal::configPath + "/themes/" + theme + ".cfc";
+    if (!QFile::exists(configColorPath)) {
+        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + theme + ".cfc";
+    }
+
+    MusECore::readConfiguration(qPrintable(configColorPath));
+
 }
 
 //---------------------------------------------------------

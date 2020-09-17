@@ -1101,7 +1101,9 @@ int main(int argc, char* argv[])
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
 //        MusEGui::updateThemeAndStyle();
 
+
         MusEGui::loadTheme(MusEGlobal::config.theme);
+//        MusEGui::loadThemeColors(MusEGlobal::config.theme);
 
         //-------------------------------------------------------
         //    BEGIN SHOW MUSE SPLASH SCREEN

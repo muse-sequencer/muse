@@ -101,6 +101,7 @@ QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
 QRect normalizeQRect(const QRect& rect);
 //void loadQtStyle(const QString&);
 void loadTheme(const QString&);
+void loadThemeColors(const QString&);
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
 //void updateThemeAndStyle();
 } 
