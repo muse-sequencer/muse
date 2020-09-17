@@ -367,7 +367,7 @@ struct GlobalConfigValues {
       QString canvasBgPixmap;
       QStringList canvasCustomBgList;
 //      QString styleSheetFile;
-      QString style;
+//      QString style;
       QString theme;
 
       QString externalWavEditor;

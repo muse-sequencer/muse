@@ -328,7 +328,7 @@ GlobalConfigValues config = {
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
 //      QString(""),                  // default styleSheetFile
-      QString("Fusion"),            // style
+//      QString("Fusion"),            // style
       QString("Dark Flat"),         // theme
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut

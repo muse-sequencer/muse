@@ -1874,62 +1874,62 @@ QRect normalizeQRect(const QRect& rect)
 //   loadQtStyle
 //---------------------------------------------------------
 
-void loadQtStyle(const QString& style)
-{
-    // Style sheets take priority over styles, and actually
-    //  reset the style object name to empty when set.
-    const QString curStyle(qApp->style()->objectName());
-    QStringList styleList = QStyleFactory::keys();
+//void loadQtStyle(const QString& style)
+//{
+//    // Style sheets take priority over styles, and actually
+//    //  reset the style object name to empty when set.
+//    const QString curStyle(qApp->style()->objectName());
+//    QStringList styleList = QStyleFactory::keys();
 
-    if (styleList.indexOf(style) == -1) {
+//    if (styleList.indexOf(style) == -1) {
 
-        if (MusEGlobal::debugMsg)
-            printf("Passed Qt style does not exist, setting default.\n");
+//        if (MusEGlobal::debugMsg)
+//            printf("Application Qt style does not exist, setting default.\n");
 
-        // To find the name of the current style, use objectName().
-        if (curStyle.compare(Appearance::getSetDefaultStyle(), Qt::CaseInsensitive) != 0)
-        {
-            qApp->setStyle(Appearance::getSetDefaultStyle());
+//        // To find the name of the current style, use objectName().
+//        if (curStyle.compare(Appearance::getSetDefaultStyle(), Qt::CaseInsensitive) != 0)
+//        {
+//            qApp->setStyle(Appearance::getSetDefaultStyle());
 
-            if (MusEGlobal::debugMsg)
-            {
-                fprintf(stderr, "loadQtStyle: Setting app style to default: %s\n", Appearance::getSetDefaultStyle().toLatin1().constData());
-                fprintf(stderr, "   App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
-            }
+//            if (MusEGlobal::debugMsg)
+//            {
+//                fprintf(stderr, "loadQtStyle: Setting app style to default: %s\n", Appearance::getSetDefaultStyle().toLatin1().constData());
+//                fprintf(stderr, "   App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//            }
 
-            // No style object name? It will happen when a stylesheet is active.
-            // Give it a name. NOTE: The object names always seem to be lower case while
-            //  the style factory key names are not.
-            if (qApp->style()->objectName().isEmpty())
-            {
-                qApp->style()->setObjectName(Appearance::getSetDefaultStyle().toLower());
-                if (MusEGlobal::debugMsg)
-                    fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
-            }
-        }
-    }
-    else if (curStyle.compare(style, Qt::CaseInsensitive) != 0)
-    {
-        qApp->setStyle(style);
-        // Do the style again to fix a bug where the arranger is non-responsive.
+//            // No style object name? It will happen when a stylesheet is active.
+//            // Give it a name. NOTE: The object names always seem to be lower case while
+//            //  the style factory key names are not.
+//            if (qApp->style()->objectName().isEmpty())
+//            {
+//                qApp->style()->setObjectName(Appearance::getSetDefaultStyle().toLower());
+//                if (MusEGlobal::debugMsg)
+//                    fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//            }
+//        }
+//    }
+//    else if (curStyle.compare(style, Qt::CaseInsensitive) != 0)
+//    {
+//        qApp->setStyle(style);
+//        // Do the style again to fix a bug where the arranger is non-responsive.
 
-        if(MusEGlobal::debugMsg)
-        {
-            fprintf(stderr, "loadTheme setting app style to:%s\n", style.toLatin1().constData());
-            fprintf(stderr, "   app style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
-        }
+//        if(MusEGlobal::debugMsg)
+//        {
+//            fprintf(stderr, "loadTheme setting app style to: %s\n", style.toLatin1().constData());
+//            fprintf(stderr, "   app style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//        }
 
-        // No style object name? It will happen when a stylesheet is active.
-        // Give it a name. NOTE: The object names always seem to be lower case while
-        //  the style factory key names are not.
-        if(qApp->style()->objectName().isEmpty())
-        {
-            qApp->style()->setObjectName(style.toLower());
-            if(MusEGlobal::debugMsg)
-                fprintf(stderr, "   Setting empty style object name. App style is now:%s\n", qApp->style()->objectName().toLatin1().constData());
-        }
-    }
-}
+//        // No style object name? It will happen when a stylesheet is active.
+//        // Give it a name. NOTE: The object names always seem to be lower case while
+//        //  the style factory key names are not.
+//        if(qApp->style()->objectName().isEmpty())
+//        {
+//            qApp->style()->setObjectName(style.toLower());
+//            if(MusEGlobal::debugMsg)
+//                fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//        }
+//    }
+//}
 
 //---------------------------------------------------------
 //   loadTheme
@@ -1981,13 +1981,13 @@ void loadTheme(const QString& theme)
 //     to actually switch them.
 //---------------------------------------------------------
 
-void updateThemeAndStyle()
-{
-  // Note that setting a stylesheet completely takes over the font until blanked again.
-//  qApp->setFont(MusEGlobal::config.fonts[0]); // has no effect
-  loadTheme(MusEGlobal::config.theme);
-  loadQtStyle(MusEGlobal::config.style);
-}
+//void updateThemeAndStyle()
+//{
+//  // Note that setting a stylesheet completely takes over the font until blanked again.
+////  qApp->setFont(MusEGlobal::config.fonts[0]); // has no effect
+////    loadQtStyle(MusEGlobal::config.style);
+//  loadTheme(MusEGlobal::config.theme);
+//}
 
 
 } // namespace MusEGui

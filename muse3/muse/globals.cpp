@@ -339,6 +339,8 @@ const QString noOutputRoutingToolTipWarn = outputRoutingToolTipBase + QString("\
 
 bool midiSeqRunning = false;
 
+QString defaultStyle = "Fusion";
+
 //---------------------------------------------------------
 //   convertFrame4ProjectSampleRate
 //---------------------------------------------------------
