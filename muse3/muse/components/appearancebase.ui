@@ -203,7 +203,7 @@
           <item row="1" column="0">
            <widget class="QRadioButton" name="radioButtonDrawRmsPeak">
             <property name="text">
-             <string>RMS/PEAK (&amp;Traditional)</string>
+             <string>RMS/PEAK (&amp;traditional)</string>
             </property>
            </widget>
           </item>
@@ -1176,7 +1176,7 @@
             <item>
              <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>MusE theme</string>
+               <string>Current theme</string>
               </property>
              </widget>
             </item>

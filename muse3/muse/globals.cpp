@@ -71,7 +71,7 @@ const QString selectableAudioBackendDevices[] = {
     "RtAudio Pulse Audio",
     "RtAudio ALSA",
     "RtAudio OSS - Open Sound System",
-    "Russian roulette (RtAudio selects)"
+    "RtAudio best guess"
 };
 
 const int numRtAudioDevices = 6;

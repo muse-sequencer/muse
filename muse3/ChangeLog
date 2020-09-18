@@ -1,3 +1,7 @@
+18.09.2020
+    - Change default theme to Dark Flat. (kybos)
+    - Remove system styles selection, default to Fusion. It's still possible 
+        to force a different style by specifying it on the command line. (kybos)
 14.09.2020
     - Improve dock positioning/sizing. (kybos)
     - Save geometry of external windows automatically,
