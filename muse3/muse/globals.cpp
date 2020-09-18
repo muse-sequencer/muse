@@ -71,7 +71,7 @@ const QString selectableAudioBackendDevices[] = {
     "RtAudio Pulse Audio",
     "RtAudio ALSA",
     "RtAudio OSS - Open Sound System",
-    "Russian roulette (RtAudio selects)"
+    "RtAudio best guess"
 };
 
 const int numRtAudioDevices = 6;
@@ -338,6 +338,8 @@ const QString noOutputRoutingToolTipWarn = outputRoutingToolTipBase + QString("\
 //uid_t euid, ruid;  // effective user id, real user id
 
 bool midiSeqRunning = false;
+
+QString defaultStyle = "Fusion";
 
 //---------------------------------------------------------
 //   convertFrame4ProjectSampleRate

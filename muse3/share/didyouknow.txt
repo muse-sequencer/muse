@@ -1,5 +1,5 @@
-To get started with MusE why don't you visit the tutorials at <br>
-<a href="http://muse-sequencer.org/index.php/Support">http://muse-sequencer.org</a>
+To get started with MusE why don't you visit the <br>
+<a href="https://github.com/muse-sequencer/muse/wiki/Tutorials">tutorials</a>
 
 MusE can add effects in realtime for audio tracks,<br>
 check the effect rack on the mixer strip
@@ -34,9 +34,6 @@ Parts can be copied and deleted using the standard cut/copy/paste<br>
 but it is also possible to click and drag parts to duplicate.<br>
 ctrl+click+drag to duplicate parts<br>
 ctrl+alt+click+drag to create clones
-
-When using the dark theme, make sure to select Qt theme plastique<br>
-or the theme will not be consistent.
 
 If it's hard to be precise while moving automation points with the mouse,<br>
 trying holding the SHIFT key, the movement will be slower.

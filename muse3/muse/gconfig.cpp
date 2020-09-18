@@ -327,8 +327,9 @@ GlobalConfigValues config = {
       true,                         // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
-      QString(""),                  // default styleSheetFile
-      QString(""),                  // style
+//      QString(""),                  // default styleSheetFile
+//      QString("Fusion"),            // style
+      QString("Dark Flat"),         // theme
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut
       true,                         // useRewindOnStop

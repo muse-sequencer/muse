@@ -146,7 +146,7 @@ extern const char* drum_map_file_pattern[];
 extern const char* drum_map_file_save_pattern[];
 extern const char* audio_file_pattern[];
 extern const char* colors_config_file_pattern[];
-extern const char* stylesheet_file_pattern[];
+//extern const char* stylesheet_file_pattern[];
 
 extern Qt::KeyboardModifiers globalKeyState;
 
@@ -230,6 +230,7 @@ extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilena
 
 extern unsigned convertFrame4ProjectSampleRate(unsigned frame);
 
+extern QString defaultStyle;
 } // namespace MusEGlobal
 
 #endif

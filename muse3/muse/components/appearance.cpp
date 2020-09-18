@@ -353,26 +353,16 @@ Appearance::Appearance(QWidget* parent)
       connect(addToPalette, SIGNAL(clicked()), SLOT(addToPaletteClicked()));
 
       //---------------------------------------------------
-      //    STYLE
-      //---------------------------------------------------
-      openStyleSheet->setIcon(*fileopenSVGIcon);
-      openStyleSheet->setToolTip(tr("Open custom style sheet"));
-      connect(openStyleSheet, SIGNAL(clicked()), SLOT(browseStyleSheet()));
-      defaultStyleSheet->setIcon(*undoSVGIcon);
-      defaultStyleSheet->setToolTip(tr("Remove custom style sheet"));
-      connect(defaultStyleSheet, SIGNAL(clicked()), SLOT(setDefaultStyleSheet()));
-      
-      //---------------------------------------------------
       //    THEMES
       //---------------------------------------------------
-//      connect(changeThemeButton, SIGNAL(clicked()), SLOT(changeTheme()));
 
       QDir themeDir(MusEGlobal::museGlobalShare + QString("/themes"));
       QStringList fileTypes;
       fileTypes.append("*.qss");
       QFileInfoList list = themeDir.entryInfoList(fileTypes);
-      for (auto item : list)
-          colorSchemeComboBox->addItem(item.baseName());
+      for (const auto& item : list)
+          themeComboBox->addItem(item.baseName());
+      themeComboBox->setCurrentText(MusEGlobal::config.theme);
 
       //---------------------------------------------------
       //    Fonts
@@ -597,7 +587,6 @@ void Appearance::resetValues()
       {
       *config = MusEGlobal::config;  // init with global config values
       *backupConfig = MusEGlobal::config;  // init with global config values
-      styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
       cbAutoAdjustFontSize->setChecked(config->autoAdjustFontSize);
 
@@ -661,22 +650,28 @@ void Appearance::resetValues()
       eventButtonGroup->setEnabled(config->canvasShowPartType & 2);
       arrGrid->setChecked(config->canvasShowGrid);
 
-      themeComboBox->clear();
-      QString cs = MusEGlobal::muse->style()->objectName();
-      cs = cs.toLower();
+//      qtStyleComboBox->clear();
+////      QString cs = MusEGlobal::muse->style()->objectName();
+////      cs = cs.toLower();
 
-      themeComboBox->insertItem(0,tr("Keep Qt system style"));
-      themeComboBox->insertItems(1, QStyleFactory::keys());
+////      qtStyleComboBox->insertItem(0,tr("Keep Qt system style"));
+//      qtStyleComboBox->insertItems(0, QStyleFactory::keys());
 
-      if (QStyleFactory::keys().indexOf(config->style) == -1)
-        themeComboBox->setCurrentIndex(0); // if none is found use the default
-      else {
-          for (int i = 0; i < themeComboBox->count(); ++i) {
-              if (themeComboBox->itemText(i).toLower() == cs) {
-                  themeComboBox->setCurrentIndex(i);
-              }
-          }
-      }
+//      if (QStyleFactory::keys().indexOf(config->style) == -1)
+//          qtStyleComboBox->setCurrentText("Fusion"); // if none is found use the default
+//      else
+//          qtStyleComboBox->setCurrentText(config->style);
+
+      //      if (QStyleFactory::keys().indexOf(config->style) == -1)
+      //          qtStyleComboBox->setCurrentIndex(0); // if none is found use the default
+      //      else {
+      //          for (int i = 0; i < qtStyleComboBox->count(); ++i) {
+      //              if (qtStyleComboBox->itemText(i).toLower() == cs) {
+      //                  qtStyleComboBox->setCurrentIndex(i);
+      //              }
+      //          }
+      //      }
+
       globalAlphaSlider->blockSignals(true);
       globalAlphaVal->blockSignals(true);
       globalAlphaSlider->setValue(config->globalAlphaBlend);
@@ -707,11 +702,11 @@ void Appearance::resetValues()
 
 QString &Appearance::getSetDefaultStyle(const QString *newStyle)
 {
-   static QString defaultStyle = "";
-   if(newStyle != NULL)
-   {
+   static QString defaultStyle = "Fusion";
+
+   if (newStyle)
       defaultStyle = *newStyle;
-   }
+
    return defaultStyle;
 }
 
@@ -788,19 +783,15 @@ void Appearance::updateFonts()
 
 bool Appearance::changeTheme()
 {
-    if (colorSchemeComboBox->currentIndex() == 0) {
-      return false;
-    }
-
-    QString currentTheme = colorSchemeComboBox->currentText();
-    QString lastTheme = QFileInfo(config->styleSheetFile).baseName();
-    if (lastTheme.isEmpty())
-        lastTheme = "Dark Flat";
+    QString currentTheme = themeComboBox->currentText();
+    QString lastTheme = config->theme;
 
     if (lastTheme == currentTheme)
         return false;
 
     printf("Changing to theme %s\n", qPrintable(currentTheme) );
+
+    MusEGlobal::config.theme = currentTheme;
 
     QDir dir(MusEGlobal::configPath + "/themes/");
     if (!dir.exists())
@@ -821,26 +812,6 @@ bool Appearance::changeTheme()
         xml.etag(1, "configuration");
         xml.tag(0, "/muse");
         fclose(f);
-    }
-
-    QString styleFile = currentTheme + ".qss";
-    QString stylePath = MusEGlobal::configPath + "/themes/" + styleFile;
-
-    if (!QFile::exists(stylePath)) {
-        stylePath = MusEGlobal::museGlobalShare + "/themes/" + styleFile;
-    }
-
-    if (QFile::exists(stylePath))
-    {
-        styleSheetPath->setText(stylePath);
-        MusEGlobal::config.styleSheetFile = stylePath;
-        if (MusEGlobal::debugMsg)
-            printf("Setting config.styleSheetFile to %s\n", config->styleSheetFile.toLatin1().data());
-    }
-    else
-    {
-        styleSheetPath->setText("");
-        MusEGlobal::config.styleSheetFile.clear();
     }
 
     QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
@@ -946,11 +917,11 @@ bool Appearance::apply()
       config->fonts[6].setItalic(italic6->isChecked());
       config->fonts[6].setBold(bold6->isChecked());
 
-      if(config->style != (themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText()))
-      {
-        restart_required = true;
-        config->style = themeComboBox->currentIndex() == 0 ? QString() : themeComboBox->currentText();
-      }
+//      if(config->style != (qtStyleComboBox->currentIndex() == 0 ? QString() : qtStyleComboBox->currentText()))
+//      {
+//        restart_required = true;
+//        config->style = qtStyleComboBox->currentIndex() == 0 ? QString() : qtStyleComboBox->currentText();
+//      }
 
       config->canvasShowGrid = arrGrid->isChecked();
       config->globalAlphaBlend = globalAlphaVal->value();
@@ -1756,36 +1727,36 @@ void Appearance::paletteClicked(int id)
             }
       }
 
-//---------------------------------------------------------
-//   browseStyleSheet
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   browseStyleSheet
+////---------------------------------------------------------
 
-void Appearance::browseStyleSheet()
-{
-      QString path;
-      if(!config->styleSheetFile.isEmpty())
-      {  
-        QFileInfo info(config->styleSheetFile);
-        path = info.absolutePath();
-      }
+//void Appearance::browseStyleSheet()
+//{
+//      QString path;
+//      if(!config->styleSheetFile.isEmpty())
+//      {
+//        QFileInfo info(config->styleSheetFile);
+//        path = info.absolutePath();
+//      }
       
-      QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::stylesheet_file_pattern, this,
-                                              tr("Select style sheet"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
-      if (!file.isEmpty()) {
-          styleSheetPath->setText(file);
-          config->styleSheetFile = file;
-      }
-}
+//      QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::stylesheet_file_pattern, this,
+//                                              tr("Select style sheet"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
+//      if (!file.isEmpty()) {
+//          styleSheetPath->setText(file);
+//          config->styleSheetFile = file;
+//      }
+//}
 
 
-//---------------------------------------------------------
-//   setDefaultStyleSheet
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   setDefaultStyleSheet
+////---------------------------------------------------------
 
-void Appearance::setDefaultStyleSheet()
-{
-      styleSheetPath->clear();
-}
+//void Appearance::setDefaultStyleSheet()
+//{
+//      styleSheetPath->clear();
+//}
 
 //---------------------------------------------------------
 //   browseFont

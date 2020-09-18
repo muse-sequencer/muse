@@ -203,7 +203,7 @@
           <item row="1" column="0">
            <widget class="QRadioButton" name="radioButtonDrawRmsPeak">
             <property name="text">
-             <string>RMS/PEAK (&amp;Traditional)</string>
+             <string>RMS/PEAK (&amp;traditional)</string>
             </property>
            </widget>
           </item>
@@ -1150,7 +1150,7 @@
      </widget>
      <widget class="QWidget" name="tabStyles">
       <attribute name="title">
-       <string>Styles</string>
+       <string>Themes</string>
       </attribute>
       <layout class="QVBoxLayout">
        <item>
@@ -1172,58 +1172,35 @@
            <number>6</number>
           </property>
           <item>
-           <layout class="QHBoxLayout">
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QLabel" name="label_5">
+             <widget class="QLabel" name="label_6">
               <property name="text">
-               <string>Qt system style</string>
+               <string>Current theme</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QComboBox" name="themeComboBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+              <property name="currentText">
+               <string/>
               </property>
-              <item>
-               <property name="text">
-                <string>Fusion</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Windows</string>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <item>
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>MusE theme</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="colorSchemeComboBox">
-              <property name="currentText">
-               <string>Current settings</string>
-              </property>
-              <item>
-               <property name="text">
-                <string>Current settings</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QCheckBox" name="cascadeStylesheetsCheckBox">
+            <property name="toolTip">
+             <string>If a user style sheet for one of  the MusE color schemes exists
+and is selected, it will be merged with the default style sheet
+for this scheme. The user style sheet takes precedence and 
+overwrites identical settings in the default style sheet.</string>
+            </property>
+            <property name="text">
+             <string>Cascade default and user theme style sheets</string>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -1320,67 +1297,6 @@
             </property>
             <property name="checked">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>10</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Style sheet</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_7">
-          <item row="0" column="0">
-           <widget class="QLineEdit" name="styleSheetPath"/>
-          </item>
-          <item row="0" column="2">
-           <widget class="QToolButton" name="defaultStyleSheet">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QToolButton" name="openStyleSheet">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="cascadeStylesheetsCheckBox">
-            <property name="toolTip">
-             <string>If a user style sheet for one of  the MusE color schemes exists
-and is selected, it will be merged with the default style sheet
-for this scheme. The user style sheet takes precedence and 
-overwrites identical settings in the default style sheet.</string>
-            </property>
-            <property name="text">
-             <string>Cascade default and user style sheets</string>
             </property>
            </widget>
           </item>
@@ -2101,7 +2017,6 @@ The font family is forced to 'Sans', which should
   <tabstop>eventProgramchange</tabstop>
   <tabstop>eventSpecial</tabstop>
   <tabstop>arrGrid</tabstop>
-  <tabstop>themeComboBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
