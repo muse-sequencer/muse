@@ -87,6 +87,8 @@ class CompactSlider : public SliderBase, public ScaleIf
 
       Q_PROPERTY( bool barSameColor READ barSameColor WRITE setBarSameColor )
       Q_PROPERTY( int radius READ radius WRITE setRadius )
+      Q_PROPERTY( int thumbLength READ thumbLength WRITE setThumbLength )
+      Q_PROPERTY( QColor thumbColor READ thumbColor WRITE setThumbColor )
 
       Q_PROPERTY( QString labelText READ labelText WRITE setLabelText )
       Q_PROPERTY( QString valPrefix READ valPrefix WRITE setValPrefix )
@@ -244,7 +246,7 @@ class CompactSlider : public SliderBase, public ScaleIf
     ActiveBorders_t activeBorders() const { return _activeBorders; }
     void setActiveBorders(ActiveBorders_t borders);
 
-    void setThumbLength(int l);
+//    void setThumbLength(int l);
     void setThumbWidth(int w);
 
     void setOrientation(Qt::Orientation o);
@@ -262,13 +264,15 @@ class CompactSlider : public SliderBase, public ScaleIf
     void setBarColor(const QColor& c) { d_barColor = c; update(); }
 //    QColor slotColor() const { return d_slotColor; }
     void setSlotColor(const QColor& c) { d_slotColor = c; update(); }
-//    QColor thumbColor() const { return d_thumbColor; }
+    QColor thumbColor() const { return d_thumbColor; }
     void setThumbColor(const QColor& c) { d_thumbColor = c; update(); }
 
     bool barSameColor() const { return _barSameColor; }
     void setBarSameColor(const bool barSameColor) { _barSameColor = barSameColor; }
     int radius() const { return _radius; }
     void setRadius(const int radius) { _radius = radius; }
+    int thumbLength() const { return d_thumbLength; }
+    void setThumbLength(const int l) { d_thumbLength = l; }
 
     // Whether the user must click on the thumb or else anywhere in the control to move the value. 
     bool detectThumb() const { return _detectThumb; }
