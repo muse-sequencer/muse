@@ -24,43 +24,42 @@
 #ifndef __PIANOROLL_H__
 #define __PIANOROLL_H__
 
-#include <QAction>
-#include <QMenu>
-#include <QToolBar>
-#include <QToolButton>
-#include <QWidget>
-#include <QPoint>
-#include <QCloseEvent>
-#include <QKeyEvent>
-
 #include <limits.h>
 #include "type_defs.h"
-#include "noteinfo.h"
-#include "cobject.h"
-#include "midieditor.h"
-#include "tools.h"
-#include "event.h"
-#include "midictrl.h"
+#include "globaldefs.h"
 #include "part.h"
+#include "midieditor.h"
 #include "ecanvas.h"
-#include "popupmenu.h"
+#include "noteinfo.h"
+#include "midictrl_consts.h"
+
+
+// Forward declarations:
+class QAction;
+class QMenu;
+class QToolBar;
+class QToolButton;
+class QWidget;
+class QPoint;
+class QCloseEvent;
+class QKeyEvent;
 
 namespace MusECore {
-class Track;
+class Event;
 class Xml;
 }
 
-
 namespace MusEGui {
 
+class TopWin;
 class CtrlEdit;
 class PitchLabel;
-class SNode;
 class ScrollScale;
 class Splitter;
-class TimeLabel;
 class Toolbar1;
 class Piano;
+class PopupMenu;
+class EditToolBar;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -68,6 +67,7 @@ class Piano;
 
 class PianoRoll : public MidiEditor {
       Q_OBJECT
+
     
     Q_PROPERTY(int pianoWidth READ pianoWidth WRITE setPianoWidth)
 
@@ -91,7 +91,8 @@ class PianoRoll : public MidiEditor {
       QAction* selectOutsideLoopAction;
       QAction* selectPrevPartAction;
       QAction* selectNextPartAction;
-      
+      QAction *startListEditAction;
+
       QAction* evColorBlueAction;
       QAction* evColorPitchAction;
       QAction* evColorVelAction;
@@ -139,12 +140,12 @@ class PianoRoll : public MidiEditor {
       QToolBar* tools;
       MusEGui::EditToolBar* tools2;
 
-      int colorMode;
+      MidiEventColorMode colorMode;
 
       static int _rasterInit;
       static int _trackInfoWidthInit;
       static int _canvasWidthInit;
-      static int colorModeInit;
+      static MidiEventColorMode colorModeInit;
 
       // Initial view state.
       MusECore::MidiPartViewState _viewState;
@@ -154,13 +155,19 @@ class PianoRoll : public MidiEditor {
 
       void initShortcuts();
       void setupNewCtrl(CtrlEdit* ctrlEdit);
-      void setEventColorMode(int);
+      void setEventColorMode(MidiEventColorMode);
       QWidget* genToolbar(QWidget* parent);
 
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       
       void setSpeakerMode(EventCanvas::PlayEventsMode mode);
+      
+      // Sets up a reasonable zoom minimum and/or maximum based on
+      //  the current global midi division (ticks per quarter note)
+      //  which has a very wide range (48 - 12288).
+      // Also sets the canvas and time scale offsets accordingly.
+      void setupHZoomRange();
 
    private slots:
       void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
@@ -170,7 +177,7 @@ class PianoRoll : public MidiEditor {
       void setRaster(int);
       void cmd(int);
       void setSteprec(bool);
-      void eventColorModeChanged(int);
+      void eventColorModeChanged(MidiEventColorMode);
       void clipboardChanged(); // enable/disable "Paste"
       void selectionChanged(); // enable/disable "Copy" & "Paste"
       void setSpeaker(bool);
@@ -211,6 +218,8 @@ class PianoRoll : public MidiEditor {
 
       int pianoWidth() const { return _pianoWidth; }
       void setPianoWidth(int w) { _pianoWidth = w; }
+
+      int changeRaster(int val);
       };
 
 } // namespace MusEGui

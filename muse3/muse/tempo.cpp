@@ -31,7 +31,6 @@
 #include "xml.h"
 
 #include <stdint.h>
-#include "large_int.h"
 
 namespace MusEGlobal {
 MusECore::TempoList tempomap;

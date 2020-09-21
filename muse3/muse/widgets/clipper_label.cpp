@@ -2,6 +2,9 @@
 #include <QPainter>
 #include <QStyle>
 #include <QLocale>
+#include <QResizeEvent>
+#include <QMouseEvent>
+#include <QContextMenuEvent>
 
 #include "fastlog.h"
 #include "clipper_label.h"

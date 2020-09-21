@@ -78,6 +78,7 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "wave.h"
+#include "conf.h"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -100,7 +101,7 @@ extern void initDSSI();
 extern void initLV2();
 extern void deinitLV2();
 #endif
-extern void readConfiguration();
+extern bool readConfiguration();
 
 extern void initMidiSequencer();   
 extern void exitMidiSequencer();
@@ -249,7 +250,7 @@ static void printExtraHelpText()
       printf("LASH and ");
 #endif
       printf("Qt options are also accepted. Some common Qt options:\n");
-      printf("   -style [=] style           Set application GUI style. Motif, Windows, Platinum etc.\n"
+      printf("   -style [=] style           Set application GUI style (Fusion, Windows etc.)\n"
                       "   -stylesheet [=] stylesheet Set application styleSheet\n" 
                       "   -session [=] session       Restore application from an earlier session\n"
                       "   -widgetcount               Print debug message at end, about undestroyed/maximum widgets\n"
@@ -619,16 +620,22 @@ int main(int argc, char* argv[])
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
+        // Qt style must be set before app object is created (->Qt docu)
+        // Should the standard Qt style (Fusion) get removed in future,
+        //   we're OK to just keep the current system style here (kybos)
+        if (QStyleFactory::keys().contains(MusEGlobal::defaultStyle, Qt::CaseInsensitive))
+            QApplication::setStyle(MusEGlobal::defaultStyle);
+
         //========================
         //  Application instance:
         //========================
         
         MuseApplication app(argc_copy, argv_copy);
-        if(QStyle* def_style = app.style())
-        {
-          const QString appStyleObjName = def_style->objectName();
-          MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
-        }
+//        if (QStyle* def_style = app.style())
+//        {
+//          const QString appStyleObjName = def_style->objectName();
+//          MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
+//        }
 
         app.setOrganizationName(ORGANIZATION_NAME);
         app.setOrganizationDomain(ORGANIZATION_DOMAIN);
@@ -1092,7 +1099,11 @@ int main(int argc, char* argv[])
         // Any later invites trouble - typically the colours may be off, 
         //  but currently with Breeze or Oxygen, MDI sub windows  may be frozen!
         // Working with Breeze maintainer to fix problem... 2017/06/06 Tim.
-        MusEGui::updateThemeAndStyle();
+//        MusEGui::updateThemeAndStyle();
+
+
+        MusEGui::loadTheme(MusEGlobal::config.theme);
+//        MusEGui::loadThemeColors(MusEGlobal::config.theme);
 
         //-------------------------------------------------------
         //    BEGIN SHOW MUSE SPLASH SCREEN
@@ -1199,12 +1210,9 @@ int main(int argc, char* argv[])
         
         MusECore::initAudio();
 
-        {
-            QString theme = QFileInfo(MusEGlobal::config.styleSheetFile).baseName();
-            MusEGui::initIcons(MusEGlobal::config.cursorSize,
-                               MusEGlobal::museGlobalShare + "/themes/" + theme,
-                               MusEGlobal::configPath + "/themes/" + theme);
-        }
+        MusEGui::initIcons(MusEGlobal::config.cursorSize,
+                           MusEGlobal::museGlobalShare + "/themes/" + MusEGlobal::config.theme,
+                           MusEGlobal::configPath + "/themes/" + MusEGlobal::config.theme);
 
         if (MusEGlobal::loadMESS)
           MusECore::initMidiSynth(); // Need to do this now so that Add Track -> Synth menu is populated when MusE is created.
@@ -1630,7 +1638,7 @@ int main(int argc, char* argv[])
         // Reset these before restarting, seems to work better, 
         //  makes a difference with the MDI freezing problem, above.
         app.setStyleSheet("");
-        app.setStyle(MusEGlobal::config.style);
+//        app.setStyle(MusEGlobal::config.style);
         
         // Reset the recently opened list.
         MusEGui::projectRecentList.clear();

@@ -26,11 +26,19 @@
 #define __GENSET_H__
 
 #include "ui_gensetbase.h"
+
+#include <QDialog>
+#include <QString>
+
 #include "cobject.h"
 
-#include <QButtonGroup>
-#include <QShowEvent>
 #include <list>
+
+
+// Forward declarations:
+class QButtonGroup;
+class QShowEvent;
+class QWidget;
 
 namespace MusEGui {
 
@@ -48,11 +56,6 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void apply();
       void ok();
       void cancel();
-      void mixerCurrent();
-      void mixer2Current();
-      void bigtimeCurrent();
-      void mainCurrent();
-      void transportCurrent();
       void editPluginPath();
       void addPluginPath();
       void removePluginPath();
@@ -72,7 +75,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       QString browsePluginPath(const QString& path);
       
    public:
-      GlobalSettingsConfig(QWidget* parent=0);
+      GlobalSettingsConfig(QWidget* parent=nullptr);
       };
 
 } // namespace MusEGui

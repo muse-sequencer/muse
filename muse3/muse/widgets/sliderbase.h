@@ -30,8 +30,12 @@
 
 #include <QElapsedTimer>
 #include <QWidget>
+#include <QPoint>
 
 class QFocusEvent;
+class QTimerEvent;
+class QWheelEvent;
+class QMouseEvent;
 
 namespace MusEGui {
 

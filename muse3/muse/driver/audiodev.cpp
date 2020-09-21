@@ -27,6 +27,9 @@
 #include <sys/time.h>
 #endif
 
+// Forwards from header:
+#include "pos.h"
+
 namespace MusECore {
   
 AudioDevice::AudioDevice()

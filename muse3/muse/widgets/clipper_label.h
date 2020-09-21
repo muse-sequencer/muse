@@ -2,6 +2,14 @@
 #define _CLIPPER_LABEL_H_
 
 #include <QFrame>
+#include <QLinearGradient>
+#include <QSize>
+#include <QString>
+
+class QPaintEvent;
+class QResizeEvent;
+class QMouseEvent;
+class QContextMenuEvent;
 
 namespace MusEGui
 {

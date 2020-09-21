@@ -23,14 +23,14 @@
 #ifndef __CTRL_EDIT_H__
 #define __CTRL_EDIT_H__
 
+#include <list>
 #include <QWidget>
 
-#include "ctrlcanvas.h"
-#include "song.h"
 #include "event_tag_list.h"
 
 namespace MusECore {
 class Xml;
+class Part;
 }
 
 #define CTRL_PANEL_FIXED_WIDTH 40
@@ -40,6 +40,7 @@ namespace MusEGui {
 class MidiEditor;
 class CtrlView;
 class CtrlPanel;
+class CtrlCanvas;
 
 //---------------------------------------------------------
 //   CtrlEdit
@@ -55,8 +56,8 @@ class CtrlEdit : public QWidget {
 
    public slots:
       void setTool(int tool);
-      void setXPos(int val)           { canvas->setXPos(val); }
-      void setXMag(int val)           { canvas->setXMag(val); }
+      void setXPos(int val);
+      void setXMag(int val);
       void setCanvasWidth(int w);
       void setController(int n);
       void curPartHasChanged(MusECore::Part*);
@@ -69,7 +70,7 @@ class CtrlEdit : public QWidget {
       void redirectWheelEvent(QWheelEvent*);
 
    public:
-      CtrlEdit(QWidget*, MidiEditor* e, int xmag,
+      CtrlEdit(QWidget*, MidiEditor* e, int xmag, int xOrigin = 0, int yOrigin = 0,
          bool expand = false, const char* name = 0);
       int ctrlNum() const;
       bool perNoteVel() const;
@@ -77,12 +78,12 @@ class CtrlEdit : public QWidget {
 
       void readStatus(MusECore::Xml&);
       void writeStatus(int, MusECore::Xml&);
-      bool itemsAreSelected() const { if(!canvas) return false; return canvas->itemsAreSelected(); }
+      bool itemsAreSelected() const;
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-      void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const
-      { if(canvas) canvas->tagItems(tag_list, options); }
-      void redrawCanvas() {canvas->redraw();}
+      void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
+      void redrawCanvas();
+      void setCanvasOrigin(int xo, int yo);
       void setPanelWidth(int w);
       };
 

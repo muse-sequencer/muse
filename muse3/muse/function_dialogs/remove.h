@@ -26,8 +26,6 @@
 #include "ui_removebase.h"
 #include "function_dialog_base.h"
 
-class QButtonGroup;
-
 namespace MusECore {
 class Xml;
 }

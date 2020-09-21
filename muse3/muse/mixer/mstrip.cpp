@@ -33,7 +33,7 @@
 #include <QVBoxLayout>
 
 #include "app.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midictrl.h"
 #include "ctrl.h"
 #include "mstrip.h"

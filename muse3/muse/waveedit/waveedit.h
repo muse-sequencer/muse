@@ -24,36 +24,33 @@
 #ifndef __WAVE_EDIT_H__
 #define __WAVE_EDIT_H__
 
-#include <QMenu>
-
-#include <QWidget>
-#include <QResizeEvent>
-#include <QKeyEvent>
-#include <QCloseEvent>
-#include <QByteArray>
-
 #include "type_defs.h"
 #include "midieditor.h"
-#include "tools.h"
-//#include "event.h"
 
+
+// Forward declarations:
+class QMenu;
+class QWidget;
+class QKeyEvent;
+class QCloseEvent;
 class QAction;
-class QResizeEvent;
 class QSlider;
 class QToolButton;
 class QPoint;
+class QToolBar;
+class QModelIndex;
 
 namespace MusECore {
-class Part;
 class PartList;
 }
 
 namespace MusEGui {
+class TopWin;
 class Splitter;
 class PosLabel;
 class ScrollScale;
-class SNode;
-class WaveCanvas;
+class EditToolBar;
+class RasterLabelCombo;
 
 //---------------------------------------------------------
 //   WaveEdit
@@ -85,7 +82,9 @@ class WaveEdit : public MidiEditor {
       int colorMode;
       
       MusEGui::Splitter* hsplitter;
-      
+
+      RasterLabelCombo* rasterLabel;
+
       static int _rasterInit;
       static int _trackInfoWidthInit;
       static int _canvasWidthInit;
@@ -97,6 +96,12 @@ class WaveEdit : public MidiEditor {
       void initShortcuts();
       void setEventColorMode(int);
 
+      // Sets up a reasonable zoom minimum and/or maximum based on
+      //  the current global midi division (ticks per quarter note)
+      //  which has a very wide range (48 - 12288).
+      // Also sets the canvas and time scale offsets accordingly.
+      void setupHZoomRange();
+
    private slots:
       void cmd(int);
       void timeChanged(unsigned t);
@@ -105,6 +110,7 @@ class WaveEdit : public MidiEditor {
       void soloChanged(bool flag);
       void moveVerticalSlider(int val);
       void eventColorModeChanged(int);
+      void _setRaster(int raster);
 
    public slots:
       void configChanged();
@@ -123,6 +129,8 @@ class WaveEdit : public MidiEditor {
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
+      // Same as setRaster() but returns the actual value used.
+      int changeRaster(int val);
       };
 
 } // namespace MusEGui

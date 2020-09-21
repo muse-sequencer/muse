@@ -25,8 +25,14 @@
 #include "event.h"
 #include "waveevent.h"
 #include "midievent.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "part.h"
+
+// Forwards from header:
+#include "eventbase.h"
+#include "part.h"
+#include "xml.h"
+#include "audio_fifo.h"
 
 namespace MusECore {
 

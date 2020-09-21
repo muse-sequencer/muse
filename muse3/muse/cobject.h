@@ -32,6 +32,8 @@
 #include <QByteArray>
 #include <QString>
 
+
+// Forward declarations:
 class QMdiSubWindow;
 class QFocusEvent;
 class QCloseEvent;
@@ -62,6 +64,7 @@ class TopWin : public QMainWindow
 
       ToplevelType type() const { return _type; }
       static QString typeName(ToplevelType t);
+      static QIcon typeIcon(ToplevelType t);
 
       bool initalizing() const { return _initalizing; }
       bool deleting() const { return _isDeleting; }
@@ -93,7 +96,7 @@ class TopWin : public QMainWindow
 
       
       void resize(int w, int h);
-      void resize(const QSize&);
+//      void resize(const QSize&);
  
 //      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
 //      static bool _sharesMenusToolbars[TOPLEVELTYPE_LAST_ENTRY];
@@ -105,7 +108,7 @@ class TopWin : public QMainWindow
       std::list<QToolBar*> _toolbars;
       bool _initalizing;
 
-      virtual QMdiSubWindow* createMdiWrapper();
+      void createMdiWrapper();
       
       static void initConfiguration();
 
@@ -148,7 +151,7 @@ class TopWin : public QMainWindow
       virtual void storeInitialViewState() const { }
       virtual void setWindowTitle (const QString&);
       virtual void focusCanvas() { }
-      virtual void windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState);
+//      virtual void windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState);
       };
 
 
@@ -165,7 +168,6 @@ class ToplevelList : public std::list<TopWin* > {
       };
 
 } // namespace MusEGui
-
 
 #endif
 

@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -33,16 +32,11 @@
 #include <QMessageBox>
 #include <QLineEdit>
 #include <QWhatsThis>
-#include <QStringListModel>
-#include <QScrollBar>
 #include <QVariant>
 #include <QList>
-#include <QString>
 #include <QObject>
-#include <QTreeWidgetItem>
 #include <list>
 
-#include "minstrument.h"
 #include "midictrl.h"
 #include "editinstrument.h"
 #include "globals.h"
@@ -54,11 +48,25 @@
 #include "popupmenu.h"
 #include "dlist.h"
 #include "drummap.h"
-#include "header.h"
 #include "editevent.h"
 #include "operations.h"
 #include "audio.h"
 #include "gui.h"
+
+// Forwards from header:
+#include <QMenu>
+#include <QAction>
+#include <QListWidgetItem>
+#include <QTreeWidgetItem>
+#include <QCloseEvent>
+#include <QKeyEvent>
+#include <QGridLayout>
+#include <QStringListModel>
+#include <QScrollBar>
+#include "minstrument.h"
+#include "midi_controller.h"
+#include "header.h"
+#include "dlist.h"
 
 namespace MusECore {
 extern int string2sysex(const QString& s, unsigned char** data);
@@ -250,21 +258,22 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       dlist_header = new Header(dlistContainer, "header");
       dlist_header->setFixedHeight(31);
       //: hide
-      dlist_header->setColumnLabel(tr("H"), COL_HIDE, 20);
+      dlist_header->setColumnLabel(tr("H"), DList::COL_HIDE, 20);
       //: mute
-      dlist_header->setColumnLabel(tr("M"), COL_MUTE, 20);
-      dlist_header->setColumnLabel(tr("Name"), COL_NAME, 120);
-      dlist_header->setColumnLabel(tr("Vol"), COL_VOLUME);
-      dlist_header->setColumnLabel(tr("Quant"), COL_QUANT, 40);
-      dlist_header->setColumnLabel(tr("E-Note"), COL_INPUTTRIGGER, 50);
-      dlist_header->setColumnLabel(tr("Len"), COL_NOTELENGTH, 40);
-      dlist_header->setColumnLabel(tr("A-Note"), COL_NOTE, 50);
-      dlist_header->setColumnLabel(tr("Ch"), COL_OUTCHANNEL);
-      dlist_header->setColumnLabel(tr("Port"), COL_OUTPORT, 70);
-      dlist_header->setColumnLabel(tr("LV1"), COL_LEVEL1);
-      dlist_header->setColumnLabel(tr("LV2"), COL_LEVEL2);
-      dlist_header->setColumnLabel(tr("LV3"), COL_LEVEL3);
-      dlist_header->setColumnLabel(tr("LV4"), COL_LEVEL4);
+      dlist_header->setColumnLabel(tr("M"), DList::COL_MUTE, 20);
+      dlist_header->setColumnLabel(tr("Name"), DList::COL_NAME, 120);
+      dlist_header->setColumnLabel(tr("Vol"), DList::COL_VOLUME);
+      dlist_header->setColumnLabel(tr("Quant"), DList::COL_QUANT, 40);
+      dlist_header->setColumnLabel(tr("E-Note"), DList::COL_INPUTTRIGGER, 50);
+      dlist_header->setColumnLabel(tr("Len"), DList::COL_NOTELENGTH, 40);
+      dlist_header->setColumnLabel(tr("A-Note"), DList::COL_NOTE, 50);
+      dlist_header->setColumnLabel(tr("Ch"), DList::COL_OUTCHANNEL);
+      dlist_header->setColumnLabel(tr("Port"), DList::COL_OUTPORT, 70);
+      dlist_header->setColumnLabel(tr("LV1"), DList::COL_LEVEL1);
+      dlist_header->setColumnLabel(tr("LV2"), DList::COL_LEVEL2);
+      dlist_header->setColumnLabel(tr("LV3"), DList::COL_LEVEL3);
+      dlist_header->setColumnLabel(tr("LV4"), DList::COL_LEVEL4);
+
       dlist_header->hide();
 
       setHeaderToolTips();
@@ -389,20 +398,20 @@ EditInstrument::~EditInstrument()
 
 void EditInstrument::setHeaderWhatsThis()
       {
-      dlist_header->setWhatsThis(COL_HIDE, tr("Hide instrument"));
-      dlist_header->setWhatsThis(COL_MUTE, tr("Mute instrument"));
-      dlist_header->setWhatsThis(COL_NAME, tr("Sound name"));
-      dlist_header->setWhatsThis(COL_VOLUME, tr("Volume percent"));
-      dlist_header->setWhatsThis(COL_QUANT, tr("Quantisation"));
-      dlist_header->setWhatsThis(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
-      dlist_header->setWhatsThis(COL_NOTELENGTH, tr("Note length"));
-      dlist_header->setWhatsThis(COL_NOTE, tr("This is the note which is played"));
-      dlist_header->setWhatsThis(COL_OUTCHANNEL, tr("Override track output channel (hold ctl to affect all rows)"));
-      dlist_header->setWhatsThis(COL_OUTPORT, tr("Override track output port (hold ctl to affect all rows)"));
-      dlist_header->setWhatsThis(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
-      dlist_header->setWhatsThis(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
-      dlist_header->setWhatsThis(COL_LEVEL3, tr("Draw default velocity level 3"));
-      dlist_header->setWhatsThis(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
+      dlist_header->setWhatsThis(DList::COL_HIDE, tr("Hide instrument"));
+      dlist_header->setWhatsThis(DList::COL_MUTE, tr("Mute instrument"));
+      dlist_header->setWhatsThis(DList::COL_NAME, tr("Sound name"));
+      dlist_header->setWhatsThis(DList::COL_VOLUME, tr("Volume percent"));
+      dlist_header->setWhatsThis(DList::COL_QUANT, tr("Quantisation"));
+      dlist_header->setWhatsThis(DList::COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      dlist_header->setWhatsThis(DList::COL_NOTELENGTH, tr("Note length"));
+      dlist_header->setWhatsThis(DList::COL_NOTE, tr("This is the note which is played"));
+      dlist_header->setWhatsThis(DList::COL_OUTCHANNEL, tr("Override track output channel (hold ctl to affect all rows)"));
+      dlist_header->setWhatsThis(DList::COL_OUTPORT, tr("Override track output port (hold ctl to affect all rows)"));
+      dlist_header->setWhatsThis(DList::COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      dlist_header->setWhatsThis(DList::COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      dlist_header->setWhatsThis(DList::COL_LEVEL3, tr("Draw default velocity level 3"));
+      dlist_header->setWhatsThis(DList::COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 //---------------------------------------------------------
@@ -411,20 +420,20 @@ void EditInstrument::setHeaderWhatsThis()
 
 void EditInstrument::setHeaderToolTips()
       {
-      dlist_header->setToolTip(COL_HIDE, tr("Hide instrument"));
-      dlist_header->setToolTip(COL_MUTE, tr("Mute instrument"));
-      dlist_header->setToolTip(COL_NAME, tr("Sound name"));
-      dlist_header->setToolTip(COL_VOLUME, tr("Volume percent"));
-      dlist_header->setToolTip(COL_QUANT, tr("Quantisation"));
-      dlist_header->setToolTip(COL_INPUTTRIGGER, tr("This input note triggers the sound"));
-      dlist_header->setToolTip(COL_NOTELENGTH, tr("Note length"));
-      dlist_header->setToolTip(COL_NOTE, tr("This is the note which is played"));
-      dlist_header->setToolTip(COL_OUTCHANNEL, tr("Override track output channel (ctl: affect all rows)"));
-      dlist_header->setToolTip(COL_OUTPORT, tr("Override track output port (ctl: affect all rows)"));
-      dlist_header->setToolTip(COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
-      dlist_header->setToolTip(COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
-      dlist_header->setToolTip(COL_LEVEL3, tr("Draw default velocity level 3"));
-      dlist_header->setToolTip(COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
+      dlist_header->setToolTip(DList::COL_HIDE, tr("Hide instrument"));
+      dlist_header->setToolTip(DList::COL_MUTE, tr("Mute instrument"));
+      dlist_header->setToolTip(DList::COL_NAME, tr("Sound name"));
+      dlist_header->setToolTip(DList::COL_VOLUME, tr("Volume percent"));
+      dlist_header->setToolTip(DList::COL_QUANT, tr("Quantisation"));
+      dlist_header->setToolTip(DList::COL_INPUTTRIGGER, tr("This input note triggers the sound"));
+      dlist_header->setToolTip(DList::COL_NOTELENGTH, tr("Note length"));
+      dlist_header->setToolTip(DList::COL_NOTE, tr("This is the note which is played"));
+      dlist_header->setToolTip(DList::COL_OUTCHANNEL, tr("Override track output channel (ctl: affect all rows)"));
+      dlist_header->setToolTip(DList::COL_OUTPORT, tr("Override track output port (ctl: affect all rows)"));
+      dlist_header->setToolTip(DList::COL_LEVEL1, tr("Control + meta keys: Draw velocity level 1"));
+      dlist_header->setToolTip(DList::COL_LEVEL2, tr("Meta key: Draw velocity level 2"));
+      dlist_header->setToolTip(DList::COL_LEVEL3, tr("Draw default velocity level 3"));
+      dlist_header->setToolTip(DList::COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
 void EditInstrument::findInstrument(const QString& find_instrument)

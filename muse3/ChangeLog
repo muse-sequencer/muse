@@ -1,3 +1,60 @@
+21.09.2020
+    - Add centered mode for pan sliders. (kybos)
+18.09.2020
+    - Change default theme to Dark Flat. (kybos)
+    - Remove system styles selection, default to Fusion. It's still possible 
+        to force a different style by specifying it on the command line. (kybos)
+14.09.2020
+    - Improve dock positioning/sizing. (kybos)
+    - Save geometry of external windows automatically,
+        remove redundant (and buggy) geometry settings. (kybos)
+13.09.2020
+    - Add Event list menu/shortcut to midi editors for easy access to the event list dock. (kybos)
+    - Clean up topwin/subwin parenting. (kybos)
+11.09.2020
+    - Master track graphic editor doesn't open multiple windows any more. (kybos)
+    - Fixed several colour issues in score editor. (kybos)
+10.09.2020
+    - Add editor specific icons to subwindows for better recognizability. (kybos)
+09.09.2020
+    - Allow only one instance of master list editor dock. (kybos)
+    - Add menu item (View) and shortcut (F7) to show/hide all active docks. (kybos)
+    - Fix docks behaviour when editor windows are switched. (kybos)
+    - Fix potential resizing artefacts when loading older files into new tabbed GUI. (kybos)
+08.09.2020
+    - Settings > Midi Division fixes: Full re-work of grid raster and snap system (Tim):
+    - Replaced INCORRECT hard-coded snap/raster fixed-value tables throughout,
+       with new class MusEGui::Rasterizer, provides CORRECT dynamic raster tables
+       that change values, and dimensions, when global Midi Divison changes.
+      There is one single global instance of this new class.
+    - New class MusEGui::RasterizerModel works with class Rasterizer to provide a
+       Qt model for use with combo boxes for example. Specific columns and maximum
+       number of rows can be specified. Model is specially designed for rasters
+       (for ex. in pianoroll the first row is three columns wide and says 'off').
+    - New class RasterLabelCombo replaces hard-coded raster snap combo boxes.
+      Works with class RasterizerModel. With a high Midi Division more rows appear,
+       meaning HIGH-RESOLUTION editing is possible, rivaling that of frames.
+      New classes RasterizerListView, RasterizerTableView, and RasterizerTreeView
+       provide three types of views for RasterLabelCombo.
+    - Wave Editor: Added a 'Snap' combo box (RasterLabelCombo).
+    - Grid lines: Fixed problems with unwanted red grid line colours.
+    - Removed never-used GUI Division from Settings.
+    - Canvases: Area before bar # 1 now FIXED WIDTH regardless of Midi Division
+       or magnification, by rearranging xorg/yorg origin stuff in class View,
+       ie. origin is no longer magnified.
+04.09.2020
+    - New streamlined GUI: 
+      Tabbed MDI as default, with the option to detach/float the graphical editor 
+      windows, per preset or dynamically (mainly for use with multi-monitor setups). 
+      List based editors (markers, clips, master list, midi events) changed to docks.
+      Arranger as the central point is fixed to the main window, 
+      not longer detachable/closeable. (kybos) 
+    - Reused snap/quantize shortcuts in midieditors (1-6) as snap shortcuts in arranger
+      as I discovered it was missing, and it's pretty much the same thing. Also
+      added a shortcut for setting quantize to off (8). Execution slightly
+      annoying as changing the quantize in the midi editors after having it
+      at off will always give triplets (which can be turned of by pressing T).
+      Fixing that would require a more extensive rewrite. (rj)
 03.09.2020
     - Fixed crash in #842 extending parts to the left often caused a crash (rj)
 14.08.2020

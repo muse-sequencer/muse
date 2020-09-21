@@ -26,6 +26,12 @@
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QTimer>
+#include <QString>
+#include <QEvent>
+#include <QWheelEvent>
+#include <QKeyEvent>
+#include <QContextMenuEvent>
+#include <QWidget>
 
 #include "nentry.h"
 #include "gconfig.h"

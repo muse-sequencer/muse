@@ -24,16 +24,13 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QCloseEvent>
 #include <QDir>
 #include <QGridLayout>
 #include <QImage>
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QKeySequence>
-#include <QLabel>
 #include <QLayout>
-#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
@@ -55,19 +52,27 @@
 #include "globals.h"
 #include "helper.h"
 #include "icons.h"
-#include "mtscale.h"
 #include "scoreedit.h"
 #include "shortcuts.h"
 #include "song.h"
 #include "structure.h"
 #include "tb1.h"
-#include "tools.h"
 #include "ttoolbar.h"
-#include "visibletracks.h"
-#include "xml.h"
 #include "arrangercolumns.h"
 #include "tlist.h"
 #include "synth.h"
+#include "pcanvas.h"
+
+// Forwards from header:
+#include <QCloseEvent>
+#include <QAction>
+#include <QGridLayout>
+#include <QMenu>
+#include "arranger.h"
+#include "visibletracks.h"
+#include "event_tag_list.h"
+#include "xml.h"
+#include "tools.h"
 
 namespace MusEGui {
 
@@ -174,7 +179,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll..."), this);
   startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums..."), this);
-  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List..."), this);
+  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("Event List..."), this);
   startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave..."), this);
 
   openCurrentTrackSynthGuiAction =  new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open Synth Plugin GUI..."), this);
@@ -228,6 +233,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
+
+  menuEdit->addSeparator();
   menuEdit->addAction(openCurrentTrackSynthGuiAction);
 
   QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
@@ -956,6 +963,10 @@ void ArrangerView::updateVisibleTracksButtons()
 {
   visTracks->updateVisibleTracksButtons();
 }
+
+Arranger* ArrangerView::getArranger() const {return arranger;}
+
+void ArrangerView::focusCanvas() { arranger->focusCanvas(); } 
 
 void ArrangerView::globalCut() { MusECore::globalCut(); }
 void ArrangerView::globalInsert() { MusECore::globalInsert(); }

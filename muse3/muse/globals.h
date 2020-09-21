@@ -26,21 +26,21 @@
 
 #include <sys/types.h>
 
+#include <QString>
+#include <QAction>
+#include <QActionGroup>
+#include <QTimer>
+#include <QToolButton>
+
 #include "value.h"
 #include "mtc.h"
 #include "metronome_class.h"
 #include "wave.h"
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
+#include "rasterizer.h"
 
 #include <unistd.h>
-
-class QString;
-class QAction;
-class QActionGroup;
-class QTimer;
-class QToolButton;
-
 
 namespace MusEGui {
 class MusE;
@@ -80,6 +80,8 @@ enum SelectableAudioBackendDevices {
 };
 
 extern QTimer* heartBeatTimer;
+
+extern MusEGui::Rasterizer *globalRasterizer;
 
 extern bool blinkTimerPhase;
 
@@ -144,7 +146,7 @@ extern const char* drum_map_file_pattern[];
 extern const char* drum_map_file_save_pattern[];
 extern const char* audio_file_pattern[];
 extern const char* colors_config_file_pattern[];
-extern const char* stylesheet_file_pattern[];
+//extern const char* stylesheet_file_pattern[];
 
 extern Qt::KeyboardModifiers globalKeyState;
 
@@ -228,6 +230,7 @@ extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilena
 
 extern unsigned convertFrame4ProjectSampleRate(unsigned frame);
 
+extern QString defaultStyle;
 } // namespace MusEGlobal
 
 #endif

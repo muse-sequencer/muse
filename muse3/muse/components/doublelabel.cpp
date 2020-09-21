@@ -22,6 +22,8 @@
 
 #include "muse_math.h"
 
+#include <QWidget>
+
 #include "doublelabel.h"
 
 namespace MusEGui {

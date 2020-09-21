@@ -24,10 +24,14 @@
 #include "tools.h"
 
 #include <QActionGroup>
+#include <QAction>
+#include <QPixmap>
+#include <QWidget>
+#include <QIcon>
 
 #include "icons.h"
-#include "action.h"
 #include "shortcuts.h"
+#include "action.h"
 
 namespace MusEGui {
 

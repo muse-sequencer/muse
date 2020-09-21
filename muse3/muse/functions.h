@@ -25,21 +25,29 @@
 
 #include <map>
 #include <set>
-#include "part.h"
+
 #include "dialogs.h"
 #include "type_defs.h"
 #include "event_tag_list.h"
 #include "pos.h"
 #include "function_dialog_consts.h"
+#include "undo.h"
 
-#include <QWidget>
+#include <QString>
 
-class QString;
 class QMimeData;
 
 #define FUNCTION_RANGE_ONLY_SELECTED 1
 #define FUNCTION_RANGE_ONLY_BETWEEN_MARKERS 2
 #define FUNCTION_ALL_PARTS 1
+
+
+// Forward declarations:
+namespace MusECore {
+class Track;
+class Part;
+class PartList;
+}
 
 namespace MusEGui {
   
@@ -261,7 +269,6 @@ class FunctionDialogReturnVelocity : public FunctionDialogReturnBase
 
 
 namespace MusECore {
-class Undo;
 
 std::set<const Part*> partlist_to_set(PartList* pl);
 std::set<const Part*> part_to_set(const Part* p);
@@ -410,6 +417,10 @@ bool delete_selected_parts();
 PartList* getSelectedMidiParts();
 PartList* getSelectedWaveParts();
 PartList* getSelectedParts();
+
+// called from GUI thread, calls applyOperationGroup.
+void resize_part(Track* t, Part* p, unsigned int size, MusECore::ResizeDirection resizeDirection,
+                   unsigned int newTickPos, bool doClones=false);
 
 // internal
 QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);

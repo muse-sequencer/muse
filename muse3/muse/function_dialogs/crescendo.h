@@ -26,8 +26,8 @@
 #include "ui_crescendobase.h"
 #include "function_dialog_base.h"
 
-class QButtonGroup;
 
+// Forward declarations:
 namespace MusECore {
 class Xml;
 }

@@ -22,7 +22,6 @@
 
 #include "functions.h"
 #include "song.h"
-#include "undo.h"
 #include "helper.h"
 
 #include "event.h"
@@ -56,13 +55,16 @@
 #include "muse_math.h"
 
 #include <QTemporaryFile>
-#include <QMimeData>
 #include <QByteArray>
 #include <QDrag>
 #include <QMessageBox>
 #include <QClipboard>
 #include <QSet>
 
+// Forwards from header:
+#include <QMimeData>
+#include "track.h"
+#include "part.h"
 
 using namespace std;
 
@@ -3171,6 +3173,61 @@ PartList* getSelectedWaveParts()
             }
       return parts;
 }
+
+//---------------------------------------------------------
+//   resize_part
+//---------------------------------------------------------
+
+void resize_part(
+  Track* track, Part* originalPart, unsigned int len, MusECore::ResizeDirection resizeDirection,
+  unsigned int newTickPos, bool doClones)
+      {
+
+      switch(track->type()) {
+            case Track::WAVE:
+            case Track::MIDI:
+            case Track::DRUM:
+                  {
+                  Undo operations;
+                                                                        
+                  auto origLen = originalPart->lenValue();
+                  auto origPosValue = originalPart->posValue();
+                  auto newFramePos = MusEGlobal::tempomap.tick2frame(newTickPos);
+
+                  auto currentPart = originalPart;
+
+                  do
+                  {
+                      if(currentPart->lenValue() == origLen && resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+                      {
+                        operations.push_back(UndoOp(UndoOp::ModifyPartLength, currentPart, origLen, len, Pos::TICKS));
+                      }
+                      if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+                      {
+                          if (currentPart->type() == Pos::FRAMES)
+                          {
+                              operations.push_back(
+                                UndoOp(UndoOp::ModifyPartStart, currentPart, origPosValue, newFramePos, Pos::FRAMES));
+                          }
+                          else // MIDIs
+                          {
+                              operations.push_back(
+                                UndoOp(UndoOp::ModifyPartStart, currentPart, origPosValue, newTickPos, Pos::TICKS));
+                          }
+                      }
+
+                      currentPart = currentPart->nextClone();
+
+                  } while (doClones && (currentPart != originalPart));
+                  
+                  MusEGlobal::song->applyOperationGroup(operations);
+                  break;
+                }
+                  
+            default:
+                  break;
+            }
+      }
 
 
 } // namespace MusECore

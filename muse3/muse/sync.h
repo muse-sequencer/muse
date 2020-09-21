@@ -26,7 +26,6 @@
 #define __SYNC_H__
 
 #include "mtc.h"
-#include "value.h"
 #include "globaldefs.h"
 
 #include <stdint.h>

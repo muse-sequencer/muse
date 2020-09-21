@@ -25,21 +25,24 @@
 #define __AMIXER_H__
 
 #include <QMainWindow>
-#include <QWidget>
 #include <QScrollArea>
-#include <QMenu>
-#include <QAction>
-#include <QHBoxLayout>
-#include <QResizeEvent>
-#include <QMoveEvent>
-#include <QCloseEvent>
-#include <QKeyEvent>
 
 #include "type_defs.h"
-#include "routedialog.h"
 #include "gconfig.h"
 
 #define EFX_HEIGHT     16
+
+
+// Forward declarations:
+class QWidget;
+class QMenu;
+class QAction;
+class QHBoxLayout;
+class QResizeEvent;
+class QMoveEvent;
+class QCloseEvent;
+class QKeyEvent;
+class QEvent;
 
 namespace MusECore {
 class Xml;
@@ -54,6 +57,7 @@ class DoubleLabel;
 class Knob;
 class Slider;
 class Strip;
+class RouteDialog;
 
 typedef QList<Strip*> StripList;
 
@@ -72,7 +76,7 @@ class ScrollArea : public QScrollArea
     virtual bool viewportEvent(QEvent* event);
     
   public:
-    ScrollArea(QWidget* parent = 0) : QScrollArea(parent) { } 
+    ScrollArea(QWidget* parent = 0);
 };
 
 //---------------------------------------------------------

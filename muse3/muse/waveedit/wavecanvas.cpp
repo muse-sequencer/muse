@@ -80,6 +80,19 @@
 #include "audio_convert/audio_converter_settings_group.h"
 #include "sndfile.h"
 #include "operations.h"
+
+// Forwards from header:
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMouseEvent>
+#include <QDragMoveEvent>
+#include <QDragLeaveEvent>
+#include <QWheelEvent>
+#include <QResizeEvent>
+#include <QPainter>
+#include "part.h"
+#include "track.h"
+
 #define ABS(x) (abs(x))
 #define FABS(x) (fabs(x))
 
@@ -360,20 +373,20 @@ void WaveCanvas::selectAtFrame(unsigned int frame)
             }
       }
 
-//---------------------------------------------------------
-//   getCaption
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   getCaption
+////---------------------------------------------------------
 
-QString WaveCanvas::getCaption() const
-      {
-      int bar1, bar2, xx;
-      unsigned x;
-      MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
-      MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
+//QString WaveCanvas::getCaption() const
+//      {
+//      int bar1, bar2, xx;
+//      unsigned x;
+//      MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
+//      MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
-      return QString("Part <") + curPart->name()
-         + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
-      }
+//      return QString("Part <") + curPart->name()
+//         + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
+//      }
 
 //---------------------------------------------------------
 //   track
@@ -1430,8 +1443,8 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       sx = event.frame() + px + xScale/2;
       ex = sx + event.lenFrame();
-      sx = sx / xScale - xpos;
-      ex = ex / xScale - xpos;
+      sx = sx / xScale - xpos - xorg;
+      ex = ex / xScale - xpos - xorg;
 
       if (sx < x1)
             sx = x1;
@@ -1440,7 +1453,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       const int ev_spos = event.spos();
       
-      int pos = (xpos + sx) * xScale - event.frame() - px;
+      int pos = (xpos + xorg + sx) * xScale - event.frame() - px;
       
 //       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
 //               mr.x(), mr.y(), mr.width(), mr.height());
@@ -2277,7 +2290,7 @@ void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
                      MusEGlobal::config.midiCanvasBeatColor, // color sequence slightly done by trial and error..
                      MusEGlobal::config.midiCanvasBeatColor,
-                     Qt::red, // dummy color
+                     MusEGlobal::config.midiCanvasFineColor,
                      MusEGlobal::config.midiCanvasBarColor
                      );
       }

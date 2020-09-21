@@ -99,6 +99,7 @@ enum {
       SHRT_REC_CLEAR, // backspace
       SHRT_FULLSCREEN,
       SHRT_TABBED_WIN,
+      SHRT_TOGGLE_DOCKS,
       SHRT_TOGGLE_REWINDONSTOP,
 
       //Main + Drumeditor
@@ -326,18 +327,19 @@ enum {
       SHRT_ERASE_MEASURE,
       SHRT_DELETE_MEASURE,
       SHRT_CREATE_MEASURE,
-      SHRT_SET_QUANT_1, //1 - pianoroll
-      SHRT_SET_QUANT_2, //2 - pianoroll
-      SHRT_SET_QUANT_3, //3 - pianoroll
-      SHRT_SET_QUANT_4, //4 - pianoroll
-      SHRT_SET_QUANT_5, //5 - pianoroll
-      SHRT_SET_QUANT_6, //6 - pianoroll
-      SHRT_SET_QUANT_7, //7 - pianoroll
-      SHRT_TOGGLE_TRIOL, //t
-      SHRT_TOGGLE_PUNCT, //.-keypad
-      SHRT_TOGGLE_PUNCT2, // ,
+      SHRT_SET_QUANT_OFF,
+      SHRT_SET_QUANT_1,
+      SHRT_SET_QUANT_2,
+      SHRT_SET_QUANT_3,
+      SHRT_SET_QUANT_4,
+      SHRT_SET_QUANT_5,
+      SHRT_SET_QUANT_6,
+      SHRT_SET_QUANT_7,
+      SHRT_TOGGLE_TRIOL,
+      SHRT_TOGGLE_PUNCT,
+      SHRT_TOGGLE_PUNCT2,
 
-      SHRT_EVENT_COLOR, //e
+      SHRT_EVENT_COLOR,
 
       SHRT_MOVE_PLAY_TO_NOTE,
 

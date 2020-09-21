@@ -26,19 +26,20 @@
 
 #include "ui_itransformbase.h"
 
-#include <QCloseEvent>
+#include <QDialog>
+
 #include "type_defs.h"
-
-class QButtonGroup;
-class Xml;
-
 #include "miditransform.h"
+
+
+// Forward declarations:
+class QCloseEvent;
+class QButtonGroup;
 
 namespace MusECore {
 class MidiInputTransformation;
-class MidiPart;
+class Xml;
 class MidiRecordEvent;
-class MidiTransformation;
 
 enum InputTransformProcEventOp { KeepType, FixType };
 

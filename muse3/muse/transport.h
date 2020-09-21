@@ -25,20 +25,24 @@
 #define __TRANSPORT_H__
 
 #include <QWidget>
-#include <QComboBox>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QSlider>
-#include <QMouseEvent>
-#include <QToolButton>
-#include <QKeyEvent>
+#include <QPalette>
 #include <QMetaObject>
 
 #include "type_defs.h"
-#include "sig.h"
+
+
+// Forward declarations:
+class QComboBox;
+class QHBoxLayout;
+class QLabel;
+class QSlider;
+class QMouseEvent;
+class QToolButton;
+class QKeyEvent;
 
 namespace MusECore {
 class Pos;
+struct TimeSignature;
 }
 
 namespace MusEGui {
@@ -96,8 +100,6 @@ class Handle : public QWidget {
    public:
       Handle(QWidget* r, QWidget* parent=0);
       };
-
-class TimeLLabel;
 
 //---------------------------------------------------------
 //   Transport

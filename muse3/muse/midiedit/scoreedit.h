@@ -23,32 +23,15 @@
 #ifndef __SCOREEDIT_H__
 #define __SCOREEDIT_H__
 
-#include <QCloseEvent>
-#include <QResizeEvent>
-#include <QKeyEvent>
-#include <QPainter>
-#include <QPixmap>
-#include <QScrollBar>
-#include <QComboBox>
-#include <QAction>
-#include <QActionGroup>
-#include <QGridLayout>
-#include <QToolButton>
-
 #include <limits.h>
 #include "type_defs.h"
-#include "noteinfo.h"
 #include "cobject.h"
 #include "event.h"
 #include "view.h"
 #include "gconfig.h"
-#include "part.h"
 #include "keyevent.h"
-#include "mtscale_flo.h"
-#include "steprec.h"
 #include "cleftypes.h"
 #include "helper.h"
-#include "spinbox.h"
 #include "event_tag_list.h"
 
 #include <set>
@@ -84,10 +67,30 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
 
 
 
+
+// Forward declarations:
+class QCloseEvent;
+class QResizeEvent;
+class QKeyEvent;
+class QPainter;
+class QPixmap;
+class QScrollBar;
+class QComboBox;
+class QAction;
+class QActionGroup;
+class QGridLayout;
+class QToolButton;
+      
+namespace MusECore {
+class Part;
+class StepRec;
+}
+
 namespace MusEGui {
 class EditToolBar;
 class ScoreCanvas;
-
+class MTScaleFlo;
+class SpinBox;
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -524,11 +527,11 @@ struct cumulative_t
 	}
 };
 
-#define BLACK_PIXMAP (NUM_PARTCOLORS)
-#define HIGHLIGHTED_PIXMAP (NUM_PARTCOLORS+1)
-#define SELECTED_PIXMAP (NUM_PARTCOLORS+2)
-#define NUM_MYCOLORS (NUM_PARTCOLORS+3 + 128)
-#define VELO_PIXMAP_BEGIN (NUM_PARTCOLORS+3)
+#define DEFAULT (NUM_PARTCOLORS)
+#define HIGHLIGHTED_PIXMAP (NUM_PARTCOLORS + 1)
+#define SELECTED_PIXMAP (NUM_PARTCOLORS + 2)
+#define NUM_MYCOLORS (NUM_PARTCOLORS + 3 + 128)
+#define VELO_PIXMAP_BEGIN (NUM_PARTCOLORS + 3)
 
 struct timesig_t
 {
@@ -629,7 +632,7 @@ class ScoreCanvas : public MusEGui::View
 {
 	Q_OBJECT
 	private:
-		static void init_pixmaps();
+        void init_pixmaps();
 		static void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
 		static void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
 		static void draw_akkolade (QPainter& p, int x, int y);
@@ -789,7 +792,6 @@ class ScoreCanvas : public MusEGui::View
         QCursor active_tool_cursor;
         int active_tool;
 
-
 	private slots:
 		void staffmode_treble_slot();
 		void staffmode_bass_slot();
@@ -895,5 +897,6 @@ vector<int> create_emphasize_list(const list<int>& nums, int denom);
 vector<int> create_emphasize_list(int num, int denom);
 
 } // namespace MusEGui
+
 #endif
 

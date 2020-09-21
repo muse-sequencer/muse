@@ -46,6 +46,7 @@
 #include "ctrl.h"
 #include "globals.h"
 #include "metronome_class.h"
+#include "undo.h"
 
 namespace MusECore {
 

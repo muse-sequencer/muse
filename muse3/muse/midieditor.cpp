@@ -21,6 +21,7 @@
 //=========================================================
 
 #include "midieditor.h"
+#include "globals.h"
 #include "midiedit/ecanvas.h"
 #include "waveedit/waveview.h"
 #include "scrollscale.h"
@@ -36,12 +37,14 @@
 #include "mstrip.h"
 #include "gconfig.h"
 #include "app.h"
+#include "rasterizer.h"
 
 #include <QRect>
 #include <QColor>
 #include <QGridLayout>
 #include <QPainter>
 #include <QPixmap>
+#include <QList>
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_MIDIEDITOR(dev, format, args...)  fprintf(dev, format, ##args)
@@ -60,7 +63,20 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       if (_pl)
             for (MusECore::iPart i = _pl->begin(); i != _pl->end(); ++i)
                   _parts.insert(i->second->sn());
-      _raster  = r;
+
+      QList<Rasterizer::Column> rast_cols;
+      rast_cols << 
+        Rasterizer::TripletColumn <<
+        Rasterizer::NormalColumn <<
+        Rasterizer::DottedColumn;
+      _rasterizerModel = new RasterizerModel(
+        MusEGlobal::globalRasterizer, this, -1, rast_cols);
+
+      _raster = _rasterizerModel->checkRaster(r);
+      _canvasXOrigin = 0;
+      _minXMag = -25;
+      _maxXMag = 2;
+
       canvas   = 0;
       
       trackInfoWidget = 0;
@@ -415,7 +431,7 @@ void MidiEditor::readStatus(MusECore::Xml& xml)
                         return;
                   case MusECore::Xml::TagStart:
                         if (tag == "raster")
-                              _raster = xml.parseInt();
+                              _raster = _rasterizerModel->checkRaster(xml.parseInt());
                         else if (tag == "topwin")
                               TopWin::readStatus(xml);
                         else
@@ -490,7 +506,7 @@ void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
                   
                   if (canvas)
                         setWindowTitle(canvas->getCaption());
-                  if (type & SC_SIG)
+                  if (time && type & SC_SIG)
                         time->update();
                         
               }        

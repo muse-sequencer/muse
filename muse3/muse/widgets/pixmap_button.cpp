@@ -19,15 +19,13 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
-#include <QString>
-#include <QWidget>
-#include <QSize>
 #include <QFont>
 #include <QPainter>
 #include <QPixmap>
 #include <QIcon>
 #include <QPaintEvent>
 #include <QMouseEvent>
+#include <QContextMenuEvent>
 
 #include "pixmap_button.h"
 

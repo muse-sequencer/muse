@@ -23,20 +23,22 @@
 #ifndef __MARKERVIEW_H__
 #define __MARKERVIEW_H__
 
+#include <QTreeWidgetItem>
+#include <QString>
+
 #include "type_defs.h"
 #include "cobject.h"
 #include "marker.h"
 
-#include <QTreeWidgetItem>
-
+class QCloseEvent;
 class QLineEdit;
 class QToolBar;
 class QToolButton;
 class QTreeWidget;
 
 namespace MusECore {
-///class PosEdit;
 class Pos;
+class Xml;
 }
 
 namespace MusEGui {
@@ -53,8 +55,8 @@ class MarkerItem : public QTreeWidgetItem {
    public:
       MarkerItem(QTreeWidget* parent, const MusECore::Marker& m);
       MarkerItem(const MusECore::Marker& m);
-      MusECore::Marker marker() const { return _marker; }
-      void setMarker(const MusECore::Marker& m); // { _marker = m; }
+      MusECore::Marker marker() const;
+      void setMarker(const MusECore::Marker& m);
       unsigned tick() const;
       const QString name() const;
       bool lock() const;
@@ -76,7 +78,9 @@ class MarkerView : public QWidget {
       PosEdit* editTick;
       QToolButton* lock;
       QToolBar* tools;
-           
+
+      virtual QSize sizeHint() const;
+
    private slots:
       void addMarker();
       void addMarker(unsigned);

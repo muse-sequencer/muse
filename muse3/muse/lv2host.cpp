@@ -44,7 +44,8 @@
 #include <QFileInfo>
 #include <QUrl>
 //#include <QX11EmbedWidget>
-#include <QCoreApplication>
+#include <QApplication>
+//#include <QCoreApplication>
 #include <QtGui/QWindow>
 #include <QVBoxLayout>
 
@@ -53,7 +54,7 @@
 #include "synth.h"
 #include "audio.h"
 #include "jackaudio.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midiport.h"
 #include "stringparam.h"
 #include "plugin.h"

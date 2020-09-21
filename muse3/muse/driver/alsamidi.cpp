@@ -28,7 +28,7 @@
 #include <stdio.h>
 
 #include "globals.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "../midiport.h"
 #include "../midiseq.h"
 #include "../midictrl.h"

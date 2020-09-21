@@ -32,7 +32,9 @@
 #include <unistd.h>
 #include <dlfcn.h>
 #include <string>
+
 #include "simpler_plugin.h"
+#include "plugin_cache_reader.h"
 
 #define SS_LOG_MAX   0
 #define SS_LOG_MIN -10

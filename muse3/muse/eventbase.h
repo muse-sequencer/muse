@@ -29,13 +29,18 @@
 
 #include "type_defs.h"
 #include "pos.h"
-#include "audio_fifo.h"
 #include "evdata.h"
 #include "wave.h" // for SndFileR
 
+//#include "part.h"
+//#include "audio_fifo.h"
+
+
 namespace MusECore {
 
+// Forward declarations:
 class Part;
+class Fifo;
 
 //---------------------------------------------------------
 //   EventBase

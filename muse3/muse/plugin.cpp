@@ -36,16 +36,15 @@
 #include <QMessageBox>
 #include <QByteArray>
 #include <QToolButton>
+#include <QComboBox>
 
 #include "globals.h"
-#include "globaldefs.h"
 #include "gconfig.h"
 #include "filedialog.h"
 #include "slider.h"
 #include "midictrl_consts.h"
 #include "plugin.h"
 #include "controlfifo.h"
-#include "xml.h"
 #include "icons.h"
 #include "song.h"
 #include "doublelabel.h"
@@ -68,6 +67,16 @@
 #include "al/dsp.h"
 
 #include "muse_math.h"
+
+// Forwards from header:
+#include <QScrollArea>
+#include <QShowEvent>
+#include <QHideEvent>
+#include <QAction>
+#include <QSpinBox>
+#include "xml.h"
+#include "plugin_list.h"
+#include "track.h"
 
 #ifdef _WIN32
 #define S_ISLNK(X) 0

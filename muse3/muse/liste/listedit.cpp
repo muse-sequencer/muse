@@ -47,6 +47,7 @@
 #include "minstrument.h"
 #include "app.h"
 #include "gconfig.h"
+#include "undo.h"
 
 namespace MusEGui {
 
@@ -987,6 +988,10 @@ void ListEdit::focusCanvas()
     liste->setFocus();
     liste->activateWindow();
   }
+}
+
+QSize ListEdit::minimumSizeHint() const {
+    return QSize(380, 200);
 }
 
 } // namespace MusEGui

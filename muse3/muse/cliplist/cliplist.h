@@ -24,15 +24,15 @@
 #ifndef __CLIPLIST_H__
 #define __CLIPLIST_H__
 
-#include "type_defs.h"
-#include "../cobject.h"
-#include "event.h"
-
 #include "ui_cliplisteditorbase.h"
+#include <QWidget>
 
+#include "type_defs.h"
+#include "cobject.h"
+
+
+// Forward declarations:
 class QCloseEvent;
-class QDialog;
-class QWidget;
 class QTreeWidgetItem;
 
 namespace MusECore {
@@ -52,7 +52,7 @@ class ClipListEditorBaseWidget : public QWidget, public Ui::ClipListEditorBase
       Q_OBJECT
 
    public:
-      ClipListEditorBaseWidget(QWidget *parent = 0) : QWidget(parent) { setupUi(this); }
+      ClipListEditorBaseWidget(QWidget *parent = nullptr);
 };
 
 //---------------------------------------------------------
@@ -64,6 +64,7 @@ class ClipListEdit : public QWidget {
       ClipListEditorBaseWidget* editor;
 
       void updateList();
+      virtual QSize sizeHint() const;
 
    private slots:
       void songChanged(MusECore::SongChangedStruct_t);

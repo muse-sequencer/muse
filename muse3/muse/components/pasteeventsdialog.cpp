@@ -20,7 +20,6 @@
 //
 //=========================================================
 
-#include <QButtonGroup>
 #include "pasteeventsdialog.h"
 #include "xml.h"
 #include "gconfig.h"

@@ -27,7 +27,12 @@
 #include "ui_editsysexdialogbase.h"
 #include "ui_editctrlbase.h"
 
-class QDialog;
+#include <QDialog>
+
+#include "event.h"
+
+
+// Forward declarations:
 class QLabel;
 class QGridLayout;
 class QTextEdit;

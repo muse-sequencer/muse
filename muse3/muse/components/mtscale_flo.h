@@ -23,12 +23,19 @@
 #ifndef __MTSCALE_FLO_H__
 #define __MTSCALE_FLO_H__
 
+#include <QRect>
+#include <QRegion>
+
 #include "type_defs.h"
 #include "view.h"
 
 
-namespace MusEGui {
+// Forward declarations:
+class QWidget;
+class QPainter;
+class QMouseEvent;
 
+namespace MusEGui {
 class ScoreCanvas;
 
 //---------------------------------------------------------

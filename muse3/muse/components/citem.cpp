@@ -20,11 +20,14 @@
 //
 //=========================================================
 
-#include "part.h"
 #include "citem.h"
 #include "undo.h"
 #include "song.h"
 #include <stdio.h>
+
+// Forwards from header:
+#include "part.h"
+#include "pos.h"
 
 namespace MusEGui {
 

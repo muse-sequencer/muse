@@ -22,15 +22,10 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QPainter>
 #include <QDrag>
-#include <QDragLeaveEvent>
-#include <QDragEnterEvent>
-#include <QDragMoveEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
 #include <QList>
 #include <QPair>
+#include <QToolTip>
 
 #include <set>
 
@@ -39,10 +34,8 @@
 #include "muse_math.h"
 #include <errno.h>
 
-#include "xml.h"
 #include "prcanvas.h"
-#include "midiport.h"
-#include "event.h"
+#include "view.h"
 #include "mpevent.h"
 #include "globals.h"
 #include "cmd.h"
@@ -51,6 +44,23 @@
 #include "functions.h"
 #include "gconfig.h"
 #include "helper.h"
+
+// Forwards from header:
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMouseEvent>
+#include <QDragMoveEvent>
+#include <QDragLeaveEvent>
+#include <QResizeEvent>
+#include <QPainter>
+#include <QWidget>
+#include "part.h"
+#include "event.h"
+#include "pianoroll.h"
+#include "midieditor.h"
+#include "citem.h"
+#include "scrollscale.h"
+#include "steprec.h"
 
 #define CHORD_TIMEOUT 75
 
@@ -100,7 +110,7 @@ CItem* PianoCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
 PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
    : EventCanvas(pr, parent, sx, sy)
       {
-      colorMode = 0;
+      colorMode = MidiEventColorMode::blueEvents;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
       supportsMultipleResize = true;
@@ -374,27 +384,28 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
           }
           else if (item->isSelected()) {
               color = MusEGlobal::config.midiItemSelectedColor;
-              //                  color = Qt::black;
           }
           else {
               color = MusEGlobal::config.midiItemColor;
               switch(colorMode) {
-              case 0:
+              case MidiEventColorMode::blueEvents:
                   break;
-              case 1:     // pitch
-              {
+              case MidiEventColorMode::pitchColorEvents:
+                  {
                   Triple* c = &myColors[event.pitch() % 12];
                   color.setRgb(c->r, c->g, c->b);
-              }
+                  }
                   break;
-              case 2:     // velocity
-              {
+              case MidiEventColorMode::velocityColorEvents:
+                  {
                   int velo = event.velo();
                   if (velo < 64)
                       color.setRgb(velo*4, 0, 0xff);
                   else
                       color.setRgb(0xff, 0, (127-velo) * 4);
-              }
+                  break;
+                  }
+              default:
                   break;
               }
           }
@@ -1434,7 +1445,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       //---------------------------------------------------
 
       drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
-                     Qt::red, // dummy color, not used
+                     MusEGlobal::config.midiCanvasBeatColor,
                      MusEGlobal::config.midiCanvasBeatColor,
                      MusEGlobal::config.midiCanvasFineColor,
                      MusEGlobal::config.midiCanvasBarColor);
@@ -1884,4 +1895,14 @@ QMenu* PianoCanvas::genItemPopup(MusEGui::CItem* item) {
     return nullptr;
 }
 
+//---------------------------------------------------------
+//   setColorMode
+//---------------------------------------------------------
+
+void PianoCanvas::setColorMode(MidiEventColorMode mode)
+      {
+      colorMode = mode;
+      redraw();
+      }
+      
 } // namespace MusEGui

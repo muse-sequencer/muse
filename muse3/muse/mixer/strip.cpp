@@ -32,29 +32,40 @@
 #include <QList>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QStyle>
+#include <QStyleOption>
+#include <QApplication>
 
 #include "globals.h"
 #include "gconfig.h"
 #include "app.h"
+#include "midiport.h"
 #include "audio.h"
 #include "song.h"
-#include "track.h"
 #include "strip.h"
-#include "meter.h"
 #include "utils.h"
 #include "muse_math.h"
 #include "ctrl.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midictrl.h"
 #include "icons.h"
 #include "undo.h"
 #include "operations.h"
 #include "amixer.h"
+#include "menutitleitem.h"
+#include "shortcuts.h"
+
+// Forwards from header:
+#include <QMouseEvent>
+#include <QResizeEvent>
+#include <QGridLayout>
+#include <QLayout>
+#include "track.h"
+#include "combobox.h"
 #include "compact_knob.h"
 #include "compact_slider.h"
-#include "menutitleitem.h"
 #include "pixmap_button.h"
-#include "shortcuts.h"
+#include "meter.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);

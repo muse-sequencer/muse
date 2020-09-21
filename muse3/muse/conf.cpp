@@ -56,7 +56,7 @@
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
 #include "waveedit.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "midisyncimpl.h"
 #include "midifilterimpl.h"
 #include "midictrl.h"
@@ -74,6 +74,7 @@
 #include "audio_convert/audio_converter_settings_group.h"
 #include "filedialog.h"
 #include "al/al.h"
+#include "shortcuts.h"
 
 namespace MusECore {
 
@@ -747,12 +748,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               if(MusEGlobal::config.routerGroupingChannels > 2)
                                 MusEGlobal::config.routerGroupingChannels = 2;
                         }
-                        else if (tag == "fixFrozenMDISubWindows")
-                              MusEGlobal::config.fixFrozenMDISubWindows = xml.parseInt();
-//                        else if (tag == "tabbedMDI")
-//                            MusEGlobal::config.tabbedMDI = xml.parseInt();
-                        else if (tag == "theme")
-                              MusEGlobal::config.style = xml.parse1();
+//                        else if (tag == "qtStyle")
+//                              MusEGlobal::config.style = xml.parse1();
                         else if (tag == "autoSave")
                               MusEGlobal::config.autoSave = xml.parseInt();
                         else if (tag == "scrollableSubMenus")
@@ -777,8 +774,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiCtrlGraphMergeEraseInclusive = xml.parseInt();
                         else if (tag == "midiCtrlGraphMergeEraseWysiwyg")
                               MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = xml.parseInt();
-                        else if (tag == "styleSheetFile")
-                              MusEGlobal::config.styleSheetFile = xml.parse1();
+                        else if (tag == "museTheme")
+                              MusEGlobal::config.theme = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
                               MusEGlobal::config.useOldStyleStopShortCut = xml.parseInt();
                         else if (tag == "useRewindOnStop")
@@ -1229,8 +1226,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               // Make sure the AL namespace variable mirrors our variable.
                               AL::division = MusEGlobal::config.division;
                         }
-                        else if (tag == "guiDivision")
-                              MusEGlobal::config.guiDivision = xml.parseInt();
+                        else if (tag == "guiDivision")  // Obsolete. Was never used.
+                              xml.parseInt();
                         else if (tag == "rtcTicks")
                               MusEGlobal::config.rtcTicks = xml.parseInt();
                         else if (tag == "curMidiSyncInPort")
@@ -1956,7 +1953,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "extendedMidi", MusEGlobal::config.extendedMidi);
       xml.intTag(level, "midiExportDivision", MusEGlobal::config.midiDivision);
-      xml.intTag(level, "guiDivision", MusEGlobal::config.guiDivision);
       xml.strTag(level, "copyright", MusEGlobal::config.copyright);
       xml.intTag(level, "smfFormat", MusEGlobal::config.smfFormat);
       xml.intTag(level, "expRunningStatus", MusEGlobal::config.expRunningStatus);
@@ -1991,11 +1987,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "routerExpandVertically", MusEGlobal::config.routerExpandVertically);
       xml.intTag(level, "routerGroupingChannels", MusEGlobal::config.routerGroupingChannels);
       
-      xml.intTag(level, "fixFrozenMDISubWindows", MusEGlobal::config.fixFrozenMDISubWindows);
-//      xml.intTag(level, "tabbedMDI", MusEGlobal::config.tabbedMDI);
-      xml.strTag(level, "theme", MusEGlobal::config.style);
+//      xml.strTag(level, "qtStyle", MusEGlobal::config.style);
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
-      xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
+      xml.strTag(level, "museTheme", MusEGlobal::config.theme);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", MusEGlobal::config.useOldStyleStopShortCut);
       xml.intTag(level, "useRewindOnStop", MusEGlobal::config.useRewindOnStop);

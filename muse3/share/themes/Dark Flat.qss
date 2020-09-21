@@ -322,10 +322,10 @@ MusEGui--CompactPatchEdit {
 
 MusEGui--CompactKnob {
     qproperty-style3d: false;
-    qproperty-drawChord: true;
     qproperty-xMargin: 2;
     qproperty-yMargin: 2;
 /*
+    qproperty-drawChord: true;
     qproperty-totalAngle: 270;
     qproperty-radius: 2;
     qproperty-symbol: Dot;
@@ -349,4 +349,12 @@ MusEGui--Strip {
 
 MusEGui--PianoRoll {
   qproperty-pianoWidth: 60;
+}
+
+MusEGui--CompactSlider#MixerStripAudioPan,
+MusEGui--CompactSlider#MixerStripMidiPanController {
+    qproperty-thumbLength: 6;
+/*
+    qproperty-thumbColor: red;
+*/
 }

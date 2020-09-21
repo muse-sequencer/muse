@@ -26,30 +26,34 @@
 #define __ROUTEDIALOG_H__
 
 #include <list>
+#include <QFrame>
 #include <QWidget>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QDialog>
 #include <QStyledItemDelegate>
-#include <QBitArray>
-#include <QCloseEvent>
-#include <QMouseEvent>
-#include <QWheelEvent>
 #include <QString>
 #include <QItemSelectionModel>
-#include <QPainter>
 #include <QColor>
-#include <QResizeEvent>
-#include <QPaintEvent>
-#include <QContextMenuEvent>
+#include <QList>
+#include <QVector>
 
 #include "type_defs.h"
 #include "route.h"
 
 
-namespace MusEGui {
+// Forward declarations:
+class QCloseEvent;
+class QMouseEvent;
+class QWheelEvent;
+class QPainter;
+class QResizeEvent;
+class QPaintEvent;
+class QContextMenuEvent;
 
-  
+namespace MusEGui {
+class RouteDialog;
+
 typedef QList <QTreeWidgetItem*> RouteTreeItemList;
 
 //---------------------------------------------------------
@@ -257,7 +261,6 @@ class RouteTreeWidgetItem : public QTreeWidgetItem
 //   ConnectionsView
 //---------------------------------------------------------
 
-class RouteDialog;
 class ConnectionsView : public QFrame
 {
         Q_OBJECT

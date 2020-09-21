@@ -25,14 +25,7 @@
 #ifndef __CONFMPORT_H__
 #define __CONFMPORT_H__
 
-#include <QWidget>
-#include <QToolTip>
 #include <QTreeWidgetItem>
-#include <QTreeWidget>
-#include <QTableWidget>
-#include <QPoint>
-#include <QMenu>
-#include <QAction>
 
 #include "ui_synthconfigbase.h"
 #include "type_defs.h"
@@ -40,6 +33,14 @@
 // Temporary for testing migration of some port list columns over to the new device list. 
 // Make permanent later.
 #define _USE_EXTRA_INSTANCE_COLUMNS_
+
+
+// Forward declarations:
+class QWidget;
+class QTreeWidget;
+class QTableWidget;
+class QMenu;
+class QAction;
 
 namespace MusECore {
 class Xml;

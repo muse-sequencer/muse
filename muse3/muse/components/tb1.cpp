@@ -23,39 +23,22 @@
 #include <stdio.h>
 #include <limits.h>
 
-#include <QHeaderView>
-#include <QTableWidget>    
 #include <QToolButton>
 
-#include "config.h"
-#include "lcombo.h"
 #include "tb1.h"
-#include "globals.h"
 #include "poslabel.h"
 #include "pitchlabel.h"
+#include "gconfig.h"
+#include "raster_widgets.h"
 
 namespace MusEGui {
 
-static int gArrangerRasterTable[] = {
-      //------                8    4     2
-      1, 4,  8, 16, 32,  64, 128, 256,  512, 1024,
-      1, 6, 12, 24, 48,  96, 192, 384,  768, 1536,
-      1, 9, 18, 36, 72, 144, 288, 576, 1152, 2304
-      };
-
-static const char* rasterStrings[] = {
-      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "2pp", "5pp", "64T", "32T", "16T", "8T", "4T", "2T", "1T",
-      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "3pp", "6pp", "64",  "32",  "16",  "8",  "4",  "2",  "1",
-      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
-      };
-
-
 //---------------------------------------------------------
-//   genToolbar
+//   Toolbar1
 //    solo time pitch raster
 //---------------------------------------------------------
 
-Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)    
+Toolbar1::Toolbar1(RasterizerModel *model, QWidget* parent, int r, bool sp)    
    : QToolBar(QString("Pos/Snap/Solo-tools"), parent)
       {
       setObjectName("Pos/Snap/Solo-tools");
@@ -89,52 +72,49 @@ Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)
       //  Raster
       //---------------------------------------------------
 
-      raster = new LabelCombo(tr("Snap"), nullptr);
+      raster = new RasterLabelCombo(RasterLabelCombo::TableView, model, nullptr, "RasterLabelCombo");
       raster->setFocusPolicy(Qt::TabFocus);
-      //raster->setContentsMargins(0,0,0,0);  
 
-      rlist = new QTableWidget(10, 3);
-      rlist->verticalHeader()->setDefaultSectionSize(22);
-      rlist->horizontalHeader()->setDefaultSectionSize(32);
-      rlist->setSelectionMode(QAbstractItemView::SingleSelection);
-      rlist->verticalHeader()->hide();
-      rlist->horizontalHeader()->hide();
-      //rlist->setContentsMargins(0,0,0,0);  
-
-      raster->setView(rlist);
-
-      int w = 0;
-      for (int j = 0; j < 3; j++)
-      {
-        for (int i = 0; i < 10; i++)
-          rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
-        w += rlist->columnWidth(j);
-      }
-      rlist->setMinimumWidth(w);
-       
       setRaster(r);
       //setContentsMargins(0,0,0,0);  
       addWidget(raster);
       
-      connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
-      connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
+      connect(raster, &RasterLabelCombo::rasterChanged, [this](int raster) { _rasterChanged(raster); } );
+      connect(solo,   &QToolButton::toggled, [this](bool v) { soloChanged(v); } );
       pos->setEnabled(false);
       }
+
+const Rasterizer *Toolbar1::rasterizer() const
+{
+  return raster->rasterizer();
+}
+
+void Toolbar1::setRasterizerModel(RasterizerModel *model)
+{
+  raster->setRasterizerModel(model);
+}
 
 //---------------------------------------------------------
 //   rasterChanged
 //---------------------------------------------------------
 
-void Toolbar1::_rasterChanged(int)
+void Toolbar1::_rasterChanged(int raster)
       {
-      int rast = gArrangerRasterTable[rlist->currentRow() + rlist->currentColumn() * 10];  
-      emit rasterChanged(rast);
-      // FIXME: HACK: Force the thing to show the right item. For some reason it won't stay on the left or right columns.
-      raster->blockSignals(true);
-      setRaster(rast);
-      raster->blockSignals(false);
+      emit rasterChanged(raster);
       }
 
+
+//---------------------------------------------------------
+//   currentRaster
+//---------------------------------------------------------
+
+int Toolbar1::currentRaster() const
+      {
+      const QModelIndex mdl_idx = raster->currentModelIndex();
+      if(!mdl_idx.isValid())
+        return 1;
+      return mdl_idx.data(RasterizerModel::RasterValueRole).toInt();
+      }
 
 //---------------------------------------------------------
 //   setPitch
@@ -180,14 +160,23 @@ void Toolbar1::setTime(unsigned val)
 
 void Toolbar1::setRaster(int val)
       {
-      for (unsigned i = 0; i < sizeof(gArrangerRasterTable)/sizeof(*gArrangerRasterTable); i++) {
-            if (val == gArrangerRasterTable[i]) {
-                  raster->setCurrentIndex(i);
-                  return;
-                  }
-            }
-      printf("setRaster(%d) not defined\n", val);
-      raster->setCurrentIndex(0);
+        changeRaster(val);
+      }
+
+//---------------------------------------------------------
+//   changeRaster
+//---------------------------------------------------------
+
+int Toolbar1::changeRaster(int val)
+      {
+        const RasterizerModel* rast_mdl = raster->rasterizerModel();
+        const int rast = rast_mdl->checkRaster(val);
+        const QModelIndex mdl_idx = rast_mdl->modelIndexOfRaster(rast);
+        if(mdl_idx.isValid())
+          raster->setCurrentModelIndex(mdl_idx);
+        else
+          fprintf(stderr, "Toolbar1::changeRaster: rast %d not found in box!\n", rast);
+        return rast;
       }
 
 //---------------------------------------------------------

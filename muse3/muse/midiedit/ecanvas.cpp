@@ -30,24 +30,32 @@
 #include <sys/mman.h>
 #endif
 
-#include <QKeyEvent>
-#include <QDropEvent>
-#include <QEvent>
-#include <QMimeData>
 #include <QByteArray>
-#include <QDrag>
 #include <QSet>
+#include <QMimeData>
 
 #include "xml.h"
-#include "midieditor.h"
 #include "ecanvas.h"
 #include "song.h"
-#include "event.h"
 #include "shortcuts.h"
 #include "audio.h"
 #include "functions.h"
-#include "midi.h"
+#include "midi_consts.h"
 #include "gconfig.h"
+#include "globals.h"
+#include "midiport.h"
+
+// Forwards from header:
+#include <QDropEvent>
+#include <QEvent>
+#include <QKeyEvent>
+#include <QToolTip>
+#include "track.h"
+#include "part.h"
+#include "event.h"
+#include "undo.h"
+#include "midieditor.h"
+#include "citem.h"
 
 namespace MusEGui {
 
@@ -94,8 +102,7 @@ QString EventCanvas::getCaption() const
       MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
       MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
-      return QString("Part <") + curPart->name()
-         + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
+      return QString("<") + curPart->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
       }
 
 //---------------------------------------------------------

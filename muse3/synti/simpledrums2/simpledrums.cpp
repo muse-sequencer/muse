@@ -1487,16 +1487,21 @@ bool SimpleSynth::loadSample(int chno, const char* filename)
       if (QFile::exists(fi.fileName()))
          loader->filename = QDir::currentPath().toStdString() + "/" + fi.fileName().toStdString();
       else {
+          printf("SIMPLE DRUMS ERROR: Can't find sample: %s\n", filename);
+          delete loader;
+          return false;
 
-         // TODO: Strings should be translated, this does
-         //       however require the class to be derived from qobject
-         //       tried in vain to make the call in the gui object
-         //       could'nt get it to work due to symbol missing in .so ...
-         QString newName = QFileDialog::getOpenFileName(0,
-                                                        QString("Can't find sample: %1 - Choose sample").arg(filename),
-                                                        filename,
-                                                        QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
-         loader->filename = newName.toStdString();
+          // dialog output hangs MusE while loading file, remove...
+
+//         // TODO: Strings should be translated, this does
+//         //       however require the class to be derived from qobject
+//         //       tried in vain to make the call in the gui object
+//         //       could'nt get it to work due to symbol missing in .so ...
+//         QString newName = QFileDialog::getOpenFileName(0,
+//                                                        QString("Can't find sample: %1 - Choose sample").arg(filename),
+//                                                        filename,
+//                                                        QString("Samples *.wav *.ogg *.flac (*.wav *.WAV *.ogg *.flac);;All files (*)"));
+//         loader->filename = newName.toStdString();
       }
    }
 

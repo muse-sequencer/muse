@@ -20,21 +20,22 @@
 //
 //=========================================================
 
-#include "sig.h"  // Tim.
+#include "sig.h"
 
 #include "markerview.h"
 #include "xml.h"
 #include "globals.h"
-#include "app.h"
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
 #include "posedit.h"
 #include "audio.h"
 #include "gconfig.h"
+#include "pos.h"
 
 #include <cstdint>
 
+#include <QCloseEvent>
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QLineEdit>
@@ -44,6 +45,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QTreeWidget>
 
 namespace MusEGui {
 
@@ -75,6 +77,8 @@ bool MarkerItem::lock() const
       {
       return _marker.type() == MusECore::Pos::FRAMES;
       }
+
+MusECore::Marker MarkerItem::marker() const { return _marker; }
 
 void MarkerItem::setMarker(const MusECore::Marker& m)
 {
@@ -664,6 +668,10 @@ void MarkerView::prevMarker()
       MusECore::Pos p(nextPos, true);
       MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, false);
       }
+
+QSize MarkerView::sizeHint() const {
+    return QSize(minimumWidth(), 400);
+}
 
 MarkerItem* MarkerView::findId(MusECore::EventID_t id) const
 {

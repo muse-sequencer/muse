@@ -26,20 +26,28 @@
 #include <set>
 #include <QSet>
 #include <QStringList>
-#include <QActionGroup>
 #include <QString>
-#include <QMenu>
-#include <QWidget>
-#include <QLine>
 #include <QRect>
+#include <QLine>
 
-#include "drummap.h"
-#include "part.h"
-#include "track.h"
-#include "mpevent.h"
 #include "type_defs.h"
 
+class QActionGroup;
+class QMenu;
+class QWidget;
+
+namespace MusEGui {
+class PopupMenu;
+}
+
 namespace MusECore {
+class MEvent;
+class Track;
+class MidiTrack;
+class Part;
+class PartList;
+struct DrumMap;
+class Xml;
 
 void enumerateJackMidiDevices();
 void populateMidiPorts();
@@ -70,7 +78,6 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 }
 
 namespace MusEGui {
-class PopupMenu;
 
 // Lists all used midi ports + devices, plus all empty ports.
 QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1, bool includeDefaultEntry = false);
@@ -92,10 +99,11 @@ QLine clipQLine(int x1, int y1, int x2, int y2, const QRect& rect);
 //  that is NOT what we want! For example Qt normalizes (50, 50, -40, -40) to (9, 9, 42, 42),
 //  but we want (10, 10, 40, 40).
 QRect normalizeQRect(const QRect& rect);
-void loadTheme(const QString&, bool force = false);
-void loadStyleSheetFile(const QString&);
+//void loadQtStyle(const QString&);
+void loadTheme(const QString&);
+void loadThemeColors(const QString&);
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
-void updateThemeAndStyle(bool forceStyle = false);
+//void updateThemeAndStyle();
 } 
 
 #endif

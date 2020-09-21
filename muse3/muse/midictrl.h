@@ -27,12 +27,7 @@
 
 #include <map>
 
-#include <QString>
-
 #include "midi_controller.h"
-#include "xml.h"
-#include "part.h"
-#include "mpevent.h"
 
 //#define _MIDI_CTRL_DEBUG_
 // For finding exactly who may be calling insert, erase clear etc. in
@@ -40,6 +35,9 @@
 //#define _MIDI_CTRL_METHODS_DEBUG_
 
 namespace MusECore {
+
+class Part;
+class MidiRecordEvent;
 
 struct MidiCtrlVal
 {

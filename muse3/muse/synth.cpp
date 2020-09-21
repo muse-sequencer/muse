@@ -42,13 +42,8 @@
 #include <QString>
 
 #include "app.h"
-#include "arranger.h"
 #include "synth.h"
-#include "xml.h"
-#include "midi.h"
-#include "midiport.h"
-#include "mididev.h"
-#include "synti/libsynti/mess.h"
+#include "midi_consts.h"
 #include "song.h"
 #include "audio.h"
 #include "event.h"
@@ -56,7 +51,6 @@
 #include "audio.h"
 #include "midiseq.h"
 #include "midictrl.h"
-#include "popupmenu.h"
 #include "midiitransform.h"
 #include "mitplugin.h"
 #include "helper.h"
@@ -65,6 +59,13 @@
 #include "plugin_list.h"
 #include "pluglist.h"
 #include "ticksynth.h"
+#include "undo.h"
+
+// Forwards from header:
+#include "midiport.h"
+#include "synti/libsynti/mess.h"
+#include "popupmenu.h"
+#include "xml.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_

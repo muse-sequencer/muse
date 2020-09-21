@@ -25,6 +25,7 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QPainter>
 #include <QPixmap>
 
@@ -35,7 +36,6 @@
 #include "gconfig.h"
 #include "app.h"
 #include "audio.h"
-#include "pitchedit.h"
 #include "midiport.h"
 #include "drummap.h"
 #include "drumedit.h"

@@ -39,6 +39,7 @@
 #include "helper.h"
 #include "filedialog.h"
 #include "al/al.h"
+#include "undo.h"
 
 #include "song.h"
 #include "operations.h"
@@ -46,6 +47,11 @@
 #include "audio_converter_settings.h"
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
+
+// Forwards from header:
+#include <QButtonGroup>
+#include <QShowEvent>
+#include <QWidget>
 
 namespace MusEGui {
 
@@ -93,11 +99,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
-      connect(setMixerCurrent, SIGNAL(clicked()), SLOT(mixerCurrent()));
-      connect(setMixer2Current, SIGNAL(clicked()), SLOT(mixer2Current()));
-      connect(setBigtimeCurrent, SIGNAL(clicked()), SLOT(bigtimeCurrent()));
-      connect(setMainCurrent, SIGNAL(clicked()), SLOT(mainCurrent()));
-      connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
       
       connect(pluginPathAdd, SIGNAL(clicked()), SLOT(addPluginPath()));
       connect(pluginPathEdit, SIGNAL(clicked()), SLOT(editPluginPath()));
@@ -153,12 +154,6 @@ void GlobalSettingsConfig::updateSettings()
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
             if (divisions[i] == MusEGlobal::config.division) {
                   midiDivisionSelect->setCurrentIndex(i);
-                  break;
-                  }
-            }
-      for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
-            if (divisions[i] == MusEGlobal::config.guiDivision) {
-                  guiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
@@ -226,41 +221,6 @@ void GlobalSettingsConfig::updateSettings()
       
       recDrumGroup->button(MusEGlobal::config.newDrumRecordCondition)->setChecked(true);
 
-      showTransport->setChecked(MusEGlobal::config.transportVisible);
-      showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
-      showMixer->setChecked(MusEGlobal::config.mixer1Visible);
-      showMixer2->setChecked(MusEGlobal::config.mixer2Visible);
-
-      mainX->setValue(MusEGlobal::config.geometryMain.x());
-      mainY->setValue(MusEGlobal::config.geometryMain.y());
-      mainW->setValue(MusEGlobal::config.geometryMain.width());
-      mainH->setValue(MusEGlobal::config.geometryMain.height());
-
-      transportX->setValue(MusEGlobal::config.geometryTransport.x());
-      transportY->setValue(MusEGlobal::config.geometryTransport.y());
-
-      bigtimeX->setValue(MusEGlobal::config.geometryBigTime.x());
-      bigtimeY->setValue(MusEGlobal::config.geometryBigTime.y());
-      bigtimeW->setValue(MusEGlobal::config.geometryBigTime.width());
-      bigtimeH->setValue(MusEGlobal::config.geometryBigTime.height());
-
-      mixerX->setValue(MusEGlobal::config.mixer1.geometry.x());
-      mixerY->setValue(MusEGlobal::config.mixer1.geometry.y());
-      mixerW->setValue(MusEGlobal::config.mixer1.geometry.width());
-      mixerH->setValue(MusEGlobal::config.mixer1.geometry.height());
-      mixer2X->setValue(MusEGlobal::config.mixer2.geometry.x());
-      mixer2Y->setValue(MusEGlobal::config.mixer2.geometry.y());
-      mixer2W->setValue(MusEGlobal::config.mixer2.geometry.width());
-      mixer2H->setValue(MusEGlobal::config.mixer2.geometry.height());
-
-      setMixerCurrent->setEnabled(MusEGlobal::muse->mixer1Window());
-      setMixer2Current->setEnabled(MusEGlobal::muse->mixer2Window());
-      
-      setBigtimeCurrent->setEnabled(MusEGlobal::muse->bigtimeWindow());
-      setTransportCurrent->setEnabled(MusEGlobal::muse->transportWindow());
-
-      fixFrozenMDISubWindowsCheckBox->setChecked(MusEGlobal::config.fixFrozenMDISubWindows);
-//      cbTabbedMDI->setChecked(MusEGlobal::config.tabbedMDI);
       showSplash->setChecked(MusEGlobal::config.showSplashScreen);
       showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
       externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
@@ -370,43 +330,8 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.minControlProcessPeriod = minControlProcessPeriods[mcp];
 
       int div            = midiDivisionSelect->currentIndex();
-      MusEGlobal::config.division    = divisions[div];
-      // Make sure the AL namespace variable mirrors our variable.
-      AL::division = MusEGlobal::config.division;
-      div                = guiDivisionSelect->currentIndex();
-      MusEGlobal::config.guiDivision = divisions[div];
+      const int new_div  = divisions[div];
       
-      MusEGlobal::config.transportVisible = showTransport->isChecked();
-      MusEGlobal::config.bigTimeVisible   = showBigtime->isChecked();
-      MusEGlobal::config.mixer1Visible     = showMixer->isChecked();
-      MusEGlobal::config.mixer2Visible     = showMixer2->isChecked();
-
-      MusEGlobal::config.geometryMain.setX(mainX->value());
-      MusEGlobal::config.geometryMain.setY(mainY->value());
-      MusEGlobal::config.geometryMain.setWidth(mainW->value());
-      MusEGlobal::config.geometryMain.setHeight(mainH->value());
-
-      MusEGlobal::config.geometryTransport.setX(transportX->value());
-      MusEGlobal::config.geometryTransport.setY(transportY->value());
-      MusEGlobal::config.geometryTransport.setWidth(0);
-      MusEGlobal::config.geometryTransport.setHeight(0);
-
-      MusEGlobal::config.geometryBigTime.setX(bigtimeX->value());
-      MusEGlobal::config.geometryBigTime.setY(bigtimeY->value());
-      MusEGlobal::config.geometryBigTime.setWidth(bigtimeW->value());
-      MusEGlobal::config.geometryBigTime.setHeight(bigtimeH->value());
-
-      MusEGlobal::config.mixer1.geometry.setX(mixerX->value());
-      MusEGlobal::config.mixer1.geometry.setY(mixerY->value());
-      MusEGlobal::config.mixer1.geometry.setWidth(mixerW->value());
-      MusEGlobal::config.mixer1.geometry.setHeight(mixerH->value());
-      MusEGlobal::config.mixer2.geometry.setX(mixer2X->value());
-      MusEGlobal::config.mixer2.geometry.setY(mixer2Y->value());
-      MusEGlobal::config.mixer2.geometry.setWidth(mixer2W->value());
-      MusEGlobal::config.mixer2.geometry.setHeight(mixer2H->value());
-
-      MusEGlobal::config.fixFrozenMDISubWindows = fixFrozenMDISubWindowsCheckBox->isChecked();
-//      MusEGlobal::config.tabbedMDI = cbTabbedMDI->isChecked();
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
       MusEGlobal::config.liveWaveUpdate = liveWaveUpdateCheckBox->isChecked();
@@ -442,37 +367,6 @@ void GlobalSettingsConfig::apply()
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
       MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();
-
-      MusEGlobal::muse->showMixer1(MusEGlobal::config.mixer1Visible);
-      MusEGlobal::muse->showMixer2(MusEGlobal::config.mixer2Visible);
-      
-      MusEGlobal::muse->showBigtime(MusEGlobal::config.bigTimeVisible);
-      MusEGlobal::muse->showTransport(MusEGlobal::config.transportVisible);
-      QWidget* w = MusEGlobal::muse->transportWindow();
-      if (w) {
-            w->resize(MusEGlobal::config.geometryTransport.size());
-            w->move(MusEGlobal::config.geometryTransport.topLeft());
-            }
-      w = MusEGlobal::muse->mixer1Window();
-      if (w) {
-            w->resize(MusEGlobal::config.mixer1.geometry.size());
-            w->move(MusEGlobal::config.mixer1.geometry.topLeft());
-            }
-      w = MusEGlobal::muse->mixer2Window();
-      if (w) {
-            w->resize(MusEGlobal::config.mixer2.geometry.size());
-            w->move(MusEGlobal::config.mixer2.geometry.topLeft());
-            }
-      w = MusEGlobal::muse->bigtimeWindow();
-      if (w) {
-            w->resize(MusEGlobal::config.geometryBigTime.size());
-            w->move(MusEGlobal::config.geometryBigTime.topLeft());
-            }
-      if(!MusEGlobal::muse->isMaximized() && !MusEGlobal::muse->isMinimized())
-      {
-         MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
-         MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
-      }
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       if(MusEGlobal::midiSeq)
@@ -511,6 +405,13 @@ void GlobalSettingsConfig::apply()
       TopWin::_openTabbed[TopWin::WAVE] = cbTabWave->isChecked();
       TopWin::_openTabbed[TopWin::SCORE] = cbTabScore->isChecked();
       TopWin::_openTabbed[TopWin::MASTER] = cbTabMaster->isChecked();
+
+      // If the division is to be changed, this will RE-NORMALIZE things like the tempo and signature lists,
+      //  and RE-FILL the various editor rasterization (snap) table values.
+      // The various editors will respond and deal with changing each of their local raster values.
+      if(new_div != MusEGlobal::config.division)
+        // True = Operation is non-undoable here.
+        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMidiDivision, new_div, 0, 0, true));
       
       // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
       MusEGlobal::muse->changeConfig(true);
@@ -534,81 +435,6 @@ void GlobalSettingsConfig::ok()
 void GlobalSettingsConfig::cancel()
       {
       close();
-      }
-
-//---------------------------------------------------------
-//   mixerCurrent
-//---------------------------------------------------------
-
-void GlobalSettingsConfig::mixerCurrent()
-      {
-      QWidget* w = MusEGlobal::muse->mixer1Window();
-      if (!w)
-            return;
-      QRect r(w->frameGeometry());
-      mixerX->setValue(r.x());
-      mixerY->setValue(r.y());
-      mixerW->setValue(w->width());
-      mixerH->setValue(w->height());
-      }
-
-//---------------------------------------------------------
-//   mixer2Current
-//---------------------------------------------------------
-
-void GlobalSettingsConfig::mixer2Current()
-      {
-      QWidget* w = MusEGlobal::muse->mixer2Window();
-      if (!w)
-            return;
-      QRect r(w->frameGeometry());
-      mixer2X->setValue(r.x());
-      mixer2Y->setValue(r.y());
-      mixer2W->setValue(w->width());
-      mixer2H->setValue(w->height());
-      }
-
-//---------------------------------------------------------
-//   bigtimeCurrent
-//---------------------------------------------------------
-
-void GlobalSettingsConfig::bigtimeCurrent()
-      {
-      QWidget* w = MusEGlobal::muse->bigtimeWindow();
-      if (!w)
-            return;
-      QRect r(w->frameGeometry());
-      bigtimeX->setValue(r.x());
-      bigtimeY->setValue(r.y());
-      bigtimeW->setValue(w->width());
-      bigtimeH->setValue(w->height());
-      }
-
-//---------------------------------------------------------
-//   mainCurrent
-//---------------------------------------------------------
-
-void GlobalSettingsConfig::mainCurrent()
-      {
-      QRect r(MusEGlobal::muse->frameGeometry());
-      mainX->setValue(r.x());
-      mainY->setValue(r.y());
-      mainW->setValue(MusEGlobal::muse->width());  //this is intendedly not the frameGeometry, but
-      mainH->setValue(MusEGlobal::muse->height()); //the "non-frame-geom." to avoid a sizing bug
-      }
-
-//---------------------------------------------------------
-//   transportCurrent
-//---------------------------------------------------------
-
-void GlobalSettingsConfig::transportCurrent()
-      {
-      QWidget* w = MusEGlobal::muse->transportWindow();
-      if (!w)
-            return;
-      QRect r(w->frameGeometry());
-      transportX->setValue(r.x());
-      transportY->setValue(r.y());
       }
 
 void GlobalSettingsConfig::showAudioConverterSettings()

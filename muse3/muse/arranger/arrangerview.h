@@ -24,41 +24,28 @@
 #ifndef __ARRANGERVIEW_H__
 #define __ARRANGERVIEW_H__
 
-#include <QCloseEvent>
-#include <QResizeEvent>
-#include <QLabel>
-#include <QKeyEvent>
-#include <QPainter>
-#include <QPixmap>
-#include <QTimer>
-#include <QScrollBar>
-#include <QComboBox>
-#include <QAction>
-#include <QActionGroup>
-#include <QGridLayout>
-#include <QByteArray>
-#include <QToolButton>
-
 #include <limits.h>
 #include "type_defs.h"
-#include "noteinfo.h"
 #include "cobject.h"
-#include "event.h"
-#include "view.h"
-#include "gconfig.h"
-#include "part.h"
-#include "keyevent.h"
-#include "mtscale_flo.h"
-#include "steprec.h"
-#include "cleftypes.h"
-#include "helper.h"
-#include "arranger.h"
-#include "event_tag_list.h"
 
+
+// Forward declarations:
+class QCloseEvent;
+class QAction;
+class QGridLayout;
+class QMenu;
+
+namespace MusECore {
+class TagEventList;
+struct EventTagOptionsStruct;
+}
 
 namespace MusEGui {
 
+class EditToolBar;
 class VisibleTracks;
+class Arranger;
+class Xml;
 
 class ArrangerView : public TopWin
 {
@@ -141,19 +128,19 @@ class ArrangerView : public TopWin
 		void selectionChanged(); // NOTE: This is received upon EITHER a part or track selection change from the Arranger.
 		void updateShortcuts();
 		void updateVisibleTracksButtons();
-		virtual void focusCanvas() { arranger->focusCanvas(); } 
+		virtual void focusCanvas();
 
 	public:
 		ArrangerView(QWidget* parent = 0);
 		~ArrangerView();
 
 		QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
-    QAction *openCurrentTrackSynthGuiAction;
+        QAction *openCurrentTrackSynthGuiAction;
 		QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
 
 		void populateAddTrack();
 
-		Arranger* getArranger() {return arranger;}
+		Arranger* getArranger() const;
 
 		void writeStatus(int level, MusECore::Xml& xml) const;
 		void readStatus(MusECore::Xml& xml);

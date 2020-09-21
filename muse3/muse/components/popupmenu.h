@@ -36,14 +36,16 @@
   #include <QTimer>
 #endif
 
+#include <QVariant>
 #include <QPointer>
+#include <QAction>
 
+
+// Forward declarations:
 class QWidget;
 class QMouseEvent;
 class QContextMenuEvent;
 class QHideEvent;
-class QVariant;
-class QAction;
 class QEvent;
 
 namespace MusEGui {

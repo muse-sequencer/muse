@@ -31,16 +31,10 @@
 #include "script_delivery.h"
 
 #include <QFileInfo>
-#include <QCloseEvent>
 #include <QMainWindow>
-#include <QMenu>
 #include <QRect>
 #include <QString>
-#include <QToolBar>
-#include <QToolButton>
-#include <QProgressDialog>
-#include <QTimer>
-#include <QDockWidget>
+#include <QPointer>
 
 #include <list>
 #include <time.h>
@@ -49,11 +43,20 @@
 #include <unistd.h>
 #endif
 
+
+// Forward declarations:
+class QCloseEvent;
+class QMenu;
+class QToolBar;
+class QToolButton;
+class QProgressDialog;
+class QTimer;
+class QMdiSubWindow;
 class MuseMdiArea;
+class QDockWidget;
 
 namespace MusECore {
 class AudioOutput;
-class Instrument;
 class MidiInstrument;
 class MidiPort;
 class MidiTrack;
@@ -71,7 +74,6 @@ class Appearance;
 class Arranger;
 class ArrangerView;
 class AudioMixerApp;
-class AudioRecord;
 class BigTime;
 class ClipListEdit;
 class EditInstrument;
@@ -79,23 +81,24 @@ class EditToolBar;
 class GlobalSettingsConfig;
 class MRConfig;
 class MarkerView;
+class LMaster;
 class MetronomeConfig;
-class MidiControllerEditDialog;
 class MidiFileConfig;
 class MidiFilterConfig;
 class MidiInputTransformDialog;
 class MidiSyncConfig;
 class MidiTransformerDialog;
-class PrinterConfig;
 class RhythmGen;
 class ScoreEdit;
 class ShortcutConfig;
 class TopWin;
+class TopLevelList;
 class Transport;
 class VisibleTracks;
 class RouteDialog;
 class CpuToolbar;
 class SnooperDialog;
+class MasterEdit;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
 
@@ -130,7 +133,6 @@ class MusE : public QMainWindow
       QAction *fileCloseAction;
       QAction *editSongInfoAction;
       
-   private:
       MuseMdiArea* mdiArea;
       
       TopWin* activeTopWin;
@@ -142,10 +144,12 @@ class MusE : public QMainWindow
       std::list<QToolBar*> foreignToolbars;  //holds a temporary list of the toolbars of a toolbar-sharer
       std::list<QMenu*> leadingMenus;
       std::list<QMenu*> trailingMenus;
+
+      QList<QDockWidget *> hiddenDocks;
    
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction;
-      QAction* fullscreenAction;
+      QAction *fullscreenAction, *toggleDocksAction;
       QAction *masterGraphicAction, *masterListAction;
 
       // Midi Menu Actions
@@ -202,7 +206,9 @@ class MusE : public QMainWindow
       QWidget* softSynthesizerConfig;
       MidiSyncConfig* midiSyncConfig;
       MRConfig* midiRemoteConfig;
+#ifdef BUILD_EXPERIMENTAL
       RhythmGen* midiRhythmGenerator;
+#endif
       MetronomeConfig* metronomeConfig;
       MidiFileConfig* midiFileConfig;
       GlobalSettingsConfig* globalSettingsConfig;
@@ -223,9 +229,12 @@ class MusE : public QMainWindow
       QDockWidget* clipListDock;
       MarkerView* markerView;
       QDockWidget* markerDock;
+      LMaster* masterList;
+      QDockWidget* masterListDock;
       ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
+      QPointer<MasterEdit> masterEditor;
 
       MusECore::ScriptReceiver _scriptReceiver;
 
@@ -260,6 +269,9 @@ class MusE : public QMainWindow
       void toggleTrackArmSelectedTrack();
       void centerAndResize();
       void resizeEvent(QResizeEvent* event) override;
+      void closeDocks();
+      void addTabbedDock(Qt::DockWidgetArea area, QDockWidget *widget);
+      void saveStateExtra();
 
       QTimer *saveTimer;
       QTimer *blinkTimer;
@@ -309,7 +321,7 @@ class MusE : public QMainWindow
       void startSongInfo(bool editable=true);
 
       void writeGlobalConfiguration() const;
-      void startClipList(bool);
+      void showClipList(bool);
       
       void openRecentMenu();
       void selectProject(QAction* act);
@@ -346,11 +358,12 @@ class MusE : public QMainWindow
       void setFullscreen(bool);
       void setDirty();
       void toggleRewindOnStop(bool);
+      void toggleDocks(bool show);
 
    public slots:
       bool saveAs();
       void bounceToFile(MusECore::AudioOutput* ao = 0);
-      void closeEvent(QCloseEvent*e);
+      void closeEvent(QCloseEvent*event) override;
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
       void fileClose();
@@ -381,7 +394,7 @@ class MusE : public QMainWindow
       void openInScoreEdit_allInOne(QWidget* destination);
       void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
       void startMasterEditor();
-      void startLMasterEditor();
+      void showMasterList(bool);
       void startListEditor();
       void startListEditor(MusECore::PartList*);
       void startDrumEditor();
@@ -409,6 +422,7 @@ class MusE : public QMainWindow
       float fAvrCpuLoad;
       int avrCpuLoadCounter;
       float fCurCpuLoad;
+
    public:
       MusE();
 
@@ -424,6 +438,8 @@ class MusE : public QMainWindow
       // Set to restart MusE (almost) from scratch before calling close().
       void setRestartingApp(bool v) { _isRestartingApp = v;}
       Arranger* arranger() const { return _arranger; }
+      int arrangerRaster() const;
+
       ArrangerView* getArrangerView() const { return arrangerView; }
       QRect configGeometryMain;
       QProgressDialog *progress;
@@ -455,7 +471,7 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
-//      bool isTabbedMDI();
+      bool restoreState(const QByteArray &state, int version = 0);
       
       const ToplevelList* getToplevels() { return &toplevels; }
       

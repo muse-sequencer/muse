@@ -24,20 +24,36 @@
 #define __PRCANVAS_H__
 
 #include "ecanvas.h"
-#include "pianoroll.h"
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
-#include <QDragMoveEvent>
-#include <QDragLeaveEvent>
-#include <QTimer>
+#include <QRect>
+#include <QPoint>
+#include <QRegion>
 
-#include "steprec.h"
+#include "noteinfo.h"
+#include "globaldefs.h"
 
 
-class QRect;
+// Forward declarations:
+class QDragEnterEvent;
+class QDropEvent;
+class QMouseEvent;
+class QDragMoveEvent;
+class QDragLeaveEvent;
+class QResizeEvent;
+class QPainter;
+class QWidget;
+
+namespace MusECore {
+class StepRec; 
+class Part; 
+class Event;
+class CItem;
+class CItemMap;
+}
 
 namespace MusEGui {
+class ScrollScale;
+class PianoRoll;
+class MidiEditor;
 
 //---------------------------------------------------------
 //   NEvent
@@ -49,9 +65,6 @@ class NEvent : public EItem {
       NEvent(const MusECore::Event& e, MusECore::Part* p, int y);
       };
 
-class ScrollScale;
-class PianoRoll;
-
 //---------------------------------------------------------
 //   PianoCanvas
 //---------------------------------------------------------
@@ -59,40 +72,40 @@ class PianoRoll;
 class PianoCanvas : public EventCanvas {
       Q_OBJECT
     
-      int colorMode;
+      MidiEventColorMode colorMode;
       
       bool noteHeldDown[128];
       
       MusECore::StepRec* steprec;
 
       
-      virtual void viewMouseDoubleClickEvent(QMouseEvent*);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion());
-      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
-      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
-      virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*, bool noSnap, bool);
-      virtual void newItem(CItem*, bool noSnap);
-      virtual bool deleteItem(CItem*);
-      virtual void startDrag(CItem* item, DragType t);
-      virtual void dragEnterEvent(QDragEnterEvent* event);
-      virtual void dragMoveEvent(QDragMoveEvent*);
-      virtual void dragLeaveEvent(QDragLeaveEvent*);
-      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&);
+      virtual void viewMouseDoubleClickEvent(QMouseEvent*) override;
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) override;
+      void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion()) override;
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) override;
+      virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true) override;
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) override;
+      virtual CItem* newItem(const QPoint&, int) override;
+      virtual void resizeItem(CItem*, bool noSnap, bool) override;
+      virtual void newItem(CItem*, bool noSnap) override;
+      virtual bool deleteItem(CItem*) override;
+      virtual void startDrag(CItem* item, DragType t) override;
+      virtual void dragEnterEvent(QDragEnterEvent* event) override;
+      virtual void dragMoveEvent(QDragMoveEvent*) override;
+      virtual void dragLeaveEvent(QDragLeaveEvent*) override;
+      virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) override;
 
-      int y2pitch(int) const;
-      int pitch2y(int) const;
-      inline int y2height(int) const { return KH/2; }
-      inline int yItemOffset() const { return KH/4; }
-      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
-      virtual void itemPressed(const CItem*);
-      virtual void itemReleased(const CItem*, const QPoint&);
+      int y2pitch(int) const override;
+      int pitch2y(int) const override;
+      inline int y2height(int) const  override { return KH/2; }
+      inline int yItemOffset() const  override { return KH/4; }
+      virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion()) override;
+      virtual void itemPressed(const CItem*) override;
+      virtual void itemReleased(const CItem*, const QPoint&) override;
       virtual void itemMoving(const CItem*, const QPoint& newMP) override;
-      virtual void itemMoved(const CItem*, const QPoint& oldMP);
-      virtual void curPartChanged();
-      virtual void resizeEvent(QResizeEvent*);
+      virtual void itemMoved(const CItem*, const QPoint& oldMP) override;
+      virtual void curPartChanged() override;
+      virtual void resizeEvent(QResizeEvent*) override;
       void mouseMove(QMouseEvent* event) override;
       QMenu* genItemPopup(MusEGui::CItem* item) override;
 
@@ -125,11 +138,8 @@ class PianoCanvas : public EventCanvas {
       PianoCanvas(MidiEditor*, QWidget*, int, int);
       virtual ~PianoCanvas();
       void cmd(int cmd);
-      void setColorMode(int mode) {
-            colorMode = mode;
-            redraw();
-            }
-      virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true);
+      void setColorMode(MidiEventColorMode mode);
+      virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true) override;
       };
 
 } // namespace MusEGui

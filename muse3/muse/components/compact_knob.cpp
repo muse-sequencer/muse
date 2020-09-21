@@ -40,6 +40,13 @@
 #include <QFlags>
 #include <QToolTip>
 #include <QString>
+#include <QFontMetrics>
+#include <QResizeEvent>
+#include <QPainter>
+#include <QEvent>
+#include <QPaintEvent>
+#include <QMouseEvent>
+#include <QKeyEvent>
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_KNOB(dev, format, args...)  //fprintf(dev, format, ##args);
@@ -958,8 +965,8 @@ void CompactKnob::drawMarker(QPainter *p, double arc, const QColor &c)
                   xm - int(rint(sa * re)),
                   ym - int(rint(ca * re)));
 
-      if (!_style3d)
-          p->drawEllipse(QPoint(xm, ym), 1, 1);
+//      if (!_style3d)
+//          p->drawEllipse(QPoint(xm, ym), 1, 1);
 
     break;
   }

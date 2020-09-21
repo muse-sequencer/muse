@@ -26,8 +26,6 @@
 #include "ui_transposebase.h"
 #include "function_dialog_base.h"
 
-class QButtonGroup;
-
 namespace MusECore {
 class Xml;
 }

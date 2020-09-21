@@ -24,8 +24,9 @@
 #include "muse_math.h"
 
 #include <QPainter>
-#include <QPaintEvent>
 
+// Forwards from header:
+#include <QPaintEvent>
 #include "track.h"
 
 namespace MusEGui {

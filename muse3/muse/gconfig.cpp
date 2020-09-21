@@ -22,6 +22,7 @@
 //=========================================================
 
 #include "gconfig.h"
+#include "xml.h"
 
 namespace MusEGlobal {
 
@@ -50,6 +51,12 @@ namespace MusEGlobal {
  *    Therefore item 2) is no longer true. It has been disabled in main.cpp.
  *    Tim.
  */
+
+StripConfig::StripConfig()
+  { _serial = -1; _tmpFileIdx = -1; _visible = true; _width = -1; _deleted = false; }
+StripConfig::StripConfig(int trackSerial, bool visible, int width)
+  { _serial = trackSerial; _tmpFileIdx = -1; _visible = visible; _width = width; _deleted = false; }
+bool StripConfig::isNull() const { return _serial < 0; }
 
 GlobalConfigValues config = {
       QStringList(),              // pluginLadspaPathList
@@ -237,9 +244,6 @@ GlobalConfigValues config = {
 
       MusEGlobal::WaveOutLine,      // waveDrawing
 
-      false,                        // fixFrozenMDISubWindows Turn on a fix for frozen MDIs in Breeze/Oxygen themes.
-//      false,                        // tabbedMDI
-
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 
       // Zero means always use anti-aliasing. For certain widgets that use it. May be more later.
       8, 
@@ -288,7 +292,6 @@ GlobalConfigValues config = {
       1,                            // startMode
       QString(""),                  // start song path
       false,                        // startSongLoadConfig
-      384,                          // gui division
       QRect(0, 0, 700, 550),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
@@ -324,8 +327,9 @@ GlobalConfigValues config = {
       true,                         // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
-      QString(""),                  // default styleSheetFile - For built-in set to ":/style.qss"
-      QString(""),                  // style
+//      QString(""),                  // default styleSheetFile
+//      QString("Fusion"),            // style
+      QString("Dark Flat"),         // theme
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut
       true,                         // useRewindOnStop
