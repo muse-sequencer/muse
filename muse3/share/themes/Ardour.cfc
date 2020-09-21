@@ -1,8 +1,22 @@
 <?xml version="1.0"?>
 <muse version="3.3">
   <configuration>
-    <theme>Oxygen</theme>
-    <globalAlphaBlend>170</globalAlphaBlend>
+    <palette0 r="255" g="255" b="255"></palette0>
+    <palette1 r="255" g="255" b="255"></palette1>
+    <palette2 r="255" g="255" b="255"></palette2>
+    <palette3 r="255" g="255" b="255"></palette3>
+    <palette4 r="255" g="255" b="255"></palette4>
+    <palette5 r="255" g="255" b="255"></palette5>
+    <palette6 r="255" g="255" b="255"></palette6>
+    <palette7 r="255" g="255" b="255"></palette7>
+    <palette8 r="255" g="255" b="255"></palette8>
+    <palette9 r="255" g="255" b="255"></palette9>
+    <palette10 r="255" g="255" b="255"></palette10>
+    <palette11 r="255" g="255" b="255"></palette11>
+    <palette12 r="255" g="255" b="255"></palette12>
+    <palette13 r="255" g="255" b="255"></palette13>
+    <palette14 r="255" g="255" b="255"></palette14>
+    <palette15 r="255" g="255" b="255"></palette15>
     <partColor0 r="255" g="232" b="140"></partColor0>
     <partColor1 r="255" g="0" b="0"></partColor1>
     <partColor2 r="0" g="255" b="0"></partColor2>
@@ -22,12 +36,15 @@
     <partColor16 r="0" g="63" b="63"></partColor16>
     <partColor17 r="170" g="85" b="0"></partColor17>
     <partCanvasBg r="144" g="149" b="157"></partCanvasBg>
+    <dummyPartColor r="160" g="160" b="164"></dummyPartColor>
+    <partCanvasCoarseRaster r="71" g="71" b="71"></partCanvasCoarseRaster>
+    <partCanvasFineRaster r="130" g="136" b="168"></partCanvasFineRaster>
     <trackBg r="60" g="63" b="72"></trackBg>
     <selectTrackBg r="64" g="103" b="105"></selectTrackBg>
     <selectTrackFg r="0" g="0" b="0"></selectTrackFg>
-    <mixerBg r="0" g="0" b="0"></mixerBg>
+    <selectTrackCurBg r="90" g="154" b="158"></selectTrackCurBg>
+    <trackSectionDividerColor r="160" g="160" b="164"></trackSectionDividerColor>
     <midiTrackLabelBg r="74" g="150" b="194"></midiTrackLabelBg>
-    <drumTrackLabelBg2 r="150" g="177" b="189"></drumTrackLabelBg2>
     <newDrumTrackLabelBg2 r="116" g="232" b="242"></newDrumTrackLabelBg2>
     <waveTrackLabelBg r="213" g="128" b="202"></waveTrackLabelBg>
     <outputTrackLabelBg r="84" g="185" b="58"></outputTrackLabelBg>
@@ -37,6 +54,7 @@
     <synthTrackLabelBg r="229" g="157" b="101"></synthTrackLabelBg>
     <midiTrackBg r="49" g="71" b="90"></midiTrackBg>
     <ctrlGraphFg r="255" g="170" b="0"></ctrlGraphFg>
+    <ctrlGraphSel r="0" g="0" b="255"></ctrlGraphSel>
     <drumTrackBg r="49" g="71" b="90"></drumTrackBg>
     <newDrumTrackBg r="49" g="71" b="90"></newDrumTrackBg>
     <waveTrackBg r="85" g="60" b="60"></waveTrackBg>
@@ -45,13 +63,47 @@
     <groupTrackBg r="90" g="72" b="54"></groupTrackBg>
     <auxTrackBg r="50" g="90" b="90"></auxTrackBg>
     <synthTrackBg r="91" g="57" b="47"></synthTrackBg>
+    <sliderBarDefaultColor r="0" g="181" b="241"></sliderBarDefaultColor>
+    <sliderDefaultColor2 r="66" g="66" b="66"></sliderDefaultColor2>
+    <panSliderColor2 r="78" g="172" b="35"></panSliderColor2>
+    <gainSliderColor2 r="209" g="86" b="86"></gainSliderColor2>
+    <auxSliderColor2 r="190" g="190" b="39"></auxSliderColor2>
+    <audioVolumeSliderColor2 r="85" g="170" b="255"></audioVolumeSliderColor2>
+    <midiVolumeSliderColor2 r="153" g="156" b="124"></midiVolumeSliderColor2>
+    <audioVolumeHandleColor r="154" g="135" b="124"></audioVolumeHandleColor>
+    <midiVolumeHandleColor r="153" g="156" b="124"></midiVolumeHandleColor>
+    <audioControllerSliderDefaultColor2 r="37" g="121" b="255"></audioControllerSliderDefaultColor2>
+    <audioPropertySliderDefaultColor2 r="220" g="77" b="255"></audioPropertySliderDefaultColor2>
+    <midiControllerSliderDefaultColor2 r="37" g="121" b="255"></midiControllerSliderDefaultColor2>
+    <midiPropertySliderDefaultColor2 r="220" g="77" b="255"></midiPropertySliderDefaultColor2>
+    <midiPatchReadoutColor r="100" g="255" b="255"></midiPatchReadoutColor>
+    <knobFontColor r="160" g="160" b="164"></knobFontColor>
+    <audioMeterPrimaryColor r="0" g="255" b="0"></audioMeterPrimaryColor>
+    <midiMeterPrimaryColor r="0" g="221" b="255"></midiMeterPrimaryColor>
+    <meterBackgroundColor r="0" g="0" b="0"></meterBackgroundColor>
+    <rackItemBackgroundColor r="127" g="127" b="127"></rackItemBackgroundColor>
+    <rackItemBgActiveColor r="0" g="120" b="200"></rackItemBgActiveColor>
+    <rackItemFontColor r="0" g="0" b="0"></rackItemFontColor>
+    <rackItemFontActiveColor r="255" g="255" b="255"></rackItemFontActiveColor>
+    <rackItemBorderColor r="128" g="128" b="128"></rackItemBorderColor>
+    <rackItemFontColorHover r="255" g="255" b="0"></rackItemFontColorHover>
+    <palSwitchBackgroundColor r="160" g="160" b="164"></palSwitchBackgroundColor>
+    <palSwitchBgActiveColor r="0" g="120" b="200"></palSwitchBgActiveColor>
+    <palSwitchFontColor r="0" g="0" b="0"></palSwitchFontColor>
+    <palSwitchFontActiveColor r="255" g="255" b="255"></palSwitchFontActiveColor>
+    <palSwitchBorderColor r="128" g="128" b="128"></palSwitchBorderColor>
+    <midiInstrumentBackgroundColor r="160" g="160" b="164"></midiInstrumentBackgroundColor>
+    <midiInstrumentBgActiveColor r="0" g="120" b="200"></midiInstrumentBgActiveColor>
+    <midiInstrumentFontColor r="0" g="0" b="0"></midiInstrumentFontColor>
+    <midiInstrumentFontActiveColor r="255" g="255" b="255"></midiInstrumentFontActiveColor>
+    <midiInstrumentBorderColor r="128" g="128" b="128"></midiInstrumentBorderColor>
     <transportHandleColor r="0" g="0" b="255"></transportHandleColor>
     <bigtimeForegroundcolor r="255" g="0" b="0"></bigtimeForegroundcolor>
     <bigtimeBackgroundcolor r="0" g="0" b="0"></bigtimeBackgroundcolor>
     <waveEditBackgroundColor r="200" g="200" b="200"></waveEditBackgroundColor>
     <rulerBackgroundColor r="46" g="46" b="46"></rulerBackgroundColor>
     <rulerForegroundColor r="154" g="154" b="154"></rulerForegroundColor>
-    <rulerCurrentColor r="255" g="255" b="255"></rulerCurrentColor>
+    <rulerCurrentColor r="54" g="113" b="42"></rulerCurrentColor>
     <waveNonselectedPart r="192" g="192" b="192"></waveNonselectedPart>
     <wavePeakColor r="128" g="128" b="128"></wavePeakColor>
     <waveRmsColor r="0" g="0" b="0"></waveRmsColor>
@@ -62,11 +114,19 @@
     <partMidiDarkEventColor r="54" g="54" b="54"></partMidiDarkEventColor>
     <partMidiLightEventColor r="200" g="200" b="200"></partMidiLightEventColor>
     <midiCanvasBackgroundColor r="172" g="172" b="172"></midiCanvasBackgroundColor>
+    <midiCanvasFineColor r="210" g="210" b="210"></midiCanvasFineColor>
+    <midiCanvasBeatColor r="130" g="130" b="130"></midiCanvasBeatColor>
+    <midiCanvasBarColor r="0" g="0" b="0"></midiCanvasBarColor>
+    <midiDividerColor r="160" g="160" b="164"></midiDividerColor>
+    <midiItemColor r="0" g="0" b="255"></midiItemColor>
+    <midiItemSelectedColor r="255" g="170" b="0"></midiItemSelectedColor>
     <midiControllerViewBackgroundColor r="112" g="112" b="112"></midiControllerViewBackgroundColor>
     <drumListBackgroundColor r="202" g="202" b="202"></drumListBackgroundColor>
-    <rulerCurrentColor r="54" g="113" b="42"></rulerCurrentColor>    
-    <waveedit>
-      <bgcolor r="200" g="200" b="200"></bgcolor>
-    </waveedit>
-    </configuration>
-  </muse>
+    <drumListFont r="0" g="0" b="0"></drumListFont>
+    <drumListSel r="255" g="255" b="0"></drumListSel>
+    <drumListSelFont r="0" g="0" b="0"></drumListSelFont>
+    <pianoCurrentKey r="0" g="191" b="255"></pianoCurrentKey>
+    <pianoPressedKey r="255" g="0" b="255"></pianoPressedKey>
+    <pianoSelectedKey r="126" g="255" b="189"></pianoSelectedKey>
+  </configuration>
+</muse>

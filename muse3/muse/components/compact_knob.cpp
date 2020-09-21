@@ -965,8 +965,8 @@ void CompactKnob::drawMarker(QPainter *p, double arc, const QColor &c)
                   xm - int(rint(sa * re)),
                   ym - int(rint(ca * re)));
 
-      if (!_style3d)
-          p->drawEllipse(QPoint(xm, ym), 1, 1);
+//      if (!_style3d)
+//          p->drawEllipse(QPoint(xm, ym), 1, 1);
 
     break;
   }

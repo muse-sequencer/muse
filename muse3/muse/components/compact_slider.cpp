@@ -123,9 +123,6 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
       d_slotColor = slotColor;
       d_thumbColor = thumbColor;
 
-      if (_barSameColor)
-          d_barColor = borderColor;
-
       _maxAliasedPointSize = 8;
       
       d_labelText = labelText;
@@ -140,12 +137,12 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
       d_offText = tr("off");
       _showValue = true;
 
-      _detectThumb = false;
-      _autoHideThumb = true;
+      _detectThumb = false; // unused
+      _autoHideThumb = false;
       _hasOffMode = false;
       d_thumbLength = 0;
       d_thumbHitLength = 0;
-      d_thumbHalf = d_thumbLength / 2;
+//      d_thumbHalf = d_thumbLength / 2;
       d_thumbWidth = 16;
       d_thumbWidthMargin = 0;
       _mouseOverThumb = false;
@@ -169,6 +166,9 @@ CompactSlider::CompactSlider(QWidget *parent, const char *name,
       //updatePixmaps();
       getActiveArea(); 
       getPixelValues();
+
+      ensurePolished();
+      d_thumbHalf = d_thumbLength / 2;
       }
 
 //------------------------------------------------------------
@@ -305,12 +305,12 @@ void CompactSlider::setActiveBorders(ActiveBorders_t borders)
 //.p  int l   --    new length
 //
 //-----------------------------------------------------
-void CompactSlider::setThumbLength(int l)
-{
-    d_thumbLength = MusECore::qwtMax(l,8);
-    d_thumbHalf = d_thumbLength / 2;
-    resize(this->size());
-}
+//void CompactSlider::setThumbLength(int l)
+//{
+//    d_thumbLength = MusECore::qwtMax(l,8);
+//    d_thumbHalf = d_thumbLength / 2;
+//    resize(this->size());
+//}
 
 //------------------------------------------------------------
 //
@@ -617,10 +617,24 @@ void CompactSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, con
 
 void CompactSlider::getActiveArea()
 {
-  const QRect& geo = rect();
-//   const int req_thumb_margin = (d_thumbHalf - d_xMargin) > 1 ? (d_thumbHalf - d_xMargin) : 1;
-  const int req_thumb_margin = d_thumbLength == 0 ? 0 : ((d_thumbHalf - d_xMargin) > 1 ? (d_thumbHalf - d_xMargin) : 1);
-  
+    const QRect& geo = rect();
+
+    if (d_thumbLength > 0){
+        const int req_thumb_margin = (d_thumbHalf - d_xMargin) > 1 ? (d_thumbHalf - d_xMargin) : 1;
+        d_sliderRect = QRect(
+                    geo.x() + d_xMargin + req_thumb_margin + 1,
+                    geo.y() + d_yMargin,
+                    geo.width() - 2 * (d_xMargin + req_thumb_margin) - 1,
+                    geo.height() - 2 * d_yMargin);
+    } else {
+        d_sliderRect = QRect(
+                    geo.x() + d_xMargin,
+                    geo.y() + d_yMargin,
+                    geo.width() - 2 * d_xMargin,
+                    geo.height() - 2 * d_yMargin);
+    }
+
+
 //   QStyleOptionFrame option;
 //   option.initFrom(this);
 /*  
@@ -661,15 +675,15 @@ void CompactSlider::getActiveArea()
     d_sliderRect = st->subElementRect(QStyle::SE_ShapedFrameContents, &option).adjusted(1, 1, -1, -1);
   }
   else*/
-  {
-    d_sliderRect = QRect(
-//                   geo.x() + d_xMargin + active_thumb_margin, 
-                  geo.x() + d_xMargin + req_thumb_margin, 
-                  geo.y() + d_yMargin, 
-//                   geo.width() - 2 * (d_xMargin + active_thumb_margin), 
-                  geo.width() - 2 * (d_xMargin + req_thumb_margin), 
-                  geo.height() - 2 * d_yMargin); 
-  }
+//  {
+//    d_sliderRect = QRect(
+////                   geo.x() + d_xMargin + active_thumb_margin,
+//                  geo.x() + d_xMargin + req_thumb_margin + 1,
+//                  geo.y() + d_yMargin,
+////                   geo.width() - 2 * (d_xMargin + active_thumb_margin),
+//                  geo.width() - 2 * (d_xMargin + req_thumb_margin - 1),
+//                  geo.height() - 2 * d_yMargin);
+//  }
 }
 
 void CompactSlider::getPixelValues()
@@ -712,9 +726,11 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   if (_barSameColor)
       d_barColor = d_borderColor;
 
+  if (!d_thumbColor.isValid())
+      d_thumbColor = d_barColor;
+
   const QPalette& pal = palette();
 
-  const int req_thumb_margin = d_thumbLength == 0 ? 0 : ((d_thumbHalf - d_xMargin) > 1 ? (d_thumbHalf - d_xMargin) : 1);
 
   const int label_to_val_margin = 6;
 
@@ -782,23 +798,28 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
                   _activeBorders & RightBorder ? border_color : inactive_border_color);
   }
   
-  // Extra left margin
-  //if(_activeBorders & LeftBorder)
-    p.fillRect(d_xMargin,
-                d_yMargin,
-                req_thumb_margin,
-                geo.height() - 2 * d_yMargin,
-                _activeBorders & LeftBorder ? margin_color : inactive_border_color);
-  
-  // Extra right margin
-  //if(_activeBorders & RightBorder)
-    p.fillRect(
-                geo.width() - d_xMargin - req_thumb_margin,
-                d_yMargin,
-                req_thumb_margin,
-                geo.height() - 2 * d_yMargin,
-                _activeBorders & RightBorder ? margin_color : inactive_border_color);
-  
+  if (d_thumbLength > 0) {
+      // Extra left margin
+      const int req_thumb_margin = (d_thumbHalf - d_xMargin) > 1 ? (d_thumbHalf - d_xMargin) : 1;
+      //if(_activeBorders & LeftBorder)
+      p.fillRect(d_xMargin,
+                 d_yMargin,
+                 req_thumb_margin + 1,
+                 geo.height() - 2 * d_yMargin,
+                 //               _activeBorders & LeftBorder ? margin_color : inactive_border_color);
+                 d_slotColor);
+
+      // Extra right margin
+      //if(_activeBorders & RightBorder)
+      p.fillRect(
+                  geo.width() - d_xMargin - req_thumb_margin,
+                  d_yMargin,
+                  req_thumb_margin,
+                  geo.height() - 2 * d_yMargin,
+                  //                _activeBorders & RightBorder ? margin_color : inactive_border_color);
+                  d_slotColor);
+  }
+
 //   const QPainterPath& onPath = *_onPath;
 //   
 //   // Draw corners as normal background colour. Path subtraction.
@@ -816,7 +837,9 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   int h = d_sliderRect.height();
 
   const int x1 = x;
-  const int w1 = d_valuePixelWidth;
+  int w1 = 0;
+  if (d_thumbLength == 0)
+      w1 = d_valuePixelWidth;
 
   const int y1 = y;
   const int y2 = y1 + h - 1;
@@ -847,45 +870,45 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
   if(!offPath.isEmpty())
 //    p.fillPath(offPath, QBrush(d_slotColor));
       p.fillPath(offPath, linearGrad_a);
-    
-    
+
+
   const double minV = minValue(ConvertNone);
   const double val = value(ConvertNone);
-  
-  const QRect bar_area((d_orient == Qt::Horizontal) ? 
-                      QRect(d_sliderRect.x(), 
-                            d_sliderRect.y(), 
-                            d_valuePixelWidth, 
+
+  const QRect bar_area((d_orient == Qt::Horizontal) ?
+                      QRect(d_sliderRect.x(),
+                            d_sliderRect.y(),
+                            d_valuePixelWidth,
                             d_sliderRect.height()) :
-                      QRect(d_sliderRect.x(), 
-                            d_sliderRect.y() + d_sliderRect.height() - d_valuePixelWidth, 
-                            d_sliderRect.width(), 
+                      QRect(d_sliderRect.x(),
+                            d_sliderRect.y() + d_sliderRect.height() - d_valuePixelWidth,
+                            d_sliderRect.width(),
                             d_sliderRect.height() - d_valuePixelWidth)); // FIXME
-  const QRect bkg_area((d_orient == Qt::Horizontal) ? 
-                      QRect(d_sliderRect.x() + d_valuePixelWidth, 
-                            d_sliderRect.y(), 
-                            //active_area.width() - (active_area.x() + val_pix), 
-                            d_sliderRect.width() - d_valuePixelWidth, 
-                            d_sliderRect.height()) : 
-                      QRect(d_sliderRect.x(), 
-                            d_sliderRect.y(), 
-                            d_sliderRect.width(), 
+  const QRect bkg_area((d_orient == Qt::Horizontal) ?
+                      QRect(d_sliderRect.x() + d_valuePixelWidth,
+                            d_sliderRect.y(),
+                            //active_area.width() - (active_area.x() + val_pix),
+                            d_sliderRect.width() - d_valuePixelWidth,
+                            d_sliderRect.height()) :
+                      QRect(d_sliderRect.x(),
+                            d_sliderRect.y(),
+                            d_sliderRect.width(),
                             d_sliderRect.height() - d_valuePixelWidth)); // FIXME
 
 //   p.setClipPath(onPath);
 //   p.fillPath(onPath, _onPixmap);
-  
+
 //   p.setClipPath(offPath);
 //   p.fillPath(offPath, _offPixmap);
-  
+
   // Restore the clipper to full size.
 //   p.setClipRect(geo);
-  
+
   if((!_autoHideThumb || _mouseOverThumb) && d_thumbLength > 0)
   {
     DEBUG_COMPACT_SLIDER(stderr, "CompactSlider::PaintEvent _mouseOverThumb:%d\n", _mouseOverThumb);
     const QRect thumb_rect((d_orient == Qt::Horizontal) ?
-                          QRect(d_sliderRect.x() + d_valuePixel - d_thumbHalf, 
+                          QRect(d_sliderRect.x() + d_valuePixel - d_thumbHalf,
                                 d_sliderRect.y() + d_thumbWidthMargin,
                                 d_thumbLength,
                                 d_sliderRect.height() - 2 * d_thumbWidthMargin) : 
@@ -893,8 +916,9 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
                                 d_sliderRect.y() + d_valuePixel - d_thumbHalf,
                                 d_sliderRect.width() - 2 * d_thumbWidthMargin,
                                 d_thumbLength));
-    p.fillRect(thumb_rect, isEnabled() ? (d_thumbColor.isValid() ? d_thumbColor : pal.color(QPalette::Active, QPalette::Mid)) :
-                                         pal.color(QPalette::Disabled, QPalette::Mid));
+    p.fillRect(thumb_rect, isEnabled() ? d_thumbColor : pal.color(QPalette::Disabled, QPalette::Mid));
+//    p.fillRect(thumb_rect, isEnabled() ? (d_thumbColor.isValid() ? d_thumbColor : pal.color(QPalette::Active, QPalette::Mid)) :
+//                                         pal.color(QPalette::Disabled, QPalette::Mid));
   }
 
   const QFont& fnt = font();
