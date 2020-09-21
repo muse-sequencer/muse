@@ -119,7 +119,10 @@ bool DoubleLabel::setString(double v)
 bool DoubleLabel::setSValue(const QString& s)
       {
       bool ok;
-      double v = s.toDouble(&ok);
+      QString sTrimmed = s.trimmed();
+      if (sTrimmed.contains(_suffix))
+          sTrimmed = sTrimmed.remove(_suffix).trimmed();
+      double v = sTrimmed.toDouble(&ok);
       if (ok && (v != val)) {
             if (v < min)
                   v = min;
