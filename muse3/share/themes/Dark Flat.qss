@@ -322,10 +322,10 @@ MusEGui--CompactPatchEdit {
 
 MusEGui--CompactKnob {
     qproperty-style3d: false;
-    qproperty-drawChord: true;
     qproperty-xMargin: 2;
     qproperty-yMargin: 2;
 /*
+    qproperty-drawChord: true;
     qproperty-totalAngle: 270;
     qproperty-radius: 2;
     qproperty-symbol: Dot;
