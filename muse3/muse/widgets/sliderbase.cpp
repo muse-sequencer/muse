@@ -205,13 +205,18 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       if(_pressed)
         return;
       
-      float inc = (maxValue(ConvertNone) - minValue(ConvertNone)) / 40;
-      if (e->modifiers() == Qt::ShiftModifier)
-            inc = inc / 10;
+      // this leads to incomprehensible values for the user, why not just use the step? (kybos)
+      //      float inc = (maxValue(ConvertNone) - minValue(ConvertNone)) / 40;
+      //      if (e->modifiers() == Qt::ShiftModifier)
+      //            inc = inc / 10;
 
-      if(inc < step())
-        inc = step();
-      
+      //      if(inc < step())
+      //        inc = step();
+
+      float inc = step();
+      if (e->modifiers() == Qt::ShiftModifier)
+          inc /= 5; // this at least works well with the default audio slider (kybos)
+
       const QPoint pixelDelta = e->pixelDelta();
       const QPoint angleDegrees = e->angleDelta() / 8;
       int delta = 0;
@@ -222,7 +227,7 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       else
         return;
 
-      if(delta > 0)
+      if (delta > 0)
             setValue(value(ConvertNone)+inc, ConvertNone);
       else
             setValue(value(ConvertNone)-inc, ConvertNone);
