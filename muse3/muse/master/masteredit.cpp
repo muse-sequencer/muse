@@ -166,7 +166,8 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       addToolBarBreak();
 
       // Already has an object name.
-      tools2 = new MusEGui::EditToolBar(this, MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
+      editTools = MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool;
+      tools2 = new MusEGui::EditToolBar(this, editTools);
       addToolBar(tools2);
 
       QToolBar* info = addToolBar(tr("Info"));
@@ -466,6 +467,15 @@ void MasterEdit::setupHZoomRange()
 {
   const int min = (_minXMag * MusEGlobal::config.division) / 384;
   hscroll->setScaleRange(min, _maxXMag);
+}
+
+//---------------------------------------------------------
+//   setEditTool
+//---------------------------------------------------------
+
+void MasterEdit::setEditTool(int tool)
+{
+    tools2->set(tool);
 }
 
 } // namespace MusEGui

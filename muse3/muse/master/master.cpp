@@ -33,6 +33,7 @@
 #include <QPair>
 #include <QRect>
 #include <QToolBar>
+#include <QMenu>
 
 #include "globals.h"
 #include "master.h"
@@ -43,6 +44,9 @@
 #include "icons.h"
 #include "audio.h"
 #include "gconfig.h"
+#include "shortcuts.h"
+#include "menutitleitem.h"
+#include "masteredit.h"
 
 namespace MusEGui {
 
@@ -300,59 +304,60 @@ void Master::newValRamp(int x1, int y1, int x2, int y2, MusECore::Undo& operatio
 //---------------------------------------------------------
 
 void Master::viewMousePressEvent(QMouseEvent* event)
-      {
-      start = event->pos();
-      int xpos = start.x();
-      int ypos = start.y();
+{
+    if (event->button() == Qt::RightButton) {
+        callContextMenu();
+        return;
+    }
 
-      _operations.clear();
+    start = event->pos();
+    int xpos = start.x();
+    int ypos = start.y();
 
-      MusEGui::Tool activeTool = tool;
+    _operations.clear();
 
-      switch (activeTool) {
-//            case MusEGui::PointerTool: // not used/implemented
-//                  drag = DRAG_LASSO_START;
-//                  break;
+    MusEGui::Tool activeTool = tool;
 
-            case MusEGui::PencilTool:
-                  drag = DRAG_NEW;
-                  MusEGlobal::song->startUndo();
-                  newVal(start.x(), start.x(), start.y(), _operations);
-                  break;
+    switch (activeTool) {
+    case MusEGui::PencilTool:
+        drag = DRAG_NEW;
+        MusEGlobal::song->startUndo();
+        newVal(start.x(), start.x(), start.y(), _operations);
+        break;
 
-            case MusEGui::RubberTool:
-                  drag = DRAG_DELETE;
-                  MusEGlobal::song->startUndo();
-                  deleteVal(start.x(), start.x(), _operations);
-                  break;
+    case MusEGui::RubberTool:
+        drag = DRAG_DELETE;
+        MusEGlobal::song->startUndo();
+        deleteVal(start.x(), start.x(), _operations);
+        break;
 
-            case MusEGui::DrawTool:
-                  if (drawLineMode) {
-                        line2x = xpos;
-                        line2y = ypos;
-                        newValRamp(line1x, line1y, line2x, line2y, _operations);
-                        // Operation is undoable.
-                        MusEGlobal::song->applyOperationGroup(_operations);
-                        _operations.clear();
-                        drawLineMode = false;
-                        }
-                  else {
-                        line2x = line1x = xpos;
-                        line2y = line1y = ypos;
-                        drawLineMode = true;
-                        }
-                  redraw();
-                  return;
+    case MusEGui::DrawTool:
+        if (drawLineMode) {
+            line2x = xpos;
+            line2y = ypos;
+            newValRamp(line1x, line1y, line2x, line2y, _operations);
+            // Operation is undoable.
+            MusEGlobal::song->applyOperationGroup(_operations);
+            _operations.clear();
+            drawLineMode = false;
+        }
+        else {
+            line2x = line1x = xpos;
+            line2y = line1y = ypos;
+            drawLineMode = true;
+        }
+        redraw();
+        return;
 
-                  break;
-            default:
-                  break;
-            }
+        break;
+    default:
+        break;
+    }
 
-      // Operation is undoable but do not start/end undo.
-      MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
-      redraw();
-      }
+    // Operation is undoable but do not start/end undo.
+    MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
+    redraw();
+}
 
 //---------------------------------------------------------
 //   viewMouseMoveEvent
@@ -505,4 +510,46 @@ void Master::newVal(int x1, int x2, int y, MusECore::Undo& operations)
                     xx1, int(60000000000.0/(280000 - y))));
       redraw();
       }
+
+QMenu* Master::toolContextMenu()
+{
+    QMenu* r_menu = new QMenu(this);
+    QAction* act0 = 0;
+
+    r_menu->addAction(new MenuTitleItem(tr("Tools:"), r_menu));
+
+    int editTools = static_cast<MasterEdit*>(editor)->getEditTools();
+    for (unsigned i = 0; i < gNumberOfTools; ++i) {
+        if ((editTools & (1 << i)) == 0)
+            continue;
+        QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
+
+        if (MusEGui::toolShortcuts.contains(1 << i)) {
+            act->setShortcut(MusEGui::shortcuts[MusEGui::toolShortcuts[1 << i]].key);
+        }
+
+        act->setData(editTools & (1 << i));
+        act->setCheckable(true);
+        act->setChecked((1 << i) == tool);
+        if (!act0)
+            act0 = act;
+    }
+
+    r_menu->setActiveAction(act0);
+    return r_menu;
+}
+
+void Master::callContextMenu()
+{
+    QMenu * cm = toolContextMenu();
+    if (cm) {
+        QAction *act = cm->exec(QCursor::pos());
+        if (act && act->data().isValid()) {
+            int selTool = act->data().toInt();
+            static_cast<MasterEdit*>(editor)->setEditTool(selTool);
+        }
+        delete cm;
+    }
+}
+
 } // namespace MusEGui

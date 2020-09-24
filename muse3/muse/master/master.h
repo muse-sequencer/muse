@@ -75,6 +75,8 @@ class Master : public MusEGui::View {
       void deleteVal(int x1, int x2, MusECore::Undo& operations);
 
       void newValRamp(int x1, int y1, int x2, int y2, MusECore::Undo& operations);
+      QMenu* toolContextMenu();
+      void callContextMenu();
 
    protected:
       // Accumulated operations during drawing etc.
