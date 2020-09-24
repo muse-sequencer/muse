@@ -177,7 +177,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
   updateScoreMenus();
 
-  startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll..."), this);
+  startPianoEditAction = new QAction(*pianorollSVGIcon, tr("Pianoroll..."), this);
+//  startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll..."), this);
   startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums..."), this);
   startListEditAction = new QAction(QIcon(*edit_listIcon), tr("Event List..."), this);
   startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave..."), this);

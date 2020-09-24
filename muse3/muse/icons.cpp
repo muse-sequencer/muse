@@ -399,6 +399,7 @@ QIcon* ctrlSVGIcon;
 QIcon* sysexSVGIcon;
 QIcon* tracktypeSVGIcon;
 QIcon* mixerstripSVGIcon;
+QIcon* pianorollSVGIcon;
 
 // tool icons
 QIcon* pencilIconSVG;
@@ -757,6 +758,8 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
       filecloseSVGIcon   = icons.getSVG("fileclose.svg");
       appexitSVGIcon     = icons.getSVG("appexit.svg");
 
+      pianorollSVGIcon   = icons.getSVG("pianoroll.svg");
+
 
       // tool icons
       pencilIconSVG     = icons.getSVG("pencil.svg");
@@ -1074,6 +1077,7 @@ void deleteIcons()
       delete noscaleSVGIcon[1];
       delete noscaleSVGIcon[2];
 
+      delete pianorollSVGIcon;
 
     //----------------------------------
       // Cursors

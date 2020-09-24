@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <path d="m2 2h60v60h-60z" fill="#fff" stroke="#fff" stroke-width="1px"/>
+ <g fill="none" stroke="#000">
+  <path d="m41 31h21" stroke-width="1px"/>
+  <path d="m41 42h21" stroke-width="1px"/>
+  <path d="m2 21h60" stroke-width="1px"/>
+ </g>
+ <g stroke="#000">
+  <rect x="3" y="50.382" width="39" height="5.2367" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.633" style="paint-order:stroke fill markers"/>
+  <path d="m40 53h22" fill="none" stroke-width="1px"/>
+  <rect x="3" y="28.382" width="39" height="5.2367" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.633" style="paint-order:stroke fill markers"/>
+  <rect x="3" y="39.382" width="39" height="5.2367" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.633" style="paint-order:stroke fill markers"/>
+  <path d="m40 10h22" fill="none" stroke-width="1px"/>
+  <rect x="3" y="7.3816" width="39" height="5.2367" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.633" style="paint-order:stroke fill markers"/>
+ </g>
+ <path d="m2 2.0489 59.86-0.048859 0.41473 60-60.226-0.088668z" fill="none" stroke="#0a4" stroke-width="3"/>
+</svg>

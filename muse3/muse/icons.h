@@ -296,6 +296,8 @@ extern QIcon* pencilMoveVertIconSVG;
 extern QIcon* audioStretchIconSVG;
 extern QIcon* audioResampleIconSVG;
 
+extern QIcon* pianorollSVGIcon;
+
 extern QIcon* noscaleSVGIcon[3];
 
 //----------------------------------

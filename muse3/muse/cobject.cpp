@@ -723,7 +723,7 @@ QIcon TopWin::typeIcon(ToplevelType t)
 {
     switch (t)
     {
-    case PIANO_ROLL: return QIcon(*pianoIconSet);
+    case PIANO_ROLL: return QIcon(*pianorollSVGIcon);
     case DRUM: return QIcon(*edit_drummsIcon);
     case MASTER: return QIcon(*mastertrack_graphicIcon);
     case WAVE: return QIcon(*edit_waveIcon);
