@@ -55,6 +55,7 @@
 #include "tscale.h"
 #include "raster_widgets.h"
 #include "xml.h"
+#include "shortcuts.h"
 
 namespace MusEGui {
 
@@ -66,14 +67,16 @@ int MasterEdit::_rasterInit = 0;
 
 void MasterEdit::keyPressEvent(QKeyEvent* e)
 {
-    if (e->key() == Qt::Key_Escape) {
-          close();
-          return;
-          }
-    else {
+    if (e->key() == Qt::Key_Escape)
+        close();
+    else if (e->key() == shortcuts[SHRT_TOOL_PENCIL].key)
+        tools2->set(MusEGui::PencilTool);
+    else if (e->key() == shortcuts[SHRT_TOOL_RUBBER].key)
+        tools2->set(MusEGui::RubberTool);
+    else if (e->key() == shortcuts[SHRT_TOOL_LINEDRAW].key)
+        tools2->set(MusEGui::DrawTool);
+    else
         e->ignore();
-        return;
-    }
 }
 
 //---------------------------------------------------------
@@ -163,7 +166,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       addToolBarBreak();
 
       // Already has an object name.
-      MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
+      tools2 = new MusEGui::EditToolBar(this, MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
       addToolBar(tools2);
 
       QToolBar* info = addToolBar(tr("Info"));

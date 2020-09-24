@@ -44,6 +44,7 @@ class TempoLabel;
 class TScale;
 class Xml;
 class RasterLabelCombo;
+class EditToolBar;
 
 //---------------------------------------------------------
 //   MasterEdit
@@ -64,6 +65,7 @@ class MasterEdit : public MidiEditor {
       QToolBar* tools;
       MusEGui::PosLabel* cursorPos;
       MusEGui::TempoLabel* tempo;
+      MusEGui::EditToolBar* tools2;
       
       static int _rasterInit;
       
