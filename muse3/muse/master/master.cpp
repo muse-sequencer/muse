@@ -516,7 +516,7 @@ QMenu* Master::toolContextMenu()
     QMenu* r_menu = new QMenu(this);
     QAction* act0 = 0;
 
-    r_menu->addAction(new MenuTitleItem(tr("Tools:"), r_menu));
+    r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
 
     int editTools = static_cast<MasterEdit*>(editor)->getEditTools();
     for (unsigned i = 0; i < gNumberOfTools; ++i) {

@@ -2669,7 +2669,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     }
   }
 
-  menu->addAction(new MusEGui::MenuTitleItem(tr("Automation:"), menu));
+  menu->addAction(new MusEGui::MenuTitleItem(tr("Automation"), menu));
   
   QAction* prevEvent = menu->addAction(tr("Previous event"));
   prevEvent->setData(PREV_EVENT);
@@ -2924,7 +2924,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 
   QMenu* menu = new QMenu;
 
-  menu->addAction(new MusEGui::MenuTitleItem(tr("Controller:"), menu));
+  menu->addAction(new MusEGui::MenuTitleItem(tr("Controller"), menu));
   QAction* bypassEvent = new QAction(menu);
   menu->addAction(bypassEvent);
   bypassEvent->setText(tr("Bypass"));
@@ -2933,7 +2933,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
   bypassEvent->setCheckable(true);
   bypassEvent->setChecked(cur_val == CTRL_VAL_UNKNOWN);
 
-  menu->addAction(new MusEGui::MenuTitleItem(tr("Automation:"), menu));
+  menu->addAction(new MusEGui::MenuTitleItem(tr("Automation"), menu));
   
   QAction* addEvent = new QAction(menu);
   menu->addAction(addEvent);

@@ -1372,7 +1372,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
   if (ev->button() == Qt::RightButton) {
     QMenu* menu = new QMenu;
 
-    menu->addAction(new MenuTitleItem(tr("Configuration:"), menu));
+    menu->addAction(new MenuTitleItem(tr("Configuration"), menu));
 
     QAction* act = menu->addAction(tr("Prefer knobs, not sliders"));
     act->setData(int(2));
@@ -1407,7 +1407,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     }
     menu->addMenu(audioEffectsRackVisibleItemsMenu);
     
-    menu->addAction(new MenuTitleItem(tr("Actions:"), menu));
+    menu->addAction(new MenuTitleItem(tr("Actions"), menu));
 
     act = menu->addAction(tr("Change track name"));
     act->setData(int(1001));

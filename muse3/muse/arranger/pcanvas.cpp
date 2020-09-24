@@ -885,7 +885,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       QMenu* partPopup = new QMenu(this);
 
-      partPopup->addAction(new MenuTitleItem(tr("Part:"), partPopup));
+      partPopup->addAction(new MenuTitleItem(tr("Part"), partPopup));
 
       QAction *act_cut = partPopup->addAction(*editcutIconSet, tr("C&ut"));
       act_cut->setData(OP_CUT);
@@ -1183,7 +1183,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                       {
                         QMenu *automationMenu = new QMenu(this);
                         QAction* act;
-                        automationMenu->addAction(new MenuTitleItem(tr("Automation:"), automationMenu));
+                        automationMenu->addAction(new MenuTitleItem(tr("Automation"), automationMenu));
                         act = automationMenu->addAction(tr("Remove selected"));
                         act->setData(0);
                         genCanvasPopup(automationMenu);
