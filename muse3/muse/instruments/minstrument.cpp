@@ -1156,7 +1156,7 @@ void MidiInstrument::populateInstrPopup(MusEGui::PopupMenu* menu, int port, bool
       act->setData(100);
       menu->addSeparator();
 
-      menu->addAction(new MusEGui::MenuTitleItem(QObject::tr("Instruments:"), menu));
+      menu->addAction(new MusEGui::MenuTitleItem(QObject::tr("Instruments"), menu));
       menu->addSeparator();
 
       if(md && md->isSynti())

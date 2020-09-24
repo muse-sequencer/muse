@@ -44,6 +44,7 @@ class TempoLabel;
 class TScale;
 class Xml;
 class RasterLabelCombo;
+class EditToolBar;
 
 //---------------------------------------------------------
 //   MasterEdit
@@ -64,6 +65,8 @@ class MasterEdit : public MidiEditor {
       QToolBar* tools;
       MusEGui::PosLabel* cursorPos;
       MusEGui::TempoLabel* tempo;
+      MusEGui::EditToolBar* tools2;
+      int editTools;
       
       static int _rasterInit;
       
@@ -97,6 +100,8 @@ class MasterEdit : public MidiEditor {
       static void writeConfiguration(int, MusECore::Xml&);
       // Same as setRaster() but returns the actual value used.
       int changeRaster(int val);
+      void setEditTool(int tool);
+      int getEditTools() { return editTools; };
       };
 
 } // namespace MusEGui

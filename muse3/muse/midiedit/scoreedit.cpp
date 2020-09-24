@@ -5032,7 +5032,7 @@ QMenu* ScoreCanvas::toolContextMenu()
     QMenu* r_menu = new QMenu(this);
     QAction* act0 = 0;
 
-    r_menu->addAction(new MenuTitleItem(tr("Tools:"), r_menu));
+    r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
 
     for (unsigned i = 0; i < gNumberOfTools; ++i) {
         if ((scoreTools & (1 << i)) == 0)

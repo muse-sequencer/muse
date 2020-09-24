@@ -21,8 +21,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-include(${PROJECT_SOURCE_DIR}/pch.txt)
-
 include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}
       )

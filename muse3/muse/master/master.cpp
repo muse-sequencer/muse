@@ -33,6 +33,7 @@
 #include <QPair>
 #include <QRect>
 #include <QToolBar>
+#include <QMenu>
 
 #include "globals.h"
 #include "master.h"
@@ -43,6 +44,9 @@
 #include "icons.h"
 #include "audio.h"
 #include "gconfig.h"
+#include "shortcuts.h"
+#include "menutitleitem.h"
+#include "masteredit.h"
 
 namespace MusEGui {
 
@@ -60,8 +64,8 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       pos[1]  = MusEGlobal::song->lpos();
       pos[2]  = MusEGlobal::song->rpos();
       drag = DRAG_OFF;
-      tool = MusEGui::PointerTool; // should be overridden soon anyway, but to be sure...
-      setFocusPolicy(Qt::StrongFocus);  
+      setTool(MusEGui::PencilTool);
+      setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
@@ -192,11 +196,8 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 
             if (tempo < 0)
                   tempo = 0;
-            if (tempo < wh) {
-                p.setCompositionMode(QPainter::CompositionMode_Multiply);
+            if (tempo < wh)
                 p.fillRect(stick, tempo, etick-stick, wh, graph_fg_color);
-                p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-                  }
             }
 
       //---------------------------------------------------
@@ -303,59 +304,60 @@ void Master::newValRamp(int x1, int y1, int x2, int y2, MusECore::Undo& operatio
 //---------------------------------------------------------
 
 void Master::viewMousePressEvent(QMouseEvent* event)
-      {
-      start = event->pos();
-      int xpos = start.x();
-      int ypos = start.y();
+{
+    if (event->button() == Qt::RightButton) {
+        callContextMenu();
+        return;
+    }
 
-      _operations.clear();
+    start = event->pos();
+    int xpos = start.x();
+    int ypos = start.y();
 
-      MusEGui::Tool activeTool = tool;
+    _operations.clear();
 
-      switch (activeTool) {
-            case MusEGui::PointerTool:
-                  drag = DRAG_LASSO_START;
-                  break;
+    MusEGui::Tool activeTool = tool;
 
-            case MusEGui::PencilTool:
-                  drag = DRAG_NEW;
-                  MusEGlobal::song->startUndo();
-                  newVal(start.x(), start.x(), start.y(), _operations);
-                  break;
+    switch (activeTool) {
+    case MusEGui::PencilTool:
+        drag = DRAG_NEW;
+        MusEGlobal::song->startUndo();
+        newVal(start.x(), start.x(), start.y(), _operations);
+        break;
 
-            case MusEGui::RubberTool:
-                  drag = DRAG_DELETE;
-                  MusEGlobal::song->startUndo();
-                  deleteVal(start.x(), start.x(), _operations);
-                  break;
+    case MusEGui::RubberTool:
+        drag = DRAG_DELETE;
+        MusEGlobal::song->startUndo();
+        deleteVal(start.x(), start.x(), _operations);
+        break;
 
-            case MusEGui::DrawTool:
-                  if (drawLineMode) {
-                        line2x = xpos;
-                        line2y = ypos;
-                        newValRamp(line1x, line1y, line2x, line2y, _operations);
-                        // Operation is undoable.
-                        MusEGlobal::song->applyOperationGroup(_operations);
-                        _operations.clear();
-                        drawLineMode = false;
-                        }
-                  else {
-                        line2x = line1x = xpos;
-                        line2y = line1y = ypos;
-                        drawLineMode = true;
-                        }
-                  redraw();
-                  return;
+    case MusEGui::DrawTool:
+        if (drawLineMode) {
+            line2x = xpos;
+            line2y = ypos;
+            newValRamp(line1x, line1y, line2x, line2y, _operations);
+            // Operation is undoable.
+            MusEGlobal::song->applyOperationGroup(_operations);
+            _operations.clear();
+            drawLineMode = false;
+        }
+        else {
+            line2x = line1x = xpos;
+            line2y = line1y = ypos;
+            drawLineMode = true;
+        }
+        redraw();
+        return;
 
-                  break;
-            default:
-                  break;
-            }
+        break;
+    default:
+        break;
+    }
 
-      // Operation is undoable but do not start/end undo.
-      MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
-      redraw();
-      }
+    // Operation is undoable but do not start/end undo.
+    MusEGlobal::song->applyOperationGroup(_operations, MusECore::Song::OperationUndoable);
+    redraw();
+}
 
 //---------------------------------------------------------
 //   viewMouseMoveEvent
@@ -508,4 +510,46 @@ void Master::newVal(int x1, int x2, int y, MusECore::Undo& operations)
                     xx1, int(60000000000.0/(280000 - y))));
       redraw();
       }
+
+QMenu* Master::toolContextMenu()
+{
+    QMenu* r_menu = new QMenu(this);
+    QAction* act0 = 0;
+
+    r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
+
+    int editTools = static_cast<MasterEdit*>(editor)->getEditTools();
+    for (unsigned i = 0; i < gNumberOfTools; ++i) {
+        if ((editTools & (1 << i)) == 0)
+            continue;
+        QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
+
+        if (MusEGui::toolShortcuts.contains(1 << i)) {
+            act->setShortcut(MusEGui::shortcuts[MusEGui::toolShortcuts[1 << i]].key);
+        }
+
+        act->setData(editTools & (1 << i));
+        act->setCheckable(true);
+        act->setChecked((1 << i) == tool);
+        if (!act0)
+            act0 = act;
+    }
+
+    r_menu->setActiveAction(act0);
+    return r_menu;
+}
+
+void Master::callContextMenu()
+{
+    QMenu * cm = toolContextMenu();
+    if (cm) {
+        QAction *act = cm->exec(QCursor::pos());
+        if (act && act->data().isValid()) {
+            int selTool = act->data().toInt();
+            static_cast<MasterEdit*>(editor)->setEditTool(selTool);
+        }
+        delete cm;
+    }
+}
+
 } // namespace MusEGui

@@ -27,8 +27,6 @@ add_subdirectory(zita_resampler)
 add_subdirectory(rubberband)
 
 
-include(${PROJECT_SOURCE_DIR}/pch.txt)
-
 ##
 ## List of source files to compile
 ##

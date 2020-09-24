@@ -1093,7 +1093,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 
                 if (!mapALSA.empty())
                 {
-                  pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
+                  pup->addAction(new MusEGui::MenuTitleItem("ALSA", pup));
 
                   for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i)
                   {
@@ -1113,7 +1113,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 
                 if (!mapJACK.empty())
                 {
-                  pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
+                  pup->addAction(new MusEGui::MenuTitleItem("JACK", pup));
 
                   for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i)
                   {
@@ -1133,7 +1133,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
                 
                 if (!mapSYNTH.empty())
                 {
-                  pup->addAction(new MusEGui::MenuTitleItem("Synth:", pup));
+                  pup->addAction(new MusEGui::MenuTitleItem("Synth", pup));
 
                   for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i)
                   {

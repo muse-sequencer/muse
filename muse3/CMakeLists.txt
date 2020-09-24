@@ -675,8 +675,6 @@ include_directories(
    ${PROJECT_BINARY_DIR}/muse/ctrl
    )
 
-# include (pch.txt)
-
 #
 # If the cmake version includes cpack, use it
 #
