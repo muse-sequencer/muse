@@ -192,11 +192,8 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 
             if (tempo < 0)
                   tempo = 0;
-            if (tempo < wh) {
-                p.setCompositionMode(QPainter::CompositionMode_Multiply);
+            if (tempo < wh)
                 p.fillRect(stick, tempo, etick-stick, wh, graph_fg_color);
-                p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-                  }
             }
 
       //---------------------------------------------------
