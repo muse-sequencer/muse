@@ -60,8 +60,8 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       pos[1]  = MusEGlobal::song->lpos();
       pos[2]  = MusEGlobal::song->rpos();
       drag = DRAG_OFF;
-      tool = MusEGui::PointerTool; // should be overridden soon anyway, but to be sure...
-      setFocusPolicy(Qt::StrongFocus);  
+      setTool(MusEGui::PencilTool);
+      setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
@@ -310,9 +310,9 @@ void Master::viewMousePressEvent(QMouseEvent* event)
       MusEGui::Tool activeTool = tool;
 
       switch (activeTool) {
-            case MusEGui::PointerTool:
-                  drag = DRAG_LASSO_START;
-                  break;
+//            case MusEGui::PointerTool: // not used/implemented
+//                  drag = DRAG_LASSO_START;
+//                  break;
 
             case MusEGui::PencilTool:
                   drag = DRAG_NEW;

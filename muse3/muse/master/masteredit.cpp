@@ -163,7 +163,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       addToolBarBreak();
 
       // Already has an object name.
-      MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
+      MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PencilTool | MusEGui::RubberTool| MusEGui::DrawTool);
       addToolBar(tools2);
 
       QToolBar* info = addToolBar(tr("Info"));
