@@ -21,8 +21,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-include(${PROJECT_SOURCE_DIR}/pch.txt)
-
 QT5_WRAP_CPP ( simpler_plugingui_mocs
       simpler_plugingui.h
       )
