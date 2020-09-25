@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <path d="m2 2h60v60h-60z" fill="#fff" stroke="#fff" stroke-width="1px"/>
+ <path d="m3.3255 3.3667 57.227-0.04671 0.39649 57.36-57.577-0.084767z" fill="#fff6d5" stroke="#2ca05a" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+ <g stroke="#000" stroke-linecap="square">
+  <rect x="18" y="28" width="35" height="7.3443" fill="#d14e00" stroke-width="1.6568" style="paint-order:stroke fill markers"/>
+  <rect x="11" y="12" width="35" height="7.3443" fill="#982a98" stroke-width="1.4092" style="paint-order:stroke fill markers"/>
+  <rect x="11" y="43.592" width="35" height="7.3443" fill="#0057d6" stroke-width="1.5088" style="paint-order:stroke fill markers"/>
+ </g>
+</svg>

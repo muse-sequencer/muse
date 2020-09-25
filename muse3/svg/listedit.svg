@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <path d="m60.633 3.3255 0.04671 57.227-57.36 0.39649 0.084767-57.577z" fill="#fff6d5" stroke="#2ca05a" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+ </g>
+ <g fill="none" stroke="#333" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m10 20h25" stroke-width="2.0937"/>
+  <path d="m42.5 20h10" stroke-width="2"/>
+  <path d="m10 27.5h25" stroke-width="2.0937"/>
+  <path d="m42.5 27.5h10" stroke-width="2"/>
+  <path d="m10 35h25" stroke-width="2.0937"/>
+  <path d="m42.5 35h10" stroke-width="2"/>
+  <path d="m10 42.5h25" stroke-width="2.0937"/>
+  <path d="m42.5 42.5h10" stroke-width="2"/>
+  <path d="m10 50h25" stroke-width="2.0937"/>
+  <path d="m42.5 50h10" stroke-width="2"/>
+  <path d="m10 12.5h25" stroke-width="2.0937"/>
+  <path d="m42.5 12.5h10" stroke-width="2"/>
+ </g>
+</svg>

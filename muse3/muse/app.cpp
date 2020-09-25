@@ -593,7 +593,7 @@ MusE::MusE() : QMainWindow()
 
       quitAction = new QAction(*MusEGui::appexitSVGIcon, tr("&Quit"), this);
 
-      editSongInfoAction = new QAction(QIcon(*MusEGui::edit_listIcon), tr("Song Info..."), this);
+      editSongInfoAction = new QAction(*MusEGui::listeditSVGIcon, tr("Song Info..."), this);
 
       //-------- View Actions
       viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel"), this);
@@ -618,7 +618,7 @@ MusE::MusE() : QMainWindow()
 
 //      QMenu* master = new QMenu(tr("Mastertrack"), this);
 //      master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Mastertrack Graphic..."), this);
+      masterGraphicAction = new QAction(QIcon(*mastereditSVGIcon),tr("Mastertrack Graphic..."), this);
       masterListAction = masterListDock->toggleViewAction();
 //      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List..."), this);
 //      master->addAction(masterGraphicAction);

@@ -216,7 +216,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NEXT_PART); } );
 
       menuEdit->addSeparator();
-      startListEditAction = menuEdit->addAction(QIcon(*edit_listIcon), tr("Event List..."));
+      startListEditAction = menuEdit->addAction(*listeditSVGIcon, tr("Event List..."));
       connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
 
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));

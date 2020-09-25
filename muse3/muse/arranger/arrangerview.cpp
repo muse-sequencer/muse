@@ -165,12 +165,12 @@ ArrangerView::ArrangerView(QWidget* parent)
   
 	
   scoreSubmenu = new QMenu(tr("Score"), this);
-  scoreSubmenu->setIcon(QIcon(*scoreIconSet));
+  scoreSubmenu->setIcon(QIcon(*scoreeditSVGIcon));
 
   scoreAllInOneSubsubmenu = new QMenu(tr("All Tracks in One Staff"), this);
   scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("One Staff per Track"), this);
 
-  startScoreEditAction = new QAction(*scoreIconSet, tr("New Score Window..."), this);
+  startScoreEditAction = new QAction(*scoreeditSVGIcon, tr("New Score Window..."), this);
   scoreSubmenu->addAction(startScoreEditAction);
   
   scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
@@ -178,10 +178,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   updateScoreMenus();
 
   startPianoEditAction = new QAction(*pianorollSVGIcon, tr("Pianoroll..."), this);
-//  startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll..."), this);
-  startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums..."), this);
-  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("Event List..."), this);
-  startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave..."), this);
+  startDrumEditAction = new QAction(*drumeditSVGIcon, tr("Drums..."), this);
+  startListEditAction = new QAction(*listeditSVGIcon, tr("Event List..."), this);
+  startWaveEditAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
 
   openCurrentTrackSynthGuiAction =  new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open Synth Plugin GUI..."), this);
 

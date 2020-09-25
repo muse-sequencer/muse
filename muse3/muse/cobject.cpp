@@ -76,8 +76,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     //setDockNestingEnabled(true); // Allow multiple rows.	Tim.
     setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
-    if (_type != ARRANGER)
-       setWindowIcon(typeIcon(_type));
+    setWindowIcon(typeIcon(_type));
 
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -395,11 +394,11 @@ void TopWin::createMdiWrapper()
     {
         mdisubwin = new QMdiSubWindow();
         mdisubwin->setWidget(this);
+        mdisubwin->setWindowIcon(typeIcon(_type));
 
         if (_type == ARRANGER) {
             mdisubwin->setWindowFlags(Qt::CustomizeWindowHint);
         } else {
-            mdisubwin->setWindowIcon(typeIcon(_type));
             mdisubwin->setAttribute(Qt::WA_DeleteOnClose);
             mdisubwin->setWindowFlags(Qt::CustomizeWindowHint
                                       | Qt::WindowCloseButtonHint);
@@ -723,11 +722,12 @@ QIcon TopWin::typeIcon(ToplevelType t)
 {
     switch (t)
     {
+    case ARRANGER: return QIcon(*arrangerSVGIcon);
     case PIANO_ROLL: return QIcon(*pianorollSVGIcon);
-    case DRUM: return QIcon(*edit_drummsIcon);
-    case MASTER: return QIcon(*mastertrack_graphicIcon);
-    case WAVE: return QIcon(*edit_waveIcon);
-    case SCORE: return QIcon(*scoreIconSet);
+    case DRUM: return QIcon(*drumeditSVGIcon);
+    case MASTER: return QIcon(*mastereditSVGIcon);
+    case WAVE: return QIcon(*waveeditorSVGIcon);
+    case SCORE: return QIcon(*scoreeditSVGIcon);
     default: return QIcon();
     }
 }
