@@ -947,11 +947,11 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   }
                   break;
             case MusECore::Track::WAVE: {
-                  QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("Wave edit"));
+                  QAction *act_wedit = partPopup->addAction(*waveeditorSVGIcon, tr("Wave edit..."));
                   act_wedit->setData(OP_WAVEEDIT);
-                  QAction *act_wexport = partPopup->addAction(tr("Save part to disk"));
+                  QAction *act_wexport = partPopup->addAction(tr("Save part to disk..."));
                   act_wexport->setData(OP_SAVEPARTTODISK);
-                  QAction *act_wfinfo = partPopup->addAction(tr("File info"));
+                  QAction *act_wfinfo = partPopup->addAction(tr("File info..."));
                   act_wfinfo->setData(OP_FILEINFO);
                   QAction *act_wfnorm = partPopup->addAction(tr("Normalize"));
                   act_wfnorm->setData(OP_NORMALIZE);

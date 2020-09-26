@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <rect x="2" y="2" width="60" height="59" fill="#fff" stop-color="#000000" style="font-variation-settings:normal;paint-order:stroke fill markers"/>
+ <g>
+  <path d="m61.951 1.9502 0.048935 59.952-60.092 0.41538 0.088804-60.319z" fill="none" stroke="#000" stroke-linecap="round" stroke-width="3.1429"/>
+  <g fill="#4d4d4d" stroke="#808080" stroke-width="1px">
+   <path d="m62.146 14.646h-60"/>
+   <path d="m61.146 32.146h-59"/>
+   <path d="m61.146 49.646h-58"/>
+   <path d="m48 62-1e-6 -60"/>
+   <path d="m32 60.793v-59"/>
+   <path d="m16 61v-58"/>
+  </g>
+ </g>
+ <g>
+  <rect transform="rotate(45)" x="16.249" y="-6.3787" width="10.621" height="10.621" fill="#0055d4" stop-color="#000000" style="font-variation-settings:normal;paint-order:stroke fill markers"/>
+  <rect transform="rotate(45)" x="38.891" y="-28.991" width="10.621" height="10.621" fill="#d45500" style="paint-order:stroke fill markers"/>
+  <rect transform="rotate(45)" x="41.012" y="18.385" width="10.621" height="10.621" fill="#d45500" style="paint-order:stroke fill markers"/>
+  <rect transform="rotate(45)" x="51.619" y="-16.263" width="10.621" height="10.621" fill="#0055d4" style="paint-order:stroke fill markers"/>
+ </g>
+ <g>
+  <path d="m62 1.9501 0.048939 59.958-60.098 0.41542 0.088813-60.326z" fill="none" stroke="#000" stroke-linecap="round" stroke-width="3.1432"/>
+ </g>
+</svg>

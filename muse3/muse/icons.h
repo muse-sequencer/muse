@@ -59,8 +59,6 @@ extern QPixmap* flagIcon;
 extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
 
-extern QIcon* pianoIconSet;
-extern QIcon* scoreIconSet;
 extern QIcon* editcutIconSet;
 extern QIcon* editcopyIconSet;
 extern QIcon* editpasteIconSet;
@@ -108,14 +106,8 @@ extern QPixmap* addtrack_auxsendIcon;
 extern QPixmap* addtrack_drumtrackIcon;
 extern QPixmap* addtrack_newDrumtrackIcon;
 extern QPixmap* addtrack_wavetrackIcon;
-extern QPixmap* edit_drummsIcon;
-extern QPixmap* edit_listIcon;
-extern QPixmap* edit_waveIcon;
-extern QPixmap* edit_mastertrackIcon;
 extern QPixmap* edit_track_addIcon;
 extern QPixmap* edit_track_delIcon;
-extern QPixmap* mastertrack_graphicIcon;
-extern QPixmap* mastertrack_listIcon;
 extern QPixmap* midi_transformIcon;
 extern QPixmap* selectIcon;
 extern QPixmap* select_allIcon;
@@ -295,6 +287,14 @@ extern QIcon* pencilMoveHorizIconSVG;
 extern QIcon* pencilMoveVertIconSVG;
 extern QIcon* audioStretchIconSVG;
 extern QIcon* audioResampleIconSVG;
+
+extern QIcon* pianorollSVGIcon;
+extern QIcon* arrangerSVGIcon;
+extern QIcon* waveeditorSVGIcon;
+extern QIcon* scoreeditSVGIcon;
+extern QIcon* mastereditSVGIcon;
+extern QIcon* drumeditSVGIcon;
+extern QIcon* listeditSVGIcon;
 
 extern QIcon* noscaleSVGIcon[3];
 

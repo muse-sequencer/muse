@@ -272,7 +272,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(nextAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NEXT_PART); } );
 
       menuEdit->addSeparator();
-      startListEditAction = menuEdit->addAction(QIcon(*edit_listIcon), tr("Event List..."));
+      startListEditAction = menuEdit->addAction(*listeditSVGIcon, tr("Event List..."));
       connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
 
       // Functions

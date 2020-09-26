@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <rect x="3" y="1.9821" width="58" height="59.036" fill="#fffaeb" style="paint-order:stroke fill markers"/>
+ <g>
+  <path d="m5 31h54" fill="#00f" stroke="#80a" stroke-width="2"/>
+  <path d="m8 49c1.7147-5.9279 3.3536-11.594 5.1298-17.684s3.5321-12.065 6.3122-15.191c2.7801-3.1262 6.3368-3.1262 9.2124 3.1336 2.8756 6.2597 4.8161 18.223 8.0309 24.482s7.4181 6.2586 10.885 0.16911c3.4672-6.0895 5.892-17.729 8.4294-29.91" fill="none" stroke="#800000" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+  <path d="m62 1.9501 0.048939 59.958-60.098 0.41542 0.088813-60.326z" fill="none" stroke="#000" stroke-linecap="round" stroke-width="3.1432"/>
+ </g>
+</svg>

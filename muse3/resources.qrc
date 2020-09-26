@@ -124,5 +124,12 @@
         <file>xpm/newdirectory-128.png</file>
         <file>xpm/right-128.png</file>
         <file>xpm/up-128.png</file>
+        <file>svg/pianoroll.svg</file>
+        <file>svg/arranger.svg</file>
+        <file>svg/waveeditor.svg</file>
+        <file>svg/drumedit.svg</file>
+        <file>svg/masteredit.svg</file>
+        <file>svg/scoreedit.svg</file>
+        <file>svg/listedit.svg</file>
     </qresource>
 </RCC>
