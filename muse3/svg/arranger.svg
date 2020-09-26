@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
- <path d="m2 2h60v60h-60z" fill="#fff" stroke="#fff" stroke-width="1px"/>
- <path d="m3.3255 3.3667 57.227-0.04671 0.39649 57.36-57.577-0.084767z" fill="#fff6d5" stroke="#2ca05a" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
  <g stroke="#000" stroke-linecap="square">
-  <rect x="18" y="28" width="35" height="7.3443" fill="#d14e00" stroke-width="1.6568" style="paint-order:stroke fill markers"/>
-  <rect x="11" y="12" width="35" height="7.3443" fill="#982a98" stroke-width="1.4092" style="paint-order:stroke fill markers"/>
-  <rect x="11" y="43.592" width="35" height="7.3443" fill="#0057d6" stroke-width="1.5088" style="paint-order:stroke fill markers"/>
+  <rect x="2.0034" y="2" width="57.331" height="14.143" fill="#c44900" stroke-width="2.5028" style="paint-order:stroke fill markers"/>
+  <rect x="1.8999" y="48.286" width="42.043" height="14.143" fill="#c83771" stroke-width="2.2948" style="paint-order:stroke fill markers"/>
+  <rect x="1.9671" y="17.429" width="47.139" height="14.143" fill="#22aed1" stroke-width="2.4298" style="paint-order:stroke fill markers"/>
+  <rect x="2.1208" y="32.857" width="59.879" height="14.143" fill="#d4aa00" stroke-width="2.7386" style="paint-order:stroke fill markers"/>
  </g>
 </svg>
