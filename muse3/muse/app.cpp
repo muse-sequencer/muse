@@ -2278,22 +2278,88 @@ void MusE::startScoreQuickly()
 //---------------------------------------------------------
 
 void MusE::startPianoroll()
-      {
-      MusECore::PartList* pl = getMidiPartsToEdit();
-      if (pl == 0)
-            return;
-      startPianoroll(pl, true);
-      }
+{
+    MusECore::PartList* pl = getMidiPartsToEdit();
+    if (pl == 0)
+        return;
+
+    if (!filterInvalidParts(TopWin::PIANO_ROLL, pl))
+        return;
+
+    startPianoroll(pl, true);
+}
 
 void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
-      {
-      MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
-      toplevels.push_back(pianoroll);
-//      pianoroll->show(); // should be redundant, done in ctor
-      connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+{
+    if (!filterInvalidParts(TopWin::PIANO_ROLL, pl))
+        return;
+
+    if (findOpenEditor(TopWin::PIANO_ROLL, pl))
+        return;
+
+    MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
+    toplevels.push_back(pianoroll);
+    //      pianoroll->show(); // should be redundant, done in ctor
+    connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+    updateWindowMenu();
+}
+
+
+bool MusE::filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartList* pl) {
+
+    for (auto it = pl->begin(); it != pl->end(); ) {
+        if ((it->second->track()->type() == MusECore::Track::MIDI && type == TopWin::PIANO_ROLL)
+                || (it->second->track()->type() == MusECore::Track::DRUM && type == TopWin::DRUM))
+            it++;
+        else
+            it = pl->erase(it);
+    }
+
+    if (pl->empty()) {
+          QMessageBox::critical(this, QString("MusE"), tr("No valid parts selected"));
+          return false;
+    }
+
+    return true;
+}
+
+bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl) {
+
+    for (const auto& it : toplevels) {
+        if (it->type() != type)
+            continue;
+
+        const MusECore::PartList* pl_tmp = static_cast<MusEGui::PianoRoll*>(it)->parts();
+
+        if (pl_tmp->size() != pl->size())
+            continue;
+
+        bool found = false;
+        for (const auto& it_pl : *pl) {
+            for (const auto& it_pl_tmp : *pl_tmp) {
+                if (it_pl.second->sn() == it_pl_tmp.second->sn()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                break;
+        }
+
+        if (!found)
+            continue;
+
+        if (it->isMdiWin())
+            mdiArea->setActiveSubWindow(it->getMdiWin());
+        else
+            it->activateWindow();
+
+        return true;
+    }
+
+    return false;
+}
 
 //---------------------------------------------------------
 //   startListenEditor
@@ -2302,13 +2368,17 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
 void MusE::startListEditor()
       {
       MusECore::PartList* pl = getMidiPartsToEdit();
-      if (pl == nullptr)
+      if (pl == 0)
             return;
       startListEditor(pl);
       }
 
 void MusE::startListEditor(MusECore::PartList* pl)
 {
+    pl->erase(++pl->begin(), pl->end());
+
+    if (findOpenListEditor(pl))
+        return;
 
     QDockWidget* dock = new QDockWidget("List Editor", this);
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
@@ -2333,6 +2403,24 @@ void MusE::startListEditor(MusECore::PartList* pl)
     dock->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+}
+
+bool MusE::findOpenListEditor(MusECore::PartList* pl) {
+
+    for (const auto& d : findChildren<QDockWidget*>()) {
+        if (strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") != 0)
+            continue;
+
+        const MusECore::PartList* pl_tmp = static_cast<MusEGui::ListEdit*>(d->widget())->parts();
+
+        if (pl->begin()->second->sn() != pl_tmp->begin()->second->sn())
+            continue;
+
+        d->raise();
+        return true;
+    }
+
+    return false;
 }
 
 //---------------------------------------------------------
@@ -2368,46 +2456,59 @@ void MusE::showMasterList(bool show)
 //---------------------------------------------------------
 
 void MusE::startDrumEditor()
-      {
-      MusECore::PartList* pl = getMidiPartsToEdit();
-      if (pl == 0)
-            return;
-      startDrumEditor(pl, true);
-      }
+{
+    MusECore::PartList* pl = getMidiPartsToEdit();
+    if (pl == 0)
+        return;
+
+    if (!filterInvalidParts(TopWin::DRUM, pl))
+        return;
+
+    startDrumEditor(pl, true);
+}
 
 void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls)
-      {
-      MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, 0, _arranger->cursorValue(), showDefaultCtrls);
-      toplevels.push_back(drumEditor);
-      drumEditor->show();
-      connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+{
+    if (!filterInvalidParts(TopWin::DRUM, pl))
+        return;
+
+    if (findOpenEditor(TopWin::DRUM, pl))
+        return;
+
+    MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, 0, _arranger->cursorValue(), showDefaultCtrls);
+    toplevels.push_back(drumEditor);
+//    drumEditor->show();
+    connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+    updateWindowMenu();
+}
 
 //---------------------------------------------------------
 //   startWaveEditor
 //---------------------------------------------------------
 
 void MusE::startWaveEditor()
-      {
-      MusECore::PartList* pl = MusECore::getSelectedWaveParts();
-      if (pl->empty()) {
-            QMessageBox::critical(this, QString("MusE"), tr("Nothing to edit"));
-            return;
-            }
-      startWaveEditor(pl);
-      }
+{
+    MusECore::PartList* pl = MusECore::getSelectedWaveParts();
+    if (pl->empty()) {
+        QMessageBox::critical(this, QString("MusE"), tr("Nothing to edit"));
+        return;
+    }
+    startWaveEditor(pl);
+}
 
 void MusE::startWaveEditor(MusECore::PartList* pl)
-      {
-      MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
-      waveEditor->show();
-      toplevels.push_back(waveEditor);
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
-      connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      updateWindowMenu();
-      }
+{
+    if (findOpenEditor(TopWin::WAVE, pl))
+        return;
+
+    MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
+//    waveEditor->show();
+    toplevels.push_back(waveEditor);
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
+    connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    updateWindowMenu();
+}
 
 
 //---------------------------------------------------------

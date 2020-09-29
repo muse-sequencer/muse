@@ -93,6 +93,8 @@ class ListEdit : public QWidget {
    public:
       ListEdit(MusECore::PartList*, QWidget* parent = 0);
       ~ListEdit();
+      MusECore::PartList* parts()            { return _pl;  }
+      const MusECore::PartList* parts() const { return _pl;  }
       };
 
 } // namespace MusEGui
