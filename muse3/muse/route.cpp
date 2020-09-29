@@ -736,7 +736,7 @@ void removeAllRoutes(Route src, Route dst)
 
 static QString track2name(const Track* n)
       {
-      if (n == 0)
+      if (n == nullptr)
             return QWidget::tr("None");
       return n->name();
       }
@@ -745,28 +745,32 @@ static QString track2name(const Track* n)
 //   icon
 //---------------------------------------------------------
 
+
 QPixmap* Route::icon(bool isSource, bool isMidi) const
 {
-  switch(type)
-  {
+    // temporary hack until all icons are SVG
+    static QPixmap* ankerIcon = new QPixmap(MusEGui::ankerSVGIcon->pixmap(QSize(18, 18)));
+
+    switch(type)
+    {
     case TRACK_ROUTE:
-      if(track)
-        return track->icon();
-    break;  
-    
+        if(track)
+            return track->icon();
+        break;
+
     case JACK_ROUTE:
-      if(isMidi)
-        return isSource ? MusEGui::routesMidiInIcon : MusEGui::routesMidiOutIcon;
-      else
-        return isSource ? MusEGui::routesInIcon : MusEGui::routesOutIcon;
-      
+        if(isMidi)
+            return isSource ? MusEGui::routesMidiInIcon : MusEGui::routesMidiOutIcon;
+        else
+            return isSource ? MusEGui::routesInIcon : MusEGui::routesOutIcon;
+
     case MIDI_DEVICE_ROUTE:
-    break;
-    
+        break;
+
     case MIDI_PORT_ROUTE:
-      return MusEGui::settings_midiport_softsynthsIcon;
-  }
-  return 0;
+        return ankerIcon;
+    }
+    return nullptr;
 }
       
 //---------------------------------------------------------

@@ -829,8 +829,8 @@ namespace MusEGui {
 QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
       {
       QMenu* p = new QMenu(parent);
-      QMenu* subp = 0;
-      QAction *act = 0;
+      QMenu* subp = nullptr;
+      QAction *act = nullptr;
       QString name;
       const int openConfigId = MusECore::MIDI_PORTS;
       const int defaultId    = MusECore::MIDI_PORTS + 1;
@@ -850,7 +850,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
         act->setData(-1);
         p->addSeparator();
       }
-      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
+      act = p->addAction(QIcon(*MusEGui::ankerSVGIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
       act->setCheckable(false);
       act->setData(openConfigId);  
       p->addSeparator();

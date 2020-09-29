@@ -3478,7 +3478,7 @@ void RoutePopupMenu::prepare()
           act->setCheckable(false);
           act->setData(-1);
         }
-        act = addAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open midi config..."));
+        act = addAction(QIcon(*ankerSVGIcon), tr("Open midi config..."));
         act->setCheckable(false);
         act->setData(_OPEN_MIDI_CONFIG_);
       }
