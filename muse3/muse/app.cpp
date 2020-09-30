@@ -2333,7 +2333,10 @@ bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* p
         if (it->type() != type)
             continue;
 
-        MusEGui::MidiEditor* med = static_cast<MusEGui::MidiEditor*>(it);
+        MusEGui::MidiEditor* med = dynamic_cast<MusEGui::MidiEditor*>(it);
+        if (med == nullptr)
+            return false;
+
         const MusECore::PartList* pl_tmp = med->parts();
 
         if (pl_tmp->size() != pl->size())
@@ -2426,9 +2429,9 @@ bool MusE::findOpenListEditor(MusECore::PartList* pl) {
             continue;
 
         if (!d->isVisible())
-            toggleDocks(true);
-//            d->show();
+            toggleDocksAction->setChecked(true);
         d->raise();
+
         return true;
     }
 
