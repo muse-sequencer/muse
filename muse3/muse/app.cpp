@@ -2326,11 +2326,15 @@ bool MusE::filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartLis
 
 bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl) {
 
+    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+        return false;
+
     for (const auto& it : toplevels) {
         if (it->type() != type)
             continue;
 
-        const MusECore::PartList* pl_tmp = static_cast<MusEGui::PianoRoll*>(it)->parts();
+        MusEGui::MidiEditor* med = static_cast<MusEGui::MidiEditor*>(it);
+        const MusECore::PartList* pl_tmp = med->parts();
 
         if (pl_tmp->size() != pl->size())
             continue;
@@ -2349,6 +2353,8 @@ bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* p
 
         if (!found)
             continue;
+
+        med->setHScrollOffset(_arranger->cursorValue());
 
         if (it->isMdiWin())
             mdiArea->setActiveSubWindow(it->getMdiWin());
@@ -2407,6 +2413,9 @@ void MusE::startListEditor(MusECore::PartList* pl)
 
 bool MusE::findOpenListEditor(MusECore::PartList* pl) {
 
+    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+        return false;
+
     for (const auto& d : findChildren<QDockWidget*>()) {
         if (strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") != 0)
             continue;
@@ -2416,6 +2425,9 @@ bool MusE::findOpenListEditor(MusECore::PartList* pl) {
         if (pl->begin()->second->sn() != pl_tmp->begin()->second->sn())
             continue;
 
+        if (!d->isVisible())
+            toggleDocks(true);
+//            d->show();
         d->raise();
         return true;
     }

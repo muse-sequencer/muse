@@ -309,7 +309,7 @@
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>Views</string>
+       <string>Editors</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_15">
        <property name="topMargin">
@@ -329,7 +329,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>6</height>
+           <height>10</height>
           </size>
          </property>
         </spacer>
@@ -1632,7 +1632,7 @@ Certain operations will also force them to be resent,
      </widget>
      <widget class="QWidget" name="tabGuiBehaviour">
       <attribute name="title">
-       <string>GUI Behaviour</string>
+       <string>GUI</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_21">
        <item>
