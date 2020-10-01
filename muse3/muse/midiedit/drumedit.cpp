@@ -406,9 +406,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       speaker->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(speaker);
 
-      QAction* whatsthis = QWhatsThis::createAction(this);
-      whatsthis->setIcon(*whatsthisSVGIcon);
-      tools->addAction(whatsthis);
+//      QAction* whatsthis = QWhatsThis::createAction(this);
+//      whatsthis->setIcon(*whatsthisSVGIcon);
+//      tools->addAction(whatsthis);
 
       // don't show pitch value in toolbar
       toolbar = new MusEGui::Toolbar1(_rasterizerModel, this, _rasterInit, false);
