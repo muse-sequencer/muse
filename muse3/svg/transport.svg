@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <g transform="matrix(1.1473 0 0 1.1262 -10.069 -10.322)" fill="#800000" stroke="#000" stroke-width=".87973">
+   <title>Bus Stop</title>
+   <g stroke="#000">
+    <path d="m14 58h4v4a3 3 0 0 0 6 0v-4h24v4a3 3 0 0 0 6 0v-4h4v-23l-2-16a8 8 0 0 0-6-6 40 40 0 0 0-28 0 8 8 0 0 0-6 6l-2 16zm8-38a2.5 2.5 0 0 0-2.5 2l-1.5 13a1.5 1.75 0 0 0 1.5 2h33a1.5 1.75 0 0 0 1.5-2l-1.5-13a2.5 2.5 0 0 0-2.5-2z" fill="#d45500" fill-rule="evenodd" stroke-width=".87973"/>
+    <path d="m27 16.5h18" fill="none" stroke-linecap="round" stroke-width="1.7595"/>
+    <path d="m24 48a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3z" fill="#fff" stroke-width=".87973"/>
+    <path d="m54 48a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3z" fill="#fff" stroke-width=".87973"/>
+   </g>
+  </g>
+ </g>
+</svg>

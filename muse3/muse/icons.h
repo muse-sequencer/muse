@@ -89,7 +89,6 @@ extern QPixmap* bluedot12x12Icon;
 extern QPixmap* orangedotIcon;
 extern QPixmap* orangedot12x12Icon;
 
-extern QPixmap* mixerSIcon;
 extern QPixmap* cliplistSIcon;
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
@@ -135,9 +134,7 @@ extern QPixmap* settings_appearance_settingsIcon;
 extern QPixmap* settings_configureshortcutsIcon;
 extern QPixmap* settings_midifileexportIcon;
 extern QPixmap* settings_midisyncIcon;
-extern QPixmap* view_bigtime_windowIcon;
 extern QPixmap* view_markerIcon;
-extern QPixmap* view_transport_windowIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* aboutMuseImage;
@@ -295,6 +292,9 @@ extern QIcon* listeditSVGIcon;
 extern QIcon* noscaleSVGIcon[3];
 extern QIcon* ankerSVGIcon;
 extern QIcon* settingsSVGIcon;
+extern QIcon* transportSVGIcon;
+extern QIcon* bigtimeSVGIcon;
+extern QIcon* mixerSVGIcon;
 
 //----------------------------------
 // Cursors
