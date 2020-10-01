@@ -596,13 +596,13 @@ MusE::MusE() : QMainWindow()
       editSongInfoAction = new QAction(*MusEGui::listeditSVGIcon, tr("Song Info..."), this);
 
       //-------- View Actions
-      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel"), this);
+      viewTransportAction = new QAction(*MusEGui::transportSVGIcon, tr("Transport Panel"), this);
       viewTransportAction->setCheckable(true);
-      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window"),  this);
+      viewBigtimeAction = new QAction(*MusEGui::bigtimeSVGIcon, tr("Bigtime Window"),  this);
       viewBigtimeAction->setCheckable(true);
-      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A"), this);
+      viewMixerAAction = new QAction(*MusEGui::mixerSVGIcon, tr("Mixer A"), this);
       viewMixerAAction->setCheckable(true);
-      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B"), this);
+      viewMixerBAction = new QAction(*MusEGui::mixerSVGIcon, tr("Mixer B"), this);
       viewMixerBAction->setCheckable(true);
 
       viewMarkerAction = markerDock->toggleViewAction();

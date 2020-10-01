@@ -133,5 +133,8 @@
         <file>svg/listedit.svg</file>
         <file>svg/anker.svg</file>
         <file>svg/settings.svg</file>
+        <file>svg/mixer.svg</file>
+        <file>svg/bigtime.svg</file>
+        <file>svg/transport.svg</file>
     </qresource>
 </RCC>
