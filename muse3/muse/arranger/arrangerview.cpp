@@ -182,6 +182,11 @@ ArrangerView::ArrangerView(QWidget* parent)
   startListEditAction = new QAction(*listeditSVGIcon, tr("Event List..."), this);
   startWaveEditAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
 
+  startPianoEditNewAction = new QAction(this);
+  startDrumEditNewAction = new QAction(this);
+  startListEditNewAction = new QAction(this);
+  startWaveEditNewAction = new QAction(this);
+
   openCurrentTrackSynthGuiAction =  new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open Synth Plugin GUI..."), this);
 
   midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform..."), this);
@@ -313,6 +318,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(startDrumEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startDrumEditor()));
   connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
   connect(startWaveEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor()));
+  connect(startPianoEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startPianoroll(true)));
+  connect(startDrumEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startDrumEditor(true)));
+  connect(startListEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor(true)));
+  connect(startWaveEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor(true)));
   connect(openCurrentTrackSynthGuiAction, SIGNAL(triggered()), SLOT(openCurrentTrackSynthGui()));
 
 
@@ -905,6 +914,10 @@ void ArrangerView::updateShortcuts()
       startDrumEditAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS].key);
       startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
       startWaveEditAction->setShortcut(shortcuts[SHRT_OPEN_WAVE].key);
+      startPianoEditNewAction->setShortcut(shortcuts[SHRT_OPEN_PIANO_NEW].key);
+      startDrumEditNewAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS_NEW].key);
+      startListEditNewAction->setShortcut(shortcuts[SHRT_OPEN_LIST_NEW].key);
+      startWaveEditNewAction->setShortcut(shortcuts[SHRT_OPEN_WAVE_NEW].key);
       openCurrentTrackSynthGuiAction->setShortcut(shortcuts[SHRT_OPEN_PLUGIN_GUI].key);
 
       midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);

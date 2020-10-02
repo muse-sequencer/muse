@@ -2277,7 +2277,7 @@ void MusE::startScoreQuickly()
 //   startPianoroll
 //---------------------------------------------------------
 
-void MusE::startPianoroll()
+void MusE::startPianoroll(bool newwin)
 {
     MusECore::PartList* pl = getMidiPartsToEdit();
     if (pl == 0)
@@ -2286,15 +2286,15 @@ void MusE::startPianoroll()
     if (!filterInvalidParts(TopWin::PIANO_ROLL, pl))
         return;
 
-    startPianoroll(pl, true);
+    startPianoroll(pl, true, newwin);
 }
 
-void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
+void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool newwin)
 {
     if (!filterInvalidParts(TopWin::PIANO_ROLL, pl))
         return;
 
-    if (findOpenEditor(TopWin::PIANO_ROLL, pl))
+    if (!newwin && findOpenEditor(TopWin::PIANO_ROLL, pl))
         return;
 
     MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
@@ -4143,38 +4143,31 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
 
 void MusE::updateWindowMenu()
 {
-    bool sep;
-
     menuWindows->clear(); // frees memory automatically
 
-    sep=false;
-    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
-        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
-            // the isVisibleTo check is necessary because isVisible returns false if a
-            // MdiSubWin is actually visible, but the muse main window is hidden for some reason
-        {
-            if (!sep)
-            {
-                menuWindows->addSeparator();
-                sep=true;
-            }
-            QAction* temp=menuWindows->addAction((*it)->windowTitle());
-            QWidget* tlw = static_cast<QWidget*>(*it);
+    for (const auto& it : toplevels) {
+        if (it->isMdiWin()) {
+            QAction* temp = menuWindows->addAction(it->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(it);
             connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
+
+            if (it->type() == TopWin::ARRANGER) { // should be always on top
+                temp->setShortcut(shortcuts[SHRT_ARRANGER].key);
+                if (toplevels.size() > 1)
+                    menuWindows->addSeparator();
+            }
         }
     }
 
-    sep=false;
-    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
-        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
-        {
-            if (!sep)
-            {
+    bool sep = false;
+    for (const auto& it : toplevels) {
+        if (!it->isMdiWin()) {
+            if (!sep && toplevels.size() > 2) {
                 menuWindows->addSeparator();
-                sep=true;
+                sep = true;
             }
-            QAction* temp=menuWindows->addAction((*it)->windowTitle());
-            QWidget* tlw = static_cast<QWidget*>(*it);
+            QAction* temp = menuWindows->addAction(it->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(it);
             connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
         }
     }

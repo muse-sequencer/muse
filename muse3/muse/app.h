@@ -394,8 +394,8 @@ public slots:
 
     void startEditor(MusECore::PartList*, int);
     void startScoreQuickly();
-    void startPianoroll();
-    void startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls = false);
+    void startPianoroll(bool newwin = false);
+    void startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls = false, bool newwin = false);
     void startWaveEditor();
     void startWaveEditor(MusECore::PartList*);
     void openInScoreEdit(ScoreEdit* destination, MusECore::PartList* pl, bool allInOne=false);
