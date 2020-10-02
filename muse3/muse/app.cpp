@@ -628,7 +628,6 @@ MusE::MusE() : QMainWindow()
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
-      midiInputPlugins->setIcon(QIcon(*MusEGui::midi_inputpluginsIcon));
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
       midiInputTrfAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform..."), this);
       midiInputFilterAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter..."), this);

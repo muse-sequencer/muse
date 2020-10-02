@@ -232,20 +232,18 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addMenu(select);
   menuEdit->addSeparator();
   
-  menuEdit->addSeparator();
-  menuEdit->addAction(editDeleteSelectedAction);
-
   menuEdit->addMenu(addTrack);
   menuEdit->addMenu(insertTrack);
+  menuEdit->addAction(editDeleteSelectedAction);
   menuEdit->addAction(editDuplicateSelTrackAction);
   menuEdit->addSeparator();
 
+  menuEdit->addMenu(editorNewSubmenu);
   menuEdit->addAction(startPianoEditAction);
-  menuEdit->addMenu(scoreSubmenu);
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
-  menuEdit->addMenu(editorNewSubmenu);
+  menuEdit->addMenu(scoreSubmenu);
 
   menuEdit->addSeparator();
   menuEdit->addAction(openCurrentTrackSynthGuiAction);

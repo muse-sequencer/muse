@@ -1376,7 +1376,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool /*evenIgn
       if (populateAll || MusECore::SynthI::visible()) {
         // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
         QMenu* synp = populateAddSynth(addTrack);
-        synp->setIcon(*synthIcon);
+//        synp->setIcon(*synthIcon);
         synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth")));
 
         // Add the sub-menu to the given menu.
