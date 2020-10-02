@@ -8,6 +8,7 @@
         Added new keyboard shortcuts for that. (kybos)
     - Fix: MDI subwindows not destroyed properly when part was deleted. (kybos)
     - Fix: No icons for submenus (well, almost). (kybos)
+    - Add: Keyboard shortcut to jump to Arranger window. (kybos)
 01.10.2020
     - More vector icons (view menu). (kybos)
 29.09.2020
