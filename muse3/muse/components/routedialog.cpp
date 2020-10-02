@@ -1886,7 +1886,7 @@ RouteDialog::RouteDialog(QWidget* parent)
   filterDstButton->setIcon(*routerFilterDestinationIcon);
   srcRoutesButton->setIcon(*routerFilterSourceRoutesIcon);
   dstRoutesButton->setIcon(*routerFilterDestinationRoutesIcon);
-  allMidiPortsButton->setIcon(*settings_midiport_softsynthsIcon);
+  allMidiPortsButton->setIcon(*ankerSVGIcon);
   verticalLayoutButton->setIcon(*routerViewSplitterIcon);
   
   routeAliasList->addItem(tr("Normal"), QVariant::fromValue<int>(MusEGlobal::RoutePreferCanonicalName));
@@ -3453,7 +3453,7 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
-          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*settings_midiport_softsynthsIcon));
+          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*ankerSVGIcon));
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -3552,7 +3552,7 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
-          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*settings_midiport_softsynthsIcon));
+          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*ankerSVGIcon));
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);

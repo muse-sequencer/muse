@@ -360,9 +360,9 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       tools->addWidget(speaker);
 
-      QAction* whatsthis = QWhatsThis::createAction(this);
-      whatsthis->setIcon(*whatsthisSVGIcon);
-      tools->addAction(whatsthis);
+//      QAction* whatsthis = QWhatsThis::createAction(this);
+//      whatsthis->setIcon(*whatsthisSVGIcon);
+//      tools->addAction(whatsthis);
       
       toolbar = new MusEGui::Toolbar1(_rasterizerModel, this, _rasterInit);
       toolbar->setObjectName("Pianoroll Pos/Snap/Solo-tools");

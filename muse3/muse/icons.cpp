@@ -48,13 +48,9 @@
 #include "xpm/midi_reset_instr.xpm"
 #include "xpm/settings_appearance_settings.xpm"
 #include "xpm/settings_configureshortcuts.xpm"
-#include "xpm/settings_globalsettings.xpm"
 #include "xpm/settings_midifileexport.xpm"
-#include "xpm/settings_midiport_softsynths.xpm"
 #include "xpm/settings_midisync.xpm"
-#include "xpm/view_bigtime_window.xpm"
 #include "xpm/view_marker.xpm"
-#include "xpm/view_transport_window.xpm"
 
 #include "xpm/delete.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase.xpm"
@@ -105,7 +101,6 @@
 #include "xpm/orangedot.xpm"
 #include "xpm/orangedot12x12.xpm"
 
-#include "xpm/mixerS.xpm"
 #include "xpm/cliplistS.xpm"
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
@@ -154,7 +149,6 @@
 namespace MusEGui {
 
 QPixmap* track_commentIcon;
-QPixmap* mixerSIcon;
 QPixmap* cliplistSIcon;
 QPixmap* deltaOnIcon;
 QPixmap* deltaOffIcon;
@@ -248,13 +242,9 @@ QPixmap* midi_local_offIcon;
 QPixmap* midi_reset_instrIcon;
 QPixmap* settings_appearance_settingsIcon;
 QPixmap* settings_configureshortcutsIcon;
-QPixmap* settings_globalsettingsIcon;
 QPixmap* settings_midifileexportIcon;
-QPixmap* settings_midiport_softsynthsIcon;
 QPixmap* settings_midisyncIcon;
-QPixmap* view_bigtime_windowIcon;
 QPixmap* view_markerIcon;
-QPixmap* view_transport_windowIcon;
 
 QPixmap* museIcon;
 QPixmap* aboutMuseImage;
@@ -411,6 +401,11 @@ QIcon* audioStretchIconSVG;
 QIcon* audioResampleIconSVG;
 
 QIcon* noscaleSVGIcon[3];
+QIcon* ankerSVGIcon;
+QIcon* settingsSVGIcon;
+QIcon* transportSVGIcon;
+QIcon* bigtimeSVGIcon;
+QIcon* mixerSVGIcon;
 
 //----------------------------------
 // Cursors
@@ -534,7 +529,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     orangedotIcon        = new QPixmap(orangedot_xpm);
     orangedot12x12Icon   = new QPixmap(orangedot12x12_xpm);
 
-    mixerSIcon           = new QPixmap(mixerS_xpm);
     cliplistSIcon        = new QPixmap(cliplistS_xpm);
     deltaOnIcon          = new QPixmap(delta_on_xpm);
     deltaOffIcon         = new QPixmap(delta_off_xpm);
@@ -577,13 +571,9 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midi_reset_instrIcon                          = new QPixmap(midi_reset_instr_xpm);
     settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
     settings_configureshortcutsIcon               = new QPixmap(settings_configureshortcuts_xpm);
-    settings_globalsettingsIcon                   = new QPixmap(settings_globalsettings_xpm);
     settings_midifileexportIcon                   = new QPixmap(settings_midifileexport_xpm);
-    settings_midiport_softsynthsIcon              = new QPixmap(settings_midiport_softsynths_xpm);
     settings_midisyncIcon                         = new QPixmap(settings_midisync_xpm);
-    view_bigtime_windowIcon                       = new QPixmap(view_bigtime_window_xpm);
     view_markerIcon                               = new QPixmap(view_marker_xpm);
-    view_transport_windowIcon                     = new QPixmap(view_transport_window_xpm);
 
     museIcon                                      = new QPixmap(muse_icon_xpm);
     aboutMuseImage                                = new QPixmap(about_muse_xpm);
@@ -744,6 +734,11 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     drumeditSVGIcon    = icons.getSVG("drumedit.svg");
     listeditSVGIcon    = icons.getSVG("listedit.svg");
 
+    ankerSVGIcon       = icons.getSVG("anker.svg");
+    settingsSVGIcon    = icons.getSVG("settings.svg");
+    transportSVGIcon   = icons.getSVG("transport.svg");
+    bigtimeSVGIcon     = icons.getSVG("bigtime.svg");
+    mixerSVGIcon       = icons.getSVG("mixer.svg");
 
     // tool icons
     pencilIconSVG     = icons.getSVG("pencil.svg");
@@ -853,7 +848,6 @@ void deleteIcons()
     delete bluedotIcon;
     delete orangedotIcon;
 
-    delete mixerSIcon;
     delete cliplistSIcon;
     delete deltaOnIcon;
     delete deltaOffIcon;
@@ -896,13 +890,9 @@ void deleteIcons()
     delete midi_reset_instrIcon;
     delete settings_appearance_settingsIcon;
     delete settings_configureshortcutsIcon;
-    delete settings_globalsettingsIcon;
     delete settings_midifileexportIcon;
-    delete settings_midiport_softsynthsIcon;
     delete settings_midisyncIcon;
-    delete view_bigtime_windowIcon;
     delete view_markerIcon;
-    delete view_transport_windowIcon;
 
     delete museIcon;
     delete aboutMuseImage;
@@ -1047,6 +1037,11 @@ void deleteIcons()
     delete pencilMoveVertIconSVG;
     delete audioStretchIconSVG;
     delete audioResampleIconSVG;
+    delete ankerSVGIcon;
+    delete settingsSVGIcon;
+    delete transportSVGIcon;
+    delete bigtimeSVGIcon;
+    delete mixerSVGIcon;
 
     delete noscaleSVGIcon[0];
     delete noscaleSVGIcon[1];
@@ -1059,6 +1054,7 @@ void deleteIcons()
     delete mastereditSVGIcon;
     delete drumeditSVGIcon;
     delete listeditSVGIcon;
+
 
     //----------------------------------
     // Cursors

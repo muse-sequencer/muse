@@ -596,13 +596,13 @@ MusE::MusE() : QMainWindow()
       editSongInfoAction = new QAction(*MusEGui::listeditSVGIcon, tr("Song Info..."), this);
 
       //-------- View Actions
-      viewTransportAction = new QAction(QIcon(*MusEGui::view_transport_windowIcon), tr("Transport Panel"), this);
+      viewTransportAction = new QAction(*MusEGui::transportSVGIcon, tr("Transport Panel"), this);
       viewTransportAction->setCheckable(true);
-      viewBigtimeAction = new QAction(QIcon(*MusEGui::view_bigtime_windowIcon), tr("Bigtime Window"),  this);
+      viewBigtimeAction = new QAction(*MusEGui::bigtimeSVGIcon, tr("Bigtime Window"),  this);
       viewBigtimeAction->setCheckable(true);
-      viewMixerAAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer A"), this);
+      viewMixerAAction = new QAction(*MusEGui::mixerSVGIcon, tr("Mixer A"), this);
       viewMixerAAction->setCheckable(true);
-      viewMixerBAction = new QAction(QIcon(*MusEGui::mixerSIcon), tr("Mixer B"), this);
+      viewMixerBAction = new QAction(*MusEGui::mixerSVGIcon, tr("Mixer B"), this);
       viewMixerBAction->setCheckable(true);
 
       viewMarkerAction = markerDock->toggleViewAction();
@@ -654,7 +654,7 @@ MusE::MusE() : QMainWindow()
       autoClearAction = new QAction(QIcon(*MusEGui::automation_clear_dataIcon), tr("Clear Automation Data"), this);
 
        //-------- Settings Actions
-      settingsGlobalAction = new QAction(QIcon(*MusEGui::settings_globalsettingsIcon), tr("Global Settings..."), this);
+      settingsGlobalAction = new QAction(*MusEGui::settingsSVGIcon, tr("Global Settings..."), this);
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
       settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
@@ -673,7 +673,7 @@ MusE::MusE() : QMainWindow()
       settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome..."), this);
       settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync..."), this);
       settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export..."), this);
-      settingsMidiPortAction = new QAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), tr("Midi Ports / Soft Synth..."), this);
+      settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports / Soft Synths..."), this);
 
       //-------- Help Actions
       helpManualAction = new QAction(tr("&Manual..."), this);

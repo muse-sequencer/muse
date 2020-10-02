@@ -34,8 +34,6 @@ class QCursor;
 
 namespace MusEGui {
 
-//const QSize DEFCURSIZE = QSize(18, 18);
-
 extern QPixmap* track_commentIcon;
 extern QPixmap* deleteIcon;
 extern QPixmap* dotIcon;
@@ -91,7 +89,6 @@ extern QPixmap* bluedot12x12Icon;
 extern QPixmap* orangedotIcon;
 extern QPixmap* orangedot12x12Icon;
 
-extern QPixmap* mixerSIcon;
 extern QPixmap* cliplistSIcon;
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
@@ -134,13 +131,9 @@ extern QPixmap* midi_local_offIcon;
 extern QPixmap* midi_reset_instrIcon;
 extern QPixmap* settings_appearance_settingsIcon;
 extern QPixmap* settings_configureshortcutsIcon;
-extern QPixmap* settings_globalsettingsIcon;
 extern QPixmap* settings_midifileexportIcon;
-extern QPixmap* settings_midiport_softsynthsIcon;
 extern QPixmap* settings_midisyncIcon;
-extern QPixmap* view_bigtime_windowIcon;
 extern QPixmap* view_markerIcon;
-extern QPixmap* view_transport_windowIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* aboutMuseImage;
@@ -296,6 +289,11 @@ extern QIcon* drumeditSVGIcon;
 extern QIcon* listeditSVGIcon;
 
 extern QIcon* noscaleSVGIcon[3];
+extern QIcon* ankerSVGIcon;
+extern QIcon* settingsSVGIcon;
+extern QIcon* transportSVGIcon;
+extern QIcon* bigtimeSVGIcon;
+extern QIcon* mixerSVGIcon;
 
 //----------------------------------
 // Cursors

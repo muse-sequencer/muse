@@ -8,6 +8,10 @@
         Added new keyboard shortcuts for that. (kybos)
     - Fix: MDI subwindows not destroyed properly when part was deleted. (kybos)
     - Fix: No icons for submenus (well, almost). (kybos)
+01.10.2020
+    - More vector icons (view menu). (kybos)
+29.09.2020
+    - Replace global settings and midi port icons by vector ones. (kybos)
 26.09.2020
     - Replace editor icons by new vector ones. (kybos)
 24.09.2020

@@ -160,7 +160,7 @@ void initShortCuts()
       defShrt(SHRT_CONFIG_MIDISYNC,       0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi sync configuration"), ARRANG_SHRT, "configure_midi_sync");
       defShrt(SHRT_MIDI_FILE_CONFIG,      0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi file import/export configuration"), ARRANG_SHRT, "configure_midi_file");
       defShrt(SHRT_APPEARANCE_SETTINGS,   0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Appearance settings"), ARRANG_SHRT, "configure_appearance_settings");
-      defShrt(SHRT_CONFIG_MIDI_PORTS,     0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi ports / Soft Synth"), ARRANG_SHRT, "configure_midi_ports");
+      defShrt(SHRT_CONFIG_MIDI_PORTS,     0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi ports / Soft synths"), ARRANG_SHRT, "configure_midi_ports");
       defShrt(SHRT_CONFIG_AUDIO_PORTS,    0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Audio subsystem configuration"), ARRANG_SHRT, "configure_audio_ports");
       //defShrt(SHRT_SAVE_GLOBAL_CONFIG,    0, QT_TRANSLATE_NOOP("shortcuts", "Save global configuration"), ARRANG_SHRT, "configure_save_global");
 

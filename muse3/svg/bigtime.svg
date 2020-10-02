@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <rect x="1" y="1" width="62" height="62" fill="#000080" style="paint-order:stroke fill markers"/>
+  <g transform="matrix(.95519 0 0 1.2653 1.0422 57.557)" fill="#f06" style="shape-inside:url(#rect2187);white-space:pre" aria-label="42">
+   <path d="m8.96-18.16-1.84-1.84 1.84-1.84h5.2l1.08 1.88-1.08 1.8h-4.64zm16 1.32 2.24-2.24h1.48v15.28l-1.24 1.24-2.48-2.44v-3.72zm2.48-20.6 1.24 1.24v15.28h-1.48l-2.24-2.24v-11.8zm-19.76 14.28-2.24 2.24h-1.48v-15.28l1.24-1.24 2.48 2.44v3.72zm16 1.32 1.84 1.84-1.84 1.84h-5.24l-1.08-1.8 1.12-1.88h1.04z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+   <path d="m41.616-18.16-1.84-1.84 1.84-1.84h5.2l1.08 1.88-1.08 1.8h-4.64zm-2.44-20.6 1.24-1.24h17.12l1.24 1.24-2.44 2.48h-14.72zm-1.32 36.2-1.24-1.24v-15.28h1.48l0.36 0.4 1.88 1.84v11.84zm20.92 1.32-1.24 1.24h-17.12l-1.24-1.24 2.44-2.48h14.72zm1.32-36.2 1.24 1.24v15.28h-1.48l-2.24-2.24v-11.8zm-3.76 15.6 1.84 1.84-1.84 1.84h-5.24l-1.08-1.8 1.12-1.88h1.04z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+  </g>
+ </g>
+ <g>
+  <path d="m61.951 2.0416 0.04894 59.958-60.098 0.41542 0.088813-60.326z" display="none" fill="none" stroke="#000" stroke-linecap="round" stroke-width="3.1432"/>
+ </g>
+ <g>
+  <path d="m60.633 3.3255 0.04671 57.227-57.36 0.39649 0.084767-57.577z" display="none" fill="none" stroke="#2ca05a" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+ </g>
+</svg>

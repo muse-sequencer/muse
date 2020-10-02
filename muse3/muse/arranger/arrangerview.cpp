@@ -194,7 +194,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editorNewSubmenu->addAction(startListEditNewAction);
   editorNewSubmenu->addAction(startWaveEditNewAction);
 
-  openCurrentTrackSynthGuiAction =  new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open Synth Plugin GUI..."), this);
+  openCurrentTrackSynthGuiAction =  new QAction(*ankerSVGIcon, tr("Open Synth Plugin GUI..."), this);
 
   midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform..."), this);
 
