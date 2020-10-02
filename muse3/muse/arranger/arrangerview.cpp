@@ -143,11 +143,11 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
   addTrack = new QMenu(tr("Add Track"), this);
-  addTrack->setIcon(QIcon(*edit_track_addIcon));
+//  addTrack->setIcon(QIcon(*edit_track_addIcon));
   insertTrack = new QMenu(tr("Insert Track"), this);
-  insertTrack->setIcon(QIcon(*edit_track_addIcon));
+//  insertTrack->setIcon(QIcon(*edit_track_addIcon));
   select = new QMenu(tr("Select"), this);
-  select->setIcon(QIcon(*selectIcon));
+//  select->setIcon(QIcon(*selectIcon));
 
   editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
   editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
@@ -165,7 +165,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   
 	
   scoreSubmenu = new QMenu(tr("Score"), this);
-  scoreSubmenu->setIcon(QIcon(*scoreeditSVGIcon));
+//  scoreSubmenu->setIcon(QIcon(*scoreeditSVGIcon));
 
   scoreAllInOneSubsubmenu = new QMenu(tr("All Tracks in One Staff"), this);
   scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("One Staff per Track"), this);
@@ -182,10 +182,17 @@ ArrangerView::ArrangerView(QWidget* parent)
   startListEditAction = new QAction(*listeditSVGIcon, tr("Event List..."), this);
   startWaveEditAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
 
-  startPianoEditNewAction = new QAction(this);
-  startDrumEditNewAction = new QAction(this);
-  startListEditNewAction = new QAction(this);
-  startWaveEditNewAction = new QAction(this);
+  editorNewSubmenu = new QMenu(tr("Open in New Window"), this);
+
+  startPianoEditNewAction = new QAction(*pianorollSVGIcon, tr("Pianoroll..."), this);
+  startDrumEditNewAction = new QAction(*drumeditSVGIcon, tr("Drums..."), this);
+  startListEditNewAction = new QAction(*listeditSVGIcon, tr("Event List..."), this);
+  startWaveEditNewAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
+
+  editorNewSubmenu->addAction(startPianoEditNewAction);
+  editorNewSubmenu->addAction(startDrumEditNewAction);
+  editorNewSubmenu->addAction(startListEditNewAction);
+  editorNewSubmenu->addAction(startWaveEditNewAction);
 
   openCurrentTrackSynthGuiAction =  new QAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open Synth Plugin GUI..."), this);
 
@@ -238,6 +245,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
+  menuEdit->addMenu(editorNewSubmenu);
 
   menuEdit->addSeparator();
   menuEdit->addAction(openCurrentTrackSynthGuiAction);
@@ -318,10 +326,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(startDrumEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startDrumEditor()));
   connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
   connect(startWaveEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor()));
-  connect(startPianoEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startPianoroll(true)));
-  connect(startDrumEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startDrumEditor(true)));
-  connect(startListEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor(true)));
-  connect(startWaveEditNewAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor(true)));
+  connect(startPianoEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startPianoroll(true);});
+  connect(startDrumEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startDrumEditor(true);});
+  connect(startListEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startListEditor(true);});
+  connect(startWaveEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startWaveEditor(true);});
   connect(openCurrentTrackSynthGuiAction, SIGNAL(triggered()), SLOT(openCurrentTrackSynthGui()));
 
 
