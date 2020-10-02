@@ -69,6 +69,7 @@ void initShortCuts()
       defShrt(SHRT_TABBED_WIN,    Qt::Key_F4, QT_TRANSLATE_NOOP("shortcuts", "Toggle tabbed/floating editor window"), GLOBAL_SHRT, "tabbed_win");
       defShrt(SHRT_TOGGLE_DOCKS,  Qt::Key_F7, QT_TRANSLATE_NOOP("shortcuts", "Toggle docks display"), GLOBAL_SHRT, "docks_display");
       defShrt(SHRT_TOGGLE_REWINDONSTOP,       Qt::CTRL + Qt::SHIFT + Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Toggle rewind on stop"), GLOBAL_SHRT, "rewindonstop");
+      defShrt(SHRT_ARRANGER,      Qt::META + Qt::Key_A, QT_TRANSLATE_NOOP("shortcuts", "Show Arranger window"), GLOBAL_SHRT, "arranger");
 
       defShrt(SHRT_CONFIG_SHORTCUTS, Qt::CTRL + Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), GLOBAL_SHRT, "configure_key_shortcuts");
 
@@ -114,6 +115,11 @@ void initShortCuts()
       defShrt(SHRT_OPEN_LIST_MASTER,      Qt::CTRL + Qt::SHIFT + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Open list mastertrack editor"), ARRANG_SHRT, "open_list_master");
       defShrt(SHRT_OPEN_MIDI_TRANSFORM,   Qt::CTRL + Qt::Key_T, QT_TRANSLATE_NOOP("shortcuts", "Open midi transformer"), ARRANG_SHRT, "open_midi_transform");
       defShrt(SHRT_OPEN_PLUGIN_GUI,       Qt::CTRL + Qt::Key_U, QT_TRANSLATE_NOOP("shortcuts", "Open track Synth GUI"), ARRANG_SHRT, "open_plugin_gui");
+
+      defShrt(SHRT_OPEN_PIANO_NEW,        Qt::CTRL + Qt::SHIFT + Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Open pianoroll in new window"), ARRANG_SHRT, "open_pianoroll_new");
+      defShrt(SHRT_OPEN_DRUMS_NEW,        Qt::CTRL + Qt::SHIFT + Qt::ALT + Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Open drumeditor in new window"), ARRANG_SHRT, "open_drumedit_new");
+      defShrt(SHRT_OPEN_LIST_NEW,         Qt::CTRL + Qt::SHIFT + Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "Open listeditor in new window"), ARRANG_SHRT, "open_listedit_new");
+      defShrt(SHRT_OPEN_WAVE_NEW,         Qt::CTRL + Qt::SHIFT + Qt::Key_Y, QT_TRANSLATE_NOOP("shortcuts", "Open waveeditor in new window"), ARRANG_SHRT, "open_waveeditor_new");
 
 
       defShrt(SHRT_ADD_MIDI_TRACK,        Qt::CTRL + Qt::Key_J, QT_TRANSLATE_NOOP("shortcuts", "Add midi track"), ARRANG_SHRT, "add_midi_track");

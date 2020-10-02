@@ -123,7 +123,6 @@ extern QPixmap* automation_mixerIcon;
 extern QPixmap* automation_take_snapshotIcon;
 extern QPixmap* midi_edit_instrumentIcon;
 extern QPixmap* midi_init_instrIcon;
-extern QPixmap* midi_inputpluginsIcon;
 extern QPixmap* midi_inputplugins_midi_input_filterIcon;
 extern QPixmap* midi_inputplugins_midi_input_transformIcon;
 extern QPixmap* midi_inputplugins_remote_controlIcon;

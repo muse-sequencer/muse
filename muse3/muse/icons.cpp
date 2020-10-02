@@ -40,7 +40,6 @@
 #include "xpm/automation_take_snapshot.xpm"
 #include "xpm/midi_edit_instrument.xpm"
 #include "xpm/midi_init_instr.xpm"
-#include "xpm/midi_inputplugins.xpm"
 #include "xpm/midi_inputplugins_midi_input_filter.xpm"
 #include "xpm/midi_inputplugins_midi_input_transform.xpm"
 #include "xpm/midi_inputplugins_remote_control.xpm"
@@ -235,7 +234,6 @@ QPixmap* automation_mixerIcon;
 QPixmap* automation_take_snapshotIcon;
 QPixmap* midi_edit_instrumentIcon;
 QPixmap* midi_init_instrIcon;
-QPixmap* midi_inputpluginsIcon;
 QPixmap* midi_inputplugins_midi_input_filterIcon;
 QPixmap* midi_inputplugins_midi_input_transformIcon;
 QPixmap* midi_inputplugins_remote_controlIcon;
@@ -565,7 +563,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     automation_take_snapshotIcon                  = new QPixmap(automation_take_snapshot_xpm);
     midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
     midi_init_instrIcon                           = new QPixmap(midi_init_instr_xpm);
-    midi_inputpluginsIcon                         = new QPixmap(midi_inputplugins_xpm);
     midi_inputplugins_midi_input_filterIcon       = new QPixmap(midi_inputplugins_midi_input_filter_xpm);
     midi_inputplugins_midi_input_transformIcon    = new QPixmap(midi_inputplugins_midi_input_transform_xpm);
     midi_inputplugins_remote_controlIcon          = new QPixmap(midi_inputplugins_remote_control_xpm);
@@ -885,7 +882,6 @@ void deleteIcons()
     delete automation_take_snapshotIcon;
     delete midi_edit_instrumentIcon;
     delete midi_init_instrIcon;
-    delete midi_inputpluginsIcon;
     delete midi_inputplugins_midi_input_filterIcon;
     delete midi_inputplugins_midi_input_transformIcon;
     delete midi_inputplugins_remote_controlIcon;

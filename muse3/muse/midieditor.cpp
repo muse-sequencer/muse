@@ -559,4 +559,11 @@ void MidiEditor::addNewParts(const std::map< const MusECore::Part*, std::set<con
         addPart(const_cast<MusECore::Part*>(*it2)); // FIXME make this const-correct!
 }
 
+void MidiEditor::setHScrollOffset(const int value) {
+    int min, max;
+    hscroll->range(&min, &max);
+    int pos = qMin(qMax(min, value), max);
+    hscroll->setOffset(pos);
+}
+
 } // namespace MusEGui
