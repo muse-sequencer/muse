@@ -24,6 +24,7 @@
 #include <QString>
 #include <QToolButton>
 #include <QLatin1Char>
+#include <QHBoxLayout>
 
 #include "cpu_toolbar.h"
 
@@ -136,7 +137,7 @@ void CpuToolbar::init()
   _resetButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
   _resetButton->setIcon(QIcon(":/xpm/cpu.xpm"));
   _resetButton->setObjectName("CpuLoadToolbarButton");
-  _resetButton->setToolTip(tr("CPU load averaged over each gui-update period\nDSP load read from JACK\nNumber of xruns\n(click to reset)"));
+  _resetButton->setToolTip(tr("CPU load averaged over each GUI update period\nDSP load read from JACK\nNumber of xruns\n(click to reset)"));
 
   _cpuLabel = new PaddedValueLabel(true, this, Qt::Widget, "CPU: ", "%");
   _cpuLabel->setFieldWidth(5);
@@ -163,6 +164,49 @@ void CpuToolbar::setValues(float cpuLoad, float dspLoad, long xRunsCount)
   _cpuLabel->setFloatValue(cpuLoad);
   _dspLabel->setFloatValue(dspLoad);
   _xrunsLabel->setIntValue(xRunsCount);
+}
+
+//---------------------------------
+//   CpuStatusbar
+//---------------------------------
+
+CpuStatusBar::CpuStatusBar(QWidget* parent)
+    : QWidget(parent)
+{
+    setObjectName("CpuLoadStatusBar");
+    setToolTip(tr("CPU load averaged over each GUI update period\nDSP load read from JACK\nNumber of xruns\n(click to reset)"));
+
+    cpuLabel = new PaddedValueLabel(true, this, Qt::Widget, "CPU: ", "%");
+    cpuLabel->setFieldWidth(5);
+    cpuLabel->setPrecision(1);
+//    cpuLabel->setIndent(2);
+
+    dspLabel = new PaddedValueLabel(true, this, Qt::Widget, "DSP: ", "%");
+    dspLabel->setFieldWidth(5);
+    dspLabel->setPrecision(1);
+    dspLabel->setFrameShape(QFrame::NoFrame);
+
+    xrunsLabel = new PaddedValueLabel(false, this, Qt::Widget, "XRUNS: ");
+    xrunsLabel->setFieldWidth(3);
+    xrunsLabel->setFrameShape(QFrame::NoFrame);
+
+    setValues(0.0f, 0.0f, 0);
+
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setContentsMargins(4,0,4,0);
+    layout->setSpacing(2);
+    layout->addWidget(cpuLabel);
+    layout->addWidget(dspLabel);
+    layout->addWidget(xrunsLabel);
+
+    connect(xrunsLabel, SIGNAL(clicked(bool)), SIGNAL(resetClicked()));
+}
+
+void CpuStatusBar::setValues(float cpuLoad, float dspLoad, long xRunsCount)
+{
+    cpuLabel->setFloatValue(cpuLoad);
+    dspLabel->setFloatValue(dspLoad);
+    xrunsLabel->setIntValue(xRunsCount);
 }
 
 

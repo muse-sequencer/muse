@@ -1819,6 +1819,16 @@ Certain operations will also force them to be resent,
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_23">
           <item>
+           <widget class="QCheckBox" name="showStatusBarCheckBox">
+            <property name="text">
+             <string>Show status bar</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="projectSaveCheckBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

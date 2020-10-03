@@ -96,6 +96,32 @@ namespace MusEGui
       void resetClicked();
   };
 
+  //---------------------------------
+  //   CpuStatusbar
+  //---------------------------------
+
+  class CpuStatusBar : public QWidget
+  {
+      Q_OBJECT
+
+  private:
+//      QToolButton* _resetButton;
+      PaddedValueLabel* cpuLabel;
+      PaddedValueLabel* dspLabel;
+      PaddedValueLabel* xrunsLabel;
+
+  public:
+      CpuStatusBar(QWidget* parent = nullptr);
+
+      void setCpuLabelText(const QString&);
+      void setDspLabelText(const QString&);
+      void setXrunsLabelText(const QString&);
+      void setValues(float cpuLoad, float dspLoad, long xRunsCount);
+
+  signals:
+      void resetClicked();
+  };
+
 }
 
 #endif

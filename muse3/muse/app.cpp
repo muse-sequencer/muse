@@ -38,6 +38,7 @@
 #include <QStringList>
 #include <QPushButton>
 #include <QDir>
+#include <QStatusBar>
 #if QT_VERSION >= 0x050b00
 #include <QScreen>
 #endif
@@ -1099,6 +1100,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::song->update();
       updateWindowMenu();
 
+
       ensurePolished();
       MusEGlobal::config.fonts[0].setFamily(font().family());
       MusEGlobal::config.fonts[0].setPointSize(font().pointSize());
@@ -1175,9 +1177,15 @@ void MusE::stopHeartBeat()
 
 void MusE::heartBeat()
 {
-  cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(), 
-                            MusEGlobal::song->dspLoad(), 
-                            MusEGlobal::song->xRunsCount());
+    if (cpuLoadToolbar->isVisible())
+        cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(),
+                                  MusEGlobal::song->dspLoad(),
+                                  MusEGlobal::song->xRunsCount());
+
+    if (statusBar()->isVisible())
+        cpuStatusBar->setValues(MusEGlobal::song->cpuLoad(),
+                                MusEGlobal::song->dspLoad(),
+                                MusEGlobal::song->xRunsCount());
 }
 
 void MusE::populateAddTrack()
@@ -4692,6 +4700,30 @@ void MusE::saveStateExtra() {
         MusEGlobal::config.mixer2.geometry.setWidth(mixer2->width());
         MusEGlobal::config.mixer2.geometry.setHeight(mixer2->height());
     }
+}
+
+void MusE::initStatusBar() {
+
+    statusBar()->setSizeGripEnabled(false);
+    statusBar()->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
+
+    cpuStatusBar = new CpuStatusBar(statusBar());
+    statusBar()->addPermanentWidget(cpuStatusBar);
+    //      statusBar()->addPermanentWidget(new CpuToolbar(statusBar()));
+
+    QLabel* lab = new QLabel(QString("%1 | %2").arg(MusEGlobal::audioDevice->driverName()).arg(MusEGlobal::sampleRate));
+//    lab->setFrameShape(QFrame::NoFrame);
+    statusBar()->addWidget(lab);
+
+    //    statusBar()->hide();
+}
+
+void MusE::setStatusBarText(const QString &message, int timeout) {
+    statusBar()->showMessage(message, timeout);
+}
+
+void MusE::clearStatusBarText() {
+    statusBar()->clearMessage();
 }
 
 } //namespace MusEGui

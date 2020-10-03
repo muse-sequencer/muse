@@ -97,6 +97,7 @@ class Transport;
 class VisibleTracks;
 class RouteDialog;
 class CpuToolbar;
+class CpuStatusBar;
 class SnooperDialog;
 class MasterEdit;
 
@@ -185,6 +186,7 @@ class MusE : public QMainWindow
       bool _lastProjectLoadedConfig;
       QToolBar *tools;
       CpuToolbar* cpuLoadToolbar;
+      CpuStatusBar* cpuStatusBar;
 
       // when adding a toolbar to the main window, remember adding it to
       // either the requiredToolbars or optionalToolbars list!
@@ -478,6 +480,9 @@ class MusE : public QMainWindow
       TopWin* getCurrentMenuSharingTopwin() { return currentMenuSharingTopwin; }
 
       float getCPULoad();
+      void initStatusBar();
+      void setStatusBarText(const QString &message, int timeout = 0);
+      void clearStatusBarText();
       
 #ifdef HAVE_LASH
       void lash_idle_cb ();
