@@ -811,6 +811,7 @@ MusE::MusE() : QMainWindow()
       // Already has an object name.
       cpuLoadToolbar = new CpuToolbar(tr("Cpu load"), this);
       addToolBar(cpuLoadToolbar);
+      cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
       QToolBar* songpos_tb;
@@ -3526,7 +3527,9 @@ void MusE::updateConfiguration()
       //rewindOnStopAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key); moved to global shortcuts in MusE::kbAccel
 
       //arrangerView->updateMusEGui::Shortcuts(); //commented out by flo: is done via signal
-      }
+
+      updateStatusBar();
+}
 
 //---------------------------------------------------------
 //   showBigtime
@@ -4708,22 +4711,35 @@ void MusE::initStatusBar() {
     statusBar()->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 
     cpuStatusBar = new CpuStatusBar(statusBar());
+    connect(cpuStatusBar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
     statusBar()->addPermanentWidget(cpuStatusBar);
-    //      statusBar()->addPermanentWidget(new CpuToolbar(statusBar()));
 
-    QLabel* lab = new QLabel(QString("%1 | %2").arg(MusEGlobal::audioDevice->driverName()).arg(MusEGlobal::sampleRate));
-//    lab->setFrameShape(QFrame::NoFrame);
-    statusBar()->addWidget(lab);
+    updateStatusBar();
+}
 
-    //    statusBar()->hide();
+void MusE::updateStatusBar() {
+
+    statusBar()->setVisible(MusEGlobal::config.showStatusBar);
+
+    if (MusEGlobal::config.showStatusBar) {
+        QString s = QString("Audio driver: %1 | Sample rate: %2Hz | Segment size: %3 | Segment count: %4")
+                .arg(MusEGlobal::audioDevice->driverName())
+                .arg(MusEGlobal::sampleRate)
+                .arg(MusEGlobal::segmentSize)
+                .arg(MusEGlobal::segmentCount);
+        //    statusBar()->addWidget(new QLabel(s));
+        setStatusBarText(s);
+    }
 }
 
 void MusE::setStatusBarText(const QString &message, int timeout) {
-    statusBar()->showMessage(message, timeout);
+    if (MusEGlobal::config.showStatusBar)
+        statusBar()->showMessage(message, timeout);
 }
 
 void MusE::clearStatusBarText() {
-    statusBar()->clearMessage();
+    if (MusEGlobal::config.showStatusBar)
+        statusBar()->clearMessage();
 }
 
 } //namespace MusEGui

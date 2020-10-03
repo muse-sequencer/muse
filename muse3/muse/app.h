@@ -274,6 +274,7 @@ class MusE : public QMainWindow
       void closeDocks();
       void addTabbedDock(Qt::DockWidgetArea area, QDockWidget *widget);
       void saveStateExtra();
+      void updateStatusBar();
 
       QTimer *saveTimer;
       QTimer *blinkTimer;

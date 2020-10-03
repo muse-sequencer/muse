@@ -387,7 +387,8 @@ GlobalConfigValues config = {
       false,                        // selectionsUndoable Whether selecting parts or events is undoable.
       false,                        // noPluginScaling
 //      false,                        // openMDIWinMaximized
-      true                          // keepTransportWindowOnTop
+      true,                         // keepTransportWindowOnTop
+      true                          // showStatusBar
     };
 
 } // namespace MusEGlobal

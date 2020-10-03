@@ -34,93 +34,117 @@ class QSize;
 namespace MusEGui
 {
 
-  //---------------------------------
-  //   PaddedValueLabel
-  //---------------------------------
+//---------------------------------
+//   PaddedValueLabel
+//---------------------------------
 
-  class PaddedValueLabel : public QLabel
-  {
+class PaddedValueLabel : public QLabel
+{
     Q_OBJECT
     
-    private:
+protected:
+    bool _isFloat;
+    QString _prefix;
+    QString _suffix;
 
-      bool _isFloat;
-      QString _prefix;
-      QString _suffix;
+    int _fieldWidth;
+    int _precision;
+    int _iVal;
+    double _dVal;
 
-      int _fieldWidth;
-      int _precision;
-      int _iVal;
-      double _dVal;
-      
-      void updateText();
-      
-    public:
-      PaddedValueLabel(bool isFloat = false, QWidget* parent = 0, Qt::WindowFlags f = Qt::Widget,
-                       const QString& prefix = QString(), const QString& suffix = QString());
+    virtual void updateText();
 
-      void setFieldWidth(int val);
-      void setPrecision(int val);
-      
-      void setIntValue(int val);
-      void setFloatValue(double val);
-      virtual QSize sizeHint() const;
-  };
+    //  signals :
+    //      void doubleclicked();
 
-  //---------------------------------
-  //   CpuToolbar
-  //---------------------------------
+public:
+    PaddedValueLabel(bool isFloat = false, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::Widget,
+                     const QString& prefix = QString(), const QString& suffix = QString());
 
-  class CpuToolbar : public QToolBar
-  {
+    void setFieldWidth(int val);
+    void setPrecision(int val);
+
+    void setIntValue(int val);
+    void setFloatValue(double val);
+    virtual QSize sizeHint() const;
+    //      void mouseDoubleClickEvent(QMouseEvent* event);
+};
+
+//---------------------------------
+//   XRunLabel
+//---------------------------------
+
+class XRunLabel : public PaddedValueLabel
+{
+    Q_OBJECT
+
+    QString defTextColor;
+
+    void updateText() override;
+
+signals :
+    void doubleclicked();
+
+public:
+    XRunLabel(QWidget* parent = 0);
+
+    void mouseDoubleClickEvent(QMouseEvent* event);
+};
+
+//---------------------------------
+//   CpuToolbar
+//---------------------------------
+
+class CpuToolbar : public QToolBar
+{
     Q_OBJECT
     
-    private:
-      QToolButton* _resetButton;
-      PaddedValueLabel* _cpuLabel;
-      PaddedValueLabel* _dspLabel;
-      PaddedValueLabel* _xrunsLabel;
+private:
+    QToolButton* _resetButton;
+    PaddedValueLabel* _cpuLabel;
+    PaddedValueLabel* _dspLabel;
+    PaddedValueLabel* _xrunsLabel;
 
-      void init();
-      
-    public:
-      CpuToolbar(QWidget* parent = 0);
-      CpuToolbar(const QString& title, QWidget* parent = 0);
+    void init();
 
-      void setCpuLabelText(const QString&);
-      void setDspLabelText(const QString&);
-      void setXrunsLabelText(const QString&);
-      void setValues(float cpuLoad, float dspLoad, long xRunsCount);
-      
-    signals:
-      void resetClicked();
-  };
+public:
+    CpuToolbar(QWidget* parent = 0);
+    CpuToolbar(const QString& title, QWidget* parent = 0);
 
-  //---------------------------------
-  //   CpuStatusbar
-  //---------------------------------
+    void setCpuLabelText(const QString&);
+    void setDspLabelText(const QString&);
+    void setXrunsLabelText(const QString&);
+    void setValues(float cpuLoad, float dspLoad, long xRunsCount);
 
-  class CpuStatusBar : public QWidget
-  {
-      Q_OBJECT
+signals:
+    void resetClicked();
+};
 
-  private:
-//      QToolButton* _resetButton;
-      PaddedValueLabel* cpuLabel;
-      PaddedValueLabel* dspLabel;
-      PaddedValueLabel* xrunsLabel;
+//---------------------------------
+//   CpuStatusbar
+//---------------------------------
 
-  public:
-      CpuStatusBar(QWidget* parent = nullptr);
+class CpuStatusBar : public QWidget
+{
+    Q_OBJECT
 
-      void setCpuLabelText(const QString&);
-      void setDspLabelText(const QString&);
-      void setXrunsLabelText(const QString&);
-      void setValues(float cpuLoad, float dspLoad, long xRunsCount);
+private:
+    //      QToolButton* _resetButton;
+    PaddedValueLabel* cpuLabel;
+    PaddedValueLabel* dspLabel;
+    PaddedValueLabel* xrunsLabel;
 
-  signals:
-      void resetClicked();
-  };
+public:
+    CpuStatusBar(QWidget* parent = nullptr);
+
+    void setCpuLabelText(const QString&);
+    void setDspLabelText(const QString&);
+    void setXrunsLabelText(const QString&);
+    void setValues(float cpuLoad, float dspLoad, long xRunsCount);
+
+signals:
+    void resetClicked();
+};
 
 }
 
