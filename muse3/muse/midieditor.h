@@ -130,6 +130,7 @@ class MidiEditor : public TopWin  {
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
+      void setHScrollOffset(const int);
 };
 
 } // namespace MusEGui

@@ -200,6 +200,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 TopWin::~TopWin()
 {
     DEBUG_COBJECT(stderr, "TopWin dtor: %s\n", objectName().toLatin1().constData());
+
+    if (mdisubwin)
+        mdisubwin->close();
 }
 
 //---------------------------------------------------------

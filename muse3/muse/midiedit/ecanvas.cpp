@@ -96,14 +96,19 @@ EventCanvas::~EventCanvas()
 //---------------------------------------------------------
 
 QString EventCanvas::getCaption() const
-      {
-      int bar1, bar2, xx;
-      unsigned x;
-      MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
-      MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
+{
+    int bar1, bar2, xx;
+    unsigned x;
+    MusEGlobal::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
+    MusEGlobal::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
 
-      return QString("<") + curPart->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
-      }
+    QString s;
+    if (editor->parts()->size() > 1)
+        s = "<" + curPart->name() + QString("> %1-%2 (%3)").arg(bar1+1).arg(bar2+1).arg(editor->parts()->size());
+    else
+        s = "<" + curPart->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
+    return s;
+}
 
 //---------------------------------------------------------
 //   leaveEvent

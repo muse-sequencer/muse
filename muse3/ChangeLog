@@ -1,3 +1,14 @@
+02.10.2020
+    - Add: Show number of opened parts per editor in title bar/tab. (kybos)
+    - New: Don't open new editor windows when the same part(s) is/are already opened.
+        The existing editor window is activated instead.
+        It's still possible to open duplicate windows by holding Shift when
+        double-clicking the part or clicking the corresponding menu entry.
+        Added a new submenu to open editors in new windows.
+        Added new keyboard shortcuts for that. (kybos)
+    - Fix: MDI subwindows not destroyed properly when part was deleted. (kybos)
+    - Fix: No icons for submenus (well, almost). (kybos)
+    - Add: Keyboard shortcut to jump to Arranger window. (kybos)
 01.10.2020
     - More vector icons (view menu). (kybos)
 29.09.2020

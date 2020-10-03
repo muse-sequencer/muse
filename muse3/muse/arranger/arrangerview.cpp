@@ -143,11 +143,11 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
   addTrack = new QMenu(tr("Add Track"), this);
-  addTrack->setIcon(QIcon(*edit_track_addIcon));
+//  addTrack->setIcon(QIcon(*edit_track_addIcon));
   insertTrack = new QMenu(tr("Insert Track"), this);
-  insertTrack->setIcon(QIcon(*edit_track_addIcon));
+//  insertTrack->setIcon(QIcon(*edit_track_addIcon));
   select = new QMenu(tr("Select"), this);
-  select->setIcon(QIcon(*selectIcon));
+//  select->setIcon(QIcon(*selectIcon));
 
   editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
   editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
@@ -165,7 +165,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   
 	
   scoreSubmenu = new QMenu(tr("Score"), this);
-  scoreSubmenu->setIcon(QIcon(*scoreeditSVGIcon));
+//  scoreSubmenu->setIcon(QIcon(*scoreeditSVGIcon));
 
   scoreAllInOneSubsubmenu = new QMenu(tr("All Tracks in One Staff"), this);
   scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("One Staff per Track"), this);
@@ -181,6 +181,18 @@ ArrangerView::ArrangerView(QWidget* parent)
   startDrumEditAction = new QAction(*drumeditSVGIcon, tr("Drums..."), this);
   startListEditAction = new QAction(*listeditSVGIcon, tr("Event List..."), this);
   startWaveEditAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
+
+  editorNewSubmenu = new QMenu(tr("Open in New Window"), this);
+
+  startPianoEditNewAction = new QAction(*pianorollSVGIcon, tr("Pianoroll..."), this);
+  startDrumEditNewAction = new QAction(*drumeditSVGIcon, tr("Drums..."), this);
+  startListEditNewAction = new QAction(*listeditSVGIcon, tr("Event List..."), this);
+  startWaveEditNewAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
+
+  editorNewSubmenu->addAction(startPianoEditNewAction);
+  editorNewSubmenu->addAction(startDrumEditNewAction);
+  editorNewSubmenu->addAction(startListEditNewAction);
+  editorNewSubmenu->addAction(startWaveEditNewAction);
 
   openCurrentTrackSynthGuiAction =  new QAction(*ankerSVGIcon, tr("Open Synth Plugin GUI..."), this);
 
@@ -220,19 +232,18 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addMenu(select);
   menuEdit->addSeparator();
   
-  menuEdit->addSeparator();
-  menuEdit->addAction(editDeleteSelectedAction);
-
   menuEdit->addMenu(addTrack);
   menuEdit->addMenu(insertTrack);
+  menuEdit->addAction(editDeleteSelectedAction);
   menuEdit->addAction(editDuplicateSelTrackAction);
   menuEdit->addSeparator();
 
+  menuEdit->addMenu(editorNewSubmenu);
   menuEdit->addAction(startPianoEditAction);
-  menuEdit->addMenu(scoreSubmenu);
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
+  menuEdit->addMenu(scoreSubmenu);
 
   menuEdit->addSeparator();
   menuEdit->addAction(openCurrentTrackSynthGuiAction);
@@ -313,6 +324,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(startDrumEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startDrumEditor()));
   connect(startListEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startListEditor()));
   connect(startWaveEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startWaveEditor()));
+  connect(startPianoEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startPianoroll(true);});
+  connect(startDrumEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startDrumEditor(true);});
+  connect(startListEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startListEditor(true);});
+  connect(startWaveEditNewAction, &QAction::triggered, MusEGlobal::muse, [=](){MusEGlobal::muse->startWaveEditor(true);});
   connect(openCurrentTrackSynthGuiAction, SIGNAL(triggered()), SLOT(openCurrentTrackSynthGui()));
 
 
@@ -346,12 +361,8 @@ ArrangerView::~ArrangerView()
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-//  emit isDeleting(static_cast<TopWin*>(this));
-//  emit closed();
-
-// keep just in case the arranger still can get closed somehow...
-    fprintf(stderr, "*** Arranger closed event caught ***\n");
-    e->accept();
+//    fprintf(stderr, "*** Arranger closed event caught ***\n"); // e.g. MMB
+    e->ignore();
 }
 
 void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const
@@ -909,6 +920,10 @@ void ArrangerView::updateShortcuts()
       startDrumEditAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS].key);
       startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
       startWaveEditAction->setShortcut(shortcuts[SHRT_OPEN_WAVE].key);
+      startPianoEditNewAction->setShortcut(shortcuts[SHRT_OPEN_PIANO_NEW].key);
+      startDrumEditNewAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS_NEW].key);
+      startListEditNewAction->setShortcut(shortcuts[SHRT_OPEN_LIST_NEW].key);
+      startWaveEditNewAction->setShortcut(shortcuts[SHRT_OPEN_WAVE_NEW].key);
       openCurrentTrackSynthGuiAction->setShortcut(shortcuts[SHRT_OPEN_PLUGIN_GUI].key);
 
       midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);

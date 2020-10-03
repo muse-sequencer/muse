@@ -629,7 +629,6 @@ MusE::MusE() : QMainWindow()
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
-      midiInputPlugins->setIcon(QIcon(*MusEGui::midi_inputpluginsIcon));
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
       midiInputTrfAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform..."), this);
       midiInputFilterAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter..."), this);
@@ -842,7 +841,7 @@ MusE::MusE() : QMainWindow()
       optionalToolbars.push_back(panicToolbar);
       optionalToolbars.push_back(metronomeToolbar);
       optionalToolbars.push_back(songpos_tb);
-      optionalToolbars.push_back(NULL);  // Toolbar break
+      optionalToolbars.push_back(nullptr);  // Toolbar break
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(sig_tb);
@@ -1327,7 +1326,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       QString label = "Loading project " + QFileInfo(name).fileName();
       progress->setLabelText(label);
 //       progress->setWindowModality(Qt::WindowModal); // REMOVE Tim. Persistent routes. Removed for version warning dialog to take priority. FIXME
-      progress->setCancelButton(0);
+      progress->setCancelButton(nullptr);
       if (!songTemplate)
         progress->setMinimumDuration(0); // if we are loading a template it will probably be fast and we can wait before showing the dialog
 
@@ -1432,7 +1431,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             //
             bool popenFlag;
             FILE* f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
-            if (f == 0) {
+            if (f == nullptr) {
                   if (errno != ENOENT) {
                         QMessageBox::critical(this, QString("MusE"),
                            tr("File open error"));
@@ -1464,9 +1463,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                     if(popenFlag)
                     {
                       pclose(f);
-                      f = 0;
+                      f = nullptr;
                       f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
-                      if (f == 0) {
+                      if (f == nullptr) {
                             if (errno != ENOENT) {
                                   QMessageBox::critical(this, QString("MusE"),
                                     tr("File open error"));
@@ -1799,7 +1798,7 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
 
       bool popenFlag;
       FILE* f = MusEGui::fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
-      if (f == 0)
+      if (f == nullptr)
             return false;
       MusECore::Xml xml(f);
       write(xml, writeTopwins);
@@ -2229,7 +2228,7 @@ MusECore::PartList* MusE::getMidiPartsToEdit()
       MusECore::PartList* pl = MusECore::getSelectedMidiParts();
       if (pl->empty()) {
             QMessageBox::critical(this, QString("MusE"), tr("Nothing to edit"));
-            return 0;
+            return nullptr;
             }
       return pl;
       }
@@ -2252,16 +2251,16 @@ void MusE::openInScoreEdit_allInOne(QWidget* dest)
 void MusE::openInScoreEdit(MusEGui::ScoreEdit* destination, bool allInOne)
 {
  MusECore::PartList* pl = getMidiPartsToEdit();
- if (pl == 0)
+ if (pl == nullptr)
     return;
  openInScoreEdit(destination, pl, allInOne);
 }
 
 void MusE::openInScoreEdit(MusEGui::ScoreEdit* destination, MusECore::PartList* pl, bool allInOne)
 {
- if (destination==NULL) // if no destination given, create a new one
+ if (destination==nullptr) // if no destination given, create a new one
  {
-      destination = new MusEGui::ScoreEdit(this, 0, _arranger->cursorValue());
+      destination = new MusEGui::ScoreEdit(this, nullptr, _arranger->cursorValue());
       toplevels.push_back(destination);
       destination->show();
       connect(destination, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
@@ -2279,45 +2278,124 @@ void MusE::openInScoreEdit(MusEGui::ScoreEdit* destination, MusECore::PartList* 
 
 void MusE::startScoreQuickly()
 {
- openInScoreEdit_oneStaffPerTrack(NULL);
+ openInScoreEdit_oneStaffPerTrack(nullptr);
 }
 
 //---------------------------------------------------------
 //   startPianoroll
 //---------------------------------------------------------
 
-void MusE::startPianoroll()
-      {
-      MusECore::PartList* pl = getMidiPartsToEdit();
-      if (pl == 0)
-            return;
-      startPianoroll(pl, true);
-      }
+void MusE::startPianoroll(bool newwin)
+{
+    MusECore::PartList* pl = getMidiPartsToEdit();
+    if (pl == nullptr)
+        return;
 
-void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
-      {
-      MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
-      toplevels.push_back(pianoroll);
-      pianoroll->show();
-      connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+    if (!filterInvalidParts(TopWin::PIANO_ROLL, pl))
+        return;
+
+    startPianoroll(pl, true, newwin);
+}
+
+void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool newwin)
+{
+    if (!filterInvalidParts(TopWin::PIANO_ROLL, pl))
+        return;
+
+    if (!newwin && findOpenEditor(TopWin::PIANO_ROLL, pl))
+        return;
+
+    MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
+    toplevels.push_back(pianoroll);
+    //      pianoroll->show(); // redundant, done in ctor
+    connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+    updateWindowMenu();
+}
+
+
+bool MusE::filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartList* pl) {
+
+    for (auto it = pl->begin(); it != pl->end(); ) {
+        if ((it->second->track()->type() == MusECore::Track::MIDI && type == TopWin::PIANO_ROLL)
+                || (it->second->track()->type() == MusECore::Track::DRUM && type == TopWin::DRUM))
+            it++;
+        else
+            it = pl->erase(it);
+    }
+
+    if (pl->empty()) {
+          QMessageBox::critical(this, QString("MusE"), tr("No valid parts selected"));
+          return false;
+    }
+
+    return true;
+}
+
+bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl) {
+
+    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+        return false;
+
+    for (const auto& it : toplevels) {
+        if (it->type() != type)
+            continue;
+
+        MusEGui::MidiEditor* med = dynamic_cast<MusEGui::MidiEditor*>(it);
+        if (med == nullptr)
+            return false;
+
+        const MusECore::PartList* pl_tmp = med->parts();
+
+        if (pl_tmp->size() != pl->size())
+            continue;
+
+        bool found = false;
+        for (const auto& it_pl : *pl) {
+            for (const auto& it_pl_tmp : *pl_tmp) {
+                if (it_pl.second->sn() == it_pl_tmp.second->sn()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                break;
+        }
+
+        if (!found)
+            continue;
+
+        med->setHScrollOffset(_arranger->cursorValue());
+
+        if (it->isMdiWin())
+            mdiArea->setActiveSubWindow(it->getMdiWin());
+        else
+            it->activateWindow();
+
+        return true;
+    }
+
+    return false;
+}
 
 //---------------------------------------------------------
 //   startListenEditor
 //---------------------------------------------------------
 
-void MusE::startListEditor()
+void MusE::startListEditor(bool newwin)
       {
       MusECore::PartList* pl = getMidiPartsToEdit();
       if (pl == nullptr)
             return;
-      startListEditor(pl);
+      startListEditor(pl, newwin);
       }
 
-void MusE::startListEditor(MusECore::PartList* pl)
+void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
 {
+    pl->erase(++pl->begin(), pl->end());
+
+    if (!newwin && findOpenListEditor(pl))
+        return;
 
     QDockWidget* dock = new QDockWidget("List Editor", this);
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
@@ -2342,6 +2420,30 @@ void MusE::startListEditor(MusECore::PartList* pl)
     dock->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+}
+
+bool MusE::findOpenListEditor(MusECore::PartList* pl) {
+
+    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+        return false;
+
+    for (const auto& d : findChildren<QDockWidget*>()) {
+        if (strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") != 0)
+            continue;
+
+        const MusECore::PartList* pl_tmp = static_cast<MusEGui::ListEdit*>(d->widget())->parts();
+
+        if (pl->begin()->second->sn() != pl_tmp->begin()->second->sn())
+            continue;
+
+        if (!d->isVisible())
+            toggleDocksAction->setChecked(true);
+        d->raise();
+
+        return true;
+    }
+
+    return false;
 }
 
 //---------------------------------------------------------
@@ -2376,47 +2478,60 @@ void MusE::showMasterList(bool show)
 //   startDrumEditor
 //---------------------------------------------------------
 
-void MusE::startDrumEditor()
-      {
-      MusECore::PartList* pl = getMidiPartsToEdit();
-      if (pl == 0)
-            return;
-      startDrumEditor(pl, true);
-      }
+void MusE::startDrumEditor(bool newwin)
+{
+    MusECore::PartList* pl = getMidiPartsToEdit();
+    if (pl == nullptr)
+        return;
 
-void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls)
-      {
-      MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, 0, _arranger->cursorValue(), showDefaultCtrls);
-      toplevels.push_back(drumEditor);
-      drumEditor->show();
-      connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
-      updateWindowMenu();
-      }
+    if (!filterInvalidParts(TopWin::DRUM, pl))
+        return;
+
+    startDrumEditor(pl, true, newwin);
+}
+
+void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls, bool newwin)
+{
+    if (!filterInvalidParts(TopWin::DRUM, pl))
+        return;
+
+    if (!newwin &&findOpenEditor(TopWin::DRUM, pl))
+        return;
+
+    MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
+    toplevels.push_back(drumEditor);
+//    drumEditor->show();
+    connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+    updateWindowMenu();
+}
 
 //---------------------------------------------------------
 //   startWaveEditor
 //---------------------------------------------------------
 
-void MusE::startWaveEditor()
-      {
-      MusECore::PartList* pl = MusECore::getSelectedWaveParts();
-      if (pl->empty()) {
-            QMessageBox::critical(this, QString("MusE"), tr("Nothing to edit"));
-            return;
-            }
-      startWaveEditor(pl);
-      }
+void MusE::startWaveEditor(bool newwin)
+{
+    MusECore::PartList* pl = MusECore::getSelectedWaveParts();
+    if (pl->empty()) {
+        QMessageBox::critical(this, QString("MusE"), tr("Nothing to edit"));
+        return;
+    }
+    startWaveEditor(pl, newwin);
+}
 
-void MusE::startWaveEditor(MusECore::PartList* pl)
-      {
-      MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
-      waveEditor->show();
-      toplevels.push_back(waveEditor);
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
-      connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-      updateWindowMenu();
-      }
+void MusE::startWaveEditor(MusECore::PartList* pl, bool newwin)
+{
+    if (! newwin && findOpenEditor(TopWin::WAVE, pl))
+        return;
+
+    MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
+//    waveEditor->show();
+    toplevels.push_back(waveEditor);
+    connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
+    connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+    updateWindowMenu();
+}
 
 
 //---------------------------------------------------------
@@ -2795,32 +2910,32 @@ void MusE::deleteParentlessDialogs()
   if(_snooperDialog)
   {
     delete _snooperDialog;
-    _snooperDialog = 0;
+    _snooperDialog = nullptr;
   }
   if(metronomeConfig)
   {
     delete metronomeConfig;
-    metronomeConfig = 0;
+    metronomeConfig = nullptr;
   }
   if(shortcutConfig)
   {
     delete shortcutConfig;
-    shortcutConfig = 0;
+    shortcutConfig = nullptr;
   }
   if(midiSyncConfig)
   {
     delete midiSyncConfig;
-    midiSyncConfig = 0;
+    midiSyncConfig = nullptr;
   }
   if(midiFileConfig)
   {
     delete midiFileConfig;
-    midiFileConfig = 0;
+    midiFileConfig = nullptr;
   }
   if(globalSettingsConfig)
   {
     delete globalSettingsConfig;
-    globalSettingsConfig = 0;
+    globalSettingsConfig = nullptr;
   }
 
   destroy_function_dialogs();
@@ -2829,23 +2944,23 @@ void MusE::deleteParentlessDialogs()
   if(MusEGlobal::mitPluginTranspose)
   {
     delete MusEGlobal::mitPluginTranspose;
-    MusEGlobal::mitPluginTranspose = 0;
+    MusEGlobal::mitPluginTranspose = nullptr;
   }
 
   if(midiInputTransform)
   {
     delete midiInputTransform;
-    midiInputTransform = 0;
+    midiInputTransform = nullptr;
   }
   if(midiFilterConfig)
   {
      delete midiFilterConfig;
-     midiFilterConfig = 0;
+     midiFilterConfig = nullptr;
   }
   if(midiRemoteConfig)
   {
     delete midiRemoteConfig;
-    midiRemoteConfig = 0;
+    midiRemoteConfig = nullptr;
   }
 #ifdef BUILD_EXPERIMENTAL
   if(midiRhythmGenerator)
@@ -2857,12 +2972,12 @@ void MusE::deleteParentlessDialogs()
   if(midiTransformerDialog)
   {
     delete midiTransformerDialog;
-    midiTransformerDialog = 0;
+    midiTransformerDialog = nullptr;
   }
   if(routeDialog)
   {
     delete routeDialog;
-    routeDialog = 0;
+    routeDialog = nullptr;
   }
 
 }
@@ -2985,7 +3100,7 @@ void MusE::bounceToTrack()
       if(MusEGlobal::audio->bounce())
         return;
 
-      MusEGlobal::song->bounceOutput = 0;
+      MusEGlobal::song->bounceOutput = nullptr;
       MusEGlobal::song->bounceTrack = nullptr;
 
       if(MusEGlobal::song->waves()->empty())
@@ -3010,7 +3125,7 @@ void MusE::bounceToTrack()
       if(checkRegionNotNull())
         return;
 
-      MusECore::AudioOutput* out = 0;
+      MusECore::AudioOutput* out = nullptr;
       // If only one output, pick it, else pick the first selected.
       if(ol->size() == 1)
         out = ol->front();
@@ -3023,7 +3138,7 @@ void MusE::bounceToTrack()
           {
             if(out)
             {
-              out = 0;
+              out = nullptr;
               break;
             }
             out = o;
@@ -3041,20 +3156,20 @@ void MusE::bounceToTrack()
 
       // search target track
       MusECore::TrackList* tl = MusEGlobal::song->tracks();
-      MusECore::WaveTrack* track = 0;
+      MusECore::WaveTrack* track = nullptr;
 
       for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it) {
             MusECore::Track* t = *it;
             if (t->selected()) {
                     if(t->type() != MusECore::Track::WAVE && t->type() != MusECore::Track::AUDIO_OUTPUT) {
-                        track = 0;
+                        track = nullptr;
                         break;
                     }
                     if(t->type() == MusECore::Track::WAVE)
                     {
                       if(track)
                       {
-                        track = 0;
+                        track = nullptr;
                         break;
                       }
                       track = (MusECore::WaveTrack*)t;
@@ -3063,7 +3178,7 @@ void MusE::bounceToTrack()
                   }
             }
 
-      if (track == 0) {
+      if (track == nullptr) {
           if(ol->size() == 1) {
             QMessageBox::critical(this,
                tr("MusE: Bounce to Track"),
@@ -3102,7 +3217,7 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       {
       if(MusEGlobal::audio->bounce())
         return;
-      MusEGlobal::song->bounceOutput = 0;
+      MusEGlobal::song->bounceOutput = nullptr;
       MusEGlobal::song->bounceTrack = nullptr;
       if(!ao)
       {
@@ -3127,13 +3242,13 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
             {
               if(ao)
               {
-               ao = 0;
+               ao = nullptr;
                break;
               }
               ao = o;
             }
           }
-          if (ao == 0) {
+          if (ao == nullptr) {
                 QMessageBox::critical(this,
                   tr("MusE: Bounce to File"),
                   tr("Select one audio output track")
@@ -3146,8 +3261,8 @@ void MusE::bounceToFile(MusECore::AudioOutput* ao)
       if (checkRegionNotNull())
             return;
 
-      MusECore::SndFile* sf = MusECore::getSndFile(0, this);
-      if (sf == 0)
+      MusECore::SndFile* sf = MusECore::getSndFile(nullptr, this);
+      if (sf == nullptr)
             return;
 
       // Switch all wave converters to offline settings mode.
@@ -3328,7 +3443,7 @@ again:
 
 void MusE::startEditInstrument(const QString& find_instrument, EditInstrumentTabType show_tab)
     {
-      if(editInstrument == 0)
+      if(editInstrument == nullptr)
       {
             editInstrument = new MusEGui::EditInstrument(this);
             editInstrument->show();
@@ -3682,7 +3797,7 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
       fprintf(stderr, " old type: %s\n", typeid(*old).name());
     if(now)
       fprintf(stderr, " now type: %s\n", typeid(*now).name());
-    if (dynamic_cast<QMdiSubWindow*>(now)!=0)
+    if (dynamic_cast<QMdiSubWindow*>(now) != nullptr)
     {
       QWidget* tmp=dynamic_cast<QMdiSubWindow*>(now)->widget();
       if (tmp)
@@ -3763,7 +3878,7 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
   }
 
   // if the activated widget is a QMdiSubWindow containing some TopWin
-  if ( (dynamic_cast<QMdiSubWindow*>(ptr)!=0) &&
+  if ( (dynamic_cast<QMdiSubWindow*>(ptr) != nullptr) &&
        (dynamic_cast<MusEGui::TopWin*>( ((QMdiSubWindow*)ptr)->widget() )!=0) )
   {
     MusEGui::TopWin* tmp = (MusEGui::TopWin*) ((QMdiSubWindow*)ptr)->widget();
@@ -3784,7 +3899,7 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
     if (MusEGlobal::heavyDebugMsg)
       fprintf(stderr, "focusChanged: at widget %p with type %s\n",ptr, typeid(*ptr).name());
 
-    if ( (dynamic_cast<MusEGui::TopWin*>(ptr)!=0) || // *ptr is a TopWin or a derived class
+    if ( (dynamic_cast<MusEGui::TopWin*>(ptr) != nullptr) || // *ptr is a TopWin or a derived class
          (ptr==this) )                               // the main window is selected
       break;
     ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns NULL, which stops the loop
@@ -3812,7 +3927,7 @@ void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
   if (MusEGlobal::debugMsg) fprintf(stderr, "ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
 
   if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
-       ( (mdiArea->currentSubWindow() != NULL) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
+       ( (mdiArea->currentSubWindow() != nullptr) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
   {
     if (MusEGlobal::debugMsg) fprintf(stderr, "  that's a menu sharing muse window which isn't inside the MDI area.\n");
     // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
@@ -3841,7 +3956,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
   if (win!=currentMenuSharingTopwin)
   {
     MusEGui::TopWin* previousMenuSharingTopwin = currentMenuSharingTopwin;
-    currentMenuSharingTopwin = NULL;
+    currentMenuSharingTopwin = nullptr;
 
     if (MusEGlobal::debugMsg) fprintf(stderr, "MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
 
@@ -3896,7 +4011,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           if(MusEGlobal::heavyDebugMsg) 
             fprintf(stderr, "  removing sharer's toolbar '%s'\n", tb->windowTitle().toLatin1().data());
           removeToolBar(tb); // this does not delete *it, which is good
-          tb->setParent(NULL);
+          tb->setParent(nullptr);
         }
       }
         
@@ -3935,7 +4050,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           if (MusEGlobal::heavyDebugMsg) 
             fprintf(stderr, "  removing optional toolbar '%s'\n", tb->windowTitle().toLatin1().data());
           removeToolBar(tb); // this does not delete *it, which is good
-          tb->setParent(NULL);
+          tb->setParent(nullptr);
         }
       }
     }
@@ -3970,7 +4085,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding toolbar break\n");
 
           addToolBarBreak();
-          foreignToolbars.push_back(NULL);
+          foreignToolbars.push_back(nullptr);
         }
     }
 
@@ -4004,26 +4119,26 @@ void MusE::shareMenuAndToolbarChanged(MusEGui::TopWin* win, bool val)
       if (activeTopWin && (win != activeTopWin) && (activeTopWin->sharesToolsAndMenu()))
         setCurrentMenuSharingTopwin(activeTopWin);
       else
-        setCurrentMenuSharingTopwin(NULL);
+        setCurrentMenuSharingTopwin(nullptr);
     }
   }
 }
 
 void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
 {
-  if (topwin==NULL)
+  if (topwin == nullptr)
     return;
 
   if (topwin == waitingForTopwin)
   {
     if (waitingForTopwin->deleting())
     {
-      waitingForTopwin=NULL;
+      waitingForTopwin = nullptr;
     }
     else
     {
       activeTopWin=waitingForTopwin;
-      waitingForTopwin=NULL;
+      waitingForTopwin = nullptr;
       emit activeTopWinChanged(activeTopWin);
     }
   }
@@ -4031,45 +4146,38 @@ void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
   {
     fprintf(stderr, "====== DEBUG ======: topwin's menu got inited AFTER being shared!\n");
     if (!topwin->sharesToolsAndMenu()) fprintf(stderr, "======       ======: WTF, now it doesn't share any more?!?\n");
-    setCurrentMenuSharingTopwin(NULL);
+    setCurrentMenuSharingTopwin(nullptr);
     setCurrentMenuSharingTopwin(topwin);
   }
 }
 
 void MusE::updateWindowMenu()
 {
-    bool sep;
-
     menuWindows->clear(); // frees memory automatically
 
-    sep=false;
-    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
-        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
-            // the isVisibleTo check is necessary because isVisible returns false if a
-            // MdiSubWin is actually visible, but the muse main window is hidden for some reason
-        {
-            if (!sep)
-            {
-                menuWindows->addSeparator();
-                sep=true;
-            }
-            QAction* temp=menuWindows->addAction((*it)->windowTitle());
-            QWidget* tlw = static_cast<QWidget*>(*it);
+    for (const auto& it : toplevels) {
+        if (it->isMdiWin()) {
+            QAction* temp = menuWindows->addAction(it->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(it);
             connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
+
+            if (it->type() == TopWin::ARRANGER) { // should be always on top
+                temp->setShortcut(shortcuts[SHRT_ARRANGER].key);
+                if (toplevels.size() > 1)
+                    menuWindows->addSeparator();
+            }
         }
     }
 
-    sep=false;
-    for (MusEGui::iToplevel it=toplevels.begin(); it!=toplevels.end(); it++) {
-        if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
-        {
-            if (!sep)
-            {
+    bool sep = false;
+    for (const auto& it : toplevels) {
+        if (!it->isMdiWin()) {
+            if (!sep && toplevels.size() > 2) {
                 menuWindows->addSeparator();
-                sep=true;
+                sep = true;
             }
-            QAction* temp=menuWindows->addAction((*it)->windowTitle());
-            QWidget* tlw = static_cast<QWidget*>(*it);
+            QAction* temp = menuWindows->addAction(it->windowTitle());
+            QWidget* tlw = static_cast<QWidget*>(it);
             connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
         }
     }
@@ -4245,7 +4353,7 @@ void MusE::importWave()
       {
          QAction act(MusEGlobal::song);
          act.setData(MusECore::Track::WAVE);
-         track = MusEGlobal::song->addNewTrack(&act, NULL);
+         track = MusEGlobal::song->addNewTrack(&act, nullptr);
       }
 
       if(!track)
@@ -4371,7 +4479,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
         sfiNew.sections = 0;
 
         SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
-        if(sfNew == NULL)
+        if(sfNew == nullptr)
         {
           QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
                                 tr("Can't create new wav file in project folder!\n") + sf_strerror(NULL));
