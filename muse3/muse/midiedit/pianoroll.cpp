@@ -268,7 +268,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
       menuConfig = menuBar()->addMenu(tr("&Display"));
-      
+      menuConfig->menuAction()->setStatusTip(tr("View-specific display options"));
+
       menuConfig->addAction(subwinAction);
 //      menuConfig->addAction(shareAction);
       menuConfig->addAction(fullscreenAction);

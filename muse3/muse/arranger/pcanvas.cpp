@@ -1237,8 +1237,8 @@ void PartCanvas::mouseRelease(QMouseEvent*)
           automation.controllerState = doNothing;
           //automation.currentCtrl=0;
           automation.currentCtrlValid = false;
-          automation.currentTrack=0;
-          automation.currentCtrlList=0;
+          automation.currentTrack=nullptr;
+          automation.currentCtrlList=nullptr;
           //automation.breakUndoCombo = false; // Don't touch this here.
       }
 
@@ -1278,7 +1278,7 @@ MusECore::Track* PartCanvas::y2Track(int y) const
                   return *it;
             ty += h;
             }
-      return 0;
+      return nullptr;
       }
 
 //---------------------------------------------------------

@@ -481,6 +481,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::loopAction->setCheckable(true);
 
       MusEGlobal::loopAction->setWhatsThis(tr("Loop between left mark and right mark"));
+      MusEGlobal::loopAction->setStatusTip(tr("Loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
 
       MusEGlobal::punchinAction = new QAction(*MusEGui::punchinSVGIcon, tr("Punch in"),
@@ -488,6 +489,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::punchinAction->setCheckable(true);
 
       MusEGlobal::punchinAction->setWhatsThis(tr("Record starts at left mark"));
+      MusEGlobal::punchinAction->setStatusTip(tr("Record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
       MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punch out"),
@@ -495,6 +497,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::punchoutAction->setCheckable(true);
 
       MusEGlobal::punchoutAction->setWhatsThis(tr("Record stops at right mark"));
+      MusEGlobal::punchoutAction->setStatusTip(tr("Record stops at right mark"));
       connect(MusEGlobal::punchoutAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchout(bool)));
 
       QAction *tseparator = new QAction(this);
@@ -549,6 +552,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::panicAction->setMenu(panicPopupMenu);
       
       MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels"));
+      MusEGlobal::panicAction->setStatusTip(tr("Send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
@@ -1018,6 +1022,7 @@ MusE::MusE() : QMainWindow()
       trailingMenus.push_back(menu_help);
 
       menu_help->addAction(helpManualAction);
+      menu_help->addAction(whatsthis);
       menu_help->addAction(helpHomepageAction);
       menu_help->addAction(helpDidYouKnow);
       menu_help->addSeparator();
@@ -4822,6 +4827,13 @@ void MusE::initStatusBar() {
     connect(cpuStatusBar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
     statusBar()->addPermanentWidget(cpuStatusBar);
 
+    QString s = QString("%1 | Sample rate: %2Hz | Segment size: %3 | Segment count: %4")
+            .arg(MusEGlobal::audioDevice->driverName())
+            .arg(MusEGlobal::sampleRate)
+            .arg(MusEGlobal::segmentSize)
+            .arg(MusEGlobal::segmentCount);
+    statusBar()->addWidget(new QLabel(s));
+
     updateStatusBar();
 }
 
@@ -4829,15 +4841,15 @@ void MusE::updateStatusBar() {
 
     statusBar()->setVisible(MusEGlobal::config.showStatusBar);
 
-    if (MusEGlobal::config.showStatusBar) {
-        QString s = QString("Audio driver: %1 | Sample rate: %2Hz | Segment size: %3 | Segment count: %4")
-                .arg(MusEGlobal::audioDevice->driverName())
-                .arg(MusEGlobal::sampleRate)
-                .arg(MusEGlobal::segmentSize)
-                .arg(MusEGlobal::segmentCount);
-        //    statusBar()->addWidget(new QLabel(s));
-        setStatusBarText(s);
-    }
+//    if (MusEGlobal::config.showStatusBar) {
+//        QString s = QString("%1 | Sample rate: %2Hz | Segment size: %3 | Segment count: %4")
+//                .arg(MusEGlobal::audioDevice->driverName())
+//                .arg(MusEGlobal::sampleRate)
+//                .arg(MusEGlobal::segmentSize)
+//                .arg(MusEGlobal::segmentCount);
+//        statusBar()->addWidget(new QLabel(s));
+//        setStatusBarText(s);
+//    }
 }
 
 void MusE::setStatusBarText(const QString &message, int timeout) {

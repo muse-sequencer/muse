@@ -312,6 +312,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
+      settingsMenu->menuAction()->setStatusTip(tr("View-specific display options"));
 
       settingsMenu->addAction(subwinAction);
 //      settingsMenu->addAction(shareAction);

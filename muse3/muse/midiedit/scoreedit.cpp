@@ -459,6 +459,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         connect(func_legato_action,       &QAction::triggered, [this]() { menu_command(CMD_LEGATO); } );
 
     QMenu* settings_menu = menuBar()->addMenu(tr("&Display"));
+    settings_menu->menuAction()->setStatusTip(tr("View-specific display options"));
 
     settings_menu->addAction(subwinAction);
 //    settings_menu->addAction(shareAction);
