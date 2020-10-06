@@ -294,6 +294,8 @@ extern QIcon* settingsSVGIcon;
 extern QIcon* transportSVGIcon;
 extern QIcon* bigtimeSVGIcon;
 extern QIcon* mixerSVGIcon;
+extern QIcon* plusSVGIcon;
+extern QIcon* minusSVGIcon;
 
 //----------------------------------
 // Cursors

@@ -52,7 +52,7 @@ namespace MusEGlobal {
 // font scaling factors
 struct FntFac {
     static constexpr double F1 = 0.7;
-    static constexpr double F2 = 1.0;
+    static constexpr double F2 = 0.8;
     static constexpr double F3 = 1.0;
     static constexpr double F4 = 0.8;
     static constexpr double F5 = 0.8;
