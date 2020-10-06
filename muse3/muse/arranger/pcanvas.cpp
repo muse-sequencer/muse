@@ -132,10 +132,13 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
 
       setFocusPolicy(Qt::StrongFocus);
       // Defaults:
-      lineEditor = 0;
+      lineEditor = nullptr;
       editMode   = false;
 
       supportsResizeToTheLeft = true;
+      setStatusTip(tr("Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers"));
+//      MusEGlobal::muse->setStatusBarText(tr("Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers"));
+
 
       tracks = MusEGlobal::song->tracks();
       setMouseTracking(true);
@@ -260,11 +263,17 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       QPoint cpos = event->pos();
       curItem     = items.find(cpos);
       bool ctrl  = event->modifiers() & Qt::ControlModifier;
+      bool shift  = event->modifiers() & Qt::ShiftModifier;
       if (curItem) {
-            if (event->button() == Qt::LeftButton && ctrl) {
+          if ((event->button() == Qt::LeftButton) && ctrl && shift) {
+              deselectAll();
+              selectItem(curItem, true);
+              emit dclickPart(((NPart*)(curItem))->track());
+          }
+          else if ((event->button() == Qt::LeftButton) && ctrl) {
                   editPart = (NPart*)curItem;
                   QRect r = map(curItem->bbox());
-                  if (lineEditor == 0) {
+                  if (lineEditor == nullptr) {
                         lineEditor = new QLineEdit(this);
                         lineEditor->setFrame(true);
                         connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
@@ -1221,7 +1230,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                       }
                   }
                   return false;
-                  break;
+//                  break;
             }
       return true;
       }
@@ -1262,7 +1271,52 @@ void PartCanvas::mouseMove(QMouseEvent* event)
 
       event->ignore();
       emit timeChanged(MusEGlobal::sigmap.raster(x, *_raster));
-      }
+
+      showStatusTip(event);
+}
+
+void PartCanvas::showStatusTip(QMouseEvent* event) {
+
+    static CItem* hoverItem = nullptr;
+    static Tool localTool;
+    static QPoint lastpos;
+
+    if (event == nullptr && lastpos.isNull())
+        return;
+
+    CItem* item;
+    if (event) {
+        item = findCurrentItem(event->pos());
+        lastpos = event->pos();
+    } else
+        item = findCurrentItem(lastpos);
+
+    if (item) {
+        if (hoverItem == item && localTool == _tool)
+            return;
+
+        hoverItem = item;
+        localTool = _tool;
+
+        QString s;
+        if (_tool & (MusEGui::PointerTool ))
+            s = tr("LMB: Select / Move / Double-click to edit | CTRL+LMB: Multi select / Move&Copy | SHIFT+LMB: Select track parts | MMB: Delete");
+        else if (_tool & (MusEGui::PencilTool))
+            s = tr("LMB: Draw to resize / MMB: Delete | CTRL+RMB: Trim length");
+        else if (_tool & (MusEGui::RubberTool))
+            s = tr("LMB: Delete | CTRL+RMB: Trim length");
+
+        if (!s.isEmpty())
+            MusEGlobal::muse->setStatusBarText(s);
+    } else {
+        if (hoverItem != nullptr) {
+            MusEGlobal::muse->clearStatusBarText();
+            hoverItem = nullptr;
+            lastpos.setX(0);
+            lastpos.setY(0);
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   y2Track

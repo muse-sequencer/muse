@@ -2339,7 +2339,8 @@ bool MusE::filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartLis
 
 bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl) {
 
-    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+    if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier
+            && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
         return false;
 
     for (const auto& it : toplevels) {
@@ -2429,7 +2430,8 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
 
 bool MusE::findOpenListEditor(MusECore::PartList* pl) {
 
-    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+    if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier
+            && QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
         return false;
 
     for (const auto& d : findChildren<QDockWidget*>()) {
@@ -4838,18 +4840,7 @@ void MusE::initStatusBar() {
 }
 
 void MusE::updateStatusBar() {
-
     statusBar()->setVisible(MusEGlobal::config.showStatusBar);
-
-//    if (MusEGlobal::config.showStatusBar) {
-//        QString s = QString("%1 | Sample rate: %2Hz | Segment size: %3 | Segment count: %4")
-//                .arg(MusEGlobal::audioDevice->driverName())
-//                .arg(MusEGlobal::sampleRate)
-//                .arg(MusEGlobal::segmentSize)
-//                .arg(MusEGlobal::segmentCount);
-//        statusBar()->addWidget(new QLabel(s));
-//        setStatusBarText(s);
-//    }
 }
 
 void MusE::setStatusBarText(const QString &message, int timeout) {
