@@ -131,9 +131,9 @@ GlobalConfigValues config = {
       {
         QFont(QString("sans-serif"), 10, QFont::Normal),
         QFont(QString("sans-serif"), 7,  QFont::Normal),    // Mixer strips and midi track info panel
-        QFont(QString("sans-serif"), 8,  QFont::Normal),
+        QFont(QString("sans-serif"), 8,  QFont::Normal),    // Part name overlay
         QFont(QString("sans-serif"), 10, QFont::Normal),
-        QFont(QString("sans-serif"), 8,  QFont::Normal),    // Small numbers: Timescale and markers, part name overlay
+        QFont(QString("sans-serif"), 8,  QFont::Normal),    // Small numbers: Timescale and markers
         QFont(QString("sans-serif"), 8,  QFont::Bold),      // Small bold numbers such as marker text
         QFont(QString("sans-serif"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone,
                                                         //  at the price of only few more pixels than Normal mode.

@@ -406,6 +406,8 @@ QIcon* settingsSVGIcon;
 QIcon* transportSVGIcon;
 QIcon* bigtimeSVGIcon;
 QIcon* mixerSVGIcon;
+QIcon* plusSVGIcon;
+QIcon* minusSVGIcon;
 
 //----------------------------------
 // Cursors
@@ -739,6 +741,8 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     transportSVGIcon   = icons.getSVG("transport.svg");
     bigtimeSVGIcon     = icons.getSVG("bigtime.svg");
     mixerSVGIcon       = icons.getSVG("mixer.svg");
+    plusSVGIcon        = icons.getSVG("plus.svg");
+    minusSVGIcon       = icons.getSVG("minus.svg");
 
     // tool icons
     pencilIconSVG     = icons.getSVG("pencil.svg");
@@ -1042,6 +1046,8 @@ void deleteIcons()
     delete transportSVGIcon;
     delete bigtimeSVGIcon;
     delete mixerSVGIcon;
+    delete plusSVGIcon;
+    delete minusSVGIcon;
 
     delete noscaleSVGIcon[0];
     delete noscaleSVGIcon[1];
