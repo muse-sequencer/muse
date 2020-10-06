@@ -2206,7 +2206,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             bool rev = brightness >= 12000 && !item_selected;
-            p.setFont(MusEGlobal::config.fonts[4]);
+            p.setFont(MusEGlobal::config.fonts[2]);
             if (rev)
               p.setPen(Qt::white);
             else

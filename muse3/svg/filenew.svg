@@ -1,15 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
- <metadata>
-  <rdf:RDF>
-   <cc:Work rdf:about="">
-    <dc:format>image/svg+xml</dc:format>
-    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:title/>
-   </cc:Work>
-  </rdf:RDF>
- </metadata>
- <path d="m10 4v55h45v-40l-15-15z" fill="#fff" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
- <path d="m40 4v15h15" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
- <path d="m41.038 12.241v-5.7342l5.7188 5.7185c3.1453 3.1452 5.7188 5.7256 5.7188 5.7342 0 0.0087-2.5734 0.01575-5.7188 0.01575h-5.7188z" fill="#fff" style="paint-order:stroke fill markers"/>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <path d="m10 6v51a2 2 45 0 0 2 2h41a2 2 135 0 0 2-2v-36a4.8284 4.8284 67.5 0 0-1.4142-3.4142l-12.172-12.172a4.8284 4.8284 22.5 0 0-3.4142-1.4142h-26a2 2 135 0 0-2 2z" fill="#fff" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+ <path d="m39.14 4.67v15h15" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
 </svg>

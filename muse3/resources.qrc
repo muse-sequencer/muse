@@ -136,5 +136,7 @@
         <file>svg/mixer.svg</file>
         <file>svg/bigtime.svg</file>
         <file>svg/transport.svg</file>
+        <file>svg/minus.svg</file>
+        <file>svg/plus.svg</file>
     </qresource>
 </RCC>

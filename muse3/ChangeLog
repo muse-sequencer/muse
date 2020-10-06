@@ -1,3 +1,6 @@
+06.10.2020
+    - Fix: Replace marker icons by SVG. (kybos)
+    - Theme: Color tab text (active/hover) for better visibility. (kybos)
 02.10.2020
     - Add: Show number of opened parts per editor in title bar/tab. (kybos)
     - New: Don't open new editor windows when the same part(s) is/are already opened.

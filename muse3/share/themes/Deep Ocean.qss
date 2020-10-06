@@ -231,7 +231,15 @@ QTreeView, QListView {
     alternate-background-color: rgb(60,60,60);
     background: rgb(30,30,30);
  }
- 
+
+QMdiArea QTabBar::tab:selected {
+    color: lightblue;
+}
+
+QMdiArea QTabBar::tab:hover {
+    color: yellow;
+}
+
 /* The title header background colour in popup and routing menus: */
 MusEGui--MenuTitleLabel {
     background-color: SeaGreen;

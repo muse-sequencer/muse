@@ -161,10 +161,10 @@ MarkerView::MarkerView(QWidget* parent)
       {
       setObjectName("MarkerView");
 
-      QAction* markerAdd = new QAction(QIcon(*flagIcon), tr("Add marker"), this);
+      QAction* markerAdd = new QAction(*plusSVGIcon, tr("Add marker"), this);
       connect(markerAdd, SIGNAL(triggered()), SLOT(addMarker()));
 
-      QAction* markerDelete = new QAction(QIcon(*deleteIcon), tr("Delete marker"), this);
+      QAction* markerDelete = new QAction(*minusSVGIcon, tr("Delete marker"), this);
       connect(markerDelete, SIGNAL(triggered()), SLOT(deleteMarker()));    
       
       // Toolbars ---------------------------------------------------------
