@@ -194,7 +194,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editorNewSubmenu->addAction(startListEditNewAction);
   editorNewSubmenu->addAction(startWaveEditNewAction);
 
-  openCurrentTrackSynthGuiAction =  new QAction(*ankerSVGIcon, tr("Open Synth Plugin GUI..."), this);
+  openCurrentTrackSynthGuiAction =  new QAction(*noscaleSVGIcon[0], tr("Open Synth Plugin GUI..."), this);
 
   midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform..."), this);
 
@@ -234,15 +234,15 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   menuEdit->addMenu(addTrack);
   menuEdit->addMenu(insertTrack);
-  menuEdit->addAction(editDeleteSelectedAction);
   menuEdit->addAction(editDuplicateSelTrackAction);
+  menuEdit->addAction(editDeleteSelectedAction);
   menuEdit->addSeparator();
 
-  menuEdit->addMenu(editorNewSubmenu);
   menuEdit->addAction(startPianoEditAction);
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
   menuEdit->addAction(startWaveEditAction);
+  menuEdit->addMenu(editorNewSubmenu);
   menuEdit->addMenu(scoreSubmenu);
 
   menuEdit->addSeparator();

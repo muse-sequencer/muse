@@ -763,7 +763,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
     noscaleSVGIcon[0] = icons.getSVG("noscale1.svg");
     noscaleSVGIcon[1] = icons.getSVG("noscale2.svg");
-    noscaleSVGIcon[2] = new QIcon(":/svg/noscale3.svg");
+    noscaleSVGIcon[2] = icons.getSVG("noscale3.svg");
 
     //----------------------------------
     // Cursors

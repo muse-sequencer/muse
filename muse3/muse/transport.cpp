@@ -162,7 +162,7 @@ TempoSig::TempoSig(QWidget* parent)
       hb1->addWidget(_masterButton);
       
       l3 = new QLabel(tr("Tempo/Sig"));
-      l3->setFont(MusEGlobal::config.fonts[2]);
+//      l3->setFont(MusEGlobal::config.fonts[2]);
       vb2->addWidget(l3);
       l1 = new TempoEdit();
       l1->setContentsMargins(0, 0, 0, 0);
@@ -205,7 +205,7 @@ TempoSig::TempoSig(QWidget* parent)
 
 void TempoSig::configChanged()
       {
-      l3->setFont(MusEGlobal::config.fonts[2]);
+//      l3->setFont(MusEGlobal::config.fonts[2]);
       }
 
 //---------------------------------------------------------
@@ -300,7 +300,7 @@ Transport::Transport(QWidget* parent, const char* name)
       box1->addWidget(recMode);
 
       l2 = new QLabel(tr("Rec Mode"));
-      l2->setFont(MusEGlobal::config.fonts[2]);
+//      l2->setFont(MusEGlobal::config.fonts[2]);
       l2->setAlignment(Qt::AlignCenter);
       connect(recMode, SIGNAL(activated(int)), SLOT(setRecMode(int)));
       box1->addWidget(l2);
@@ -315,7 +315,7 @@ Transport::Transport(QWidget* parent, const char* name)
       box1->addWidget(cycleMode);
 
       l3 = new QLabel(tr("Cycle Rec"));
-      l3->setFont(MusEGlobal::config.fonts[2]);
+//      l3->setFont(MusEGlobal::config.fonts[2]);
       l3->setAlignment(Qt::AlignCenter);
       connect(cycleMode, SIGNAL(activated(int)), SLOT(setCycleMode(int)));
       box1->addWidget(l3);
@@ -374,7 +374,7 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->addWidget(tl1);
 
       l5 = new QLabel(tr("Left Mark"));
-      l5->setFont(MusEGlobal::config.fonts[2]);
+//      l5->setFont(MusEGlobal::config.fonts[2]);
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
@@ -384,7 +384,7 @@ Transport::Transport(QWidget* parent, const char* name)
       tl2->setFocusPolicy(Qt::NoFocus);
 
       l6 = new QLabel(tr("Right Mark"));
-      l6->setFont(MusEGlobal::config.fonts[2]);
+//      l6->setFont(MusEGlobal::config.fonts[2]);
       l6->setAlignment(Qt::AlignCenter);
       marken->addWidget(l6);
 
@@ -583,10 +583,10 @@ Transport::Transport(QWidget* parent, const char* name)
 
 void Transport::configChanged()
       {
-      l2->setFont(MusEGlobal::config.fonts[2]);
-      l3->setFont(MusEGlobal::config.fonts[2]);
-      l5->setFont(MusEGlobal::config.fonts[2]);
-      l6->setFont(MusEGlobal::config.fonts[2]);
+//      l2->setFont(MusEGlobal::config.fonts[2]);
+//      l3->setFont(MusEGlobal::config.fonts[2]);
+//      l5->setFont(MusEGlobal::config.fonts[2]);
+//      l6->setFont(MusEGlobal::config.fonts[2]);
 
       QPalette pal;
       pal.setColor(lefthandle->backgroundRole(), MusEGlobal::config.transportHandleColor);
