@@ -356,12 +356,13 @@ MusEGui--Strip {
 }
 
 MusEGui--PianoRoll {
-  qproperty-pianoWidth: 60;
+	qproperty-pianoWidth: 60;
 }
 
 MusEGui--CompactSlider#MixerStripAudioPan,
 MusEGui--CompactSlider#MixerStripMidiPanController {
-    qproperty-thumbLength: 6;
+/* better use even numbers */
+    qproperty-thumbLength: 2;
 /*
     qproperty-thumbColor: red;
 */
