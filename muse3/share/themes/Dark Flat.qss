@@ -25,7 +25,7 @@ QStatusBar #PaddedValueLabel  {
 }
 
 QStatusBar {
-    color: lightgreen;
+    color: LightSkyBlue;
 }
 
 QToolButton {

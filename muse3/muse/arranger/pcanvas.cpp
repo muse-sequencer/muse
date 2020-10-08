@@ -136,9 +136,8 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       editMode   = false;
 
       supportsResizeToTheLeft = true;
-      setStatusTip(tr("Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers"));
+      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers (set with MMB + RMB)."));
 //      MusEGlobal::muse->setStatusBarText(tr("Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers"));
-
 
       tracks = MusEGlobal::song->tracks();
       setMouseTracking(true);
@@ -263,9 +262,9 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       QPoint cpos = event->pos();
       curItem     = items.find(cpos);
       bool ctrl  = event->modifiers() & Qt::ControlModifier;
-      bool shift  = event->modifiers() & Qt::ShiftModifier;
+      bool alt = event->modifiers() & Qt::AltModifier;
       if (curItem) {
-          if ((event->button() == Qt::LeftButton) && ctrl && shift) {
+          if ((event->button() == Qt::LeftButton) && ctrl && alt) {
               deselectAll();
               selectItem(curItem, true);
               emit dclickPart(((NPart*)(curItem))->track());
@@ -1279,17 +1278,9 @@ void PartCanvas::showStatusTip(QMouseEvent* event) {
 
     static CItem* hoverItem = nullptr;
     static Tool localTool;
-    static QPoint lastpos;
-
-    if (event == nullptr && lastpos.isNull())
-        return;
 
     CItem* item;
-    if (event) {
         item = findCurrentItem(event->pos());
-        lastpos = event->pos();
-    } else
-        item = findCurrentItem(lastpos);
 
     if (item) {
         if (hoverItem == item && localTool == _tool)
@@ -1300,11 +1291,19 @@ void PartCanvas::showStatusTip(QMouseEvent* event) {
 
         QString s;
         if (_tool & (MusEGui::PointerTool ))
-            s = tr("LMB: Select / Move / Double-click to edit | CTRL+LMB: Multi select / Move&Copy | SHIFT+LMB: Select track parts | MMB: Delete");
+            s = tr("LMB: Select / Move / Dblclick to edit | CTRL+LMB: Multi select / Move&Copy | CTRL+ALT+LMB: Dblclick to edit in new window | SHIFT+LMB: Select track | MMB: Delete");
         else if (_tool & (MusEGui::PencilTool))
             s = tr("LMB: Draw to resize / MMB: Delete | CTRL+RMB: Trim length");
         else if (_tool & (MusEGui::RubberTool))
             s = tr("LMB: Delete | CTRL+RMB: Trim length");
+        else if (_tool & (MusEGui::CutTool))
+            s = tr("LMB: Cut part in two");
+        else if (_tool & (MusEGui::GlueTool))
+            s = tr("LMB: Merge with following part");
+        else if (_tool & (MusEGui::MuteTool))
+            s = tr("LMB: Mute selected part");
+        else if (_tool & (MusEGui::AutomationTool))
+            s = tr("LMB: Edit automation events in audio parts");
 
         if (!s.isEmpty())
             MusEGlobal::muse->setStatusBarText(s);
@@ -1312,8 +1311,6 @@ void PartCanvas::showStatusTip(QMouseEvent* event) {
         if (hoverItem != nullptr) {
             MusEGlobal::muse->clearStatusBarText();
             hoverItem = nullptr;
-            lastpos.setX(0);
-            lastpos.setY(0);
         }
     }
 }

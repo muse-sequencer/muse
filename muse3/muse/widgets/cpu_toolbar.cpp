@@ -202,17 +202,20 @@ CpuStatusBar::CpuStatusBar(QWidget* parent)
     setToolTip(tr("CPU load averaged over each GUI update period\nDSP load read from JACK\nNumber of xruns\n(click to reset)"));
 
     cpuLabel = new PaddedValueLabel(true, this, Qt::Widget, "CPU: ", "%");
-    cpuLabel->setToolTip(tr("CPU load averaged over each GUI update period"));
+    cpuLabel->setToolTip(tr("CPU load averaged over each GUI update period."));
+    cpuLabel->setStatusTip(tr("CPU load averaged over each GUI update period."));
     cpuLabel->setFieldWidth(5);
     cpuLabel->setPrecision(1);
 
     dspLabel = new PaddedValueLabel(true, this, Qt::Widget, "DSP: ", "%");
-    dspLabel->setToolTip(tr("DSP load read from JACK"));
+    dspLabel->setToolTip(tr("DSP load read from JACK."));
+    dspLabel->setStatusTip(tr("DSP load read from JACK."));
     dspLabel->setFieldWidth(5);
     dspLabel->setPrecision(1);
 
     xrunsLabel = new XRunLabel(this);
-    xrunsLabel->setToolTip(tr("Number of xruns\n(double-click to reset)"));
+    xrunsLabel->setToolTip(tr("Number of xruns.\nDouble-click to reset."));
+    xrunsLabel->setStatusTip(tr("Number of xruns.\nDouble-click to reset."));
     xrunsLabel->setFieldWidth(3);
 
     setValues(0.0f, 0.0f, 0);

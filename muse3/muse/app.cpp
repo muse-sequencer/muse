@@ -2431,7 +2431,7 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
 bool MusE::findOpenListEditor(MusECore::PartList* pl) {
 
     if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier
-            && QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+            && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
         return false;
 
     for (const auto& d : findChildren<QDockWidget*>()) {

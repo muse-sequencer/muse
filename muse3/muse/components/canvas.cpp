@@ -1689,6 +1689,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       QPoint pos = event->pos();
       bool ctrl = event->modifiers() & Qt::ControlModifier;
       bool shift = event->modifiers() & Qt::ShiftModifier;
+      bool alt = event->modifiers() & Qt::AltModifier;
       bool redrawFlag = false;
 
       switch (drag) {
@@ -1700,7 +1701,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         curPartId = curPart->sn();
                         curPartChanged();
                         }
-                  if (!ctrl)
+                  if (alt || !ctrl)
                         deselectAll();
                   if(curItem)
                   {
@@ -1947,7 +1948,7 @@ void Canvas::setTool(int t)
             return;
       _tool = Tool(t);
       setCursor();
-      MusEGlobal::muse->clearStatusBarText();
+//      MusEGlobal::muse->clearStatusBarText();
       update();
       }
 
