@@ -259,6 +259,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       //  because the contents need to scale. Without this, contents were not
       //  updating on Mint Cinnamon when adjusting the vertical splitters.
       setAttribute(Qt::WA_StaticContents, false);
+      setStatusTip(tr("Control canvas: Use Pencil tool to edit events and Draw tool to adjust them gradually."));
 
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
           setBg(MusEGlobal::config.midiControllerViewBg);
@@ -306,8 +307,8 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
 
       setMouseTracking(true);
-      curPart = 0;
-      curTrack = 0;
+      curPart = nullptr;
+      curTrack = nullptr;
       if (!editor->parts()->empty())
             setCurTrackAndPart();
 

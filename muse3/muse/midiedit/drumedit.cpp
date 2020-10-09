@@ -191,7 +191,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       veloOnOffset  = 0;
       veloOffOffset = 0;
       lastSelections = 0;
-      split1w1 = 0;
+      split1w1 = nullptr;
       //selPart  = 0;
       _playEvents    = true;
       _canvasXOrigin = DefaultCanvasXOrigin;
@@ -312,7 +312,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      settingsMenu->menuAction()->setStatusTip(tr("View-specific display options"));
+      settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
 
       settingsMenu->addAction(subwinAction);
 //      settingsMenu->addAction(shareAction);

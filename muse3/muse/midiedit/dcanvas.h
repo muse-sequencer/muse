@@ -139,6 +139,8 @@ class DrumCanvas : public EventCanvas {
       virtual void curPartChanged() override;
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
       void mouseMove(QMouseEvent* event) override;
+      void showNoteTooltip(QMouseEvent* event);
+      void showStatusTip(QMouseEvent *event);
 
    protected:
       void setCursor() override;

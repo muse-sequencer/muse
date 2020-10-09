@@ -669,9 +669,9 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
 bool DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y)
       {
       // Include a "<Default>" entry. Do not pass parent! Causes accelerators to be returned in QAction::text() !
-      QMenu* p = MusEGui::midiPortsPopup(0, t->port, true);
+      QMenu* p = MusEGui::midiPortsPopup(nullptr, t->port, true);
       
-      QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
+      QAction* act = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
       if(!act)
       {
         delete p;
@@ -777,7 +777,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             else
               shown=true;
 
-          QMenu* popup = new QMenu(NULL /* intendedly not "this" */);
+          QMenu* popup = new QMenu(nullptr /* intendedly not "this" */);
 
           popup->setToolTipsVisible(true);
 
@@ -1366,7 +1366,7 @@ void DList::sizeChange(int section, int, int)
 {
   redraw();
 
-  if(editEntry==NULL)
+  if(editEntry==nullptr)
     return;
 
   const int line = (editEntry-ourDrumMap);
@@ -1411,7 +1411,7 @@ void DList::escapePressed()
     pitch_editor->hide();
     pitch_editor->blockSignals(false);
   }
-  editEntry = 0;
+  editEntry = nullptr;
   setFocus();
   update();
 }
@@ -1422,13 +1422,13 @@ void DList::escapePressed()
 
 void DList::returnPressed()
       {
-      if (editor==NULL)
+      if (editor==nullptr)
       {
         printf("THIS SHOULD NEVER HAPPEN: editor is NULL in DList::returnPressed()!\n");
         return;
       }
 
-      if (editEntry==NULL)
+      if (editEntry==nullptr)
       {
         printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::returnPressed()!\n");
         selectedColumn = -1;
@@ -1462,7 +1462,7 @@ void DList::returnPressed()
       editor->blockSignals(true);
       editor->hide();
       editor->blockSignals(false);
-      editEntry = 0;
+      editEntry = nullptr;
       setFocus();
       update();
 
@@ -1476,13 +1476,13 @@ void DList::returnPressed()
 
 void DList::valEdited()
       {
-      if (val_editor==NULL)
+      if (val_editor==nullptr)
       {
         printf("THIS SHOULD NEVER HAPPEN: val_editor is NULL in DList::returnPressed()!\n");
         return;
       }
 
-      if (editEntry==NULL)
+      if (editEntry==nullptr)
       {
         printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::returnPressed()!\n");
         selectedColumn = -1;
@@ -1585,7 +1585,7 @@ void DList::valEdited()
       val_editor->blockSignals(true);
       val_editor->hide();
       val_editor->blockSignals(false);
-      editEntry = 0;
+      editEntry = nullptr;
       setFocus();
       update();
 
@@ -1599,13 +1599,13 @@ void DList::valEdited()
 
 void DList::pitchEdited()
 {
-      if (pitch_editor==NULL)
+      if (pitch_editor==nullptr)
       {
         printf("THIS SHOULD NEVER HAPPEN: pitch_editor is NULL in DList::pitchEdited()!\n");
         return;
       }
 
-      if (editEntry==NULL)
+      if (editEntry==nullptr)
       {
         printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::pitchEdited()!\n");
         selectedColumn = -1;
@@ -1644,11 +1644,11 @@ void DList::pitchEdited()
                     if(editEntry->enote != val)
                     {
                       editEntry->enote = val;
-                      editEntry = 0;
+                      editEntry = nullptr;
                       dcanvas->propagate_drummap_change(instrument, field, false, false, false, false);
                     }
                     else
-                      editEntry = 0;
+                      editEntry = nullptr;
                     return;
                 }
                 else
@@ -1676,7 +1676,7 @@ void DList::pitchEdited()
       pitch_editor->blockSignals(true);
       pitch_editor->hide();
       pitch_editor->blockSignals(false);
-      editEntry = 0;
+      editEntry = nullptr;
       setFocus();
       update();
 
@@ -1693,7 +1693,7 @@ void DList::moved(int section, int, int)
 {
   redraw();
 
-  if(editEntry==NULL)
+  if(editEntry==nullptr)
     return;
 
   const int line = (editEntry-ourDrumMap);
@@ -1775,7 +1775,9 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
       ourDrumMap=dcanvas->getOurDrumMap();
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
       connect(dcanvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
-      
+
+      setStatusTip(tr("Drum list: Edit instrument-specific settings."));
+
       init(h, parent);
       }
 
@@ -2114,7 +2116,7 @@ void DList::wheelEvent(QWheelEvent* ev)
 
 int DList::getSelectedInstrument()
       {
-      if (currentlySelected == NULL)
+      if (currentlySelected == nullptr)
             return -1;
       return currentlySelected - ourDrumMap;
       }
@@ -2130,12 +2132,12 @@ void DList::ourDrumMapChanged(bool instrMapChanged)
   
   if (instrMapChanged)
   {
-    if (editEntry!=NULL)
+    if (editEntry!=nullptr)
     {
       printf("THIS SHOULD NEVER HAPPEN: DList::ourDrumMapChanged(true) caused editEntry to be\n"
              "                          invalidated. The current active editor will have no\n"
              "                          effect, expect potential breakage...\n");
-      editEntry=NULL;
+      editEntry=nullptr;
     }
   }
   else // that is: if (!instrMapChanged)
@@ -2148,12 +2150,12 @@ void DList::ourDrumMapChanged(bool instrMapChanged)
              "                          cannot have changed (actually)\n");
       editIdx=-1;
     }
-    editEntry=(editIdx>=0) ? &ourDrumMap[editIdx] : NULL;
+    editEntry=(editIdx>=0) ? &ourDrumMap[editIdx] : nullptr;
   }
   
   if (selIdx >= ourDrumMapSize) selIdx=ourDrumMapSize-1;
   if (selIdx < 0) selIdx=0;
-  currentlySelected = (ourDrumMapSize!=0) ? &ourDrumMap[selIdx] : NULL;
+  currentlySelected = (ourDrumMapSize!=0) ? &ourDrumMap[selIdx] : nullptr;
   
   if (ourDrumMapSize==0)
     drag = NORMAL;

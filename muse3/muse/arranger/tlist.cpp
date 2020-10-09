@@ -108,6 +108,8 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       //  full rect paint events even on small scrolls! See help on QPainter::scroll().
       setAttribute(Qt::WA_OpaquePaintEvent);
 
+      setStatusTip(tr("Track list: Use context menu to create tracks. Click track ID to select, CTRL to add, SHIFT for range, dblclick to select all of same type."));
+
       setObjectName(name);
       ypos = 0;
       editMode = false;
@@ -631,7 +633,7 @@ void TList::returnPressed()
                 MusECore::TrackList* tl = MusEGlobal::song->tracks();
                 for (MusECore::iTrack i = tl->begin(); i != tl->end(); ++i) {
                       if ((*i)->name() == editor->text()) {
-                            editTrack = 0;
+                            editTrack = nullptr;
                             editor->blockSignals(true);  
                             editor->hide();
                             editor->blockSignals(false); 
@@ -653,7 +655,7 @@ void TList::returnPressed()
                 }
         }    
         
-        editTrack = 0;
+        editTrack = nullptr;
       }  
       
       editMode = false;
@@ -674,7 +676,7 @@ void TList::chanValueFinished()
     // Default to track port if -1 and track channel if -1.
     const int channel = chan_edit->value() - (editTrack->isMidiTrack() ? 1 : 0); // Subtract 1 from midi channel display.
     setTrackChannel(editTrack, false, channel, 0);
-    editTrack = 0;
+    editTrack = nullptr;
   }
 
   editMode = false;
@@ -1053,7 +1055,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
       }
       
       MusECore::Track* t = y2Track(ev->y() + ypos);
-      if(t == NULL)
+      if(t == nullptr)
       {
         ev->accept();
         return;
@@ -1197,7 +1199,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         nact->setChecked(synth->nativeGuiVisible());
 
 #ifdef LV2_SUPPORT
-        PopupMenu *mSubPresets = NULL;
+        PopupMenu *mSubPresets = nullptr;
         //show presets submenu for lv2 synths        
         if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
         {
@@ -1228,7 +1230,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
               synth->showNativeGui(show);
               }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>()) {
+        else if (mSubPresets != nullptr && ract != nullptr && ract->data().canConvert<void *>()) {
           static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
         }
 #endif
@@ -1276,7 +1278,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
       #endif
       
 #ifdef LV2_SUPPORT
-      PopupMenu *mSubPresets = NULL;
+      PopupMenu *mSubPresets = nullptr;
       if(port->device() && port->device()->isSynti())
       {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
@@ -1297,7 +1299,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
             port->showNativeGui(!port->nativeGuiVisible());
             }
 #ifdef LV2_SUPPORT
-        else if (mSubPresets != NULL && ract != NULL && ract->data().canConvert<void *>())
+        else if (mSubPresets != nullptr && ract != nullptr && ract->data().canConvert<void *>())
         {
            if (port->device() && port->device()->isSynti())
            {
@@ -2439,7 +2441,7 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
 {
   QString fn;
   
-  if (fn_==NULL)
+  if (fn_==nullptr)
     fn=MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
        this, tr("Muse: Load Track's Drum Map"), 0);
   else
@@ -2531,7 +2533,7 @@ void TList::loadTrackDrummapFromXML(MusECore::MidiTrack *t, MusECore::Xml &xml)
 void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* fn_)
 {
   QString fn;
-  if (fn_==NULL)
+  if (fn_==nullptr)
     fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
                                          this, tr("MusE: Store Track's Drum Map"));
   else

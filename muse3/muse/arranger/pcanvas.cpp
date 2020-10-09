@@ -136,7 +136,7 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       editMode   = false;
 
       supportsResizeToTheLeft = true;
-      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers (set with MMB + RMB)."));
+      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB)."));
 //      MusEGlobal::muse->setStatusBarText(tr("Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers"));
 
       tracks = MusEGlobal::song->tracks();
@@ -1291,9 +1291,9 @@ void PartCanvas::showStatusTip(QMouseEvent* event) {
 
         QString s;
         if (_tool & (MusEGui::PointerTool ))
-            s = tr("LMB: Select / Move / Dblclick to edit | CTRL+LMB: Multi select / Move&Copy | CTRL+ALT+LMB: Dblclick to edit in new window | SHIFT+LMB: Select track | MMB: Delete");
+            s = tr("LMB: Select/Move/Dblclick to edit | CTRL+LMB: Multi select/Move&Copy | CTRL+ALT+LMB: Dblclick to edit in new window | SHIFT+LMB: Select track | MMB: Delete");
         else if (_tool & (MusEGui::PencilTool))
-            s = tr("LMB: Draw to resize / MMB: Delete | CTRL+RMB: Trim length");
+            s = tr("LMB: Draw to resize | MMB: Delete | CTRL+RMB: Trim length");
         else if (_tool & (MusEGui::RubberTool))
             s = tr("LMB: Delete | CTRL+RMB: Trim length");
         else if (_tool & (MusEGui::CutTool))

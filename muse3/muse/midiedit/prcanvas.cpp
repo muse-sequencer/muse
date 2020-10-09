@@ -115,7 +115,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
       supportsMultipleResize = true;
-      MusEGlobal::muse->setStatusBarText(tr("Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit."));
+      setStatusTip(tr("MIDI canvas: Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit."));
 
       steprec=new MusECore::StepRec(noteHeldDown);
 
@@ -1928,9 +1928,9 @@ void PianoCanvas::showStatusTip(QMouseEvent* event) {
 
         QString s;
         if (_tool & (MusEGui::PointerTool ))
-            s = tr("LMB: Select / Move | CTRL+LMB: Add/Remove selection / Move copy | SHIFT+LMB: Select note | MMB: Delete | CTRL+RMB: Trim length");
+            s = tr("LMB: Select/Move | CTRL+LMB: Multi select/Move&copy | SHIFT+LMB: Select pitch | MMB: Delete | CTRL+RMB: Trim length");
         else if (_tool & (MusEGui::PencilTool))
-            s = tr("LMB: Resize | CTRL+LMB: Add/Remove selection | CTRL+SHIFT+LMB: Add/Remove note selection | MMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length");
+            s = tr("LMB: Resize | CTRL+LMB: Multi select | CTRL+SHIFT+LMB: Multi pitch select | MMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length");
         else if (_tool & (MusEGui::RubberTool))
             s = tr("LMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length");
 

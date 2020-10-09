@@ -288,7 +288,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   
   QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
-  menuSettings->menuAction()->setStatusTip(tr("View-specific display options"));
+  menuSettings->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
   menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));

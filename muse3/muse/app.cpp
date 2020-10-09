@@ -551,8 +551,8 @@ MusE::MusE() : QMainWindow()
       QMenu* panicPopupMenu = new QMenu(this);
       MusEGlobal::panicAction->setMenu(panicPopupMenu);
       
-      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels"));
-      MusEGlobal::panicAction->setStatusTip(tr("Send note off to all midi channels"));
+//      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels")); // wrong?
+      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
@@ -641,8 +641,11 @@ MusE::MusE() : QMainWindow()
       midiRhythmAction = new QAction(QIcon(*midi_inputplugins_random_rhythm_generatorIcon), tr("Rhythm Generator"), this);
 #endif
       midiResetInstAction = new QAction(QIcon(*MusEGui::midi_reset_instrIcon), tr("Reset Instrument"), this);
+      midiResetInstAction->setStatusTip(tr("Send 'note-off' command to all midi channels."));
       midiInitInstActions = new QAction(QIcon(*MusEGui::midi_init_instrIcon), tr("Init Instrument"), this);
+      midiInitInstActions->setStatusTip(tr("Send initialization messages as found in instrument definition."));
       midiLocalOffAction = new QAction(QIcon(*MusEGui::midi_local_offIcon), tr("Local Off"), this);
+      midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels"));
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Bounce to Track"), this);

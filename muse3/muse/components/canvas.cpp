@@ -1948,7 +1948,7 @@ void Canvas::setTool(int t)
             return;
       _tool = Tool(t);
       setCursor();
-//      MusEGlobal::muse->clearStatusBarText();
+      MusEGlobal::muse->clearStatusBarText();
       update();
       }
 
