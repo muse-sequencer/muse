@@ -1827,7 +1827,7 @@ namespace MusEGui {
 void MusE::writeGlobalConfiguration() const
       {
       FILE* f = fopen(MusEGlobal::configName.toLatin1().constData(), "w");
-      if (f == 0) {
+      if (f == nullptr) {
             fprintf(stderr, "save configuration to <%s> failed: %s\n",
                MusEGlobal::configName.toLatin1().constData(), strerror(errno));
             return;
@@ -1846,7 +1846,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
     parent = this;
   //QString file = QFileDialog::getOpenFileName(parent, tr("Load configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
   QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
-                                               tr("Load configuration colors"), NULL, MusEGui::MFileDialog::GLOBAL_VIEW);
+                                               tr("Load configuration colors"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
 
   if(file.isEmpty())
     return false;

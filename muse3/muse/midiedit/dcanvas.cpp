@@ -124,7 +124,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       {
       drumEditor=static_cast<DrumEdit*>(pr);
       
-      setStatusTip(tr("Drum canvas: Use Pencil tool to create and edit events, Pointer tool to select. Cursor tool for special keyboard entry mode (arrow keys, V, B, N, M, Del)."));
+      setStatusTip(tr("Drum canvas: Use Pencil tool to create and edit events, Pointer tool to select, Cursor tool for special keyboard entry mode (arrow keys, V, B, N, M, Del)."));
 
       ourDrumMap=nullptr;
       rebuildOurDrumMap();
@@ -159,8 +159,8 @@ bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
 
       int mport, ch;
       // Default to track port if -1 and track channel if -1.
-      MusECore::Track* track = 0;
-      MusECore::MidiTrack* mt = 0;
+      MusECore::Track* track = nullptr;
+      MusECore::MidiTrack* mt = nullptr;
       if(ourDrumMap[index].port == -1)
       {
         track = *instrument_map[index].tracks.begin();
@@ -252,7 +252,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
       MusECore::iPartToChange ip2c = parts2change.find(part);
       if(ip2c == parts2change.end())
       {
-        MusECore::PartToChange p2c = {0, npartoffset};
+        MusECore::PartToChange p2c = {nullptr, npartoffset};
         parts2change.insert(std::pair<MusECore::Part*, MusECore::PartToChange> (part, p2c));
       }
       else
@@ -460,7 +460,7 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 
   tick    -= curPart->tick();
   if (tick < 0)
-        return 0;
+        return nullptr;
   MusECore::Event e(MusECore::Note);
   e.setTick(tick);
   e.setPitch(instrument_map[instrument].pitch);

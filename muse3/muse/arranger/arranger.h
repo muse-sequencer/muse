@@ -116,6 +116,7 @@ class Arranger : public QWidget {
       void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
       void setHeaderToolTips();
       void setHeaderWhatsThis();
+      void setHeaderStatusTips();
       void setHeaderSizes();
       void initTracklistHeader();
 

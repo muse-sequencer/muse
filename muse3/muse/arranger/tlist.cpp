@@ -118,7 +118,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       setMouseTracking(true);
       header    = hdr;
 
-      _scroll    = nullptr;
+      _scroll   = nullptr;
       editTrack = nullptr;
       editor    = nullptr;
       chan_edit = nullptr;

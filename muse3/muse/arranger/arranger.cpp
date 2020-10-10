@@ -215,6 +215,25 @@ void Arranger::setHeaderWhatsThis()
       }
 
 //---------------------------------------------------------
+//   Arranger::setHeaderStatusTips
+//---------------------------------------------------------
+
+void Arranger::setHeaderStatusTips()
+{
+    header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index. Click to select track, CTRL+LMB to add/remove, SHIFT+LMB for range select, dblclick to select all of the same type."));
+    header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Enable/Disable input monitor. Passes input through to output (see also Settings: Automatically monitor on record arm)."));
+    header->setStatusTip(TList::COL_RECORD,   tr("Enable/Disable recording."));
+    header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator. Left-click to mute track (for quick action), right-click to toggle track on/off (for more permanent action)."));
+    header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator. Click to toggle (Connected tracks are also 'phantom' soloed, indicated by a dark square)."));
+    header->setStatusTip(TList::COL_CLASS,    tr("Track type. Click to switch between midi and drum track types."));
+    header->setStatusTip(TList::COL_NAME,     tr("Track name. Double-click to edit. Right-click for context menu."));
+    header->setStatusTip(TList::COL_OCHANNEL, tr("Midi/Drum: Output channel number. Audio: Channels. Mid/right-click to change."));
+    header->setStatusTip(TList::COL_OPORT,    tr("Midi/Drum: Output port. Synth: Assigned midi port. Left-click to change, right-click to show synth GUI."));
+    header->setStatusTip(TList::COL_TIMELOCK, tr("Time lock"));
+    header->setStatusTip(TList::COL_CLEF,     tr("Notation clef. Click to select this tracks notation clef."));
+}
+
+//---------------------------------------------------------
 //   Arranger
 //    is the central widget in app
 //---------------------------------------------------------
@@ -543,7 +562,7 @@ void Arranger::initTracklistHeader()
     header = new Header(tracklist, "TrackListHeader");
     header->setFixedHeight(31);
 
-    header->setColumnLabel(tr("#"), TList::COL_TRACK_IDX);
+    header->setColumnLabel("#", TList::COL_TRACK_IDX);
     header->setColumnIcon(*monitorOnSVGIcon, TList::COL_INPUT_MONITOR);
     header->setColumnIcon(*recArmOnSVGIcon, TList::COL_RECORD);
     header->setColumnIcon(*muteOnSVGIcon, TList::COL_MUTE);
@@ -581,6 +600,7 @@ void Arranger::initTracklistHeader()
 
     setHeaderToolTips();
     setHeaderWhatsThis();
+    setHeaderStatusTips(); // does not work with Qt 5.9!
     header->setSectionsMovable (true);
     header->restoreState(header_state);
 }

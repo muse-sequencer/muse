@@ -301,14 +301,15 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       // Scripts:
       //----------------------
 
-      QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
-              [this](int id) { execDeliveredScript(id); } );
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execUserScriptReceived,
-              [this](int id) { execUserScript(id); } );
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
+// This is a duplicate, already available in central MIDI menu
+//      QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
+//      connect(&_scriptReceiver,
+//              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+//              [this](int id) { execDeliveredScript(id); } );
+//      connect(&_scriptReceiver,
+//              &MusECore::ScriptReceiver::execUserScriptReceived,
+//              [this](int id) { execUserScript(id); } );
+//      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
 
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));

@@ -616,10 +616,12 @@ MusE::MusE() : QMainWindow()
       toggleDocksAction = new QAction(tr("Show Docks"), this);
       toggleDocksAction->setCheckable(true);
       toggleDocksAction->setChecked(true);
+      toggleDocksAction->setStatusTip(tr("Toggle display of currently visible dock windows."));
 
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
+      fullscreenAction->setStatusTip(tr("Display MusE main window in full screen mode."));
 
 //      QMenu* master = new QMenu(tr("Mastertrack"), this);
 //      master->setIcon(QIcon(*edit_mastertrackIcon));
@@ -631,6 +633,7 @@ MusE::MusE() : QMainWindow()
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
+      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'"));
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
