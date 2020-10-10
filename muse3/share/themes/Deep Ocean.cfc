@@ -102,7 +102,7 @@
     <bigtimeBackgroundcolor r="0" g="0" b="0"></bigtimeBackgroundcolor>
     <waveEditBackgroundColor r="200" g="200" b="200"></waveEditBackgroundColor>
     <rulerBackgroundColor r="40" g="50" b="60"></rulerBackgroundColor>
-    <rulerForegroundColor r="154" g="154" b="154"></rulerForegroundColor>
+    <rulerForegroundColor r="85" g="170" b="255"></rulerForegroundColor>
     <rulerCurrentColor r="54" g="113" b="42"></rulerCurrentColor>
     <waveNonselectedPart r="192" g="192" b="192"></waveNonselectedPart>
     <wavePeakColor r="128" g="128" b="128"></wavePeakColor>
