@@ -49,109 +49,110 @@ class Xml;
 
 class ArrangerView : public TopWin
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	private:
+private:
 
-		enum cmd_enum
-			{CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_INSERTMEAS, CMD_PASTE_CLONE,
-			CMD_PASTE_TO_TRACK, CMD_PASTE_CLONE_TO_TRACK, CMD_PASTE_DIALOG, CMD_DELETE,
-			CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
-			CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
-			CMD_DELETE_TRACK, CMD_DUPLICATE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
-			CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
-			CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO     };
+    enum cmd_enum
+    {CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_INSERTMEAS, CMD_PASTE_CLONE,
+        CMD_PASTE_TO_TRACK, CMD_PASTE_CLONE_TO_TRACK, CMD_PASTE_DIALOG, CMD_DELETE,
+        CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
+        CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
+        CMD_DELETE_TRACK, CMD_DUPLICATE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
+        CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
+        CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO     };
 
-		virtual void closeEvent(QCloseEvent*);
+    void closeEvent(QCloseEvent*) override;
 
-		QGridLayout* mainGrid;
-		QWidget* mainw;
+    QGridLayout* mainGrid;
+    QWidget* mainw;
 
-		EditToolBar* editTools;
-		VisibleTracks* visTracks;
+    EditToolBar* editTools;
+    VisibleTracks* visTracks;
 
-		Arranger* arranger;
+    Arranger* arranger;
 
-		// Edit Menu actions
-		QMenu* select;
-		QMenu* addTrack;
+    // Edit Menu actions
+    QMenu* select;
+    QMenu* addTrack;
     QMenu* insertTrack;
 
-		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
+    QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
     QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
     QAction *trackAMidiAction, *trackADrumAction, *trackAWaveAction, *trackAOutputAction, *trackAGroupAction;
-		QAction *trackAInputAction, *trackAAuxAction;
+    QAction *trackAInputAction, *trackAAuxAction;
     QAction *trackIMidiAction, *trackIDrumAction, *trackIWaveAction, *trackIOutputAction, *trackIGroupAction;
     QAction *trackIInputAction, *trackIAuxAction;
 
-		QAction *editDeleteAction,*editCutAction, *editCopyAction, *editCopyRangeAction;
-		QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;
-		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
+    QAction *editDeleteAction,*editCutAction, *editCopyAction, *editCopyRangeAction;
+    QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;
+    QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
     QAction *editDuplicateSelTrackAction;
-		QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
-		QAction *midiTransformerAction;
-		QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
+    QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
+    QAction *midiTransformerAction;
+    QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
 
-		QAction* func_quantize_action;
-		QAction* func_notelen_action;
-		QAction* func_velocity_action;
-		QAction* func_cresc_action;
-		QAction* func_transpose_action;
-		QAction* func_erase_action;
-		QAction* func_move_action;
-		QAction* func_fixed_len_action;
-		QAction* func_del_overlaps_action;
-		QAction* func_legato_action;
+    QAction* func_quantize_action;
+    QAction* func_notelen_action;
+    QAction* func_velocity_action;
+    QAction* func_cresc_action;
+    QAction* func_transpose_action;
+    QAction* func_erase_action;
+    QAction* func_move_action;
+    QAction* func_fixed_len_action;
+    QAction* func_del_overlaps_action;
+    QAction* func_legato_action;
 
-	private slots:
-		void globalCut();
-		void globalInsert();
-		void globalSplit();
+private slots:
+    void globalCut();
+    void globalInsert();
+    void globalSplit();
     void openCurrentTrackSynthGui();
-        void globalCutSel();
-        void globalInsertSel();
-        void globalSplitSel();
-        void cmd(int);
-        void addNewTrack(QAction* action);
-        void insertNewTrack(QAction* action);
-        void configCustomColumns();
-        void toggleMixerStrip();
+    void globalCutSel();
+    void globalInsertSel();
+    void globalSplitSel();
+    void cmd(int);
+    void addNewTrack(QAction* action);
+    void insertNewTrack(QAction* action);
+    void configCustomColumns();
+    void toggleMixerStrip();
 
-	signals:
-		void isDeleting(MusEGui::TopWin*);
-		void closed();
+signals:
+    void isDeleting(MusEGui::TopWin*);
+    void closed();
 
-	public slots:
-		void scoreNamingChanged();
-		void updateScoreMenus();
-		void clipboardChanged();
-		void selectionChanged(); // NOTE: This is received upon EITHER a part or track selection change from the Arranger.
-		void updateShortcuts();
-		void updateVisibleTracksButtons();
-		virtual void focusCanvas();
+public slots:
+    void scoreNamingChanged();
+    void updateScoreMenus();
+    void clipboardChanged();
+    void selectionChanged(); // NOTE: This is received upon EITHER a part or track selection change from the Arranger.
+    void updateShortcuts();
+    void updateVisibleTracksButtons();
+    virtual void focusCanvas() override;
 
-	public:
-		ArrangerView(QWidget* parent = 0);
-		~ArrangerView();
+public:
+    ArrangerView(QWidget* parent = nullptr);
+    ~ArrangerView() override;
 
-		QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
-        QMenu* editorNewSubmenu;
-        QAction *startPianoEditNewAction, *startDrumEditNewAction, *startListEditNewAction, *startWaveEditNewAction;
-        QAction *openCurrentTrackSynthGuiAction;
-		QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
+    QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+    QMenu* editorNewSubmenu;
+    QAction *startPianoEditNewAction, *startDrumEditNewAction, *startListEditNewAction, *startWaveEditNewAction;
+    QAction *openCurrentTrackSynthGuiAction;
+    QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
 
-		void populateAddTrack();
+    void populateAddTrack();
 
-		Arranger* getArranger() const;
+    Arranger* getArranger() const;
 
-		void writeStatus(int level, MusECore::Xml& xml) const;
-		void readStatus(MusECore::Xml& xml);
-		static void readConfiguration(MusECore::Xml&);
-		void writeConfiguration(int, MusECore::Xml&);
-		
-		// Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
-		// Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
-		void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
+    void writeStatus(int level, MusECore::Xml& xml) const override;
+    void readStatus(MusECore::Xml& xml) override;
+    static void readConfiguration(MusECore::Xml&);
+    void writeConfiguration(int, MusECore::Xml&);
+    void storeSettings() override;
+
+    // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+    // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+    void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
 };
 
 }  // namespace MusEGui

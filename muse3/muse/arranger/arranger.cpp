@@ -42,6 +42,7 @@
 #include <QCursor>
 #include <QPoint>
 #include <QRect>
+#include <QSettings>
 
 #include "arranger.h"
 #include "song.h"
@@ -549,12 +550,21 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
 
 void Arranger::setDefaultSplitterSizes()
 {
-  QList<int> vallist;
-  vallist.append(trackInfoWidget->sizeHint().width());
-  list->resize(250, 100);
-  vallist.append(tlistLayout->sizeHint().width());
-  vallist.append(1);
-  split->setSizes(vallist);
+    QSettings s;
+    if (split->restoreState(s.value("Arranger/splitState").toByteArray()))
+        return;
+
+    QList<int> vallist;
+    vallist.append(trackInfoWidget->sizeHint().width());
+    list->resize(250, 100);
+    vallist.append(tlistLayout->sizeHint().width());
+    vallist.append(1);
+    split->setSizes(vallist);
+}
+
+void Arranger::storeSplitterSizes() {
+    QSettings s;
+    s.setValue("Arranger/splitState", split->saveState());
 }
 
 void Arranger::initTracklistHeader()

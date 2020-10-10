@@ -367,6 +367,10 @@ void ArrangerView::closeEvent(QCloseEvent* e)
     e->ignore();
 }
 
+void ArrangerView::storeSettings() {
+    arranger->storeSplitterSizes();
+}
+
 void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const
 {
   xml.tag(level++, "arrangerview");

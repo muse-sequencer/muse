@@ -85,7 +85,7 @@
     <rackItemBgActiveColor r="15" g="82" b="148"></rackItemBgActiveColor>
     <rackItemFontColor r="128" g="128" b="128"></rackItemFontColor>
     <rackItemFontActiveColor r="255" g="255" b="255"></rackItemFontActiveColor>
-    <rackItemBorderColor r="18" g="118" b="199"></rackItemBorderColor>
+    <rackItemBorderColor r="40" g="50" b="60"></rackItemBorderColor>
     <rackItemFontColorHover r="170" g="170" b="170"></rackItemFontColorHover>
     <palSwitchBackgroundColor r="90" g="90" b="90"></palSwitchBackgroundColor>
     <palSwitchBgActiveColor r="15" g="82" b="148"></palSwitchBgActiveColor>
@@ -102,7 +102,7 @@
     <bigtimeBackgroundcolor r="0" g="0" b="0"></bigtimeBackgroundcolor>
     <waveEditBackgroundColor r="200" g="200" b="200"></waveEditBackgroundColor>
     <rulerBackgroundColor r="40" g="50" b="60"></rulerBackgroundColor>
-    <rulerForegroundColor r="85" g="170" b="255"></rulerForegroundColor>
+    <rulerForegroundColor r="130" g="174" b="214"></rulerForegroundColor>
     <rulerCurrentColor r="54" g="113" b="42"></rulerCurrentColor>
     <waveNonselectedPart r="192" g="192" b="192"></waveNonselectedPart>
     <wavePeakColor r="128" g="128" b="128"></wavePeakColor>

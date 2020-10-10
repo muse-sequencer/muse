@@ -764,6 +764,8 @@ void TopWin::setWindowTitle (const QString& title)
     muse->updateWindowMenu();
 }
 
+void TopWin::storeSettings() {}
+
 //void TopWin::windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState)
 //{
 //    // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,

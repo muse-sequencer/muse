@@ -158,8 +158,8 @@ class PianoRoll : public MidiEditor {
       void setEventColorMode(MidiEventColorMode);
       QWidget* genToolbar(QWidget* parent);
 
-      virtual void closeEvent(QCloseEvent*);
-      virtual void keyPressEvent(QKeyEvent*);
+      virtual void closeEvent(QCloseEvent*) override;
+      virtual void keyPressEvent(QKeyEvent*) override;
       
       void setSpeakerMode(EventCanvas::PlayEventsMode mode);
       
@@ -174,7 +174,7 @@ class PianoRoll : public MidiEditor {
       void noteinfoChanged(MusEGui::NoteInfo::ValType, int);
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);
-      void setRaster(int);
+      void setRaster(int) override;
       void cmd(int);
       void setSteprec(bool);
       void eventColorModeChanged(MidiEventColorMode);
@@ -200,19 +200,20 @@ class PianoRoll : public MidiEditor {
    public slots:
       void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
       void horizontalZoom(int mag, const QPoint& glob_pos);
-      virtual void updateHScrollRange();
+      void updateHScrollRange() override;
       void execDeliveredScript(int id);
       void execUserScript(int id);
-      void focusCanvas();
-      void storeInitialViewState() const;
+      void focusCanvas() override;
+      void storeInitialViewState() const override;
       
    public:
-      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0,
+      PianoRoll(MusECore::PartList*, QWidget* parent = nullptr, const char* name = nullptr,
                 unsigned initPos = INT_MAX, bool showDefaultControls = false);
-      virtual void readStatus(MusECore::Xml&);
-      virtual void writeStatus(int, MusECore::Xml&) const;
+      void readStatus(MusECore::Xml&) override;
+      void writeStatus(int, MusECore::Xml&) const override;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
+      void storeSettings() override;
       CtrlEdit* addCtrl(int ctl_num = MusECore::CTRL_VELOCITY);
       MusECore::MidiPartViewState getViewState() const;
 

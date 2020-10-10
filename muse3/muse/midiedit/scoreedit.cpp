@@ -754,14 +754,18 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
     _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
     names.erase(name);
 
-    QSettings settings;
-    //settings.setValue("ScoreEdit/geometry", saveGeometry());
-    settings.setValue("ScoreEdit/windowState", saveState());
+    storeSettings();
 
     emit isDeleting(static_cast<TopWin*>(this));
     e->accept();
 }
 
+void ScoreEdit::storeSettings() {
+
+    QSettings settings;
+    //settings.setValue("ScoreEdit/geometry", saveGeometry());
+    settings.setValue("ScoreEdit/windowState", saveState());
+}
 
 void ScoreEdit::menu_command(int cmd)
 {

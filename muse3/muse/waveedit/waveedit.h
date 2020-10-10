@@ -90,8 +90,8 @@ class WaveEdit : public MidiEditor {
       static int _canvasWidthInit;
       static int colorModeInit;
 
-      virtual void closeEvent(QCloseEvent*);
-      virtual void keyPressEvent(QKeyEvent*);
+      void closeEvent(QCloseEvent*) override;
+      void keyPressEvent(QKeyEvent*) override;
 
       void initShortcuts();
       void setEventColorMode(int);
@@ -114,23 +114,24 @@ class WaveEdit : public MidiEditor {
 
    public slots:
       void configChanged();
-      virtual void updateHScrollRange();
+      virtual void updateHScrollRange() override;
       void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
       void horizontalZoom(int mag, const QPoint& glob_pos);
-      void focusCanvas();
+      void focusCanvas() override;
 
    signals:
       void isDeleting(MusEGui::TopWin*);
 
    public:
-      WaveEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
-      virtual ~WaveEdit();
-      virtual void readStatus(MusECore::Xml&);
-      virtual void writeStatus(int, MusECore::Xml&) const;
+      WaveEdit(MusECore::PartList*, QWidget* parent = nullptr, const char* name = nullptr);
+      virtual ~WaveEdit() override;
+      virtual void readStatus(MusECore::Xml&) override;
+      virtual void writeStatus(int, MusECore::Xml&) const override;
       static void readConfiguration(MusECore::Xml&);
       static void writeConfiguration(int, MusECore::Xml&);
       // Same as setRaster() but returns the actual value used.
       int changeRaster(int val);
+      void storeSettings() override;
       };
 
 } // namespace MusEGui
