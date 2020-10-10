@@ -8,6 +8,7 @@
         Status bar is mainly used for context-sensitive help, to improve 
         usability for new users. Many status tips created, more to come.
         Default status text shows audio driver and related data. (kybos)
+    - Fix: Make sure current splitter sizes are saved on application quit. (kybos)
 06.10.2020
     - Fix: Replace marker icons by SVG. (kybos)
     - Theme: Color tab text (active/hover) for better visibility. (kybos)
