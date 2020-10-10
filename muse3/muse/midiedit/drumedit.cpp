@@ -144,29 +144,34 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
 
-      QSettings settings;
-      settings.setValue("Drumedit/windowState", saveState());
-
-      //Store values of the horizontal splitter
-      QList<int> sizes = split2->sizes();
-      QList<int>::iterator it = sizes.begin();
-      //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget      
-      _dlistWidthInit = *it;
-      it++;
-      _dcanvasWidthInit = *it;
-      
-      //Store values of the horizontal splitter
-      sizes.clear();
-      sizes = hsplitter->sizes();
-      it = sizes.begin();
-      //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
-      _trackInfoWidthInit = *it;
-      it++;
-      _canvasWidthInit = *it;
+      storeSettings();
     
       emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
+
+void DrumEdit::storeSettings() {
+
+    QSettings settings;
+    settings.setValue("Drumedit/windowState", saveState());
+
+    //Store values of the horizontal splitter
+    QList<int> sizes = split2->sizes();
+    QList<int>::iterator it = sizes.begin();
+    //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget
+    _dlistWidthInit = *it;
+    it++;
+    _dcanvasWidthInit = *it;
+
+    //Store values of the horizontal splitter
+    sizes.clear();
+    sizes = hsplitter->sizes();
+    it = sizes.begin();
+    //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
+    _trackInfoWidthInit = *it;
+    it++;
+    _canvasWidthInit = *it;
+}
 
 //---------------------------------------------------------
 //   DrumEdit

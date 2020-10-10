@@ -75,11 +75,12 @@ class TopWin : public QMainWindow
       static void readConfiguration(ToplevelType, MusECore::Xml&);
       static void writeConfiguration(ToplevelType, int, MusECore::Xml&);
       
+      virtual void storeSettings();
       
       bool isMdiWin() const;
       QMdiSubWindow* getMdiWin() const { return mdisubwin; }
 
-      TopWin(ToplevelType t, QWidget* parent=0, const char* name=0, Qt::WindowFlags f = Qt::Window);
+      TopWin(ToplevelType t, QWidget* parent=nullptr, const char* name=nullptr, Qt::WindowFlags f = Qt::Window);
       virtual ~TopWin();
          
       bool sharesToolsAndMenu() const { return _sharesToolsAndMenu; }
@@ -93,7 +94,6 @@ class TopWin : public QMainWindow
       virtual void removeToolBar(QToolBar*);
       virtual void removeToolBarBreak(QToolBar*);
       virtual void addToolBar(Qt::ToolBarArea, QToolBar*);
-
       
       void resize(int w, int h);
 //      void resize(const QSize&);

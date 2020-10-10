@@ -1310,19 +1310,24 @@ void PianoRoll::closeEvent(QCloseEvent* e)
       {
       _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
 
-      QSettings settings;
-      settings.setValue("Pianoroll/windowState", saveState());
-
-      //Store values of the horizontal splitter
-      QList<int> sizes = hsplitter->sizes();
-      QList<int>::iterator it = sizes.begin();
-      _trackInfoWidthInit = *it; //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
-      it++;
-      _canvasWidthInit = *it;
+      storeSettings();
     
       emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
+
+void PianoRoll::storeSettings() {
+
+    QSettings settings;
+    settings.setValue("Pianoroll/windowState", saveState());
+
+    //Store values of the horizontal splitter
+    QList<int> sizes = hsplitter->sizes();
+    QList<int>::iterator it = sizes.begin();
+    _trackInfoWidthInit = *it; //There are only 2 values stored in the sizelist, size of trackinfo widget and canvas widget
+    it++;
+    _canvasWidthInit = *it;
+}
 
 //---------------------------------------------------------
 //   readConfiguration

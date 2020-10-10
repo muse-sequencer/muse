@@ -100,7 +100,7 @@ class ScoreEdit : public TopWin
 {
 	Q_OBJECT
 	private:
-		virtual void closeEvent(QCloseEvent*);
+        void closeEvent(QCloseEvent*) override;
 		
 		void init_name();
 
@@ -172,7 +172,7 @@ class ScoreEdit : public TopWin
 		
 		bool set_name(QString newname, bool emit_signal=true, bool emergency_name=false);
 
-		virtual void keyPressEvent(QKeyEvent*);
+        void keyPressEvent(QKeyEvent*) override;
 		
 	private slots:
 		void menu_command(int);
@@ -196,16 +196,17 @@ class ScoreEdit : public TopWin
 		void canvas_height_changed(int);
 		void viewport_height_changed(int);
 		void song_changed(MusECore::SongChangedStruct_t);
-		void focusCanvas();
+        void focusCanvas() override;
 		
 	public:
-		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = INT_MAX);
-		~ScoreEdit();
+        ScoreEdit(QWidget* parent = nullptr, const char* name = nullptr, unsigned initPos = INT_MAX);
+        ~ScoreEdit() override;
 
-		void writeStatus(int level, MusECore::Xml& xml) const;
-		void readStatus(MusECore::Xml& xml);
+        void writeStatus(int level, MusECore::Xml& xml) const override;
+        void readStatus(MusECore::Xml& xml) override;
 		static void read_configuration(MusECore::Xml&);
 		static void write_configuration(int, MusECore::Xml&);
+        void storeSettings() override;
 		
 		void add_parts(MusECore::PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
@@ -274,7 +275,7 @@ class FloEvent
 		MusECore::key_enum key;
 		bool minor;    
 		
-		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, const MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
+        FloEvent(unsigned ti, int p,int v,int l,typeEnum t, const MusECore::Part* part=nullptr, const MusECore::Event* event=nullptr)
 		{
 			pitch=p;
 			vel=v;

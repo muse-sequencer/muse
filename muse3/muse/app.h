@@ -274,6 +274,7 @@ class MusE : public QMainWindow
     void closeDocks();
     void addTabbedDock(Qt::DockWidgetArea area, QDockWidget *widget);
     void saveStateExtra();
+    void saveStateTopLevels();
     bool findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl);
     bool findOpenListEditor(MusECore::PartList* pl);
     bool filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartList* pl);

@@ -1904,6 +1904,9 @@ void MusE::closeEvent(QCloseEvent* event)
       QSettings settings;
       settings.setValue("MusE/geometry", saveGeometry());
 
+      // this must be done here as the close events of child windows are not called on quit
+      saveStateTopLevels();
+
       saveStateExtra();
 
       writeGlobalConfiguration();
@@ -4791,6 +4794,12 @@ void MusE::addTabbedDock(Qt::DockWidgetArea area, QDockWidget *dock)
 //        dock->raise(); // doesn't work, Qt problem (kybos)
         QTimer::singleShot(0, [dock](){ dock->raise(); });
     }
+}
+
+void MusE::saveStateTopLevels() {
+
+    for (const auto& it : toplevels)
+        it->storeSettings();
 }
 
 void MusE::saveStateExtra() {

@@ -208,6 +208,7 @@ class Arranger : public QWidget {
       void setDefaultSplitterSizes();
       void updateHeaderCustomColumns();
       void toggleTrackInfo();
+      void storeSplitterSizes();
       
       unsigned cursorValue() { return cursVal; }
       
