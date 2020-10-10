@@ -44,6 +44,7 @@
 #include "functions.h"
 #include "gconfig.h"
 #include "helper.h"
+#include "app.h"
 
 // Forwards from header:
 #include <QDragEnterEvent>
@@ -114,6 +115,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
       supportsMultipleResize = true;
+      setStatusTip(tr("MIDI canvas: Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit."));
 
       steprec=new MusECore::StepRec(noteHeldDown);
 
@@ -1836,53 +1838,11 @@ void PianoCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
-    if (!MusEGlobal::config.showNoteTooltips)
-        return;
+    if (MusEGlobal::config.showNoteTooltips)
+        showNoteTooltip(event);
 
-    static CItem* hoverItem = nullptr;
-
-    if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool)) {
-
-        QString str;
-        CItem* item = findCurrentItem(event->pos());
-        if (item) {
-            if (hoverItem == item)
-                return;
-
-            hoverItem = item;
-
-            int pitch = item->event().pitch();
-            MusECore::Pos start(item->event().tick() + item->part()->tick());
-
-            int bar, beat, tick, hour, min, sec, msec;
-
-            start.mbt(&bar, &beat, &tick);
-            QString str_bar = QString("%1.%2.%3")
-                .arg(bar + 1,  4, 10, QLatin1Char('0'))
-                .arg(beat + 1, 2, 10, QLatin1Char('0'))
-                .arg(tick,     3, 10, QLatin1Char('0'));
-
-            start.msmu(&hour, &min, &sec, &msec, nullptr);
-            QString str_time = QString("%1:%2:%3.%4")
-                .arg(hour,  2, 10, QLatin1Char('0'))
-                .arg(min,   2, 10, QLatin1Char('0'))
-                .arg(sec,   2, 10, QLatin1Char('0'))
-                .arg(msec,  3, 10, QLatin1Char('0'));
-
-            str = tr("Note: ") + MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")\n"
-                    + tr("Velocity: ") + QString::number(item->event().velo()) + "\n"
-                    + tr("Start (bar): ") +  str_bar + "\n"
-                    + tr("Start (time): ") + str_time + "\n"
-                    + tr("Length (ticks): ") + QString::number(item->event().lenTick());
-
-        } else {
-            hoverItem = nullptr;
-            int pitch = y2pitch(event->pos().y());
-            str = MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")";
-        }
-
-        QToolTip::showText(event->globalPos(), str);
-    }
+    if (MusEGlobal::config.showStatusBar)
+        showStatusTip(event);
 }
 
 //---------------------------------------------------------
@@ -1905,4 +1865,84 @@ void PianoCanvas::setColorMode(MidiEventColorMode mode)
       redraw();
       }
       
+void PianoCanvas::showNoteTooltip(QMouseEvent* event) {
+
+    static CItem* hoverItem = nullptr;
+
+    if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool)) {
+
+        QString str;
+        CItem* item = findCurrentItem(event->pos());
+        if (item) {
+            if (hoverItem == item)
+                return;
+
+            hoverItem = item;
+
+            int pitch = item->event().pitch();
+            MusECore::Pos start(item->event().tick() + item->part()->tick());
+
+            int bar, beat, tick, hour, min, sec, msec;
+
+            start.mbt(&bar, &beat, &tick);
+            QString str_bar = QString("%1.%2.%3")
+                    .arg(bar + 1,  4, 10, QLatin1Char('0'))
+                    .arg(beat + 1, 2, 10, QLatin1Char('0'))
+                    .arg(tick,     3, 10, QLatin1Char('0'));
+
+            start.msmu(&hour, &min, &sec, &msec, nullptr);
+            QString str_time = QString("%1:%2:%3.%4")
+                    .arg(hour,  2, 10, QLatin1Char('0'))
+                    .arg(min,   2, 10, QLatin1Char('0'))
+                    .arg(sec,   2, 10, QLatin1Char('0'))
+                    .arg(msec,  3, 10, QLatin1Char('0'));
+
+            str = tr("Note: ") + MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")\n"
+                    + tr("Velocity: ") + QString::number(item->event().velo()) + "\n"
+                    + tr("Start (bar): ") +  str_bar + "\n"
+                    + tr("Start (time): ") + str_time + "\n"
+                    + tr("Length (ticks): ") + QString::number(item->event().lenTick());
+
+        } else {
+            hoverItem = nullptr;
+            int pitch = y2pitch(event->pos().y());
+            str = MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")";
+        }
+
+        QToolTip::showText(QPoint(event->globalX(), event->globalY() + 20), str);
+    }
+}
+
+void PianoCanvas::showStatusTip(QMouseEvent* event) {
+
+    static CItem* hoverItem = nullptr;
+    static Tool localTool;
+
+    CItem* item = findCurrentItem(event->pos());
+    if (item) {
+        if (hoverItem == item && localTool == _tool)
+            return;
+
+        hoverItem = item;
+        localTool = _tool;
+
+        QString s;
+        if (_tool & (MusEGui::PointerTool ))
+            s = tr("LMB: Select/Move | CTRL+LMB: Multi select/Move&copy | SHIFT+LMB: Select pitch | MMB: Delete | CTRL+RMB: Trim length");
+        else if (_tool & (MusEGui::PencilTool))
+            s = tr("LMB: Resize | CTRL+LMB: Multi select | CTRL+SHIFT+LMB: Multi pitch select | MMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length");
+        else if (_tool & (MusEGui::RubberTool))
+            s = tr("LMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length");
+
+        if (!s.isEmpty())
+            MusEGlobal::muse->setStatusBarText(s);
+    } else {
+        if (hoverItem != nullptr) {
+            MusEGlobal::muse->clearStatusBarText();
+            hoverItem = nullptr;
+        }
+    }
+}
+
+
 } // namespace MusEGui

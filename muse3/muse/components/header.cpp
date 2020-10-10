@@ -152,6 +152,16 @@ void Header::setWhatsThis(int col, const QString &text)
       item->setWhatsThis(text);
       }
 
+//---------------------------------------------------------
+//   setStatusTip
+//---------------------------------------------------------
+
+void Header::setStatusTip(int col, const QString &text)
+{
+    QStandardItem *item = itemModel->horizontalHeaderItem(col);
+    item->setStatusTip(text);
+}
+
 void Header::mousePressEvent ( QMouseEvent * e )
 {
   if (e->button() == Qt::RightButton) {

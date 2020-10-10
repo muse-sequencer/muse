@@ -204,6 +204,7 @@ void GlobalSettingsConfig::updateSettings()
       revertPluginNativeGUIScalingCheckBox->setChecked(MusEGlobal::config.noPluginScaling);
 //      openMDIWinMaximizedCheckBox->setChecked(MusEGlobal::config.openMDIWinMaximized);
       keepTransportWindowOnTopCheckBox->setChecked(MusEGlobal::config.keepTransportWindowOnTop);
+      showStatusBarCheckBox->setChecked(MusEGlobal::config.showStatusBar);
 
       deviceAudioBackendComboBox->setCurrentIndex(MusEGlobal::config.deviceAudioBackend);
 
@@ -357,6 +358,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();
 //      MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
       MusEGlobal::config.keepTransportWindowOnTop = keepTransportWindowOnTopCheckBox->isChecked();
+      MusEGlobal::config.showStatusBar = showStatusBarCheckBox->isChecked();
 
       if (rangeMarkers1RadioButton->isChecked())
           MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_MID_RIGHT;

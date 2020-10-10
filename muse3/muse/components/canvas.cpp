@@ -43,6 +43,8 @@
 #include "menutitleitem.h"
 #include "shortcuts.h"
 #include "helper.h"
+#include "globals.h"
+#include "app.h"
 
 // Forwards from header:
 #include <QPainter>
@@ -65,7 +67,7 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       {
       _cursorOverrideCount = 0;
       canvasTools = 0;
-      itemPopupMenu = 0;
+      itemPopupMenu = nullptr;
       
       button = Qt::NoButton;
       keyState = Qt::NoModifier;
@@ -77,7 +79,7 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       canScrollDown = true;
       hscrollDir = HSCROLL_NONE;
       vscrollDir = VSCROLL_NONE;
-      scrollTimer=NULL;
+      scrollTimer=nullptr;
       ignore_mouse_move = false;
       resizeDirection= MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT;
 
@@ -91,10 +93,10 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       pos[0]  = MusEGlobal::song->cpos();
       pos[1]  = MusEGlobal::song->lpos();
       pos[2]  = MusEGlobal::song->rpos();
-      curPart = NULL;
+      curPart = nullptr;
       curPartId = -1;
-      curItem = NULL;
-      newCItem = NULL;
+      curItem = nullptr;
+      newCItem = nullptr;
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       }
 
@@ -901,7 +903,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         deselectAll();
                         selectItem(curItem, true);
 //                         itemSelectionsChanged();
-                        itemSelectionsChanged(NULL, true);
+                        itemSelectionsChanged(nullptr, true);
                         redraw();
                         }
                   else {
@@ -1317,7 +1319,7 @@ void Canvas::scrollTimerDone()
       {
           //printf("Canvas::scrollTimerDone !(drag != DRAG_OFF && doScroll) deleting scrollTimer\n");
           delete scrollTimer;
-          scrollTimer=NULL;
+          scrollTimer=nullptr;
       }
 }
 
@@ -1499,7 +1501,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                         if (drag == DRAG_MOVE)
                               deselectAll();
                         selectItem(curItem, true);
-                        itemSelectionsChanged(NULL, drag == DRAG_MOVE);
+                        itemSelectionsChanged(nullptr, drag == DRAG_MOVE);
                         redraw();
                         }
                   DragType dt;
@@ -1687,6 +1689,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       QPoint pos = event->pos();
       bool ctrl = event->modifiers() & Qt::ControlModifier;
       bool shift = event->modifiers() & Qt::ShiftModifier;
+      bool alt = event->modifiers() & Qt::AltModifier;
       bool redrawFlag = false;
 
       switch (drag) {
@@ -1698,7 +1701,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         curPartId = curPart->sn();
                         curPartChanged();
                         }
-                  if (!ctrl)
+                  if (alt || !ctrl)
                         deselectAll();
                   if(curItem)
                   {
@@ -1713,7 +1716,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         }
                   }
 
-                  itemSelectionsChanged(NULL, !ctrl);
+                  itemSelectionsChanged(nullptr, !ctrl);
                   redrawFlag = true;
                   if(curItem)
                     itemReleased(curItem, curItem->pos());
@@ -1772,7 +1775,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                   {
                     items.add(newCItem);
                     curItem = newCItem;
-                    newCItem = NULL;
+                    newCItem = nullptr;
                     itemReleased(curItem, curItem->pos());
                     itemsReleased();
                     newItem(curItem, shift);
@@ -1788,7 +1791,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                         deselectAll();
                   // Set the new lasso rectangle and compute the new lasso region.
                   selectLasso(ctrl);
-                  itemSelectionsChanged(NULL, !ctrl);
+                  itemSelectionsChanged(nullptr, !ctrl);
                   redrawFlag = true;
                   break;
 
@@ -1824,7 +1827,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
         if(newCItem->event().empty() && newCItem->part()) // Was it a new part, with no event?
           delete newCItem->part();
         delete newCItem;
-        newCItem = NULL;
+        newCItem = nullptr;
       }
       
       if(drag == DRAG_ZOOM) // Update the small zoom drawing area
@@ -1945,6 +1948,7 @@ void Canvas::setTool(int t)
             return;
       _tool = Tool(t);
       setCursor();
+      MusEGlobal::muse->clearStatusBarText();
       update();
       }
 
@@ -1959,7 +1963,7 @@ CItem *Canvas::findCurrentItem(const QPoint &cStart)
    //    (if any)
    //---------------------------------------------------
 
-   CItem *item = 0;
+   CItem *item = nullptr;
    if (virt())
       item = items.find(cStart);
    else {
@@ -2251,7 +2255,7 @@ QMenu* Canvas::genCanvasPopup(QMenu* menu)
       QMenu* r_menu = menu;
       if(!r_menu)
         r_menu = new QMenu(this);
-      QAction* act0 = 0;
+      QAction* act0 = nullptr;
 
       r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
       
@@ -2292,7 +2296,7 @@ void Canvas::canvasPopup(int n)
 
 void Canvas::setCurrentPart(MusECore::Part* part)
 {
-  curItem = NULL;
+  curItem = nullptr;
   deselectAll();
   curPart = part;
   curPartId = curPart->sn();

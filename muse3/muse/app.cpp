@@ -38,6 +38,7 @@
 #include <QStringList>
 #include <QPushButton>
 #include <QDir>
+#include <QStatusBar>
 #if QT_VERSION >= 0x050b00
 #include <QScreen>
 #endif
@@ -480,6 +481,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::loopAction->setCheckable(true);
 
       MusEGlobal::loopAction->setWhatsThis(tr("Loop between left mark and right mark"));
+      MusEGlobal::loopAction->setStatusTip(tr("Loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
 
       MusEGlobal::punchinAction = new QAction(*MusEGui::punchinSVGIcon, tr("Punch in"),
@@ -487,6 +489,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::punchinAction->setCheckable(true);
 
       MusEGlobal::punchinAction->setWhatsThis(tr("Record starts at left mark"));
+      MusEGlobal::punchinAction->setStatusTip(tr("Record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
       MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punch out"),
@@ -494,6 +497,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::punchoutAction->setCheckable(true);
 
       MusEGlobal::punchoutAction->setWhatsThis(tr("Record stops at right mark"));
+      MusEGlobal::punchoutAction->setStatusTip(tr("Record stops at right mark"));
       connect(MusEGlobal::punchoutAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchout(bool)));
 
       QAction *tseparator = new QAction(this);
@@ -547,7 +551,8 @@ MusE::MusE() : QMainWindow()
       QMenu* panicPopupMenu = new QMenu(this);
       MusEGlobal::panicAction->setMenu(panicPopupMenu);
       
-      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels"));
+//      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels")); // wrong?
+      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
@@ -611,10 +616,12 @@ MusE::MusE() : QMainWindow()
       toggleDocksAction = new QAction(tr("Show Docks"), this);
       toggleDocksAction->setCheckable(true);
       toggleDocksAction->setChecked(true);
+      toggleDocksAction->setStatusTip(tr("Toggle display of currently visible dock windows."));
 
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
+      fullscreenAction->setStatusTip(tr("Display MusE main window in full screen mode."));
 
 //      QMenu* master = new QMenu(tr("Mastertrack"), this);
 //      master->setIcon(QIcon(*edit_mastertrackIcon));
@@ -626,6 +633,7 @@ MusE::MusE() : QMainWindow()
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
+      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'"));
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
@@ -636,8 +644,11 @@ MusE::MusE() : QMainWindow()
       midiRhythmAction = new QAction(QIcon(*midi_inputplugins_random_rhythm_generatorIcon), tr("Rhythm Generator"), this);
 #endif
       midiResetInstAction = new QAction(QIcon(*MusEGui::midi_reset_instrIcon), tr("Reset Instrument"), this);
+      midiResetInstAction->setStatusTip(tr("Send 'note-off' command to all midi channels."));
       midiInitInstActions = new QAction(QIcon(*MusEGui::midi_init_instrIcon), tr("Init Instrument"), this);
+      midiInitInstActions->setStatusTip(tr("Send initialization messages as found in instrument definition."));
       midiLocalOffAction = new QAction(QIcon(*MusEGui::midi_local_offIcon), tr("Local Off"), this);
+      midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels"));
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
@@ -809,6 +820,7 @@ MusE::MusE() : QMainWindow()
       // Already has an object name.
       cpuLoadToolbar = new CpuToolbar(tr("Cpu load"), this);
       addToolBar(cpuLoadToolbar);
+      cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
       QToolBar* songpos_tb;
@@ -1016,6 +1028,7 @@ MusE::MusE() : QMainWindow()
       trailingMenus.push_back(menu_help);
 
       menu_help->addAction(helpManualAction);
+      menu_help->addAction(whatsthis);
       menu_help->addAction(helpHomepageAction);
       menu_help->addAction(helpDidYouKnow);
       menu_help->addSeparator();
@@ -1098,6 +1111,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::song->update();
       updateWindowMenu();
 
+
       ensurePolished();
       MusEGlobal::config.fonts[0].setFamily(font().family());
       MusEGlobal::config.fonts[0].setPointSize(font().pointSize());
@@ -1174,9 +1188,15 @@ void MusE::stopHeartBeat()
 
 void MusE::heartBeat()
 {
-  cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(), 
-                            MusEGlobal::song->dspLoad(), 
-                            MusEGlobal::song->xRunsCount());
+    if (cpuLoadToolbar->isVisible())
+        cpuLoadToolbar->setValues(MusEGlobal::song->cpuLoad(),
+                                  MusEGlobal::song->dspLoad(),
+                                  MusEGlobal::song->xRunsCount());
+
+    if (statusBar()->isVisible())
+        cpuStatusBar->setValues(MusEGlobal::song->cpuLoad(),
+                                MusEGlobal::song->dspLoad(),
+                                MusEGlobal::song->xRunsCount());
 }
 
 void MusE::populateAddTrack()
@@ -2325,7 +2345,8 @@ bool MusE::filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartLis
 
 bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl) {
 
-    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+    if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier
+            && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
         return false;
 
     for (const auto& it : toplevels) {
@@ -2415,7 +2436,8 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
 
 bool MusE::findOpenListEditor(MusECore::PartList* pl) {
 
-    if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
+    if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier
+            && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
         return false;
 
     for (const auto& d : findChildren<QDockWidget*>()) {
@@ -3633,7 +3655,9 @@ void MusE::updateConfiguration()
       //rewindOnStopAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_TOGGLE_REWINDONSTOP].key); moved to global shortcuts in MusE::kbAccel
 
       //arrangerView->updateMusEGui::Shortcuts(); //commented out by flo: is done via signal
-      }
+
+      updateStatusBar();
+}
 
 //---------------------------------------------------------
 //   showBigtime
@@ -4800,6 +4824,39 @@ void MusE::saveStateExtra() {
         MusEGlobal::config.mixer2.geometry.setWidth(mixer2->width());
         MusEGlobal::config.mixer2.geometry.setHeight(mixer2->height());
     }
+}
+
+void MusE::initStatusBar() {
+
+    statusBar()->setSizeGripEnabled(false);
+    statusBar()->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
+
+    cpuStatusBar = new CpuStatusBar(statusBar());
+    connect(cpuStatusBar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
+    statusBar()->addPermanentWidget(cpuStatusBar);
+
+    QString s = QString("%1 | Sample rate: %2Hz | Segment size: %3 | Segment count: %4")
+            .arg(MusEGlobal::audioDevice->driverName())
+            .arg(MusEGlobal::sampleRate)
+            .arg(MusEGlobal::segmentSize)
+            .arg(MusEGlobal::segmentCount);
+    statusBar()->addWidget(new QLabel(s));
+
+    updateStatusBar();
+}
+
+void MusE::updateStatusBar() {
+    statusBar()->setVisible(MusEGlobal::config.showStatusBar);
+}
+
+void MusE::setStatusBarText(const QString &message, int timeout) {
+    if (MusEGlobal::config.showStatusBar)
+        statusBar()->showMessage(message, timeout);
+}
+
+void MusE::clearStatusBarText() {
+    if (MusEGlobal::config.showStatusBar)
+        statusBar()->clearMessage();
 }
 
 } //namespace MusEGui

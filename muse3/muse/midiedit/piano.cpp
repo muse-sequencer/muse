@@ -190,16 +190,17 @@ static const char *oct_xpm[] = {
 //---------------------------------------------------------
 
 Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
-   : View(parent, 1, ymag),
-     pianoWidth(width)
-      {
-      setMouseTracking(true);
-      _midiEditor = editor;
-      curPitch = -1;
-      selectedPitch = 60;  // Start with 'C3"
-      keyDown = -1;
-      button = Qt::NoButton;
-      }
+    : View(parent, 1, ymag),
+      pianoWidth(width)
+{
+    setMouseTracking(true);
+    _midiEditor = editor;
+    curPitch = -1;
+    selectedPitch = 60;  // Start with 'C3"
+    keyDown = -1;
+    button = Qt::NoButton;
+    setStatusTip(tr("Piano: Press key to play. Enter events in step record mode (SHIFT for chords). RMB: Set cursor for polyphonic control events."));
+}
 
 //---------------------------------------------------------
 //   draw

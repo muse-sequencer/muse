@@ -1499,6 +1499,7 @@ int main(int argc, char* argv[])
         //MusEGui::updateThemeAndStyle(); // Works better if called just after app created, above.
 
         MusEGlobal::muse->seqStart();
+        MusEGlobal::muse->initStatusBar();
         
         // If the sequencer object was created, report timing.
         if(MusEGlobal::midiSeq)

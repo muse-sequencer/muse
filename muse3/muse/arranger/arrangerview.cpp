@@ -183,6 +183,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   startWaveEditAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
 
   editorNewSubmenu = new QMenu(tr("Open in New Window"), this);
+  editorNewSubmenu->menuAction()->setStatusTip(tr("Always open the part(s) in a new editor window"));
 
   startPianoEditNewAction = new QAction(*pianorollSVGIcon, tr("Pianoroll..."), this);
   startDrumEditNewAction = new QAction(*drumeditSVGIcon, tr("Drums..."), this);
@@ -287,6 +288,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   
   QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
+  menuSettings->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
   menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));

@@ -132,10 +132,12 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
 
       setFocusPolicy(Qt::StrongFocus);
       // Defaults:
-      lineEditor = 0;
+      lineEditor = nullptr;
       editMode   = false;
 
       supportsResizeToTheLeft = true;
+      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB)."));
+//      MusEGlobal::muse->setStatusBarText(tr("Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers"));
 
       tracks = MusEGlobal::song->tracks();
       setMouseTracking(true);
@@ -260,11 +262,17 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       QPoint cpos = event->pos();
       curItem     = items.find(cpos);
       bool ctrl  = event->modifiers() & Qt::ControlModifier;
+      bool alt = event->modifiers() & Qt::AltModifier;
       if (curItem) {
-            if (event->button() == Qt::LeftButton && ctrl) {
+          if ((event->button() == Qt::LeftButton) && ctrl && alt) {
+              deselectAll();
+              selectItem(curItem, true);
+              emit dclickPart(((NPart*)(curItem))->track());
+          }
+          else if ((event->button() == Qt::LeftButton) && ctrl) {
                   editPart = (NPart*)curItem;
                   QRect r = map(curItem->bbox());
-                  if (lineEditor == 0) {
+                  if (lineEditor == nullptr) {
                         lineEditor = new QLineEdit(this);
                         lineEditor->setFrame(true);
                         connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
@@ -1221,7 +1229,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                       }
                   }
                   return false;
-                  break;
+//                  break;
             }
       return true;
       }
@@ -1237,8 +1245,8 @@ void PartCanvas::mouseRelease(QMouseEvent*)
           automation.controllerState = doNothing;
           //automation.currentCtrl=0;
           automation.currentCtrlValid = false;
-          automation.currentTrack=0;
-          automation.currentCtrlList=0;
+          automation.currentTrack=nullptr;
+          automation.currentCtrlList=nullptr;
           //automation.breakUndoCombo = false; // Don't touch this here.
       }
 
@@ -1262,7 +1270,50 @@ void PartCanvas::mouseMove(QMouseEvent* event)
 
       event->ignore();
       emit timeChanged(MusEGlobal::sigmap.raster(x, *_raster));
-      }
+
+      showStatusTip(event);
+}
+
+void PartCanvas::showStatusTip(QMouseEvent* event) {
+
+    static CItem* hoverItem = nullptr;
+    static Tool localTool;
+
+    CItem* item;
+        item = findCurrentItem(event->pos());
+
+    if (item) {
+        if (hoverItem == item && localTool == _tool)
+            return;
+
+        hoverItem = item;
+        localTool = _tool;
+
+        QString s;
+        if (_tool & (MusEGui::PointerTool ))
+            s = tr("LMB: Select/Move/Dblclick to edit | CTRL+LMB: Multi select/Move&Copy | CTRL+ALT+LMB: Dblclick to edit in new window | SHIFT+LMB: Select track | MMB: Delete");
+        else if (_tool & (MusEGui::PencilTool))
+            s = tr("LMB: Draw to resize | MMB: Delete | CTRL+RMB: Trim length");
+        else if (_tool & (MusEGui::RubberTool))
+            s = tr("LMB: Delete | CTRL+RMB: Trim length");
+        else if (_tool & (MusEGui::CutTool))
+            s = tr("LMB: Cut part in two");
+        else if (_tool & (MusEGui::GlueTool))
+            s = tr("LMB: Merge with following part");
+        else if (_tool & (MusEGui::MuteTool))
+            s = tr("LMB: Mute selected part");
+        else if (_tool & (MusEGui::AutomationTool))
+            s = tr("LMB: Edit automation events in audio parts");
+
+        if (!s.isEmpty())
+            MusEGlobal::muse->setStatusBarText(s);
+    } else {
+        if (hoverItem != nullptr) {
+            MusEGlobal::muse->clearStatusBarText();
+            hoverItem = nullptr;
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   y2Track
@@ -1278,7 +1329,7 @@ MusECore::Track* PartCanvas::y2Track(int y) const
                   return *it;
             ty += h;
             }
-      return 0;
+      return nullptr;
       }
 
 //---------------------------------------------------------

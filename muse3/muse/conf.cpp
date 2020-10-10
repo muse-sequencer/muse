@@ -1343,6 +1343,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 //                            MusEGlobal::config.openMDIWinMaximized = xml.parseInt();
                         else if (tag == "keepTransportWindowOnTop")
                             MusEGlobal::config.keepTransportWindowOnTop = xml.parseInt();
+                        else if (tag == "showStatusBar")
+                            MusEGlobal::config.showStatusBar = xml.parseInt();
 
 
                         // ---- the following only skips obsolete entries ----
@@ -1825,7 +1827,7 @@ namespace MusEGui {
 void MusE::writeGlobalConfiguration() const
       {
       FILE* f = fopen(MusEGlobal::configName.toLatin1().constData(), "w");
-      if (f == 0) {
+      if (f == nullptr) {
             fprintf(stderr, "save configuration to <%s> failed: %s\n",
                MusEGlobal::configName.toLatin1().constData(), strerror(errno));
             return;
@@ -1844,7 +1846,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
     parent = this;
   //QString file = QFileDialog::getOpenFileName(parent, tr("Load configuration colors"), QString(), tr("MusE color configuration files *.cfc (*.cfc)"));
   QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
-                                               tr("Load configuration colors"), NULL, MusEGui::MFileDialog::GLOBAL_VIEW);
+                                               tr("Load configuration colors"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
 
   if(file.isEmpty())
     return false;
@@ -2038,6 +2040,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "noPluginScaling", MusEGlobal::config.noPluginScaling);
 //      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
       xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
+      xml.intTag(level, "showStatusBar", MusEGlobal::config.showStatusBar);
 
       for (int i = 1; i < NUM_FONTS; ++i) {
 //          for (int i = 0; i < NUM_FONTS; ++i) {

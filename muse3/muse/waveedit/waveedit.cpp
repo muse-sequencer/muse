@@ -216,6 +216,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
+      settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
 
       settingsMenu->addAction(subwinAction);
 //      settingsMenu->addAction(shareAction);

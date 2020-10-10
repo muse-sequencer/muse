@@ -1,3 +1,13 @@
+10.10.2020
+    - Fix: Change key modifiers for opening part in new window to Ctrl+Alt,
+        because Shift always selects all parts of a track. So now even 
+        Ctrl+Shift+Alt works, opening all track parts in a new window. (kybos)
+    - New: Added status bar. Can be optionally hidden in GUI settings.
+        Moved CPU load display to status bar, xruns > 1 displayed in red (reset
+        by doubleclick). CPU toolbar remains available but is hidden by default.
+        Status bar is mainly used for context-sensitive help, to improve 
+        usability for new users. Many status tips created, more to come.
+        Default status text shows audio driver and related data. (kybos)
 06.10.2020
     - Fix: Replace marker icons by SVG. (kybos)
     - Theme: Color tab text (active/hover) for better visibility. (kybos)

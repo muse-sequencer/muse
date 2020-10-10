@@ -440,6 +440,7 @@ struct GlobalConfigValues {
       // Open MDI windows maximized
 //      bool openMDIWinMaximized;
       bool keepTransportWindowOnTop;
+      bool showStatusBar;
       };
 
 

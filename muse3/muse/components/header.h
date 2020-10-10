@@ -53,6 +53,7 @@ class Header : public QHeaderView {
       void setColumnIcon(QIcon &icon, int col, int width = -1 );
       void setToolTip(int col, const QString &text);
       void setWhatsThis(int col, const QString &text);
+      void setStatusTip(int col, const QString &text);
       void mousePressEvent ( QMouseEvent * e );
       void removeColumn(int col);
     private slots:

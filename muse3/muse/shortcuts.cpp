@@ -442,7 +442,7 @@ void writeShortCuts(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "shortcuts");
       for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
-            if (shortcuts[i].xml != NULL && shortcuts[i].type != INVIS_SHRT) //Avoid nullptr & hardcoded shortcuts
+            if (shortcuts[i].xml != nullptr && shortcuts[i].type != INVIS_SHRT) //Avoid nullptr & hardcoded shortcuts
                   xml.intTag(level, shortcuts[i].xml, shortcuts[i].key);
             }
       xml.etag(level, "shortcuts");

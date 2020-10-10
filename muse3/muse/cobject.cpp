@@ -82,6 +82,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
     subwinAction = new QAction(tr("Tabbed/Floating"), this);
     subwinAction->setCheckable(true);
+    subwinAction->setStatusTip(tr("Display editor in a tab or in a separate window (preset in Global Settings->Editors)."));
     subwinAction->setShortcut(shortcuts[SHRT_TABBED_WIN].key);
     connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
 

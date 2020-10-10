@@ -58,6 +58,7 @@
 #include "helper.h"
 #include "operations.h"
 #include "gconfig.h"
+#include "app.h"
 
 #define CARET   10
 #define CARET2   5
@@ -92,14 +93,14 @@ CItem* DrumCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       {
       if (signed(event.tick())<0) {
             printf("ERROR: trying to add event before current part!\n");
-            return NULL;
+            return nullptr;
       }
       
       int instr=pitch_and_track_to_instrument(event.pitch(), part->track());
       if (instr<0)
       {
         if (heavyDebugMsg) printf("trying to add event which is hidden or not in any part known to me\n");
-        return NULL;
+        return nullptr;
       }
       
       DEvent* ev = new DEvent(event, part, instr);
@@ -123,15 +124,16 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       {
       drumEditor=static_cast<DrumEdit*>(pr);
       
-      if (debugMsg) printf("DrumCanvas in new style drummap mode\n");
-      ourDrumMap=NULL;
+      setStatusTip(tr("Drum canvas: Use Pencil tool to create and edit events, Pointer tool to select, Cursor tool for special keyboard entry mode (arrow keys, V, B, N, M, Del)."));
+
+      ourDrumMap=nullptr;
       rebuildOurDrumMap();
       
       setVirt(false);
       cursorPos= QPoint(0,0);
       _stepSize=1;
       
-      steprec=new MusECore::StepRec(NULL);
+      steprec=new MusECore::StepRec(nullptr);
       
       songChanged(SC_TRACK_INSERTED);
       connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
@@ -139,7 +141,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
 
 DrumCanvas::~DrumCanvas()
 {
-  if (must_delete_our_drum_map && ourDrumMap!=NULL)
+  if (must_delete_our_drum_map && ourDrumMap!=nullptr)
     delete [] ourDrumMap;
   
   delete steprec;
@@ -157,8 +159,8 @@ bool DrumCanvas::index2Note(int index, int* port, int* channel, int* note)
 
       int mport, ch;
       // Default to track port if -1 and track channel if -1.
-      MusECore::Track* track = 0;
-      MusECore::MidiTrack* mt = 0;
+      MusECore::Track* track = nullptr;
+      MusECore::MidiTrack* mt = nullptr;
       if(ourDrumMap[index].port == -1)
       {
         track = *instrument_map[index].tracks.begin();
@@ -250,7 +252,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
       MusECore::iPartToChange ip2c = parts2change.find(part);
       if(ip2c == parts2change.end())
       {
-        MusECore::PartToChange p2c = {0, npartoffset};
+        MusECore::PartToChange p2c = {nullptr, npartoffset};
         parts2change.insert(std::pair<MusECore::Part*, MusECore::PartToChange> (part, p2c));
       }
       else
@@ -402,7 +404,7 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
       {
       int instr = y2pitch(p.y());
       if ((instr<0) || (instr>=getOurDrumMapSize()))
-        return NULL;
+        return nullptr;
 
       int k4  = (Qt::MetaModifier | Qt::AltModifier);
       //int nk4 = Qt::ControlModifier;
@@ -435,7 +437,7 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
 CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 {
   if ((instrument<0) || (instrument>=getOurDrumMapSize()))
-    return NULL;
+    return nullptr;
 
   if (!instrument_map[instrument].tracks.contains(curPart->track()))
   {
@@ -447,7 +449,7 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
     if (parts.count() != 1)
     {
       QMessageBox::warning(this, tr("Creating event failed"), tr("Couldn't create the event, because the currently selected part isn't the same track, and the selected instrument could be either on no or on multiple parts, which is ambiguous.\nSelect the destination part, then try again."));
-      return NULL;
+      return nullptr;
     }
     else
     {
@@ -458,7 +460,7 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 
   tick    -= curPart->tick();
   if (tick < 0)
-        return 0;
+        return nullptr;
   MusECore::Event e(MusECore::Note);
   e.setTick(tick);
   e.setPitch(instrument_map[instrument].pitch);
@@ -484,7 +486,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
 {
    if(!item)
    {
-     printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::newItem called with NULL item!\n");
+     printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::newItem called with nullptr item!\n");
      return;
    }
      
@@ -1539,7 +1541,7 @@ void DrumCanvas::midiNote(int pitch, int velo)
          else
          {
             QSet<Track*> possible_dest_tracks;
-            Part* rec_part=NULL;
+            Part* rec_part=nullptr;
             int rec_index=-1;
 
             int ourDrumMapSize=getOurDrumMapSize();
@@ -1556,7 +1558,7 @@ void DrumCanvas::midiNote(int pitch, int velo)
                 possible_dest_tracks.unite(instrument_map[i].tracks);
             }
             
-            if (rec_part == NULL) // if recording to curPart isn't possible
+            if (rec_part == nullptr) // if recording to curPart isn't possible
             {
               QSet<Part*> possible_dest_parts = parts_at_tick(pos[0], possible_dest_tracks);
               
@@ -1578,12 +1580,12 @@ void DrumCanvas::midiNote(int pitch, int velo)
                 {
                   printf("ERROR: THIS SHOULD NEVER HAPPEN: i found a destination part for step recording, but now i can't find the instrument any more in DrumCanvas::midiNote()?!\n");
                   QMessageBox::critical(this, tr("Internal error"), tr("Wtf, some nasty internal error which is actually impossible occurred. Check console output. Nothing recorded."));
-                  rec_part=NULL;
+                  rec_part=nullptr;
                 }
               }
             }
             
-            if (rec_part != NULL)
+            if (rec_part != nullptr)
               steprec->record(rec_part,instrument_map[rec_index].pitch,ourDrumMap[rec_index].len,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier, pitch);
          }   
       }
@@ -1835,7 +1837,7 @@ void DrumCanvas::rebuildOurDrumMap()
 
   // maybe delete and then populate ourDrumMap
   
-  if (must_delete_our_drum_map && ourDrumMap!=NULL)
+  if (must_delete_our_drum_map && ourDrumMap!=nullptr)
     delete [] ourDrumMap;
   
   int size = instrument_map.size();
@@ -1875,8 +1877,14 @@ void DrumCanvas::mouseMove(QMouseEvent* event) {
 
     EventCanvas::mouseMove(event);
 
-    if (!MusEGlobal::config.showNoteTooltips)
-        return;
+    if (MusEGlobal::config.showNoteTooltips)
+        showNoteTooltip(event);
+
+    if (MusEGlobal::config.showStatusBar)
+        showStatusTip(event);
+}
+
+void DrumCanvas::showNoteTooltip(QMouseEvent* event) {
 
     static CItem* hoverItem = nullptr;
 
@@ -1903,16 +1911,16 @@ void DrumCanvas::mouseMove(QMouseEvent* event) {
 
             start.mbt(&bar, &beat, &tick);
             QString str_bar = QString("%1.%2.%3")
-                .arg(bar + 1,  4, 10, QLatin1Char('0'))
-                .arg(beat + 1, 2, 10, QLatin1Char('0'))
-                .arg(tick,     3, 10, QLatin1Char('0'));
+                    .arg(bar + 1,  4, 10, QLatin1Char('0'))
+                    .arg(beat + 1, 2, 10, QLatin1Char('0'))
+                    .arg(tick,     3, 10, QLatin1Char('0'));
 
             start.msmu(&hour, &min, &sec, &msec, nullptr);
             QString str_time = QString("%1:%2:%3.%4")
-                .arg(hour,  2, 10, QLatin1Char('0'))
-                .arg(min,   2, 10, QLatin1Char('0'))
-                .arg(sec,   2, 10, QLatin1Char('0'))
-                .arg(msec,  3, 10, QLatin1Char('0'));
+                    .arg(hour,  2, 10, QLatin1Char('0'))
+                    .arg(min,   2, 10, QLatin1Char('0'))
+                    .arg(sec,   2, 10, QLatin1Char('0'))
+                    .arg(msec,  3, 10, QLatin1Char('0'));
 
             str = tr("Note: ") + str + "\n"
                     + tr("Velocity: ") + QString::number(item->event().velo()) + "\n"
@@ -1924,6 +1932,39 @@ void DrumCanvas::mouseMove(QMouseEvent* event) {
         }
 
         QToolTip::showText(event->globalPos(), str);
+    }
+}
+
+void DrumCanvas::showStatusTip(QMouseEvent* event) {
+
+    static CItem* hoverItem = nullptr;
+    static Tool localTool;
+
+    CItem* item = findCurrentItem(event->pos());
+    if (item) {
+        if (hoverItem == item && localTool == _tool)
+            return;
+
+        hoverItem = item;
+        localTool = _tool;
+
+        QString s;
+        if (_tool & (MusEGui::PointerTool ))
+            s = tr("LMB: Select/Move | CTRL+LMB: Multi select/Move&copy | SHIFT+LMB: Select pitch | MMB: Delete");
+        else if (_tool & (MusEGui::PencilTool))
+            s = tr("LMB: Select | CTRL+LMB: Multi select | SHIFT+LMB: Select pitch | CTRL+SHIFT+LMB: Multi pitch select | MMB: Delete");
+        else if (_tool & (MusEGui::RubberTool))
+            s = tr("LMB: Delete");
+        else if (_tool & (MusEGui::CursorTool))
+            s = tr("Arrow keys to move cursor, V,B,N,M keys to create events with increasing velocity, Del to delete.");
+
+        if (!s.isEmpty())
+            MusEGlobal::muse->setStatusBarText(s);
+    } else {
+        if (hoverItem != nullptr) {
+            MusEGlobal::muse->clearStatusBarText();
+            hoverItem = nullptr;
+        }
     }
 }
 
