@@ -58,8 +58,8 @@ namespace MusEGui {
 const int CtrlCanvas::overlayTextOffsetFromOrg = 2;
 const QString CtrlCanvas::overlayHintSelectPart =
   CtrlCanvas::tr("Make the current part's track match the selected drumlist entry");
-const QString CtrlCanvas::overlayHintHoldCtrl =
-  CtrlCanvas::tr("Drawing hint: Hold Ctrl to affect only existing events");
+//const QString CtrlCanvas::overlayHintHoldCtrl =
+//  CtrlCanvas::tr("Drawing hint: Hold Ctrl to affect only existing events");
 
 //---------------------------------------------------------
 //   computeVal
@@ -259,7 +259,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       //  because the contents need to scale. Without this, contents were not
       //  updating on Mint Cinnamon when adjusting the vertical splitters.
       setAttribute(Qt::WA_StaticContents, false);
-      setStatusTip(tr("Control canvas: Use Pencil tool to edit events and Draw tool to adjust them gradually."));
+      setStatusTip(tr("Control canvas: Use Pencil tool to edit events and Draw tool to adjust them gradually. Hold Ctrl to affect only existing events."));
 
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
           setBg(MusEGlobal::config.midiControllerViewBg);
@@ -3355,8 +3355,8 @@ void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
       {
         p.drawText(txt_x , y * 2, overlayHintSelectPart);
       }
-      else if (noEvents)
-           p.drawText(txt_x , y * 2, overlayHintHoldCtrl);
+//      else if (noEvents)
+//           p.drawText(txt_x , y * 2, overlayHintHoldCtrl);
       }
 
 //---------------------------------------------------------
@@ -3379,12 +3379,12 @@ QRect CtrlCanvas::overlayRect() const
         r2.translate(txt_x, y * 2);   
         r |= r2;
       }
-      else if (noEvents) 
-      {
-        QRect r2 = fm.boundingRect(overlayHintHoldCtrl);
-        r2.translate(txt_x, y * 2);   
-        r |= r2;
-      }
+//      else if (noEvents)
+//      {
+//        QRect r2 = fm.boundingRect(overlayHintHoldCtrl);
+//        r2.translate(txt_x, y * 2);
+//        r |= r2;
+//      }
       return r;
 }
 
@@ -3577,7 +3577,7 @@ bool CtrlCanvas::cancelMouseOps()
 bool CtrlCanvas::setCurDrumPitch(int instrument)
 {
       DrumEdit* drumedit = dynamic_cast<DrumEdit*>(editor);
-      if (drumedit == NULL)
+      if (drumedit == nullptr)
         curDrumPitch = instrument;
       else // new style drummap mode
       {
