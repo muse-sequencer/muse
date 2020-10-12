@@ -138,5 +138,6 @@
         <file>svg/transport.svg</file>
         <file>svg/minus.svg</file>
         <file>svg/plus.svg</file>
+        <file>svg/key.svg</file>
     </qresource>
 </RCC>

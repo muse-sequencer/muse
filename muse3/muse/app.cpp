@@ -667,7 +667,7 @@ MusE::MusE() : QMainWindow()
        //-------- Settings Actions
       settingsGlobalAction = new QAction(*MusEGui::settingsSVGIcon, tr("Global Settings..."), this);
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
-      settingsShortcutsAction = new QAction(QIcon(*MusEGui::settings_configureshortcutsIcon), tr("Configure Shortcuts..."), this);
+      settingsShortcutsAction = new QAction(*MusEGui::keySVGIcon, tr("Keyboard Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
       dontFollowAction = new QAction(tr("Don't Follow Song"), this);
       dontFollowAction->setCheckable(true);

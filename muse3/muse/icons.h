@@ -130,7 +130,6 @@ extern QPixmap* midi_inputplugins_transposeIcon;
 extern QPixmap* midi_local_offIcon;
 extern QPixmap* midi_reset_instrIcon;
 extern QPixmap* settings_appearance_settingsIcon;
-extern QPixmap* settings_configureshortcutsIcon;
 extern QPixmap* settings_midifileexportIcon;
 extern QPixmap* settings_midisyncIcon;
 extern QPixmap* view_markerIcon;
@@ -296,6 +295,7 @@ extern QIcon* bigtimeSVGIcon;
 extern QIcon* mixerSVGIcon;
 extern QIcon* plusSVGIcon;
 extern QIcon* minusSVGIcon;
+extern QIcon* keySVGIcon;
 
 //----------------------------------
 // Cursors

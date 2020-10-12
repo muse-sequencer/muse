@@ -47,7 +47,6 @@
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
 #include "xpm/settings_appearance_settings.xpm"
-#include "xpm/settings_configureshortcuts.xpm"
 #include "xpm/settings_midifileexport.xpm"
 #include "xpm/settings_midisync.xpm"
 #include "xpm/view_marker.xpm"
@@ -241,7 +240,6 @@ QPixmap* midi_inputplugins_transposeIcon;
 QPixmap* midi_local_offIcon;
 QPixmap* midi_reset_instrIcon;
 QPixmap* settings_appearance_settingsIcon;
-QPixmap* settings_configureshortcutsIcon;
 QPixmap* settings_midifileexportIcon;
 QPixmap* settings_midisyncIcon;
 QPixmap* view_markerIcon;
@@ -408,6 +406,7 @@ QIcon* bigtimeSVGIcon;
 QIcon* mixerSVGIcon;
 QIcon* plusSVGIcon;
 QIcon* minusSVGIcon;
+QIcon* keySVGIcon;
 
 //----------------------------------
 // Cursors
@@ -572,7 +571,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midi_local_offIcon                            = new QPixmap(midi_local_off_xpm);
     midi_reset_instrIcon                          = new QPixmap(midi_reset_instr_xpm);
     settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
-    settings_configureshortcutsIcon               = new QPixmap(settings_configureshortcuts_xpm);
     settings_midifileexportIcon                   = new QPixmap(settings_midifileexport_xpm);
     settings_midisyncIcon                         = new QPixmap(settings_midisync_xpm);
     view_markerIcon                               = new QPixmap(view_marker_xpm);
@@ -743,6 +741,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     mixerSVGIcon       = icons.getSVG("mixer.svg");
     plusSVGIcon        = icons.getSVG("plus.svg");
     minusSVGIcon       = icons.getSVG("minus.svg");
+    keySVGIcon         = icons.getSVG("key.svg");
 
     // tool icons
     pencilIconSVG     = icons.getSVG("pencil.svg");
@@ -893,7 +892,6 @@ void deleteIcons()
     delete midi_local_offIcon;
     delete midi_reset_instrIcon;
     delete settings_appearance_settingsIcon;
-    delete settings_configureshortcutsIcon;
     delete settings_midifileexportIcon;
     delete settings_midisyncIcon;
     delete view_markerIcon;
@@ -1048,6 +1046,7 @@ void deleteIcons()
     delete mixerSVGIcon;
     delete plusSVGIcon;
     delete minusSVGIcon;
+    delete keySVGIcon;
 
     delete noscaleSVGIcon[0];
     delete noscaleSVGIcon[1];

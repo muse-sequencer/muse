@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:osb="http://www.openswatchbook.org/uri/2009/osb" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <g>
+  <path d="m13.953 21.523a11 11 0 0 0-11 11 11 11 0 0 0 11 11 11 11 0 0 0 10.047-6.5234h19.549v9h5v-9h5v9h5v-9h3v-8h-37.176a11 11 0 0 0-10.42-7.4766zm0 6.0078a4.993 4.993 0 0 1 4.9941 4.9922 4.993 4.993 0 0 1-4.9941 4.9941 4.993 4.993 0 0 1-4.9922-4.9941 4.993 4.993 0 0 1 4.9922-4.9922z" fill="#fc0" stop-color="#000000" stroke="#000" stroke-linecap="round" stroke-linejoin="round" style="paint-order:stroke fill markers"/>
+ </g>
+</svg>
