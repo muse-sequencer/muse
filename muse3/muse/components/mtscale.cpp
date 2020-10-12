@@ -270,7 +270,7 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
 
       const int mx_2    = mx + mw;
       const int my12    = 12;
-      const int my12_m1 = my12 - 1;
+//      const int my12_m1 = my12 - 1;
       const int my13    = 13;
       const int mh_m12  = height() - 12;
 
@@ -284,6 +284,7 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
       
       QPen pen;
       pen.setCosmetic(true);
+      p.setRenderHint(QPainter::Antialiasing);
       
 // For testing...
       //fprintf(stderr, "MTScale::pdraw x:%d w:%d\n", x, w);
@@ -364,8 +365,9 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
               //  behave incorrectly with coordinates as small as +/-4000."
 
 
-              QPixmap* pm = flagIconS;
-              const int pmw = rmapxDev(pm->width());
+//              QPixmap* pm = flagIconS;
+//              const int pmw = rmapxDev(pm->width());
+              const int pmw = rmapxDev(7);
               const int pmx = xp;
               const int pmx2 = xp + pmw;
 
@@ -379,7 +381,13 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
 // For testing...
 //                     fprintf(stderr, "...marker within range. xorg:%d xmag:%d xpos:%d Drawing marker at:%d\n", xorg, xmag, xpos, mapx(pmx));
 
-                p.drawPixmap(mapx(pmx), 0, *pm);
+//                p.drawPixmap(mapx(pmx), 0, *pm);
+//                  p.setRenderHint(QPainter::Antialiasing);
+                  p.setBrush(Qt::green);
+                  p.setPen(Qt::green);
+                  p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(mapx(pmx)), 1.},
+                                                   {static_cast<qreal>(mapx(pmx2)), 6.},
+                                                   {static_cast<qreal>(mapx(pmx)), 11.} } );
               }
 
               const QString s = m->second.name();
@@ -422,48 +430,109 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
       //    draw location marker
       //---------------------------------------------------
 
-      if (barLocator) {
-            pen.setColor(Qt::blue);
-            p.setPen(pen);
-            int xp = pos[1];
-            int mxp = mapx(xp);
-            if (xp >= vx && xp < vx_2)
-                  p.drawLine(mxp, my, mxp, mh_m12);
-            xp = pos[2];
-            mxp = mapx(xp);
-            if (xp >= vx && xp < vx_2)
-                  p.drawLine(mxp, my, mxp, mh_m12);
-            pen.setColor(Qt::red);
-            p.setPen(pen);
-            // Draw the red main position cursor last, on top of the others.
-            xp = pos[0];
-            mxp = mapx(xp);
-            if (xp >= vx && xp < vx_2)
-                  p.drawLine(mxp, my, mxp, mh_m12);
-            }
-      else {
-            for (int i = 0; i < 3; ++i) {
-                  const int xp = pos[i];
+//      if (barLocator) { // unused?
+//            pen.setColor(Qt::blue);
+//            p.setPen(pen);
+//            int xp = pos[1];
+//            int mxp = mapx(xp);
+//            if (xp >= vx && xp < vx_2)
+//                  p.drawLine(mxp, my, mxp, mh_m12);
+//            xp = pos[2];
+//            mxp = mapx(xp);
+//            if (xp >= vx && xp < vx_2)
+//                  p.drawLine(mxp, my, mxp, mh_m12);
+//            pen.setColor(Qt::red);
+//            p.setPen(pen);
+//            // Draw the red main position cursor last, on top of the others.
+//            xp = pos[0];
+//            mxp = mapx(xp);
+//            if (xp >= vx && xp < vx_2)
+//                  p.drawLine(mxp, my, mxp, mh_m12);
+//            }
+//      else {
+//            for (int i = 0; i < 3; ++i) {
+//                  const int xp = pos[i];
                   
-                  QPixmap* pm = markIcon[i];
-                  const int pmw_d2 = rmapxDev(pm->width()) / 2;
-                  const int pmx = xp - pmw_d2;
-                  const int pmx2 = xp + pmw_d2;
+//                  QPixmap* pm = markIcon[i];
+//                  const int pmw_d2 = rmapxDev(pm->width()) / 2;
+//                  const int pmx = xp - pmw_d2;
+//                  const int pmx2 = xp + pmw_d2;
 
-// For testing...
-                  //fprintf(stderr,
-                  //  "MTScale::pdraw: Pos mark: x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d x2:%d x2_right:%d h_m12:%d i:%d xp:%d pmw:%d pmw_d2:%d pmx:%d pmx2:%d\n",
-                  //  r.x(), r.y(), r.width(), r.height(), mx, my, mw, mh, x2, x2_right, h_m12, i, xp, pm->width(), pmw_d2, pmx, pmx2);
+//// For testing...
+//                  //fprintf(stderr,
+//                  //  "MTScale::pdraw: Pos mark: x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d x2:%d x2_right:%d h_m12:%d i:%d xp:%d pmw:%d pmw_d2:%d pmx:%d pmx2:%d\n",
+//                  //  r.x(), r.y(), r.width(), r.height(), mx, my, mw, mh, x2, x2_right, h_m12, i, xp, pm->width(), pmw_d2, pmx, pmx2);
 
-                  if ((pmx >= vx && pmx < vx_2) || (pmx2 > vx && pmx2 <= vx_2) ||
-                      (vx >= pmx && vx < pmx2) || (vx_2 > pmx && vx_2 <= pmx2)) {
-// For testing...
-//                         fprintf(stderr, "...position mark within range. xorg:%d xmag:%d xpos:%d Drawing mark at:%d\n", xorg, xmag, xpos, mapx(pmx));
+//                  if ((pmx >= vx && pmx < vx_2) || (pmx2 > vx && pmx2 <= vx_2) ||
+//                      (vx >= pmx && vx < pmx2) || (vx_2 > pmx && vx_2 <= pmx2)) {
+//// For testing...
+////                         fprintf(stderr, "...position mark within range. xorg:%d xmag:%d xpos:%d Drawing mark at:%d\n", xorg, xmag, xpos, mapx(pmx));
                         
-                        p.drawPixmap(mapx(pmx), my12_m1, *pm);
-                        }
-                  }
-            }
+//                        p.drawPixmap(mapx(pmx), my12_m1, *pm);
+//                        }
+//                  }
+//            }
+
+
+
+      const qreal mtop = 18.;
+      const qreal mbottom = 26.;
+      const int radius = 8;
+
+      // draw left range marker
+      {
+          const int xp = static_cast<int>(pos[1]);
+          const int pmw_d2 = rmapxDev(radius);
+          const int pmx = xp - pmw_d2;
+          const int pmx2 = xp + pmw_d2;
+
+          if ((pmx >= vx && pmx < vx_2) || (pmx2 > vx && pmx2 <= vx_2) ||
+                  (vx >= pmx && vx < pmx2) || (vx_2 > pmx && vx_2 <= pmx2)) {
+
+              p.setBrush(Qt::blue);
+              p.setPen(Qt::blue);
+              p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(mapx(xp)), mtop},
+                                               {static_cast<qreal>(mapx(pmx)), mtop},
+                                               {static_cast<qreal>(mapx(xp)), mbottom} } );
+          }
+      }
+
+      // draw right range marker
+      {
+          const int xp = static_cast<int>(pos[2]);
+          const int pmw_d2 = rmapxDev(radius);
+          const int pmx = xp - pmw_d2;
+          const int pmx2 = xp + pmw_d2;
+
+          if ((pmx >= vx && pmx < vx_2) || (pmx2 > vx && pmx2 <= vx_2) ||
+                  (vx >= pmx && vx < pmx2) || (vx_2 > pmx && vx_2 <= pmx2)) {
+
+              p.setBrush(Qt::blue);
+              p.setPen(Qt::blue);
+              p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(mapx(xp)), mtop},
+                                               {static_cast<qreal>(mapx(pmx2)), mtop},
+                                               {static_cast<qreal>(mapx(xp)), mbottom} } );
+          }
+      }
+
+      // draw current position marker
+      {
+          const int xp = static_cast<int>(pos[0]);
+          const int pmw_d2 = rmapxDev(radius);
+          const int pmx = xp - pmw_d2;
+          const int pmx2 = xp + pmw_d2;
+
+          if ((pmx >= vx && pmx < vx_2) || (pmx2 > vx && pmx2 <= vx_2) ||
+                  (vx >= pmx && vx < pmx2) || (vx_2 > pmx && vx_2 <= pmx2)) {
+
+              p.setBrush(Qt::red);
+              p.setPen(Qt::red);
+              p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(mapx(pmx)), mtop},
+                                               {static_cast<qreal>(mapx(pmx2)), mtop},
+                                               {static_cast<qreal>(mapx(xp)), mbottom} } );
+          }
+      }
+
             
       if (pos[3] != INT_MAX) {
             int xp = pos[3];
