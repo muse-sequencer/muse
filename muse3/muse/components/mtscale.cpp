@@ -44,6 +44,7 @@ MTScale::MTScale(int r, QWidget* parent, int xs, bool _mode)
       {
       waveMode = _mode;
       setToolTip(tr("Bar scale"));
+      setStatusTip(tr("Bar scale: Use mouse buttons to set position and range markers. Hold Shift to set (LMB) or delete (RMB) custom markers"));
       barLocator = false;
       raster = r;
       if (waveMode) {
