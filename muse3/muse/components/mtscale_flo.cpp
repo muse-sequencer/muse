@@ -211,6 +211,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
     //---------------------------------------------------
 
     int y = 12;
+    p.setRenderHint(QPainter::Antialiasing);
     p.setPen(MusEGlobal::config.rulerFg);
     p.setFont(MusEGlobal::config.fonts[5]);
     p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
@@ -242,8 +243,13 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
             else
                 x2 = xp+200;
 
-            if(xp >= -32)
-                p.drawPixmap(xp, 0, *flagIconS);
+            if(xp >= -32) {
+                p.setBrush(MusEGlobal::config.markerColor);
+                p.setPen(MusEGlobal::config.markerColor);
+                p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(xp), 1.},
+                                                 {static_cast<qreal>(xp) + 7., 6.},
+                                                 {static_cast<qreal>(xp), 11.} } );
+            }
 
             if(xp >= -1023)
             {
@@ -254,7 +260,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
 
             if(xp >= 0)
             {
-                p.setPen(Qt::green);
+                p.setPen(MusEGlobal::config.markerColor);
                 p.drawLine(xp, y, xp, height());
             }
         }
@@ -266,11 +272,67 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r, const QRegion&)
 
     int h = height()-12;
 
-    for (int i = 0; i < 3; ++i) {
-        int xp = parent->tick_to_x(pos[i]) + xoffset - xpos;
+//    for (int i = 0; i < 3; ++i) {
+//        int xp = parent->tick_to_x(pos[i]) + xoffset - xpos;
+//        if (xp >= x && xp < x+w) {
+//            QPixmap* pm = markIcon[i];
+//            p.drawPixmap(xp - pm->width()/2, y-1, *pm);
+//        }
+//    }
+
+
+    const qreal mtop = 18.;
+    const qreal mbottom = 26.;
+    const int radius = 8;
+
+    // draw left range marker
+    {
+        const int xp = parent->tick_to_x(static_cast<int>(pos[1])) + xoffset - xpos;
+
         if (xp >= x && xp < x+w) {
-            QPixmap* pm = markIcon[i];
-            p.drawPixmap(xp - pm->width()/2, y-1, *pm);
+//            QPixmap* pm = markIcon[i];
+//            p.drawPixmap(xp - pm->width()/2, y-1, *pm);
+
+            const int pmx = xp - radius;
+
+            p.setBrush(MusEGlobal::config.rangeMarkerColor);
+            p.setPen(MusEGlobal::config.rangeMarkerColor);
+            p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(mapx(xp)), mtop},
+                                             {static_cast<qreal>(mapx(pmx)), mtop},
+                                             {static_cast<qreal>(mapx(xp)), mbottom} } );
+        }
+    }
+
+    // draw right range marker
+    {
+        const int xp = parent->tick_to_x(static_cast<int>(pos[2])) + xoffset - xpos;
+
+        if (xp >= x && xp < x+w) {
+
+            const int pmx2 = xp + radius;
+
+            p.setBrush(MusEGlobal::config.rangeMarkerColor);
+            p.setPen(MusEGlobal::config.rangeMarkerColor);
+            p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(mapx(xp)), mtop},
+                                             {static_cast<qreal>(mapx(pmx2)), mtop},
+                                             {static_cast<qreal>(mapx(xp)), mbottom} } );
+        }
+    }
+
+    // draw position marker
+    {
+        const int xp = parent->tick_to_x(static_cast<int>(pos[0])) + xoffset - xpos;
+
+        if (xp >= x && xp < x+w) {
+
+            const int pmx = xp - radius;
+            const int pmx2 = xp + radius;
+
+            p.setBrush(MusEGlobal::config.positionMarkerColor);
+            p.setPen(MusEGlobal::config.positionMarkerColor);
+            p.drawPolygon( QVector<QPointF>{ {static_cast<qreal>(mapx(pmx)), mtop},
+                                             {static_cast<qreal>(mapx(pmx2)), mtop},
+                                             {static_cast<qreal>(mapx(xp)), mbottom} } );
         }
     }
 

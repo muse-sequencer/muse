@@ -939,15 +939,13 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       switch(trackType) {
             case MusECore::Track::MIDI: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startPianoEditAction);
-                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
-//                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startScoreEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
+                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
                   QAction *act_mexport = partPopup->addAction(tr("Save part to disk..."));
                   act_mexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
-            case MusECore::Track::DRUM:
-            {
+            case MusECore::Track::DRUM: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("Save part to disk..."));

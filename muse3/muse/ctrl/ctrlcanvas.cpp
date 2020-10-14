@@ -3254,7 +3254,7 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
       View::pdraw(p, rect);
       p.restore();
       
-      pen.setColor(Qt::blue);
+      pen.setColor(MusEGlobal::config.rangeMarkerColor);
       p.setPen(pen);
       int xp = mapx(pos[1]);
       if (xp >= x && xp < x+w) {
@@ -3267,7 +3267,7 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect, const QRegion& region)
       // Draw the red main position cursor last, on top of the others.
       xp = mapx(pos[0]);
       if (xp >= x && xp < x+w) {
-            pen.setColor(Qt::red);
+            pen.setColor(MusEGlobal::config.positionMarkerColor);
             p.setPen(pen);
             p.drawLine(xp, y, xp, y+h);
             }

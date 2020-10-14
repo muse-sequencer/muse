@@ -242,6 +242,11 @@ GlobalConfigValues config = {
       Qt::white,                      // midiInstrumentFontActiveColor;
       Qt::darkGray,                   // midiInstrumentBorderColor;
 
+    Qt::green,                       // markerColor;
+    Qt::blue,                        // rangeMarkerColor;
+    Qt::red,                         // positionMarkerColor;
+    Qt::black,                       // currentPositionColor;
+
       MusEGlobal::WaveOutLine,      // waveDrawing
 
       // maxAliasedPointSize At what point size to switch from aliased text to non-aliased text. 

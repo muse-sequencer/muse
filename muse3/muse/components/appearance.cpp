@@ -225,6 +225,11 @@ Appearance::Appearance(QWidget* parent)
       new IdListViewItem(0x42c, aid, "Part canvas raster coarse");
       new IdListViewItem(0x42d, aid, "Part canvas raster fine");
 
+      new IdListViewItem(0x453, aid, "Markers");
+      new IdListViewItem(0x454, aid, "Range markers");
+      new IdListViewItem(0x455, aid, "Position marker");
+      new IdListViewItem(0x456, aid, "Current mouse position hint");
+
       new IdListViewItem(0x41f, aid, "Ruler background");
       new IdListViewItem(0x420, aid, "Ruler text");
       new IdListViewItem(0x424, aid, "Ruler current marker space");
@@ -475,6 +480,11 @@ QColor* Appearance::globalConfigColorFromId(int id) const
       case 0x450: return &MusEGlobal::config.pianoCurrentKey;
       case 0x451: return &MusEGlobal::config.pianoPressedKey;
       case 0x452: return &MusEGlobal::config.pianoSelectedKey;
+
+    case 0x453: return &MusEGlobal::config.markerColor;
+    case 0x454: return &MusEGlobal::config.rangeMarkerColor;
+    case 0x455: return &MusEGlobal::config.positionMarkerColor;
+    case 0x456: return &MusEGlobal::config.currentPositionColor;
 
 //      case 0x500: return &MusEGlobal::config.mixerBg;
       case 0x501: return &MusEGlobal::config.midiTrackLabelBg;

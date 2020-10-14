@@ -103,7 +103,7 @@
     <waveEditBackgroundColor r="200" g="200" b="200"></waveEditBackgroundColor>
     <rulerBackgroundColor r="40" g="50" b="60"></rulerBackgroundColor>
     <rulerForegroundColor r="130" g="174" b="214"></rulerForegroundColor>
-    <rulerCurrentColor r="54" g="113" b="42"></rulerCurrentColor>
+    <rulerCurrentColor r="0" g="90" b="160"></rulerCurrentColor>
     <waveNonselectedPart r="192" g="192" b="192"></waveNonselectedPart>
     <wavePeakColor r="128" g="128" b="128"></wavePeakColor>
     <waveRmsColor r="0" g="0" b="0"></waveRmsColor>
@@ -128,5 +128,9 @@
     <pianoCurrentKey r="0" g="191" b="255"></pianoCurrentKey>
     <pianoPressedKey r="255" g="0" b="255"></pianoPressedKey>
     <pianoSelectedKey r="126" g="255" b="189"></pianoSelectedKey>
+    <markerColor r="0" g="166" b="255"></markerColor>
+    <rangeMarkerColor r="0" g="170" b="127"></rangeMarkerColor>
+    <positionMarkerColor r="255" g="100" b="0"></positionMarkerColor>
+    <currentPositionColor r="255" g="255" b="0"></currentPositionColor>
   </configuration>
 </muse>

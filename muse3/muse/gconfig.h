@@ -293,6 +293,11 @@ struct GlobalConfigValues {
       QColor midiInstrumentFontActiveColor;
       QColor midiInstrumentBorderColor;
 
+      QColor markerColor;
+      QColor rangeMarkerColor;
+      QColor positionMarkerColor;
+      QColor currentPositionColor;
+
       WaveDrawing waveDrawing;
 
       // At what point size to switch from aliased text to non-aliased text. Zero means always use anti-aliasing. 
