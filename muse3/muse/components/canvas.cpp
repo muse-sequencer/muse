@@ -284,7 +284,7 @@ void Canvas::drawMarkers(QPainter& p, const QRect& mr, const QRegion&)
       pen.setCosmetic(true);
       
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
-      pen.setColor(Qt::green);
+      pen.setColor(MusEGlobal::config.markerColor);
       p.setPen(pen);
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             const ViewXCoordinate xp(m->second.tick(), false);
@@ -502,7 +502,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
       //    draw location marker
       //---------------------------------------------------
 
-      pen.setColor(Qt::blue);
+      pen.setColor(MusEGlobal::config.rangeMarkerColor);
       p.setPen(pen);
       int mlx;
       ViewXCoordinate lxp0(pos[0], false);
@@ -517,7 +517,7 @@ void Canvas::draw(QPainter& p, const QRect& mr, const QRegion& mrg)
             p.drawLine(mlx, my, mlx, my_2);
             }
       // Draw the red main position cursor last, on top of the others.
-      pen.setColor(Qt::red);
+      pen.setColor(MusEGlobal::config.positionMarkerColor);
       p.setPen(pen);
       
 // For testing...

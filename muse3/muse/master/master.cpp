@@ -204,7 +204,7 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       //    draw marker
       //---------------------------------------------------
 
-      pen.setColor(Qt::blue);
+      pen.setColor(MusEGlobal::config.rangeMarkerColor);
       p.setPen(pen);
       int xp = mapx(pos[1]);
       if (xp >= x && xp < x+w) {
@@ -214,7 +214,7 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
       if (xp >= x && xp < x+w) {
             p.drawLine(xp, y, xp, y+h);
             }
-      pen.setColor(Qt::red);
+      pen.setColor(MusEGlobal::config.positionMarkerColor);
       p.setPen(pen);
       // Draw the red main position cursor last, on top of the others.
       xp = mapx(pos[0]);

@@ -681,7 +681,7 @@ void WaveCanvas::drawMarkers(QPainter& p, const QRect& mr, const QRegion&)
       pen.setCosmetic(true);
       
       MusECore::MarkerList* marker = MusEGlobal::song->marker();
-      pen.setColor(Qt::green);
+      pen.setColor(MusEGlobal::config.markerColor);
       p.setPen(pen);
       for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             const ViewXCoordinate xp(MusEGlobal::tempomap.tick2frame(m->second.tick()), false);

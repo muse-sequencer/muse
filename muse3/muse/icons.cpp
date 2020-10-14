@@ -61,9 +61,6 @@
 #include "xpm/doth.xpm"
 #include "xpm/dot1.xpm"
 #include "xpm/synth.xpm"
-#include "xpm/cmark.xpm"
-#include "xpm/lmark.xpm"
-#include "xpm/rmark.xpm"
 #include "xpm/cursor.xpm"
 
 #include "xpm/routing_input_button_slim_4.xpm"
@@ -77,8 +74,6 @@
 
 #include "xpm/up.xpm"
 #include "xpm/down.xpm"
-#include "xpm/flag.xpm"
-#include "xpm/flagS.xpm"
 #include "xpm/lock.xpm"
 
 #include "xpm/editcutS.xpm"
@@ -169,7 +164,6 @@ QPixmap* dotIcon;
 QPixmap* dothIcon;
 QPixmap* dot1Icon;
 QPixmap* synthIcon;
-QPixmap* markIcon[3];
 QPixmap* cursorIcon;
 QPixmap* muteIcon;
 QPixmap* eyeIcon;
@@ -177,8 +171,6 @@ QPixmap* eyeCrossedIcon;
 QPixmap* eyeGrayIcon;
 QPixmap* upIcon;
 QPixmap* downIcon;
-QPixmap* flagIcon;
-QPixmap* flagIconS;
 QPixmap* lockIcon;
 
 QIcon* editcutIconSet;
@@ -486,9 +478,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     dothIcon     = new QPixmap(doth_xpm);
     dot1Icon     = new QPixmap(dot1_xpm);
     synthIcon    = new QPixmap(synth_xpm);
-    markIcon[0]  = new QPixmap(cmark_xpm);
-    markIcon[1]  = new QPixmap(lmark_xpm);
-    markIcon[2]  = new QPixmap(rmark_xpm);
     cursorIcon   = new QPixmap(cursor_xpm);
     muteIcon     = new QPixmap(editmuteS_xpm);
     eyeIcon      = new QPixmap(eye_xpm);
@@ -496,8 +485,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     eyeGrayIcon  = new QPixmap(eye_gray_xpm);
     upIcon       = new QPixmap(up_xpm);
     downIcon     = new QPixmap(down_xpm);
-    flagIcon     = new QPixmap(flag_xpm);
-    flagIconS    = new QPixmap(flagS_xpm);
     lockIcon     = new QPixmap(lock_xpm);
 
     editcutIconSet       = new QIcon(QPixmap(editcutS_xpm)); // ddskrjo
@@ -814,15 +801,10 @@ void deleteIcons()
     delete dothIcon;
     delete dot1Icon;
     delete synthIcon;
-    delete markIcon[0];
-    delete markIcon[1];
-    delete markIcon[2];
     delete cursorIcon;
     delete muteIcon;
     delete upIcon;
     delete downIcon;
-    delete flagIcon;
-    delete flagIconS;
     delete lockIcon;
 
     delete editcutIconSet;

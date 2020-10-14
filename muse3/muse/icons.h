@@ -40,7 +40,6 @@ extern QPixmap* dotIcon;
 extern QPixmap* dothIcon;
 extern QPixmap* dot1Icon;
 extern QPixmap* synthIcon;
-extern QPixmap* markIcon[3];
 
 extern QPixmap* cursorIcon;
 extern QPixmap* midiCtrlMergeEraseIcon;
@@ -53,8 +52,6 @@ extern QPixmap* eyeCrossedIcon;
 extern QPixmap* eyeGrayIcon;
 extern QPixmap* upIcon;
 extern QPixmap* downIcon;
-extern QPixmap* flagIcon;
-extern QPixmap* flagIconS;
 extern QPixmap* lockIcon;
 
 extern QIcon* editcutIconSet;

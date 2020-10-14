@@ -1168,8 +1168,18 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "pianoSelectedKey")
                             MusEGlobal::config.pianoSelectedKey = readColor(xml);
 
-                        else if (tag == "maxAliasedPointSize")
+                        else if (tag == "markerColor")
+                            MusEGlobal::config.markerColor = readColor(xml);
+                        else if (tag == "rangeMarkerColor")
+                            MusEGlobal::config.rangeMarkerColor = readColor(xml);
+                        else if (tag == "positionMarkerColor")
+                            MusEGlobal::config.positionMarkerColor = readColor(xml);
+                        else if (tag == "currentPositionColor")
+                            MusEGlobal::config.currentPositionColor = readColor(xml);
 
+
+
+                        else if (tag == "maxAliasedPointSize")
                               MusEGlobal::config.maxAliasedPointSize = xml.parseInt();
 
                         else if (tag == "iconSize")
@@ -1813,6 +1823,11 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "pianoCurrentKey", MusEGlobal::config.pianoCurrentKey);
       xml.colorTag(level, "pianoPressedKey", MusEGlobal::config.pianoPressedKey);
       xml.colorTag(level, "pianoSelectedKey", MusEGlobal::config.pianoSelectedKey);
+
+      xml.colorTag(level, "markerColor", MusEGlobal::config.markerColor);
+      xml.colorTag(level, "rangeMarkerColor", MusEGlobal::config.rangeMarkerColor);
+      xml.colorTag(level, "positionMarkerColor", MusEGlobal::config.positionMarkerColor);
+      xml.colorTag(level, "currentPositionColor", MusEGlobal::config.currentPositionColor);
 }
       
 
