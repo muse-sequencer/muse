@@ -1,3 +1,6 @@
+14.10.2020
+    - New: Replace marker pixmaps by vector drawing. (kybos)
+    - New: Customizable colours for all markers. (kybos)
 10.10.2020
     - Fix: Change key modifiers for opening part in new window to Ctrl+Alt,
         because Shift always selects all parts of a track. So now even 
