@@ -2321,7 +2321,7 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool ne
 
     MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(pianoroll);
-    //      pianoroll->show(); // redundant, done in ctor
+    pianoroll->show();
     connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
     updateWindowMenu();
@@ -2471,6 +2471,7 @@ void MusE::startMasterEditor()
     if (!masterEditor) {
         masterEditor = new MusEGui::MasterEdit(this);
         toplevels.push_back(masterEditor);
+        masterEditor->show();
         connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
         updateWindowMenu();
     } else {
@@ -2516,7 +2517,7 @@ void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls, bool n
 
     MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(drumEditor);
-//    drumEditor->show();
+    drumEditor->show();
     connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
     updateWindowMenu();
@@ -2542,8 +2543,8 @@ void MusE::startWaveEditor(MusECore::PartList* pl, bool newwin)
         return;
 
     MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
-//    waveEditor->show();
     toplevels.push_back(waveEditor);
+    waveEditor->show();
     connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
     connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     updateWindowMenu();
