@@ -149,8 +149,6 @@ class CtrlCanvas : public MusEGui::View {
       //Qt::CursorShape _cursorShape;
       
       static const int overlayTextOffsetFromOrg;
-      static const QString overlayHintSelectPart;
-//      static const QString overlayHintHoldCtrl;
 
       void applyYOffset(MusECore::Event& e, int yoffset) const;
 

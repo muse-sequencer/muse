@@ -56,10 +56,6 @@ namespace MusEGui {
 
 // static
 const int CtrlCanvas::overlayTextOffsetFromOrg = 2;
-const QString CtrlCanvas::overlayHintSelectPart =
-  CtrlCanvas::tr("Make the current part's track match the selected drumlist entry");
-//const QString CtrlCanvas::overlayHintHoldCtrl =
-//  CtrlCanvas::tr("Drawing hint: Hold Ctrl to affect only existing events");
 
 //---------------------------------------------------------
 //   computeVal
@@ -3339,24 +3335,15 @@ void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
       {
       const QString s = _controller ? _controller->name() : QString("");
       
-      //p.setFont(MusEGlobal::config.fonts[3]);  // Use widget font instead. 
       p.setFont(font());
       
       p.setPen(palette().color(QPalette::WindowText));
       
-      //QFontMetrics fm(MusEGlobal::config.fonts[3]);  // Use widget font metrics instead. 
-      //int y = fm.lineSpacing() + 2;
       int y = fontMetrics().lineSpacing() + 2;
       
       const int txt_x = -xorg + overlayTextOffsetFromOrg;
 
       p.drawText(txt_x, y, s);
-      if (curDrumPitch==-2)
-      {
-        p.drawText(txt_x , y * 2, overlayHintSelectPart);
-      }
-//      else if (noEvents)
-//           p.drawText(txt_x , y * 2, overlayHintHoldCtrl);
       }
 
 //---------------------------------------------------------
@@ -3366,25 +3353,13 @@ void CtrlCanvas::drawOverlay(QPainter& p, const QRect&, const QRegion&)
 
 QRect CtrlCanvas::overlayRect() const
 {
-      //QFontMetrics fm(MusEGlobal::config.fonts[3]);   // Use widget font metrics instead (and set a widget font) !!! 
       const QFontMetrics fm = fontMetrics();
       QRect r = fm.boundingRect(_controller ? _controller->name() : QString(""));
       
       int y = fm.lineSpacing() + 2;
       const int txt_x = -xorg + overlayTextOffsetFromOrg;
-      r.translate(txt_x, y);   
-      if (curDrumPitch==-2)
-      {
-        QRect r2 = fm.boundingRect(overlayHintSelectPart);
-        r2.translate(txt_x, y * 2);   
-        r |= r2;
-      }
-//      else if (noEvents)
-//      {
-//        QRect r2 = fm.boundingRect(overlayHintHoldCtrl);
-//        r2.translate(txt_x, y * 2);
-//        r |= r2;
-//      }
+      r.translate(txt_x, y);
+
       return r;
 }
 
