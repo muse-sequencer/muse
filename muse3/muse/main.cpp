@@ -662,6 +662,12 @@ int main(int argc, char* argv[])
         MusEGlobal::museGlobalLib   = QString(LIBDIR);
         MusEGlobal::museGlobalShare = QString(SHAREDIR);
 
+        QByteArray appDir = qgetenv("APPDIR");
+        if (!appDir.isEmpty()) {
+            MusEGlobal::museGlobalLib   = appDir + MusEGlobal::museGlobalLib;
+            MusEGlobal::museGlobalShare = appDir + MusEGlobal::museGlobalShare;
+        }
+
         MusEGlobal::museProject     = MusEGlobal::museProjectInitPath; //getcwd(0, 0);
         MusEGlobal::museInstruments = MusEGlobal::museGlobalShare + "/instruments";
 

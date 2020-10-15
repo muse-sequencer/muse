@@ -6,8 +6,7 @@
   <project_license>GPL-2.0+</project_license>
   <name>MusE</name>
   <summary>The open source sequencer</summary>
-  <translation/>
-  <content_rating type="oars-1.1" />
+  <translation type="qt">MusE</translation>
   <description>
     <p>
       MusE is a MIDI/Audio sequencer with recording and editing capabilities. It can
