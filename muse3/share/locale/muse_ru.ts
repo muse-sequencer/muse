@@ -183,10 +183,9 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>(C) Copyright 1999-2020 the MusE development team.
-See http://www.muse-sequencer.org for new versions and
-more information.
+See https://muse-sequencer.github.io for new versions and more information.
 
-Published under the GNU Public License</source>
+Published under the GNU Public License.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -290,7 +289,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Style/Fonts</source>
-        <translation>Стиль/Шрифты</translation>
+        <translation type="vanished">Стиль/Шрифты</translation>
     </message>
     <message>
         <source>QT Theme</source>
@@ -298,35 +297,35 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>Windows</source>
-        <translation>Окна</translation>
+        <translation type="vanished">Окна</translation>
     </message>
     <message>
         <source>MusE</source>
-        <translation>MusE</translation>
+        <translation type="vanished">MusE</translation>
     </message>
     <message>
         <source>Metal</source>
-        <translation>Металл</translation>
+        <translation type="vanished">Металл</translation>
     </message>
     <message>
         <source>Norwegian Wood</source>
-        <translation>Норвежское дерево</translation>
+        <translation type="vanished">Норвежское дерево</translation>
     </message>
     <message>
         <source>Platinum</source>
-        <translation>Платина</translation>
+        <translation type="vanished">Платина</translation>
     </message>
     <message>
         <source>CDE</source>
-        <translation>КДЕ</translation>
+        <translation type="vanished">КДЕ</translation>
     </message>
     <message>
         <source>Motif</source>
-        <translation>Motif</translation>
+        <translation type="vanished">Motif</translation>
     </message>
     <message>
         <source>Motif Plus</source>
-        <translation>Motif Plus</translation>
+        <translation type="vanished">Motif Plus</translation>
     </message>
     <message>
         <source>Fonts</source>
@@ -438,7 +437,7 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>MusE color scheme</source>
-        <translation>Цветовая схема MusE</translation>
+        <translation type="vanished">Цветовая схема MusE</translation>
     </message>
     <message>
         <source>current settings</source>
@@ -466,10 +465,6 @@ Published under the GNU Public License</source>
     </message>
     <message>
         <source>O&amp;nly outline</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RMS/PEAK (&amp;Traditional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -505,10 +500,6 @@ Published under the GNU Public License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Current settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Size (pt)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -521,14 +512,6 @@ Aliased text is bright and sharp but may look poor
  in some cases.
 The font family is forced to &apos;Sans&apos;, which should 
  give reasonable results at low point sizes.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Qt system style</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Style sheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -574,6 +557,33 @@ Font 6: 80%</source>
     </message>
     <message>
         <source>Fill in optimal font sizes in relation to the system font</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RMS/PEAK (&amp;traditional)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If a user style sheet for one of  the MusE color schemes exists
+and is selected, it will be merged with the default style sheet
+for this scheme. The user style sheet takes precedence and 
+overwrites identical settings in the default style sheet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cascade default and user theme style sheets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show icons in menus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use native standard dialogs</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3697,15 +3707,15 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>GUI Style</source>
-        <translation>Стиль ГИП</translation>
+        <translation type="vanished">Стиль ГИП</translation>
     </message>
     <message>
         <source>MDI-subwindowness and sharing menus</source>
-        <translation>Общие меню и подменю MDI</translation>
+        <translation type="vanished">Общие меню и подменю MDI</translation>
     </message>
     <message>
         <source>Presets:</source>
-        <translation>Пресеты:</translation>
+        <translation type="vanished">Пресеты:</translation>
     </message>
     <message>
         <source>traditional MusE SDI</source>
@@ -3713,11 +3723,11 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>Cakewalk-like MDI</source>
-        <translation>MDI в стиле Cakewalk</translation>
+        <translation type="vanished">MDI в стиле Cakewalk</translation>
     </message>
     <message>
         <source>Borland-/Mac-like MDI</source>
-        <translation>MDI в стиле Borland-/Mac</translation>
+        <translation type="vanished">MDI в стиле Borland-/Mac</translation>
     </message>
     <message>
         <source>&amp;Apply</source>
@@ -3770,7 +3780,7 @@ left button behave like the middle button in such areas.</source>
     <message>
         <source>Displayed Resolution
 (Ticks/Quarternote)</source>
-        <translation>Отображаемое разрешение
+        <translation type="vanished">Отображаемое разрешение
 (Тиков/на четверть)</translation>
     </message>
     <message>
@@ -3841,11 +3851,11 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>Views</source>
-        <translation>Настройки окон</translation>
+        <translation type="vanished">Настройки окон</translation>
     </message>
     <message>
         <source>y-pos</source>
-        <translation>y-поз.</translation>
+        <translation type="vanished">y-поз.</translation>
     </message>
     <message>
         <source>show</source>
@@ -3853,31 +3863,31 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>x-pos</source>
-        <translation>x-поз.</translation>
+        <translation type="vanished">x-поз.</translation>
     </message>
     <message>
         <source>height</source>
-        <translation>высота</translation>
+        <translation type="vanished">высота</translation>
     </message>
     <message>
         <source>width</source>
-        <translation>ширина</translation>
+        <translation type="vanished">ширина</translation>
     </message>
     <message>
         <source>Big Time</source>
-        <translation>Хронометр</translation>
+        <translation type="vanished">Хронометр</translation>
     </message>
     <message>
         <source>Transport</source>
-        <translation>Транспорт</translation>
+        <translation type="vanished">Транспорт</translation>
     </message>
     <message>
         <source>Cur</source>
-        <translation>Тек</translation>
+        <translation type="vanished">Тек</translation>
     </message>
     <message>
         <source>set current values</source>
-        <translation>установить текущее значение</translation>
+        <translation type="vanished">установить текущее значение</translation>
     </message>
     <message>
         <source>show splash screen</source>
@@ -3893,11 +3903,11 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>Mixer A</source>
-        <translation>Микшер А</translation>
+        <translation type="vanished">Микшер А</translation>
     </message>
     <message>
         <source>Mixer B</source>
-        <translation>Микшер В</translation>
+        <translation type="vanished">Микшер В</translation>
     </message>
     <message>
         <source>show &quot;Did you know?&quot; dialog</source>
@@ -3945,7 +3955,7 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>Projects:</source>
-        <translation>Проекты:</translation>
+        <translation type="vanished">Проекты:</translation>
     </message>
     <message>
         <source>...</source>
@@ -3953,7 +3963,7 @@ left button behave like the middle button in such areas.</source>
     </message>
     <message>
         <source>Main Window</source>
-        <translation>Главное окно</translation>
+        <translation type="vanished">Главное окно</translation>
     </message>
     <message>
         <source>Try to use Jack Freewheel</source>
@@ -4073,7 +4083,7 @@ Adjusts responsiveness of audio controls and
     </message>
     <message>
         <source>GUI Behaviour</source>
-        <translation>Поведение ГИП</translation>
+        <translation type="vanished">Поведение ГИП</translation>
     </message>
     <message>
         <source>Use old-style stop shortcut:</source>
@@ -4271,10 +4281,6 @@ Disable to use an alternate standard
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Plugin Paths</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4303,10 +4309,6 @@ Disable to use an alternate standard
     </message>
     <message>
         <source>DSSI</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>VST</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4478,15 +4480,6 @@ Certain operations will also force them to be resent,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>With some themes like Breeze or Oxygen, 
- MDI windows may be frozen and 
- non-responsive to the mouse. 
-This option turns on a fix.
-Benign XCB connection errors may still 
- occur, slowing the program somewhat.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Revert native GUI scaling for plugins in HiDPI</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4528,10 +4521,6 @@ Turn off to reduce clutter.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Bug fix: Fix frozen MDI windows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Use first available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4565,14 +4554,6 @@ Turn off to reduce clutter.</source>
     <message>
         <source>Whether record-arming a track 
  automatically activates monitoring.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open MDI subwindows maximized</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Traditional MusE SDI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4617,6 +4598,62 @@ Turn off to reduce clutter.</source>
     </message>
     <message>
         <source>Tweaks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open editors in tabs (else in separate windows)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Piano roll</source>
+        <translation type="unfinished">Пианоролл</translation>
+    </message>
+    <message>
+        <source>Drum editor</source>
+        <translation type="unfinished">Редактор ударных</translation>
+    </message>
+    <message>
+        <source>Wave editor</source>
+        <translation type="unfinished">Wave редактор</translation>
+    </message>
+    <message>
+        <source>Score editor</source>
+        <translation type="unfinished">Партитурный редактор</translation>
+    </message>
+    <message>
+        <source>Master track editor</source>
+        <translation type="unfinished">Редактор мастер-трека (график)</translation>
+    </message>
+    <message>
+        <source>DSSI VST</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Directories where dssi-vst (if installed) looks for Wine vst plugins (*.dll files)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Directories containing Linux vst plugins (*.so files)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GUI</source>
+        <translation type="unfinished">ГИП</translation>
+    </message>
+    <message>
+        <source>Show status bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show note tooltips in midi editors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keep transport window on top (requires restart)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4749,23 +4786,23 @@ Turn off to reduce clutter.</source>
     <name>MdiSettingsBase</name>
     <message>
         <source>Form</source>
-        <translation>Form</translation>
+        <translation type="vanished">Form</translation>
     </message>
     <message>
         <source>GroupBox</source>
-        <translation>Окно Группы</translation>
+        <translation type="vanished">Окно Группы</translation>
     </message>
     <message>
         <source>MDI subwin</source>
-        <translation>MDI под-окно</translation>
+        <translation type="vanished">MDI под-окно</translation>
     </message>
     <message>
         <source>Shares menu when subwin</source>
-        <translation>Общее меню в под-окне</translation>
+        <translation type="vanished">Общее меню в под-окне</translation>
     </message>
     <message>
         <source>Shares menu when free</source>
-        <translation>Общее меню всегда</translation>
+        <translation type="vanished">Общее меню всегда</translation>
     </message>
 </context>
 <context>
@@ -6250,6 +6287,17 @@ None: Use only if high accuracy is needed for
     </message>
 </context>
 <context>
+    <name>MusECore::RasterizerModel</name>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished">Выкл</translation>
+    </message>
+    <message>
+        <source>Bar</source>
+        <translation type="unfinished">Такт</translation>
+    </message>
+</context>
+<context>
     <name>MusECore::Song</name>
     <message>
         <source>Jack shutdown!</source>
@@ -6290,7 +6338,7 @@ click on the Restart button.</source>
     </message>
     <message>
         <source>Automation:</source>
-        <translation>Автоматизация:</translation>
+        <translation type="vanished">Автоматизация:</translation>
     </message>
     <message>
         <source>previous event</source>
@@ -6413,12 +6461,16 @@ Transfer them to master tempo list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Controller:</source>
+        <source>Bypass</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Bypass</source>
-        <translation type="unfinished"></translation>
+        <source>Automation</source>
+        <translation type="unfinished">Автоматизация</translation>
+    </message>
+    <message>
+        <source>Controller</source>
+        <translation type="unfinished">Контроллер</translation>
     </message>
 </context>
 <context>
@@ -6544,18 +6596,18 @@ click on part to mute/unmute</source>
     <message>
         <source>Main application font, and default font for any
  controls not defined here.</source>
-        <translation>Главный шрифт приложения, и шрифт по умолчанию 
+        <translation type="vanished">Главный шрифт приложения, и шрифт по умолчанию 
 для кнопок управления, назначаются не здесь.</translation>
     </message>
     <message>
         <source>Mixer strips and effects racks. Midi track info panel.
 Midi control panel entry box.</source>
-        <translation>Линейки микшера и рэки эффектов. Инфо-панель Midi-трека.
+        <translation type="vanished">Линейки микшера и рэки эффектов. Инфо-панель Midi-трека.
 Окно ввода контрольной панели Midi.</translation>
     </message>
     <message>
         <source>Transport controls.</source>
-        <translation>Контроль транспорта.</translation>
+        <translation type="vanished">Контроль транспорта.</translation>
     </message>
     <message>
         <source>Time scale upper, and time signature.
@@ -6565,7 +6617,7 @@ Controller graph and S/X buttons.</source>
     </message>
     <message>
         <source>Time scale lower, and arranger part name overlay.</source>
-        <translation>Шкала времени внизу и название партии.</translation>
+        <translation type="vanished">Шкала времени внизу и название партии.</translation>
     </message>
     <message>
         <source>Tempo scale, and markers.</source>
@@ -6599,7 +6651,7 @@ Word-breaking but only with spaces.</source>
     </message>
     <message>
         <source>Select style sheet</source>
-        <translation>Выберите стиль </translation>
+        <translation type="vanished">Выберите стиль </translation>
     </message>
     <message>
         <source>Qt style sheets (*.qss)</source>
@@ -6607,11 +6659,7 @@ Word-breaking but only with spaces.</source>
     </message>
     <message>
         <source>Keep Qt system style</source>
-        <translation>Удерживать системный стиль Qt</translation>
-    </message>
-    <message>
-        <source>Do you really want to reset colors to theme default?</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished">Удерживать системный стиль Qt</translation>
     </message>
     <message>
         <source>&amp;Ok</source>
@@ -6620,14 +6668,6 @@ Word-breaking but only with spaces.</source>
     <message>
         <source>&amp;Cancel</source>
         <translation type="vanished">Отмена</translation>
-    </message>
-    <message>
-        <source>Open custom style sheet</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Remove custom style sheet</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Style was changed.
@@ -6653,6 +6693,25 @@ Restart now?</source>
     </message>
     <message>
         <source>Select Color: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Main application font, and default font
+for any controls not defined here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strips and effects racks.
+Midi track info panel.
+Midi control panel entry box.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arranger part name overlay.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Time scale lower.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6768,19 +6827,19 @@ Right-click to show GUI.</source>
     </message>
     <message>
         <source>Off</source>
-        <translation>Выкл</translation>
+        <translation type="vanished">Выкл</translation>
     </message>
     <message>
         <source>Bar</source>
-        <translation>Такт</translation>
+        <translation type="vanished">Такт</translation>
     </message>
     <message>
         <source>Snap</source>
-        <translation>Привязка</translation>
+        <translation type="vanished">Привязка</translation>
     </message>
     <message>
         <source>Len</source>
-        <translation>Дл</translation>
+        <translation type="vanished">Дл</translation>
     </message>
     <message>
         <source>song length - bars</source>
@@ -6958,16 +7017,52 @@ Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show mixer strip for current track</source>
+        <source>Track index. Click to select track, CTRL+LMB to add/remove, SHIFT+LMB for range select, dblclick to select all of the same type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>#</source>
+        <source>Enable/Disable input monitor. Passes input through to output (see also Settings: Automatically monitor on record arm).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Hide mixer strip for current track</source>
+        <source>Enable/Disable recording.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mute indicator. Left-click to mute track (for quick action), right-click to toggle track on/off (for more permanent action).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Solo indicator. Click to toggle (Connected tracks are also &apos;phantom&apos; soloed, indicated by a dark square).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track type. Click to switch between midi and drum track types.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Track name. Double-click to edit. Right-click for context menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi/Drum: Output channel number. Audio: Channels. Mid/right-click to change.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi/Drum: Output port. Synth: Assigned midi port. Left-click to change, right-click to show synth GUI.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Notation clef. Click to select this tracks notation clef.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cursor position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bars</source>
+        <translation type="unfinished">Такт(ов)</translation>
     </message>
 </context>
 <context>
@@ -7233,7 +7328,7 @@ Right-click to show GUI.</source>
     </message>
     <message>
         <source>Changed Settings</source>
-        <translation>Измененные настройки</translation>
+        <translation type="vanished">Измененные настройки</translation>
     </message>
     <message>
         <source>Unfortunately, the changed arranger column settings
@@ -7314,10 +7409,6 @@ To apply the changes, please restart MusE. Sorry.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>List...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Wave...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7358,13 +7449,39 @@ To apply the changes, please restart MusE. Sorry.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The changed arranger column settings
-cannot be applied while MusE is running.
-To apply the changes, please restart MusE.</source>
+        <source>New...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New...</source>
+        <source>Arranger</source>
+        <translation type="unfinished">Компоновщик</translation>
+    </message>
+    <message>
+        <source>Insert Track</source>
+        <translation type="unfinished">Добавить трек</translation>
+    </message>
+    <message>
+        <source>Event List...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open in New Window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Always open the part(s) in a new editor window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open Synth Plugin GUI...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display menu: View-specific display options.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle &amp;Mixer Strip</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7451,7 +7568,7 @@ To apply the changes, please restart MusE.</source>
     </message>
     <message>
         <source>Show New Style Drum Tracks</source>
-        <translation>Показывать треки ударных в новом стиле</translation>
+        <translation type="vanished">Показывать треки ударных в новом стиле</translation>
     </message>
     <message>
         <source>Strips</source>
@@ -7683,23 +7800,19 @@ To apply the changes, please restart MusE.</source>
 <context>
     <name>MusEGui::Canvas</name>
     <message>
-        <source>Tools:</source>
-        <translation type="unfinished"></translation>
+        <source>Tools</source>
+        <translation type="unfinished">Инструменты</translation>
     </message>
 </context>
 <context>
     <name>MusEGui::ClipListEdit</name>
     <message>
         <source>MusE: Clip List Editor</source>
-        <translation>MusE: Редактор списка клипов</translation>
+        <translation type="vanished">MusE: Редактор списка клипов</translation>
     </message>
     <message>
         <source>Window &amp;Config</source>
         <translation type="vanished">Конфигурация &amp;окна</translation>
-    </message>
-    <message>
-        <source>&amp;Display</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7731,9 +7844,32 @@ To apply the changes, please restart MusE.</source>
     </message>
 </context>
 <context>
+    <name>MusEGui::CpuStatusBar</name>
+    <message>
+        <source>CPU load averaged over each GUI update period
+DSP load read from JACK
+Number of xruns
+(click to reset)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CPU load averaged over each GUI update period.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DSP load read from JACK.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of xruns.
+Double-click to reset.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::CpuToolbar</name>
     <message>
-        <source>CPU load averaged over each gui-update period
+        <source>CPU load averaged over each GUI update period
 DSP load read from JACK
 Number of xruns
 (click to reset)</source>
@@ -7744,7 +7880,7 @@ Number of xruns
     <name>MusEGui::CtrlCanvas</name>
     <message>
         <source>Drawing hint: Hold Ctrl to affect only existing events</source>
-        <translation>Совет: Удерживайте Ctrl, чтобы править только существующие события</translation>
+        <translation type="vanished">Совет: Удерживайте Ctrl, чтобы править только существующие события</translation>
     </message>
     <message>
         <source>Use shift + pencil or line tool to draw new events</source>
@@ -7756,7 +7892,7 @@ Number of xruns
     </message>
     <message>
         <source>Use pencil or line tool to draw new events</source>
-        <translation>Используйте карандаш или линию для для создания новых событий</translation>
+        <translation type="vanished">Используйте карандаш или линию для для создания новых событий</translation>
     </message>
     <message>
         <source>Merge options</source>
@@ -7814,13 +7950,17 @@ Number of xruns
         <source>Cancel dragging the items</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Control canvas: Use Pencil tool to edit events and Draw tool to adjust them gradually. Hold Ctrl to affect only existing events.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::CtrlPanel</name>
     <message>
         <source>S</source>
         <extracomment>Select controller</extracomment>
-        <translation>S</translation>
+        <translation type="vanished">S</translation>
     </message>
     <message>
         <source>select controller</source>
@@ -7829,7 +7969,7 @@ Number of xruns
     <message>
         <source>X</source>
         <extracomment>Remove panel (destroy button)</extracomment>
-        <translation>X</translation>
+        <translation type="vanished">X</translation>
     </message>
     <message>
         <source>remove panel</source>
@@ -8050,6 +8190,10 @@ Number of xruns
         <source>Set instrument list</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Drum list: Edit instrument-specific settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::DrumCanvas</name>
@@ -8099,6 +8243,42 @@ Select the destination part, then try again.</source>
     <message>
         <source>Reset the track&apos;s drum map with instrument defaults?</source>
         <translation type="unfinished">Заменить инструменты в карте инструментами по умолчанию?</translation>
+    </message>
+    <message>
+        <source>Drum canvas: Use Pencil tool to create and edit events, Pointer tool to select, Cursor tool for special keyboard entry mode (arrow keys, V, B, N, M, Del).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start (bar): </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start (time): </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Select/Move | CTRL+LMB: Multi select/Move&amp;copy | SHIFT+LMB: Select pitch | MMB: Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Select | CTRL+LMB: Multi select | SHIFT+LMB: Select pitch | CTRL+SHIFT+LMB: Multi pitch select | MMB: Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arrow keys to move cursor, V,B,N,M keys to create events with increasing velocity, Del to delete.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8169,15 +8349,15 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>Load Map</source>
-        <translation>Загрузить карту</translation>
+        <translation type="vanished">Загрузить карту</translation>
     </message>
     <message>
         <source>Save Map</source>
-        <translation>Сохранить карту</translation>
+        <translation type="vanished">Сохранить карту</translation>
     </message>
     <message>
         <source>Reset GM Map</source>
-        <translation>Настроить карту GM по умолчанию </translation>
+        <translation type="vanished">Настроить карту GM по умолчанию </translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -8277,7 +8457,7 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>&amp;Plugins</source>
-        <translation>&amp;Плагины</translation>
+        <translation type="vanished">&amp;Плагины</translation>
     </message>
     <message>
         <source>Window &amp;Config</source>
@@ -8313,7 +8493,7 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>ctrl</source>
-        <translation>ctrl</translation>
+        <translation type="vanished">ctrl</translation>
     </message>
     <message>
         <source>Add Controller View</source>
@@ -8394,7 +8574,7 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>Re-order map</source>
-        <translation>Переписать карту</translation>
+        <translation type="vanished">Переписать карту</translation>
     </message>
     <message>
         <source>Group</source>
@@ -8438,11 +8618,11 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>Drum map tools</source>
-        <translation>Инструменты карты барабанов</translation>
+        <translation type="vanished">Инструменты карты барабанов</translation>
     </message>
     <message>
         <source>Cursor step:</source>
-        <translation>Шаг курсора:</translation>
+        <translation type="vanished">Шаг курсора:</translation>
     </message>
     <message>
         <source>H</source>
@@ -8451,12 +8631,12 @@ Select the destination part, then try again.</source>
     </message>
     <message>
         <source>Not all parts are displayed</source>
-        <translation>Показаны не все партии</translation>
+        <translation type="vanished">Показаны не все партии</translation>
     </message>
     <message>
         <source>You selected both old-style-drumtracks and others (that is: new-style or midi tracks), but they cannot displayed in the same drum edit.
 I&apos;ll only display the old-style drumtracks in this editor, dropping the others.</source>
-        <translation>Вы выбрали треки в старом стиле вместе с другими (в новом стиле или midi треки), но они не могут быть показаны в той же редакции ударных. Показываю только треки в старом стиле, остальные опускаю.</translation>
+        <translation type="vanished">Вы выбрали треки в старом стиле вместе с другими (в новом стиле или midi треки), но они не могут быть показаны в той же редакции ударных. Показываю только треки в старом стиле, остальные опускаю.</translation>
     </message>
     <message>
         <source>Play Events</source>
@@ -8547,19 +8727,23 @@ I&apos;ll only display the old-style drumtracks in this editor, dropping the oth
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Load drummap</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Store drummap</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Cursor tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Add controller view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Event List...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display menu: View-specific display options.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cursor step</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9240,10 +9424,6 @@ With the cursor tool you can:
         <translation type="unfinished">Пресеты</translation>
     </message>
     <message>
-        <source>Effect rack</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>New</source>
         <translation type="unfinished">Новый</translation>
     </message>
@@ -9279,6 +9459,11 @@ With the cursor tool you can:
         <source>Save preset</source>
         <translation type="unfinished">Сохранить пресет</translation>
     </message>
+    <message>
+        <source>Effect rack
+Double-click a slot to insert FX</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
@@ -9292,6 +9477,10 @@ With the cursor tool you can:
     <message>
         <source>Track Info Columns</source>
         <translation>Трек-инфо</translation>
+    </message>
+    <message>
+        <source>Custom column</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9322,23 +9511,23 @@ With the cursor tool you can:
     <name>MusEGui::LMaster</name>
     <message>
         <source>MusE: Mastertrack</source>
-        <translation>MusE: Мастер-трек</translation>
+        <translation type="vanished">MusE: Мастер-трек</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="vanished">&amp;Правка</translation>
     </message>
     <message>
         <source>Insert Tempo</source>
-        <translation>Вставить темп</translation>
+        <translation type="vanished">Вставить темп</translation>
     </message>
     <message>
         <source>Insert Signature</source>
-        <translation>Вставить размер</translation>
+        <translation type="vanished">Вставить размер</translation>
     </message>
     <message>
         <source>Insert Key</source>
-        <translation>Вставить ключ</translation>
+        <translation type="vanished">Вставить ключ</translation>
     </message>
     <message>
         <source>Edit Positon</source>
@@ -9346,11 +9535,11 @@ With the cursor tool you can:
     </message>
     <message>
         <source>Edit Value</source>
-        <translation>Изменить значение</translation>
+        <translation type="vanished">Изменить значение</translation>
     </message>
     <message>
         <source>Delete Event</source>
-        <translation>Удалить событие</translation>
+        <translation type="vanished">Удалить событие</translation>
     </message>
     <message>
         <source>Window &amp;Config</source>
@@ -9366,7 +9555,7 @@ With the cursor tool you can:
     </message>
     <message>
         <source>Timesig</source>
-        <translation>Размер</translation>
+        <translation type="vanished">Размер</translation>
     </message>
     <message>
         <source>Key</source>
@@ -9386,7 +9575,7 @@ With the cursor tool you can:
     </message>
     <message>
         <source>Meter</source>
-        <translation>Индикатор</translation>
+        <translation type="vanished">Индикатор</translation>
     </message>
     <message>
         <source>Time</source>
@@ -9417,23 +9606,39 @@ With the cursor tool you can:
         <translation>Изменение темпа и размера запрещено!</translation>
     </message>
     <message>
-        <source>Edit Position</source>
+        <source>Signature</source>
+        <translation type="unfinished">Размер</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation type="unfinished">Позиция</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Удалить</translation>
+    </message>
+    <message>
+        <source>Insert tempo change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Display</source>
+        <source>Insert time signature change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New tempo</source>
+        <source>Insert key change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New signature</source>
+        <source>Edit position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New key</source>
+        <source>Edit value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete event</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9465,7 +9670,7 @@ With the cursor tool you can:
     </message>
     <message>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="vanished">&amp;Правка</translation>
     </message>
     <message>
         <source>Cut</source>
@@ -9481,7 +9686,7 @@ With the cursor tool you can:
     </message>
     <message>
         <source>Delete Events</source>
-        <translation>Удалить события</translation>
+        <translation type="vanished">Удалить события</translation>
     </message>
     <message>
         <source>Window &amp;Config</source>
@@ -9529,34 +9734,74 @@ With the cursor tool you can:
     </message>
     <message>
         <source>Increase Tick</source>
-        <translation>Увеличить Тик</translation>
+        <translation type="vanished">Увеличить Тик</translation>
     </message>
     <message>
         <source>Decrease Tick</source>
-        <translation>Уменьшить Тик</translation>
+        <translation type="vanished">Уменьшить Тик</translation>
     </message>
     <message>
         <source>MusE: List Editor</source>
-        <translation>MusE: Редактор списка</translation>
+        <translation type="vanished">MusE: Редактор списка</translation>
     </message>
     <message>
         <source>Insert Note</source>
-        <translation type="unfinished">Вставить ноту</translation>
+        <translation type="obsolete">Вставить ноту</translation>
     </message>
     <message>
         <source>Insert SysEx</source>
-        <translation type="unfinished">Вставить SysEx</translation>
+        <translation type="obsolete">Вставить SysEx</translation>
     </message>
     <message>
         <source>Insert Ctrl</source>
-        <translation type="unfinished">Вставить кнтрл</translation>
+        <translation type="obsolete">Вставить кнтрл</translation>
     </message>
     <message>
         <source>Insert Meta</source>
-        <translation type="unfinished">Вставить Meta</translation>
+        <translation type="obsolete">Вставить Meta</translation>
     </message>
     <message>
-        <source>&amp;Display</source>
+        <source>Note</source>
+        <translation type="unfinished">Нота</translation>
+    </message>
+    <message>
+        <source>SysEx</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Meta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tick+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tick-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Удалить</translation>
+    </message>
+    <message>
+        <source>Insert note event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert system exclusive event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert controller event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert meta event</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9837,6 +10082,10 @@ Unavailable devices or ports can be purged
         <source>Bar scale</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Bar scale: Use mouse buttons to set position and range markers. Hold Shift to set (LMB) or delete (RMB) custom markers.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::MTScaleFlo</name>
@@ -9853,7 +10102,7 @@ Unavailable devices or ports can be purged
     <name>MusEGui::MarkerView</name>
     <message>
         <source>MusE: Marker</source>
-        <translation>MusE: Маркер</translation>
+        <translation type="vanished">MusE: Маркер</translation>
     </message>
     <message>
         <source>add marker</source>
@@ -9865,7 +10114,7 @@ Unavailable devices or ports can be purged
     </message>
     <message>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="vanished">&amp;Правка</translation>
     </message>
     <message>
         <source>Window &amp;Config</source>
@@ -9904,12 +10153,15 @@ Unavailable devices or ports can be purged
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Display</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Edit tools</source>
         <translation type="unfinished">Инструменты правки</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::Master</name>
+    <message>
+        <source>Tools</source>
+        <translation type="unfinished">Инструменты</translation>
     </message>
 </context>
 <context>
@@ -9952,15 +10204,15 @@ Unavailable devices or ports can be purged
     </message>
     <message>
         <source>Off</source>
-        <translation>Выкл</translation>
+        <translation type="vanished">Выкл</translation>
     </message>
     <message>
         <source>Bar</source>
-        <translation>Такт</translation>
+        <translation type="vanished">Такт</translation>
     </message>
     <message>
         <source>Snap</source>
-        <translation>Привязка</translation>
+        <translation type="vanished">Привязка</translation>
     </message>
     <message>
         <source>CurPos </source>
@@ -9984,6 +10236,14 @@ Unavailable devices or ports can be purged
     </message>
     <message>
         <source>Tempo at cursor position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mastertrack</source>
+        <translation type="unfinished">Мастер-трек</translation>
+    </message>
+    <message>
+        <source>Display menu: View-specific display options.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10212,22 +10472,9 @@ Proceed?</source>
         <translation type="vanished">ctrl-двойной щелчок вкл/выкл</translation>
     </message>
     <message>
-        <source>Palette A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Palette B</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>A</source>
-        <extracomment>Palette A</extracomment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>B</source>
         <extracomment>Palette B</extracomment>
-        <translation type="unfinished">B</translation>
+        <translation type="obsolete">B</translation>
     </message>
     <message>
         <source>Volume/gain
@@ -10256,6 +10503,14 @@ Proceed?</source>
     </message>
     <message>
         <source>Pass input through to output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Palette A: MIDI instrument / MIDI controllers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Palette B: MIDI properties</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10812,19 +11067,19 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <source>Transport Panel</source>
-        <translation type="vanished">Панель транспорта</translation>
+        <translation>Панель транспорта</translation>
     </message>
     <message>
         <source>Bigtime Window</source>
-        <translation type="vanished">Окно хронометра</translation>
+        <translation>Окно хронометра</translation>
     </message>
     <message>
         <source>Mixer A</source>
-        <translation type="vanished">Микшер А</translation>
+        <translation>Микшер А</translation>
     </message>
     <message>
         <source>Mixer B</source>
-        <translation type="vanished">Микшер В</translation>
+        <translation>Микшер В</translation>
     </message>
     <message>
         <source>Cliplist</source>
@@ -10836,7 +11091,7 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <source>Arranger View</source>
-        <translation>Показывать Компоновщик</translation>
+        <translation type="vanished">Показывать Компоновщик</translation>
     </message>
     <message>
         <source>Fullscreen</source>
@@ -10900,11 +11155,11 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <source>Mixer Automation</source>
-        <translation>Автоматизация микшера</translation>
+        <translation type="vanished">Автоматизация микшера</translation>
     </message>
     <message>
         <source>Take Snapshot</source>
-        <translation>Сделать снимок</translation>
+        <translation type="vanished">Сделать снимок</translation>
     </message>
     <message>
         <source>Clear Automation Data</source>
@@ -10912,11 +11167,11 @@ You can also select the Save command from the File menu.</source>
     </message>
     <message>
         <source>Cascade</source>
-        <translation>Каскадом</translation>
+        <translation type="vanished">Каскадом</translation>
     </message>
     <message>
         <source>Tile</source>
-        <translation>Черепицей</translation>
+        <translation type="vanished">Черепицей</translation>
     </message>
     <message>
         <source>In rows</source>
@@ -11065,7 +11320,7 @@ You can also select the Save command from the File menu.</source>
     <message>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
-        <translation>Текущий проект содержит не сохранённые данные.
+        <translation type="vanished">Текущий проект содержит не сохранённые данные.
 Сохранить текущий проект?</translation>
     </message>
     <message>
@@ -11132,7 +11387,7 @@ and one audio output track</source>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
-        <translation>Текущий проект содержит не сохранённые данные.
+        <translation type="vanished">Текущий проект содержит не сохранённые данные.
 Загрузка нового проекта приведёт к перезаписи данных текущего проекта.
 Сохранить текущий проект?</translation>
     </message>
@@ -11150,16 +11405,16 @@ Save Current Project?</source>
     </message>
     <message>
         <source>MusE: Open Help</source>
-        <translation>MusE: Открыть справку</translation>
+        <translation type="vanished">MusE: Открыть справку</translation>
     </message>
     <message>
         <source>Unable to launch help</source>
-        <translation>Невозможно открыть справку</translation>
+        <translation type="vanished">Невозможно открыть справку</translation>
     </message>
     <message>
         <source>For some reason MusE has to launch the default
 browser on your machine.</source>
-        <translation>По некоторым причинам MusE вынужден запустить
+        <translation type="vanished">По некоторым причинам MusE вынужден запустить
 на вашей машине броузер по умолчанию.</translation>
     </message>
     <message>
@@ -11373,10 +11628,6 @@ Conversions may be applied if file is saved!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No help found at: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Load configuration colors</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11391,11 +11642,6 @@ Are you sure you want to proceed?</source>
     </message>
     <message>
         <source>Save configuration colors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>File exists.
-Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11462,10 +11708,6 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>To record press record and then play</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Send note off to all midi channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11537,40 +11779,8 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Transport Panel...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Bigtime Window...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mixer A...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mixer B...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cliplist...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Marker View...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Mastertrack</source>
-        <translation type="unfinished">Мастер-трек</translation>
-    </message>
-    <message>
-        <source>Graphic...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>List...</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Мастер-трек</translation>
     </message>
     <message>
         <source>Edit Instrument...</source>
@@ -11605,23 +11815,11 @@ Do you want to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>In Rows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>In Columns</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Global Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Appearance...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Configure Shortcuts...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11638,10 +11836,6 @@ Do you want to overwrite it?</source>
     </message>
     <message>
         <source>Midi File Import/Export...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Midi Ports / Soft Synth...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11708,6 +11902,77 @@ Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
         <source>Resample now</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Unable to launch browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error launching default browser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Panic button: Send &apos;all sounds off&apos; and &apos;reset all controls&apos; to all midi channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Docks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle display of currently visible dock windows.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display MusE main window in full screen mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mastertrack Graphic...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python scripts for midi processing. User scripts can be added in &apos;~/.config/MusE/MusE/scripts/&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send &apos;note-off&apos; command to all midi channels.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send initialization messages as found in instrument definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send &apos;local-off&apos; command to all midi channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Take Automation Snapshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyboard Shortcuts...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Midi Ports / Soft Synths...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The current project contains unsaved data.
+Save current project?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No valid parts selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The current project contains unsaved data.
+Load overwrites current project.
+Save current project?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::NoteInfo</name>
@@ -11729,11 +11994,11 @@ Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
     </message>
     <message>
         <source>Velo On</source>
-        <translation>Скор. наж</translation>
+        <translation type="vanished">Скор. наж</translation>
     </message>
     <message>
         <source>Velo Off</source>
-        <translation>Скор. снятия</translation>
+        <translation type="vanished">Скор. снятия</translation>
     </message>
     <message>
         <source>delta/absolute mode</source>
@@ -11741,6 +12006,14 @@ Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
     </message>
     <message>
         <source>Delta/Absolute mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velo on</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velo off</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11808,7 +12081,7 @@ Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
     </message>
     <message>
         <source>MusE: save part</source>
-        <translation>MusE: сохранить партию</translation>
+        <translation type="vanished">MusE: сохранить партию</translation>
     </message>
     <message>
         <source>Part name: %1
@@ -11867,12 +12140,8 @@ Likely the selected track is the wrong type.</source>
         <translation>Удалить выбранное</translation>
     </message>
     <message>
-        <source>Part:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Automation:</source>
-        <translation type="unfinished">Автоматизация:</translation>
+        <translation type="obsolete">Автоматизация:</translation>
     </message>
     <message>
         <source>Normalize</source>
@@ -11915,15 +12184,55 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Wave edit</source>
+        <source>Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save part to disk</source>
+        <source>Part</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>File info</source>
+        <source>Wave edit...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File info...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE: Save part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Automation</source>
+        <translation type="unfinished">Автоматизация</translation>
+    </message>
+    <message>
+        <source>LMB: Select/Move/Dblclick to edit | CTRL+LMB: Multi select/Move&amp;Copy | CTRL+ALT+LMB: Dblclick to edit in new window | SHIFT+LMB: Select track | MMB: Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Draw to resize | MMB: Delete | CTRL+RMB: Trim length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Delete | CTRL+RMB: Trim length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Cut part in two</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Merge with following part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Mute selected part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Edit automation events in audio parts</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11969,6 +12278,60 @@ Likely the selected track is the wrong type.</source>
         <source>%1 quarters</source>
         <comment>for floating-point arguments like 1.5</comment>
         <translation>%1 четверти</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::Piano</name>
+    <message>
+        <source>Piano: Press key to play. Enter events in step record mode (SHIFT for chords). RMB: Set cursor for polyphonic control events.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Left click: Play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Right click: Select key</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::PianoCanvas</name>
+    <message>
+        <source>MIDI canvas: Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start (bar): </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start (time): </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Length (ticks): </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Select/Move | CTRL+LMB: Multi select/Move&amp;copy | SHIFT+LMB: Select pitch | MMB: Delete | CTRL+RMB: Trim length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Resize | CTRL+LMB: Multi select | CTRL+SHIFT+LMB: Multi pitch select | MMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LMB: Delete | RMB: Select exclusive | CTRL+RMB: Trim length</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12079,7 +12442,7 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message>
         <source>&amp;Plugins</source>
-        <translation>&amp;Плагины</translation>
+        <translation type="vanished">&amp;Плагины</translation>
     </message>
     <message>
         <source>Window &amp;Config</source>
@@ -12119,11 +12482,11 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message>
         <source>ctrl</source>
-        <translation>ctrl</translation>
+        <translation type="vanished">ctrl</translation>
     </message>
     <message>
         <source>Add Controller View</source>
-        <translation>Добавить панель</translation>
+        <translation type="vanished">Добавить панель</translation>
     </message>
     <message>
         <source>Paste to current part</source>
@@ -12145,12 +12508,32 @@ Likely the selected track is the wrong type.</source>
         <source>Play events</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Event List...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display menu: View-specific display options.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add controller view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play single note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play chords</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::PluginDialog</name>
     <message>
         <source>MusE: select plugin</source>
-        <translation>MusE: выбрать плагин</translation>
+        <translation type="vanished">MusE: выбрать плагин</translation>
     </message>
     <message>
         <source>Lib</source>
@@ -12343,6 +12726,10 @@ Right-click on plugins to add/remove from a category.</source>
         <source>VST effect</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>MusE: Select Plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::PluginGui</name>
@@ -12423,6 +12810,13 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <source>Select directory</source>
         <translation>Выбрать папку</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::RasterLabelCombo</name>
+    <message>
+        <source>Snap</source>
+        <translation type="unfinished">Привязка</translation>
     </message>
 </context>
 <context>
@@ -12629,6 +13023,10 @@ Right-click on plugins to add/remove from a category.</source>
         <source>There are no parts you could add the note to.</source>
         <translation>Нет партий, куда вы могли бы добавить ноту.</translation>
     </message>
+    <message>
+        <source>Tools</source>
+        <translation type="unfinished">Инструменты</translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::ScoreEdit</name>
@@ -12646,7 +13044,7 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
     <message>
         <source>Note length:</source>
-        <translation>Длина ноты:</translation>
+        <translation type="vanished">Длина ноты:</translation>
     </message>
     <message>
         <source>last</source>
@@ -12654,19 +13052,19 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
     <message>
         <source>Apply to new notes:</source>
-        <translation>Применить к новым нотам:</translation>
+        <translation type="vanished">Применить к новым нотам:</translation>
     </message>
     <message>
         <source>Apply to selected notes:</source>
-        <translation>Применить к выбранным нотам:</translation>
+        <translation type="vanished">Применить к выбранным нотам:</translation>
     </message>
     <message>
         <source>Velocity:</source>
-        <translation>Скорость наж:</translation>
+        <translation type="vanished">Скорость наж:</translation>
     </message>
     <message>
         <source>Off-Velocity:</source>
-        <translation>Скорость отп:</translation>
+        <translation type="vanished">Скорость отп:</translation>
     </message>
     <message>
         <source>Quantisation settings</source>
@@ -12674,11 +13072,11 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
     <message>
         <source>Quantisation:</source>
-        <translation>Квантование:</translation>
+        <translation type="vanished">Квантование:</translation>
     </message>
     <message>
         <source>Pixels per whole:</source>
-        <translation>Пикселей на целую:</translation>
+        <translation type="vanished">Пикселей на целую:</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -12694,7 +13092,7 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
     <message>
         <source>Copy events in range</source>
-        <translation>Копировать события в диапазоне</translation>
+        <translation type="vanished">Копировать события в диапазоне</translation>
     </message>
     <message>
         <source>&amp;Paste</source>
@@ -12742,11 +13140,11 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
     <message>
         <source>Change note &amp;length</source>
-        <translation>Изменить длину &amp;ноты</translation>
+        <translation type="vanished">Изменить длину &amp;ноты</translation>
     </message>
     <message>
         <source>Change note &amp;velocity</source>
-        <translation>Изменить &amp;скорость наж. ноты</translation>
+        <translation type="vanished">Изменить &amp;скорость наж. ноты</translation>
     </message>
     <message>
         <source>Crescendo/Decrescendo</source>
@@ -12782,11 +13180,11 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
     <message>
         <source>Note head &amp;colors</source>
-        <translation>&amp;Цвет головки ноты</translation>
+        <translation type="vanished">&amp;Цвет головки ноты</translation>
     </message>
     <message>
         <source>&amp;Black</source>
-        <translation>&amp;Черный</translation>
+        <translation type="vanished">&amp;Черный</translation>
     </message>
     <message>
         <source>&amp;Velocity</source>
@@ -12798,19 +13196,19 @@ Right-click on plugins to add/remove from a category.</source>
     </message>
     <message>
         <source>Set up &amp;preamble</source>
-        <translation>&amp;Настроить преамбулу</translation>
+        <translation type="vanished">&amp;Настроить преамбулу</translation>
     </message>
     <message>
         <source>Display &amp;key signature</source>
-        <translation>&amp;Показывать знаки при ключе</translation>
+        <translation type="vanished">&amp;Показывать знаки при ключе</translation>
     </message>
     <message>
         <source>Display &amp;time signature</source>
-        <translation>&amp;Показывать тактовый размер</translation>
+        <translation type="vanished">&amp;Показывать тактовый размер</translation>
     </message>
     <message>
         <source>Set Score &amp;name</source>
-        <translation>Назн. имя &amp;партитуры</translation>
+        <translation type="vanished">Назн. имя &amp;партитуры</translation>
     </message>
     <message>
         <source>Enter the new score title</source>
@@ -12832,6 +13230,70 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>&amp;Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantisation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pixels per whole</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Velocity</source>
+        <translation type="unfinished">Скорость нажатия</translation>
+    </message>
+    <message>
+        <source>Apply to selected notes, or new notes if none is selected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Off-Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy Events in Range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change Note &amp;Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change Note &amp;Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display menu: View-specific display options.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note Head &amp;Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set Up &amp;Preamble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display &amp;Key Signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display &amp;Time Signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set Score &amp;Name</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12922,10 +13384,6 @@ the selected title is not unique</source>
         <source>Signature: </source>
         <translation type="obsolete">Размер:</translation>
     </message>
-    <message>
-        <source>Signature </source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>MusEGui::SigToolbarWidget</name>
@@ -12961,10 +13419,6 @@ the selected title is not unique</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Configuration:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Prefer knobs, not sliders</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12981,10 +13435,6 @@ the selected title is not unique</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Actions:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Change track name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12995,6 +13445,14 @@ the selected title is not unique</source>
     <message>
         <source>Visible audio effects</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Actions</source>
+        <translation type="unfinished">Действия</translation>
     </message>
 </context>
 <context>
@@ -13231,6 +13689,10 @@ the selected title is not unique</source>
         <source>Delete Selected Tracks</source>
         <translation type="unfinished">Удалить выделенные треки</translation>
     </message>
+    <message>
+        <source>Track list: Use context menu to create tracks. Click track ID to select, CTRL to add, SHIFT for range, dblclick to select all of same type.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::TempoSig</name>
@@ -13269,10 +13731,6 @@ the selected title is not unique</source>
         <source>TAP</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Tempo </source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>MusEGui::TempoToolbarWidget</name>
@@ -13289,7 +13747,7 @@ the selected title is not unique</source>
     <name>MusEGui::Toolbar1</name>
     <message>
         <source>Off</source>
-        <translation>Выкл</translation>
+        <translation type="vanished">Выкл</translation>
     </message>
     <message>
         <source>Solo</source>
@@ -13301,7 +13759,7 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>Snap</source>
-        <translation>Привязка</translation>
+        <translation type="vanished">Привязка</translation>
     </message>
 </context>
 <context>
@@ -13324,7 +13782,7 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>List editor</source>
-        <translation>Редактор списка</translation>
+        <translation type="vanished">Редактор списка</translation>
     </message>
     <message>
         <source>Drum editor</source>
@@ -13336,7 +13794,7 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>Master track list editor</source>
-        <translation>Редактор мастер-трека (список)</translation>
+        <translation type="vanished">Редактор мастер-трека (список)</translation>
     </message>
     <message>
         <source>Wave editor</source>
@@ -13344,11 +13802,11 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>Clip list</source>
-        <translation>Редактор списка клипов</translation>
+        <translation type="vanished">Редактор списка клипов</translation>
     </message>
     <message>
         <source>Marker view</source>
-        <translation>Редактор маркеров</translation>
+        <translation type="vanished">Редактор маркеров</translation>
     </message>
     <message>
         <source>Score editor</source>
@@ -13391,11 +13849,11 @@ the selected title is not unique</source>
         <translation type="unfinished">Метроном</translation>
     </message>
     <message>
-        <source>As Subwindow</source>
+        <source>Tabbed/Floating</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Shares Tools and Menu</source>
+        <source>Display editor in a tab or in a separate window (preset in Global Settings-&gt;Editors).</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13819,6 +14277,10 @@ Missing data is muted</source>
         <source>&amp;Display</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Display menu: View-specific display options.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MusEGui::WaveView</name>
@@ -13954,7 +14416,7 @@ Missing data is muted</source>
     </message>
     <message>
         <source>insert</source>
-        <translation>вставить</translation>
+        <translation type="vanished">вставить</translation>
     </message>
     <message>
         <source> times</source>
@@ -13962,7 +14424,7 @@ Missing data is muted</source>
     </message>
     <message>
         <source>raster</source>
-        <translation>значение</translation>
+        <translation type="vanished">значение</translation>
     </message>
     <message>
         <source> ticks</source>
@@ -13999,6 +14461,14 @@ Missing data is muted</source>
     <message>
         <source>Cancel</source>
         <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Insert</source>
+        <translation type="unfinished">Вставить</translation>
+    </message>
+    <message>
+        <source>Raster</source>
+        <translation type="unfinished">Значение</translation>
     </message>
 </context>
 <context>
@@ -14284,10 +14754,6 @@ to be expanded by more than </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Instruments:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Current device</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14324,10 +14790,6 @@ to be expanded by more than </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Empty</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Input routing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14360,6 +14822,14 @@ to be expanded by more than </source>
 Possibly this wasn&apos;t a sound file?
 If it was check the permissions, MusE
 sometimes requires write access to the file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Slot</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -15251,6 +15721,10 @@ This also turns on text word wrap, which may
     </message>
     <message>
         <source>Filter:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Reset all</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -16343,10 +16817,6 @@ Robert Jonsson
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Don&apos;t load Native VST plugins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Don&apos;t load DSSI plugins</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16409,6 +16879,10 @@ Robert Jonsson
     </message>
     <message>
         <source>Pyro communication timeout in seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Don&apos;t load LinuxVST plugins</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -16691,7 +17165,7 @@ Continue?</source>
     </message>
     <message>
         <source>Settings: Midi ports / Soft Synth</source>
-        <translation>Настройки: Midi-порты / Синтезаторы</translation>
+        <translation type="vanished">Настройки: Midi-порты / Синтезаторы</translation>
     </message>
     <message>
         <source>Settings: Audio subsystem configuration</source>
@@ -16747,7 +17221,7 @@ Continue?</source>
     </message>
     <message>
         <source>Automation: Mixer automation</source>
-        <translation>Автоматизация: Автоматизация микшера</translation>
+        <translation type="vanished">Автоматизация: Автоматизация микшера</translation>
     </message>
     <message>
         <source>Automation: Take mixer snapshot</source>
@@ -17099,11 +17573,11 @@ Continue?</source>
     </message>
     <message>
         <source>Insert Channel Aftertouch</source>
-        <translation>Вставить Channel Aftertouch</translation>
+        <translation type="vanished">Вставить Channel Aftertouch</translation>
     </message>
     <message>
         <source>Insert Key Aftertouch</source>
-        <translation>Вставить Key Aftertouch</translation>
+        <translation type="vanished">Вставить Key Aftertouch</translation>
     </message>
     <message>
         <source>Insert Tempo</source>
@@ -17135,7 +17609,7 @@ Continue?</source>
     </message>
     <message>
         <source>Add new style drum track</source>
-        <translation>Добавить трек ударных в новом стиле</translation>
+        <translation type="vanished">Добавить трек ударных в новом стиле</translation>
     </message>
     <message>
         <source>Edit: Paste to selected track</source>
@@ -17243,6 +17717,118 @@ Continue?</source>
     </message>
     <message>
         <source>Tool: Sample rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle tabbed/floating editor window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle docks display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Arranger window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open track Synth GUI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open pianoroll in new window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open drumeditor in new window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open listeditor in new window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open waveeditor in new window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert midi track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert drum track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert wave track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert audio output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert audio group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert audio input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Insert audio aux</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Toggle mixer strip display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings: Midi ports / Soft synths</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantize: Set quantize to off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select strip to the left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select strip to the right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip volume down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip volume up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip pan left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip pan right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip volume down page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip volume up page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip pan left page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mixer strip pan right page</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
