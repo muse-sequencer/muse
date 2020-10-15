@@ -2197,7 +2197,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         addTrackMenu->setTitle(tr("Insert Track"));
                         addTrackMenu->setIcon(QIcon(*edit_track_addIcon));
                         p->addMenu(addTrackMenu);
-                        QAction* act = p->exec(ev->globalPos(), 0);
+                        QAction* act = p->exec(ev->globalPos(), nullptr);
                         if (act) {
                               //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
                               int n = act->data().toInt();
@@ -2213,7 +2213,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                           break;
                                     case 1002:     // show track comment
                                           {
-                                          TrackComment* tc = new TrackComment(t, 0);
+                                          TrackComment* tc = new TrackComment(t, nullptr);
                                           tc->show();
                                           }
                                           break;
