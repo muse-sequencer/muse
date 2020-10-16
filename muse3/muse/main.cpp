@@ -662,7 +662,7 @@ int main(int argc, char* argv[])
         MusEGlobal::museGlobalLib   = QString(LIBDIR);
         MusEGlobal::museGlobalShare = QString(SHAREDIR);
 
-        QByteArray appDir = qgetenv("APPDIR");
+        const QString appDir = qEnvironmentVariable("APPDIR"); // running in AppImage
         if (!appDir.isEmpty()) {
             MusEGlobal::museGlobalLib   = appDir + MusEGlobal::museGlobalLib;
             MusEGlobal::museGlobalShare = appDir + MusEGlobal::museGlobalShare;

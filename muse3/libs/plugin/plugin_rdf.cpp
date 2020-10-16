@@ -109,35 +109,39 @@ void scanLrdfDir(const QString& dirname,
 
 void scanLrdfPlugins(QStringList* rdfs, bool debugStdErr)
 {
-  QString lrdfPath = std::getenv("LRDF_PATH");
-  if(lrdfPath.isEmpty())
-  {
-    QString share_rdf_dir(SHAREDIR);
-    if(!share_rdf_dir.isEmpty())
-      share_rdf_dir += "/rdf:";
-    QString homePath = std::getenv("HOME");
-    if(!homePath.isEmpty())
-      homePath += QString("/lrdf:");
-    
-    lrdfPath =
-      // Our own rdf files (and fixes) take priority.
-      share_rdf_dir +
-      // Then the usual home place.
-      homePath +
-      // Then the system.
-      QString("/usr/local/share/ladspa/rdf:/usr/share/ladspa/rdf");
-  }
-  if(!lrdfPath.isEmpty())
-  {
-// QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
+    QString lrdfPath = std::getenv("LRDF_PATH");
+    if(lrdfPath.isEmpty())
+    {
+        QString share_rdf_dir(SHAREDIR);
+        const QString appDir = qEnvironmentVariable("APPDIR");
+        if (!appDir.isEmpty())
+            share_rdf_dir = appDir + share_rdf_dir;
+
+        if(!share_rdf_dir.isEmpty())
+            share_rdf_dir += "/rdf:";
+        QString homePath = std::getenv("HOME");
+        if(!homePath.isEmpty())
+            homePath += QString("/lrdf:");
+
+        lrdfPath =
+                // Our own rdf files (and fixes) take priority.
+                share_rdf_dir +
+                // Then the usual home place.
+                homePath +
+                // Then the system.
+                QString("/usr/local/share/ladspa/rdf:/usr/share/ladspa/rdf");
+    }
+    if(!lrdfPath.isEmpty())
+    {
+        // QString::*EmptyParts is deprecated, use Qt::*EmptyParts, new as of 5.14.
 #if QT_VERSION >= 0x050e00
-    QStringList sl = lrdfPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive);
+        QStringList sl = lrdfPath.split(":", Qt::SkipEmptyParts, Qt::CaseSensitive);
 #else
-    QStringList sl = lrdfPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive);
+        QStringList sl = lrdfPath.split(":", QString::SkipEmptyParts, Qt::CaseSensitive);
 #endif
-    for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-      scanLrdfDir(*it, rdfs, debugStdErr);
-  }
+        for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
+            scanLrdfDir(*it, rdfs, debugStdErr);
+    }
 }
 
 
