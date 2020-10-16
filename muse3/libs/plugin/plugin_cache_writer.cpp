@@ -1545,7 +1545,7 @@ static bool pluginScan(
   QProcess process;
 
   QString prog;
-  const QString appDir = qEnvironmentVariable("APPDIR");
+  const QByteArray appDir = qgetenv("APPDIR");
   if (!appDir.isEmpty())
       prog = appDir + QString(BINDIR) + QString("/muse_plugin_scan");
   else
