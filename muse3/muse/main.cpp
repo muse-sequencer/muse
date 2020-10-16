@@ -666,8 +666,6 @@ int main(int argc, char* argv[])
         if (!appDir.isEmpty()) {
             MusEGlobal::museGlobalLib   = appDir + MusEGlobal::museGlobalLib;
             MusEGlobal::museGlobalShare = appDir + MusEGlobal::museGlobalShare;
-            fprintf(stderr, "Global share: %s\nGlobal lib: %s\n",
-                    qPrintable(MusEGlobal::museGlobalShare), qPrintable(MusEGlobal::museGlobalLib));
         }
 
         MusEGlobal::museProject     = MusEGlobal::museProjectInitPath; //getcwd(0, 0);
