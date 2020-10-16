@@ -64,13 +64,23 @@ jobs:
         # chmod a+x linuxdeployqt-continuous-x86_64.AppImage
         
         export VERSION=master #linuxdeployqt uses this for naming the file
+        
         LIB_MODULES=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/modules
         LIB_PLUGINS=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/plugins
         LIB_SYNTHI=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/synthi
         LIB_CONV=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/converters
         export LD_LIBRARY_PATH=$LIB_MODULES:$LIB_PLUGINS:$LIB_SYNTHI:$LIB_CONV:$LD_LIBRARY_PATH
         # ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/applications/*.desktop -appimage -bundle-non-qt-libs -verbose=2
-        ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt --output appimage
+        #./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt --output appimage
+        ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt
+        
+        echo '#! /usr/bin/env bash' > appdir/AppRun
+        echo 'set -e' >> appdir/AppRun
+        echo 'this_dir=$(readlink -f $(dirname "$0"))' >> appdir/AppRun
+        echo 'export LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH' >> appdir/AppRun
+        echo 'exec "$this_dir"/AppRun.wrapped "$@"' >> appdir/AppRun
+        
+        ./linuxdeploy-plugin-appimage-x86_64.AppImage --appdir appdir 
         
     - name: Upload AppImage      
       uses: "marvinpinto/action-automatic-releases@latest"
