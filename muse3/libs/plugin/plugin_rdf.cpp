@@ -113,7 +113,7 @@ void scanLrdfPlugins(QStringList* rdfs, bool debugStdErr)
     if(lrdfPath.isEmpty())
     {
         QString share_rdf_dir(SHAREDIR);
-        const QByteArray appDir = qgetenv("APPDIR");
+        const QString appDir = qEnvironmentVariable("APPDIR");
         if (!appDir.isEmpty())
             share_rdf_dir = appDir + share_rdf_dir;
 
