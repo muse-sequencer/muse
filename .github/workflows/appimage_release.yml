@@ -1,4 +1,4 @@
-name: Create AppImage on tagged release
+name: Create AppImage for release
 
 on: workflow_dispatch
 #on: push
