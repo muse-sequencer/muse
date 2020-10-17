@@ -1,11 +1,16 @@
-name: Create AppImage release
+name: Create AppImage on tagged release
 
 #on: workflow_dispatch
-on: push
+on:
+  push:
+    tags:
+      - 'muse_*_pre*'
+#    - 'muse_*'
+#    - '!muse_*_pre*'
 
 env: 
   BUILD_TYPE: Release
-  TAG: muse_3_1_1
+  TAG: ${{GITHUB_REF}}
 
 jobs:
   build:
@@ -83,14 +88,12 @@ jobs:
         echo 'export LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH' >> appdir/AppRun
         echo 'exec "$this_dir"/AppRun.wrapped "$@"' >> appdir/AppRun
         
-        export VERSION=${{ env.TAG }}
+        export VERSION=$(basename ${{ env.TAG }})
         ./linuxdeploy-plugin-appimage-x86_64.AppImage --appdir appdir 
         
     - name: Upload AppImage      
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "${{ env.TAG }}"
-        prerelease: false
-        title: "Release ${{ env.TAG }}"
+        prerelease: true
         files: ${{runner.workspace}}/build/MusE*.AppImage
