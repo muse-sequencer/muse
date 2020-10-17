@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: '3.1.1'
+        ref: 'muse_3_1_1'
                  
     - name: Install Deps
       run: |
