@@ -10,7 +10,8 @@ on: push
 
 env: 
   BUILD_TYPE: Release
-  TAG: ${{ env.GITHUB_REF }}
+  TAG: muse_3_2_0_pre1
+  PRERELEASE: true
 
 jobs:
   build:
@@ -95,5 +96,5 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: true
+        prerelease: ${{ env.PRERELEASE }}
         files: ${{runner.workspace}}/build/MusE*.AppImage
