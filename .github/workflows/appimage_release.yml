@@ -5,6 +5,7 @@ on: push
 
 env: 
   BUILD_TYPE: Release
+  TAG: muse_3_1_1
 
 jobs:
   build:
@@ -13,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: 'muse_3_1_1'
+        ref: ${{ env.TAG }}
                  
     - name: Install Deps
       run: |
@@ -66,9 +67,7 @@ jobs:
         
         # wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
         # chmod a+x linuxdeployqt-continuous-x86_64.AppImage
-        
-        export VERSION=master #linuxdeployqt uses this for naming the file
-        
+               
         LIB_MODULES=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/modules
         LIB_PLUGINS=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/plugins
         LIB_SYNTHI=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/synthi
@@ -84,12 +83,14 @@ jobs:
         echo 'export LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH' >> appdir/AppRun
         echo 'exec "$this_dir"/AppRun.wrapped "$@"' >> appdir/AppRun
         
+        export VERSION=${{ env.TAG }}
         ./linuxdeploy-plugin-appimage-x86_64.AppImage --appdir appdir 
         
     - name: Upload AppImage      
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "release"
-        title: "Latest release"
+        automatic_release_tag: "${{ env.TAG }}"
+        prerelease: false
+        title: "Release ${{ env.TAG }}"
         files: ${{runner.workspace}}/build/MusE*.AppImage
