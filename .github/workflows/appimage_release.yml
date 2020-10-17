@@ -1,10 +1,10 @@
 name: Create AppImage on tagged release
 
 #on: workflow_dispatch
-on:
-  push:
-    tags:
-      - 'muse_*_pre*'
+on: push
+#  push:
+#    tags:
+#      - 'muse_*'
 #    - 'muse_*'
 #    - '!muse_*_pre*'
 
