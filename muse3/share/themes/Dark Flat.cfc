@@ -46,7 +46,7 @@
     <trackSectionDividerColor r="48" g="49" b="50"></trackSectionDividerColor>
     <midiTrackLabelBg r="81" g="180" b="255"></midiTrackLabelBg>
     <newDrumTrackLabelBg2 r="69" g="220" b="220"></newDrumTrackLabelBg2>
-    <waveTrackLabelBg r="255" g="126" b="197"></waveTrackLabelBg>
+    <waveTrackLabelBg r="170" g="142" b="255"></waveTrackLabelBg>
     <outputTrackLabelBg r="66" g="220" b="133"></outputTrackLabelBg>
     <inputTrackLabelBg r="255" g="104" b="104"></inputTrackLabelBg>
     <groupTrackLabelBg r="200" g="200" b="61"></groupTrackLabelBg>
@@ -57,7 +57,7 @@
     <ctrlGraphSel r="255" g="85" b="0"></ctrlGraphSel>
     <drumTrackBg r="49" g="71" b="90"></drumTrackBg>
     <newDrumTrackBg r="61" g="135" b="135"></newDrumTrackBg>
-    <waveTrackBg r="170" g="85" b="127"></waveTrackBg>
+    <waveTrackBg r="115" g="96" b="172"></waveTrackBg>
     <outputTrackBg r="43" g="140" b="87"></outputTrackBg>
     <inputTrackBg r="226" g="93" b="93"></inputTrackBg>
     <groupTrackBg r="134" g="134" b="0"></groupTrackBg>

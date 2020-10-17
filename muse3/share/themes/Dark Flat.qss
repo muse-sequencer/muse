@@ -219,7 +219,7 @@ QMdiArea QTabBar::tab:hover {
 }
 
 QMdiArea QTabBar::tab:selected {
-    color: lightgreen;
+    color: orange;
 }
 
  
