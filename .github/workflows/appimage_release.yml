@@ -1,6 +1,7 @@
 name: Create AppImage release
 
-on: workflow_dispatch
+#on: workflow_dispatch
+on: push
 
 env: 
   BUILD_TYPE: Release
