@@ -10,7 +10,7 @@ on: push
 
 env: 
   BUILD_TYPE: Release
-  TAG: $GITHUB_REF
+  TAG: ${{ env.GITHUB_REF }}
 
 jobs:
   build:
