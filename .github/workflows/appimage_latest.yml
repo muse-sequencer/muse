@@ -1,7 +1,9 @@
 name: Create AppImage latest
 
-on: workflow_dispatch
-#on: push
+#on: workflow_dispatch
+on: 
+  schedule:
+    - cron: '0 7 * * MON'
 
 env: 
   BUILD_TYPE: Release
