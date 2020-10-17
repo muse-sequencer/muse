@@ -89,12 +89,15 @@ jobs:
         echo 'export LD_LIBRARY_PATH="$this_dir"/usr/lib:$LD_LIBRARY_PATH' >> appdir/AppRun
         echo 'exec "$this_dir"/AppRun.wrapped "$@"' >> appdir/AppRun
         
-        export VERSION=$(basename ${{ env.TAG }})
+        export VERSION=${{ env.TAG }}
         ./linuxdeploy-plugin-appimage-x86_64.AppImage --appdir appdir 
         
     - name: Upload AppImage      
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: ${{ env.TAG }} 
+        title: ${{ env.TAG }}
+        draft: true
         prerelease: ${{ env.PRERELEASE }}
         files: ${{runner.workspace}}/build/MusE*.AppImage
