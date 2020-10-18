@@ -755,7 +755,7 @@ QPixmap* Route::icon(bool isSource, bool isMidi) const
     {
     case TRACK_ROUTE:
         if(track)
-            return track->icon();
+            return new QPixmap(track->icon()->pixmap(16,16));
         break;
 
     case JACK_ROUTE:

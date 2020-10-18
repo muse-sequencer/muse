@@ -43,13 +43,13 @@ const char* midiTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show midi t
 const char* synthTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show synth tracks");
 
 VisibleToolB visTrackList[] = {
-      {&addtrack_wavetrackIcon,   QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show wave tracks"),     waveTrack   },
-      {&addtrack_audiogroupIcon,  QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show group tracks"),    groupTrack  },
-      {&addtrack_auxsendIcon,     QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show aux tracks"),      auxTrack    },
-      {&addtrack_audioinputIcon,  QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show input tracks"),    inputTrack  },
-      {&addtrack_audiooutputIcon, QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show output tracks"),   outputTrack },
-      {&addtrack_addmiditrackIcon,QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show midi tracks"),     midiTrack   },
-      {&synthIcon,                QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show synth tracks"),    midiTrack   },
+      {&waveeditorSVGIcon,   QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show wave tracks"),     waveTrack   },
+      {&trackGroupVGIcon,    QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show group tracks"),    groupTrack  },
+      {&trackAuxSVGIcon,     QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show aux tracks"),      auxTrack    },
+      {&trackInputSVGIcon,   QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show input tracks"),    inputTrack  },
+      {&trackOutputSVGIcon,  QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show output tracks"),   outputTrack },
+      {&pianorollSVGIcon,    QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show midi tracks"),     midiTrack   },
+      {&synthSVGIcon,        QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show synth tracks"),    midiTrack   },
       };
 
 //---------------------------------------------------------

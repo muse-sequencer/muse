@@ -34,7 +34,7 @@ namespace MusEGui {
 class Action;
 
 struct VisibleToolB {
-      QPixmap** icon;
+      QIcon** icon;
       const char* tip;
       const char* ltip;
       };

@@ -162,7 +162,8 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
 
 static void drawCenteredPixmap(QPainter& p, const QPixmap* pm, const QRect& r)
       {
-      p.drawPixmap(r.x() + (r.width() - pm->width())/2, r.y() + (r.height() - pm->height())/2, *pm);
+      p.drawPixmap(r.x(), r.y() + 2, *pm);
+//      p.drawPixmap(r.x() + (r.width() - pm->width())/2, r.y() + (r.height() - pm->height())/2, *pm);
       }
 
 //---------------------------------------------------------
@@ -398,7 +399,7 @@ void TList::paint(const QRect& r)
                                 break;
                           case COL_CLASS:
                                 {
-                                if(const QPixmap* pm = MusECore::Track::trackTypeIcon(type))
+                                if(const QPixmap* pm = new QPixmap(MusECore::Track::trackTypeIcon(type)->pixmap(16,16)))
                                   drawCenteredPixmap(p, pm, r);
                                 }
                                 break;
@@ -2828,8 +2829,8 @@ void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelecte
 {
   QMenu p;
   p.clear();
-  p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(MusECore::Track::MIDI);
-  p.addAction(QIcon(*addtrack_newDrumtrackIcon), tr("Drum"))->setData(MusECore::Track::DRUM);
+  p.addAction(*pianorollSVGIcon, tr("Midi"))->setData(MusECore::Track::MIDI);
+  p.addAction(*drumeditSVGIcon, tr("Drum"))->setData(MusECore::Track::DRUM);
   QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
   if (!act)

@@ -169,10 +169,10 @@ class Track {
       inline int serial() const { return _sn; }
 
       static const char* _cname[];
-      static QPixmap* trackTypeIcon(TrackType);
+      static QIcon *trackTypeIcon(TrackType);
       static QColor trackTypeColor(TrackType);
       static QColor trackTypeLabelColor(TrackType);
-      QPixmap* icon() const { return trackTypeIcon(type()); }
+      QIcon* icon() const { return trackTypeIcon(type()); }
       QColor color() const { return trackTypeColor(type()); }
       QColor labelColor() const { return trackTypeLabelColor(type()); }
 

@@ -39,7 +39,6 @@ extern QPixmap* deleteIcon;
 extern QPixmap* dotIcon;
 extern QPixmap* dothIcon;
 extern QPixmap* dot1Icon;
-extern QPixmap* synthIcon;
 
 extern QPixmap* cursorIcon;
 extern QPixmap* midiCtrlMergeEraseIcon;
@@ -92,14 +91,6 @@ extern QPixmap* deltaOffIcon;
 extern QPixmap* veloPerNote_OnIcon;
 extern QPixmap* veloPerNote_OffIcon;
 
-extern QPixmap* addtrack_addmiditrackIcon;
-extern QPixmap* addtrack_audiogroupIcon;
-extern QPixmap* addtrack_audioinputIcon;
-extern QPixmap* addtrack_audiooutputIcon;
-extern QPixmap* addtrack_auxsendIcon;
-extern QPixmap* addtrack_drumtrackIcon;
-extern QPixmap* addtrack_newDrumtrackIcon;
-extern QPixmap* addtrack_wavetrackIcon;
 extern QPixmap* edit_track_addIcon;
 extern QPixmap* edit_track_delIcon;
 extern QPixmap* midi_transformIcon;
@@ -283,6 +274,12 @@ extern QIcon* scoreeditSVGIcon;
 extern QIcon* mastereditSVGIcon;
 extern QIcon* drumeditSVGIcon;
 extern QIcon* listeditSVGIcon;
+
+extern QIcon* synthSVGIcon;
+extern QIcon* trackInputSVGIcon;
+extern QIcon* trackOutputSVGIcon;
+extern QIcon* trackAuxSVGIcon;
+extern QIcon* trackGroupVGIcon;
 
 extern QIcon* noscaleSVGIcon[3];
 extern QIcon* ankerSVGIcon;
