@@ -3,15 +3,11 @@
  <rect x="3" y="1.9821" width="58" height="59.036" fill="#fffaeb" style="paint-order:stroke fill markers"/>
  <path d="m62 1.9501 0.048939 59.958-60.098 0.41542 0.088813-60.326z" fill="none" stroke="#000" stroke-linecap="round" stroke-width="3.1432"/>
  <g stroke="#000">
-  <g transform="matrix(.79032 0 0 .79032 4.1774 -3.7097)">
-   <rect x="39" y="25" width="28" height="5" rx="1.5556" ry="2.5" fill="#ccc" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".98601"/>
-   <rect x="5" y="22" width="35" height="11" rx="1.4" ry="1.8333" fill="#333" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".8775"/>
-   <path d="m61 25v5" fill="none" stroke-width="1.291px"/>
-  </g>
-  <g transform="matrix(-.79032 0 0 -.79032 60.823 65.71)">
-   <rect x="39" y="25" width="28" height="5" rx="1.5556" ry="2.5" fill="#ccc" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".98601"/>
-   <rect x="5" y="22" width="35" height="11" rx="1.4" ry="1.8333" fill="#333" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".8775"/>
-   <path d="m61 25v5" fill="none" stroke-width="1.291px"/>
-  </g>
+  <rect x="35" y="15.048" width="22.129" height="5.9516" rx="1.2294" ry="2.9758" fill="#ccc" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".77927"/>
+  <rect x="8.129" y="13.048" width="27.661" height="9.9516" rx="1.1065" ry="1.6586" fill="#d40000" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".6935"/>
+  <path d="m52.387 15.048v5.9516" fill="none" stroke-width="1.0203px"/>
+  <rect transform="scale(-1)" x="-30" y="-47" width="22.129" height="6.0484" rx="1.2294" ry="3.0242" fill="#ccc" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".77927"/>
+  <rect transform="scale(-1)" x="-56.871" y="-49" width="27.661" height="10.048" rx="1.1065" ry="1.6747" fill="#008000" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".6935"/>
+  <path d="m12.613 47v-6.0484" fill="none" stroke-width="1.0203px"/>
  </g>
 </svg>
