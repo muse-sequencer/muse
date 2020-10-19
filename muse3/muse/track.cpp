@@ -321,29 +321,27 @@ void Track::internal_assign(const Track& t, int flags)
 //   Static
 //---------------------------------------------------------
 
-QPixmap* Track::trackTypeIcon(TrackType type)
+QIcon* Track::trackTypeIcon(TrackType type)
 {
   switch(type) {
         case MusECore::Track::MIDI:
-              return MusEGui::addtrack_addmiditrackIcon;
+              return MusEGui::pianorollSVGIcon;
         case MusECore::Track::DRUM:
-              return MusEGui::addtrack_newDrumtrackIcon;
+              return MusEGui::drumeditSVGIcon;
         case MusECore::Track::WAVE:
-              return MusEGui::addtrack_wavetrackIcon;
+              return MusEGui::waveeditorSVGIcon;
         case MusECore::Track::AUDIO_OUTPUT:
-              return MusEGui::addtrack_audiooutputIcon;
+              return MusEGui::trackOutputSVGIcon;
         case MusECore::Track::AUDIO_INPUT:
-              return MusEGui::addtrack_audioinputIcon;
+              return MusEGui::trackInputSVGIcon;
         case MusECore::Track::AUDIO_GROUP:
-              return MusEGui::addtrack_audiogroupIcon;
+              return MusEGui::trackGroupVGIcon;
         case MusECore::Track::AUDIO_AUX:
-              return MusEGui::addtrack_auxsendIcon;
+              return MusEGui::trackAuxSVGIcon;
         case MusECore::Track::AUDIO_SOFTSYNTH:
-              return MusEGui::synthIcon;
-        default:
-              break;
+              return MusEGui::synthSVGIcon;
         }
-  return 0;        
+  return nullptr;
 }
 
 //---------------------------------------------------------

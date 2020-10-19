@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <rect x="3" y="1.9821" width="58" height="59.036" fill="#fffaeb" style="paint-order:stroke fill markers"/>
+ <path d="m62 1.9501 0.048939 59.958-60.098 0.41542 0.088813-60.326z" fill="none" stroke="#000" stroke-linecap="round" stroke-width="3.1432"/>
+ <g transform="translate(.33551 .66449)" stroke="#000">
+  <rect transform="rotate(45)" x="48.083" y="-4.2426" width="27.607" height="7.5455" rx="1.5337" ry="3.7728" fill="#ccc" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".77927"/>
+  <rect transform="rotate(45)" x="14.561" y="-6.7377" width="34.508" height="12.536" rx="1.3803" ry="2.0893" fill="#d40000" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width=".6935"/>
+  <path d="m52.338 46.338-5.3355 5.3355" fill="none" stroke-width="1.0203px"/>
+ </g>
+</svg>

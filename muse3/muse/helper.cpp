@@ -1300,7 +1300,7 @@ QMenu* populateAddSynth(QWidget* parent)
         {  
           mmaps[itype] = new PopupMenu(parent);
           mmaps[itype]->setToolTipsVisible(true);
-          mmaps[itype]->setIcon(*synthIcon);
+          mmaps[itype]->setIcon(*synthSVGIcon);
           mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
           synp->addMenu(mmaps[itype]);
         }  
@@ -1328,46 +1328,46 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool /*evenIgn
         populateAll=true;
 
       if (populateAll || MusECore::MidiTrack::visible()) {
-        QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
+        QAction* midi = addTrack->addAction(*pianorollSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Midi Track")));
         midi->setData(MusECore::Track::MIDI);
         grp->addAction(midi);
 
-        QAction* newdrum = addTrack->addAction(QIcon(*addtrack_newDrumtrackIcon),
+        QAction* newdrum = addTrack->addAction(*drumeditSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
         newdrum->setData(MusECore::Track::DRUM);
         grp->addAction(newdrum);
       }
       if (populateAll || MusECore::WaveTrack::visible()) {
-        QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
+        QAction* wave = addTrack->addAction(*waveeditorSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Wave Track")));
        wave->setData(MusECore::Track::WAVE);
        grp->addAction(wave);
       }
 
       if (populateAll || MusECore::AudioOutput::visible()) {
-        QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
+        QAction* aoutput = addTrack->addAction(*trackOutputSVGIcon,
                                                qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Output")));
         aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
         grp->addAction(aoutput);
       }
 
       if (populateAll || MusECore::AudioGroup::visible()) {
-        QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
+        QAction* agroup = addTrack->addAction(*trackGroupVGIcon,
                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Group")));
         agroup->setData(MusECore::Track::AUDIO_GROUP);
         grp->addAction(agroup);
       }
 
       if (populateAll || MusECore::AudioInput::visible()) {
-        QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
+        QAction* ainput = addTrack->addAction(*trackInputSVGIcon,
                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Input")));
         ainput->setData(MusECore::Track::AUDIO_INPUT);
         grp->addAction(ainput);
       }
 
       if (populateAll || MusECore::AudioAux::visible()) {
-        QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
+        QAction* aaux = addTrack->addAction(*trackAuxSVGIcon,
                                             qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Aux Send")));
         aaux->setData(MusECore::Track::AUDIO_AUX);
         grp->addAction(aaux);

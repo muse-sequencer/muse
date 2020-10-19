@@ -749,13 +749,13 @@ static QString track2name(const Track* n)
 QPixmap* Route::icon(bool isSource, bool isMidi) const
 {
     // temporary hack until all icons are SVG
-    static QPixmap* ankerIcon = new QPixmap(MusEGui::ankerSVGIcon->pixmap(QSize(18, 18)));
+    static QPixmap* ankerIcon = new QPixmap(MusEGui::ankerSVGIcon->pixmap(QSize(16, 16)));
 
     switch(type)
     {
     case TRACK_ROUTE:
         if(track)
-            return track->icon();
+            return new QPixmap(track->icon()->pixmap(16,16));
         break;
 
     case JACK_ROUTE:

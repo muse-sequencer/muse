@@ -60,7 +60,6 @@
 #include "xpm/dot.xpm"
 #include "xpm/doth.xpm"
 #include "xpm/dot1.xpm"
-#include "xpm/synth.xpm"
 #include "xpm/cursor.xpm"
 
 #include "xpm/routing_input_button_slim_4.xpm"
@@ -101,14 +100,6 @@
 #include "xpm/velo_all.xpm"
 #include "xpm/velo_per_note.xpm"
 
-#include "xpm/addtrack_addmiditrack_2.xpm"
-#include "xpm/addtrack_audiogroup.xpm"
-#include "xpm/addtrack_audioinput.xpm"
-#include "xpm/addtrack_audiooutput.xpm"
-#include "xpm/addtrack_auxsend_2.xpm"
-#include "xpm/addtrack_old_drumtrack.xpm"
-#include "xpm/addtrack_drumtrack_2.xpm"
-#include "xpm/addtrack_wavetrack.xpm"
 #include "xpm/edit_track_add.xpm"
 #include "xpm/edit_track_del.xpm"
 #include "xpm/midi_transform.xpm"
@@ -163,7 +154,6 @@ QPixmap* record1_Icon;
 QPixmap* dotIcon;
 QPixmap* dothIcon;
 QPixmap* dot1Icon;
-QPixmap* synthIcon;
 QPixmap* cursorIcon;
 QPixmap* muteIcon;
 QPixmap* eyeIcon;
@@ -197,14 +187,6 @@ QPixmap* orangedot12x12Icon;
 QIcon* ledGreenIcon;
 QIcon* ledDarkGreenIcon;
 
-QPixmap* addtrack_addmiditrackIcon;
-QPixmap* addtrack_audiogroupIcon;
-QPixmap* addtrack_audioinputIcon;
-QPixmap* addtrack_audiooutputIcon;
-QPixmap* addtrack_auxsendIcon;
-QPixmap* addtrack_drumtrackIcon;
-QPixmap* addtrack_newDrumtrackIcon;
-QPixmap* addtrack_wavetrackIcon;
 QPixmap* edit_track_addIcon;
 QPixmap* edit_track_delIcon;
 QPixmap* midi_transformIcon;
@@ -368,6 +350,11 @@ QIcon* scoreeditSVGIcon;
 QIcon* mastereditSVGIcon;
 QIcon* drumeditSVGIcon;
 QIcon* listeditSVGIcon;
+QIcon* synthSVGIcon;
+QIcon* trackInputSVGIcon;
+QIcon* trackOutputSVGIcon;
+QIcon* trackAuxSVGIcon;
+QIcon* trackGroupVGIcon;
 
 // tool icons
 QIcon* pencilIconSVG;
@@ -477,7 +464,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     dotIcon      = new QPixmap(dot_xpm);
     dothIcon     = new QPixmap(doth_xpm);
     dot1Icon     = new QPixmap(dot1_xpm);
-    synthIcon    = new QPixmap(synth_xpm);
     cursorIcon   = new QPixmap(cursor_xpm);
     muteIcon     = new QPixmap(editmuteS_xpm);
     eyeIcon      = new QPixmap(eye_xpm);
@@ -523,14 +509,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     veloPerNote_OnIcon   = new QPixmap(velo_per_note_xpm);
     veloPerNote_OffIcon  = new QPixmap(velo_all_xpm);
 
-    addtrack_addmiditrackIcon     = new QPixmap(addtrack_addmiditrack_2_xpm);
-    addtrack_audiogroupIcon       = new QPixmap(addtrack_audiogroup_xpm);
-    addtrack_audioinputIcon       = new QPixmap(addtrack_audioinput_xpm);
-    addtrack_audiooutputIcon      = new QPixmap(addtrack_audiooutput_xpm);
-    addtrack_auxsendIcon          = new QPixmap(addtrack_auxsend_2_xpm);
-    addtrack_drumtrackIcon        = new QPixmap(addtrack_old_drumtrack_xpm);
-    addtrack_newDrumtrackIcon     = new QPixmap(addtrack_drumtrack_2_xpm);
-    addtrack_wavetrackIcon        = new QPixmap(addtrack_wavetrack_xpm);
     edit_track_addIcon            = new QPixmap(edit_track_add_xpm);
     edit_track_delIcon            = new QPixmap(edit_track_del_xpm);
     midi_transformIcon            = new QPixmap(midi_transform_xpm);
@@ -721,6 +699,12 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     drumeditSVGIcon    = icons.getSVG("drumedit.svg");
     listeditSVGIcon    = icons.getSVG("listedit.svg");
 
+    synthSVGIcon       = icons.getSVG("synth.svg");
+    trackInputSVGIcon  = icons.getSVG("track_input.svg");
+    trackOutputSVGIcon = icons.getSVG("track_output.svg");
+    trackAuxSVGIcon    = icons.getSVG("track_aux.svg");
+    trackGroupVGIcon   = icons.getSVG("track_group.svg");
+
     ankerSVGIcon       = icons.getSVG("anker.svg");
     settingsSVGIcon    = icons.getSVG("settings.svg");
     transportSVGIcon   = icons.getSVG("transport.svg");
@@ -800,7 +784,6 @@ void deleteIcons()
     delete dotIcon;
     delete dothIcon;
     delete dot1Icon;
-    delete synthIcon;
     delete cursorIcon;
     delete muteIcon;
     delete upIcon;
@@ -839,14 +822,6 @@ void deleteIcons()
     delete veloPerNote_OnIcon;
     delete veloPerNote_OffIcon;
 
-    delete addtrack_addmiditrackIcon;
-    delete addtrack_audiogroupIcon;
-    delete addtrack_audioinputIcon;
-    delete addtrack_audiooutputIcon;
-    delete addtrack_auxsendIcon;
-    delete addtrack_drumtrackIcon;
-    delete addtrack_newDrumtrackIcon;
-    delete addtrack_wavetrackIcon;
     delete edit_track_addIcon;
     delete edit_track_delIcon;
     delete midi_transformIcon;
@@ -1042,6 +1017,11 @@ void deleteIcons()
     delete drumeditSVGIcon;
     delete listeditSVGIcon;
 
+    delete synthSVGIcon;
+    delete trackInputSVGIcon;
+    delete trackOutputSVGIcon;
+    delete trackAuxSVGIcon;
+    delete trackGroupVGIcon;
 
     //----------------------------------
     // Cursors
