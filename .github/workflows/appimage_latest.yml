@@ -1,7 +1,10 @@
 name: Create AppImage latest
 
 #on: workflow_dispatch
-on: pull_request
+on: 
+  push:
+    branches:
+      - main
 #on: 
 #  schedule:
 #    - cron: '0 7 * * MON'
