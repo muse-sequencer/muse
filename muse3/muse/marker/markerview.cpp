@@ -525,7 +525,7 @@ void MarkerView::markerSelectionChanged()
       editSMPTE->blockSignals(true);
       editName->blockSignals(true);
       lock->blockSignals(true);
-      if (item == 0) {  // never triggered
+      if (item == nullptr) {  // never triggered
             editTick->setValue(0);
             editSMPTE->setValue(0);
             editName->setText(QString(""));
@@ -555,7 +555,7 @@ void MarkerView::markerSelectionChanged()
 void MarkerView::clicked(QTreeWidgetItem* i)
       {
       MarkerItem* item = (MarkerItem*)i;
-      if (item == 0) {
+      if (item == nullptr) {
             table->clearSelection();
             return;
             }
