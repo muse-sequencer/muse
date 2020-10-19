@@ -4,7 +4,7 @@ name: Create AppImage latest
 on: 
   push:
     branches:
-      - main
+      - master
 #on: 
 #  schedule:
 #    - cron: '0 7 * * MON'
