@@ -92,5 +92,5 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "latest"
         prerelease: true
-        title: "Current master (experimental)"
+        title: "Current master (AppImage)"
         files: ${{runner.workspace}}/build/MusE*.AppImage
