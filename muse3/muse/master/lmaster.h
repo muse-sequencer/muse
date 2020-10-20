@@ -161,7 +161,7 @@ class LMaster : public QWidget {
       bool editingNewItem;
 
       virtual void closeEvent(QCloseEvent*);
-//      bool eventFilter(QObject *, QEvent *event) override;
+      bool eventFilter(QObject *, QEvent *event) override;
       virtual QSize sizeHint() const;
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;

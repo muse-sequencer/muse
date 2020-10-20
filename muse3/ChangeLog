@@ -1,3 +1,8 @@
+20.10.2020
+    - Fix: Resolve key shortcut conflicts in docks. (kybos)
+    - Add: Add new shortcuts in docks (List master editor, Event list). (kybos)
+    - Add: Outline focused widget in dock. (kybos)
+    - Fix: Redesign marker dock for better usability. (kybos)
 19.10.2020
     - New: Create new SVG icons for tracks. (kybos)
 14.10.2020

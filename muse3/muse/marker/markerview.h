@@ -79,7 +79,8 @@ class MarkerView : public QWidget {
       QToolButton* lock;
       QToolBar* tools;
 
-      virtual QSize sizeHint() const;
+      QSize sizeHint() const override;
+      bool eventFilter(QObject *, QEvent *event) override;
 
    private slots:
       void addMarker();

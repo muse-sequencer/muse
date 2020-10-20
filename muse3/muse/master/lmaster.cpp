@@ -34,9 +34,7 @@
 #include <QMessageBox>
 #include <QStyle>
 #include <QToolButton>
-// #include <QShortcut>
-// #include <QDebug>
-// #include <QApplication>
+#include <QApplication>
 
 // Forwards from header:
 #include <QTreeWidget>
@@ -48,7 +46,6 @@
 #include <QKeyEvent>
 #include <QCloseEvent>
 #include <QAction>
-//#include "cobject.h"
 #include "tempo.h"
 #include "sig.h"
 #include "posedit.h"
@@ -99,7 +96,6 @@ void LMaster::songChanged(MusECore::SongChangedStruct_t type)
 
 LMaster::LMaster(QWidget* parent)
    : QWidget(parent)
-//   : MidiEditor(TopWin::LMASTER, 0, 0, parent, name)
       {
       setObjectName("MasterTrackList");
       _isDeleting = false;
@@ -110,7 +106,6 @@ LMaster::LMaster(QWidget* parent)
       key_editor = 0;
       editedItem = 0;
       editingNewItem = false;
-//      isMdiWin() ? setWindowTitle(tr("Mastertrack List")) : setWindowTitle(tr("MusE: Mastertrack List"));
 
       setMinimumHeight(100);
       //setFixedWidth(400);            // FIXME: Arbitrary. But without this, sig editor is too wide. Must fix sig editor width...
@@ -129,7 +124,6 @@ LMaster::LMaster(QWidget* parent)
       posAction   = new QAction(tr("Position"), this);
       valAction   = new QAction(tr("Value"), this);
       delAction   = new QAction(tr("Delete"), this);
-      delAction->setShortcut(Qt::Key_D);
 
       tempoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
       signAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -231,7 +225,7 @@ LMaster::LMaster(QWidget* parent)
       valAction->setToolTip(tr("Edit value") + " (" + valAction->shortcut().toString() + ")");
       delAction->setToolTip(tr("Delete event") + " (" + delAction->shortcut().toString() + ")");
 
-//      qApp->installEventFilter(this);
+      qApp->installEventFilter(this);
       }
 
 //---------------------------------------------------------
@@ -1098,6 +1092,7 @@ void LMaster::initShortcuts()
       keyAction->setShortcut(shortcuts[SHRT_LM_INS_KEY].key);
       posAction->setShortcut(shortcuts[SHRT_LM_EDIT_BEAT].key);
       valAction->setShortcut(shortcuts[SHRT_LM_EDIT_VALUE].key);
+      delAction->setShortcut(shortcuts[SHRT_DELETE].key);
       }
 
 void LMaster::comboboxTimerSlot()
@@ -1109,21 +1104,25 @@ QSize LMaster::sizeHint() const {
     return QSize(380, 400);
 }
 
-//bool LMaster::eventFilter(QObject*, QEvent *e)
-//{
-//    if (e->type() == QEvent::Shortcut) {
-//        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
-//        if (sev->isAmbiguous()) {
-//            for (const auto& action : actions()) {
-//                if (action->shortcut() == sev->key()) {
-//                    action->trigger();
-//                    return true;
-//                }
-//            }
-//        }
-//    }
-//    return false;
-//}
+bool LMaster::eventFilter(QObject*, QEvent *e)
+{
+    if (!view->hasFocus())
+        return false;
+
+    if (e->type() == QEvent::Shortcut) {
+        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
+        if (sev->isAmbiguous()) {
+            for (const auto& action : actions()) {
+                if (action->shortcut() == sev->key()) {
+                    action->trigger();
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
 
 
 } // namespace MusEGui

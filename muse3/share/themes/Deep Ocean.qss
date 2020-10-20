@@ -86,14 +86,14 @@ QMenu::item:selected, QMenuBar::item:selected {
     background-color: rgb(0,90,160);
 }
 
-QDockWidget {
-    border: 1px solid rgb(0,90,160);
-}
-
 QDockWidget::title {
     text-align: center;
     border: 1px solid rgb(0,90,160);
     border-radius: 2px;
+}
+
+QDockWidget QTreeWidget:focus {
+    border: 1px solid rgb(0,90,160);
 }
 
 QToolBar QToolButton {
@@ -244,6 +244,7 @@ QMdiArea QTabBar::tab:selected {
     color: DodgerBlue;
 }
 
+/*** MusE properties ***/
 
 /* The title header background colour in popup and routing menus: */
 MusEGui--MenuTitleLabel {
