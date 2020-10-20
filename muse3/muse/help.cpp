@@ -36,7 +36,7 @@
 #include "aboutbox_impl.h"
 
 // Whether to open the pdf or the html
-#define MUSE_USE_PDF_HELP_FILE
+//#define MUSE_USE_PDF_HELP_FILE
 
 namespace MusEGui {
 
@@ -46,7 +46,19 @@ namespace MusEGui {
 
 void MusE::startHelpBrowser()
 {
-    QString museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation");
+    const QWidget* w = QApplication::widgetAt (QCursor::pos());
+    QString museManual;
+    if (w && w->objectName() == "PartCanvas")
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+    else if (w && w->objectName() == "Pianoroll")
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+    else if (w && w->objectName() == "DrumCanvas")
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+    else if (w && w->objectName() == "WaveCanvas")
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+    else
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation");
+
     launchBrowser(museManual);
 }
 

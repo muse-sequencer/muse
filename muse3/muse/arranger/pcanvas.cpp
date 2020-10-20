@@ -127,6 +127,7 @@ NPart::NPart(MusECore::Part* p) : PItem(p)
 PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
    : Canvas(parent, sx, sy)
       {
+      setObjectName("PartCanvas");
       setAcceptDrops(true);
       _raster = r;
 
@@ -136,8 +137,7 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       editMode   = false;
 
       supportsResizeToTheLeft = true;
-      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB)."));
-//      MusEGlobal::muse->setStatusBarText(tr("Use Pencil tool to draw parts. Double-click to create a new MIDI part between the range markers"));
+      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB). Press F1 for more."));
 
       tracks = MusEGlobal::song->tracks();
       setMouseTracking(true);
