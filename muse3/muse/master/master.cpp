@@ -514,7 +514,7 @@ void Master::newVal(int x1, int x2, int y, MusECore::Undo& operations)
 QMenu* Master::toolContextMenu()
 {
     QMenu* r_menu = new QMenu(this);
-    QAction* act0 = 0;
+    QAction* act0 = nullptr;
 
     r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
 

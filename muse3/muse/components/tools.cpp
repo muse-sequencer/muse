@@ -35,38 +35,38 @@
 
 namespace MusEGui {
 
-const char* infoPointer = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pointer tool:\n"
+static const char* infoPointer = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pointer tool:\n"
       "With the pointer tool you can:\n"
       "  select parts\n"
       "  move parts\n"
       "  copy parts");
-const char* infoPencil = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pencil tool:\n"
+static const char* infoPencil = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pencil tool:\n"
       "With the pencil tool you can:\n"
       "  create new parts\n"
       "  modify length of parts");
-const char* infoDel = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Delete tool:\n"
+static const char* infoDel = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Delete tool:\n"
       "With the delete tool you can delete parts");
-const char* infoCut = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cut tool:\n"
+static const char* infoCut = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cut tool:\n"
       "With the cut tool you can split a part");
-const char* infoGlue = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Glue tool:\n"
+static const char* infoGlue = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Glue tool:\n"
       "With the glue tool you can glue two parts");
-const char* infoScore = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Score tool:\n");
-const char* infoQuant = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Quantize tool:\n"
+static const char* infoScore = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Score tool:\n");
+static const char* infoQuant = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Quantize tool:\n"
       "Insert display quantize event");
-const char* infoDraw = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Drawing tool");
-const char* infoMute = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Muting tool:\n"
+static const char* infoDraw = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Drawing tool");
+static const char* infoMute = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Muting tool:\n"
       "Click on part to mute/unmute");
-const char* infoAutomation = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Manipulate automation");
-const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cursor (tracker mode) tool:\n"
+static const char* infoAutomation = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Manipulate automation");
+static const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cursor (tracker mode) tool:\n"
       "With the cursor tool you can:\n"
       "  navigate with arrow keys\n"
       "  use VBNM to place notes\n"
       "  change step with 0 and 9");
-const char* infoRange = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Range tool");
-const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Panning tool");
-const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Zoom tool");
-const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool");
-const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool");
+static const char* infoRange = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Range tool");
+static const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Panning tool");
+static const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Zoom tool");
+static const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool");
+static const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool");
 
 ToolB toolList[] = {
       {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pointer"),        infoPointer },
@@ -80,10 +80,10 @@ ToolB toolList[] = {
       {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Score"),          infoScore   }, // not used
       {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Quantize"),       infoQuant   }, // not used
       {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Draw"),           infoDraw    },
-      {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Mute parts"),     infoMute    },
+      {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Mute parts"),   infoMute    },
       {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Edit automation"),infoAutomation},
       {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor"),         infoCursor},
-      {&audioStretchIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Stretch"),     infoStretch},
+      {&audioStretchIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Stretch"),  infoStretch},
       {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample rate"), infoSamplerate}
       };
 
@@ -100,8 +100,10 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
    : QToolBar(tr("Edit Tools"), parent)
       {
       setObjectName("Edit Tools");
-      QActionGroup* action = new QActionGroup(parent);  // Parent needed.
-      action->setExclusive(true);
+      QActionGroup* actionGroup = new QActionGroup(parent);  // Parent needed.
+      actionGroup->setExclusive(true);
+
+      initShortcuts();
 
       nactions = 0;
       for (unsigned i = 0; i < sizeof(toolList)/sizeof(*toolList); ++i) {
@@ -117,12 +119,11 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
                   continue;
             ToolB* t = &toolList[i];
 
-            Action* a = new Action(action, 1<<i, tr(t->tip).toLatin1().data(), true);
+            Action* a = new Action(actionGroup, 1 << i, tr(t->tip).toLatin1().data(), true);
             actions[n] = a;
-            //a->setIconSet(QIcon(**(t->icon)));
             a->setIcon(**(t->icon));
-//            a->setIcon(QIcon(**(t->icon)));
-            a->setToolTip(tr(t->tip));
+            a->setShortcut(shortcuts[toolShortcuts[1 << i]].key);
+            a->setToolTip(tr(t->tip) + " (" + a->shortcut().toString() + ")");
             a->setWhatsThis(tr(t->ltip));
             if (first) {
                   a->setChecked(true);
@@ -130,30 +131,33 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
                   }
             ++n;
             }
-      action->setVisible(true);
+      actionGroup->setVisible(true);
       //action->addTo(this);
       // Note: Does not take ownership.
-      addActions(action->actions());
+      addActions(actionGroup->actions());
       
-      connect(action, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
+      connect(actionGroup, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
+}
 
-      toolShortcuts[PointerTool] = SHRT_TOOL_POINTER;
-      toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
-      toolShortcuts[RubberTool]  = SHRT_TOOL_RUBBER;
-      toolShortcuts[CutTool]     = SHRT_TOOL_SCISSORS;
-      toolShortcuts[GlueTool]    = SHRT_TOOL_GLUE;
-      toolShortcuts[RangeTool]   = SHRT_TOOL_RANGE;
-      toolShortcuts[PanTool]     = SHRT_TOOL_PAN;
-      toolShortcuts[ZoomTool]    = SHRT_TOOL_ZOOM;
-      //toolShortcuts[ScoreTool]   = SHRT_TOOL_
-      //toolShortcuts[QuantTool]    = SHRT_TOOL_
-      toolShortcuts[DrawTool]    = SHRT_TOOL_LINEDRAW;
-      toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
-      toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
-      toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
-      toolShortcuts[StretchTool]  = SHRT_TOOL_STRETCH;
-      toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
-      }
+void EditToolBar::initShortcuts() {
+    toolShortcuts[PointerTool] = SHRT_TOOL_POINTER;
+    toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
+    toolShortcuts[RubberTool]  = SHRT_TOOL_RUBBER;
+    toolShortcuts[CutTool]     = SHRT_TOOL_SCISSORS;
+    toolShortcuts[GlueTool]    = SHRT_TOOL_GLUE;
+    toolShortcuts[RangeTool]   = SHRT_TOOL_RANGE;
+    toolShortcuts[PanTool]     = SHRT_TOOL_PAN;
+    toolShortcuts[ZoomTool]    = SHRT_TOOL_ZOOM;
+    //toolShortcuts[ScoreTool]   = SHRT_TOOL_
+    //toolShortcuts[QuantTool]    = SHRT_TOOL_
+    toolShortcuts[DrawTool]    = SHRT_TOOL_LINEDRAW;
+    toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
+    toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
+    toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
+    toolShortcuts[StretchTool]  = SHRT_TOOL_STRETCH;
+    toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
+}
+
 
 //---------------------------------------------------------
 //   toolChanged
