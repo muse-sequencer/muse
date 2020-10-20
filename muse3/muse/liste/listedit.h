@@ -65,15 +65,17 @@ class ListEdit : public QWidget {
       enum { CMD_DELETE, CMD_INC, CMD_DEC };
 
       
-      virtual void closeEvent(QCloseEvent*) override;
+      void closeEvent(QCloseEvent*) override;
 //      virtual void keyPressEvent(QKeyEvent*);
 //      virtual QSize sizeHint() const override;
-      virtual QSize minimumSizeHint() const override;
+      QSize minimumSizeHint() const override;
+      bool eventFilter(QObject *, QEvent *event) override;
 
       void initShortcuts();
       void genPartlist();
 
       QAction *noteAction, *sysexAction, *ctrlAction, *metaAction;
+      QAction *incAction, *decAction, *deleteAction;
 
    private slots:
       void editInsertNote();

@@ -32,6 +32,7 @@
 #include "audio.h"
 #include "gconfig.h"
 #include "pos.h"
+#include "shortcuts.h"
 
 #include <cstdint>
 
@@ -46,6 +47,8 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QTreeWidget>
+#include <QApplication>
+#include <QDebug>
 
 namespace MusEGui {
 
@@ -162,9 +165,18 @@ MarkerView::MarkerView(QWidget* parent)
       setObjectName("MarkerView");
 
       QAction* markerAdd = new QAction(*plusSVGIcon, tr("Add marker"), this);
+      markerAdd->setShortcut(Qt::Key_A);
+      markerAdd->setToolTip(tr("Add marker") + " (A)");
+      addAction(markerAdd);
+      markerAdd->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
       connect(markerAdd, SIGNAL(triggered()), SLOT(addMarker()));
 
       QAction* markerDelete = new QAction(*minusSVGIcon, tr("Delete marker"), this);
+      markerDelete->setShortcut(shortcuts[SHRT_DELETE].key);
+      markerDelete->setToolTip(tr("Delete marker") + " (" + markerDelete->shortcut().toString() + ")");
+      addAction(markerDelete);
+      markerDelete->setShortcutContext(Qt::WidgetWithChildrenShortcut);
       connect(markerDelete, SIGNAL(triggered()), SLOT(deleteMarker()));    
       
       // Toolbars ---------------------------------------------------------
@@ -185,6 +197,7 @@ MarkerView::MarkerView(QWidget* parent)
       table->setSelectionMode(QAbstractItemView::SingleSelection);
 
       table->setIndentation(2);
+      table->setFocusPolicy(Qt::StrongFocus);
       
       QStringList columnnames;
       columnnames << tr("Bar:Beat:Tick")
@@ -263,6 +276,8 @@ MarkerView::MarkerView(QWidget* parent)
       // And we had a request to remove this from a knowledgable tester. REMOVE Tim.
       ///show();
       ///hide();
+
+      qApp->installEventFilter(this);
       }
 
 //---------------------------------------------------------
@@ -272,6 +287,26 @@ MarkerView::MarkerView(QWidget* parent)
 MarkerView::~MarkerView()
       {
       }
+
+bool MarkerView::eventFilter(QObject*, QEvent *e)
+{
+    if (!table->hasFocus())
+        return false;
+
+    if (e->type() == QEvent::Shortcut) {
+        QShortcutEvent* sev = static_cast<QShortcutEvent*>(e);
+        if (sev->isAmbiguous()) {
+            for (const auto& action : actions()) {
+                if (action->shortcut() == sev->key()) {
+                    action->trigger();
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
 
 //---------------------------------------------------------
 //   addMarker
