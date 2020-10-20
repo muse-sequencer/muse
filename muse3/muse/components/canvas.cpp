@@ -2251,7 +2251,7 @@ void Canvas::updateItemSelections()
 QMenu* Canvas::genCanvasPopup(QMenu* menu)
       {
       if (canvasTools == 0)
-            return 0;
+            return nullptr;
       QMenu* r_menu = menu;
       if(!r_menu)
         r_menu = new QMenu(this);

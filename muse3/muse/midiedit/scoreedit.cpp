@@ -5035,7 +5035,7 @@ void ScoreCanvas::add_new_parts(const std::map< const MusECore::Part*, std::set<
 QMenu* ScoreCanvas::toolContextMenu()
 {
     QMenu* r_menu = new QMenu(this);
-    QAction* act0 = 0;
+    QAction* act0 = nullptr;
 
     r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
 
