@@ -244,6 +244,7 @@ QMdiArea QTabBar::tab:selected {
     color: DodgerBlue;
 }
 
+/*** MusE properties ***/
 
 /* The title header background colour in popup and routing menus: */
 MusEGui--MenuTitleLabel {
