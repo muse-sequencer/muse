@@ -182,6 +182,9 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
    : QListWidget(parent)
       {
       setObjectName("Rack");
+      viewport()->setObjectName("EffectRack"); // needed for context help
+      setStatusTip(tr("Effect rack: Double-click a slot to insert/edit effect. RMB to open context menu. Press F1 for more."));
+
       setAttribute(Qt::WA_DeleteOnClose);
 
      _bkgPainter = new ItemBackgroundPainter(this);

@@ -550,14 +550,17 @@ MusE::MusE() : QMainWindow()
 
       QMenu* panicPopupMenu = new QMenu(this);
       MusEGlobal::panicAction->setMenu(panicPopupMenu);
+      MusEGlobal::panicAction->setObjectName("PanicButton");
       
 //      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels")); // wrong?
-      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels"));
+      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels. Press F1 for more."));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
+      MusEGlobal::metronomeAction->setObjectName("MetronomeButton");
       MusEGlobal::metronomeAction->setCheckable(true);
       MusEGlobal::metronomeAction->setWhatsThis(tr("Turn on/off metronome"));
+      MusEGlobal::metronomeAction->setStatusTip(tr("Metronome on/off. Press F1 for more."));
       MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
       connect(MusEGlobal::metronomeAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), MusEGlobal::metronomeAction, SLOT(setChecked(bool)));
@@ -632,8 +635,8 @@ MusE::MusE() : QMainWindow()
 //      master->addAction(masterListAction);
 
       //-------- Midi Actions
-      menuScriptPlugins = new QMenu(tr("&Plugins"), this);
-      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'"));
+      menuScriptPlugins = new QMenu(tr("&Scripts"), this);
+      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
@@ -648,7 +651,7 @@ MusE::MusE() : QMainWindow()
       midiInitInstActions = new QAction(QIcon(*MusEGui::midi_init_instrIcon), tr("Init Instrument"), this);
       midiInitInstActions->setStatusTip(tr("Send initialization messages as found in instrument definition."));
       midiLocalOffAction = new QAction(QIcon(*MusEGui::midi_local_offIcon), tr("Local Off"), this);
-      midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels"));
+      midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels."));
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
