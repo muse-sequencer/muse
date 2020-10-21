@@ -25,5 +25,4 @@ Documentation:
 
 These and other important documents, READMEs, and addendums are in the [muse3](muse3) directory.
 
-The official MusE manual can be found here in HTML or PDF form in the [muse3/doc](muse3/doc) directory. 
-The manuals are also installed along with MusE.
+The official MusE Manual (work in progress) has migrated to the wiki and can be found [here][https://github.com/muse-sequencer/muse/wiki/Documentation].
