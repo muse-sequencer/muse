@@ -172,7 +172,6 @@ details.
          libinstpatch-dev\
          liblilv-dev\
          liblrdf0-dev\
-         liblash-compat-dev\
          librubberband-dev\
          python3-dev
     4. Change directory:
