@@ -1723,6 +1723,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
 
       solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
+      solo->setObjectName("SoloButton");
+      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for more."));
       solo->setFocusPolicy(Qt::NoFocus);
       solo->setContentsMargins(0, 0, 0, 0);
       solo->setToolTip(tr("Solo or proxy solo"));
@@ -1748,6 +1750,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       if (type != MusECore::Track::AUDIO_AUX) {
             iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
                                 routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+            iR->setObjectName("InputRouteButton");
+            iR->setStatusTip(tr("Input routing. Press F1 for more."));
             iR->setContentsMargins(0, 0, 0, 0);
             iR->setFocusPolicy(Qt::NoFocus);
             iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1758,6 +1762,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
                           routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+      oR->setObjectName("OutputRouteButton");
+      oR->setStatusTip(tr("Output routing. Press F1 for more."));
       oR->setContentsMargins(0, 0, 0, 0);
       oR->setFocusPolicy(Qt::NoFocus);
       oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1776,6 +1782,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
         _recMonitor->setCheckable(true);
         _recMonitor->setToolTip(tr("Input monitor"));
         _recMonitor->setWhatsThis(tr("Pass input through to output"));
+        _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
         _recMonitor->setChecked(at->recMonitor());
         connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
       }

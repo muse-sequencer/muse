@@ -144,5 +144,6 @@
         <file>svg/track_output.svg</file>
         <file>svg/track_input.svg</file>
         <file>svg/synth.svg</file>
+        <file>svg/info.svg</file>
     </qresource>
 </RCC>

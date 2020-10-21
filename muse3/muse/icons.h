@@ -239,6 +239,7 @@ extern QIcon* filesaveasSVGIcon;
 extern QIcon* filecloseSVGIcon;
 extern QIcon* appexitSVGIcon;
 extern QIcon* whatsthisSVGIcon;
+extern QIcon* infoSVGIcon;
 extern QIcon* exitSVGIcon;
 extern QIcon* noteSVGIcon;
 extern QIcon* metaSVGIcon;

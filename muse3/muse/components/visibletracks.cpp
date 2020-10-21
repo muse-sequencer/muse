@@ -75,6 +75,7 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
             a->setIcon(QIcon(**(t->icon)));
             a->setToolTip(tr(t->tip));
             a->setWhatsThis(tr(t->ltip));
+            a->setStatusTip(tr(t->ltip));
             a->setChecked(true);
             ++n;
             }

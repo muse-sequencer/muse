@@ -1368,7 +1368,7 @@ void Appearance::closeEvent(QCloseEvent* e)
   if(_colorDialog)
   {
     _colorDialog->deleteLater();
-    _colorDialog = 0;
+    _colorDialog = nullptr;
   }
   e->accept();
   QDialog::closeEvent(e);
@@ -1384,7 +1384,7 @@ void Appearance::okClicked()
       if(_colorDialog)
       {
         _colorDialog->deleteLater();
-        _colorDialog = 0;
+        _colorDialog = nullptr;
       }
       //close();
       hide();
@@ -1406,7 +1406,7 @@ void Appearance::cancel()
       if(_colorDialog)
       {
         _colorDialog->deleteLater();
-        _colorDialog = 0;
+        _colorDialog = nullptr;
       }
       //close();
       hide();
@@ -1421,7 +1421,7 @@ void Appearance::removeBackground()
       QTreeWidgetItem* item = backgroundTree->currentItem();
       MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap());
       user_bg->takeChild(user_bg->indexOfChild(item));
-      backgroundTree->setCurrentItem (0);
+      backgroundTree->setCurrentItem (nullptr);
       removeBgButton->setEnabled(false);
       }
 
@@ -1817,5 +1817,13 @@ void Appearance::on_pbSetFontFamily_clicked()
     fontName5->setText(fontName0->text());
     fontName6->setText(fontName0->text());
 }
+
+
+void Appearance::on_helpButton_clicked()
+{
+    QString s("https://github.com/muse-sequencer/muse/wiki/style-sheets-and-colours");
+    MusEGlobal::muse->launchBrowser(s);
+}
+
 
 } // namespace MusEGui

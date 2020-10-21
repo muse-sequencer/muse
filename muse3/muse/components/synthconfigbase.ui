@@ -30,7 +30,7 @@
        <item row="0" column="0">
         <widget class="QTreeWidget" name="synthList">
          <property name="toolTip">
-          <string>list of available software synthesizers</string>
+          <string>List of available software synthesizers</string>
          </property>
          <property name="allColumnsShowFocus">
           <bool>true</bool>
@@ -108,7 +108,7 @@
            <bool>false</bool>
           </attribute>
           <attribute name="verticalHeaderDefaultSectionSize">
-           <number>18</number>
+           <number>20</number>
           </attribute>
           <attribute name="verticalHeaderHighlightSections">
            <bool>false</bool>
@@ -214,7 +214,7 @@
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
           <attribute name="verticalHeaderDefaultSectionSize">
-           <number>18</number>
+           <number>20</number>
           </attribute>
          </widget>
         </item>

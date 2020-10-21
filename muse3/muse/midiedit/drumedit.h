@@ -139,6 +139,7 @@ private:
 
     void setHeaderToolTips();
     void setHeaderWhatsThis();
+    void setHeaderStatusTip();
 
     // Sets up a reasonable zoom minimum and/or maximum based on
     //  the current global midi division (ticks per quarter note)

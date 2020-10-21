@@ -916,11 +916,11 @@ Refer to the instrument manufacturer's
            <property name="allColumnsShowFocus">
             <bool>true</bool>
            </property>
-           <attribute name="headerDefaultSectionSize">
-            <number>60</number>
-           </attribute>
            <attribute name="headerMinimumSectionSize">
             <number>30</number>
+           </attribute>
+           <attribute name="headerDefaultSectionSize">
+            <number>60</number>
            </attribute>
            <attribute name="headerStretchLastSection">
             <bool>false</bool>
@@ -2019,6 +2019,8 @@ Caution! Watch out for controllers such as
    <addaction name="fileOpenAction"/>
    <addaction name="fileSaveAction"/>
    <addaction name="fileSaveAsAction"/>
+   <addaction name="separator"/>
+   <addaction name="actionInfo"/>
   </widget>
   <widget class="QMenuBar" name="MenuBar">
    <property name="geometry">
@@ -2026,7 +2028,7 @@ Caution! Watch out for controllers such as
      <x>0</x>
      <y>0</y>
      <width>816</width>
-     <height>30</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="defaultUp">
@@ -2147,6 +2149,14 @@ Caution! Watch out for controllers such as
    </property>
    <property name="name" stdset="0">
     <cstring>whatsThisAction</cstring>
+   </property>
+  </action>
+  <action name="actionInfo">
+   <property name="text">
+    <string>Info</string>
+   </property>
+   <property name="toolTip">
+    <string>Additional information</string>
    </property>
   </action>
  </widget>

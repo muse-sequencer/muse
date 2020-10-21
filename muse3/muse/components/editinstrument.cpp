@@ -52,6 +52,7 @@
 #include "operations.h"
 #include "audio.h"
 #include "gui.h"
+#include "app.h"
 
 // Forwards from header:
 #include <QMenu>
@@ -228,6 +229,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       fileSaveAction->setIcon(*filesaveSVGIcon);
       fileSaveAsAction->setIcon(*filesaveasSVGIcon);
       fileCloseAction->setIcon(*exitSVGIcon);
+      actionInfo->setIcon(*infoSVGIcon);
       viewController->setSelectionMode(QAbstractItemView::SingleSelection);
 
       QAction* whatsthis = QWhatsThis::createAction(this);
@@ -236,8 +238,8 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       Help->addAction(whatsthis);
 
       // populate instrument list
-      oldMidiInstrument = 0;
-      oldPatchItem = 0;
+      oldMidiInstrument = nullptr;
+      oldPatchItem = nullptr;
       for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) {
             // Imperfect, crude way of ignoring internal instruments, soft synths etc. If it has a gui,
             //  it must be an internal instrument. But this will still allow some vst instruments (without a gui)
@@ -4097,5 +4099,12 @@ void EditInstrument::initListDeleteClicked()
   //delete item;
   workingInstrument->setDirty(true);
 }
+
+void EditInstrument::on_actionInfo_triggered()
+{
+    QString s("https://github.com/muse-sequencer/muse/wiki/instrument-definitions");
+    MusEGlobal::muse->launchBrowser(s);
+}
+
 
 } // namespace MusEGui

@@ -310,7 +310,7 @@ private slots:
     void startHelpBrowser();
     void startHomepageBrowser();
     void startBugBrowser();
-    void launchBrowser(QString &whereTo);
+//    void launchBrowser(QString &whereTo);
     void importMidi();
     void importWave();
     void importPart();
@@ -487,6 +487,8 @@ public:
     void initStatusBar();
     void setStatusBarText(const QString &message, int timeout = 0);
     void clearStatusBarText();
+
+    void launchBrowser(QString &whereTo);
 
 #ifdef HAVE_LASH
     void lash_idle_cb ();

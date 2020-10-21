@@ -28,7 +28,7 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QUrl>
-#include <QDebug>
+//#include <QDebug>
 
 #include "app.h"
 #include "globals.h"
@@ -48,13 +48,13 @@ namespace MusEGui {
 void MusE::startHelpBrowser()
 {
     QWidget* w = QApplication::widgetAt (QCursor::pos());
-    qDebug() << w << w->objectName();
+//    qDebug() << "Debug F1 help: Widget at mouse position:" << w << w->objectName();
 
     // setting object name for action toolbutton doesn't work, use a workaround
     QToolButton* tb = nullptr;
     if (w && strcmp(w->metaObject()->className(), "QToolButton") == 0) {
         tb = dynamic_cast<QToolButton*>(w);
-        qDebug() << tb << tb->defaultAction()->objectName();
+//        qDebug() << "Debug F1 help: Tool button action:" << tb << tb->defaultAction()->objectName();
     }
 
     QString museManual;
@@ -71,6 +71,10 @@ void MusE::startHelpBrowser()
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#tracks-and-parts");
     else if (w && w->objectName() == "EffectRack")
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/understanding-the-effects-rack");
+    else if (w && w->objectName() == "SoloButton")
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#track-soloing");
+    else if (w && (w->objectName() == "InputRouteButton" || w->objectName() == "OutputRouteButton"))
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#routes");
 
     else if (w && tb && tb->defaultAction()->objectName() == "PanicButton")
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#panic-local-off-reset-instrument-and-init-instrument");
@@ -122,6 +126,10 @@ void MusE::aboutQt()
       {
       QMessageBox::aboutQt(this, QString("MusE"));
       }
+
+//---------------------------------------------------------
+//   launchBrowser
+//---------------------------------------------------------
 
 void MusE::launchBrowser(QString &whereTo)
       {

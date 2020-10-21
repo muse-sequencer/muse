@@ -544,6 +544,7 @@ MusE::MusE() : QMainWindow()
                                               MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
       MusEGlobal::recordAction->setWhatsThis(tr("To record press record and then play"));
+      MusEGlobal::recordAction->setStatusTip(tr("To record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
       MusEGlobal::panicAction = new QAction(*MusEGui::panicSVGIcon, tr("Panic"), this);
@@ -577,14 +578,12 @@ MusE::MusE() : QMainWindow()
       fileNewFromTemplateAction->setWhatsThis(tr("Create new song from template"));
 
       fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
-
       fileOpenAction->setToolTip(tr("Open song from file"));
       fileOpenAction->setWhatsThis(tr("Click this button to open an existing song."));
 
       openRecent = new QMenu(tr("Open &Recent"), this);
 
       fileSaveAction = new QAction(*MusEGui::filesaveSVGIcon, tr("&Save"), this);
-
       fileSaveAction->setToolTip(tr("Save current song"));
       fileSaveAction->setWhatsThis(tr("Click this button to save the song you are editing. You will be prompted for a file name."));
 
@@ -690,7 +689,7 @@ MusE::MusE() : QMainWindow()
       settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports / Soft Synths..."), this);
 
       //-------- Help Actions
-      helpManualAction = new QAction(tr("&Manual..."), this);
+      helpManualAction = new QAction(tr("&Manual (wiki)..."), this);
       helpHomepageAction = new QAction(tr("&MusE Homepage..."), this);
       helpDidYouKnow = new QAction(tr("&Did You Know?"), this);
 

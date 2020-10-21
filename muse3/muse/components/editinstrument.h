@@ -163,7 +163,9 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
       void storePatchCollection();
       void fetchPatchCollection();
 
-   public:
+      void on_actionInfo_triggered();
+
+public:
       EditInstrument(QWidget* parent = 0, Qt::WindowFlags fl = Qt::Window);
       virtual ~EditInstrument();
       void findInstrument(const QString& find_instrument);
