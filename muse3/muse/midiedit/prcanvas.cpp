@@ -111,11 +111,12 @@ CItem* PianoCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
 PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
    : EventCanvas(pr, parent, sx, sy)
       {
+      setObjectName("Pianoroll");
       colorMode = MidiEventColorMode::blueEvents;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
       supportsMultipleResize = true;
-      setStatusTip(tr("MIDI canvas: Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit."));
+      setStatusTip(tr("Pianoroll canvas: Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit. Press F1 for more."));
 
       steprec=new MusECore::StepRec(noteHeldDown);
 

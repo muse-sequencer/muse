@@ -1750,6 +1750,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
 
       solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
+      solo->setObjectName("SoloButton");
+      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for more."));
       solo->setFocusPolicy(Qt::NoFocus);
       solo->setToolTip(tr("Solo or proxy solo"));
       solo->setContentsMargins(0, 0, 0, 0);
@@ -1774,6 +1776,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
                           routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+      iR->setObjectName("InputRouteButton");
+      iR->setStatusTip(tr("Intput routing. Press F1 for more."));
       iR->setContentsMargins(0, 0, 0, 0);
       iR->setFocusPolicy(Qt::NoFocus);
       iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1783,6 +1787,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       
       oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
                           routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+      oR->setObjectName("OutputRouteButton");
+      oR->setStatusTip(tr("Output routing. Press F1 for more."));
       oR->setContentsMargins(0, 0, 0, 0);
       oR->setFocusPolicy(Qt::NoFocus);
       oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1794,13 +1800,14 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       if(track && track->canRecordMonitor())
       {
-        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, 0, 0, false, true);
+        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
         _recMonitor->setFocusPolicy(Qt::NoFocus);
         _recMonitor->setContentsMargins(0, 0, 0, 0);
         _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         _recMonitor->setCheckable(true);
         _recMonitor->setToolTip(tr("Input monitor"));
         _recMonitor->setWhatsThis(tr("Pass input through to output"));
+        _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
         _recMonitor->setChecked(t->recMonitor());
         connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
       }

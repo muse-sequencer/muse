@@ -336,6 +336,7 @@ QIcon* filesaveasSVGIcon;
 QIcon* filecloseSVGIcon;
 QIcon* appexitSVGIcon;
 QIcon* whatsthisSVGIcon;
+QIcon* infoSVGIcon;
 QIcon* exitSVGIcon;
 QIcon* noteSVGIcon;
 QIcon* metaSVGIcon;
@@ -675,6 +676,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     speakerSingleNoteSVGIcon = icons.getSVG("speaker_single_note.svg");
     speakerChordsSVGIcon     = icons.getSVG("speaker_chords.svg");
     whatsthisSVGIcon  = icons.getSVG("whatsthis.svg");
+    infoSVGIcon       = icons.getSVG("info.svg");
     exitSVGIcon       = icons.getSVG("exit.svg");
     noteSVGIcon       = icons.getSVG("note.svg");
     metaSVGIcon       = icons.getSVG("meta.svg");
@@ -969,6 +971,7 @@ void deleteIcons()
     delete filecloseSVGIcon;
     delete appexitSVGIcon;
     delete whatsthisSVGIcon;
+    delete infoSVGIcon;
     delete exitSVGIcon;
     delete noteSVGIcon;
     delete metaSVGIcon;

@@ -1,3 +1,6 @@
+21.10.2020
+    - New: Context sensitive help for many widgets and dialogs. (kybos)
+    - Add more status tips. (kybos)
 20.10.2020
     - Fix: Resolve key shortcut conflicts in docks. (kybos)
     - Add: Add new shortcuts in docks (List master editor, Event list). (kybos)

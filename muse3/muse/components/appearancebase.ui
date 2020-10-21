@@ -1935,6 +1935,13 @@ The font family is forced to 'Sans', which should
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="helpButton">
+       <property name="text">
+        <string>Help</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="applyButton">
        <property name="text">
         <string>Apply</string>

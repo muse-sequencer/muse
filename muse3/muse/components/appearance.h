@@ -157,6 +157,7 @@ private slots:
 
 private slots:
       void on_pbAdjustFontSizes_clicked();
+      void on_helpButton_clicked();
 };
 
 } // namespace MusEGui

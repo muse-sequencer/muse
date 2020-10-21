@@ -114,6 +114,24 @@ void DrumEdit::setHeaderWhatsThis()
       header->setWhatsThis(DList::COL_LEVEL4, tr("Meta + alt keys: Draw velocity level 4"));
       }
 
+void DrumEdit::setHeaderStatusTip()
+{
+    header->setStatusTip(DList::COL_HIDE, tr("Hide instrument"));
+    header->setStatusTip(DList::COL_MUTE, tr("Mute instrument"));
+    header->setStatusTip(DList::COL_NAME, tr("Sound name"));
+    header->setStatusTip(DList::COL_VOLUME, tr("Volume percent"));
+    header->setStatusTip(DList::COL_QUANT, tr("Quantisation"));
+    header->setStatusTip(DList::COL_INPUTTRIGGER, tr("Note which triggers the sound"));
+    header->setStatusTip(DList::COL_NOTELENGTH, tr("Note length"));
+    header->setStatusTip(DList::COL_NOTE, tr("Note which is played"));
+    header->setStatusTip(DList::COL_OUTCHANNEL, tr("Override track output channel (hold CTRL to affect all rows)."));
+    header->setStatusTip(DList::COL_OUTPORT, tr("Override track output port (hold CTRL to affect all rows)."));
+    header->setStatusTip(DList::COL_LEVEL1, tr("CTRL + META keys: Draw velocity level 1"));
+    header->setStatusTip(DList::COL_LEVEL2, tr("META key: Draw velocity level 2"));
+    header->setStatusTip(DList::COL_LEVEL3, tr("Draw default velocity level 3"));
+    header->setStatusTip(DList::COL_LEVEL4, tr("META + ALT keys: Draw velocity level 4"));
+}
+
 //---------------------------------------------------------
 //   setHeaderToolTips
 //---------------------------------------------------------

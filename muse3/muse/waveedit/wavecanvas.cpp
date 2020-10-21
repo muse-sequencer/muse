@@ -153,6 +153,10 @@ CItem* WaveCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
 WaveCanvas::WaveCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
    : EventCanvas(pr, parent, sx, 1)
       {
+      setObjectName("WaveCanvas");
+
+      setStatusTip(tr("Wave canvas: Use Pencil tool to edit wave events, Pointer tool to select and edit. Press F1 for more."));
+
       colorMode = 0;
       button = 0;
       

@@ -544,20 +544,24 @@ MusE::MusE() : QMainWindow()
                                               MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
       MusEGlobal::recordAction->setWhatsThis(tr("To record press record and then play"));
+      MusEGlobal::recordAction->setStatusTip(tr("To record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
       MusEGlobal::panicAction = new QAction(*MusEGui::panicSVGIcon, tr("Panic"), this);
 
       QMenu* panicPopupMenu = new QMenu(this);
       MusEGlobal::panicAction->setMenu(panicPopupMenu);
+      MusEGlobal::panicAction->setObjectName("PanicButton");
       
 //      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels")); // wrong?
-      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels"));
+      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels. Press F1 for more."));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
+      MusEGlobal::metronomeAction->setObjectName("MetronomeButton");
       MusEGlobal::metronomeAction->setCheckable(true);
       MusEGlobal::metronomeAction->setWhatsThis(tr("Turn on/off metronome"));
+      MusEGlobal::metronomeAction->setStatusTip(tr("Metronome on/off. Press F1 for more."));
       MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
       connect(MusEGlobal::metronomeAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), MusEGlobal::metronomeAction, SLOT(setChecked(bool)));
@@ -574,14 +578,12 @@ MusE::MusE() : QMainWindow()
       fileNewFromTemplateAction->setWhatsThis(tr("Create new song from template"));
 
       fileOpenAction = new QAction(*MusEGui::fileopenSVGIcon, tr("&Open..."), this);
-
       fileOpenAction->setToolTip(tr("Open song from file"));
       fileOpenAction->setWhatsThis(tr("Click this button to open an existing song."));
 
       openRecent = new QMenu(tr("Open &Recent"), this);
 
       fileSaveAction = new QAction(*MusEGui::filesaveSVGIcon, tr("&Save"), this);
-
       fileSaveAction->setToolTip(tr("Save current song"));
       fileSaveAction->setWhatsThis(tr("Click this button to save the song you are editing. You will be prompted for a file name."));
 
@@ -632,8 +634,8 @@ MusE::MusE() : QMainWindow()
 //      master->addAction(masterListAction);
 
       //-------- Midi Actions
-      menuScriptPlugins = new QMenu(tr("&Plugins"), this);
-      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'"));
+      menuScriptPlugins = new QMenu(tr("&Scripts"), this);
+      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
@@ -648,7 +650,7 @@ MusE::MusE() : QMainWindow()
       midiInitInstActions = new QAction(QIcon(*MusEGui::midi_init_instrIcon), tr("Init Instrument"), this);
       midiInitInstActions->setStatusTip(tr("Send initialization messages as found in instrument definition."));
       midiLocalOffAction = new QAction(QIcon(*MusEGui::midi_local_offIcon), tr("Local Off"), this);
-      midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels"));
+      midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels."));
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
@@ -687,7 +689,7 @@ MusE::MusE() : QMainWindow()
       settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports / Soft Synths..."), this);
 
       //-------- Help Actions
-      helpManualAction = new QAction(tr("&Manual..."), this);
+      helpManualAction = new QAction(tr("&Manual (wiki)..."), this);
       helpHomepageAction = new QAction(tr("&MusE Homepage..."), this);
       helpDidYouKnow = new QAction(tr("&Did You Know?"), this);
 
