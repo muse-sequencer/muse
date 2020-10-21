@@ -25,4 +25,4 @@ Documentation:
 
 These and other important documents, READMEs, and addendums are in the [muse3](muse3) directory.
 
-The official MusE Manual (work in progress) has migrated to the wiki and can be found [here][https://github.com/muse-sequencer/muse/wiki/Documentation].
+The official MusE Manual (work in progress) has migrated to the wiki and can be found [here](https://github.com/muse-sequencer/muse/wiki/Documentation).
