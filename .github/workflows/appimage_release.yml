@@ -69,22 +69,18 @@ jobs:
       run: |
         make DESTDIR=appdir install ; find appdir/
         
-        find appdir \( -name "moc_*" -or -name "*.o" -or -name "qrc_*" -or -name "Makefile*" -or -name "*.a" \) -exec rm {} \;
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
         wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
         chmod +x linuxdeploy*.AppImage
-        
-        # wget -c -nv "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-        # chmod a+x linuxdeployqt-continuous-x86_64.AppImage
                
-        LIB_MODULES=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/modules
-        LIB_PLUGINS=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/plugins
-        LIB_SYNTHI=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/synthi
-        LIB_CONV=${{runner.workspace}}/build/appdir/usr/lib/muse-3.1/converters
+        export MUSEDIR=$(basename -a ${{runner.workspace}}/build/appdir/usr/lib/muse-*)      
+        LIB_MODULES=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/modules
+        LIB_PLUGINS=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/plugins
+        LIB_SYNTHI=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/synthi
+        LIB_CONV=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/converters
         export LD_LIBRARY_PATH=$LIB_MODULES:$LIB_PLUGINS:$LIB_SYNTHI:$LIB_CONV:$LD_LIBRARY_PATH
-        # ./linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/applications/*.desktop -appimage -bundle-non-qt-libs -verbose=2
-        #./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt --output appimage
+
         ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt
         
         echo '#! /usr/bin/env bash' > appdir/AppRun
