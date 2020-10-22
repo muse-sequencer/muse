@@ -167,9 +167,8 @@ class LMaster : public QWidget {
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 
    private slots:
-      void select(QTreeWidgetItem*, QTreeWidgetItem*);
       void itemDoubleClicked(QTreeWidgetItem* item);
-      void returnPressed();
+      void editingFinished();
       void itemPressed(QTreeWidgetItem* i, int column);
       void tempoButtonClicked();
       void timeSigButtonClicked();

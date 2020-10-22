@@ -62,9 +62,9 @@
 namespace MusEGui {
 
 LMasterLViewItem::LMasterLViewItem(QTreeWidget* parent)
-  : QTreeWidgetItem(QTreeWidgetItem::UserType)
+    : QTreeWidgetItem(QTreeWidgetItem::UserType)
 {
-  parent->insertTopLevelItem(0, this);
+    parent->insertTopLevelItem(0, this);
 }
 
 //---------------------------------------------------------
@@ -82,159 +82,163 @@ void LMaster::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 void LMaster::songChanged(MusECore::SongChangedStruct_t type)
-      {
-      if(_isDeleting)  // Ignore while while deleting to prevent crash.
+{
+    if(_isDeleting)  // Ignore while while deleting to prevent crash.
         return;
-      
-      if (type & (SC_SIG | SC_TEMPO | SC_KEY ))
-            updateList();
-      }
+
+    if (type & (SC_SIG | SC_TEMPO | SC_KEY ))
+        updateList();
+}
 
 //---------------------------------------------------------
 //   LMaster
 //---------------------------------------------------------
 
 LMaster::LMaster(QWidget* parent)
-   : QWidget(parent)
-      {
-      setObjectName("MasterTrackList");
-      _isDeleting = false;
+    : QWidget(parent)
+{
+    setObjectName("MasterTrackList");
+    _isDeleting = false;
 
-      pos_editor = 0;
-      tempo_editor = 0;
-      sig_editor = 0;
-      key_editor = 0;
-      editedItem = 0;
-      editingNewItem = false;
+    pos_editor = 0;
+    tempo_editor = 0;
+    sig_editor = 0;
+    key_editor = 0;
+    editedItem = 0;
+    editingNewItem = false;
 
-      setMinimumHeight(100);
-      //setFixedWidth(400);            // FIXME: Arbitrary. But without this, sig editor is too wide. Must fix sig editor width...
-      setFocusPolicy(Qt::NoFocus);
-
-
-      comboboxTimer=new QTimer(this);
-      comboboxTimer->setInterval(150);
-      comboboxTimer->setSingleShot(true);
-      connect(comboboxTimer, SIGNAL(timeout()), this, SLOT(comboboxTimerSlot()));
+    setMinimumHeight(100);
+    //setFixedWidth(400);            // FIXME: Arbitrary. But without this, sig editor is too wide. Must fix sig editor width...
+    setFocusPolicy(Qt::NoFocus);
 
 
-      tempoAction = new QAction(tr("Tempo"), this);
-      signAction  = new QAction(tr("Signature"), this);
-      keyAction   = new QAction(tr("Key"), this);
-      posAction   = new QAction(tr("Position"), this);
-      valAction   = new QAction(tr("Value"), this);
-      delAction   = new QAction(tr("Delete"), this);
+    comboboxTimer=new QTimer(this);
+    comboboxTimer->setInterval(150);
+    comboboxTimer->setSingleShot(true);
+    connect(comboboxTimer, SIGNAL(timeout()), this, SLOT(comboboxTimerSlot()));
 
-      tempoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-      signAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-      keyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-      posAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-      valAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-      delAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
-      addAction(tempoAction);
-      addAction(signAction);
-      addAction(keyAction);
-      addAction(posAction);
-      addAction(valAction);
-      addAction(delAction);
+    tempoAction = new QAction(tr("Tempo"), this);
+    signAction  = new QAction(tr("Signature"), this);
+    keyAction   = new QAction(tr("Key"), this);
+    posAction   = new QAction(tr("Position"), this);
+    valAction   = new QAction(tr("Value"), this);
+    delAction   = new QAction(tr("Delete"), this);
 
-      connect(tempoAction, &QAction::triggered, [this]() { cmd(CMD_INSERT_TEMPO); } );
-      connect(signAction,  &QAction::triggered, [this]() { cmd(CMD_INSERT_SIG); } );
-      connect(keyAction,   &QAction::triggered, [this]() { cmd(CMD_INSERT_KEY); } );
-      connect(posAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_BEAT); } );
-      connect(valAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_VALUE); } );
-      connect(delAction,   &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
-      
-      
-      // Toolbars ---------------------------------------------------------
-      
-      // NOTICE: Please ensure that any tool bar object names here match the names assigned 
-      //          to identical or similar toolbars in class MusE or other TopWin classes. 
-      //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
-      //          to retain the original toolbar layout. If it finds an existing
-      //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
-      //          instead of /appending/ with addToolBar().
+    tempoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    signAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    keyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    posAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    valAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    delAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
-      QToolBar* edit = new QToolBar(tr("Edit tools"), this);
-      edit->addAction(tempoAction);
-      edit->addAction(signAction);
-      edit->addAction(keyAction);
-      edit->addAction(posAction);
-      edit->addAction(valAction);
-      edit->addAction(delAction);
+    addAction(tempoAction);
+    addAction(signAction);
+    addAction(keyAction);
+    addAction(posAction);
+    addAction(valAction);
+    addAction(delAction);
 
-      //---------------------------------------------------
-      //    master
-      //---------------------------------------------------
+    connect(tempoAction, &QAction::triggered, [this]() { cmd(CMD_INSERT_TEMPO); } );
+    connect(signAction,  &QAction::triggered, [this]() { cmd(CMD_INSERT_SIG); } );
+    connect(keyAction,   &QAction::triggered, [this]() { cmd(CMD_INSERT_KEY); } );
+    connect(posAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_BEAT); } );
+    connect(valAction,   &QAction::triggered, [this]() { cmd(CMD_EDIT_VALUE); } );
+    connect(delAction,   &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
 
-      view = new QTreeWidget;
-      view->setAllColumnsShowFocus(true);
-      view->setSelectionMode(QAbstractItemView::SingleSelection);
-      QStringList columnnames;
-      columnnames << tr("Position")
-                  << tr("Time")
-                  << tr("Type")
-                  << tr("Value");
-      view->setHeaderLabels(columnnames);
-      view->setColumnWidth(2,70);
-      view->setIndentation(2);
 
-      //---------------------------------------------------
-      //    Rest
-      //---------------------------------------------------
+    // Toolbars ---------------------------------------------------------
 
-      QGridLayout* mainGrid = new QGridLayout(this);
-      mainGrid->setRowStretch(0, 100);
-      mainGrid->setColumnStretch(0, 100);
+    // NOTICE: Please ensure that any tool bar object names here match the names assigned
+    //          to identical or similar toolbars in class MusE or other TopWin classes.
+    //         This allows MusE::setCurrentMenuSharingTopwin() to do some magic
+    //          to retain the original toolbar layout. If it finds an existing
+    //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
+    //          instead of /appending/ with addToolBar().
 
-      mainGrid->addWidget(edit,  0, 0);
-      mainGrid->addWidget(view,  1, 0);
-      updateList();
+    QToolBar* edit = new QToolBar(tr("Edit tools"), this);
+    edit->addAction(tempoAction);
+    edit->addAction(signAction);
+    edit->addAction(keyAction);
+    edit->addAction(posAction);
+    edit->addAction(valAction);
+    edit->addAction(delAction);
 
-      tempo_editor = new QLineEdit(view->viewport());
-      tempo_editor->setFrame(false);
-      tempo_editor->hide();
-      connect(tempo_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
-      sig_editor = new SigEdit(view->viewport());
-      sig_editor->setFrame(false);
-      sig_editor->hide();
-      connect(sig_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
-      pos_editor = new PosEdit(view->viewport());
-      pos_editor->setFrame(false);
-      pos_editor->hide();
-      connect(pos_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
-      key_editor = new QComboBox(view->viewport());
-      key_editor->setFrame(false);
-      key_editor->addItems(MusECore::KeyEvent::keyStrs);
-      key_editor->hide();
-      connect(key_editor, SIGNAL(activated(int)), SLOT(returnPressed()));
+    //---------------------------------------------------
+    //    master
+    //---------------------------------------------------
 
-      connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
-      connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
-      connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
-      connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
-      connect(this, SIGNAL(seekTo(int)), MusEGlobal::song, SLOT(seekTo(int)));
+    view = new QTreeWidget;
+    view->setAllColumnsShowFocus(true);
+    view->setSelectionMode(QAbstractItemView::SingleSelection);
+    QStringList columnnames;
+    columnnames << tr("Position")
+                << tr("Time")
+                << tr("Type")
+                << tr("Value");
+    view->setHeaderLabels(columnnames);
+    view->setColumnWidth(2,70);
+    view->setIndentation(2);
 
-      initShortcuts();
+    //---------------------------------------------------
+    //    Rest
+    //---------------------------------------------------
 
-      tempoAction->setToolTip(tr("Insert tempo change") + " (" + tempoAction->shortcut().toString() + ")");
-      signAction->setToolTip(tr("Insert time signature change")  + " (" + signAction->shortcut().toString() + ")");
-      keyAction->setToolTip(tr("Insert key change") + " (" + keyAction->shortcut().toString() + ")");
-      posAction->setToolTip(tr("Edit position") + " (" + posAction->shortcut().toString() + ")");
-      valAction->setToolTip(tr("Edit value") + " (" + valAction->shortcut().toString() + ")");
-      delAction->setToolTip(tr("Delete event") + " (" + delAction->shortcut().toString() + ")");
+    QGridLayout* mainGrid = new QGridLayout(this);
+    mainGrid->setRowStretch(0, 100);
+    mainGrid->setColumnStretch(0, 100);
 
-      qApp->installEventFilter(this);
-      }
+    mainGrid->addWidget(edit,  0, 0);
+    mainGrid->addWidget(view,  1, 0);
+    updateList();
+
+    tempo_editor = new QLineEdit(view->viewport());
+    tempo_editor->setFrame(false);
+    tempo_editor->hide();
+    connect(tempo_editor, SIGNAL(editingFinished()), SLOT(editingFinished()));
+
+    sig_editor = new SigEdit(view->viewport());
+    sig_editor->setFrame(false);
+    sig_editor->hide();
+    connect(sig_editor, SIGNAL(returnPressed()), SLOT(editingFinished()));
+    connect(sig_editor, SIGNAL(escapePressed()), SLOT(editingFinished()));
+
+    pos_editor = new PosEdit(view->viewport());
+    pos_editor->setFrame(false);
+    pos_editor->hide();
+    connect(pos_editor, SIGNAL(editingFinished()), SLOT(editingFinished()));
+
+    key_editor = new QComboBox(view->viewport());
+    key_editor->setFrame(false);
+    key_editor->addItems(MusECore::KeyEvent::keyStrs);
+    key_editor->hide();
+    connect(key_editor, SIGNAL(activated(int)), SLOT(editingFinished()));
+
+    connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
+    connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
+    connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
+    connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
+    connect(this, SIGNAL(seekTo(int)), MusEGlobal::song, SLOT(seekTo(int)));
+
+    initShortcuts();
+
+    tempoAction->setToolTip(tr("Insert tempo change") + " (" + tempoAction->shortcut().toString() + ")");
+    signAction->setToolTip(tr("Insert time signature change")  + " (" + signAction->shortcut().toString() + ")");
+    keyAction->setToolTip(tr("Insert key change") + " (" + keyAction->shortcut().toString() + ")");
+    posAction->setToolTip(tr("Edit position") + " (" + posAction->shortcut().toString() + ")");
+    valAction->setToolTip(tr("Edit value") + " (" + valAction->shortcut().toString() + ")");
+    delAction->setToolTip(tr("Delete event") + " (" + delAction->shortcut().toString() + ")");
+
+    qApp->installEventFilter(this);
+}
 
 //---------------------------------------------------------
 //   ~LMaster
 //---------------------------------------------------------
 
 LMaster::~LMaster()
-      {
-      }
+{
+}
 
 //---------------------------------------------------------
 //   focusCanvas
@@ -242,11 +246,11 @@ LMaster::~LMaster()
 
 void LMaster::focusCanvas()
 {
-  if(MusEGlobal::config.smartFocus)
-  {
-    view->setFocus();
-    view->activateWindow();
-  }
+    if(MusEGlobal::config.smartFocus)
+    {
+        view->setFocus();
+        view->activateWindow();
+    }
 }
 
 //---------------------------------------------------------
@@ -254,570 +258,515 @@ void LMaster::focusCanvas()
 //---------------------------------------------------------
 
 void LMaster::insertSig(const MusECore::SigEvent* ev)
-      {
-      new LMasterSigEventItem(view, ev);
-      }
+{
+    new LMasterSigEventItem(view, ev);
+}
 
 //---------------------------------------------------------
 //   insertTempo
 //---------------------------------------------------------
 
 void LMaster::insertTempo(const MusECore::TEvent* ev)
-      {
-      new LMasterTempoItem(view, ev);
-      }
+{
+    new LMasterTempoItem(view, ev);
+}
 
 void LMaster::insertKey(const MusECore::KeyEvent& ev)
-      {
-      new LMasterKeyEventItem(view, ev);
-      }
+{
+    new LMasterKeyEventItem(view, ev);
+}
 //---------------------------------------------------------
 //   updateList
 //---------------------------------------------------------
 
 void LMaster::updateList()
-      {
-      LMasterLViewItem* selected = (LMasterLViewItem*) view->currentItem();
-      LMASTER_LVTYPE type = LMASTER_TEMPO;
-      unsigned tick = 0;
+{
+    LMasterLViewItem* selected = (LMasterLViewItem*) view->currentItem();
+    LMASTER_LVTYPE type = LMASTER_TEMPO;
+    unsigned tick = 0;
 
-      if (selected) {
-            type = selected->getType();
-            tick = selected->tick();
-            }
-      
-      view->clear();
-      const MusECore::TempoList* t = &MusEGlobal::tempomap;
-      const MusECore::SigList* s   = &MusEGlobal::sigmap;
-      const MusECore::KeyList* k   = &MusEGlobal::keymap;
+    if (selected) {
+        type = selected->getType();
+        tick = selected->tick();
+    }
 
-      MusECore::criTEvent it   = t->rbegin();
-      MusECore::criSigEvent is = s->rbegin();
-      MusECore::criKeyEvent ik = k->rbegin();
+    view->clear();
+    const MusECore::TempoList* t = &MusEGlobal::tempomap;
+    const MusECore::SigList* s   = &MusEGlobal::sigmap;
+    const MusECore::KeyList* k   = &MusEGlobal::keymap;
 
-        // three lists that should be added to the view.
-         // question if it would not be easier to merge the lists and use a sorting algorithm?
-         // how often is this function called? A: only on songChanged (SC_TEMPO && SC_SIG)
+    MusECore::criTEvent it   = t->rbegin();
+    MusECore::criSigEvent is = s->rbegin();
+    MusECore::criKeyEvent ik = k->rbegin();
 
-      for (;;) {
+    // three lists that should be added to the view.
+    // question if it would not be easier to merge the lists and use a sorting algorithm?
+    // how often is this function called? A: only on songChanged (SC_TEMPO && SC_SIG)
+
+    for (;;) {
 
         // crazy long, must be possible to solve more elegantly...
 
         if (ik != k->rend() && is == s->rend() && it == t->rend()) {// ik biggest
-          insertKey(ik->second);
-          ++ik;
+            insertKey(ik->second);
+            ++ik;
         }
         else if (is != s->rend() && ik == k->rend() && it == t->rend()) {// is biggest
-          insertSig(is->second);
-          ++is;
+            insertSig(is->second);
+            ++is;
         }
         else if (it != t->rend() && ik == k->rend() && is == s->rend()) {// it biggest
-          insertTempo(it->second);
-          ++it;
+            insertTempo(it->second);
+            ++it;
         }
 
         else if ( ((ik != k->rend()) && (is == s->rend()) && (ik->second.tick >= it->second->tick))
-                || ((it == t->rend()) && (ik->second.tick >= is->second->tick ) )) {// ik biggest
-          insertKey(ik->second);
-          ++ik;
+                  || ((it == t->rend()) && (ik->second.tick >= is->second->tick ) )) {// ik biggest
+            insertKey(ik->second);
+            ++ik;
         }
         else if ( ((is != s->rend()) && (ik == k->rend()) && (is->second->tick >= it->second->tick))
-                || ((it == t->rend()) && (is->second->tick >= ik->second.tick ))) {// is biggest
-          insertSig(is->second);
-          ++is;
+                  || ((it == t->rend()) && (is->second->tick >= ik->second.tick ))) {// is biggest
+            insertSig(is->second);
+            ++is;
         }
 
         else if (((it != t->rend()) && (ik == k->rend()) && (it->second->tick >= is->second->tick))
-                || ((is == s->rend()) && (it->second->tick >= ik->second.tick ))) {// it biggest
-          insertTempo(it->second);
-          ++it;
+                 || ((is == s->rend()) && (it->second->tick >= ik->second.tick ))) {// it biggest
+            insertTempo(it->second);
+            ++it;
         }
 
         else if (ik != k->rend() && ik->second.tick >= is->second->tick && ik->second.tick >= it->second->tick) {// ik biggest
-          insertKey(ik->second);
-          ++ik;
+            insertKey(ik->second);
+            ++ik;
         }
         else if (is != s->rend() &&  is->second->tick >= it->second->tick && is->second->tick >= ik->second.tick) { // is biggest
-          insertSig(is->second);
-          ++is;
+            insertSig(is->second);
+            ++is;
         }
         else if (it != t->rend() && it->second->tick >= is->second->tick && it->second->tick >= ik->second.tick) { // it biggest
-          insertTempo(it->second);
-          ++it;
+            insertTempo(it->second);
+            ++it;
         }
         if (ik == k->rend() && is == s->rend() && it == t->rend() )
-          break;
-      }
-
-      // Try to reselect the previous selection:
-      if(selected)
-      {
-        LMasterLViewItem* tmp = getItemAtPos(tick, type);
-        if (tmp) {
-           view->clearSelection();
-           view->setCurrentItem(tmp);
-           }
-      }     
+            break;
     }
 
-////---------------------------------------------------------
-////   readStatus
-////---------------------------------------------------------
-
-//void LMaster::readStatus(MusECore::Xml& xml)
-//      {
-//      for (;;) {
-//            MusECore::Xml::Token token = xml.parse();
-//            const QString& tag = xml.s1();
-//            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
-//                  break;
-//            switch (token) {
-//                  case MusECore::Xml::TagStart:
-//                        if (tag == "midieditor")
-//                              MidiEditor::readStatus(xml);
-//                        else
-//                              xml.unknown("LMaster");
-//                        break;
-//                  case MusECore::Xml::TagEnd:
-//                        if (tag == "lmaster")
-//                              return;
-//                  default:
-//                        break;
-//                  }
-//            }
-//      }
-
-////---------------------------------------------------------
-////   writeStatus
-////---------------------------------------------------------
-
-//void LMaster::writeStatus(int level, MusECore::Xml& xml) const
-//      {
-//      xml.tag(level++, "lmaster");
-//      MidiEditor::writeStatus(level, xml);
-//      xml.tag(level, "/lmaster");
-//      }
-
-////---------------------------------------------------------
-////   readConfiguration
-////---------------------------------------------------------
-
-//void LMaster::readConfiguration(MusECore::Xml& xml)
-//      {
-//      for (;;) {
-//            MusECore::Xml::Token token = xml.parse();
-//            const QString& tag = xml.s1();
-//            switch (token) {
-//                  case MusECore::Xml::Error:
-//                  case MusECore::Xml::End:
-//                        return;
-//                  case MusECore::Xml::TagStart:
-//                        if (tag == "topwin")
-//                              TopWin::readConfiguration(LMASTER, xml);
-//                        else
-//                              xml.unknown("LMaster");
-//                        break;
-//                  case MusECore::Xml::TagEnd:
-//                        if (tag == "lmaster")
-//                              return;
-//                  default:
-//                        break;
-//                  }
-//            }
-//      }
-
-////---------------------------------------------------------
-////   writeConfiguration
-////---------------------------------------------------------
-
-//void LMaster::writeConfiguration(int level, MusECore::Xml& xml)
-//      {
-//      xml.tag(level++, "lmaster");
-//      TopWin::writeConfiguration(LMASTER, level, xml);
-//      xml.tag(level, "/lmaster");
-//      }
-
-//---------------------------------------------------------
-//   select
-//---------------------------------------------------------
-
-//DELETETHIS (whole function)? or is this todo?
-void LMaster::select(QTreeWidgetItem* /*item*/, QTreeWidgetItem* /*previous_item*/)
-      {
-      }
+    // Try to reselect the previous selection:
+    if(selected)
+    {
+        LMasterLViewItem* tmp = getItemAtPos(tick, type);
+        if (tmp) {
+            view->clearSelection();
+            view->setCurrentItem(tmp);
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   cmd
 //---------------------------------------------------------
 
 void LMaster::cmd(int cmd)
-      {
-      switch(cmd) {
-            case CMD_DELETE: {
-                  LMasterLViewItem* l = (LMasterLViewItem*) view->currentItem();
-                  if (!l)
-                     return;
-                  // Delete item:
-                  if (l->tick() != 0) {
-                        if (l == view->topLevelItem(view->topLevelItemCount() - 1))
-                              view->setCurrentItem(view->itemAbove(l));
-                        else
-                              view->setCurrentItem(view->itemBelow(l));
+{
+    switch(cmd) {
+    case CMD_DELETE: {
+        LMasterLViewItem* l = (LMasterLViewItem*) view->currentItem();
+        if (!l)
+            return;
+        // Delete item:
+        if (l->tick() != 0) {
+            if (l == view->topLevelItem(view->topLevelItemCount() - 1))
+                view->setCurrentItem(view->itemAbove(l));
+            else
+                view->setCurrentItem(view->itemBelow(l));
 
-                        switch (l->getType()) {
-                              case LMASTER_TEMPO:
-                                    {
-                                    LMasterTempoItem* t = (LMasterTempoItem*) l;
-                                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
-                                         t->tick(), t->tempo()));
-                                    break;
-                                    }
-                              case LMASTER_SIGEVENT:
-                                    {
-                                    LMasterSigEventItem* s = (LMasterSigEventItem*) l;
-                                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
-                                                    s->tick(), s->z(), s->n()));
-                                    break;
-                                    }
-                              case LMASTER_KEYEVENT:
-                                    {
-                                    LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
-                                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                              k->tick(), k->key(), (int)k->isMinor()));
-                                    break;
-                                    }
-                              default:
-                                    M_ERROR("Default switch statement reached");
-                                    break;
-                              }
-                        }
-                  break;
-                  }
-            case CMD_INSERT_TEMPO:
-                  tempoButtonClicked();
-                  break;
-            case CMD_INSERT_SIG:
-                  timeSigButtonClicked();
-                  break;
-            case CMD_INSERT_KEY:
-                  insertKey();
-                  break;
-            case CMD_EDIT_BEAT:
-            case CMD_EDIT_VALUE:
-                  cmd == CMD_EDIT_VALUE ? editorColumn = LMASTER_VAL_COL : editorColumn = LMASTER_BEAT_COL;
-                  if (view->currentItem() && !editedItem) {
-                        itemDoubleClicked(view->currentItem());
-                        }
-                  break;
+            switch (l->getType()) {
+            case LMASTER_TEMPO:
+            {
+                LMasterTempoItem* t = (LMasterTempoItem*) l;
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
+                                                                  t->tick(), t->tempo()));
+                break;
             }
-      }
+            case LMASTER_SIGEVENT:
+            {
+                LMasterSigEventItem* s = (LMasterSigEventItem*) l;
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
+                                                                  s->tick(), s->z(), s->n()));
+                break;
+            }
+            case LMASTER_KEYEVENT:
+            {
+                LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
+                                                                  k->tick(), k->key(), (int)k->isMinor()));
+                break;
+            }
+            default:
+                M_ERROR("Default switch statement reached");
+                break;
+            }
+        }
+        break;
+    }
+    case CMD_INSERT_TEMPO:
+        tempoButtonClicked();
+        break;
+    case CMD_INSERT_SIG:
+        timeSigButtonClicked();
+        break;
+    case CMD_INSERT_KEY:
+        insertKey();
+        break;
+    case CMD_EDIT_BEAT:
+    case CMD_EDIT_VALUE:
+        cmd == CMD_EDIT_VALUE ? editorColumn = LMASTER_VAL_COL : editorColumn = LMASTER_BEAT_COL;
+        if (view->currentItem() && !editedItem) {
+            itemDoubleClicked(view->currentItem());
+        }
+        break;
+    }
+}
 
 /*!
     \fn LMaster::itemPressed(QListViewItem* i, const QPoint& p, int column)
  */
 void LMaster::itemPressed(QTreeWidgetItem* i, int column)
-      {
-      if (editedItem) {
-            if (editorColumn != column || editedItem != i)
-            returnPressed();
-            }
-      else {
-            if (key_editor)
-              key_editor->hide();
-            setFocus();
-            editorColumn = column;
-          }
-      }
+{
+    if (editedItem) {
+        if (editorColumn != column || editedItem != i)
+            editingFinished();
+    }
+    else {
+        if (key_editor)
+            key_editor->hide();
+        setFocus();
+        editorColumn = column;
+    }
+}
 
 //---------------------------------------------------------
 //   itemDoubleClicked(QListViewItem* item)
 //!  Sets lmaster in edit mode, and opens editor for selected value
 //---------------------------------------------------------
 void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
-      {
-      emit seekTo(((LMasterLViewItem*) i)->tick());
+{
+    emit seekTo(((LMasterLViewItem*) i)->tick());
 
-      QFontMetrics fm(font());
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+    QFontMetrics fm(font());
+    // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
-      int fnt_w = fm.horizontalAdvance('0');
+    int fnt_w = fm.horizontalAdvance('0');
 #else
-      int fnt_w = fm.width('0');
+    int fnt_w = fm.width('0');
 #endif
-      if (!editedItem && editorColumn == LMASTER_VAL_COL) {
-            editedItem = (LMasterLViewItem*) i;
+    if (!editedItem && editorColumn == LMASTER_VAL_COL) {
+        editedItem = (LMasterLViewItem*) i;
+        QRect itemRect = view->visualItemRect(editedItem);
+        int x1 = view->columnWidth(LMASTER_BEAT_COL) + view->columnWidth(LMASTER_TIME_COL)
+                + view->columnWidth(LMASTER_TYPE_COL);
+        itemRect.setX(x1);
+        //Qt makes crazy things with itemRect if this is called directly..
+        if (editingNewItem) {
+            int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0 , this); // ddskrjo 0
+            int h  = fm.height() + fw * 2;
+            itemRect.setWidth(view->columnWidth(LMASTER_VAL_COL));
+            itemRect.setY(1);
+            itemRect.setHeight(h);
+        }
+
+
+        // Edit tempo value:
+        if (editedItem->getType() == LMASTER_TEMPO) {
+            tempo_editor->setText(editedItem->text(LMASTER_VAL_COL));
+            tempo_editor->setGeometry(itemRect);
+            tempo_editor->show();
+            tempo_editor->setFocus();
+            tempo_editor->selectAll();
+        }
+        else if (editedItem->getType() == LMASTER_SIGEVENT) { // Edit signatur value:
+            sig_editor->setValue(((LMasterSigEventItem*)editedItem)->getEvent()->sig);
+            int w = fnt_w * 14;
+            if(w > itemRect.width())
+                w = itemRect.width();
+            sig_editor->setGeometry(itemRect.x(), itemRect.y(), w, itemRect.height());
+            sig_editor->show();
+            sig_editor->setFocus();
+        }
+        else if (editedItem->getType() == LMASTER_KEYEVENT) {
+            key_editor->setGeometry(itemRect);
+            LMasterKeyEventItem* kei = static_cast<LMasterKeyEventItem*>(editedItem);
+            key_editor->setCurrentIndex(MusECore::KeyEvent::keyToIndex(kei->key(), kei->isMinor()));
+            key_editor->show();
+            key_editor->setFocus();
+            comboboxTimer->start();
+        }
+        else {
+            printf("illegal Master list type\n");
+        }
+    }
+    // Edit tempo or signal position:
+    else if (!editedItem && editorColumn == LMASTER_BEAT_COL) {
+        editedItem = (LMasterLViewItem*) i;
+        // Don't allow movement of initial values:
+        if  (editedItem->tick() == 0) {
+            QMessageBox::information(this, tr(LMASTER_MSGBOX_STRING),
+                                     tr("Reposition of the initial tempo and signature events is not allowed") );
+            editedItem = 0;
+        }
+        // Everything OK
+        else {
+            pos_editor->setValue(editedItem->tick());
             QRect itemRect = view->visualItemRect(editedItem);
-            int x1 = view->columnWidth(LMASTER_BEAT_COL) + view->columnWidth(LMASTER_TIME_COL)
-                  + view->columnWidth(LMASTER_TYPE_COL);
-            itemRect.setX(x1);
-            //Qt makes crazy things with itemRect if this is called directly..
-            if (editingNewItem) {
-                  int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0 , this); // ddskrjo 0
-                  int h  = fm.height() + fw * 2;
-                  itemRect.setWidth(view->columnWidth(LMASTER_VAL_COL));
-                  itemRect.setY(1);
-                  itemRect.setHeight(h);
-                  }
-
-
-            // Edit tempo value:
-            if (editedItem->getType() == LMASTER_TEMPO) {
-                  tempo_editor->setText(editedItem->text(LMASTER_VAL_COL));
-                  tempo_editor->setGeometry(itemRect);
-                  tempo_editor->show();
-                  tempo_editor->setFocus();
-                  tempo_editor->selectAll();
-                  }
-            else if (editedItem->getType() == LMASTER_SIGEVENT) { // Edit signatur value:
-                  sig_editor->setValue(((LMasterSigEventItem*)editedItem)->getEvent()->sig);
-                  int w = fnt_w * 14;
-                  if(w > itemRect.width())
-                    w = itemRect.width();
-                  sig_editor->setGeometry(itemRect.x(), itemRect.y(), w, itemRect.height());
-                  sig_editor->show();
-                  sig_editor->setFocus();
-                  }
-            else if (editedItem->getType() == LMASTER_KEYEVENT) {
-                  key_editor->setGeometry(itemRect);
-                  LMasterKeyEventItem* kei = static_cast<LMasterKeyEventItem*>(editedItem);
-                  key_editor->setCurrentIndex(MusECore::KeyEvent::keyToIndex(kei->key(), kei->isMinor()));
-                  key_editor->show();
-                  key_editor->setFocus();
-                  comboboxTimer->start();
-                  }
-            else {
-              printf("illegal Master list type\n");
-              }
-            }
-      // Edit tempo or signal position:
-      else if (!editedItem && editorColumn == LMASTER_BEAT_COL) {
-            editedItem = (LMasterLViewItem*) i;
-            // Don't allow movement of initial values:
-            if  (editedItem->tick() == 0) {
-                  QMessageBox::information(this, tr(LMASTER_MSGBOX_STRING),
-                        tr("Reposition of the initial tempo and signature events is not allowed") );
-                  editedItem = 0;
-                  }
-            // Everything OK
-            else {
-                  pos_editor->setValue(editedItem->tick());
-                  QRect itemRect = view->visualItemRect(editedItem);
-                  itemRect.setX(view->indentation());
-                  int w = view->columnWidth(LMASTER_BEAT_COL) - view->indentation();
-                  if(w < (fnt_w * 13))
-                    w = fnt_w * 13;
-                  itemRect.setWidth(w);
-                  pos_editor->setGeometry(itemRect);
-                  pos_editor->show();
-                  pos_editor->setFocus();
-                  }
-            }
-      }
+            itemRect.setX(view->indentation());
+            int w = view->columnWidth(LMASTER_BEAT_COL) - view->indentation();
+            if(w < (fnt_w * 13))
+                w = fnt_w * 13;
+            itemRect.setWidth(w);
+            pos_editor->setGeometry(itemRect);
+            pos_editor->show();
+            pos_editor->setFocus();
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   returnPressed()
 //!  called when editor is closed
 //---------------------------------------------------------
 
-void LMaster::returnPressed()
-      {
-      if (!editedItem)
+void LMaster::editingFinished()
+{
+    if (!editedItem)
+        return;
+
+    setFocus();
+
+    // Tempo event:
+    if (editedItem->getType() == LMASTER_TEMPO && editorColumn == LMASTER_VAL_COL) {
+        if (!tempo_editor->isHidden())
             return;
 
-      setFocus();
-      // Tempo event:
-      if (editedItem->getType() == LMASTER_TEMPO && editorColumn == LMASTER_VAL_COL) {
-            QString input = tempo_editor->text();
-            tempo_editor->hide();
-            repaint();
-            LMasterTempoItem* e = (LMasterTempoItem*) editedItem;
-            const MusECore::TEvent* t = e->getEvent();
-            unsigned tick = t->tick;
-            bool conversionOK;
-            double dbl_input = input.toDouble(&conversionOK);
-            if (conversionOK && dbl_input < 250.0) {
-                  int tempo = (int) ((1000000.0 * 60.0)/dbl_input);
+        LMasterTempoItem* e = dynamic_cast<LMasterTempoItem*>(editedItem);
+        if (!e)
+            return;
 
-                  if (!editingNewItem) {
-                        MusEGlobal::song->startUndo();
-                        // Operation is undoable but do not start/end undo.
-                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
-                                         tick, e->tempo()), MusECore::Song::OperationUndoable);
-                        // Operation is undoable but do not start/end undo.
-                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
-                                      tick, tempo), MusECore::Song::OperationUndoable);
-                        MusEGlobal::song->endUndo(SC_TEMPO);
-                        }
-                  //
-                  // New item edited:
-                  //
-                  else {
-                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo, tick, tempo));
-                        }
-                  }
+        const MusECore::TEvent* t = e->getEvent();
+        QString input = tempo_editor->text();
+        unsigned tick = t->tick;
+        bool conversionOK;
+        double dbl_input = input.toDouble(&conversionOK);
+
+        if (conversionOK && dbl_input < 250.0) {
+            int tempo = (int) ((1000000.0 * 60.0)/dbl_input);
+
+            if (!editingNewItem) {
+                MusEGlobal::song->startUndo();
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
+                                                                  tick, e->tempo()), MusECore::Song::OperationUndoable);
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
+                                                                  tick, tempo), MusECore::Song::OperationUndoable);
+                MusEGlobal::song->endUndo(SC_TEMPO);
+            }
+            //
+            // New item edited:
+            //
             else {
-                  QMessageBox::warning(this, tr("MusE: List Editor"),
-                     tr("Input error, conversion not OK or value out of range"),
-                     QMessageBox::Ok, Qt::NoButton
-                     );
-                  }
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo, tick, tempo));
             }
-      //
-      // Beat column, change position of a particular tempo or signature event
-      //
-      else if (editorColumn == LMASTER_BEAT_COL) {
-            int oldtick = editedItem->tick();
-            int newtick = pos_editor->pos().tick();
-            if (newtick == 0) { // Do not allow change of position to beginning of song
-                  QMessageBox::warning(this, tr(LMASTER_MSGBOX_STRING),
-                     tr("Reposition of tempo and signature events to start position is not allowed!"),
-                     QMessageBox::Ok, Qt::NoButton
-                     );
-                  }
-            else if (oldtick != newtick) {  // Ignore if tick hasn't changed
-                  if (editedItem->getType() == LMASTER_TEMPO) {
-                        LMasterTempoItem* t = (LMasterTempoItem*) editedItem;
-                        int tempo = t->tempo();
-                        MusEGlobal::song->startUndo();
-                        // Operation is undoable but do not start/end undo.
-                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
-                                              oldtick, tempo), MusECore::Song::OperationUndoable);
-                        // Operation is undoable but do not start/end undo.
-                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
-                                      newtick, tempo), MusECore::Song::OperationUndoable);
-                        MusEGlobal::song->endUndo(SC_TEMPO);
-                        // Select the item:
-                        QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_TEMPO);
-                        if (newSelected) {
-                              view->clearSelection();
-                              view->setCurrentItem(newSelected);
-                              }
-                        }
-                  else if (editedItem->getType() == LMASTER_SIGEVENT) {
-                        LMasterSigEventItem* t = (LMasterSigEventItem*) editedItem;
-                        int z = t->z();
-                        int n = t->n();
-                        if (!editingNewItem) {
-                              MusEGlobal::song->startUndo();
-                              //Delete first, in order to get sane tick-value
-                              // Operation is undoable but do not start/end undo.
-                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
-                                              oldtick, z, n), MusECore::Song::OperationUndoable);
-                              newtick = pos_editor->pos().tick();
-                              // Add will replace if found. 
-                              // Operation is undoable but do not start/end undo.
-                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
-                                              newtick, z, n), MusECore::Song::OperationUndoable);
-                              MusEGlobal::song->endUndo(SC_SIG);
-                              }
-                        else
-                              // Add will replace if found. 
-                              // Operation is undoable but do not start/end undo.
-                              MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
-                                              newtick, z, n), MusECore::Song::OperationUndoable);
+        }
+        else {
+            QMessageBox::warning(this, tr("MusE: List Editor"),
+                                 tr("Input error, conversion not OK or value out of range"),
+                                 QMessageBox::Ok, Qt::NoButton
+                                 );
+        }
 
-                        // Select the item:
-                        QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_SIGEVENT);
-                        if (newSelected) {
-                              view->clearSelection();
-                              view->setCurrentItem(newSelected);
-                              }
-                        }
-                  else if (editedItem->getType() == LMASTER_KEYEVENT) {
-                        LMasterKeyEventItem* k = (LMasterKeyEventItem*) editedItem;
-                        MusEGlobal::song->startUndo();
-                        // Operation is undoable but do not start/end undo.
-                        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                  oldtick, k->key(), (int)k->isMinor()),  MusECore::Song::OperationUndoable);
-                      // Operation is undoable but do not start/end undo.
-                      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
-                                  newtick, k->key(), (int)k->isMinor()), MusECore::Song::OperationUndoable);
-                        MusEGlobal::song->endUndo(SC_KEY);
+        tempo_editor->setModified(false);
+        tempo_editor->hide();
+        repaint();
+    }
+    //
+    // Beat column, change position of a particular tempo or signature event
+    //
+    else if (editorColumn == LMASTER_BEAT_COL) {
+        if (pos_editor->isHidden())
+            return;
 
-                        // Select the item:
-                        QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_KEYEVENT);
-                        if (newSelected) {
-                              view->clearSelection();
-                              view->setCurrentItem(newSelected);
-                              }
-                        }
-                  else {
-                    printf("unknown master list event type!\n");
-                  }
-
-                  }
-            pos_editor->hide();
-            repaint();
+        int oldtick = editedItem->tick();
+        int newtick = pos_editor->pos().tick();
+        if (newtick == 0) { // Do not allow change of position to beginning of song
+            QMessageBox::warning(this, tr(LMASTER_MSGBOX_STRING),
+                                 tr("Reposition of tempo and signature events to start position is not allowed!"),
+                                 QMessageBox::Ok, Qt::NoButton
+                                 );
+        }
+        else if (oldtick != newtick) {  // Ignore if tick hasn't changed
+            if (editedItem->getType() == LMASTER_TEMPO) {
+                LMasterTempoItem* t = dynamic_cast<LMasterTempoItem*>(editedItem);
+                if (!t)
+                    return;
+                int tempo = t->tempo();
+                MusEGlobal::song->startUndo();
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteTempo,
+                                                                  oldtick, tempo), MusECore::Song::OperationUndoable);
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddTempo,
+                                                                  newtick, tempo), MusECore::Song::OperationUndoable);
+                MusEGlobal::song->endUndo(SC_TEMPO);
+                // Select the item:
+                QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_TEMPO);
+                if (newSelected) {
+                    view->clearSelection();
+                    view->setCurrentItem(newSelected);
+                }
             }
-      //
-      // SigEvent, value changed:
-      //
-      else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL) 
-      {
-            MusECore::TimeSignature newSig = sig_editor->sig();
-            
-            sig_editor->hide();
-            
-            // Added p3.3.43 Prevents aborting with 0 z or n.
-            if(newSig.isValid())
-            {
-              LMasterSigEventItem* e = (LMasterSigEventItem*) editedItem;
-              int tick = e->tick();
-              if (!editingNewItem) {
+            else if (editedItem->getType() == LMASTER_SIGEVENT) {
+                LMasterSigEventItem* t = dynamic_cast<LMasterSigEventItem*>(editedItem);
+                if (!t)
+                    return;
+                int z = t->z();
+                int n = t->n();
+                if (!editingNewItem) {
                     MusEGlobal::song->startUndo();
+                    //Delete first, in order to get sane tick-value
                     // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
-                                    tick, e->z(), e->n()), MusECore::Song::OperationUndoable);
-                    // Add will replace if found. 
+                                                                      oldtick, z, n), MusECore::Song::OperationUndoable);
+                    newtick = pos_editor->pos().tick();
+                    // Add will replace if found.
                     // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
-                                    tick, newSig.z, newSig.n), MusECore::Song::OperationUndoable);
+                                                                      newtick, z, n), MusECore::Song::OperationUndoable);
                     MusEGlobal::song->endUndo(SC_SIG);
-                    }
-              else
-                    // Add will replace if found. 
+                }
+                else
+                    // Add will replace if found.
+                    // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
-                                    tick, newSig.z, newSig.n));
+                                                                      newtick, z, n), MusECore::Song::OperationUndoable);
+
+                // Select the item:
+                QTreeWidgetItem* newSelected = dynamic_cast<QTreeWidgetItem*>(getItemAtPos(newtick, LMASTER_SIGEVENT));
+                if (newSelected) {
+                    view->clearSelection();
+                    view->setCurrentItem(newSelected);
+                }
+            }
+            else if (editedItem->getType() == LMASTER_KEYEVENT) {
+                LMasterKeyEventItem* k = dynamic_cast<LMasterKeyEventItem*>(editedItem);
+                if (!k)
+                    return;
+                MusEGlobal::song->startUndo();
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
+                                                                  oldtick, k->key(), (int)k->isMinor()),  MusECore::Song::OperationUndoable);
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
+                                                                  newtick, k->key(), (int)k->isMinor()), MusECore::Song::OperationUndoable);
+                MusEGlobal::song->endUndo(SC_KEY);
+
+                // Select the item:
+                QTreeWidgetItem* newSelected = dynamic_cast<QTreeWidgetItem*>(getItemAtPos(newtick, LMASTER_KEYEVENT));
+                if (newSelected) {
+                    view->clearSelection();
+                    view->setCurrentItem(newSelected);
+                }
             }
             else {
-              printf("Signature is not valid!\n");
+                printf("unknown master list event type!\n");
             }
-      }
 
-      else if (editedItem->getType() == LMASTER_KEYEVENT && editorColumn == LMASTER_VAL_COL) {
-          QString input = key_editor->currentText();
-          key_editor->hide();
-          repaint();
-          LMasterKeyEventItem* e = (LMasterKeyEventItem*) editedItem;
-          const MusECore::KeyEvent& t = e->getEvent();
-          unsigned tick = t.tick;
-          const MusECore::KeyEvent key = MusECore::KeyEvent::stringToKey(input);
+        }
 
-          if (!editingNewItem) {
-                      MusEGlobal::song->startUndo();
-                      // Operation is undoable but do not start/end undo.
-                      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
-                                  tick, e->key(), (int)e->isMinor()),  MusECore::Song::OperationUndoable);
-                      // Operation is undoable but do not start/end undo.
-                      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
-                                  tick, key.key, (int)key.minor), MusECore::Song::OperationUndoable);
-                      MusEGlobal::song->endUndo(SC_KEY);
-                    }
-              //
-              // New item edited:
-              //
-              else {
-                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey, tick, key.key, (int)key.minor));
-                    }
-          }
-      updateList();
-      view->setFocus();
-      // No item edited now:
-      editedItem = 0;
-      editorColumn = -1;
-      editingNewItem = false;
-      
-      }
+        pos_editor->hide();
+        repaint();
+    }
+    //
+    // SigEvent, value changed:
+    //
+    else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL)
+    {
+        if (sig_editor->isHidden())
+            return;
+
+        MusECore::TimeSignature newSig = sig_editor->sig();
+
+        // Added p3.3.43 Prevents aborting with 0 z or n.
+        if(newSig.isValid())
+        {
+            LMasterSigEventItem* e = dynamic_cast<LMasterSigEventItem*>(editedItem);
+            if (!e)
+                return;
+            int tick = e->tick();
+            if (!editingNewItem) {
+                MusEGlobal::song->startUndo();
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
+                                                                  tick, e->z(), e->n()), MusECore::Song::OperationUndoable);
+                // Add will replace if found.
+                // Operation is undoable but do not start/end undo.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
+                                                                  tick, newSig.z, newSig.n), MusECore::Song::OperationUndoable);
+                MusEGlobal::song->endUndo(SC_SIG);
+            }
+            else
+                // Add will replace if found.
+                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
+                                                                  tick, newSig.z, newSig.n));
+        }
+        else {
+            printf("Signature is not valid!\n");
+        }
+
+        sig_editor->hide();
+        repaint();
+    }
+
+    else if (editedItem->getType() == LMASTER_KEYEVENT && editorColumn == LMASTER_VAL_COL) {
+        LMasterKeyEventItem* e = dynamic_cast<LMasterKeyEventItem*>(editedItem);
+        if (!e)
+            return;
+
+        const MusECore::KeyEvent& t = e->getEvent();
+
+        QString input = key_editor->currentText();
+        unsigned tick = t.tick;
+        const MusECore::KeyEvent key = MusECore::KeyEvent::stringToKey(input);
+
+        if (!editingNewItem) {
+            MusEGlobal::song->startUndo();
+            // Operation is undoable but do not start/end undo.
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteKey,
+                                                              tick, e->key(), (int)e->isMinor()),  MusECore::Song::OperationUndoable);
+            // Operation is undoable but do not start/end undo.
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey,
+                                                              tick, key.key, (int)key.minor), MusECore::Song::OperationUndoable);
+            MusEGlobal::song->endUndo(SC_KEY);
+        }
+        //
+        // New item edited:
+        //
+        else {
+            MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey, tick, key.key, (int)key.minor));
+        }
+
+        key_editor->hide();
+        repaint();
+    }
+
+    updateList();
+    view->setFocus();
+    // No item edited now:
+    editedItem = nullptr;
+    editorColumn = -1;
+    editingNewItem = false;
+}
 
 
 /*!
@@ -825,61 +774,61 @@ void LMaster::returnPressed()
     \brief Returns the initialized text to the View
  */
 QString LMasterLViewItem::text(int column) const
-      {
-      QString ret = "?";
-      switch (column) {
-            case LMASTER_BEAT_COL:
-                  ret = c1;
-                  break;
-            case LMASTER_TIME_COL:
-                  ret = c2;
-                  break;
-            case LMASTER_TYPE_COL:
-                  ret = c3;
-                  break;
-            case LMASTER_VAL_COL:
-                  ret = c4;
-                  break;
-            default:
-                  fprintf(stderr,"LMasterLViewItem::text(int): Default switch statement reached... Unknown column.\n");
-                  break;
-            }
-      return ret;
-      }
+{
+    QString ret = "?";
+    switch (column) {
+    case LMASTER_BEAT_COL:
+        ret = c1;
+        break;
+    case LMASTER_TIME_COL:
+        ret = c2;
+        break;
+    case LMASTER_TYPE_COL:
+        ret = c3;
+        break;
+    case LMASTER_VAL_COL:
+        ret = c4;
+        break;
+    default:
+        fprintf(stderr,"LMasterLViewItem::text(int): Default switch statement reached... Unknown column.\n");
+        break;
+    }
+    return ret;
+}
 
 //---------------------------------------------------------
 //   LMasterKeyEventItem
 //!  Initializes a LMasterKeyEventItem with a KeyEvent
 //---------------------------------------------------------
 LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const MusECore::KeyEvent& ev)
-      : LMasterLViewItem(parent)
-      {
-      keyEvent = ev;
-      unsigned t = ev.tick;
-      int bar, beat;
-      unsigned tick;
-      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
-      c1 = QString("%1.%2.%3")
-          .arg(bar + 1,      4, 10, QLatin1Char('0'))
-          .arg(beat + 1,     2, 10, QLatin1Char('0'))
-          .arg(tick,         3, 10, QLatin1Char('0'));
+    : LMasterLViewItem(parent)
+{
+    keyEvent = ev;
+    unsigned t = ev.tick;
+    int bar, beat;
+    unsigned tick;
+    MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
+    c1 = QString("%1.%2.%3")
+            .arg(bar + 1,      4, 10, QLatin1Char('0'))
+            .arg(beat + 1,     2, 10, QLatin1Char('0'))
+            .arg(tick,         3, 10, QLatin1Char('0'));
 
-      double time = double(MusEGlobal::tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
-      int min = int(time) / 60;
-      int sec = int(time) % 60;
-      int msec = int((time - (min*60 + sec)) * 1000.0);
-      c2 = QString("%1:%2:%3")
-          .arg(min,  3, 10, QLatin1Char('0'))
-          .arg(sec,  2, 10, QLatin1Char('0'))
-          .arg(msec, 3, 10, QLatin1Char('0'));
-      c3 = "Key";
-      c4 = ev.keyString();
-      setText(0, c1);
-      setText(1, c2);
-      setText(2, c3);
-      setText(3, c4);
+    double time = double(MusEGlobal::tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
+    int min = int(time) / 60;
+    int sec = int(time) % 60;
+    int msec = int((time - (min*60 + sec)) * 1000.0);
+    c2 = QString("%1:%2:%3")
+            .arg(min,  3, 10, QLatin1Char('0'))
+            .arg(sec,  2, 10, QLatin1Char('0'))
+            .arg(msec, 3, 10, QLatin1Char('0'));
+    c3 = "Key";
+    c4 = ev.keyString();
+    setText(0, c1);
+    setText(1, c2);
+    setText(2, c3);
+    setText(3, c4);
 
-      }
+}
 
 
 LMASTER_LVTYPE LMasterKeyEventItem::getType() const { return LMASTER_KEYEVENT; }
@@ -893,34 +842,34 @@ bool LMasterKeyEventItem::isMinor() const { return keyEvent.minor; }
 //!  Initializes a LMasterTempoItem with a TEvent
 //---------------------------------------------------------
 LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const MusECore::TEvent* ev)
-      : LMasterLViewItem(parent)
-      {
-      tempoEvent = ev;
-      unsigned t = ev->tick;
-      int bar, beat;
-      unsigned tick;
-      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
-      c1 = QString("%1.%2.%3")
-          .arg(bar + 1,      4, 10, QLatin1Char('0'))
-          .arg(beat + 1,     2, 10, QLatin1Char('0'))
-          .arg(tick,         3, 10, QLatin1Char('0'));
+    : LMasterLViewItem(parent)
+{
+    tempoEvent = ev;
+    unsigned t = ev->tick;
+    int bar, beat;
+    unsigned tick;
+    MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
+    c1 = QString("%1.%2.%3")
+            .arg(bar + 1,      4, 10, QLatin1Char('0'))
+            .arg(beat + 1,     2, 10, QLatin1Char('0'))
+            .arg(tick,         3, 10, QLatin1Char('0'));
 
-      double time = double(MusEGlobal::tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
-      int min = int(time) / 60;
-      int sec = int(time) % 60;
-      int msec = int((time - (min*60 + sec)) * 1000.0);
-      c2 = QString("%1:%2:%3")
-          .arg(min,  3, 10, QLatin1Char('0'))
-          .arg(sec,  2, 10, QLatin1Char('0'))
-          .arg(msec, 3, 10, QLatin1Char('0'));
-      c3 = "Tempo";
-      double dt = (1000000.0 * 60.0)/ev->tempo;
-      c4.setNum(dt, 'f', 3);
-      setText(0, c1);
-      setText(1, c2);
-      setText(2, c3);
-      setText(3, c4);
-      }
+    double time = double(MusEGlobal::tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
+    int min = int(time) / 60;
+    int sec = int(time) % 60;
+    int msec = int((time - (min*60 + sec)) * 1000.0);
+    c2 = QString("%1:%2:%3")
+            .arg(min,  3, 10, QLatin1Char('0'))
+            .arg(sec,  2, 10, QLatin1Char('0'))
+            .arg(msec, 3, 10, QLatin1Char('0'));
+    c3 = "Tempo";
+    double dt = (1000000.0 * 60.0)/ev->tempo;
+    c4.setNum(dt, 'f', 3);
+    setText(0, c1);
+    setText(1, c2);
+    setText(2, c3);
+    setText(3, c4);
+}
 
 LMASTER_LVTYPE LMasterTempoItem::getType() const { return LMASTER_TEMPO; }
 const MusECore::TEvent* LMasterTempoItem::getEvent() const { return tempoEvent; }
@@ -932,33 +881,33 @@ int LMasterTempoItem::tempo() const { return tempoEvent->tempo; }
 //!  Initializes a ListView item with a SigEvent
 //---------------------------------------------------------
 LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const MusECore::SigEvent* ev)
-      : LMasterLViewItem(parent)
-      {
-      sigEvent = ev;
-      unsigned t = ev->tick;
-      int bar, beat;
-      unsigned tick;
-      MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
-      c1 = QString("%1.%2.%3")
-          .arg(bar + 1,      4, 10, QLatin1Char('0'))
-          .arg(beat + 1,     2, 10, QLatin1Char('0'))
-          .arg(tick,         3, 10, QLatin1Char('0'));
+    : LMasterLViewItem(parent)
+{
+    sigEvent = ev;
+    unsigned t = ev->tick;
+    int bar, beat;
+    unsigned tick;
+    MusEGlobal::sigmap.tickValues(t, &bar, &beat, &tick);
+    c1 = QString("%1.%2.%3")
+            .arg(bar + 1,      4, 10, QLatin1Char('0'))
+            .arg(beat + 1,     2, 10, QLatin1Char('0'))
+            .arg(tick,         3, 10, QLatin1Char('0'));
 
-      double time = double(MusEGlobal::tempomap.tick2frame(t)) / double (MusEGlobal::sampleRate);
-      int min = int(time) / 60;
-      int sec = int(time) % 60;
-      int msec = int((time - (min*60 + sec)) * 1000.0);
-      c2 = QString("%1:%2:%3")
-          .arg(min,  3, 10, QLatin1Char('0'))
-          .arg(sec,  2, 10, QLatin1Char('0'))
-          .arg(msec, 3, 10, QLatin1Char('0'));
-      c3 = "Timesig";
-      c4 = QString("%1  /  %2").arg(ev->sig.z).arg(ev->sig.n);
-      setText(0, c1);
-      setText(1, c2);
-      setText(2, c3);
-      setText(3, c4);
-      }
+    double time = double(MusEGlobal::tempomap.tick2frame(t)) / double (MusEGlobal::sampleRate);
+    int min = int(time) / 60;
+    int sec = int(time) % 60;
+    int msec = int((time - (min*60 + sec)) * 1000.0);
+    c2 = QString("%1:%2:%3")
+            .arg(min,  3, 10, QLatin1Char('0'))
+            .arg(sec,  2, 10, QLatin1Char('0'))
+            .arg(msec, 3, 10, QLatin1Char('0'));
+    c3 = "Timesig";
+    c4 = QString("%1  /  %2").arg(ev->sig.z).arg(ev->sig.n);
+    setText(0, c1);
+    setText(1, c2);
+    setText(2, c3);
+    setText(3, c4);
+}
 
 LMASTER_LVTYPE LMasterSigEventItem::getType() const { return LMASTER_SIGEVENT; }
 const MusECore::SigEvent* LMasterSigEventItem::getEvent() const { return sigEvent; }
@@ -971,25 +920,25 @@ int LMasterSigEventItem::n() const { return sigEvent->sig.n; }
 //!  inserts a new tempo-item in the list and starts the editor for it
 //---------------------------------------------------------
 void LMaster::tempoButtonClicked()
-      {
-      LMasterTempoItem* lastTempo = (LMasterTempoItem*) getLastOfType(LMASTER_TEMPO);
-//      QString beatString = ((LMasterLViewItem*)lastTempo)->text(LMASTER_BEAT_COL); DELETETHIS?
-//      int m, b, t;
-//      Pos p = Pos(beatString);
-//      p.mbt(&m, &b, &t);
-//      m++; //Next bar
-//      int newTick = MusEGlobal::sigmap.bar2tick(m, b, t);
-      int newTick = MusEGlobal::song->cpos();
-      MusECore::TEvent* ev = new MusECore::TEvent(lastTempo->tempo(), newTick);
-      new LMasterTempoItem(view, ev);
-      QTreeWidgetItem* newTempoItem = view->topLevelItem(0);
+{
+    LMasterTempoItem* lastTempo = (LMasterTempoItem*) getLastOfType(LMASTER_TEMPO);
+    //      QString beatString = ((LMasterLViewItem*)lastTempo)->text(LMASTER_BEAT_COL); DELETETHIS?
+    //      int m, b, t;
+    //      Pos p = Pos(beatString);
+    //      p.mbt(&m, &b, &t);
+    //      m++; //Next bar
+    //      int newTick = MusEGlobal::sigmap.bar2tick(m, b, t);
+    int newTick = MusEGlobal::song->cpos();
+    MusECore::TEvent* ev = new MusECore::TEvent(lastTempo->tempo(), newTick);
+    new LMasterTempoItem(view, ev);
+    QTreeWidgetItem* newTempoItem = view->topLevelItem(0);
 
-      editingNewItem = true; // State
-      editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
-      view->clearSelection();
-      view->setCurrentItem(newTempoItem);
-      itemDoubleClicked(newTempoItem);
-      }
+    editingNewItem = true; // State
+    editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
+    view->clearSelection();
+    view->setCurrentItem(newTempoItem);
+    itemDoubleClicked(newTempoItem);
+}
 
 
 //---------------------------------------------------------
@@ -997,103 +946,103 @@ void LMaster::tempoButtonClicked()
 //!  inserts a new sig-item in the list and starts the editor for it
 //---------------------------------------------------------
 void LMaster::timeSigButtonClicked()
-      {
-      LMasterSigEventItem* lastSig = (LMasterSigEventItem*) getLastOfType(LMASTER_SIGEVENT);
-//      QString beatString = ((LMasterLViewItem*)lastSig)->text(LMASTER_BEAT_COL); DELETETHIS
-//      int m, b, t;
-//      Pos p = Pos(beatString);
-//      p.mbt(&m, &b, &t);
-//      m++;
-//      int newTick = MusEGlobal::sigmap.bar2tick(m, b, t);
-      int newTick = MusEGlobal::song->cpos();
-      MusECore::SigEvent* ev = new MusECore::SigEvent(MusECore::TimeSignature(lastSig->z(), lastSig->n()), newTick);
-      new LMasterSigEventItem(view, ev);
-      QTreeWidgetItem* newSigItem = view->topLevelItem(0);
+{
+    LMasterSigEventItem* lastSig = (LMasterSigEventItem*) getLastOfType(LMASTER_SIGEVENT);
+    //      QString beatString = ((LMasterLViewItem*)lastSig)->text(LMASTER_BEAT_COL); DELETETHIS
+    //      int m, b, t;
+    //      Pos p = Pos(beatString);
+    //      p.mbt(&m, &b, &t);
+    //      m++;
+    //      int newTick = MusEGlobal::sigmap.bar2tick(m, b, t);
+    int newTick = MusEGlobal::song->cpos();
+    MusECore::SigEvent* ev = new MusECore::SigEvent(MusECore::TimeSignature(lastSig->z(), lastSig->n()), newTick);
+    new LMasterSigEventItem(view, ev);
+    QTreeWidgetItem* newSigItem = view->topLevelItem(0);
 
-      editingNewItem = true; // State
-      editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
-      view->clearSelection();
-      view->setCurrentItem(newSigItem);
-      itemDoubleClicked(newSigItem);
-      }
+    editingNewItem = true; // State
+    editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
+    view->clearSelection();
+    view->setCurrentItem(newSigItem);
+    itemDoubleClicked(newSigItem);
+}
 
 //---------------------------------------------------------
 //   insertKey()
 //!  inserts a new key in the list and starts the editor for it
 //---------------------------------------------------------
 void LMaster::insertKey()
-      {
-      LMasterKeyEventItem* lastKey = (LMasterKeyEventItem*) getLastOfType(LMASTER_KEYEVENT);
+{
+    LMasterKeyEventItem* lastKey = (LMasterKeyEventItem*) getLastOfType(LMASTER_KEYEVENT);
 
-      //QString beatString = ((LMasterLViewItem*)lastKey)->text(LMASTER_BEAT_COL); DELETETHIS
-      //int m, b, t;
-      //Pos p = Pos(beatString);
-      //p.mbt(&m, &b, &t);
-      //m++; //Next bar
+    //QString beatString = ((LMasterLViewItem*)lastKey)->text(LMASTER_BEAT_COL); DELETETHIS
+    //int m, b, t;
+    //Pos p = Pos(beatString);
+    //p.mbt(&m, &b, &t);
+    //m++; //Next bar
 
-      int newTick = MusEGlobal::song->cpos();
-      new LMasterKeyEventItem(view, MusECore::KeyEvent(
-        lastKey ? lastKey->key() : MusECore::KEY_C, newTick, lastKey ? lastKey->isMinor() : false));
-      QTreeWidgetItem* newKeyItem = view->topLevelItem(0);
+    int newTick = MusEGlobal::song->cpos();
+    new LMasterKeyEventItem(view, MusECore::KeyEvent(
+                                lastKey ? lastKey->key() : MusECore::KEY_C, newTick, lastKey ? lastKey->isMinor() : false));
+    QTreeWidgetItem* newKeyItem = view->topLevelItem(0);
 
-      editingNewItem = true; // State
-      editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
-      view->clearSelection();
-      view->setCurrentItem(newKeyItem);
-      itemDoubleClicked(newKeyItem);
-      }
+    editingNewItem = true; // State
+    editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
+    view->clearSelection();
+    view->setCurrentItem(newKeyItem);
+    itemDoubleClicked(newKeyItem);
+}
 
 
 /*!
     \fn LMaster::getLastOfType(LMASTER_LVTYPE t)
  */
 LMasterLViewItem* LMaster::getLastOfType(LMASTER_LVTYPE t)
-      {
-      LMasterLViewItem* tmp = (LMasterLViewItem*) view->topLevelItem(view->topLevelItemCount() - 1);
-      while (tmp->getType() != t) {
-            tmp = (LMasterLViewItem*) view->itemAbove(tmp);
-            }
-      return tmp;
-      }
+{
+    LMasterLViewItem* tmp = (LMasterLViewItem*) view->topLevelItem(view->topLevelItemCount() - 1);
+    while (tmp->getType() != t) {
+        tmp = (LMasterLViewItem*) view->itemAbove(tmp);
+    }
+    return tmp;
+}
 
 
 /*!
     \fn LMaster::getItemAtPos(unsigned tick, LMASTER_LVTYPE t)
  */
 LMasterLViewItem* LMaster::getItemAtPos(unsigned tick, LMASTER_LVTYPE t)
-      {
-      LMasterLViewItem* tmp = (LMasterLViewItem*) view->topLevelItem(0);
-      while (tmp) {
-            if (tmp->getType() == t && tmp->tick() == tick)
-                  return tmp;
-            tmp = (LMasterLViewItem*) view->itemBelow(tmp);
-            }
+{
+    LMasterLViewItem* tmp = (LMasterLViewItem*) view->topLevelItem(0);
+    while (tmp) {
+        if (tmp->getType() == t && tmp->tick() == tick)
+            return tmp;
+        tmp = (LMasterLViewItem*) view->itemBelow(tmp);
+    }
 
-      return 0;
-      }
+    return 0;
+}
 
 
 /*!
     \fn LMaster::configChanged()
  */
 void LMaster::configChanged()
-      {
-      initShortcuts();
-      }
+{
+    initShortcuts();
+}
 
 
 /*!
     \fn LMaster::initShortcuts()
  */
 void LMaster::initShortcuts()
-      {
-      tempoAction->setShortcut(shortcuts[SHRT_LM_INS_TEMPO].key);
-      signAction->setShortcut(shortcuts[SHRT_LM_INS_SIG].key);
-      keyAction->setShortcut(shortcuts[SHRT_LM_INS_KEY].key);
-      posAction->setShortcut(shortcuts[SHRT_LM_EDIT_BEAT].key);
-      valAction->setShortcut(shortcuts[SHRT_LM_EDIT_VALUE].key);
-      delAction->setShortcut(shortcuts[SHRT_DELETE].key);
-      }
+{
+    tempoAction->setShortcut(shortcuts[SHRT_LM_INS_TEMPO].key);
+    signAction->setShortcut(shortcuts[SHRT_LM_INS_SIG].key);
+    keyAction->setShortcut(shortcuts[SHRT_LM_INS_KEY].key);
+    posAction->setShortcut(shortcuts[SHRT_LM_EDIT_BEAT].key);
+    valAction->setShortcut(shortcuts[SHRT_LM_EDIT_VALUE].key);
+    delAction->setShortcut(shortcuts[SHRT_DELETE].key);
+}
 
 void LMaster::comboboxTimerSlot()
 {
