@@ -93,12 +93,12 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
 //---------------------------------------------------------
 void VisibleTracks::updateVisibleTracksButtons()
 {
-    actions[0]->setChecked(MusECore::WaveTrack::visible());
-    actions[1]->setChecked(MusECore::AudioGroup::visible());
-    actions[2]->setChecked(MusECore::AudioAux::visible());
-    actions[3]->setChecked(MusECore::AudioInput::visible());
-    actions[4]->setChecked(MusECore::AudioOutput::visible());
-    actions[5]->setChecked(MusECore::MidiTrack::visible());
+    actions[0]->setChecked(MusECore::MidiTrack::visible());
+    actions[1]->setChecked(MusECore::WaveTrack::visible());
+    actions[2]->setChecked(MusECore::AudioOutput::visible());
+    actions[3]->setChecked(MusECore::AudioGroup::visible());
+    actions[4]->setChecked(MusECore::AudioInput::visible());
+    actions[5]->setChecked(MusECore::AudioAux::visible());
     actions[6]->setChecked(MusECore::SynthI::visible());
 }
 //---------------------------------------------------------
@@ -110,22 +110,22 @@ void VisibleTracks::visibilityChanged(QAction* action)
 //      printf("update visibility\n");
       switch (((Action*)action)->id()) {
           case 0:
-            MusECore::WaveTrack::setVisible(action->isChecked());
+            MusECore::MidiTrack::setVisible(action->isChecked());
             break;
           case 1:
-            MusECore::AudioGroup::setVisible(action->isChecked());
+            MusECore::WaveTrack::setVisible(action->isChecked());
             break;
           case 2:
-            MusECore::AudioAux::setVisible(action->isChecked());
-            break;
-          case 3:
-            MusECore::AudioInput::setVisible(action->isChecked());
-            break;
-          case 4:
             MusECore::AudioOutput::setVisible(action->isChecked());
             break;
+          case 3:
+            MusECore::AudioGroup::setVisible(action->isChecked());
+            break;
+          case 4:
+            MusECore::AudioInput::setVisible(action->isChecked());
+            break;
           case 5:
-            MusECore::MidiTrack::setVisible(action->isChecked());
+            MusECore::AudioAux::setVisible(action->isChecked());
             break;
           case 6:
             MusECore::SynthI::setVisible(action->isChecked());
