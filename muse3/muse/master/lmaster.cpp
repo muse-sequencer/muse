@@ -100,11 +100,11 @@ LMaster::LMaster(QWidget* parent)
     setObjectName("MasterTrackList");
     _isDeleting = false;
 
-    pos_editor = 0;
-    tempo_editor = 0;
-    sig_editor = 0;
-    key_editor = 0;
-    editedItem = 0;
+    pos_editor = nullptr;
+    tempo_editor = nullptr;
+    sig_editor = nullptr;
+    key_editor = nullptr;
+    editedItem = nullptr;
     editingNewItem = false;
 
     setMinimumHeight(100);
@@ -200,8 +200,9 @@ LMaster::LMaster(QWidget* parent)
     sig_editor = new SigEdit(view->viewport());
     sig_editor->setFrame(false);
     sig_editor->hide();
-    connect(sig_editor, SIGNAL(returnPressed()), SLOT(editingFinished()));
-    connect(sig_editor, SIGNAL(escapePressed()), SLOT(editingFinished()));
+//    connect(sig_editor, SIGNAL(returnPressed()), SLOT(editingFinished()));
+//    connect(sig_editor, SIGNAL(escapePressed()), SLOT(editingFinished()));
+    connect(sig_editor, SIGNAL(editingFinished()), SLOT(editingFinished()));
 
     pos_editor = new PosEdit(view->viewport());
     pos_editor->setFrame(false);
@@ -370,13 +371,27 @@ void LMaster::updateList()
 
 void LMaster::cmd(int cmd)
 {
+    editedItem = nullptr;
+    tempo_editor->hide();
+    pos_editor->hide();
+    key_editor->hide();
+    sig_editor->hide();
+
     switch(cmd) {
     case CMD_DELETE: {
-        LMasterLViewItem* l = (LMasterLViewItem*) view->currentItem();
+        LMasterLViewItem* l = dynamic_cast<LMasterLViewItem*>(view->currentItem());
         if (!l)
             return;
+
         // Delete item:
         if (l->tick() != 0) {
+//            if (l == editedItem) {
+//                editedItem = nullptr;
+//                tempo_editor->hide();
+//                pos_editor->hide();
+//                key_editor->hide();
+//            }
+
             if (l == view->topLevelItem(view->topLevelItemCount() - 1))
                 view->setCurrentItem(view->itemAbove(l));
             else
@@ -514,7 +529,7 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
         if  (editedItem->tick() == 0) {
             QMessageBox::information(this, tr(LMASTER_MSGBOX_STRING),
                                      tr("Reposition of the initial tempo and signature events is not allowed") );
-            editedItem = 0;
+            editedItem = nullptr;
         }
         // Everything OK
         else {
@@ -542,12 +557,15 @@ void LMaster::editingFinished()
     if (!editedItem)
         return;
 
-    setFocus();
+//    setFocus();
 
     // Tempo event:
     if (editedItem->getType() == LMASTER_TEMPO && editorColumn == LMASTER_VAL_COL) {
-        if (!tempo_editor->isHidden())
+        if (tempo_editor->isHidden())
             return;
+
+        tempo_editor->hide();
+        repaint();
 
         LMasterTempoItem* e = dynamic_cast<LMasterTempoItem*>(editedItem);
         if (!e)
@@ -585,10 +603,6 @@ void LMaster::editingFinished()
                                  QMessageBox::Ok, Qt::NoButton
                                  );
         }
-
-        tempo_editor->setModified(false);
-        tempo_editor->hide();
-        repaint();
     }
     //
     // Beat column, change position of a particular tempo or signature event
@@ -596,6 +610,9 @@ void LMaster::editingFinished()
     else if (editorColumn == LMASTER_BEAT_COL) {
         if (pos_editor->isHidden())
             return;
+
+        pos_editor->hide();
+        repaint();
 
         int oldtick = editedItem->tick();
         int newtick = pos_editor->pos().tick();
@@ -683,9 +700,6 @@ void LMaster::editingFinished()
             }
 
         }
-
-        pos_editor->hide();
-        repaint();
     }
     //
     // SigEvent, value changed:
@@ -694,6 +708,9 @@ void LMaster::editingFinished()
     {
         if (sig_editor->isHidden())
             return;
+
+        sig_editor->hide();
+        repaint();
 
         MusECore::TimeSignature newSig = sig_editor->sig();
 
@@ -723,12 +740,15 @@ void LMaster::editingFinished()
         else {
             printf("Signature is not valid!\n");
         }
-
-        sig_editor->hide();
-        repaint();
     }
 
     else if (editedItem->getType() == LMASTER_KEYEVENT && editorColumn == LMASTER_VAL_COL) {
+        if (key_editor->isHidden())
+            return;
+
+        key_editor->hide();
+        repaint();
+
         LMasterKeyEventItem* e = dynamic_cast<LMasterKeyEventItem*>(editedItem);
         if (!e)
             return;
@@ -755,9 +775,6 @@ void LMaster::editingFinished()
         else {
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddKey, tick, key.key, (int)key.minor));
         }
-
-        key_editor->hide();
-        repaint();
     }
 
     updateList();
@@ -1018,7 +1035,7 @@ LMasterLViewItem* LMaster::getItemAtPos(unsigned tick, LMASTER_LVTYPE t)
         tmp = (LMasterLViewItem*) view->itemBelow(tmp);
     }
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -1055,6 +1072,19 @@ QSize LMaster::sizeHint() const {
 
 bool LMaster::eventFilter(QObject*, QEvent *e)
 {
+//    if (obj == sig_editor && e->type() == QEvent::WindowDeactivate) {
+//        editingFinished();
+//        return true;
+//    }
+
+//    if (e->type() == QEvent::KeyPress) {
+//        QKeyEvent* ke = static_cast<QKeyEvent*>(e);
+//        if (ke->key() == Qt::Key_Enter) {
+//            editingFinished();
+//            return true;
+//        }
+//    }
+
     if (!view->hasFocus())
         return false;
 

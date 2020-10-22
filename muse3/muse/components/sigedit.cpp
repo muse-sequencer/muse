@@ -61,6 +61,8 @@ SigEdit::SigEdit(QWidget* parent)
       connect(zSpin, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
       connect(nSpin, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
       connect(zSpin, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
+      connect(nSpin, SIGNAL(editingFinished()), SIGNAL(editingFinished()));
+      connect(zSpin, SIGNAL(editingFinished()), SIGNAL(editingFinished()));
 
       connect(zSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
       connect(nSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
