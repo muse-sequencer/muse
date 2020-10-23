@@ -1724,7 +1724,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo->setObjectName("SoloButton");
-      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for more."));
+      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for help."));
       solo->setFocusPolicy(Qt::NoFocus);
       solo->setContentsMargins(0, 0, 0, 0);
       solo->setToolTip(tr("Solo or proxy solo"));
@@ -1751,7 +1751,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
             iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
                                 routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
             iR->setObjectName("InputRouteButton");
-            iR->setStatusTip(tr("Input routing. Press F1 for more."));
+            iR->setStatusTip(tr("Input routing. Press F1 for help."));
             iR->setContentsMargins(0, 0, 0, 0);
             iR->setFocusPolicy(Qt::NoFocus);
             iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1763,7 +1763,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
                           routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
       oR->setObjectName("OutputRouteButton");
-      oR->setStatusTip(tr("Output routing. Press F1 for more."));
+      oR->setStatusTip(tr("Output routing. Press F1 for help."));
       oR->setContentsMargins(0, 0, 0, 0);
       oR->setFocusPolicy(Qt::NoFocus);
       oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

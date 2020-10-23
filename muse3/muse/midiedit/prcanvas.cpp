@@ -116,7 +116,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       supportsResizeToTheLeft = true;
       supportsMultipleResize = true;
-      setStatusTip(tr("Pianoroll canvas: Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit. Press F1 for more."));
+      setStatusTip(tr("Pianoroll canvas: Use Pencil tool to draw and edit MIDI events, Pointer tool to select and edit. Press F1 for help."));
 
       steprec=new MusECore::StepRec(noteHeldDown);
 

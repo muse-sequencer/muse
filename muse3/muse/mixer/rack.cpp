@@ -183,7 +183,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       {
       setObjectName("Rack");
       viewport()->setObjectName("EffectRack"); // needed for context help
-      setStatusTip(tr("Effect rack: Double-click a slot to insert/edit effect. RMB to open context menu. Press F1 for more."));
+      setStatusTip(tr("Effect rack: Double-click a slot to insert/edit effect. RMB to open context menu. Press F1 for help."));
 
       setAttribute(Qt::WA_DeleteOnClose);
 

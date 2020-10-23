@@ -554,14 +554,14 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::panicAction->setObjectName("PanicButton");
       
 //      MusEGlobal::panicAction->setWhatsThis(tr("Send note off to all midi channels")); // wrong?
-      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels. Press F1 for more."));
+      MusEGlobal::panicAction->setStatusTip(tr("Panic button: Send 'all sounds off' and 'reset all controls' to all midi channels. Press F1 for help."));
       connect(MusEGlobal::panicAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(panic()));
 
       MusEGlobal::metronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome"), this);
       MusEGlobal::metronomeAction->setObjectName("MetronomeButton");
       MusEGlobal::metronomeAction->setCheckable(true);
       MusEGlobal::metronomeAction->setWhatsThis(tr("Turn on/off metronome"));
-      MusEGlobal::metronomeAction->setStatusTip(tr("Metronome on/off. Press F1 for more."));
+      MusEGlobal::metronomeAction->setStatusTip(tr("Metronome on/off. Press F1 for help."));
       MusEGlobal::metronomeAction->setChecked(MusEGlobal::song->click());
       connect(MusEGlobal::metronomeAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
       connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), MusEGlobal::metronomeAction, SLOT(setChecked(bool)));
