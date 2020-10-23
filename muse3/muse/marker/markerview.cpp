@@ -203,7 +203,7 @@ MarkerView::MarkerView(QWidget* parent)
     columnnames << tr("Bar:Beat:Tick")
                 << tr("Hr:Mn:Sc:Fr:Sf")
                 << tr("Lock")
-                << tr("Text");
+                << tr("Description");
 
     table->setHeaderLabels(columnnames);
     table->setColumnWidth(2, 40);
@@ -235,6 +235,7 @@ MarkerView::MarkerView(QWidget* parent)
     editName = new QLineEdit;
     editName->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred));
     editName->setToolTip(tr("Edit marker description"));
+    editName->setPlaceholderText(tr("<Description>"));
 
     hbox->addWidget(editTick);
     hbox->addWidget(editSMPTE);

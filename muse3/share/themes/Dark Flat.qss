@@ -91,7 +91,7 @@ QWidget#MarkerView QLineEdit {
 */
 
 QWidget#MarkerView QLineEdit:enabled {
-    background: black;
+    background: rgb(60,60,60);
 }
 
 QToolBar QToolButton {
