@@ -60,6 +60,8 @@ class SigEdit : public QWidget
       void setN(const int n);
       void setZ(const int z);
       void moveFocus();
+      void checkEditingFinishedZSpin();
+      void checkEditingFinishedNSpin();
 
    public slots:
       void setValue(const MusECore::TimeSignature&);

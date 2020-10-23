@@ -10,44 +10,44 @@
 
 class MyLineEdit : public QLineEdit
 {
-  public:
+public:
     MyLineEdit(QWidget* parent = 0) : QLineEdit(parent) {};
     
-  protected:
+protected:
     virtual void mousePressEvent (QMouseEvent* e)
     {
-      QLineEdit::mousePressEvent(e);
-      selectAll();
+        QLineEdit::mousePressEvent(e);
+        selectAll();
     }
 };
 
 SigSpinBox::SigSpinBox(QWidget *parent) :
     QSpinBox(parent)
 {
-  setKeyboardTracking(false);
-  _denominator=false;
-  setLineEdit(new MyLineEdit(this));
+    setKeyboardTracking(false);
+    _denominator=false;
+    setLineEdit(new MyLineEdit(this));
 }
 
 void SigSpinBox::keyPressEvent(QKeyEvent* ev)
 {
     switch (ev->key()) {
-      case Qt::Key_Return:
+    case Qt::Key_Return:
         QSpinBox::keyPressEvent(ev);
         emit returnPressed();
         return;
         break;
-      case Qt::Key_Escape:
+    case Qt::Key_Escape:
         emit escapePressed();
         return;
         break;
-      case Qt::Key_Left:
-      case Qt::Key_Right:
-      case Qt::Key_Slash:
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+    case Qt::Key_Slash:
         emit moveFocus();
         return;
         break;
-      default:
+    default:
         break;
     }
     QSpinBox::keyPressEvent(ev);
@@ -55,31 +55,31 @@ void SigSpinBox::keyPressEvent(QKeyEvent* ev)
 
 void SigSpinBox::setDenominator()
 {
-  _denominator=true;
+    _denominator=true;
 }
 
 void SigSpinBox::stepBy(int step)
 {
-  if (!_denominator) {
-    setValue(value() + step);
-    return;
-  }
-
-  MusECore::TimeSignature sig(4, value());
-  if (step == 1) {
-    // make sure that sig is valid then increase
-    if (sig.isValid())
-      setValue(value() * 2);
-  }
-  else if (step == -1) {
-    // make sure that sig is valid then increase
-    if (sig.isValid()) {
-      int v = value() / 2;
-      if (v < 2)
-        v = 2;
-      setValue(v);
+    if (!_denominator) {
+        setValue(value() + step);
+        return;
     }
-  }
+
+    MusECore::TimeSignature sig(4, value());
+    if (step == 1) {
+        // make sure that sig is valid then increase
+        if (sig.isValid())
+            setValue(value() * 2);
+    }
+    else if (step == -1) {
+        // make sure that sig is valid then increase
+        if (sig.isValid()) {
+            int v = value() / 2;
+            if (v < 2)
+                v = 2;
+            setValue(v);
+        }
+    }
 }
 
 //---------------------------------------------------------
@@ -87,9 +87,9 @@ void SigSpinBox::stepBy(int step)
 //---------------------------------------------------------
 
 QSize SigSpinBox::sizeHint() const
-      {
-      if(const QStyle* st = style())
-      {
+{
+    if(const QStyle* st = style())
+    {
         st = st->proxy();
         
         QStyleOptionSpinBox option;
@@ -101,14 +101,14 @@ QSize SigSpinBox::sizeHint() const
         QFontMetrics fm(font());
         const int fw = st->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
         int h  = fm.height() + fw * 2;
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+        // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
         int w  = fw * 2 + b_rect.width() + fm.horizontalAdvance(QString("00"));
 #else
         int w  = fw * 2 + b_rect.width() + fm.width(QString("00"));
 #endif
-        return QSize(w, h).expandedTo(QApplication::globalStrut());
-      }
-      return QSize(20, 20).expandedTo(QApplication::globalStrut());      
-      }
-      
+        return QSize(w, h);
+    }
+    return QSize(20, 20);
+}
+

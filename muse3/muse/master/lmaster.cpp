@@ -200,8 +200,6 @@ LMaster::LMaster(QWidget* parent)
     sig_editor = new SigEdit(view->viewport());
     sig_editor->setFrame(false);
     sig_editor->hide();
-//    connect(sig_editor, SIGNAL(returnPressed()), SLOT(editingFinished()));
-//    connect(sig_editor, SIGNAL(escapePressed()), SLOT(editingFinished()));
     connect(sig_editor, SIGNAL(editingFinished()), SLOT(editingFinished()));
 
     pos_editor = new PosEdit(view->viewport());
@@ -215,7 +213,7 @@ LMaster::LMaster(QWidget* parent)
     key_editor->hide();
     connect(key_editor, SIGNAL(activated(int)), SLOT(editingFinished()));
 
-    connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
+//    connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
     connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
     connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
     connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
@@ -385,12 +383,6 @@ void LMaster::cmd(int cmd)
 
         // Delete item:
         if (l->tick() != 0) {
-//            if (l == editedItem) {
-//                editedItem = nullptr;
-//                tempo_editor->hide();
-//                pos_editor->hide();
-//                key_editor->hide();
-//            }
 
             if (l == view->topLevelItem(view->topLevelItemCount() - 1))
                 view->setCurrentItem(view->itemAbove(l));
@@ -649,20 +641,20 @@ void LMaster::editingFinished()
                     return;
                 int z = t->z();
                 int n = t->n();
+                newtick = MusEGlobal::sigmap.raster1(newtick, 0);
                 if (!editingNewItem) {
                     MusEGlobal::song->startUndo();
                     //Delete first, in order to get sane tick-value
                     // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteSig,
                                                                       oldtick, z, n), MusECore::Song::OperationUndoable);
-                    newtick = pos_editor->pos().tick();
                     // Add will replace if found.
                     // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
                                                                       newtick, z, n), MusECore::Song::OperationUndoable);
                     MusEGlobal::song->endUndo(SC_SIG);
                 }
-                else
+                else //{
                     // Add will replace if found.
                     // Operation is undoable but do not start/end undo.
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddSig,
@@ -674,6 +666,7 @@ void LMaster::editingFinished()
                     view->clearSelection();
                     view->setCurrentItem(newSelected);
                 }
+//                }
             }
             else if (editedItem->getType() == LMASTER_KEYEVENT) {
                 LMasterKeyEventItem* k = dynamic_cast<LMasterKeyEventItem*>(editedItem);
@@ -972,6 +965,7 @@ void LMaster::timeSigButtonClicked()
     //      m++;
     //      int newTick = MusEGlobal::sigmap.bar2tick(m, b, t);
     int newTick = MusEGlobal::song->cpos();
+    newTick = MusEGlobal::sigmap.raster1(newTick, 0);
     MusECore::SigEvent* ev = new MusECore::SigEvent(MusECore::TimeSignature(lastSig->z(), lastSig->n()), newTick);
     new LMasterSigEventItem(view, ev);
     QTreeWidgetItem* newSigItem = view->topLevelItem(0);
@@ -1070,20 +1064,15 @@ QSize LMaster::sizeHint() const {
     return QSize(380, 400);
 }
 
-bool LMaster::eventFilter(QObject*, QEvent *e)
+bool LMaster::eventFilter(QObject* obj, QEvent *e)
 {
-//    if (obj == sig_editor && e->type() == QEvent::WindowDeactivate) {
-//        editingFinished();
-//        return true;
-//    }
-
-//    if (e->type() == QEvent::KeyPress) {
-//        QKeyEvent* ke = static_cast<QKeyEvent*>(e);
-//        if (ke->key() == Qt::Key_Enter) {
-//            editingFinished();
-//            return true;
-//        }
-//    }
+    if (obj == view && e->type() == QEvent::KeyPress) {
+        QKeyEvent* ke = static_cast<QKeyEvent*>(e);
+        if (ke->key() == Qt::Key_Return) {
+            editingFinished();
+            return true;
+        }
+    }
 
     if (!view->hasFocus())
         return false;
