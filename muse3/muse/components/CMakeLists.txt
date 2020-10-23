@@ -106,6 +106,7 @@ QT5_WRAP_CPP (components_mocs
       pitchlabel.h  
 #       pixmap_button.h
       plugindialog.h
+      pluginsettings.h
 #       popup_double_spinbox.h
       popupmenu.h  
       posedit.h  
@@ -180,6 +181,7 @@ file (GLOB components_ui_files
       pastedialogbase.ui
       pasteeventsdialogbase.ui
       plugindialogbase.ui
+      pluginsettings.ui
       projectcreate.ui
       routedialogbase.ui
       #rubberband_settings_base.ui
@@ -262,6 +264,7 @@ file (GLOB components_source_files
       pitchlabel.cpp 
 #       pixmap_button.cpp
       plugindialog.cpp
+      pluginsettings.cpp
 #       popup_double_spinbox.cpp
       popupmenu.cpp 
       posedit.cpp 

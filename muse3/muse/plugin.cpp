@@ -54,6 +54,7 @@
 #include "utils.h"
 #include "pluglist.h"
 #include "gui.h"
+#include "pluginsettings.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -3566,21 +3567,21 @@ namespace MusEGui {
 // Resource System in Qt documentation - ORCAN
 //const char* presetOpenText = "<img source=\"fileopen\"> "
 //      "Click this button to load a saved <em>preset</em>.";
-const char* presetOpenText = "Click this button to load a saved <em>preset</em>.";
-const char* presetSaveText = "Click this button to save curent parameter "
+static const char* presetOpenText = "Click this button to load a saved <em>preset</em>.";
+static const char* presetSaveText = "Click this button to save curent parameter "
       "settings as a <em>preset</em>.  You will be prompted for a file name.";
-const char* presetBypassText = "Click this button to bypass effect unit";
+static const char* presetBypassText = "Click this button to bypass effect unit";
 
 //---------------------------------------------------------
 //   PluginGui
 //---------------------------------------------------------
 
 PluginGui::PluginGui(MusECore::PluginIBase* p)
-   : QMainWindow(0)
+   : QMainWindow(nullptr)
       {
-      gw     = 0;
-      params = 0;
-      paramsOut = 0;
+      gw     = nullptr;
+      params = nullptr;
+      paramsOut = nullptr;
       plugin = p;
       updateWindowTitle();
       
@@ -3601,6 +3602,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       whatsthis->setIcon(*whatsthisSVGIcon);
       tools->addAction(whatsthis);
 
+      tools->addSeparator();
+
       //onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
       onOff = new QAction(*muteSVGIcon, tr("Bypass plugin"), this);
       onOff->setCheckable(true);
@@ -3610,51 +3613,55 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       connect(onOff, &QAction::toggled, [this](bool v) { bypassToggled(v); } );
       tools->addAction(onOff);
 
-      tools->addSeparator();
-      tools->addWidget(new QLabel(tr("Quirks:")));
+      QAction* settings = new QAction(*settingsSVGIcon, tr("Plugin settings"), this);
+      connect(settings, &QAction::triggered, this, &PluginGui::showSettings);
+      tools->addAction(settings);
 
-      fixedSpeedAct= new QAction(QIcon(*fixedSpeedSVGIcon), tr("Fixed speed"), this);
-      fixedSpeedAct->setCheckable(true);
-      fixedSpeedAct->setChecked(plugin->cquirks()._fixedSpeed);
-      fixedSpeedAct->setEnabled(plugin->usesTransportSource());
-      fixedSpeedAct->setToolTip(tr("Fixed speed"));
-      connect(fixedSpeedAct, &QAction::toggled, [this](bool v) { fixedSpeedToggled(v); } );
-      tools->addAction(fixedSpeedAct);
+//      tools->addSeparator();
+//      tools->addWidget(new QLabel(tr("Quirks:")));
 
-      transpGovLatencyAct = new QAction(QIcon(*transportAffectsLatencySVGIcon), tr("Transport affects audio latency"), this);
-      transpGovLatencyAct->setCheckable(true);
-      transpGovLatencyAct->setChecked(plugin->cquirks()._transportAffectsAudioLatency);
-      transpGovLatencyAct->setEnabled(plugin->usesTransportSource());
-      transpGovLatencyAct->setToolTip(tr("Transport affects audio latency"));
-      connect(transpGovLatencyAct, &QAction::toggled, [this](bool v) { transportGovernsLatencyToggled(v); } );
-      tools->addAction(transpGovLatencyAct);
+//      fixedSpeedAct= new QAction(QIcon(*fixedSpeedSVGIcon), tr("Fixed speed"), this);
+//      fixedSpeedAct->setCheckable(true);
+//      fixedSpeedAct->setChecked(plugin->cquirks()._fixedSpeed);
+//      fixedSpeedAct->setEnabled(plugin->usesTransportSource());
+//      fixedSpeedAct->setToolTip(tr("Fixed speed"));
+//      connect(fixedSpeedAct, &QAction::toggled, [this](bool v) { fixedSpeedToggled(v); } );
+//      tools->addAction(fixedSpeedAct);
 
-      overrideLatencyAct= new QAction(QIcon(*overrideLatencySVGIcon), tr("Override reported audio latency"), this);
-      overrideLatencyAct->setCheckable(true);
-      overrideLatencyAct->setChecked(plugin->cquirks()._overrideReportedLatency);
-      overrideLatencyAct->setToolTip(tr("Override reported audio latency"));
-      connect(overrideLatencyAct, &QAction::toggled, [this](bool v) { overrideReportedLatencyToggled(v); } );
-      tools->addAction(overrideLatencyAct);
+//      transpGovLatencyAct = new QAction(QIcon(*transportAffectsLatencySVGIcon), tr("Transport affects audio latency"), this);
+//      transpGovLatencyAct->setCheckable(true);
+//      transpGovLatencyAct->setChecked(plugin->cquirks()._transportAffectsAudioLatency);
+//      transpGovLatencyAct->setEnabled(plugin->usesTransportSource());
+//      transpGovLatencyAct->setToolTip(tr("Transport affects audio latency"));
+//      connect(transpGovLatencyAct, &QAction::toggled, [this](bool v) { transportGovernsLatencyToggled(v); } );
+//      tools->addAction(transpGovLatencyAct);
 
-      latencyOverrideEntry = new QSpinBox();
-      latencyOverrideEntry->setRange(0, 8191);
-      latencyOverrideEntry->setValue(plugin->cquirks()._latencyOverrideValue);
-      latencyOverrideEntry->setEnabled(plugin->cquirks()._overrideReportedLatency);
-      latencyOverrideEntry->setToolTip(tr("Reported audio latency override value"));
-      // Special: Need qt helper overload for these lambdas.
-      connect(latencyOverrideEntry,
-        QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
-      tools->addWidget(latencyOverrideEntry);
+//      overrideLatencyAct= new QAction(QIcon(*overrideLatencySVGIcon), tr("Override reported audio latency"), this);
+//      overrideLatencyAct->setCheckable(true);
+//      overrideLatencyAct->setChecked(plugin->cquirks()._overrideReportedLatency);
+//      overrideLatencyAct->setToolTip(tr("Override reported audio latency"));
+//      connect(overrideLatencyAct, &QAction::toggled, [this](bool v) { overrideReportedLatencyToggled(v); } );
+//      tools->addAction(overrideLatencyAct);
 
-      fixScalingTooltip[0] = tr("Revert native UI HiDPI scaling: Follow global setting");
-      fixScalingTooltip[1] = tr("Revert native UI HiDPI scaling: On");
-      fixScalingTooltip[2] = tr("Revert native UI HiDPI scaling: Off");
-      fixNativeUIScalingTB = new QToolButton(this);
-      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[plugin->cquirks()._fixNativeUIScaling]);
-      fixNativeUIScalingTB->setProperty("state", plugin->cquirks()._fixNativeUIScaling);
-      fixNativeUIScalingTB->setToolTip(fixScalingTooltip[plugin->cquirks()._fixNativeUIScaling]);
-      connect(fixNativeUIScalingTB, &QToolButton::clicked, [this]() { fixNativeUIScalingTBClicked(); } );
-      tools->addWidget(fixNativeUIScalingTB);
+//      latencyOverrideEntry = new QSpinBox();
+//      latencyOverrideEntry->setRange(0, 8191);
+//      latencyOverrideEntry->setValue(plugin->cquirks()._latencyOverrideValue);
+//      latencyOverrideEntry->setEnabled(plugin->cquirks()._overrideReportedLatency);
+//      latencyOverrideEntry->setToolTip(tr("Reported audio latency override value"));
+//      // Special: Need qt helper overload for these lambdas.
+//      connect(latencyOverrideEntry,
+//        QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
+//      tools->addWidget(latencyOverrideEntry);
+
+//      fixScalingTooltip[0] = tr("Revert native UI HiDPI scaling: Follow global setting");
+//      fixScalingTooltip[1] = tr("Revert native UI HiDPI scaling: On");
+//      fixScalingTooltip[2] = tr("Revert native UI HiDPI scaling: Off");
+//      fixNativeUIScalingTB = new QToolButton(this);
+//      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[plugin->cquirks()._fixNativeUIScaling]);
+//      fixNativeUIScalingTB->setProperty("state", plugin->cquirks()._fixNativeUIScaling);
+//      fixNativeUIScalingTB->setToolTip(fixScalingTooltip[plugin->cquirks()._fixNativeUIScaling]);
+//      connect(fixNativeUIScalingTB, &QToolButton::clicked, [this]() { fixNativeUIScalingTBClicked(); } );
+//      tools->addWidget(fixNativeUIScalingTB);
 
       // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
       // Resource System in Qt documentation - ORCAN
@@ -4395,7 +4402,7 @@ void PluginGui::save()
             return;
       bool popenFlag;
       FILE* f = fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
-      if (f == 0)
+      if (f == nullptr)
             return;
       MusECore::Xml xml(f);
       xml.header();
@@ -4420,44 +4427,51 @@ void PluginGui::bypassToggled(bool val)
       MusEGlobal::song->update(SC_ROUTE);
       }
 
-void PluginGui::transportGovernsLatencyToggled(bool v)
+void PluginGui::showSettings()
 {
-  // TODO Make a safe audio-synced operation?
-  plugin->quirks()._transportAffectsAudioLatency = v;
-  MusEGlobal::song->update(SC_ROUTE);
+    PluginSettings *settingsDialog = new PluginSettings(plugin, MusEGlobal::config.noPluginScaling);
+    settingsDialog->setWindowTitle(tr("Plugin Settings"));
+    settingsDialog->show();
 }
 
-void PluginGui::fixedSpeedToggled(bool v)
-{
-  // TODO Make a safe audio-synced operation?
-  plugin->quirks()._fixedSpeed = v;
-  MusEGlobal::song->update(SC_ROUTE);
-}
+//void PluginGui::transportGovernsLatencyToggled(bool v)
+//{
+//  // TODO Make a safe audio-synced operation?
+//  plugin->quirks()._transportAffectsAudioLatency = v;
+//  MusEGlobal::song->update(SC_ROUTE);
+//}
 
-void PluginGui::overrideReportedLatencyToggled(bool v)
-{
-  // TODO Make a safe audio-synced operation?
-  plugin->quirks()._overrideReportedLatency = v;
-  latencyOverrideEntry->setEnabled(v);
-  MusEGlobal::song->update(SC_ROUTE);
-}
+//void PluginGui::fixedSpeedToggled(bool v)
+//{
+//  // TODO Make a safe audio-synced operation?
+//  plugin->quirks()._fixedSpeed = v;
+//  MusEGlobal::song->update(SC_ROUTE);
+//}
 
-void PluginGui::latencyOverrideValueChanged(int v)
-{
-  // TODO Make a safe audio-synced operation?
-  plugin->quirks()._latencyOverrideValue = v;
-  MusEGlobal::song->update(SC_ROUTE);
-}
+//void PluginGui::overrideReportedLatencyToggled(bool v)
+//{
+//  // TODO Make a safe audio-synced operation?
+//  plugin->quirks()._overrideReportedLatency = v;
+//  latencyOverrideEntry->setEnabled(v);
+//  MusEGlobal::song->update(SC_ROUTE);
+//}
 
-void PluginGui::fixNativeUIScalingTBClicked()
-{
-    int state = fixNativeUIScalingTB->property("state").toInt();
-    state = (state == 2) ? 0 : state + 1;
-    fixNativeUIScalingTB->setToolTip(fixScalingTooltip[state]);
-    fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
-    fixNativeUIScalingTB->setProperty("state", state);
-    plugin->quirks()._fixNativeUIScaling = (MusECore::PluginQuirks::NatUISCaling)state;
-}
+//void PluginGui::latencyOverrideValueChanged(int v)
+//{
+//  // TODO Make a safe audio-synced operation?
+//  plugin->quirks()._latencyOverrideValue = v;
+//  MusEGlobal::song->update(SC_ROUTE);
+//}
+
+//void PluginGui::fixNativeUIScalingTBClicked()
+//{
+//    int state = fixNativeUIScalingTB->property("state").toInt();
+//    state = (state == 2) ? 0 : state + 1;
+//    fixNativeUIScalingTB->setToolTip(fixScalingTooltip[state]);
+//    fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
+//    fixNativeUIScalingTB->setProperty("state", state);
+//    plugin->quirks()._fixNativeUIScaling = (MusECore::PluginQuirks::NatUISCaling)state;
+//}
 
 //---------------------------------------------------------
 //   setOn
