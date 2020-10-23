@@ -155,7 +155,7 @@ WaveCanvas::WaveCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       {
       setObjectName("WaveCanvas");
 
-      setStatusTip(tr("Wave canvas: Use Pencil tool to edit wave events, Pointer tool to select and edit. Press F1 for more."));
+      setStatusTip(tr("Wave canvas: Use Pencil tool to edit wave events, Pointer tool to select and edit. Press F1 for help."));
 
       colorMode = 0;
       button = 0;

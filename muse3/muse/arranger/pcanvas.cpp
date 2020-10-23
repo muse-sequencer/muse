@@ -137,7 +137,7 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       editMode   = false;
 
       supportsResizeToTheLeft = true;
-      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB). Press F1 for more."));
+      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB). Press F1 for help."));
 
       tracks = MusEGlobal::song->tracks();
       setMouseTracking(true);

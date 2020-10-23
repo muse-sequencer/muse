@@ -1751,7 +1751,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo->setObjectName("SoloButton");
-      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for more."));
+      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for help."));
       solo->setFocusPolicy(Qt::NoFocus);
       solo->setToolTip(tr("Solo or proxy solo"));
       solo->setContentsMargins(0, 0, 0, 0);
@@ -1777,7 +1777,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
                           routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
       iR->setObjectName("InputRouteButton");
-      iR->setStatusTip(tr("Intput routing. Press F1 for more."));
+      iR->setStatusTip(tr("Intput routing. Press F1 for help."));
       iR->setContentsMargins(0, 0, 0, 0);
       iR->setFocusPolicy(Qt::NoFocus);
       iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -1788,7 +1788,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
                           routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
       oR->setObjectName("OutputRouteButton");
-      oR->setStatusTip(tr("Output routing. Press F1 for more."));
+      oR->setStatusTip(tr("Output routing. Press F1 for help."));
       oR->setContentsMargins(0, 0, 0, 0);
       oR->setFocusPolicy(Qt::NoFocus);
       oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

@@ -62,6 +62,9 @@ SigEdit::SigEdit(QWidget* parent)
       connect(nSpin, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
       connect(zSpin, SIGNAL(escapePressed()), SIGNAL(escapePressed()));
 
+      connect(nSpin, SIGNAL(editingFinished()), SLOT(checkEditingFinishedNSpin()));
+      connect(zSpin, SIGNAL(editingFinished()), SLOT(checkEditingFinishedZSpin()));
+
       connect(zSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
       connect(nSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
       zSpin->selectAll();
@@ -148,10 +151,22 @@ void SigEdit::paintEvent(QPaintEvent* event) {
             p.fillRect(event->rect(), p.background());
             QWidget::paintEvent(event);
             }
+
 void SigEdit::setFocus()
 {
   zSpin->setFocus();
 }
+
+void SigEdit::checkEditingFinishedZSpin() {
+    if (!nSpin->hasFocus())
+        emit editingFinished();
+}
+
+void SigEdit::checkEditingFinishedNSpin() {
+    if (!nSpin->hasFocus())
+        emit editingFinished();
+}
+
 
 }
 

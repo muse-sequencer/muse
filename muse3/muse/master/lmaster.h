@@ -167,9 +167,8 @@ class LMaster : public QWidget {
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 
    private slots:
-      void select(QTreeWidgetItem*, QTreeWidgetItem*);
       void itemDoubleClicked(QTreeWidgetItem* item);
-      void returnPressed();
+      void editingFinished();
       void itemPressed(QTreeWidgetItem* i, int column);
       void tempoButtonClicked();
       void timeSigButtonClicked();
@@ -189,10 +188,7 @@ class LMaster : public QWidget {
    public:
       LMaster(QWidget* parent = 0);
       ~LMaster();
-//      virtual void readStatus(MusECore::Xml&);
-//      virtual void writeStatus(int, MusECore::Xml&) const;
-//      static void readConfiguration(MusECore::Xml&);
-//      static void writeConfiguration(int, MusECore::Xml&);
+
       LMasterLViewItem* getLastOfType(LMASTER_LVTYPE t);
       };
 
