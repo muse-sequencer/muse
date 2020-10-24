@@ -729,16 +729,16 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, const QString& uri,
 
 
   #ifdef DSSI_SUPPORT
-  dssi_descr = NULL;
+  dssi_descr = nullptr;
   #endif
 
   if(f)
     fi = *f;
   _uri = uri;
 
-  plugin = NULL;
-  ladspa = NULL;
-  _handle = 0;
+  plugin = nullptr;
+  ladspa = nullptr;
+  _handle = nullptr;
   _references = 0;
   _instNo     = 0;
   _label = QString(d->Label);
@@ -824,16 +824,16 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
   }
   
   #ifdef DSSI_SUPPORT
-  dssi_descr = NULL;
+  dssi_descr = nullptr;
   #endif
 
 //   fi = info._fi;
   fi = QFileInfo(PLUGIN_GET_QSTRING(info.filePath()));
   _uri = PLUGIN_GET_QSTRING(info._uri);
 
-  plugin = NULL;
-  ladspa = NULL;
-  _handle = 0;
+  plugin = nullptr;
+  ladspa = nullptr;
+  _handle = nullptr;
   _references = 0;
   _instNo     = 0;
   
@@ -889,12 +889,12 @@ int Plugin::incReferences(int val)
     }
 
     _handle = 0;
-    ladspa = NULL;
-    plugin = NULL;
+    ladspa = nullptr;
+    plugin = nullptr;
     rpIdx.clear();
 
     #ifdef DSSI_SUPPORT
-    dssi_descr = NULL;
+    dssi_descr = nullptr;
     #endif
 
     return 0;
@@ -919,14 +919,14 @@ int Plugin::incReferences(int val)
       for(unsigned long i = 0;; ++i)
       {
         descr = dssi(i);
-        if(descr == NULL)
+        if(descr == nullptr)
           break;
 
         QString label(descr->LADSPA_Plugin->Label);
         if(label == _label)
         {
           _isDssi = true;
-          ladspa = NULL;
+          ladspa = nullptr;
           dssi_descr = descr;
           plugin = descr->LADSPA_Plugin;
           break;
@@ -943,7 +943,7 @@ int Plugin::incReferences(int val)
         for(unsigned long i = 0;; ++i)
         {
           descr = ladspadf(i);
-          if(descr == NULL)
+          if(descr == nullptr)
             break;
 
           QString label(descr->Label);
@@ -954,7 +954,7 @@ int Plugin::incReferences(int val)
             plugin = descr;
 
             #ifdef DSSI_SUPPORT
-            dssi_descr = NULL;
+            dssi_descr = nullptr;
             #endif
 
             break;
@@ -963,7 +963,7 @@ int Plugin::incReferences(int val)
       }
     }
 
-    if(plugin != NULL)
+    if(plugin != nullptr)
     {
       _name = QString(plugin->Name);
       _uniqueID = plugin->UniqueID;
@@ -1012,7 +1012,7 @@ int Plugin::incReferences(int val)
     }
   }
 
-  if(plugin == NULL)
+  if(plugin == nullptr)
   {
     dlclose(_handle);
     _handle = 0;
@@ -1209,11 +1209,11 @@ Pipeline::Pipeline()
    : std::vector<PluginI*>()
       {
       for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
-        buffer[i] = NULL;
+        buffer[i] = nullptr;
       initBuffers();
 
       for (int i = 0; i < MusECore::PipelineDepth; ++i)
-            push_back(0);
+            push_back(nullptr);
       }
 
 //---------------------------------------------------------
@@ -1224,7 +1224,7 @@ Pipeline::Pipeline(const Pipeline& p, AudioTrack* t)
    : std::vector<PluginI*>()
       {
       for(int i = 0; i < MusECore::MAX_CHANNELS; ++i)
-        buffer[i] = NULL;
+        buffer[i] = nullptr;
       initBuffers();
 
       for(int i = 0; i < MusECore::PipelineDepth; ++i)
@@ -1250,7 +1250,7 @@ Pipeline::Pipeline(const Pipeline& p, AudioTrack* t)
             }
           }
         }
-        push_back(NULL); // No plugin. Initialize with NULL.
+        push_back(nullptr); // No plugin. Initialize with NULL.
       }
       }
 
@@ -2126,7 +2126,7 @@ PluginI::PluginI()
 PluginI::~PluginI()
       {
       #ifdef OSC_SUPPORT
-      _oscif.oscSetPluginI(NULL);
+      _oscif.oscSetPluginI(nullptr);
       #endif
 
       if (_plugin) {
@@ -2207,14 +2207,14 @@ void PluginI::setChannels(int c)
           {
             // Create a new plugin instance with handle.
             handles[i] = _plugin->instantiate(this);
-            if(handles[i] == NULL)
+            if(handles[i] == nullptr)
             {
               fprintf(stderr, "PluginI::setChannels: cannot instantiate instance %d\n", i);
 
               // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert().
               // Whoever uses these will have to check instance count or null handle, and try to gracefully fix it and allow a song save.
               for(int k = i; k < ni; ++k)
-                handles[i] = NULL;
+                handles[i] = nullptr;
               ni = i + 1;
               //channel = ?;
               break;
@@ -2323,7 +2323,7 @@ void PluginI::setCustomData(const std::vector<QString>&
 #endif
 )
 {
-   if(_plugin == NULL)
+   if(_plugin == nullptr)
       return;
 
 #ifdef LV2_SUPPORT
@@ -2354,10 +2354,10 @@ void PluginI::setCustomData(const std::vector<QString>&
 LADSPA_Handle Plugin::instantiate(PluginI *)
 {
   LADSPA_Handle h = plugin->instantiate(plugin, MusEGlobal::sampleRate);
-  if(h == NULL)
+  if(h == nullptr)
   {
     fprintf(stderr, "Plugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->Label);
-    return NULL;
+    return nullptr;
   }
 
   return h;
@@ -2411,7 +2411,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
       handle = new LADSPA_Handle[instances];
       for(int i = 0; i < instances; ++i)
-        handle[i]=NULL;
+        handle[i]=nullptr;
 
       for(int i = 0; i < instances; ++i)
       {
@@ -2420,7 +2420,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
         #endif
 
         handle[i] = _plugin->instantiate(this);
-        if(handle[i] == NULL)
+        if(handle[i] == nullptr)
           return true;
       }
 
@@ -2655,7 +2655,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
       }
 
 #ifdef LV2_SUPPORT
-      if(_plugin != NULL && _plugin->isLV2Plugin())//save lv2 plugin state custom data before controls
+      if(_plugin != nullptr && _plugin->isLV2Plugin())//save lv2 plugin state custom data before controls
       {
          LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
          //for multi-instance plugins write only first instance's state
@@ -2667,7 +2667,7 @@ void PluginI::writeConfiguration(int level, Xml& xml)
 #endif
 
 #ifdef VST_NATIVE_SUPPORT
-      if(_plugin != NULL && _plugin->isVstNativePlugin())//save vst plugin state custom data before controls
+      if(_plugin != nullptr && _plugin->isVstNativePlugin())//save vst plugin state custom data before controls
       {
          VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
          //for multi-instance plugins write only first instance's state
@@ -3097,7 +3097,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
   const unsigned long min_per_mask = min_per-1;   // min_per must be power of 2
 
   AutomationType at = AUTO_OFF;
-  CtrlListList* cll = NULL;
+  CtrlListList* cll = nullptr;
   ciCtrlList icl_first;
   if(_track)
   {
@@ -3132,7 +3132,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
       ciCtrlList icl = icl_first;
       for(unsigned long k = 0; k < controlPorts; ++k)
       {
-        CtrlList* cl = (cll && _id != -1 && icl != cll->end()) ? icl->second : NULL;
+        CtrlList* cl = (cll && _id != -1 && icl != cll->end()) ? icl->second : nullptr;
         CtrlInterpolate& ci = controls[k].interp;
         // Always refresh the interpolate struct at first, since things may have changed.
         // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
@@ -3593,7 +3593,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       connect(fileOpen, &QAction::triggered, [this]() { load(); } );
       tools->addAction(fileOpen);
 
-      QAction* fileSave = new QAction(*filesaveSVGIcon, tr("Save Preset"), this);
+      QAction* fileSave = new QAction(*filesaveasSVGIcon, tr("Save Preset"), this);
 //       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
       connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
@@ -3604,7 +3604,6 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
       tools->addSeparator();
 
-      //onOff = new QAction(QIcon(*exitIconS), tr("bypass plugin"), this);
       onOff = new QAction(*muteSVGIcon, tr("Bypass plugin"), this);
       onOff->setCheckable(true);
       onOff->setChecked(!plugin->on());
@@ -4333,12 +4332,12 @@ void PluginGui::load()
       s += "/";
 
       QString fn = getOpenFileName(s, MusEGlobal::preset_file_pattern,
-         this, tr("MusE: load preset"), 0);
+         this, tr("MusE: load preset"), nullptr);
       if (fn.isEmpty())
             return;
       bool popenFlag;
       FILE* f = fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
-      if (f == 0)
+      if (f == nullptr)
             return;
 
       MusECore::Xml xml(f);
@@ -4397,7 +4396,7 @@ void PluginGui::save()
       s += "/";
 
       QString fn = getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
-        tr("MusE: save preset"));
+        tr("MusE: Save preset"));
       if (fn.isEmpty())
             return;
       bool popenFlag;
@@ -4429,9 +4428,9 @@ void PluginGui::bypassToggled(bool val)
 
 void PluginGui::showSettings()
 {
-    PluginSettings *settingsDialog = new PluginSettings(plugin, MusEGlobal::config.noPluginScaling);
-    settingsDialog->setWindowTitle(tr("Plugin Settings"));
-    settingsDialog->show();
+    PluginSettings settingsDialog(plugin, MusEGlobal::config.noPluginScaling, this);
+    settingsDialog.setWindowTitle(tr("Plugin Settings"));
+    settingsDialog.exec();
 }
 
 //void PluginGui::transportGovernsLatencyToggled(bool v)
