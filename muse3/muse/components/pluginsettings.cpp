@@ -2,6 +2,9 @@
 #include "ui_pluginsettings.h"
 
 #include "song.h"
+#include "icons.h"
+#include "app.h"
+#include "globals.h"
 
 
 namespace MusEGui {
@@ -11,6 +14,7 @@ PluginSettings::PluginSettings(MusECore::PluginIBase *plugin, bool globalScaleRe
     ui(new Ui::PluginSettings)
 {
     ui->setupUi(this);
+    ui->pbInfo->setIcon(*infoSVGIcon);
 
     ui->cbFixedSpeed->setChecked(plugin->quirks()._fixedSpeed);
     ui->cbFixedSpeed->setEnabled(plugin->usesTransportSource());
@@ -88,6 +92,12 @@ void PluginSettings::on_buttonBox_rejected()
 void PluginSettings::on_cbOverrideLatency_toggled(bool checked)
 {
     ui->sbOverrideLatency->setEnabled(checked);
+}
+
+void PluginSettings::on_pbInfo_clicked()
+{
+    QString s("https://github.com/muse-sequencer/muse/wiki/HiDPI");
+    MusEGlobal::muse->launchBrowser(s);
 }
 
 

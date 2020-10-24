@@ -25,6 +25,8 @@ private slots:
 
     void on_cbOverrideLatency_toggled(bool checked);
 
+    void on_pbInfo_clicked();
+
 private:
     Ui::PluginSettings *ui;
 
