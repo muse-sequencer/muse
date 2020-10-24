@@ -32,6 +32,8 @@
 #include "helper.h"
 #include "song.h"
 #include "icons.h"
+#include "rectoolbar.h"
+#include "postoolbar.h"
 
 #include <QMenuBar>
 #include <QWidgetAction>
@@ -168,6 +170,12 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     transport_toolbar->setObjectName("Transport tool");
     transport_toolbar->addActions(MusEGlobal::transportAction->actions());
     transport_toolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
+
+    RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
+    addToolBar(recToolbar);
+
+    PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+    addToolBar(posToolbar);
 
     // Already has an object name.
     TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);

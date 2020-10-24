@@ -56,7 +56,7 @@ void TempoToolbar::init()
 {
   setObjectName("Tempo toolbar");
 
-  _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, 0, 0, false, true);
+  _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, nullptr, nullptr, false, true);
   _masterButton->setContentsMargins(0, 0, 0, 0);
   _masterButton->setFocusPolicy(Qt::NoFocus);
   _masterButton->setCheckable(true);

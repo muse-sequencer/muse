@@ -111,7 +111,9 @@ QT5_WRAP_CPP (components_mocs
       popupmenu.h  
       posedit.h  
       poslabel.h  
+      postoolbar.h
       projectcreateimpl.h
+      rectoolbar.h
       routedialog.h
       routepopup.h  
       #rubberband_settings.h
@@ -269,7 +271,9 @@ file (GLOB components_source_files
       popupmenu.cpp 
       posedit.cpp 
       poslabel.cpp
+      postoolbar.cpp
       projectcreateimpl.cpp
+      rectoolbar.cpp
       routedialog.cpp
       routepopup.cpp 
       #rubberband_settings.cpp

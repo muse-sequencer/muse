@@ -255,7 +255,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       _rasterizerModel->setDisplayFormat(RasterizerModel::FractionFormat);
 
       _raster = _rasterizerModel->pickRaster(0, RasterizerModel::Goto1);
-      selected = 0;
+      selected = nullptr;
       showTrackinfoFlag = true;
       
       cursVal = INT_MAX;
