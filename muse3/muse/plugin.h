@@ -42,7 +42,6 @@
 #include "globaldefs.h"
 #include "ctrl.h"
 #include "controlfifo.h"
-
 #include "config.h"
 
 #ifdef OSC_SUPPORT
@@ -676,14 +675,14 @@ class PluginGui : public QMainWindow {
       GuiWidgets* gw;
 
       QAction* onOff;
-      QAction* transpGovLatencyAct;
-      QAction* fixedSpeedAct;
-      QAction* overrideLatencyAct;
-      QSpinBox* latencyOverrideEntry;
+//      QAction* transpGovLatencyAct;
+//      QAction* fixedSpeedAct;
+//      QAction* overrideLatencyAct;
+//      QSpinBox* latencyOverrideEntry;
       QWidget* mw;            // main widget
       QScrollArea* view;
-      QToolButton* fixNativeUIScalingTB;
-      QString fixScalingTooltip[3];
+//      QToolButton* fixNativeUIScalingTB;
+//      QString fixScalingTooltip[3];
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
@@ -697,11 +696,12 @@ class PluginGui : public QMainWindow {
       void load();
       void save();
       void bypassToggled(bool);
-      void transportGovernsLatencyToggled(bool);
-      void fixNativeUIScalingTBClicked();
-      void fixedSpeedToggled(bool);
-      void overrideReportedLatencyToggled(bool);
-      void latencyOverrideValueChanged(int);
+      void showSettings();
+//      void transportGovernsLatencyToggled(bool);
+//      void fixNativeUIScalingTBClicked();
+//      void fixedSpeedToggled(bool);
+//      void overrideReportedLatencyToggled(bool);
+//      void latencyOverrideValueChanged(int);
       void sliderChanged(double value, int id, int scrollMode);
       void labelChanged(double, int);
       void guiParamChanged(unsigned long int);
