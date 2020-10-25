@@ -309,6 +309,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
 
                 return;
             }
+            break;
 
         default:
             break;
@@ -428,16 +429,12 @@ void TopWin::setIsMdiWin(bool val)
         if (!isMdiWin())
         {
             _savedToolbarState = saveState();
-//            bool vis=isVisible();
 
             createMdiWrapper();
             muse->addMdiSubWindow(mdisubwin);
 
             if (windowTitle().startsWith("MusE: "))
                 setWindowTitle(windowTitle().mid(6));
-
-//            subwin->setVisible(vis);
-//            this->QMainWindow::show(); //bypass the delegation to the subwin
 
             mdisubwin->showMaximized();
 
@@ -522,7 +519,7 @@ QToolBar* TopWin::addToolBar(const QString& title)
 void TopWin::addToolBarBreak(Qt::ToolBarArea area)
 {
     QMainWindow::addToolBarBreak(area);
-    _toolbars.push_back(NULL);
+    _toolbars.push_back(nullptr);
 }
 
 
@@ -537,18 +534,16 @@ void TopWin::shareToolsAndMenu(bool val)
         return;
     }
 
-
     _sharesToolsAndMenu = val;
 
     if (!val)
     {
         muse->shareMenuAndToolbarChanged(this, false);
 
-        for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
-            if (*it != NULL)
-            {
-                QMainWindow::addToolBar(*it);
-                (*it)->show();
+        for (const auto& it : _toolbars)
+            if (it) {
+                QMainWindow::addToolBar(it);
+                it->show();
             }
             else
                 QMainWindow::addToolBarBreak();
@@ -563,22 +558,17 @@ void TopWin::shareToolsAndMenu(bool val)
         if (_savedToolbarState.isEmpty())	 // this check avoids overwriting a previously saved state
             _savedToolbarState = saveState(); // (by setIsMdiWin) with a now incorrect (empty) state
 
-        for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
-            if (*it != NULL)
-            {
-                QMainWindow::removeToolBar(*it); // this does NOT delete the toolbar, which is good
-                (*it)->setParent(NULL);
+        for (const auto& it : _toolbars)
+            if (it) {
+                QMainWindow::removeToolBar(it); // this does NOT delete the toolbar, which is good
+                it->setParent(nullptr);
             }
 
         menuBar()->hide();
 
         muse->shareMenuAndToolbarChanged(this, true);
     }
-
-//    shareAction->setChecked(val);
 }
-
-
 
 //---------------------------------------------------------
 //	 storeInitialState
@@ -663,6 +653,7 @@ void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
         case MusECore::Xml::TagEnd:
             if (tag == "topwin")
                 return;
+            break;
 
         default:
             break;

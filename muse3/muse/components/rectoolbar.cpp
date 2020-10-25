@@ -14,7 +14,8 @@ RecToolbar::RecToolbar(const QString &title, QWidget *parent)
 
     QComboBox *recMode = new QComboBox;
     recMode->setFocusPolicy(Qt::NoFocus);
-    recMode->setToolTip(tr("Recording mode"));
+    recMode->setToolTip(tr("Record mode"));
+    recMode->setStatusTip(tr("Record mode: Overdub to add new events, Replace to replace overlapping events."));
     recMode->insertItem(MusECore::Song::REC_OVERDUP, tr("Overdub"));
     recMode->insertItem(MusECore::Song::REC_REPLACE, tr("Replace"));
     recMode->setCurrentIndex(MusEGlobal::song->recMode());
@@ -22,7 +23,8 @@ RecToolbar::RecToolbar(const QString &title, QWidget *parent)
 
     QComboBox *cycleMode = new QComboBox;
     cycleMode->setFocusPolicy(Qt::NoFocus);
-    cycleMode->setToolTip(tr("Cycle mode"));
+    cycleMode->setToolTip(tr("Cycle record mode"));
+    cycleMode->setStatusTip(tr("Cycle record mode: Normal to replace range when loop is finished, Mix to add new events, Replace to replace range on first MIDI input."));
     cycleMode->insertItem(MusECore::Song::CYCLE_NORMAL,  tr("Normal"));
     cycleMode->insertItem(MusECore::Song::CYCLE_MIX,     tr("Mix"));
     cycleMode->insertItem(MusECore::Song::CYCLE_REPLACE, tr("Replace"));
