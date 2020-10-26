@@ -12,7 +12,7 @@ RecToolbar::RecToolbar(const QString &title, QWidget *parent)
 {
     setObjectName("Recording toolbar");
 
-    QComboBox *recMode = new QComboBox;
+    recMode = new QComboBox;
     recMode->setFocusPolicy(Qt::NoFocus);
     recMode->setToolTip(tr("Record mode"));
     recMode->setStatusTip(tr("Record mode: Overdub to add new events, Replace to replace overlapping events."));
@@ -20,8 +20,9 @@ RecToolbar::RecToolbar(const QString &title, QWidget *parent)
     recMode->insertItem(MusECore::Song::REC_REPLACE, tr("Replace"));
     recMode->setCurrentIndex(MusEGlobal::song->recMode());
     connect(recMode, SIGNAL(activated(int)), SLOT(setRecMode(int)));
+    connect(MusEGlobal::song, SIGNAL(recModeChanged(int)), SLOT(setRecMode(int)));
 
-    QComboBox *cycleMode = new QComboBox;
+    cycleMode = new QComboBox;
     cycleMode->setFocusPolicy(Qt::NoFocus);
     cycleMode->setToolTip(tr("Cycle record mode"));
     cycleMode->setStatusTip(tr("Cycle record mode: Normal to replace range when loop is finished, Mix to add new events, Replace to replace range on first MIDI input."));
@@ -30,6 +31,7 @@ RecToolbar::RecToolbar(const QString &title, QWidget *parent)
     cycleMode->insertItem(MusECore::Song::CYCLE_REPLACE, tr("Replace"));
     cycleMode->setCurrentIndex(MusEGlobal::song->cycleMode());
     connect(cycleMode, SIGNAL(activated(int)), SLOT(setCycleMode(int)));
+    connect(MusEGlobal::song, SIGNAL(cycleModeChanged(int)), SLOT(setCycleMode(int)));
 
     addWidget(recMode);
     addWidget(cycleMode);
@@ -41,7 +43,11 @@ RecToolbar::RecToolbar(const QString &title, QWidget *parent)
 
 void RecToolbar::setRecMode(int id)
 {
-    MusEGlobal::song->setRecMode(id);
+    if (MusEGlobal::song->recMode() != id)
+        MusEGlobal::song->setRecMode(id);
+
+    if (recMode->currentIndex() != id)
+        recMode->setCurrentIndex(id);
 }
 
 //---------------------------------------------------------
@@ -50,7 +56,11 @@ void RecToolbar::setRecMode(int id)
 
 void RecToolbar::setCycleMode(int id)
 {
-    MusEGlobal::song->setCycleMode(id);
+    if (MusEGlobal::song->cycleMode() != id)
+        MusEGlobal::song->setCycleMode(id);
+
+    if (cycleMode->currentIndex() != id)
+        cycleMode->setCurrentIndex(id);
 }
 
 } // namespace

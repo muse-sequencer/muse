@@ -3,16 +3,21 @@
 
 #include <QToolBar>
 
+class QComboBox;
+
 namespace MusEGui {
 
 class RecToolbar : public QToolBar
 {
     Q_OBJECT
 
+    QComboBox *recMode;
+    QComboBox *cycleMode;
+
 public:
     RecToolbar(const QString& title, QWidget* parent = nullptr);
 
-private slots:
+public slots:
     void setRecMode(int);
     void setCycleMode(int);
 };

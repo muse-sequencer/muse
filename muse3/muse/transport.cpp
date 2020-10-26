@@ -303,7 +303,10 @@ Transport::Transport(QWidget* parent, const char* name)
 //      l2->setFont(MusEGlobal::config.fonts[2]);
       l2->setAlignment(Qt::AlignCenter);
       connect(recMode, SIGNAL(activated(int)), SLOT(setRecMode(int)));
+      connect(MusEGlobal::song, SIGNAL(recModeChanged(int)), SLOT(setRecMode(int)));
       box1->addWidget(l2);
+
+
 
       cycleMode = new QComboBox;
       cycleMode->setFocusPolicy(Qt::NoFocus);
@@ -318,6 +321,7 @@ Transport::Transport(QWidget* parent, const char* name)
 //      l3->setFont(MusEGlobal::config.fonts[2]);
       l3->setAlignment(Qt::AlignCenter);
       connect(cycleMode, SIGNAL(activated(int)), SLOT(setCycleMode(int)));
+      connect(MusEGlobal::song, SIGNAL(cycleModeChanged(int)), SLOT(setCycleMode(int)));
       box1->addWidget(l3);
 
       box1->setSpacing(0);
@@ -777,18 +781,26 @@ void Transport::setSyncFlag(bool f)
 //---------------------------------------------------------
 
 void Transport::setRecMode(int id)
-      {
-      MusEGlobal::song->setRecMode(id);
-      }
+{
+    if (MusEGlobal::song->recMode() != id)
+        MusEGlobal::song->setRecMode(id);
+
+    if (recMode->currentIndex() != id)
+        recMode->setCurrentIndex(id);
+}
 
 //---------------------------------------------------------
 //   toggleCycleMode
 //---------------------------------------------------------
 
 void Transport::setCycleMode(int id)
-      {
-      MusEGlobal::song->setCycleMode(id);
-      }
+{
+    if (MusEGlobal::song->cycleMode() != id)
+        MusEGlobal::song->setCycleMode(id);
+
+    if (cycleMode->currentIndex() != id)
+        cycleMode->setCurrentIndex(id);
+}
 
 //---------------------------------------------------------
 //   songChanged

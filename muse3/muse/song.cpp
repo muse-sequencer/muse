@@ -4833,5 +4833,14 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
     MusEGlobal::song->applyOperationGroup(ops);
 }
 
+void Song::setRecMode(int val) {
+    _recMode = val;
+    emit recModeChanged(val);
+}
+
+void Song::setCycleMode(int val) {
+    _cycleMode = val;
+    emit cycleModeChanged(val);
+}
 
 } // namespace MusECore

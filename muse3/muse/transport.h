@@ -141,8 +141,6 @@ class Transport : public QWidget
       void cposChanged(int);
       void lposChanged(const MusECore::Pos&);
       void rposChanged(const MusECore::Pos&);
-      void setRecMode(int);
-      void setCycleMode(int);
       void songChanged(MusECore::SongChangedStruct_t);
       void syncChanged(bool);
       void timebaseMasterChanged(bool);
@@ -165,6 +163,8 @@ class Transport : public QWidget
       void setSyncFlag(bool);
       void setPlay(bool f);
       void setHandleColor(QColor);
+      void setRecMode(int);
+      void setCycleMode(int);
 
    public:
       Transport(QWidget* parent, const char* name = 0);
