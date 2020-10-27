@@ -258,15 +258,14 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       // Scripts:
       //----------------------
 
-// This is a duplicate, already available in central MIDI menu
-//      menuPlugins = menuBar()->addMenu(tr("&Plugins"));
-//      connect(&_scriptReceiver,
-//              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
-//              [this](int id) { execDeliveredScript(id); } );
-//      connect(&_scriptReceiver,
-//              &MusECore::ScriptReceiver::execUserScriptReceived,
-//              [this](int id) { execUserScript(id); } );
-//      MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
+      menuPlugins = menuBar()->addMenu(tr("&Scripts"));
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+              [this](int id) { execDeliveredScript(id); } );
+      connect(&_scriptReceiver,
+              &MusECore::ScriptReceiver::execUserScriptReceived,
+              [this](int id) { execUserScript(id); } );
+      MusEGlobal::song->populateScriptMenu(menuPlugins, &_scriptReceiver);
 
       menuConfig = menuBar()->addMenu(tr("&Display"));
       menuConfig->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
