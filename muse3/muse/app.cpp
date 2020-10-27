@@ -98,6 +98,7 @@
 #include "shortcuts.h"
 #include "rectoolbar.h"
 #include "postoolbar.h"
+#include "synctoolbar.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -844,6 +845,9 @@ MusE::MusE() : QMainWindow()
       RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
       addToolBar(recToolbar);
 
+      SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
+      addToolBar(syncToolbar);
+
       PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
       addToolBar(posToolbar);
 
@@ -865,6 +869,7 @@ MusE::MusE() : QMainWindow()
       optionalToolbars.push_back(nullptr);  // Toolbar break
       optionalToolbars.push_back(transportToolbar);
       optionalToolbars.push_back(recToolbar);
+      optionalToolbars.push_back(syncToolbar);
       optionalToolbars.push_back(posToolbar);
       optionalToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(sig_tb);

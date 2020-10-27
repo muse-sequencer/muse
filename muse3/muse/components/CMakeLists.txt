@@ -137,6 +137,7 @@ QT5_WRAP_CPP (components_mocs
       splitter.h  
       #src_resampler_settings.h
 #       swidget.h  
+      synctoolbar.h
       tb1.h  
 #       tempolabel.h
 #       text_edit.h
@@ -299,6 +300,7 @@ file (GLOB components_source_files
       splitter.cpp  
       #src_resampler_settings.cpp
 #       swidget.cpp 
+      synctoolbar.cpp
       tb1.cpp   
 #       tempolabel.cpp 
 #       text_edit.cpp

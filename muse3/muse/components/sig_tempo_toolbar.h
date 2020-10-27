@@ -58,8 +58,8 @@ namespace MusEGui
       void init();
       
     public:
-      TempoToolbar(QWidget* parent = 0);
-      TempoToolbar(const QString& title, QWidget* parent = 0);
+      TempoToolbar(QWidget* parent = nullptr);
+      TempoToolbar(const QString& title, QWidget* parent = nullptr);
       bool masterTrack() const;
       void setMasterTrack(bool);
     

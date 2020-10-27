@@ -77,10 +77,10 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       _minXMag = -25;
       _maxXMag = 2;
 
-      canvas   = 0;
+      canvas   = nullptr;
       
-      trackInfoWidget = 0;
-      selected = 0;
+      trackInfoWidget = nullptr;
+      selected = nullptr;
       
       //wview    = 0;
       _curDrumInstrument = -1;
@@ -148,7 +148,7 @@ void MidiEditor::switchInfo(int n)
       if(n == idx) {
 //             MidiStrip* w = (MidiStrip*)(trackInfoWidget->getWidget(idx));
             Strip* w = (Strip*)(trackInfoWidget->getWidget(idx));
-            if (w == 0 || selected != w->getTrack()) {
+            if (w == nullptr || selected != w->getTrack()) {
                   if (w)
                   {
                         //fprintf(stderr, "MidiEditor::switchInfo deleting strip\n");
@@ -210,9 +210,9 @@ void MidiEditor::updateTrackInfo()
       if(part)
         selected = part->track();
       else
-        selected = 0;
+        selected = nullptr;
       
-      if (selected == 0) {
+      if (selected == nullptr) {
             switchInfo(0);
             return;
             }
@@ -239,8 +239,8 @@ void MidiEditor::checkTrackInfoTrack()
         if(it == tl->end())
         {
           delete w;
-          trackInfoWidget->addWidget(0, idx);
-          selected = 0;
+          trackInfoWidget->addWidget(nullptr, idx);
+          selected = nullptr;
           switchInfo(0);
         } 
       }   
@@ -419,7 +419,7 @@ MidiEditor::~MidiEditor()
 
 void MidiEditor::readStatus(MusECore::Xml& xml)
       {
-      if (_pl == 0)
+      if (_pl == nullptr)
             _pl = new MusECore::PartList;
 
       for (;;) {
@@ -532,7 +532,7 @@ MusECore::Part* MidiEditor::curCanvasPart()
   if(canvas) 
     return canvas->part(); 
   else 
-    return 0; 
+    return nullptr;
 }
 
 //---------------------------------------------------------

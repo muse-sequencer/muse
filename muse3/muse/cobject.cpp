@@ -34,6 +34,7 @@
 #include "icons.h"
 #include "rectoolbar.h"
 #include "postoolbar.h"
+#include "synctoolbar.h"
 
 #include <QMenuBar>
 #include <QWidgetAction>
@@ -173,6 +174,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
     RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
     addToolBar(recToolbar);
+
+    SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
+    addToolBar(syncToolbar);
 
     PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
     addToolBar(posToolbar);
