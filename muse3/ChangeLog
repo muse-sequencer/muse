@@ -1,3 +1,5 @@
+27.10.2020
+    - Fix: Tap button - flash when waiting for input, reset timeout after each click. (kybos)
 24.10.2020
     - New: Proper settings dialog for plugins. (kybos)
 23.10.2020
