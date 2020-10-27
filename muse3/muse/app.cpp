@@ -3797,7 +3797,8 @@ QWidget* MusE::bigtimeWindow()   { return bigtime; }
 //---------------------------------------------------------
 void MusE::execDeliveredScript(int id)
 {
-      MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(), MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
+    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(),
+                                    MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
 }
 
 //---------------------------------------------------------
@@ -3805,7 +3806,8 @@ void MusE::execDeliveredScript(int id)
 //---------------------------------------------------------
 void MusE::execUserScript(int id)
 {
-      MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(), MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
+    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
+                                    MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
 }
 
 //---------------------------------------------------------

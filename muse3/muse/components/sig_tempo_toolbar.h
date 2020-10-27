@@ -45,13 +45,15 @@ namespace MusEGui
     Q_OBJECT
     
     private:
-//      QLabel* label;
       TempoEdit* tempo_edit;
       QToolButton *tap_button;
       IconButton* _masterButton;
 
       QTimer tap_timer;
       QDateTime last_tap_time;
+      QTimer *blink_timer;
+      bool blinkButtonState;
+      QString buttonDefColor;
                   
       void init();
       
@@ -73,6 +75,7 @@ namespace MusEGui
       void tap_tempo();
       void tap_timer_signal();
       void masterToggled(bool);
+      void tapButtonBlink();
   };
 
 
