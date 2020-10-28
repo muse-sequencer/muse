@@ -131,26 +131,26 @@ details.
       - Python    The python scripting language
           http://www.python.org
           The remote control supports Python 2 or 3. See README.python.
-          The bundled midi scripts ('Functions') require Python 3.
+          The bundled midi scripts ('Scripts', or 'Plugins' in earlier versions) require Python 3.
            
       - Pyro 4    Python Remote Objects
           https://pythonhosted.org/Pyro4/
           The remote control supports Pyro 4. See README.python.
 
-      - PyQt5 is used by some of the bundled midi scripts ('Functions').
+      - PyQt5 is used by some of the bundled midi scripts ('Scripts', or 'Plugins' in earlier versions).
+
 
   Quick instructions for Ubuntu and similar distributions:
-  
   
   =================================
       Building MusE under Debian/Ubuntu:
   =================================
 
     1. Install tools:
-	sudo apt-get install\
+    sudo apt-get install\
          git build-essential cmake
     2. Clone muse source:
-	git clone https://github.com/muse-sequencer/muse.git
+    git clone https://github.com/muse-sequencer/muse.git
     3. Install libraries:
 	sudo apt-get install\
          libsndfile1-dev\
@@ -173,7 +173,8 @@ details.
          liblilv-dev\
          liblrdf0-dev\
          librubberband-dev\
-         python3-dev
+         python3-dev\
+         python3-pyqt5
     4. Change directory:
         cd muse/muse3
     5. Compile:
@@ -389,7 +390,7 @@ details.
             cat /proc/sys/dev/rtc/max-user-freq
 
   =============================
-      known bugs
+      Known bugs:
   =============================
 
       The odd wierdness happens and some things may not be completely implemeneted
@@ -404,6 +405,6 @@ details.
 
 ====================================================================
 Let us know whether MusE works for you !!!
-Have a look at the webpage http://www.muse-sequencer.org for details.
+Have a look at the webpage https://muse-sequencer.github.io/ for details.
 
 

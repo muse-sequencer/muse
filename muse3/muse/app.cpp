@@ -637,8 +637,8 @@ MusE::MusE() : QMainWindow()
 //      master->addAction(masterListAction);
 
       //-------- Midi Actions
-      menuScriptPlugins = new QMenu(tr("&Scripts"), this);
-      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
+//      menuScriptPlugins = new QMenu(tr("&Scripts"), this);
+//      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
@@ -941,18 +941,6 @@ MusE::MusE() : QMainWindow()
       menuView->addSeparator();
       menuView->addAction(toggleDocksAction);
       menuView->addAction(fullscreenAction);
-
-
-      //---------------------------------------------------
-      //  Connect script receiver
-      //---------------------------------------------------
-
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
-              [this](int id) { execDeliveredScript(id); } );
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execUserScriptReceived,
-              [this](int id) { execUserScript(id); } );
       
       //-------------------------------------------------------------
       //    popup Midi
@@ -962,8 +950,6 @@ MusE::MusE() : QMainWindow()
       menuBar()->addMenu(menu_functions);
       trailingMenus.push_back(menu_functions);
 
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
-      menu_functions->addMenu(menuScriptPlugins);
       menu_functions->addAction(midiEditInstAction);
       menu_functions->addMenu(midiInputPlugins);
       midiInputPlugins->addAction(midiTrpAction);
@@ -3796,24 +3782,6 @@ QWidget* MusE::transportWindow() { return transport; }
 QWidget* MusE::bigtimeWindow()   { return bigtime; }
 
 //---------------------------------------------------------
-//   execDeliveredScript
-//---------------------------------------------------------
-void MusE::execDeliveredScript(int id)
-{
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(),
-                                    MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
-}
-
-//---------------------------------------------------------
-//   execUserScript
-//---------------------------------------------------------
-void MusE::execUserScript(int id)
-{
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
-                                    MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
-}
-
-//---------------------------------------------------------
 //   findUnusedWaveFiles
 //---------------------------------------------------------
 void MusE::findUnusedWaveFiles()
@@ -3961,18 +3929,18 @@ void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
 {
   if (MusEGlobal::debugMsg) fprintf(stderr, "ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
 
-  if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
-       ( (mdiArea->currentSubWindow() != nullptr) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
-  {
-    if (MusEGlobal::debugMsg) fprintf(stderr, "  that's a menu sharing muse window which isn't inside the MDI area.\n");
-    // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
-    // then unfocus the MDI area and/or the currently active MDI subwin. otherwise you'll be unable to use win's
-    // tools or menu entries, as whenever you click at them, they're replaced by the currently active MDI subwin's
-    // menus and toolbars.
-    // as unfocusing the MDI area and/or the subwin does not work for some reason, we must do this workaround:
-    // simply focus anything in the main window except the mdi area.
-    menuBar()->setFocus(Qt::MenuBarFocusReason);
-  }
+//  if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
+//       ( (mdiArea->currentSubWindow() != nullptr) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
+//  {
+//    if (MusEGlobal::debugMsg) fprintf(stderr, "  that's a menu sharing muse window which isn't inside the MDI area.\n");
+//    // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
+//    // then unfocus the MDI area and/or the currently active MDI subwin. otherwise you'll be unable to use win's
+//    // tools or menu entries, as whenever you click at them, they're replaced by the currently active MDI subwin's
+//    // menus and toolbars.
+//    // as unfocusing the MDI area and/or the subwin does not work for some reason, we must do this workaround:
+//    // simply focus anything in the main window except the mdi area.
+//    menuBar()->setFocus(Qt::MenuBarFocusReason);
+//  }
 
   if (win && (win->sharesToolsAndMenu()))
     setCurrentMenuSharingTopwin(win);
@@ -4140,6 +4108,11 @@ void MusE::addMdiSubWindow(QMdiSubWindow* win)
   mdiArea->addSubWindow(win);
 }
 
+void MusE::setActiveMdiSubWindow(QMdiSubWindow* win)
+{
+    mdiArea->setActiveSubWindow(win);
+}
+
 void MusE::shareMenuAndToolbarChanged(MusEGui::TopWin* win, bool val)
 {
   if (val)
@@ -4248,7 +4221,7 @@ void MusE::bringToFront(QWidget* widget)
 
   if (win->isMdiWin())
   {
-    win->show();
+    win->showMaximized();
     mdiArea->setActiveSubWindow(win->getMdiWin());
   }
   else

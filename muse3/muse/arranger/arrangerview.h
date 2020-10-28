@@ -77,6 +77,7 @@ private:
     QMenu* addTrack;
     QMenu* insertTrack;
 
+
     QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
     QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
     QAction *trackAMidiAction, *trackADrumAction, *trackAWaveAction, *trackAOutputAction, *trackAGroupAction;
@@ -103,6 +104,8 @@ private:
     QAction* func_del_overlaps_action;
     QAction* func_legato_action;
 
+    MusECore::ScriptReceiver _scriptReceiver;
+
 private slots:
     void globalCut();
     void globalInsert();
@@ -116,6 +119,8 @@ private slots:
     void insertNewTrack(QAction* action);
     void configCustomColumns();
     void toggleMixerStrip();
+    void execDeliveredScript(int);
+    void execUserScript(int);
 
 signals:
     void isDeleting(MusEGui::TopWin*);
