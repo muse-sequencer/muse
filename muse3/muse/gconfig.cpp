@@ -320,7 +320,7 @@ GlobalConfigValues config = {
          QList<bool>(),
          QList<StripConfig>()
       },
-      true,                         // TransportVisible;
+      false,                         // TransportVisible;
       false,                        // BigTimeVisible;
       false,                        // mixer1Visible;
       false,                        // mixer2Visible;

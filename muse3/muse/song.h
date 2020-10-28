@@ -302,9 +302,9 @@ class Song : public QObject {
       bool record() const           { return recordFlag; }
       bool punchin() const          { return punchinFlag; }
       bool punchout() const         { return punchoutFlag; }
-      void setRecMode(int val)      { _recMode = val; }
+      void setRecMode(int val);
       int  recMode() const          { return _recMode; }
-      void setCycleMode(int val)    { _cycleMode = val; }
+      void setCycleMode(int val);
       int cycleMode() const         { return _cycleMode; }
       bool click() const            { return _click; }
       bool quantize() const         { return _quantize; }
@@ -406,7 +406,6 @@ class Song : public QObject {
       void removePart(Part* part);
       void changePart(Part*, Part*);
 
-public:
       void normalizeWaveParts(Part *partCursor = NULL);
 
       //-----------------------------------------
@@ -581,6 +580,8 @@ public:
       void controllerChanged(MusECore::Track*, int); 
       void newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
       void sigDirty();
+      void recModeChanged(int);
+      void cycleModeChanged(int);
       };
 
 } // namespace MusECore

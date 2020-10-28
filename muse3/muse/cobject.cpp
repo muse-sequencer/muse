@@ -32,6 +32,9 @@
 #include "helper.h"
 #include "song.h"
 #include "icons.h"
+#include "rectoolbar.h"
+#include "postoolbar.h"
+#include "synctoolbar.h"
 
 #include <QMenuBar>
 #include <QWidgetAction>
@@ -155,27 +158,35 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     metronome_toolbar->setObjectName("Metronome tool");
     metronome_toolbar->addAction(MusEGlobal::metronomeAction);
 
-    QToolBar* songpos_tb;
+    QToolBar* songpos_tb = new QToolBar;
     songpos_tb = addToolBar(tr("Song Position"));
     songpos_tb->setObjectName("Song Position tool");
     songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
     songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+    addToolBar(Qt::BottomToolBarArea, songpos_tb);
+
+    QToolBar* transportToolbar = addToolBar(tr("Transport"));
+    transportToolbar->setObjectName("Transport tool");
+    transportToolbar->addActions(MusEGlobal::transportAction->actions());
+    transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
+
+    RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
+    addToolBar(recToolbar);
+
+    SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
+    addToolBar(syncToolbar);
 
     addToolBarBreak();
 
-    QToolBar* transport_toolbar = addToolBar(tr("Transport"));
-    transport_toolbar->setObjectName("Transport tool");
-    transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-    transport_toolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
-
-    // Already has an object name.
     TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
     addToolBar(tempo_tb);
 
-    // Already has an object name.
     SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
     addToolBar(sig_tb);
+
+    PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+    addToolBar(posToolbar);
 
     connect(tempo_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
     connect(tempo_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
@@ -301,6 +312,7 @@ void TopWin::readStatus(MusECore::Xml& xml)
 
                 return;
             }
+            break;
 
         default:
             break;
@@ -420,7 +432,6 @@ void TopWin::setIsMdiWin(bool val)
         if (!isMdiWin())
         {
             _savedToolbarState = saveState();
-//            bool vis=isVisible();
 
             createMdiWrapper();
             muse->addMdiSubWindow(mdisubwin);
@@ -511,7 +522,7 @@ QToolBar* TopWin::addToolBar(const QString& title)
 void TopWin::addToolBarBreak(Qt::ToolBarArea area)
 {
     QMainWindow::addToolBarBreak(area);
-    _toolbars.push_back(NULL);
+    _toolbars.push_back(nullptr);
 }
 
 
@@ -526,18 +537,16 @@ void TopWin::shareToolsAndMenu(bool val)
         return;
     }
 
-
     _sharesToolsAndMenu = val;
 
     if (!val)
     {
         muse->shareMenuAndToolbarChanged(this, false);
 
-        for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
-            if (*it != NULL)
-            {
-                QMainWindow::addToolBar(*it);
-                (*it)->show();
+        for (const auto& it : _toolbars)
+            if (it) {
+                QMainWindow::addToolBar(it);
+                it->show();
             }
             else
                 QMainWindow::addToolBarBreak();
@@ -552,22 +561,17 @@ void TopWin::shareToolsAndMenu(bool val)
         if (_savedToolbarState.isEmpty())	 // this check avoids overwriting a previously saved state
             _savedToolbarState = saveState(); // (by setIsMdiWin) with a now incorrect (empty) state
 
-        for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
-            if (*it != NULL)
-            {
-                QMainWindow::removeToolBar(*it); // this does NOT delete the toolbar, which is good
-                (*it)->setParent(NULL);
+        for (const auto& it : _toolbars)
+            if (it) {
+                QMainWindow::removeToolBar(it); // this does NOT delete the toolbar, which is good
+                it->setParent(nullptr);
             }
 
         menuBar()->hide();
 
         muse->shareMenuAndToolbarChanged(this, true);
     }
-
-//    shareAction->setChecked(val);
 }
-
-
 
 //---------------------------------------------------------
 //	 storeInitialState
@@ -652,6 +656,7 @@ void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
         case MusECore::Xml::TagEnd:
             if (tag == "topwin")
                 return;
+            break;
 
         default:
             break;

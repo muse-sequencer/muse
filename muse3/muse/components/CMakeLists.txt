@@ -111,7 +111,9 @@ QT5_WRAP_CPP (components_mocs
       popupmenu.h  
       posedit.h  
       poslabel.h  
+      postoolbar.h
       projectcreateimpl.h
+      rectoolbar.h
       routedialog.h
       routepopup.h  
       #rubberband_settings.h
@@ -135,6 +137,7 @@ QT5_WRAP_CPP (components_mocs
       splitter.h  
       #src_resampler_settings.h
 #       swidget.h  
+      synctoolbar.h
       tb1.h  
 #       tempolabel.h
 #       text_edit.h
@@ -269,7 +272,9 @@ file (GLOB components_source_files
       popupmenu.cpp 
       posedit.cpp 
       poslabel.cpp
+      postoolbar.cpp
       projectcreateimpl.cpp
+      rectoolbar.cpp
       routedialog.cpp
       routepopup.cpp 
       #rubberband_settings.cpp
@@ -295,6 +300,7 @@ file (GLOB components_source_files
       splitter.cpp  
       #src_resampler_settings.cpp
 #       swidget.cpp 
+      synctoolbar.cpp
       tb1.cpp   
 #       tempolabel.cpp 
 #       text_edit.cpp

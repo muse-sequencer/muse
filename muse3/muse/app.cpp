@@ -96,6 +96,9 @@
 #include "wave.h"
 #include "wavepreview.h"
 #include "shortcuts.h"
+#include "rectoolbar.h"
+#include "postoolbar.h"
+#include "synctoolbar.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -489,7 +492,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::punchinAction->setCheckable(true);
 
       MusEGlobal::punchinAction->setWhatsThis(tr("Record starts at left mark"));
-      MusEGlobal::punchinAction->setStatusTip(tr("Record starts at left mark"));
+      MusEGlobal::punchinAction->setStatusTip(tr("Recording starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
       MusEGlobal::punchoutAction = new QAction(*MusEGui::punchoutSVGIcon, tr("Punch out"),
@@ -497,7 +500,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::punchoutAction->setCheckable(true);
 
       MusEGlobal::punchoutAction->setWhatsThis(tr("Record stops at right mark"));
-      MusEGlobal::punchoutAction->setStatusTip(tr("Record stops at right mark"));
+      MusEGlobal::punchoutAction->setStatusTip(tr("Recording stops at right mark"));
       connect(MusEGlobal::punchoutAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchout(bool)));
 
       QAction *tseparator = new QAction(this);
@@ -797,8 +800,8 @@ MusE::MusE() : QMainWindow()
       //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
       //          instead of /appending/ with addToolBar().
 
-      tools = addToolBar(tr("File Buttons"));
-      tools->setObjectName("File Buttons");
+      tools = addToolBar(tr("File buttons"));
+      tools->setObjectName("File buttons");
       tools->addAction(fileNewAction);
       tools->addAction(fileNewFromTemplateAction);
       tools->addAction(fileOpenAction);
@@ -819,42 +822,53 @@ MusE::MusE() : QMainWindow()
       metronomeToolbar->setObjectName("Metronome tool");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
-      // Already has an object name.
       cpuLoadToolbar = new CpuToolbar(tr("Cpu load"), this);
       addToolBar(cpuLoadToolbar);
       cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
-      QToolBar* songpos_tb;
+      QToolBar* songpos_tb = new QToolBar;
       songpos_tb = addToolBar(tr("Song Position"));
       songpos_tb->setObjectName("Song Position tool");
       songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
       songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
       songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+      addToolBar(Qt::BottomToolBarArea, songpos_tb);
 
-      addToolBarBreak();
-      
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
       transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
-      // Already has an object name.
+      RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
+      addToolBar(recToolbar);
+
+      SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
+      addToolBar(syncToolbar);
+
+      addToolBarBreak();
+
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
       addToolBar(tempo_tb);
       
-      // Already has an object name.
       SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
       addToolBar(sig_tb);
       
+      PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+      addToolBar(posToolbar);
+
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
+
       optionalToolbars.push_back(undoToolbar);
       optionalToolbars.push_back(panicToolbar);
       optionalToolbars.push_back(metronomeToolbar);
       optionalToolbars.push_back(songpos_tb);
       optionalToolbars.push_back(nullptr);  // Toolbar break
       optionalToolbars.push_back(transportToolbar);
+      optionalToolbars.push_back(recToolbar);
+      optionalToolbars.push_back(syncToolbar);
+      optionalToolbars.push_back(posToolbar);
       optionalToolbars.push_back(tempo_tb);
       optionalToolbars.push_back(sig_tb);
 
@@ -4012,7 +4026,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); ++it)
       {
         QToolBar* tb = *it;
-        if(tb)
+        if (tb)
         {
           // Check for existing toolbar with same object name, and replace it.
           for(list<QToolBar*>::iterator i_atb = add_toolbars.begin(); i_atb!=add_toolbars.end(); ++i_atb)

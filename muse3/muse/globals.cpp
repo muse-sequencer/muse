@@ -303,7 +303,7 @@ QAction* panicAction;
 QAction* metronomeAction;
 QAction* cpuLoadAction;
 
-MusEGui::MusE* muse = 0;
+MusEGui::MusE* muse = nullptr;
 
 MusECore::MetroAccentsPresetsMap metroAccentPresets;
 MusECore::MetronomeSettings metroGlobalSettings;
