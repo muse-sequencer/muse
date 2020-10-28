@@ -1,4 +1,8 @@
 28.10.2020
+    - New: Add new toolbars to replace the separate transport window.
+            The old behaviour is still available - the new toolbars can be hidden 
+            and the transport window shown. Display state of all windows/toolbars
+            is saved when MusE is restarted. (kybos)
     - Add: Show index of active part in title bar/tab in multi-part editors. (kybos)
     - Fix: Move Plugins submenu (contaning global/user Python scripts) from global 
            Midi menu to Arranger scope Functions menu, as it's only relevant for 
