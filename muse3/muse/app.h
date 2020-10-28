@@ -379,7 +379,6 @@ public slots:
     void showMixer2(bool);
     void startRouteDialog();
     void showMarker(bool);
-    //      void showArranger(bool);
     void importMidi(const QString &file);
     void showDidYouKnowDialogIfEnabled();
     void showDidYouKnowDialog();
@@ -411,6 +410,8 @@ public slots:
     void addMdiSubWindow(QMdiSubWindow*);
     void shareMenuAndToolbarChanged(MusEGui::TopWin*, bool);
     void topwinMenuInited(MusEGui::TopWin*);
+    void setActiveMdiSubWindow(QMdiSubWindow*);
+
 
     void updateWindowMenu();
 

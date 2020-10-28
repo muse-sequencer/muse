@@ -3915,18 +3915,18 @@ void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
 {
   if (MusEGlobal::debugMsg) fprintf(stderr, "ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
 
-  if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
-       ( (mdiArea->currentSubWindow() != nullptr) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
-  {
-    if (MusEGlobal::debugMsg) fprintf(stderr, "  that's a menu sharing muse window which isn't inside the MDI area.\n");
-    // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
-    // then unfocus the MDI area and/or the currently active MDI subwin. otherwise you'll be unable to use win's
-    // tools or menu entries, as whenever you click at them, they're replaced by the currently active MDI subwin's
-    // menus and toolbars.
-    // as unfocusing the MDI area and/or the subwin does not work for some reason, we must do this workaround:
-    // simply focus anything in the main window except the mdi area.
-    menuBar()->setFocus(Qt::MenuBarFocusReason);
-  }
+//  if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
+//       ( (mdiArea->currentSubWindow() != nullptr) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
+//  {
+//    if (MusEGlobal::debugMsg) fprintf(stderr, "  that's a menu sharing muse window which isn't inside the MDI area.\n");
+//    // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
+//    // then unfocus the MDI area and/or the currently active MDI subwin. otherwise you'll be unable to use win's
+//    // tools or menu entries, as whenever you click at them, they're replaced by the currently active MDI subwin's
+//    // menus and toolbars.
+//    // as unfocusing the MDI area and/or the subwin does not work for some reason, we must do this workaround:
+//    // simply focus anything in the main window except the mdi area.
+//    menuBar()->setFocus(Qt::MenuBarFocusReason);
+//  }
 
   if (win && (win->sharesToolsAndMenu()))
     setCurrentMenuSharingTopwin(win);
@@ -4094,6 +4094,11 @@ void MusE::addMdiSubWindow(QMdiSubWindow* win)
   mdiArea->addSubWindow(win);
 }
 
+void MusE::setActiveMdiSubWindow(QMdiSubWindow* win)
+{
+    mdiArea->setActiveSubWindow(win);
+}
+
 void MusE::shareMenuAndToolbarChanged(MusEGui::TopWin* win, bool val)
 {
   if (val)
@@ -4202,7 +4207,7 @@ void MusE::bringToFront(QWidget* widget)
 
   if (win->isMdiWin())
   {
-    win->show();
+    win->showMaximized();
     mdiArea->setActiveSubWindow(win->getMdiWin());
   }
   else

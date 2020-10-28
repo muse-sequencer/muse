@@ -428,11 +428,6 @@ void TopWin::setIsMdiWin(bool val)
             if (windowTitle().startsWith("MusE: "))
                 setWindowTitle(windowTitle().mid(6));
 
-//            subwin->setVisible(vis);
-//            this->QMainWindow::show(); //bypass the delegation to the subwin
-
-            mdisubwin->showMaximized();
-
             shareToolsAndMenu(true);
 
             fullscreenAction->setEnabled(false);
@@ -442,6 +437,8 @@ void TopWin::setIsMdiWin(bool val)
                 subwinAction->setChecked(true);
             }
             muse->updateWindowMenu();
+            mdisubwin->showMaximized();
+            muse->setActiveMdiSubWindow(mdisubwin);
         }
         else
         {
@@ -459,7 +456,6 @@ void TopWin::setIsMdiWin(bool val)
             setParent(muse);
             setWindowFlags(Qt::Window);
 
-            QMainWindow::show();
 
             if (!windowTitle().startsWith("MusE: "))
                 setWindowTitle(windowTitle().insert(0, "MusE: "));
@@ -472,6 +468,7 @@ void TopWin::setIsMdiWin(bool val)
                 subwinAction->setChecked(false);
             }
             muse->updateWindowMenu();
+            QMainWindow::show();
         }
         else
         {
