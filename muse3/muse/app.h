@@ -199,7 +199,7 @@ class MusE : public QMainWindow
     // either the leadingMenus or trailingMenus list!
     QMenu *menu_file, *menuView, *menuSettings, *menuWindows, *menu_help;
     QMenu* menu_audio, *menuUtils;
-    QMenu* menu_functions, *menuScriptPlugins;
+    QMenu* menu_functions; // *menuScriptPlugins;
 
     QMenu* follow;
     QMenu* midiInputPlugins;
@@ -237,8 +237,6 @@ class MusE : public QMainWindow
     MidiTransformerDialog* midiTransformerDialog;
     QMenu* openRecent;
     QPointer<MasterEdit> masterEditor;
-
-    MusECore::ScriptReceiver _scriptReceiver;
 
     bool writeTopwinState;
     // Set to restart MusE (almost) from scratch before calling close().
@@ -310,7 +308,6 @@ private slots:
     void startHelpBrowser();
     void startHomepageBrowser();
     void startBugBrowser();
-//    void launchBrowser(QString &whereTo);
     void importMidi();
     void importWave();
     void importPart();
@@ -318,8 +315,6 @@ private slots:
     void findUnusedWaveFiles();
 
     void toggleTransport(bool);
-    //      void toggleMarker(bool);
-    //      void toggleArranger(bool);
     void toggleBigTime(bool);
     void toggleMixer1(bool);
     void toggleMixer2(bool);
@@ -358,11 +353,6 @@ private slots:
     void bigtimeClosed();
     void mixer1Closed();
     void mixer2Closed();
-    //      void markerClosed();
-    //      void arrangerClosed();
-
-    void execDeliveredScript(int);
-    void execUserScript(int);
 
     void activeTopWinChangedSlot(MusEGui::TopWin*);
     void setCurrentMenuSharingTopwin(MusEGui::TopWin*);
@@ -389,7 +379,6 @@ public slots:
     void showMixer2(bool);
     void startRouteDialog();
     void showMarker(bool);
-    //      void showArranger(bool);
     void importMidi(const QString &file);
     void showDidYouKnowDialogIfEnabled();
     void showDidYouKnowDialog();
@@ -421,6 +410,8 @@ public slots:
     void addMdiSubWindow(QMdiSubWindow*);
     void shareMenuAndToolbarChanged(MusEGui::TopWin*, bool);
     void topwinMenuInited(MusEGui::TopWin*);
+    void setActiveMdiSubWindow(QMdiSubWindow*);
+
 
     void updateWindowMenu();
 

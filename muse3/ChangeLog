@@ -1,3 +1,12 @@
+28.10.2020
+    - Add: Show index of active part in title bar/tab in multi-part editors. (kybos)
+    - Fix: Move Plugins submenu (contaning global/user Python scripts) from global 
+           Midi menu to Arranger scope Functions menu, as it's only relevant for 
+           the Arranger. 
+           Fix scripts being applied to wrong (non-midi) parts. 
+           Check for active part selection before executing scripts. 
+           Rename relevant Plugin menus to Scripts to avoid confusion with all the other
+           plugin types. (kybos)
 27.10.2020
     - Fix: Tap button - flash when waiting for input, reset timeout after each click. (kybos)
 24.10.2020

@@ -73,7 +73,7 @@ class PianoRoll : public MidiEditor {
 
     int _pianoWidth;
 
-      QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
+      QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuScripts;
       PopupMenu* addControllerMenu;
       
       QAction* editCutAction; 

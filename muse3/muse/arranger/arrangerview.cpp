@@ -286,7 +286,21 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addAction(editExpandPartsAction);
   functions_menu->addAction(editCleanPartsAction);
   
-  
+  functions_menu->addSeparator();
+  QMenu* menuScripts = functions_menu->addMenu(tr("&Scripts"));
+  menuScripts->menuAction()->setStatusTip(tr("Python scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
+  MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+  //---------------------------------------------------
+  //  Connect script receiver
+  //---------------------------------------------------
+  connect(&_scriptReceiver,
+          &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+          [this](int id) { execDeliveredScript(id); } );
+  connect(&_scriptReceiver,
+          &MusECore::ScriptReceiver::execUserScriptReceived,
+          [this](int id) { execUserScript(id); } );
+
+
   QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
   menuSettings->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
   menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
@@ -1033,6 +1047,34 @@ void ArrangerView::configCustomColumns()
 void ArrangerView::toggleMixerStrip()
 {
     arranger->toggleTrackInfo();
+}
+
+//---------------------------------------------------------
+//   execDeliveredScript
+//---------------------------------------------------------
+void ArrangerView::execDeliveredScript(int id)
+{
+    if (MusECore::getSelectedMidiParts()->empty()) {
+        QMessageBox::warning(this, QString("MusE"), tr("Nothing to edit"));
+        return;
+    }
+
+    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(),
+                                    MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
+}
+
+//---------------------------------------------------------
+//   execUserScript
+//---------------------------------------------------------
+void ArrangerView::execUserScript(int id)
+{
+    if (MusECore::getSelectedMidiParts()->empty()) {
+        QMessageBox::warning(this, QString("MusE"), tr("Nothing to edit"));
+        return;
+    }
+
+    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
+                                    MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 
 } // namespace MusEGui
