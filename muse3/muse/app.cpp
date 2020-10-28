@@ -634,8 +634,8 @@ MusE::MusE() : QMainWindow()
 //      master->addAction(masterListAction);
 
       //-------- Midi Actions
-      menuScriptPlugins = new QMenu(tr("&Scripts"), this);
-      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
+//      menuScriptPlugins = new QMenu(tr("&Scripts"), this);
+//      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
@@ -927,18 +927,6 @@ MusE::MusE() : QMainWindow()
       menuView->addSeparator();
       menuView->addAction(toggleDocksAction);
       menuView->addAction(fullscreenAction);
-
-
-      //---------------------------------------------------
-      //  Connect script receiver
-      //---------------------------------------------------
-
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
-              [this](int id) { execDeliveredScript(id); } );
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execUserScriptReceived,
-              [this](int id) { execUserScript(id); } );
       
       //-------------------------------------------------------------
       //    popup Midi
@@ -948,8 +936,6 @@ MusE::MusE() : QMainWindow()
       menuBar()->addMenu(menu_functions);
       trailingMenus.push_back(menu_functions);
 
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
-      menu_functions->addMenu(menuScriptPlugins);
       menu_functions->addAction(midiEditInstAction);
       menu_functions->addMenu(midiInputPlugins);
       midiInputPlugins->addAction(midiTrpAction);
@@ -3780,24 +3766,6 @@ QWidget* MusE::mixer2Window()     { return mixer2; }
 
 QWidget* MusE::transportWindow() { return transport; }
 QWidget* MusE::bigtimeWindow()   { return bigtime; }
-
-//---------------------------------------------------------
-//   execDeliveredScript
-//---------------------------------------------------------
-void MusE::execDeliveredScript(int id)
-{
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(),
-                                    MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
-}
-
-//---------------------------------------------------------
-//   execUserScript
-//---------------------------------------------------------
-void MusE::execUserScript(int id)
-{
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
-                                    MusECore::getSelectedParts(), 0, false); // TODO: get quant from arranger
-}
 
 //---------------------------------------------------------
 //   findUnusedWaveFiles
