@@ -158,19 +158,18 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     metronome_toolbar->setObjectName("Metronome tool");
     metronome_toolbar->addAction(MusEGlobal::metronomeAction);
 
-    QToolBar* songpos_tb;
+    QToolBar* songpos_tb = new QToolBar;
     songpos_tb = addToolBar(tr("Song Position"));
     songpos_tb->setObjectName("Song Position tool");
     songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
     songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+    addToolBar(Qt::BottomToolBarArea, songpos_tb);
 
-    addToolBarBreak();
-
-    QToolBar* transport_toolbar = addToolBar(tr("Transport"));
-    transport_toolbar->setObjectName("Transport tool");
-    transport_toolbar->addActions(MusEGlobal::transportAction->actions());
-    transport_toolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
+    QToolBar* transportToolbar = addToolBar(tr("Transport"));
+    transportToolbar->setObjectName("Transport tool");
+    transportToolbar->addActions(MusEGlobal::transportAction->actions());
+    transportToolbar->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
     RecToolbar *recToolbar = new RecToolbar(tr("Recording"), this);
     addToolBar(recToolbar);
@@ -178,16 +177,16 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
     addToolBar(syncToolbar);
 
-    PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
-    addToolBar(posToolbar);
+    addToolBarBreak();
 
-    // Already has an object name.
     TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
     addToolBar(tempo_tb);
 
-    // Already has an object name.
     SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
     addToolBar(sig_tb);
+
+    PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+    addToolBar(posToolbar);
 
     connect(tempo_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
     connect(tempo_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));

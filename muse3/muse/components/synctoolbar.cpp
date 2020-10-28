@@ -3,7 +3,6 @@
 #include "synctoolbar.h"
 #include "song.h"
 #include "icons.h"
-#include "transport.h"
 #include "audio.h"
 #include "audiodev.h"
 
@@ -38,8 +37,6 @@ SyncToolbar::SyncToolbar(const QString &title, QWidget *parent)
     addAction(jackTransportAction);
     addAction(timebaseMasterAction);
 
-    timebaseMasterButton = static_cast<QToolButton*>(widgetForAction(timebaseMasterAction));
-
     blinkTimer = new QTimer(this);
     connect(blinkTimer, SIGNAL(timeout()), SLOT(timebaseBlink()));
     blinkTimer->stop();
@@ -49,10 +46,6 @@ SyncToolbar::SyncToolbar(const QString &title, QWidget *parent)
     connect(timebaseMasterAction, SIGNAL(toggled(bool)), SLOT(timebaseMasterClicked(bool)));
 
     connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
-
-    ensurePolished();
-    buttonDefColor = timebaseMasterButton->palette().color(QPalette::Button).name();
-    buttonCheckedColor = timebaseMasterButton->palette().color(QPalette::Highlight).name();
 }
 
 //---------------------------------------------------------
@@ -129,23 +122,20 @@ void SyncToolbar::songChanged(MusECore::SongChangedStruct_t flags)
         const bool has_master = MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasTimebaseMaster();
         if (has_master && MusEGlobal::timebaseMasterState)
         {
-//            timebaseMasterButton->setBlinking(false);
             blinkTimer->stop();
-            timebaseMasterButton->setStyleSheet("QToolButton {background:" + buttonCheckedColor + "}");
             timebaseMasterAction->setChecked(true);
         }
         else if (has_master && MusEGlobal::config.timebaseMaster)
         {
             timebaseMasterAction->setChecked(false);
-//            timebaseMasterButton->setBlinking(true);
-            blinkState = true;
-            blinkTimer->start(250);
+            if (timebaseMasterAction->isEnabled()) {
+                blinkState = false;
+                blinkTimer->start(250);
+            }
         }
         else
         {
-//            timebaseMasterButton->setBlinking(false);
             blinkTimer->stop();
-            timebaseMasterButton->setStyleSheet("QToolButton {background:" + buttonDefColor + "}");
             timebaseMasterAction->setChecked(false);
         }
     }
@@ -153,8 +143,11 @@ void SyncToolbar::songChanged(MusECore::SongChangedStruct_t flags)
 
 void SyncToolbar::timebaseBlink()
 {
+    if (!timebaseMasterAction->isEnabled())
+        return;
+
     blinkState = !blinkState;
-    timebaseMasterButton->setStyleSheet("QToolButton {background:" + (blinkState ? buttonDefColor : "Crimson") + "}");
+    timebaseMasterAction->setChecked(blinkState);
 }
 
 

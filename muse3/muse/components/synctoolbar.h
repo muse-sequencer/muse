@@ -16,10 +16,7 @@ class SyncToolbar : public QToolBar
     QAction* syncAction;
     QAction* jackTransportAction;
     QAction* timebaseMasterAction;
-    QToolButton* timebaseMasterButton;
     QTimer* blinkTimer;
-    QString buttonDefColor;
-    QString buttonCheckedColor;
     bool blinkState;
 
 private slots:

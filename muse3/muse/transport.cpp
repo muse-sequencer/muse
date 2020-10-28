@@ -79,7 +79,7 @@ namespace MusEGui {
 //       }
 
 static QToolButton* newButton(const QIcon* icon, const QString& tt,
-                              bool toggle=false, QWidget* parent=0)
+                              bool toggle=false, QWidget* parent=nullptr)
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(25);

@@ -822,21 +822,19 @@ MusE::MusE() : QMainWindow()
       metronomeToolbar->setObjectName("Metronome tool");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
-      // Already has an object name.
       cpuLoadToolbar = new CpuToolbar(tr("Cpu load"), this);
       addToolBar(cpuLoadToolbar);
       cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
-      QToolBar* songpos_tb;
+      QToolBar* songpos_tb = new QToolBar;
       songpos_tb = addToolBar(tr("Song Position"));
       songpos_tb->setObjectName("Song Position tool");
       songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
       songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
       songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
+      addToolBar(Qt::BottomToolBarArea, songpos_tb);
 
-      addToolBarBreak();
-      
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport tool");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
@@ -848,17 +846,17 @@ MusE::MusE() : QMainWindow()
       SyncToolbar *syncToolbar = new SyncToolbar(tr("Sync"), this);
       addToolBar(syncToolbar);
 
-      PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
-      addToolBar(posToolbar);
+      addToolBarBreak();
 
-      // Already has an object name.
       TempoToolbar* tempo_tb = new TempoToolbar(tr("Tempo"), this);
       addToolBar(tempo_tb);
       
-      // Already has an object name.
       SigToolbar* sig_tb = new SigToolbar(tr("Signature"), this);
       addToolBar(sig_tb);
       
+      PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
+      addToolBar(posToolbar);
+
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
 
