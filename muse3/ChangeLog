@@ -1,3 +1,7 @@
+29.10.2020
+    - New: Color range between markers in the timeline ruler. (kybos)
+    - Fix: Fix huge tooltips in bigtime window. (kybos)
+    - Fix: Fix non-standard button in tempo toolbar. (kybos)
 28.10.2020
     - New: Add new toolbars to replace the separate transport window.
             The old behaviour is still available - the new toolbars can be hidden 
