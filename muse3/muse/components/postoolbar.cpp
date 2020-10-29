@@ -1,9 +1,12 @@
 #include "postoolbar.h"
 #include "song.h"
+#include "gconfig.h"
 
 #include <QLabel>
 #include <QSpacerItem>
 #include <QHBoxLayout>
+#include <QPainter>
+//#include <QVector>
 
 
 namespace MusEGui {
@@ -14,7 +17,29 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
 {
     setObjectName("Position toolbar");
 
-    QLabel *range = new QLabel(tr("Range"), this);
+    QLabel *range = new QLabel(this);
+//    QLabel *range = new QLabel(tr("Range"), this);
+
+    int size = MusEGlobal::config.iconSize;
+    qreal dpr = devicePixelRatioF();
+    QPixmap pix(size * dpr, size * dpr);
+    pix.setDevicePixelRatio(dpr);
+    pix.fill( Qt::transparent );
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setBrush(MusEGlobal::config.rangeMarkerColor);
+    QPen pen;
+    pen.setCosmetic(true);
+    pen.setColor(MusEGlobal::config.rangeMarkerColor);
+    p.setPen(pen);
+
+    qreal pixc = size/2;
+    p.drawPolygon( QVector<QPointF>{ { pixc + 4, 1 },
+                                     { pixc - 4, 1 },
+                                     { pixc + 4, 9 } } );
+    p.drawLine(QPointF(pixc + 4, 8), QPointF(pixc + 4, size - 2));
+    range->setPixmap(pix);
+
     addWidget(range);
 
     markerLeft = new PosEdit(this);
