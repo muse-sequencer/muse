@@ -162,7 +162,7 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
 
 static void drawCenteredPixmap(QPainter& p, const QPixmap* pm, const QRect& r)
       {
-      p.drawPixmap(r.x(), r.y() + 2, *pm);
+      p.drawPixmap(r.x(), r.y() + (r.height() - pm->height() / 2) / 2, *pm);
 //      p.drawPixmap(r.x() + (r.width() - pm->width())/2, r.y() + (r.height() - pm->height())/2, *pm);
       }
 

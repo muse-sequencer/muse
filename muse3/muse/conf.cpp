@@ -39,13 +39,13 @@
 #include "pianoroll.h"
 #include "scoreedit.h"
 #include "master/masteredit.h"
-#include "listedit.h"
+//#include "listedit.h"
 #include "cliplist/cliplist.h"
 #include "arrangerview.h"
 #include "marker/markerview.h"
-#include "master/lmaster.h"
+//#include "master/lmaster.h"
 #include "bigtime.h"
-#include "arranger.h"
+//#include "arranger.h"
 #include "conf.h"
 #include "gconfig.h"
 #include "pitchedit.h"
@@ -1360,6 +1360,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
                               xml.skip(tag);
+                        else if ((tag == "lmaster") || (tag == "listedit"))
+                            xml.skip(tag);
                         else if (tag == "mixerVisible")
                               xml.skip(tag);
                         else if (tag == "geometryMixer")

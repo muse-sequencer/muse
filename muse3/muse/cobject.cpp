@@ -158,13 +158,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     metronome_toolbar->setObjectName("Metronome tool");
     metronome_toolbar->addAction(MusEGlobal::metronomeAction);
 
-    QToolBar* songpos_tb = new QToolBar;
-    songpos_tb = addToolBar(tr("Song Position"));
+    QToolBar* songpos_tb = addToolBar(tr("Song Position"));
     songpos_tb->setObjectName("Song Position tool");
     songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
     songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
-    addToolBar(Qt::BottomToolBarArea, songpos_tb);
 
     QToolBar* transportToolbar = addToolBar(tr("Transport"));
     transportToolbar->setObjectName("Transport tool");
@@ -425,6 +423,9 @@ void TopWin::createMdiWrapper()
 void TopWin::setIsMdiWin(bool val)
 {
     if (MusEGlobal::unityWorkaround)
+        return;
+
+    if (!val && _type == ARRANGER)
         return;
 
     if (val)
@@ -749,16 +750,11 @@ void TopWin::setFullscreen(bool val)
 
 void TopWin::resize(int w, int h)
 {
-    QMainWindow::resize(w,h);
-
     if (isMdiWin())
-        mdisubwin->resize(w,h);
-}
+        return;
 
-//void TopWin::resize(const QSize& s)
-//{
-//    resize(s.width(), s.height());
-//}
+    QMainWindow::resize(w,h);
+}
 
 void TopWin::setWindowTitle (const QString& title)
 {

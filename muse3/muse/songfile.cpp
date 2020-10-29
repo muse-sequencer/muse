@@ -1061,6 +1061,10 @@ void MusE::readToplevels(MusECore::Xml& xml)
                 startMasterEditor();
                 toplevels.back()->readStatus(xml);
             }
+            else if (tag == "arrangerview") {
+                TopWin* tw = toplevels.findType(TopWin::ARRANGER);
+                    tw->readStatus(xml);
+            }
             else if (tag == "waveedit") {
                 if(!pl->empty())
                 {
@@ -1221,34 +1225,34 @@ void MusE::read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate)
 //---------------------------------------------------------
 
 void MusE::write(MusECore::Xml& xml, bool writeTopwins) const
-      {
-      xml.header();
+{
+    xml.header();
 
-      int level = 0;
-      xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+    int level = 0;
+    xml.nput(level++, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
 
-      writeConfiguration(level, xml);
+    writeConfiguration(level, xml);
 
-      writeStatusMidiInputTransformPlugins(level, xml);
+    writeStatusMidiInputTransformPlugins(level, xml);
 
-      MusEGlobal::song->write(level, xml);
+    MusEGlobal::song->write(level, xml);
 
-      if (writeTopwins && !toplevels.empty()) {
-            xml.tag(level++, "toplevels");
-            for (MusEGui::ciToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-                  if ((*i)->isVisible())
-                        (*i)->writeStatus(level, xml);
-                  }
-            xml.tag(level--, "/toplevels");
-            }
-      else if (!writeTopwins)
-      {
-            xml.tag(level, "no_toplevels");
-            xml.etag(level, "no_toplevels");
-      }
+    if (writeTopwins && !toplevels.empty()) {
+        xml.tag(level++, "toplevels");
+        for (const auto& i : toplevels) {
+            if (i->isVisible())
+                i->writeStatus(level, xml);
+        }
+        xml.tag(level--, "/toplevels");
+    }
+    else if (!writeTopwins)
+    {
+        xml.tag(level, "no_toplevels");
+        xml.etag(level, "no_toplevels");
+    }
 
-      xml.tag(level, "/muse");
-      }
+    xml.tag(level, "/muse");
+}
 
 } // namespace MusEGui
 
