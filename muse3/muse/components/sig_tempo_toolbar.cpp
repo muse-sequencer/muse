@@ -56,12 +56,10 @@ void TempoToolbar::init()
 {
     setObjectName("Tempo toolbar");
 
-    _masterButton = new IconButton(masterTrackOnSVGIcon, masterTrackOffSVGIcon, 0, 0, false, true);
-    _masterButton->setContentsMargins(0, 0, 0, 0);
-    _masterButton->setFocusPolicy(Qt::NoFocus);
+    _masterButton = new QToolButton(this);
+    _masterButton->setIcon(*masterTrackOnSVGIcon);
     _masterButton->setCheckable(true);
     _masterButton->setToolTip(tr("Use mastertrack tempo"));
-    _masterButton->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
     connect(_masterButton, SIGNAL(toggled(bool)), SLOT(masterToggled(bool)));
 
     tempo_edit=new TempoEdit(this);

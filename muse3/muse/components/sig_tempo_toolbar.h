@@ -47,7 +47,7 @@ namespace MusEGui
     private:
       TempoEdit* tempo_edit;
       QToolButton *tap_button;
-      IconButton* _masterButton;
+      QToolButton* _masterButton;
 
       QTimer tap_timer;
       QDateTime last_tap_time;
