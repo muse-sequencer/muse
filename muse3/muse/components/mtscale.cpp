@@ -496,6 +496,13 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
               }
           }
 
+          if (pos[2] > pos[1]) {
+              QColor c(MusEGlobal::config.rangeMarkerColor);
+              c.setAlpha(127);
+              p.fillRect(QRect(QPoint(mapx(static_cast<int>(pos[1])), mtop), QPoint(mapx(static_cast<int>(pos[2])), mbottom)), c);
+          }
+
+
           // draw position marker
           {
               const int xp = static_cast<int>(pos[0]);
