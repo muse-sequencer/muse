@@ -46,7 +46,7 @@
 #include "midieditor.h"
 
 namespace MusEGui {
-  
+
 /*
 static const char *oct_xpm[] = {
     // w h colors
@@ -199,7 +199,7 @@ Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
     selectedPitch = 60;  // Start with 'C3"
     keyDown = -1;
     button = Qt::NoButton;
-    setStatusTip(tr("Piano: Press key to play. Enter events in step record mode (SHIFT for chords). RMB: Set cursor for polyphonic control events."));
+    setStatusTip(tr("Piano: Press key to play or enter events in step record mode (SHIFT for chords). RMB: Set cursor for polyphonic control events. CTRL+Mousewheel to zoom view vertically."));
 }
 
 //---------------------------------------------------------
@@ -327,7 +327,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
     // draw C notes
     {
         const int octaveHeight = 7 * KH;
-        QFont f("Arial", 7);
+        QFont f(MusEGlobal::config.fonts[0].family(), 7);
         QFontMetrics fm(f);
         p.setFont(f);
         p.setPen(Qt::black);
@@ -406,7 +406,7 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
     }
 
 }
-      
+
 //---------------------------------------------------------
 //   pitch2y
 //---------------------------------------------------------
@@ -581,11 +581,11 @@ void Piano::viewMouseReleaseEvent(QMouseEvent* event)
 void Piano::setCurSelectedPitch(int pitch)
       {
       if (pitch < 0 || pitch >= 128)
-        return; 
+        return;
       if (pitch != selectedPitch) {
             selectedPitch = pitch;
             emit curSelectedPitchChanged(selectedPitch);
-            redraw(); 
+            redraw();
             }
       }
 
@@ -612,5 +612,5 @@ void Piano::wheelEvent(QWheelEvent* ev)
 
     emit redirectWheelEvent(ev);
 }
-      
+
 } // namespace MusEGui
