@@ -60,7 +60,7 @@ BigTime::BigTime(QWidget* parent)
   dwin = new QWidget(this, Qt::WindowStaysOnTopHint);  // Possibly also Qt::X11BypassWindowManagerHint
   dwin->setObjectName("bigtime-dwin");
   dwin->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-  dwin->setStyleSheet("font-size:10px; font-family:'Courier'; ");   // Tim p4.0.8
+  dwin->setStyleSheet("QWidget {font-size:10px; font-family:'Courier'}");   // Tim p4.0.8
 
   fmtButton = new QCheckBox(QString(""), this);
   fmtButton->resize(18,18);
@@ -391,7 +391,7 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   else if (fs > 256)
         fs = 256;
         
-  QString fstr = QString("font-size:%1px; font-family:'Courier'; ").arg(fs);  // Tim p4.0.8
+  QString fstr = QString("QWidget {font-size:%1px; font-family:'Courier'}").arg(fs);  // Tim p4.0.8
   dwin->setStyleSheet(fstr);
   setBgColor(MusEGlobal::config.bigTimeBackgroundColor);
   setFgColor(MusEGlobal::config.bigTimeForegroundColor);
