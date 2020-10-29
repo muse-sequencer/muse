@@ -158,8 +158,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     metronome_toolbar->setObjectName("Metronome tool");
     metronome_toolbar->addAction(MusEGlobal::metronomeAction);
 
-    QToolBar* songpos_tb = addToolBar(tr("Song Position"));
-    songpos_tb->setObjectName("Song Position tool");
+    QToolBar* songpos_tb = addToolBar(tr("Timeline"));
+    songpos_tb->setObjectName("Timeline tool");
     songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
     songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);

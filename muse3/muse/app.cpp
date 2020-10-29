@@ -828,8 +828,8 @@ MusE::MusE() : QMainWindow()
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
       QToolBar* songpos_tb = new QToolBar;
-      songpos_tb = addToolBar(tr("Song Position"));
-      songpos_tb->setObjectName("Song Position tool");
+      songpos_tb = addToolBar(tr("Timeline"));
+      songpos_tb->setObjectName("Timeline tool");
       songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
       songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
       songpos_tb->setContextMenuPolicy(Qt::PreventContextMenu);
