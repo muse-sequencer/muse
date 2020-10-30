@@ -199,6 +199,8 @@ QToolBar QComboBox QAbstractItemView {
 QToolBar QLabel#PosLabel, 
 QToolBar QLabel#PitchLabel,
 QToolBar QLabel#TempoLabel,
+QToolBar QLabel#PosTicks,
+QToolBar QLabel#PosFrames,
 QToolBar QLabel#PaddedValueLabel {
     background-color: rgb(40,50,60);
     border: 1px solid rgb(0,100,210);

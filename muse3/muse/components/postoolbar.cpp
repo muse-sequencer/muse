@@ -1,8 +1,9 @@
 #include "postoolbar.h"
 #include "song.h"
 #include "gconfig.h"
+#include "audio.h"
+#include "icons.h"
 
-#include <QLabel>
 #include <QSpacerItem>
 #include <QHBoxLayout>
 #include <QPainter>
@@ -50,7 +51,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
 
     markerLeft = new PosEdit(this);
     markerLeft->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-    markerLeft->setFocusPolicy(Qt::NoFocus);
+//    markerLeft->setFocusPolicy(Qt::NoFocus);
     markerLeft->setToolTip(tr("Left marker"));
     markerLeft->setStatusTip(tr("Left marker position"));
     addWidget(markerLeft);
@@ -65,11 +66,12 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     p.drawLine(QPointF(pixc - rad, off + 2 * rad), QPointF(pixc - rad, iconSize - 2 * off));
 
     pixlab->setPixmap(pix);
+    pixlab->setContentsMargins(2,0,0,0);
     addWidget(pixlab);
 
     markerRight = new PosEdit(this);
     markerRight->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-    markerRight->setFocusPolicy(Qt::NoFocus);
+//    markerRight->setFocusPolicy(Qt::NoFocus);
     markerRight->setToolTip(tr("Right marker"));
     markerRight->setStatusTip(tr("Right marker position"));
     addWidget(markerRight);
@@ -91,22 +93,51 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     p.drawLine(QPointF(pixc, off + 2 * rad), QPointF(pixc, iconSize - 2 * off));
 
     pixlab->setPixmap(pix);
+    pixlab->setContentsMargins(2,0,0,0);
     addWidget(pixlab);
 
     time = new PosEdit(this);
     time->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-    time->setFocusPolicy(Qt::NoFocus);
+//    time->setFocusPolicy(Qt::NoFocus);
+    time->setToolTip(tr("Current position"));
     time->setStatusTip(tr("Current position in bars/beats"));
+    addWidget(time);
 
     timeSmpte = new PosEdit(this);
     timeSmpte->setSmpte(true);
     timeSmpte->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-    timeSmpte->setFocusPolicy(Qt::NoFocus);
+//    timeSmpte->setFocusPolicy(Qt::NoFocus);
     timeSmpte->setToolTip(tr("SMPTE position"));
     timeSmpte->setStatusTip(tr("Current position in SMPTE time"));
-
-    addWidget(time);
     addWidget(timeSmpte);
+
+    toggleTickFrame = new QAction(*plusSVGIcon, "Toggle ticks/frames");
+    toggleTickFrame->setCheckable(true);
+    toggleTickFrame->setChecked(false);
+    toggleTickFrame->setToolTip(tr("Show position in ticks and audio frames"));
+    addAction(toggleTickFrame);
+
+    posTicks = new QLabel(this);
+    posTicks->setObjectName("PosTicks");
+    posTicks->setToolTip(tr("Current position in ticks"));
+    posTicks->setStatusTip(tr("Current position in ticks"));
+    posTicks->setText("0000000000");
+    posTicks->setTextFormat(Qt::PlainText);
+    posTicks->setFocusPolicy(Qt::NoFocus);
+    posTicks->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    posTicksAction = addWidget(posTicks);
+    posTicksAction->setVisible(false);
+
+    posFrames = new QLabel(this);
+    posFrames->setObjectName("PosFrames");
+    posFrames->setToolTip(tr("Current position in audio frames"));
+    posFrames->setStatusTip(tr("Current position in audio frames"));
+    posFrames->setText("0000000000");
+    posFrames->setTextFormat(Qt::PlainText);
+    posFrames->setFocusPolicy(Qt::NoFocus);
+    posFrames->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    posFramesAction = addWidget(posFrames);
+    posFramesAction->setVisible(false);
 
     slider = new QSlider;
     slider->setFocusPolicy(Qt::NoFocus);
@@ -119,7 +150,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     slider->setToolTip(tr("Current position"));
     slider->setStatusTip(tr("Current position slider"));
 
-    addSeparator();
+//    addSeparator();
     addWidget(slider);
 
     connect(markerLeft,  SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lposChanged(const MusECore::Pos&)));
@@ -127,6 +158,8 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     connect(time, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos&)));
     connect(timeSmpte, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos&)));
     connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
+    connect(toggleTickFrame, SIGNAL(toggled(bool)), SLOT(showTickFrameToggled(bool)));
+
 
     connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
     connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));
@@ -183,6 +216,11 @@ void PosToolbar::setPos(int idx, unsigned v, bool)
             slider->setValue(v);
             slider->blockSignals(false);
         }
+
+        posTicks->setText(QString::number(v).rightJustified(10, '0'));
+//        unsigned absFrame = MusEGlobal::audio->pos().frame();
+        posFrames->setText(QString::number(MusEGlobal::audio->pos().frame()).rightJustified(10, '0'));
+
         break;
     case 1:
         markerLeft->setValue(v);
@@ -201,6 +239,18 @@ void PosToolbar::songChanged(MusECore::SongChangedStruct_t)
 {
     slider->setRange(0, MusEGlobal::song->len());
 }
+
+void PosToolbar::showTickFrameToggled(bool checked) {
+    if (checked) {
+        posTicksAction->setVisible(true);
+        posFramesAction->setVisible(true);
+    } else {
+        posTicksAction->setVisible(false);
+        posFramesAction->setVisible(false);    }
+    updateGeometry();
+    update();
+}
+
 
 
 } // namespace
