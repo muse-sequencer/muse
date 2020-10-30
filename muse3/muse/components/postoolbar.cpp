@@ -6,7 +6,6 @@
 #include <QSpacerItem>
 #include <QHBoxLayout>
 #include <QPainter>
-//#include <QVector>
 
 
 namespace MusEGui {
@@ -17,48 +16,82 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
 {
     setObjectName("Position toolbar");
 
-    QLabel *range = new QLabel(this);
+    QLabel *pixlab = new QLabel(this);
 //    QLabel *range = new QLabel(tr("Range"), this);
 
-    int size = MusEGlobal::config.iconSize;
+    int iconSize = MusEGlobal::config.iconSize;
     qreal dpr = devicePixelRatioF();
-    QPixmap pix(size * dpr, size * dpr);
+    QPixmap pix(iconSize * dpr, iconSize * dpr);
     pix.setDevicePixelRatio(dpr);
     pix.fill( Qt::transparent );
+
     QPainter p(&pix);
     p.setRenderHint(QPainter::Antialiasing);
     p.setBrush(MusEGlobal::config.rangeMarkerColor);
-    QPen pen;
-    pen.setCosmetic(true);
-    pen.setColor(MusEGlobal::config.rangeMarkerColor);
-    p.setPen(pen);
+    p.setPen(MusEGlobal::config.rangeMarkerColor);
 
-    qreal pixc = size/2;
-    p.drawPolygon( QVector<QPointF>{ { pixc + 4, 1 },
-                                     { pixc - 4, 1 },
-                                     { pixc + 4, 9 } } );
-    p.drawLine(QPointF(pixc + 4, 8), QPointF(pixc + 4, size - 2));
-    range->setPixmap(pix);
+//    QPen pen;
+//    pen.setCosmetic(true);
+//    pen.setColor(MusEGlobal::config.rangeMarkerColor);
+//    p.setPen(pen);
 
-    addWidget(range);
+
+    qreal pixc = iconSize / 2;
+    qreal off = 0;
+//    qreal off = iconSize / 10;
+    qreal rad = iconSize / 4;
+    p.drawPolygon( QVector<QPointF>{ { pixc + rad, off },
+                                     { pixc - rad, off },
+                                     { pixc + rad, off + 2 * rad } } );
+    p.drawLine(QPointF(pixc + rad, off + 2 * rad), QPointF(pixc + rad, iconSize - 2 * off));
+
+    pixlab->setPixmap(pix);
+    addWidget(pixlab);
 
     markerLeft = new PosEdit(this);
     markerLeft->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
     markerLeft->setFocusPolicy(Qt::NoFocus);
     markerLeft->setToolTip(tr("Left marker"));
     markerLeft->setStatusTip(tr("Left marker position"));
+    addWidget(markerLeft);
+
+
+    pixlab = new QLabel(this);
+    pix.fill( Qt::transparent );
+
+    p.drawPolygon( QVector<QPointF>{ { pixc - rad, off },
+                                     { pixc + rad, off },
+                                     { pixc - rad, off + 2 * rad } } );
+    p.drawLine(QPointF(pixc - rad, off + 2 * rad), QPointF(pixc - rad, iconSize - 2 * off));
+
+    pixlab->setPixmap(pix);
+    addWidget(pixlab);
+
     markerRight = new PosEdit(this);
     markerRight->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
     markerRight->setFocusPolicy(Qt::NoFocus);
     markerRight->setToolTip(tr("Right marker"));
     markerRight->setStatusTip(tr("Right marker position"));
-
-    addWidget(markerLeft);
     addWidget(markerRight);
 
-    QLabel *pos = new QLabel(tr("Pos"), this);
-    pos->setIndent(2);
-    addWidget(pos);
+//    QLabel *pos = new QLabel(tr("Pos"), this);
+//    pos->setIndent(2);
+//    addWidget(pos);
+
+    p.setBrush(MusEGlobal::config.positionMarkerColor);
+    p.setPen(Qt::NoPen);
+
+    pixlab = new QLabel(this);
+    pix.fill( Qt::transparent );
+
+    p.drawPolygon( QVector<QPointF>{ { pixc - 2 * rad, off },
+                                     { pixc + 2 * rad, off },
+                                     { pixc, off + 2 * rad } } );
+    p.setPen(MusEGlobal::config.positionMarkerColor);
+    p.drawLine(QPointF(pixc, off + 2 * rad), QPointF(pixc, iconSize - 2 * off));
+
+    pixlab->setPixmap(pix);
+    addWidget(pixlab);
 
     time = new PosEdit(this);
     time->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
