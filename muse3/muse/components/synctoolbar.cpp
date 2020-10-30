@@ -108,8 +108,8 @@ void SyncToolbar::songChanged(MusECore::SongChangedStruct_t flags)
     if (flags & SC_USE_JACK_TRANSPORT) {
         QSignalBlocker blocker(jackTransportAction);
         QSignalBlocker blockerx(timebaseMasterAction);
-        jackTransportAction->setChecked(MusEGlobal::config.useJackTransport);
         jackTransportAction->setEnabled(MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasOwnTransport());
+        jackTransportAction->setChecked(MusEGlobal::config.useJackTransport && jackTransportAction->isEnabled());
         timebaseMasterAction->setEnabled(MusEGlobal::audioDevice &&
                                          MusEGlobal::audioDevice->hasOwnTransport() &&
                                          MusEGlobal::audioDevice->hasTimebaseMaster() &&
@@ -146,6 +146,7 @@ void SyncToolbar::timebaseBlink()
     if (!timebaseMasterAction->isEnabled())
         return;
 
+    QSignalBlocker blocker(timebaseMasterAction);
     blinkState = !blinkState;
     timebaseMasterAction->setChecked(blinkState);
 }

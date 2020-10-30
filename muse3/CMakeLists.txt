@@ -722,16 +722,12 @@ file (GLOB doc_files
       COPYING
       libdivide_LICENSE
       README
-      README.editor-shortcuts
-      README.effects-rack
-      README.instruments
+      README.developer
       README.ladspaguis
-      README.metronome
-      README.python
-      README.shortcuts
       README.softsynth
-      README.translate
-      README.usage
+      README.vstsdk
+      README.win32
+      README.developer.undo_system
       SECURITY
       )
 INSTALL( FILES ${doc_files} DESTINATION ${MusE_DOC_DIR})
