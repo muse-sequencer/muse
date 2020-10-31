@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Robert Jonsson 2020
+# Constant Velocity
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#
+#  Copyright (C) 2002-2020 by the MusE development team
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+
+import sys,time
+from PyQt5.QtWidgets import QApplication, QWidget, QComboBox, QLabel, QSpinBox, QPushButton, QGridLayout
+
+class ConstantVelocity(QWidget):
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+
+        self.setWindowTitle('Constant Velocity For Event')
+
+        title = QLabel('Note number (60 = C3):')
+        self.noteValueInputBox = QSpinBox()
+        self.noteValueInputBox.setValue(60)
+
+        numLabel = QLabel('New velocity (1-127):')
+        self.numEntry = QSpinBox()
+        self.numEntry.setMinimum(1)
+        self.numEntry.setMaximum(127)
+        self.numEntry.setValue(100)
+
+        print ("setting execute")
+        button = QPushButton("Execute")
+        button.clicked.connect(self.execute)
+
+        grid = QGridLayout()
+        grid.setSpacing(3)
+
+        grid.addWidget(title, 1, 0)
+        grid.addWidget(self.noteValueInputBox, 1, 1)
+        grid.addWidget(numLabel, 2, 0)
+        grid.addWidget(self.numEntry, 2, 1)
+
+        grid.addWidget(button, 3, 1)
+
+        self.setLayout(grid)
+        self.resize(200, 100)
+        button.setFocus()
+
+    def execute(self):
+
+        fileToProcess = open(sys.argv[1],"r")
+        inputEvents = fileToProcess.readlines()
+        fileToProcess.close()
+        
+        selectedNote = self.noteValueInputBox.value()
+        newVelocity = self.numEntry.value()
+        
+        outputEvents=[]
+
+        #loop through events
+        for line in inputEvents:
+          if line.startswith('NOTE'):
+            tag,tick,note,length,velocity = line.split(' ')
+            if int(note) == int(selectedNote):
+              outputEvents.append("%s %s %s %s %d\n"%(tag,tick,note,length,newVelocity))
+            else:
+              outputEvents.append(line)
+          else:
+            outputEvents.append(line)
+
+        fileToProcess = open(sys.argv[1],"w")
+        fileToProcess.writelines(outputEvents)
+        fileToProcess.close()
+
+        quit()
+
+app = QApplication(sys.argv)
+qb = ConstantVelocity()
+qb.show()
+sys.exit(app.exec_())
