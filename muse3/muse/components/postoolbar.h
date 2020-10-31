@@ -3,6 +3,7 @@
 
 #include <QToolBar>
 #include <QSlider>
+#include <QLabel>
 
 #include "pos.h"
 #include "posedit.h"
@@ -26,13 +27,19 @@ private:
    PosEdit *markerRight;
    PosEdit *time;
    PosEdit *timeSmpte;
+   QLabel *posTicks;
+   QLabel *posFrames;
+   QAction *posTicksAction;
+   QAction *posFramesAction;
    QSlider *slider;
+   QAction *toggleTickFrame;
 
 private slots:
     void cposChanged(const MusECore::Pos&);
     void cposChanged(int);
     void lposChanged(const MusECore::Pos&);
     void rposChanged(const MusECore::Pos&);
+    void showTickFrameToggled(bool);
 
 };
 
