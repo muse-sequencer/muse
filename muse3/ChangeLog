@@ -1,3 +1,6 @@
+31.10.2020
+    - Add: Optional display of ticks/frames in the position toolbar. (kybos)
+    - Add: Draw marker/position symbols as labels in the position toolbar. (kybos)
 29.10.2020
     - New: Color range between markers in the timeline ruler. (kybos)
     - Fix: Fix huge tooltips in bigtime window. (kybos)

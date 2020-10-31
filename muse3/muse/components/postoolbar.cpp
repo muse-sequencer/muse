@@ -18,7 +18,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     setObjectName("Position toolbar");
 
     QLabel *pixlab = new QLabel(this);
-//    QLabel *range = new QLabel(tr("Range"), this);
+    //    QLabel *range = new QLabel(tr("Range"), this);
 
     int iconSize = MusEGlobal::config.iconSize;
     qreal dpr = devicePixelRatioF();
@@ -31,16 +31,10 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     p.setBrush(MusEGlobal::config.rangeMarkerColor);
     p.setPen(MusEGlobal::config.rangeMarkerColor);
 
-//    QPen pen;
-//    pen.setCosmetic(true);
-//    pen.setColor(MusEGlobal::config.rangeMarkerColor);
-//    p.setPen(pen);
-
-
     qreal pixc = iconSize / 2;
     qreal off = 0;
-//    qreal off = iconSize / 10;
-    qreal rad = iconSize / 4;
+    //    qreal off = iconSize / 10;
+    qreal rad = iconSize / 5;
     p.drawPolygon( QVector<QPointF>{ { pixc + rad, off },
                                      { pixc - rad, off },
                                      { pixc + rad, off + 2 * rad } } );
@@ -51,7 +45,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
 
     markerLeft = new PosEdit(this);
     markerLeft->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-//    markerLeft->setFocusPolicy(Qt::NoFocus);
+    //    markerLeft->setFocusPolicy(Qt::NoFocus);
     markerLeft->setToolTip(tr("Left marker"));
     markerLeft->setStatusTip(tr("Left marker position"));
     addWidget(markerLeft);
@@ -71,14 +65,14 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
 
     markerRight = new PosEdit(this);
     markerRight->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-//    markerRight->setFocusPolicy(Qt::NoFocus);
+    //    markerRight->setFocusPolicy(Qt::NoFocus);
     markerRight->setToolTip(tr("Right marker"));
     markerRight->setStatusTip(tr("Right marker position"));
     addWidget(markerRight);
 
-//    QLabel *pos = new QLabel(tr("Pos"), this);
-//    pos->setIndent(2);
-//    addWidget(pos);
+    //    QLabel *pos = new QLabel(tr("Pos"), this);
+    //    pos->setIndent(2);
+    //    addWidget(pos);
 
     p.setBrush(MusEGlobal::config.positionMarkerColor);
     p.setPen(Qt::NoPen);
@@ -98,7 +92,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
 
     time = new PosEdit(this);
     time->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-//    time->setFocusPolicy(Qt::NoFocus);
+    //    time->setFocusPolicy(Qt::NoFocus);
     time->setToolTip(tr("Current position"));
     time->setStatusTip(tr("Current position in bars/beats"));
     addWidget(time);
@@ -106,15 +100,16 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     timeSmpte = new PosEdit(this);
     timeSmpte->setSmpte(true);
     timeSmpte->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-//    timeSmpte->setFocusPolicy(Qt::NoFocus);
+    //    timeSmpte->setFocusPolicy(Qt::NoFocus);
     timeSmpte->setToolTip(tr("SMPTE position"));
     timeSmpte->setStatusTip(tr("Current position in SMPTE time"));
     addWidget(timeSmpte);
 
-    toggleTickFrame = new QAction(*plusSVGIcon, "Toggle ticks/frames");
+    toggleTickFrame = new QAction(*showFieldsSVGIcon, "Toggle ticks/frames");
     toggleTickFrame->setCheckable(true);
     toggleTickFrame->setChecked(false);
     toggleTickFrame->setToolTip(tr("Show position in ticks and audio frames"));
+    toggleTickFrame->setStatusTip(tr("Show additional output fields displaying the current position in ticks and audio frames"));
     addAction(toggleTickFrame);
 
     posTicks = new QLabel(this);
@@ -150,7 +145,7 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     slider->setToolTip(tr("Current position"));
     slider->setStatusTip(tr("Current position slider"));
 
-//    addSeparator();
+    //    addSeparator();
     addWidget(slider);
 
     connect(markerLeft,  SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lposChanged(const MusECore::Pos&)));
@@ -217,10 +212,10 @@ void PosToolbar::setPos(int idx, unsigned v, bool)
             slider->blockSignals(false);
         }
 
-        posTicks->setText(QString::number(v).rightJustified(10, '0'));
-//        unsigned absFrame = MusEGlobal::audio->pos().frame();
-        posFrames->setText(QString::number(MusEGlobal::audio->pos().frame()).rightJustified(10, '0'));
-
+        if (posTicksAction->isVisible()) {
+            posTicks->setText(QString::number(v).rightJustified(10, '0'));
+            posFrames->setText(QString::number(MusEGlobal::audio->pos().frame()).rightJustified(10, '0'));
+        }
         break;
     case 1:
         markerLeft->setValue(v);

@@ -145,5 +145,6 @@
         <file>svg/track_input.svg</file>
         <file>svg/synth.svg</file>
         <file>svg/info.svg</file>
+        <file>svg/show_fields.svg</file>
     </qresource>
 </RCC>
