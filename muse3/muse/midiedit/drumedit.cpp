@@ -324,21 +324,22 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       // Scripts:
       //----------------------
 
-      QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Scripts"));
+      menuScripts = menuBar()->addMenu(tr("&Scripts"));
       connect(&_scriptReceiver,
               &MusECore::ScriptReceiver::execDeliveredScriptReceived,
               [this](int id) { execDeliveredScript(id); } );
       connect(&_scriptReceiver,
               &MusECore::ScriptReceiver::execUserScriptReceived,
               [this](int id) { execUserScript(id); } );
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
-
+      MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+      QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
+      refreshScriptsAction->setIcon(*fileopenSVGIcon);
+      connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
 
       settingsMenu->addAction(subwinAction);
-//      settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
 
       settingsMenu->addSeparator();
@@ -2241,5 +2242,13 @@ void DrumEdit::setupHZoomRange()
   const int min = (_minXMag * MusEGlobal::config.division) / 384;
   hscroll->setScaleRange(min, _maxXMag);
 }
+
+void DrumEdit::refreshScriptsTriggered() {
+    MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+    QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
+    refreshScriptsAction->setIcon(*fileopenSVGIcon);
+    connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
+}
+
 
 } // namespace MusEGui

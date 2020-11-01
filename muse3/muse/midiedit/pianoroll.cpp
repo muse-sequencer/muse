@@ -266,6 +266,9 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
               &MusECore::ScriptReceiver::execUserScriptReceived,
               [this](int id) { execUserScript(id); } );
       MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+      QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
+      refreshScriptsAction->setIcon(*fileopenSVGIcon);
+      connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
 
       menuConfig = menuBar()->addMenu(tr("&Display"));
       menuConfig->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
@@ -1905,5 +1908,12 @@ void PianoRoll::newCanvasWidth(int /*w*/)
       updateHScrollRange();
 */      
       }
+
+void PianoRoll::refreshScriptsTriggered() {
+    MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+    QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
+    refreshScriptsAction->setIcon(*fileopenSVGIcon);
+    connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
+}
 
 } // namespace MusEGui

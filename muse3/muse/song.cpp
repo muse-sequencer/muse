@@ -4036,41 +4036,42 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
 
 void Song::populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver)
 {
-      // List scripts
-      QString distScripts = MusEGlobal::museGlobalShare + "/scripts";
-      QString userScripts = MusEGlobal::configPath + "/scripts";
+    menuPlugins->clear();
 
-      QFileInfo distScriptsFi(distScripts);
-      if (distScriptsFi.isDir()) {
-            QDir dir = QDir(distScripts);
-            dir.setFilter(QDir::Executable | QDir::Files);
-            deliveredScriptNames = dir.entryList();
-            }
-      QFileInfo userScriptsFi(userScripts);
-      if (userScriptsFi.isDir()) {
-            QDir dir(userScripts);
-            dir.setFilter(QDir::Executable | QDir::Files);
-            userScriptNames = dir.entryList();
-            }
+    // List scripts
+    QString distScripts = MusEGlobal::museGlobalShare + "/scripts";
+    QString userScripts = MusEGlobal::configPath + "/scripts";
 
-      if (deliveredScriptNames.size() > 0 || userScriptNames.size() > 0) {
-            int id = 0;
-            if (deliveredScriptNames.size() > 0) {
-                  for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
-                        QAction* act = menuPlugins->addAction(*it);
-                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecDeliveredScript(id); } );
-                        }
-                  menuPlugins->addSeparator();
-                  }
-            if (userScriptNames.size() > 0) {
-                  for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
-                        QAction* act = menuPlugins->addAction(*it);
-                        connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecUserScript(id); } );
-                        }
-                  menuPlugins->addSeparator();
-                  }
+    QFileInfo distScriptsFi(distScripts);
+    if (distScriptsFi.isDir()) {
+        QDir dir = QDir(distScripts);
+        dir.setFilter(QDir::Executable | QDir::Files);
+        deliveredScriptNames = dir.entryList();
+    }
+    QFileInfo userScriptsFi(userScripts);
+    if (userScriptsFi.isDir()) {
+        QDir dir(userScripts);
+        dir.setFilter(QDir::Executable | QDir::Files);
+        userScriptNames = dir.entryList();
+    }
+
+    if (deliveredScriptNames.size() > 0 || userScriptNames.size() > 0) {
+        int id = 0;
+        if (deliveredScriptNames.size() > 0) {
+            for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
+                QAction* act = menuPlugins->addAction(*it);
+                connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecDeliveredScript(id); } );
             }
-      return;
+            menuPlugins->addSeparator();
+        }
+        if (userScriptNames.size() > 0) {
+            for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
+                QAction* act = menuPlugins->addAction(*it);
+                connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecUserScript(id); } );
+            }
+            menuPlugins->addSeparator();
+        }
+    }
 }
 
 //---------------------------------------------------------

@@ -105,6 +105,8 @@ private:
     QAction* func_legato_action;
 
     MusECore::ScriptReceiver _scriptReceiver;
+    QMenu* menuScripts;
+    void refreshScriptsTriggered();
 
 private slots:
     void globalCut();

@@ -287,9 +287,12 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addAction(editCleanPartsAction);
   
   functions_menu->addSeparator();
-  QMenu* menuScripts = functions_menu->addMenu(tr("&Scripts"));
+  menuScripts = functions_menu->addMenu(tr("&Scripts"));
   menuScripts->menuAction()->setStatusTip(tr("Python scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
   MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+  QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
+  refreshScriptsAction->setIcon(*fileopenSVGIcon);
+  connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
   //---------------------------------------------------
   //  Connect script receiver
   //---------------------------------------------------
@@ -306,10 +309,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
-//  menuSettings->addSeparator();
-//  menuSettings->addAction(subwinAction);
-//  menuSettings->addAction(shareAction);
-//  menuSettings->addAction(fullscreenAction);
 
 
   //-------- Edit connections
@@ -1076,5 +1075,13 @@ void ArrangerView::execUserScript(int id)
     MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
+
+void ArrangerView::refreshScriptsTriggered() {
+    MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+    QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
+    refreshScriptsAction->setIcon(*fileopenSVGIcon);
+    connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
+}
+
 
 } // namespace MusEGui

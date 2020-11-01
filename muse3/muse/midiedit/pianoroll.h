@@ -168,6 +168,8 @@ class PianoRoll : public MidiEditor {
       //  which has a very wide range (48 - 12288).
       // Also sets the canvas and time scale offsets accordingly.
       void setupHZoomRange();
+      void refreshScriptsTriggered();
+
 
    private slots:
       void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);

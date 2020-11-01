@@ -77,7 +77,7 @@ private:
     group_mode_t _group_mode;
     bool _ignore_hide;
 
-    QMenu* menuEdit, *menuFunctions, *menuSelect;
+    QMenu* menuEdit, *menuFunctions, *menuSelect, *menuScripts;
     PopupMenu* addControllerMenu;
 
     int tickValue;
@@ -146,6 +146,8 @@ private:
     //  which has a very wide range (48 - 12288).
     // Also sets the canvas and time scale offsets accordingly.
     void setupHZoomRange();
+    void refreshScriptsTriggered();
+
 
 private slots:
     void setRaster(int) override;
