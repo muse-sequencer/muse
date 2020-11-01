@@ -1,3 +1,7 @@
+01.11.2020
+    - Fixed bug 853: Crash in infinite loop in latency code. (Tim)
+      Don't examine things connected TO a device if examining its 'capture' part.
+    - Latency code: Optimization of most loops, should be a bit faster now, depending.
 31.10.2020
     - Add: Optional display of ticks/frames in the position toolbar. (kybos)
     - Add: Draw marker/position symbols as labels in the position toolbar. (kybos)

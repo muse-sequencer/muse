@@ -696,7 +696,7 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
     }
   }    
 
-  if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
+  if(capture/*Tim*/ && metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
       const int port = metro_settings->clickPort;
       if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
@@ -748,7 +748,7 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
     }
   }    
 
-  if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
+  if(capture/*Tim*/ && metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
       const int port = metro_settings->clickPort;
       if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
