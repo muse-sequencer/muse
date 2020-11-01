@@ -106,7 +106,6 @@ private:
 
     MusECore::ScriptReceiver _scriptReceiver;
     QMenu* menuScripts;
-    void refreshScriptsTriggered();
 
 private slots:
     void globalCut();

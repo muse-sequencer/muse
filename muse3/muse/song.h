@@ -191,6 +191,8 @@ class Song : public QObject {
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
 
+      void refreshScriptsTriggered(QMenu* menuScripts, ScriptReceiver* receiver);
+
    public:
       Song(const char* name = 0);
       ~Song();
@@ -553,7 +555,7 @@ class Song : public QObject {
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();
       QString getScriptPath(int id, bool delivered);
-      void populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver);
+      void populateScriptMenu(QMenu* menuScripts, ScriptReceiver* receiver);
       void setDirty() { emit sigDirty(); }
 
       /* restarts recording from last start position

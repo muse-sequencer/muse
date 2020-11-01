@@ -4034,9 +4034,9 @@ void Song::executeScript(QWidget *parent, const char* scriptfile, PartList* part
 }
 
 
-void Song::populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver)
+void Song::populateScriptMenu(QMenu* menuScripts, ScriptReceiver* receiver)
 {
-    menuPlugins->clear();
+    menuScripts->clear();
 
     // List scripts
     QString distScripts = MusEGlobal::museGlobalShare + "/scripts";
@@ -4059,19 +4059,28 @@ void Song::populateScriptMenu(QMenu* menuPlugins, ScriptReceiver* receiver)
         int id = 0;
         if (deliveredScriptNames.size() > 0) {
             for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
-                QAction* act = menuPlugins->addAction(*it);
+                QAction* act = menuScripts->addAction(*it);
                 connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecDeliveredScript(id); } );
             }
-            menuPlugins->addSeparator();
+            menuScripts->addSeparator();
         }
         if (userScriptNames.size() > 0) {
             for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
-                QAction* act = menuPlugins->addAction(*it);
+                QAction* act = menuScripts->addAction(*it);
                 connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecUserScript(id); } );
             }
-            menuPlugins->addSeparator();
+            menuScripts->addSeparator();
         }
     }
+
+    QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
+//    refreshScriptsAction->setIcon(*fileopenSVGIcon);
+    connect(refreshScriptsAction, &QAction::triggered, [this, menuScripts, receiver]() { refreshScriptsTriggered(menuScripts, receiver); } );
+
+}
+
+void Song::refreshScriptsTriggered(QMenu* menuScripts, ScriptReceiver* receiver) {
+    MusEGlobal::song->populateScriptMenu(menuScripts, receiver);
 }
 
 //---------------------------------------------------------

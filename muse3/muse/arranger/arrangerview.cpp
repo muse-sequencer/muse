@@ -288,11 +288,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   
   functions_menu->addSeparator();
   menuScripts = functions_menu->addMenu(tr("&Scripts"));
-  menuScripts->menuAction()->setStatusTip(tr("Python scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
+  menuScripts->menuAction()->setStatusTip(tr("Scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
   MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
-  QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
-  refreshScriptsAction->setIcon(*fileopenSVGIcon);
-  connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
   //---------------------------------------------------
   //  Connect script receiver
   //---------------------------------------------------
@@ -1074,13 +1071,6 @@ void ArrangerView::execUserScript(int id)
 
     MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
-}
-
-void ArrangerView::refreshScriptsTriggered() {
-    MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
-    QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
-    refreshScriptsAction->setIcon(*fileopenSVGIcon);
-    connect(refreshScriptsAction, &QAction::triggered, [this]() { refreshScriptsTriggered(); } );
 }
 
 
