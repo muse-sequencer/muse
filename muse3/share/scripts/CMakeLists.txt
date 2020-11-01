@@ -26,7 +26,8 @@ file(GLOB script_files
       RemoveShortEvents 
       SpeedHalf
       SpeedDouble
-      ConstantLength 
+      ConstantLength
+      ConstantVelocityForNote
       SwingQuantize1
       RandomQuantize1
       RandomPosition1
