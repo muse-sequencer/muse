@@ -28,7 +28,6 @@
 #include "config.h"
 #include "globaldefs.h"
 #include "cobject.h"
-#include "script_delivery.h"
 
 #include <QFileInfo>
 #include <QMainWindow>

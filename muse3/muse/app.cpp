@@ -637,8 +637,6 @@ MusE::MusE() : QMainWindow()
 //      master->addAction(masterListAction);
 
       //-------- Midi Actions
-//      menuScriptPlugins = new QMenu(tr("&Scripts"), this);
-//      menuScriptPlugins->menuAction()->setStatusTip(tr("Python scripts for midi processing. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
       midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);

@@ -4074,13 +4074,13 @@ void Song::populateScriptMenu(QMenu* menuScripts, ScriptReceiver* receiver)
     }
 
     QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
-//    refreshScriptsAction->setIcon(*fileopenSVGIcon);
+    refreshScriptsAction->setIcon(QIcon(":/svg/fileopen.svg"));
     connect(refreshScriptsAction, &QAction::triggered, [this, menuScripts, receiver]() { refreshScriptsTriggered(menuScripts, receiver); } );
 
 }
 
 void Song::refreshScriptsTriggered(QMenu* menuScripts, ScriptReceiver* receiver) {
-    MusEGlobal::song->populateScriptMenu(menuScripts, receiver);
+    populateScriptMenu(menuScripts, receiver);
 }
 
 //---------------------------------------------------------
