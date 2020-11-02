@@ -30,6 +30,7 @@
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "dcanvas.h"
+#include "scripts.h"
 
 #include <QString>
 #include <QVector>
@@ -77,7 +78,7 @@ private:
     group_mode_t _group_mode;
     bool _ignore_hide;
 
-    QMenu* menuEdit, *menuFunctions, *menuSelect;
+    QMenu* menuEdit, *menuFunctions, *menuSelect, *menuScripts;
     PopupMenu* addControllerMenu;
 
     int tickValue;
@@ -101,6 +102,7 @@ private:
     QToolButton* speaker;
     MusEGui::EditToolBar* tools2;
     bool _playEvents;
+    MusECore::Scripts scripts;
 
     MusEGui::Toolbar1* toolbar;
     MusEGui::Splitter* hsplitter;

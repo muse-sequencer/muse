@@ -27,6 +27,7 @@
 #include <limits.h>
 #include "type_defs.h"
 #include "cobject.h"
+#include "scripts.h"
 
 
 // Forward declarations:
@@ -104,7 +105,8 @@ private:
     QAction* func_del_overlaps_action;
     QAction* func_legato_action;
 
-    MusECore::ScriptReceiver _scriptReceiver;
+    MusECore::Scripts scripts;
+    QMenu* menuScripts;
 
 private slots:
     void globalCut();

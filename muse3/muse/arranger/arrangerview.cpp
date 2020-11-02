@@ -287,17 +287,17 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addAction(editCleanPartsAction);
   
   functions_menu->addSeparator();
-  QMenu* menuScripts = functions_menu->addMenu(tr("&Scripts"));
-  menuScripts->menuAction()->setStatusTip(tr("Python scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
-  MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+  menuScripts = functions_menu->addMenu(tr("&Scripts"));
+  menuScripts->menuAction()->setStatusTip(tr("Scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
+  scripts.populateScriptMenu(menuScripts);
   //---------------------------------------------------
   //  Connect script receiver
   //---------------------------------------------------
-  connect(&_scriptReceiver,
-          &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+  connect(&scripts,
+          &MusECore::Scripts::execDeliveredScriptReceived,
           [this](int id) { execDeliveredScript(id); } );
-  connect(&_scriptReceiver,
-          &MusECore::ScriptReceiver::execUserScriptReceived,
+  connect(&scripts,
+          &MusECore::Scripts::execUserScriptReceived,
           [this](int id) { execUserScript(id); } );
 
 
@@ -306,10 +306,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuSettings->addAction(tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
-//  menuSettings->addSeparator();
-//  menuSettings->addAction(subwinAction);
-//  menuSettings->addAction(shareAction);
-//  menuSettings->addAction(fullscreenAction);
 
 
   //-------- Edit connections
@@ -1059,7 +1055,7 @@ void ArrangerView::execDeliveredScript(int id)
         return;
     }
 
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(),
+    scripts.executeScript(this, scripts.getScriptPath(id, true).toLatin1().constData(),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 
@@ -1073,8 +1069,9 @@ void ArrangerView::execUserScript(int id)
         return;
     }
 
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
+    scripts.executeScript(this, scripts.getScriptPath(id, false).toLatin1().constData(),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
+
 
 } // namespace MusEGui

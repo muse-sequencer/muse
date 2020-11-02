@@ -324,21 +324,19 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       // Scripts:
       //----------------------
 
-      QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Scripts"));
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+      menuScripts = menuBar()->addMenu(tr("&Scripts"));
+      scripts.populateScriptMenu(menuScripts);
+      connect(&scripts,
+              &MusECore::Scripts::execDeliveredScriptReceived,
               [this](int id) { execDeliveredScript(id); } );
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execUserScriptReceived,
+      connect(&scripts,
+              &MusECore::Scripts::execUserScriptReceived,
               [this](int id) { execUserScript(id); } );
-      MusEGlobal::song->populateScriptMenu(menuScriptPlugins, &_scriptReceiver);
-
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
 
       settingsMenu->addAction(subwinAction);
-//      settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
 
       settingsMenu->addSeparator();
@@ -2071,8 +2069,8 @@ void DrumEdit::initShortcuts()
 //---------------------------------------------------------
 void DrumEdit::execDeliveredScript(int id)
 {
-      QString scriptfile = MusEGlobal::song->getScriptPath(id, true);
-      MusEGlobal::song->executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      QString scriptfile = scripts.getScriptPath(id, true);
+      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -2080,8 +2078,8 @@ void DrumEdit::execDeliveredScript(int id)
 //---------------------------------------------------------
 void DrumEdit::execUserScript(int id)
 {
-      QString scriptfile = MusEGlobal::song->getScriptPath(id, false);
-      MusEGlobal::song->executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      QString scriptfile = scripts.getScriptPath(id, false);
+      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 void DrumEdit::setStep(QString v)
@@ -2241,5 +2239,6 @@ void DrumEdit::setupHZoomRange()
   const int min = (_minXMag * MusEGlobal::config.division) / 384;
   hscroll->setScaleRange(min, _maxXMag);
 }
+
 
 } // namespace MusEGui

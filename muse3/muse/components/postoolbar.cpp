@@ -108,8 +108,8 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     toggleTickFrame = new QAction(*showFieldsSVGIcon, "Toggle ticks/frames");
     toggleTickFrame->setCheckable(true);
     toggleTickFrame->setChecked(false);
-    toggleTickFrame->setToolTip(tr("Show position in ticks and audio frames"));
-    toggleTickFrame->setStatusTip(tr("Show additional output fields displaying the current position in ticks and audio frames"));
+    toggleTickFrame->setToolTip(tr("Show/Hide position in ticks and audio frames"));
+    toggleTickFrame->setStatusTip(tr("Show/Hide additional output fields displaying the current position in ticks and audio frames"));
     addAction(toggleTickFrame);
 
     posTicks = new QLabel(this);
