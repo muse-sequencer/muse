@@ -130,12 +130,14 @@ details.
       
       - Python    The python scripting language
           http://www.python.org
-          The remote control supports Python 2 or 3. See README.python.
+          The remote control supports Python 3. 
+          See https://github.com/muse-sequencer/muse/wiki/python-remote-control.
           The bundled midi scripts ('Scripts', or 'Plugins' in earlier versions) require Python 3.
            
       - Pyro 4    Python Remote Objects
           https://pythonhosted.org/Pyro4/
-          The remote control supports Pyro 4. See README.python.
+          The remote control supports Pyro 4. 
+          See https://github.com/muse-sequencer/muse/wiki/python-remote-control.
 
       - PyQt5 is used by some of the bundled midi scripts ('Scripts', or 'Plugins' in earlier versions).
 

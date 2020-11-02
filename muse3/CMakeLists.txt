@@ -407,24 +407,15 @@ else (ENABLE_RTAUDIO)
 endif (ENABLE_RTAUDIO)
 
 ##
-## check for python >= 2.4
+## check for python >= 3.5
 ##
 
 if (ENABLE_PYTHON)
       include(FindPythonLibs)
       if (PYTHONLIBS_FOUND)
-# Older cmake does not define PYTHON_INCLUDE_DIRS and PYTHONLIBS_VERSION_STRING.
-# We need to define them ourselves to do a version comparison
-            if(DEFINED PYTHON_INCLUDE_PATH AND NOT DEFINED PYTHON_INCLUDE_DIRS)
-                  set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
-            endif(DEFINED PYTHON_INCLUDE_PATH AND NOT DEFINED PYTHON_INCLUDE_DIRS)
-            if(NOT DEFINED PYTHONLIBS_VERSION_STRING)
-                  STRING(REGEX REPLACE ".*python(2\\.[0-9]+)" "\\1"
-                         PYTHONLIBS_VERSION_STRING "${PYTHON_INCLUDE_DIRS}")
-            endif(NOT DEFINED PYTHONLIBS_VERSION_STRING)
-            if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
+            if (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
                   set(PYTHON_SUPPORT ON)
-            endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 2.4)
+            endif (NOT PYTHONLIBS_VERSION_STRING VERSION_LESS 3.5)
       endif (PYTHONLIBS_FOUND)
 #  TODO Check for Pyro4?
 endif (ENABLE_PYTHON)
@@ -780,7 +771,7 @@ if (ENABLE_LRDF AND (NOT LRDF_FOUND))
 endif (ENABLE_LRDF AND (NOT LRDF_FOUND))
 
 if (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
-        message("** WARNING: python (>= 2.4) was enabled, but development files were not found or too old.")
+        message("** WARNING: python (>= 3.5) was enabled, but development files were not found or too old.")
 endif (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
 
 if (ENABLE_ALSA AND (NOT ALSA_FOUND))
@@ -887,15 +878,15 @@ summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("LV2 support" LV2_SUPPORT)
 if(LV2_SUPPORT)
   summary_add("LV2 Gtk2 UI support" HAVE_GTK2)
-  summary_add("LV2 makePath support" LV2_MAKE_PATH_SUPPORT)
+  #~ summary_add("LV2 makePath support" LV2_MAKE_PATH_SUPPORT)
 endif(LV2_SUPPORT)
 #summary_add("VST support" VST_SUPPORT)
 summary_add("Native VST support" VST_NATIVE_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("RubberBand support" RUBBERBAND_SUPPORT)
-summary_add("Zita Resampler support" ZITA_RESAMPLER_SUPPORT)
+#~ summary_add("Zita Resampler support" ZITA_RESAMPLER_SUPPORT)
 summary_add("Instpatch support" HAVE_INSTPATCH)
-summary_add("Experimental features" ENABLE_EXPERIMENTAL)
+#~ summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()
 
 if ( MODULES_BUILD_STATIC )
