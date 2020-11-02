@@ -242,16 +242,16 @@ QMdiArea QTabBar::tab:selected {
 
 /* The title header background colour in popup and routing menus: */
 MusEGui--MenuTitleLabel {
-    background-color: DarkCyan;
+    background-color: #004d4d;
 }
 
 /* The category item background colour in the advanced router trees: */
 MusEGui--RouteTreeWidget {
-    qproperty-categoryColor: DarkCyan;
+    qproperty-categoryColor: #004d4d;
 }
 
 MusEGui--SnooperDialog {
-    qproperty-flashColor: DarkCyan;
+    qproperty-flashColor: #004d4d;
 }
 
 MusEGui--TList {

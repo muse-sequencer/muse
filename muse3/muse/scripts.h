@@ -18,7 +18,6 @@ class Scripts : public QObject
     QStringList deliveredScriptNames;
     QStringList userScriptNames;
 
-//    void refreshScriptsTriggered(QMenu* menuScripts);
     void writeStringToFile(FILE *filePointer, const char *writeString);
 
     void receiveExecDeliveredScript(int id);

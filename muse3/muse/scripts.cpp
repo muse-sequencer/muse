@@ -51,7 +51,7 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
     progress.setLabelText("Process parts");
     progress.setRange(0,parts->size());
     progress.setValue(0);
-    progress.setCancelButton(0);
+    progress.setCancelButton(nullptr);
     MusEGlobal::song->startUndo(); // undo this entire block
     for (const auto& i : *parts) {
         //const char* tmp = tmpnam(NULL);
@@ -233,10 +233,6 @@ void Scripts::populateScriptMenu(QMenu* menuScripts)
     connect(refreshScriptsAction, &QAction::triggered, [this, menuScripts]() { populateScriptMenu(menuScripts); } );
 
 }
-
-//void Scripts::refreshScriptsTriggered(QMenu* menuScripts) {
-//    populateScriptMenu(menuScripts);
-//}
 
 //---------------------------------------------------------
 //   getScriptPath
