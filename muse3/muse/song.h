@@ -28,8 +28,6 @@
 #include <QStringList>
 #include <QFont>
 
-#include "script_delivery.h"
-
 #include <map>
 #include <set>
 #include <list>
@@ -162,8 +160,6 @@ class Song : public QObject {
 
       QString songInfoStr;  // contains user supplied song information, stored in song file.
       bool showSongInfo;
-      QStringList deliveredScriptNames;
-      QStringList userScriptNames;
 
       // Private: Update the audio device's real transport position after a tempo or master change for ex.
       void updateTransportPos(const SongChangedStruct_t& flags);
@@ -190,8 +186,6 @@ class Song : public QObject {
 
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
-
-      void refreshScriptsTriggered(QMenu* menuScripts, ScriptReceiver* receiver);
 
    public:
       Song(const char* name = 0);
@@ -513,7 +507,6 @@ class Song : public QObject {
 #ifdef PYTHON_SUPPORT
       virtual bool event (QEvent* e );
 #endif
-      void executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected);
 
    public slots:
       void seekTo(int tick);
@@ -554,8 +547,6 @@ class Song : public QObject {
       Track* addTrack(Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       void duplicateTracks();
-      QString getScriptPath(int id, bool delivered);
-      void populateScriptMenu(QMenu* menuScripts, ScriptReceiver* receiver);
       void setDirty() { emit sigDirty(); }
 
       /* restarts recording from last start position

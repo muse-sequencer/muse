@@ -32,6 +32,7 @@
 #include "ecanvas.h"
 #include "noteinfo.h"
 #include "midictrl_consts.h"
+#include "scripts.h"
 
 
 // Forward declarations:
@@ -149,6 +150,7 @@ class PianoRoll : public MidiEditor {
 
       // Initial view state.
       MusECore::MidiPartViewState _viewState;
+      MusECore::Scripts scripts;
       
       bool _playEvents;
       EventCanvas::PlayEventsMode _playEventsMode;

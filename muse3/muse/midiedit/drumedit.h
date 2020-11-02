@@ -30,6 +30,7 @@
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "dcanvas.h"
+#include "scripts.h"
 
 #include <QString>
 #include <QVector>
@@ -101,6 +102,7 @@ private:
     QToolButton* speaker;
     MusEGui::EditToolBar* tools2;
     bool _playEvents;
+    MusECore::Scripts scripts;
 
     MusEGui::Toolbar1* toolbar;
     MusEGui::Splitter* hsplitter;

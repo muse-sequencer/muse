@@ -175,7 +175,6 @@
   <zorder>groupBox_2</zorder>
   <zorder>groupBox</zorder>
   <zorder>buttonBox</zorder>
-  <zorder>verticalSpacer</zorder>
  </widget>
  <resources/>
  <connections>

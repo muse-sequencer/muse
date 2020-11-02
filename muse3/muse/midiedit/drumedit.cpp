@@ -331,7 +331,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(&_scriptReceiver,
               &MusECore::ScriptReceiver::execUserScriptReceived,
               [this](int id) { execUserScript(id); } );
-      MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+      scripts.populateScriptMenu(menuScripts, &_scriptReceiver);
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
@@ -2069,8 +2069,8 @@ void DrumEdit::initShortcuts()
 //---------------------------------------------------------
 void DrumEdit::execDeliveredScript(int id)
 {
-      QString scriptfile = MusEGlobal::song->getScriptPath(id, true);
-      MusEGlobal::song->executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      QString scriptfile = scripts.getScriptPath(id, true);
+      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -2078,8 +2078,8 @@ void DrumEdit::execDeliveredScript(int id)
 //---------------------------------------------------------
 void DrumEdit::execUserScript(int id)
 {
-      QString scriptfile = MusEGlobal::song->getScriptPath(id, false);
-      MusEGlobal::song->executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      QString scriptfile = scripts.getScriptPath(id, false);
+      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 void DrumEdit::setStep(QString v)

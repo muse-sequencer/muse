@@ -289,7 +289,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addSeparator();
   menuScripts = functions_menu->addMenu(tr("&Scripts"));
   menuScripts->menuAction()->setStatusTip(tr("Scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
-  MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+  scripts.populateScriptMenu(menuScripts, &_scriptReceiver);
   //---------------------------------------------------
   //  Connect script receiver
   //---------------------------------------------------
@@ -1055,7 +1055,7 @@ void ArrangerView::execDeliveredScript(int id)
         return;
     }
 
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, true).toLatin1().constData(),
+    scripts.executeScript(this, scripts.getScriptPath(id, true).toLatin1().constData(),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 
@@ -1069,7 +1069,7 @@ void ArrangerView::execUserScript(int id)
         return;
     }
 
-    MusEGlobal::song->executeScript(this, MusEGlobal::song->getScriptPath(id, false).toLatin1().constData(),
+    scripts.executeScript(this, scripts.getScriptPath(id, false).toLatin1().constData(),
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 

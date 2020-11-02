@@ -265,7 +265,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(&_scriptReceiver,
               &MusECore::ScriptReceiver::execUserScriptReceived,
               [this](int id) { execUserScript(id); } );
-      MusEGlobal::song->populateScriptMenu(menuScripts, &_scriptReceiver);
+      scripts.populateScriptMenu(menuScripts, &_scriptReceiver);
 
       menuConfig = menuBar()->addMenu(tr("&Display"));
       menuConfig->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
@@ -1871,8 +1871,8 @@ void PianoRoll::initShortcuts()
 //---------------------------------------------------------
 void PianoRoll::execDeliveredScript(int id)
 {
-      QString scriptfile = MusEGlobal::song->getScriptPath(id, true);
-      MusEGlobal::song->executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
+      QString scriptfile = scripts.getScriptPath(id, true);
+      scripts.executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1880,8 +1880,8 @@ void PianoRoll::execDeliveredScript(int id)
 //---------------------------------------------------------
 void PianoRoll::execUserScript(int id)
 {
-      QString scriptfile = MusEGlobal::song->getScriptPath(id, false);
-      MusEGlobal::song->executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
+      QString scriptfile = scripts.getScriptPath(id, false);
+      scripts.executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
