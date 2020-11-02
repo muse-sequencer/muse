@@ -19,10 +19,7 @@
 namespace MusECore {
 
 
-Scripts::Scripts(QObject *parent) : QObject(parent)
-{
-
-}
+Scripts::Scripts(QObject *parent) : QObject(parent) {}
 
 //---------------------------------------------------------
 //   executeScript
@@ -155,7 +152,7 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
                     int pitch = sl[2].toInt();
                     int len = sl[3].toInt();
                     int velo = sl[4].toInt();
-                    fprintf(stderr, "extraced %d %d %d %d\n", tick, pitch, len, velo);
+                    fprintf(stderr, "extracted %d %d %d %d\n", tick, pitch, len, velo);
                     e.setTick(tick);
                     e.setPitch(pitch);
                     e.setVelo(velo);
@@ -194,7 +191,7 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
 }
 
 
-void Scripts::populateScriptMenu(QMenu* menuScripts, ScriptReceiver* receiver)
+void Scripts::populateScriptMenu(QMenu* menuScripts)
 {
     menuScripts->clear();
 
@@ -219,28 +216,27 @@ void Scripts::populateScriptMenu(QMenu* menuScripts, ScriptReceiver* receiver)
     if (deliveredScriptNames.size() > 0) {
         for (QStringList::Iterator it = deliveredScriptNames.begin(); it != deliveredScriptNames.end(); it++, id++) {
             QAction* act = menuScripts->addAction(*it);
-            connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecDeliveredScript(id); } );
+            connect(act, &QAction::triggered, [this, id]() { receiveExecDeliveredScript(id); } );
         }
         menuScripts->addSeparator();
     }
     if (userScriptNames.size() > 0) {
         for (QStringList::Iterator it = userScriptNames.begin(); it != userScriptNames.end(); it++, id++) {
             QAction* act = menuScripts->addAction(*it);
-            connect(act, &QAction::triggered, [receiver, id]() { receiver->receiveExecUserScript(id); } );
+            connect(act, &QAction::triggered, [this, id]() { receiveExecUserScript(id); } );
         }
         menuScripts->addSeparator();
     }
 
     QAction* refreshScriptsAction = menuScripts->addAction(tr("Re-read script names from disc"));
     refreshScriptsAction->setIcon(*MusEGui::fileopenSVGIcon);
-//    refreshScriptsAction->setIcon(QIcon(":/svg/fileopen.svg"));
-    connect(refreshScriptsAction, &QAction::triggered, [this, menuScripts, receiver]() { refreshScriptsTriggered(menuScripts, receiver); } );
+    connect(refreshScriptsAction, &QAction::triggered, [this, menuScripts]() { populateScriptMenu(menuScripts); } );
 
 }
 
-void Scripts::refreshScriptsTriggered(QMenu* menuScripts, ScriptReceiver* receiver) {
-    populateScriptMenu(menuScripts, receiver);
-}
+//void Scripts::refreshScriptsTriggered(QMenu* menuScripts) {
+//    populateScriptMenu(menuScripts);
+//}
 
 //---------------------------------------------------------
 //   getScriptPath
@@ -261,6 +257,16 @@ void Scripts::writeStringToFile(FILE *filePointer, const char *writeString)
     if (MusEGlobal::debugMsg)
         std::cout << writeString;
     fputs(writeString, filePointer);
+}
+
+void Scripts::receiveExecDeliveredScript(int id)
+{
+    execDeliveredScriptReceived(id);
+}
+
+void Scripts::receiveExecUserScript(int id)
+{
+    execUserScriptReceived(id);
 }
 
 

@@ -66,7 +66,6 @@ QT5_WRAP_CPP ( muse_moc_headers
       midi_editor_layout.h
       plugin.h
       rasterizer.h
-      script_delivery.h
       scripts.h
       song.h
       transport.h
@@ -132,7 +131,6 @@ file (GLOB core_source_files
       pos.cpp
       rasterizer.cpp
       route.cpp
-      script_delivery.cpp
       scripts.cpp
       seqmsg.cpp
       shortcuts.cpp

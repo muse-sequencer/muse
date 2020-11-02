@@ -106,7 +106,6 @@ private:
     QAction* func_legato_action;
 
     MusECore::Scripts scripts;
-//    MusECore::ScriptReceiver _scriptReceiver;
     QMenu* menuScripts;
 
 private slots:

@@ -289,15 +289,15 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addSeparator();
   menuScripts = functions_menu->addMenu(tr("&Scripts"));
   menuScripts->menuAction()->setStatusTip(tr("Scripts for midi processing. Applied to selected midi parts (or else tracks). User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
-  scripts.populateScriptMenu(menuScripts, &_scriptReceiver);
+  scripts.populateScriptMenu(menuScripts);
   //---------------------------------------------------
   //  Connect script receiver
   //---------------------------------------------------
-  connect(&_scriptReceiver,
-          &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+  connect(&scripts,
+          &MusECore::Scripts::execDeliveredScriptReceived,
           [this](int id) { execDeliveredScript(id); } );
-  connect(&_scriptReceiver,
-          &MusECore::ScriptReceiver::execUserScriptReceived,
+  connect(&scripts,
+          &MusECore::Scripts::execUserScriptReceived,
           [this](int id) { execUserScript(id); } );
 
 

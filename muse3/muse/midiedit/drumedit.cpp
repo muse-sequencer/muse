@@ -325,13 +325,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //----------------------
 
       menuScripts = menuBar()->addMenu(tr("&Scripts"));
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execDeliveredScriptReceived,
+      scripts.populateScriptMenu(menuScripts);
+      connect(&scripts,
+              &MusECore::Scripts::execDeliveredScriptReceived,
               [this](int id) { execDeliveredScript(id); } );
-      connect(&_scriptReceiver,
-              &MusECore::ScriptReceiver::execUserScriptReceived,
+      connect(&scripts,
+              &MusECore::Scripts::execUserScriptReceived,
               [this](int id) { execUserScript(id); } );
-      scripts.populateScriptMenu(menuScripts, &_scriptReceiver);
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));

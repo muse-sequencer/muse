@@ -3,7 +3,6 @@
 
 #include <QObject>
 
-#include "script_delivery.h"
 
 class QMenu;
 
@@ -15,16 +14,25 @@ class Scripts : public QObject
 {
     Q_OBJECT
 
+
     QStringList deliveredScriptNames;
     QStringList userScriptNames;
 
-    void refreshScriptsTriggered(QMenu* menuScripts, ScriptReceiver* receiver);
+//    void refreshScriptsTriggered(QMenu* menuScripts);
     void writeStringToFile(FILE *filePointer, const char *writeString);
+
+    void receiveExecDeliveredScript(int id);
+    void receiveExecUserScript(int id);
+
+signals:
+    void execDeliveredScriptReceived(int);
+    void execUserScriptReceived(int);
 
 public:
     explicit Scripts(QObject *parent = nullptr);
 
-    void populateScriptMenu(QMenu* menuScripts, ScriptReceiver* receiver);
+
+    void populateScriptMenu(QMenu* menuScripts);
     void executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected);
     QString getScriptPath(int id, bool delivered);
 };
