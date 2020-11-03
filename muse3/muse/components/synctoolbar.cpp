@@ -19,6 +19,7 @@ SyncToolbar::SyncToolbar(const QString &title, QWidget *parent)
     syncAction = new QAction(*externSyncOnSVGIcon, "External sync", this);
     syncAction->setCheckable(true);
     syncAction->setToolTip(tr("External sync on/off"));
+    syncAction->setChecked(MusEGlobal::extSyncFlag);
 
     jackTransportAction = new QAction(*jackTransportOnSVGIcon, "Jack Transport", this);
     jackTransportAction->setCheckable(true);
@@ -29,9 +30,13 @@ SyncToolbar::SyncToolbar(const QString &title, QWidget *parent)
     timebaseMasterAction->setToolTip(
                 tr("On: Timebase master\nOff: Not master\nFlash: Waiting. Another client is master. Click to force."));
 
-    syncAction->setChecked(MusEGlobal::extSyncFlag);
-    jackTransportAction->setChecked(MusEGlobal::config.useJackTransport);
-    timebaseMasterAction->setChecked(MusEGlobal::timebaseMasterState);
+
+    const bool has_master = MusEGlobal::audioDevice && MusEGlobal::audioDevice->hasTimebaseMaster();
+    jackTransportAction->setEnabled(has_master);
+    timebaseMasterAction->setEnabled(has_master && MusEGlobal::config.useJackTransport);
+
+    jackTransportAction->setChecked(has_master && MusEGlobal::config.useJackTransport);
+    timebaseMasterAction->setChecked(has_master && MusEGlobal::config.useJackTransport && MusEGlobal::timebaseMasterState);
 
     addAction(syncAction);
     addAction(jackTransportAction);
