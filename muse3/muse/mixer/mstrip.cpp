@@ -1456,116 +1456,61 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
       //_routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
 
-      _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 2);
+      _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 3);
 
-      _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 2, 0, 1, 3);
+      _sliderPos           = GridPosStruct(_curGridRow + 2, 0, 1, 2);
 
-      _propertyRackPos     = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+      _sliderLabelPos      = GridPosStruct(_curGridRow + 3, 0, 1, 2);
 
-      _sliderPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
+      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 4, 0, 1, 3);
 
-      _sliderLabelPos      = GridPosStruct(_curGridRow + 5, 0, 1, 2);
+      _offPos              = GridPosStruct(_curGridRow + 5, 0, 1, 1);
+      _recPos              = GridPosStruct(_curGridRow + 5, 1, 1, 1);
+      _offMonRecPos        = GridPosStruct(_curGridRow + 5, 0, 1, 2);
 
-      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 6, 0, 1, 3);
+      _mutePos             = GridPosStruct(_curGridRow + 6, 0, 1, 1);
+      _soloPos             = GridPosStruct(_curGridRow + 6, 1, 1, 1);
 
-      _offPos              = GridPosStruct(_curGridRow + 7, 0, 1, 1);
-      _recPos              = GridPosStruct(_curGridRow + 7, 1, 1, 1);
-      _offMonRecPos        = GridPosStruct(_curGridRow + 7, 0, 1, 2);
-
-      _mutePos             = GridPosStruct(_curGridRow + 8, 0, 1, 1);
-      _soloPos             = GridPosStruct(_curGridRow + 8, 1, 1, 1);
-
-      _automationPos       = GridPosStruct(_curGridRow + 9, 0, 1, 2);
+      _automationPos       = GridPosStruct(_curGridRow + 7, 0, 1, 2);
 
       //_rightSpacerPos      = GridPosStruct(_curGridRow + 9, 2, 1, 1);
 
+      tabwidget = new QTabWidget(this);
+      tabwidget->setContentsMargins(0,0,0,0);
+//      tabwidget->tabBar()->setContentsMargins(0,0,0,0);
 
-      _upperStackTabButtonA = new PaletteSwitcher();
-      _upperStackTabButtonB = new PaletteSwitcher();
-//      _upperStackTabButtonA = new ElidedLabel();
-//      _upperStackTabButtonB = new ElidedLabel();
-      _upperStackTabButtonA->setContentsMargins(0, 0, 0, 0);
-      _upperStackTabButtonB->setContentsMargins(0, 0, 0, 0);
-      _upperStackTabButtonA->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      _upperStackTabButtonB->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      _upperStackTabButtonA->setFocusPolicy(Qt::StrongFocus);
-      _upperStackTabButtonB->setFocusPolicy(Qt::StrongFocus);
-      _upperStackTabButtonA->setAlignment(Qt::AlignCenter);
-      _upperStackTabButtonB->setAlignment(Qt::AlignCenter);
-      _upperStackTabButtonA->setToolTip(tr("Palette A: MIDI instrument / MIDI controllers"));
-      _upperStackTabButtonB->setToolTip(tr("Palette B: MIDI properties"));
-      //: Palette A
-      _upperStackTabButtonA->setText("A");
-      //: Palette B
-      _upperStackTabButtonB->setText("B");
-      _upperStackTabButtonA->setHasOffMode(true);
-      _upperStackTabButtonB->setHasOffMode(true);
-      // Start with control rack palette 'A' showing.
-      // TODO: Make this button class mutually exclusive capable.
-      _upperStackTabButtonA->setOff(false);
-      _upperStackTabButtonB->setOff(true);
-
-      _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-      _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-      _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-      _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-      _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-      _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-      _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
-      _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
-      _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
-      _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
-
-      QHBoxLayout* upperStackTabLayout = new QHBoxLayout();
-      upperStackTabLayout->setContentsMargins(0, 0, 0, 0);
-      upperStackTabLayout->setMargin(0);
-      upperStackTabLayout->setSpacing(0);
-      upperStackTabLayout->addSpacing(6);
-      upperStackTabLayout->addWidget(_upperStackTabButtonA);
-      upperStackTabLayout->addWidget(_upperStackTabButtonB);
-      upperStackTabLayout->addSpacing(6);
-
-      addGridLayout(upperStackTabLayout, _upperStackTabPos);
-
-      connect(_upperStackTabButtonA,
-              SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonAPressed()));
-      connect(_upperStackTabButtonB,
-              SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonBPressed()));
-      connect(_upperStackTabButtonA,
-              SIGNAL(returnPressed(QPoint,int,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonAPressed()));
-      connect(_upperStackTabButtonB,
-              SIGNAL(returnPressed(QPoint,int,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonBPressed()));
 
       _infoRack = new MidiComponentRack(t, mStripInfoRack);
       //_infoRack->setVisible(false); // Not visible unless expanded.
       // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not.
       //_infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
-      _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
-      _infoRack->setLineWidth(rackFrameWidth);
-      _infoRack->setMidLineWidth(0);
+//      _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+//      _infoRack->setLineWidth(rackFrameWidth);
+//      _infoRack->setMidLineWidth(0);
       _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+//      _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
       _infoRack->setFocusPolicy(Qt::NoFocus);
-      _infoRack->setVisible(false);
+//      _infoRack->setVisible(false);
 
       _upperRack = new MidiComponentRack(t, mStripUpperRack);
       // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not.
       //_upperRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
-      _upperRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
-      _upperRack->setLineWidth(rackFrameWidth);
-      _upperRack->setMidLineWidth(0);
-      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
+//      _upperRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
+//      _upperRack->setLineWidth(rackFrameWidth);
+//      _upperRack->setMidLineWidth(0);
+//      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
       _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+//      _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
       _upperRack->setFocusPolicy(Qt::NoFocus);
-      _upperRack->setVisible(true);
+//      _upperRack->setVisible(true);
 
-      addGridWidget(_upperRack, _preScrollAreaPos_A);
-      addGridWidget(_infoRack, _propertyRackPos);
+//      addGridWidget(_upperRack, _preScrollAreaPos_A);
+//      addGridWidget(_infoRack, _propertyRackPos);
+
+      tabwidget->addTab(_infoRack, "Ins");
+      tabwidget->addTab(_upperRack, "Prop");
+      tabwidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      addGridWidget(tabwidget, _upperStackTabPos);
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -2061,18 +2006,18 @@ void MidiStrip::buildStrip()
 QWidget* MidiStrip::setupComponentTabbing(QWidget* previousWidget)
 {
   QWidget* prev = previousWidget;
-  if(_upperStackTabButtonA)
-  {
-    if(prev)
-      QWidget::setTabOrder(prev, _upperStackTabButtonA);
-    prev = _upperStackTabButtonA;
-  }
-  if(_upperStackTabButtonB)
-  {
-    if(prev)
-      QWidget::setTabOrder(prev, _upperStackTabButtonB);
-    prev = _upperStackTabButtonB;
-  }
+//  if(_upperStackTabButtonA)
+//  {
+//    if(prev)
+//      QWidget::setTabOrder(prev, _upperStackTabButtonA);
+//    prev = _upperStackTabButtonA;
+//  }
+//  if(_upperStackTabButtonB)
+//  {
+//    if(prev)
+//      QWidget::setTabOrder(prev, _upperStackTabButtonB);
+//    prev = _upperStackTabButtonB;
+//  }
   prev = _upperRack->setupComponentTabbing(prev);
   prev = _infoRack->setupComponentTabbing(prev);
   if(sl)
@@ -2305,16 +2250,16 @@ void MidiStrip::configChanged()
   slider->setFillColor(MusEGlobal::config.midiVolumeSliderColor);
   slider->setHandleColor(MusEGlobal::config.midiVolumeHandleColor);
 
-  _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-  _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-  _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-  _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-  _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-  _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-  _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
-  _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
-  _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
-  _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
+//  _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+//  _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+//  _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+//  _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+//  _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+//  _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+//  _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
+//  _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
+//  _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
+//  _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
 
   // Enable special hack for line edits.
   if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
@@ -2411,21 +2356,21 @@ void MidiStrip::controlRightClicked(QPoint p, int id)
   MusEGlobal::song->execMidiAutomationCtlPopup(static_cast<MusECore::MidiTrack*>(track), 0, p, id);
 }
 
-void MidiStrip::upperStackTabButtonAPressed()
-{
-  _infoRack->hide();
-  _upperRack->show();
-  _upperStackTabButtonA->setOff(false);
-  _upperStackTabButtonB->setOff(true);
-}
+//void MidiStrip::upperStackTabButtonAPressed()
+//{
+//  _infoRack->hide();
+//  _upperRack->show();
+//  _upperStackTabButtonA->setOff(false);
+//  _upperStackTabButtonB->setOff(true);
+//}
 
-void MidiStrip::upperStackTabButtonBPressed()
-{
-  _upperRack->hide();
-  _infoRack->show();
-  _upperStackTabButtonA->setOff(true);
-  _upperStackTabButtonB->setOff(false);
-}
+//void MidiStrip::upperStackTabButtonBPressed()
+//{
+//  _upperRack->hide();
+//  _infoRack->show();
+//  _upperStackTabButtonA->setOff(true);
+//  _upperStackTabButtonB->setOff(false);
+//}
 
 //---------------------------------------------------------
 //   recMonitorToggled

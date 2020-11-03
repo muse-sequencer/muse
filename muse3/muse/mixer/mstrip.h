@@ -37,6 +37,7 @@ class QString;
 class QPoint;
 class QVBoxLayout;
 class QSpacerItem;
+class QTabWidget;
 
 namespace MusECore {
 class MidiTrack;
@@ -285,11 +286,11 @@ class MidiStrip : public Strip {
       
   private:
       GridPosStruct _upperStackTabPos;
-      GridPosStruct _preScrollAreaPos_A;
+//      GridPosStruct _preScrollAreaPos_A;
       //GridPosStruct _preScrollAreaPos_B;
       GridPosStruct _infoSpacerTop;
       GridPosStruct _infoSpacerBottom;
-      GridPosStruct _propertyRackPos;
+//      GridPosStruct _propertyRackPos;
       GridPosStruct _sliderPos;
       GridPosStruct _sliderLabelPos;
       GridPosStruct _postScrollAreaPos_A;
@@ -313,11 +314,12 @@ class MidiStrip : public Strip {
       IconButton* _recMonitor;
       MeterLayout* _meterLayout;
 
-      PaletteSwitcher* _upperStackTabButtonA;
-      PaletteSwitcher* _upperStackTabButtonB;
+//      PaletteSwitcher* _upperStackTabButtonA;
+//      PaletteSwitcher* _upperStackTabButtonB;
       MidiComponentRack* _upperRack;
       MidiComponentRack* _lowerRack;
       MidiComponentRack* _infoRack;
+      QTabWidget *tabwidget;
       
       // Whether the layout is in mode A (normal, racks on left) or B (racks on right).
       bool _isExpanded;
@@ -352,8 +354,8 @@ class MidiStrip : public Strip {
       void volLabelChanged(double);
       void controlRightClicked(QPoint, int);
 
-      void upperStackTabButtonAPressed();
-      void upperStackTabButtonBPressed();
+//      void upperStackTabButtonAPressed();
+//      void upperStackTabButtonBPressed();
 
    protected slots:
       virtual void heartBeat();
