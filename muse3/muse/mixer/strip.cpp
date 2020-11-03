@@ -1293,7 +1293,7 @@ void Strip::focusYieldWidgetDestroyed(QObject* obj)
   if(obj != _focusYieldWidget)
     return;
   //disconnect(_focusYieldWidget, SIGNAL(destroyed(QObject*)), this, SLOT(focusYieldWidgetDestroyed(QObject*)));
-  _focusYieldWidget = 0;
+  _focusYieldWidget = nullptr;
 }
 
 void Strip::addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment)

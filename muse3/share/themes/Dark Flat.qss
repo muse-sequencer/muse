@@ -230,11 +230,11 @@ QTreeView, QListView {
     background: rgb(30,30,30);
  }
 
-QMdiArea QTabBar::tab:hover {
+QMdiArea > QTabBar::tab:hover {
     color: yellow;
 }
 
-QMdiArea QTabBar::tab:selected {
+QMdiArea > QTabBar::tab:selected {
     color: coral;
 }
 

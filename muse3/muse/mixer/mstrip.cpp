@@ -1476,9 +1476,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //_rightSpacerPos      = GridPosStruct(_curGridRow + 9, 2, 1, 1);
 
       tabwidget = new QTabWidget(this);
+      tabwidget->setObjectName("MidiStripTabWidget");
       tabwidget->setContentsMargins(0,0,0,0);
-//      tabwidget->tabBar()->setContentsMargins(0,0,0,0);
-
+      tabwidget->setUsesScrollButtons(false);
+      tabwidget->setFocusPolicy(Qt::NoFocus);
 
       _infoRack = new MidiComponentRack(t, mStripInfoRack);
       //_infoRack->setVisible(false); // Not visible unless expanded.
@@ -1487,8 +1488,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 //      _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
 //      _infoRack->setLineWidth(rackFrameWidth);
 //      _infoRack->setMidLineWidth(0);
-      _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
 //      _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+      _infoRack->setContentsMargins(0,0,0,0);
       _infoRack->setFocusPolicy(Qt::NoFocus);
 //      _infoRack->setVisible(false);
 
@@ -1499,17 +1501,17 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 //      _upperRack->setLineWidth(rackFrameWidth);
 //      _upperRack->setMidLineWidth(0);
 //      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
-      _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
 //      _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+      _upperRack->setContentsMargins(0,0,0,0);
       _upperRack->setFocusPolicy(Qt::NoFocus);
 //      _upperRack->setVisible(true);
 
-//      addGridWidget(_upperRack, _preScrollAreaPos_A);
-//      addGridWidget(_infoRack, _propertyRackPos);
-
-      tabwidget->addTab(_infoRack, "Ins");
-      tabwidget->addTab(_upperRack, "Prop");
-      tabwidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+      tabwidget->addTab(_upperRack, tr("Prop"));
+      tabwidget->addTab(_infoRack, tr("Ctrl"));
+      tabwidget->setTabToolTip(0, tr("Midi instruments and properties"));
+      tabwidget->setTabToolTip(1, tr("Midi controllers"));
+      tabwidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       addGridWidget(tabwidget, _upperStackTabPos);
 
       //---------------------------------------------------
@@ -1563,7 +1565,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       sliderGrid = new QGridLayout(); 
       sliderGrid->setSpacing(0);
       sliderGrid->setHorizontalSpacing(2);
-      sliderGrid->setContentsMargins(2, 2, 4, 2);
+      sliderGrid->setContentsMargins(2, 0, 4, 0);
+//      sliderGrid->setContentsMargins(2, 2, 4, 2);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
       sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
       
