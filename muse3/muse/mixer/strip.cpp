@@ -60,6 +60,7 @@
 #include <QResizeEvent>
 #include <QGridLayout>
 #include <QLayout>
+#include <QPushButton>
 #include "track.h"
 #include "combobox.h"
 #include "compact_knob.h"
@@ -1339,23 +1340,29 @@ void Strip::resizeEvent(QResizeEvent* ev)
 
 void Strip::updateRouteButtons()
 {
-  if (iR)
-  {
-      iR->setIconSetB(track->noInRoute());
-      if (track->noInRoute())
-        iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
-      else
-        iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
-  }
+    if (iR)
+    {
+        //      iR->setIconSetB(track->noInRoute());
+        if (track->noInRoute()) {
+            iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
+            iR->setIcon(*routingInputUnconnectedSVGIcon);
+        }  else {
+            iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+            iR->setIcon(*routingInputSVGIcon);
+        }
+    }
 
-  if (oR)
-  {
-    oR->setIconSetB(track->noOutRoute());
-    if (track->noOutRoute())
-      oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
-    else
-      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
-  }
+    if (oR)
+    {
+        //    oR->setIconSetB(track->noOutRoute());
+        if (track->noOutRoute()) {
+            oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
+            oR->setIcon(*routingOutputUnconnectedSVGIcon);
+        } else {
+            oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+            oR->setIcon(*routingOutputSVGIcon);
+        }
+    }
 }
 
 void Strip::mousePressEvent(QMouseEvent* ev)

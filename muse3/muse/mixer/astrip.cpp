@@ -41,6 +41,7 @@
 #include <QVariant>
 #include <QAction>
 #include <QGridLayout>
+#include <QPushButton>
 
 #include "app.h"
 #include "globals.h"
@@ -1507,26 +1508,30 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //    mono/stereo  pre/post
       //---------------------------------------------------
 
-      stereo  = new IconButton(stereoOnSVGIcon, stereoOffSVGIcon, nullptr, nullptr, false, true);
-      stereo->setContentsMargins(0, 0, 0, 0);
-      stereo->setFocusPolicy(Qt::NoFocus);
+//      stereo  = new IconButton(stereoOnSVGIcon, stereoOffSVGIcon, nullptr, nullptr, false, true);
+      stereo = new QPushButton(this);
+      stereo->setIcon(*stereoOnSVGIcon);
+//      stereo->setContentsMargins(0, 0, 0, 0);
+//      stereo->setFocusPolicy(Qt::NoFocus);
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
       stereo->setChecked(channel == 2);
-      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+//      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       connect(stereo, SIGNAL(toggled(bool)), SLOT(stereoToggled(bool)));
 
       // disable mono/stereo for Synthesizer-Plugins
       if (type == MusECore::Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(false);
 
-      pre = new IconButton(preFaderOnSVGIcon, preFaderOffSVGIcon, nullptr, nullptr, false, true);
-      pre->setContentsMargins(0, 0, 0, 0);
-      pre->setFocusPolicy(Qt::NoFocus);
+//      pre = new IconButton(preFaderOnSVGIcon, preFaderOffSVGIcon, nullptr, nullptr, false, true);
+      pre = new QPushButton(this);
+      pre->setIcon(*preFaderOnSVGIcon);
+//      pre->setContentsMargins(0, 0, 0, 0);
+//      pre->setFocusPolicy(Qt::NoFocus);
       pre->setCheckable(true);
       pre->setToolTip(tr("Pre Fader Listening (PFL)"));
       pre->setChecked(at->prefader());
-      pre->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+//      pre->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       connect(pre, SIGNAL(toggled(bool)), SLOT(preToggled(bool)));
 
       addGridWidget(stereo, _stereoToolPos);
@@ -1748,25 +1753,28 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       if (type != MusECore::Track::AUDIO_AUX) {
-            iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
-                                routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
-            iR->setObjectName("InputRouteButton");
+//            iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
+//                                routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+          iR = new QPushButton(this);
+          iR->setIcon(*routingInputSVGIcon);
             iR->setStatusTip(tr("Input routing. Press F1 for help."));
-            iR->setContentsMargins(0, 0, 0, 0);
-            iR->setFocusPolicy(Qt::NoFocus);
-            iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//            iR->setContentsMargins(0, 0, 0, 0);
+//            iR->setFocusPolicy(Qt::NoFocus);
+//            iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
             iR->setCheckable(false);
             iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
             connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
             }
 
-      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
-                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+//      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
+//                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+      oR = new QPushButton(this);
+      oR->setIcon(*routingOutputSVGIcon);
       oR->setObjectName("OutputRouteButton");
       oR->setStatusTip(tr("Output routing. Press F1 for help."));
-      oR->setContentsMargins(0, 0, 0, 0);
-      oR->setFocusPolicy(Qt::NoFocus);
-      oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//      oR->setContentsMargins(0, 0, 0, 0);
+//      oR->setFocusPolicy(Qt::NoFocus);
+//      oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       oR->setCheckable(false);
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));

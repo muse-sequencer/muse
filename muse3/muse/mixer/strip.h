@@ -42,6 +42,7 @@ class QMouseEvent;
 class QResizeEvent;
 class QGridLayout;
 class QLayout;
+class QPushButton;
 
 namespace MusECore {
 class Track;
@@ -731,8 +732,10 @@ class Strip : public QFrame {
       IconButton* record;
       IconButton* solo;
       IconButton* mute;
-      IconButton* iR; // Input routing button
-      IconButton* oR; // Output routing button
+      QPushButton* iR; // Input routing button
+      QPushButton* oR; // Output routing button
+//      IconButton* iR; // Input routing button
+//      IconButton* oR; // Output routing button
       QGridLayout* sliderGrid;
       CompactComboBox* autoType;
       void setLabelText();

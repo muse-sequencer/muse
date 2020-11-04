@@ -262,8 +262,10 @@ class AudioStrip : public Strip {
       bool _preferKnobs;
 
       IconButton* _recMonitor;
-      IconButton* stereo;
-      IconButton* pre;
+      QPushButton* stereo;
+      QPushButton* pre;
+//      IconButton* stereo;
+//      IconButton* pre;
       IconButton* off;
 
       double volume;

@@ -31,6 +31,7 @@
 #include <QCursor>
 #include <QGridLayout>
 #include <QVBoxLayout>
+#include <QPushButton>
 
 #include "app.h"
 #include "midi_consts.h"
@@ -1477,9 +1478,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       tabwidget = new QTabWidget(this);
       tabwidget->setObjectName("MidiStripTabWidget");
-      tabwidget->setContentsMargins(0,0,0,0);
+      tabwidget->setContentsMargins(0,4,0,0);
       tabwidget->setUsesScrollButtons(false);
-      tabwidget->setFocusPolicy(Qt::NoFocus);
+//      tabwidget->setFocusPolicy(Qt::NoFocus);
 
       _infoRack = new MidiComponentRack(t, mStripInfoRack);
       //_infoRack->setVisible(false); // Not visible unless expanded.
@@ -1722,25 +1723,29 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //    routing
       //---------------------------------------------------
 
-      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
-                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+//      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
+//                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+      iR = new QPushButton(this);
+      iR->setIcon(*routingInputSVGIcon);
       iR->setObjectName("InputRouteButton");
       iR->setStatusTip(tr("Intput routing. Press F1 for help."));
-      iR->setContentsMargins(0, 0, 0, 0);
-      iR->setFocusPolicy(Qt::NoFocus);
-      iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      iR->setCheckable(false);
+//      iR->setContentsMargins(0, 0, 0, 0);
+//      iR->setFocusPolicy(Qt::NoFocus);
+//      iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//      iR->setCheckable(false);
       iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       
-      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
-                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+//      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
+//                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+      oR = new QPushButton(this);
+      oR->setIcon(*routingOutputSVGIcon);
       oR->setObjectName("OutputRouteButton");
       oR->setStatusTip(tr("Output routing. Press F1 for help."));
-      oR->setContentsMargins(0, 0, 0, 0);
-      oR->setFocusPolicy(Qt::NoFocus);
-      oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      oR->setCheckable(false);
+//      oR->setContentsMargins(0, 0, 0, 0);
+//      oR->setFocusPolicy(Qt::NoFocus);
+//      oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+//      oR->setCheckable(false);
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
    
