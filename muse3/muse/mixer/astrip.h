@@ -222,20 +222,13 @@ class AudioStrip : public Strip {
   private:
       GridPosStruct _upperRackPos;
       GridPosStruct _effectRackPos;
-      GridPosStruct _stereoToolPos;
-      GridPosStruct _preToolPos;
+      GridPosStruct _stereoPrePos;
       GridPosStruct _gainToolPos;
       GridPosStruct _sliderPos;
       GridPosStruct _sliderLabelPos;
       GridPosStruct _lowerRackPos;
-      GridPosStruct _offPos;
-      GridPosStruct _recPos;
-      GridPosStruct _mutePos;
-      GridPosStruct _soloPos;
-      GridPosStruct _inRoutesPos;
-      GridPosStruct _outRoutesPos;
-      GridPosStruct _automationPos;
-      GridPosStruct _offMonRecPos;
+      GridPosStruct _routePos;
+      GridPosStruct _bottomPos;
 
       AudioStripProperties props;
 

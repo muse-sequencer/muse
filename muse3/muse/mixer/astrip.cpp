@@ -1321,55 +1321,56 @@ void AudioStrip::resetClipper()
 //---------------------------------------------------------
 
 void AudioStrip::updateChannels()
-      {
-      MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
-      int c = t->channels();
-      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
+{
+    MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
+    int c = t->channels();
+    DEBUG_AUDIO_STRIP(stderr, "AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
 
-      if (c > channel) {
-            for (int cc = channel; cc < c; ++cc) {
-                  _clipperLabel[cc] = new ClipperLabel();
-                  _clipperLabel[cc]->setContentsMargins(0, 0, 0, 0);
-                  _clipperLabel[cc]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-                  setClipperTooltip(cc);
-                  _clipperLayout->addWidget(_clipperLabel[cc]);
-                  connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
+    if (c > channel) {
+        for (int cc = channel; cc < c; ++cc) {
+            _clipperLabel[cc] = new ClipperLabel();
+            _clipperLabel[cc]->setContentsMargins(0, 0, 0, 0);
+            _clipperLabel[cc]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+            setClipperTooltip(cc);
+            _clipperLayout->addWidget(_clipperLabel[cc]);
+            connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
 
-                  meter[cc] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
-                  meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
-                  meter[cc]->setFixedWidth(props.meterWidth());
-                  meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-                  meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
-                                             MusEGlobal::config.meterBackgroundColor);
-                  meter[cc]->setFrame(props.meterFrame(), props.meterFrameColor());
-                  connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
-                  _meterLayout->hlayout()->addWidget(meter[cc], Qt::AlignLeft);
-//                  meter[cc]->show();
-                  }
-            }
-      else if (c < channel) {
-            for (int cc = channel-1; cc >= c; --cc) {
-                  if(_clipperLabel[cc])
-                    delete _clipperLabel[cc];
-                  _clipperLabel[cc] = nullptr;
+            meter[cc] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+            meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
+            meter[cc]->setFixedWidth(props.meterWidth());
+            meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+            meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
+                                       MusEGlobal::config.meterBackgroundColor);
+            meter[cc]->setFrame(props.meterFrame(), props.meterFrameColor());
+            connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
+            _meterLayout->hlayout()->addWidget(meter[cc], Qt::AlignLeft);
+            //                  meter[cc]->show();
+        }
+    }
+    else if (c < channel) {
+        for (int cc = channel-1; cc >= c; --cc) {
+            if(_clipperLabel[cc])
+                delete _clipperLabel[cc];
+            _clipperLabel[cc] = nullptr;
 
-                  if(meter[cc])
-                    delete meter[cc];
-                  meter[cc] = nullptr;
-                  }
-            }
+            if(meter[cc])
+                delete meter[cc];
+            meter[cc] = nullptr;
+        }
+    }
 
-      if (meter[0] && !meter[0]->vu3d() && !props.meterWidthPerChannel()) {
-           for (int ch = 0; ch < c; ++ch) {
-               meter[ch]->setFixedWidth(props.meterWidth() / c);
-           }
-      }
+    if (meter[0] && !meter[0]->vu3d() && !props.meterWidthPerChannel()) {
+        for (int ch = 0; ch < c; ++ch) {
+            meter[ch]->setFixedWidth(props.meterWidth() / c);
+        }
+    }
 
-      channel = c;
-      stereo->blockSignals(true);
-      stereo->setChecked(channel == 2);
-      stereo->blockSignals(false);
-      }
+    channel = c;
+    stereo->blockSignals(true);
+    stereo->setChecked(channel == 2);
+    stereo->blockSignals(false);
+    update();
+}
 
 //---------------------------------------------------------
 //   AudioStrip
@@ -1406,27 +1407,66 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
       setFont(MusEGlobal::config.fonts[1]);
       setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-              + "QAbstractButton { margin: 2px 1px 2px 1px; padding: 1px; }"
+              + "QAbstractButton { padding: 1px; }"
+//              + "QAbstractButton { margin: 2px 1px 2px 1px; padding: 1px; }"
               + "#TrackOffButton { padding: 0px; }");
 
       channel       = at->channels();
 
-      _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
-      _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
+      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
       _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
-      _stereoToolPos       = GridPosStruct(_curGridRow + 2, 0, 1, 1);
-      _preToolPos          = GridPosStruct(_curGridRow + 2, 1, 1, 1);
+      _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 2);
       _upperRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
       _sliderPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
       _sliderLabelPos      = GridPosStruct(_curGridRow + 5, 0, 1, 2);
       _lowerRackPos        = GridPosStruct(_curGridRow + 6, 0, 1, 3);
-      _offMonRecPos        = GridPosStruct(_curGridRow + 7, 0, 1, 1);
-      _recPos              = GridPosStruct(_curGridRow + 7, 1, 1, 1);
-      _mutePos             = GridPosStruct(_curGridRow + 8, 0, 1, 1);
-      _soloPos             = GridPosStruct(_curGridRow + 8, 1, 1, 1);
-      _automationPos       = GridPosStruct(_curGridRow + 9, 0, 1, 2);
-      _offPos              = GridPosStruct(_curGridRow + 10, 0, 1, 2);
+      _bottomPos            = GridPosStruct(_curGridRow + 7, 0, 1, 2);
 
+
+      //---------------------------------------------------
+      //    routing
+      //---------------------------------------------------
+
+      QHBoxLayout *routeLayout = new QHBoxLayout;
+      routeLayout->setContentsMargins(1,2,1,2);
+      routeLayout->setSpacing(1);
+
+      if (type != MusECore::Track::AUDIO_AUX) {
+          //            iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
+          //                                routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+          iR = new QPushButton(this);
+          iR->setIcon(*routingInputSVGIcon);
+          iR->setStatusTip(tr("Input routing. Press F1 for help."));
+          iR->setFocusPolicy(Qt::NoFocus);
+          iR->setCheckable(false);
+          iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+          connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+//          addGridWidget(iR, _inRoutesPos);
+          routeLayout->addWidget(iR);
+      } else {
+          QPushButton *iRx = new QPushButton(this);
+          iRx->setIcon(*routingInputSVGIcon);
+          iRx->setEnabled(false);
+//          addGridWidget(iRx, _inRoutesPos);
+          routeLayout->addWidget(iRx);
+      }
+
+//      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
+//                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+      oR = new QPushButton(this);
+      oR->setIcon(*routingOutputSVGIcon);
+      oR->setObjectName("OutputRouteButton");
+      oR->setStatusTip(tr("Output routing. Press F1 for help."));
+      oR->setFocusPolicy(Qt::NoFocus);
+      oR->setCheckable(false);
+      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
+//      addGridWidget(oR, _outRoutesPos);
+      routeLayout->addWidget(oR);
+
+      updateRouteButtons();
+
+      addGridLayout(routeLayout, _routePos);
 
 //      _infoRack = new AudioComponentRack(at, aStripInfoRack, false);
 //      //_infoRack->setVisible(false); // Not visible unless expanded.
@@ -1470,35 +1510,40 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //    mono/stereo  pre/post
       //---------------------------------------------------
 
+      QHBoxLayout *stereoPreLayout = new QHBoxLayout;
+      stereoPreLayout->setContentsMargins(1,2,1,2);
+      stereoPreLayout->setSpacing(1);
+
 //      stereo  = new IconButton(stereoOnSVGIcon, stereoOffSVGIcon, nullptr, nullptr, false, true);
       stereo = new QPushButton(this);
       stereo->setIcon(*stereoOnSVGIcon);
-//      stereo->setContentsMargins(1, 2, 1, 2);
       stereo->setFocusPolicy(Qt::NoFocus);
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
       stereo->setChecked(channel == 2);
-//      stereo->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 
       // disable mono/stereo for Synthesizer-Plugins
       if (type == MusECore::Track::AUDIO_SOFTSYNTH)
           stereo->setEnabled(false);
 
       connect(stereo, SIGNAL(toggled(bool)), SLOT(stereoToggled(bool)));
+      stereoPreLayout->addWidget(stereo);
+
 
 //      pre = new IconButton(preFaderOnSVGIcon, preFaderOffSVGIcon, nullptr, nullptr, false, true);
       pre = new QPushButton(this);
       pre->setIcon(*preFaderOnSVGIcon);
-//      pre->setContentsMargins(1, 2, 1, 2);
       pre->setFocusPolicy(Qt::NoFocus);
       pre->setCheckable(true);
       pre->setToolTip(tr("Pre Fader Listening (PFL)"));
       pre->setChecked(at->prefader());
-//      pre->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
       connect(pre, SIGNAL(toggled(bool)), SLOT(preToggled(bool)));
+      stereoPreLayout->addWidget(pre);
 
-      addGridWidget(stereo, _stereoToolPos);
-      addGridWidget(pre, _preToolPos);
+//      addGridWidget(stereo, _stereoToolPos);
+//      addGridWidget(pre, _preToolPos);
+
+      addGridLayout(stereoPreLayout, _stereoPrePos);
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -1663,6 +1708,31 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //    mute, solo, record
       //---------------------------------------------------
 
+      QGridLayout *lowLayout = new QGridLayout;
+      lowLayout->setContentsMargins(1,2,1,2);
+      lowLayout->setSpacing(1);
+
+      if (track && track->canRecordMonitor()) {
+          //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
+          _recMonitor = new QPushButton;
+          _recMonitor->setIcon(*monitorOnSVGIcon);
+          _recMonitor->setFocusPolicy(Qt::NoFocus);
+          _recMonitor->setCheckable(true);
+          _recMonitor->setToolTip(tr("Input monitor"));
+          _recMonitor->setWhatsThis(tr("Pass input through to output"));
+          _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
+          _recMonitor->setChecked(at->recMonitor());
+          connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+//          addGridWidget(_recMonitor, _offMonRecPos);
+          lowLayout->addWidget(_recMonitor, 0, 0, 1, 1);
+      } else {
+          QPushButton *recMonitorx = new QPushButton(this);
+          recMonitorx->setIcon(*monitorOnSVGIcon);
+          recMonitorx->setEnabled(false);
+//          addGridWidget(recMonitorx, _offMonRecPos);
+          lowLayout->addWidget(recMonitorx, 0, 0, 1, 1);
+      }
+
       if (track->canRecord()) {
           //            record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, nullptr, nullptr, false, true);
           record  = new QPushButton(this);
@@ -1675,13 +1745,15 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
               record->setToolTip(tr("Record arm"));
           record->setChecked(at->recordFlag());
           connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
-          addGridWidget(record, _recPos);
+//          addGridWidget(record, _recPos);
+          lowLayout->addWidget(record, 0, 1, 1, 1);
       } else {
           QPushButton *recordx = new QPushButton(this);
           recordx->setIcon(*recArmOnSVGIcon);
           recordx->setFocusPolicy(Qt::NoFocus);
           recordx->setEnabled(false);
-          addGridWidget(recordx, _recPos);
+//          addGridWidget(recordx, _recPos);
+          lowLayout->addWidget(recordx, 0, 1, 1, 1);
       }
 
 //      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
@@ -1693,7 +1765,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       mute->setChecked(at->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
-      addGridWidget(mute, _mutePos);
+//      addGridWidget(mute, _mutePos);
+      lowLayout->addWidget(mute, 1, 0, 1, 1);
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo  = new QPushButton(this);
@@ -1708,7 +1781,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 //      solo->setIconSetB(at->internalSolo());
       solo->setChecked(at->solo());
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
-      addGridWidget(solo, _soloPos);
+//      addGridWidget(solo, _soloPos);
+      lowLayout->addWidget(solo, 1, 1, 1, 1);
 
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, nullptr, nullptr, false, true);
       off = new QPushButton(this);
@@ -1719,63 +1793,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       off->setToolTip(tr("Track off"));
       off->setChecked(at->off());
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
-      addGridWidget(off, _offPos);
-
-      //---------------------------------------------------
-      //    routing
-      //---------------------------------------------------
-
-      if (type != MusECore::Track::AUDIO_AUX) {
-          //            iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
-          //                                routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
-          iR = new QPushButton(this);
-          iR->setIcon(*routingInputSVGIcon);
-          iR->setStatusTip(tr("Input routing. Press F1 for help."));
-          iR->setFocusPolicy(Qt::NoFocus);
-          iR->setCheckable(false);
-          iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
-          connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
-          addGridWidget(iR, _inRoutesPos);
-      } else {
-          QPushButton *iRx = new QPushButton(this);
-          iRx->setIcon(*routingInputSVGIcon);
-          iRx->setEnabled(false);
-          addGridWidget(iRx, _inRoutesPos);
-      }
-
-
-//      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
-//                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
-      oR = new QPushButton(this);
-      oR->setIcon(*routingOutputSVGIcon);
-      oR->setObjectName("OutputRouteButton");
-      oR->setStatusTip(tr("Output routing. Press F1 for help."));
-      oR->setFocusPolicy(Qt::NoFocus);
-      oR->setCheckable(false);
-      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
-      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-      addGridWidget(oR, _outRoutesPos);
-
-      updateRouteButtons();
-
-      if (track && track->canRecordMonitor()) {
-          //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
-          _recMonitor = new QPushButton;
-          _recMonitor->setIcon(*monitorOnSVGIcon);
-          _recMonitor->setFocusPolicy(Qt::NoFocus);
-          _recMonitor->setCheckable(true);
-          _recMonitor->setToolTip(tr("Input monitor"));
-          _recMonitor->setWhatsThis(tr("Pass input through to output"));
-          _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
-          _recMonitor->setChecked(at->recMonitor());
-          connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
-          addGridWidget(_recMonitor, _offMonRecPos);
-      } else {
-          QPushButton *recMonitorx = new QPushButton(this);
-          recMonitorx->setIcon(*monitorOnSVGIcon);
-          recMonitorx->setEnabled(false);
-          addGridWidget(recMonitorx, _offMonRecPos);
-      }
+//      addGridWidget(off, _offPos);
+      lowLayout->addWidget(off, 3, 0, 1, 2);
 
 
       //---------------------------------------------------
@@ -1795,11 +1814,15 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       autoType->addAction(tr("Write"), MusECore::AUTO_WRITE);
       autoType->setCurrentItem(at->automationType());
 
+      ensurePolished();
       colorAutoType();
 
       autoType->setToolTip(tr("Automation type"));
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
-      addGridWidget(autoType, _automationPos);
+//      addGridWidget(autoType, _automationPos);
+      lowLayout->addWidget(autoType, 2, 0, 1, 2);
+
+      addGridLayout(lowLayout, _bottomPos);
 
       grid->setColumnStretch(2, 10);
 
@@ -1839,34 +1862,16 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
 void AudioStrip::colorAutoType() {
 
-//    QPalette palette;
-//    if (track->automationType() == MusECore::AUTO_TOUCH || track->automationType() == MusECore::AUTO_WRITE)
-//    {
-//        palette.setColor(QPalette::Button, QColor(215, 76, 39));  // red
-//        autoType->setPalette(palette);
-//    }
-//    else if (track->automationType() == MusECore::AUTO_READ)
-//    {
-//        palette.setColor(QPalette::Button, QColor(100, 172, 49));  // green
-//        autoType->setPalette(palette);
-//    }
-//    else
-//    {
-//        palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
-//        autoType->setPalette(palette);
-//    }
-
       if (track->automationType() == MusECore::AUTO_TOUCH || track->automationType() == MusECore::AUTO_WRITE)
       {
-          autoType->setStyleSheet("QToolButton { background: rgb(215, 76, 39); }");
+          autoType->setStyleSheet("QToolButton { background: rgb(153, 0, 0); }");
       }
       else if (track->automationType() == MusECore::AUTO_READ)
       {
-          autoType->setStyleSheet("QToolButton { background: rgb(100, 172, 49); }");
+          autoType->setStyleSheet("QToolButton { background: rgb(26, 101, 26); }");
       }
       else
       {
-//          palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
           QString c = palette().color(QPalette::Button).name();
           autoType->setStyleSheet("QToolButton { background:" + c + "; }");
       }

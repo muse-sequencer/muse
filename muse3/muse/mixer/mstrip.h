@@ -291,14 +291,8 @@ class MidiStrip : public Strip {
       GridPosStruct _sliderPos;
       GridPosStruct _sliderLabelPos;
       GridPosStruct _lowerRackPos;
-      GridPosStruct _offPos;
-      GridPosStruct _recPos;
-      GridPosStruct _mutePos;
-      GridPosStruct _soloPos;
-      GridPosStruct _inRoutesPos;
-      GridPosStruct _outRoutesPos;
-      GridPosStruct _automationPos;
-      GridPosStruct _offMonRecPos;
+      GridPosStruct _routePos;
+      GridPosStruct _bottomPos;
 
       MidiStripProperties props;
 

@@ -1444,7 +1444,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       // Set the whole strip's font, except for the label.
       setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
       setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-              + "QAbstractButton { margin: 2px 1px 2px 1px; padding: 1px; }"
+//              + "QAbstractButton { margin: 2px 1px 2px 1px; padding: 1px; }"
+              + "QAbstractButton { padding: 1px; }"
               + "#TrackOffButton { padding: 0px; }"
               + "QTabBar::tab { margin: 0px; padding: 2px 4px 2px 4px; }");
 
@@ -1452,18 +1453,47 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       t->setActivity(0);
       t->setLastActivity(0);
 
-      _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
-      _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
+      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
       _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 3);
       _sliderPos           = GridPosStruct(_curGridRow + 2, 0, 1, 2);
       _sliderLabelPos      = GridPosStruct(_curGridRow + 3, 0, 1, 2);
       _lowerRackPos        = GridPosStruct(_curGridRow + 4, 0, 1, 3);
-      _offMonRecPos        = GridPosStruct(_curGridRow + 5, 0, 1, 1);
-      _recPos              = GridPosStruct(_curGridRow + 5, 1, 1, 1);
-      _mutePos             = GridPosStruct(_curGridRow + 6, 0, 1, 1);
-      _soloPos             = GridPosStruct(_curGridRow + 6, 1, 1, 1);
-      _automationPos       = GridPosStruct(_curGridRow + 7, 0, 1, 2);
-      _offPos              = GridPosStruct(_curGridRow + 8, 0, 1, 2);
+      _bottomPos           = GridPosStruct(_curGridRow + 5, 0, 1, 2);
+
+      //---------------------------------------------------
+      //    routing
+      //---------------------------------------------------
+
+      QHBoxLayout *routeLayout = new QHBoxLayout;
+      routeLayout->setContentsMargins(1,2,1,2);
+      routeLayout->setSpacing(1);
+//      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
+//                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+      iR = new QPushButton(this);
+      iR->setIcon(*routingInputSVGIcon);
+      iR->setObjectName("InputRouteButton");
+      iR->setStatusTip(tr("Intput routing. Press F1 for help."));
+      iR->setFocusPolicy(Qt::NoFocus);
+      iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+      connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+      routeLayout->addWidget(iR);
+//      addGridWidget(iR, _inRoutesPos);
+
+//      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
+//                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+      oR = new QPushButton(this);
+      oR->setIcon(*routingOutputSVGIcon);
+      oR->setObjectName("OutputRouteButton");
+      oR->setStatusTip(tr("Output routing. Press F1 for help."));
+      oR->setFocusPolicy(Qt::NoFocus);
+      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
+      routeLayout->addWidget(oR);
+//      addGridWidget(oR, _outRoutesPos);
+
+      updateRouteButtons();
+
+      addGridLayout(routeLayout, _routePos);
 
 
       tabwidget = new QTabWidget(this);
@@ -1652,6 +1682,31 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //    record, mixdownfile
       //---------------------------------------------------
 
+      QGridLayout *lowLayout = new QGridLayout;
+      lowLayout->setContentsMargins(1,2,1,2);
+      lowLayout->setSpacing(1);
+
+      if (track && track->canRecordMonitor()) {
+          //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
+          _recMonitor = new QPushButton;
+          _recMonitor->setIcon(*monitorOnSVGIcon);
+          _recMonitor->setFocusPolicy(Qt::NoFocus);
+          _recMonitor->setCheckable(true);
+          _recMonitor->setToolTip(tr("Input monitor"));
+          _recMonitor->setWhatsThis(tr("Pass input through to output"));
+          _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
+          _recMonitor->setChecked(t->recMonitor());
+          connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+//          addGridWidget(_recMonitor, _offMonRecPos);
+          lowLayout->addWidget(_recMonitor, 0, 0, 1, 1);
+      } else {
+          QPushButton *recMonitorx = new QPushButton(this);
+          recMonitorx->setIcon(*monitorOnSVGIcon);
+          recMonitorx->setEnabled(false);
+//          addGridWidget(recMonitorx, _offMonRecPos);
+          lowLayout->addWidget(recMonitorx, 0, 0, 1, 1);
+      }
+
 //      record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, 0, 0, false, true);
       record  = new QPushButton(this);
       record->setIcon(*recArmOnSVGIcon);
@@ -1660,17 +1715,20 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       record->setToolTip(tr("Record arm"));
       record->setChecked(track->recordFlag());
       connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
-      addGridWidget(record, _recPos);
+//      addGridWidget(record, _recPos);
+      lowLayout->addWidget(record, 0, 1, 1, 1);
 
+//      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
       mute  = new QPushButton(this);
-      mute->setIcon(*muteOffSVGIcon);
+      mute->setIcon(*muteOnSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
       mute->setToolTip(tr("Mute or proxy mute"));
       mute->setChecked(track->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
-      addGridWidget(mute, _mutePos);
+//      addGridWidget(mute, _mutePos);
+      lowLayout->addWidget(mute, 1, 0, 1, 1);
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo  = new QPushButton(this);
@@ -1685,8 +1743,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //      solo->setIconSetB(track->internalSolo());
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
-      addGridWidget(solo, _soloPos);
-
+//      addGridWidget(solo, _soloPos);
+      lowLayout->addWidget(solo, 1, 1, 1, 1);
 
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, 0, 0, false, true);
       off = new QPushButton(this);
@@ -1697,54 +1755,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       off->setToolTip(tr("Track off"));
       off->setChecked(track->off());
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
-      addGridWidget(off, _offPos);
-
-      //---------------------------------------------------
-      //    routing
-      //---------------------------------------------------
-
-//      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
-//                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
-      iR = new QPushButton(this);
-      iR->setIcon(*routingInputSVGIcon);
-      iR->setObjectName("InputRouteButton");
-      iR->setStatusTip(tr("Intput routing. Press F1 for help."));
-      iR->setFocusPolicy(Qt::NoFocus);
-      iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
-      connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
-      addGridWidget(iR, _inRoutesPos);
-      
-//      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
-//                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
-      oR = new QPushButton(this);
-      oR->setIcon(*routingOutputSVGIcon);
-      oR->setObjectName("OutputRouteButton");
-      oR->setStatusTip(tr("Output routing. Press F1 for help."));
-      oR->setFocusPolicy(Qt::NoFocus);
-      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
-      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-      addGridWidget(oR, _outRoutesPos);
-   
-      updateRouteButtons();
-
-      if (track && track->canRecordMonitor()) {
-          //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
-          _recMonitor = new QPushButton;
-          _recMonitor->setIcon(*monitorOnSVGIcon);
-          _recMonitor->setFocusPolicy(Qt::NoFocus);
-          _recMonitor->setCheckable(true);
-          _recMonitor->setToolTip(tr("Input monitor"));
-          _recMonitor->setWhatsThis(tr("Pass input through to output"));
-          _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
-          _recMonitor->setChecked(t->recMonitor());
-          connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
-          addGridWidget(_recMonitor, _offMonRecPos);
-      } else {
-          QPushButton *recMonitorx = new QPushButton(this);
-          recMonitorx->setIcon(*routingInputSVGIcon);
-          recMonitorx->setEnabled(false);
-          addGridWidget(recMonitorx, _offMonRecPos);
-      }
+//      addGridWidget(off, _offPos);
+      lowLayout->addWidget(off, 3, 0, 1, 2);
 
 
       //---------------------------------------------------
@@ -1771,7 +1783,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       autoType->addAction("n/a", MusECore::AUTO_OFF);
       autoType->setCurrentItem(MusECore::AUTO_OFF);
 
-      addGridWidget(autoType, _automationPos);
+//      addGridWidget(autoType, _automationPos);
+      lowLayout->addWidget(autoType, 2, 0, 1, 2);
+
+      addGridLayout(lowLayout, _bottomPos);
 
       grid->setColumnStretch(2, 10);
 
