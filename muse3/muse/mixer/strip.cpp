@@ -1152,15 +1152,17 @@ void Strip::muteToggled(bool val)
 //---------------------------------------------------------
 
 void Strip::soloToggled(bool val)
-      {
-      solo->setIconSetB(track && track->internalSolo());
-      if(!track)
+{
+    if (track && track->internalSolo())
+        solo->setIcon(*soloAndProxyOnSVGIcon);
+    //    solo->setIconSetB(track && track->internalSolo());
+    if (!track)
         return;
-      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
-      MusECore::PendingOperationList operations;
-      operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackSolo));
-      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-      }
+    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+    MusECore::PendingOperationList operations;
+    operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackSolo));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
 
 //---------------------------------------------------------
 //   Strip
@@ -1909,22 +1911,24 @@ QString Strip::getLabelText()
 
 void Strip::updateMuteIcon()
 {
-  if(!track)
-    return;
+    if(!track)
+        return;
 
-  bool found = false;
-  MusECore::TrackList* tl = MusEGlobal::song->tracks();
-  for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
-  {
-    MusECore::Track* t = *it;
-    // Ignore this track.
-    if(t != track && (t->internalSolo() || t->solo()))
+    bool found = false;
+    MusECore::TrackList* tl = MusEGlobal::song->tracks();
+    for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
     {
-      found = true;
-      break;
+        MusECore::Track* t = *it;
+        // Ignore this track.
+        if(t != track && (t->internalSolo() || t->solo()))
+        {
+            found = true;
+            break;
+        }
     }
-  }
-  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
+    //  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
+    if (found && !track->internalSolo() && !track->solo())
+        mute->setIcon(*muteAndProxyOnSVGIcon);
 }
 
 

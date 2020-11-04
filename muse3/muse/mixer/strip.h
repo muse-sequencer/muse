@@ -729,13 +729,11 @@ class Strip : public QFrame {
       // The widget that will receive focus when we want to clear focus.
       QWidget* _focusYieldWidget;
 
-      IconButton* record;
-      IconButton* solo;
-      IconButton* mute;
+      QPushButton* record;
+      QPushButton* solo;
+      QPushButton* mute;
       QPushButton* iR; // Input routing button
       QPushButton* oR; // Output routing button
-//      IconButton* iR; // Input routing button
-//      IconButton* oR; // Output routing button
       QGridLayout* sliderGrid;
       CompactComboBox* autoType;
       void setLabelText();

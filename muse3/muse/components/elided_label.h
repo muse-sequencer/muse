@@ -233,16 +233,6 @@ class ElidedTextLabel : public QFrame
 };
 
 
-
-class PaletteSwitcher : public ElidedLabel
-{
-    Q_OBJECT
-
-    // derive own class so it can be customized from stylesheet...
-    // TODO: make real switcher with two mutually exclusive buttons
-};
-
-
 } // namespace MusEGui
 
 #endif

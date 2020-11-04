@@ -350,11 +350,6 @@ MusEGui--ElidedLabel {
     qproperty-style3d: false;
 }
 
-MusEGui--PaletteSwitcher {
-    qproperty-radius: 2;
-    qproperty-style3d: false;
-}
-
 MusEGui--CompactPatchEdit {
     qproperty-radius: 2;
     qproperty-style3d: false;

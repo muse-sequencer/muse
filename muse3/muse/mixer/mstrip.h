@@ -49,7 +49,7 @@ class DoubleLabel;
 class Slider;
 class CompactSlider;
 class CompactPatchEdit;
-class IconButton;
+//class IconButton;
 
 //---------------------------------------------------------
 //   MidiComponentRack
@@ -286,36 +286,28 @@ class MidiStrip : public Strip {
       
   private:
       GridPosStruct _upperStackTabPos;
-//      GridPosStruct _preScrollAreaPos_A;
-      //GridPosStruct _preScrollAreaPos_B;
       GridPosStruct _infoSpacerTop;
       GridPosStruct _infoSpacerBottom;
-//      GridPosStruct _propertyRackPos;
       GridPosStruct _sliderPos;
       GridPosStruct _sliderLabelPos;
-      GridPosStruct _postScrollAreaPos_A;
-      //GridPosStruct _postScrollAreaPos_B;
+      GridPosStruct _lowerRackPos;
       GridPosStruct _offPos;
       GridPosStruct _recPos;
       GridPosStruct _mutePos;
       GridPosStruct _soloPos;
-      //GridPosStruct _routesPos;
       GridPosStruct _inRoutesPos;
       GridPosStruct _outRoutesPos;
       GridPosStruct _automationPos;
-      //GridPosStruct _rightSpacerPos;
       GridPosStruct _offMonRecPos;
 
       MidiStripProperties props;
 
       Slider* slider;
       DoubleLabel* sl;
-      IconButton* off;
-      IconButton* _recMonitor;
+      QPushButton* off;
+      QPushButton* _recMonitor;
       MeterLayout* _meterLayout;
 
-//      PaletteSwitcher* _upperStackTabButtonA;
-//      PaletteSwitcher* _upperStackTabButtonB;
       MidiComponentRack* _upperRack;
       MidiComponentRack* _lowerRack;
       MidiComponentRack* _infoRack;
