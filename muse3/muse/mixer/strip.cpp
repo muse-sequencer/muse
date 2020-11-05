@@ -1153,9 +1153,14 @@ void Strip::muteToggled(bool val)
 
 void Strip::soloToggled(bool val)
 {
-    if (track && track->internalSolo())
-        solo->setIcon(*soloAndProxyOnSVGIcon);
+    if (track && track->internalSolo()) {
+        if (solo->isChecked())
+            solo->setIcon(*soloAndProxyOnSVGIcon);
+        else
+            solo->setIcon(*soloProxyOnSVGIcon);
+    }
     //    solo->setIconSetB(track && track->internalSolo());
+
     if (!track)
         return;
     // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
@@ -1927,8 +1932,12 @@ void Strip::updateMuteIcon()
         }
     }
     //  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
-    if (found && !track->internalSolo() && !track->solo())
-        mute->setIcon(*muteAndProxyOnSVGIcon);
+    if (found && !track->internalSolo() && !track->solo()) {
+        if (mute->isChecked())
+            mute->setIcon(*muteAndProxyOnSVGIcon);
+        else
+            mute->setIcon(*muteProxyOnSVGIcon);
+    }
 }
 
 

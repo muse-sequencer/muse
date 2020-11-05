@@ -2286,8 +2286,12 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
             solo->setChecked(track->solo());
             solo->blockSignals(false);
 //            solo->setIconSetB(track->internalSolo());
-            if (track->internalSolo())
-              solo->setIcon(*soloAndProxyOnSVGIcon);
+            if (track->internalSolo()) {
+                if (solo->isChecked())
+                    solo->setIcon(*soloAndProxyOnSVGIcon);
+                else
+                    solo->setIcon(*soloProxyOnSVGIcon);
+            }
             updateMuteIcon();
       }
       

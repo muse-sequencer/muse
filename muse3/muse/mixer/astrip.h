@@ -255,6 +255,8 @@ class AudioStrip : public Strip {
       double volume;
       bool _volPressed;
 
+      QString colorNameButton;
+
       ClipperLabel* _clipperLabel[MusECore::MAX_CHANNELS];
       QHBoxLayout* _clipperLayout;
 

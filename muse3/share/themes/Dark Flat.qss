@@ -201,7 +201,8 @@ QWidget#Strip {
 */
 }
 
-QWidget#Strip QAbstractButton {
+QWidget#Strip QAbstractButton,
+QWidget#AudioAutoType {
 	background-color: rgb(50,50,50);
     border: 1px solid rgb(90,90,90);
 }
@@ -212,7 +213,7 @@ QWidget#Strip QAbstractButton:hover {
 
 QWidget#Strip QAbstractButton:pressed, 
 QWidget#Strip QAbstractButton:checked {
-    background-color: rgb(0,120,200);
+    background-color: rgb(0,90,160);
 }
 
 QTreeView, QListView {

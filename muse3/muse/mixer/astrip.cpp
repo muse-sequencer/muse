@@ -948,14 +948,14 @@ void AudioStrip::configChanged()
   // TODO This is somewhat crude, might miss automatic changes.
   // Later link up MeterLayout and Slider better.
   _meterLayout->setMeterEndsMargin(slider->scaleEndpointsMargin());
-  
+
   // Possible, but leave it to the background painter for now.
   //rack->setActiveColor(MusEGlobal::config.rackItemBackgroundColor);
 
   _upperRack->configChanged();
 //  _infoRack->configChanged();
   _lowerRack->configChanged();
-  
+
   // Ensure updateGeometry is called in case the number of rack items changed.
   // Not required for at least suse, but required for at least mint cinnamon.
   rack->updateGeometry();
@@ -1002,8 +1002,12 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
             solo->setChecked(track->solo());
             solo->blockSignals(false);
 //            solo->setIconSetB(track->internalSolo());
-            if (track->internalSolo())
-              solo->setIcon(*soloAndProxyOnSVGIcon);
+            if (track->internalSolo()) {
+                if (solo->isChecked())
+                    solo->setIcon(*soloAndProxyOnSVGIcon);
+                else
+                    solo->setIcon(*soloProxyOnSVGIcon);
+            }
             updateMuteIcon();
             }
       if (val & SC_RECFLAG)
@@ -1708,9 +1712,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //    mute, solo, record
       //---------------------------------------------------
 
-      QGridLayout *lowLayout = new QGridLayout;
-      lowLayout->setContentsMargins(1,2,1,2);
-      lowLayout->setSpacing(1);
+      QGridLayout *bottomLayout = new QGridLayout;
+      bottomLayout->setContentsMargins(1,2,1,2);
+      bottomLayout->setSpacing(1);
 
       if (track && track->canRecordMonitor()) {
           //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
@@ -1724,13 +1728,13 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           _recMonitor->setChecked(at->recMonitor());
           connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
 //          addGridWidget(_recMonitor, _offMonRecPos);
-          lowLayout->addWidget(_recMonitor, 0, 0, 1, 1);
+          bottomLayout->addWidget(_recMonitor, 0, 0, 1, 1);
       } else {
           QPushButton *recMonitorx = new QPushButton(this);
           recMonitorx->setIcon(*monitorOnSVGIcon);
           recMonitorx->setEnabled(false);
 //          addGridWidget(recMonitorx, _offMonRecPos);
-          lowLayout->addWidget(recMonitorx, 0, 0, 1, 1);
+          bottomLayout->addWidget(recMonitorx, 0, 0, 1, 1);
       }
 
       if (track->canRecord()) {
@@ -1746,19 +1750,19 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           record->setChecked(at->recordFlag());
           connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
 //          addGridWidget(record, _recPos);
-          lowLayout->addWidget(record, 0, 1, 1, 1);
+          bottomLayout->addWidget(record, 0, 1, 1, 1);
       } else {
           QPushButton *recordx = new QPushButton(this);
           recordx->setIcon(*recArmOnSVGIcon);
           recordx->setFocusPolicy(Qt::NoFocus);
           recordx->setEnabled(false);
 //          addGridWidget(recordx, _recPos);
-          lowLayout->addWidget(recordx, 0, 1, 1, 1);
+          bottomLayout->addWidget(recordx, 0, 1, 1, 1);
       }
 
 //      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
       mute  = new QPushButton(this);
-      mute->setIcon(*muteOffSVGIcon);
+      mute->setIcon(*muteOnSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
       mute->setToolTip(tr("Mute or proxy mute"));
@@ -1766,7 +1770,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
 //      addGridWidget(mute, _mutePos);
-      lowLayout->addWidget(mute, 1, 0, 1, 1);
+      bottomLayout->addWidget(mute, 1, 0, 1, 1);
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo  = new QPushButton(this);
@@ -1782,7 +1786,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       solo->setChecked(at->solo());
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
 //      addGridWidget(solo, _soloPos);
-      lowLayout->addWidget(solo, 1, 1, 1, 1);
+      bottomLayout->addWidget(solo, 1, 1, 1, 1);
 
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, nullptr, nullptr, false, true);
       off = new QPushButton(this);
@@ -1794,7 +1798,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       off->setChecked(at->off());
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
 //      addGridWidget(off, _offPos);
-      lowLayout->addWidget(off, 3, 0, 1, 2);
+      bottomLayout->addWidget(off, 3, 0, 1, 2);
 
 
       //---------------------------------------------------
@@ -1814,15 +1818,16 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       autoType->addAction(tr("Write"), MusECore::AUTO_WRITE);
       autoType->setCurrentItem(at->automationType());
 
-      ensurePolished();
+      autoType->ensurePolished();
+      colorNameButton = autoType->palette().color(QPalette::Button).name();
       colorAutoType();
 
       autoType->setToolTip(tr("Automation type"));
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
 //      addGridWidget(autoType, _automationPos);
-      lowLayout->addWidget(autoType, 2, 0, 1, 2);
+      bottomLayout->addWidget(autoType, 2, 0, 1, 2);
 
-      addGridLayout(lowLayout, _bottomPos);
+      addGridLayout(bottomLayout, _bottomPos);
 
       grid->setColumnStretch(2, 10);
 
@@ -1864,16 +1869,15 @@ void AudioStrip::colorAutoType() {
 
       if (track->automationType() == MusECore::AUTO_TOUCH || track->automationType() == MusECore::AUTO_WRITE)
       {
-          autoType->setStyleSheet("QToolButton { background: rgb(153, 0, 0); }");
+          autoType->setStyleSheet("QToolButton { background: rgb(150, 0, 0); }");
       }
       else if (track->automationType() == MusECore::AUTO_READ)
       {
-          autoType->setStyleSheet("QToolButton { background: rgb(26, 101, 26); }");
+          autoType->setStyleSheet("QToolButton { background: rgb(0, 100, 50); }");
       }
       else
       {
-          QString c = palette().color(QPalette::Button).name();
-          autoType->setStyleSheet("QToolButton { background:" + c + "; }");
+          autoType->setStyleSheet("QToolButton { background:" + colorNameButton + "; }");
       }
 }
 

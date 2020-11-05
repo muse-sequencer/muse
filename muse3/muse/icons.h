@@ -188,11 +188,11 @@ extern QIcon* midiControllerNewSVGIcon;
 extern QIcon* midiControllerSelectSVGIcon;
 extern QIcon* midiControllerRemoveSVGIcon;
 
-extern QIcon* soloSVGIcon;
-extern QIcon* soloProxySVGIcon;
+//extern QIcon* soloSVGIcon;
+//extern QIcon* soloProxySVGIcon;
 extern QIcon* muteSVGIcon;
-extern QIcon* trackEnableSVGIcon;
-extern QIcon* recArmSVGIcon;
+//extern QIcon* trackEnableSVGIcon;
+//extern QIcon* recArmSVGIcon;
 extern QIcon* recMasterSVGIcon;
 
 extern QIcon* stopSVGIcon;
