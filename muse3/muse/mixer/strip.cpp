@@ -1157,7 +1157,9 @@ void Strip::soloToggled(bool val)
         if (solo->isChecked())
             solo->setIcon(*soloAndProxyOnSVGIcon);
         else
-            solo->setIcon(*soloProxyOnSVGIcon);
+            solo->setIcon(*soloProxyOnAloneSVGIcon);
+    } else {
+        solo->setIcon(*soloOnAloneSVGIcon);
     }
     //    solo->setIconSetB(track && track->internalSolo());
 
@@ -1937,6 +1939,8 @@ void Strip::updateMuteIcon()
             mute->setIcon(*muteAndProxyOnSVGIcon);
         else
             mute->setIcon(*muteProxyOnSVGIcon);
+    } else {
+        mute->setIcon(*muteOnSVGIcon);
     }
 }
 

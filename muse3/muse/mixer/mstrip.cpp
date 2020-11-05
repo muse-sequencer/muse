@@ -1732,7 +1732,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo  = new QPushButton(this);
-      solo->setIcon(*soloOnSVGIcon);
+      solo->setIcon(*soloOnAloneSVGIcon);
       solo->setObjectName("SoloButton");
       solo->setStatusTip(tr("Solo or proxy solo. Press F1 for help."));
       solo->setFocusPolicy(Qt::NoFocus);
@@ -2290,7 +2290,9 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
                 if (solo->isChecked())
                     solo->setIcon(*soloAndProxyOnSVGIcon);
                 else
-                    solo->setIcon(*soloProxyOnSVGIcon);
+                    solo->setIcon(*soloProxyOnAloneSVGIcon);
+            } else {
+                solo->setIcon(*soloOnAloneSVGIcon);
             }
             updateMuteIcon();
       }
