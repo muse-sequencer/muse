@@ -267,6 +267,7 @@ class AudioStrip : public Strip {
       void updateVolume();
       void updateChannels();
       void updateRackSizes(bool upper, bool lower);
+      void setStripStyle();
 
    private slots:
       void recMonitorToggled(bool);

@@ -1441,13 +1441,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
 
-      // Set the whole strip's font, except for the label.
-      setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
-      setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-//              + "QAbstractButton { margin: 2px 1px 2px 1px; padding: 1px; }"
-              + "QAbstractButton { padding: 1px; }"
-              + "#TrackOffButton { padding: 0px; }"
-              + "QTabBar::tab { margin: 0px; padding: 2px 4px 2px 4px; }");
+      setStripStyle();
 
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
@@ -1470,6 +1464,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 //      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
 //                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
       iR = new QPushButton(this);
+//      iR->setIconSize(QSize(8,8));
+//      iR->setMaximumHeight(8);
       iR->setIcon(*routingInputSVGIcon);
       iR->setObjectName("InputRouteButton");
       iR->setStatusTip(tr("Intput routing. Press F1 for help."));
@@ -1482,6 +1478,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 //      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
 //                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
       oR = new QPushButton(this);
+//      oR->setIconSize(QSize(8,8));
+//      oR->setMaximumHeight(8);
       oR->setIcon(*routingOutputSVGIcon);
       oR->setObjectName("OutputRouteButton");
       oR->setStatusTip(tr("Output routing. Press F1 for help."));
@@ -1826,6 +1824,16 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       inHeartBeat = false;
       }
+
+void MidiStrip::setStripStyle() {
+    // Set the whole strip's font, except for the label.
+    setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
+    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
+            + "QAbstractButton { padding: 1px; qproperty-iconSize:" +
+                  QString::number(MusEGlobal::config.fonts[1].pointSize() * 2) + "px; }"
+            + "#TrackOffButton { padding: 0px; }"
+            + "QTabBar::tab { margin: 0px; padding: 2px 4px 2px 4px; }");
+}
 
 //---------------------------------------------------
 //  buildStrip
@@ -2213,8 +2221,7 @@ void MidiStrip::configChanged()
   if(font() != MusEGlobal::config.fonts[1])
   {
     //DEBUG_MIDI_STRIP(stderr, "MidiStrip::configChanged changing font: current size:%d\n", font().pointSize());
-    setFont(MusEGlobal::config.fonts[1]);
-    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+    setStripStyle();
     // Update in case font changed.
     updateRackSizes(true, true);
   }

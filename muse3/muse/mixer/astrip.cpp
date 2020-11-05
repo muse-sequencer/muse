@@ -1409,13 +1409,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
 
-      // Set the whole strip's font, except for the label.
-      // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
-      setFont(MusEGlobal::config.fonts[1]);
-      setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-              + "QAbstractButton { padding: 1px; }"
-//              + "QAbstractButton { margin: 2px 1px 2px 1px; padding: 1px; }"
-              + "#TrackOffButton { padding: 0px; }");
+      setStripStyle();
 
       channel       = at->channels();
 
@@ -1867,6 +1861,16 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(_lowerRack, SIGNAL(componentReleased(int,double,int)), SLOT(componentReleased(int,double,int)));
 }
 
+
+void AudioStrip::setStripStyle() {
+    // Set the whole strip's font, except for the label.
+    // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
+    setFont(MusEGlobal::config.fonts[1]);
+    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
+            + "QAbstractButton { padding: 1px; qproperty-iconSize:" +
+                  QString::number(MusEGlobal::config.fonts[1].pointSize() * 2) + "px; }"
+            + "#TrackOffButton { padding: 0px; }");
+}
 
 void AudioStrip::colorAutoType() {
 

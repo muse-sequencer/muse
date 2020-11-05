@@ -322,6 +322,7 @@ class MidiStrip : public Strip {
       void updateControls();
       void updateOffState();
       void updateRackSizes(bool upper, bool lower);
+      void setStripStyle();
 
    protected:
       void setupMidiVolume();
