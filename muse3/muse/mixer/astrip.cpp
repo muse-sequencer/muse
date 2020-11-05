@@ -1823,6 +1823,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       colorAutoType();
 
       autoType->setToolTip(tr("Automation type"));
+      autoType->setStatusTip(tr("Automation type: Off, Read, Touch or Write. Press F1 for help."));
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
 //      addGridWidget(autoType, _automationPos);
       bottomLayout->addWidget(autoType, 2, 0, 1, 2);
