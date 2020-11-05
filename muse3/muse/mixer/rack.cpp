@@ -206,7 +206,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       if (_customScrollbar) {
           // FIXME: put into external stylesheet
-          // Tried, but due to bug in QT it's not possible to address a single scrollbar (kybos)
+          // Tried, but there is a bug in QT, not possible to address scrollbar in individual widget (kybos)
           QFile file(":/qss/scrollbar_small_vertical.qss");
           file.open(QFile::ReadOnly);
           QString style = file.readAll();
