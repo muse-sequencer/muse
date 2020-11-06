@@ -452,7 +452,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       time                = new MusEGui::MTScale(_raster, split1, _viewState.xscale());
       piano               = new Piano(split1, _viewState.yscale(), _pianoWidth, this);
       canvas              = new PianoCanvas(this, split1, _viewState.xscale(), _viewState.yscale());
-      vscroll             = new MusEGui::ScrollScale(-2, 6, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
+      vscroll             = new MusEGui::ScrollScale(-2, 3, _viewState.yscale(), KH * 75, Qt::Vertical, split1);
       setCurDrumInstrument(piano->curSelectedPitch());
 
       canvas->setOrigin(_canvasXOrigin, 0);
