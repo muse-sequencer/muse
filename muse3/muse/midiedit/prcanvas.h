@@ -51,7 +51,6 @@ class CItemMap;
 }
 
 namespace MusEGui {
-class ScrollScale;
 class PianoRoll;
 class MidiEditor;
 

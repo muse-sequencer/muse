@@ -49,7 +49,6 @@ class Undo;
 namespace MusEGui {
 class Header;
 class PopupMenu;
-class ScrollScale;
 
 //---------------------------------------------------------
 //   TList

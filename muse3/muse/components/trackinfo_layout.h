@@ -37,7 +37,6 @@ namespace MusEGui {
 class Splitter;
 class ScrollBar;
 class WidgetStack;
-class ScrollScale;
 class CompactToolButton;
 
 //---------------------------------------------------------

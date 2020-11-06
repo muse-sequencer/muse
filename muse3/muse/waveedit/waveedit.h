@@ -48,7 +48,6 @@ namespace MusEGui {
 class TopWin;
 class Splitter;
 class PosLabel;
-class ScrollScale;
 class EditToolBar;
 class RasterLabelCombo;
 
