@@ -58,7 +58,6 @@ class TopWin;
 class CtrlEdit;
 class DList;
 class Header;
-class ScrollScale;
 class Splitter;
 class Toolbar1;
 class PopupMenu;

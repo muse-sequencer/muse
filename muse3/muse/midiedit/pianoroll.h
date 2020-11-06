@@ -55,7 +55,6 @@ namespace MusEGui {
 class TopWin;
 class CtrlEdit;
 class PitchLabel;
-class ScrollScale;
 class Splitter;
 class Toolbar1;
 class Piano;
