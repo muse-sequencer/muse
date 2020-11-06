@@ -1487,7 +1487,8 @@ QString Pipeline::name(int idx) const
       PluginI* p = (*this)[idx];
       if (p)
             return p->name();
-      return "<" + QObject::tr("Slot") + " " + QString::number(idx + 1) + ">";
+
+      return "<" + QObject::tr("FX slot") + " " + QString::number(idx + 1) + ">";
       }
 
 //---------------------------------------------------------

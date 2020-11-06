@@ -602,7 +602,7 @@ void MidiComponentRack::updateComponents()
                   if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
                   {
                     control->setPatchNameOff(true);
-                    const QString patchName(tr("<unknown>"));
+                    const QString patchName(tr("<Patch>"));
                     if(control->patchName() != patchName)
                       control->setPatchName(patchName);
                   }
@@ -1502,8 +1502,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _upperRack->setContentsMargins(0,0,0,0);
       _upperRack->setFocusPolicy(Qt::NoFocus);
 
-      tabwidget->addTab(_upperRack, tr("Ins"));
-      tabwidget->addTab(_infoRack, tr("Ctr"));
+      tabwidget->addTab(_upperRack, tr("Inst"));
+      tabwidget->addTab(_infoRack, tr("Ctrl"));
       tabwidget->setTabToolTip(0, tr("Midi instruments and properties"));
       tabwidget->setTabToolTip(1, tr("Midi controllers"));
       tabwidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);

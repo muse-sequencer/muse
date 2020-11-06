@@ -206,28 +206,28 @@ QWidget#Strip {
 */
 }
 
-QWidget#Strip QAbstractButton,
+QWidget#Strip > QAbstractButton,
 QWidget#AudioAutoType {
 	background-color: rgb(50,50,50);
     border: 1px solid rgb(0,120,200);
 }
 
-QWidget#Strip QAbstractButton:!enabled {
+QWidget#Strip > QAbstractButton:!enabled {
 /*
 	background-color: rgb(80,80,80);
 */
     border: 1px solid rgb(90,90,90);
 }
 
-QWidget#Strip QAbstractButton:hover {
+QWidget#Strip > QAbstractButton:hover {
 /*
 	background-color: rgb(80,80,80);
 */
     border-color: yellow;
 }
 
-QWidget#Strip QAbstractButton:pressed, 
-QWidget#Strip QAbstractButton:checked {
+QWidget#Strip > QAbstractButton:pressed, 
+QWidget#Strip > QAbstractButton:checked {
     background-color: rgb(0,90,160);
 }
 
