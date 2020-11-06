@@ -13,33 +13,35 @@ namespace MusEGui
 {
 
 ClipperLabel::ClipperLabel(QWidget *parent):
-   QFrame(parent),
-   _isClipped(false),
-   _value(0.0)
+    QFrame(parent),
+    _isClipped(false),
+    _value(0.0)
 {   
-      // Background is drawn by us.
-      setBackgroundRole(QPalette::NoRole);
-      setAttribute(Qt::WA_NoSystemBackground);
-      setAttribute(Qt::WA_StaticContents);
-      setAttribute(Qt::WA_OpaquePaintEvent);    
-  
-      //setFrameStyle(QFrame::Box | QFrame::Sunken);
-      setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-      
-      //setLineWidth(1); // Not really required - StyledPanel always has 1 width.
-      //setMidLineWidth(0);
-      
-      const int fw = frameWidth();
-      setContentsMargins(fw, fw, fw, fw);
-//    setProperty("clipped", "false");
+    setObjectName("ClipperLabel");
 
-      const QColor fc(255, 75, 75);
-      const QColor fcd = fc.darker(150);
-      _onGradient.setColorAt(0.0, fcd);
-      _onGradient.setColorAt(0.5, fc);
-      _onGradient.setColorAt(1.0, fcd);
-      
-   setVal(_value, true);
+    // Background is drawn by us.
+    setBackgroundRole(QPalette::NoRole);
+    setAttribute(Qt::WA_NoSystemBackground);
+    setAttribute(Qt::WA_StaticContents);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+
+    //setFrameStyle(QFrame::Box | QFrame::Sunken);
+    setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+
+    //setLineWidth(1); // Not really required - StyledPanel always has 1 width.
+    //setMidLineWidth(0);
+
+    const int fw = frameWidth();
+    setContentsMargins(fw, fw, fw, fw);
+    //    setProperty("clipped", "false");
+
+    const QColor fc(255, 75, 75);
+    const QColor fcd = fc.darker(150);
+    _onGradient.setColorAt(0.0, fcd);
+    _onGradient.setColorAt(0.5, fc);
+    _onGradient.setColorAt(1.0, fcd);
+
+    setVal(_value, true);
 }
   
 QSize ClipperLabel::sizeHint() const

@@ -189,6 +189,11 @@ QToolBar QLabel#PaddedValueLabel {
     height: 20px;
 }
 
+QFrame#SliderMeterFrameAudio,
+QFrame#SliderMeterFrameMidi {
+    border: 1px solid rgb(0,120,200);
+}
+
 QWidget#Rack {
     border: 1px solid rgb(0,120,200);
 }
@@ -204,7 +209,14 @@ QWidget#Strip {
 QWidget#Strip QAbstractButton,
 QWidget#AudioAutoType {
 	background-color: rgb(50,50,50);
-    border: 1px solid rgb(0,90,160);
+    border: 1px solid rgb(0,120,200);
+}
+
+QWidget#Strip QAbstractButton:!enabled {
+/*
+	background-color: rgb(80,80,80);
+*/
+    border: 1px solid rgb(90,90,90);
 }
 
 QWidget#Strip QAbstractButton:hover {
@@ -219,6 +231,18 @@ QWidget#Strip QAbstractButton:checked {
     background-color: rgb(0,90,160);
 }
 
+QWidget#VolumeEditAudio, 
+QWidget#VolumeEditMidi {
+    background-color: rgb(60,60,60);
+}
+
+/* doesn't work */
+/*
+QFrame#ClipperLabel {
+    border: 1px solid rgb(90,90,90);
+}
+*/
+
 QTreeView, QListView {
     alternate-background-color: rgb(60,60,60);
     background: rgb(30,30,30);
@@ -232,26 +256,37 @@ QMdiArea > QTabBar::tab:selected {
     color: coral;
 }
 
+QTabWidget::pane {
+    position: absolute;
+    border-top: 1px solid rgb(120,120,120);
+}
+
 QWidget#MidiStripTabWidget::tab-bar {
-    left: 2px; 
+/*
+    left: 3px; 
+*/
+	alignment: center;
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab {
 /*
-	margin: 0px;
-    padding: 1px 4px 1px 4px;
-*/
     background-color: rgb(60,60,60);
-	border: 1px solid rgb(90,90,90);
+*/
+	border: 1px solid rgb(120,120,120);
     border-bottom-style: none;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab:selected {
-    background: rgb(0,90,60);
 /*
+    background: rgb(0,90,60);
+*/
     border-color: rgb(0,120,200);
+    color: coral;
+/*
+    margin-left: -2px;
+    margin-right: -2px;
 */
 }
 
@@ -260,9 +295,6 @@ QWidget#MidiStripTabWidget QTabBar::tab:!selected {
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab:focus {
-/*
-    background: rgb(50,50,50); 
-*/
 	border: 1px solid rgb(150,150,150);
 }
 

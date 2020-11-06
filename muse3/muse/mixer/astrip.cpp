@@ -920,11 +920,10 @@ void AudioStrip::configChanged()
   }
 
   // Set the whole strip's font, except for the label.
-  if(font() != MusEGlobal::config.fonts[1])
+  if (font() != MusEGlobal::config.fonts[1])
   {
-    setFont(MusEGlobal::config.fonts[1]);
-    DEBUG_AUDIO_STRIP(stderr, "AudioStrip::configChanged changing font: current size:%d\n", font().pointSize());
-    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+//    DEBUG_AUDIO_STRIP(stderr, "AudioStrip::configChanged changing font: current size:%d\n", font().pointSize());
+      setStripStyle();
   }
 
   // Set the strip label's font.
@@ -940,8 +939,8 @@ void AudioStrip::configChanged()
   sl->setRange(MusEGlobal::config.minSlider, volSliderMax);
   sl->setOff(MusEGlobal::config.minSlider);
   // Enable special hack for line edits.
-  if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
-    sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
+//  if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
+//    sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
   // REMOVE Tim. mixer. Added.
   // In case something in the slider changed, update the meter layout.
@@ -1417,11 +1416,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
       _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 2);
       _upperRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
-      _sliderPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
-      _sliderLabelPos      = GridPosStruct(_curGridRow + 5, 0, 1, 2);
-      _lowerRackPos        = GridPosStruct(_curGridRow + 6, 0, 1, 3);
-      _bottomPos            = GridPosStruct(_curGridRow + 7, 0, 1, 2);
-
+      _sliderMeterPos      = GridPosStruct(_curGridRow + 4, 0, 1, 2);
+      _lowerRackPos        = GridPosStruct(_curGridRow + 5, 0, 1, 3);
+      _bottomPos           = GridPosStruct(_curGridRow + 6, 0, 1, 2);
 
       //---------------------------------------------------
       //    routing
@@ -1441,13 +1438,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           iR->setCheckable(false);
           iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
           connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
-//          addGridWidget(iR, _inRoutesPos);
           routeLayout->addWidget(iR);
       } else {
           QPushButton *iRx = new QPushButton(this);
           iRx->setIcon(*routingInputSVGIcon);
           iRx->setEnabled(false);
-//          addGridWidget(iRx, _inRoutesPos);
           routeLayout->addWidget(iRx);
       }
 
@@ -1461,7 +1456,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       oR->setCheckable(false);
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-//      addGridWidget(oR, _outRoutesPos);
       routeLayout->addWidget(oR);
 
       updateRouteButtons();
@@ -1540,9 +1534,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(pre, SIGNAL(toggled(bool)), SLOT(preToggled(bool)));
       stereoPreLayout->addWidget(pre);
 
-//      addGridWidget(stereo, _stereoToolPos);
-//      addGridWidget(pre, _preToolPos);
-
       addGridLayout(stereoPreLayout, _stereoPrePos);
 
       //---------------------------------------------------
@@ -1550,7 +1541,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       sliderGrid = new QGridLayout();
-      sliderGrid->setContentsMargins(2, 0, 2, 2);
+      sliderGrid->setContentsMargins(2, 0, 3, 2);
       sliderGrid->setSpacing(0);
       sliderGrid->setHorizontalSpacing(2);
 
@@ -1579,7 +1570,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 //      for(int ch = 0; ch < channel; ++ch)
 //        _clipperLayout->addWidget(_clipperLabel[ch]);
       sliderGrid->addLayout(_clipperLayout, 0, 0, 1, -1, Qt::AlignCenter);
-      sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
+//      sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
 
       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
                           MusEGlobal::config.audioVolumeSliderColor,
@@ -1622,12 +1613,12 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       // Slider::fitValue() not required so far. The log function is accurate but rounded to the nearest .000001
       slider->setValue(track_vol);
 
-      sliderGrid->addWidget(slider, 2, 0, Qt::AlignHCenter);
+      sliderGrid->addWidget(slider, 1, 0, Qt::AlignHCenter);
 
       _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
       _meterLayout->setMargin(0);
       _meterLayout->setSpacing(props.meterSpacing());
-      sliderGrid->addLayout(_meterLayout, 2, 1, Qt::AlignHCenter);
+      sliderGrid->addLayout(_meterLayout, 1, 1, Qt::AlignHCenter);
 
       for (int i = 0; i < channel; ++i) {
           meter[i] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
@@ -1647,9 +1638,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           _meterLayout->hlayout()->addWidget(meter[i], Qt::AlignHCenter);
       }
 
-      addGridLayout(sliderGrid, _sliderPos);
-
       sl = new DoubleLabel(0.0, MusEGlobal::config.minSlider, volSliderMax, this);
+      sl->setObjectName("VolumeEditAudio");
       sl->setContentsMargins(0, 0, 0, 0);
       sl->setTextMargins(0, 0, 0, 0);
       sl->setFocusPolicy(Qt::WheelFocus);
@@ -1667,7 +1657,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sl->setPrecision(volSliderPrec);
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       sl->setValue(track_vol);
-      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
+//      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
       // If smart focus is on redirect strip focus to slider label.
       //if(MusEGlobal::config.smartFocus)
@@ -1681,7 +1671,16 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(slider, SIGNAL(sliderReleased(double, int)), SLOT(volumeReleased(double,int)));
       connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(volumeRightClicked(QPoint)));
 
-      addGridWidget(sl, _sliderLabelPos, Qt::AlignCenter);
+      sliderGrid->addWidget(sl, 2, 0, 1, 2, Qt::AlignHCenter);
+
+      QFrame *sliderMeterFrame = new QFrame;
+      sliderMeterFrame->setObjectName("SliderMeterFrameAudio");
+      sliderMeterFrame->setLayout(sliderGrid);
+
+      QHBoxLayout *sliderMeterLayout = new QHBoxLayout();
+      sliderMeterLayout->setContentsMargins(1,2,1,2);
+      sliderMeterLayout->addWidget(sliderMeterFrame);
+      addGridLayout(sliderMeterLayout, _sliderMeterPos);
 
       //---------------------------------------------------
       //    pan, balance
@@ -1723,13 +1722,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
           _recMonitor->setChecked(at->recMonitor());
           connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
-//          addGridWidget(_recMonitor, _offMonRecPos);
           bottomLayout->addWidget(_recMonitor, 0, 0, 1, 1);
       } else {
           QPushButton *recMonitorx = new QPushButton(this);
           recMonitorx->setIcon(*monitorOnSVGIcon);
           recMonitorx->setEnabled(false);
-//          addGridWidget(recMonitorx, _offMonRecPos);
           bottomLayout->addWidget(recMonitorx, 0, 0, 1, 1);
       }
 
@@ -1745,14 +1742,12 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
               record->setToolTip(tr("Record arm"));
           record->setChecked(at->recordFlag());
           connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
-//          addGridWidget(record, _recPos);
           bottomLayout->addWidget(record, 0, 1, 1, 1);
       } else {
           QPushButton *recordx = new QPushButton(this);
           recordx->setIcon(*recArmOnSVGIcon);
           recordx->setFocusPolicy(Qt::NoFocus);
           recordx->setEnabled(false);
-//          addGridWidget(recordx, _recPos);
           bottomLayout->addWidget(recordx, 0, 1, 1, 1);
       }
 
@@ -1765,7 +1760,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       mute->setChecked(at->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
-//      addGridWidget(mute, _mutePos);
       bottomLayout->addWidget(mute, 1, 0, 1, 1);
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
@@ -1781,7 +1775,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 //      solo->setIconSetB(at->internalSolo());
       solo->setChecked(at->solo());
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
-//      addGridWidget(solo, _soloPos);
       bottomLayout->addWidget(solo, 1, 1, 1, 1);
 
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, nullptr, nullptr, false, true);
@@ -1793,7 +1786,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       off->setToolTip(tr("Track off"));
       off->setChecked(at->off());
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
-//      addGridWidget(off, _offPos);
       bottomLayout->addWidget(off, 3, 0, 1, 2);
 
 
@@ -1821,7 +1813,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       autoType->setToolTip(tr("Automation type"));
       autoType->setStatusTip(tr("Automation type: Off, Read, Touch or Write. Press F1 for help."));
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
-//      addGridWidget(autoType, _automationPos);
       bottomLayout->addWidget(autoType, 2, 0, 1, 2);
 
       addGridLayout(bottomLayout, _bottomPos);
