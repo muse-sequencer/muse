@@ -49,7 +49,7 @@ namespace MusEGui {
 //    lineedit double values
 //---------------------------------------------------------
 
-Dentry::Dentry(QWidget* parent, const char* name) : LineEdit(parent)
+Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
       {
       setObjectName(name);
       _slider = 0;      
@@ -107,7 +107,7 @@ void Dentry::mousePressEvent(QMouseEvent* event)
       }
 
       if(m_button == Qt::LeftButton)
-        LineEdit::mousePressEvent(event);
+        QLineEdit::mousePressEvent(event);
 
       button = m_button;
       starty = event->y();
@@ -231,7 +231,7 @@ void Dentry::mouseDoubleClickEvent(QMouseEvent* event)
       if(event->modifiers() & Qt::ControlModifier)
         emit ctrlDoubleClicked(_id);
       else
-        LineEdit::mouseDoubleClickEvent(event);
+        QLineEdit::mouseDoubleClickEvent(event);
       }
 
 void Dentry::keyPressEvent(QKeyEvent* e)
@@ -263,7 +263,7 @@ void Dentry::keyPressEvent(QKeyEvent* e)
     default:
       // Let ancestor handle it.
       e->ignore();
-      LineEdit::keyPressEvent(e);
+      QLineEdit::keyPressEvent(e);
       return;
     break;
   }
@@ -272,7 +272,7 @@ void Dentry::keyPressEvent(QKeyEvent* e)
   {
     // Let ancestor handle it.
     e->ignore();
-    LineEdit::keyPressEvent(e);
+    QLineEdit::keyPressEvent(e);
     return;
   }
 

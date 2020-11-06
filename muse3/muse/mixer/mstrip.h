@@ -288,8 +288,7 @@ class MidiStrip : public Strip {
       GridPosStruct _upperStackTabPos;
       GridPosStruct _infoSpacerTop;
       GridPosStruct _infoSpacerBottom;
-      GridPosStruct _sliderPos;
-      GridPosStruct _sliderLabelPos;
+      GridPosStruct _sliderMeterPos;
       GridPosStruct _lowerRackPos;
       GridPosStruct _routePos;
       GridPosStruct _bottomPos;

@@ -23,7 +23,8 @@
 #ifndef __DENTRY_H__
 #define __DENTRY_H__
 
-#include "line_edit.h"
+//#include "line_edit.h"
+#include <QLineEdit>
 
 class QWidget;
 class QWheelEvent;
@@ -40,7 +41,7 @@ class SliderBase;
 //   Dentry
 //---------------------------------------------------------
 
-class Dentry : public LineEdit {
+class Dentry : public QLineEdit {
       Q_OBJECT
 
       Q_PROPERTY( int id READ id WRITE setId )

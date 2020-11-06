@@ -224,8 +224,7 @@ class AudioStrip : public Strip {
       GridPosStruct _effectRackPos;
       GridPosStruct _stereoPrePos;
       GridPosStruct _gainToolPos;
-      GridPosStruct _sliderPos;
-      GridPosStruct _sliderLabelPos;
+      GridPosStruct _sliderMeterPos;
       GridPosStruct _lowerRackPos;
       GridPosStruct _routePos;
       GridPosStruct _bottomPos;

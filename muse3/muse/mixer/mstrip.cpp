@@ -1449,23 +1449,21 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
       _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 3);
-      _sliderPos           = GridPosStruct(_curGridRow + 2, 0, 1, 2);
-      _sliderLabelPos      = GridPosStruct(_curGridRow + 3, 0, 1, 2);
-      _lowerRackPos        = GridPosStruct(_curGridRow + 4, 0, 1, 3);
-      _bottomPos           = GridPosStruct(_curGridRow + 5, 0, 1, 2);
+      _sliderMeterPos      = GridPosStruct(_curGridRow + 2, 0, 1, 2);
+      _lowerRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+      _bottomPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
 
       //---------------------------------------------------
       //    routing
       //---------------------------------------------------
 
       QHBoxLayout *routeLayout = new QHBoxLayout;
-      routeLayout->setContentsMargins(1,2,1,2);
+      routeLayout->setContentsMargins(1,2,1,3);
       routeLayout->setSpacing(1);
+
 //      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
 //                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
       iR = new QPushButton(this);
-//      iR->setIconSize(QSize(8,8));
-//      iR->setMaximumHeight(8);
       iR->setIcon(*routingInputSVGIcon);
       iR->setObjectName("InputRouteButton");
       iR->setStatusTip(tr("Intput routing. Press F1 for help."));
@@ -1473,13 +1471,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       routeLayout->addWidget(iR);
-//      addGridWidget(iR, _inRoutesPos);
 
 //      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
 //                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
       oR = new QPushButton(this);
-//      oR->setIconSize(QSize(8,8));
-//      oR->setMaximumHeight(8);
       oR->setIcon(*routingOutputSVGIcon);
       oR->setObjectName("OutputRouteButton");
       oR->setStatusTip(tr("Output routing. Press F1 for help."));
@@ -1487,7 +1482,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
       routeLayout->addWidget(oR);
-//      addGridWidget(oR, _outRoutesPos);
 
       updateRouteButtons();
 
@@ -1496,7 +1490,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       tabwidget = new QTabWidget(this);
       tabwidget->setObjectName("MidiStripTabWidget");
-      tabwidget->setContentsMargins(0,4,0,0);
       tabwidget->setUsesScrollButtons(false);
 
       _infoRack = new MidiComponentRack(t, mStripInfoRack);
@@ -1509,8 +1502,8 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _upperRack->setContentsMargins(0,0,0,0);
       _upperRack->setFocusPolicy(Qt::NoFocus);
 
-      tabwidget->addTab(_upperRack, tr("Prop"));
-      tabwidget->addTab(_infoRack, tr("Ctrl"));
+      tabwidget->addTab(_upperRack, tr("Ins"));
+      tabwidget->addTab(_infoRack, tr("Ctr"));
       tabwidget->setTabToolTip(0, tr("Midi instruments and properties"));
       tabwidget->setTabToolTip(1, tr("Midi controllers"));
       tabwidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
@@ -1567,14 +1560,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       sliderGrid = new QGridLayout(); 
       sliderGrid->setSpacing(0);
       sliderGrid->setHorizontalSpacing(2);
-      sliderGrid->setContentsMargins(2, 0, 4, 0);
-//      sliderGrid->setContentsMargins(2, 2, 4, 2);
+      sliderGrid->setContentsMargins(2, 0, 3, 2);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
       sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
       
-      addGridLayout(sliderGrid, _sliderPos);
-
       sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0);
+      sl->setObjectName("VolumeEditMidi");
       sl->setContentsMargins(0, 0, 0, 0);
       sl->setTextMargins(0, 0, 0, 0);
       sl->setFocusPolicy(Qt::WheelFocus);
@@ -1585,11 +1576,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       //sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
-      sl->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
+      sl->setToolTip(tr("Volume/Gain\n(Ctrl-double-click on/off)"));
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       // Set the label's slider 'buddy'.
       sl->setSlider(slider);
-      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
+//      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
       // Special for midi volume slider and label: Setup midi volume as decibel preference.
       setupMidiVolume();
@@ -1651,7 +1642,16 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
       connect(sl, SIGNAL(ctrlDoubleClicked(int)), SLOT(volLabelDoubleClicked()));
       
-      addGridWidget(sl, _sliderLabelPos, Qt::AlignCenter);
+      sliderGrid->addWidget(sl, 2, 0, 1, 2, Qt::AlignHCenter);
+
+      QFrame *sliderMeterFrame = new QFrame;
+      sliderMeterFrame->setObjectName("SliderMeterFrameMidi");
+      sliderMeterFrame->setLayout(sliderGrid);
+
+      QHBoxLayout *sliderMeterLayout = new QHBoxLayout();
+      sliderMeterLayout->setContentsMargins(1,0,1,2);
+      sliderMeterLayout->addWidget(sliderMeterFrame);
+      addGridLayout(sliderMeterLayout, _sliderMeterPos);
 
       //---------------------------------------------------
       //    pan, balance
@@ -1680,9 +1680,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //    record, mixdownfile
       //---------------------------------------------------
 
-      QGridLayout *lowLayout = new QGridLayout;
-      lowLayout->setContentsMargins(1,2,1,2);
-      lowLayout->setSpacing(1);
+      QGridLayout *bottomLayout = new QGridLayout;
+      bottomLayout->setContentsMargins(1,2,1,2);
+      bottomLayout->setSpacing(1);
 
       if (track && track->canRecordMonitor()) {
           //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
@@ -1695,14 +1695,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
           _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
           _recMonitor->setChecked(t->recMonitor());
           connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
-//          addGridWidget(_recMonitor, _offMonRecPos);
-          lowLayout->addWidget(_recMonitor, 0, 0, 1, 1);
+          bottomLayout->addWidget(_recMonitor, 0, 0, 1, 1);
       } else {
           QPushButton *recMonitorx = new QPushButton(this);
           recMonitorx->setIcon(*monitorOnSVGIcon);
           recMonitorx->setEnabled(false);
-//          addGridWidget(recMonitorx, _offMonRecPos);
-          lowLayout->addWidget(recMonitorx, 0, 0, 1, 1);
+          bottomLayout->addWidget(recMonitorx, 0, 0, 1, 1);
       }
 
 //      record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, 0, 0, false, true);
@@ -1713,8 +1711,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       record->setToolTip(tr("Record arm"));
       record->setChecked(track->recordFlag());
       connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
-//      addGridWidget(record, _recPos);
-      lowLayout->addWidget(record, 0, 1, 1, 1);
+      bottomLayout->addWidget(record, 0, 1, 1, 1);
 
 //      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
       mute  = new QPushButton(this);
@@ -1725,8 +1722,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       mute->setChecked(track->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
-//      addGridWidget(mute, _mutePos);
-      lowLayout->addWidget(mute, 1, 0, 1, 1);
+      bottomLayout->addWidget(mute, 1, 0, 1, 1);
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo  = new QPushButton(this);
@@ -1741,8 +1737,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //      solo->setIconSetB(track->internalSolo());
       solo->setChecked(track->solo());
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
-//      addGridWidget(solo, _soloPos);
-      lowLayout->addWidget(solo, 1, 1, 1, 1);
+      bottomLayout->addWidget(solo, 1, 1, 1, 1);
 
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, 0, 0, false, true);
       off = new QPushButton(this);
@@ -1753,8 +1748,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       off->setToolTip(tr("Track off"));
       off->setChecked(track->off());
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
-//      addGridWidget(off, _offPos);
-      lowLayout->addWidget(off, 3, 0, 1, 2);
+      bottomLayout->addWidget(off, 3, 0, 1, 2);
 
 
       //---------------------------------------------------
@@ -1781,10 +1775,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       autoType->addAction("n/a", MusECore::AUTO_OFF);
       autoType->setCurrentItem(MusECore::AUTO_OFF);
 
-//      addGridWidget(autoType, _automationPos);
-      lowLayout->addWidget(autoType, 2, 0, 1, 2);
+      bottomLayout->addWidget(autoType, 2, 0, 1, 2);
 
-      addGridLayout(lowLayout, _bottomPos);
+      addGridLayout(bottomLayout, _bottomPos);
 
       grid->setColumnStretch(2, 10);
 
@@ -1831,6 +1824,7 @@ void MidiStrip::setStripStyle() {
     setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
             + "QAbstractButton { padding: 1px; qproperty-iconSize:" +
                   QString::number(MusEGlobal::config.fonts[1].pointSize() * 2) + "px; }"
+            + "QTabWidget::pane { border-style: solid; border-width: 1px; }"
             + "#TrackOffButton { padding: 0px; }"
             + "QTabBar::tab { margin: 0px; padding: 2px 4px 2px 4px; }");
 }
@@ -2246,8 +2240,8 @@ void MidiStrip::configChanged()
 //  _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
 
   // Enable special hack for line edits.
-  if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
-    sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
+//  if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
+//    sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
   // Special for midi volume slider and label: Setup midi volume as decibel preference.
   setupMidiVolume();
