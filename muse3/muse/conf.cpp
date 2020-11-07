@@ -2067,7 +2067,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
             
       xml.intTag(level, "globalAlphaBlend", MusEGlobal::config.globalAlphaBlend);
       
-      MusECore::writeConfigurationColors(level, xml);
+//      MusECore::writeConfigurationColors(level, xml);
       
       xml.intTag(level, "mtctype", MusEGlobal::mtcType);
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",

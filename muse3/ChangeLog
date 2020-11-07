@@ -1,3 +1,7 @@
+07.11.2020
+    - Fix: Complete theme specific internal color handling.
+            Colors are not saved in the central config file any more,
+            but in theme specific config files. (kybos)
 02.11.2020
     - Add: Refresh function for the midi Scripts menu. 
            Scripts can be re-read from dics without restarting MusE.
