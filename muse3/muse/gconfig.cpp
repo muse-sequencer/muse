@@ -230,12 +230,6 @@ GlobalConfigValues config = {
       Qt::darkGray,                   // rackItemBorderColor
       Qt::yellow,                     // rackItemBorderHoverColor
 
-      Qt::gray,                       // palSwitchBackgroundColor;
-      QColor(0, 120, 200),            // palSwitchBgActiveColor;
-      Qt::black,                      // palSwitchFontColor;
-      Qt::white,                      // palSwitchFontActiveColor;
-      Qt::darkGray,                   // palSwitchBorderColor;
-
       Qt::gray,                       // midiInstrumentBackgroundColor;
       QColor(0, 120, 200),            // midiInstrumentBgActiveColor;
       Qt::black,                      // midiInstrumentFontColor;

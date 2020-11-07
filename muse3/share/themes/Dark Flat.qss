@@ -210,6 +210,7 @@ QWidget#Strip > QAbstractButton,
 QWidget#AudioAutoType {
 	background-color: rgb(50,50,50);
     border: 1px solid rgb(0,120,200);
+    border-radius: 3px;
 }
 
 QWidget#Strip > QAbstractButton:!enabled {
@@ -256,19 +257,21 @@ QMdiArea > QTabBar::tab:selected {
     color: coral;
 }
 
-QTabWidget::pane {
-    position: absolute;
+/* TabWidget in Midi mixer strip */
+QWidget#MidiStripTabWidget::pane {
+    /* position: absolute; */
     border-top: 1px solid rgb(120,120,120);
+    padding: 0;
 }
 
 QWidget#MidiStripTabWidget::tab-bar {
-/*
     left: 3px; 
-*/
-	alignment: center;
+	/* alignment: center; */
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab {
+    margin: 0px; 
+    padding: 1px 4px 1px 4px;
 /*
     background-color: rgb(60,60,60);
 */
@@ -283,6 +286,7 @@ QWidget#MidiStripTabWidget QTabBar::tab:selected {
     background: rgb(0,90,60);
 */
     border-color: rgb(0,120,200);
+    border-bottom-style: none;
     color: coral;
 /*
     margin-left: -2px;
@@ -389,25 +393,23 @@ MusEGui--TrackNameLabel {
 
 MusEGui--EffectRack {
     qproperty-style3d: false;
-    qproperty-radius: 0;
-  /* use smaller non-standard scrollbar */
-/*
-    qproperty-customScrollbar: false;
-*/
+    qproperty-radius: 2;
+    /* use smaller non-standard scrollbar */
+    /* qproperty-customScrollbar: false; */
 }
 
 MusEGui--CompactSlider {
     qproperty-barSameColor: true;
-    qproperty-radius: 0;
+    qproperty-radius: 2;
 }
 
 MusEGui--ElidedLabel {
-    qproperty-radius: 0;
+    qproperty-radius: 2;
     qproperty-style3d: false;
 }
 
 MusEGui--CompactPatchEdit {
-    qproperty-radius: 0;
+    qproperty-radius: 2;
     qproperty-style3d: false;
 }
 

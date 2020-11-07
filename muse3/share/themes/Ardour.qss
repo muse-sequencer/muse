@@ -68,6 +68,16 @@ QTreeView, QListView {
 	alternate-background-color: rgb(127,127,137);
 }
 
+QWidget#MidiStripTabWidget QTabBar::tab {
+  padding: 2px 3px 2px 3px;
+  border: none;
+}
+
+QWidget#MidiStripTabWidget QTabBar::tab:selected {
+  background-color: darkgreen;
+}
+
+
 /* The category item background colour in the advanced router trees: */
 MusEGui--RouteTreeWidget {
   qproperty-categoryColor: DarkCyan;
@@ -75,27 +85,6 @@ MusEGui--RouteTreeWidget {
 
 MusEGui--SnooperDialog {
   qproperty-flashColor: DarkCyan;
-}
-
-
-/* These share the same config colour (orange)
-    but can be set separately here: */
-/*====================================================*/
-MusEGui--EffectRack {
-  qproperty-activeColor: Green;
-}
-MusEGui--CompactKnob {
-  qproperty-activeColor: Green;
-}
-MusEGui--ElidedLabel {
-  qproperty-activeColor: Green;
-}
-/*====================================================*/
-
-
-/* The LCD number readout colour in the midi patch control: */
-MusEGui--LCDPatchEdit {
-  qproperty-readoutColor: Yellow;
 }
 
 
@@ -113,3 +102,4 @@ MusEGui--PopupMenu::item#menuTitleItem {
      background-color: DarkCyan;
 }
 */
+

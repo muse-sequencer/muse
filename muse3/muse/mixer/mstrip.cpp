@@ -1824,9 +1824,7 @@ void MidiStrip::setStripStyle() {
     setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
             + "QAbstractButton { padding: 1px; qproperty-iconSize:" +
                   QString::number(MusEGlobal::config.fonts[1].pointSize() * 2) + "px; }"
-            + "QTabWidget::pane { border-style: solid; border-width: 1px; }"
-            + "#TrackOffButton { padding: 0px; }"
-            + "QTabBar::tab { margin: 0px; padding: 2px 4px 2px 4px; }");
+            + "#TrackOffButton { padding: 0px; }");
 }
 
 //---------------------------------------------------

@@ -281,12 +281,6 @@ struct GlobalConfigValues {
       QColor rackItemBorderColor;
       QColor rackItemFontColorHover;
 
-      QColor palSwitchBackgroundColor;
-      QColor palSwitchBgActiveColor;
-      QColor palSwitchFontColor;
-      QColor palSwitchFontActiveColor;
-      QColor palSwitchBorderColor;
-
       QColor midiInstrumentBackgroundColor;
       QColor midiInstrumentBgActiveColor;
       QColor midiInstrumentFontColor;
