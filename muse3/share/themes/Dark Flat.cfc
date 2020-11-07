@@ -87,11 +87,6 @@
     <rackItemFontActiveColor r="255" g="255" b="255"></rackItemFontActiveColor>
     <rackItemBorderColor r="40" g="40" b="40"></rackItemBorderColor>
     <rackItemFontColorHover r="190" g="190" b="190"></rackItemFontColorHover>
-    <palSwitchBackgroundColor r="90" g="90" b="90"></palSwitchBackgroundColor>
-    <palSwitchBgActiveColor r="0" g="120" b="200"></palSwitchBgActiveColor>
-    <palSwitchFontColor r="0" g="0" b="0"></palSwitchFontColor>
-    <palSwitchFontActiveColor r="255" g="255" b="255"></palSwitchFontActiveColor>
-    <palSwitchBorderColor r="40" g="40" b="40"></palSwitchBorderColor>
     <midiInstrumentBackgroundColor r="40" g="40" b="40"></midiInstrumentBackgroundColor>
     <midiInstrumentBgActiveColor r="0" g="120" b="200"></midiInstrumentBgActiveColor>
     <midiInstrumentFontColor r="150" g="150" b="150"></midiInstrumentFontColor>

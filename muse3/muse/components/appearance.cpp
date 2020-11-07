@@ -786,20 +786,39 @@ void Appearance::updateFonts()
 bool Appearance::changeTheme()
 {
     QString currentTheme = themeComboBox->currentText();
-    QString lastTheme = config->theme;
 
-    if (lastTheme == currentTheme)
+    if (config->theme == currentTheme)
         return false;
 
     printf("Changing to theme %s\n", qPrintable(currentTheme) );
 
     MusEGlobal::config.theme = currentTheme;
 
+    if (!isColorsDirty())
+        saveCurrentThemeColors();
+
+    QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
+    if (!QFile::exists(configColorPath)) {
+        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme + ".cfc";
+    }
+
+    // We want the simple version, don't set the style or stylesheet yet.
+    MusECore::readConfiguration(qPrintable(configColorPath));
+//    MusEGlobal::muse->changeConfig(true);
+
+    backgroundTree->reset();
+    hide();
+
+    return true;
+}
+
+void Appearance::saveCurrentThemeColors() {
+
     QDir dir(MusEGlobal::configPath + "/themes/");
     if (!dir.exists())
         dir.mkpath(MusEGlobal::configPath + "/themes/");
 
-    QString lastColorPath = MusEGlobal::configPath + "/themes/" + lastTheme + ".cfc";
+    QString lastColorPath = MusEGlobal::configPath + "/themes/" + config->theme + ".cfc";
 
     FILE* f = fopen(qPrintable(lastColorPath), "w");
     if (!f) {
@@ -815,20 +834,6 @@ bool Appearance::changeTheme()
         xml.tag(0, "/muse");
         fclose(f);
     }
-
-    QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
-    if (!QFile::exists(configColorPath)) {
-        configColorPath = MusEGlobal::museGlobalShare + "/themes/" + currentTheme + ".cfc";
-    }
-
-    // We want the simple version, don't set the style or stylesheet yet.
-    MusECore::readConfiguration(qPrintable(configColorPath));
-//    MusEGlobal::muse->changeConfig(true);
-
-//    backgroundTree->reset();
-//    hide();
-
-    return true;
 }
 
 //---------------------------------------------------------
@@ -838,6 +843,9 @@ bool Appearance::changeTheme()
 bool Appearance::apply()
 {
       bool restart_required = false;
+
+      if (isColorsDirty())
+          saveCurrentThemeColors();
 
       if (changeTheme()) {
           *config = MusEGlobal::config;
