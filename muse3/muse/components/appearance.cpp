@@ -799,35 +799,37 @@ void Appearance::updateFonts()
 bool Appearance::changeTheme()
 {
     QString currentTheme = themeComboBox->currentText();
-    QString lastTheme = config->theme;
 
-    if (lastTheme == currentTheme)
+    if (config->theme == currentTheme)
         return false;
 
     printf("Changing to theme %s\n", qPrintable(currentTheme) );
 
     MusEGlobal::config.theme = currentTheme;
 
-    QDir dir(MusEGlobal::configPath + "/themes/");
-    if (!dir.exists())
-        dir.mkpath(MusEGlobal::configPath + "/themes/");
+    if (!isColorsDirty())
+        saveCurrentThemeColors();
 
-    QString lastColorPath = MusEGlobal::configPath + "/themes/" + lastTheme + ".cfc";
+//    QDir dir(MusEGlobal::configPath + "/themes/");
+//    if (!dir.exists())
+//        dir.mkpath(MusEGlobal::configPath + "/themes/");
 
-    FILE* f = fopen(qPrintable(lastColorPath), "w");
-    if (!f) {
-        fprintf(stderr, "Saving configuration colors to <%s> failed: %s\n",
-                qPrintable(lastColorPath), strerror(errno));
-    } else {
-        MusECore::Xml xml(f);
-        xml.header();
-        xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
-        xml.tag(1, "configuration");
-        MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
-        xml.etag(1, "configuration");
-        xml.tag(0, "/muse");
-        fclose(f);
-    }
+//    QString lastColorPath = MusEGlobal::configPath + "/themes/" + lastTheme + ".cfc";
+
+//    FILE* f = fopen(qPrintable(lastColorPath), "w");
+//    if (!f) {
+//        fprintf(stderr, "Saving configuration colors to <%s> failed: %s\n",
+//                qPrintable(lastColorPath), strerror(errno));
+//    } else {
+//        MusECore::Xml xml(f);
+//        xml.header();
+//        xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+//        xml.tag(1, "configuration");
+//        MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
+//        xml.etag(1, "configuration");
+//        xml.tag(0, "/muse");
+//        fclose(f);
+//    }
 
     QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
     if (!QFile::exists(configColorPath)) {
@@ -844,6 +846,30 @@ bool Appearance::changeTheme()
     return true;
 }
 
+void Appearance::saveCurrentThemeColors() {
+
+    QDir dir(MusEGlobal::configPath + "/themes/");
+    if (!dir.exists())
+        dir.mkpath(MusEGlobal::configPath + "/themes/");
+
+    QString lastColorPath = MusEGlobal::configPath + "/themes/" + config->theme + ".cfc";
+
+    FILE* f = fopen(qPrintable(lastColorPath), "w");
+    if (!f) {
+        fprintf(stderr, "Saving configuration colors to <%s> failed: %s\n",
+                qPrintable(lastColorPath), strerror(errno));
+    } else {
+        MusECore::Xml xml(f);
+        xml.header();
+        xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
+        xml.tag(1, "configuration");
+        MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
+        xml.etag(1, "configuration");
+        xml.tag(0, "/muse");
+        fclose(f);
+    }
+}
+
 //---------------------------------------------------------
 //   apply
 //---------------------------------------------------------
@@ -851,6 +877,9 @@ bool Appearance::changeTheme()
 bool Appearance::apply()
 {
       bool restart_required = false;
+
+      if (isColorsDirty())
+          saveCurrentThemeColors();
 
       if (changeTheme()) {
           *config = MusEGlobal::config;
