@@ -23,6 +23,7 @@
 
 file(GLOB script_files
       DoNothing 
+      Humanize
       RemoveShortEvents 
       SpeedHalf
       SpeedDouble

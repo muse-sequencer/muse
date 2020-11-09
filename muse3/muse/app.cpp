@@ -1102,9 +1102,10 @@ MusE::MusE() : QMainWindow()
 
       MusEGlobal::song->blockSignals(false);
 
-      QSettings settings;
-      if (settings.contains("MusE/geometry"))
-          restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      if (MusEGlobal::config.geometryMain.size().width()) {
+          resize(MusEGlobal::config.geometryMain.size());
+          move(MusEGlobal::config.geometryMain.topLeft());
+      }
       else
           centerAndResize();
 
@@ -1163,8 +1164,9 @@ void MusE::centerAndResize() {
     if (MusEGlobal::config.transportVisible) {
         QRect r( geometry().x() + (width / 2),
                  geometry().y() + (height / 10),
-                 200, 100);
+                 0, 0);
         MusEGlobal::config.geometryTransport = r;
+        // don't position the window here, it's done when file/template is loaded
     }
 }
 
@@ -1624,11 +1626,13 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 //  not restoring on project reload. Didn't want to have to re-enable this, IIRC there
 //  was a problem with using this (interference with other similar competing settings),
 //  but here we go... Quick tested OK with normal and 'Borland/Mac' GUI modes.
-      resize(MusEGlobal::config.geometryMain.size());
-      move(MusEGlobal::config.geometryMain.topLeft());
 
-      if (MusEGlobal::config.transportVisible)
-            transport->show();
+// Loading a file should not manipulate the geometry of the main window (kybos)
+//      resize(MusEGlobal::config.geometryMain.size());
+//      move(MusEGlobal::config.geometryMain.topLeft());
+
+//      if (MusEGlobal::config.transportVisible)
+//            transport->show();
       transport->move(MusEGlobal::config.geometryTransport.topLeft());
       showTransport(MusEGlobal::config.transportVisible);
 
@@ -1845,162 +1849,154 @@ void MusE::quitDoc()
 //---------------------------------------------------------
 
 void MusE::closeEvent(QCloseEvent* event)
-      {
-      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-      MusEGlobal::song->setStop(true);
-      //
-      // wait for sequencer
-      //
-      while (MusEGlobal::audio->isPlaying()) {
-            qApp->processEvents();
-            }
-      if (MusEGlobal::song->dirty) {
-            int n = 0;
-            n = QMessageBox::warning(this, appName,
-               tr("The current project contains unsaved data.\n"
-               "Save current project?"),
-               tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
-            if (n == 0) {
-                  if (!save())      // don't quit if save failed
-                  {
-                        setRestartingApp(false); // Cancel any restart.
-                        event->ignore();
-                        QApplication::restoreOverrideCursor();
-                        return;
-                  }
-                  }
-            else if (n == 2)
+{
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    MusEGlobal::song->setStop(true);
+    //
+    // wait for sequencer
+    //
+    while (MusEGlobal::audio->isPlaying()) {
+        qApp->processEvents();
+    }
+    if (MusEGlobal::song->dirty) {
+        int n = 0;
+        n = QMessageBox::warning(this, appName,
+                                 tr("The current project contains unsaved data.\n"
+                                    "Save current project?"),
+                                 tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
+        if (n == 0) {
+            if (!save())      // don't quit if save failed
             {
-                  setRestartingApp(false); // Cancel any restart.
-                  event->ignore();
-                  QApplication::restoreOverrideCursor();
-                  return;
+                setRestartingApp(false); // Cancel any restart.
+                event->ignore();
+                QApplication::restoreOverrideCursor();
+                return;
             }
-            }
-      
-// redundant, top windows are properly parented now (kybos)
-////      // NOTICE: In the TopWin constructor, recently all top levels were changed to parentless,
-////      //  to fix stay-on-top behaviour that seems to have been introduced in Qt5.
-////      // But now, when the app closes by main mindow for example, all other top win destructors
-////      //  are not called. So we must do it here.
-//      for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i)
-//      {
-//        TopWin* tw = *i;
-//        // Top win has no parent? Manually delete it.
-//        if(!tw->parent())
-//          delete tw;
-//      }
-              
-      seqStop();
+        }
+        else if (n == 2)
+        {
+            setRestartingApp(false); // Cancel any restart.
+            event->ignore();
+            QApplication::restoreOverrideCursor();
+            return;
+        }
+    }
 
-      MusECore::WaveTrackList* wt = MusEGlobal::song->waves();
-      for (MusECore::iWaveTrack iwt = wt->begin(); iwt != wt->end(); ++iwt) {
-            MusECore::WaveTrack* t = *iwt;
-            if (t->recFile() && t->recFile()->samples() == 0) {
-                  t->recFile()->remove();
-                  }
-            }
 
-      QSettings settings;
-      settings.setValue("MusE/geometry", saveGeometry());
+    seqStop();
 
-      // this must be done here as the close events of child windows are not called on quit
-      saveStateTopLevels();
+    MusECore::WaveTrackList* wt = MusEGlobal::song->waves();
+    for (MusECore::iWaveTrack iwt = wt->begin(); iwt != wt->end(); ++iwt) {
+        MusECore::WaveTrack* t = *iwt;
+        if (t->recFile() && t->recFile()->samples() == 0) {
+            t->recFile()->remove();
+        }
+    }
 
-      saveStateExtra();
+    // Don't use saveGeoemetry for the main window: Qt has issues (data gets invalid)
+    //    when both standard MusE and AppImage are used on the same PC
+    //      QSettings settings;
+    //      settings.setValue("MusE/geometry", saveGeometry());
 
-      writeGlobalConfiguration();
+    MusEGlobal::config.geometryMain = geometry();
 
-      // save "Open Recent" list
-      QString prjPath(MusEGlobal::configPath);
-      prjPath += "/projects";
-      QFile f(prjPath);
-      f.open(QIODevice::WriteOnly | QIODevice::Text);
-      if (f.exists()) {
+    // must be done here as the close events of child windows are not always called on quit
+    saveStateTopLevels();
+
+    saveStateExtra();
+
+    writeGlobalConfiguration();
+
+    // save "Open Recent" list
+    QString prjPath(MusEGlobal::configPath);
+    prjPath += "/projects";
+    QFile f(prjPath);
+    f.open(QIODevice::WriteOnly | QIODevice::Text);
+    if (f.exists()) {
         QTextStream out(&f);
         for (int i = 0; i < projectRecentList.size(); ++i) {
-           out << projectRecentList[i] << "\n";
+            out << projectRecentList[i] << "\n";
         }
-      }
-      if(MusEGlobal::debugMsg)
+    }
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Exiting JackAudio\n");
-      MusECore::exitJackAudio();
-      if(MusEGlobal::debugMsg)
+    MusECore::exitJackAudio();
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Exiting DummyAudio\n");
-      MusECore::exitDummyAudio();
+    MusECore::exitDummyAudio();
 #ifdef HAVE_RTAUDIO
-      if(MusEGlobal::debugMsg)
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Exiting RtAudio\n");
-      MusECore::exitRtAudio();
+    MusECore::exitRtAudio();
 #endif
-      if(MusEGlobal::debugMsg)
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Exiting Metronome\n");
-      MusECore::exitMetronome();
+    MusECore::exitMetronome();
 
-      MusEGlobal::song->cleanupForQuit();
+    MusEGlobal::song->cleanupForQuit();
 
-      // Give midi devices a chance to close first, above in cleanupForQuit.
-      if(MusEGlobal::debugMsg)
+    // Give midi devices a chance to close first, above in cleanupForQuit.
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Exiting ALSA midi\n");
-      MusECore::exitMidiAlsa();
+    MusECore::exitMidiAlsa();
 
-      if(MusEGlobal::debugMsg)
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "Muse: Cleaning up temporary wavefiles + peakfiles\n");
-      // Cleanup temporary wavefiles + peakfiles used for undo
-      for (std::list<QString>::iterator i = MusECore::temporaryWavFiles.begin(); i != MusECore::temporaryWavFiles.end(); i++) {
-            QString filename = *i;
-            QFileInfo f(filename);
-            QDir d = f.dir();
-            d.remove(filename);
-            d.remove(f.completeBaseName() + ".wca");
-            }
+    // Cleanup temporary wavefiles + peakfiles used for undo
+    for (std::list<QString>::iterator i = MusECore::temporaryWavFiles.begin(); i != MusECore::temporaryWavFiles.end(); i++) {
+        QString filename = *i;
+        QFileInfo f(filename);
+        QDir d = f.dir();
+        d.remove(filename);
+        d.remove(f.completeBaseName() + ".wca");
+    }
 
-      if(MusEGlobal::usePythonBridge)
-      {
+    if(MusEGlobal::usePythonBridge)
+    {
         fprintf(stderr, "Stopping MusE Pybridge...\n");
         if(stopPythonBridge() == false)
-          fprintf(stderr, "MusE: Could not stop Python bridge\n");
+            fprintf(stderr, "MusE: Could not stop Python bridge\n");
         else
-          fprintf(stderr, "MusE: Pybridge stopped\n");
-      }
+            fprintf(stderr, "MusE: Pybridge stopped\n");
+    }
 
 #ifdef HAVE_LASH
-      // Disconnect gracefully from LASH.
-      if(lash_client)
-      {
+    // Disconnect gracefully from LASH.
+    if(lash_client)
+    {
         if(MusEGlobal::debugMsg)
-          fprintf(stderr, "MusE: Disconnecting from LASH\n");
+            fprintf(stderr, "MusE: Disconnecting from LASH\n");
         lash_event_t* lashev = lash_event_new_with_type (LASH_Quit);
         lash_send_event(lash_client, lashev);
-      }
+    }
 #endif
 
-      if(MusEGlobal::debugMsg)
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Exiting Dsp\n");
-      AL::exitDsp();
+    AL::exitDsp();
 
-      if(MusEGlobal::debugMsg)
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Exiting OSC\n");
-      MusECore::exitOSC();
+    MusECore::exitOSC();
 
-      delete MusEGlobal::audioPrefetch;
-      delete MusEGlobal::audio;
+    delete MusEGlobal::audioPrefetch;
+    delete MusEGlobal::audio;
 
-      // Destroy the sequencer object if it exists.
-      MusECore::exitMidiSequencer();
+    // Destroy the sequencer object if it exists.
+    MusECore::exitMidiSequencer();
 
-      delete MusEGlobal::song;
+    delete MusEGlobal::song;
 
-      if(MusEGlobal::debugMsg)
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Deleting icons\n");
-      deleteIcons();
+    deleteIcons();
 
-      if(MusEGlobal::debugMsg)
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Deleting all parentless dialogs and widgets\n");
-      deleteParentlessDialogs();
+    deleteParentlessDialogs();
 
-      qApp->quit();
-      }
+    qApp->quit();
+}
 
 
 //---------------------------------------------------------
@@ -3668,21 +3664,22 @@ void MusE::updateConfiguration()
 //---------------------------------------------------------
 
 void MusE::showBigtime(bool on)
-      {
-      if (on && bigtime == nullptr) {
-            bigtime = new MusEGui::BigTime(this);
-            bigtime->setPos(0, MusEGlobal::song->cpos(), false);
-            connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
-            connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
-            connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), bigtime, SLOT(songChanged(MusECore::SongChangedStruct_t)));
-            connect(bigtime, SIGNAL(closed()), SLOT(bigtimeClosed()));
-            bigtime->resize(MusEGlobal::config.geometryBigTime.size());
-            bigtime->move(MusEGlobal::config.geometryBigTime.topLeft());
-            }
-      if (bigtime)
-            bigtime->setVisible(on);
-      viewBigtimeAction->setChecked(on);
-      }
+{
+    if (on && bigtime == nullptr) {
+        bigtime = new MusEGui::BigTime(this);
+        bigtime->setPos(0, MusEGlobal::song->cpos(), false);
+        connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
+        connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
+        connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), bigtime, SLOT(songChanged(MusECore::SongChangedStruct_t)));
+        connect(bigtime, SIGNAL(closed()), SLOT(bigtimeClosed()));
+    }
+    if (bigtime) {
+        bigtime->resize(MusEGlobal::config.geometryBigTime.size());
+        bigtime->move(MusEGlobal::config.geometryBigTime.topLeft());
+        bigtime->setVisible(on);
+    }
+    viewBigtimeAction->setChecked(on);
+}
 
 //---------------------------------------------------------
 //   toggleBigTime
@@ -4675,10 +4672,6 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
    return false;
 }
 
-void MusE::resizeEvent(QResizeEvent* event) {
-    QMainWindow::resizeEvent(event);
-    MusEGlobal::config.geometryMain = geometry();
-}
 
 int MusE::arrangerRaster() const
 {
@@ -4788,40 +4781,33 @@ void MusE::addTabbedDock(Qt::DockWidgetArea area, QDockWidget *dock)
 
 void MusE::saveStateTopLevels() {
 
-    for (const auto& it : toplevels)
+    for (const auto& it : toplevels) {
+        if (activeTopWin && (activeTopWin == it))
+            it->storeInitialState();
         it->storeSettings();
+    }
 }
 
 void MusE::saveStateExtra() {
 
     MusEGlobal::config.transportVisible = transport->isVisible();
-    MusEGlobal::config.geometryTransport.setX(transport->frameGeometry().x());
-    MusEGlobal::config.geometryTransport.setY(transport->frameGeometry().y());
-    MusEGlobal::config.geometryTransport.setWidth(0);
-    MusEGlobal::config.geometryTransport.setHeight(0);
+    MusEGlobal::config.geometryTransport.setTopLeft(transport->pos());
+    // size part not used, transport window has fixed size
 
     if (bigtime) {
         MusEGlobal::config.bigTimeVisible = bigtime->isVisible();
-        MusEGlobal::config.geometryBigTime.setX(bigtime->frameGeometry().x());
-        MusEGlobal::config.geometryBigTime.setY(bigtime->frameGeometry().y());
-        MusEGlobal::config.geometryBigTime.setWidth(bigtime->width());
-        MusEGlobal::config.geometryBigTime.setHeight(bigtime->height());
+        MusEGlobal::config.geometryBigTime.setTopLeft(bigtime->pos());
+        MusEGlobal::config.geometryBigTime.setSize(bigtime->size());
     }
 
     if (mixer1) {
         MusEGlobal::config.mixer1Visible = mixer1->isVisible();
-        MusEGlobal::config.mixer1.geometry.setX(mixer1->frameGeometry().x());
-        MusEGlobal::config.mixer1.geometry.setY(mixer1->frameGeometry().y());
-        MusEGlobal::config.mixer1.geometry.setWidth(mixer1->width());
-        MusEGlobal::config.mixer1.geometry.setHeight(mixer1->height());
+        MusEGlobal::config.mixer1.geometry = mixer1->geometry();
     }
 
     if (mixer2) {
         MusEGlobal::config.mixer2Visible = mixer2->isVisible();
-        MusEGlobal::config.mixer2.geometry.setX(mixer2->frameGeometry().x());
-        MusEGlobal::config.mixer2.geometry.setY(mixer2->frameGeometry().y());
-        MusEGlobal::config.mixer2.geometry.setWidth(mixer2->width());
-        MusEGlobal::config.mixer2.geometry.setHeight(mixer2->height());
+        MusEGlobal::config.mixer2.geometry = mixer2->geometry();
     }
 }
 

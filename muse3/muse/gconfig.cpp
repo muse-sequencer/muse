@@ -291,7 +291,7 @@ GlobalConfigValues config = {
       1,                            // startMode
       QString(""),                  // start song path
       false,                        // startSongLoadConfig
-      QRect(0, 0, 700, 550),        // GeometryMain;
+      QRect(0, 0, 0, 0),            // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
       {
