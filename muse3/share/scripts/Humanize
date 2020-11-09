@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Staffan Melin (based on RandomizeVelocityRelative by Michael Oswald and RandomPosition1 by Robert Jonsson)
+# Humanize Midi notes by randomizing velocity and position
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+
+import sys,time
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QGridLayout, QLabel
+
+import random
+
+class Humanize(QWidget):
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+
+		self.setWindowTitle('Humanize Midi notes by randomizing velocity and position')
+
+		self.positionSpreadPosEdit = QLineEdit()
+		self.positionSpreadPosEdit.setText('5')
+		self.positionSpreadNegEdit = QLineEdit()
+		self.positionSpreadNegEdit.setText('5')
+
+		self.velocitySpreadPosEdit = QLineEdit()
+		self.velocitySpreadPosEdit.setText('20')
+		self.velocitySpreadNegEdit = QLineEdit()
+		self.velocitySpreadNegEdit.setText('20')
+		
+		button = QPushButton("Execute")
+		button.clicked.connect(self.execute)
+
+		grid = QGridLayout()
+		grid.setSpacing(3)
+
+		grid.addWidget(QLabel('Pos spread (+%)'), 2, 0)
+		grid.addWidget(self.positionSpreadPosEdit, 2, 1)
+		grid.addWidget(QLabel('Pos spread (-%)'), 3, 0)
+		grid.addWidget(self.positionSpreadNegEdit, 3, 1)
+		grid.addWidget(QLabel('Vel spread (+)'), 4, 0)
+		grid.addWidget(self.velocitySpreadPosEdit, 4, 1)
+		grid.addWidget(QLabel('Vel spread (-)'), 5, 0)
+		grid.addWidget(self.velocitySpreadNegEdit, 5, 1)
+		grid.addWidget(button, 6, 1)
+
+		self.setLayout(grid)
+		self.resize(300, 150)
+		button.setFocus()
+
+	def execute(self):
+		testFile = open(sys.argv[1],"r")
+		inputEvents = testFile.readlines()
+		testFile.close()
+
+		positionSpreadPos = int(self.positionSpreadPosEdit.text())
+		positionSpreadNeg = int(self.positionSpreadNegEdit.text())
+		velocitySpreadPos = int(self.velocitySpreadPosEdit.text())
+		velocitySpreadNeg = int(self.velocitySpreadNegEdit.text())
+		
+		outputEvents=[]
+		random.seed()
+
+        # get length of beat
+		beatLen = 384 # default
+		for line in inputEvents:
+			if line.startswith('BEATLEN'):
+				tag,tick = line.split(' ')
+				beatLen = int(tick)
+
+		# loop through events
+		eventList=[]
+		for line in inputEvents:
+			if line.startswith('NOTE'):
+				tag,tick,pitch,length,velocity = line.split(' ')
+
+				# position: move note random % of beatlen
+				tick = int(tick)
+				tick = tick + int((random.randint(-positionSpreadNeg, positionSpreadPos) / 100) * beatLen)
+
+				# velocity
+				velocity = int(velocity)
+				velocity = velocity + int(random.randint(-velocitySpreadNeg, velocitySpreadPos))
+
+				if tick < 0:
+					tick = 0
+				if velocity < 0:
+					velocity = 0
+				if velocity > 127:
+					velocity = 127
+
+				newLine = "NOTE " + str(tick) + " " + str(pitch)  + " " + str(length) + " " + str(velocity) + "\n"
+
+				outputEvents.append(newLine)
+			else:
+				outputEvents.append(line)
+
+		testFile = open(sys.argv[1],"w")
+		testFile.writelines(outputEvents)
+		testFile.close()
+
+		quit()
+
+
+app = QApplication(sys.argv)
+qb = Humanize()
+qb.show()
+sys.exit(app.exec_())
