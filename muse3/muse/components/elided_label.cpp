@@ -129,7 +129,7 @@ void ElidedLabel::paintEvent(QPaintEvent* e)
   QPainter painter(this);
 
   const QRect r = rect();
-  const QRect ar = r.adjusted(1, 1, -1, -1);
+  const QRect ar = r.adjusted(2, 1, -1, -1);
 
   ItemBackgroundPainter ibp;
   ibp.drawBackground(&painter, r, palette(), 1, 1,

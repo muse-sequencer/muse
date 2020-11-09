@@ -184,6 +184,10 @@ void CompactPatchEdit::setBorderColor(const QColor& c)
     _patchNameLabel->setBorderColor(c);
     _patchEdit->setBorderColor(c);
 }
+void CompactPatchEdit::setBorderColorPatchEdit(const QColor &c)
+{
+    _patchEdit->setBorderColor(c);
+}
 void CompactPatchEdit::setFontColor(const QColor& c)
 {
     _patchNameLabel->setFontColor(c);

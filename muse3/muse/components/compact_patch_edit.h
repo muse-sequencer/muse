@@ -107,6 +107,7 @@ class CompactPatchEdit : public QFrame
     void setBgColor(const QColor& c);
     void setBgActiveColor(const QColor& c);
     void setBorderColor(const QColor& c);
+    void setBorderColorPatchEdit(const QColor& c);
     void setFontColor(const QColor& c);
     void setFontActiveColor(const QColor& c);
     void setStyle3d(const bool s);

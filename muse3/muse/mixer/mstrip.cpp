@@ -465,6 +465,7 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
         control->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
         control->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
         control->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
+        control->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
         control->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
         control->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
         
@@ -1344,6 +1345,7 @@ void MidiComponentRack::setComponentColors()
         w->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
         w->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
         w->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
+        w->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
         w->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
         w->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
       }
@@ -1458,7 +1460,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //---------------------------------------------------
 
       QHBoxLayout *routeLayout = new QHBoxLayout;
-      routeLayout->setContentsMargins(1,2,1,3);
+      routeLayout->setContentsMargins(1,3,1,2);
       routeLayout->setSpacing(1);
 
 //      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
@@ -1681,7 +1683,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //---------------------------------------------------
 
       QGridLayout *bottomLayout = new QGridLayout;
-      bottomLayout->setContentsMargins(1,2,1,2);
+      bottomLayout->setContentsMargins(1,1,1,2);
       bottomLayout->setSpacing(1);
 
       if (track && track->canRecordMonitor()) {
@@ -1822,9 +1824,9 @@ void MidiStrip::setStripStyle() {
     // Set the whole strip's font, except for the label.
     setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
     setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-            + "QAbstractButton { padding: 1px; qproperty-iconSize:" +
+            + "QAbstractButton { padding: 0px; qproperty-iconSize:" +
                   QString::number(MusEGlobal::config.fonts[1].pointSize() * 2) + "px; }"
-            + "#TrackOffButton { padding: 0px; }");
+            + "#TrackOffButton { padding: -1px; }");
 }
 
 //---------------------------------------------------

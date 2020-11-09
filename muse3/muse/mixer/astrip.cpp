@@ -1425,7 +1425,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       QHBoxLayout *routeLayout = new QHBoxLayout;
-      routeLayout->setContentsMargins(1,2,1,2);
+      routeLayout->setContentsMargins(1,3,1,2);
       routeLayout->setSpacing(1);
 
       if (type != MusECore::Track::AUDIO_AUX) {
@@ -1708,7 +1708,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       //---------------------------------------------------
 
       QGridLayout *bottomLayout = new QGridLayout;
-      bottomLayout->setContentsMargins(1,2,1,2);
+      bottomLayout->setContentsMargins(1,1,1,2);
       bottomLayout->setSpacing(1);
 
       if (track && track->canRecordMonitor()) {
@@ -1800,7 +1800,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       //autoType->setAutoFillBackground(true);
 
-      autoType->addAction(tr("Off"), MusECore::AUTO_OFF);
+      autoType->addAction(tr("Auto off"), MusECore::AUTO_OFF);
       autoType->addAction(tr("Read"), MusECore::AUTO_READ);
       autoType->addAction(tr("Touch"), MusECore::AUTO_TOUCH);
       autoType->addAction(tr("Write"), MusECore::AUTO_WRITE);
@@ -1858,9 +1858,9 @@ void AudioStrip::setStripStyle() {
     // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
     setFont(MusEGlobal::config.fonts[1]);
     setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-            + "QAbstractButton { padding: 1px; qproperty-iconSize:" +
+            + "QAbstractButton { padding: 0px; qproperty-iconSize:" +
                   QString::number(MusEGlobal::config.fonts[1].pointSize() * 2) + "px; }"
-            + "#TrackOffButton { padding: 0px; }");
+            + "#TrackOffButton { padding: -1px; }");
 }
 
 void AudioStrip::colorAutoType() {

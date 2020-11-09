@@ -63,8 +63,8 @@ class CompactToolButton : public QToolButton {
 
    public:
       CompactToolButton(
-        QWidget* parent = 0, const QIcon& icon = QIcon(),
-        bool hasFixedIconSize = true, bool drawFlat = false, const char* name = 0);
+        QWidget* parent = nullptr, const QIcon& icon = QIcon(),
+        bool hasFixedIconSize = true, bool drawFlat = false, const char* name = nullptr);
          
       bool hasFixedIconSize() const { return _hasFixedIconSize; }
       void setHasFixedIconSize(bool v);

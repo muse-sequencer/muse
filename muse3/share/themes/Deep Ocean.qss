@@ -225,6 +225,11 @@ QWidget#Strip > QAbstractButton:checked {
     border: 1px solid rgb(0,127,255);
 }
 
+QWidget#Strip > QAbstractButton:!enabled {
+    border: 1px solid rgb(90,90,90);
+}
+
+
 QTreeView, QListView {
     alternate-background-color: rgb(60,60,60);
     background: rgb(30,30,30);
