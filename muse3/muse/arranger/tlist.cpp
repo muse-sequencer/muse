@@ -162,8 +162,7 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
 
 static void drawCenteredPixmap(QPainter& p, const QPixmap* pm, const QRect& r)
       {
-      p.drawPixmap(r.x(), r.y() + (r.height() - pm->height() / 2) / 2, *pm);
-//      p.drawPixmap(r.x() + (r.width() - pm->width())/2, r.y() + (r.height() - pm->height())/2, *pm);
+      p.drawPixmap(r.x() + (r.width() - pm->width())/2, r.y() + (r.height() - pm->height())/2, *pm);
       }
 
 //---------------------------------------------------------
@@ -289,8 +288,9 @@ void TList::paint(const QRect& r)
         }
       }
 
-      const int header_fh = header->fontMetrics().lineSpacing();
-      const int svg_sz = qMin(header_fh + 2, qMax(MIN_TRACKHEIGHT - 5, 6));
+//      const int header_fh = header->fontMetrics().lineSpacing();
+//      const int svg_sz = qMin(header_fh + 2, qMax(MIN_TRACKHEIGHT - 5, 6)); // ???
+      const int svg_sz = MIN_TRACKHEIGHT - 4; // 2px margin
 
       MusECore::TrackList* l = MusEGlobal::song->tracks();
       const MusECore::Track* cur_sel_track = l->currentSelection();
@@ -369,17 +369,16 @@ void TList::paint(const QRect& r)
                 p.restore();
             }
 
-            int x = 0;
+            int x = -1; // compensate for the buggy QHeaderView, would even have to be -2 for perfect alignment
             for (int index = 0; index < header->count(); ++index) {
                   int section = header->logicalIndex(index);
                   int w   = header->sectionSize(section);
-                  QRect r = p.transform().mapRect(QRect(x+2, yy, w-4, trackHeight));
+                  QRect r = p.transform().mapRect(QRect(x + 2, yy, w - 4, trackHeight));
                   QRect svg_r = p.transform().mapRect(
-                    QRect(x + w / 2 - svg_sz / 2,
-                          yy + trackHeight / 2 - svg_sz / 2,
-                          svg_sz,
-                          svg_sz));
-                    //QRect(x+2, yy, qMin(header_fh, MIN_TRACKHEIGHT)-4, trackHeight));
+                              QRect(x + w / 2 - svg_sz / 2,
+                                    yy + trackHeight / 2 - svg_sz / 2,
+                                    svg_sz,
+                                    svg_sz));
 
                   if(!header->isSectionHidden(section))
                   {
@@ -399,8 +398,10 @@ void TList::paint(const QRect& r)
                                 break;
                           case COL_CLASS:
                                 {
-                                if(const QPixmap* pm = new QPixmap(MusECore::Track::trackTypeIcon(type)->pixmap(16,16)))
-                                  drawCenteredPixmap(p, pm, r);
+                                if(const QIcon* icon = MusECore::Track::trackTypeIcon(type))
+                                  icon->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+//                                if(const QPixmap* pm = new QPixmap(MusECore::Track::trackTypeIcon(type)->pixmap(16,16)))
+//                                    drawCenteredPixmap(p, pm, r);
                                 }
                                 break;
                           case COL_MUTE:
