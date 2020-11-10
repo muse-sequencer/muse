@@ -1884,25 +1884,27 @@ void Strip::keyPressEvent(QKeyEvent* ev)
 
 void Strip::setSelected(bool v)
 {
-  if(_selected == v)
-    return;
-  
-  if(_isEmbedded)
-  {
-    _selected = false;
-    return;
-  }
-  if (v) {
-    label->setFrameStyle(Raised | StyledPanel);
-    setHighLight(true);
-    // First time selected? Set the focus.
-    setFocus();
-  }
-  else {
-    label->setFrameStyle(Sunken | StyledPanel);
-    setHighLight(false);
-  }
-  _selected=v;
+    if(_selected == v)
+        return;
+
+    if(_isEmbedded)
+    {
+        _selected = false;
+        return;
+    }
+    if (v) {
+        if (label->style3d())
+            label->setFrameStyle(Raised | StyledPanel);
+        setHighLight(true);
+        // First time selected? Set the focus.
+        setFocus();
+    }
+    else {
+        if (label->style3d())
+            label->setFrameStyle(Sunken | StyledPanel);
+        setHighLight(false);
+    }
+    _selected=v;
 }
 
 void Strip::setHighLight(bool highlight)

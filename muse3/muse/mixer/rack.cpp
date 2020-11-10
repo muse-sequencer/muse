@@ -89,7 +89,7 @@ class EffectRackDelegate : public QStyledItemDelegate {
 
 const int EffectRackDelegate::itemXMargin = 1;
 const int EffectRackDelegate::itemYMargin = 1;
-const int EffectRackDelegate::itemTextXMargin = 2;
+const int EffectRackDelegate::itemTextXMargin = 1;
 const int EffectRackDelegate::itemTextYMargin = 1;
 
 EffectRackDelegate::EffectRackDelegate(QObject * parent, MusECore::AudioTrack* at ) : QStyledItemDelegate(parent) { 

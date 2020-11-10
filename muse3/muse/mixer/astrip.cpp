@@ -1756,7 +1756,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       mute->setIcon(*muteOnSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
-      mute->setToolTip(tr("Mute or proxy mute"));
+      mute->setToolTip(tr("Mute or proxy mute. Connected tracks are 'phantom' muted."));
       mute->setChecked(at->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
@@ -1766,7 +1766,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       solo  = new QPushButton(this);
       solo->setIcon(*soloOnAloneSVGIcon);
       solo->setObjectName("SoloButton");
-      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for help."));
+      solo->setStatusTip(tr("Solo or proxy solo. Connected tracks are 'phantom' soloed. Press F1 for help."));
       solo->setFocusPolicy(Qt::NoFocus);
       solo->setToolTip(tr("Solo or proxy solo"));
       solo->setCheckable(true);
@@ -1857,10 +1857,11 @@ void AudioStrip::setStripStyle() {
     // Set the whole strip's font, except for the label.
     // May be good to keep this. In the midi strip without it the upper rack is too tall at first. So avoid trouble.
     setFont(MusEGlobal::config.fonts[1]);
+    int iconSize = MusEGlobal::config.fonts[1].pointSize() * 2;
     setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
-            + "QAbstractButton { padding: 0px; qproperty-iconSize:" +
-                  QString::number(MusEGlobal::config.fonts[1].pointSize() * 2) + "px; }"
-            + "#TrackOffButton { padding: -1px; }");
+            + "#Strip > QAbstractButton { padding: 0px; qproperty-iconSize:" +
+                  QString::number(iconSize) + "px; }"
+            + "#Strip #TrackOffButton { qproperty-iconSize:" + QString::number(iconSize - 2) + "px; }");
 }
 
 void AudioStrip::colorAutoType() {

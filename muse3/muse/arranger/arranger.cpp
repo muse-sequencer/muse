@@ -206,7 +206,7 @@ void Arranger::setHeaderWhatsThis()
       header->setWhatsThis(TList::COL_RECORD,   tr("Enable recording. Click to toggle.\n"
                                             "See also Settings: Automatically Monitor On Record Arm."));
       header->setWhatsThis(TList::COL_MUTE,     tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"));
-      header->setWhatsThis(TList::COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed,\n indicated by a dark square."));
+      header->setWhatsThis(TList::COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed."));
       header->setWhatsThis(TList::COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
       header->setWhatsThis(TList::COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
       header->setWhatsThis(TList::COL_OCHANNEL, tr("Midi/Drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
@@ -225,7 +225,7 @@ void Arranger::setHeaderStatusTips()
     header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Enable/Disable input monitor. Passes input through to output (see also Settings: Automatically monitor on record arm)."));
     header->setStatusTip(TList::COL_RECORD,   tr("Enable/Disable recording."));
     header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator. Left-click to mute track (for quick action), right-click to toggle track on/off (for more permanent action)."));
-    header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator. Click to toggle (Connected tracks are also 'phantom' soloed, indicated by a dark square)."));
+    header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator. Connected tracks are also 'phantom' soloed."));
     header->setStatusTip(TList::COL_CLASS,    tr("Track type. Click to switch between midi and drum track types."));
     header->setStatusTip(TList::COL_NAME,     tr("Track name. Double-click to edit. Right-click for context menu."));
     header->setStatusTip(TList::COL_OCHANNEL, tr("Midi/Drum: Output channel number. Audio: Channels. Mid/right-click to change."));

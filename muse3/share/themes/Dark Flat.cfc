@@ -65,7 +65,7 @@
     <synthTrackBg r="241" g="142" b="60"></synthTrackBg>
     <sliderBarDefaultColor r="0" g="90" b="160"></sliderBarDefaultColor>
     <sliderDefaultColor2 r="40" g="40" b="40"></sliderDefaultColor2>
-    <panSliderColor2 r="170" g="62" b="150"></panSliderColor2>
+    <panSliderColor2 r="170" g="0" b="0"></panSliderColor2>
     <gainSliderColor2 r="51" g="153" b="102"></gainSliderColor2>
     <auxSliderColor2 r="241" g="153" b="0"></auxSliderColor2>
     <audioVolumeSliderColor2 r="21" g="21" b="21"></audioVolumeSliderColor2>
@@ -74,21 +74,21 @@
     <midiVolumeHandleColor r="90" g="90" b="90"></midiVolumeHandleColor>
     <audioControllerSliderDefaultColor2 r="37" g="121" b="255"></audioControllerSliderDefaultColor2>
     <audioPropertySliderDefaultColor2 r="220" g="77" b="255"></audioPropertySliderDefaultColor2>
-    <midiControllerSliderDefaultColor2 r="0" g="170" b="127"></midiControllerSliderDefaultColor2>
-    <midiPropertySliderDefaultColor2 r="0" g="170" b="127"></midiPropertySliderDefaultColor2>
+    <midiControllerSliderDefaultColor2 r="130" g="0" b="97"></midiControllerSliderDefaultColor2>
+    <midiPropertySliderDefaultColor2 r="130" g="0" b="97"></midiPropertySliderDefaultColor2>
     <midiPatchReadoutColor r="255" g="255" b="0"></midiPatchReadoutColor>
     <knobFontColor r="190" g="190" b="190"></knobFontColor>
     <audioMeterPrimaryColor r="0" g="255" b="0"></audioMeterPrimaryColor>
     <midiMeterPrimaryColor r="0" g="255" b="0"></midiMeterPrimaryColor>
     <meterBackgroundColor r="21" g="21" b="21"></meterBackgroundColor>
     <rackItemBackgroundColor r="90" g="90" b="90"></rackItemBackgroundColor>
-    <rackItemBgActiveColor r="0" g="100" b="167"></rackItemBgActiveColor>
+    <rackItemBgActiveColor r="130" g="36" b="0"></rackItemBgActiveColor>
     <rackItemFontColor r="15" g="15" b="15"></rackItemFontColor>
     <rackItemFontActiveColor r="255" g="255" b="255"></rackItemFontActiveColor>
     <rackItemBorderColor r="40" g="40" b="40"></rackItemBorderColor>
     <rackItemFontColorHover r="190" g="190" b="190"></rackItemFontColorHover>
     <midiInstrumentBackgroundColor r="40" g="40" b="40"></midiInstrumentBackgroundColor>
-    <midiInstrumentBgActiveColor r="0" g="120" b="200"></midiInstrumentBgActiveColor>
+    <midiInstrumentBgActiveColor r="170" g="85" b="0"></midiInstrumentBgActiveColor>
     <midiInstrumentFontColor r="150" g="150" b="150"></midiInstrumentFontColor>
     <midiInstrumentFontActiveColor r="254" g="254" b="254"></midiInstrumentFontActiveColor>
     <midiInstrumentBorderColor r="40" g="40" b="40"></midiInstrumentBorderColor>
