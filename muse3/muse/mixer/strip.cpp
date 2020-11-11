@@ -1002,7 +1002,7 @@ void Strip::changeTrackName()
   dlg.setWindowTitle(tr("Name"));
   dlg.setLabelText(tr("Enter track name:"));
   dlg.setTextValue(oldname);
-  dlg.setStyleSheet("font-size:" + QString::number(qApp->font().pointSize()) + "pt");
+  dlg.setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
   const int res = dlg.exec();
   if(res == QDialog::Rejected)

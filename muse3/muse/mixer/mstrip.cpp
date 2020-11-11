@@ -1649,6 +1649,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       QFrame *sliderMeterFrame = new QFrame;
       sliderMeterFrame->setObjectName("SliderMeterFrameMidi");
       sliderMeterFrame->setLayout(sliderGrid);
+      sliderMeterFrame->setMinimumWidth(cMinStripWidth);
 
       QHBoxLayout *sliderMeterLayout = new QHBoxLayout();
       sliderMeterLayout->setContentsMargins(1,0,1,2);

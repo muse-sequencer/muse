@@ -709,6 +709,8 @@ class Strip : public QFrame {
       bool _highlight;
 
    protected:
+      static constexpr int cMinStripWidth = 50;
+
       // Whether to propagate changes to other selected tracks.
       // This includes operating a control or using the universal up/down volume/ pan keys etc.
       bool _broadcastChanges;

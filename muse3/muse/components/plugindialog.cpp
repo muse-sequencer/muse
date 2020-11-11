@@ -43,7 +43,8 @@ PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
 {
     ui.setupUi(this);
-    this->setStyleSheet("font-size:" + QString::number(qApp->font().pointSize()) + "pt");
+    // this dlg is called from the mixer strip so it would inherit the small font size
+    setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
       group_info=NULL;
       setWindowTitle(tr("MusE: Select Plugin"));

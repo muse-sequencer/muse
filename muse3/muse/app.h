@@ -275,6 +275,7 @@ class MusE : public QMainWindow
     bool findOpenListEditor(MusECore::PartList* pl);
     bool filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartList* pl);
     void updateStatusBar();
+    void setAndAdjustFonts();
 
     QTimer *saveTimer;
     QTimer *blinkTimer;
