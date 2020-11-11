@@ -22,19 +22,20 @@
 #=============================================================================
 
 file(GLOB script_files
-      DoNothing 
-      Humanize
-      RemoveShortEvents 
-      SpeedHalf
-      SpeedDouble
       ConstantLength
       ConstantVelocityForNote
-      SwingQuantize1
+      DoNothing 
+      CreateBassline
+      Humanize
+      RandomizeVelocityRelative
       RandomQuantize1
       RandomPosition1
-      RandomizeVelocityRelative
       RemoveAftertouch
+      RemoveShortEvents 
       Rhythm1
+      SpeedHalf
+      SpeedDouble
+      SwingQuantize1
       TempoDelay
       )
 
