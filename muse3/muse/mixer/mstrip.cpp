@@ -1333,6 +1333,7 @@ void MidiComponentRack::setComponentColors()
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
         w->setBorderColor(color);
+        w->setThumbColor(color);
         w->setBarColor(MusEGlobal::config.sliderBarColor);
         w->setSlotColor(MusEGlobal::config.sliderBackgroundColor);
       }
@@ -1449,11 +1450,16 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       t->setActivity(0);
       t->setLastActivity(0);
 
-      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
+      _routePos            = GridPosStruct(_curGridRow,     0, 1, 3);
       _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 3);
-      _sliderMeterPos      = GridPosStruct(_curGridRow + 2, 0, 1, 2);
+      _sliderMeterPos      = GridPosStruct(_curGridRow + 2, 0, 1, 3);
       _lowerRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
-      _bottomPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
+      _bottomPos           = GridPosStruct(_curGridRow + 4, 0, 1, 3);
+//      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
+//      _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 3);
+//      _sliderMeterPos      = GridPosStruct(_curGridRow + 2, 0, 1, 2);
+//      _lowerRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+//      _bottomPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
 
       //---------------------------------------------------
       //    routing
@@ -1559,12 +1565,12 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       _meterLayout->hlayout()->addWidget(meter[0], Qt::AlignHCenter);
       
-      sliderGrid = new QGridLayout(); 
-      sliderGrid->setSpacing(0);
-      sliderGrid->setHorizontalSpacing(2);
-      sliderGrid->setContentsMargins(2, 0, 3, 2);
-      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
-      sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
+//      sliderGrid = new QGridLayout();
+//      sliderGrid->setSpacing(0);
+//      sliderGrid->setHorizontalSpacing(2);
+//      sliderGrid->setContentsMargins(2, 0, 3, 2);
+//      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
+//      sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
       
       sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0);
       sl->setObjectName("VolumeEditMidi");
@@ -1644,7 +1650,18 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
       connect(sl, SIGNAL(ctrlDoubleClicked(int)), SLOT(volLabelDoubleClicked()));
       
+      sliderGrid = new QGridLayout();
+      sliderGrid->setSpacing(0);
+      sliderGrid->setHorizontalSpacing(2);
+      sliderGrid->setContentsMargins(2, 0, 3, 2);
+
+      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
+      sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
       sliderGrid->addWidget(sl, 2, 0, 1, 2, Qt::AlignHCenter);
+
+      sliderGrid->setColumnStretch(0, slider->sizeHint().width());
+//      sliderGrid->setColumnStretch(1, _meterLayout->sizeHint().width());
+      sliderGrid->setColumnStretch(1, meter[0]->sizeHint().width());
 
       QFrame *sliderMeterFrame = new QFrame;
       sliderMeterFrame->setObjectName("SliderMeterFrameMidi");

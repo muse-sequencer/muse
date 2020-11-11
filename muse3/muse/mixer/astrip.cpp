@@ -781,8 +781,9 @@ void AudioComponentRack::setComponentColors()
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
         w->setBorderColor(color);
-        //w->setBarColor(color);
+        w->setThumbColor(color);
         w->setBarColor(MusEGlobal::config.sliderBarColor);
+        w->setSlotColor(MusEGlobal::config.sliderBackgroundColor);
       }
       break;
     }
@@ -1412,13 +1413,20 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       channel       = at->channels();
 
-      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
+      _routePos            = GridPosStruct(_curGridRow,     0, 1, 3);
       _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
-      _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 2);
+      _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 3);
       _upperRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
-      _sliderMeterPos      = GridPosStruct(_curGridRow + 4, 0, 1, 2);
+      _sliderMeterPos      = GridPosStruct(_curGridRow + 4, 0, 1, 3);
       _lowerRackPos        = GridPosStruct(_curGridRow + 5, 0, 1, 3);
-      _bottomPos           = GridPosStruct(_curGridRow + 6, 0, 1, 2);
+      _bottomPos           = GridPosStruct(_curGridRow + 6, 0, 1, 3);
+//      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
+//      _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
+//      _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 2);
+//      _upperRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+//      _sliderMeterPos      = GridPosStruct(_curGridRow + 4, 0, 1, 2);
+//      _lowerRackPos        = GridPosStruct(_curGridRow + 5, 0, 1, 3);
+//      _bottomPos           = GridPosStruct(_curGridRow + 6, 0, 1, 2);
 
       //---------------------------------------------------
       //    routing
@@ -1569,7 +1577,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
 //      for(int ch = 0; ch < channel; ++ch)
 //        _clipperLayout->addWidget(_clipperLabel[ch]);
-      sliderGrid->addLayout(_clipperLayout, 0, 0, 1, -1, Qt::AlignCenter);
+      sliderGrid->addLayout(_clipperLayout, 0, 0, 1, 2, Qt::AlignCenter);
 //      sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
 
       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
@@ -1618,6 +1626,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
       _meterLayout->setMargin(0);
       _meterLayout->setSpacing(props.meterSpacing());
+
       sliderGrid->addLayout(_meterLayout, 1, 1, Qt::AlignHCenter);
 
       for (int i = 0; i < channel; ++i) {
@@ -1672,6 +1681,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(volumeRightClicked(QPoint)));
 
       sliderGrid->addWidget(sl, 2, 0, 1, 2, Qt::AlignHCenter);
+      sliderGrid->setColumnStretch(0, slider->sizeHint().width());
+      sliderGrid->setColumnStretch(1, _meterLayout->sizeHint().width());
 
       QFrame *sliderMeterFrame = new QFrame;
       sliderMeterFrame->setObjectName("SliderMeterFrameAudio");
