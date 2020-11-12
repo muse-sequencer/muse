@@ -189,10 +189,10 @@ QToolBar QLabel#PaddedValueLabel {
     height: 20px;
 }
 
-QFrame#SliderMeterFrameAudio,
+/* QFrame#SliderMeterFrameAudio,
 QFrame#SliderMeterFrameMidi {
     border: 1px solid rgb(0,120,200);
-}
+} */
 
 QWidget#Rack {
     border: 1px solid rgb(0,120,200);
@@ -296,7 +296,9 @@ QWidget#MidiStripTabWidget QTabBar::tab:!selected {
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab:focus {
-	border: 1px solid rgb(150,150,150);
+    /* border: 1px dotted rgb(150,150,150); */
+    border-style: dotted;
+    border-bottom: none;
 }
 
 

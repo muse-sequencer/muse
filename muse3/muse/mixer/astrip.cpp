@@ -1681,12 +1681,21 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(volumeRightClicked(QPoint)));
 
       sliderGrid->addWidget(sl, 2, 0, 1, 2, Qt::AlignHCenter);
-      sliderGrid->setColumnStretch(0, slider->sizeHint().width());
-      sliderGrid->setColumnStretch(1, _meterLayout->sizeHint().width());
+//      sliderGrid->setColumnStretch(0, slider->sizeHint().width());
+//      sliderGrid->setColumnStretch(1, _meterLayout->sizeHint().width());
+
+      QHBoxLayout *sliderHLayout = new QHBoxLayout();
+      sliderHLayout->setContentsMargins(0,0,0,0);
+      sliderHLayout->setSpacing(0);
+      sliderHLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
+      sliderHLayout->addLayout(sliderGrid);
+      sliderHLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
+      sliderHLayout->setAlignment(Qt::AlignHCenter);
 
       QFrame *sliderMeterFrame = new QFrame;
       sliderMeterFrame->setObjectName("SliderMeterFrameAudio");
-      sliderMeterFrame->setLayout(sliderGrid);
+      sliderMeterFrame->setLayout(sliderHLayout);
+//      sliderMeterFrame->setLayout(sliderGrid);
       sliderMeterFrame->setMinimumWidth(cMinStripWidth);
 
       QHBoxLayout *sliderMeterLayout = new QHBoxLayout();
@@ -1768,7 +1777,8 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       mute->setIcon(*muteOnSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
-      mute->setToolTip(tr("Mute or proxy mute. Connected tracks are 'phantom' muted."));
+      mute->setToolTip(tr("Mute or proxy mute"));
+      mute->setStatusTip(tr("Mute or proxy mute. Connected tracks are 'phantom' muted."));
       mute->setChecked(at->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
@@ -1778,9 +1788,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       solo  = new QPushButton(this);
       solo->setIcon(*soloOnAloneSVGIcon);
       solo->setObjectName("SoloButton");
+      solo->setToolTip(tr("Solo or proxy solo"));
       solo->setStatusTip(tr("Solo or proxy solo. Connected tracks are 'phantom' soloed. Press F1 for help."));
       solo->setFocusPolicy(Qt::NoFocus);
-      solo->setToolTip(tr("Solo or proxy solo"));
       solo->setCheckable(true);
       if (at->internalSolo())
         solo->setIcon(*soloAndProxyOnSVGIcon);
