@@ -37,7 +37,7 @@ namespace MusEGui {
 class Splitter;
 class ScrollBar;
 class WidgetStack;
-class CompactToolButton;
+//class CompactToolButton;
 
 //---------------------------------------------------------
 //   TrackInfoLayout

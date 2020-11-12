@@ -1023,17 +1023,6 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "rackItemFontColorHover")
                             MusEGlobal::config.rackItemFontColorHover = readColor(xml);
 
-                        else if (tag == "palSwitchBackgroundColor")
-                            MusEGlobal::config.palSwitchBackgroundColor = readColor(xml);
-                        else if (tag == "palSwitchBgActiveColor")
-                            MusEGlobal::config.palSwitchBgActiveColor = readColor(xml);
-                        else if (tag == "palSwitchFontColor")
-                            MusEGlobal::config.palSwitchFontColor = readColor(xml);
-                        else if (tag == "palSwitchFontActiveColor")
-                            MusEGlobal::config.palSwitchFontActiveColor = readColor(xml);
-                        else if (tag == "palSwitchBorderColor")
-                            MusEGlobal::config.palSwitchBorderColor = readColor(xml);
-
                         else if (tag == "midiInstrumentBackgroundColor")
                             MusEGlobal::config.midiInstrumentBackgroundColor = readColor(xml);
                         else if (tag == "midiInstrumentBgActiveColor")
@@ -1422,13 +1411,13 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
 //---------------------------------------------------------
 bool readConfiguration()
 {
-    return readConfiguration(NULL);
+    return readConfiguration(nullptr);
 }
 
 bool readConfiguration(const char *configFile)
       {
       QByteArray ba;
-      if (configFile == NULL)
+      if (configFile == nullptr)
       {
         ba = MusEGlobal::configName.toLatin1();
         configFile = ba.constData();
@@ -1436,7 +1425,7 @@ bool readConfiguration(const char *configFile)
 
       fprintf(stderr, "Config File <%s>\n", configFile);
       FILE* f = fopen(configFile, "r");
-      if (f == 0) {
+      if (f == nullptr) {
             if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
                   fprintf(stderr, "NO Config File <%s> found\n", configFile);
 
@@ -1776,12 +1765,6 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "rackItemBorderColor",  MusEGlobal::config.rackItemBorderColor);
       xml.colorTag(level, "rackItemFontColorHover",  MusEGlobal::config.rackItemFontColorHover);
 
-      xml.colorTag(level, "palSwitchBackgroundColor",  MusEGlobal::config.palSwitchBackgroundColor);
-      xml.colorTag(level, "palSwitchBgActiveColor",  MusEGlobal::config.palSwitchBgActiveColor);
-      xml.colorTag(level, "palSwitchFontColor",  MusEGlobal::config.palSwitchFontColor);
-      xml.colorTag(level, "palSwitchFontActiveColor",  MusEGlobal::config.palSwitchFontActiveColor);
-      xml.colorTag(level, "palSwitchBorderColor",  MusEGlobal::config.palSwitchBorderColor);
-
       xml.colorTag(level, "midiInstrumentBackgroundColor",  MusEGlobal::config.midiInstrumentBackgroundColor);
       xml.colorTag(level, "midiInstrumentBgActiveColor",  MusEGlobal::config.midiInstrumentBgActiveColor);
       xml.colorTag(level, "midiInstrumentFontColor",  MusEGlobal::config.midiInstrumentFontColor);
@@ -1890,7 +1873,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
   if(!parent)
     parent = this;
   QString file = MusEGui::getSaveFileName(QString("themes"), MusEGlobal::colors_config_file_pattern, this,
-                                               tr("Save configuration colors"), NULL, MusEGui::MFileDialog::USER_VIEW);
+                                               tr("Save configuration colors"), nullptr, MusEGui::MFileDialog::USER_VIEW);
 
   if(file.isEmpty())
     return false;
@@ -1905,7 +1888,7 @@ bool MusE::saveConfigurationColors(QWidget* parent)
 //  }
 
   FILE* f = fopen(file.toLatin1().constData(), "w");
-  if (f == 0) 
+  if (f == nullptr)
   {
     fprintf(stderr, "save configuration colors to <%s> failed: %s\n",
         file.toLatin1().constData(), strerror(errno));

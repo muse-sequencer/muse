@@ -298,13 +298,6 @@ Appearance::Appearance(QWidget* parent)
       new IdListViewItem(0x535, id, "Font mouse hover");
       new IdListViewItem(0x534, id, "Border");
 
-      id = new IdListViewItem(0, aid, "Palette switcher");
-      new IdListViewItem(0x540, id, "Background");
-      new IdListViewItem(0x541, id, "Background active");
-      new IdListViewItem(0x542, id, "Font");
-      new IdListViewItem(0x543, id, "Font active");
-      new IdListViewItem(0x544, id, "Border");
-
       id = new IdListViewItem(0, aid, "Midi instrument");
       new IdListViewItem(0x550, id, "Background");
       new IdListViewItem(0x551, id, "Background active");
@@ -412,7 +405,7 @@ Appearance::~Appearance()
 QColor* Appearance::globalConfigColorFromId(int id) const
 {
   if(id == 0) 
-    return 0;
+    return nullptr;
     
   if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
     return &MusEGlobal::config.partColors[id & 0xff];
@@ -524,12 +517,6 @@ QColor* Appearance::globalConfigColorFromId(int id) const
     case 0x534: return &MusEGlobal::config.rackItemBorderColor;
     case 0x535: return &MusEGlobal::config.rackItemFontColorHover;
 
-    case 0x540: return &MusEGlobal::config.palSwitchBackgroundColor;
-    case 0x541: return &MusEGlobal::config.palSwitchBgActiveColor;
-    case 0x542: return &MusEGlobal::config.palSwitchFontColor;
-    case 0x543: return &MusEGlobal::config.palSwitchFontActiveColor;
-    case 0x544: return &MusEGlobal::config.palSwitchBorderColor;
-
     case 0x550: return &MusEGlobal::config.midiInstrumentBackgroundColor;
     case 0x551: return &MusEGlobal::config.midiInstrumentBgActiveColor;
     case 0x552: return &MusEGlobal::config.midiInstrumentFontColor;
@@ -558,7 +545,7 @@ QColor* Appearance::workingConfigColorFromId(int id) const
 {
   long int itemOffset = configOffsetFromColorId(id);
   if(itemOffset == -1)
-    return 0;
+    return nullptr;
   return (QColor*)(((const char*)config) + itemOffset);
 }
 
@@ -566,7 +553,7 @@ QColor* Appearance::backupConfigColorFromId(int id) const
 {
   long int itemOffset = configOffsetFromColorId(id);
   if(itemOffset == -1)
-    return 0;
+    return nullptr;
   return (QColor*)(((const char*)backupConfig) + itemOffset);
 }
 
@@ -809,27 +796,6 @@ bool Appearance::changeTheme()
 
     if (!isColorsDirty())
         saveCurrentThemeColors();
-
-//    QDir dir(MusEGlobal::configPath + "/themes/");
-//    if (!dir.exists())
-//        dir.mkpath(MusEGlobal::configPath + "/themes/");
-
-//    QString lastColorPath = MusEGlobal::configPath + "/themes/" + lastTheme + ".cfc";
-
-//    FILE* f = fopen(qPrintable(lastColorPath), "w");
-//    if (!f) {
-//        fprintf(stderr, "Saving configuration colors to <%s> failed: %s\n",
-//                qPrintable(lastColorPath), strerror(errno));
-//    } else {
-//        MusECore::Xml xml(f);
-//        xml.header();
-//        xml.nput(0, "<muse version=\"%d.%d\">\n", xml.latestMajorVersion(), xml.latestMinorVersion());
-//        xml.tag(1, "configuration");
-//        MusECore::writeConfigurationColors(2, xml, false); // Don't save part colour names.
-//        xml.etag(1, "configuration");
-//        xml.tag(0, "/muse");
-//        fclose(f);
-//    }
 
     QString configColorPath = MusEGlobal::configPath + "/themes/" + currentTheme + ".cfc";
     if (!QFile::exists(configColorPath)) {

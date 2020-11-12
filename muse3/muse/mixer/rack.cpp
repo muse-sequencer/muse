@@ -107,7 +107,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
       painter->setRenderHint(QPainter::Antialiasing);
 
       const QRect rr = option.rect;
-      QRect cr = QRect(rr.x()+itemXMargin, rr.y()+itemYMargin, 
+      QRect cr = QRect(rr.x() + itemXMargin, rr.y() + itemYMargin,
                        rr.width() - 2 * itemXMargin, rr.height() - 2 * itemYMargin);
 
       const QRect onrect = (tr->efxPipe() && tr->efxPipe()->isOn(index.row())) ? rr : QRect();
@@ -137,7 +137,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
                         cr.y() + itemTextYMargin, 
                         cr.width() - 2 * itemTextXMargin, 
                         cr.height() - 2 * itemTextYMargin, 
-                        Qt::AlignLeft | Qt::AlignVCenter, 
+                        Qt::AlignLeft | Qt::AlignVCenter,
                         name);
 
       painter->restore();
@@ -191,8 +191,6 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       track = t;
       itemheight = 19;
-      //setFont(MusEGlobal::config.fonts[1]);
-      //activeColor = QColor(74, 165, 49);
 
       _style3d = true;
       _radius = 2;
@@ -205,7 +203,8 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       ensurePolished();
 
       if (_customScrollbar) {
-          // FIXME: put into external stylesheet (but currently there is none for default theme)
+          // FIXME: put into external stylesheet
+          // I tried, but there is a bug in QT, not possible to address scrollbar in individual widget (kybos)
           QFile file(":/qss/scrollbar_small_vertical.qss");
           file.open(QFile::ReadOnly);
           QString style = file.readAll();
@@ -219,6 +218,7 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
 
       for (int i = 0; i < MusECore::PipelineDepth; ++i)
             new RackSlot(this, track, i, itemheight);
+
       updateContents();
 
       connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
@@ -230,8 +230,6 @@ EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
       viewport()->setAttribute( Qt::WA_Hover );
 
       setSpacing(0);
-//      setLineWidth(1);
-//      setFrameShape(QFrame::Box);
 
       setAcceptDrops(true);
       setFocusPolicy(Qt::NoFocus);
@@ -241,9 +239,11 @@ void EffectRack::updateContents()
       {
       if(!track)
         return;
+
       MusECore::Pipeline* pipe = track->efxPipe();
       if(!pipe)
         return;
+
       for (int i = 0; i < MusECore::PipelineDepth; ++i) {
             const QString name = pipe->name(i);
             const QString uri = pipe->uri(i);

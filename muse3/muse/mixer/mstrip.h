@@ -37,6 +37,7 @@ class QString;
 class QPoint;
 class QVBoxLayout;
 class QSpacerItem;
+class QTabWidget;
 
 namespace MusECore {
 class MidiTrack;
@@ -48,7 +49,7 @@ class DoubleLabel;
 class Slider;
 class CompactSlider;
 class CompactPatchEdit;
-class IconButton;
+//class IconButton;
 
 //---------------------------------------------------------
 //   MidiComponentRack
@@ -285,39 +286,25 @@ class MidiStrip : public Strip {
       
   private:
       GridPosStruct _upperStackTabPos;
-      GridPosStruct _preScrollAreaPos_A;
-      //GridPosStruct _preScrollAreaPos_B;
       GridPosStruct _infoSpacerTop;
       GridPosStruct _infoSpacerBottom;
-      GridPosStruct _propertyRackPos;
-      GridPosStruct _sliderPos;
-      GridPosStruct _sliderLabelPos;
-      GridPosStruct _postScrollAreaPos_A;
-      //GridPosStruct _postScrollAreaPos_B;
-      GridPosStruct _offPos;
-      GridPosStruct _recPos;
-      GridPosStruct _mutePos;
-      GridPosStruct _soloPos;
-      //GridPosStruct _routesPos;
-      GridPosStruct _inRoutesPos;
-      GridPosStruct _outRoutesPos;
-      GridPosStruct _automationPos;
-      //GridPosStruct _rightSpacerPos;
-      GridPosStruct _offMonRecPos;
+      GridPosStruct _sliderMeterPos;
+      GridPosStruct _lowerRackPos;
+      GridPosStruct _routePos;
+      GridPosStruct _bottomPos;
 
       MidiStripProperties props;
 
       Slider* slider;
       DoubleLabel* sl;
-      IconButton* off;
-      IconButton* _recMonitor;
+      QPushButton* off;
+      QPushButton* _recMonitor;
       MeterLayout* _meterLayout;
 
-      PaletteSwitcher* _upperStackTabButtonA;
-      PaletteSwitcher* _upperStackTabButtonB;
       MidiComponentRack* _upperRack;
       MidiComponentRack* _lowerRack;
       MidiComponentRack* _infoRack;
+      QTabWidget *tabwidget;
       
       // Whether the layout is in mode A (normal, racks on left) or B (racks on right).
       bool _isExpanded;
@@ -334,6 +321,7 @@ class MidiStrip : public Strip {
       void updateControls();
       void updateOffState();
       void updateRackSizes(bool upper, bool lower);
+      void setStripStyle();
 
    protected:
       void setupMidiVolume();
@@ -352,8 +340,8 @@ class MidiStrip : public Strip {
       void volLabelChanged(double);
       void controlRightClicked(QPoint, int);
 
-      void upperStackTabButtonAPressed();
-      void upperStackTabButtonBPressed();
+//      void upperStackTabButtonAPressed();
+//      void upperStackTabButtonBPressed();
 
    protected slots:
       virtual void heartBeat();

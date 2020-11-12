@@ -46,7 +46,7 @@ class EffectRack;
 class Knob;
 class Slider;
 class CompactSlider;
-class IconButton;
+//class IconButton;
 class ClipperLabel;
 
 //---------------------------------------------------------
@@ -220,29 +220,14 @@ class AudioStrip : public Strip {
       enum AStripRacks { aStripUpperRack = 0, aStripInfoRack = 1, aStripLowerRack = 2 };
 
   private:
-      GridPosStruct _preScrollAreaPos_A;
-      //GridPosStruct _preScrollAreaPos_B;
+      GridPosStruct _upperRackPos;
       GridPosStruct _effectRackPos;
-      GridPosStruct _stereoToolPos;
-      GridPosStruct _preToolPos;
+      GridPosStruct _stereoPrePos;
       GridPosStruct _gainToolPos;
-      GridPosStruct _infoSpacerTop;
-      GridPosStruct _infoSpacerBottom;
-      GridPosStruct _propertyRackPos;
-      GridPosStruct _sliderPos;
-      GridPosStruct _sliderLabelPos;
-      GridPosStruct _postScrollAreaPos_A;
-      //GridPosStruct _postScrollAreaPos_B;
-      GridPosStruct _offPos;
-      GridPosStruct _recPos;
-      GridPosStruct _mutePos;
-      GridPosStruct _soloPos;
-      //GridPosStruct _routesPos;
-      GridPosStruct _inRoutesPos;
-      GridPosStruct _outRoutesPos;
-      GridPosStruct _automationPos;
-      //GridPosStruct _rightSpacerPos;
-      GridPosStruct _offMonRecPos;
+      GridPosStruct _sliderMeterPos;
+      GridPosStruct _lowerRackPos;
+      GridPosStruct _routePos;
+      GridPosStruct _bottomPos;
 
       AudioStripProperties props;
 
@@ -261,23 +246,27 @@ class AudioStrip : public Strip {
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
 
-      IconButton* _recMonitor;
-      IconButton* stereo;
-      IconButton* pre;
-      IconButton* off;
+      QPushButton* _recMonitor;
+      QPushButton* stereo;
+      QPushButton* pre;
+      QPushButton* off;
 
       double volume;
       bool _volPressed;
+
+      QString colorNameButton;
 
       ClipperLabel* _clipperLabel[MusECore::MAX_CHANNELS];
       QHBoxLayout* _clipperLayout;
 
       void setClipperTooltip(int ch);
+      void colorAutoType();
 
       void updateOffState();
       void updateVolume();
       void updateChannels();
       void updateRackSizes(bool upper, bool lower);
+      void setStripStyle();
 
    private slots:
       void recMonitorToggled(bool);

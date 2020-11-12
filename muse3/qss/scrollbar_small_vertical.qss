@@ -1,8 +1,8 @@
 QScrollBar:vertical { 
     border: 1px solid grey; 
     background: darkgrey; 
-    width: 12px; 
-    margin: 6px 0 6px 0; 
+    width: 11px;
+    margin: 6px 0 6px 0;
 } 
 QScrollBar::handle:vertical { 
     background: lightgrey; 

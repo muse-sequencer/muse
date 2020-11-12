@@ -42,6 +42,7 @@ class QMouseEvent;
 class QResizeEvent;
 class QGridLayout;
 class QLayout;
+class QPushButton;
 
 namespace MusECore {
 class Track;
@@ -708,6 +709,8 @@ class Strip : public QFrame {
       bool _highlight;
 
    protected:
+      static constexpr int cMinStripWidth = 50;
+
       // Whether to propagate changes to other selected tracks.
       // This includes operating a control or using the universal up/down volume/ pan keys etc.
       bool _broadcastChanges;
@@ -728,11 +731,11 @@ class Strip : public QFrame {
       // The widget that will receive focus when we want to clear focus.
       QWidget* _focusYieldWidget;
 
-      IconButton* record;
-      IconButton* solo;
-      IconButton* mute;
-      IconButton* iR; // Input routing button
-      IconButton* oR; // Output routing button
+      QPushButton* record;
+      QPushButton* solo;
+      QPushButton* mute;
+      QPushButton* iR; // Input routing button
+      QPushButton* oR; // Output routing button
       QGridLayout* sliderGrid;
       CompactComboBox* autoType;
       void setLabelText();

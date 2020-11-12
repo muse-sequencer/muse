@@ -75,6 +75,8 @@ void MusE::startHelpBrowser()
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#track-soloing");
     else if (w && (w->objectName() == "InputRouteButton" || w->objectName() == "OutputRouteButton"))
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#routes");
+    else if (w && (w->objectName() == "AudioAutoType"))
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#audio-automation");
 
     else if (w && tb && tb->defaultAction()->objectName() == "PanicButton")
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#panic-local-off-reset-instrument-and-init-instrument");

@@ -285,11 +285,11 @@ QIcon* midiControllerNewSVGIcon;
 QIcon* midiControllerSelectSVGIcon;
 QIcon* midiControllerRemoveSVGIcon;
 
-QIcon* soloSVGIcon;
-QIcon* soloProxySVGIcon;
+//QIcon* soloSVGIcon;
+//QIcon* soloProxySVGIcon;
 QIcon* muteSVGIcon;
-QIcon* trackEnableSVGIcon;
-QIcon* recArmSVGIcon;
+//QIcon* trackEnableSVGIcon;
+//QIcon* recArmSVGIcon;
 QIcon* recMasterSVGIcon;
 
 QIcon* stopSVGIcon;
@@ -611,21 +611,21 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midiControllerRemoveSVGIcon = icons.getSVG("midi_controller_remove.svg");
 
 
-    soloSVGIcon = icons.getSVG("headphones_off.svg");
-    soloSVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
+//    soloSVGIcon = icons.getSVG("headphones_off.svg");
+//    soloSVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
     // TODO
-    soloProxySVGIcon = icons.getSVG("headphones_off.svg");
-    soloProxySVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
+//    soloProxySVGIcon = icons.getSVG("headphones_off.svg");
+//    soloProxySVGIcon->addFile(":/svg/headphones_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
     muteSVGIcon = icons.getSVG("mute_off.svg");
     muteSVGIcon->addFile(":/svg/mute_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
-    trackEnableSVGIcon = icons.getSVG("track_on.svg");
-    trackEnableSVGIcon->addFile(":/svg/track_off.svg", QSize(), QIcon::Normal, QIcon::On);
+//    trackEnableSVGIcon = icons.getSVG("track_on.svg");
+//    trackEnableSVGIcon->addFile(":/svg/track_off.svg", QSize(), QIcon::Normal, QIcon::On);
 
     //recArmSVGIcon = icons.getSVG("rec_arm_off_default_col.svg");
-    recArmSVGIcon = icons.getSVG("rec_arm_off.svg");
-    recArmSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
+//    recArmSVGIcon = icons.getSVG("rec_arm_off.svg");
+//    recArmSVGIcon->addFile(":/svg/rec_arm_on.svg", QSize(), QIcon::Normal, QIcon::On);
 
     //recMasterSVGIcon = icons.getSVG("rec_arm_off_default_col.svg");
     recMasterSVGIcon = icons.getSVG("rec_arm_off.svg");
@@ -921,11 +921,11 @@ void deleteIcons()
     delete midiControllerRemoveSVGIcon;
 
 
-    delete soloSVGIcon;
-    delete soloProxySVGIcon;
+//    delete soloSVGIcon;
+//    delete soloProxySVGIcon;
     delete muteSVGIcon;
-    delete trackEnableSVGIcon;
-    delete recArmSVGIcon;
+//    delete trackEnableSVGIcon;
+//    delete recArmSVGIcon;
     delete recMasterSVGIcon;
 
     delete stopSVGIcon;

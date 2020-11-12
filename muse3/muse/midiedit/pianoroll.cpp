@@ -259,6 +259,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       //----------------------
 
       menuScripts = menuBar()->addMenu(tr("&Scripts"));
+      menuScripts->menuAction()->setStatusTip(tr("Scripts are applied to all or selected events. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
       scripts.populateScriptMenu(menuScripts);
       connect(&scripts,
               &MusECore::Scripts::execDeliveredScriptReceived,

@@ -31,6 +31,7 @@
 #include <QCursor>
 #include <QGridLayout>
 #include <QVBoxLayout>
+#include <QPushButton>
 
 #include "app.h"
 #include "midi_consts.h"
@@ -464,6 +465,7 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
         control->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
         control->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
         control->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
+        control->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
         control->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
         control->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
         
@@ -601,7 +603,7 @@ void MidiComponentRack::updateComponents()
                   if(hwVal == MusECore::CTRL_VAL_UNKNOWN)
                   {
                     control->setPatchNameOff(true);
-                    const QString patchName(tr("<unknown>"));
+                    const QString patchName(tr("<Patch>"));
                     if(control->patchName() != patchName)
                       control->setPatchName(patchName);
                   }
@@ -1331,6 +1333,7 @@ void MidiComponentRack::setComponentColors()
       {
         CompactSlider* w = static_cast<CompactSlider*>(cw._widget);
         w->setBorderColor(color);
+        w->setThumbColor(color);
         w->setBarColor(MusEGlobal::config.sliderBarColor);
         w->setSlotColor(MusEGlobal::config.sliderBackgroundColor);
       }
@@ -1343,6 +1346,7 @@ void MidiComponentRack::setComponentColors()
         w->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
         w->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
         w->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
+        w->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
         w->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
         w->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
       }
@@ -1440,132 +1444,78 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       // Start the layout in mode A (normal, racks on left).
       _isExpanded = false;
 
-      // Set the whole strip's font, except for the label.
-      setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
-//      ensurePolished();
-//      if (!_bgColor.isValid())
-//          _bgColor = palette().window().color();
-      setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
-//                    + "QWidget {background-color: " + _bgColor.name() + "}");
+      setStripStyle();
 
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
       t->setLastActivity(0);
 
-      _inRoutesPos         = GridPosStruct(_curGridRow,     0, 1, 1);
-      _outRoutesPos        = GridPosStruct(_curGridRow,     1, 1, 1);
-      //_routesPos           = GridPosStruct(_curGridRow,     0, 1, 2);
+      _routePos            = GridPosStruct(_curGridRow,     0, 1, 3);
+      _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 3);
+      _sliderMeterPos      = GridPosStruct(_curGridRow + 2, 0, 1, 3);
+      _lowerRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+      _bottomPos           = GridPosStruct(_curGridRow + 4, 0, 1, 3);
+//      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
+//      _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 3);
+//      _sliderMeterPos      = GridPosStruct(_curGridRow + 2, 0, 1, 2);
+//      _lowerRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+//      _bottomPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
 
-      _upperStackTabPos    = GridPosStruct(_curGridRow + 1, 0, 1, 2);
+      //---------------------------------------------------
+      //    routing
+      //---------------------------------------------------
 
-      _preScrollAreaPos_A  = GridPosStruct(_curGridRow + 2, 0, 1, 3);
+      QHBoxLayout *routeLayout = new QHBoxLayout;
+      routeLayout->setContentsMargins(1,3,1,2);
+      routeLayout->setSpacing(1);
 
-      _propertyRackPos     = GridPosStruct(_curGridRow + 3, 0, 1, 3);
+//      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
+//                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
+      iR = new QPushButton(this);
+      iR->setIcon(*routingInputSVGIcon);
+      iR->setObjectName("InputRouteButton");
+      iR->setStatusTip(tr("Intput routing. Press F1 for help."));
+      iR->setFocusPolicy(Qt::NoFocus);
+      iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+      connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
+      routeLayout->addWidget(iR);
 
-      _sliderPos           = GridPosStruct(_curGridRow + 4, 0, 1, 2);
+//      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
+//                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
+      oR = new QPushButton(this);
+      oR->setIcon(*routingOutputSVGIcon);
+      oR->setObjectName("OutputRouteButton");
+      oR->setStatusTip(tr("Output routing. Press F1 for help."));
+      oR->setFocusPolicy(Qt::NoFocus);
+      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
+      routeLayout->addWidget(oR);
 
-      _sliderLabelPos      = GridPosStruct(_curGridRow + 5, 0, 1, 2);
+      updateRouteButtons();
 
-      _postScrollAreaPos_A = GridPosStruct(_curGridRow + 6, 0, 1, 3);
-
-      _offPos              = GridPosStruct(_curGridRow + 7, 0, 1, 1);
-      _recPos              = GridPosStruct(_curGridRow + 7, 1, 1, 1);
-      _offMonRecPos        = GridPosStruct(_curGridRow + 7, 0, 1, 2);
-
-      _mutePos             = GridPosStruct(_curGridRow + 8, 0, 1, 1);
-      _soloPos             = GridPosStruct(_curGridRow + 8, 1, 1, 1);
-
-      _automationPos       = GridPosStruct(_curGridRow + 9, 0, 1, 2);
-
-      //_rightSpacerPos      = GridPosStruct(_curGridRow + 9, 2, 1, 1);
+      addGridLayout(routeLayout, _routePos);
 
 
-      _upperStackTabButtonA = new PaletteSwitcher();
-      _upperStackTabButtonB = new PaletteSwitcher();
-//      _upperStackTabButtonA = new ElidedLabel();
-//      _upperStackTabButtonB = new ElidedLabel();
-      _upperStackTabButtonA->setContentsMargins(0, 0, 0, 0);
-      _upperStackTabButtonB->setContentsMargins(0, 0, 0, 0);
-      _upperStackTabButtonA->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      _upperStackTabButtonB->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      _upperStackTabButtonA->setFocusPolicy(Qt::StrongFocus);
-      _upperStackTabButtonB->setFocusPolicy(Qt::StrongFocus);
-      _upperStackTabButtonA->setAlignment(Qt::AlignCenter);
-      _upperStackTabButtonB->setAlignment(Qt::AlignCenter);
-      _upperStackTabButtonA->setToolTip(tr("Palette A: MIDI instrument / MIDI controllers"));
-      _upperStackTabButtonB->setToolTip(tr("Palette B: MIDI properties"));
-      //: Palette A
-      _upperStackTabButtonA->setText("A");
-      //: Palette B
-      _upperStackTabButtonB->setText("B");
-      _upperStackTabButtonA->setHasOffMode(true);
-      _upperStackTabButtonB->setHasOffMode(true);
-      // Start with control rack palette 'A' showing.
-      // TODO: Make this button class mutually exclusive capable.
-      _upperStackTabButtonA->setOff(false);
-      _upperStackTabButtonB->setOff(true);
-
-      _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-      _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-      _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-      _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-      _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-      _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-      _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
-      _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
-      _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
-      _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
-
-      QHBoxLayout* upperStackTabLayout = new QHBoxLayout();
-      upperStackTabLayout->setContentsMargins(0, 0, 0, 0);
-      upperStackTabLayout->setMargin(0);
-      upperStackTabLayout->setSpacing(0);
-      upperStackTabLayout->addSpacing(6);
-      upperStackTabLayout->addWidget(_upperStackTabButtonA);
-      upperStackTabLayout->addWidget(_upperStackTabButtonB);
-      upperStackTabLayout->addSpacing(6);
-
-      addGridLayout(upperStackTabLayout, _upperStackTabPos);
-
-      connect(_upperStackTabButtonA,
-              SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonAPressed()));
-      connect(_upperStackTabButtonB,
-              SIGNAL(pressed(QPoint,int,Qt::MouseButtons,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonBPressed()));
-      connect(_upperStackTabButtonA,
-              SIGNAL(returnPressed(QPoint,int,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonAPressed()));
-      connect(_upperStackTabButtonB,
-              SIGNAL(returnPressed(QPoint,int,Qt::KeyboardModifiers)),
-              SLOT(upperStackTabButtonBPressed()));
+      tabwidget = new QTabWidget(this);
+      tabwidget->setObjectName("MidiStripTabWidget");
+      tabwidget->setUsesScrollButtons(false);
 
       _infoRack = new MidiComponentRack(t, mStripInfoRack);
-      //_infoRack->setVisible(false); // Not visible unless expanded.
-      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not.
-      //_infoRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
-      _infoRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
-      _infoRack->setLineWidth(rackFrameWidth);
-      _infoRack->setMidLineWidth(0);
-      _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      _infoRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+      _infoRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
+      _infoRack->setContentsMargins(0,0,0,0);
       _infoRack->setFocusPolicy(Qt::NoFocus);
-      _infoRack->setVisible(false);
 
       _upperRack = new MidiComponentRack(t, mStripUpperRack);
-      // FIXME For some reason StyledPanel has trouble, intermittent sometimes panel is drawn, sometimes not.
-      //_upperRack->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
-      _upperRack->setFrameStyle(QFrame::Box | QFrame::Sunken);
-      _upperRack->setLineWidth(rackFrameWidth);
-      _upperRack->setMidLineWidth(0);
-      // We do set a minimum height on this widget. Tested: Must be on fixed. Thankfully, it'll expand if more controls are added.
-      _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-      _upperRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
+      _upperRack->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
+      _upperRack->setContentsMargins(0,0,0,0);
       _upperRack->setFocusPolicy(Qt::NoFocus);
-      _upperRack->setVisible(true);
 
-      addGridWidget(_upperRack, _preScrollAreaPos_A);
-      addGridWidget(_infoRack, _propertyRackPos);
+      tabwidget->addTab(_upperRack, tr("Inst"));
+      tabwidget->addTab(_infoRack, tr("Ctrl"));
+      tabwidget->setTabToolTip(0, tr("Midi instruments and properties"));
+      tabwidget->setTabToolTip(1, tr("Midi controllers"));
+      tabwidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
+      addGridWidget(tabwidget, _upperStackTabPos);
 
       //---------------------------------------------------
       //    slider, label, meter
@@ -1614,17 +1564,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       meter[0]->setFrame(props.meterFrame(), props.meterFrameColor());
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       _meterLayout->hlayout()->addWidget(meter[0], Qt::AlignHCenter);
-      
-      sliderGrid = new QGridLayout(); 
-      sliderGrid->setSpacing(0);
-      sliderGrid->setHorizontalSpacing(2);
-      sliderGrid->setContentsMargins(2, 2, 4, 2);
-      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
-      sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
-      
-      addGridLayout(sliderGrid, _sliderPos);
-
+           
       sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0);
+      sl->setObjectName("VolumeEditMidi");
       sl->setContentsMargins(0, 0, 0, 0);
       sl->setTextMargins(0, 0, 0, 0);
       sl->setFocusPolicy(Qt::WheelFocus);
@@ -1635,11 +1577,11 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       //sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
-      sl->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
+      sl->setToolTip(tr("Volume/Gain\n(Ctrl-double-click on/off)"));
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       // Set the label's slider 'buddy'.
       sl->setSlider(slider);
-      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
+//      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
       // Special for midi volume slider and label: Setup midi volume as decibel preference.
       setupMidiVolume();
@@ -1701,7 +1643,36 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
       connect(sl, SIGNAL(ctrlDoubleClicked(int)), SLOT(volLabelDoubleClicked()));
       
-      addGridWidget(sl, _sliderLabelPos, Qt::AlignCenter);
+      sliderGrid = new QGridLayout();
+      sliderGrid->setSpacing(0);
+      sliderGrid->setHorizontalSpacing(2);
+      sliderGrid->setContentsMargins(2, 0, 3, 2);
+
+      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
+      sliderGrid->addLayout(_meterLayout, 0, 1, Qt::AlignHCenter);
+      sliderGrid->addWidget(sl, 2, 0, 1, 2, Qt::AlignHCenter);
+
+//      sliderGrid->setColumnStretch(0, slider->sizeHint().width());
+//      sliderGrid->setColumnStretch(1, meter[0]->sizeHint().width());
+
+      QHBoxLayout *sliderHLayout = new QHBoxLayout();
+      sliderHLayout->setContentsMargins(0,0,0,0);
+      sliderHLayout->setSpacing(0);
+      sliderHLayout->addStretch();
+      sliderHLayout->addLayout(sliderGrid);
+      sliderHLayout->addStretch();
+      sliderHLayout->setAlignment(Qt::AlignHCenter);
+
+      QFrame *sliderMeterFrame = new QFrame;
+      sliderMeterFrame->setObjectName("SliderMeterFrameMidi");
+      sliderMeterFrame->setLayout(sliderHLayout);
+//      sliderMeterFrame->setLayout(sliderGrid);
+      sliderMeterFrame->setMinimumWidth(cMinStripWidth);
+
+      QHBoxLayout *sliderMeterLayout = new QHBoxLayout();
+      sliderMeterLayout->setContentsMargins(1,0,1,2);
+      sliderMeterLayout->addWidget(sliderMeterFrame);
+      addGridLayout(sliderMeterLayout, _sliderMeterPos);
 
       //---------------------------------------------------
       //    pan, balance
@@ -1718,7 +1689,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       _lowerRack->setContentsMargins(rackFrameWidth, rackFrameWidth, rackFrameWidth, rackFrameWidth);
       _lowerRack->setFocusPolicy(Qt::NoFocus);
 
-      addGridWidget(_lowerRack, _postScrollAreaPos_A);
+      addGridWidget(_lowerRack, _lowerRackPos);
       
       _upperRack->setEnabled(!t->off());
       _infoRack->setEnabled(!t->off());
@@ -1730,114 +1701,77 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //    record, mixdownfile
       //---------------------------------------------------
 
-      record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, 0, 0, false, true);
+      QGridLayout *bottomLayout = new QGridLayout;
+      bottomLayout->setContentsMargins(1,1,1,2);
+      bottomLayout->setSpacing(1);
+
+      if (track && track->canRecordMonitor()) {
+          //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
+          _recMonitor = new QPushButton;
+          _recMonitor->setIcon(*monitorOnSVGIcon);
+          _recMonitor->setFocusPolicy(Qt::NoFocus);
+          _recMonitor->setCheckable(true);
+          _recMonitor->setToolTip(tr("Input monitor"));
+          _recMonitor->setWhatsThis(tr("Pass input through to output"));
+          _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
+          _recMonitor->setChecked(t->recMonitor());
+          connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
+          bottomLayout->addWidget(_recMonitor, 0, 0, 1, 1);
+      } else {
+          QPushButton *recMonitorx = new QPushButton(this);
+          recMonitorx->setIcon(*monitorOnSVGIcon);
+          recMonitorx->setEnabled(false);
+          bottomLayout->addWidget(recMonitorx, 0, 0, 1, 1);
+      }
+
+//      record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, 0, 0, false, true);
+      record  = new QPushButton(this);
+      record->setIcon(*recArmOnSVGIcon);
       record->setFocusPolicy(Qt::NoFocus);
       record->setCheckable(true);
-      record->setContentsMargins(0, 0, 0, 0);
-      record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       record->setToolTip(tr("Record arm"));
       record->setChecked(track->recordFlag());
       connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
+      bottomLayout->addWidget(record, 0, 1, 1, 1);
 
-      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
+//      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
+      mute  = new QPushButton(this);
+      mute->setIcon(*muteOnSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
-      mute->setContentsMargins(0, 0, 0, 0);
       mute->setToolTip(tr("Mute or proxy mute"));
+      mute->setStatusTip(tr("Mute or proxy mute. Connected tracks are 'phantom' muted."));
       mute->setChecked(track->mute());
       updateMuteIcon();
-      mute->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
+      bottomLayout->addWidget(mute, 1, 0, 1, 1);
 
-      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
+//      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
+      solo  = new QPushButton(this);
+      solo->setIcon(*soloOnAloneSVGIcon);
       solo->setObjectName("SoloButton");
-      solo->setStatusTip(tr("Solo or proxy solo. Press F1 for help."));
-      solo->setFocusPolicy(Qt::NoFocus);
       solo->setToolTip(tr("Solo or proxy solo"));
-      solo->setContentsMargins(0, 0, 0, 0);
+      solo->setStatusTip(tr("Solo or proxy solo. Connected tracks are 'phantom' soloed. Press F1 for help."));
+      solo->setFocusPolicy(Qt::NoFocus);
       solo->setCheckable(true);
-      solo->setIconSetB(track->internalSolo());
+      if (track->internalSolo())
+        solo->setIcon(*soloAndProxyOnSVGIcon);
+      //      solo->setIconSetB(track->internalSolo());
       solo->setChecked(track->solo());
-      solo->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
-      
-      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, 0, 0, false, true);
-      off->setContentsMargins(0, 0, 0, 0);
+      bottomLayout->addWidget(solo, 1, 1, 1, 1);
+
+//      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, 0, 0, false, true);
+      off = new QPushButton(this);
+      off->setObjectName("TrackOffButton");
+      off->setIcon(*trackOffSVGIcon);
       off->setFocusPolicy(Qt::NoFocus);
-      off->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       off->setCheckable(true);
       off->setToolTip(tr("Track off"));
       off->setChecked(track->off());
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
+      bottomLayout->addWidget(off, 3, 0, 1, 2);
 
-      //---------------------------------------------------
-      //    routing
-      //---------------------------------------------------
-
-      iR = new IconButton(routingInputSVGIcon, routingInputSVGIcon,
-                          routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
-      iR->setObjectName("InputRouteButton");
-      iR->setStatusTip(tr("Intput routing. Press F1 for help."));
-      iR->setContentsMargins(0, 0, 0, 0);
-      iR->setFocusPolicy(Qt::NoFocus);
-      iR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      iR->setCheckable(false);
-      iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
-      connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
-      
-      oR = new IconButton(routingOutputSVGIcon, routingOutputSVGIcon,
-                          routingOutputUnconnectedSVGIcon, routingOutputUnconnectedSVGIcon, false, true);
-      oR->setObjectName("OutputRouteButton");
-      oR->setStatusTip(tr("Output routing. Press F1 for help."));
-      oR->setContentsMargins(0, 0, 0, 0);
-      oR->setFocusPolicy(Qt::NoFocus);
-      oR->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      oR->setCheckable(false);
-      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
-      connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
-   
-      updateRouteButtons();
-
-      if(track && track->canRecordMonitor())
-      {
-        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
-        _recMonitor->setFocusPolicy(Qt::NoFocus);
-        _recMonitor->setContentsMargins(0, 0, 0, 0);
-        _recMonitor->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        _recMonitor->setCheckable(true);
-        _recMonitor->setToolTip(tr("Input monitor"));
-        _recMonitor->setWhatsThis(tr("Pass input through to output"));
-        _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
-        _recMonitor->setChecked(t->recMonitor());
-        connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
-      }
-
-      if(off && record && _recMonitor)
-      {
-        QHBoxLayout* offRecMonLayout = new QHBoxLayout();
-        offRecMonLayout->setContentsMargins(0, 0, 0, 0);
-        offRecMonLayout->setSpacing(0);
-        offRecMonLayout->addWidget(off);
-        offRecMonLayout->addWidget(_recMonitor);
-        offRecMonLayout->addWidget(record);
-        addGridLayout(offRecMonLayout, _offMonRecPos);
-      }
-      else
-      {
-        if(off)
-           addGridWidget(off, _offPos);
-        if(_recMonitor)
-          addGridWidget(_recMonitor, _recPos);
-        else if(record)
-          addGridWidget(record, _recPos);
-      }
-      addGridWidget(mute, _mutePos);
-      addGridWidget(solo, _soloPos);
-
-      if(iR)
-        addGridWidget(iR, _inRoutesPos);
-      if(oR)
-        addGridWidget(oR, _outRoutesPos);
 
       //---------------------------------------------------
       //    automation mode
@@ -1863,15 +1797,16 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       autoType->addAction("n/a", MusECore::AUTO_OFF);
       autoType->setCurrentItem(MusECore::AUTO_OFF);
 
-      addGridWidget(autoType, _automationPos);
+      bottomLayout->addWidget(autoType, 2, 0, 1, 2);
+
+      addGridLayout(bottomLayout, _bottomPos);
 
       grid->setColumnStretch(2, 10);
 
-      if (off) {
-            off->blockSignals(true);
-            updateOffState();   // init state
-            off->blockSignals(false);
-            }
+      off->blockSignals(true);
+      updateOffState();   // init state
+      off->blockSignals(false);
+
 
       // Now build the strip components.
       buildStrip();
@@ -1904,6 +1839,16 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       inHeartBeat = false;
       }
+
+void MidiStrip::setStripStyle() {
+    // Set the whole strip's font, except for the label.
+    setFont(MusEGlobal::config.fonts[1]); // For some reason must keep this, the upper rack is too tall at first.
+    int iconSize = MusEGlobal::config.fonts[1].pointSize() * 2;
+    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1])
+            + "#Strip > QAbstractButton { padding: 0px; qproperty-iconSize:" +
+                  QString::number(iconSize) + "px; }"
+            + "#Strip #TrackOffButton { qproperty-iconSize:" + QString::number(iconSize - 2) + "px; }");
+}
 
 //---------------------------------------------------
 //  buildStrip
@@ -2061,18 +2006,30 @@ void MidiStrip::buildStrip()
 QWidget* MidiStrip::setupComponentTabbing(QWidget* previousWidget)
 {
   QWidget* prev = previousWidget;
-  if(_upperStackTabButtonA)
+  if(tabwidget->currentIndex() == 0)
   {
     if(prev)
-      QWidget::setTabOrder(prev, _upperStackTabButtonA);
-    prev = _upperStackTabButtonA;
+      QWidget::setTabOrder(prev, tabwidget->currentWidget());
+    prev = tabwidget->currentWidget();
   }
-  if(_upperStackTabButtonB)
+  if(tabwidget->currentIndex() == 1)
   {
     if(prev)
-      QWidget::setTabOrder(prev, _upperStackTabButtonB);
-    prev = _upperStackTabButtonB;
+        QWidget::setTabOrder(prev, tabwidget->currentWidget());
+      prev = tabwidget->currentWidget();
   }
+  //  if(_upperStackTabButtonA)
+  //  {
+  //    if(prev)
+  //      QWidget::setTabOrder(prev, _upperStackTabButtonA);
+  //    prev = _upperStackTabButtonA;
+  //  }
+  //  if(_upperStackTabButtonB)
+  //  {
+  //    if(prev)
+  //      QWidget::setTabOrder(prev, _upperStackTabButtonB);
+  //    prev = _upperStackTabButtonB;
+  //  }
   prev = _upperRack->setupComponentTabbing(prev);
   prev = _infoRack->setupComponentTabbing(prev);
   if(sl)
@@ -2291,10 +2248,9 @@ void MidiStrip::configChanged()
   if(font() != MusEGlobal::config.fonts[1])
   {
     //DEBUG_MIDI_STRIP(stderr, "MidiStrip::configChanged changing font: current size:%d\n", font().pointSize());
-    setFont(MusEGlobal::config.fonts[1]);
-    setStyleSheet(MusECore::font2StyleSheetFull(MusEGlobal::config.fonts[1]));
+    setStripStyle();
     // Update in case font changed.
-    updateRackSizes(true, true);
+//    updateRackSizes(true, true); // function has no content
   }
   // Update always, in case style, stylesheet, or font changed.
   //updateRackSizes(true, true);
@@ -2305,20 +2261,20 @@ void MidiStrip::configChanged()
   slider->setFillColor(MusEGlobal::config.midiVolumeSliderColor);
   slider->setHandleColor(MusEGlobal::config.midiVolumeHandleColor);
 
-  _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-  _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
-  _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-  _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
-  _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-  _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
-  _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
-  _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
-  _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
-  _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
+//  _upperStackTabButtonA->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+//  _upperStackTabButtonB->setBgColor(MusEGlobal::config.palSwitchBackgroundColor);
+//  _upperStackTabButtonA->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+//  _upperStackTabButtonB->setBgActiveColor(MusEGlobal::config.palSwitchBgActiveColor);
+//  _upperStackTabButtonA->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+//  _upperStackTabButtonB->setBorderColor(MusEGlobal::config.palSwitchBorderColor);
+//  _upperStackTabButtonA->setFontColor(MusEGlobal::config.palSwitchFontColor);
+//  _upperStackTabButtonB->setFontColor(MusEGlobal::config.palSwitchFontColor);
+//  _upperStackTabButtonA->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
+//  _upperStackTabButtonB->setFontActiveColor(MusEGlobal::config.palSwitchFontActiveColor);
 
   // Enable special hack for line edits.
-  if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
-    sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
+//  if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
+//    sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
   // Special for midi volume slider and label: Setup midi volume as decibel preference.
   setupMidiVolume();
@@ -2363,7 +2319,15 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);
-            solo->setIconSetB(track->internalSolo());
+//            solo->setIconSetB(track->internalSolo());
+            if (track->internalSolo()) {
+                if (solo->isChecked())
+                    solo->setIcon(*soloAndProxyOnSVGIcon);
+                else
+                    solo->setIcon(*soloProxyOnAloneSVGIcon);
+            } else {
+                solo->setIcon(*soloOnAloneSVGIcon);
+            }
             updateMuteIcon();
       }
       
@@ -2411,21 +2375,21 @@ void MidiStrip::controlRightClicked(QPoint p, int id)
   MusEGlobal::song->execMidiAutomationCtlPopup(static_cast<MusECore::MidiTrack*>(track), 0, p, id);
 }
 
-void MidiStrip::upperStackTabButtonAPressed()
-{
-  _infoRack->hide();
-  _upperRack->show();
-  _upperStackTabButtonA->setOff(false);
-  _upperStackTabButtonB->setOff(true);
-}
+//void MidiStrip::upperStackTabButtonAPressed()
+//{
+//  _infoRack->hide();
+//  _upperRack->show();
+//  _upperStackTabButtonA->setOff(false);
+//  _upperStackTabButtonB->setOff(true);
+//}
 
-void MidiStrip::upperStackTabButtonBPressed()
-{
-  _upperRack->hide();
-  _infoRack->show();
-  _upperStackTabButtonA->setOff(true);
-  _upperStackTabButtonB->setOff(false);
-}
+//void MidiStrip::upperStackTabButtonBPressed()
+//{
+//  _upperRack->hide();
+//  _infoRack->show();
+//  _upperStackTabButtonA->setOff(true);
+//  _upperStackTabButtonB->setOff(false);
+//}
 
 //---------------------------------------------------------
 //   recMonitorToggled

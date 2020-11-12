@@ -60,6 +60,7 @@
 #include <QResizeEvent>
 #include <QGridLayout>
 #include <QLayout>
+#include <QPushButton>
 #include "track.h"
 #include "combobox.h"
 #include "compact_knob.h"
@@ -1001,7 +1002,7 @@ void Strip::changeTrackName()
   dlg.setWindowTitle(tr("Name"));
   dlg.setLabelText(tr("Enter track name:"));
   dlg.setTextValue(oldname);
-  dlg.setStyleSheet("font-size:" + QString::number(qApp->font().pointSize()) + "pt");
+  dlg.setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
   const int res = dlg.exec();
   if(res == QDialog::Rejected)
@@ -1151,15 +1152,24 @@ void Strip::muteToggled(bool val)
 //---------------------------------------------------------
 
 void Strip::soloToggled(bool val)
-      {
-      solo->setIconSetB(track && track->internalSolo());
-      if(!track)
+{
+    if (track && track->internalSolo()) {
+        if (solo->isChecked())
+            solo->setIcon(*soloAndProxyOnSVGIcon);
+        else
+            solo->setIcon(*soloProxyOnAloneSVGIcon);
+    } else {
+        solo->setIcon(*soloOnAloneSVGIcon);
+    }
+    //    solo->setIconSetB(track && track->internalSolo());
+
+    if (!track)
         return;
-      // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
-      MusECore::PendingOperationList operations;
-      operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackSolo));
-      MusEGlobal::audio->msgExecutePendingOperations(operations, true);
-      }
+    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+    MusECore::PendingOperationList operations;
+    operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackSolo));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
 
 //---------------------------------------------------------
 //   Strip
@@ -1232,15 +1242,6 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       //    label
       //---------------------------------------------
 
-//       label = new TextEdit(this);
-//       label->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//       label->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//       label->viewport()->setContentsMargins(0, 0, 0, 0);
-//       label->setMaximumBlockCount(1);
-//       label->setBackgroundVisible(false);
-//       label->setTextFormat(Qt::PlainText);
-//       label->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-
       label = new TrackNameLabel(this);
       label->setElideMode(Qt::ElideMiddle);
       label->setFocusPolicy(Qt::NoFocus);
@@ -1293,7 +1294,7 @@ void Strip::focusYieldWidgetDestroyed(QObject* obj)
   if(obj != _focusYieldWidget)
     return;
   //disconnect(_focusYieldWidget, SIGNAL(destroyed(QObject*)), this, SLOT(focusYieldWidgetDestroyed(QObject*)));
-  _focusYieldWidget = 0;
+  _focusYieldWidget = nullptr;
 }
 
 void Strip::addGridWidget(QWidget* w, const GridPosStruct& pos, Qt::Alignment alignment)
@@ -1339,23 +1340,29 @@ void Strip::resizeEvent(QResizeEvent* ev)
 
 void Strip::updateRouteButtons()
 {
-  if (iR)
-  {
-      iR->setIconSetB(track->noInRoute());
-      if (track->noInRoute())
-        iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
-      else
-        iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
-  }
+    if (iR)
+    {
+        //      iR->setIconSetB(track->noInRoute());
+        if (track->noInRoute()) {
+            iR->setToolTip(MusEGlobal::noInputRoutingToolTipWarn);
+            iR->setIcon(*routingInputUnconnectedSVGIcon);
+        }  else {
+            iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
+            iR->setIcon(*routingInputSVGIcon);
+        }
+    }
 
-  if (oR)
-  {
-    oR->setIconSetB(track->noOutRoute());
-    if (track->noOutRoute())
-      oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
-    else
-      oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
-  }
+    if (oR)
+    {
+        //    oR->setIconSetB(track->noOutRoute());
+        if (track->noOutRoute()) {
+            oR->setToolTip(MusEGlobal::noOutputRoutingToolTipWarn);
+            oR->setIcon(*routingOutputUnconnectedSVGIcon);
+        } else {
+            oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
+            oR->setIcon(*routingOutputSVGIcon);
+        }
+    }
 }
 
 void Strip::mousePressEvent(QMouseEvent* ev)
@@ -1868,25 +1875,27 @@ void Strip::keyPressEvent(QKeyEvent* ev)
 
 void Strip::setSelected(bool v)
 {
-  if(_selected == v)
-    return;
-  
-  if(_isEmbedded)
-  {
-    _selected = false;
-    return;
-  }
-  if (v) {
-    label->setFrameStyle(Raised | StyledPanel);
-    setHighLight(true);
-    // First time selected? Set the focus.
-    setFocus();
-  }
-  else {
-    label->setFrameStyle(Sunken | StyledPanel);
-    setHighLight(false);
-  }
-  _selected=v;
+    if(_selected == v)
+        return;
+
+    if(_isEmbedded)
+    {
+        _selected = false;
+        return;
+    }
+    if (v) {
+        if (label->style3d())
+            label->setFrameStyle(Raised | StyledPanel);
+        setHighLight(true);
+        // First time selected? Set the focus.
+        setFocus();
+    }
+    else {
+        if (label->style3d())
+            label->setFrameStyle(Sunken | StyledPanel);
+        setHighLight(false);
+    }
+    _selected=v;
 }
 
 void Strip::setHighLight(bool highlight)
@@ -1902,22 +1911,30 @@ QString Strip::getLabelText()
 
 void Strip::updateMuteIcon()
 {
-  if(!track)
-    return;
+    if(!track)
+        return;
 
-  bool found = false;
-  MusECore::TrackList* tl = MusEGlobal::song->tracks();
-  for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
-  {
-    MusECore::Track* t = *it;
-    // Ignore this track.
-    if(t != track && (t->internalSolo() || t->solo()))
+    bool found = false;
+    MusECore::TrackList* tl = MusEGlobal::song->tracks();
+    for(MusECore::ciTrack it = tl->begin(); it != tl->end(); ++it)
     {
-      found = true;
-      break;
+        MusECore::Track* t = *it;
+        // Ignore this track.
+        if(t != track && (t->internalSolo() || t->solo()))
+        {
+            found = true;
+            break;
+        }
     }
-  }
-  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
+    //  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
+    if (found && !track->internalSolo() && !track->solo()) {
+        if (mute->isChecked())
+            mute->setIcon(*muteAndProxyOnSVGIcon);
+        else
+            mute->setIcon(*muteProxyOnSVGIcon);
+    } else {
+        mute->setIcon(*muteOnSVGIcon);
+    }
 }
 
 
