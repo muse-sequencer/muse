@@ -194,9 +194,9 @@ QFrame#SliderMeterFrameMidi {
     border: 1px solid rgb(0,120,200);
 } */
 
-QWidget#Rack {
+/* QWidget#Rack {
     border: 1px solid rgb(0,120,200);
-}
+} */
 
 QWidget#Strip {
     border: 1px solid rgb(90,90,90);
@@ -239,8 +239,8 @@ QFrame#ClipperLabel {
 */
 
 QTreeView, QListView {
-    alternate-background-color: rgb(60,60,60);
-    background: rgb(30,30,30);
+    alternate-background-color: rgb(50,50,50);
+    background: rgb(40,40,40);
  }
 
 QMdiArea > QTabBar::tab:hover {

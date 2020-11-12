@@ -1687,15 +1687,14 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       QHBoxLayout *sliderHLayout = new QHBoxLayout();
       sliderHLayout->setContentsMargins(0,0,0,0);
       sliderHLayout->setSpacing(0);
-      sliderHLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
+      sliderHLayout->addStretch();
       sliderHLayout->addLayout(sliderGrid);
-      sliderHLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
+      sliderHLayout->addStretch();
       sliderHLayout->setAlignment(Qt::AlignHCenter);
 
       QFrame *sliderMeterFrame = new QFrame;
       sliderMeterFrame->setObjectName("SliderMeterFrameAudio");
       sliderMeterFrame->setLayout(sliderHLayout);
-//      sliderMeterFrame->setLayout(sliderGrid);
       sliderMeterFrame->setMinimumWidth(cMinStripWidth);
 
       QHBoxLayout *sliderMeterLayout = new QHBoxLayout();

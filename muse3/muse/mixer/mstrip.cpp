@@ -1653,15 +1653,14 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       sliderGrid->addWidget(sl, 2, 0, 1, 2, Qt::AlignHCenter);
 
 //      sliderGrid->setColumnStretch(0, slider->sizeHint().width());
-//      sliderGrid->setColumnStretch(1, _meterLayout->sizeHint().width());
 //      sliderGrid->setColumnStretch(1, meter[0]->sizeHint().width());
 
       QHBoxLayout *sliderHLayout = new QHBoxLayout();
       sliderHLayout->setContentsMargins(0,0,0,0);
       sliderHLayout->setSpacing(0);
-      sliderHLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
+      sliderHLayout->addStretch();
       sliderHLayout->addLayout(sliderGrid);
-      sliderHLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
+      sliderHLayout->addStretch();
       sliderHLayout->setAlignment(Qt::AlignHCenter);
 
       QFrame *sliderMeterFrame = new QFrame;
@@ -2007,18 +2006,30 @@ void MidiStrip::buildStrip()
 QWidget* MidiStrip::setupComponentTabbing(QWidget* previousWidget)
 {
   QWidget* prev = previousWidget;
-//  if(_upperStackTabButtonA)
-//  {
-//    if(prev)
-//      QWidget::setTabOrder(prev, _upperStackTabButtonA);
-//    prev = _upperStackTabButtonA;
-//  }
-//  if(_upperStackTabButtonB)
-//  {
-//    if(prev)
-//      QWidget::setTabOrder(prev, _upperStackTabButtonB);
-//    prev = _upperStackTabButtonB;
-//  }
+  if(tabwidget->currentIndex() == 0)
+  {
+    if(prev)
+      QWidget::setTabOrder(prev, tabwidget->currentWidget());
+    prev = tabwidget->currentWidget();
+  }
+  if(tabwidget->currentIndex() == 1)
+  {
+    if(prev)
+        QWidget::setTabOrder(prev, tabwidget->currentWidget());
+      prev = tabwidget->currentWidget();
+  }
+  //  if(_upperStackTabButtonA)
+  //  {
+  //    if(prev)
+  //      QWidget::setTabOrder(prev, _upperStackTabButtonA);
+  //    prev = _upperStackTabButtonA;
+  //  }
+  //  if(_upperStackTabButtonB)
+  //  {
+  //    if(prev)
+  //      QWidget::setTabOrder(prev, _upperStackTabButtonB);
+  //    prev = _upperStackTabButtonB;
+  //  }
   prev = _upperRack->setupComponentTabbing(prev);
   prev = _infoRack->setupComponentTabbing(prev);
   if(sl)
