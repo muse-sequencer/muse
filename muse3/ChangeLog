@@ -1,3 +1,8 @@
+12.11.2020
+    - New: Replace non-standard widgets in the mixer strip by standard and 
+            customizable ones where possible. Make the layout more symmetric
+            and clear. (kybos)
+    - New: New mixer strip and track list icons for the Deep Ocean theme. (kybos)
 09.11.2020
     - Fix: Issues with saving window geometry/state. (kybos)
 07.11.2020

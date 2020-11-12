@@ -1413,13 +1413,13 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       channel       = at->channels();
 
-      _routePos            = GridPosStruct(_curGridRow,     0, 1, 3);
-      _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
-      _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 3);
-      _upperRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 3);
-      _sliderMeterPos      = GridPosStruct(_curGridRow + 4, 0, 1, 3);
-      _lowerRackPos        = GridPosStruct(_curGridRow + 5, 0, 1, 3);
-      _bottomPos           = GridPosStruct(_curGridRow + 6, 0, 1, 3);
+      _routePos            = GridPosStruct(_curGridRow,     0, 1, 1);
+      _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 1);
+      _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 1);
+      _upperRackPos        = GridPosStruct(_curGridRow + 3, 0, 1, 1);
+      _sliderMeterPos      = GridPosStruct(_curGridRow + 4, 0, 1, 1);
+      _lowerRackPos        = GridPosStruct(_curGridRow + 5, 0, 1, 1);
+      _bottomPos           = GridPosStruct(_curGridRow + 6, 0, 1, 1);
 //      _routePos            = GridPosStruct(_curGridRow,     0, 1, 2);
 //      _effectRackPos       = GridPosStruct(_curGridRow + 1, 0, 1, 3);
 //      _stereoPrePos        = GridPosStruct(_curGridRow + 2, 0, 1, 2);
