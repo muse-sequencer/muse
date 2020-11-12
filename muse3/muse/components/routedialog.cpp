@@ -1882,12 +1882,12 @@ RouteDialog::RouteDialog(QWidget* parent)
 //   newDstList->setTextElideMode(Qt::ElideNone);
 //   routeList->setTextElideMode(Qt::ElideNone);
   
-  filterSrcButton->setIcon(*routerFilterSourceIcon);
-  filterDstButton->setIcon(*routerFilterDestinationIcon);
-  srcRoutesButton->setIcon(*routerFilterSourceRoutesIcon);
-  dstRoutesButton->setIcon(*routerFilterDestinationRoutesIcon);
+  filterSrcButton->setIcon(*routeSourceSVGIcon);
+  filterDstButton->setIcon(*routeDestSVGIcon);
+  srcRoutesButton->setIcon(*routeSelSourceSVGIcon);
+  dstRoutesButton->setIcon(*routeSelDestSVGIcon);
   allMidiPortsButton->setIcon(*ankerSVGIcon);
-  verticalLayoutButton->setIcon(*routerViewSplitterIcon);
+  verticalLayoutButton->setIcon(*routeAutoAdjustSVGIcon);
   
   routeAliasList->addItem(tr("Normal"), QVariant::fromValue<int>(MusEGlobal::RoutePreferCanonicalName));
   routeAliasList->addItem(tr("Alias 1"), QVariant::fromValue<int>(MusEGlobal::RoutePreferFirstAlias));

@@ -122,12 +122,6 @@
 #include "xpm/pianoNew.xpm"
 #include "xpm/presetsNew.xpm"
 
-#include "xpm/router_filter_source.xpm"
-#include "xpm/router_filter_destination.xpm"
-#include "xpm/router_filter_source_routes.xpm"
-#include "xpm/router_filter_destination_routes.xpm"
-#include "xpm/router_view_splitter.xpm"
-
 #include "icons.h"
 
 
@@ -229,13 +223,6 @@ QIcon* userIcon;
 
 QIcon* pianoNewIcon;
 QIcon* presetsNewIcon;
-
-QPixmap* routerFilterSourceIcon;
-QPixmap* routerFilterDestinationIcon;
-QPixmap* routerFilterSourceRoutesIcon;
-QPixmap* routerFilterDestinationRoutesIcon;
-QPixmap* routerViewSplitterIcon;
-
 
 //----------------------------------
 //   SVG...
@@ -388,6 +375,12 @@ QIcon* mixerSVGIcon;
 QIcon* plusSVGIcon;
 QIcon* minusSVGIcon;
 QIcon* keySVGIcon;
+
+QIcon* routeAutoAdjustSVGIcon;
+QIcon* routeSelSourceSVGIcon;
+QIcon* routeSelDestSVGIcon;
+QIcon* routeSourceSVGIcon;
+QIcon* routeDestSVGIcon;
 
 //----------------------------------
 // Cursors
@@ -552,13 +545,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
     pianoNewIcon                                  = new QIcon(QPixmap(pianoNew_xpm));
     presetsNewIcon                                = new QIcon(QPixmap(presetsNew_xpm));
-
-    routerFilterSourceIcon                        = new QPixmap(router_filter_source_xpm);
-    routerFilterDestinationIcon                   = new QPixmap(router_filter_destination_xpm);
-    routerFilterSourceRoutesIcon                  = new QPixmap(router_filter_source_routes_xpm);
-    routerFilterDestinationRoutesIcon             = new QPixmap(router_filter_destination_routes_xpm);
-    routerViewSplitterIcon                        = new QPixmap(router_view_splitter_xpm);
-
 
     //----------------------------------
     //   SVG...
@@ -743,6 +729,12 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     noscaleSVGIcon[1] = icons.getSVG("noscale2.svg");
     noscaleSVGIcon[2] = icons.getSVG("noscale3.svg");
 
+    routeAutoAdjustSVGIcon = icons.getSVG("route_auto_adjust.svg");
+    routeSelSourceSVGIcon = icons.getSVG("route_sel_source.svg");
+    routeSelDestSVGIcon = icons.getSVG("route_sel_dest.svg");
+    routeSourceSVGIcon = icons.getSVG("route_sources.svg");
+    routeDestSVGIcon = icons.getSVG("route_destinations.svg");
+
     //----------------------------------
     // Cursors
     //----------------------------------
@@ -863,13 +855,6 @@ void deleteIcons()
     delete globalIcon;
     delete userIcon;
     delete projectIcon;
-
-    delete routerFilterSourceIcon;
-    delete routerFilterDestinationIcon;
-    delete routerFilterSourceRoutesIcon;
-    delete routerFilterDestinationRoutesIcon;
-    delete routerViewSplitterIcon;
-
 
     //----------------------------------
     //   SVG...
@@ -1028,6 +1013,12 @@ void deleteIcons()
     delete trackOutputSVGIcon;
     delete trackAuxSVGIcon;
     delete trackGroupVGIcon;
+
+    delete routeAutoAdjustSVGIcon;
+    delete routeSelSourceSVGIcon;
+    delete routeSelDestSVGIcon;
+    delete routeSourceSVGIcon;
+    delete routeDestSVGIcon;
 
     //----------------------------------
     // Cursors

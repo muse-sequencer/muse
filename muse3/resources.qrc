@@ -146,5 +146,10 @@
         <file>svg/synth.svg</file>
         <file>svg/info.svg</file>
         <file>svg/show_fields.svg</file>
+        <file>svg/route_auto_adjust.svg</file>
+        <file>svg/route_sel_source.svg</file>
+        <file>svg/route_destinations.svg</file>
+        <file>svg/route_sel_dest.svg</file>
+        <file>svg/route_sources.svg</file>
     </qresource>
 </RCC>

@@ -133,11 +133,11 @@ extern QIcon* userIcon;
 extern QIcon* pianoNewIcon;
 extern QIcon* presetsNewIcon;
 
-extern QPixmap* routerFilterSourceIcon;
-extern QPixmap* routerFilterDestinationIcon;
-extern QPixmap* routerFilterSourceRoutesIcon;
-extern QPixmap* routerFilterDestinationRoutesIcon;
-extern QPixmap* routerViewSplitterIcon;
+//extern QPixmap* routerFilterSourceIcon;
+//extern QPixmap* routerFilterDestinationIcon;
+//extern QPixmap* routerFilterSourceRoutesIcon;
+//extern QPixmap* routerFilterDestinationRoutesIcon;
+//extern QPixmap* routerViewSplitterIcon;
 
 
 //----------------------------------
@@ -292,6 +292,12 @@ extern QIcon* mixerSVGIcon;
 extern QIcon* plusSVGIcon;
 extern QIcon* minusSVGIcon;
 extern QIcon* keySVGIcon;
+
+extern QIcon* routeAutoAdjustSVGIcon;
+extern QIcon* routeSelSourceSVGIcon;
+extern QIcon* routeSelDestSVGIcon;
+extern QIcon* routeSourceSVGIcon;
+extern QIcon* routeDestSVGIcon;
 
 //----------------------------------
 // Cursors
