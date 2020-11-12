@@ -1242,15 +1242,6 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       //    label
       //---------------------------------------------
 
-//       label = new TextEdit(this);
-//       label->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//       label->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//       label->viewport()->setContentsMargins(0, 0, 0, 0);
-//       label->setMaximumBlockCount(1);
-//       label->setBackgroundVisible(false);
-//       label->setTextFormat(Qt::PlainText);
-//       label->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-
       label = new TrackNameLabel(this);
       label->setElideMode(Qt::ElideMiddle);
       label->setFocusPolicy(Qt::NoFocus);

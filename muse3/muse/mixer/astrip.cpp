@@ -1575,10 +1575,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           }
       }
 
-//      for(int ch = 0; ch < channel; ++ch)
-//        _clipperLayout->addWidget(_clipperLabel[ch]);
       sliderGrid->addLayout(_clipperLayout, 0, 0, 1, 2, Qt::AlignCenter);
-//      sliderGrid->addItem(new QSpacerItem(0, 1), 1, 0, 1, -1);
 
       slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
                           MusEGlobal::config.audioVolumeSliderColor,
