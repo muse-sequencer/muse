@@ -115,7 +115,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
   double val = 0.0;
   int prec = 0.0;
   double step = 0.0;
-  bool showval = MusEGlobal::config.showControlValues;;
+  bool showval = MusEGlobal::config.showControlValues;
 
   switch(desc->_componentType)
   {
@@ -2051,7 +2051,7 @@ void AudioStrip::setClipperTooltip(int ch)
 
 void AudioStrip::iRoutePressed()
       {
-      RoutePopupMenu* pup = new RoutePopupMenu(0, false, _broadcastChanges);
+      RoutePopupMenu* pup = new RoutePopupMenu(nullptr, false, _broadcastChanges);
       pup->exec(QCursor::pos(), track, false);
       delete pup;
       iR->setDown(false);
@@ -2063,7 +2063,7 @@ void AudioStrip::iRoutePressed()
 
 void AudioStrip::oRoutePressed()
 {
-      RoutePopupMenu* pup = new RoutePopupMenu(0, true, _broadcastChanges);
+      RoutePopupMenu* pup = new RoutePopupMenu(nullptr, true, _broadcastChanges);
       pup->exec(QCursor::pos(), track, true);
       delete pup;
       oR->setDown(false);
@@ -2117,8 +2117,8 @@ void AudioStrip::incPan(int increaseValue)
   const int id = MusECore::AC_PAN;
   MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
 
-  ComponentRack* rack = 0;
-  ComponentWidget* cw = 0;
+  ComponentRack* rack = nullptr;
+  ComponentWidget* cw = nullptr;
   // Be sure to search all racks. Even if pan is in multiple racks, only one hit is
   //  needed since after the value is set, the other pan controls will be updated too.
   if((cw = _upperRack->findComponent(ComponentRack::controllerComponent, -1, id)))

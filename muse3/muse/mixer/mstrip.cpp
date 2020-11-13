@@ -465,7 +465,7 @@ void MidiComponentRack::newComponentWidget( ComponentDescriptor* desc, const Com
         control->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
         control->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
         control->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
-        control->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
+//        control->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
         control->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
         control->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
         
@@ -1346,7 +1346,7 @@ void MidiComponentRack::setComponentColors()
         w->setBgColor(MusEGlobal::config.midiInstrumentBackgroundColor);
         w->setBgActiveColor(MusEGlobal::config.midiInstrumentBgActiveColor);
         w->setBorderColor(MusEGlobal::config.midiInstrumentBorderColor);
-        w->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
+//        w->setBorderColorPatchEdit(MusEGlobal::config.midiInstrumentBgActiveColor);
         w->setFontColor(MusEGlobal::config.midiInstrumentFontColor);
         w->setFontActiveColor(MusEGlobal::config.midiInstrumentFontActiveColor);
       }
@@ -1876,8 +1876,11 @@ void MidiStrip::buildStrip()
   CompactPatchEditComponentDescriptor progControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiProgramController", MusECore::CTRL_PROGRAM);
   _upperRack->newComponent(&progControllerDesc);
 
+
   if(_preferKnobs)
   {
+    _upperRack->layout()->addItem(new QSpacerItem(0, 4));
+
     CompactKnobComponentDescriptor varSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiVarSendController", MusECore::CTRL_VARIATION_SEND);
     CompactKnobComponentDescriptor revSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiRevSendController", MusECore::CTRL_REVERB_SEND);
     CompactKnobComponentDescriptor choSendControllerDesc(ComponentRack::controllerComponent, "MixerStripMidiChoSendController", MusECore::CTRL_CHORUS_SEND);
@@ -1887,6 +1890,8 @@ void MidiStrip::buildStrip()
   }
   else
   {
+    _upperRack->layout()->addItem(new QSpacerItem(0, 2));
+
     // To avoid too bright or annoying joined borders which are twice the normal width,
     //  show no bottom borders except for last one!
     CompactSliderComponentDescriptor varSendControllerDesc(

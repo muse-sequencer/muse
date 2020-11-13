@@ -466,8 +466,7 @@ void LCDPatchEdit::paintEvent(QPaintEvent* e)
     case PatchHorizontal:
       painter.setRenderHint(QPainter::Antialiasing, false);
       ibp.drawBackground(&painter, rect(), pal, 1, 1, QRect(),
-                         0, _style3d, nullptr, _borderColor, _bgColor);
-//      _radius, _style3d, nullptr, _borderColor, _bgColor);
+                         _radius, _style3d, nullptr, _borderColor, _bgColor);
 
       painter.setPen(offCol);
       painter.drawPoint(colon1x, colon_y1);

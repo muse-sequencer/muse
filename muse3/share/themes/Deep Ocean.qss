@@ -243,6 +243,14 @@ QMdiArea > QTabBar::tab:selected {
     color: DodgerBlue;
 }
 
+QWidget#MidiStripTabWidget::pane {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid rgb(90,90,90);
+    padding-top: 1px;
+    border-bottom: 1px solid rgb(90,90,90);
+}
+
 QWidget#MidiStripTabWidget::tab-bar {
     left: 2px; 
 }
@@ -267,10 +275,8 @@ QWidget#MidiStripTabWidget QTabBar::tab:!selected {
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab:focus {
-/*
-    background: rgb(50,50,50); 
-*/
-	border: 1px solid rgb(150,150,150);
+    border-style: dotted;
+    border-bottom: none;
 }
 
 

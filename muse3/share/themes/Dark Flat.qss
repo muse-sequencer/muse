@@ -189,10 +189,11 @@ QToolBar QLabel#PaddedValueLabel {
     height: 20px;
 }
 
-/* QFrame#SliderMeterFrameAudio,
+QFrame#SliderMeterFrameAudio,
 QFrame#SliderMeterFrameMidi {
-    border: 1px solid rgb(0,120,200);
-} */
+    border-top: 1px solid rgb(60,60,60);
+    border-bottom: 1px solid rgb(60,60,60);
+}
 
 /* QWidget#Rack {
     border: 1px solid rgb(0,120,200);
@@ -362,7 +363,7 @@ MusEGui--AudioStripProperties {
 MusEGui--MidiStripProperties {
     qproperty-sliderRadius: 1;
     qproperty-sliderRadiusHandle: 1;
-    qproperty-sliderHandleHeight: 26;
+    qproperty-sliderHandleHeight: 24;
     qproperty-sliderHandleWidth: 14;
     qproperty-sliderGrooveWidth: 6;
 /* draw groove part above the handle */
@@ -416,8 +417,8 @@ MusEGui--CompactPatchEdit {
 
 MusEGui--CompactKnob {
     qproperty-style3d: false;
-    qproperty-xMargin: 2;
-    qproperty-yMargin: 2;
+    qproperty-xMargin: 3;
+    qproperty-yMargin: 3;
 /*
     qproperty-drawChord: true;
     qproperty-totalAngle: 270;
