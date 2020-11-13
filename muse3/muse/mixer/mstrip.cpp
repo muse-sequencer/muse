@@ -1514,6 +1514,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       tabwidget->addTab(_infoRack, tr("Prop"));
       tabwidget->setTabToolTip(0, tr("Instruments and controllers"));
       tabwidget->setTabToolTip(1, tr("Properties"));
+      tabwidget->setContentsMargins(0,0,0,0);
       tabwidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum);
       addGridWidget(tabwidget, _upperStackTabPos);
 
@@ -1708,7 +1709,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       if (track && track->canRecordMonitor()) {
           //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
           _recMonitor = new QPushButton;
-          _recMonitor->setIcon(*monitorOnSVGIcon);
+          _recMonitor->setIcon(*monitorStateSVGIcon);
           _recMonitor->setFocusPolicy(Qt::NoFocus);
           _recMonitor->setCheckable(true);
           _recMonitor->setToolTip(tr("Input monitor"));
@@ -1726,7 +1727,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
 //      record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, 0, 0, false, true);
       record  = new QPushButton(this);
-      record->setIcon(*recArmOnSVGIcon);
+      record->setIcon(*recArmStateSVGIcon);
       record->setFocusPolicy(Qt::NoFocus);
       record->setCheckable(true);
       record->setToolTip(tr("Record arm"));
@@ -1736,7 +1737,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
 //      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
       mute  = new QPushButton(this);
-      mute->setIcon(*muteOnSVGIcon);
+      mute->setIcon(*muteStateSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
       mute->setToolTip(tr("Mute or proxy mute"));
@@ -1748,7 +1749,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo  = new QPushButton(this);
-      solo->setIcon(*soloOnAloneSVGIcon);
+      solo->setIcon(*soloStateSVGIcon);
       solo->setObjectName("SoloButton");
       solo->setToolTip(tr("Solo or proxy solo"));
       solo->setStatusTip(tr("Solo or proxy solo. Connected tracks are 'phantom' soloed. Press F1 for help."));
@@ -1764,7 +1765,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, 0, 0, false, true);
       off = new QPushButton(this);
       off->setObjectName("TrackOffButton");
-      off->setIcon(*trackOffSVGIcon);
+      off->setIcon(*trackOnSVGIcon);
       off->setFocusPolicy(Qt::NoFocus);
       off->setCheckable(true);
       off->setToolTip(tr("Track off"));
@@ -2326,7 +2327,7 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
                 else
                     solo->setIcon(*soloProxyOnAloneSVGIcon);
             } else {
-                solo->setIcon(*soloOnAloneSVGIcon);
+                solo->setIcon(*soloStateSVGIcon);
             }
             updateMuteIcon();
       }

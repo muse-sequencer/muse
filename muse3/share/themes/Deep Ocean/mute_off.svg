@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" shape-rendering="crispEdges" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g transform="matrix(1.0214 0 0 1.0867 -1.2391 -2.7369)" stroke-width=".9492" aria-label="R">
+  <g transform="scale(.9558 1.0462)" fill="#729fcf" stroke="#000" stroke-width=".92993" aria-label="M">
+   <path d="m6.8568 6.8054h15.878l11.017 25.89 11.082-25.89h15.845v48.378h-11.795v-35.384l-11.147 26.085h-7.9064l-11.147-26.085v35.384h-11.827z" fill="#729fcf" stroke="#000" stroke-width=".91105" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+  </g>
+ </g>
+</svg>

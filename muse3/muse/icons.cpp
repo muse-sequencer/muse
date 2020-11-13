@@ -244,6 +244,7 @@ QIcon* muteOnSVGIcon;
 QIcon* muteOnXSVGIcon;
 QIcon* muteProxyOnSVGIcon;
 QIcon* muteAndProxyOnSVGIcon;
+QIcon* muteStateSVGIcon;
 
 QIcon* soloOffSVGIcon;
 QIcon* soloOnSVGIcon;
@@ -251,6 +252,7 @@ QIcon* soloOnAloneSVGIcon;
 QIcon* soloProxyOnSVGIcon;
 QIcon* soloProxyOnAloneSVGIcon;
 QIcon* soloAndProxyOnSVGIcon;
+QIcon* soloStateSVGIcon;
 
 QIcon* trackOffSVGIcon;
 QIcon* trackOnSVGIcon;
@@ -263,9 +265,11 @@ QIcon* preFaderOnSVGIcon;
 
 QIcon* recArmOffSVGIcon;
 QIcon* recArmOnSVGIcon;
+QIcon* recArmStateSVGIcon;
 
 QIcon* monitorOffSVGIcon;
 QIcon* monitorOnSVGIcon;
+QIcon* monitorStateSVGIcon;
 
 QIcon* velocityPerNoteSVGIcon;
 QIcon* midiControllerNewSVGIcon;
@@ -423,18 +427,40 @@ public:
         QDir dir(path_global, "*.svg");
         _global = dir.entryList(QDir::Files);
         _global_on = !_global.isEmpty();
+
         dir.setPath(path_user);
         _user = dir.entryList(QDir::Files);
         _user_on = !_user.isEmpty();
     }
 
-    QIcon* getSVG(const QString & name) {
-        if (_user_on && _user.contains(name))
-            return new QIcon(_path_user + "/" + name);
-        if (_global_on && _global.contains(name))
-            return new QIcon(_path_global + "/" + name);
+    QIcon* getSVG(const QString & filename)
+    {
+        if (_user_on && _user.contains(filename))
+            return new QIcon(_path_user + "/" + filename);
 
-        return new QIcon(":/svg/" + name);
+        if (_global_on && _global.contains(filename))
+            return new QIcon(_path_global + "/" + filename);
+
+        return new QIcon(":/svg/" + filename);
+    }
+
+    void addSVG(QIcon *icon, const QString & filename,
+                  QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::On)
+    {
+        if (!icon)
+            return;
+
+        if (_user_on && _user.contains(filename)) {
+            icon->addFile(_path_user + "/" + filename, QSize(), mode, state);
+            return;
+        }
+
+        if (_global_on && _global.contains(filename)) {
+            icon->addFile(_path_global + "/" + filename, QSize(), mode, state);
+            return;;
+        }
+
+        icon->addFile(":/svg/" + filename, QSize(), mode, state);
     }
 };
 
@@ -567,6 +593,9 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     muteProxyOnSVGIcon = icons.getSVG("mute_proxy_on.svg");
     muteAndProxyOnSVGIcon = icons.getSVG("mute_and_proxy_on.svg");
 
+    muteStateSVGIcon = icons.getSVG("mute_off.svg");
+    icons.addSVG(muteStateSVGIcon, "mute_on.svg");
+
     soloOffSVGIcon = icons.getSVG("solo_spotlight_off.svg");
     soloOnSVGIcon = icons.getSVG("solo_spotlight_on.svg");
     soloOnAloneSVGIcon = icons.getSVG("solo_spotlight_on_alone.svg");
@@ -574,8 +603,12 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     soloProxyOnAloneSVGIcon = icons.getSVG("solo_proxy_spotlight_on_alone.svg");
     soloAndProxyOnSVGIcon = icons.getSVG("solo_and_proxy_spotlight_on.svg");
 
+    soloStateSVGIcon = icons.getSVG("solo_spotlight_off.svg");
+    icons.addSVG(soloStateSVGIcon, "solo_spotlight_on_alone.svg");
+
     trackOffSVGIcon  = icons.getSVG("track_off.svg");
     trackOnSVGIcon = icons.getSVG("track_on.svg");
+    icons.addSVG(trackOnSVGIcon, "track_off.svg");
 
     stereoOffSVGIcon  = icons.getSVG("stereo_off.svg");
     stereoOnSVGIcon = icons.getSVG("stereo_on.svg");
@@ -586,8 +619,14 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     recArmOffSVGIcon = icons.getSVG("rec_arm_off_default_col.svg");
     recArmOnSVGIcon = icons.getSVG("rec_arm_on.svg");
 
+    recArmStateSVGIcon = icons.getSVG("rec_arm_off_default_col.svg");
+    icons.addSVG(recArmStateSVGIcon, "rec_arm_on.svg");
+
     monitorOffSVGIcon = icons.getSVG("monitor_off_default_col.svg");
     monitorOnSVGIcon = icons.getSVG("monitor_on.svg");
+
+    monitorStateSVGIcon = icons.getSVG("monitor_off_default_col.svg");
+    icons.addSVG(monitorStateSVGIcon, "monitor_on.svg");
 
     velocityPerNoteSVGIcon = icons.getSVG("velocity_all_notes.svg");
     velocityPerNoteSVGIcon->addFile(":/svg/velocity_per_note.svg", QSize(), QIcon::Normal, QIcon::On);
@@ -876,6 +915,7 @@ void deleteIcons()
     delete muteOnXSVGIcon;
     delete muteProxyOnSVGIcon;
     delete muteAndProxyOnSVGIcon;
+    delete muteStateSVGIcon;
 
     delete soloOffSVGIcon;
     delete soloOnSVGIcon;
@@ -883,6 +923,7 @@ void deleteIcons()
     delete soloProxyOnSVGIcon;
     delete soloProxyOnAloneSVGIcon;
     delete soloAndProxyOnSVGIcon;
+    delete soloStateSVGIcon;
 
     delete trackOffSVGIcon;
     delete trackOnSVGIcon;
@@ -895,9 +936,11 @@ void deleteIcons()
 
     delete recArmOffSVGIcon;
     delete recArmOnSVGIcon;
+    delete recArmStateSVGIcon;
 
     delete monitorOffSVGIcon;
     delete monitorOnSVGIcon;
+    delete monitorStateSVGIcon;
 
     delete velocityPerNoteSVGIcon;
 

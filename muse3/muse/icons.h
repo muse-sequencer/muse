@@ -160,6 +160,7 @@ extern QIcon* muteOnSVGIcon;
 extern QIcon* muteOnXSVGIcon;
 extern QIcon* muteProxyOnSVGIcon;
 extern QIcon* muteAndProxyOnSVGIcon;
+extern QIcon* muteStateSVGIcon;
 
 extern QIcon* soloOffSVGIcon;
 extern QIcon* soloOnSVGIcon;
@@ -167,6 +168,7 @@ extern QIcon* soloOnAloneSVGIcon;
 extern QIcon* soloProxyOnSVGIcon;
 extern QIcon* soloProxyOnAloneSVGIcon;
 extern QIcon* soloAndProxyOnSVGIcon;
+extern QIcon* soloStateSVGIcon;
 
 extern QIcon* trackOffSVGIcon;
 extern QIcon* trackOnSVGIcon;
@@ -179,9 +181,11 @@ extern QIcon* preFaderOnSVGIcon;
 
 extern QIcon* recArmOffSVGIcon;
 extern QIcon* recArmOnSVGIcon;
+extern QIcon* recArmStateSVGIcon;
 
 extern QIcon* monitorOffSVGIcon;
 extern QIcon* monitorOnSVGIcon;
+extern QIcon* monitorStateSVGIcon;
 
 extern QIcon* velocityPerNoteSVGIcon;
 extern QIcon* midiControllerNewSVGIcon;

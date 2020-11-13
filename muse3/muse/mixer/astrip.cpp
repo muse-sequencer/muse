@@ -1008,7 +1008,7 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
                 else
                     solo->setIcon(*soloProxyOnAloneSVGIcon);
             } else {
-                solo->setIcon(*soloOnAloneSVGIcon);
+                solo->setIcon(*soloStateSVGIcon);
             }
             updateMuteIcon();
       }
@@ -1731,7 +1731,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       if (track && track->canRecordMonitor()) {
           //        _recMonitor = new IconButton(monitorOnSVGIcon, monitorOffSVGIcon, nullptr, nullptr, false, true);
           _recMonitor = new QPushButton;
-          _recMonitor->setIcon(*monitorOnSVGIcon);
+          _recMonitor->setIcon(*monitorStateSVGIcon);
           _recMonitor->setFocusPolicy(Qt::NoFocus);
           _recMonitor->setCheckable(true);
           _recMonitor->setToolTip(tr("Input monitor"));
@@ -1750,7 +1750,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       if (track->canRecord()) {
           //            record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, nullptr, nullptr, false, true);
           record  = new QPushButton(this);
-          record->setIcon(*recArmOnSVGIcon);
+          record->setIcon(*recArmStateSVGIcon);
           record->setFocusPolicy(Qt::NoFocus);
           record->setCheckable(true);
           if (type == MusECore::Track::AUDIO_OUTPUT)
@@ -1770,7 +1770,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
 //      mute  = new IconButton(muteOnSVGIcon, muteOffSVGIcon, muteAndProxyOnSVGIcon, muteProxyOnSVGIcon, false, true);
       mute  = new QPushButton(this);
-      mute->setIcon(*muteOnSVGIcon);
+      mute->setIcon(*muteStateSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
       mute->setCheckable(true);
       mute->setToolTip(tr("Mute or proxy mute"));
@@ -1782,7 +1782,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
       solo  = new QPushButton(this);
-      solo->setIcon(*soloOnAloneSVGIcon);
+      solo->setIcon(*soloStateSVGIcon);
       solo->setObjectName("SoloButton");
       solo->setToolTip(tr("Solo or proxy solo"));
       solo->setStatusTip(tr("Solo or proxy solo. Connected tracks are 'phantom' soloed. Press F1 for help."));
@@ -1798,7 +1798,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, nullptr, nullptr, false, true);
       off = new QPushButton(this);
       off->setObjectName("TrackOffButton");
-      off->setIcon(*trackOffSVGIcon);
+      off->setIcon(*trackOnSVGIcon);
       off->setFocusPolicy(Qt::NoFocus);
       off->setCheckable(true);
       off->setToolTip(tr("Track off"));

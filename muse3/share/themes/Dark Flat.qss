@@ -253,14 +253,16 @@ QMdiArea > QTabBar::tab:selected {
 
 /* TabWidget in Midi mixer strip */
 QWidget#MidiStripTabWidget::pane {
-    /* position: absolute; */
-    border-top: 1px solid rgb(120,120,120);
+    position: absolute;
+    margin: 0;
     padding: 0;
+    border-top: 1px solid rgb(120,120,120);
+    padding-top: 1px;
 }
 
 QWidget#MidiStripTabWidget::tab-bar {
-    left: 3px; 
-	/* alignment: center; */
+    /* left: 3px;  */
+	alignment: center;
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab {

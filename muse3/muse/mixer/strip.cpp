@@ -109,6 +109,9 @@ void ComponentRack::clearDelete()
       cw._widget->deleteLater();
   }
   _components.clear();
+
+// layout items must be removed too to avoid artefacts! (kybos)
+  while(_layout->takeAt(0));
 }
 
 void ComponentRack::addComponentWidget( const ComponentWidget& cw, const ComponentWidget& before )
@@ -1159,7 +1162,7 @@ void Strip::soloToggled(bool val)
         else
             solo->setIcon(*soloProxyOnAloneSVGIcon);
     } else {
-        solo->setIcon(*soloOnAloneSVGIcon);
+        solo->setIcon(*soloStateSVGIcon);
     }
     //    solo->setIconSetB(track && track->internalSolo());
 
@@ -1933,7 +1936,7 @@ void Strip::updateMuteIcon()
         else
             mute->setIcon(*muteProxyOnSVGIcon);
     } else {
-        mute->setIcon(*muteOnSVGIcon);
+        mute->setIcon(*muteStateSVGIcon);
     }
 }
 
