@@ -295,7 +295,7 @@ Published under the GNU Public License.</source>
     <message>
         <location line="+19"/>
         <source>RMS/PEAK (&amp;traditional)</source>
-        <translation type="unfinished"></translation>
+        <translation>RMS/PEAK (&amp;traditionell)</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -305,7 +305,7 @@ Published under the GNU Public License.</source>
     <message>
         <location line="+1722"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>Hilfe</translation>
     </message>
     <message>
         <source>show snap grid</source>
@@ -389,7 +389,7 @@ Font 6: 80%</translation>
     <message>
         <location line="-237"/>
         <source>Current theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelles Design</translation>
     </message>
     <message>
         <location line="+16"/>
@@ -402,17 +402,17 @@ overwrites identical settings in the default style sheet.</source>
     <message>
         <location line="+6"/>
         <source>Cascade default and user theme style sheets</source>
-        <translation type="unfinished"></translation>
+        <translation>Default und Benutzerstylesheet kaskadieren</translation>
     </message>
     <message>
         <location line="+85"/>
         <source>Show icons in menus</source>
-        <translation type="unfinished"></translation>
+        <translation>Ikonen in Menüs anzeigen</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Use native standard dialogs</source>
-        <translation type="unfinished"></translation>
+        <translation>Native Standarddialoge verwenden</translation>
     </message>
     <message>
         <location line="+132"/>
@@ -4753,42 +4753,42 @@ Fenster</translation>
     <message>
         <location line="-101"/>
         <source>Sample rate conversion, time stretching and pitch shifting</source>
-        <translation type="unfinished"></translation>
+        <translation>Sampleratenkonversion, Timestretching und Pitchschifting</translation>
     </message>
     <message>
         <location line="-801"/>
         <source>Editors</source>
-        <translation type="unfinished"></translation>
+        <translation>Editoren</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Open editors in tabs (else in separate windows)</source>
-        <translation type="unfinished"></translation>
+        <translation>Editoren in Tabs öffnen (sonst in separaten Fenstern)</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Piano roll</source>
-        <translation type="unfinished">Pianoroll</translation>
+        <translation>Pianoroll</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Drum editor</source>
-        <translation type="unfinished">Schlagzeugeditor</translation>
+        <translation>Schlagzeugeditor</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Wave editor</source>
-        <translation type="unfinished">Wave-Editor</translation>
+        <translation>Wave-Editor</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Score editor</source>
-        <translation type="unfinished">Partitureditor</translation>
+        <translation>Partitureditor</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Master track editor</source>
-        <translation type="unfinished">Masterspur-Editor</translation>
+        <translation>Masterspur-Editor</translation>
     </message>
     <message>
         <location line="+99"/>
@@ -5141,12 +5141,12 @@ Certain operations will also force them to be resent,
     <message>
         <location line="+6"/>
         <source>Show status bar</source>
-        <translation type="unfinished"></translation>
+        <translation>Statusleiste anzeigen</translation>
     </message>
     <message>
         <location line="+85"/>
         <source>Show note tooltips in midi editors</source>
-        <translation type="unfinished"></translation>
+        <translation>Noten-Tooltips in Midieditoren anzeigen</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -5161,7 +5161,7 @@ Certain operations will also force them to be resent,
     <message>
         <location line="+36"/>
         <source>Keep transport window on top (requires restart)</source>
-        <translation type="unfinished"></translation>
+        <translation>Transportfenster immer oben (erfordert Neustart)</translation>
     </message>
     <message>
         <location line="+209"/>
@@ -5193,7 +5193,7 @@ Certain operations will also force them to be resent,
  small sizes. Some styles refuse to draw 
  the frame. This hack forces a frame to be 
  drawn, but may interfere with other styles.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="-190"/>
@@ -7998,34 +7998,34 @@ bis zum Senden des ersten Clocks.</translation>
     <message>
         <location filename="../../muse/scripts.cpp" line="+44"/>
         <source>Do you want to process ALL or only selected events?</source>
-        <translation type="unfinished">Alle oder nur ausgewählte Events bearbeiten?</translation>
+        <translation>Alle oder nur ausgewählte Events bearbeiten?</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>&amp;Selected</source>
-        <translation type="unfinished">Aus&amp;gewählt</translation>
+        <translation>Aus&amp;gewählt</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>&amp;All</source>
-        <translation type="unfinished">&amp;Alle</translation>
+        <translation>&amp;Alle</translation>
     </message>
     <message>
         <location line="+77"/>
         <source>MusE - external script failed</source>
-        <translation type="unfinished">MusE - externes Skript fehlgeschlagen</translation>
+        <translation>MusE - externes Skript fehlgeschlagen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>MusE was unable to launch the script, error message:
 %1</source>
-        <translation type="unfinished">MusE konnte das Skript nicht starten, Fehlermeldung:
+        <translation>MusE konnte das Skript nicht starten, Fehlermeldung:
 %1</translation>
     </message>
     <message>
         <location line="+109"/>
         <source>Re-read script names from disc</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriptnamen vom Disk einlesen</translation>
     </message>
 </context>
 <context>
@@ -8106,7 +8106,7 @@ Knopf.</translation>
         <location line="+237"/>
         <location line="+264"/>
         <source>Automation</source>
-        <translation type="unfinished">Automatisierung</translation>
+        <translation>Automatisierung</translation>
     </message>
     <message>
         <location line="-262"/>
@@ -8179,7 +8179,7 @@ Knopf.</translation>
     <message>
         <location line="+161"/>
         <source>Controller</source>
-        <translation type="unfinished">Kontroller</translation>
+        <translation>Kontroller</translation>
     </message>
     <message>
         <source>Controller:</source>
@@ -8675,12 +8675,12 @@ Rechtsklick, um die GUI zu zeigen.</translation>
     <message>
         <location line="+3"/>
         <source>Cursor position</source>
-        <translation type="unfinished"></translation>
+        <translation>Cursorposition</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Bars</source>
-        <translation type="unfinished">Takte</translation>
+        <translation>Takte</translation>
     </message>
     <message>
         <source>Off</source>
@@ -8990,7 +8990,7 @@ Right-click to show GUI.</source>
     <message>
         <location line="+0"/>
         <source>Arranger</source>
-        <translation type="unfinished">Arrangierer</translation>
+        <translation>Arrangierer</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -9103,7 +9103,7 @@ Right-click to show GUI.</source>
     <message>
         <location line="+2"/>
         <source>Insert Track</source>
-        <translation type="unfinished">Spur einfügen</translation>
+        <translation>Spur einfügen</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -9159,13 +9159,13 @@ Right-click to show GUI.</source>
         <location line="+11"/>
         <location line="+8"/>
         <source>Event List...</source>
-        <translation type="unfinished"></translation>
+        <translation>Eventliste</translation>
     </message>
     <message>
         <location line="+864"/>
         <location line="+14"/>
         <source>Nothing to edit</source>
-        <translation type="unfinished">Es gibt nichts zu editieren</translation>
+        <translation>Es gibt nichts zu editieren</translation>
     </message>
     <message>
         <source>All Tracks in One Staff...</source>
@@ -9205,7 +9205,7 @@ Right-click to show GUI.</source>
     <message>
         <location line="-6"/>
         <source>Open in New Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Im neuen Fenster öffnen</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -9215,7 +9215,7 @@ Right-click to show GUI.</source>
     <message>
         <location line="+12"/>
         <source>Open Synth Plugin GUI...</source>
-        <translation type="unfinished"></translation>
+        <translation>Synth-Plugin GUI öffnen...</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -9250,7 +9250,7 @@ Right-click to show GUI.</source>
     <message>
         <location line="+24"/>
         <source>&amp;Scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Skripte</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -9270,7 +9270,7 @@ Right-click to show GUI.</source>
     <message>
         <location line="+1"/>
         <source>Toggle &amp;Mixer Strip</source>
-        <translation type="unfinished"></translation>
+        <translation>Mixerstrip umschalten</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -9868,7 +9868,7 @@ Um Sie zu übernehmen, starten Sie MusE bitte neu.
     <message>
         <location filename="../../muse/components/canvas.cpp" line="+2260"/>
         <source>Tools</source>
-        <translation type="unfinished">Werkzeuge</translation>
+        <translation>Werkzeuge</translation>
     </message>
 </context>
 <context>
@@ -10719,7 +10719,7 @@ Select the destination part, then try again.</source>
     <message>
         <location line="+11"/>
         <source>Event List...</source>
-        <translation type="unfinished"></translation>
+        <translation>Eventliste...</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -10729,7 +10729,7 @@ Select the destination part, then try again.</source>
     <message>
         <location line="+25"/>
         <source>&amp;Scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Skripte</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -10739,7 +10739,7 @@ Select the destination part, then try again.</source>
     <message>
         <location line="+121"/>
         <source>Cursor step</source>
-        <translation type="unfinished"></translation>
+        <translation>Cursor-Schritt</translation>
     </message>
     <message>
         <source>Load drummap</source>
@@ -12242,7 +12242,7 @@ Double-click a slot to insert FX</source>
     <message>
         <location line="+2"/>
         <source>Delete</source>
-        <translation type="unfinished">Löschen</translation>
+        <translation>Löschen</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -12297,7 +12297,7 @@ Double-click a slot to insert FX</source>
     <message>
         <location line="+59"/>
         <source>Insert note event</source>
-        <translation type="unfinished"></translation>
+        <translation>Notenevent einfügen</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -12327,7 +12327,7 @@ Double-click a slot to insert FX</source>
     <message>
         <location line="+1"/>
         <source>Delete event</source>
-        <translation type="unfinished"></translation>
+        <translation>Event löschen</translation>
     </message>
     <message>
         <source>MusE: List Editor</source>
@@ -14931,12 +14931,12 @@ Can not continue.</source>
     <message>
         <location line="-3907"/>
         <source>Show Docks</source>
-        <translation type="unfinished"></translation>
+        <translation>Docks anzeigen</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Toggle display of currently visible dock windows.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anzeige von angedockten Fenstern umschalten.</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -14946,7 +14946,7 @@ Can not continue.</source>
     <message>
         <location line="+4"/>
         <source>Mastertrack Graphic...</source>
-        <translation type="unfinished"></translation>
+        <translation>Masterspur-Editor graphisch...</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -14961,12 +14961,12 @@ Can not continue.</source>
     <message>
         <location line="+15"/>
         <source>Take Automation Snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatisierung-Schnappschuss aufnehmen</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Keyboard Shortcuts...</source>
-        <translation type="unfinished"></translation>
+        <translation>Tastenkürzel...</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -14976,32 +14976,32 @@ Can not continue.</source>
     <message>
         <location line="+3"/>
         <source>&amp;Manual (wiki)...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Handbuch (Wiki)...</translation>
     </message>
     <message>
         <location line="+108"/>
         <source>File buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei-Schaltflächen</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufnahme</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Sync</source>
-        <translation type="unfinished">Sync</translation>
+        <translation>Sync</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Position</source>
-        <translation type="unfinished">Zeitposition</translation>
+        <translation>Zeitposition</translation>
     </message>
     <message>
         <location line="+1022"/>
@@ -15012,7 +15012,7 @@ Save current project?</source>
     <message>
         <location line="+474"/>
         <source>No valid parts selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine gültigen Parts ausgewählt</translation>
     </message>
     <message>
         <location line="+1057"/>
@@ -15095,12 +15095,12 @@ Conversions may be applied if file is saved!</source>
     <message>
         <location filename="../../muse/help.cpp" line="+140"/>
         <source>Unable to launch browser</source>
-        <translation type="unfinished"></translation>
+        <translation>Browser konnte nicht gestartet werden</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Error launching default browser</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehler beim Starten des Default-Browsers</translation>
     </message>
 </context>
 <context>
@@ -15622,7 +15622,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
     <message>
         <location line="+4"/>
         <source>Event List...</source>
-        <translation type="unfinished"></translation>
+        <translation>Eventliste...</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -15682,7 +15682,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
     <message>
         <location line="+8"/>
         <source>&amp;Scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Skripte</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -15692,12 +15692,12 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
     <message>
         <location line="+94"/>
         <source>Play single note</source>
-        <translation type="unfinished"></translation>
+        <translation>Note abspielen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Play chords</source>
-        <translation type="unfinished"></translation>
+        <translation>Akkorde abspielen</translation>
     </message>
     <message>
         <source>&amp;Plugins</source>
@@ -15717,7 +15717,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
         <location line="+28"/>
         <location line="+26"/>
         <source>Add controller view</source>
-        <translation type="unfinished">Controlleransicht hinzufügen</translation>
+        <translation>Controlleransicht hinzufügen</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -15793,7 +15793,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
     <message>
         <location filename="../../muse/components/plugindialog.cpp" line="+50"/>
         <source>MusE: Select Plugin</source>
-        <translation type="unfinished"></translation>
+        <translation>MusE: Plugin auswählen</translation>
     </message>
     <message>
         <location line="+8"/>
@@ -16053,7 +16053,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location line="+4"/>
         <source>Plugin settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin-Einstellungen</translation>
     </message>
     <message>
         <location line="+784"/>
@@ -16063,7 +16063,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location line="+33"/>
         <source>Plugin Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Plugin-Einstellungen</translation>
     </message>
     <message>
         <source>Quirks:</source>
@@ -16113,17 +16113,17 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location filename="../../muse/components/pluginsettings.cpp" line="+29"/>
         <source>Global setting: </source>
-        <translation type="unfinished"></translation>
+        <translation>Globale Einstellung: </translation>
     </message>
     <message>
         <location line="+0"/>
         <source>On</source>
-        <translation type="unfinished">An</translation>
+        <translation>An</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Off</source>
-        <translation type="unfinished">Aus</translation>
+        <translation>Aus</translation>
     </message>
 </context>
 <context>
@@ -16139,7 +16139,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location filename="../../muse/components/postoolbar.cpp" line="+49"/>
         <source>Left marker</source>
-        <translation type="unfinished"></translation>
+        <translation>Linker Marker</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -16149,7 +16149,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location line="+19"/>
         <source>Right marker</source>
-        <translation type="unfinished"></translation>
+        <translation>Rechter Marker</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -16160,17 +16160,17 @@ Right-click on plugins to add/remove from a category.</source>
         <location line="+26"/>
         <location line="+49"/>
         <source>Current position</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Position</translation>
     </message>
     <message>
         <location line="-48"/>
         <source>Current position in bars/beats</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Position in Takten/Schlägen</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>SMPTE position</source>
-        <translation type="unfinished"></translation>
+        <translation>SMPTE Position</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -16180,7 +16180,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location line="+6"/>
         <source>Show/Hide position in ticks and audio frames</source>
-        <translation type="unfinished"></translation>
+        <translation>Position in Ticks und Audioframes anzeigen/verstecken</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -16191,18 +16191,18 @@ Right-click on plugins to add/remove from a category.</source>
         <location line="+5"/>
         <location line="+1"/>
         <source>Current position in ticks</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Position in Ticks</translation>
     </message>
     <message>
         <location line="+10"/>
         <location line="+1"/>
         <source>Current position in audio frames</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Position in Audioframes</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Current position slider</source>
-        <translation type="unfinished"></translation>
+        <translation>Schieberegler für aktuelle Position</translation>
     </message>
 </context>
 <context>
@@ -16226,7 +16226,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location filename="../../muse/components/rectoolbar.cpp" line="+17"/>
         <source>Record mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufnahmemodus</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -16542,7 +16542,7 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location line="+898"/>
         <source>Tools</source>
-        <translation type="unfinished">Werkzeuge</translation>
+        <translation>Werkzeuge</translation>
     </message>
 </context>
 <context>
@@ -16626,17 +16626,17 @@ Right-click on plugins to add/remove from a category.</source>
     <message>
         <location line="-124"/>
         <source>Quantisation</source>
-        <translation type="unfinished">Quantisierung</translation>
+        <translation>Quantisierung</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Pixels per whole</source>
-        <translation type="unfinished"></translation>
+        <translation>Pixels pro ganze Note</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Note length</source>
-        <translation type="unfinished">Notenlänge</translation>
+        <translation>Notenlänge</translation>
     </message>
     <message>
         <location line="+48"/>
@@ -17045,7 +17045,7 @@ Titel ist nicht einzigartig</translation>
     <message>
         <location line="+11"/>
         <source>Actions</source>
-        <translation type="unfinished">Funktionen</translation>
+        <translation>Aktionen</translation>
     </message>
     <message>
         <source>Actions:</source>
@@ -17492,7 +17492,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
     <message>
         <location line="+4"/>
         <source>Timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -17502,12 +17502,12 @@ Flash: Waiting. Another client is master. Click to force.</source>
     <message>
         <location line="+5"/>
         <source>Recording</source>
-        <translation type="unfinished"></translation>
+        <translation>Aufnahme</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Sync</source>
-        <translation type="unfinished">Sync</translation>
+        <translation>Sync</translation>
     </message>
     <message>
         <source>Song Position</source>
@@ -17534,7 +17534,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
     <message>
         <location line="+3"/>
         <source>Position</source>
-        <translation type="unfinished">Zeitposition</translation>
+        <translation>Zeitposition</translation>
     </message>
     <message>
         <location line="+531"/>
