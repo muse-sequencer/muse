@@ -129,13 +129,13 @@ GlobalConfigValues config = {
       QColor(0, 0, 0),        // bigTimeBackgroundColor;
       QColor(200, 192, 171),  // waveEditBackgroundColor;
       {
-        QFont(QString("sans-serif"), 10, QFont::Normal),
-        QFont(QString("sans-serif"), 7,  QFont::Normal),    // Mixer strips and midi track info panel
-        QFont(QString("sans-serif"), 8,  QFont::Normal),    // Part name overlay
-        QFont(QString("sans-serif"), 10, QFont::Normal),
-        QFont(QString("sans-serif"), 8,  QFont::Normal),    // Small numbers: Timescale and markers
-        QFont(QString("sans-serif"), 8,  QFont::Bold),      // Small bold numbers such as marker text
-        QFont(QString("sans-serif"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone,
+        QFont(),    // filled with system font dynamically
+        QFont(QString(), 7,  QFont::Normal),    // Mixer strips and midi track info panel
+        QFont(QString(), 8,  QFont::Normal),    // Part name overlay
+        QFont(QString(), 10, QFont::Normal),
+        QFont(QString(), 8,  QFont::Normal),    // Small numbers: Timescale and markers
+        QFont(QString(), 8,  QFont::Bold),      // Small bold numbers such as marker text
+        QFont(QString(), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone,
                                                         //  at the price of only few more pixels than Normal mode.
         },
       true,                         // autoAdjustFontSize;

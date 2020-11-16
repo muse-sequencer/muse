@@ -1,3 +1,6 @@
+16.11.2020
+    - Fix: Initialize all fonts with the current system font family on first run,
+            to avoid ugly looking sans-serif default on desktops like KDE. (kybos)
 15.11.2020
     *** MusE 4.0pre1 *** 
 12.11.2020
