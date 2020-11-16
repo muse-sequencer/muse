@@ -68,8 +68,8 @@
     <panSliderColor2 r="0" g="129" b="180"></panSliderColor2>
     <gainSliderColor2 r="0" g="150" b="107"></gainSliderColor2>
     <auxSliderColor2 r="225" g="143" b="0"></auxSliderColor2>
-    <audioVolumeSliderColor2 r="28" g="26" b="0"></audioVolumeSliderColor2>
-    <midiVolumeSliderColor2 r="28" g="26" b="0"></midiVolumeSliderColor2>
+    <audioVolumeSliderColor2 r="25" g="25" b="15"></audioVolumeSliderColor2>
+    <midiVolumeSliderColor2 r="25" g="25" b="15"></midiVolumeSliderColor2>
     <audioVolumeHandleColor r="80" g="80" b="59"></audioVolumeHandleColor>
     <midiVolumeHandleColor r="80" g="80" b="59"></midiVolumeHandleColor>
     <audioControllerSliderDefaultColor2 r="37" g="121" b="255"></audioControllerSliderDefaultColor2>
@@ -80,16 +80,16 @@
     <knobFontColor r="190" g="190" b="190"></knobFontColor>
     <audioMeterPrimaryColor r="0" g="255" b="0"></audioMeterPrimaryColor>
     <midiMeterPrimaryColor r="0" g="255" b="0"></midiMeterPrimaryColor>
-    <meterBackgroundColor r="0" g="20" b="0"></meterBackgroundColor>
+    <meterBackgroundColor r="20" g="25" b="15"></meterBackgroundColor>
     <rackItemBackgroundColor r="90" g="90" b="90"></rackItemBackgroundColor>
     <rackItemBgActiveColor r="170" g="48" b="0"></rackItemBgActiveColor>
     <rackItemFontColor r="15" g="15" b="15"></rackItemFontColor>
     <rackItemFontActiveColor r="255" g="255" b="255"></rackItemFontActiveColor>
     <rackItemBorderColor r="40" g="40" b="40"></rackItemBorderColor>
     <rackItemFontColorHover r="190" g="190" b="190"></rackItemFontColorHover>
-    <midiInstrumentBackgroundColor r="40" g="40" b="40"></midiInstrumentBackgroundColor>
+    <midiInstrumentBackgroundColor r="90" g="90" b="90"></midiInstrumentBackgroundColor>
     <midiInstrumentBgActiveColor r="0" g="117" b="64"></midiInstrumentBgActiveColor>
-    <midiInstrumentFontColor r="150" g="150" b="150"></midiInstrumentFontColor>
+    <midiInstrumentFontColor r="0" g="0" b="0"></midiInstrumentFontColor>
     <midiInstrumentFontActiveColor r="254" g="254" b="254"></midiInstrumentFontActiveColor>
     <midiInstrumentBorderColor r="40" g="40" b="40"></midiInstrumentBorderColor>
     <transportHandleColor r="0" g="0" b="255"></transportHandleColor>
