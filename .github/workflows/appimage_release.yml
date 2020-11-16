@@ -9,7 +9,6 @@ on:
 #on: push
 #  push:
 #    tags:
-#      - 'muse_*'
 #    - 'muse_*'
 #    - '!muse_*_pre*'
 
@@ -95,5 +94,5 @@ jobs:
     - name: Upload AppImage  
       uses: actions/upload-artifact@v2
       with:
-        name: AppImage current master
+        name: AppImage release
         path: ${{runner.workspace}}/build/MusE-*-x86_64.AppImage
