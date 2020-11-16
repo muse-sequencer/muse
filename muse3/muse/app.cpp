@@ -1126,6 +1126,12 @@ void MusE::setAndAdjustFonts() {
     MusEGlobal::config.fonts[0].setBold(font().bold());
     MusEGlobal::config.fonts[0].setItalic(font().italic());
 
+    // init font family with system font (the original sans-serif default looked terrible on KDE)
+    for (int i = 1; i < NUM_FONTS; i++) {
+        if (MusEGlobal::config.fonts[i].family().isEmpty())
+            MusEGlobal::config.fonts[i].setFamily(font().family());
+    }
+
     if (MusEGlobal::config.autoAdjustFontSize) {
         int fs = font().pointSize();
         MusEGlobal::config.fonts[1].setPointSize(qRound(fs * MusEGlobal::FntFac::F1));
