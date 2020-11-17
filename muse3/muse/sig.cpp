@@ -401,10 +401,13 @@ unsigned SigList::raster(unsigned t, int raster) const
             }
       int delta  = t - e->second->tick;
       int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
-      if (raster == 0)
+      // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
+      if (raster == 0 || raster > ticksM)
             raster = ticksM;
       int rest   = delta % ticksM;
       int bb     = (delta/ticksM)*ticksM;
+//       fprintf(stderr, "SigList::raster: t:%d delta:%d ticksM:%d raster:%d rest:%d bb:%d result:%d\n",
+//               t, delta, ticksM, raster, rest, bb, e->second->tick + bb + ((rest + raster/2)/raster)*raster);
       return  e->second->tick + bb + ((rest + raster/2)/raster)*raster;
       }
 
@@ -426,7 +429,8 @@ unsigned SigList::raster1(unsigned t, int raster) const
 
       int delta  = t - e->second->tick;
       int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
-      if (raster == 0)
+      // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
+      if (raster == 0 || raster > ticksM)
             raster = ticksM;
       int rest   = delta % ticksM;
       int bb     = (delta/ticksM)*ticksM;
@@ -452,7 +456,8 @@ unsigned SigList::raster2(unsigned t, int raster) const
 
       int delta  = t - e->second->tick;
       int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
-      if (raster == 0)
+      // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
+      if (raster == 0 || raster > ticksM)
             raster = ticksM;
       int rest   = delta % ticksM;
       int bb     = (delta/ticksM)*ticksM;
@@ -465,17 +470,17 @@ unsigned SigList::raster2(unsigned t, int raster) const
 
 int SigList::rasterStep(unsigned t, int raster) const
       {
-      if (raster == 0) {
-            ciSigEvent e = upper_bound(t);
-            if(e == end())
-            {
-              printf("SigList::rasterStep event not found tick:%d\n", t);
-              //return 0;
-              return raster;
-            }
-      
-            return ticks_beat(e->second->sig.n) * e->second->sig.z;
-            }
+      ciSigEvent e = upper_bound(t);
+      if(e == end())
+      {
+        printf("SigList::rasterStep event not found tick:%d\n", t);
+        //return 0;
+        return raster;
+      }
+      const int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
+      // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
+      if (raster == 0 || raster > ticksM)
+        raster = ticksM;
       return raster;
       }
 

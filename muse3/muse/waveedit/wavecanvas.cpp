@@ -1082,6 +1082,10 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
       if (x < 0)
             x = 0;
       
+      // Special for wave canvas: Normally in the base class EventCanvas we would rasterize the tick before emitting,
+      //  but since these units are in frames we handle displaying the position specially in the WaveEditor.
+      // One reason is that we may need the precise frame, such as for the editing 'functions' and the stretching below.
+      // Snapping those things, even to the minimum 1 tick ('off'), might be undesirable when we're editing at wave level.
       emit timeChanged(x);
 
       switch(_tool)

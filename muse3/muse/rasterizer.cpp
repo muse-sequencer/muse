@@ -53,7 +53,10 @@ void Rasterizer::updateColumn(Column col)
 
   const int col_num = col;
   const int col_offset = col_num * _rows;
+  // For the 'off' row.
   _rasterArray[col_offset] = 1;
+  // For the 'bar' row.
+  _rasterArray[col_offset + _rows - 1] = 0;
 
   if(col == TripletColumn) {
     d = _division * 4 * 2;
@@ -72,7 +75,8 @@ void Rasterizer::updateColumn(Column col)
     div = d / 2;
     }
     
-  for(row = _rows - 1; row >= 1; --row)
+  // Set all rows, except 'off' and 'bar' which are already done above.
+  for(row = _rows - 2; row >= 1; --row)
   {
     _rasterArray[col_offset + row] = div;
     // Can't use it if it has a remainder.
@@ -94,15 +98,15 @@ void Rasterizer::updateRasterizer()
   int num_cols = columnCount();
   if(num_cols > 0)
   {
-    //  The actual number of rows displayed depends on the division value.
-    //  The actual number and the maximum will always be at least 4: Off, whole, half,
+    // The actual number of rows displayed depends on the division value.
+    // The actual number and the maximum will always be at least 5: Bar, off, whole, half,
     //  and quarter notes are always available, regardless of division value.
     // The other two columns, triplet (x2/3) and dotted (x3/2), may contain up to the
     //  same rows as the centre, but some values may be missing if they have a remainder -
     //  values are unusable if they have a remainder after the divisions.
 
     int div = _division;
-    int rows = 4;
+    int rows = 5;
     while(1)
     {
       // Must be integral values, no remainder.
@@ -185,20 +189,62 @@ int Rasterizer::rasterAt(int row, int col) const
 
 bool Rasterizer::isBarRaster(int row, int col) const 
 { 
-  const int rast = rasterAt(row, col);
-  if(rast < 0)
-    return false;
+  return rasterAt(row, col) == 0;
+}
 
-  const int trip_numer = _division * 2;
-  const int dot_numer = _division * 3;
-  // Is the raster value length exactly equal to a bar, triplet bar, or dotted bar?
-  const int trip_bar_numer = 4 * trip_numer;
-  const int norm_bar_numer = 4 * _division;
-  const int dot_bar_numer = 4 * dot_numer;
-  return
-    (rast == norm_bar_numer) ||
-    (rast == trip_bar_numer / 3 && trip_bar_numer % 3 == 0) ||
-    (rast == dot_bar_numer / 2  && dot_bar_numer % 2  == 0);
+bool Rasterizer::isOffRaster(int row, int col) const 
+{ 
+  return rasterAt(row, col) == 1;
+}
+
+int Rasterizer::barRow() const
+{
+  return rowCount() - 1;
+}
+
+int Rasterizer::offRow() const
+{
+  return 0;
+}
+
+int Rasterizer::commonRaster(CommonRasters commonRast) const
+{
+  const int rows = rowCount();
+  int inv_row = 0;
+  switch(commonRast)
+  {
+    case CommonRasterBar:
+      return 0;
+    break;
+    case CommonRasterOff:
+      return 1;
+    break;
+    case CommonRaster1:
+      inv_row = 2;
+    break;
+    case CommonRaster2:
+      inv_row = 3;
+    break;
+    case CommonRaster4:
+      inv_row = 4;
+    break;
+    case CommonRaster8:
+      inv_row = 5;
+    break;
+    case CommonRaster16:
+      inv_row = 6;
+    break;
+    case CommonRaster32:
+      inv_row = 7;
+    break;
+    case CommonRaster64:
+      inv_row = 8;
+    break;
+  }
+  const int row = rows - inv_row;
+  if(row >= 0 && row != offRow() && row != barRow())
+    return rasterAt(row, NormalColumn);
+  return -1;
 }
 
 bool Rasterizer::isLessThanNormalRaster(int row, int col, int normalRaster) const 
@@ -206,6 +252,9 @@ bool Rasterizer::isLessThanNormalRaster(int row, int col, int normalRaster) cons
   const int rast = rasterAt(row, col);
   if(rast < 0)
     return true;
+  // The last row is for 'bar'.
+  if(rast == 0)
+    return false;
 
   switch(col)
   {
@@ -225,6 +274,17 @@ bool Rasterizer::isLessThanNormalRaster(int row, int col, int normalRaster) cons
   return true;
 }
 
+int Rasterizer::rasterDenomAt(int row) const
+{
+  // The first row is for 'off'.
+  if(row == 0)
+    return 0;
+  const int row_count = rowCount();
+  // The last row is for 'bar'.
+  if(row == row_count - 1)
+    return 0;
+  return 1 << (row_count - row - 2);
+}
 
 
 // =========================================================================
@@ -301,40 +361,39 @@ QString RasterizerModel::textAt(int row, int col) const
   if(rast_row < 0)
     return QString();
 
-  Rasterizer::Column rast_col = modelToRasterCol(col);
+  const Rasterizer::Column rast_col = modelToRasterCol(col);
   if(rast_col == Rasterizer::InvalidColumn)
     return QString();
 
   // All columns of row zero say 'off'.
-  if(rast_row == 0)
+  if(_rasterizer->isOffRaster(rast_row, rast_col))
     return QT_TRANSLATE_NOOP("MusECore::RasterizerModel", "Off");
+  
+  // All columns of the last row say 'Bar'.
+  if(_rasterizer->isBarRaster(rast_row, rast_col))
+    return QT_TRANSLATE_NOOP("MusECore::RasterizerModel", "Bar");
   
   const int rast = _rasterizer->rasterAt(rast_row, rast_col);
   if(rast < 0)
     return QString();
 
-  // Is the raster value length exactly equal to a bar, triplet bar, or dotted bar?
-  const bool is_bar = _rasterizer->isBarRaster(rast_row, rast_col);
   // Is the raster value length less than a triplet, normal, or dotted 64th note?
   const bool show_tick = _rasterizer->isLessThanNormalRaster(rast_row, rast_col, _rasterizer->division() / 16);
 
-  const int row_inv = rowCount() - row - 1;
   if(show_tick)
     return QString("%1tk").arg(rast);
   else
   {
+    const int denom_num = _rasterizer->rasterDenomAt(rast_row);
     QString s;
     switch(_displayFormat)
     {
       case FractionFormat:
-        if(is_bar)
-          s += QT_TRANSLATE_NOOP("MusECore::RasterizerModel", "Bar");
-        else
-          s += QString("1/%1").arg(1 << row_inv);
+          s += QString("1/%1").arg(denom_num);
       break;
 
       case DenominatorFormat:
-        s += QString("%1").arg(1 << row_inv);
+        s += QString("%1").arg(denom_num);
       break;
     }
     if(rast_col == Rasterizer::TripletColumn)
@@ -492,6 +551,92 @@ int RasterizerModel::checkRaster(int val) const
   return _rasterizer->division();
 }
 
+int RasterizerModel::barRow() const
+{
+  const int rast_bar_row = _rasterizer->barRow();
+  QMap<int /*rasterRow*/, int /*modelRow*/>::const_iterator imbr =
+    _rasterToModelRowMap.find(rast_bar_row);
+  if(imbr == _rasterToModelRowMap.constEnd())
+    return -1;
+  return imbr.value();
+}
+
+int RasterizerModel::offRow() const
+{
+  const int rast_off_row = _rasterizer->offRow();
+  QMap<int /*rasterRow*/, int /*modelRow*/>::const_iterator imbr =
+    _rasterToModelRowMap.find(rast_off_row);
+  if(imbr == _rasterToModelRowMap.constEnd())
+    return -1;
+  return imbr.value();
+}
+
+bool RasterizerModel::isBarRaster(int row, int col) const 
+{ 
+  const int rast_row = modelToRasterRow(row);
+  if(rast_row < 0)
+    return false;
+
+  const Rasterizer::Column rast_col = modelToRasterCol(col);
+  if(rast_col == Rasterizer::InvalidColumn)
+    return false;
+
+  return _rasterizer->isBarRaster(rast_row, rast_col);
+}
+
+bool RasterizerModel::isOffRaster(int row, int col) const 
+{ 
+  const int rast_row = modelToRasterRow(row);
+  if(rast_row < 0)
+    return false;
+
+  const Rasterizer::Column rast_col = modelToRasterCol(col);
+  if(rast_col == Rasterizer::InvalidColumn)
+    return false;
+
+  return _rasterizer->isOffRaster(rast_row, rast_col);
+}
+
+int RasterizerModel::commonRaster(Rasterizer::CommonRasters commonRast) const
+{
+  const int rows = rowCount();
+  int inv_row = 0;
+  switch(commonRast)
+  {
+    case Rasterizer::CommonRasterBar:
+      return 0;
+    break;
+    case Rasterizer::CommonRasterOff:
+      return 1;
+    break;
+    case Rasterizer::CommonRaster1:
+      inv_row = 2;
+    break;
+    case Rasterizer::CommonRaster2:
+      inv_row = 3;
+    break;
+    case Rasterizer::CommonRaster4:
+      inv_row = 4;
+    break;
+    case Rasterizer::CommonRaster8:
+      inv_row = 5;
+    break;
+    case Rasterizer::CommonRaster16:
+      inv_row = 6;
+    break;
+    case Rasterizer::CommonRaster32:
+      inv_row = 7;
+    break;
+    case Rasterizer::CommonRaster64:
+      inv_row = 8;
+    break;
+  }
+  const int row = rows - inv_row;
+  if(row >= 0 && row != offRow() && row != barRow())
+    return rasterAt(row, Rasterizer::NormalColumn);
+  return -1;
+}
+
 int RasterizerModel::pickRaster(int raster, RasterPick pick) const
 {
   const QModelIndex mdl_idx = modelIndexOfRaster(raster);
@@ -510,13 +655,19 @@ int RasterizerModel::pickRaster(int raster, RasterPick pick) const
   const bool has_dotted_col =
     _rasterToModelColumnMap.find(Rasterizer::DottedColumn) != _rasterToModelColumnMap.constEnd();
 
+  const bool is_off = isOffRaster(mdl_row, mdl_col);
+  const bool is_bar = isBarRaster(mdl_row, mdl_col);
+  const int off_row = offRow();
+  const int bar_row = barRow();
+
   int new_mdl_row = mdl_row;
   int new_mdl_col = mdl_col;
+  int new_raster = -1;
   switch(pick)
   {
     case ToggleTriple:
-      // Special for row zero ('off').
-      if(mdl_row == 0)
+      // Special for 'off' and 'bar' rows.
+      if(is_off || is_bar)
         return raster;
       if(mdl_col == Rasterizer::TripletColumn && has_normal_col)
         new_mdl_col = Rasterizer::NormalColumn;
@@ -525,7 +676,7 @@ int RasterizerModel::pickRaster(int raster, RasterPick pick) const
     break;
 
     case ToggleDotted:
-      if(mdl_row == 0)
+      if(is_off || is_bar)
         return raster;
       if(mdl_col == Rasterizer::DottedColumn && has_normal_col)
         new_mdl_col = Rasterizer::NormalColumn;
@@ -534,12 +685,13 @@ int RasterizerModel::pickRaster(int raster, RasterPick pick) const
     break;
 
     case ToggleHigherDotted:
-      if(mdl_row == 0)
+      if(is_off || is_bar)
         return raster;
       if(mdl_col == Rasterizer::DottedColumn && has_normal_col)
       {
-        // Exclude row zero ('off').
-        if(mdl_row >= 2)
+        // Exclude 'off' and 'bar' rows.
+        const int nrow = new_mdl_row - 1;
+        if(nrow >= 0 && nrow != off_row && nrow != bar_row)
         {
           --new_mdl_row;
           new_mdl_col = Rasterizer::NormalColumn;
@@ -547,7 +699,8 @@ int RasterizerModel::pickRaster(int raster, RasterPick pick) const
       }
       else if(has_dotted_col)
       {
-        if(mdl_row < (mdl_rows - 1))
+        const int nrow = new_mdl_row + 1;
+        if(nrow < mdl_rows && nrow != off_row && nrow != bar_row)
         {
           new_mdl_col = Rasterizer::DottedColumn;
           ++new_mdl_row;
@@ -555,87 +708,53 @@ int RasterizerModel::pickRaster(int raster, RasterPick pick) const
       }
     break;
 
+    case GotoBar:
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRasterBar);
+    break;
+
     case GotoOff:
-      if(mdl_rows >= 1)
-      {
-        // Special for row zero ('off').
-        new_mdl_row = 0;
-        new_mdl_col = Rasterizer::TripletColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRasterOff);
     break;
 
     case Goto1:
-      // Exclude row zero ('off').
-      if(mdl_rows >= 2)
-      {
-        new_mdl_row = mdl_rows - 1;
-        // Special for row zero ('off').
-        if(mdl_row == 0)
-          new_mdl_col = Rasterizer::NormalColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRaster1);
     break;
 
     case Goto2:
-      if(mdl_rows >= 3)
-      {
-        new_mdl_row = mdl_rows - 2;
-        if(mdl_row == 0)
-          new_mdl_col = Rasterizer::NormalColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRaster2);
     break;
 
     case Goto4:
-      if(mdl_rows >= 4)
-      {
-        new_mdl_row = mdl_rows - 3;
-        if(mdl_row == 0)
-          new_mdl_col = Rasterizer::NormalColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRaster4);
     break;
 
     case Goto8:
-      if(mdl_rows >= 5)
-      {
-        new_mdl_row = mdl_rows - 4;
-        if(mdl_row == 0)
-          new_mdl_col = Rasterizer::NormalColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRaster8);
     break;
 
     case Goto16:
-      if(mdl_rows >= 6)
-      {
-        new_mdl_row = mdl_rows - 5;
-        if(mdl_row == 0)
-          new_mdl_col = Rasterizer::NormalColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRaster16);
     break;
 
     case Goto32:
-      if(mdl_rows >= 7)
-      {
-        new_mdl_row = mdl_rows - 6;
-        if(mdl_row == 0)
-          new_mdl_col = Rasterizer::NormalColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRaster32);
     break;
 
     case Goto64:
-      if(mdl_rows >= 8)
-      {
-        new_mdl_row = mdl_rows - 7;
-        if(mdl_row == 0)
-          new_mdl_col = Rasterizer::NormalColumn;
-      }
+      new_raster = _rasterizer->commonRaster(Rasterizer::CommonRaster64);
     break;
 
     case NoPick:
     break;
   }
 
+  // Was there a new raster?
+  if(new_raster >= 0)
+    return new_raster;
+  // Otherwise was there no new model row and column?
   if(new_mdl_row == mdl_row && new_mdl_col == mdl_col)
     return raster;
-
+  // Return the raster at the new model row and column
   return rasterAt(new_mdl_row, new_mdl_col);
 }
 
@@ -663,9 +782,9 @@ QVariant RasterizerModel::data(const QModelIndex &index, int role) const
     return rasterAt(row, col);
   else if(role == Qt::TextAlignmentRole)
   {
-    // Special for row zero ('off'): In the view we set it to span all columns.
+    // Special for 'off' and 'bar' rows: In the view we set them to span all columns.
     // Don't bother aligning if there is only one column (it just looks a little weird).
-    if(row == 0 && columnCount() > 1)
+    if(columnCount() > 1 && (row == offRow() || row == barRow()))
       return Qt::AlignCenter;
   }
   

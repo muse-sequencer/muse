@@ -46,8 +46,19 @@ void RasterizerTableView::reset()
   if(!mdl)
     return;
   const int cols = mdl->columnCount();
-  // Special for row zero ('off'): Span all columns.
-  setSpan(0, 0, 1, cols);
+  // Special for 'off' and 'bar' rows: Span all columns.
+  // Is it a RasterizerModel? (It should be).
+  const RasterizerModel* rast_mdl = dynamic_cast<const RasterizerModel*>(mdl);
+  if(rast_mdl)
+  {
+    const int off_row = rast_mdl->offRow();
+    const int bar_row = rast_mdl->barRow();
+    if(off_row >= 0)
+      setSpan(off_row, 0, 1, cols);
+    if(bar_row >= 0)
+      setSpan(bar_row, 0, 1, cols);
+  }
+    
   int w = 0;
   for(int i = 0; i < cols; ++i)
   {

@@ -159,8 +159,13 @@ bool TagEventListStruct::add(const Event& e)
 {
   //if(e.empty())
   //  return _evlist.end();
-  _stats.add(e);
-  return _evlist.add(e) != _evlist.end();
+// REMOVE Tim. Ctrl. Changed.
+//   _stats.add(e);
+//   return _evlist.add(e) != _evlist.end();
+  const bool res = _evlist.add(e) != _evlist.end();
+  if(res)
+    _stats.add(e);
+  return res;
 }
 
 

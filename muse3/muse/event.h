@@ -219,6 +219,10 @@ class EventList : public EL {
 
       // Returns an iterator that points to the inserted event.
       // Returns end() if an error occurred.
+      // REMOVE Tim. Ctrl. Added comment.
+      // NOTE: It is FORBIDDEN to have multiple controller events at the same time with the same controller number.
+      // To preserve speed, we RELY on catching that at higher levels like the add event dialog or during song loading.
+      // See detailed comments in add().
       iEvent add(Event event);
       void move(Event& event, unsigned tick);
       void dump() const;
@@ -236,6 +240,15 @@ class EventList : public EL {
       // If findCtl is given it finds that specific controller.
       // Otherwise if findCtl -1 it finds all controllers.
       void findControllers(bool wave, FindMidiCtlsList_t* outList, int findCtl = -1) const;
+      // REMOVE Tim. ctrl. Added.
+      // If event is a controller, returns an iterator to the event if found, otherwise returns end.
+      // Note: It is FORBIDDEN to have multiple controller events at the same time with the same controller number.
+      ciEvent findControllerAt(const Event& event) const;
+      iEvent findControllerAt(const Event& event);
+      // REMOVE Tim. ctrl. Added.
+      // Returns true if the event is a controller event and its controller number
+      //  already exists at the given time, regardless of value.
+      bool controllerValueExists(const Event& event) const;
       };
 
 } // namespace MusECore

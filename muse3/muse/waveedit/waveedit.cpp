@@ -559,6 +559,11 @@ void WaveEdit::setTime(unsigned samplepos)
       // Normally frame to tick methods round down. But here we need it to 'snap'
       //  the frame from either side of a tick to the tick. So round to nearest.
       unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos, 0, MusECore::LargeIntRoundNearest);
+      // Rasterize the tick.
+      tick = MusEGlobal::sigmap.raster(tick, _raster);
+      // To rasterize the pos2 frame, we must convert the rasterized tick back to frames.
+      samplepos = MusEGlobal::tempomap.tick2frame(tick);
+
       pos1->setValue(tick);
       pos2->setValue(samplepos);
       time->setPos(3, tick, false);
@@ -775,10 +780,8 @@ void WaveEdit::soloChanged(bool flag)
 
 void WaveEdit::keyPressEvent(QKeyEvent* event)
       {
-// REMOVE Tim. raster. Added.
-// TODO: Raster:
-//       RasterizerModel::RasterPick rast_pick = RasterizerModel::NoPick;
-//       const int cur_rast = raster();
+      RasterizerModel::RasterPick rast_pick = RasterizerModel::NoPick;
+      const int cur_rast = raster();
 
       WaveCanvas* wc = (WaveCanvas*)canvas;
       int key = event->key();
@@ -894,43 +897,52 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             return;
             }
             
-// TODO: Raster:            
-//       else if (key == shortcuts[SHRT_SET_QUANT_1].key)
-//             rast_pick = RasterizerModel::Goto1;
-//       else if (key == shortcuts[SHRT_SET_QUANT_2].key)
-//             rast_pick = RasterizerModel::Goto2;
-//       else if (key == shortcuts[SHRT_SET_QUANT_3].key)
-//             rast_pick = RasterizerModel::Goto4;
-//       else if (key == shortcuts[SHRT_SET_QUANT_4].key)
-//             rast_pick = RasterizerModel::Goto8;
-//       else if (key == shortcuts[SHRT_SET_QUANT_5].key)
-//             rast_pick = RasterizerModel::Goto16;
-//       else if (key == shortcuts[SHRT_SET_QUANT_6].key)
-//             rast_pick = RasterizerModel::Goto32;
-//       else if (key == shortcuts[SHRT_SET_QUANT_7].key)
-//             rast_pick = RasterizerModel::Goto64;
-//       else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
-//             rast_pick = RasterizerModel::ToggleTriple;
-//       else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
-//             rast_pick = RasterizerModel::ToggleDotted;
-//       else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key)
-//             rast_pick = RasterizerModel::ToggleHigherDotted;
+      else if (key == shortcuts[SHRT_SET_QUANT_BAR].key)
+            rast_pick = RasterizerModel::GotoBar;
+      else if (key == shortcuts[SHRT_SET_QUANT_OFF].key)
+            //this hack has the downside that the next shortcut will use triols, but it's better than not having it, I think...
+            rast_pick = RasterizerModel::GotoOff;
+      else if (key == shortcuts[SHRT_SET_QUANT_1].key)
+            rast_pick = RasterizerModel::Goto1;
+      else if (key == shortcuts[SHRT_SET_QUANT_2].key)
+            rast_pick = RasterizerModel::Goto2;
+      else if (key == shortcuts[SHRT_SET_QUANT_3].key)
+            rast_pick = RasterizerModel::Goto4;
+      else if (key == shortcuts[SHRT_SET_QUANT_4].key)
+            rast_pick = RasterizerModel::Goto8;
+      else if (key == shortcuts[SHRT_SET_QUANT_5].key)
+            rast_pick = RasterizerModel::Goto16;
+      else if (key == shortcuts[SHRT_SET_QUANT_6].key)
+            rast_pick = RasterizerModel::Goto32;
+      else if (key == shortcuts[SHRT_SET_QUANT_7].key)
+            rast_pick = RasterizerModel::Goto64;
+      else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
+            rast_pick = RasterizerModel::ToggleTriple;
+      else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
+            rast_pick = RasterizerModel::ToggleDotted;
+      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key)
+            rast_pick = RasterizerModel::ToggleHigherDotted;
             
       else { //Default:
             event->ignore();
             return;
             }
         
-// TODO: Raster:  
-//       if(rast_pick != RasterizerModel::NoPick)
-//       {
-//         const int new_rast = _rasterizerModel->pickRaster(cur_rast, rast_pick);
-//         if(new_rast != cur_rast)
-//         {
-//           setRaster(new_rast);
-//           toolbar->setRaster(_raster);
-//         }
-//       }
+      if(rast_pick != RasterizerModel::NoPick)
+      {
+        const int new_rast = _rasterizerModel->pickRaster(cur_rast, rast_pick);
+        if(new_rast != cur_rast)
+        {
+          setRaster(new_rast);
+          //toolbar->setRaster(_raster);
+          
+          const QModelIndex mdl_idx = _rasterizerModel->modelIndexOfRaster(_raster);
+          if(mdl_idx.isValid())
+            rasterLabel->setCurrentModelIndex(mdl_idx);
+          else
+            fprintf(stderr, "WaveEdit::keyPressEvent: _raster %d not found in box!\n", _raster);
+        }
+      }
       }
 
 //---------------------------------------------------------

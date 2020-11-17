@@ -1639,6 +1639,8 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             hscroll->setPos(pos);
             return;
             }
+      else if (key == shortcuts[SHRT_SET_QUANT_BAR].key)
+            rast_pick = RasterizerModel::GotoBar;
       else if (key == shortcuts[SHRT_SET_QUANT_OFF].key)
             //this hack has the downside that the next shortcut will use triols, but it's better than not having it, I think...
             rast_pick = RasterizerModel::GotoOff;

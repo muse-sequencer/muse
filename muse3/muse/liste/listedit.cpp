@@ -750,9 +750,20 @@ void ListEdit::editInsertCtrl()
         else
             tick-= curPart->tick();
         event.setTick(tick);
-        // Indicate do undo, and do port controller values and clone parts.
-        MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent,
-                                                          event, curPart, true, true));
+        // REMOVE Tim. ctrl. Added.
+        // It is FORBIDDEN to have multiple controller events at the same time with the same controller number.
+        MusECore::ciEvent iev = curPart->events().findControllerAt(event);
+        if(iev != curPart->events().end())
+        {
+          // Indicate do undo, and do port controller values and clone parts.
+          MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,
+                                                            event, iev->second, curPart, true, true));
+        }
+        else
+
+          // Indicate do undo, and do port controller values and clone parts.
+          MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddEvent,
+                                                            event, curPart, true, true));
     }
 }
 

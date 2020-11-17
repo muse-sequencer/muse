@@ -657,6 +657,10 @@ int MidiCtrlValList::visibleValue(unsigned int tick, Part* part, bool inclMutedP
 //    return true if new controller value added
 //   Accepts duplicate controller items at the same position, to accurately reflect
 //    what is really in the event lists.
+//   REMOVE Tim. Ctrl. Added comment.
+//   NOTE: It is FORBIDDEN to have multiple controller events at the same time with the same controller number.
+//   To preserve speed, we RELY on catching that at higher levels like the add event dialog or during song loading.
+//   See detailed comments in EventList::add().
 //---------------------------------------------------------
 
 bool MidiCtrlValList::addMCtlVal(unsigned int tick, int val, Part* part)

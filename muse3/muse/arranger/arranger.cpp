@@ -251,10 +251,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       QList<Rasterizer::Column> rast_cols;
       rast_cols << Rasterizer::NormalColumn;
       _rasterizerModel = new RasterizerModel(
-        MusEGlobal::globalRasterizer, this, 6, rast_cols);
+      MusEGlobal::globalRasterizer, this, 7, rast_cols);
       _rasterizerModel->setDisplayFormat(RasterizerModel::FractionFormat);
 
-      _raster = _rasterizerModel->pickRaster(0, RasterizerModel::Goto1);
+      _raster = _rasterizerModel->pickRaster(0, RasterizerModel::GotoBar);
       selected = nullptr;
       showTrackinfoFlag = true;
       
@@ -1362,6 +1362,9 @@ void Arranger::keyPressEvent(QKeyEvent* event)
   }
   // QUANTIZE shortcuts from midi editors is reused for SNAP in Arranger
   //    `does not work exactly the same but close enough I think.
+  else if (key == shortcuts[SHRT_SET_QUANT_BAR].key) {
+      rast_pick = RasterizerModel::GotoBar;
+  }
   else if (key == shortcuts[SHRT_SET_QUANT_OFF].key) {
       rast_pick = RasterizerModel::GotoOff;
   }

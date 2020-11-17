@@ -138,7 +138,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       _minXMag = -500;
       _maxXMag = 2;
       _rasterizerModel->setDisplayFormat(RasterizerModel::FractionFormat);
-      _rasterizerModel->setMaxRows(6);
+      _rasterizerModel->setMaxRows(7);
       QList<Rasterizer::Column> rast_cols;
       rast_cols << 
         Rasterizer::NormalColumn;

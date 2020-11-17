@@ -92,8 +92,21 @@ iEvent EventList::add(Event event)
       }
       else
       {
-// REMOVE Tim. citem. ctl. Added. It seems we must allow multiple controller events
-//  if they are to be moved, dragged, and dropped.
+// REMOVE Tim. Ctrl. Changed comment.
+//
+// // REMOVE Tim. citem. ctl. Added. It seems we must allow multiple controller events
+// //  if they are to be moved, dragged, and dropped.
+
+// NOTE: Due to the companion controller cache, it is FORBIDDEN to have multiple controller events at the same time
+//  with the same controller number. The cache has no way of linking specific entries with those multiple events.
+// If the cache has multiple events, it can crash the operations system when deleting cache items.
+// It is tempting to catch that at a low level like the event list.
+// But it would only be there to catch rare mistakes, and may slow other legitimate additions, and be redundant
+//  in many cases where a search is already done.
+// Also, if add() is called as part of an (undo) operation, we have no mechanism to return a flag indicating success -
+//  not when add() is called in the realtime thread. Not even in non-realtime stage 1 when Song::applyOperation() is called.
+// So to preserve speed, we RELY on catching that at higher levels such as the add event dialog or during song loading.
+
 //         if(event.type() == Controller)
 //         {
 //           EventRange er = equal_range(key);
@@ -127,6 +140,7 @@ iEvent EventList::add(Event event)
 //         }
 //         else
 //         {        
+
           iEvent i = lower_bound(key);
           while(i != end() && i->first == key && i->second.type() != Note)
             ++i;
@@ -233,8 +247,11 @@ int EventList::findSimilarType(const Event& event, EventList& list,
           compareA, compareB, compareC,
           compareWavePath, compareWavePos, compareWaveStartPos))
     {
-      ++cnt;
-      list.add(e);
+// REMOVE Tim. ctrl. Changed.
+//       ++cnt;
+//       list.add(e);
+      if(list.add(e) != list.end())
+        ++cnt;
     }
   }
   return cnt;
@@ -476,6 +493,42 @@ void EventList::findControllers(bool wave, FindMidiCtlsList_t* outList, int find
       break;
     }
   }
+}
+
+// REMOVE Tim. ctrl. Added.
+ciEvent EventList::findControllerAt(const Event& event) const
+{
+  cEventRange range = equal_range(event.posValue());
+  const int ctlnum = event.dataA();
+  for (ciEvent i = range.first; i != range.second; ++i) {
+    if (i->second.type() == Controller && i->second.dataA() == ctlnum)
+          return i;
+  }
+  return cend();
+}
+
+// REMOVE Tim. ctrl. Added.
+iEvent EventList::findControllerAt(const Event& event)
+{
+  EventRange range = equal_range(event.posValue());
+  const int ctlnum = event.dataA();
+  for (iEvent i = range.first; i != range.second; ++i) {
+    if (i->second.type() == Controller && i->second.dataA() == ctlnum)
+          return i;
+  }
+  return end();
+}
+
+// REMOVE Tim. ctrl. Added.
+bool EventList::controllerValueExists(const Event& event) const
+{
+  cEventRange range = equal_range(event.posValue());
+  const int ctlnum = event.dataA();
+  for (ciEvent i = range.first; i != range.second; ++i) {
+    if (i->second.type() == Controller && i->second.dataA() == ctlnum)
+          return true;
+  }
+  return false;
 }
 
 } // namespace MusECore

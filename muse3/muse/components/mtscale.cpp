@@ -106,6 +106,10 @@ void MTScale::setPos(int idx, unsigned val, bool)
                   }
             return;
             }
+      // Why don't we just rasterize here instead of in the callers?
+      // Possibly because we may need fine control over this PROGRAMMED position
+      //  versus the position EMITTED by MTScale?
+      //val = MusEGlobal::sigmap.raster(val, raster);
       if (waveMode)
             val = MusEGlobal::tempomap.tick2frame(val);
       if (val == pos[idx])

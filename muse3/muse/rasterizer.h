@@ -48,10 +48,15 @@ class Rasterizer : public QObject {
         DottedColumn  =  2
         };
 
+      enum CommonRasters {
+         CommonRasterBar, CommonRasterOff, CommonRaster1, CommonRaster2, CommonRaster4,
+         CommonRaster8, CommonRaster16, CommonRaster32, CommonRaster64
+        };
+
   private:
       int _division;          // System midi division (ticks per quarter note) setting.
       int _rows;              // Current number of rows in the raster array.
-      int *_rasterArray;      // Two-dimensional array of raster values. -1 = invalid.
+      int *_rasterArray;      // Two-dimensional array of raster values. -1 = invalid. 0 = Snap to bar. 1 = 'off'.
 
       void updateColumn(Column col);
 
@@ -85,12 +90,23 @@ class Rasterizer : public QObject {
       //  at that location, or row or column are out of range.
       int rasterAt(int row, int col) const;
 
-      // Returns true if the raster at the given row and column is exactly equal
-      //  to a triple, normal, or dotted bar.
+      // Returns true if the raster at the given row and column is 0 (snap to bar).
       bool isBarRaster(int row, int col) const;
+      // Returns true if the raster at the given row and column is 1 ('off').
+      bool isOffRaster(int row, int col) const;
+      // Returns the row number of the 'bar' row.
+      int barRow() const;
+      // Returns the row number of the 'off' row.
+      int offRow() const;
+      // Returns the raster value of some often-used denominator values.
+      // Returns -1 if the raster is not available.
+      int commonRaster(CommonRasters commonRast) const;
       // Returns true if the raster at the given row and column is less than
       //  a triple, normal, or dotted version of the given normal raster value.
       bool isLessThanNormalRaster(int row, int col, int normalRaster) const;
+      // Returns a denominator value for the row, suitable for display (1 2 4 8 16 32 etc.)
+      // Returns zero if the row is a 'bar' row.
+      int rasterDenomAt(int row) const;
 };
 
 class RasterizerModel : public QAbstractTableModel
@@ -103,7 +119,7 @@ class RasterizerModel : public QAbstractTableModel
     enum DisplayFormat { FractionFormat, DenominatorFormat };
     enum RasterPick { NoPick,
       ToggleTriple, ToggleDotted, ToggleHigherDotted,
-      GotoOff, Goto1, Goto2, Goto4, Goto8, Goto16, Goto32, Goto64 };
+      GotoBar, GotoOff, Goto1, Goto2, Goto4, Goto8, Goto16, Goto32, Goto64 };
 
   private:
     // The external rasterizer array used in this model.
@@ -166,7 +182,7 @@ class RasterizerModel : public QAbstractTableModel
     // Returns a model-to-raster row list, ie. which raster rows are included in the model.
     QList<int /*rasterRow*/> visibleRows() const;
     // Returns the model-to-raster column list, ie. which raster columns are included in the model.
-    QList<Rasterizer::Column> visibleColumns() const; // { return _columns; }
+    QList<Rasterizer::Column> visibleColumns() const;
     // Sets the model-to-raster column list, ie. which raster columns are included in the model.
     void setVisibleColumns(const QList<Rasterizer::Column>& cols);
     // How text is displayed.
@@ -174,6 +190,17 @@ class RasterizerModel : public QAbstractTableModel
     // Sets how text is displayed.
     void setDisplayFormat(DisplayFormat format);
 
+    // Returns the model row number of the 'bar' row.
+    int barRow() const;
+    // Returns the model row number of the 'off' row.
+    int offRow() const;
+    // Returns true if the raster at the given row and column is 0 (snap to bar).
+    bool isBarRaster(int row, int col) const;
+    // Returns true if the raster at the given row and column is 1 ('off').
+    bool isOffRaster(int row, int col) const;
+    // Returns the raster value of some often-used denominator values.
+    // Returns -1 if the raster is not available.
+    int commonRaster(Rasterizer::CommonRasters commonRast) const;
     // Returns the index into the model of the given raster value, or -1 if raster not found.
     int indexOfRaster(int val) const;
     // Returns the model index of the given raster value, or invalid model index if raster not found.

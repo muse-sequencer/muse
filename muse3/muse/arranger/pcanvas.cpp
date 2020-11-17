@@ -1268,6 +1268,8 @@ void PartCanvas::mouseMove(QMouseEvent* event)
 
       event->ignore();
       emit timeChanged(MusEGlobal::sigmap.raster(x, *_raster));
+      //fprintf(stderr, "PartCanvas::mouseMove: x:%d *_raster:%d sigmap.raster(x, *_raster):%d\n",
+      //        x, *_raster, MusEGlobal::sigmap.raster(x, *_raster));
 
       showStatusTip(event);
 }
