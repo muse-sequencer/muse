@@ -136,16 +136,20 @@ if (GIT_FOUND)
             OUTPUT_VARIABLE GIT_RET_NOTUSED
             RETURN_VALUE IS_GIT_REPO )
     if(IS_GIT_REPO EQUAL 0)
-      EXEC_PROGRAM( ${GIT_EXECUTABLE}
+        EXEC_PROGRAM( ${GIT_EXECUTABLE}
             ARGS "log -1 --format='%ci'"
             OUTPUT_VARIABLE MusE_GITDATE )
-      EXEC_PROGRAM( ${GIT_EXECUTABLE}
-            ARGS "log -1 --format='%t'"
-            OUTPUT_VARIABLE MusE_GITHASH )
-      EXEC_PROGRAM( ${GIT_EXECUTABLE}
+#        EXEC_PROGRAM( ${GIT_EXECUTABLE}
+#            ARGS "log -1 --format='%t'"
+#            OUTPUT_VARIABLE MusE_GITHASH )
+        EXEC_PROGRAM( ${GIT_EXECUTABLE}
             ARGS "rev-parse --abbrev-ref HEAD"
             OUTPUT_VARIABLE MusE_GITBRANCH )
-      SET(MusE_GITSTRING "git: ${MusE_GITBRANCH} - ${MusE_GITHASH} - ${MusE_GITDATE}")
+        EXEC_PROGRAM( ${GIT_EXECUTABLE}
+            ARGS "describe --dirty --always"
+            OUTPUT_VARIABLE MusE_GITDESCRIBE )
+        SET(MusE_GITSTRING "${MusE_GITBRANCH} | ${MusE_GITDESCRIBE} | ${MusE_GITDATE}")
+#        SET(MusE_GITSTRING "git: ${MusE_GITBRANCH} - ${MusE_GITHASH} - ${MusE_GITDATE}")
     else (IS_GIT_REPO EQUAL 0)
         SET(MusE_GITSTRING "")
     endif (IS_GIT_REPO EQUAL 0)
