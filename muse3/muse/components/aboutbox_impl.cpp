@@ -31,15 +31,20 @@
 #include "driver/rtaudio.h"
 #endif
 
+
 namespace MusEGui {
 
 AboutBoxImpl::AboutBoxImpl()
 {
   setupUi(this);
+
   imageLabel->setPixmap(*aboutMuseImage);
+
   QString version(VERSION);
   QString gitstring(GITSTRING);
-  versionLabel->setText("Version: " + version + (gitstring == QString() ? "" : "\n("+ gitstring + ")"));
+
+  versionLabel->setText("Version: " + version + (gitstring.isEmpty() ? "" : "\ngit: " + gitstring));
+
   QString systemInfo="";
 
 #ifdef LV2_SUPPORT
@@ -56,10 +61,17 @@ AboutBoxImpl::AboutBoxImpl()
   #endif
 #endif
 
-    internalDebugInformation->append(versionLabel->text());
-    internalDebugInformation->append("Build info:");
+    if (!gitstring.isEmpty()) {
+        QStringList sl = gitstring.split(" | ");
+        internalDebugInformation->append("GIT");
+        internalDebugInformation->append(QString("Branch:\t\t%1").arg(sl.at(0)));
+        internalDebugInformation->append(QString("Tag:\t\t%1").arg(sl.at(1)));
+        internalDebugInformation->append(QString("Commit timestamp:\t%1").arg(sl.at(2)));
+    }
+
+    internalDebugInformation->append("\nBuild info");
     internalDebugInformation->append(systemInfo);
-    internalDebugInformation->append("Runtime information:\n");
+    internalDebugInformation->append("Runtime information\n");
     internalDebugInformation->append(QString("Running audio driver:\t%1").arg(MusEGlobal::audioDevice->driverName()));
 
 #ifdef HAVE_RTAUDIO
@@ -71,7 +83,7 @@ AboutBoxImpl::AboutBoxImpl()
     internalDebugInformation->append(QString("Segment size\t\t%1").arg(MusEGlobal::segmentSize));
     internalDebugInformation->append(QString("Segment count\t%1").arg(MusEGlobal::segmentCount));
 
-    internalDebugInformation->append("\nTimer:");
+    internalDebugInformation->append("\nTimer");
     if ((MusEGlobal::midiSeq)) {
         internalDebugInformation->append(QString("Name\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerName()));
         internalDebugInformation->append(QString("Freq\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerFreq()));
@@ -79,7 +91,7 @@ AboutBoxImpl::AboutBoxImpl()
         internalDebugInformation->append("no timer information available as midiSeq is not instantiated");
     }
 
-    internalDebugInformation->append("\nMiscellaneous:");
+    internalDebugInformation->append("\nMiscellaneous");
     internalDebugInformation->append(QString("debugMode:\t\t%1").arg(MusEGlobal::debugMode?"true":"false"));
     internalDebugInformation->append(QString("midInputTrace:\t%1").arg(MusEGlobal::midiInputTrace?"true":"false"));
     internalDebugInformation->append(QString("midiOutputTrace:\t%1").arg(MusEGlobal::midiOutputTrace?"true":"false"));
@@ -106,6 +118,9 @@ AboutBoxImpl::AboutBoxImpl()
     internalDebugInformation->append(QString("midiSeqRunning:\t%1").arg(MusEGlobal::midiSeqRunning?"true":"false"));
     internalDebugInformation->append(QString("automation:\t\t%1").arg(MusEGlobal::automation?"true":"false"));
 
+    QTextCursor cursor = internalDebugInformation->textCursor();
+    cursor.setPosition(0);
+    internalDebugInformation->setTextCursor(cursor);
 }
 
 }
