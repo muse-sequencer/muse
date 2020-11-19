@@ -25,23 +25,26 @@
 # produce the .desktop file
 #
 configure_file (
-      org.musesequencer.Muse3.desktop.in
-      ${PROJECT_BINARY_DIR}/packaging/org.musesequencer.Muse3.desktop
+      org.musesequencer.Muse4.desktop.in
+      ${PROJECT_BINARY_DIR}/packaging/org.musesequencer.Muse4.desktop
       )
 
 #
 # install the appdata, desktop and mime files
 #
-install( FILES org.musesequencer.Muse3.png
-      DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps/
+install( FILES muse64x64.png
+      DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps/ RENAME muse.png
       )
-install( FILES ${PROJECT_BINARY_DIR}/packaging/org.musesequencer.Muse3.desktop
+install( FILES muse128x128.png
+      DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/128x128/apps/ RENAME muse.png
+      )
+install( FILES ${PROJECT_BINARY_DIR}/packaging/org.musesequencer.Muse4.desktop
       DESTINATION ${SHARE_INSTALL_PREFIX}/applications/
       )
 install( FILES muse.xml
       DESTINATION ${SHARE_INSTALL_PREFIX}/mime/packages/
       )
-install( FILES org.musesequencer.Muse3.appdata.xml
+install( FILES org.musesequencer.Muse4.appdata.xml
       DESTINATION ${SHARE_INSTALL_PREFIX}/metainfo/
       )
 
