@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 1999-2020 MusE development team -->
+
+<component type="desktop">
+  <id>org.musesequencer.Muse4</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0+</project_license>
+  <name>MusE</name>
+  <summary>Digital Audio Workstation</summary>
+  
+  <translation type="qt">MusE</translation>
+  <content_rating type="oars-1.0">
+    <content_attribute id="language-humor">none</content_attribute>
+  </content_rating>
+  
+  <description>
+    <p>
+      MusE is a MIDI/Audio sequencer with recording and editing capabilities. It can
+      perform audio effects like chorus/flanger in real-time via LASH and it supports
+      Jack and ALSA interfaces. MusE aims to be a complete multitrack virtual studio
+      for Linux.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">org.musesequencer.muse4.desktop</launchable>
+  
+  <screenshots>
+    <screenshot type="default">
+      <image>https://muse-sequencer.github.io/img/arranger_new.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://muse-sequencer.github.io/img/midi.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://muse-sequencer.github.io/img/drum.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://muse-sequencer.github.io/img/wave.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://muse-sequencer.github.io/img/mixer.png</image>
+    </screenshot>
+  </screenshots>
+  
+  <url type="homepage">https://muse-sequencer.github.io/</url>
+  
+  <provides>
+    <binary>muse4</binary>
+  </provides>
+
+  <releases>
+    <release version="4.0.0-pre1" date="2020-11-15">
+      <description>
+        <p>Apart from the usual bunch of bug fixes and improvements 
+        the most prominent new feature is the new tabbed UI with docks! 
+        By default now with a dark theme.</p>
+      </description>        
+    </release>
+  </releases>
+  
+</component>

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=MusE
+GenericName=Digital Audio Workstation
+GenericName[fr]=Séquenceur audio/MIDI
+Comment=A music editor for Linux
+Comment[fr]=Éditeur MIDI de musique
+Icon=muse.png
+Type=Application
+Exec=${MusE_EXEC_NAME}
+Terminal=false
+Categories=Sequencer;Midi;X-Jack;X-Sequencers;X-MIDI;Audio;AudioVideo;
+MimeType=audio/midi;application/x-muse;application/xml;
