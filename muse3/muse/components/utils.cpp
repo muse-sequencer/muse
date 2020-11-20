@@ -82,7 +82,7 @@ void dump(const unsigned char* p, int n)
       {
       printf("dump %d\n", n);
       for (int i = 0; i < n; ++i) {
-            printf("%02x ", *p++);
+            printf("%02x ", p[i]);
             if ((i > 0) && (i % 16 == 0) && (i+1 < n))
                   printf("\n");
             }
