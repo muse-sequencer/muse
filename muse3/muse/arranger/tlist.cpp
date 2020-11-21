@@ -108,7 +108,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       //  full rect paint events even on small scrolls! See help on QPainter::scroll().
       setAttribute(Qt::WA_OpaquePaintEvent);
 
-      setStatusTip(tr("Track list: Use context menu to create tracks. Click track ID to select, CTRL to add, SHIFT for range, dblclick to select all of same type. Press F1 for help."));
+      setStatusTip(tr("Track list: RMB to create tracks. Click track ID to select, CTRL to add select, SHIFT for range select, dblclick to select all tracks of same type. Press F1 for help."));
 
       setObjectName(name);
       ypos = 0;

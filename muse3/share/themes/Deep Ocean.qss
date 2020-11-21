@@ -198,7 +198,8 @@ QWidget#ListEdit QTreeView {
 */
 
 QWidget#Rack {
-    border: 1px solid rgb(24,151,255);
+    border: 1px solid rgb(0,120,86);
+    /* border: 1px solid rgb(24,151,255); */
 }
 
 QWidget#Strip {
@@ -216,13 +217,13 @@ QWidget#AudioAutoType {
     border-radius: 3px;
 }
 
-QWidget#Strip > QAbstractButton:hover {
-    background-color: rgb(0,127,255);
-}
-
 QWidget#Strip > QAbstractButton:checked {
     background-color: rgb(0,90,160);
     border: 1px solid rgb(0,127,255);
+}
+
+QWidget#Strip > QAbstractButton:hover {
+    background-color: rgb(0,127,255);
 }
 
 QWidget#Strip > QAbstractButton:!enabled {
