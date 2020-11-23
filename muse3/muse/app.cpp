@@ -687,7 +687,7 @@ MusE::MusE() : QMainWindow()
       settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome..."), this);
       settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync..."), this);
       settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export..."), this);
-      settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports / Soft Synths..."), this);
+      settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports/Soft Synths..."), this);
 
       //-------- Help Actions
       helpManualAction = new QAction(tr("&Manual (wiki)..."), this);
