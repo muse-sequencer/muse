@@ -2059,12 +2059,15 @@ void TList::mousePressEvent(QMouseEvent* ev)
         {
             if (button == Qt::RightButton) {
 
-                bool allSelected=false;
-                if (ctrl || (t->selected() && tracks->countSelected() > 1)) // toggle all selected tracks
-                    allSelected=true;
+                if (t->isMidiTrack()) {
+                    bool allSelected=false;
+                    if (ctrl || (t->selected() && tracks->countSelected() > 1)) // toggle all selected tracks
+                        allSelected=true;
 
-                if (t->isMidiTrack())
                     classesPopupMenu(t, x, t->y() - ypos, allSelected);
+                } else if (t->isSynthTrack()) {
+                    oportPropertyPopupMenu(t, x, t->y() - ypos);
+                }
             }
             break;
         }
