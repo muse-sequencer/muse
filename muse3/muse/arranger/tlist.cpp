@@ -254,6 +254,9 @@ void TList::paint(const QRect& r)
     int x1 = rect.x();
     int x2 = rect.x() + w;
 
+    QFont fit(font());
+    fit.setItalic(true);
+
     //---------------------------------------------------
     //    Tracks
     //---------------------------------------------------
@@ -460,7 +463,7 @@ void TList::paint(const QRect& r)
 
                 case COL_OPORT:
                 {
-                    QString s = "n/a";
+                    QString s;
                     if (track->isMidiTrack()) {
                         int outport = ((MusECore::MidiTrack*)track)->outPort();
                         s = QString("%1:%2").arg(outport+1).arg(MusEGlobal::midiPorts[outport].portname());
@@ -477,14 +480,21 @@ void TList::paint(const QRect& r)
                                 s = tr("<none>");
                         }
                     }
+                    else
+                    {
+                        p.setFont(fit);
+                        s = "n/a";
+                    }
 
                     p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                    if (p.font().italic())
+                        p.setFont(font());
                 }
                     break;
 
                 case COL_AUTOMATION:
                 {
-                    QString s = "n/a";
+                    QString s;
 
                     if (!track->isMidiTrack()) {
                         MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)track)->controller();
@@ -497,16 +507,20 @@ void TList::paint(const QRect& r)
                                 countVisible++;
                         }
                         s = QString(" %1(%2) %3").arg(countVisible).arg(countAll).arg(tr("visible"));
+                    } else {
+                        p.setFont(fit);
+                        s = "n/a";
                     }
 
-
                     p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                    if (p.font().italic())
+                        p.setFont(font());
                 }
                     break;
 
                 case COL_CLEF:
                 {
-                    QString s = "n/a";
+                    QString s;
                     if (track->isMidiTrack() && track->type() == MusECore::Track::MIDI) { // no drum tracks!
                         if (((MusECore::MidiTrack*)track)->getClef() == trebleClef)
                             s=tr("Treble");
@@ -514,8 +528,14 @@ void TList::paint(const QRect& r)
                             s=tr("Bass");
                         else if (((MusECore::MidiTrack*)track)->getClef() == grandStaff)
                             s=tr("Grand");
+                    } else {
+                        p.setFont(fit);
+                        s = "n/a";
                     }
+
                     p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                    if (p.font().italic())
+                        p.setFont(font());
                 }
                     break;
 
