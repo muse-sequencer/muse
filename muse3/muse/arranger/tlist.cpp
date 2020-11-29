@@ -1103,16 +1103,9 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
         if (section == COL_NAME) {
             editTrackName(t);
         }
-        else if (section == COL_OPORT) {
-            if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH) {
-                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
-                if (synth->hasNativeGui()) {
-                    synth->showNativeGui(!synth->nativeGuiVisible());
-                }
-                else if (synth->hasGui()) {
-                    synth->showGui(!synth->guiVisible());
-                }
-            }
+        else if (section == COL_OPORT || section == COL_CLASS) {
+            if (t->isSynthTrack() || t->isMidiTrack())
+                openSynthGui(t);
         }
         else if (section == COL_TRACK_IDX) {
             if (button == Qt::LeftButton) {
@@ -1183,7 +1176,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                     else
                         ctrl_at_tick=MusEGlobal::song->cpos();
 
-                    if (ctrl_edit==0)
+                    if (ctrl_edit==nullptr)
                     {
                         ctrl_edit=new QSpinBox(this);
                         ctrl_edit->setSpecialValueText(tr("off"));
@@ -1273,6 +1266,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
 
     if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM)
         return;
+
     int oPort      = ((MusECore::MidiTrack*)t)->outPort();
     MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
@@ -1803,9 +1797,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
     mode = NORMAL;
 
-
-
-
     if (button == Qt::LeftButton && col != COL_INPUT_MONITOR && col != COL_RECORD && col != COL_MUTE && col != COL_SOLO)
     {
         mode = START_DRAG;  // Allow a track drag to start.
@@ -1864,11 +1855,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
 
         MusEGlobal::song->update(SC_TRACK_SELECTION);
-
     }
     else
     {
-
         switch (col) {
 
         case COL_TRACK_IDX:

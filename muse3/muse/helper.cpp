@@ -1260,7 +1260,7 @@ QMenu* populateAddSynth(QWidget* parent)
   asmap smaps[ntypes];
   PopupMenu* mmaps[ntypes];
   for(int itype = 0; itype < ntypes; ++itype)
-    mmaps[itype] = 0;
+    mmaps[itype] = nullptr;
   
   MusECore::Synth* synth;
   MusECore::Synth::Type type;
@@ -1796,6 +1796,41 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       
       return est_width;
       }
+
+//---------------------------------------------------
+//  openSynthGui
+//---------------------------------------------------
+
+void openSynthGui(MusECore::Track* t) {
+
+    //auto curTrack = MusEGlobal::muse->arranger()->curTrack();
+
+    MusECore::SynthI* synth = nullptr;
+
+    if (t->isMidiTrack()) {
+
+        int oPort = ((MusECore::MidiTrack*)t)->outPort();
+        MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
+
+        if (port->device() && port->device()->isSynti())
+            synth = static_cast<MusECore::SynthI*>(port->device());
+
+    } else if (t->isSynthTrack()) {
+        synth = static_cast<MusECore::SynthI*>(t);
+    } else {
+        return;
+    }
+
+    if (!synth || !synth->synth())
+        return;
+
+    if (synth->hasNativeGui()) {
+        synth->showNativeGui(!synth->nativeGuiVisible());
+    }
+    else if (synth->hasGui()) {
+        synth->showGui(!synth->guiVisible());
+    }
+}
 
 //---------------------------------------------------
 //  clipQLine

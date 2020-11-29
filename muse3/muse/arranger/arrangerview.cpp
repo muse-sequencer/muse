@@ -884,7 +884,7 @@ void ArrangerView::populateAddTrack()
 
 void ArrangerView::addNewTrack(QAction* action)
 {
-  MusEGlobal::song->addNewTrack(action, NULL);  // Add at the end
+  MusEGlobal::song->addNewTrack(action, nullptr);  // Add at the end
 }
 
 void ArrangerView::insertNewTrack(QAction* action)
@@ -1010,21 +1010,9 @@ void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
 
 void ArrangerView::openCurrentTrackSynthGui()
 {
-  auto curTrack = MusEGlobal::muse->arranger()->curTrack();
-
-  if(curTrack->isSynthTrack()) {
-
-    MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(curTrack);
-
-    if (synth->hasNativeGui()) {
-
-      synth->showNativeGui(!synth->nativeGuiVisible());
-    }
-    else if (synth->hasGui()) {
-
-      synth->showGui(!synth->guiVisible());
-    }
-  }
+    auto curTrack = MusEGlobal::muse->arranger()->curTrack();
+    if (curTrack->isSynthTrack() || curTrack->isMidiTrack())
+        openSynthGui(curTrack);
 }
 
 void ArrangerView::configCustomColumns()
