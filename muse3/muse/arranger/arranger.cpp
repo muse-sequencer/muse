@@ -223,7 +223,7 @@ void Arranger::setHeaderStatusTips()
 {
     header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index: Double-click to select all tracks of the same type."));
     header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Input monitor: Left click to toggle, right click for all tracks of same type."));
-    header->setStatusTip(TList::COL_RECORD,   tr("Recording: Left click to toggle, right click for all tracks of same type. Audio output: Bounce to file."));
+    header->setStatusTip(TList::COL_RECORD,   tr("Recording: Left click to toggle, right click for all tracks of same type. Audio output: Record downmix to a file."));
     header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator: Left click to mute, right click to switch on/off (+CTRL for all tracks except audio outputs)."));
     header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator: Click to solo (+CTRL for all tracks except audio outputs). Connected tracks are 'phantom' soloed."));
     header->setStatusTip(TList::COL_CLASS,    tr("Track type: MIDI: Context menu to switch between midi and drum track types. Synth: Context menu or double-click to open GUI."));

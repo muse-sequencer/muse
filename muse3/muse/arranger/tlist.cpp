@@ -1986,7 +1986,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 if (t->selected() && tracks->countSelected() > 1) {
                     MusECore::Undo operations;
                     MusECore::TrackList* tl = MusEGlobal::song->tracks();
-                    for (const auto& tit : *tl)
+                    for (const auto tit : *tl)
                     {
                         if (tit->selected() && tit->canRecordMonitor())
                             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, tit, val));
@@ -2044,7 +2044,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 if (t->selected() && tracks->countSelected() > 1) {
                     MusECore::Undo operations;
                     MusECore::TrackList* tl = MusEGlobal::song->tracks();
-                    for (const auto& tit : *tl)
+                    for (const auto tit : *tl)
                     {
                         if (tit->selected() && tit->canRecord() && tit->type() != MusECore::Track::AUDIO_OUTPUT)
                             MusEGlobal::song->setRecordFlag(tit, val, &operations);
