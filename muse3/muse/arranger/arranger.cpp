@@ -221,7 +221,7 @@ void Arranger::setHeaderWhatsThis()
 
 void Arranger::setHeaderStatusTips()
 {
-    header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index: Double-click to select all tracks of the same type."));
+    header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index: Double-click to select all tracks of the same type (+SHIFT to select all)."));
     header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Input monitor: Left click to toggle, right click for all tracks of same type."));
     header->setStatusTip(TList::COL_RECORD,   tr("Recording: Left click to toggle, right click for all tracks of same type. Audio output: Record downmix to a file."));
     header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator: Left click to mute, right click to switch on/off (+CTRL for all tracks except audio outputs)."));

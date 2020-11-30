@@ -92,7 +92,6 @@ extern QPixmap* veloPerNote_OnIcon;
 extern QPixmap* veloPerNote_OffIcon;
 
 extern QPixmap* edit_track_addIcon;
-extern QPixmap* edit_track_delIcon;
 extern QPixmap* midi_transformIcon;
 extern QPixmap* selectIcon;
 extern QPixmap* select_allIcon;
@@ -296,6 +295,7 @@ extern QIcon* mixerSVGIcon;
 extern QIcon* plusSVGIcon;
 extern QIcon* minusSVGIcon;
 extern QIcon* keySVGIcon;
+extern QIcon* delSelTracksSVGIcon;
 
 extern QIcon* routeAutoAdjustSVGIcon;
 extern QIcon* routeSelSourceSVGIcon;

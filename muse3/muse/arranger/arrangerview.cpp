@@ -134,7 +134,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste Clone to Selected Trac&k"), this);
   editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (Show Dialo&g)..."), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
-  editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
+  editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected Tracks"), this);
   editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
 
   editShrinkPartsAction = new QAction(tr("Shrink Selected Parts"), this);

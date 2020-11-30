@@ -151,5 +151,6 @@
         <file>svg/route_destinations.svg</file>
         <file>svg/route_sel_dest.svg</file>
         <file>svg/route_sources.svg</file>
+        <file>svg/delete_sel_tracks.svg</file>
     </qresource>
 </RCC>

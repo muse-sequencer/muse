@@ -1094,6 +1094,8 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
         return;
     }
 
+    const bool shift = ((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier;
+
     int colx = header->sectionPosition(section);
     int colw = header->sectionSize(section);
     int coly = t->y() - ypos;
@@ -1109,12 +1111,16 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
         }
         else if (section == COL_TRACK_IDX) {
             if (button == Qt::LeftButton) {
-                // Select all tracks of the same type
-                MusEGlobal::song->selectAllTracks(false);
-                MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
-                foreach (MusECore::Track *other_t, *all_tl) {
-                    if (other_t->type() == t->type())
-                        other_t->setSelected(true);
+                if (shift)
+                    MusEGlobal::song->selectAllTracks(true);
+                else {
+                    // Select all tracks of the same type
+                    MusEGlobal::song->selectAllTracks(false);
+                    MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
+                    for (const auto tit : *all_tl) {
+                        if (tit->type() == t->type())
+                            tit->setSelected(true);
+                    }
                 }
                 MusEGlobal::song->update(SC_TRACK_SELECTION);
             }
@@ -2225,7 +2231,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 int selCnt = MusEGlobal::song->countSelectedTracks();
                 p->addAction(*minusSVGIcon, tr("Delete Track"))->setData(1001);
                 if(selCnt > 1){
-                    p->addAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"))->setData(1003);
+                    p->addAction(*delSelTracksSVGIcon, tr("Delete Selected Tracks"))->setData(1003);
                 }
                 p->addAction(*listeditSVGIcon, tr("Track Comment"))->setData(1002);
                 p->addSeparator();
