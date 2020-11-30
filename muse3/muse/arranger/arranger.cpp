@@ -177,20 +177,20 @@ Arranger::custom_col_t Arranger::readOneCustomColumn(MusECore::Xml& xml)
 //---------------------------------------------------------
 
 void Arranger::setHeaderToolTips()
-      {
-      header->setToolTip(TList::COL_TRACK_IDX,  tr("Track index"));
-      header->setToolTip(TList::COL_INPUT_MONITOR, tr("Enable input monitor"));
-      header->setToolTip(TList::COL_RECORD,     tr("Enable recording"));
-      header->setToolTip(TList::COL_MUTE,       tr("Mute/Off indicator"));
-      header->setToolTip(TList::COL_SOLO,       tr("Solo indicator"));
-      header->setToolTip(TList::COL_CLASS,      tr("Track type"));
-      header->setToolTip(TList::COL_NAME,       tr("Track name"));
-      header->setToolTip(TList::COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
-      header->setToolTip(TList::COL_OPORT,      tr("Midi output port or synth midi port"));
-      header->setToolTip(TList::COL_TIMELOCK,   tr("Time lock"));
-      header->setToolTip(TList::COL_AUTOMATION, tr("Automation parameter selection"));
-      header->setToolTip(TList::COL_CLEF,       tr("Notation clef"));
-      }
+{
+    header->setToolTip(TList::COL_TRACK_IDX,  tr("Track index"));
+    header->setToolTip(TList::COL_INPUT_MONITOR, tr("Input monitor"));
+    header->setToolTip(TList::COL_RECORD,     tr("Recording"));
+    header->setToolTip(TList::COL_MUTE,       tr("Mute/Off indicator"));
+    header->setToolTip(TList::COL_SOLO,       tr("Solo indicator"));
+    header->setToolTip(TList::COL_CLASS,      tr("Track type"));
+    header->setToolTip(TList::COL_NAME,       tr("Track name"));
+    header->setToolTip(TList::COL_OCHANNEL,   tr("Midi output channel number or number of audio channels"));
+    header->setToolTip(TList::COL_OPORT,      tr("Midi output port or synth midi port"));
+//    header->setToolTip(TList::COL_TIMELOCK,   tr("Time lock"));
+    header->setToolTip(TList::COL_AUTOMATION, tr("Automation parameter selection"));
+    header->setToolTip(TList::COL_CLEF,       tr("Notation clef"));
+}
 
 
 
@@ -199,21 +199,21 @@ void Arranger::setHeaderToolTips()
 //---------------------------------------------------------
 
 void Arranger::setHeaderWhatsThis()
-      {
-      header->setWhatsThis(TList::COL_TRACK_IDX, tr("Track index"));
-      header->setWhatsThis(TList::COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to output for monitoring.\n"
+{
+    header->setWhatsThis(TList::COL_TRACK_IDX, tr("Track index"));
+    header->setWhatsThis(TList::COL_INPUT_MONITOR, tr("Enable input monitor. Click to toggle.\nPasses input through to output for monitoring.\n"
+                                                      "See also Settings: Automatically Monitor On Record Arm."));
+    header->setWhatsThis(TList::COL_RECORD,   tr("Enable recording. Click to toggle.\n"
                                                  "See also Settings: Automatically Monitor On Record Arm."));
-      header->setWhatsThis(TList::COL_RECORD,   tr("Enable recording. Click to toggle.\n"
-                                            "See also Settings: Automatically Monitor On Record Arm."));
-      header->setWhatsThis(TList::COL_MUTE,     tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"));
-      header->setWhatsThis(TList::COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed."));
-      header->setWhatsThis(TList::COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
-      header->setWhatsThis(TList::COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
-      header->setWhatsThis(TList::COL_OCHANNEL, tr("Midi/Drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
-      header->setWhatsThis(TList::COL_OPORT,    tr("Midi/Drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
-      header->setWhatsThis(TList::COL_TIMELOCK, tr("Time lock"));
-      header->setWhatsThis(TList::COL_CLEF,     tr("Notation clef. Select this tracks notation clef."));
-      }
+    header->setWhatsThis(TList::COL_MUTE,     tr("Mute indicator. Click to toggle.\nRight-click to toggle track on/off.\nMute is designed for rapid, repeated action.\nOn/Off is not!"));
+    header->setWhatsThis(TList::COL_SOLO,     tr("Solo indicator. Click to toggle.\nConnected tracks are also 'phantom' soloed."));
+    header->setWhatsThis(TList::COL_CLASS,    tr("Track type. Right-click to change\n midi and drum track types."));
+    header->setWhatsThis(TList::COL_NAME,     tr("Track name. Double-click to edit.\nRight-click for more options."));
+    header->setWhatsThis(TList::COL_OCHANNEL, tr("Midi/Drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
+    header->setWhatsThis(TList::COL_OPORT,    tr("Midi/Drum track: Output port.\nSynth track: Right-click to show GUI."));
+//    header->setWhatsThis(TList::COL_TIMELOCK, tr("Time lock"));
+    header->setWhatsThis(TList::COL_CLEF,     tr("Notation clef. Select this tracks notation clef."));
+}
 
 //---------------------------------------------------------
 //   Arranger::setHeaderStatusTips
@@ -221,17 +221,18 @@ void Arranger::setHeaderWhatsThis()
 
 void Arranger::setHeaderStatusTips()
 {
-    header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index. Click to select track, CTRL+LMB to add/remove, SHIFT+LMB for range select, dblclick to select all of the same type."));
-    header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Enable/Disable input monitor. Passes input through to output (see also Settings: Automatically monitor on record arm)."));
-    header->setStatusTip(TList::COL_RECORD,   tr("Enable/Disable recording."));
-    header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator. Left-click to mute track (for quick action), right-click to toggle track on/off (for more permanent action)."));
-    header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator. Connected tracks are also 'phantom' soloed."));
-    header->setStatusTip(TList::COL_CLASS,    tr("Track type. Click to switch between midi and drum track types."));
-    header->setStatusTip(TList::COL_NAME,     tr("Track name. Double-click to edit. Right-click for context menu."));
-    header->setStatusTip(TList::COL_OCHANNEL, tr("Midi/Drum: Output channel number. Audio: Channels. Mid/right-click to change."));
-    header->setStatusTip(TList::COL_OPORT,    tr("Midi/Drum: Output port. Synth: Assigned midi port. Left-click to change, right-click to show synth GUI."));
-    header->setStatusTip(TList::COL_TIMELOCK, tr("Time lock"));
-    header->setStatusTip(TList::COL_CLEF,     tr("Notation clef. Click to select this tracks notation clef."));
+    header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index: Double-click to select all tracks of the same type."));
+    header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Input monitor: Left click to toggle, right click for all tracks of same type."));
+    header->setStatusTip(TList::COL_RECORD,   tr("Recording: Left click to toggle, right click for all tracks of same type. Audio output: Bounce to file."));
+    header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator: Left click to mute, right click to switch on/off (+CTRL for all tracks except audio outputs)."));
+    header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator: Click to solo (+CTRL for all tracks except audio outputs). Connected tracks are 'phantom' soloed."));
+    header->setStatusTip(TList::COL_CLASS,    tr("Track type: MIDI: Context menu to switch between midi and drum track types. Synth: Context menu or double-click to open GUI."));
+    header->setStatusTip(TList::COL_NAME,     tr("Track name: Double-click to edit. Right-click for context menu."));
+    header->setStatusTip(TList::COL_OCHANNEL, tr("Midi/Drum: Output channel number. Audio: Number of channels. Mid/right/double-click to change."));
+    header->setStatusTip(TList::COL_OPORT,    tr("Midi/Drum: Context menu to set the output port (+CTRL to set for all midi tracks). Synth: Context menu to show synth GUI."));
+//    header->setStatusTip(TList::COL_TIMELOCK, tr("Time lock"));
+    header->setStatusTip(TList::COL_AUTOMATION, tr("Automation: Context menu to select parameters."));
+    header->setStatusTip(TList::COL_CLEF,     tr("Notation clef: Context menu to select this track's notation clef."));
 }
 
 //---------------------------------------------------------

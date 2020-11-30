@@ -108,7 +108,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
     //  full rect paint events even on small scrolls! See help on QPainter::scroll().
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setStatusTip(tr("Track list: RMB to create tracks. Click track ID to select, CTRL to add select, SHIFT for range select, dblclick to select all tracks of same type. Press F1 for help."));
+    setStatusTip(tr("Track list: Use context menu to create tracks. Click track to select, CTRL to add select, SHIFT for range select. Press F1 for help."));
 
     setObjectName(name);
     ypos = 0;
@@ -1979,12 +1979,28 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 break;
 
             const bool val = !(t->recMonitor());
+
             if (button == Qt::LeftButton)
             {
+                // apply to selected tracks
+                if (t->selected() && tracks->countSelected() > 1) {
+                    MusECore::Undo operations;
+                    MusECore::TrackList* tl = MusEGlobal::song->tracks();
+                    for (const auto& tit : *tl)
+                    {
+                        if (tit->selected() && tit->canRecordMonitor())
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, tit, val));
+                    }
+                    if (!operations.empty())
+                        MusEGlobal::song->applyOperationGroup(operations);
+                }
+                else
+                {
                 // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
                 MusECore::PendingOperationList operations;
                 operations.add(MusECore::PendingOperationItem(t, val, MusECore::PendingOperationItem::SetTrackRecMonitor));
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                }
             }
             else if (button == Qt::RightButton)
             {
@@ -2010,25 +2026,40 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
         case COL_RECORD:
         {
-            if(!t->canRecord())
+            if (!t->canRecord())
                 break;
 
             bool val = !(t->recordFlag());
+
             if (button == Qt::LeftButton) {
                 if (t->type() == MusECore::Track::AUDIO_OUTPUT)
                 {
                     if (val && !t->recordFlag())
-                    {
                         MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)t);
-                        break;
-                    }
-                }
-                // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
-                if(!t->setRecordFlag1(val))
+
                     break;
-                MusECore::PendingOperationList operations;
-                operations.add(MusECore::PendingOperationItem(t, val, MusECore::PendingOperationItem::SetTrackRecord));
-                MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                }
+
+                // apply to selected tracks
+                if (t->selected() && tracks->countSelected() > 1) {
+                    MusECore::Undo operations;
+                    MusECore::TrackList* tl = MusEGlobal::song->tracks();
+                    for (const auto& tit : *tl)
+                    {
+                        if (tit->selected() && tit->canRecord() && tit->type() != MusECore::Track::AUDIO_OUTPUT)
+                            MusEGlobal::song->setRecordFlag(tit, val, &operations);
+                    }
+                    if (!operations.empty())
+                        MusEGlobal::song->applyOperationGroup(operations);
+                }
+                else {
+                    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+                    if (!t->setRecordFlag1(val))
+                        break;
+                    MusECore::PendingOperationList operations;
+                    operations.add(MusECore::PendingOperationItem(t, val, MusECore::PendingOperationItem::SetTrackRecord));
+                    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+                }
             }
             else if (button == Qt::RightButton)
             {
@@ -2047,10 +2078,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 else {
                     MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
                     foreach (MusECore::MidiTrack *mt, *mtl) {
-                        MusEGlobal::song->setRecordFlag(mt, val, &operations);
+                        if (mt->type() == t->type())
+                            MusEGlobal::song->setRecordFlag(mt, val, &operations);
                     }
                 }
-                if(!operations.empty())
+                if (!operations.empty())
                 {
                     MusEGlobal::song->applyOperationGroup(operations);
                     // Not required if undoable.
@@ -2069,12 +2101,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
             if (button == Qt::RightButton) {
 
                 if (t->isMidiTrack()) {
-                    bool allSelected=false;
-                    if (ctrl || (t->selected() && tracks->countSelected() > 1)) // toggle all selected tracks
-                        allSelected=true;
-
-                    classesPopupMenu(t, x, t->y() - ypos, allSelected);
-                } else if (t->isSynthTrack()) {
+                    classesPopupMenu(t, x, t->y() - ypos, true);
+                }
+                else if (t->isSynthTrack()) {
                     oportPropertyPopupMenu(t, x, t->y() - ypos);
                 }
             }
@@ -2083,13 +2112,21 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
         case COL_OPORT:
         {
-            bool allClassPorts=false;
-            if (ctrl || (t->selected() && tracks->countSelected() > 1))
-                allClassPorts=true;
-            if (button == Qt::MiddleButton || (shift && button == Qt::RightButton))
-                oportPropertyPopupMenu(t, x, t->y() - ypos);
-            else if (button == Qt::RightButton)
-                MusEGui::midiPortsPopupMenu(t, x, t->y() - ypos, allClassPorts, this);
+            if (button == Qt::RightButton) {
+                if (t->isSynthTrack())
+                    oportPropertyPopupMenu(t, x, t->y() - ypos);
+                else if (t->isMidiTrack())
+                    MusEGui::midiPortsPopupMenu(t, x, t->y() - ypos, ctrl, this);
+            }
+
+//            bool allClassPorts=false;
+//            if (ctrl || (t->selected() && tracks->countSelected() > 1))
+//                allClassPorts=true;
+
+//            if (button == Qt::MiddleButton || (shift && button == Qt::RightButton))
+//                oportPropertyPopupMenu(t, x, t->y() - ypos);
+//            else if (button == Qt::RightButton)
+//                MusEGui::midiPortsPopupMenu(t, x, t->y() - ypos, allClassPorts, this);
 
             break;
         }
