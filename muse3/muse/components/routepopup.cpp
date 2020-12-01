@@ -748,14 +748,14 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
     
     //RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, redLedIcon, darkRedLedIcon, this, tr("Show aliases:"));
-    RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, 0, 0, this, tr("Show aliases:"));
+    RoutingMatrixWidgetAction* name_wa = new RoutingMatrixWidgetAction(2, nullptr, nullptr, this, tr("Show aliases:"));
     name_wa->setArrayStayOpen(true);
     name_wa->setData(_ALIASES_WIDGET_ACTION_);
     name_wa->array()->setColumnsExclusive(true);
     name_wa->array()->setExclusiveToggle(true);
     name_wa->array()->headerSetVisible(false);
-    name_wa->array()->setText(0, tr("First "));
-    name_wa->array()->setText(1, tr("Second"));
+    name_wa->array()->setText(0, tr("First  "));
+    name_wa->array()->setText(1, tr("Second "));
     switch(MusEGlobal::config.preferredRouteNameOrAlias)
     {
       case MusEGlobal::RoutePreferFirstAlias:
