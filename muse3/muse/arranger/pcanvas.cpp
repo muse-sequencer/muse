@@ -3348,17 +3348,14 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
       //--------------------------------
       // vertical lines
       //-------------------------------
+
       if (MusEGlobal::config.canvasShowGrid) {
         int rast = *_raster;
-        if(rast == 0) // Special for arranger 'bar' snap.
-        {
-          rast = MusEGlobal::sigmap.ticks_beat(1);
-        }
         
         drawTickRaster(p, mr, mrg, rast,
                          false, false, false,
-                       MusEGlobal::config.partCanvasFineRasterColor,
-                       MusEGlobal::config.partCanvasFineRasterColor,
+                       MusEGlobal::config.partCanvasBeatRasterColor,
+                       MusEGlobal::config.partCanvasBeatRasterColor,
                        MusEGlobal::config.partCanvasFineRasterColor,
                        MusEGlobal::config.partCanvasCoarseRasterColor);
       }
@@ -3389,7 +3386,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& mrg)
 // For testing...
 //             vbbox.dump("PartCanvas::drawCanvas vbbox");
             
-            if(MusEGlobal::config.canvasShowGrid && (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))
+            if((MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways) &&
+               (track->isMidiTrack() || track->type() == MusECore::Track::WAVE))
             {
               if(compareXCoordinates(vx_2, vbbx, CompareGreaterEqual) && 
                 (myy_2 >= my && myy_2 < my_2))

@@ -45,21 +45,25 @@ class Toolbar1 : public QToolBar {
       QToolButton* solo;
       PosLabel* pos;
       PitchLabel* pitch;
+      QToolButton* gridOnButton;
       RasterLabelCombo* raster;
       bool showPitch;
 
    private slots:
       void _rasterChanged(int raster);
+      void gridOnButtonChanged(bool v);
 
    public slots:
       void setTime(unsigned);
       void setPitch(int);
       void setInt(int);
       void setRaster(int);
+      void setGridOn(bool flag);
 
    signals:
       void rasterChanged(int raster);
       void soloChanged(bool);
+      void gridOnChanged(bool v);
 
    public:
       Toolbar1(RasterizerModel *model, QWidget* parent, int r=96,     

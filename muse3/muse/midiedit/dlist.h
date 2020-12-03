@@ -46,6 +46,7 @@ class QHeaderView;
 class QMouseEvent;
 class QPainter;
 class QWheelEvent;
+class QEvent;
 
 namespace MusECore {
 struct DrumMap;
@@ -151,6 +152,7 @@ class DList : public View {
       DPitchEdit* pitch_editor;
       MusECore::DrumMap* editEntry;
       MusECore::DrumMap* currentlySelected;
+      int curPitch;
       int selectedColumn;
 
       
@@ -165,6 +167,7 @@ class DList : public View {
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void viewMouseMoveEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent* e);
+      virtual void leaveEvent(QEvent*e);
 
       int x2col(int x) const;
       // Returns -1 if invalid.
@@ -190,11 +193,13 @@ class DList : public View {
       void keyReleased(int, bool);
       void curDrumInstrumentChanged(int);
       void redirectWheelEvent(QWheelEvent*);
+      void pitchChanged(int);
 
    public slots:
       void tracklistChanged();
       void songChanged(MusECore::SongChangedStruct_t);
       void ourDrumMapChanged(bool);
+      void setPitch(int);
    
    public:
       void lineEdit(int line, int section);

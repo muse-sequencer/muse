@@ -2291,16 +2291,19 @@ void WaveCanvas::adjustWaveOffset()
 
 void WaveCanvas::drawCanvas(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      //---------------------------------------------------
-      // vertical lines
-      //---------------------------------------------------
+      if (MusEGlobal::config.canvasShowGrid)
+      {
+        //---------------------------------------------------
+        // vertical lines
+        //---------------------------------------------------
 
-      drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
-                     MusEGlobal::config.midiCanvasBeatColor, // color sequence slightly done by trial and error..
-                     MusEGlobal::config.midiCanvasBeatColor,
-                     MusEGlobal::config.midiCanvasFineColor,
-                     MusEGlobal::config.midiCanvasBarColor
-                     );
+        drawTickRaster(p, rect, rg, editor->raster(), true, false, false,
+                      MusEGlobal::config.midiCanvasBeatColor, // color sequence slightly done by trial and error..
+                      MusEGlobal::config.midiCanvasBeatColor,
+                      MusEGlobal::config.midiCanvasFineColor,
+                      MusEGlobal::config.midiCanvasBarColor
+                      );
+      }
       }
 
 //---------------------------------------------------------

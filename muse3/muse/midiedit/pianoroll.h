@@ -175,6 +175,7 @@ class PianoRoll : public MidiEditor {
       void noteinfoChanged(MusEGui::NoteInfo::ValType, int);
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);
+      void gridOnChanged(bool flag);
       void setRaster(int) override;
       void cmd(int);
       void setSteprec(bool);

@@ -402,12 +402,14 @@ unsigned SigList::raster(unsigned t, int raster) const
       int delta  = t - e->second->tick;
       int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
       // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
+      // FIXME (And any other places with this comment) Still not fully protected,
+      //        for example @ 4/4 @ 4dotted snap, raster < ticksM ! 
       if (raster == 0 || raster > ticksM)
             raster = ticksM;
       int rest   = delta % ticksM;
       int bb     = (delta/ticksM)*ticksM;
-//       fprintf(stderr, "SigList::raster: t:%d delta:%d ticksM:%d raster:%d rest:%d bb:%d result:%d\n",
-//               t, delta, ticksM, raster, rest, bb, e->second->tick + bb + ((rest + raster/2)/raster)*raster);
+      //fprintf(stderr, "SigList::raster: t:%d delta:%d ticksM:%d raster:%d rest:%d bb:%d result:%d\n",
+      //        t, delta, ticksM, raster, rest, bb, e->second->tick + bb + ((rest + raster/2)/raster)*raster);
       return  e->second->tick + bb + ((rest + raster/2)/raster)*raster;
       }
 

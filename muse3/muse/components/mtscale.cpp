@@ -247,6 +247,263 @@ void MTScale::leaveEvent(QEvent*)
       }
 
 //---------------------------------------------------------
+//   drawTickRaster
+//---------------------------------------------------------
+
+void MTScale::drawTickRaster(
+  QPainter& p, const QRect& mr, const QRegion& /*mrg*/, int /*raster*/,
+  bool waveMode, 
+  bool /*useGivenColors*/,
+  bool /*drawText*/,
+  const QColor& /*bar_color*/,
+  const QColor& /*beat_color*/,
+  const QColor& /*fine_color*/,
+  const QColor& /*coarse_color*/,
+  const QColor& text_color,
+  const QFont& large_font,
+  const QFont& small_font
+  )
+{
+      const ViewRect r(mr, true);
+      const ViewXCoordinate& x = r._x;
+      const ViewXCoordinate x_2(mr.x() + mr.width(), true);
+      
+      //p.save();
+      bool wmtxen = p.worldMatrixEnabled();
+      p.setWorldMatrixEnabled(false);
+
+      // Limiter required because MusEGlobal::sigmap.tickValues takes unsigned only !
+      const ViewXCoordinate lim_v0(0, false);
+      const ViewXCoordinate x_lim = compareXCoordinates(x, lim_v0, CompareLess) ? lim_v0 : x;
+      const ViewXCoordinate x_2lim = compareXCoordinates(x_2, lim_v0, CompareLess) ? lim_v0 : x_2;
+
+      const int my = mr.y();
+      const int mh = mr.height();
+
+      const int mbottom = mr.bottom();
+
+      const ViewYCoordinate bottom(mr.bottom(), true);
+
+      const int mw1000      = 1000;
+      const int mh2         = 2;
+
+      const ViewWCoordinate w2(2, true);
+      const ViewHCoordinate h2(2, true);
+      const ViewHCoordinate h_m1(mh - 1, true);
+      const ViewHCoordinate h_m3(mh - 3, true);
+      
+      int bar1, bar2, beat;
+      ScaleRetStruct scale_info;
+      int beat_start_beat;
+      unsigned tick;
+
+      QPen pen;
+      pen.setCosmetic(true);
+
+// For testing...
+//       fprintf(stderr, "View::drawTickRaster_new(): virt:%d drawText:%d mx:%d my:%d mw:%d mh:%draster%d\n",
+//               virt(), drawText, mx, my, mw, mh, raster);  
+      
+      if (waveMode) {
+            MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(asUnmapped(x_lim)._value), &bar1, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(asUnmapped(x_2lim)._value), &bar2, &beat, &tick);
+            }
+      else {
+            MusEGlobal::sigmap.tickValues(asUnmapped(x_lim)._value, &bar1, &beat, &tick);
+            MusEGlobal::sigmap.tickValues(asUnmapped(x_2lim)._value, &bar2, &beat, &tick);
+            }
+
+      //fprintf(stderr, "bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
+
+      int stick = MusEGlobal::sigmap.bar2tick(bar1, 0, 0);
+      int ntick, deltaTick;
+      ScaleRetStruct prev_scale_info;
+      for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
+            ntick     = MusEGlobal::sigmap.bar2tick(bar+1, 0, 0);
+            deltaTick = ntick - stick;
+            int a, b=0;
+            double tpix;
+            if (waveMode) {
+                  a = MusEGlobal::tempomap.tick2frame(ntick);
+                  b = MusEGlobal::tempomap.tick2frame(stick);
+                     tpix  = rmapx_f(a - b);
+               }
+            else {
+                  tpix  = rmapx_f(deltaTick);
+                  }
+                  
+            scale_info = scale(true, bar, tpix);
+            
+            if(!scale_info._drawBar)
+            {
+              // Only check this on the first starting bar.
+              if(bar == bar1)
+              {
+                int prev_a, prev_b=0;
+                double prev_tpix;
+                int prev_stick;
+                int prev_ntick = stick;
+                int prev_bar = bar1 - 1;
+                for( ; prev_bar >= 0; --prev_bar, prev_ntick = prev_stick)
+                {
+                  prev_stick = MusEGlobal::sigmap.bar2tick(prev_bar, 0, 0);
+                  if (waveMode) {
+                        prev_a = MusEGlobal::tempomap.tick2frame(prev_ntick);
+                        prev_b = MusEGlobal::tempomap.tick2frame(prev_stick);
+                        prev_tpix  = rmapx_f(prev_a - prev_b);
+                    }
+                  else {
+                        prev_tpix  = rmapx_f(prev_ntick - prev_stick);
+                        }
+                  
+                  prev_scale_info = scale(true, prev_bar, prev_tpix);
+
+// For testing...
+//                   fprintf(stderr,
+//                       "drawTickRaster: Bar check: bar1:%d bar2:%d bar:%d prev_bar:%d"
+//                       " stick:%d prev_stick:%d prev_ntick:%d prev_tpix:%f drawBar:%d\n",
+//                       bar1, bar2, bar, prev_bar, stick, prev_stick, prev_ntick, prev_tpix,
+//                       prev_scale_info._drawBar);
+
+                  if(prev_scale_info._drawBar)
+                    break;
+                }
+                
+                if(prev_bar >= 0)
+                {
+                  const int prev_tick = waveMode ? prev_b : prev_stick;
+                  drawBarText(p, prev_tick, prev_bar, mr, text_color, large_font);
+                }
+              }
+                
+              continue;
+            }
+            
+            if(scale_info._isSmall)
+            {
+                  const int tick_sm = waveMode ? b : stick;
+                  
+                  const ViewXCoordinate x_sm(tick_sm, false);
+                  const int mx_sm = asMapped(x_sm)._value;
+                  
+                  pen.setColor(text_color);
+                  p.setPen(pen);
+                  
+                  if(scale_info._drawBar)
+                  {
+// For testing...
+//                     fprintf(stderr,
+//                      "is_small:%d Coarse line: tick_sm:%d mx_sm:%d stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
+//                      scale_info._isSmall, tick_sm, mx_sm, stick, ntick, bar1, bar2, bar);
+                    
+                    if(isXInRange(x_sm, x, x_2))
+                    {
+// For testing...
+//                       fprintf(stderr, "is_small:%d Coarse Line is within range."
+//                             " Drawing line at mx_sm:%d my:%d mx_sm:%d mbottom:%d...\n",
+//                             scale_info._isSmall, mx_sm, my, mx_sm, mbottom);
+                      
+                      p.drawLine(mx_sm, my, mx_sm, mbottom);
+                    }
+                  }
+                  
+// For testing...
+//                   fprintf(stderr,
+//                     "is_small:%d Coarse text: tick_sm:%d mx_sm:%d stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
+//                     scale_info._isSmall, tick_sm, mx_sm, stick, ntick, bar1, bar2, bar);
+
+                  drawBarText(p, tick_sm, bar, mr, text_color, large_font);
+            }
+
+            if(!scale_info._isSmall) {
+                  int z, n;
+                  MusEGlobal::sigmap.timesig(stick, z, n);
+                  
+                  beat_start_beat = 0;
+                  for (int beat = beat_start_beat; beat < z; beat++) {
+                        int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
+                        
+                        int xx_e = MusEGlobal::sigmap.bar2tick(bar, beat + 1, 0);
+
+                        if (waveMode)
+                              xx = MusEGlobal::tempomap.tick2frame(xx);
+                        if (waveMode)
+                              xx_e = MusEGlobal::tempomap.tick2frame(xx_e);
+                        
+                        const ViewXCoordinate xx_v(xx, false);
+                        const int mxx = asMapped(xx_v)._value;
+                        
+                        int y1;
+                        int num;
+                        int m_yt = my;
+                        ViewHCoordinate h_txt;
+                        
+                        if (beat == 0) {
+                              num = bar + 1;
+                              y1  = my + 1;
+                              h_txt = h_m1;
+                              p.setFont(large_font);
+                              }
+                        else {
+                              num = beat + 1;
+                              y1  = my + 6;
+                              m_yt = my + mh2;
+                              h_txt = h_m3;
+                              p.setFont(small_font);
+                              }
+
+                        const ViewYCoordinate yt(m_yt, true);
+                        
+                        pen.setColor(text_color);
+                        p.setPen(pen);
+
+                        if(isXInRange(xx_v, x, x_2))
+                        {
+// For testing...
+//                           fprintf(stderr, "is_small:%d Beat Line is within range."
+//                                 " Drawing line at mxx:%d y1:%d mbottom:%d...\n",
+//                                 scale_info._isSmall, mxx, y1, mbottom);
+                          
+                          p.drawLine(mxx, y1, mxx, mbottom);
+                        }
+                              
+                        QString s;
+                        s.setNum(num);
+                        int brw = p.fontMetrics().boundingRect(s).width();
+                        if(brw > mw1000)
+                          brw = mw1000;
+                        
+                        const ViewWCoordinate brw_v(brw, true);
+                        const ViewXCoordinate vxx_v = 
+                          mathXCoordinates(xx_v, w2, MathAdd);
+                        const ViewRect br_txt(vxx_v, yt, brw_v, h_txt);
+                              
+// For testing...
+//                           fprintf(stderr,
+//                               "drawBarText: Bar text: bar:%d beat:%d vx:%d vy:%d"
+//                               " vw:%d vh:%d tick:%d br x:%d y:%d w:%d h:%d\n",
+//                               bar, beat, vr.x(), vr.y(), vr.width(), vr.height(), tick,
+//                               br_txt.x(), br_txt.y(), br_txt.width(), br_txt.height());
+
+                        if(intersects(br_txt, r))
+                        {
+// For testing...
+//                           fprintf(stderr,
+//                           "is_small:%d Beat text: s:%s stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
+//                           scale_info._isSmall, s.toLatin1().constData(), stick, ntick, bar1, bar2, bar);
+
+                          p.drawText(asQRectMapped(br_txt), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
+                        }
+                        }
+                  }
+            }
+
+      //p.setWorldMatrixEnabled(true);
+      p.setWorldMatrixEnabled(wmtxen);
+      //p.restore();      
+}
+
+//---------------------------------------------------------
 //   pdraw
 //---------------------------------------------------------
 
@@ -554,8 +811,8 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
       
         drawTickRaster(p, QRect(mr.x(), my13, mr.width(), mh_m12), mrg, 0,
                          waveMode, false, true,
-                         MusEGlobal::config.rulerFg, 
-                         MusEGlobal::config.rulerFg,
+                         Qt::red, // dummy color, initialize to a bold color so it will be evident if it is used
+                         Qt::red, // -"-
                          Qt::red, // dummy color, initialize to a bold color so it will be evident if it is used
                          Qt::red, // -"-
                          MusEGlobal::config.rulerFg,

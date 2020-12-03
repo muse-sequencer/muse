@@ -169,6 +169,7 @@ private slots:
     void ctrlPopupTriggered(QAction* act);
     void ctrlMenuAboutToShow();
     void ctrlMenuAboutToHide();
+    void gridOnChanged(bool);
 
     void updateGroupingActions();
     void set_ignore_hide(bool);

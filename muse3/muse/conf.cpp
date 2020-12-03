@@ -915,6 +915,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                             MusEGlobal::config.dummyPartColor = readColor(xml);
                         else if (tag == "partCanvasFineRaster")
                               MusEGlobal::config.partCanvasFineRasterColor = readColor(xml);
+                        else if (tag == "partCanvasBeatRaster")
+                              MusEGlobal::config.partCanvasBeatRasterColor = readColor(xml);
                         else if (tag == "partCanvasCoarseRaster")
                               MusEGlobal::config.partCanvasCoarseRasterColor = readColor(xml);
                         else if (tag == "trackBg")
@@ -1075,6 +1077,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.canvasShowPartEvent = xml.parseInt();
                         else if (tag == "canvasShowGrid")
                               MusEGlobal::config.canvasShowGrid = xml.parseInt();
+                        else if (tag == "canvasShowGridHorizontalAlways")
+                              MusEGlobal::config.canvasShowGridHorizontalAlways = xml.parseInt();
+                        else if (tag == "canvasShowGridBeatsAlways")
+                              MusEGlobal::config.canvasShowGridBeatsAlways = xml.parseInt();
                         else if (tag == "canvasBgPixmap")
                               MusEGlobal::config.canvasBgPixmap = xml.parse1();
                         else if (tag == "canvasCustomBgList")
@@ -1709,6 +1715,7 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
       xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
       xml.colorTag(level, "dummyPartColor",  MusEGlobal::config.dummyPartColor);
       xml.colorTag(level, "partCanvasCoarseRaster",  MusEGlobal::config.partCanvasCoarseRasterColor);
+      xml.colorTag(level, "partCanvasBeatRaster",  MusEGlobal::config.partCanvasBeatRasterColor);
       xml.colorTag(level, "partCanvasFineRaster",  MusEGlobal::config.partCanvasFineRasterColor);
 
       xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
@@ -2077,6 +2084,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "canvasShowPartType", MusEGlobal::config.canvasShowPartType);
       xml.intTag(level, "canvasShowPartEvent", MusEGlobal::config.canvasShowPartEvent);
       xml.intTag(level, "canvasShowGrid", MusEGlobal::config.canvasShowGrid);
+      xml.intTag(level, "canvasShowGridHorizontalAlways", MusEGlobal::config.canvasShowGridHorizontalAlways);
+      xml.intTag(level, "canvasShowGridBeatsAlways", MusEGlobal::config.canvasShowGridBeatsAlways);
       xml.strTag(level, "canvasBgPixmap", MusEGlobal::config.canvasBgPixmap);
       xml.strTag(level, "canvasCustomBgList", MusEGlobal::config.canvasCustomBgList.join(";"));
 

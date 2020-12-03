@@ -28,6 +28,7 @@
 #include <QWheelEvent>
 #include <QPainter>
 #include <QPixmap>
+#include <QEvent>
 
 #include <stdio.h>
 
@@ -287,7 +288,12 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
             if (dm == currentlySelected) {
                   p.fillRect(ux, yy, uw, TH, MusEGlobal::config.drumListSel);
                   p.setPen(MusEGlobal::config.drumListSelFont);
-            } else {
+            }
+            else if(instrument == curPitch) {
+                  p.fillRect(ux, yy, uw, TH, MusEGlobal::config.drumListSel.darker()); // TODO Create a new colour.
+                  p.setPen(MusEGlobal::config.drumListSelFont); // TODO Would likely need its own colour too.
+            }
+            else {
                 p.setPen(MusEGlobal::config.drumListFont);
             }
 //            else
@@ -1770,7 +1776,9 @@ void DList::init(QHeaderView* h, QWidget* parent)
 DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
    : MusEGui::View(parent, 1, ymag)
       {
+      setMouseTracking(true);
       _alphaOverlay = 64;
+      curPitch = -1;
       dcanvas=dcanvas_;
       ourDrumMap=dcanvas->getOurDrumMap();
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
@@ -1784,7 +1792,9 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
 DList::DList(QHeaderView* h, QWidget* parent, int ymag, MusECore::DrumMap* dm, int dmSize)
    : MusEGui::View(parent, 1, ymag)
       {
+      setMouseTracking(true);
       _alphaOverlay = 64;
+      curPitch = -1;
       dcanvas=nullptr;
       ourDrumMap=dm;
       ourDrumMapSize=dmSize;
@@ -1807,6 +1817,15 @@ DList::~DList()
 void DList::viewMouseMoveEvent(QMouseEvent* ev)
       {
       curY = ev->y();
+      int dInstrument;
+      dInstrument = curY / TH;
+      if (dInstrument >= ourDrumMapSize)
+        dInstrument = ourDrumMapSize - 1;
+      if (dInstrument < 0)
+        dInstrument = 0;
+      emit pitchChanged(dInstrument);
+      setPitch(dInstrument);
+
       int delta = curY - startY;
       switch (drag) {
             case START_DRAG: // this cannot happen if ourDrumMapSize==0
@@ -2162,5 +2181,27 @@ void DList::ourDrumMapChanged(bool instrMapChanged)
 
   redraw();
 }
+
+//---------------------------------------------------------
+//   leaveEvent
+//---------------------------------------------------------
+
+void DList::leaveEvent(QEvent*)
+      {
+      emit pitchChanged(-1);
+      setPitch(-1);
+      }
+
+//---------------------------------------------------------
+//   setPitch
+//---------------------------------------------------------
+
+void DList::setPitch(int pitch)
+      {
+      if (curPitch == pitch)
+            return;
+      curPitch = pitch;
+      redraw();
+      }
 
 } // namespace MusEGui

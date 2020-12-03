@@ -35,7 +35,6 @@
 #include <QMainWindow>
 #include <QScrollBar>
 #include <QToolBar>
-#include <QToolButton>
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
@@ -74,6 +73,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QScrollArea>
+#include <QToolButton>
 #include "track.h"
 #include "part.h"
 #include "xml.h"
@@ -249,7 +249,10 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       _minXMag = -500;
       _maxXMag = -5;
       QList<Rasterizer::Column> rast_cols;
-      rast_cols << Rasterizer::NormalColumn;
+      rast_cols <<
+        Rasterizer::TripletColumn <<
+        Rasterizer::NormalColumn <<
+        Rasterizer::DottedColumn;
       _rasterizerModel = new RasterizerModel(
       MusEGlobal::globalRasterizer, this, 7, rast_cols);
       _rasterizerModel->setDisplayFormat(RasterizerModel::FractionFormat);
@@ -287,7 +290,16 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       cursorPos->setEnabled(false);
       toolbar->addWidget(cursorPos);
 
-      _rasterCombo = new RasterLabelCombo(RasterLabelCombo::ListView, _rasterizerModel, this, "RasterLabelCombo");
+      gridOnButton = new QToolButton();
+      gridOnButton->setIcon(*gridOnSVGIcon);
+      gridOnButton->setFocusPolicy(Qt::NoFocus);
+      gridOnButton->setCheckable(true);
+      gridOnButton->setToolTip(tr("Show grid"));
+      gridOnButton->setWhatsThis(tr("Show grid"));
+      toolbar->addWidget(gridOnButton);
+      connect(gridOnButton, &QToolButton::toggled, [this](bool v) { gridOnChanged(v); } );
+
+      _rasterCombo = new RasterLabelCombo(RasterLabelCombo::TableView, _rasterizerModel, this, "RasterLabelCombo");
       _rasterCombo->setFocusPolicy(Qt::TabFocus);
       toolbar->addWidget(_rasterCombo);
 
@@ -691,6 +703,12 @@ void Arranger::configChanged()
       }
       setHeaderSizes();
       _parentWin->updateVisibleTracksButtons();
+
+      gridOnButton->blockSignals(true);
+      gridOnButton->setChecked(MusEGlobal::config.canvasShowGrid);
+      gridOnButton->blockSignals(false);
+
+      canvas->redraw();
       }
 
 //---------------------------------------------------------
@@ -1104,6 +1122,17 @@ void Arranger::setTempo200()
       {
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetGlobalTempo, 200, 0));
       }
+
+//---------------------------------------------------------
+//   gridOnChanged
+//---------------------------------------------------------
+
+void Arranger::gridOnChanged(bool v)
+{
+  MusEGlobal::config.canvasShowGrid = v;
+  // We want the simple version, don't set the style or stylesheet yet.
+  MusEGlobal::muse->changeConfig(true);
+}
 
 //---------------------------------------------------------
 //   setGlobalTempo

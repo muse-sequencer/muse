@@ -46,24 +46,40 @@ void RasterizerTableView::reset()
   if(!mdl)
     return;
   const int cols = mdl->columnCount();
-  // Special for 'off' and 'bar' rows: Span all columns.
+  const int rows = mdl->rowCount();
+  int off_row = -1;
+  int bar_row = -1;
   // Is it a RasterizerModel? (It should be).
   const RasterizerModel* rast_mdl = dynamic_cast<const RasterizerModel*>(mdl);
   if(rast_mdl)
   {
-    const int off_row = rast_mdl->offRow();
-    const int bar_row = rast_mdl->barRow();
-    if(off_row >= 0)
-      setSpan(off_row, 0, 1, cols);
-    if(bar_row >= 0)
-      setSpan(bar_row, 0, 1, cols);
+    off_row = rast_mdl->offRow();
+    bar_row = rast_mdl->barRow();
   }
+  for(int i = 0; i < rows; ++i)
+  {
+    // Special for 'off' and 'bar' rows: Span all columns.
+    if(i == off_row)
+      setSpan(off_row, 0, 1, cols);
+    else if(i == bar_row)
+      setSpan(bar_row, 0, 1, cols);
+    else
+      for(int c = 0; c < cols; ++c)
+      {
+        // Be sure to reset any previous wide spans to normal single-column span!
+        // Otherwise leftover wide span items appear in the list when it changes! Verified and tested OK.
+        // TODO TEST : How can that happen? Doesn't the table clear first?
+        // Or does it 'economize' (re-use) items? Apparently so. Should we clear first if not already done?
+        setSpan(i, c, 1, 1);
+      }
+  }  
     
   int w = 0;
   for(int i = 0; i < cols; ++i)
   {
     if(isColumnHidden(i))
       continue;
+    resizeColumnToContents(i);
     w += columnWidth(i);
   }
   setMinimumWidth(w);

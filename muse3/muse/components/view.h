@@ -151,8 +151,9 @@ class View : public QWidget {
       {
         bool _drawBar;
         bool _isSmall;
+        int _newRaster;
       };
-      ScaleRetStruct scale(bool drawText, int bar, double tpix) const;
+      ScaleRetStruct scale(bool drawText, int bar, double tpix, int raster = 0) const;
       //void drawBarText(QPainter& p, int tick, int bar, const QRect& vr, const QColor& textColor, const QFont& font) const;
       void drawBarText(QPainter& p, int tick, int bar, const QRect& mr, const QColor& textColor, const QFont& font) const;
 

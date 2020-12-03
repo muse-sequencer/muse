@@ -32,6 +32,7 @@
 // Forward declarations:
 class QCloseEvent;
 class QToolBar;
+class QToolButton;
 
 namespace MusEGui {
 class Master;
@@ -66,6 +67,7 @@ class MasterEdit : public MidiEditor {
       MusEGui::PosLabel* cursorPos;
       MusEGui::TempoLabel* tempo;
       MusEGui::EditToolBar* tools2;
+      QToolButton* gridOnButton;
       int editTools;
       
       static int _rasterInit;
@@ -83,6 +85,8 @@ class MasterEdit : public MidiEditor {
       void _setRaster(int raster);
       void setTime(unsigned);
       void setTempo(int);
+      void configChanged();
+      void gridOnChanged(bool v);
 
    public slots:
       void songChanged(MusECore::SongChangedStruct_t);

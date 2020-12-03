@@ -28,8 +28,8 @@
 #include "tb1.h"
 #include "poslabel.h"
 #include "pitchlabel.h"
-#include "gconfig.h"
 #include "raster_widgets.h"
+#include "icons.h"
 
 namespace MusEGui {
 
@@ -68,6 +68,15 @@ Toolbar1::Toolbar1(RasterizerModel *model, QWidget* parent, int r, bool sp)
             addWidget(pitch);
             }
 
+      gridOnButton = new QToolButton();
+      gridOnButton->setIcon(*gridOnSVGIcon);
+      gridOnButton->setFocusPolicy(Qt::NoFocus);
+      gridOnButton->setCheckable(true);
+      gridOnButton->setToolTip(tr("Show grid"));
+      gridOnButton->setWhatsThis(tr("Show grid"));
+      addWidget(gridOnButton);
+      connect(gridOnButton, &QToolButton::toggled, [this](bool v) { gridOnButtonChanged(v); } );
+
       //---------------------------------------------------
       //  Raster
       //---------------------------------------------------
@@ -103,6 +112,15 @@ void Toolbar1::_rasterChanged(int raster)
       emit rasterChanged(raster);
       }
 
+
+//---------------------------------------------------------
+//   gridOnButtonChanged
+//---------------------------------------------------------
+
+void Toolbar1::gridOnButtonChanged(bool v)
+{
+  emit gridOnChanged(v);
+}
 
 //---------------------------------------------------------
 //   currentRaster
@@ -177,6 +195,17 @@ int Toolbar1::changeRaster(int val)
         else
           fprintf(stderr, "Toolbar1::changeRaster: rast %d not found in box!\n", rast);
         return rast;
+      }
+
+//---------------------------------------------------------
+//   setGridOn
+//---------------------------------------------------------
+
+void Toolbar1::setGridOn(bool flag)
+      {
+        gridOnButton->blockSignals(true);
+        gridOnButton->setChecked(flag);
+        gridOnButton->blockSignals(false);
       }
 
 //---------------------------------------------------------

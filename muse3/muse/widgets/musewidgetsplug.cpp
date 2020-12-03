@@ -273,6 +273,8 @@ MusEGlobal::GlobalConfigValues config = {
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
       true,                         // canvasShowGrid;
+      false,                        // canvasShowGridHorizontalAlways
+      false,                        // canvasShowGridBeatsAlways
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
       QString(""),                  // default styleSheetFile - For built-in set to ":/style.qss"
