@@ -1209,23 +1209,26 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
 //   oportPropertyPopupMenu
 //---------------------------------------------------------
 
-void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
+void TList::showSynthGUIPopupMenu(MusECore::Track* t, int x, int y)
 {
 
-    if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+    if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
     {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
         PopupMenu* p = new PopupMenu;
 
+        QAction* cact = p->addAction(*MusEGui::ankerSVGIcon, qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Configure MIDI Ports/Soft Synths...")));
+        p->addSeparator();
+
         if(!synth->synth())
             p->addAction(tr("SYNTH IS UNAVAILABLE!"));
 
-        QAction* gact = p->addAction(tr("Show GUI"));
+        QAction* gact = p->addAction(tr("Show Synth GUI"));
         gact->setCheckable(true);
         gact->setEnabled(synth->hasGui());
         gact->setChecked(synth->guiVisible());
 
-        QAction* nact = p->addAction(tr("Show Native GUI"));
+        QAction* nact = p->addAction(tr("Show Native Synth GUI"));
         nact->setCheckable(true);
         nact->setEnabled(synth->hasNativeGui());
         nact->setChecked(synth->nativeGuiVisible());
@@ -1261,6 +1264,10 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
             bool show = !synth->nativeGuiVisible();
             synth->showNativeGui(show);
         }
+        else if (ract == cact) {
+            MusEGlobal::muse->configMidiPorts();
+        }
+
 #ifdef LV2_SUPPORT
         else if (mSubPresets != nullptr && ract != nullptr && ract->data().canConvert<void *>()) {
             static_cast<MusECore::LV2SynthIF *>(synth->sif())->applyPreset(ract->data().value<void *>());
@@ -1270,13 +1277,22 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         return;
     }
 
+    // MIDI tracks
     if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM)
         return;
 
-    int oPort      = ((MusECore::MidiTrack*)t)->outPort();
+    int oPort = static_cast<MusECore::MidiTrack*>(t)->outPort();
     MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
 
     PopupMenu* p = new PopupMenu;
+
+    QAction* switchact;
+    if (t->type() == MusECore::Track::MIDI)
+        switchact = p->addAction(*drumeditSVGIcon, tr("Switch Track to Drum"));
+    else
+        switchact = p->addAction(*pianorollSVGIcon, tr("Switch Track to MIDI"));
+
+    p->addSeparator();
 
     if(port->device() && port->device()->isSynti())
     {
@@ -1285,12 +1301,12 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
             p->addAction(tr("SYNTH IS UNAVAILABLE!"));
     }
 
-    QAction* gact = p->addAction(tr("Show GUI"));
+    QAction* gact = p->addAction(tr("Show Synth GUI"));
     gact->setCheckable(true);
     gact->setEnabled(port->hasGui());
     gact->setChecked(port->guiVisible());
 
-    QAction* nact = p->addAction(tr("Show Native GUI"));
+    QAction* nact = p->addAction(tr("Show Native Synth GUI"));
     nact->setCheckable(true);
     nact->setEnabled(port->hasNativeGui());
     nact->setChecked(port->nativeGuiVisible());
@@ -1324,6 +1340,7 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         }
     }
 #endif
+
     QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
     if (ract == gact) {
         port->showGui(!port->guiVisible());
@@ -1331,6 +1348,21 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
     else if (ract == nact) {
         port->showNativeGui(!port->nativeGuiVisible());
     }
+    else if (ract == switchact) {
+        if (!t->selected())
+            changeTrackToType(t, t->type() == MusECore::Track::MIDI ? MusECore::Track::DRUM : MusECore::Track::MIDI);
+        else
+        {
+            MusECore::Track::TrackType curType = t->type();
+            for (auto const myt : *MusEGlobal::song->tracks())
+            {
+                if (myt->selected() && myt->type() == curType)
+                    changeTrackToType(myt, myt->type() == MusECore::Track::MIDI ? MusECore::Track::DRUM : MusECore::Track::MIDI);
+            } // track for-loop
+        }
+    }
+
+
 #ifdef LV2_SUPPORT
     else if (mSubPresets != nullptr && ract != nullptr && ract->data().canConvert<void *>())
     {
@@ -1341,8 +1373,8 @@ void TList::oportPropertyPopupMenu(MusECore::Track* t, int x, int y)
         }
     }
 #endif
-    delete p;
 
+    delete p;
 }
 
 //---------------------------------------------------------
@@ -2105,14 +2137,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
         case COL_CLASS:
         {
             if (button == Qt::RightButton) {
-
-                if (t->isMidiTrack()) {
-                    classesPopupMenu(t, x, t->y() - ypos, true);
-                }
-                else if (t->isSynthTrack()) {
-                    oportPropertyPopupMenu(t, x, t->y() - ypos);
-                }
+                if (t->isMidiTrack() || t->isSynthTrack())
+                    showSynthGUIPopupMenu(t, x, t->y() - ypos);
             }
+
             break;
         }
 
@@ -2120,19 +2148,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
         {
             if (button == Qt::RightButton) {
                 if (t->isSynthTrack())
-                    oportPropertyPopupMenu(t, x, t->y() - ypos);
+                    showSynthGUIPopupMenu(t, x, t->y() - ypos);
                 else if (t->isMidiTrack())
                     MusEGui::midiPortsPopupMenu(t, x, t->y() - ypos, ctrl, this);
             }
-
-//            bool allClassPorts=false;
-//            if (ctrl || (t->selected() && tracks->countSelected() > 1))
-//                allClassPorts=true;
-
-//            if (button == Qt::MiddleButton || (shift && button == Qt::RightButton))
-//                oportPropertyPopupMenu(t, x, t->y() - ypos);
-//            else if (button == Qt::RightButton)
-//                MusEGui::midiPortsPopupMenu(t, x, t->y() - ypos, allClassPorts, this);
 
             break;
         }
@@ -2891,33 +2910,33 @@ void TList::setYPos(int y)
 //   classesPopupMenu
 //---------------------------------------------------------
 
-void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelected)
-{
-    QMenu p;
-    p.clear();
-    p.addAction(*pianorollSVGIcon, tr("Midi"))->setData(MusECore::Track::MIDI);
-    p.addAction(*drumeditSVGIcon, tr("Drum"))->setData(MusECore::Track::DRUM);
-    QAction* act = p.exec(mapToGlobal(QPoint(x, y)), nullptr);
+//void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelected)
+//{
+//    QMenu p;
+//    p.clear();
+//    p.addAction(*pianorollSVGIcon, tr("Midi"))->setData(MusECore::Track::MIDI);
+//    p.addAction(*drumeditSVGIcon, tr("Drum"))->setData(MusECore::Track::DRUM);
+//    QAction* act = p.exec(mapToGlobal(QPoint(x, y)), nullptr);
 
-    if (!act)
-        return;
+//    if (!act)
+//        return;
 
-    int n = act->data().toInt();
+//    int n = act->data().toInt();
 
-    if (!allSelected) {
-        changeTrackToType(tIn,MusECore::Track::TrackType(n));
-    }
-    else
-    {
-        MusECore::TrackList *tracks = MusEGlobal::song->tracks();
-        for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt)
-        {
-            if ((*myt)->selected() && (*myt)->isMidiTrack())
-                changeTrackToType(*myt,MusECore::Track::TrackType(n));
+//    if (!allSelected) {
+//        changeTrackToType(tIn,MusECore::Track::TrackType(n));
+//    }
+//    else
+//    {
+//        MusECore::TrackList *tracks = MusEGlobal::song->tracks();
+//        for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt)
+//        {
+//            if ((*myt)->selected() && (*myt)->isMidiTrack())
+//                changeTrackToType(*myt,MusECore::Track::TrackType(n));
 
-        } // track for-loop
-    }
-}
+//        } // track for-loop
+//    }
+//}
 
 void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType)
 {

@@ -850,7 +850,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
         act->setData(-1);
         p->addSeparator();
       }
-      act = p->addAction(QIcon(*MusEGui::ankerSVGIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Midi Ports/Soft Synths...")));
+      act = p->addAction(*MusEGui::ankerSVGIcon, qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Configure MIDI Ports/Soft Synths...")));
       act->setCheckable(false);
       act->setData(openConfigId);  
       p->addSeparator();

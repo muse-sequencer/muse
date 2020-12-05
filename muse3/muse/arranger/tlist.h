@@ -123,13 +123,13 @@ class TList : public QWidget {
       virtual QSize sizeHint() const override;
       virtual QSize minimumSizeHint() const override;
 
-      void oportPropertyPopupMenu(MusECore::Track*, int x, int y);
+      void showSynthGUIPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
       void adjustScrollbar();
       void paint(const QRect& r);
       void redraw(const QRect& r);
       MusECore::Track* y2Track(int) const;
-      void classesPopupMenu(MusECore::Track*, int x, int y, bool allSelected);
+//      void classesPopupMenu(MusECore::Track*, int x, int y, bool allSelected);
       MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);

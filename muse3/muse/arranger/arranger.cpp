@@ -186,7 +186,7 @@ void Arranger::setHeaderToolTips()
     header->setToolTip(TList::COL_CLASS,      tr("Track type"));
     header->setToolTip(TList::COL_NAME,       tr("Track name"));
     header->setToolTip(TList::COL_OCHANNEL,   tr("Midi output channel number or number of audio channels"));
-    header->setToolTip(TList::COL_OPORT,      tr("Midi output port or synth midi port"));
+    header->setToolTip(TList::COL_OPORT,      tr("Midi output port or synth GUI"));
 //    header->setToolTip(TList::COL_TIMELOCK,   tr("Time lock"));
     header->setToolTip(TList::COL_AUTOMATION, tr("Automation parameter selection"));
     header->setToolTip(TList::COL_CLEF,       tr("Notation clef"));
