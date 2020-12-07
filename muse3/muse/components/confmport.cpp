@@ -1206,7 +1206,7 @@ MPConfig::MPConfig(QWidget* parent)
       ;
 
 #ifdef ALSA_SUPPORT
-      addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
+      addALSADevice->setChecked(MusEGlobal::midiSeq != nullptr);
 #else
       addALSADevice->setVisible(false);
 #endif
@@ -1233,7 +1233,7 @@ MPConfig::MPConfig(QWidget* parent)
       connect(okButton, SIGNAL(clicked()), SLOT(okClicked()));
       
       songChanged(SC_CONFIG);  
-      }
+}
 
   
 MPConfig::~MPConfig()
@@ -1522,7 +1522,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       int row_cnt = 0;
       for (MusECore::iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
             MusECore::MidiDevice* md = *imd;
-            MusECore::SynthI* synth = 0;
+            MusECore::SynthI* synth = nullptr;
             if(md->isSynti())
               synth = static_cast<MusECore::SynthI*>(md);
             QTableWidgetItem* iitem = new QTableWidgetItem(md->name());
@@ -1644,7 +1644,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
 void MPConfig::addInstanceClicked()
       {
       SynthItem* item = static_cast<SynthItem*>(synthList->currentItem());
-      if (item == 0)
+      if (item == nullptr)
             return;
       // Add at end of list.
       MusECore::SynthI *si = MusEGlobal::song->createSynthI(
@@ -1659,7 +1659,7 @@ void MPConfig::addInstanceClicked()
       for (int i = 0; i < MusECore::MIDI_PORTS; ++i) {
             MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
             MusECore::MidiDevice* dev = port->device();
-            if (dev==0) {
+            if (dev == nullptr) {
                   // This is a brand new instance. Set the instrument as well for convenience.
                   MusEGlobal::audio->msgSetMidiDevice(port, si, si);
                   // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.

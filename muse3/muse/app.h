@@ -342,7 +342,6 @@ private slots:
 #ifdef BUILD_EXPERIMENTAL
     void hideMidiRhythmGenerator();
 #endif
-    void bounceToTrack();
     void resetMidiDevices();
     void initMidiDevices();
     void localOff();
@@ -364,7 +363,8 @@ private slots:
 
 public slots:
     bool saveAs();
-    void bounceToFile(MusECore::AudioOutput* ao = 0);
+    void bounceToFile(MusECore::AudioOutput* ao = nullptr);
+    void bounceToTrack(MusECore::AudioOutput* ao = nullptr);
     void closeEvent(QCloseEvent*event) override;
     void loadProjectFile(const QString&);
     void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);

@@ -193,7 +193,7 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       for(int row = 0; row < rt_chans; ++row)
       {
         //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, redLedIcon, darkRedLedIcon, this, QString::number(row + 1));
-        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, 0, 0, this, QString::number(row + 1));
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(t_chans, nullptr, nullptr, this, QString::number(row + 1));
         wa->setFont(wa->smallFont());
         wa->array()->headerSetVisible(row == 0);
         r.channel = row;
@@ -368,7 +368,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
   MusECore::MidiDevice* md;
   
   bool is_first_pass = true;
-  QActionGroup* act_group = 0;
+  QActionGroup* act_group = nullptr;
   // Order the entire listing by device type.
   for(int dtype = 0; dtype <= MusECore::MidiDevice::SYNTH_MIDI; ++dtype)
   {
@@ -426,7 +426,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
         //  MusECore::MUSE_MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
-          MusECore::MUSE_MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+          MusECore::MUSE_MIDI_CHANNELS, nullptr, nullptr, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         if(row == 0)
         {
           switch(dtype)
@@ -531,7 +531,7 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
         //  MusECore::MUSE_MIDI_CHANNELS, redLedIcon, darkRedLedIcon, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(
-          MusECore::MUSE_MIDI_CHANNELS, 0, 0, this, QString("%1:%2").arg(i + 1).arg(md->name()));
+          MusECore::MUSE_MIDI_CHANNELS, nullptr, nullptr, this, QString("%1:%2").arg(i + 1).arg(md->name()));
         if(row == 0)
         {
           wa->array()->setCheckBoxTitle(tr("Omni"));
@@ -717,7 +717,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
   if(!MusEGlobal::checkAudioDevice())
     return;
 
-  MusECore::RouteList* rl = 0;
+  MusECore::RouteList* rl = nullptr;
   int channels = -1;
   std::list<QString> ol;
   MusECore::RouteCapabilitiesStruct rcaps;
@@ -806,7 +806,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
       if(port)
       {
         //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, this);
-        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, 0, 0, this);
+        RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, nullptr, nullptr, this);
         if(row == 0)
         {
           wa->array()->headerSetTitle(tr("Jack ports"));
@@ -943,10 +943,10 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     switch(ir->type)
     {
       case MusECore::Route::JACK_ROUTE:
-        if(ir->jackPort == 0 && MusEGlobal::audioDevice->findPort(ir->persistentJackPortName) == 0)
+        if(ir->jackPort == nullptr && MusEGlobal::audioDevice->findPort(ir->persistentJackPortName) == nullptr)
         {
           //RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, redLedIcon, darkRedLedIcon, 
-          RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, 0, 0, 
+          RoutingMatrixWidgetAction* wa = new RoutingMatrixWidgetAction(channels == -1 ? 1 : channels, nullptr, nullptr,
                                                                         this, ir->persistentJackPortName);
           wa->setEnabled(false);
           if(row == 0)
@@ -966,7 +966,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
           else
             wa->array()->headerSetVisible(false);
 
-          MusECore::Route r(MusECore::Route::JACK_ROUTE, -1, 0, -1, -1, -1, ir->persistentJackPortName);
+          MusECore::Route r(MusECore::Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, ir->persistentJackPortName);
           wa->setData(QVariant::fromValue(r));
 
           if(channels == -1)
@@ -1072,7 +1072,7 @@ bool RoutePopupMenu::event(QEvent* event)
               mev->windowPos().x(), mev->windowPos().y(), 
               mev->localPos().x(), mev->localPos().y());
       
-      QMenu* target_menu = 0;
+      QMenu* target_menu = nullptr;
       const int sz = QApplication::topLevelWidgets().size();
       for(int i = 0; i < sz; ++i)
       {
@@ -1126,7 +1126,7 @@ bool RoutePopupMenu::event(QEvent* event)
       switch(e->key())
       {
           case Qt::Key_Space:
-            if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, 0, this))
+            if (!style()->styleHint(QStyle::SH_Menu_SpaceActivatesItem, nullptr, this))
                 break;
           // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
           // FALLTHROUGH
@@ -1283,7 +1283,7 @@ void RoutePopupMenu::mouseReleaseEvent(QMouseEvent* e)
   int ch_hit_clk_idx_max = -1;
   int ch_hit_clk_ch_start = -1;
   bool ch_hit_clk_val = false;
-  QActionGroup* ch_hit_clk_act_group = 0;
+  QActionGroup* ch_hit_clk_act_group = nullptr;
   
   const int sz = actions().size();
   for(int i = 0; i < sz; ++i)
@@ -1517,7 +1517,7 @@ void RoutePopupMenu::mousePressEvent(QMouseEvent* e)
   int ch_hit_clk_idx_min = -1;
   int ch_hit_clk_idx_max = -1;
   int ch_hit_clk_ch_start = -1;
-  QActionGroup* ch_hit_clk_act_group = 0;
+  QActionGroup* ch_hit_clk_act_group = nullptr;
 
   const int sz = actions().size();
   for(int i = 0; i < sz; ++i)
@@ -1644,12 +1644,12 @@ void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
   int ch_hit_hvr_idx_min = -1;
   int ch_hit_hvr_idx_max = -1;
   int ch_hit_hvr_ch_start = -1;
-  QActionGroup* ch_hit_hvr_act_group = 0;
+  QActionGroup* ch_hit_hvr_act_group = nullptr;
 
   int ch_hit_clk_idx_min = -1;
   int ch_hit_clk_idx_max = -1;
   int ch_hit_clk_ch_start = -1;
-  QActionGroup* ch_hit_clk_act_group = 0;
+  QActionGroup* ch_hit_clk_act_group = nullptr;
   
   const int sz = actions().size();
   for(int i = 0; i < sz; ++i)
@@ -3458,7 +3458,7 @@ void RoutePopupMenu::prepare()
       MusECore::Track* const track = _route.track;
       if(track->isMidiTrack())
       {
-        QAction* act = 0;
+        QAction* act = nullptr;
         // Warn if no devices available. Add an item to open midi config. 
         int pi = 0;
         for( ; pi < MusECore::MIDI_PORTS; ++pi)
@@ -3504,7 +3504,7 @@ void RoutePopupMenu::prepare()
       MusECore::Track* const track = _route.track;
       if(track->isMidiTrack())
       {
-        QAction* act = 0;
+        QAction* act = nullptr;
         addMidiPorts(track, this, _isOutMenu, true, _isOutMenu);
         if(_isOutMenu)   
         {

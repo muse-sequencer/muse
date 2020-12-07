@@ -123,7 +123,8 @@ class TList : public QWidget {
       virtual QSize sizeHint() const override;
       virtual QSize minimumSizeHint() const override;
 
-      void showSynthGUIPopupMenu(MusECore::Track*, int x, int y);
+      void showMidiClassPopupMenu(MusECore::Track*, int x, int y);
+      void showAudioOutPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
       void adjustScrollbar();
       void paint(const QRect& r);

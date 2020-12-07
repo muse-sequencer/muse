@@ -397,9 +397,13 @@ void TList::paint(const QRect& r)
                     break;
 
                 case COL_RECORD:
-                    if (track->canRecord()) {
-                        (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
-                    }
+                    // TODO: audio output is a trigger, not an indicator/toggle, this should be made clear
+//                    if (track->canRecord()) {
+//                        if (track->type() == MusECore::Track::AUDIO_OUTPUT)
+//                            filesaveSVGIcon->paint(&p, svg_r, Qt::AlignCenter);
+//                        else
+                    (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+//                    }
                     break;
 
                 case COL_CLASS:
@@ -1111,9 +1115,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
         }
         else if (section == COL_TRACK_IDX) {
             if (button == Qt::LeftButton) {
-                if (shift)
-                    MusEGlobal::song->selectAllTracks(true);
-                else {
+                if (shift) {
                     // Select all tracks of the same type
                     MusEGlobal::song->selectAllTracks(false);
                     MusECore::TrackList* all_tl = MusEGlobal::song->tracks();
@@ -1121,9 +1123,11 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                         if (tit->type() == t->type())
                             tit->setSelected(true);
                     }
+                } else {
+                    MusEGlobal::song->selectAllTracks(true);
                 }
-                MusEGlobal::song->update(SC_TRACK_SELECTION);
             }
+            MusEGlobal::song->update(SC_TRACK_SELECTION);
         }
         else if (section == COL_OCHANNEL) {
             // Enabled for audio tracks. And synth channels cannot be changed ATM.
@@ -1206,18 +1210,17 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
 }
 
 //---------------------------------------------------------
-//   oportPropertyPopupMenu
+//   synthGUI context menu
 //---------------------------------------------------------
 
-void TList::showSynthGUIPopupMenu(MusECore::Track* t, int x, int y)
+void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
 {
-
     if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
     {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
         PopupMenu* p = new PopupMenu;
 
-        QAction* cact = p->addAction(*MusEGui::ankerSVGIcon, qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Configure MIDI Ports/Soft Synths...")));
+        QAction* cact = p->addAction(*MusEGui::ankerSVGIcon, tr("Configure MIDI Ports/Soft Synths..."));
         p->addSeparator();
 
         if(!synth->synth())
@@ -1277,6 +1280,7 @@ void TList::showSynthGUIPopupMenu(MusECore::Track* t, int x, int y)
         return;
     }
 
+
     // MIDI tracks
     if (t->type() != MusECore::Track::MIDI && t->type() != MusECore::Track::DRUM)
         return;
@@ -1286,60 +1290,65 @@ void TList::showSynthGUIPopupMenu(MusECore::Track* t, int x, int y)
 
     PopupMenu* p = new PopupMenu;
 
-    QAction* switchact;
-    if (t->type() == MusECore::Track::MIDI)
-        switchact = p->addAction(*drumeditSVGIcon, tr("Switch Track to Drum"));
-    else
-        switchact = p->addAction(*pianorollSVGIcon, tr("Switch Track to MIDI"));
+    QAction *switchact = nullptr, *gact = nullptr, *nact = nullptr;
 
-    p->addSeparator();
+#ifdef LV2_SUPPORT
+    PopupMenu *mSubPresets = nullptr;
+#endif
+
+    if (t->type() == MusECore::Track::MIDI)
+        switchact = p->addAction(*drumeditSVGIcon, tr("Convert MIDI to Drum Track"));
+    else
+        switchact = p->addAction(*pianorollSVGIcon, tr("Convert Drum to MIDI Track"));
+
 
     if(port->device() && port->device()->isSynti())
     {
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
-        if(!synth->synth())
-            p->addAction(tr("SYNTH IS UNAVAILABLE!"));
-    }
+        if(synth->synth()) {
 
-    QAction* gact = p->addAction(tr("Show Synth GUI"));
-    gact->setCheckable(true);
-    gact->setEnabled(port->hasGui());
-    gact->setChecked(port->guiVisible());
+            p->addSeparator();
 
-    QAction* nact = p->addAction(tr("Show Native Synth GUI"));
-    nact->setCheckable(true);
-    nact->setEnabled(port->hasNativeGui());
-    nact->setChecked(port->nativeGuiVisible());
+            gact = p->addAction(tr("Show Synth GUI"));
+            gact->setCheckable(true);
+            gact->setEnabled(port->hasGui());
+            gact->setChecked(port->guiVisible());
 
-    // If it has a gui but we don't have OSC, disable the action.
+            nact = p->addAction(tr("Show Native Synth GUI"));
+            nact->setCheckable(true);
+            nact->setEnabled(port->hasNativeGui());
+            nact->setChecked(port->nativeGuiVisible());
+
+            // If it has a gui but we don't have OSC, disable the action.
 #ifndef OSC_SUPPORT
 #ifdef DSSI_SUPPORT
-    if(port->device() && port->device()->isSynti())
-    {
-        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
-        if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::DSSI_SYNTH)
-        {
-            nact->setChecked(false);
-            nact->setEnabled(false);
-        }
-    }
+            if(port->device() && port->device()->isSynti())
+            {
+                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
+                if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::DSSI_SYNTH)
+                {
+                    nact->setChecked(false);
+                    nact->setEnabled(false);
+                }
+            }
 #endif
 #endif
 
 #ifdef LV2_SUPPORT
-    PopupMenu *mSubPresets = nullptr;
-    if(port->device() && port->device()->isSynti())
-    {
-        MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
-        //show presets submenu for lv2 synths
-        if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
-        {
-            mSubPresets = new PopupMenu(tr("Presets"));
-            p->addMenu(mSubPresets);
-            static_cast<MusECore::LV2SynthIF *>(synth->sif())->populatePresetsMenu(mSubPresets);
+            if(port->device() && port->device()->isSynti())
+            {
+                MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
+                //show presets submenu for lv2 synths
+                if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
+                {
+                    mSubPresets = new PopupMenu(tr("Presets"));
+                    p->addMenu(mSubPresets);
+                    static_cast<MusECore::LV2SynthIF *>(synth->sif())->populatePresetsMenu(mSubPresets);
+                }
+            }
+#endif
         }
     }
-#endif
 
     QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
     if (ract == gact) {
@@ -1373,6 +1382,31 @@ void TList::showSynthGUIPopupMenu(MusECore::Track* t, int x, int y)
         }
     }
 #endif
+
+    delete p;
+}
+
+//---------------------------------------------------------
+//   audio output context menu
+//---------------------------------------------------------
+
+void TList::showAudioOutPopupMenu(MusECore::Track* t, int x, int y)
+{
+    if (t->type() != MusECore::Track::AUDIO_OUTPUT)
+        return;
+
+    PopupMenu* p = new PopupMenu;
+
+    QAction* actTrack = p->addAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Record Downmix to Selected Wave Track"));
+    actTrack->setEnabled(!MusEGlobal::audio->bounce());
+    QAction* actFile = p->addAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Record Downmix to a File..."));
+    actFile->setEnabled(!MusEGlobal::audio->bounce());
+
+    QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
+    if (ract == actFile)
+        MusEGlobal::muse->bounceToFile(static_cast<MusECore::AudioOutput*>(t));
+    else if (ract == actTrack)
+        MusEGlobal::muse->bounceToTrack(static_cast<MusECore::AudioOutput*>(t));
 
     delete p;
 }
@@ -2138,7 +2172,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
         {
             if (button == Qt::RightButton) {
                 if (t->isMidiTrack() || t->isSynthTrack())
-                    showSynthGUIPopupMenu(t, x, t->y() - ypos);
+                    showMidiClassPopupMenu(t, x, t->y() - ypos);
+                else if (t->type() == MusECore::Track::AUDIO_OUTPUT)
+                    showAudioOutPopupMenu(t, x, t->y() - ypos);
             }
 
             break;
@@ -2148,7 +2184,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
         {
             if (button == Qt::RightButton) {
                 if (t->isSynthTrack())
-                    showSynthGUIPopupMenu(t, x, t->y() - ypos);
+                    showMidiClassPopupMenu(t, x, t->y() - ypos);
                 else if (t->isMidiTrack())
                     MusEGui::midiPortsPopupMenu(t, x, t->y() - ypos, ctrl, this);
             }

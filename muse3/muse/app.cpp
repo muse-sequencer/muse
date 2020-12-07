@@ -3121,9 +3121,9 @@ void MusE::configShortCutsSaveConfig()
 //   bounceToTrack
 //---------------------------------------------------------
 
-void MusE::bounceToTrack()
+void MusE::bounceToTrack(MusECore::AudioOutput* ao)
       {
-      if(MusEGlobal::audio->bounce())
+      if (MusEGlobal::audio->bounce())
         return;
 
       MusEGlobal::song->bounceOutput = nullptr;
@@ -3153,7 +3153,9 @@ void MusE::bounceToTrack()
 
       MusECore::AudioOutput* out = nullptr;
       // If only one output, pick it, else pick the first selected.
-      if(ol->size() == 1)
+      if (ao)
+          out = ao;
+      else if(ol->size() == 1)
         out = ol->front();
       else
       {

@@ -221,12 +221,12 @@ void Arranger::setHeaderWhatsThis()
 
 void Arranger::setHeaderStatusTips()
 {
-    header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index: Double-click to select all tracks of the same type (+SHIFT to select all)."));
+    header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index: Double-click to select all tracks (+SHIFT to select all of the same type)."));
     header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Input monitor: Left click to toggle, right click for all tracks of same type."));
     header->setStatusTip(TList::COL_RECORD,   tr("Recording: Left click to toggle, right click for all tracks of same type. Audio output: Record downmix to a file."));
     header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator: Left click to mute, right click to switch on/off (+CTRL for all tracks except audio outputs)."));
     header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator: Click to solo (+CTRL for all tracks except audio outputs). Connected tracks are 'phantom' soloed."));
-    header->setStatusTip(TList::COL_CLASS,    tr("Track type: MIDI: Context menu to switch between midi and drum track types. Synth: Context menu or double-click to open GUI."));
+    header->setStatusTip(TList::COL_CLASS,    tr("Track type: MIDI: Switch track types. Synth: Open GUI. Audio output: Downmix."));
     header->setStatusTip(TList::COL_NAME,     tr("Track name: Double-click to edit. Right-click for context menu."));
     header->setStatusTip(TList::COL_OCHANNEL, tr("Midi/Drum: Output channel number. Audio: Number of channels. Mid/right/double-click to change."));
     header->setStatusTip(TList::COL_OPORT,    tr("Midi/Drum: Context menu to set the output port (+CTRL to set for all midi tracks). Synth: Context menu to show synth GUI."));

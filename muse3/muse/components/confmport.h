@@ -29,6 +29,7 @@
 
 #include "ui_synthconfigbase.h"
 #include "type_defs.h"
+#include "synth.h"
 
 // Temporary for testing migration of some port list columns over to the new device list. 
 // Make permanent later.
@@ -120,7 +121,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void closeEvent(QCloseEvent*e);
 
    public:
-      MPConfig(QWidget* parent=0);
+      MPConfig(QWidget* parent = nullptr);
       ~MPConfig();
       };
 
