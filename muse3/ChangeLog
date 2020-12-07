@@ -1,3 +1,10 @@
+07.12.2020
+    - Fix: Standardize Track list as far as possible. Use left mouse consistently 
+            for (multi)selecting tracks (except for flags/indicators columns).
+            Use right mouse button for context menus where appropriate.
+            Use double-click for text editing and access to frequently used items. 
+            Improve consistency when applying functions to multiple tracks. (kybos)
+    - New: Add context menu to audio output track type column for downmixing. (kybos)
 16.11.2020
     - Fix: Initialize all fonts with the current system font family on first run,
             to avoid ugly looking sans-serif default on desktops like KDE. (kybos)
