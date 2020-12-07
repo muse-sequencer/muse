@@ -663,6 +663,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*, bool)), this,
          SLOT(setSelection(int, MusECore::Event&, MusECore::Part*, bool)));
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
+      connect(canvas, SIGNAL(pitchChanged(int)), dlist, SLOT(setPitch(int)));   
+      connect(canvas, &EventCanvas::pitchChanged, [this](int p) { dlist->setPitch(p); } );   
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       setWindowTitle(canvas->getCaption());
@@ -678,6 +680,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(toolbar, &Toolbar1::rasterChanged, [this](int raster) { setRaster(raster); } );
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
+      connect(toolbar, &Toolbar1::gridOnChanged, [this](bool v) { gridOnChanged(v); } );
       connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(info, SIGNAL(deltaModeChanged(bool)), SLOT(deltaModeChanged(bool)));
       connect(info, SIGNAL(returnPressed()), SLOT(focusCanvas()));
@@ -1034,6 +1037,17 @@ void DrumEdit::soloChanged(bool flag)
         operations.add(MusECore::PendingOperationItem(canvas->track(), flag, MusECore::PendingOperationItem::SetTrackSolo));
         MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
+      }
+
+//---------------------------------------------------------
+//   gridOnChanged
+//---------------------------------------------------------
+
+void DrumEdit::gridOnChanged(bool flag)
+      {
+        MusEGlobal::config.canvasShowGrid = flag;
+        // We want the simple version, don't set the style or stylesheet yet.
+        MusEGlobal::muse->changeConfig(true);
       }
 
 //---------------------------------------------------------
@@ -1824,7 +1838,10 @@ void DrumEdit::configChanged()
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
       dlist->setBg(MusEGlobal::config.drumListBg);
+      toolbar->setGridOn(MusEGlobal::config.canvasShowGrid);
       initShortcuts();
+
+      canvas->redraw();
       }
 
 //---------------------------------------------------------

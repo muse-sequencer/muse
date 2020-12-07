@@ -229,13 +229,16 @@ void Master::pdraw(QPainter& p, const QRect& rect, const QRegion&)
 
 void Master::draw(QPainter& p, const QRect& rect, const QRegion& rg)
       {
-      drawTickRaster(p, rect, rg, editor->raster(),
-                     false, false, false,
-                     MusEGlobal::config.midiCanvasBeatColor,
-                     MusEGlobal::config.midiCanvasBeatColor,
-                     MusEGlobal::config.midiCanvasFineColor,
-                     MusEGlobal::config.midiCanvasBarColor
-                     );
+      if (MusEGlobal::config.canvasShowGrid)
+      {
+        drawTickRaster(p, rect, rg, editor->raster(),
+                      false, false, false,
+                      MusEGlobal::config.midiCanvasBeatColor,
+                      MusEGlobal::config.midiCanvasBeatColor,
+                      MusEGlobal::config.midiCanvasFineColor,
+                      MusEGlobal::config.midiCanvasBarColor
+                      );
+      }
 
       if ((tool == MusEGui::DrawTool) && drawLineMode) {
           QPen pen;

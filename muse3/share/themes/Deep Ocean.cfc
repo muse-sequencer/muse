@@ -38,6 +38,7 @@
     <partCanvasBg r="40" g="50" b="60"></partCanvasBg>
     <dummyPartColor r="80" g="90" b="100"></dummyPartColor>
     <partCanvasCoarseRaster r="80" g="80" b="80"></partCanvasCoarseRaster>
+    <partCanvasBeatRaster r="70" g="70" b="70"></partCanvasBeatRaster>
     <partCanvasFineRaster r="60" g="60" b="65"></partCanvasFineRaster>
     <trackBg r="40" g="50" b="60"></trackBg>
     <selectTrackBg r="100" g="180" b="255"></selectTrackBg>

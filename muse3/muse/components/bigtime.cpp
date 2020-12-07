@@ -378,9 +378,9 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   int hspace = 20;
 // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
-  int tw     = fm.horizontalAdvance(QString("000:00:00:00"));
+  int tw     = fm.horizontalAdvance(QString("0000.00.00000"));
 #else
-  int tw     = fm.width(QString("000:00:00:00"));
+  int tw     = fm.width(QString("0000.00.00000"));
 #endif
   
   fs         = ((ev->size().width() - hspace*2)*fs) / tw;
@@ -410,7 +410,7 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   int absFrameY = timeY;
   barLabel->resize(digitWidth*4, fs);
   beatLabel->resize(digitWidth*2, fs);
-  tickLabel->resize(digitWidth*3, fs);
+  tickLabel->resize(digitWidth*5, fs);
   minLabel->resize(digitWidth*3, fs);
   secLabel->resize(digitWidth*2, fs);
   frameLabel->resize(digitWidth*2, fs);

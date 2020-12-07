@@ -303,6 +303,8 @@ extern QIcon* routeSelDestSVGIcon;
 extern QIcon* routeSourceSVGIcon;
 extern QIcon* routeDestSVGIcon;
 
+extern QIcon* gridOnSVGIcon;
+
 //----------------------------------
 // Cursors
 //----------------------------------

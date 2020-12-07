@@ -643,14 +643,10 @@ void View::drawBarText(QPainter& p, int tick, int bar, const QRect& mr, const QC
   }
 }
 
-View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
+View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix, int raster) const
 {
   ScaleRetStruct ret;
   ret._drawBar = true;
-  ret._isSmall = drawText ? (tpix < 64) : (tpix < 32);
-  
-  if(!ret._isSmall)
-    return ret;
   
   int n = 1;
   if(drawText)
@@ -681,6 +677,15 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
       //fprintf(stderr, "drawText: tpix < 32\n");
       n <<= 1;
     }
+
+    ret._newRaster = raster * n;
+
+    ret._isSmall = tpix < 64;
+    if(!ret._isSmall)
+      return ret;
+
+    if (bar % n)
+      ret._drawBar = false;
   }
   else
   {
@@ -689,58 +694,70 @@ View::ScaleRetStruct View::scale(bool drawText, int bar, double tpix) const
     if (tpix <= 0.01)
     {
       //fprintf(stderr, "tpix <= 0.01\n");
-      n <<= 10;
+      n <<= 11;
     }
     else if (tpix <= 0.03125)
     {
       //fprintf(stderr, "tpix <= 0.03125\n");
-      n <<= 9;
+      n <<= 10;
     }
     else if (tpix <= 0.0625)
     {
       //fprintf(stderr, "tpix <= 0.0625\n");
-      n <<= 8;
+      n <<= 9;
     }
     else if (tpix <= 0.125)
     {
       //fprintf(stderr, "tpix <= 0.125\n");
-      n <<= 7;
+      n <<= 8;
     }
     else if (tpix <= 0.25)
     {
       //fprintf(stderr, "tpix <= 0.25\n");
-      n <<= 6;
+      n <<= 7;
     }
     else if (tpix <= 0.5)
     {
       //fprintf(stderr, "tpix <= 0.5\n");
-      n <<= 5;
+      n <<= 6;
     }
     else if (tpix <= 1.0)
     {
       //fprintf(stderr, "tpix <= 1.0\n");
-      n <<= 4;
+      n <<= 5;
     }
     else if (tpix <= 2.0)
     {
       //fprintf(stderr, "tpix <= 2.0\n");
-      n <<= 3;
+      n <<= 4;
     }
     else if (tpix <= 4.0)
     {
       //fprintf(stderr, "tpix <= 4.0\n");
-      n <<= 2;
+      n <<= 3;
     }
     else if (tpix <= 8.0)
     {
       //fprintf(stderr, "tpix <= 8.0\n");
+      n <<= 2;
+    }
+    else if (tpix <= 32.0)
+    {
+      //fprintf(stderr, "tpix <= 32.0\n");
       n <<= 1;
     }
+
+    ret._newRaster = raster * n;
+
+    ret._isSmall = tpix < 32;
+    if(!ret._isSmall)
+      return ret;
+
+    // FIXME: Hack?
+    if (bar % (n > 1 ? (n >> 1) : n))
+      ret._drawBar = false;
   }
-  
-  if (bar % n)
-    ret._drawBar = false;
-  
+
   return ret;
 }
 
@@ -752,14 +769,14 @@ void View::drawTickRaster(
   QPainter& p, const QRect& mr, const QRegion& /*mrg*/, int raster,
   bool waveMode, 
   bool /*useGivenColors*/,
-  bool drawText,
+  bool /*drawText*/,
   const QColor& bar_color,
   const QColor& beat_color,
   const QColor& fine_color,
   const QColor& coarse_color,
-  const QColor& text_color,
-  const QFont& large_font,
-  const QFont& small_font
+  const QColor& /*text_color*/,
+  const QFont& /*large_font*/,
+  const QFont& /*small_font*/
   )
 {
       const ViewRect r(mr, true);
@@ -782,19 +799,16 @@ void View::drawTickRaster(
 
       const ViewYCoordinate bottom(mr.bottom(), true);
 
-      const int mw1000      = 1000;
-      const int mh2         = 2;
-
       const ViewWCoordinate w2(2, true);
       const ViewHCoordinate h2(2, true);
       const ViewHCoordinate h_m1(mh - 1, true);
       const ViewHCoordinate h_m3(mh - 3, true);
       
-      int bar1, bar2, beat;
+      int bar1, bar2, beat, beatBar;
       ScaleRetStruct scale_info;
-      bool is_beat_small;
-      int beat_start_beat, rast_x, rast_z, rast_n, rast_xx, rast_xxx;
-      unsigned tick, rast_xb;
+      int rast_x, next_rast_xx, rast_xx, raster_scaled;
+      unsigned tick, conv_rast_xx, conv_next_rast_xx;
+      double rast_mapx;
 
       QPen pen;
       pen.setCosmetic(true);
@@ -802,58 +816,6 @@ void View::drawTickRaster(
 // For testing...
 //       fprintf(stderr, "View::drawTickRaster_new(): virt:%d drawText:%d mx:%d my:%d mw:%d mh:%draster%d\n",
 //               virt(), drawText, mx, my, mw, mh, raster);  
-      
-      int qq = raster;
-      int qq_shift = 1;
-      
-      double rast_mapx = rmapx_f(raster);
-      // NOTE: had to add this 4.0 magic value to draw the restart closer to how it used to be
-      //       without it not every point where you can put a note would have a line on many zoom levels
-      rast_mapx = rast_mapx * 4.0;
-      // grid too dense?
-      if (rast_mapx <= 0.01)
-      {
-            //fprintf(stderr, "tpix <= 0.01\n");
-            qq_shift <<= 11;
-      }
-      else if (rast_mapx <= 0.03125)
-      {
-            //fprintf(stderr, "tpix <= 0.03125\n");
-            qq_shift <<= 10;
-      }
-      else if (rast_mapx <= 0.0625)
-      {
-            //fprintf(stderr, "tpix <= 0.0625\n");
-            qq_shift <<= 9;
-      }
-      else if (rast_mapx <= 0.125)
-      {
-            //fprintf(stderr, "tpix <= 0.125\n");
-            qq_shift <<= 8;
-      }
-      else if (rast_mapx <= 0.25)
-      {
-            //fprintf(stderr, "tpix <= 0.25\n");
-            qq_shift <<= 7;
-      }
-      else if (rast_mapx <= 0.5)
-      {
-            //fprintf(stderr, "tpix <= 0.5\n");
-            qq_shift <<= 6;
-      }
-      else if (rast_mapx <= 1.0)
-            qq_shift <<= 5;
-      else if (rast_mapx <= 2)
-            qq_shift <<= 4;
-      else if (rast_mapx <= 4)
-            qq_shift <<= 3;
-      else if (rast_mapx <= 8)
-            qq_shift <<= 2;
-      else if (rast_mapx < 32)
-            qq_shift <<= 1;
-
-      qq *= qq_shift;
-      
       
       if (waveMode) {
             MusEGlobal::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(asUnmapped(x_lim)._value), &bar1, &beat, &tick);
@@ -867,10 +829,10 @@ void View::drawTickRaster(
       //fprintf(stderr, "bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
 
       int stick = MusEGlobal::sigmap.bar2tick(bar1, 0, 0);
-      int ntick;
-      ScaleRetStruct prev_scale_info;
+      int ntick, deltaTick;
       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
             ntick     = MusEGlobal::sigmap.bar2tick(bar+1, 0, 0);
+            deltaTick = ntick - stick;
             int a, b=0;
             double tpix;
             if (waveMode) {
@@ -879,205 +841,166 @@ void View::drawTickRaster(
                      tpix  = rmapx_f(a - b);
                }
             else {
-                  tpix  = rmapx_f(ntick - stick);
+                  tpix  = rmapx_f(deltaTick);
                   }
                   
-            //draw_fake_bar = /*true*/ false;
-            is_beat_small = tpix < 32;
+            scale_info = scale(false, bar, tpix, raster);
             
-            scale_info = scale(drawText, bar, tpix);
-            
-            if(drawText && !scale_info._drawBar)
+            if(scale_info._drawBar)
             {
-              // Only check this on the first starting bar.
-              if(bar == bar1)
+              const int tick_sm = waveMode ? b : stick;
+              
+              const ViewXCoordinate x_sm(tick_sm, false);
+              if(compareXCoordinates(x_sm, x_2, CompareGreaterEqual))
+                break;
+              if(compareXCoordinates(x_sm, x, CompareGreaterEqual))
+              //if(isXInRange(x_sm, x, x_2))
               {
-                int prev_a, prev_b=0;
-                double prev_tpix;
-                int prev_stick;
-                int prev_ntick = stick;
-                int prev_bar = bar1 - 1;
-                for( ; prev_bar >= 0; --prev_bar, prev_ntick = prev_stick)
+                const int mx_sm = asMapped(x_sm)._value;
+                
+                const ScaleRetStruct scale_info_text_lines = scale(true, bar, tpix, raster);
+                if (scale_info_text_lines._drawBar) {
+                  // highlight lines drawn with text
+                  pen.setColor(coarse_color);
+                } else {
+                  pen.setColor(bar_color);
+                }
+                p.setPen(pen);
+              
+// For testing...
+//                 fprintf(stderr,
+//                   "is_small:%d tpix:%.15f Coarse line: tick_sm:%d mx_sm:%d stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
+//                   scale_info._isSmall, tpix, tick_sm, mx_sm, stick, ntick, bar1, bar2, bar);
+//                 fprintf(stderr, "is_small:%d Coarse Line is within range."
+//                       " Drawing line at mx_sm:%d my:%d mx_sm:%d mbottom:%d tpix:%.15f\n",
+//                       scale_info._isSmall, mx_sm, my, mx_sm, mbottom, tpix);
+                
+                p.drawLine(mx_sm, my, mx_sm, mbottom);
+              }
+            }
+            
+            if(!scale_info._isSmall)
+            {
+              // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
+              if (raster >= 4 && raster < deltaTick)
+              {
+                for (rast_xx = stick; rast_xx < ntick; /*rast_xx += raster*/)
                 {
-                  prev_stick = MusEGlobal::sigmap.bar2tick(prev_bar, 0, 0);
-                  if (waveMode) {
-                        prev_a = MusEGlobal::tempomap.tick2frame(prev_ntick);
-                        prev_b = MusEGlobal::tempomap.tick2frame(prev_stick);
-                        prev_tpix  = rmapx_f(prev_a - prev_b);
-                    }
-                  else {
-                        prev_tpix  = rmapx_f(prev_ntick - prev_stick);
-                        }
-                  
-                  prev_scale_info = scale(drawText, prev_bar, prev_tpix);
+                  next_rast_xx = rast_xx + raster;
+                  if(waveMode)
+                  {
+                    conv_rast_xx = MusEGlobal::tempomap.tick2frame(rast_xx);
+                    conv_next_rast_xx = MusEGlobal::tempomap.tick2frame(next_rast_xx);
+                  }
+                  else
+                  {
+                    conv_rast_xx = rast_xx;
+                    conv_next_rast_xx = next_rast_xx;
+                  }
+
+                  rast_mapx = rmapx_f(conv_next_rast_xx - conv_rast_xx);
+                  // NOTE: had to add this 4.0 magic value to draw the restart closer to how it used to be
+                  //       without it not every point where you can put a note would have a line on many zoom levels
+                  rast_mapx = rast_mapx * 4.0;
+                  const ScaleRetStruct scale_info_fine_lines = scale(false, bar, rast_mapx, raster);
+                  raster_scaled = scale_info_fine_lines._newRaster;
+                  // Infinite loop protection.
+                  if(raster_scaled < 1)
+                    raster_scaled = 1;
+
+                  const ViewXCoordinate x_sm(conv_rast_xx, false);
+                  if(compareXCoordinates(x_sm, x_2, CompareGreaterEqual))
+                    break;
+                  if(compareXCoordinates(x_sm, x, CompareGreaterEqual))
+                  //if(isXInRange(x_sm, x, x_2))
+                  {
+
+                    // Ignore already drawn bar lines.
+                    if(!scale_info._drawBar || rast_xx != stick)
+                    {
+                      // If the line happens to be exactly on a beat, emphasize that it's a beat line.
+                      // Don't bother drawing the beat lines if we want to always draw them,
+                      //  since that is already done below.
+                      // FIXME: This loop doesn't know EXACTLY whether all beat lines will be drawn below.
+                      // So it is possible that in some low raster conditions the lines won't be drawn.
+                      // But to avoid redundant duplicate drawing of beat lines we do this anyway.
+                      // If you really want all the lines drawn, remove the second part of this conditional.
+                      // Since canvasShowGridBeatsAlways is false by default, most users won't notice.
+                      MusEGlobal::sigmap.tickValues(rast_xx, &beatBar, &beat, &tick);
+                      if(tick != 0 || (tick == 0 && !MusEGlobal::config.canvasShowGridBeatsAlways))
+                      {
+                        if(tick == 0)
+                          pen.setColor(beat_color);
+                        else
+                          pen.setColor(fine_color);
+                        p.setPen(pen);
+
+                        rast_x = mapx(conv_rast_xx);
 
 // For testing...
-//                   fprintf(stderr,
-//                       "drawTickRaster: Bar check: bar1:%d bar2:%d bar:%d prev_bar:%d"
-//                       " stick:%d prev_stick:%d prev_ntick:%d prev_tpix:%f drawBar:%d\n",
-//                       bar1, bar2, bar, prev_bar, stick, prev_stick, prev_ntick, prev_tpix,
-//                       prev_scale_info._drawBar);
+//                           fprintf(stderr,
+//                           "is_small:%d Fine line: raster:%d raster_scaled:%d rast_xx:%d"
+//                           " rast_x:%d stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
+//                           scale_info._isSmall, raster, raster_scaled, rast_xx, 
+//                           rast_x, stick, ntick, bar1, bar2, bar);
 
-                  if(prev_scale_info._drawBar)
-                    break;
-                }
-                
-                if(prev_bar >= 0)
-                {
-                  const int prev_tick = waveMode ? prev_b : prev_stick;
-                  drawBarText(p, prev_tick, prev_bar, mr, text_color, large_font);
+                        p.drawLine(rast_x, my, rast_x, mbottom);
+                      }
+                    }
+                  }
+                  rast_xx += raster_scaled;
                 }
               }
-                
-              continue;
-            }
-            
-            if(!drawText || (drawText && scale_info._isSmall))
-            {
-                  const int tick_sm = waveMode ? b : stick;
-                  
-                  const ViewXCoordinate x_sm(tick_sm, false);
-                  const int mx_sm = asMapped(x_sm)._value;
-                  
-                  if(drawText) {
-                    pen.setColor(text_color);
-                  } else {
-
-                    ScaleRetStruct scale_info_text_lines = scale(true, bar, tpix);
-                    if (scale_info_text_lines._drawBar) {
-                      // highlight lines drawn with text
-                      pen.setColor(coarse_color);
-                    } else {
-                      pen.setColor(bar_color);
-                    }
-                  }
-                  p.setPen(pen);
-                  
-                  if(scale_info._drawBar)
-                  {
-// For testing...
-//                     fprintf(stderr,
-//                      "...is_small:%d mx:%d mw:%d tick_sm:%d mx_sm:%d stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
-//                      scale_info._isSmall, mx, mw, tick_sm, mx_sm, stick, ntick, bar1, bar2, bar);
-                    
-                    if(isXInRange(x_sm, x, x_2))
-                    {
-// For testing...
-//                       fprintf(stderr, "...Line is within range."
-//                             " Drawing line at mx_sm:%d my:%d mx_sm:%d mbottom:%d...\n",
-//                             mx_sm, my, mx_sm, mbottom);
-                      
-                      p.drawLine(mx_sm, my, mx_sm, mbottom);
-                    }
-                  }
-                  
-                  if(drawText)
-                  {
-                    drawBarText(p, tick_sm, bar, mr, text_color, large_font);
-                  }
             }
 
-            if(!drawText && !scale_info._isSmall)
-            {
-              if (raster>=4) {
-                          pen.setColor(fine_color);
-                          p.setPen(pen);
-                          rast_xb = MusEGlobal::sigmap.bar2tick(bar, 0, 0);
-                          MusEGlobal::sigmap.timesig(rast_xb, rast_z, rast_n);
-                          rast_xx = rast_xb + (scale_info._drawBar ? qq : 0);
-                          rast_xxx = MusEGlobal::sigmap.bar2tick(bar, rast_z, 0);
-                          while (rast_xx <= rast_xxx) {
-                                rast_x = mapx(rast_xx);
-                                p.drawLine(rast_x, my, rast_x, mbottom);
-                                rast_xx += qq;
-                                }
-                          }
-            }
-                        
-            if((!drawText && !is_beat_small) || (drawText && !scale_info._isSmall)) {
+            // If we want to show beat lines always, do them here instead of above.
+            // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
+            if(MusEGlobal::config.canvasShowGridBeatsAlways &&
+               raster > 0 /*&& raster < deltaTick*/ && !scale_info._isSmall) {
                   int z, n;
                   MusEGlobal::sigmap.timesig(stick, z, n);
                   
-                  beat_start_beat = (drawText || (!drawText && !scale_info._drawBar)) ? 0 : 1;
-                  for (int beat = beat_start_beat; beat < z; beat++) {
+                  for (int beat = 0; beat < z; /*beat++*/) {
                         int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
-                        if (waveMode)
-                              xx = MusEGlobal::tempomap.tick2frame(xx);
-                        
                         int xx_e = MusEGlobal::sigmap.bar2tick(bar, beat + 1, 0);
-                        if (waveMode)
-                              xx_e = MusEGlobal::tempomap.tick2frame(xx_e);
-                        
-                        if((xx_e - xx) < raster)
-                          continue;
-                        
-                        const ViewXCoordinate xx_v(xx, false);
-                        const int mxx = asMapped(xx_v)._value;
-                        
-                        if(drawText)
+                        if(waveMode)
                         {
-                          int y1;
-                          int num;
-                          int m_yt = my;
-                          ViewHCoordinate h_txt;
-                          
-                          if (beat == 0) {
-                                num = bar + 1;
-                                y1  = my + 1;
-                                h_txt = h_m1;
-                                p.setFont(large_font);
-                                }
-                          else {
-                                num = beat + 1;
-                                y1  = my + 6;
-                                m_yt = my + mh2;
-                                h_txt = h_m3;
-                                p.setFont(small_font);
-                                }
-
-                          const ViewYCoordinate yt(m_yt, true);
-                          
-                          pen.setColor(text_color);
-                          p.setPen(pen);
-                          if(isXInRange(xx_v, x, x_2))
-                            p.drawLine(mxx, y1, mxx, mbottom);
-                                
-                          QString s;
-                          s.setNum(num);
-                          int brw = p.fontMetrics().boundingRect(s).width();
-                          if(brw > mw1000)
-                            brw = mw1000;
-                          
-                          const ViewWCoordinate brw_v(brw, true);
-                          const ViewXCoordinate vxx_v = 
-                            mathXCoordinates(xx_v, w2, MathAdd);
-                          const ViewRect br_txt(vxx_v, yt, brw_v, h_txt);
-                                
-// For testing...
-//                           fprintf(stderr,
-//                               "drawBarText: Bar text: bar:%d beat:%d vx:%d vy:%d"
-//                               " vw:%d vh:%d tick:%d br x:%d y:%d w:%d h:%d\n",
-//                               bar, beat, vr.x(), vr.y(), vr.width(), vr.height(), tick,
-//                               br_txt.x(), br_txt.y(), br_txt.width(), br_txt.height());
-  
-                          if(intersects(br_txt, r))
-                          {
-// For testing...
-//                             fprintf(stderr, "...bar text within range. xorg:%d xmag:%d xpos:%d Drawing bar text at x:%d y:%d w:%d h:%d\n",
-//                                     xorg, xmag, xpos, map(br_txt).x(), map(br_txt).y(), map(br_txt).width(), map(br_txt).height());
-    
-                            p.drawText(asQRectMapped(br_txt), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
-                          }
+                          xx = MusEGlobal::tempomap.tick2frame(xx);
+                          xx_e = MusEGlobal::tempomap.tick2frame(xx_e);
                         }
-                        else
+                        
+                        rast_mapx = rmapx_f(xx_e - xx);
+                        // FIXME: Arbitrary value, hope this is satisfactory.
+                        rast_mapx = rast_mapx * 4.0;
+                        const ScaleRetStruct scale_info_beat_lines = scale(false, bar, rast_mapx, 1);
+                        raster_scaled = scale_info_beat_lines._newRaster;
+                        // Infinite loop protection.
+                        if(raster_scaled < 1)
+                          raster_scaled = 1;
+
+                        // Ignore already drawn bar lines.
+                        if(!scale_info._drawBar || beat != 0)
                         {
-                          if(isXInRange(xx_v, x, x_2))
+                          const ViewXCoordinate xx_v(xx, false);
+                          if(compareXCoordinates(xx_v, x_2, CompareGreaterEqual))
+                            break;
+                          if(compareXCoordinates(xx_v, x, CompareGreaterEqual))
+                          //if(isXInRange(xx_v, x, x_2))
                           {
+                            const int mxx = asMapped(xx_v)._value;
+                            
+// For testing...
+//                             fprintf(stderr, "is_small:%d Beat Line is within range."
+//                                   " Drawing line at mxx:%d my:%d mbottom:%d...\n",
+//                                   scale_info._isSmall, mxx, my, mbottom);
+                            
                             pen.setColor(beat_color);
                             p.setPen(pen);
                             p.drawLine(mxx, my, mxx, mbottom);
                           }
                         }
+                        
+                        beat += raster_scaled;
                         }
                   }
             }

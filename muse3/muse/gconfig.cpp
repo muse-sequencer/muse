@@ -166,8 +166,9 @@ GlobalConfigValues config = {
       QColor(220, 211, 202),     // synthTrackBg;
       
       QColor(98, 124, 168),      // part canvas bg
-      QColor(71, 71, 71),        // partCanvasCoarseRaster;
-      QColor(130, 136, 168),     // partCanvasFineRaster;
+      QColor(71, 71, 71),        // partCanvasCoarseRasterColor;
+      QColor(90, 90, 90),        // partCanvasBeatRasterColor;
+      QColor(130, 136, 168),     // partCanvasFineRasterColor;
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       Qt::blue,                  // ctrlGraphSel;
 //      QColor(0, 0, 0),           // mixerBg;
@@ -324,6 +325,8 @@ GlobalConfigValues config = {
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
       true,                         // canvasShowGrid;
+      false,                        // canvasShowGridHorizontalAlways
+      false,                        // canvasShowGridBeatsAlways
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
 //      QString(""),                  // default styleSheetFile

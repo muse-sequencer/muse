@@ -385,6 +385,8 @@ QIcon* routeSelDestSVGIcon;
 QIcon* routeSourceSVGIcon;
 QIcon* routeDestSVGIcon;
 
+QIcon* gridOnSVGIcon;
+
 //----------------------------------
 // Cursors
 //----------------------------------
@@ -773,6 +775,8 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     routeSourceSVGIcon = icons.getSVG("route_sources.svg");
     routeDestSVGIcon = icons.getSVG("route_destinations.svg");
 
+    gridOnSVGIcon = icons.getSVG("grid_on.svg");
+
     //----------------------------------
     // Cursors
     //----------------------------------
@@ -1061,6 +1065,8 @@ void deleteIcons()
     delete routeSelDestSVGIcon;
     delete routeSourceSVGIcon;
     delete routeDestSVGIcon;
+
+    delete gridOnSVGIcon;
 
     //----------------------------------
     // Cursors

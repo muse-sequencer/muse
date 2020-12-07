@@ -1431,7 +1431,8 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
 // For testing...
 //                         fprintf(stderr, "...Drawing horizontal line at x:%d yy:%d x + w:%d yy:%d\n", x, yy, x + w, yy);
 
-                        p.drawLine(ux, uyy, ux_2, uyy);
+                        if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
+                          p.drawLine(ux, uyy, ux_2, uyy);
                         break;
                   default:
 // For testing...
@@ -1443,16 +1444,18 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
             --key;
             }
 
-      //---------------------------------------------------
-      // vertical lines
-      //---------------------------------------------------
+      if (MusEGlobal::config.canvasShowGrid)
+      {
+        //---------------------------------------------------
+        // vertical lines
+        //---------------------------------------------------
 
-      drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
-                     MusEGlobal::config.midiCanvasBeatColor,
-                     MusEGlobal::config.midiCanvasBeatColor,
-                     MusEGlobal::config.midiCanvasFineColor,
-                     MusEGlobal::config.midiCanvasBarColor);
-
+        drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
+                      MusEGlobal::config.midiCanvasBeatColor,
+                      MusEGlobal::config.midiCanvasBeatColor,
+                      MusEGlobal::config.midiCanvasFineColor,
+                      MusEGlobal::config.midiCanvasBarColor);
+      }
       }
 
 //---------------------------------------------------------

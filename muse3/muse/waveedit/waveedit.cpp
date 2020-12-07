@@ -287,6 +287,15 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       pos2->setSmpte(true);
       tb1->addWidget(pos2);
 
+      gridOnButton = new QToolButton();
+      gridOnButton->setIcon(*gridOnSVGIcon);
+      gridOnButton->setFocusPolicy(Qt::NoFocus);
+      gridOnButton->setCheckable(true);
+      gridOnButton->setToolTip(tr("Show grid"));
+      gridOnButton->setWhatsThis(tr("Show grid"));
+      tb1->addWidget(gridOnButton);
+      connect(gridOnButton, &QToolButton::toggled, [this](bool v) { gridOnChanged(v); } );
+
       rasterLabel = new RasterLabelCombo(RasterLabelCombo::TableView, _rasterizerModel, this, "RasterLabelCombo");
       rasterLabel->setFocusPolicy(Qt::TabFocus);
       tb1->addWidget(rasterLabel);
@@ -498,7 +507,13 @@ void WaveEdit::configChanged()
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
       
+      gridOnButton->blockSignals(true);
+      gridOnButton->setChecked(MusEGlobal::config.canvasShowGrid);
+      gridOnButton->blockSignals(false);
+
       initShortcuts();
+      
+      canvas->redraw();
       }
 
 //---------------------------------------------------------
@@ -773,6 +788,17 @@ void WaveEdit::soloChanged(bool flag)
       operations.add(MusECore::PendingOperationItem(part->track(), flag, MusECore::PendingOperationItem::SetTrackSolo));
       MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
+
+//---------------------------------------------------------
+//   gridOnChanged
+//---------------------------------------------------------
+
+void WaveEdit::gridOnChanged(bool v)
+{
+  MusEGlobal::config.canvasShowGrid = v;
+  // We want the simple version, don't set the style or stylesheet yet.
+  MusEGlobal::muse->changeConfig(true);
+}
 
 //---------------------------------------------------------
 //   viewKeyPressEvent

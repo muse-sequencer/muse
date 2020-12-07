@@ -61,6 +61,7 @@ class WaveEdit : public MidiEditor {
       QSlider* ymag;
       QToolBar* tb1;
       QToolButton* solo;
+      QToolButton* gridOnButton;
       MusEGui::PosLabel* pos1;
       MusEGui::PosLabel* pos2;
       QAction* selectAllAction;
@@ -107,6 +108,7 @@ class WaveEdit : public MidiEditor {
       void setTime(unsigned t);
       void songChanged1(MusECore::SongChangedStruct_t);
       void soloChanged(bool flag);
+      void gridOnChanged(bool flag);
       void moveVerticalSlider(int val);
       void eventColorModeChanged(int);
       void _setRaster(int raster);

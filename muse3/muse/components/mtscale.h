@@ -53,6 +53,19 @@ class MTScale : public View {
       virtual void viewMouseReleaseEvent(QMouseEvent* event);
       virtual void leaveEvent(QEvent*e);
 
+      virtual void drawTickRaster(QPainter& p, const QRect&, const QRegion& = QRegion(), int raster = 0,
+                                      bool waveMode = false,
+                                      bool useGivenColors = false,
+                                      bool drawText = false,
+                                      const QColor& bar_color = Qt::cyan, // default to very obvious color to visualize uninitialized drawing
+                                      const QColor& beat_color = Qt::cyan,
+                                      const QColor& fine_color = Qt::cyan,
+                                      const QColor& coarse_color = Qt::cyan,
+                                      const QColor& text_color = Qt::cyan,
+                                      const QFont& large_font = QFont(),
+                                      const QFont& small_font = QFont()
+                                     );
+
    signals:
       void timeChanged(unsigned);
 

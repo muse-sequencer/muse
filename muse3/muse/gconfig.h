@@ -218,6 +218,7 @@ struct GlobalConfigValues {
       
       QColor partCanvasBg;
       QColor partCanvasCoarseRasterColor;
+      QColor partCanvasBeatRasterColor;
       QColor partCanvasFineRasterColor;
       QColor ctrlGraphFg;
       QColor ctrlGraphSel;
@@ -363,6 +364,8 @@ struct GlobalConfigValues {
       int canvasShowPartType;       // 1 - names, 2 events
       int canvasShowPartEvent;      //
       bool canvasShowGrid;
+      bool canvasShowGridHorizontalAlways;
+      bool canvasShowGridBeatsAlways;
       QString canvasBgPixmap;
       QStringList canvasCustomBgList;
 //      QString styleSheetFile;

@@ -223,6 +223,7 @@ Appearance::Appearance(QWidget* parent)
 
       new IdListViewItem(0x41c, aid, "Part canvas background");
       new IdListViewItem(0x42c, aid, "Part canvas raster coarse");
+      new IdListViewItem(0x457, aid, "Part canvas raster beat");
       new IdListViewItem(0x42d, aid, "Part canvas raster fine");
 
       new IdListViewItem(0x453, aid, "Markers");
@@ -478,6 +479,7 @@ QColor* Appearance::globalConfigColorFromId(int id) const
     case 0x454: return &MusEGlobal::config.rangeMarkerColor;
     case 0x455: return &MusEGlobal::config.positionMarkerColor;
     case 0x456: return &MusEGlobal::config.currentPositionColor;
+    case 0x457: return &MusEGlobal::config.partCanvasBeatRasterColor;
 
 //      case 0x500: return &MusEGlobal::config.mixerBg;
       case 0x501: return &MusEGlobal::config.midiTrackLabelBg;
@@ -651,6 +653,8 @@ void Appearance::resetValues()
       eventSpecial->setChecked(config->canvasShowPartEvent & (1 << 6));
       eventButtonGroup->setEnabled(config->canvasShowPartType & 2);
       arrGrid->setChecked(config->canvasShowGrid);
+      gridAlwaysShowH->setChecked(config->canvasShowGridHorizontalAlways);
+      gridAlwaysShowBeats->setChecked(config->canvasShowGridBeatsAlways);
 
 //      qtStyleComboBox->clear();
 ////      QString cs = MusEGlobal::muse->style()->objectName();
@@ -934,6 +938,8 @@ bool Appearance::apply()
 //      }
 
       config->canvasShowGrid = arrGrid->isChecked();
+      config->canvasShowGridHorizontalAlways = gridAlwaysShowH->isChecked();
+      config->canvasShowGridBeatsAlways = gridAlwaysShowBeats->isChecked();
       config->globalAlphaBlend = globalAlphaVal->value();
       config->maxAliasedPointSize = maxAliasedPointSize->value();
       config->autoAdjustFontSize = cbAutoAdjustFontSize->isChecked();

@@ -40,6 +40,7 @@ class QVBoxLayout;
 class QHBoxLayout;
 class QScrollArea;
 class QGridLayout;
+class QToolButton;
 
 namespace MusECore {
 class Track;
@@ -89,6 +90,7 @@ class Arranger : public QWidget {
       Header* header;
       MTScale* time;
       SpinBox* lenEntry;
+      QToolButton* gridOnButton;
       bool showTrackinfoFlag;
       TrackInfoWidget* trackInfoWidget;
       QScrollArea* tracklistScroll;
@@ -138,6 +140,7 @@ class Arranger : public QWidget {
       void setTempo50();
       void setTempo100();
       void setTempo200();
+      void gridOnChanged(bool v);
       void verticalScrollSetYpos(unsigned);
       void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
       void horizontalZoom(int mag, const QPoint& glob_pos);

@@ -803,28 +803,35 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
       pen.setColor(MusEGlobal::config.midiDividerColor);
       p.setPen(pen);
       
-      //---------------------------------------------------
-      //  horizontal lines
-      //---------------------------------------------------
+      if (MusEGlobal::config.canvasShowGrid || MusEGlobal::config.canvasShowGridHorizontalAlways)
+      {
+        //---------------------------------------------------
+        //  horizontal lines
+        //---------------------------------------------------
 
-      int uyy  = ((uy-1) / TH) * TH + TH;
-      
-// For testing...
-//       fprintf(stderr, "DrumCanvas::drawCanvas ux:%d uy:%d uw:%d uh:%d uyy:%d\n", ux, uy, uw, uh, uyy);
-      
-      for (; uyy < uy_2; uyy += TH) {
-            p.drawLine(ux, uyy, ux_2, uyy);
-            }
+        int uyy  = ((uy-1) / TH) * TH + TH;
+        
+  // For testing...
+  //       fprintf(stderr, "DrumCanvas::drawCanvas ux:%d uy:%d uw:%d uh:%d uyy:%d\n", ux, uy, uw, uh, uyy);
+        
+        for (; uyy < uy_2; uyy += TH) {
+              p.drawLine(ux, uyy, ux_2, uyy);
+              }
+      }
 
-      //---------------------------------------------------
-      // vertical lines
-      //---------------------------------------------------
+      if (MusEGlobal::config.canvasShowGrid)
+      {
+        //---------------------------------------------------
+        // vertical lines
+        //---------------------------------------------------
 
-      drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
-                     MusEGlobal::config.midiCanvasBeatColor,
-                     MusEGlobal::config.midiCanvasBeatColor,
-                     MusEGlobal::config.midiCanvasFineColor,
-                     MusEGlobal::config.midiCanvasBarColor);
+        if (MusEGlobal::config.canvasShowGrid)
+          drawTickRaster(p, mr, rg, editor->raster(), false, false, false,
+                        MusEGlobal::config.midiCanvasBeatColor,
+                        MusEGlobal::config.midiCanvasBeatColor,
+                        MusEGlobal::config.midiCanvasFineColor,
+                        MusEGlobal::config.midiCanvasBarColor);
+      }
 }
 
 //---------------------------------------------------------
@@ -1933,7 +1940,7 @@ void DrumCanvas::showNoteTooltip(QMouseEvent* event) {
             hoverItem = nullptr;
         }
 
-        QToolTip::showText(event->globalPos(), str);
+        QToolTip::showText(QPoint(event->globalX(), event->globalY() + 10), str);
     }
 }
 

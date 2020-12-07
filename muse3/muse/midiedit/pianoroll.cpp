@@ -533,6 +533,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(toolbar, &Toolbar1::rasterChanged, [this](int raster) { setRaster(raster); } );
       connect(toolbar,  SIGNAL(soloChanged(bool)), SLOT(soloChanged(bool)));
+      connect(toolbar, &Toolbar1::gridOnChanged, [this](bool v) { gridOnChanged(v); } );
 
       setFocusPolicy(Qt::NoFocus);
       
@@ -663,7 +664,10 @@ void PianoRoll::configChanged()
       else {
             canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       }
+      toolbar->setGridOn(MusEGlobal::config.canvasShowGrid);
       initShortcuts();
+
+      canvas->redraw();
       }
 
 //---------------------------------------------------------
@@ -1393,6 +1397,17 @@ void PianoRoll::soloChanged(bool flag)
         operations.add(MusECore::PendingOperationItem(canvas->track(), flag, MusECore::PendingOperationItem::SetTrackSolo));
         MusEGlobal::audio->msgExecutePendingOperations(operations, true);
       }
+      }
+
+//---------------------------------------------------------
+//   gridOnChanged
+//---------------------------------------------------------
+
+void PianoRoll::gridOnChanged(bool flag)
+      {
+        MusEGlobal::config.canvasShowGrid = flag;
+        // We want the simple version, don't set the style or stylesheet yet.
+        MusEGlobal::muse->changeConfig(true);
       }
 
 //---------------------------------------------------------

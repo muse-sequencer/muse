@@ -30,13 +30,13 @@
 #include "gconfig.h"
 #include "audio.h"
 #include "song.h"
+#include "icons.h"
 
 #include <limits.h>
 
 #include <QActionGroup>
 #include <QGridLayout>
 #include <QLabel>
-#include <QToolButton>
 #include <QMenuBar>
 #include <QMenu>
 #include <QList>
@@ -46,6 +46,7 @@
 // Forwards from header:
 #include <QCloseEvent>
 #include <QToolBar>
+#include <QToolButton>
 #include "master.h"
 #include "mtscale.h"
 #include "poslabel.h"
@@ -123,6 +124,19 @@ void MasterEdit::songChanged(MusECore::SongChangedStruct_t type)
       }
 
 //---------------------------------------------------------
+//   configChanged
+//---------------------------------------------------------
+
+void MasterEdit::configChanged()
+      {
+      gridOnButton->blockSignals(true);
+      gridOnButton->setChecked(MusEGlobal::config.canvasShowGrid);
+      gridOnButton->blockSignals(false);
+
+      canvas->redraw();
+      }
+
+//---------------------------------------------------------
 //   MasterEdit
 //---------------------------------------------------------
 
@@ -140,8 +154,10 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       _rasterizerModel->setDisplayFormat(RasterizerModel::FractionFormat);
       _rasterizerModel->setMaxRows(7);
       QList<Rasterizer::Column> rast_cols;
-      rast_cols << 
-        Rasterizer::NormalColumn;
+      rast_cols <<
+        Rasterizer::TripletColumn <<
+        Rasterizer::NormalColumn <<
+        Rasterizer::DottedColumn;
       _rasterizerModel->setVisibleColumns(rast_cols);
       // Request to set the raster, but be sure to use the one it chooses,
       //  which may be different than the one requested.
@@ -187,7 +203,16 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       tempo->setToolTip(tr("Tempo at cursor position"));
       info->addWidget(tempo);
 
-      rasterLabel = new RasterLabelCombo(RasterLabelCombo::ListView, _rasterizerModel, this, "RasterLabelCombo");
+      gridOnButton = new QToolButton();
+      gridOnButton->setIcon(*gridOnSVGIcon);
+      gridOnButton->setFocusPolicy(Qt::NoFocus);
+      gridOnButton->setCheckable(true);
+      gridOnButton->setToolTip(tr("Show grid"));
+      gridOnButton->setWhatsThis(tr("Show grid"));
+      info->addWidget(gridOnButton);
+      connect(gridOnButton, &QToolButton::toggled, [this](bool v) { gridOnChanged(v); } );
+
+      rasterLabel = new RasterLabelCombo(RasterLabelCombo::TableView, _rasterizerModel, this, "RasterLabelCombo");
       rasterLabel->setFocusPolicy(Qt::TabFocus);
       info->addWidget(rasterLabel);
 
@@ -265,10 +290,14 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       connect(canvas, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
+      connect(MusEGlobal::muse, &MusE::configChanged, [this]() { configChanged(); } );
+
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
       connect(rasterLabel, &RasterLabelCombo::rasterChanged, [this](int raster) { _setRaster(raster); } );
+
+      configChanged();  // set configuration values
 
       initTopwinState();
       finalizeInit();
@@ -477,6 +506,17 @@ void MasterEdit::setupHZoomRange()
 void MasterEdit::setEditTool(int tool)
 {
     tools2->set(tool);
+}
+
+//---------------------------------------------------------
+//   gridOnChanged
+//---------------------------------------------------------
+
+void MasterEdit::gridOnChanged(bool v)
+{
+  MusEGlobal::config.canvasShowGrid = v;
+  // We want the simple version, don't set the style or stylesheet yet.
+  MusEGlobal::muse->changeConfig(true);
 }
 
 } // namespace MusEGui
