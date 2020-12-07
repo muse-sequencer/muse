@@ -654,8 +654,8 @@ MusE::MusE() : QMainWindow()
       midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels."));
 
       //-------- Audio Actions
-      audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
-      audioBounce2FileAction = new QAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Bounce to File..."), this);
+      audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Record Downmix to Selected Wave Track"), this);
+      audioBounce2FileAction = new QAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Record Downmix to a File..."), this);
       audioRestartAction = new QAction(QIcon(*MusEGui::audio_restartaudioIcon), tr("Restart Audio"), this);
 
       //-------- Automation Actions
@@ -687,7 +687,7 @@ MusE::MusE() : QMainWindow()
       settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome..."), this);
       settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync..."), this);
       settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export..."), this);
-      settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports / Soft Synths..."), this);
+      settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports/Soft Synths..."), this);
 
       //-------- Help Actions
       helpManualAction = new QAction(tr("&Manual (wiki)..."), this);
@@ -3121,9 +3121,9 @@ void MusE::configShortCutsSaveConfig()
 //   bounceToTrack
 //---------------------------------------------------------
 
-void MusE::bounceToTrack()
+void MusE::bounceToTrack(MusECore::AudioOutput* ao)
       {
-      if(MusEGlobal::audio->bounce())
+      if (MusEGlobal::audio->bounce())
         return;
 
       MusEGlobal::song->bounceOutput = nullptr;
@@ -3132,7 +3132,7 @@ void MusE::bounceToTrack()
       if(MusEGlobal::song->waves()->empty())
       {
         QMessageBox::critical(this,
-            tr("MusE: Bounce to Track"),
+            tr("MusE: Record Downmix to Track"),
             tr("No wave tracks found")
             );
         return;
@@ -3142,7 +3142,7 @@ void MusE::bounceToTrack()
       if(ol->empty())
       {
         QMessageBox::critical(this,
-            tr("MusE: Bounce to Track"),
+            tr("MusE: Record Downmix to Track"),
             tr("No audio output tracks found")
             );
         return;
@@ -3153,7 +3153,9 @@ void MusE::bounceToTrack()
 
       MusECore::AudioOutput* out = nullptr;
       // If only one output, pick it, else pick the first selected.
-      if(ol->size() == 1)
+      if (ao)
+          out = ao;
+      else if(ol->size() == 1)
         out = ol->front();
       else
       {
@@ -3173,7 +3175,7 @@ void MusE::bounceToTrack()
         if(!out)
         {
           QMessageBox::critical(this,
-              tr("MusE: Bounce to Track"),
+              tr("MusE: Record Downmix to Track"),
               tr("Select one audio output track,\nand one target wave track")
               );
           return;
@@ -3207,7 +3209,7 @@ void MusE::bounceToTrack()
       if (track == nullptr) {
           if(ol->size() == 1) {
             QMessageBox::critical(this,
-               tr("MusE: Bounce to Track"),
+               tr("MusE: Record Downmix to Track"),
                tr("Select one target wave track")
                );
             return;
@@ -3215,7 +3217,7 @@ void MusE::bounceToTrack()
           else
           {
             QMessageBox::critical(this,
-               tr("MusE: Bounce to Track"),
+               tr("MusE: Record Downmix to Track"),
                tr("Select one target wave track,\nand one audio output track")
                );
             return;
@@ -3240,71 +3242,71 @@ void MusE::bounceToTrack()
 //---------------------------------------------------------
 
 void MusE::bounceToFile(MusECore::AudioOutput* ao)
-      {
-      if(MusEGlobal::audio->bounce())
+{
+    if(MusEGlobal::audio->bounce())
         return;
-      MusEGlobal::song->bounceOutput = nullptr;
-      MusEGlobal::song->bounceTrack = nullptr;
-      if(!ao)
-      {
- MusECore::OutputList* ol = MusEGlobal::song->outputs();
+    MusEGlobal::song->bounceOutput = nullptr;
+    MusEGlobal::song->bounceTrack = nullptr;
+    if(!ao)
+    {
+        MusECore::OutputList* ol = MusEGlobal::song->outputs();
         if(ol->empty())
         {
-          QMessageBox::critical(this,
-              tr("MusE: Bounce to File"),
-              tr("No audio output tracks found")
-              );
-          return;
+            QMessageBox::critical(this,
+                                  tr("MusE: Record Downmix to File"),
+                                  tr("No audio output tracks found")
+                                  );
+            return;
         }
         // If only one output, pick it, else pick the first selected.
         if(ol->size() == 1)
-          ao = ol->front();
+            ao = ol->front();
         else
         {
-          for(MusECore::iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
-          {
-     MusECore::AudioOutput* o = *iao;
-            if(o->selected())
+            for(MusECore::iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
             {
-              if(ao)
-              {
-               ao = nullptr;
-               break;
-              }
-              ao = o;
+                MusECore::AudioOutput* o = *iao;
+                if(o->selected())
+                {
+                    if(ao)
+                    {
+                        ao = nullptr;
+                        break;
+                    }
+                    ao = o;
+                }
             }
-          }
-          if (ao == nullptr) {
+            if (ao == nullptr) {
                 QMessageBox::critical(this,
-                  tr("MusE: Bounce to File"),
-                  tr("Select one audio output track")
-                  );
+                                      tr("MusE: Record Downmix to File"),
+                                      tr("Select one audio output track")
+                                      );
                 return;
-          }
+            }
         }
-      }
+    }
 
-      if (checkRegionNotNull())
-            return;
+    if (checkRegionNotNull())
+        return;
 
-      MusECore::SndFile* sf = MusECore::getSndFile(nullptr, this);
-      if (sf == nullptr)
-            return;
+    MusECore::SndFile* sf = MusECore::getSndFile(nullptr, this);
+    if (sf == nullptr)
+        return;
 
-      // Switch all wave converters to offline settings mode.
-      MusEGlobal::song->setAudioConvertersOfflineOperation(true);
+    // Switch all wave converters to offline settings mode.
+    MusEGlobal::song->setAudioConvertersOfflineOperation(true);
 
-      // This will wait a few cycles until freewheel is set and a seek is done.
-      MusEGlobal::audio->msgBounce();
-      MusEGlobal::song->bounceOutput = ao;
-      ao->setRecFile(sf);
-      if(MusEGlobal::debugMsg)
+    // This will wait a few cycles until freewheel is set and a seek is done.
+    MusEGlobal::audio->msgBounce();
+    MusEGlobal::song->bounceOutput = ao;
+    ao->setRecFile(sf);
+    if(MusEGlobal::debugMsg)
         fprintf(stderr, "ao->setRecFile %p\n", sf);
-      MusEGlobal::song->setRecord(true, false);
-      MusEGlobal::song->setRecordFlag(ao, true);
-      ao->prepareRecording();
-      MusEGlobal::song->setPlay(true);
-      }
+    MusEGlobal::song->setRecord(true, false);
+    MusEGlobal::song->setRecordFlag(ao, true);
+    ao->prepareRecording();
+    MusEGlobal::song->setPlay(true);
+}
 
 
 //---------------------------------------------------------
@@ -3318,8 +3320,8 @@ bool MusE::checkRegionNotNull()
       int end   = MusEGlobal::song->rPos().frame();
       if (end - start <= 0) {
             QMessageBox::critical(this,
-               tr("MusE: Bounce"),
-               tr("Set left/right marker for bounce range")
+               tr("MusE: Record Downmix"),
+               tr("Set left and right markers for recording range")
                );
             return true;
             }

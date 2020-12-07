@@ -850,12 +850,12 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
         act->setData(-1);
         p->addSeparator();
       }
-      act = p->addAction(QIcon(*MusEGui::ankerSVGIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
+      act = p->addAction(*MusEGui::ankerSVGIcon, qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Configure MIDI Ports/Soft Synths...")));
       act->setCheckable(false);
       act->setData(openConfigId);  
       p->addSeparator();
       
-      p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), p));
+      p->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output Port/Device")), p));
 
       p->addSeparator();
       
@@ -869,7 +869,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
       QVector<int> alsa_list;
       QVector<int> jack_list;
       QVector<int> synth_list;
-      QVector<int> *cur_list;
+      QVector<int> *cur_list = nullptr;
       QVector<int> unused_list;
 
       for (int i = 0; i < MusECore::MIDI_PORTS; ++i)
@@ -971,7 +971,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort, bool includeDefaultEntry)
           if(!subp)
           {
             subp = new QMenu(p);
-            subp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Empty ports")));
+            subp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Empty Ports")));
           }
           act = subp->addAction(QString().setNum(port + 1));
           act->setData(port);
@@ -996,8 +996,8 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
       case MusECore::Track::DRUM:
       case MusECore::Track::AUDIO_SOFTSYNTH:
       {
-            MusECore::MidiTrack* track = 0;
-            MusECore::SynthI* synthi = 0;
+            MusECore::MidiTrack* track = nullptr;
+            MusECore::SynthI* synthi = nullptr;
             
             int potential_new_port_no=-1;
             int port = -1; 
@@ -1017,14 +1017,14 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
             }
             
             // NOTE: If parent is given, causes accelerators to be returned in QAction::text() !
-            QMenu* p = MusEGui::midiPortsPopup(0, port, includeDefaultEntry);
+            QMenu* p = MusEGui::midiPortsPopup(nullptr, port, includeDefaultEntry);
             
             // find first free port number
             // do not permit numbers already used in other tracks!
             // except if it's only used in this track.
             int no;
             for (no=0;no<MusECore::MIDI_PORTS;no++)
-              if (MusEGlobal::midiPorts[no].device()==NULL)
+              if (MusEGlobal::midiPorts[no].device()==nullptr)
               {
                 MusECore::ciMidiTrack it;
                 for (it=MusEGlobal::song->midis()->begin(); it!=MusEGlobal::song->midis()->end(); ++it)
@@ -1153,7 +1153,7 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
               }
             }
             
-            QAction* act = widget ? p->exec(widget->mapToGlobal(QPoint(x, y)), 0) : p->exec();
+            QAction* act = widget ? p->exec(widget->mapToGlobal(QPoint(x, y)), nullptr) : p->exec();
             if(!act) 
             {
               delete p;
@@ -1260,7 +1260,7 @@ QMenu* populateAddSynth(QWidget* parent)
   asmap smaps[ntypes];
   PopupMenu* mmaps[ntypes];
   for(int itype = 0; itype < ntypes; ++itype)
-    mmaps[itype] = 0;
+    mmaps[itype] = nullptr;
   
   MusECore::Synth* synth;
   MusECore::Synth::Type type;
@@ -1796,6 +1796,41 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       
       return est_width;
       }
+
+//---------------------------------------------------
+//  openSynthGui
+//---------------------------------------------------
+
+void openSynthGui(MusECore::Track* t) {
+
+    //auto curTrack = MusEGlobal::muse->arranger()->curTrack();
+
+    MusECore::SynthI* synth = nullptr;
+
+    if (t->isMidiTrack()) {
+
+        int oPort = ((MusECore::MidiTrack*)t)->outPort();
+        MusECore::MidiPort* port = &MusEGlobal::midiPorts[oPort];
+
+        if (port->device() && port->device()->isSynti())
+            synth = static_cast<MusECore::SynthI*>(port->device());
+
+    } else if (t->isSynthTrack()) {
+        synth = static_cast<MusECore::SynthI*>(t);
+    } else {
+        return;
+    }
+
+    if (!synth || !synth->synth())
+        return;
+
+    if (synth->hasNativeGui()) {
+        synth->showNativeGui(!synth->nativeGuiVisible());
+    }
+    else if (synth->hasGui()) {
+        synth->showGui(!synth->guiVisible());
+    }
+}
 
 //---------------------------------------------------
 //  clipQLine

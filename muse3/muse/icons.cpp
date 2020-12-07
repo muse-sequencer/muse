@@ -101,7 +101,6 @@
 #include "xpm/velo_per_note.xpm"
 
 #include "xpm/edit_track_add.xpm"
-#include "xpm/edit_track_del.xpm"
 #include "xpm/midi_transform.xpm"
 #include "xpm/select.xpm"
 #include "xpm/select_all.xpm"
@@ -182,7 +181,6 @@ QIcon* ledGreenIcon;
 QIcon* ledDarkGreenIcon;
 
 QPixmap* edit_track_addIcon;
-QPixmap* edit_track_delIcon;
 QPixmap* midi_transformIcon;
 QPixmap* selectIcon;
 QPixmap* select_allIcon;
@@ -379,6 +377,7 @@ QIcon* mixerSVGIcon;
 QIcon* plusSVGIcon;
 QIcon* minusSVGIcon;
 QIcon* keySVGIcon;
+QIcon* delSelTracksSVGIcon;
 
 QIcon* routeAutoAdjustSVGIcon;
 QIcon* routeSelSourceSVGIcon;
@@ -459,7 +458,7 @@ public:
 
         if (_global_on && _global.contains(filename)) {
             icon->addFile(_path_global + "/" + filename, QSize(), mode, state);
-            return;;
+            return;
         }
 
         icon->addFile(":/svg/" + filename, QSize(), mode, state);
@@ -533,7 +532,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     veloPerNote_OffIcon  = new QPixmap(velo_all_xpm);
 
     edit_track_addIcon            = new QPixmap(edit_track_add_xpm);
-    edit_track_delIcon            = new QPixmap(edit_track_del_xpm);
     midi_transformIcon            = new QPixmap(midi_transform_xpm);
     selectIcon                    = new QPixmap(select_xpm);
     select_allIcon                = new QPixmap(select_all_xpm);
@@ -744,6 +742,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     plusSVGIcon        = icons.getSVG("plus.svg");
     minusSVGIcon       = icons.getSVG("minus.svg");
     keySVGIcon         = icons.getSVG("key.svg");
+    delSelTracksSVGIcon = icons.getSVG("delete_sel_tracks.svg");
 
     // tool icons
     pencilIconSVG     = icons.getSVG("pencil.svg");
@@ -862,7 +861,6 @@ void deleteIcons()
     delete veloPerNote_OffIcon;
 
     delete edit_track_addIcon;
-    delete edit_track_delIcon;
     delete midi_transformIcon;
     delete selectIcon;
     delete select_allIcon;
@@ -1042,6 +1040,7 @@ void deleteIcons()
     delete plusSVGIcon;
     delete minusSVGIcon;
     delete keySVGIcon;
+    delete delSelTracksSVGIcon;
 
     delete noscaleSVGIcon[0];
     delete noscaleSVGIcon[1];

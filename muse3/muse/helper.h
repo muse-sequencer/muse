@@ -80,15 +80,16 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 namespace MusEGui {
 
 // Lists all used midi ports + devices, plus all empty ports.
-QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1, bool includeDefaultEntry = false);
+QMenu* midiPortsPopup(QWidget* parent = nullptr, int checkPort = -1, bool includeDefaultEntry = false);
 // Includes all listed in midiPortsPopup, plus unused devices.
 void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts, 
-                        const QWidget* widget = 0, bool includeDefaultEntry = false);
+                        const QWidget* widget = nullptr, bool includeDefaultEntry = false);
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false, bool evenIgnoreDrumPreference=false);
+void openSynthGui(MusECore::Track* t);
 QStringList localizedStringListFromCharArray(const char** array, const char* context);
 QString getFilterExtension(const QString &filter);
-QString browseProjectFolder(QWidget* parent = 0);
+QString browseProjectFolder(QWidget* parent = nullptr);
 QString projectTitleFromFilename(QString filename);
 QString projectPathFromFilename(QString filename);
 QString projectExtensionFromFilename(QString filename);

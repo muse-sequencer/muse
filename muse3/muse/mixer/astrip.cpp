@@ -1754,7 +1754,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           record->setFocusPolicy(Qt::NoFocus);
           record->setCheckable(true);
           if (type == MusECore::Track::AUDIO_OUTPUT)
-              record->setToolTip(tr("Record downmix"));
+              record->setToolTip(tr("Record downmix to a file..."));
           else
               record->setToolTip(tr("Record arm"));
           record->setChecked(at->recordFlag());

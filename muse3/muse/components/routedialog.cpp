@@ -4136,7 +4136,7 @@ void RouteDialog::addItems()
 
 void MusE::startRouteDialog()
 {
-  if(routeDialog == 0)
+  if(routeDialog == nullptr)
     // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
     routeDialog = new MusEGui::RouteDialog;
   routeDialog->show();

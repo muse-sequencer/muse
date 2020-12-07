@@ -375,7 +375,7 @@ GlobalConfigValues config = {
       true,                         // midiCtrlGraphMergeErase Whether to erase underlying erase target items when dragging/dropping source items.
       false,                        // midiCtrlGraphMergeEraseInclusive Whether to erase target items in-between source item groups.
       true,                         // midiCtrlGraphMergeEraseWysiwyg Whether to erase past the last item in a group to include its original source width.
-      MusEGlobal::RoutePreferCanonicalName,  // preferredRouteNameOrAlias
+      MusEGlobal::RoutePreferSecondAlias,  // preferredRouteNameOrAlias
       true,                         // routerExpandVertically
       2,                            // routerGroupingChannels
       false,                        // enableLatencyCorrection.
