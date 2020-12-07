@@ -402,15 +402,17 @@ unsigned SigList::raster(unsigned t, int raster) const
       int delta  = t - e->second->tick;
       int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
       // If the raster is on 'bar' or is greater than a full bar, we limit the raster to a full bar.
-      // FIXME (And any other places with this comment) Still not fully protected,
-      //        for example @ 4/4 @ 4dotted snap, raster < ticksM ! 
       if (raster == 0 || raster > ticksM)
             raster = ticksM;
       int rest   = delta % ticksM;
       int bb     = (delta/ticksM)*ticksM;
-      //fprintf(stderr, "SigList::raster: t:%d delta:%d ticksM:%d raster:%d rest:%d bb:%d result:%d\n",
-      //        t, delta, ticksM, raster, rest, bb, e->second->tick + bb + ((rest + raster/2)/raster)*raster);
-      return  e->second->tick + bb + ((rest + raster/2)/raster)*raster;
+      int rr = ((rest + raster/2)/raster)*raster;
+      // If the remaining length is less than a raster (ex. 4/4 + 4. snap) be sure to use that shorter length.
+      const int r_cur = (rest / raster) * raster;
+      const int len_cur = ticksM - r_cur;
+      if(len_cur < raster && rest >= (r_cur + len_cur / 2))
+        rr = ticksM;
+      return  e->second->tick + bb + rr;
       }
 
 //---------------------------------------------------------
@@ -452,7 +454,6 @@ unsigned SigList::raster2(unsigned t, int raster) const
       if(e == end())
       {
         printf("SigList::raster2 event not found tick:%d\n", t);
-        //return 0;
         return t;
       }
 
@@ -463,7 +464,11 @@ unsigned SigList::raster2(unsigned t, int raster) const
             raster = ticksM;
       int rest   = delta % ticksM;
       int bb     = (delta/ticksM)*ticksM;
-      return  e->second->tick + bb + ((rest+raster-1)/raster)*raster;
+      int rr = ((rest+raster-1)/raster)*raster;
+      // If the result is beyond a bar (ex. last shorter division of 4/4 + 4. snap), limit to that bar.
+      if(rr > ticksM)
+        rr = ticksM;
+      return  e->second->tick + bb + rr;
       }
 
 //---------------------------------------------------------
@@ -476,7 +481,6 @@ int SigList::rasterStep(unsigned t, int raster) const
       if(e == end())
       {
         printf("SigList::rasterStep event not found tick:%d\n", t);
-        //return 0;
         return raster;
       }
       const int ticksM = ticks_beat(e->second->sig.n) * e->second->sig.z;
