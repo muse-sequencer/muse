@@ -24,7 +24,7 @@
 #ifndef __CONF_H__
 #define __CONF_H__
 
-#include "ui_configmidifilebase.h"
+#include "components/ui_configmidifilebase.h"
 
 #include <QDialog>
 
