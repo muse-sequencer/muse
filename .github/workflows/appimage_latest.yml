@@ -55,7 +55,7 @@ jobs:
         cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr
     - name: Build
       working-directory: ${{runner.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE -j4
+      run: cmake --build . --config $BUILD_TYPE -j1
         
     - name: Create AppImage
       working-directory: ${{runner.workspace}}/build
