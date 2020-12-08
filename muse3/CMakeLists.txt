@@ -30,7 +30,7 @@ include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5.1)
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy (SET CMP0007 NEW)
@@ -276,7 +276,7 @@ LINK_DIRECTORIES(${Qt5Xml_LIBRARY_DIRS})
 LINK_DIRECTORIES(${Qt5Svg_LIBRARY_DIRS})
 
 SET(QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5UiTools_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5Svg_LIBRARIES} ${Qt5Core_LIBRARIES})
-
+set(CMAKE_AUTOUIC ON)
 
 ##include(${QT_USE_FILE})
 
