@@ -52,7 +52,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         REPO_PATH=$GITHUB_WORKSPACE/muse3     
-        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_AUTOUIC=ON)
+        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_AUTOUIC=ON
     - name: Build
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . --config $BUILD_TYPE -j3
