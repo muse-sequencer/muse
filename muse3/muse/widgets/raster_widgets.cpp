@@ -56,6 +56,13 @@ void RasterizerTableView::reset()
     off_row = rast_mdl->offRow();
     bar_row = rast_mdl->barRow();
   }
+
+  // Be sure to reset any previous wide spans to normal single-column span!
+  // Otherwise leftover wide span items appear in the list when it changes! Verified and tested OK.
+  // TODO TEST : How can that happen? Doesn't the table clear first?
+  // Or does it 'economize' (re-use) items? Apparently so. Should we clear first if not already done?
+  clearSpans();
+
   for(int i = 0; i < rows; ++i)
   {
     // Special for 'off' and 'bar' rows: Span all columns.
@@ -63,15 +70,6 @@ void RasterizerTableView::reset()
       setSpan(off_row, 0, 1, cols);
     else if(i == bar_row)
       setSpan(bar_row, 0, 1, cols);
-    else
-      for(int c = 0; c < cols; ++c)
-      {
-        // Be sure to reset any previous wide spans to normal single-column span!
-        // Otherwise leftover wide span items appear in the list when it changes! Verified and tested OK.
-        // TODO TEST : How can that happen? Doesn't the table clear first?
-        // Or does it 'economize' (re-use) items? Apparently so. Should we clear first if not already done?
-        setSpan(i, c, 1, 1);
-      }
   }  
     
   int w = 0;
