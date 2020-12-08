@@ -353,7 +353,7 @@ public:
 
 } // namespace MusEGui
 
-#include "ui_routedialogbase.h"
+#include "mixer/ui_routedialogbase.h"
 
 namespace MusEGui {
 
