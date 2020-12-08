@@ -59,7 +59,7 @@
 #include "knob.h"
 #include "slider.h"
 #include "strip.h"
-#include "routedialog.h"
+#include "components/routedialog.h"
 
 #define __WIDTH_COMPENSATION 4
 
