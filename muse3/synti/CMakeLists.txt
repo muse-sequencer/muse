@@ -51,9 +51,7 @@ if (HAVE_FLUIDSYNTH)
       set (SubDirs ${SubDirs}  fluidsynth ) # removed fluid, fluidsynth should supercede it in every way.
 endif (HAVE_FLUIDSYNTH)
 
-#subdirs(${SubDirs})
-foreach(dir ${SubDirs})
-    ADD_SUBDIRECTORY(${dir})
-endforeach()
+subdirs(${SubDirs})
+
 
 
