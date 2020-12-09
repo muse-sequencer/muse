@@ -53,11 +53,7 @@ if (PYTHON_SUPPORT)
       set ( SubDirs ${SubDirs} remote )
 endif (PYTHON_SUPPORT)
 
-subdirs (${SubDirs})
-# foreach(subdir ${SubDirs})
-#       MESSAGE( STATUS "Adding subdir " ${subdir} )
-#       ADD_SUBDIRECTORY(${subdir})
-# endforeach()
+# subdirs (${SubDirs})
 
 ##
 ## Expand Qt macros in source files
@@ -174,6 +170,11 @@ file (GLOB latency_compensator_source_files
 file (GLOB wavepreview_source_files
       wavepreview.cpp
       )
+
+foreach(subdir ${SubDirs})
+      # MESSAGE( STATUS "Adding subdir " ${subdir} )
+      ADD_SUBDIRECTORY(${subdir})
+endforeach()
 
 ##
 ## Define target
