@@ -1047,12 +1047,17 @@ void Appearance::colorNameEditFinished()
 
 void Appearance::loadColors()
 {
-  if(!MusEGlobal::muse->loadConfigurationColors(this))
-  {
-    DEBUG_APPEARANCE(stderr, "Appearance::loadColors failed\n");
-    return;
-  }  
-  resetValues();
+    if (!MusEGlobal::muse->loadConfigurationColors(this))
+    {
+        DEBUG_APPEARANCE(stderr, "Appearance::loadColors failed\n");
+        return;
+    }
+
+    //  resetValues();
+    *config = MusEGlobal::config;
+    updateColorItems();
+    setConfigurationColors();
+    updateColor();
 }
 
 void Appearance::saveColors()
