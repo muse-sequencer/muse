@@ -171,11 +171,6 @@ file (GLOB wavepreview_source_files
       wavepreview.cpp
       )
 
-foreach(subdir ${SubDirs})
-      # MESSAGE( STATUS "Adding subdir " ${subdir} )
-      ADD_SUBDIRECTORY(${subdir})
-endforeach()
-
 ##
 ## Define target
 ##
@@ -414,3 +409,7 @@ if ( ${MODULES_BUILD} STREQUAL SHARED )
               
 endif ( ${MODULES_BUILD} STREQUAL SHARED )
 
+foreach(subdir ${SubDirs})
+      # MESSAGE( STATUS "Adding subdir " ${subdir} )
+      ADD_SUBDIRECTORY(${subdir})
+endforeach()
