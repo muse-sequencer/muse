@@ -1871,7 +1871,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
   }
   // Notify app, and write into configuration file.
   // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
-  changeConfig(true);
+  changeConfig(false);
   return true;
 }
 

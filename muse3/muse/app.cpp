@@ -3013,18 +3013,20 @@ void MusE::deleteParentlessDialogs()
 //---------------------------------------------------------
 
 void MusE::configAppearance()
-      {
-      if (!appearance)
-            // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
-            appearance = new MusEGui::Appearance(this);
-      appearance->resetValues();
-      if(appearance->isVisible()) {
-          appearance->raise();
-          appearance->activateWindow();
-          }
-      else
-          appearance->show();
-      }
+{
+    if (!appearance) {
+        // NOTE: For deleting parentless dialogs and widgets, please add them to MusE::deleteParentlessDialogs().
+        appearance = new MusEGui::Appearance(this);
+        appearance->resetValues();
+    }
+
+    if(appearance->isVisible()) {
+        appearance->raise();
+        appearance->activateWindow();
+    }
+    else
+        appearance->show();
+}
 
 //---------------------------------------------------------
 //   startSnooper
