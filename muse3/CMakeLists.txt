@@ -708,7 +708,23 @@ set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -f
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(doc libs audio_convert al awl grepmidi sandbox man plugins muse synti packaging utils demos share)
+### subdirs is deprecated since cmake 3.x
+#subdirs(doc libs audio_convert al awl grepmidi sandbox man plugins muse synti packaging utils demos share)
+ADD_SUBDIRECTORY (doc)
+ADD_SUBDIRECTORY (libs)
+ADD_SUBDIRECTORY (audio_convert)
+ADD_SUBDIRECTORY (al)
+ADD_SUBDIRECTORY (awl)
+ADD_SUBDIRECTORY (grepmidi)
+ADD_SUBDIRECTORY (sandbox)
+ADD_SUBDIRECTORY (man)
+ADD_SUBDIRECTORY (plugins)
+ADD_SUBDIRECTORY (muse)
+ADD_SUBDIRECTORY (synti)
+ADD_SUBDIRECTORY (packaging)
+ADD_SUBDIRECTORY (utils)
+ADD_SUBDIRECTORY (demos)
+ADD_SUBDIRECTORY (share)
 
 ## Install doc files
 file (GLOB doc_files
