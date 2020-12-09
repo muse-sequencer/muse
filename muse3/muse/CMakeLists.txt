@@ -53,7 +53,10 @@ if (PYTHON_SUPPORT)
       set ( SubDirs ${SubDirs} remote )
 endif (PYTHON_SUPPORT)
 
-subdirs (${SubDirs})
+#subdirs (${SubDirs})
+foreach(dir ${SubDirs})
+    ADD_SUBDIRECTORY(${dir})
+endforeach()
 
 ##
 ## Expand Qt macros in source files

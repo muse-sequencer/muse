@@ -21,5 +21,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-subdirs( freeverb doublechorus pandelay )
+ADD_SUBDIRECTORY( freeverb )
+ADD_SUBDIRECTORY( doublechorus )
+ADD_SUBDIRECTORY( pandelay )
 

@@ -23,19 +23,18 @@
 
 # NOTE: locale/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(
-      drummaps
-      instruments
-      plugins
-      pybridge
-      scripts
-      templates
-      wallpapers
-      scoreglyphs
-      locale
-      themes
-      metronome
-      rdf
-      )
+
+ADD_SUBDIRECTORY(drummaps)
+ADD_SUBDIRECTORY(instruments)
+ADD_SUBDIRECTORY(plugins)
+ADD_SUBDIRECTORY(pybridge)
+ADD_SUBDIRECTORY(scripts)
+ADD_SUBDIRECTORY(templates)
+ADD_SUBDIRECTORY(wallpapers)
+ADD_SUBDIRECTORY(scoreglyphs)
+ADD_SUBDIRECTORY(locale)
+ADD_SUBDIRECTORY(themes)
+ADD_SUBDIRECTORY(metronome)
+ADD_SUBDIRECTORY(rdf)
 
 install (FILES didyouknow.txt splash.png DESTINATION ${MusE_SHARE_DIR} )
