@@ -21,4 +21,14 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-subdirs(evdata memory midi_controller midnam mpevent string sysex_helper xml time_stretch wave plugin)
+ADD_SUBDIRECTORY(evdata)
+ADD_SUBDIRECTORY(memory)
+ADD_SUBDIRECTORY(midi_controller)
+ADD_SUBDIRECTORY(midnam)
+ADD_SUBDIRECTORY(mpevent) 
+ADD_SUBDIRECTORY(string)
+ADD_SUBDIRECTORY(sysex_helper) 
+ADD_SUBDIRECTORY(xml) 
+ADD_SUBDIRECTORY(time_stretch) 
+ADD_SUBDIRECTORY(wave)
+ADD_SUBDIRECTORY(plugin)
