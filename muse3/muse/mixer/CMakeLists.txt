@@ -52,6 +52,8 @@ add_library ( mixer ${MODULES_BUILD}
       ${mixer_source_files}
       ${mixer_mocs}
       )
+      
+add_dependencies(mixer components)
 
 ##
 ## Append to the list of translations
