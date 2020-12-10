@@ -54,7 +54,7 @@ struct FluidChannel;
 
 #define FS_SFDATALEN                    1
 #define FS_VERSION_MAJOR                0
-#define FS_VERSION_MINOR                4
+#define FS_VERSION_MINOR                5
 //#define FS_INIT_DATA_HEADER_SIZE        4
 #define FS_INIT_DATA_HEADER_SIZE        6    // Including MFG + synth IDs
 #define FS_INIT_CHANNEL_SECTION       255

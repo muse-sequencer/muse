@@ -385,8 +385,16 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
             }
 
       //Reverb:
-      *chptr = rev_on; chptr++;
-      *chptr = cho_on; chptr++;
+      *chptr = rev_on;
+      chptr++;
+      *chptr = cho_on;
+      chptr++;
+
+      float f = fluid_synth_get_gain(fluidsynth);
+      memcpy(chptr, &f, 4);
+//      chptr += 4;
+      len += 4;
+
       if (FS_DEBUG) {
             for (int i=0; i<len; i++)
                   printf("%c ", initBuffer[i]);
@@ -395,6 +403,7 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
                   printf("%x ", initBuffer[i]);
             printf("\n");
             }
+
       // Give values to host:
       *data = (unsigned char*)initBuffer;
       *n = len;
@@ -410,6 +419,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
 
       bool load_drumchannels = true; // Introduced in initdata ver 0.3
       bool handle_bankvalue  = true; // Introduced in initdata ver 0.4
+      bool load_slider_values = true; // Introduced in initdata ver 0.5
 
       if (FS_DEBUG) {
             printf("--- PARSING INIT DATA ---\n");
@@ -440,7 +450,11 @@ void FluidSynth::parseInitData(int n, const byte* d)
             if (version_major == 0 && version_minor <= 3) {
                   handle_bankvalue = false;
                   }
+
+            if (version_major == 0 && version_minor <= 4) {
+                load_slider_values = false;
             }
+      }
 
       byte nr_of_fonts = d[3];
       //byte nr_of_fonts = d[5];
@@ -504,6 +518,15 @@ void FluidSynth::parseInitData(int n, const byte* d)
       //Reverb:
       setController(0, FS_REVERB_ON, d[arrayIndex]); arrayIndex++;
       setController(0, FS_CHORUS_ON, d[arrayIndex]); arrayIndex++;
+
+      if (load_slider_values) {
+          float f = float(d[arrayIndex]);
+          printf("--- gain: %f", f);
+//          fluid_synth_set_gain(fluidsynth, float(d[arrayIndex]));
+          setController(0, FS_GAIN, (float)d[arrayIndex]);
+          arrayIndex += 4;
+      }
+
 
       //if (FS_DEBUG)
             printf("--- END PARSE INIT DATA ---\n");
