@@ -1,3 +1,5 @@
+10.12.2020
+    - Add: Storing missing slider and other settings in MESS fluidsynth. (kybos)
 07.12.2020
     - Fix: Standardize Track list as far as possible. Use left mouse consistently 
             for (multi)selecting tracks (except for flags/indicators columns).

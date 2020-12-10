@@ -120,7 +120,7 @@ QString projPathPtr;
 //
 FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoaderMutex(_GlobalSfLoaderMutex)
       {
-      gui = 0;
+      gui = nullptr;
       setSampleRate(sr);
       fluid_settings_t* s = new_fluid_settings();
       fluid_settings_setnum(s, (char*) "synth.sample-rate", float(sampleRate()));
@@ -139,7 +139,7 @@ FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoade
             channels[i].drumchannel= false;
       }
 
-      initBuffer  = 0;
+      initBuffer  = nullptr;
       initLen     = 0;
 
       QObject::connect(&fontWorker,SIGNAL(loadFontSignal(void*)),&fontWorker,SLOT(execLoadFont(void*)));
@@ -325,17 +325,20 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
       len+=(FS_MAX_NR_OF_CHANNELS*4); // 4 bytes: ext+int id + bankno + drumchannel status
       // + reverb
       len+=2;
+      // sliders
+      len += sizeof(float) + sizeof(double) * 7 + sizeof(byte) * 2;
+
 
       if (FS_DEBUG)
             printf("Total length of init sysex: %d\n", len);
       
       //byte* d = new byte[len];
       if (len > initLen) {
-            if (initBuffer)
-                  delete [] initBuffer;
-            initBuffer = new byte[len];
-            initLen = len;    
-            }
+          if (initBuffer)
+              delete [] initBuffer;
+          initBuffer = new byte[len];
+          initLen = len;
+      }
 
       // Header:
       //d[0] = FS_INIT_DATA;
@@ -385,8 +388,46 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
             }
 
       //Reverb:
-      *chptr = rev_on; chptr++;
-      *chptr = cho_on; chptr++;
+      *chptr = rev_on;
+      chptr++;
+      *chptr = cho_on;
+      chptr++;
+
+      // sliders (> 0.4)
+      float f = fluid_synth_get_gain(fluidsynth);
+      memcpy(chptr, &f, sizeof(float));
+      chptr += sizeof(float);
+
+      double d = fluid_synth_get_reverb_roomsize(fluidsynth);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+      d = fluid_synth_get_reverb_damp(fluidsynth);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+      d = fluid_synth_get_reverb_width(fluidsynth);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+      d = fluid_synth_get_reverb_level(fluidsynth);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+
+      byte b = static_cast<byte>(fluid_synth_get_chorus_nr(fluidsynth));
+      memcpy(chptr, &b, sizeof(byte));
+      chptr += sizeof(byte);
+      b = static_cast<byte>(fluid_synth_get_chorus_type(fluidsynth));
+      memcpy(chptr, &b, sizeof(byte));
+      chptr += sizeof(byte);
+      d = fluid_synth_get_chorus_level(fluidsynth);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+      d = fluid_synth_get_chorus_speed_Hz(fluidsynth);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+      d = fluid_synth_get_chorus_depth_ms(fluidsynth);
+      memcpy(chptr, &d, sizeof(double));
+//      chptr += sizeof(double);
+
+
       if (FS_DEBUG) {
             for (int i=0; i<len; i++)
                   printf("%c ", initBuffer[i]);
@@ -395,6 +436,7 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
                   printf("%x ", initBuffer[i]);
             printf("\n");
             }
+
       // Give values to host:
       *data = (unsigned char*)initBuffer;
       *n = len;
@@ -405,114 +447,180 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
 //-----------------------------------
 void FluidSynth::parseInitData(int n, const byte* d)
 {
-      printf("projPathPtr ");
-      std::cout << projPathPtr.toLatin1().constData() << std::endl;
+    printf("projPathPtr ");
+    std::cout << projPathPtr.toLatin1().constData() << std::endl;
 
-      bool load_drumchannels = true; // Introduced in initdata ver 0.3
-      bool handle_bankvalue  = true; // Introduced in initdata ver 0.4
+    bool load_drumchannels = true; // Introduced in initdata ver 0.3
+    bool handle_bankvalue  = true; // Introduced in initdata ver 0.4
 
-      if (FS_DEBUG) {
-            printf("--- PARSING INIT DATA ---\n");
-            for (int i=0; i<n; i++)
-                  printf("%c ", d[i]);
-            printf("\n");
-            }
+    if (FS_DEBUG) {
+        printf("--- PARSING INIT DATA ---\n");
+        for (int i=0; i<n; i++)
+            printf("%c ", d[i]);
+        printf("\n");
+    }
 
-      byte version_major, version_minor;
-      version_major = d[1]; version_minor = d[2];
-      //version_major = d[3]; version_minor = d[4];
+    byte version_major, version_minor;
+    version_major = d[1]; version_minor = d[2];
+    //version_major = d[3]; version_minor = d[4];
 
-      // Check which version of the initdata we're using and if it's OK
-      if (!(version_major == FS_VERSION_MAJOR && version_minor == FS_VERSION_MINOR)) {
-            if (FS_DEBUG) {
-                  printf("Project saved with other version of fluidsynth format. Ver: %d.%d\n", version_major, version_minor);
-                  }
+    // Check which version of the initdata we're using and if it's OK
+    if (!(version_major == FS_VERSION_MAJOR && version_minor == FS_VERSION_MINOR)) {
+        if (FS_DEBUG) {
+            printf("Project saved with other version of fluidsynth format. Ver: %d.%d\n", version_major, version_minor);
+        }
 
-            if (version_major == 0 && version_minor == 1) {
-              sendError("Initialization data created with different version of FluidSynth Mess, will be ignored.");
-              return;
-              }
-
-            if (version_major == 0 && version_minor <= 2) {
-                  load_drumchannels = false;
-                  }
-
-            if (version_major == 0 && version_minor <= 3) {
-                  handle_bankvalue = false;
-                  }
-            }
-
-      byte nr_of_fonts = d[3];
-      //byte nr_of_fonts = d[5];
-      nrOfSoundfonts = nr_of_fonts; //"Global" counter
-      //byte* chptr = (unsigned char*)d + 4;
-      int arrayIndex = 4;
-      //const byte* chptr = (d + FS_INIT_DATA_HEADER_SIZE);
-
-      //Get lastdir:
-      lastdir = std::string((char*)&d[arrayIndex]);
-      sendLastdir(lastdir.c_str());
-
-      arrayIndex+=strlen(lastdir.c_str())+1;
-
-      printf("Number of soundfonts for this instance: %d\n", nr_of_fonts);
-
-      FluidSoundFont* fonts = new FluidSoundFont[nrOfSoundfonts]; //Just a temp one
-      //Fonts:
-      for (int i=0; i<nr_of_fonts; i++) {
-            fonts[i].file_name = QString::fromLatin1((char*)&d[arrayIndex]);
-            arrayIndex+=fonts[i].file_name.size()+1;
-            QByteArray ba = projPathPtr.toLatin1();
-
-            if (QFileInfo(fonts[i].file_name).isRelative()) {
-                printf("path is relative, we append full path!\n");
-                fonts[i].file_name = QString(ba) + "/"+ fonts[i].file_name;
-                }
-            std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].file_name.toLatin1().constData() << std::endl;
-            }
-
-      if (d[arrayIndex] != FS_INIT_CHANNEL_SECTION) {
-            delete[] fonts;
-            sendError("Init-data corrupt... Projectfile error. Initdata ignored.\n");
+        if (version_major == 0 && version_minor == 1) {
+            sendError("Initialization data created with different version of FluidSynth Mess, will be ignored.");
             return;
-            }
+        }
 
-      arrayIndex++;
-      for (int i=0; i<nr_of_fonts; i++) {
-            fonts[i].extid = d[arrayIndex];
+        if (version_major == 0 && version_minor <= 2) {
+            load_drumchannels = false;
+        }
+
+        if (version_major == 0 && version_minor <= 3) {
+            handle_bankvalue = false;
+        }
+    }
+
+    byte nr_of_fonts = d[3];
+    //byte nr_of_fonts = d[5];
+    nrOfSoundfonts = nr_of_fonts; //"Global" counter
+    //byte* chptr = (unsigned char*)d + 4;
+    int arrayIndex = 4;
+    //const byte* chptr = (d + FS_INIT_DATA_HEADER_SIZE);
+
+    //Get lastdir:
+    lastdir = std::string((char*)&d[arrayIndex]);
+    sendLastdir(lastdir.c_str());
+
+    arrayIndex+=strlen(lastdir.c_str())+1;
+
+    printf("Number of soundfonts for this instance: %d\n", nr_of_fonts);
+
+    FluidSoundFont* fonts = new FluidSoundFont[nrOfSoundfonts]; //Just a temp one
+    //Fonts:
+    for (int i=0; i<nr_of_fonts; i++) {
+        fonts[i].file_name = QString::fromLatin1((char*)&d[arrayIndex]);
+        arrayIndex+=fonts[i].file_name.size()+1;
+        QByteArray ba = projPathPtr.toLatin1();
+
+        if (QFileInfo(fonts[i].file_name).isRelative()) {
+            printf("path is relative, we append full path!\n");
+            fonts[i].file_name = QString(ba) + "/"+ fonts[i].file_name;
+        }
+        std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].file_name.toLatin1().constData() << std::endl;
+    }
+
+    if (d[arrayIndex] != FS_INIT_CHANNEL_SECTION) {
+        delete[] fonts;
+        sendError("Init-data corrupt... Projectfile error. Initdata ignored.\n");
+        return;
+    }
+
+    arrayIndex++;
+    for (int i=0; i<nr_of_fonts; i++) {
+        fonts[i].extid = d[arrayIndex];
+        arrayIndex++;
+        //printf("Extid, %d: %d\n",i,fonts[i].extid);
+    }
+
+    // All channels external id + preset
+    for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++) {
+        channels[i].font_extid = d[arrayIndex]; arrayIndex++;
+        channels[i].preset     = d[arrayIndex]; arrayIndex++;
+        if (handle_bankvalue) { // Ver 0.4 and later
+            channels[i].banknum = d[arrayIndex]; arrayIndex++;
+        }
+        else {
+            channels[i].banknum = 0;
+        }
+
+        if (load_drumchannels) { // Ver 0.3 and later
+            channels[i].drumchannel = d[arrayIndex];
             arrayIndex++;
-            //printf("Extid, %d: %d\n",i,fonts[i].extid);
-            }
+        }
+    }
 
-      // All channels external id + preset
-      for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++) {
-            channels[i].font_extid = d[arrayIndex]; arrayIndex++;
-            channels[i].preset     = d[arrayIndex]; arrayIndex++;
-            if (handle_bankvalue) { // Ver 0.4 and later
-                  channels[i].banknum = d[arrayIndex]; arrayIndex++;
-                  }
-            else {
-                  channels[i].banknum = 0;
-                  }
+    //Reverb:
+    setController(0, FS_REVERB_ON, d[arrayIndex]); arrayIndex++;
+    setController(0, FS_CHORUS_ON, d[arrayIndex]); arrayIndex++;
 
-            if (load_drumchannels) { // Ver 0.3 and later
-                  channels[i].drumchannel = d[arrayIndex];
-                  arrayIndex++;
-                  }
-            }
+    // sliders
+    if (version_major == 0 && version_minor > 4) {
+        // magic numbers taken from FluidSynth::setController
+        {
+            float f;
+            memcpy(&f, &d[arrayIndex], sizeof(float));
+            fluid_synth_set_gain(fluidsynth, f);
+            MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_GAIN, int(f * 25));
+            gui->writeEvent(ev);
+            arrayIndex += sizeof(float);
+        }
 
-      //Reverb:
-      setController(0, FS_REVERB_ON, d[arrayIndex]); arrayIndex++;
-      setController(0, FS_CHORUS_ON, d[arrayIndex]); arrayIndex++;
+        {
+            double size, damping, width, level;
 
-      //if (FS_DEBUG)
-            printf("--- END PARSE INIT DATA ---\n");
+            memcpy(&size, &d[arrayIndex], sizeof(double));
+            arrayIndex += sizeof(double);
+            memcpy(&damping, &d[arrayIndex], sizeof(double));
+            arrayIndex += sizeof(double);
+            memcpy(&width, &d[arrayIndex], sizeof(double));
+            arrayIndex += sizeof(double);
+            memcpy(&level, &d[arrayIndex], sizeof(double));
+            arrayIndex += sizeof(double);
+
+            fluid_synth_set_reverb(fluidsynth, size, damping, width, level);
+
+            MusECore::MidiPlayEvent ev1(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_LEVEL, static_cast<int>(level * 16384/2));
+            gui->writeEvent(ev1);
+            MusECore::MidiPlayEvent ev2(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_WIDTH, static_cast<int>(width * 164));
+            gui->writeEvent(ev2);
+            MusECore::MidiPlayEvent ev3(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_DAMPING, static_cast<int>(damping * 16384));
+            gui->writeEvent(ev3);
+            MusECore::MidiPlayEvent ev4(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_ROOMSIZE, static_cast<int>(size * 16384));
+            gui->writeEvent(ev4);
+        }
+
+        {
+            byte num, type;
+            double level, speed, depth;
+
+            memcpy(&num, &d[arrayIndex], sizeof(byte));
+            arrayIndex += sizeof(byte);
+            memcpy(&type, &d[arrayIndex], sizeof(byte));
+            arrayIndex += sizeof(byte);
+            memcpy(&level, &d[arrayIndex], sizeof(double));
+            arrayIndex += sizeof(double);
+            memcpy(&speed, &d[arrayIndex], sizeof(double));
+            arrayIndex += sizeof(double);
+            memcpy(&depth, &d[arrayIndex], sizeof(double));
+            //                arrayIndex += sizeof(double);
+
+            fluid_synth_set_chorus(fluidsynth, num, level, speed, depth, type);
+
+            MusECore::MidiPlayEvent ev1(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_NUM, num);
+            gui->writeEvent(ev1);
+            MusECore::MidiPlayEvent ev2(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_TYPE, type);
+            gui->writeEvent(ev2);
+            MusECore::MidiPlayEvent ev3(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_SPEED, static_cast<int>(speed * 3479 - 0.291));
+            gui->writeEvent(ev3);
+            MusECore::MidiPlayEvent ev4(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_DEPTH, static_cast<int>(depth * 16383/40));
+            gui->writeEvent(ev4);
+            MusECore::MidiPlayEvent ev5(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_LEVEL, static_cast<int>(level * 16383));
+            gui->writeEvent(ev5);
+        }
+    }
+
+    //if (FS_DEBUG)
+    printf("--- END PARSE INIT DATA ---\n");
 
 
-      for (int i=0; i<nrOfSoundfonts; i++) {
-            pushSoundfont(fonts[i].file_name.toLatin1().constData(), fonts[i].extid);
-            }
-      delete[] fonts;
+    for (int i=0; i<nrOfSoundfonts; i++) {
+        pushSoundfont(fonts[i].file_name.toLatin1().constData(), fonts[i].extid);
+    }
+    delete[] fonts;
 }
 
 
@@ -1105,7 +1213,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   cho_num = val;
                   fluid_synth_set_chorus(fluidsynth, cho_num, cho_level, cho_speed, cho_depth, cho_type);
                   if (!fromGui) {
-                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_NUM, val);
+                      MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_NUM, val);
                         gui->writeEvent(ev);
                         }
                   break;
