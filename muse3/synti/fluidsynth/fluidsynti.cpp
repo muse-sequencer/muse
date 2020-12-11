@@ -420,10 +420,10 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
       d = fluid_synth_get_chorus_level(fluidsynth);
       memcpy(chptr, &d, sizeof(double));
       chptr += sizeof(double);
-      d = fluid_synth_get_chorus_speed_Hz(fluidsynth);
+      d = fluid_synth_get_chorus_speed(fluidsynth);
       memcpy(chptr, &d, sizeof(double));
       chptr += sizeof(double);
-      d = fluid_synth_get_chorus_depth_ms(fluidsynth);
+      d = fluid_synth_get_chorus_depth(fluidsynth);
       memcpy(chptr, &d, sizeof(double));
 //      chptr += sizeof(double);
 
