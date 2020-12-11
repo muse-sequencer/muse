@@ -2284,8 +2284,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 QMenu* p = new QMenu;
                 // Leave room for normal track IDs - base these at AUDIO_SOFTSYNTH.
                 int selCnt = MusEGlobal::song->countSelectedTracks();
+                p->addAction(*duplSelTrackSVGIcon, tr("Duplicate Track"))->setData(1005);
                 p->addAction(*minusSVGIcon, tr("Delete Track"))->setData(1001);
                 if(selCnt > 1){
+                    p->addAction(*duplSelTracksSVGIcon, tr("Duplicate Selected Tracks"))->setData(1004);
                     p->addAction(*delSelTracksSVGIcon, tr("Delete Selected Tracks"))->setData(1003);
                 }
                 p->addAction(*listeditSVGIcon, tr("Track Comment"))->setData(1002);
@@ -2332,6 +2334,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                             TrackComment* tc = new TrackComment(t, nullptr);
                             tc->show();
                         }
+                            break;
+                        case 1004:
+                            MusEGlobal::song->duplicateTracks();
+                            break;
+                        case 1005:
+                            MusEGlobal::song->duplicateTracks(t);
                             break;
 
                         case 1010:

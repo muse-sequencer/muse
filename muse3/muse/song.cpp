@@ -515,93 +515,118 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
 //    Called from GUI context
 //---------------------------------------------------------
 
-void Song::duplicateTracks()
+void Song::duplicateTracks(Track *t)
 {
-  const TrackList& tl = _tracks;  
+    const TrackList& tl = _tracks;
 
-  int audio_found = 0;
-  int midi_found = 0;
-  int new_drum_found = 0;
-  for(ciTrack it = tl.cbegin(); it != tl.cend(); ++it) 
-    if((*it)->selected()) 
-    {
-      Track::TrackType type = (*it)->type(); 
-      if(type == Track::DRUM)
-        ++new_drum_found;
-      else if(type == Track::MIDI)
-        ++midi_found;
-      else
-        ++audio_found;
+    int audio_found = 0;
+    int midi_found = 0;
+    int new_drum_found = 0;
+
+    if (t) {
+        if (t->type() == Track::DRUM)
+            ++new_drum_found;
+        else if (t->type() == Track::MIDI)
+            ++midi_found;
+        else
+            ++audio_found;
+    } else {
+        for (ciTrack it = tl.cbegin(); it != tl.cend(); ++it)
+            if ((*it)->selected())
+            {
+                Track::TrackType type = (*it)->type();
+                if (type == Track::DRUM)
+                    ++new_drum_found;
+                else if (type == Track::MIDI)
+                    ++midi_found;
+                else
+                    ++audio_found;
+            }
     }
- 
-  if(audio_found == 0 && midi_found == 0 && new_drum_found==0)
-    return;
-  
-  MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, new_drum_found);
 
-  int rv = dlg->exec();
-  if(rv == QDialog::Rejected)
-  {
+    if(audio_found == 0 && midi_found == 0 && new_drum_found==0)
+        return;
+
+    MusEGui::DuplicateTracksDialog* dlg = new MusEGui::DuplicateTracksDialog(audio_found, midi_found, new_drum_found);
+
+    int rv = dlg->exec();
+    if(rv == QDialog::Rejected)
+    {
+        delete dlg;
+        return;
+    }
+
+    int copies = dlg->copies();
+
+    int flags = Track::ASSIGN_PROPERTIES;
+    if(dlg->copyStdCtrls())
+        flags |= Track::ASSIGN_STD_CTRLS;
+    if(dlg->copyPlugins())
+        flags |= Track::ASSIGN_PLUGINS;
+    if(dlg->copyPluginCtrls())
+        flags |= Track::ASSIGN_PLUGIN_CTRLS;
+    if(dlg->allRoutes())
+        flags |= Track::ASSIGN_ROUTES;
+    if(dlg->defaultRoutes())
+        flags |= Track::ASSIGN_DEFAULT_ROUTES;
+
+    // These three are exclusive.
+    if(dlg->duplicateParts())
+        flags |= Track::ASSIGN_DUPLICATE_PARTS;
+    else if(dlg->copyParts())
+        flags |= Track::ASSIGN_COPY_PARTS;
+    else if(dlg->cloneParts())
+        flags |= Track::ASSIGN_CLONE_PARTS;
+
+    if(dlg->copyDrumlist())
+        flags |= Track::ASSIGN_DRUMLIST;
+
     delete dlg;
-    return;
-  }
-        
-  int copies = dlg->copies();
 
-  int flags = Track::ASSIGN_PROPERTIES;
-  if(dlg->copyStdCtrls())
-    flags |= Track::ASSIGN_STD_CTRLS;
-  if(dlg->copyPlugins())
-    flags |= Track::ASSIGN_PLUGINS;
-  if(dlg->copyPluginCtrls())
-    flags |= Track::ASSIGN_PLUGIN_CTRLS;
-  if(dlg->allRoutes())
-    flags |= Track::ASSIGN_ROUTES;
-  if(dlg->defaultRoutes())
-    flags |= Track::ASSIGN_DEFAULT_ROUTES;
+    int idx;
+    int trackno = tl.size();
+    TrackNameFactory names;
+    Undo operations;
 
-  // These three are exclusive.
-  if(dlg->duplicateParts())
-    flags |= Track::ASSIGN_DUPLICATE_PARTS;
-  else if(dlg->copyParts())
-    flags |= Track::ASSIGN_COPY_PARTS;
-  else if(dlg->cloneParts())
-    flags |= Track::ASSIGN_CLONE_PARTS;
-  
-  if(dlg->copyDrumlist())
-    flags |= Track::ASSIGN_DRUMLIST;  
-  
-  delete dlg;
-  
-  int idx;
-  int trackno = tl.size();
-  TrackNameFactory names;
-  
-  Undo operations;
-  for(TrackList::const_reverse_iterator it = tl.crbegin(); it != tl.crend(); ++it) 
-  {
-    Track* track = *it;
-    if(track->selected()) 
-    {
-      if(names.genUniqueNames(track->type(), track->name(), copies))
-      {
-        for(int cp = 0; cp < copies; ++cp)
+    if (t) {
+        if (names.genUniqueNames(t->type(), t->name(), copies))
         {
-          Track* new_track = track->clone(flags);
-          if(!new_track)
-            break;
-          new_track->setName(names.at(cp));
-          idx = trackno + cp;
-          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
+            for (int cp = 0; cp < copies; ++cp)
+            {
+                Track* new_track = t->clone(flags);
+                if (!new_track)
+                    break;
+                new_track->setName(names.at(cp));
+                idx = trackno + cp;
+                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
+            }
         }
-      }
+    } else {
+        for(TrackList::const_reverse_iterator it = tl.crbegin(); it != tl.crend(); ++it)
+        {
+            Track* track = *it;
+            if(track->selected())
+            {
+                if(names.genUniqueNames(track->type(), track->name(), copies))
+                {
+                    for(int cp = 0; cp < copies; ++cp)
+                    {
+                        Track* new_track = track->clone(flags);
+                        if(!new_track)
+                            break;
+                        new_track->setName(names.at(cp));
+                        idx = trackno + cp;
+                        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
+                    }
+                }
+            }
+            --trackno;
+        }
     }
-    --trackno;
-  }
-  
-  applyOperationGroup(operations);
+
+    applyOperationGroup(operations);
 }          
-      
+
 bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
 //   Event ev(event);

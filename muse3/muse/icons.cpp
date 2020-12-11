@@ -100,7 +100,6 @@
 #include "xpm/velo_all.xpm"
 #include "xpm/velo_per_note.xpm"
 
-#include "xpm/edit_track_add.xpm"
 #include "xpm/midi_transform.xpm"
 #include "xpm/select.xpm"
 #include "xpm/select_all.xpm"
@@ -180,7 +179,6 @@ QPixmap* orangedot12x12Icon;
 QIcon* ledGreenIcon;
 QIcon* ledDarkGreenIcon;
 
-QPixmap* edit_track_addIcon;
 QPixmap* midi_transformIcon;
 QPixmap* selectIcon;
 QPixmap* select_allIcon;
@@ -378,6 +376,8 @@ QIcon* plusSVGIcon;
 QIcon* minusSVGIcon;
 QIcon* keySVGIcon;
 QIcon* delSelTracksSVGIcon;
+QIcon* duplSelTrackSVGIcon;
+QIcon* duplSelTracksSVGIcon;
 
 QIcon* routeAutoAdjustSVGIcon;
 QIcon* routeSelSourceSVGIcon;
@@ -531,7 +531,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     veloPerNote_OnIcon   = new QPixmap(velo_per_note_xpm);
     veloPerNote_OffIcon  = new QPixmap(velo_all_xpm);
 
-    edit_track_addIcon            = new QPixmap(edit_track_add_xpm);
     midi_transformIcon            = new QPixmap(midi_transform_xpm);
     selectIcon                    = new QPixmap(select_xpm);
     select_allIcon                = new QPixmap(select_all_xpm);
@@ -743,6 +742,8 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     minusSVGIcon       = icons.getSVG("minus.svg");
     keySVGIcon         = icons.getSVG("key.svg");
     delSelTracksSVGIcon = icons.getSVG("delete_sel_tracks.svg");
+    duplSelTrackSVGIcon = icons.getSVG("duplicate_sel_track.svg");
+    duplSelTracksSVGIcon = icons.getSVG("duplicate_sel_tracks.svg");
 
     // tool icons
     pencilIconSVG     = icons.getSVG("pencil.svg");
@@ -860,7 +861,6 @@ void deleteIcons()
     delete veloPerNote_OnIcon;
     delete veloPerNote_OffIcon;
 
-    delete edit_track_addIcon;
     delete midi_transformIcon;
     delete selectIcon;
     delete select_allIcon;
@@ -1041,6 +1041,8 @@ void deleteIcons()
     delete minusSVGIcon;
     delete keySVGIcon;
     delete delSelTracksSVGIcon;
+    delete duplSelTrackSVGIcon;
+    delete duplSelTracksSVGIcon;
 
     delete noscaleSVGIcon[0];
     delete noscaleSVGIcon[1];
