@@ -134,20 +134,17 @@ ArrangerView::ArrangerView(QWidget* parent)
   editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste Clone to Selected Trac&k"), this);
   editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (Show Dialo&g)..."), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
-  editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected Tracks"), this);
-  editDuplicateSelTrackAction = new QAction(QIcon(*edit_track_addIcon), tr("Duplicate Selected Tracks"), this);
+  editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);
+  editDuplicateSelTrackAction = new QAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"), this);
 
-  editShrinkPartsAction = new QAction(tr("Shrink Selected Parts"), this);
-  editExpandPartsAction = new QAction(tr("Expand Selected Parts"), this);
+  editShrinkPartsAction = new QAction(tr("Shrink Selected Parts to Events Length"), this);
+  editExpandPartsAction = new QAction(tr("Expand Selected Parts to Events Length"), this);
   editCleanPartsAction = new QAction(tr("Purge Hidden Events from Selected Parts"), this);
 
 
   addTrack = new QMenu(tr("Add Track"), this);
-//  addTrack->setIcon(QIcon(*edit_track_addIcon));
   insertTrack = new QMenu(tr("Insert Track"), this);
-//  insertTrack->setIcon(QIcon(*edit_track_addIcon));
-  select = new QMenu(tr("Select"), this);
-//  select->setIcon(QIcon(*selectIcon));
+  select = new QMenu(tr("Se&lect Parts"), this);
 
   editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
   editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
@@ -165,7 +162,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   
 	
   scoreSubmenu = new QMenu(tr("Score"), this);
-//  scoreSubmenu->setIcon(QIcon(*scoreeditSVGIcon));
 
   scoreAllInOneSubsubmenu = new QMenu(tr("All Tracks in One Staff"), this);
   scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("One Staff per Track"), this);
@@ -182,7 +178,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   startListEditAction = new QAction(*listeditSVGIcon, tr("Event List..."), this);
   startWaveEditAction = new QAction(*waveeditorSVGIcon, tr("Wave..."), this);
 
-  editorNewSubmenu = new QMenu(tr("Open in New Window"), this);
+  editorNewSubmenu = new QMenu(tr("Open Editor in New Window"), this);
   editorNewSubmenu->menuAction()->setStatusTip(tr("Always open the part(s) in a new editor window"));
 
   startPianoEditNewAction = new QAction(*pianorollSVGIcon, tr("Pianoroll..."), this);
@@ -219,26 +215,42 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addActions(MusEGlobal::undoRedo->actions());
   menuEdit->addSeparator();
 
+  QMenu* menuStructure = menuEdit->addMenu(tr("&Global"));
+  menuStructure->addAction(strGlobalCutAction);
+  menuStructure->addAction(strGlobalInsertAction);
+  menuStructure->addAction(strGlobalSplitAction);
+  menuStructure->addSeparator();
+  menuStructure->addAction(strGlobalCutSelAction);
+  menuStructure->addAction(strGlobalInsertSelAction);
+  menuStructure->addAction(strGlobalSplitSelAction);
+//  menuEdit->addSeparator();
+
+  QMenu* menuTracks = menuEdit->addMenu(tr("&Tracks"));
+  menuTracks->addMenu(addTrack);
+  menuTracks->addMenu(insertTrack);
+  menuTracks->addAction(editDuplicateSelTrackAction);
+  menuTracks->addAction(editDeleteSelectedAction);
+  menuEdit->addSeparator();
+
+  menuEdit->addMenu(select);
+//  menuEdit->addSeparator();
+
   menuEdit->addAction(editDeleteAction);
   menuEdit->addAction(editCutAction);
   menuEdit->addAction(editCopyAction);
   menuEdit->addAction(editCopyRangeAction);
   menuEdit->addAction(editPasteAction);
-  menuEdit->addAction(editPasteToTrackAction);
-  menuEdit->addAction(editPasteCloneAction);
-  menuEdit->addAction(editPasteCloneToTrackAction);
-  menuEdit->addAction(editPasteDialogAction);
+
+  QMenu* menuPaste = menuEdit->addMenu(tr("Paste &Special"));
+  menuPaste->addAction(editPasteToTrackAction);
+  menuPaste->addAction(editPasteCloneAction);
+  menuPaste->addAction(editPasteCloneToTrackAction);
+  menuPaste->addAction(editPasteDialogAction);
+
+  menuEdit->addSeparator();
   menuEdit->addAction(editInsertEMAction);
   menuEdit->addSeparator();
-  menuEdit->addMenu(select);
-  menuEdit->addSeparator();
   
-  menuEdit->addMenu(addTrack);
-  menuEdit->addMenu(insertTrack);
-  menuEdit->addAction(editDuplicateSelTrackAction);
-  menuEdit->addAction(editDeleteSelectedAction);
-  menuEdit->addSeparator();
-
   menuEdit->addAction(startPianoEditAction);
   menuEdit->addAction(startDrumEditAction);
   menuEdit->addAction(startListEditAction);
@@ -252,15 +264,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
   functions_menu->addAction(midiTransformerAction);
   functions_menu->addSeparator();
-  QMenu* menuStructure = functions_menu->addMenu(tr("&Structure"));
-    menuStructure->addAction(strGlobalCutAction);
-    menuStructure->addAction(strGlobalInsertAction);
-    menuStructure->addAction(strGlobalSplitAction);
-    menuStructure->addSeparator();
-    menuStructure->addAction(strGlobalCutSelAction);
-    menuStructure->addAction(strGlobalInsertSelAction);
-    menuStructure->addAction(strGlobalSplitSelAction);
-  functions_menu->addSeparator();
+
   QAction* func_quantize_action =     functions_menu->addAction(tr("&Quantize Notes"));
   QAction* func_notelen_action =      functions_menu->addAction(tr("Change Note &Length"));
   QAction* func_velocity_action =     functions_menu->addAction(tr("Change Note &Velocity"));

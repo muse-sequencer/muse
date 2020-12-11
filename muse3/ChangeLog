@@ -1,3 +1,7 @@
+11.12.2020
+    - Fix: Clean up edit menu, move Structure submenu to Edit->Global. (kybos)
+    - Add: Add Duplicate track function to track context menu. (kybos)
+    - New: New vector icons for Duplicate track(s) menu items. (kybos)
 10.12.2020
     - Add: Storing missing slider and other settings in MESS fluidsynth. (kybos)
 07.12.2020
