@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g fill-rule="evenodd" stroke="#000" stroke-dashoffset="37.795" stroke-linecap="square" stroke-width="1.7">
+  <rect x="4" y="4" width="56" height="9.5218" fill="#37c8ab" style="paint-order:fill markers stroke"/>
+  <rect x="4" y="19.826" width="56" height="9.5218" fill="#37c8ab" style="paint-order:fill markers stroke"/>
+  <rect x="4" y="51.478" width="56" height="9.5218" fill="#fc0" style="paint-order:fill markers stroke"/>
+  <rect x="4" y="35.652" width="56" height="9.5218" fill="#fc0" style="paint-order:fill markers stroke"/>
+ </g>
+</svg>

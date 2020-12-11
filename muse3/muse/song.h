@@ -546,7 +546,7 @@ class Song : public QObject {
       Track* createTrack(Track::TrackType type, bool setDefaults = true);
       Track* addTrack(Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
-      void duplicateTracks();
+      void duplicateTracks(Track* t = nullptr);
       void setDirty() { emit sigDirty(); }
 
       /* restarts recording from last start position
