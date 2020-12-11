@@ -43,6 +43,7 @@
 //#include "common_defs.h"
 #include "fluidsynti.h"
 #include "muse/midi_consts.h"
+#include "fluidsynth/synth.h"
 
 // fluid_synth_error() is deprecated in 2.0.2 and will cause a compile error.
 #define FLUIDSYNTI_FS_VERSION FLUIDSYNTI_FS_VERSION_CHECK(FLUIDSYNTH_VERSION_MAJOR, FLUIDSYNTH_VERSION_MINOR, FLUIDSYNTH_VERSION_MICRO)
