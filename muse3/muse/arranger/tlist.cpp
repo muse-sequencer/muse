@@ -398,12 +398,12 @@ void TList::paint(const QRect& r)
 
                 case COL_RECORD:
                     // TODO: audio output is a trigger, not an indicator/toggle, this should be made clear
-//                    if (track->canRecord()) {
+                    if (track->canRecord()) {
 //                        if (track->type() == MusECore::Track::AUDIO_OUTPUT)
 //                            filesaveSVGIcon->paint(&p, svg_r, Qt::AlignCenter);
 //                        else
-                    (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
-//                    }
+                        (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                    }
                     break;
 
                 case COL_CLASS:
