@@ -56,6 +56,8 @@ add_library ( waveedit ${MODULES_BUILD}
       ${waveedit_mocs}
       )
 
+add_dependencies(waveedit components)
+
 ##
 ## Append to the list of translations
 ##
