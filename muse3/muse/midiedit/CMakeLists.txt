@@ -72,6 +72,8 @@ add_library ( midiedit ${MODULES_BUILD}
       ${midiedit_mocs}
       )
 
+add_dependencies(midiedit components)
+
 ##
 ## Append to the list of translations
 ##
