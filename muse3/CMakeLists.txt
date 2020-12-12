@@ -554,7 +554,7 @@ SET (USE_SSE false)
 if ( ENABLE_FLUID )
       # Be careful with variable name here since we have a shared
       #  synth library named 'fluid_synth' to be built later.
-      PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=0.9.0)
+      PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=1.1.6)
       if (FLUIDSYN_FOUND)
             set(HAVE_FLUIDSYNTH ON)
       endif (FLUIDSYN_FOUND)
