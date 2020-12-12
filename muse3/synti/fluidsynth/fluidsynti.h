@@ -127,6 +127,8 @@ class FluidSynth : public Mess {
       byte* initBuffer;
       int initLen;
 
+      double chorus_speed_range_lower;
+
       byte getFontInternalIdByExtId (byte channel);
 
       void debug(const char* msg) { if (FS_DEBUG) printf("Debug: %s\n",msg); }

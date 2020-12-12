@@ -43,7 +43,6 @@
 //#include "common_defs.h"
 #include "fluidsynti.h"
 #include "muse/midi_consts.h"
-#include "fluidsynth/synth.h"
 
 // fluid_synth_error() is deprecated in 2.0.2 and will cause a compile error.
 #define FLUIDSYNTI_FS_VERSION FLUIDSYNTI_FS_VERSION_CHECK(FLUIDSYNTH_VERSION_MAJOR, FLUIDSYNTH_VERSION_MINOR, FLUIDSYNTH_VERSION_MICRO)
@@ -142,6 +141,14 @@ FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoade
 
       initBuffer  = nullptr;
       initLen     = 0;
+
+      int ver_maj, ver_min, ver_mic;
+      fluid_version(&ver_maj, &ver_min, &ver_mic);
+
+      if (ver_maj > 2 || (ver_maj == 2 && ver_min >= 1))
+          chorus_speed_range_lower = .1;
+      else
+          chorus_speed_range_lower = .29;
 
       QObject::connect(&fontWorker,SIGNAL(loadFontSignal(void*)),&fontWorker,SLOT(execLoadFont(void*)));
       fontWorker.moveToThread(&fontLoadThread);
@@ -421,10 +428,22 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
       d = fluid_synth_get_chorus_level(fluidsynth);
       memcpy(chptr, &d, sizeof(double));
       chptr += sizeof(double);
+
+      // functions renamed in libfluidsynth 2, just for the fun ob breaking things...
+      // now (2.2) even the new ones are deprecated again, together with all the others setters/getters,
+      //    all supposed to be removed in fs 3 - there will be lot of fun when fs 3 is out...
+#if FLUIDSYNTH_VERSION_MAJOR > 1
       d = fluid_synth_get_chorus_speed(fluidsynth);
+#else
+      d = fluid_synth_get_chorus_speed_Hz(fluidsynth);
+#endif
       memcpy(chptr, &d, sizeof(double));
       chptr += sizeof(double);
+#if FLUIDSYNTH_VERSION_MAJOR > 1
       d = fluid_synth_get_chorus_depth(fluidsynth);
+#else
+      d = fluid_synth_get_chorus_depth_ms(fluidsynth);
+#endif
       memcpy(chptr, &d, sizeof(double));
 //      chptr += sizeof(double);
 
@@ -605,7 +624,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
             gui->writeEvent(ev1);
             MusECore::MidiPlayEvent ev2(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_TYPE, type);
             gui->writeEvent(ev2);
-            MusECore::MidiPlayEvent ev3(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_SPEED, static_cast<int>(speed * 3479 - 0.291));
+            MusECore::MidiPlayEvent ev3(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_SPEED, static_cast<int>(speed * 3479 - chorus_speed_range_lower));
             gui->writeEvent(ev3);
             MusECore::MidiPlayEvent ev4(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_DEPTH, static_cast<int>(depth * 16383/40));
             gui->writeEvent(ev4);
@@ -1228,8 +1247,8 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                         }
                   break;
                   }
-            case FS_CHORUS_SPEED: {//(0.291,5) Hz
-                  cho_speed = (double)(0.291 + (double)val/3479);
+            case FS_CHORUS_SPEED: {//(0.291,5) Hz (0.29Hz acc.to API docu, changed to 0.1Hz in fs 2.1.0)
+                  cho_speed = (double)(chorus_speed_range_lower + (double)val/3479);
                   fluid_synth_set_chorus(fluidsynth, cho_num, cho_level, cho_speed, cho_depth, cho_type);
                   if (!fromGui) {
                         MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_SPEED, val);
