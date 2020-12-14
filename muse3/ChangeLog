@@ -1,3 +1,9 @@
+14.12.2020
+    - Fix: Support both old and new shortcuts for setting range markers as a default.
+            Remove corresponding options from global settings. (kybos)
+    - Fix: Improve channels column shortcuts in track list, avoid dependency
+            on middle mouse button (add shift+RMB for decreasing values). 
+            Wrap channel values around when increasing/decreasing. (kybos)
 11.12.2020
     - Fix: Clean up edit menu, move Structure submenu to Edit->Global. (kybos)
     - Add: Add Duplicate track function to track context menu. (kybos)

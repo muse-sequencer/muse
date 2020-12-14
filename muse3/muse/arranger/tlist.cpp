@@ -108,7 +108,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
     //  full rect paint events even on small scrolls! See help on QPainter::scroll().
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setStatusTip(tr("Track list: Use context menu to create tracks. Click track to select, CTRL to add select, SHIFT for range select. Press F1 for help."));
+    setStatusTip(tr("Track list: LMB to select track, CTRL+LMB to add to selection, SHIFT+LMB for range select. RMB in empty area to create tracks. Press F1 for help."));
 
     setObjectName(name);
     ypos = 0;
@@ -997,23 +997,38 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
 
         if(!doAllTracks && !track->selected())
         {
-            if(isDelta)
+            if(isDelta) {
                 channel = mt->outChannel() + delta;
-            if(channel >= MusECore::MUSE_MIDI_CHANNELS) channel = MusECore::MUSE_MIDI_CHANNELS - 1;
-            if(channel < 0) channel = 0;
+                if(channel >= MusECore::MUSE_MIDI_CHANNELS)
+                    channel = 0;
+                else if(channel < 0)
+                    channel = MusECore::MUSE_MIDI_CHANNELS - 1;
+            }
+
+            channel = qMin(channel, MusECore::MUSE_MIDI_CHANNELS - 1);
+            channel = qMax(channel, 0);
+
             if(channel != mt->outChannel())
                 operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, mt, mt->outChannel(), channel));
         }
         else
         {
-            MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
-            for(MusECore::iMidiTrack it = tracks->begin(); it != tracks->end(); ++it)
+            for (const auto& t : *MusEGlobal::song->midis())
             {
-                MusECore::MidiTrack* t = *it;
-                if(isDelta)
+                if (doAllTracks && (t->type() != mt->type()))
+                    continue; // only tracks of the same type
+
+                if(isDelta) {
                     channel = t->outChannel() + delta;
-                if(channel >= MusECore::MUSE_MIDI_CHANNELS) channel = MusECore::MUSE_MIDI_CHANNELS - 1;
-                else if(channel < 0) channel = 0;
+                    if(channel >= MusECore::MUSE_MIDI_CHANNELS)
+                        channel = 0;
+                    else if (channel < 0)
+                        channel = MusECore::MUSE_MIDI_CHANNELS - 1;
+                }
+
+                channel = qMin(channel, MusECore::MUSE_MIDI_CHANNELS - 1);
+                channel = qMax(channel, 0);
+
                 if(channel != t->outChannel() && (doAllTracks || t->selected()))
                     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->outChannel(), channel));
             }
@@ -1026,32 +1041,42 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
     {
         if(track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
         {
-            if(channel > MusECore::MAX_CHANNELS)
-                channel = MusECore::MAX_CHANNELS;
-            else if(channel < 1)
-                channel = 1;
-
             if(!doAllTracks && !track->selected())
             {
-                if(isDelta)
+                if(isDelta) {
                     channel = track->channels() + delta;
-                if(channel > MusECore::MAX_CHANNELS) channel = MusECore::MAX_CHANNELS;
-                else if(channel < 1) channel = 1;
+                    if(channel > MusECore::MAX_CHANNELS)
+                        channel = 1;
+                    else if(channel < 1)
+                        channel = MusECore::MAX_CHANNELS;
+                }
+
+                channel = qMin(channel, MusECore::MAX_CHANNELS);
+                channel = qMax(channel, 1);
+
                 if(channel != track->channels())
                     operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, track, track->channels(), channel));
             }
             else
             {
-                MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-                for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
+                for(const auto& t : *MusEGlobal::song->tracks())
                 {
-                    if((*it)->isMidiTrack())
+                    if(t->isMidiTrack())
                         continue;
-                    MusECore::Track* t = *it;
-                    if(isDelta)
+                    if (doAllTracks && (t->type() != track->type()))
+                        continue; // only tracks of the same type
+
+                    if(isDelta) {
                         channel = t->channels() + delta;
-                    if(channel > MusECore::MAX_CHANNELS) channel = MusECore::MAX_CHANNELS;
-                    else if(channel < 1) channel = 1;
+                        if(channel > MusECore::MAX_CHANNELS)
+                            channel = 1;
+                        else if(channel < 1)
+                            channel = MusECore::MAX_CHANNELS;
+                    }
+
+                    channel = qMin(channel, MusECore::MAX_CHANNELS);
+                    channel = qMax(channel, 1);
+
                     if(channel != t->channels() && (doAllTracks || t->selected()))
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->channels(), channel));
                 }
@@ -2421,12 +2446,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
         case COL_OCHANNEL:
         {
             int delta = 0;
-            if (button == Qt::RightButton)
-                delta = 1;
-            else if (button == Qt::MidButton)
+            if (button == Qt::MidButton || (button == Qt::RightButton && shift))
                 delta = -1;
+            else if (button == Qt::RightButton)
+                delta = 1;
 
-            setTrackChannel(t, true, 0, delta, ctrl || shift);
+            setTrackChannel(t, true, 0, delta, ctrl);
 
             break;
         }

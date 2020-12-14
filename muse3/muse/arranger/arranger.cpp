@@ -222,17 +222,17 @@ void Arranger::setHeaderWhatsThis()
 void Arranger::setHeaderStatusTips()
 {
     header->setStatusTip(TList::COL_TRACK_IDX, tr("Track index: Double-click to select all tracks (+SHIFT to select all of the same type)."));
-    header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Input monitor: Left click to toggle, right click for all tracks of same type."));
-    header->setStatusTip(TList::COL_RECORD,   tr("Recording: Left click to toggle, right click for all tracks of same type. Audio output: Record downmix to a file."));
+    header->setStatusTip(TList::COL_INPUT_MONITOR, tr("Input monitor: Left click to toggle current/selected, right click for all tracks of same type."));
+    header->setStatusTip(TList::COL_RECORD,   tr("Recording: LMB to toggle current/selected, RMB for all tracks of same type. Audio output: LMB to downmix to a file."));
     header->setStatusTip(TList::COL_MUTE,     tr("Mute indicator: Left click to mute, right click to switch on/off (+CTRL for all tracks except audio outputs)."));
     header->setStatusTip(TList::COL_SOLO,     tr("Solo indicator: Click to solo (+CTRL for all tracks except audio outputs). Connected tracks are 'phantom' soloed."));
-    header->setStatusTip(TList::COL_CLASS,    tr("Track type: MIDI: Switch track types. Synth: Open GUI. Audio output: Downmix."));
-    header->setStatusTip(TList::COL_NAME,     tr("Track name: Double-click to edit. Right-click for context menu."));
-    header->setStatusTip(TList::COL_OCHANNEL, tr("Midi/Drum: Output channel number. Audio: Number of channels. Mid/right/double-click to change."));
-    header->setStatusTip(TList::COL_OPORT,    tr("Midi/Drum: Context menu to set the output port (+CTRL to set for all midi tracks). Synth: Context menu to show synth GUI."));
+    header->setStatusTip(TList::COL_CLASS,    tr("Track type (RMB for context menu): MIDI: Switch track types. Synth: Open GUI. Audio output: Downmix."));
+    header->setStatusTip(TList::COL_NAME,     tr("Track name: Double-click to edit. RMB for context menu."));
+    header->setStatusTip(TList::COL_OCHANNEL, tr("Midi/Drum: Output channel number. Audio: Number of channels. MMB / (CTRL/SHIFT+)RMB / Double-click to change."));
+    header->setStatusTip(TList::COL_OPORT,    tr("Midi/Drum: RMB to set the output port (+CTRL for all tracks of same type). Synth: RMB to show synth GUI."));
 //    header->setStatusTip(TList::COL_TIMELOCK, tr("Time lock"));
-    header->setStatusTip(TList::COL_AUTOMATION, tr("Automation: Context menu to select parameters."));
-    header->setStatusTip(TList::COL_CLEF,     tr("Notation clef: Context menu to select this track's notation clef."));
+    header->setStatusTip(TList::COL_AUTOMATION, tr("Automation: RMB to select parameters."));
+    header->setStatusTip(TList::COL_CLEF,     tr("Notation clef: RMB to select this track's notation clef."));
 }
 
 //---------------------------------------------------------

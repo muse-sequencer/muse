@@ -166,12 +166,6 @@ enum CONF_LV2_UI_BEHAVIOR {
    CONF_LV2_UI_ASK_ALWAYS
 };
 
-enum CONF_SET_RANGE_MARKERS {
-    CONF_SET_MARKERS_MID_RIGHT = 0,
-    CONF_SET_MARKERS_CTRL_RIGHT_RIGHT,
-    CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT,
-};
-
 struct GlobalConfigValues {
       QStringList pluginLadspaPathList;
       QStringList pluginDssiPathList;
@@ -393,7 +387,6 @@ struct GlobalConfigValues {
       bool popupsDefaultStayOpen;
       bool leftMouseButtonCanDecrease;
 //      bool rangeMarkerWithoutMMB;
-      CONF_SET_RANGE_MARKERS rangeMarkersSet;
       MusECore::newDrumRecordCondition_t newDrumRecordCondition;
       bool addHiddenTracks;
       bool unhideTracks;

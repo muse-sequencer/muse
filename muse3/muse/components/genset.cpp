@@ -238,13 +238,6 @@ void GlobalSettingsConfig::updateSettings()
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
 
-      switch (MusEGlobal::config.rangeMarkersSet)
-      {
-      case MusEGlobal::CONF_SET_MARKERS_MID_RIGHT: rangeMarkers1RadioButton->setChecked(true); break;
-      case MusEGlobal::CONF_SET_MARKERS_CTRL_RIGHT_RIGHT: rangeMarkers2RadioButton->setChecked(true); break;
-      case MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT: rangeMarkers3RadioButton->setChecked(true); break;
-      }
-
       trackHeight->setValue(MusEGlobal::config.trackHeight);
 
       lv2UiBehaviorComboBox->setCurrentIndex(static_cast<int>(MusEGlobal::config.lv2UiBehavior));
@@ -359,13 +352,6 @@ void GlobalSettingsConfig::apply()
 //      MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
       MusEGlobal::config.keepTransportWindowOnTop = keepTransportWindowOnTopCheckBox->isChecked();
       MusEGlobal::config.showStatusBar = showStatusBarCheckBox->isChecked();
-
-      if (rangeMarkers1RadioButton->isChecked())
-          MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_MID_RIGHT;
-      else if (rangeMarkers2RadioButton->isChecked())
-          MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_CTRL_RIGHT_RIGHT;
-      else if (rangeMarkers3RadioButton->isChecked())
-          MusEGlobal::config.rangeMarkersSet=MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT;
 
       MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
       MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();
