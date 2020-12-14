@@ -44,7 +44,7 @@ MTScale::MTScale(int r, QWidget* parent, int xs, bool _mode)
       {
       waveMode = _mode;
       setToolTip(tr("Bar scale"));
-      setStatusTip(tr("Bar scale: Use mouse buttons to set position and range markers. Hold Shift to set (LMB) or delete (RMB) custom markers."));
+      setStatusTip(tr("Bar scale: Set position (LMB) and range markers (left: CTRL+LMB or MMB, right: CTRL+RMB or RMB). Hold SHIFT to set (LMB) or delete (RMB) custom markers."));
       barLocator = false;
       raster = r;
       if (waveMode) {
@@ -197,7 +197,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
 
       switch (button) {
       case Qt::LeftButton:
-          if ((MusEGlobal::config.rangeMarkersSet == MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT) && (event->modifiers() & Qt::ControlModifier))
+          if (event->modifiers() & Qt::ControlModifier)
               posType = MusECore::Song::LPOS;
           else
               posType = MusECore::Song::CPOS;
@@ -206,16 +206,12 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
           posType = MusECore::Song::LPOS;
           break;
       case Qt::RightButton:
-          if ((MusEGlobal::config.rangeMarkersSet == MusEGlobal::CONF_SET_MARKERS_CTRL_LEFT_CTRL_RIGHT) && (event->modifiers() & Qt::ControlModifier))
-              posType = MusECore::Song::RPOS;
-          else if ((MusEGlobal::config.rangeMarkersSet == MusEGlobal::CONF_SET_MARKERS_CTRL_RIGHT_RIGHT) && (event->modifiers() & Qt::ControlModifier))
-              posType = MusECore::Song::LPOS;
-          else
-              posType = MusECore::Song::RPOS;
+          posType = MusECore::Song::RPOS;
           break;
       default:
           return; // if no button is pressed the function returns here
-            }
+      }
+
       MusECore::Pos p(x, true);
       
       if(posType == MusECore::Song::CPOS && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker

@@ -1216,12 +1216,13 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
             {
               if(track)
               {
-                MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
-                for(MusECore::iMidiTrack myt = tracks->begin(); myt != tracks->end(); ++myt) 
+                for(const auto& mt : *MusEGlobal::song->midis())
                 {
-                  MusECore::MidiTrack* mt = *myt;
-                  if(n != mt->outPort() && (allClassPorts || mt->selected()))
-                    changed |= mt->setOutPortAndUpdate(n, false);
+                    if (allClassPorts && (mt->type() != track->type()))
+                        continue;
+
+                    if(n != mt->outPort() && (allClassPorts || mt->selected()))
+                        changed |= mt->setOutPortAndUpdate(n, false);
                 }
               }
             }

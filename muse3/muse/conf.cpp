@@ -1309,8 +1309,6 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.popupsDefaultStayOpen = xml.parseInt();
                         else if (tag == "leftMouseButtonCanDecrease")
                               MusEGlobal::config.leftMouseButtonCanDecrease = xml.parseInt();
-                        else if (tag == "rangeMarkersSet")
-                              MusEGlobal::config.rangeMarkersSet = (MusEGlobal::CONF_SET_RANGE_MARKERS)xml.parseInt();
 //                        else if (tag == "rangeMarkerWithoutMMB")
 //                            MusEGlobal::config.rangeMarkerWithoutMMB = xml.parseInt();
                         else if (tag == "addHiddenTracks")
@@ -2005,7 +2003,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "moveArmedCheckBox", MusEGlobal::config.moveArmedCheckBox);
       xml.intTag(level, "popupsDefaultStayOpen", MusEGlobal::config.popupsDefaultStayOpen);
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
-      xml.intTag(level, "rangeMarkersSet", MusEGlobal::config.rangeMarkersSet);
 //      xml.intTag(level, "rangeMarkerWithoutMMB", MusEGlobal::config.rangeMarkerWithoutMMB);
       xml.intTag(level, "smartFocus", MusEGlobal::config.smartFocus);
       xml.intTag(level, "borderlessMouse", MusEGlobal::config.borderlessMouse);

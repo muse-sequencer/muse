@@ -21,7 +21,6 @@
 //=========================================================
 
 #include "masteredit.h"
-#include "hitscale.h"
 #include "utils.h"
 #include "lcombo.h"
 #include "doublelabel.h"

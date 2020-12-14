@@ -1733,70 +1733,6 @@ Certain operations will also force them to be resent,
         </layout>
        </item>
        <item>
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Maximum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>17</width>
-           <height>13</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox1">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Set range markers (left / right)</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QRadioButton" name="rangeMarkers1RadioButton">
-            <property name="text">
-             <string>Middle mouse button / Right mouse button</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">buttonGroup</string>
-            </attribute>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rangeMarkers2RadioButton">
-            <property name="text">
-             <string>Ctrl + Right mouse button / Right mouse button</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">buttonGroup</string>
-            </attribute>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rangeMarkers3RadioButton">
-            <property name="text">
-             <string>Ctrl + Left mouse button / Ctrl + Right mouse button</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">buttonGroup</string>
-            </attribute>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -2327,9 +2263,6 @@ Otherwise, hold Ctrl to keep them open.</string>
   <tabstop>guiRefreshSelect</tabstop>
   <tabstop>trackHeight</tabstop>
   <tabstop>lv2UiBehaviorComboBox</tabstop>
-  <tabstop>rangeMarkers1RadioButton</tabstop>
-  <tabstop>rangeMarkers2RadioButton</tabstop>
-  <tabstop>rangeMarkers3RadioButton</tabstop>
   <tabstop>projectSaveCheckBox</tabstop>
   <tabstop>moveArmedCheckBox</tabstop>
   <tabstop>monitorOnRecordCheckBox</tabstop>

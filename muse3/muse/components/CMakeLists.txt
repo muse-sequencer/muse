@@ -79,7 +79,7 @@ QT5_WRAP_CPP (components_mocs
       filedialog.h  
       genset.h  
       header.h  
-      hitscale.h  
+#      hitscale.h
       intlabel.h  
 #       knob.h  
 #       knob_and_meter.h
@@ -239,7 +239,7 @@ file (GLOB components_source_files
       filedialog.cpp 
       genset.cpp 
       header.cpp 
-      hitscale.cpp 
+#      hitscale.cpp
       intlabel.cpp 
 #       knob.cpp 
 #       knob_and_meter.cpp
