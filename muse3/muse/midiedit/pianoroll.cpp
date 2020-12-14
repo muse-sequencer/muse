@@ -207,13 +207,16 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       selectOutsideLoopAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
       connect(selectOutsideLoopAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_OLOOP); } );
       
-      menuSelect->addSeparator();
-      
-      selectPrevPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
-      connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_PREV_PART); } );
-      
-      selectNextPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-      connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NEXT_PART); } );
+      if (parts()->size() > 1) {
+          menuEdit->addSeparator();
+          selectNextPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
+          selectPrevPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
+          connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_PREV_PART); } );
+          connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NEXT_PART); } );
+      } else {
+          selectNextPartAction = nullptr;
+          selectPrevPartAction = nullptr;
+      }
 
       menuEdit->addSeparator();
       startListEditAction = menuEdit->addAction(*listeditSVGIcon, tr("Event List..."));
@@ -1863,8 +1866,12 @@ void PianoRoll::initShortcuts()
       selectInvertAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
       selectInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
       selectOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
-      selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
-      selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+
+      if (selectNextPartAction && selectPrevPartAction) {
+          selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
+          selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+      }
+
       startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
 
 //      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);

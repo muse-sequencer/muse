@@ -61,7 +61,9 @@ private:
         CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
         CMD_DELETE_TRACK, CMD_DUPLICATE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
         CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
-        CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO     };
+        CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO,
+        CMD_RANGE_TO_SELECTION
+    };
 
     void closeEvent(QCloseEvent*) override;
 
@@ -91,6 +93,7 @@ private:
     QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
     QAction *editDuplicateSelTrackAction;
     QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
+    QAction *editRangeToSelection;
     QAction *midiTransformerAction;
     QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
 

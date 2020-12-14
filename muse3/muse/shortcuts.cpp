@@ -224,7 +224,7 @@ void initShortCuts()
       defShrt(SHRT_SEL_LEFT_ADD,     Qt::Key_Left + Qt::SHIFT,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part/event to the left to selection"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_left_add");
       defShrt(SHRT_SEL_RIGHT,        Qt::Key_Right,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part/event to the right or move cursor"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT,"sel_right");
       defShrt(SHRT_SEL_RIGHT_ADD,    Qt::Key_Right + Qt::SHIFT, QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part/event to the right to selection"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT,"sel_right_add");
-      defShrt(SHRT_LOCATORS_TO_SELECTION, Qt::ALT + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Edit: Set locators to selection"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "loc_to_sel");
+      defShrt(SHRT_LOCATORS_TO_SELECTION, Qt::ALT + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Edit: Set range markers to selection"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "loc_to_sel");
       defShrt(SHRT_INC_PITCH,        Qt::CTRL + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase pitch"), PROLL_SHRT + DEDIT_SHRT, "sel_inc_pitch");
       defShrt(SHRT_DEC_PITCH,        Qt::CTRL + Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease pitch"), PROLL_SHRT + DEDIT_SHRT, "sel_dec_pitch");
       defShrt(SHRT_INC_POS,          Qt::CTRL + Qt::Key_Right,  QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase event position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "sel_inc_pos");
