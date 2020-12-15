@@ -513,8 +513,9 @@ void Piano::viewMouseMoveEvent(QMouseEvent* event)
         return;
 
     int v = qMax(1, qMin(127, (event->x() + 1) * 127 / pianoWidth));
-    QString str = tr("Left click: Play") + " (Vel: " + QString::number(v) + ")\n"
-            + tr("Right click: Select key");
+    QString str = tr("Velocity: ") + QString::number(v);
+//    QString str = tr("Left click: Play") + " (Vel: " + QString::number(v) + ")\n"
+//            + tr("Right click: Select key");
     QToolTip::showText(event->globalPos(), str);
 }
 

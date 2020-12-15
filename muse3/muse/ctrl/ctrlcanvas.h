@@ -38,6 +38,7 @@ class QWheelEvent;
 class QMouseEvent;
 class QEvent;
 class QWidget;
+class QLabel;
 
 namespace MusECore {
 class Event;
