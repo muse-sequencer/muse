@@ -922,6 +922,9 @@ void DrumCanvas::cmd(int cmd)
                               selectItem(k->second, false);
                         }
                   break;
+            case CMD_RANGE_TO_SELECTION:
+                setRangeToSelection();
+                break;
             case CMD_SELECT_PREV_PART:     // select previous part
                   {
                       MusECore::Part* pt = editor->curCanvasPart();

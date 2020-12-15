@@ -92,6 +92,7 @@ class EventCanvas : public Canvas {
       bool stuckNoteExists(int port, int channel, int pitch) const;
       // Returns true if a note was actually stopped and removed from the stuck notes list.
       bool stopStuckNote(int port, int channel, int pitch);
+      virtual void setRangeToSelection();
 
       bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;

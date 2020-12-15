@@ -136,11 +136,53 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       QAction* act;
       
-      //---------Pulldown Menu----------------------------
-      // We probably don't need an empty menu - Orcan
-      //QMenu* menuFile = menuBar()->addMenu(tr("&File"));
       QMenu* menuEdit = menuBar()->addMenu(tr("&Edit"));
       
+      cutAction = menuEdit->addAction(tr("C&ut"));
+      connect(cutAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_CUT); } );
+
+      copyAction = menuEdit->addAction(tr("&Copy"));
+      connect(copyAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_COPY); } );
+
+      pasteAction = menuEdit->addAction(tr("&Paste"));
+      connect(pasteAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_PASTE); } );
+
+      menuEdit->addSeparator();
+
+      copyPartRegionAction = menuEdit->addAction(tr("Create Part &from Range"));
+      connect(copyPartRegionAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_CREATE_PART_REGION); } );
+
+      act = menuEdit->addAction(tr("Edit in E&xternal Editor..."));
+      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_EXTERNAL); } );
+
+      menuEdit->addSeparator();
+
+//      select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
+
+      selectAllAction = menuEdit->addAction(QIcon(*select_allIcon), tr("Select &All"));
+      connect(selectAllAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_ALL); } );
+
+      selectNoneAction = menuEdit->addAction(QIcon(*select_allIcon), tr("&Deselect All"));
+      connect(selectNoneAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NONE); } );
+
+      menuEdit->addSeparator();
+
+      selectRangeToSelectionAction = menuEdit->addAction(tr("Set &Range to Selection"));
+      connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_RANGE_TO_SELECTION); } );
+
+      // only 1 part can be opened
+      //      if (parts()->size() > 1) {
+      //          menuEdit->addSeparator();
+      //          selectNextPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
+      //          selectPrevPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
+      //          connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
+      //          connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_PREV_PART); } );
+      //      } else {
+      //          selectPrevPartAction = nullptr;
+      //          selectNextPartAction = nullptr;
+      //      }
+
+
       menuFunctions = menuBar()->addMenu(tr("Func&tions"));
 
       menuGain = menuFunctions->addMenu(tr("&Gain"));
@@ -165,24 +207,6 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       menuFunctions->addSeparator();
 
-      copyAction = menuEdit->addAction(tr("&Copy"));
-      connect(copyAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_COPY); } );
-
-      copyPartRegionAction = menuEdit->addAction(tr("&Create Part from Region"));
-      connect(copyPartRegionAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_CREATE_PART_REGION); } );
-
-      cutAction = menuEdit->addAction(tr("C&ut"));
-      connect(cutAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_CUT); } );
-
-      pasteAction = menuEdit->addAction(tr("&Paste"));
-      connect(pasteAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_PASTE); } );
-
-
-      act = menuEdit->addAction(tr("Edit in E&xternal Editor..."));
-      connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_EXTERNAL); } );
-      
-      menuEdit->addSeparator();
-
 // REMOVE Tim. Also remove CMD_ADJUST_WAVE_OFFSET and so on...      
 //       adjustWaveOffsetAction = menuEdit->addAction(tr("Adjust wave offset..."));
 //       mapper->setMapping(adjustWaveOffsetAction, WaveCanvas::CMD_ADJUST_WAVE_OFFSET);
@@ -203,23 +227,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       act = menuFunctions->addAction(tr("Reverse Selection"));
       connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_REVERSE); } );
       
-      select = menuEdit->addMenu(QIcon(*selectIcon), tr("Select"));
-      
-      selectAllAction = select->addAction(QIcon(*select_allIcon), tr("Select &All"));
-      connect(selectAllAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_ALL); } );
-      
-      selectNoneAction = select->addAction(QIcon(*select_allIcon), tr("&Deselect All"));
-      connect(selectNoneAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NONE); } );
-      
-      select->addSeparator();
-      
-      selectPrevPartAction = select->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
-      connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_PREV_PART); } );
-      
-      selectNextPartAction = select->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-      connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
 
-      
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
       settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
 
@@ -484,8 +492,13 @@ void WaveEdit::initShortcuts()
       //selectInvertAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
       //selectInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
       //selectOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
-      selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
-      selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+
+//      if (selectPrevPartAction && selectNextPartAction) {
+//          selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
+//          selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+//      }
+
+      selectRangeToSelectionAction->setShortcut(shortcuts[SHRT_LOCATORS_TO_SELECTION].key);
       
 //      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
       //evColorNormalAction->setShortcut(shortcuts[  ].key);

@@ -1464,102 +1464,105 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& mr, const QRegion& rg)
 //---------------------------------------------------------
 
 void PianoCanvas::cmd(int cmd)
-      {
-      switch (cmd) {
-            case CMD_SELECT_ALL:     // select all
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        if (!k->second->isSelected())
-                              selectItem(k->second, true);
-                        }
-                  break;
-            case CMD_SELECT_NONE:     // select none
-                  deselectAll();
-                  break;
-            case CMD_SELECT_INVERT:     // invert selection
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        selectItem(k->second, !k->second->isSelected());
-                        }
-                  break;
-            case CMD_SELECT_ILOOP:     // select inside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        NEvent* nevent = (NEvent*)(k->second);
-                        MusECore::Part* part     = nevent->part();
-                        MusECore::Event event    = nevent->event();
-                        unsigned tick  = event.tick() + part->tick();
-                        if (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos())
-                              selectItem(k->second, false);
-                        else
-                              selectItem(k->second, true);
-                        }
-                  break;
-            case CMD_SELECT_OLOOP:     // select outside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        NEvent* nevent = (NEvent*)(k->second);
-                        MusECore::Part* part     = nevent->part();
-                        MusECore::Event event    = nevent->event();
-                        unsigned tick  = event.tick() + part->tick();
-                        if (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos())
-                              selectItem(k->second, true);
-                        else
-                              selectItem(k->second, false);
-                        }
-                  break;
-            case CMD_SELECT_PREV_PART:     // select previous part
-                  {
-                    MusECore::Part* pt = editor->curCanvasPart();
-                    MusECore::Part* newpt = pt;
-                    MusECore::PartList* pl = editor->parts();
-                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt)
-                      {
-                        if(ip == pl->begin())
-                          ip = pl->end();
-                        --ip;
-                        newpt = ip->second;
-                        break;
-                      }
-                    if(newpt != pt)
-                      editor->setCurCanvasPart(newpt);
-                  }
-                  break;
-            case CMD_SELECT_NEXT_PART:     // select next part
-                  {
-                    MusECore::Part* pt = editor->curCanvasPart();
-                    MusECore::Part* newpt = pt;
-                    MusECore::PartList* pl = editor->parts();
-                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt)
-                      {
-                        ++ip;
-                        if(ip == pl->end())
-                          ip = pl->begin();
-                        newpt = ip->second;
-                        break;
-                      }
-                    if(newpt != pt)
-                      editor->setCurCanvasPart(newpt);
-                  }
-                  break;
-
-            case CMD_FIXED_LEN:
-            case CMD_CRESCENDO:
-            case CMD_TRANSPOSE:
-            case CMD_THIN_OUT:
-            case CMD_ERASE_EVENT:
-            case CMD_NOTE_SHIFT:
-            case CMD_MOVE_CLOCK:
-            case CMD_COPY_MEASURE:
-            case CMD_ERASE_MEASURE:
-            case CMD_DELETE_MEASURE:
-            case CMD_CREATE_MEASURE:
-                  break;
-            default:
-//                  printf("unknown ecanvas cmd %d\n", cmd);
-                  break;
+{
+    switch (cmd) {
+    case CMD_SELECT_ALL:     // select all
+        for (iCItem k = items.begin(); k != items.end(); ++k) {
+            if (!k->second->isSelected())
+                selectItem(k->second, true);
+        }
+        break;
+    case CMD_SELECT_NONE:     // select none
+        deselectAll();
+        break;
+    case CMD_SELECT_INVERT:     // invert selection
+        for (iCItem k = items.begin(); k != items.end(); ++k) {
+            selectItem(k->second, !k->second->isSelected());
+        }
+        break;
+    case CMD_SELECT_ILOOP:     // select inside loop
+        for (iCItem k = items.begin(); k != items.end(); ++k) {
+            NEvent* nevent = (NEvent*)(k->second);
+            MusECore::Part* part     = nevent->part();
+            MusECore::Event event    = nevent->event();
+            unsigned tick  = event.tick() + part->tick();
+            if (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos())
+                selectItem(k->second, false);
+            else
+                selectItem(k->second, true);
+        }
+        break;
+    case CMD_SELECT_OLOOP:     // select outside loop
+        for (iCItem k = items.begin(); k != items.end(); ++k) {
+            NEvent* nevent = (NEvent*)(k->second);
+            MusECore::Part* part     = nevent->part();
+            MusECore::Event event    = nevent->event();
+            unsigned tick  = event.tick() + part->tick();
+            if (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos())
+                selectItem(k->second, true);
+            else
+                selectItem(k->second, false);
+        }
+        break;
+    case CMD_RANGE_TO_SELECTION:
+        setRangeToSelection();
+        break;
+    case CMD_SELECT_PREV_PART:     // select previous part
+    {
+        MusECore::Part* pt = editor->curCanvasPart();
+        MusECore::Part* newpt = pt;
+        MusECore::PartList* pl = editor->parts();
+        for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
+            if(ip->second == pt)
+            {
+                if(ip == pl->begin())
+                    ip = pl->end();
+                --ip;
+                newpt = ip->second;
+                break;
             }
-      itemSelectionsChanged();
-      redraw();
-      }
+        if(newpt != pt)
+            editor->setCurCanvasPart(newpt);
+    }
+        break;
+    case CMD_SELECT_NEXT_PART:     // select next part
+    {
+        MusECore::Part* pt = editor->curCanvasPart();
+        MusECore::Part* newpt = pt;
+        MusECore::PartList* pl = editor->parts();
+        for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
+            if(ip->second == pt)
+            {
+                ++ip;
+                if(ip == pl->end())
+                    ip = pl->begin();
+                newpt = ip->second;
+                break;
+            }
+        if(newpt != pt)
+            editor->setCurCanvasPart(newpt);
+    }
+        break;
+
+    case CMD_FIXED_LEN:
+    case CMD_CRESCENDO:
+    case CMD_TRANSPOSE:
+    case CMD_THIN_OUT:
+    case CMD_ERASE_EVENT:
+    case CMD_NOTE_SHIFT:
+    case CMD_MOVE_CLOCK:
+    case CMD_COPY_MEASURE:
+    case CMD_ERASE_MEASURE:
+    case CMD_DELETE_MEASURE:
+    case CMD_CREATE_MEASURE:
+        break;
+    default:
+        //                  printf("unknown ecanvas cmd %d\n", cmd);
+        break;
+    }
+    itemSelectionsChanged();
+    redraw();
+}
 
 //---------------------------------------------------------
 //   midiNote

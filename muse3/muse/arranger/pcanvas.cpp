@@ -137,7 +137,7 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       editMode   = false;
 
       supportsResizeToTheLeft = true;
-      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts. Double-click to create a new MIDI/drum part between the range markers (set with MMB + RMB). Press F1 for help."));
+      setStatusTip(tr("Part canvas: Use Pencil tool to draw parts, or double-click to create a new MIDI/drum part between the range markers. Press F1 for help."));
 
       tracks = MusEGlobal::song->tracks();
       setMouseTracking(true);
@@ -1525,41 +1525,9 @@ void PartCanvas::keyPress(QKeyEvent* event)
       CItem* newItem = 0;
       bool singleSelection = isSingleSelection();
       bool add = false;
-      //Locators to selection
-      if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
-            CItem *leftmost = 0, *rightmost = 0;
-            for (iCItem i = items.begin(); i != items.end(); i++) {
-            if (i->second->isSelected()) {
-                  // Check leftmost:
-                  if (!leftmost)
-                        leftmost = i->second;
-                  else
-                        if (leftmost->x() > i->second->x())
-                              leftmost = i->second;
-
-                  // Check rightmost:
-                  if (!rightmost)
-                        rightmost = i->second;
-                  else
-                        if (rightmost->x() < i->second->x())
-                              rightmost = i->second;
-                  }
-            }
-
-            if(leftmost && rightmost)
-            {
-              int left_tick = leftmost->part()->tick();
-              int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
-              MusECore::Pos p1(left_tick, true);
-              MusECore::Pos p2(right_tick, true);
-              MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
-              MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
-            }
-            return;
-      }
 
       // Select part to the right
-      else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
+      if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
             if (key == shortcuts[SHRT_SEL_RIGHT_ADD].key)
                   add = true;
 
@@ -4386,8 +4354,8 @@ void PartCanvas::processAutomationMovements(QPoint inPos, bool slowMotion)
 
       //if(old_frame != new_frame)
       //{
-        automation.currentCtrlFrameList.replace(i, new_frame);
-        operations.push_back(UndoOp(UndoOp::ModifyAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), old_frame, new_frame, old_value, cvval));
+      automation.currentCtrlFrameList.replace(i, new_frame);
+      operations.push_back(UndoOp(UndoOp::ModifyAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), old_frame, new_frame, old_value, cvval));
       //}
     }
   }
@@ -4523,5 +4491,42 @@ void PartCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir, boo
       itemSelectionsChanged();
       redraw();
       }
+
+void PartCanvas::setRangeToSelection() {
+
+    CItem *leftmost = nullptr, *rightmost = nullptr;
+
+    for (const auto& i : items) {
+        if (i.second->isSelected()) {
+            if (!leftmost)
+                leftmost = i.second;
+            else if (leftmost->x() > i.second->x())
+                leftmost = i.second;
+
+            if (!rightmost)
+                rightmost = i.second;
+            else
+                if (rightmost->x() < i.second->x())
+                    rightmost = i.second;
+        }
+    }
+
+    if (leftmost && rightmost)
+    {
+        int left_tick = leftmost->part()->tick();
+        int right_tick = rightmost->part()->tick() + rightmost->part()->lenTick();
+        MusECore::Pos p1(left_tick, true);
+        MusECore::Pos p2(right_tick, true);
+
+        if (p1 < MusEGlobal::song->lPos()) {
+            MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+            MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
+        } else {
+            MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
+            MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+        }
+    }
+}
+
 
 } // namespace MusEGui

@@ -70,15 +70,16 @@ class WaveEdit : public MidiEditor {
       QAction* copyAction;
       QAction* copyPartRegionAction;
       QAction* pasteAction;
-      QAction* selectPrevPartAction;
-      QAction* selectNextPartAction;
+//      QAction* selectPrevPartAction;
+//      QAction* selectNextPartAction;
+      QAction* selectRangeToSelectionAction;
       QAction* adjustWaveOffsetAction;
 
       QAction* evColorNormalAction;
       QAction* evColorPartsAction;
       
       MusEGui::EditToolBar* tools2;
-      QMenu* menuFunctions, *select, *menuGain, *eventColor;
+      QMenu* menuFunctions, *menuGain, *eventColor; //*select,;
       int colorMode;
       
       MusEGui::Splitter* hsplitter;

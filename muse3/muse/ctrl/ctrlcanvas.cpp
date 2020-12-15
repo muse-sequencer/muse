@@ -28,6 +28,7 @@
 #include <QCursor>
 #include <QMouseEvent>
 #include <QAction>
+#include <QToolTip>
 
 #include "ctrlcanvas.h"
 #include "app.h"
@@ -1823,7 +1824,10 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
       emit yposChanged(val);
 
       //_mouseDist = event->pos();
-      }
+
+      if (MusEGlobal::config.showNoteTooltips)
+          QToolTip::showText(QPoint(event->globalX(), event->globalY() + 20), tr("Value: ") + QString::number(val));
+}
 
 //---------------------------------------------------------
 //   viewMouseReleaseEvent

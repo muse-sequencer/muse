@@ -442,36 +442,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
       if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
-      //
-      //  Shortcut for DrumEditor & PianoRoll
-      //  Sets locators to selected events
-      //
-      if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
-            int tick_max = 0;
-            int tick_min = INT_MAX;
-            bool found = false;
-
-            for (iCItem i= items.begin(); i != items.end(); i++) {
-                  if (!i->second->isSelected())
-                        continue;
-
-                  int tick = i->second->x();
-                  int len = i->second->event().lenTick();
-                  found = true;
-                  if (tick + len > tick_max)
-                        tick_max = tick + len;
-                  if (tick < tick_min)
-                        tick_min = tick;
-                  }
-            if (found) {
-                  MusECore::Pos p1(tick_min, true);
-                  MusECore::Pos p2(tick_max, true);
-                  MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
-                  MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
-                  }
-            }
       // Select items by key (PianoRoll & DrumEditor)
-      else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
+      if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
               rciCItem i;
 
               if (items.empty())
@@ -727,5 +699,41 @@ void EventCanvas::stopPlayEvents()
       // Clear the stuck notes list.
       _stuckNotes.clear();
       }
+
+
+void EventCanvas::setRangeToSelection() {
+
+    int tick_max = 0;
+    int tick_min = INT_MAX;
+    bool found = false;
+
+    for (const auto& i : items) {
+        if (!i.second->isSelected())
+            continue;
+
+        int tick = i.second->x();
+        int len = i.second->event().lenTick();
+        found = true;
+        if (tick + len > tick_max)
+            tick_max = tick + len;
+        if (tick < tick_min)
+            tick_min = tick;
+    }
+
+    if (found) {
+        MusECore::Pos p1(tick_min, true);
+        MusECore::Pos p2(tick_max, true);
+
+        if (p1 < MusEGlobal::song->lPos()) {
+            MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+            MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
+        } else {
+            MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
+            MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+        }
+    }
+}
+
+
 
 } // namespace MusEGui

@@ -445,34 +445,6 @@ void WaveCanvas::keyPress(QKeyEvent* event)
 
       // TODO: New WaveCanvas: Convert these to frames, and remove unneeded functions.
             
-      //
-      //  Shortcut for DrumEditor & PianoRoll
-      //  Sets locators to selected events
-      //
-      else if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
-            int tick_max = 0;
-            int tick_min = INT_MAX;
-            bool found = false;
-
-            for (iCItem i= items.begin(); i != items.end(); i++) {
-                  if (!i->second->isSelected())
-                        continue;
-
-                  int tick = i->second->x();
-                  int len = i->second->event().lenTick();
-                  found = true;
-                  if (tick + len > tick_max)
-                        tick_max = tick + len;
-                  if (tick < tick_min)
-                        tick_min = tick;
-                  }
-            if (found) {
-                  MusECore::Pos p1(tick_min, true);
-                  MusECore::Pos p2(tick_max, true);
-                  MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
-                  MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
-                  }
-            }
       // Select items by key (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
               rciCItem i;
@@ -2469,42 +2441,47 @@ void WaveCanvas::cmd(int cmd)
                               selectItem(k->second, false);
                         }
                   break;
-            case CMD_SELECT_PREV_PART:     // select previous part
-                  {
-                    MusECore::Part* pt = editor->curCanvasPart();
-                    MusECore::Part* newpt = pt;
-                    MusECore::PartList* pl = editor->parts();
-                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt) 
-                      {
-                        if(ip == pl->begin())
-                          ip = pl->end();
-                        --ip;
-                        newpt = ip->second;
-                        break;    
-                      }
-                    if(newpt != pt)
-                      editor->setCurCanvasPart(newpt);
-                  }
-                  break;
-            case CMD_SELECT_NEXT_PART:     // select next part
-                  {
-                    MusECore::Part* pt = editor->curCanvasPart();
-                    MusECore::Part* newpt = pt;
-                    MusECore::PartList* pl = editor->parts();
-                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt) 
-                      {
-                        ++ip;
-                        if(ip == pl->end())
-                          ip = pl->begin();
-                        newpt = ip->second;
-                        break;    
-                      }
-                    if(newpt != pt)
-                      editor->setCurCanvasPart(newpt);
-                  }
-                  break;
+            case CMD_RANGE_TO_SELECTION:
+                setRangeToSelection();
+                break;
+
+// only one part currently possible
+//            case CMD_SELECT_PREV_PART:     // select previous part
+//                  {
+//                    MusECore::Part* pt = editor->curCanvasPart();
+//                    MusECore::Part* newpt = pt;
+//                    MusECore::PartList* pl = editor->parts();
+//                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
+//                      if(ip->second == pt)
+//                      {
+//                        if(ip == pl->begin())
+//                          ip = pl->end();
+//                        --ip;
+//                        newpt = ip->second;
+//                        break;
+//                      }
+//                    if(newpt != pt)
+//                      editor->setCurCanvasPart(newpt);
+//                  }
+//                  break;
+//            case CMD_SELECT_NEXT_PART:     // select next part
+//                  {
+//                    MusECore::Part* pt = editor->curCanvasPart();
+//                    MusECore::Part* newpt = pt;
+//                    MusECore::PartList* pl = editor->parts();
+//                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
+//                      if(ip->second == pt)
+//                      {
+//                        ++ip;
+//                        if(ip == pl->end())
+//                          ip = pl->begin();
+//                        newpt = ip->second;
+//                        break;
+//                      }
+//                    if(newpt != pt)
+//                      editor->setCurCanvasPart(newpt);
+//                  }
+//                  break;
                  
             case CMD_ADJUST_WAVE_OFFSET:
                   adjustWaveOffset();
@@ -3435,6 +3412,26 @@ void WaveCanvas::itemPopup(CItem* /*item*/, int n, const QPoint& /*pt*/)
         break;
   }
 }
+
+
+void WaveCanvas::setRangeToSelection() {
+
+    if (selectionStop > selectionStart) {
+        int tick_min = MusEGlobal::tempomap.frame2tick(selectionStart, 0, MusECore::LargeIntRoundNearest);
+        int tick_max = MusEGlobal::tempomap.frame2tick(selectionStop, 0, MusECore::LargeIntRoundNearest);
+        MusECore::Pos p1(tick_min, true);
+        MusECore::Pos p2(tick_max, true);
+
+        if (p1 < MusEGlobal::song->lPos()) {
+            MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+            MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
+        } else {
+            MusEGlobal::song->setPos(MusECore::Song::RPOS, p2);
+            MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
+        }
+    }
+}
+
 
 } // namespace MusEGui
 

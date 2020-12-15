@@ -238,6 +238,7 @@ class PartCanvas : public Canvas {
       void updateItems();
       void cmd(int);
       void songIsClearing();
+      void setRangeToSelection();
       
    public slots:
       void redirKeypress(QKeyEvent* e) { keyPress(e); }

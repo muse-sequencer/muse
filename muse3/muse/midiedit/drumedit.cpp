@@ -262,7 +262,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       pasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to current part"));
       pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with Dialog)"));
       menuEdit->addSeparator();
-      deleteAction = menuEdit->addAction(tr("Delete Events"));
+      deleteAction = menuEdit->addAction(tr("Delete &Events"));
 
       connect(cutAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_CUT); } );
       connect(copyAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_COPY); } );
@@ -272,6 +272,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(pasteDialogAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_PASTE_DIALOG); } );
       connect(deleteAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_DEL); } );
 
+      menuEdit->addSeparator();
       menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
 
       sallAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select All"));
@@ -283,16 +284,25 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       menuSelect->addSeparator();
 
-      prevAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Previous Part"));
-      nextAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
+      selectRangeToSelectionAction = menuSelect->addAction(tr("Set &Range to Selection"));
+      connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_RANGE_TO_SELECTION); } );
+
+      if (parts()->size() > 1) {
+          menuEdit->addSeparator();
+          nextAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
+          prevAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Previous Part"));
+          connect(prevAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_PREV_PART); } );
+          connect(nextAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NEXT_PART); } );
+      } else {
+          prevAction = nullptr;
+          nextAction = nullptr;
+      }
 
       connect(sallAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_ALL); } );
       connect(snoneAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NONE); } );
       connect(invAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_INVERT); } );
       connect(inAction,    &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_ILOOP); } );
       connect(outAction,   &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_OLOOP); } );
-      connect(prevAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_PREV_PART); } );
-      connect(nextAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NEXT_PART); } );
 
       menuEdit->addSeparator();
       startListEditAction = menuEdit->addAction(*listeditSVGIcon, tr("Event List..."));
@@ -2078,8 +2088,12 @@ void DrumEdit::initShortcuts()
       inAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
       outAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
 
-      prevAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
-      nextAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+      selectRangeToSelectionAction->setShortcut(shortcuts[SHRT_LOCATORS_TO_SELECTION].key);
+
+      if (prevAction && nextAction) {
+          prevAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
+          nextAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+      }
 
       startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
       }

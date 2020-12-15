@@ -144,7 +144,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   addTrack = new QMenu(tr("Add Track"), this);
   insertTrack = new QMenu(tr("Insert Track"), this);
-  select = new QMenu(tr("Se&lect Parts"), this);
+  select = new QMenu(tr("Se&lect"), this);
 
   editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
   editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
@@ -152,6 +152,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editInsideLoopAction = new QAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"), this);
   editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
   editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
+  editRangeToSelection = new QAction(tr("Set &Range to Selection"), this);
 
   select->addAction(editSelectAllAction);
   select->addAction(editDeselectAllAction);
@@ -159,6 +160,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   select->addAction(editInsideLoopAction);
   select->addAction(editOutsideLoopAction);
   select->addAction(editAllPartsAction);
+  select->addSeparator();
+  select->addAction(editRangeToSelection);
   
 	
   scoreSubmenu = new QMenu(tr("Score"), this);
@@ -233,7 +236,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addSeparator();
 
   menuEdit->addMenu(select);
-//  menuEdit->addSeparator();
+  menuEdit->addSeparator();
 
   menuEdit->addAction(editDeleteAction);
   menuEdit->addAction(editCutAction);
@@ -334,6 +337,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editInsideLoopAction,        &QAction::triggered, [this]() { cmd(CMD_SELECT_ILOOP); } );
   connect(editOutsideLoopAction,       &QAction::triggered, [this]() { cmd(CMD_SELECT_OLOOP); } );
   connect(editAllPartsAction,          &QAction::triggered, [this]() { cmd(CMD_SELECT_PARTS); } );
+  connect(editRangeToSelection,        &QAction::triggered, [this]() { cmd(CMD_RANGE_TO_SELECTION); } );
   
   connect(startPianoEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startPianoroll()));
   connect(startScoreEditAction, SIGNAL(triggered()), MusEGlobal::muse, SLOT(startScoreQuickly()));
@@ -555,262 +559,266 @@ void ArrangerView::tagItems(MusECore::TagEventList* tag_list, const MusECore::Ev
 }
 
 void ArrangerView::cmd(int cmd)
-      {
-      // Don't process if user is dragging or has clicked on the parts. 
-      // Causes problems/crashes later in Canvas::viewMouseMoveEvent and viewMouseReleaseEvent.
-      if(arranger && arranger->getCanvas() && arranger->getCanvas()->getCurrentDrag())
+{
+    // Don't process if user is dragging or has clicked on the parts.
+    // Causes problems/crashes later in Canvas::viewMouseMoveEvent and viewMouseReleaseEvent.
+    if(arranger && arranger->getCanvas() && arranger->getCanvas()->getCurrentDrag())
         return;
-      
-      MusECore::TrackList* tracks = MusEGlobal::song->tracks();
-      int l = MusEGlobal::song->lpos();
-      int r = MusEGlobal::song->rpos();
 
-      MusECore::TagEventList tag_list;
-      
-      const FunctionDialogElements_t fn_element_dflt =
-        FunctionAllEventsButton |
-        FunctionLoopedButton |
-        FunctionAllPartsButton | 
-        FunctionSelectedPartsButton;
+    MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+    int l = MusEGlobal::song->lpos();
+    int r = MusEGlobal::song->rpos();
 
-      switch(cmd) {
-            case CMD_CUT:
-                  arranger->cmd(Arranger::CMD_CUT_PART);
-                  break;
-            case CMD_COPY:
-                  arranger->cmd(Arranger::CMD_COPY_PART);
-                  break;
-            case CMD_COPY_RANGE:
-                  arranger->cmd(Arranger::CMD_COPY_PART_IN_RANGE);
-                  break;
-            case CMD_PASTE:
-                  arranger->cmd(Arranger::CMD_PASTE_PART);
-                  break;
-            case CMD_PASTE_CLONE:
-                  arranger->cmd(Arranger::CMD_PASTE_CLONE_PART);
-                  break;
-            case CMD_PASTE_TO_TRACK:
-                  arranger->cmd(Arranger::CMD_PASTE_PART_TO_TRACK);
-                  break;
-            case CMD_PASTE_CLONE_TO_TRACK:
-                  arranger->cmd(Arranger::CMD_PASTE_CLONE_PART_TO_TRACK);
-                  break;
-            case CMD_PASTE_DIALOG:
-                  arranger->cmd(Arranger::CMD_PASTE_DIALOG);
-                  break;
-            case CMD_INSERTMEAS:
-                  arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
-                  break;
-            case CMD_DELETE:
-                  if (!MusECore::delete_selected_parts())
-                  {
-                      QMessageBox::StandardButton btn = QMessageBox::warning(
-                          this,tr("Remove track(s)"),tr("Are you sure you want to remove this track(s)?"),
-                          QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok);
+    MusECore::TagEventList tag_list;
 
-                      if (btn == QMessageBox::Cancel)
-                          break;
-                      MusEGlobal::audio->msgRemoveTracks();
-                  }
+    const FunctionDialogElements_t fn_element_dflt =
+            FunctionAllEventsButton |
+            FunctionLoopedButton |
+            FunctionAllPartsButton |
+            FunctionSelectedPartsButton;
 
-                  break;
-            case CMD_DELETE_TRACK: // from menu
-                  {
-                  MusEGlobal::audio->msgRemoveTracks();
-                  }
-                  break;
+    switch(cmd) {
+    case CMD_CUT:
+        arranger->cmd(Arranger::CMD_CUT_PART);
+        break;
+    case CMD_COPY:
+        arranger->cmd(Arranger::CMD_COPY_PART);
+        break;
+    case CMD_COPY_RANGE:
+        arranger->cmd(Arranger::CMD_COPY_PART_IN_RANGE);
+        break;
+    case CMD_PASTE:
+        arranger->cmd(Arranger::CMD_PASTE_PART);
+        break;
+    case CMD_PASTE_CLONE:
+        arranger->cmd(Arranger::CMD_PASTE_CLONE_PART);
+        break;
+    case CMD_PASTE_TO_TRACK:
+        arranger->cmd(Arranger::CMD_PASTE_PART_TO_TRACK);
+        break;
+    case CMD_PASTE_CLONE_TO_TRACK:
+        arranger->cmd(Arranger::CMD_PASTE_CLONE_PART_TO_TRACK);
+        break;
+    case CMD_PASTE_DIALOG:
+        arranger->cmd(Arranger::CMD_PASTE_DIALOG);
+        break;
+    case CMD_INSERTMEAS:
+        arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
+        break;
+    case CMD_DELETE:
+        if (!MusECore::delete_selected_parts())
+        {
+            QMessageBox::StandardButton btn = QMessageBox::warning(
+                        this,tr("Remove track(s)"),tr("Are you sure you want to remove this track(s)?"),
+                        QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok);
 
-            case CMD_DUPLICATE_TRACK:
-                  MusEGlobal::song->duplicateTracks(); 
-                  break;
+            if (btn == QMessageBox::Cancel)
+                break;
+            MusEGlobal::audio->msgRemoveTracks();
+        }
 
-            case CMD_SELECT_ALL:
-            case CMD_SELECT_NONE:
-            case CMD_SELECT_INVERT:
-            case CMD_SELECT_ILOOP:
-            case CMD_SELECT_OLOOP:
-                  for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        MusECore::PartList* parts = (*i)->parts();
-                        for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
-                              bool f = false;
-                              int t1 = p->second->tick();
-                              int t2 = t1 + p->second->lenTick();
-                              bool inside =
-                                 ((t1 >= l) && (t1 < r))
-                                 ||  ((t2 > l) && (t2 < r))
-                                 ||  ((t1 <= l) && (t2 > r));
-                              switch(cmd) {
-                                    case CMD_SELECT_INVERT:
-                                          f = !p->second->selected();
-                                          break;
-                                    case CMD_SELECT_NONE:
-                                          f = false;
-                                          break;
-                                    case CMD_SELECT_ALL:
-                                          f = true;
-                                          break;
-                                    case CMD_SELECT_ILOOP:
-                                          f = inside;
-                                          break;
-                                    case CMD_SELECT_OLOOP:
-                                          f = !inside;
-                                          break;
-                                    }
-                              p->second->setSelected(f);
-                              }
-                        }
-                  MusEGlobal::song->update();
-                  break;
+        break;
+    case CMD_DELETE_TRACK: // from menu
+    {
+        MusEGlobal::audio->msgRemoveTracks();
+    }
+        break;
 
-            case CMD_SELECT_PARTS:
-                  for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        if (!(*i)->selected())
-                              continue;
-                        MusECore::PartList* parts = (*i)->parts();
-                        for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p)
-                              p->second->setSelected(true);
-                        }
-                  MusEGlobal::song->update();
-                  break;
-                  
-            case CMD_SHRINK_PART: MusECore::shrink_parts(); break;
-            case CMD_EXPAND_PART: MusECore::expand_parts(); break;
-            case CMD_CLEAN_PART: MusECore::clean_parts(); break;      
+    case CMD_DUPLICATE_TRACK:
+        MusEGlobal::song->duplicateTracks();
+        break;
 
-            case CMD_QUANTIZE:
-                  {
-                  FunctionDialogReturnQuantize ret =
-                    quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::quantize_items(&tag_list, ret._raster_index,
-                                            ret._quant_len,
-                                            ret._strength,
-                                            ret._swing,
-                                            ret._threshold);
-                  }
-                  break;
-                  }
-            
-            case CMD_VELOCITY:
-                  {
-                  FunctionDialogReturnVelocity ret =
-                    velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::modify_velocity_items(&tag_list, ret._rateVal, ret._offsetVal);
-                  }
-                  break;
-                  }
-            case CMD_CRESCENDO:
-                  {
-                  FunctionDialogReturnCrescendo ret =
-                    crescendo_items_dialog(FunctionDialogMode(
-                      FunctionLoopedButton |
-                      FunctionSelectedLoopedButton |
-                      FunctionAllPartsButton | 
-                      FunctionSelectedPartsButton));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::crescendo_items(&tag_list, ret._start_val, ret._end_val, ret._absolute);
-                  }
-                  break;
-                  }
-            case CMD_NOTELEN:
-                  {
-                  FunctionDialogReturnGateTime ret =
-                    gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::modify_notelen_items(&tag_list, ret._rateVal, ret._offsetVal);
-                  }
-                  break;
-                  }
-            case CMD_TRANSPOSE:
-                  {
-                  FunctionDialogReturnTranspose ret =
-                    transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::transpose_items(&tag_list, ret._amount);
-                  }
-                  break;
-                  }
-            
-            case CMD_ERASE:
-            {
-              FunctionDialogReturnErase ret =
+    case CMD_SELECT_ALL:
+    case CMD_SELECT_NONE:
+    case CMD_SELECT_INVERT:
+    case CMD_SELECT_ILOOP:
+    case CMD_SELECT_OLOOP:
+        for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+            MusECore::PartList* parts = (*i)->parts();
+            for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
+                bool f = false;
+                int t1 = p->second->tick();
+                int t2 = t1 + p->second->lenTick();
+                bool inside =
+                        ((t1 >= l) && (t1 < r))
+                        ||  ((t2 > l) && (t2 < r))
+                        ||  ((t1 <= l) && (t2 > r));
+                switch(cmd) {
+                case CMD_SELECT_INVERT:
+                    f = !p->second->selected();
+                    break;
+                case CMD_SELECT_NONE:
+                    f = false;
+                    break;
+                case CMD_SELECT_ALL:
+                    f = true;
+                    break;
+                case CMD_SELECT_ILOOP:
+                    f = inside;
+                    break;
+                case CMD_SELECT_OLOOP:
+                    f = !inside;
+                    break;
+                }
+                p->second->setSelected(f);
+            }
+        }
+        MusEGlobal::song->update();
+        break;
+
+    case CMD_SELECT_PARTS:
+        for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+            if (!(*i)->selected())
+                continue;
+            MusECore::PartList* parts = (*i)->parts();
+            for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p)
+                p->second->setSelected(true);
+        }
+        MusEGlobal::song->update();
+        break;
+
+    case CMD_RANGE_TO_SELECTION:
+        arranger->getCanvas()->setRangeToSelection();
+        break;
+
+    case CMD_SHRINK_PART: MusECore::shrink_parts(); break;
+    case CMD_EXPAND_PART: MusECore::expand_parts(); break;
+    case CMD_CLEAN_PART: MusECore::clean_parts(); break;
+
+    case CMD_QUANTIZE:
+    {
+        FunctionDialogReturnQuantize ret =
+                quantize_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::quantize_items(&tag_list, ret._raster_index,
+                                     ret._quant_len,
+                                     ret._strength,
+                                     ret._swing,
+                                     ret._threshold);
+        }
+        break;
+    }
+
+    case CMD_VELOCITY:
+    {
+        FunctionDialogReturnVelocity ret =
+                velocity_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::modify_velocity_items(&tag_list, ret._rateVal, ret._offsetVal);
+        }
+        break;
+    }
+    case CMD_CRESCENDO:
+    {
+        FunctionDialogReturnCrescendo ret =
+                crescendo_items_dialog(FunctionDialogMode(
+                                           FunctionLoopedButton |
+                                           FunctionSelectedLoopedButton |
+                                           FunctionAllPartsButton |
+                                           FunctionSelectedPartsButton));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::crescendo_items(&tag_list, ret._start_val, ret._end_val, ret._absolute);
+        }
+        break;
+    }
+    case CMD_NOTELEN:
+    {
+        FunctionDialogReturnGateTime ret =
+                gatetime_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::modify_notelen_items(&tag_list, ret._rateVal, ret._offsetVal);
+        }
+        break;
+    }
+    case CMD_TRANSPOSE:
+    {
+        FunctionDialogReturnTranspose ret =
+                transpose_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::transpose_items(&tag_list, ret._amount);
+        }
+        break;
+    }
+
+    case CMD_ERASE:
+    {
+        FunctionDialogReturnErase ret =
                 erase_items_dialog(FunctionDialogMode(fn_element_dflt));
-              if(ret._valid)
-              {
-                tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                MusECore::erase_items(&tag_list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
-              }
-            }
-            break;
-            
-            case CMD_MOVE:
-                  {
-                  FunctionDialogReturnMove ret =
-                    move_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::move_items(&tag_list, ret._amount);
-                  }
-                  break;
-                  }
-            case CMD_FIXED_LEN:
-                  {
-                  FunctionDialogReturnSetLen ret =
-                    setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::set_notelen_items(&tag_list, ret._len);
-                  }
-                  break;
-                  }
-            case CMD_DELETE_OVERLAPS:
-                  {
-                  FunctionDialogReturnDelOverlaps ret =
-                    deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::delete_overlaps_items(&tag_list);
-                  }
-                  break;
-                  }
-            case CMD_LEGATO:
-                  {
-                  FunctionDialogReturnLegato ret =
-                    legato_items_dialog(FunctionDialogMode(fn_element_dflt));
-                  if(ret._valid)
-                  {
-                    tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
-                      ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
-                    MusECore::legato_items(&tag_list, ret._min_len, !ret._allow_shortening);
-                  }
-                  break;
-                  }
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::erase_items(&tag_list, ret._veloThreshold, ret._veloThresUsed, ret._lenThreshold, ret._lenThresUsed);
+        }
+    }
+        break;
 
-            }
-      }
+    case CMD_MOVE:
+    {
+        FunctionDialogReturnMove ret =
+                move_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::move_items(&tag_list, ret._amount);
+        }
+        break;
+    }
+    case CMD_FIXED_LEN:
+    {
+        FunctionDialogReturnSetLen ret =
+                setlen_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::set_notelen_items(&tag_list, ret._len);
+        }
+        break;
+    }
+    case CMD_DELETE_OVERLAPS:
+    {
+        FunctionDialogReturnDelOverlaps ret =
+                deloverlaps_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::delete_overlaps_items(&tag_list);
+        }
+        break;
+    }
+    case CMD_LEGATO:
+    {
+        FunctionDialogReturnLegato ret =
+                legato_items_dialog(FunctionDialogMode(fn_element_dflt));
+        if(ret._valid)
+        {
+            tagItems(&tag_list, MusECore::EventTagOptionsStruct::fromOptions(
+                         ret._allEvents, ret._allParts, ret._range, ret._pos0, ret._pos1));
+            MusECore::legato_items(&tag_list, ret._min_len, !ret._allow_shortening);
+        }
+        break;
+    }
+
+    }
+}
 
 void ArrangerView::scoreNamingChanged()
 {
@@ -935,6 +943,7 @@ void ArrangerView::updateShortcuts()
       editInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
       editOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
       editAllPartsAction->setShortcut(shortcuts[SHRT_SELECT_PRTSTRACK].key);
+      editRangeToSelection->setShortcut(shortcuts[SHRT_LOCATORS_TO_SELECTION].key);
 
       startPianoEditAction->setShortcut(shortcuts[SHRT_OPEN_PIANO].key);
       startDrumEditAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS].key);

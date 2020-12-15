@@ -130,6 +130,7 @@ private:
     QAction *groupNoneAction, *groupChanAction, *groupMaxAction;
     QAction *addControllerAction;
     QAction *startListEditAction;
+    QAction* selectRangeToSelectionAction;
 
     void initShortcuts();
     void setupNewCtrl(CtrlEdit* ctrlEdit);
