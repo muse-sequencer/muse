@@ -152,7 +152,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editInsideLoopAction = new QAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"), this);
   editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
   editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
-  editRangeToSelection = new QAction(tr("Set Range to Selection"), this);
+  editRangeToSelection = new QAction(tr("Set &Range to Selection"), this);
 
   select->addAction(editSelectAllAction);
   select->addAction(editDeselectAllAction);

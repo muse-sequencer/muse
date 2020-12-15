@@ -207,6 +207,11 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       selectOutsideLoopAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
       connect(selectOutsideLoopAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_OLOOP); } );
       
+      menuSelect->addSeparator();
+
+      selectRangeToSelectionAction = menuSelect->addAction(tr("Set &Range to Selection"));
+      connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_RANGE_TO_SELECTION); } );
+
       if (parts()->size() > 1) {
           menuEdit->addSeparator();
           selectNextPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
@@ -1866,6 +1871,8 @@ void PianoRoll::initShortcuts()
       selectInvertAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
       selectInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
       selectOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
+
+      selectRangeToSelectionAction->setShortcut(shortcuts[SHRT_LOCATORS_TO_SELECTION].key);
 
       if (selectNextPartAction && selectPrevPartAction) {
           selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);

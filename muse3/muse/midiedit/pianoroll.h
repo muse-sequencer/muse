@@ -92,6 +92,7 @@ class PianoRoll : public MidiEditor {
       QAction* selectPrevPartAction;
       QAction* selectNextPartAction;
       QAction *startListEditAction;
+      QAction* selectRangeToSelectionAction;
 
       QAction* evColorBlueAction;
       QAction* evColorPitchAction;

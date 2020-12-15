@@ -173,6 +173,7 @@ class WaveCanvas : public EventCanvas {
       void drawStretchAutomation(QPainter& p, const QRect& r, WEvent* wevent) const;
       MusECore::iStretchListItem stretchListHitTest(int types, QPoint pt, WEvent* wevent);
       void setStretchAutomationCursor(QPoint pt);
+      void setRangeToSelection() override;
 
    protected:
       virtual QPoint raster(const QPoint&) const;
@@ -234,9 +235,10 @@ class WaveCanvas : public EventCanvas {
              CMD_EDIT_EXTERNAL,
              CMD_QUANTIZE,
              CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT, 
-             CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
+             CMD_SELECT_ILOOP, CMD_SELECT_OLOOP,
+//             CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART,
              CMD_ERASE_MEASURE, CMD_DELETE_MEASURE, CMD_CREATE_MEASURE,
-             CMD_ADJUST_WAVE_OFFSET
+             CMD_ADJUST_WAVE_OFFSET , CMD_RANGE_TO_SELECTION
            };
              
       WaveCanvas(MidiEditor*, QWidget*, int, int);

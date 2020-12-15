@@ -282,6 +282,11 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       inAction = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("Inside Loop"));
       outAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("Outside Loop"));
 
+      menuSelect->addSeparator();
+
+      selectRangeToSelectionAction = menuSelect->addAction(tr("Set &Range to Selection"));
+      connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_RANGE_TO_SELECTION); } );
+
       if (parts()->size() > 1) {
           menuEdit->addSeparator();
           nextAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
@@ -2082,6 +2087,8 @@ void DrumEdit::initShortcuts()
       invAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
       inAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
       outAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
+
+      selectRangeToSelectionAction->setShortcut(shortcuts[SHRT_LOCATORS_TO_SELECTION].key);
 
       if (prevAction && nextAction) {
           prevAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
