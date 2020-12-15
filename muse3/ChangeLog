@@ -1,7 +1,8 @@
 15.12.2020
     - Fix: Bug in Set range to selection, not always correctly set. (kybos)
-    - New: Set range to selection now working in wave editor. (kybos)
+    - Fix: Set range to selection not working in wave editor. (kybos)
     - Add: Menu item for Set range to selection in all relevant editors. (kybos)
+    - Add: Dynamic value tooltip in control canvas. (kybos)
 14.12.2020
     - Fix: Support both old and new shortcuts for setting range markers as a default.
             Remove corresponding options from global settings. (kybos)
