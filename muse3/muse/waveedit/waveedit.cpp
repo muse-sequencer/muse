@@ -149,7 +149,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       menuEdit->addSeparator();
 
-      copyPartRegionAction = menuEdit->addAction(tr("&Create Part from Range"));
+      copyPartRegionAction = menuEdit->addAction(tr("Create Part &from Range"));
       connect(copyPartRegionAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_CREATE_PART_REGION); } );
 
       act = menuEdit->addAction(tr("Edit in E&xternal Editor..."));
