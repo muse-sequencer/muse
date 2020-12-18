@@ -297,7 +297,8 @@ struct Port {
 
 class PluginQuirks
 {
-  public:
+public:
+    enum NatUISCaling {GLOBAL, ON, OFF};
     // Whether the LV2 'speed' timePosition property switches to 0.0 in stop mode, or remains
     //  fixed at 1.0 regardless of play or stop mode. Fixes plugins like TAL NoiseMak3r
     //  stuck repeating small modulator segment at speed = 0.0.
@@ -310,9 +311,6 @@ class PluginQuirks
     bool _overrideReportedLatency;
     // Value to override the reported latency.
     int _latencyOverrideValue;
-    // Reverse scaling of native UI windows on HiDPI
-    enum NatUISCaling {GLOBAL, ON, OFF};
-    NatUISCaling _fixNativeUIScaling;
 
   PluginQuirks() :
     _fixedSpeed(false),
@@ -325,6 +323,13 @@ class PluginQuirks
   void write(int level, Xml& xml) const;
   // Return true on error.
   bool read(Xml& xml);
+  bool fixNativeUIScaling() const;
+  void setFixNativeUIScaling(NatUISCaling fixScaling) { _fixNativeUIScaling = fixScaling; };
+  NatUISCaling getFixNativeUIScaling() const { return _fixNativeUIScaling; };
+
+private:
+  // Reverse scaling of native UI windows on HiDPI
+  NatUISCaling _fixNativeUIScaling;
 };
 
 //---------------------------------------------------------

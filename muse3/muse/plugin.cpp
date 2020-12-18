@@ -704,6 +704,14 @@ bool PluginQuirks::read(Xml& xml)
       return true;
       }
 
+bool PluginQuirks::fixNativeUIScaling() const {
+    if ((_fixNativeUIScaling == NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
+            || _fixNativeUIScaling == NatUISCaling::ON)
+        return true;
+    else
+        return false;
+}
+
 //==============================================================
 //   END PluginQuirks
 //==============================================================
