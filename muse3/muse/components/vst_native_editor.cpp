@@ -140,9 +140,7 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
           int h = pRect->bottom - pRect->top;
           if (w > 0 && h > 0)
           {
-              if ((quirks._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
-                   || quirks._fixNativeUIScaling == MusECore::PluginQuirks::NatUISCaling::ON) {
-
+              if (quirks.fixNativeUIScaling()) {
                   w = qRound((qreal)w / qApp->devicePixelRatio());
                   h = qRound((qreal)h / qApp->devicePixelRatio());
               }

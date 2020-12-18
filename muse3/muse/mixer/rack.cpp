@@ -344,13 +344,13 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       QMenu* menu = new QMenu;
       QAction* newAction = menu->addAction(tr("New"));
       QAction* changeAction = menu->addAction(tr("Change"));
-      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("Move up"));//,   UP, UP);
-      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("Move down"));//, DOWN, DOWN);
+      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("Move Up"));//,   UP, UP);
+      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("Move Down"));//, DOWN, DOWN);
       QAction* removeAction = menu->addAction(tr("Remove"));//,    REMOVE, REMOVE);
       QAction* bypassAction = menu->addAction(tr("Bypass"));//,    BYPASS, BYPASS);
-      QAction* showGuiAction = menu->addAction(tr("Show gui"));//,  SHOW, SHOW);
-      QAction* showNativeGuiAction = menu->addAction(tr("Show native gui"));//,  SHOW_NATIVE, SHOW_NATIVE);
-      QAction* saveAction = menu->addAction(tr("Save preset"));
+      QAction* showGuiAction = menu->addAction(tr("Show Generic GUI"));//,  SHOW, SHOW);
+      QAction* showNativeGuiAction = menu->addAction(tr("Show Native GUI"));//,  SHOW_NATIVE, SHOW_NATIVE);
+      QAction* saveAction = menu->addAction(tr("Save Preset"));
 
       newAction->setData(NEW);
       changeAction->setData(CHANGE);

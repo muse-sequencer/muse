@@ -27,9 +27,9 @@ PluginSettings::PluginSettings(MusECore::PluginIBase *plugin, bool globalScaleRe
     ui->sbOverrideLatency->setEnabled(plugin->cquirks()._overrideReportedLatency);
 
     ui->labelRevertScalingGlobal->setText(QString(tr("Global setting: ") + (globalScaleRevert ? tr("On") : tr("Off"))));
-    if (plugin->quirks()._fixNativeUIScaling == MusECore::PluginQuirks::GLOBAL)
+    if (plugin->quirks().getFixNativeUIScaling() == MusECore::PluginQuirks::GLOBAL)
         ui->rbRevertScalingFollowGlobal->setChecked(true);
-    else if (plugin->quirks()._fixNativeUIScaling == MusECore::PluginQuirks::ON)
+    else if (plugin->quirks().getFixNativeUIScaling() == MusECore::PluginQuirks::ON)
         ui->rbRevertScalingOn->setChecked(true);
     else
         ui->rbRevertScalingOff->setChecked(true);
@@ -80,8 +80,8 @@ void PluginSettings::on_buttonBox_accepted()
     else
         scaleMode = MusECore::PluginQuirks::OFF;
 
-    if (scaleMode != settings->_fixNativeUIScaling)
-        settings->_fixNativeUIScaling = scaleMode;
+    if (scaleMode != settings->getFixNativeUIScaling())
+        settings->setFixNativeUIScaling(scaleMode);
 }
 
 void PluginSettings::on_buttonBox_rejected()
