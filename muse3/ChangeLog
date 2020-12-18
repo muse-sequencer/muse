@@ -1,3 +1,5 @@
+18.12.2020
+    - Fix: Improve handling of LV2 native UIs on HiDPI. (kybos)
 15.12.2020
     - Fix: Bug in Set range to selection, not always correctly set. (kybos)
     - Fix: Set range to selection not working in wave editor. (kybos)

@@ -1251,7 +1251,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
         if(!synth->synth())
             p->addAction(tr("SYNTH IS UNAVAILABLE!"));
 
-        QAction* gact = p->addAction(tr("Show Synth GUI"));
+        QAction* gact = p->addAction(tr("Show Generic Synth GUI"));
         gact->setCheckable(true);
         gact->setEnabled(synth->hasGui());
         gact->setChecked(synth->guiVisible());
@@ -1334,7 +1334,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
 
             p->addSeparator();
 
-            gact = p->addAction(tr("Show Synth GUI"));
+            gact = p->addAction(tr("Show Generic Synth GUI"));
             gact->setCheckable(true);
             gact->setEnabled(port->hasGui());
             gact->setChecked(port->guiVisible());
