@@ -155,6 +155,7 @@ namespace MusECore
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
 #define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 #define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
+#define LV2_UI_SCALE_FACTOR LV2_UI_PREFIX "scaleFactor"
 
 #ifdef MIDNAM_SUPPORT
 #define LV2_F_MIDNAM_INTERFACE LV2_MIDNAM__interface
@@ -2686,7 +2687,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
         {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
         {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
         {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
-        {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_UI__scaleFactor), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_scaleFactor},
+        {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_UI_SCALE_FACTOR), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_scaleFactor},
         {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, nullptr}
     };
 
