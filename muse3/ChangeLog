@@ -1,3 +1,7 @@
+19.12.2020
+    - Fix: More fixes for HiDPI withLV2 native UIs. Surge synth should now 
+            display an adequately scaled UI and not misbehave on resizing any more.
+            Surge 1.7+ is required for scaling support. (kybos)
 18.12.2020
     - Fix: Improve handling of LV2 native UIs on HiDPI. (kybos)
 15.12.2020

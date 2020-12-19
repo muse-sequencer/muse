@@ -1323,14 +1323,12 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
     if(state->widget != NULL && state->hasGui)
     {
-        int w = qRound((qreal)width / qApp->devicePixelRatio());
-        int h = qRound((qreal)height / qApp->devicePixelRatio());
-
-        ((LV2PluginWrapper_Window *)state->widget)->resize(w, h);
+        // this breaks the HiDPI fix for plugins like Surge, all tested plugins work well without it for all
+        // ((LV2PluginWrapper_Window *)state->widget)->resize(w, h);
         QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
         if(ewWin != NULL)
         {
-            ewWin->resize(w, h);
+            ewWin->resize(width, height);
         }
         else
         {
@@ -1342,11 +1340,11 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
 #endif
             if(ewCent != NULL)
             {
-                ewCent->resize(w, h);
+                ewCent->resize(width, height);
             }
         }
-        state->uiX11Size.setWidth(w);
-        state->uiX11Size.setHeight(h);
+        state->uiX11Size.setWidth(width);
+        state->uiX11Size.setHeight(height);
         return 0;
     }
     return 1;
@@ -1376,8 +1374,6 @@ void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
     }
 }
 
-bool LV2Synth::sFixScaling = false;
-
 void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bool fixScaling)
 {
     LV2Synth* synth = state->synth;
@@ -1385,8 +1381,6 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
 
     if(synth->_pluginUiTypes.size() == 0)
         return;
-
-    sFixScaling = fixScaling;
 
     //state->uiTimer->stopNextTime();
     if(state->pluginWindow != NULL)
@@ -2679,6 +2673,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
     _sampleRate = (double)MusEGlobal::sampleRate;
     _fSampleRate = (float)MusEGlobal::sampleRate;
 
+    _scaleFactor =(float)qApp->devicePixelRatio();
+
     //prepare features and options arrays
     LV2_Options_Option _tmpl_options [] =
     {
@@ -2690,8 +2686,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
         {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
         {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &MusEGlobal::segmentSize},
         {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
-        {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
-
+        {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_UI__scaleFactor), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_scaleFactor},
+        {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, nullptr}
     };
 
     _options = new LV2_Options_Option[SIZEOF_ARRAY(_tmpl_options)]; // last option is NULLs
