@@ -370,6 +370,7 @@ private:
     LV2_Log_Log _lv2_log_log;    
     double _sampleRate;
     float _fSampleRate;
+    float _scaleFactor;
     // Just so we can point to a zero.
     static const unsigned minBlockSize;
     bool _isSynth;
@@ -434,8 +435,6 @@ private:
     float *_pluginControlsMin;
     float *_pluginControlsMax;
     std::map<QString, LilvNode *> _presets;
-
-    static bool sFixScaling;
 
 public:
     virtual Type synthType() const {
