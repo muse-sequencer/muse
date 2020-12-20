@@ -705,6 +705,9 @@ bool PluginQuirks::read(Xml& xml)
       }
 
 bool PluginQuirks::fixNativeUIScaling() const {
+    if (qApp->devicePixelRatio() <= 1.0)
+        return false; // no hidpi monitor in use, no need to fix anything
+
     if ((_fixNativeUIScaling == NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
             || _fixNativeUIScaling == NatUISCaling::ON)
         return true;
@@ -4441,45 +4444,6 @@ void PluginGui::showSettings()
     settingsDialog.setWindowTitle(tr("Plugin Settings"));
     settingsDialog.exec();
 }
-
-//void PluginGui::transportGovernsLatencyToggled(bool v)
-//{
-//  // TODO Make a safe audio-synced operation?
-//  plugin->quirks()._transportAffectsAudioLatency = v;
-//  MusEGlobal::song->update(SC_ROUTE);
-//}
-
-//void PluginGui::fixedSpeedToggled(bool v)
-//{
-//  // TODO Make a safe audio-synced operation?
-//  plugin->quirks()._fixedSpeed = v;
-//  MusEGlobal::song->update(SC_ROUTE);
-//}
-
-//void PluginGui::overrideReportedLatencyToggled(bool v)
-//{
-//  // TODO Make a safe audio-synced operation?
-//  plugin->quirks()._overrideReportedLatency = v;
-//  latencyOverrideEntry->setEnabled(v);
-//  MusEGlobal::song->update(SC_ROUTE);
-//}
-
-//void PluginGui::latencyOverrideValueChanged(int v)
-//{
-//  // TODO Make a safe audio-synced operation?
-//  plugin->quirks()._latencyOverrideValue = v;
-//  MusEGlobal::song->update(SC_ROUTE);
-//}
-
-//void PluginGui::fixNativeUIScalingTBClicked()
-//{
-//    int state = fixNativeUIScalingTB->property("state").toInt();
-//    state = (state == 2) ? 0 : state + 1;
-//    fixNativeUIScalingTB->setToolTip(fixScalingTooltip[state]);
-//    fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[state]);
-//    fixNativeUIScalingTB->setProperty("state", state);
-//    plugin->quirks()._fixNativeUIScaling = (MusECore::PluginQuirks::NatUISCaling)state;
-//}
 
 //---------------------------------------------------------
 //   setOn

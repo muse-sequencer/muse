@@ -1,7 +1,16 @@
+20.12.2020
+    - Fix: Most plugin native UI windows now should behave sensibly out of the box 
+            on HiDPI (of course plugins with no HiDPI/scaling support still look tiny,
+            but there should be no oversized or broken Qt windows around them).
+            Global setting for the HiDPI fix is now on by default, but is only active when
+            at least one Hi-Res screen is found. The container window should now also 
+            adjust to specific screen in multi monitor setups. (kybos)
+    - Fix: More fixes for Surge and others on HiDPI. Native UI window now resizes 
+            correctly when the zoom level in Surge itself is changed. (kybos)
 19.12.2020
     - Fix: More fixes for HiDPI withLV2 native UIs. Surge synth should now 
             display an adequately scaled UI and not misbehave on resizing any more.
-            Surge 1.7+ is required for scaling support. (kybos)
+            Surge 1.7+ and liblv2 1.18 are required for scaling support. (kybos)
 18.12.2020
     - Fix: Improve handling of LV2 native UIs on HiDPI. (kybos)
 15.12.2020

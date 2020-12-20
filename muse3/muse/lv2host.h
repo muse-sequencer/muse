@@ -371,6 +371,7 @@ private:
     double _sampleRate;
     float _fSampleRate;
     float _scaleFactor;
+    static bool sFixScaling;
     // Just so we can point to a zero.
     static const unsigned minBlockSize;
     bool _isSynth;

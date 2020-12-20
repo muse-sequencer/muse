@@ -432,8 +432,6 @@ struct GlobalConfigValues {
       bool selectionsUndoable;
       // Revert native GUI scaling on HiDPI
       bool noPluginScaling;
-      // Open MDI windows maximized
-//      bool openMDIWinMaximized;
       bool keepTransportWindowOnTop;
       bool showStatusBar;
       };
