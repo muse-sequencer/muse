@@ -706,7 +706,7 @@ bool PluginQuirks::read(Xml& xml)
 
 bool PluginQuirks::fixNativeUIScaling() const {
     if (qApp->devicePixelRatio() <= 1.0)
-        return false; // no hidpi monitor used, no need to fix anything
+        return false; // no hidpi monitor in use, no need to fix anything
 
     if ((_fixNativeUIScaling == NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
             || _fixNativeUIScaling == NatUISCaling::ON)

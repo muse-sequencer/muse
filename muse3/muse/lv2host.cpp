@@ -1324,8 +1324,18 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
     if(state->widget != NULL && state->hasGui)
     {
-        // breaks HiDPI display for plugins like Surge, tested plugins work well without it
-        // ((LV2PluginWrapper_Window *)state->widget)->resize(w, h);
+        // breaks HiDPI scaling for plugins like Surge; tested plugins work same or better without it (kybos)
+        QWidget *mainWin = ((LV2PluginWrapper_Window *)state->widget);
+        if (sFixScaling && mainWin->devicePixelRatio() >= 1.0) {
+            int w = qRound((qreal)width / mainWin->devicePixelRatio());
+            int h = qRound((qreal)height / mainWin->devicePixelRatio());
+            mainWin->setMinimumSize(w,h);
+            mainWin->resize(w, h);
+        } else {
+            mainWin->setMinimumSize(width, height);
+            mainWin->resize(width, height);
+        }
+
         QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
         if(ewWin != NULL)
         {
@@ -1375,6 +1385,8 @@ void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
     }
 }
 
+bool LV2Synth::sFixScaling = false;
+
 void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bool fixScaling)
 {
     LV2Synth* synth = state->synth;
@@ -1382,6 +1394,8 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
 
     if(synth->_pluginUiTypes.size() == 0)
         return;
+
+    sFixScaling = fixScaling;
 
     //state->uiTimer->stopNextTime();
     if(state->pluginWindow != NULL)
