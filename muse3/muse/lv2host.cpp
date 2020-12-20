@@ -1324,7 +1324,7 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
     if(state->widget != NULL && state->hasGui)
     {
-        // this breaks the HiDPI fix for plugins like Surge, all tested plugins work well without it for all
+        // breaks HiDPI display for plugins like Surge, tested plugins work well without it
         // ((LV2PluginWrapper_Window *)state->widget)->resize(w, h);
         QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
         if(ewWin != NULL)
@@ -1650,9 +1650,9 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                             int h = 0;
                             MusEGui::lv2Gtk2Helper_gtk_widget_get_allocation(uiW, &w, &h);
 
-                            if (fixScaling) {
-                                w = qRound((qreal)w / qApp->devicePixelRatio());
-                                h = qRound((qreal)h / qApp->devicePixelRatio());
+                            if (fixScaling && win->devicePixelRatio() >= 1.0) {
+                                w = qRound((qreal)w / win->devicePixelRatio());
+                                h = qRound((qreal)h / win->devicePixelRatio());
                             }
 
                             win->setMinimumSize(w, h);
@@ -1663,9 +1663,9 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                     else
                     {
                         // Set the minimum size to the supplied uiX11Size.
-                         if (fixScaling) {
-                             state->uiX11Size.setWidth(qRound((qreal)state->uiX11Size.width() / qApp->devicePixelRatio()));
-                             state->uiX11Size.setHeight(qRound((qreal)state->uiX11Size.height() / qApp->devicePixelRatio()));
+                         if (fixScaling && win->devicePixelRatio() >= 1.0) {
+                             state->uiX11Size.setWidth(qRound((qreal)state->uiX11Size.width() / win->devicePixelRatio()));
+                             state->uiX11Size.setHeight(qRound((qreal)state->uiX11Size.height() / win->devicePixelRatio()));
                          }
 
                          win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());

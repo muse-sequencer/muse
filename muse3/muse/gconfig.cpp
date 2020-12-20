@@ -386,8 +386,7 @@ GlobalConfigValues config = {
       true,                         // showNoteNamesInPianoRoll
       true,                         // showNoteTooltipsCheckBox
       false,                        // selectionsUndoable Whether selecting parts or events is undoable.
-      false,                        // noPluginScaling
-//      false,                        // openMDIWinMaximized
+      true,                        // noPluginScaling
       true,                         // keepTransportWindowOnTop
       true                          // showStatusBar
     };
