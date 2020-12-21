@@ -65,8 +65,8 @@ jobs:
  
     - name: Build sratom
       run: |
-        mkdir ${{runner.workspace}}/serd_build
-        cd ${{runner.workspace}}/serd_build
+        mkdir ${{runner.workspace}}/sratom_build
+        cd ${{runner.workspace}}/sratom_build
         git clone --depth 1 --branch v0.6.6 https://gitlab.com/lv2/sratom.git .
         git submodule update --init --recursive
         ./waf configure
