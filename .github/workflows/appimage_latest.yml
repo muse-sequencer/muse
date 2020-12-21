@@ -43,16 +43,6 @@ jobs:
         ./waf
         sudo ./waf install
 
-    - name: Build sratom
-      run: |
-        mkdir ${{runner.workspace}}/serd_build
-        cd ${{runner.workspace}}/serd_build
-        git clone --depth 1 --branch v0.6.6 https://gitlab.com/lv2/sratom.git .
-        git submodule update --init --recursive
-        ./waf configure
-        ./waf
-        sudo ./waf install
-
     - name: Build serd
       run: |
         mkdir ${{runner.workspace}}/serd_build
@@ -72,7 +62,17 @@ jobs:
         ./waf configure
         ./waf
         sudo ./waf install
-               
+ 
+    - name: Build sratom
+      run: |
+        mkdir ${{runner.workspace}}/serd_build
+        cd ${{runner.workspace}}/serd_build
+        git clone --depth 1 --branch v0.6.6 https://gitlab.com/lv2/sratom.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
+ 
     - name: Build lilv
       run: |
         mkdir ${{runner.workspace}}/lilv_build
