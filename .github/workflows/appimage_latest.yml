@@ -24,8 +24,9 @@ jobs:
         sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-xenial
         sudo apt-get update
         sudo apt-get install libsndfile1-dev libsamplerate0-dev libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
-          lv2-dev libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev \
-          libinstpatch-dev liblilv-dev liblrdf0-dev liblash-compat-dev librubberband-dev python3-dev
+          libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev \
+          libinstpatch-dev liblrdf0-dev liblash-compat-dev librubberband-dev python3-dev
+        # liblilv-dev lv2-dev
         # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
         sudo apt-get install qt515base qt515tools qt515svg
@@ -40,6 +41,15 @@ jobs:
         ./waf
         sudo ./waf install
 
+        cd ..
+        mkdir ${{runner.workspace}}/serd_build
+        cd ${{runner.workspace}}/serd_build
+        git clone --depth 1 --branch v0.30.6 https://github.com/drobilla/serd.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
+        
         cd ..
         mkdir ${{runner.workspace}}/lilv_build
         cd ${{runner.workspace}}/lilv_build
