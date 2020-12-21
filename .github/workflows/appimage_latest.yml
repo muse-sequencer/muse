@@ -31,6 +31,8 @@ jobs:
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
         sudo apt-get install qt515base qt515tools qt515svg
         
+        sudo apt-get remove libserd-0-0 libsord-0-0
+        
     - name: Build lv2/lilv
       run: |
         mkdir ${{runner.workspace}}/lv2_build
