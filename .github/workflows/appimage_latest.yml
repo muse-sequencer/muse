@@ -30,6 +30,23 @@ jobs:
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
         sudo apt-get install qt515base qt515tools qt515svg
         
+    - name: Build lv2/lilv
+      run: |
+        mkdir lv2_build
+        cd lv2_build
+        git clone --depth 1 --branch v1.18.0 https://gitlab.com/lv2/lv2.git .
+        ./waf configure
+        ./waf
+        ./waf install
+
+        cd ..
+        mkdir lilv_build
+        cd lilv_build
+        git clone --depth 1 --branch v0.24.10 https://gitlab.com/lv2/lilv.git .
+        ./waf configure
+        ./waf
+        ./waf install
+        
     - name: Check Qt Installation
       run: |
         #cat /opt/qt515/bin/qt515-env.sh
