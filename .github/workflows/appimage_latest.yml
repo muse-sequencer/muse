@@ -51,6 +51,15 @@ jobs:
         sudo ./waf install
         
         cd ..
+        mkdir ${{runner.workspace}}/sord_build
+        cd ${{runner.workspace}}/sord_build
+        git clone --depth 1 --branch v0.16.6 https://gitlab.com/drobilla/sord.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
+               
+        cd ..
         mkdir ${{runner.workspace}}/lilv_build
         cd ${{runner.workspace}}/lilv_build
         git clone --depth 1 --branch v0.24.10 https://gitlab.com/lv2/lilv.git .
