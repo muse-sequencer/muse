@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-16.04
 
     steps:
     - uses: actions/checkout@v2
@@ -27,19 +27,71 @@ jobs:
                  
     - name: Install Deps
       run: |
-        sudo add-apt-repository ppa:beineri/opt-qt-5.14.2-bionic
+        sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-xenial
         sudo apt-get update
-        sudo apt-get install libsndfile1-dev libsamplerate0-dev libjack-jackd2-dev ladspa-sdk liblo-dev \
-          dssi-dev lv2-dev libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev \
-          libinstpatch-dev liblilv-dev liblrdf0-dev liblash-compat-dev librubberband-dev python3-dev
+        sudo apt-get install libsndfile1-dev libsamplerate0-dev libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
+          libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev \
+          libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev
+        # liblilv-dev lv2-dev liblrdf0-dev
         # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
-        sudo apt-get install qt514base qt514tools qt514svg
+        sudo apt-get install qt515base qt515tools qt515svg
+        
+        sudo apt-get remove libsord-0-0 libserd-0-0
+                      
+    - name: Build lv2
+      run: |     
+        mkdir ${{runner.workspace}}/lv2_build
+        cd ${{runner.workspace}}/lv2_build
+        git clone --depth 1 --branch v1.18.0 https://gitlab.com/lv2/lv2.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
+    - name: Build serd
+      run: |
+        mkdir ${{runner.workspace}}/serd_build
+        cd ${{runner.workspace}}/serd_build
+        git clone --depth 1 --branch v0.30.6 https://gitlab.com/drobilla/serd.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
+        
+    - name: Build sord
+      run: |
+        mkdir ${{runner.workspace}}/sord_build
+        cd ${{runner.workspace}}/sord_build
+        git clone --depth 1 --branch v0.16.6 https://gitlab.com/drobilla/sord.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
+ 
+    - name: Build sratom
+      run: |
+        mkdir ${{runner.workspace}}/sratom_build
+        cd ${{runner.workspace}}/sratom_build
+        git clone --depth 1 --branch v0.6.6 https://gitlab.com/lv2/sratom.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
+ 
+    - name: Build lilv
+      run: |
+        mkdir ${{runner.workspace}}/lilv_build
+        cd ${{runner.workspace}}/lilv_build
+        git clone --depth 1 --branch v0.24.10 https://gitlab.com/lv2/lilv.git .
+        git submodule update --init --recursive
+        ./waf configure
+        ./waf
+        sudo ./waf install
         
     - name: Check Qt Installation
       run: |
-        #cat /opt/qt513/bin/qt514-env.sh
-        QT_BASE_DIR=/opt/qt514
+        #cat /opt/qt515/bin/qt515-env.sh
+        QT_BASE_DIR=/opt/qt515
         export QTDIR=$QT_BASE_DIR
         export PATH=$QT_BASE_DIR/bin:$PATH
         export LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
@@ -79,7 +131,6 @@ jobs:
         LIB_SYNTHI=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/synthi
         LIB_CONV=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/converters
         export LD_LIBRARY_PATH=$LIB_MODULES:$LIB_PLUGINS:$LIB_SYNTHI:$LIB_CONV:$LD_LIBRARY_PATH
-
         ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt
         
         echo '#! /usr/bin/env bash' > appdir/AppRun
