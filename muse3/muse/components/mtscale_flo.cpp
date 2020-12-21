@@ -45,7 +45,6 @@ namespace MusEGui {
 MTScaleFlo::MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget)
     : View(parent_widget, 1, 1)
 {
-    setToolTip(tr("Bar scale"));
     pos[0] = MusEGlobal::song->cpos();
     pos[1] = MusEGlobal::song->lpos();
     pos[2] = MusEGlobal::song->rpos();

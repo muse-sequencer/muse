@@ -782,9 +782,9 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         }
         
         // Try these, may need more/less. 
-        if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-           SC_TRACK_MOVED |
-           SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
+        if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_TRACK_MOVED |
+           SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
+           SC_SIG))
         {
           unsigned endTick = MusEGlobal::song->len();
           int offset  = MusEGlobal::sigmap.ticksMeasure(endTick);
