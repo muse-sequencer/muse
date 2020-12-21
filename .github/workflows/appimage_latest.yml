@@ -34,7 +34,7 @@ jobs:
       run: |
         mkdir lv2_build
         cd lv2_build
-        git clone --depth 1 --branch v1.18.0 https://gitlab.com/lv2/lv2.git .
+        git clone --depth 1 --branch v1.18.0 https://gitlab.com/lv2/lv2.git
         ./waf configure
         ./waf
         ./waf install
@@ -42,7 +42,7 @@ jobs:
         cd ..
         mkdir lilv_build
         cd lilv_build
-        git clone --depth 1 --branch v0.24.10 https://gitlab.com/lv2/lilv.git .
+        git clone --depth 1 --branch v0.24.10 https://gitlab.com/lv2/lilv.git
         ./waf configure
         ./waf
         ./waf install
