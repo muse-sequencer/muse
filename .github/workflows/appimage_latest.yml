@@ -32,16 +32,16 @@ jobs:
         
     - name: Build lv2/lilv
       run: |
-        mkdir lv2_build
-        cd lv2_build
+        mkdir ${{runner.workspace}}/lv2_build
+        cd ${{runner.workspace}}/lv2_build
         git clone --depth 1 --branch v1.18.0 https://gitlab.com/lv2/lv2.git
         ./waf configure
         ./waf
         ./waf install
 
         cd ..
-        mkdir lilv_build
-        cd lilv_build
+        mkdir ${{runner.workspace}}/lilv_build
+        cd ${{runner.workspace}}/lilv_build
         git clone --depth 1 --branch v0.24.10 https://gitlab.com/lv2/lilv.git
         ./waf configure
         ./waf
