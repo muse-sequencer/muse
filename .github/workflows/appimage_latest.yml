@@ -38,7 +38,7 @@ jobs:
         git submodule update --init --recursive
         ./waf configure
         ./waf
-        ./waf install
+        sudo ./waf install
 
         cd ..
         mkdir ${{runner.workspace}}/lilv_build
@@ -47,7 +47,7 @@ jobs:
         git submodule update --init --recursive
         ./waf configure
         ./waf
-        ./waf install
+        sudo ./waf install
         
     - name: Check Qt Installation
       run: |
