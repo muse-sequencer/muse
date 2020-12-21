@@ -35,6 +35,7 @@ jobs:
         mkdir ${{runner.workspace}}/lv2_build
         cd ${{runner.workspace}}/lv2_build
         git clone --depth 1 --branch v1.18.0 https://gitlab.com/lv2/lv2.git .
+        git submodule update --init --recursive
         ./waf configure
         ./waf
         ./waf install
@@ -43,6 +44,7 @@ jobs:
         mkdir ${{runner.workspace}}/lilv_build
         cd ${{runner.workspace}}/lilv_build
         git clone --depth 1 --branch v0.24.10 https://gitlab.com/lv2/lilv.git .
+        git submodule update --init --recursive
         ./waf configure
         ./waf
         ./waf install
