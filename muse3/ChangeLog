@@ -1,3 +1,7 @@
+22.12.2020
+    - Update AppImage build scripts (AppImage is even ~8MB smaller now): 
+    	1. Build on Ubuntu 16.04 for better compatibility.
+	2. Include latest versions of lv2/lilv for better HiDPI support in LV2. (kybos)
 21.12.2020
     - Fix: Total number of bars not updated when signature has been changed. (kybos)
     - For issue 920: More values (480-based) in global settings midi division list. (Tim)
