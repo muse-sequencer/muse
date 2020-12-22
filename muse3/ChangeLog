@@ -1,5 +1,6 @@
 21.12.2020
     - Fix: Total number of bars not updated when signature has been changed. (kybos)
+    - For issue 920: More values (480-based) in global settings midi division list. (Tim)
 20.12.2020
     - Fix: Most plugin native UI windows now should behave sensibly out of the box 
             on HiDPI (of course plugins with no HiDPI/scaling support still look tiny,

@@ -1166,8 +1166,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>565</width>
-            <height>544</height>
+            <width>571</width>
+            <height>539</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1207,7 +1207,7 @@ Adjusts responsiveness of audio controls and
                  </sizepolicy>
                 </property>
                 <property name="currentIndex">
-                 <number>3</number>
+                 <number>5</number>
                 </property>
                 <item>
                  <property name="text">
@@ -1221,7 +1221,17 @@ Adjusts responsiveness of audio controls and
                 </item>
                 <item>
                  <property name="text">
+                  <string>120</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>192</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>240</string>
                  </property>
                 </item>
                 <item>
@@ -1231,7 +1241,17 @@ Adjusts responsiveness of audio controls and
                 </item>
                 <item>
                  <property name="text">
+                  <string>480</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>768</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>960</string>
                  </property>
                 </item>
                 <item>
@@ -1241,7 +1261,17 @@ Adjusts responsiveness of audio controls and
                 </item>
                 <item>
                  <property name="text">
+                  <string>1920</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>3072</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>3840</string>
                  </property>
                 </item>
                 <item>
@@ -1251,7 +1281,17 @@ Adjusts responsiveness of audio controls and
                 </item>
                 <item>
                  <property name="text">
+                  <string>7680</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>12288</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>15360</string>
                  </property>
                 </item>
                </widget>
@@ -1915,8 +1955,8 @@ Turn off to reduce clutter.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>543</width>
-               <height>503</height>
+               <width>545</width>
+               <height>487</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout6">
@@ -2288,7 +2328,4 @@ Otherwise, hold Ctrl to keep them open.</string>
  </tabstops>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>
