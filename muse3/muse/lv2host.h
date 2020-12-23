@@ -767,6 +767,8 @@ struct LV2PluginWrapper_State {
 
     bool hasGui;
     bool hasExternalGui;
+    bool fixedSizeGui;
+    bool noUserResizeGui;
     LV2UI_Idle_Interface *uiIdleIface;
     const LilvUI *uiCurrent;    
     LV2UI_Resize uiResize;
