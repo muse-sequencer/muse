@@ -181,6 +181,9 @@ typedef struct
     LilvNode *host_uiType;
     LilvNode *ext_uiType;
     LilvNode *ext_d_uiType;
+    LilvNode *lv2_OptionalFeature;
+    LilvNode *uiFixedSize;
+    LilvNode *uiNoUserResize;
     LilvNode *lv2_portMinimumSize;
     LilvNode *lv2_portDiscrete;
     LilvNode *lv2_portContinuous;
@@ -316,6 +319,9 @@ void initLV2()
     lv2CacheNodes.host_uiType            = lilv_new_uri(lilvWorld, LV2_UI_HOST_URI);
     lv2CacheNodes.ext_uiType             = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL);
     lv2CacheNodes.ext_d_uiType           = lilv_new_uri(lilvWorld, LV2_UI_EXTERNAL_DEPRECATED);
+    lv2CacheNodes.lv2_OptionalFeature    = lilv_new_uri(lilvWorld, LV2_CORE__optionalFeature);
+    lv2CacheNodes.uiFixedSize            = lilv_new_uri(lilvWorld, LV2_UI__fixedSize);
+    lv2CacheNodes.uiNoUserResize         = lilv_new_uri(lilvWorld, LV2_UI__noUserResize);
     lv2CacheNodes.lv2_portMinimumSize    = lilv_new_uri(lilvWorld, LV2_RESIZE_PORT__minimumSize);
     lv2CacheNodes.lv2_portContinuous     = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__continuousCV);
     lv2CacheNodes.lv2_portDiscrete       = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__discreteCV);
@@ -1322,27 +1328,36 @@ void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
 int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
 {
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-    if(state->widget != NULL && state->hasGui)
+
+    if (state->widget != NULL && state->hasGui && !state->fixedSizeGui)
     {
         QWidget *mainWin = ((LV2PluginWrapper_Window *)state->widget);
+
         bool sFixScaling = false;
         if (state->plugInst != nullptr)
             sFixScaling = state->plugInst->cquirks().fixNativeUIScaling();
-        else if(state->sif != nullptr)
+        else if (state->sif != nullptr)
             sFixScaling = state->sif->cquirks().fixNativeUIScaling();
 
         if (sFixScaling && mainWin->devicePixelRatio() >= 1.0) {
             int w = qRound((qreal)width / mainWin->devicePixelRatio());
             int h = qRound((qreal)height / mainWin->devicePixelRatio());
-            mainWin->setMinimumSize(w,h);
+
+            if (state->noUserResizeGui)
+                mainWin->setFixedSize(w,h);
+            else
+                mainWin->setMinimumSize(w,h);
             mainWin->resize(w, h);
         } else {
-            mainWin->setMinimumSize(width, height);
+            if (state->noUserResizeGui)
+                mainWin->setFixedSize(width, height);
+            else
+                mainWin->setMinimumSize(width, height);
             mainWin->resize(width, height);
         }
 
         QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
-        if(ewWin != NULL)
+        if (ewWin != NULL)
         {
             ewWin->resize(width, height);
         }
@@ -1354,15 +1369,17 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
 #else
             QWidget *ewCent= ((LV2PluginWrapper_Window *)state->widget)->centralWidget();
 #endif
-            if(ewCent != NULL)
+            if (ewCent != NULL)
             {
                 ewCent->resize(width, height);
             }
         }
         state->uiX11Size.setWidth(width);
         state->uiX11Size.setHeight(height);
+
         return 0;
     }
+
     return 1;
 }
 
@@ -1467,6 +1484,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
         state->hasExternalGui = false;
     }
 
+    const LilvNode* nUI = lilv_ui_get_uri(selectedUi);
+    state->fixedSizeGui = lilv_world_ask(lilvWorld, nUI, lv2CacheNodes.lv2_OptionalFeature, lv2CacheNodes.uiFixedSize);
+    state->noUserResizeGui = lilv_world_ask(lilvWorld, nUI, lv2CacheNodes.lv2_OptionalFeature, lv2CacheNodes.uiNoUserResize);
+
+
 #ifdef LV2_GUI_USE_QWIDGET
     win = new LV2PluginWrapper_Window(state, Q_NULLPTR, Qt::Window);
 #else
@@ -1481,7 +1503,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
         state->widget = win;
         state->pluginWindow = win;
         const char *cUiUri = lilv_node_as_uri(pluginUiType);
-        const char *cUiTypeUri = lilv_node_as_uri(lilv_ui_get_uri(selectedUi));
+        const char *cUiTypeUri = lilv_node_as_uri(nUI);
         bool bEmbed = false;
         bool bGtk = false;
         QWidget *ewWin = NULL;
@@ -1670,7 +1692,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                                 h = qRound((qreal)h / win->devicePixelRatio());
                             }
 
-                            win->setMinimumSize(w, h);
+                            if (state->fixedSizeGui || state->noUserResizeGui)
+                                win->setFixedSize(w, h);
+                            else
+                                win->setMinimumSize(w, h);
+
                             win->resize(w, h);
                         }
 #endif
@@ -1683,7 +1709,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                              state->uiX11Size.setHeight(qRound((qreal)state->uiX11Size.height() / win->devicePixelRatio()));
                          }
 
-                         win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
+                         if (state->fixedSizeGui || state->noUserResizeGui)
+                             win->setFixedSize(state->uiX11Size.width(), state->uiX11Size.height());
+                         else
+                             win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
+
 
                         if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
                             win->resize(ewWin->size());
