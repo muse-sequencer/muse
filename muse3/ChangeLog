@@ -1,3 +1,7 @@
+25.12.2020
+    - Added double click as a way to initiate changing shortcuts in the dialog (rj)
+    - Changed default shortcut for SOLO track to META-N (From META-S as the system eats it 
+      on multiple systems)
 23.12.2020
     - New: Implement LV2 UI features FixedSize/NoUserResize. (kybos) 
 22.12.2020

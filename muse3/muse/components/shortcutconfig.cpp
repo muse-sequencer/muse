@@ -59,6 +59,7 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
 
    connect(cgListView, SIGNAL(itemClicked(QTreeWidgetItem*, int )), this, SLOT(categorySelChanged(QTreeWidgetItem*, int)));
    connect(scListView, SIGNAL(itemClicked(QTreeWidgetItem*, int )), this, SLOT(shortcutSelChanged(QTreeWidgetItem*, int)));
+   connect(scListView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int )), this, SLOT(assignShortcut()));
 
    connect(textFilter, SIGNAL(textEdited(QString)), this, SLOT(filterChanged(QString)));
 
