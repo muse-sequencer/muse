@@ -32,5 +32,6 @@ jobs:
         #remove-stale-when-updated: # optional, default is true
         # Run the processor in debug mode without actually performing any operations on live issues.
         debug-only: true # optional
+        ascending: true  
         # Skip adding stale message when marking an issue as stale.
         #skip-stale-issue-message: # optional
