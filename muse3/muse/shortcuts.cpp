@@ -205,7 +205,7 @@ void initShortCuts()
       defShrt(SHRT_EDIT_TRACK_NAME,       Qt::Key_F2, QT_TRANSLATE_NOOP("shortcuts", "Edit selected track name"), ARRANG_SHRT, "edit_track_name");
 
       defShrt(SHRT_MUTE_CURRENT_TRACKS,   Qt::META + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Mute all currently selected tracks"), ARRANG_SHRT, "mute_curren_tracks");
-      defShrt(SHRT_SOLO_CURRENT_TRACKS,   Qt::META + Qt::Key_S, QT_TRANSLATE_NOOP("shortcuts", "Solo all currently selected tracks"), ARRANG_SHRT, "solo_curren_tracks");
+      defShrt(SHRT_SOLO_CURRENT_TRACKS,   Qt::META + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Solo all currently selected tracks"), ARRANG_SHRT, "solo_curren_tracks");
 
       //-----------------------------------------------------------
 
