@@ -37,6 +37,7 @@
 #include <QByteArray>
 #include <QToolButton>
 #include <QComboBox>
+#include <QGroupBox>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -50,6 +51,7 @@
 #include "doublelabel.h"
 #include "fastlog.h"
 #include "checkbox.h"
+#include "comboboxpi.h"
 #include "meter.h"
 #include "utils.h"
 #include "pluglist.h"
@@ -896,7 +898,7 @@ int Plugin::incReferences(int val)
       dlclose(_handle);
     }
 
-    _handle = 0;
+    _handle = nullptr;
     ladspa = nullptr;
     plugin = nullptr;
     rpIdx.clear();
@@ -908,7 +910,7 @@ int Plugin::incReferences(int val)
     return 0;
   }
 
-  if(_handle == 0)
+  if(_handle == nullptr)
   {
     _handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
 
@@ -2032,6 +2034,35 @@ bool PluginIBase::addScheduledControlEvent(unsigned long i, double val, unsigned
   return false;
 }
 
+CtrlEnumValues* PluginIBase::ctrlEnumValues(unsigned long i) const {
+    Q_UNUSED(i)
+    return nullptr;
+}
+
+QString PluginIBase::portGroup(long unsigned int i) const {
+    Q_UNUSED(i)
+    return QString();
+}
+
+int PluginIBase::propCnt() {
+    return 0;
+}
+QString PluginIBase::propLabel(int i) const {
+    Q_UNUSED(i)
+    return QString();
+}
+PropType PluginIBase::propType(int i) const {
+    Q_UNUSED(i)
+    return PROP_NONE;
+}
+bool PluginIBase::propValues(int i, float &min, float &max, float &def) const {
+    Q_UNUSED(i)
+    Q_UNUSED(min)
+    Q_UNUSED(max)
+    Q_UNUSED(def)
+    return false;
+}
+
 QString PluginIBase::dssi_ui_filename() const
 {
   QString libr(lib());
@@ -2382,7 +2413,7 @@ LADSPA_Handle Plugin::instantiate(PluginI *)
 bool PluginI::initPluginInstance(Plugin* plug, int c)
       {
       channel = c;
-      if(plug == 0)
+      if(plug == nullptr)
       {
         printf("initPluginInstance: zero plugin\n");
         return true;
@@ -3598,12 +3629,10 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       tools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
 
       QAction* fileOpen = new QAction(*fileopenSVGIcon, tr("Load Preset"), this);
-//       connect(fileOpen, SIGNAL(triggered()), this, SLOT(load()));
       connect(fileOpen, &QAction::triggered, [this]() { load(); } );
       tools->addAction(fileOpen);
 
       QAction* fileSave = new QAction(*filesaveasSVGIcon, tr("Save Preset"), this);
-//       connect(fileSave, SIGNAL(triggered()), this, SLOT(save()));
       connect(fileSave, &QAction::triggered, [this]() { save(); } );
       tools->addAction(fileSave);
 
@@ -3625,54 +3654,6 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       connect(settings, &QAction::triggered, this, &PluginGui::showSettings);
       tools->addAction(settings);
 
-//      tools->addSeparator();
-//      tools->addWidget(new QLabel(tr("Quirks:")));
-
-//      fixedSpeedAct= new QAction(QIcon(*fixedSpeedSVGIcon), tr("Fixed speed"), this);
-//      fixedSpeedAct->setCheckable(true);
-//      fixedSpeedAct->setChecked(plugin->cquirks()._fixedSpeed);
-//      fixedSpeedAct->setEnabled(plugin->usesTransportSource());
-//      fixedSpeedAct->setToolTip(tr("Fixed speed"));
-//      connect(fixedSpeedAct, &QAction::toggled, [this](bool v) { fixedSpeedToggled(v); } );
-//      tools->addAction(fixedSpeedAct);
-
-//      transpGovLatencyAct = new QAction(QIcon(*transportAffectsLatencySVGIcon), tr("Transport affects audio latency"), this);
-//      transpGovLatencyAct->setCheckable(true);
-//      transpGovLatencyAct->setChecked(plugin->cquirks()._transportAffectsAudioLatency);
-//      transpGovLatencyAct->setEnabled(plugin->usesTransportSource());
-//      transpGovLatencyAct->setToolTip(tr("Transport affects audio latency"));
-//      connect(transpGovLatencyAct, &QAction::toggled, [this](bool v) { transportGovernsLatencyToggled(v); } );
-//      tools->addAction(transpGovLatencyAct);
-
-//      overrideLatencyAct= new QAction(QIcon(*overrideLatencySVGIcon), tr("Override reported audio latency"), this);
-//      overrideLatencyAct->setCheckable(true);
-//      overrideLatencyAct->setChecked(plugin->cquirks()._overrideReportedLatency);
-//      overrideLatencyAct->setToolTip(tr("Override reported audio latency"));
-//      connect(overrideLatencyAct, &QAction::toggled, [this](bool v) { overrideReportedLatencyToggled(v); } );
-//      tools->addAction(overrideLatencyAct);
-
-//      latencyOverrideEntry = new QSpinBox();
-//      latencyOverrideEntry->setRange(0, 8191);
-//      latencyOverrideEntry->setValue(plugin->cquirks()._latencyOverrideValue);
-//      latencyOverrideEntry->setEnabled(plugin->cquirks()._overrideReportedLatency);
-//      latencyOverrideEntry->setToolTip(tr("Reported audio latency override value"));
-//      // Special: Need qt helper overload for these lambdas.
-//      connect(latencyOverrideEntry,
-//        QOverload<int>::of(&QSpinBox::valueChanged), [=](int v) { latencyOverrideValueChanged(v); } );
-//      tools->addWidget(latencyOverrideEntry);
-
-//      fixScalingTooltip[0] = tr("Revert native UI HiDPI scaling: Follow global setting");
-//      fixScalingTooltip[1] = tr("Revert native UI HiDPI scaling: On");
-//      fixScalingTooltip[2] = tr("Revert native UI HiDPI scaling: Off");
-//      fixNativeUIScalingTB = new QToolButton(this);
-//      fixNativeUIScalingTB->setIcon(*noscaleSVGIcon[plugin->cquirks()._fixNativeUIScaling]);
-//      fixNativeUIScalingTB->setProperty("state", plugin->cquirks()._fixNativeUIScaling);
-//      fixNativeUIScalingTB->setToolTip(fixScalingTooltip[plugin->cquirks()._fixNativeUIScaling]);
-//      connect(fixNativeUIScalingTB, &QToolButton::clicked, [this]() { fixNativeUIScalingTBClicked(); } );
-//      tools->addWidget(fixNativeUIScalingTB);
-
-      // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt
-      // Resource System in Qt documentation - ORCAN
       fileOpen->setWhatsThis(tr(presetOpenText));
       onOff->setWhatsThis(tr(presetBypassText));
       fileSave->setWhatsThis(tr(presetSaveText));
@@ -3681,333 +3662,11 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       id.setNum(plugin->pluginID());
       QString name(MusEGlobal::museGlobalShare + QString("/plugins/") + id + QString(".ui"));
       QFile uifile(name);
-      if (uifile.exists()) {
-            //
-            // construct GUI from *.ui file
-            //
-            PluginLoader loader;
-            QFile file(uifile.fileName());
-            file.open(QFile::ReadOnly);
-            mw = loader.load(&file, this);
-            file.close();
-            setCentralWidget(mw);
+      if (uifile.exists())
+          constructGUIFromFile(uifile);
+      else
+          constructGUIFromPluginMetadata();
 
-            QObjectList l = mw->children();
-            QObject *obj;
-
-            nobj = 0;
-            QList<QObject*>::iterator it;
-            for (it = l.begin(); it != l.end(); ++it) {
-                  obj = *it;
-                  QByteArray ba = obj->objectName().toLatin1();
-                  const char* name = ba.constData();
-                  if (*name !='P')
-                        continue;
-                  unsigned long parameter;
-                  int rv = sscanf(name, "P%lu", &parameter);
-                  if(rv != 1)
-                    continue;
-                  ++nobj;
-                  }
-            it = l.begin();
-            gw   = new GuiWidgets[nobj];
-            nobj = 0;
-
-            // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.
-            // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.
-
-            DoubleLabel* dl_obj;
-            QCheckBox*   cb_obj;
-            QComboBox*   combobox_obj;
-            unsigned long int nn;
-
-            for (it = l.begin(); it != l.end(); ++it) {
-                  obj = *it;
-                  QByteArray ba = obj->objectName().toLatin1();
-                  const char* name = ba.constData();
-                  if (*name !='P')
-                        continue;
-                  unsigned long parameter;
-                  int rv = sscanf(name, "P%lu", &parameter);
-                if(rv != 1)
-                    continue;
-
-                  // For some reason lambdas need this local copy (nn) of nobj otherwise they fail and crash.
-                  nn = nobj;
-                  
-                  gw[nobj].widget  = (QWidget*)obj;
-                  gw[nobj].param   = parameter;
-                  gw[nobj].type    = -1;
-                  gw[nobj].pressed = false;
-
-                  if (strcmp(obj->metaObject()->className(), "MusEGui::Slider") == 0) {
-                        gw[nobj].type = GuiWidgets::SLIDER;
-                        Slider* s = static_cast<Slider*>(obj);
-                        s->setId(nobj);
-                        s->setCursorHoming(true);
-
-                        LADSPA_PortRangeHint range = plugin->range(parameter);
-                        double lower = 0.0;     // default values
-                        double upper = 1.0;
-                        double dlower = lower;
-                        double dupper = upper;
-                        double val   = plugin->param(parameter);
-                        double dval  = val;
-                        getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
-
-                        // TODO
-                        //s->setThumbLength(1);
-                        //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
-                        //s->setScaleMaxMinor(5);
-                        //s->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
-                        //s->setScale(dlower, dupper, 1.0, false);
-                        //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-                        //s->setScaleBackBone(false);
-                        //s->setFillThumb(false);
-
-                        QFont fnt;
-                        fnt.setFamily("Sans");
-                        fnt.setPixelSize(9);
-                        //fnt.setStyleStrategy(QFont::PreferBitmap);
-                        fnt.setStyleStrategy(QFont::NoAntialias);
-                        fnt.setHintingPreference(QFont::PreferVerticalHinting);
-                        s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
-                        s->setSizeHint(200, 8);
-
-                        for(unsigned long i = 0; i < nobj; i++)
-                        {
-                          if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
-                            ((DoubleLabel*)gw[i].widget)->setSlider(s);
-                        }
-                        connect(s, QOverload<double, int, int>::of(&Slider::valueChanged), [=]() { guiParamChanged(nn); } );
-                        connect(s, &Slider::sliderPressed, [this](double v, int i) { guiSliderPressed(v, i); } );
-                        connect(s, &Slider::sliderReleased, [this](double v, int i) { guiSliderReleased(v, i); } );
-                        connect(s, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { guiSliderRightClicked(p, i); } );
-                        }
-                  else if (strcmp(obj->metaObject()->className(), "MusEGui::DoubleLabel") == 0) {
-                        gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
-                        dl_obj = static_cast<DoubleLabel*>(obj);
-                        dl_obj->setId(nobj);
-                        dl_obj->setAlignment(Qt::AlignCenter);
-                        for(unsigned long i = 0; i < nobj; i++)
-                        {
-                          if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
-                          {
-                            dl_obj->setSlider((Slider*)gw[i].widget);
-                            break;
-                          }
-                        }
-                        connect((DoubleLabel*)obj, &DoubleLabel::valueChanged, [this, nn]() { guiParamChanged(nn); } );
-                        }
-                  else if (strcmp(obj->metaObject()->className(), "QCheckBox") == 0) {
-                        gw[nobj].type = GuiWidgets::QCHECKBOX;
-                        gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
-                        cb_obj = static_cast<QCheckBox*>(obj);
-                        connect(cb_obj, &QCheckBox::toggled, [this, nn]() { guiParamChanged(nn); } );
-                        connect(cb_obj, &QCheckBox::pressed, [this, nn]() { guiParamPressed(nn); } );
-                        connect(cb_obj, &QCheckBox::released, [this, nn]() { guiParamReleased(nn); } );
-                        connect(cb_obj, &QCheckBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
-                        }
-                  else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
-                        gw[nobj].type = GuiWidgets::QCOMBOBOX;
-                        gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
-                        combobox_obj = static_cast<QComboBox*>(obj);
-                        connect(combobox_obj, QOverload<int>::of(&QComboBox::activated), [=]() { guiParamChanged(nn); } );
-                        connect(combobox_obj, &QComboBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
-                        }
-                  else {
-                        printf("unknown widget class %s\n", obj->metaObject()->className());
-                        continue;
-                        }
-                  ++nobj;
-                  }
-              updateValues(); // otherwise the GUI won't have valid data
-            }
-      else {
-            view = new QScrollArea;
-            view->setWidgetResizable(true);
-            setCentralWidget(view);
-
-            mw = new QWidget;
-            QGridLayout* grid = new QGridLayout;
-            grid->setSpacing(2);
-
-            mw->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-
-            unsigned long n  = plugin->parameters();
-            params = new GuiParam[n];
-
-            QFontMetrics fm = fontMetrics();
-            int h           = fm.height() + 4;
-
-            Slider* sl_obj;
-            CheckBox* cb_obj;
-
-            for (unsigned long i = 0; i < n; ++i) {
-                  QLabel* label = 0;
-                  LADSPA_PortRangeHint range = plugin->range(i);
-                  double lower = 0.0;     // default values
-                  double upper = 1.0;
-                  double dlower = lower;
-                  double dupper = upper;
-                  double val   = plugin->param(i);
-                  double dval  = val;
-                  params[i].pressed = false;
-                  params[i].hint = range.HintDescriptor;
-
-                  getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
-
-                  if (LADSPA_IS_HINT_TOGGLED(range.HintDescriptor)) {
-                        params[i].type = GuiParam::GUI_SWITCH;
-                        CheckBox* cb = new CheckBox(mw, i, "param");
-                        cb->setId(i);
-                        cb->setText(QString(plugin->paramName(i)));
-                        cb->setChecked(plugin->param(i) != 0.0);
-                        cb->setFixedHeight(h);
-                        params[i].actuator = cb;
-                        }
-                  else {
-                        label           = new QLabel(QString(plugin->paramName(i)), 0);
-                        params[i].type  = GuiParam::GUI_SLIDER;
-                        params[i].label = new DoubleLabel(val, lower, upper, 0);
-                        params[i].label->setFrame(true);
-                        params[i].label->setAlignment(Qt::AlignCenter);
-                        params[i].label->setPrecision(2);
-                        params[i].label->setId(i);
-
-                        // Let sliders all have different but unique colors
-                        // Some prime number magic
-                        uint j = i+1;
-                        uint c1 = j * 211  % 256;
-                        uint c2 = j * j * 137  % 256;
-                        uint c3 = j * j * j * 43  % 256;
-                        QColor color(c1, c2, c3);
-
-                        Slider* s = new Slider(0, "param", Qt::Horizontal,
-                           Slider::InsideHorizontal, 8, color, ScaleDraw::TextHighlightSplitAndShadow);
-
-                        // TODO
-                        //s->setThumbLength(1);
-                        //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
-                        //s->setScaleMaxMinor(5);
-                        //s->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
-                        //s->setScale(dlower, dupper, 1.0, false);
-                        //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-                        //s->setScaleBackBone(false);
-                        //s->setFillThumb(false);
-
-                        QFont fnt;
-                        fnt.setFamily("Sans");
-                        fnt.setPixelSize(9);
-                        //fnt.setStyleStrategy(QFont::PreferBitmap);
-                        fnt.setStyleStrategy(QFont::NoAntialias);
-                        fnt.setHintingPreference(QFont::PreferVerticalHinting);
-                        s->setFont(fnt);
-                        s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
-
-                        s->setCursorHoming(true);
-                        s->setId(i);
-                        s->setSizeHint(200, 8);
-                        s->setRange(dlower, dupper);
-                        if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
-                          s->setStep(1.0);
-                        s->setValue(dval);
-                        params[i].actuator = s;
-                        params[i].label->setSlider(s);
-                        }
-                  params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
-                  if (params[i].type == GuiParam::GUI_SLIDER) {
-                        label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-                        params[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-                        grid->addWidget(label, i, 0);
-                        grid->addWidget(params[i].label,    i, 1);
-                        grid->addWidget(params[i].actuator, i, 2);
-                        }
-                  else if (params[i].type == GuiParam::GUI_SWITCH) {
-                        grid->addWidget(params[i].actuator, i, 0, 1, 3);
-                        }
-                  if (params[i].type == GuiParam::GUI_SLIDER) {
-                        sl_obj = static_cast<Slider*>(params[i].actuator);
-                        connect(sl_obj, QOverload<double, int, int>::of(&Slider::valueChanged),
-                                [=](double v, int id, int scroll_mode) { sliderChanged(v, id, scroll_mode); } );
-                        connect(params[i].label, &DoubleLabel::valueChanged, [this](double v, int i) { labelChanged(v, i); } );
-                        connect(sl_obj, &Slider::sliderPressed, [this](double v, int i) { ctrlPressed(v, i); } );
-                        connect(sl_obj, &Slider::sliderReleased, [this](double v, int i) { ctrlReleased(v, i); } );
-                        connect(sl_obj, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
-                        }
-                  else if (params[i].type == GuiParam::GUI_SWITCH){
-                        cb_obj = (CheckBox*)params[i].actuator;
-                        connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
-                        connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
-                        connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
-                        }
-                  }
-
-
-            int n2  = plugin->parametersOut();
-            if (n2 > 0) {
-              paramsOut = new GuiParam[n2];
-
-              for (int i = 0; i < n2; ++i) {
-                      QLabel* label = 0;
-                      LADSPA_PortRangeHint range = plugin->rangeOut(i);
-                      double lower = 0.0;     // default values
-                      double upper = 32768.0; // Many latency outs have no hints so set this arbitrarily high
-                      double dlower = lower;
-                      double dupper = upper;
-                      double val   = plugin->paramOut(i);
-                      double dval  = val;
-                      paramsOut[i].pressed = false;
-                      paramsOut[i].hint = range.HintDescriptor;
-
-                      getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
-                      label           = new QLabel(QString(plugin->paramOutName(i)), 0);
-                      paramsOut[i].type  = GuiParam::GUI_METER;
-                      paramsOut[i].label = new DoubleLabel(val, lower, upper, 0);
-                      paramsOut[i].label->setFrame(true);
-                      paramsOut[i].label->setAlignment(Qt::AlignCenter);
-                      paramsOut[i].label->setPrecision(2);
-                      paramsOut[i].label->setId(i);
-
-                      Meter::MeterType mType=Meter::LinMeter;
-                      //if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
-                      if(LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
-                        mType=Meter::DBMeter;
-                      Meter* m = new Meter(this, 
-                                           mType, 
-                                           Qt::Horizontal, 
-                                           dlower, dupper,
-                                           Meter::InsideHorizontal); //, ScaleDraw::TextHighlightNone);
-                      m->setRefreshRate(MusEGlobal::config.guiRefresh);
-                      m->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
-                      m->setVal(dval, dval, false);
-                      m->setScaleBackBone(false);
-                      m->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
-
-                      QFont fnt;
-                      fnt.setFamily("Sans");
-                      fnt.setPixelSize(9);
-                      //fnt.setStyleStrategy(QFont::PreferBitmap);
-                      fnt.setStyleStrategy(QFont::NoAntialias);
-                      fnt.setHintingPreference(QFont::PreferVerticalHinting);
-                      m->setFont(fnt);
-                      m->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
-
-                      paramsOut[i].actuator = m;
-                      label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-                      paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-                      grid->addWidget(label, n+i, 0);
-                      grid->addWidget(paramsOut[i].label,    n+i, 1);
-                      grid->addWidget(paramsOut[i].actuator, n+i, 2);
-              }
-            }
-
-
-            grid->setColumnStretch(2, 10);
-            mw->setLayout(grid);
-            view->setWidget(mw);
-            }
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       }
 
@@ -4024,6 +3683,394 @@ PluginGui::~PluginGui()
       if (paramsOut)
             delete[] paramsOut;
       }
+
+//---------------------------------------------------------
+// construct GUI from *.ui file
+//---------------------------------------------------------
+
+void PluginGui::constructGUIFromFile(QFile& uifile) {
+
+    PluginLoader loader;
+    QFile file(uifile.fileName());
+    file.open(QFile::ReadOnly);
+    mw = loader.load(&file, this);
+    file.close();
+    setCentralWidget(mw);
+
+    QObjectList l = mw->children();
+    QObject *obj;
+
+    nobj = 0;
+    QList<QObject*>::iterator it;
+    for (it = l.begin(); it != l.end(); ++it) {
+          obj = *it;
+          QByteArray ba = obj->objectName().toLatin1();
+          const char* name = ba.constData();
+          if (*name !='P')
+                continue;
+          unsigned long parameter;
+          int rv = sscanf(name, "P%lu", &parameter);
+          if(rv != 1)
+            continue;
+          ++nobj;
+          }
+    it = l.begin();
+    gw   = new GuiWidgets[nobj];
+    nobj = 0;
+
+    // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.
+    // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.
+
+    DoubleLabel* dl_obj;
+    QCheckBox*   cb_obj;
+    QComboBox*   combobox_obj;
+    unsigned long int nn;
+
+    for (it = l.begin(); it != l.end(); ++it) {
+          obj = *it;
+          QByteArray ba = obj->objectName().toLatin1();
+          const char* name = ba.constData();
+          if (*name !='P')
+                continue;
+          unsigned long parameter;
+          int rv = sscanf(name, "P%lu", &parameter);
+        if(rv != 1)
+            continue;
+
+          // For some reason lambdas need this local copy (nn) of nobj otherwise they fail and crash.
+          nn = nobj;
+
+          gw[nobj].widget  = (QWidget*)obj;
+          gw[nobj].param   = parameter;
+          gw[nobj].type    = -1;
+          gw[nobj].pressed = false;
+
+          if (strcmp(obj->metaObject()->className(), "MusEGui::Slider") == 0) {
+                gw[nobj].type = GuiWidgets::SLIDER;
+                Slider* s = static_cast<Slider*>(obj);
+                s->setId(nobj);
+                s->setCursorHoming(true);
+
+                LADSPA_PortRangeHint range = plugin->range(parameter);
+                double lower = 0.0;     // default values
+                double upper = 1.0;
+                double dlower = lower;
+                double dupper = upper;
+                double val   = plugin->param(parameter);
+                double dval  = val;
+                getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+
+                // TODO
+                //s->setThumbLength(1);
+                //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
+                //s->setScaleMaxMinor(5);
+                //s->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
+                //s->setScale(dlower, dupper, 1.0, false);
+                //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
+                //s->setScaleBackBone(false);
+                //s->setFillThumb(false);
+
+                QFont fnt;
+                fnt.setFamily("Sans");
+                fnt.setPixelSize(9);
+                //fnt.setStyleStrategy(QFont::PreferBitmap);
+                fnt.setStyleStrategy(QFont::NoAntialias);
+                fnt.setHintingPreference(QFont::PreferVerticalHinting);
+                s->setFont(fnt);
+                s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
+                s->setSizeHint(200, 8);
+
+                for(unsigned long i = 0; i < nobj; i++)
+                {
+                  if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
+                    ((DoubleLabel*)gw[i].widget)->setSlider(s);
+                }
+                connect(s, QOverload<double, int, int>::of(&Slider::valueChanged), [=]() { guiParamChanged(nn); } );
+                connect(s, &Slider::sliderPressed, [this](double v, int i) { guiSliderPressed(v, i); } );
+                connect(s, &Slider::sliderReleased, [this](double v, int i) { guiSliderReleased(v, i); } );
+                connect(s, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { guiSliderRightClicked(p, i); } );
+                }
+          else if (strcmp(obj->metaObject()->className(), "MusEGui::DoubleLabel") == 0) {
+                gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
+                dl_obj = static_cast<DoubleLabel*>(obj);
+                dl_obj->setId(nobj);
+                dl_obj->setAlignment(Qt::AlignCenter);
+                for(unsigned long i = 0; i < nobj; i++)
+                {
+                  if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
+                  {
+                    dl_obj->setSlider((Slider*)gw[i].widget);
+                    break;
+                  }
+                }
+                connect((DoubleLabel*)obj, &DoubleLabel::valueChanged, [this, nn]() { guiParamChanged(nn); } );
+                }
+          else if (strcmp(obj->metaObject()->className(), "QCheckBox") == 0) {
+                gw[nobj].type = GuiWidgets::QCHECKBOX;
+                gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
+                cb_obj = static_cast<QCheckBox*>(obj);
+                connect(cb_obj, &QCheckBox::toggled, [this, nn]() { guiParamChanged(nn); } );
+                connect(cb_obj, &QCheckBox::pressed, [this, nn]() { guiParamPressed(nn); } );
+                connect(cb_obj, &QCheckBox::released, [this, nn]() { guiParamReleased(nn); } );
+                connect(cb_obj, &QCheckBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
+                }
+          else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
+                gw[nobj].type = GuiWidgets::QCOMBOBOX;
+                gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
+                combobox_obj = static_cast<QComboBox*>(obj);
+                connect(combobox_obj, QOverload<int>::of(&QComboBox::activated), [=]() { guiParamChanged(nn); } );
+                connect(combobox_obj, &QComboBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
+                }
+          else {
+                printf("unknown widget class %s\n", obj->metaObject()->className());
+                continue;
+                }
+          ++nobj;
+          }
+      updateValues(); // otherwise the GUI won't have valid data
+}
+
+//---------------------------------------------------------
+// construct GUI from plugin's meta data
+//---------------------------------------------------------
+void PluginGui::constructGUIFromPluginMetadata() {
+
+    view = new QScrollArea;
+    view->setWidgetResizable(true);
+    setCentralWidget(view);
+
+    mw = new QWidget(view);
+    view->setWidget(mw);
+
+    QVBoxLayout* vbox = new QVBoxLayout(mw);
+    vbox->setSizeConstraint(QLayout::SetMinAndMaxSize);
+
+    QGroupBox* groupBox = nullptr;
+    QGridLayout* grid = nullptr;
+
+
+    // input ports
+    unsigned long n  = plugin->parameters();
+    params = new GuiParam[n];
+
+    QFontMetrics fm = fontMetrics();
+    int h           = fm.height() + 4;
+
+    Slider* sl_obj;
+    CheckBox* cb_obj;
+    ComboBoxPI* cmb_obj;
+
+    QString lastGroup;
+
+    for (unsigned long i = 0; i < n; ++i) {
+        if (!i || plugin->portGroup(i) != lastGroup) {
+            if (plugin->portGroup(i).isEmpty()) {
+                grid = new QGridLayout();
+                grid->setColumnMinimumWidth(0, 100);
+                vbox->addLayout(grid);
+            } else {
+                groupBox = new QGroupBox(plugin->portGroup(i));
+                grid = new QGridLayout(groupBox);
+                grid->setColumnMinimumWidth(0, 100);
+                groupBox->setLayout(grid);
+                vbox->addWidget(groupBox);
+            }
+            lastGroup = plugin->portGroup(i);
+        }
+
+        QLabel* label = nullptr;
+        LADSPA_PortRangeHint range = plugin->range(i);
+        double lower = 0.0;     // default values
+        double upper = 1.0;
+        double dlower = lower;
+        double dupper = upper;
+        double val   = plugin->param(i);
+        double dval  = val;
+        params[i].pressed = false;
+        params[i].hint = range.HintDescriptor;
+
+        getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+
+        if (LADSPA_IS_HINT_TOGGLED(range.HintDescriptor)
+                || plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_BOOL) {
+            params[i].type = GuiParam::GUI_SWITCH;
+            label = new QLabel(QString(plugin->paramName(i)), nullptr);
+            CheckBox* cb = new CheckBox(mw, i, "param");
+            cb->setId(i);
+//            cb->setText(QString(plugin->paramName(i)));
+            cb->setChecked(plugin->param(i) != 0.0);
+            cb->setFixedHeight(h);
+            params[i].actuator = cb;
+
+            grid->addWidget(label, i, 0);
+            grid->addWidget(params[i].actuator, i, 1);
+
+            cb_obj = (CheckBox*)params[i].actuator;
+
+            connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
+            connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
+            connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
+
+        }
+        else if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_ENUM) {
+            label = new QLabel(QString(plugin->paramName(i)), nullptr);
+            params[i].type  = GuiParam::GUI_ENUM;
+            ComboBoxPI* cmb = new ComboBoxPI(mw, i, "enum");
+
+            int curItem = -1;
+            int cnt = 0;
+            for (const auto& it : *plugin->ctrlEnumValues(i)) {
+                cmb->addItem(it.second, it.first);
+                if (curItem == -1 && it.first == static_cast<float>(val))
+                    curItem = cnt;
+                cnt++;
+            }
+            cmb->setCurrentIndex(curItem);
+
+            params[i].actuator = cmb;
+
+            grid->addWidget(label, i, 0);
+            grid->addWidget(params[i].actuator, i, 1, 1, 2);
+
+            cmb_obj = static_cast<ComboBoxPI*>(params[i].actuator);
+
+            connect(cmb_obj, QOverload<int>::of(&ComboBoxPI::currentIndexChanged), [=]() { comboChanged(i); } );
+            connect(cmb_obj, &ComboBoxPI::rightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
+
+        }
+        else {
+            label           = new QLabel(QString(plugin->paramName(i)), nullptr);
+            params[i].type  = GuiParam::GUI_SLIDER;
+            params[i].label = new DoubleLabel(val, lower, upper, nullptr);
+            params[i].label->setFrame(true);
+            params[i].label->setAlignment(Qt::AlignCenter);
+            params[i].label->setPrecision(2);
+            params[i].label->setId(i);
+
+            // Let sliders all have different but unique colors
+            // Some prime number magic
+            uint j = i+1;
+            uint c1 = j * 211  % 256;
+            uint c2 = j * j * 137  % 256;
+            uint c3 = j * j * j * 43  % 256;
+            QColor color(c1, c2, c3);
+
+            Slider* s = new Slider(0, "param", Qt::Horizontal,
+                                   Slider::InsideHorizontal, 8, color, ScaleDraw::TextHighlightSplitAndShadow);
+
+            // TODO
+            //s->setThumbLength(1);
+            //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
+            //s->setScaleMaxMinor(5);
+            //s->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
+            //s->setScale(dlower, dupper, 1.0, false);
+            //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
+            //s->setScaleBackBone(false);
+            //s->setFillThumb(false);
+
+            QFont fnt;
+            fnt.setFamily("Sans");
+            fnt.setPixelSize(9);
+            fnt.setStyleStrategy(QFont::NoAntialias);
+            fnt.setHintingPreference(QFont::PreferVerticalHinting);
+            s->setFont(fnt);
+            s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
+
+            s->setCursorHoming(true);
+            s->setId(i);
+            s->setSizeHint(200, 8);
+            s->setRange(dlower, dupper);
+            if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
+                s->setStep(1.0);
+            s->setValue(dval);
+            params[i].actuator = s;
+            params[i].label->setSlider(s);
+
+            label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            params[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            grid->addWidget(label, i, 0);
+            grid->addWidget(params[i].label,    i, 1);
+            grid->addWidget(params[i].actuator, i, 2);
+
+            sl_obj = static_cast<Slider*>(params[i].actuator);
+            connect(sl_obj, QOverload<double, int, int>::of(&Slider::valueChanged),
+                    [=](double v, int id, int scroll_mode) { sliderChanged(v, id, scroll_mode); } );
+            connect(params[i].label, &DoubleLabel::valueChanged, [this](double v, int i) { labelChanged(v, i); } );
+            connect(sl_obj, &Slider::sliderPressed, [this](double v, int i) { sliderPressed(v, i); } );
+            connect(sl_obj, &Slider::sliderReleased, [this](double v, int i) { sliderReleased(v, i); } );
+            connect(sl_obj, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
+        }
+
+        params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+    }
+
+
+    int n2  = plugin->parametersOut();
+    if (n2 > 0) {
+        paramsOut = new GuiParam[n2];
+
+        groupBox = new QGroupBox(tr("Output controls"));
+        grid = new QGridLayout(groupBox);
+        groupBox->setLayout(grid);
+        vbox->addWidget(groupBox);
+
+        for (int i = 0; i < n2; ++i) {
+            QLabel* label = nullptr;
+            LADSPA_PortRangeHint range = plugin->rangeOut(i);
+            double lower = 0.0;     // default values
+            double upper = 32768.0; // Many latency outs have no hints so set this arbitrarily high
+            double dlower = lower;
+            double dupper = upper;
+            double val   = plugin->paramOut(i);
+            double dval  = val;
+            paramsOut[i].pressed = false;
+            paramsOut[i].hint = range.HintDescriptor;
+
+            getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+            label           = new QLabel(QString(plugin->paramOutName(i)), nullptr);
+            paramsOut[i].type  = GuiParam::GUI_METER;
+            paramsOut[i].label = new DoubleLabel(val, lower, upper, nullptr);
+            paramsOut[i].label->setFrame(true);
+            paramsOut[i].label->setAlignment(Qt::AlignCenter);
+            paramsOut[i].label->setPrecision(2);
+            paramsOut[i].label->setId(i);
+
+            Meter::MeterType mType=Meter::LinMeter;
+            //if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
+            if(LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
+                mType=Meter::DBMeter;
+            Meter* m = new Meter(this,
+                                 mType,
+                                 Qt::Horizontal,
+                                 dlower, dupper,
+                                 Meter::InsideHorizontal); //, ScaleDraw::TextHighlightNone);
+            m->setRefreshRate(MusEGlobal::config.guiRefresh);
+            m->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
+            m->setVal(dval, dval, false);
+            m->setScaleBackBone(false);
+            m->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+
+            QFont fnt;
+            fnt.setFamily("Sans");
+            fnt.setPixelSize(9);
+            fnt.setStyleStrategy(QFont::NoAntialias);
+            fnt.setHintingPreference(QFont::PreferVerticalHinting);
+            m->setFont(fnt);
+            m->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
+
+            paramsOut[i].actuator = m;
+            label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            grid->addWidget(label, n+i, 0);
+            grid->addWidget(paramsOut[i].label,    n+i, 1);
+            grid->addWidget(paramsOut[i].actuator, n+i, 2);
+        }
+    }
+
+    vbox->addStretch(0);
+    mw->setLayout(vbox);
+}
+
 
 void PluginGui::updateWindowTitle()
 {
@@ -4147,7 +4194,7 @@ void PluginGui::heartBeat()
 //   ctrlPressed
 //---------------------------------------------------------
 
-void PluginGui::ctrlPressed(double /*val*/, int param)
+void PluginGui::sliderPressed(double /*val*/, int param)
 {
       params[param].pressed = true;
       MusECore::AudioTrack* track = plugin->track();
@@ -4155,8 +4202,6 @@ void PluginGui::ctrlPressed(double /*val*/, int param)
       if(id != -1)
       {
         id = MusECore::genACnum(id, param);
-        if(params[param].type == GuiParam::GUI_SLIDER)
-        {
           double val = ((Slider*)params[param].actuator)->value();
           if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
                 val = muse_db2val(val);
@@ -4170,16 +4215,6 @@ void PluginGui::ctrlPressed(double /*val*/, int param)
             track->startAutoRecord(id, val);
             track->setPluginCtrlVal(id, val);
           }
-        }
-        else if(params[param].type == GuiParam::GUI_SWITCH)
-        {
-          float val = (float)((CheckBox*)params[param].actuator)->isChecked();
-          if(track)
-          {
-            track->startAutoRecord(id, val);
-            track->setPluginCtrlVal(id, val);
-          }
-        }
       }
       plugin->enableController(param, false);
 }
@@ -4188,7 +4223,7 @@ void PluginGui::ctrlPressed(double /*val*/, int param)
 //   ctrlReleased
 //---------------------------------------------------------
 
-void PluginGui::ctrlReleased(double /*val*/, int param)
+void PluginGui::sliderReleased(double /*val*/, int param)
 {
       MusECore::AutomationType at = MusECore::AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
@@ -4331,6 +4366,26 @@ void PluginGui::labelChanged(double val, int param)
 }
 
 //---------------------------------------------------------
+//   comboChanged
+//---------------------------------------------------------
+
+void PluginGui::comboChanged(unsigned long param)
+{
+    MusECore::AudioTrack* track = plugin->track();
+
+    ComboBoxPI *c = static_cast<ComboBoxPI*>(params[param].actuator);
+    double val = rint( c->currentData().toDouble() );
+    int id = plugin->id();
+    if(track && id != -1)
+    {
+        id = MusECore::genACnum(id, param);
+        track->startAutoRecord(id, val);
+    }
+    plugin->setParam(param, val);  // Schedules a timed control change.
+    plugin->enableController(param, false);
+}
+
+//---------------------------------------------------------
 //   load
 //---------------------------------------------------------
 
@@ -4459,182 +4514,203 @@ void PluginGui::setOn(bool val)
 //---------------------------------------------------------
 
 void PluginGui::updateValues()
-      {
-      if (params) {
-            for (unsigned long i = 0; i < plugin->parameters(); ++i) {
-                  GuiParam* gp = &params[i];
-                  if (gp->type == GuiParam::GUI_SLIDER) {
-                        double lv = plugin->param(i);
-                        double sv = lv;
-                        if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                              sv = MusECore::fast_log10(lv) * 20.0;
-                        else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
-                        {
-                              sv = rint(lv);
-                              lv = sv;
-                        }
-                        gp->label->blockSignals(true);
-                        gp->actuator->blockSignals(true);
-                        gp->label->setValue(lv);
-                        ((Slider*)(gp->actuator))->setValue(sv);
-                        gp->label->blockSignals(false);
-                        gp->actuator->blockSignals(false);
-                        }
-                  else if (gp->type == GuiParam::GUI_SWITCH) {
-                        gp->actuator->blockSignals(true);
-                        ((CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
-                        gp->actuator->blockSignals(false);
-                        }
-                  }
+{
+    if (params) {
+        for (unsigned long i = 0; i < plugin->parameters(); ++i) {
+            GuiParam* gp = &params[i];
+            if (gp->type == GuiParam::GUI_SLIDER) {
+                double lv = plugin->param(i);
+                double sv = lv;
+                if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
+                    sv = MusECore::fast_log10(lv) * 20.0;
+                else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
+                {
+                    sv = rint(lv);
+                    lv = sv;
+                }
+                gp->label->blockSignals(true);
+                gp->actuator->blockSignals(true);
+                gp->label->setValue(lv);
+                ((Slider*)(gp->actuator))->setValue(sv);
+                gp->label->blockSignals(false);
+                gp->actuator->blockSignals(false);
             }
-      else if (gw) {
-            for (unsigned long i = 0; i < nobj; ++i) {
-                  QWidget* widget = gw[i].widget;
-                  int type = gw[i].type;
-                  unsigned long param = gw[i].param;
-                  double val = plugin->param(param);
-                  widget->blockSignals(true);
-                  switch(type) {
-                        case GuiWidgets::SLIDER:
-                              ((Slider*)widget)->setValue(val);    // Note conversion to double
-                              break;
-                        case GuiWidgets::DOUBLE_LABEL:
-                              ((DoubleLabel*)widget)->setValue(val);   // Note conversion to double
-                              break;
-                        case GuiWidgets::QCHECKBOX:
-                              ((QCheckBox*)widget)->setChecked(int(val));
-                              break;
-                        case GuiWidgets::QCOMBOBOX:
-                              ((QComboBox*)widget)->setCurrentIndex(int(val));
-                              break;
-                        }
-                  widget->blockSignals(false);
-                  }
+            else if (gp->type == GuiParam::GUI_SWITCH) {
+                gp->actuator->blockSignals(true);
+                ((CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
+                gp->actuator->blockSignals(false);
             }
-      }
+            else if (gp->type == GuiParam::GUI_ENUM) {
+                float sv = static_cast<float>(plugin->param(i));
+                ComboBoxPI *c = static_cast<ComboBoxPI*>(gp->actuator);
+                int idx = c->findData(sv);
+                gp->actuator->blockSignals(true);
+                c->setCurrentIndex(idx);
+                gp->actuator->blockSignals(false);
+            }
+        }
+    }
+    else if (gw) {
+        for (unsigned long i = 0; i < nobj; ++i) {
+            QWidget* widget = gw[i].widget;
+            int type = gw[i].type;
+            unsigned long param = gw[i].param;
+            double val = plugin->param(param);
+            widget->blockSignals(true);
+            switch(type) {
+            case GuiWidgets::SLIDER:
+                ((Slider*)widget)->setValue(val);    // Note conversion to double
+                break;
+            case GuiWidgets::DOUBLE_LABEL:
+                ((DoubleLabel*)widget)->setValue(val);   // Note conversion to double
+                break;
+            case GuiWidgets::QCHECKBOX:
+                ((QCheckBox*)widget)->setChecked(int(val));
+                break;
+            case GuiWidgets::QCOMBOBOX:
+                ((QComboBox*)widget)->setCurrentIndex(int(val));
+                break;
+            }
+            widget->blockSignals(false);
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   updateControls
 //---------------------------------------------------------
 
 void PluginGui::updateControls()
-      {
-       if (!plugin->track() || plugin->id() == -1)
-         return;
+{
+    if (!plugin->track() || plugin->id() == -1)
+        return;
 
-       // update outputs
+    // update outputs
 
-       if (paramsOut) {
-         for (unsigned long i = 0; i < plugin->parametersOut(); ++i) {
-               GuiParam* gp = &paramsOut[i];
-               if (gp->type == GuiParam::GUI_METER) {
-                 double lv = plugin->paramOut(i);
-                 double sv = lv;
-                 if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                       sv = MusECore::fast_log10(lv) * 20.0;
-                 else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
-                 {
-                       sv = rint(lv);
-                       lv = sv;
-                 }
-                 ((Meter*)(gp->actuator))->setVal(sv, sv, false);
-                 gp->label->setValue(lv);
+    if (paramsOut) {
+        for (unsigned long i = 0; i < plugin->parametersOut(); ++i) {
+            GuiParam* gp = &paramsOut[i];
+            if (gp->type == GuiParam::GUI_METER) {
+                double lv = plugin->paramOut(i);
+                double sv = lv;
+                if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
+                    sv = MusECore::fast_log10(lv) * 20.0;
+                else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
+                {
+                    sv = rint(lv);
+                    lv = sv;
+                }
+                ((Meter*)(gp->actuator))->setVal(sv, sv, false);
+                gp->label->setValue(lv);
 
-               }
-             }
-       }
-
-
-      if (params) {
-            for (unsigned long i = 0; i < plugin->parameters(); ++i) {
-                    GuiParam* gp = &params[i];
-                    if(gp->pressed) // Inhibit the controller stream if control is currently pressed.
-                      continue;
-                    double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i),
-                                                                    MusEGlobal::audio->curFramePos(),
-                                                                    !MusEGlobal::automation ||
-                                                                    plugin->track()->automationType() == MusECore::AUTO_OFF ||
-                                                                    !plugin->controllerEnabled(i));
-                    if (gp->type == GuiParam::GUI_SLIDER) {
-                            {
-                              double sv = v;
-                              if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                                    sv = MusECore::fast_log10(v) * 20.0;
-                              else
-                              if (LADSPA_IS_HINT_INTEGER(params[i].hint))
-                              {
-                                    sv = rint(v);
-                                    v = sv;
-                              }
-                              if(((Slider*)(gp->actuator))->value() != sv)
-                              {
-                                gp->label->blockSignals(true);
-                                gp->actuator->blockSignals(true);
-                                ((Slider*)(gp->actuator))->setValue(sv);
-                                gp->label->setValue(v);
-                                gp->actuator->blockSignals(false);
-                                gp->label->blockSignals(false);
-                              }
-                            }
-                          }
-                    else if (gp->type == GuiParam::GUI_SWITCH) {
-                            {
-                              bool b = (int)v;
-                              if(((CheckBox*)(gp->actuator))->isChecked() != b)
-                              {
-                                gp->actuator->blockSignals(true);
-                                ((CheckBox*)(gp->actuator))->setChecked(b);
-                                gp->actuator->blockSignals(false);
-                              }
-                            }
-                          }
-               }
             }
-      else if (gw) {
-            for (unsigned long i = 0; i < nobj; ++i) {
-                  if(gw[i].pressed) // Inhibit the controller stream if control is currently pressed.
-                    continue;
-                  QWidget* widget = gw[i].widget;
-                  int type = gw[i].type;
-                  unsigned long param = gw[i].param;
-                  double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param),
-                                                                  MusEGlobal::audio->curFramePos(),
-                                                                  !MusEGlobal::automation ||
-                                                                  plugin->track()->automationType() == MusECore::AUTO_OFF ||
-                                                                  !plugin->controllerEnabled(param));
-                  widget->blockSignals(true);
-                  switch(type) {
-                        case GuiWidgets::SLIDER:
-                              {
-                                if(((Slider*)widget)->value() != v)
-                                  ((Slider*)widget)->setValue(v);
-                              }
-                              break;
-                        case GuiWidgets::DOUBLE_LABEL:
-                              {
-                                if(((DoubleLabel*)widget)->value() != v)
-                                  ((DoubleLabel*)widget)->setValue(v);
-                              }
-                              break;
-                        case GuiWidgets::QCHECKBOX:
-                              {
-                                bool b = (bool)v;
-                                if(((QCheckBox*)widget)->isChecked() != b)
-                                  ((QCheckBox*)widget)->setChecked(b);
-                              }
-                              break;
-                        case GuiWidgets::QCOMBOBOX:
-                              {
-                                int n = (int)v;
-                                if(((QComboBox*)widget)->currentIndex() != n)
-                                  ((QComboBox*)widget)->setCurrentIndex(n);
-                              }
-                              break;
+        }
+    }
+
+
+    if (params) {
+        for (unsigned long i = 0; i < plugin->parameters(); ++i) {
+            GuiParam* gp = &params[i];
+            if(gp->pressed) // Inhibit the controller stream if control is currently pressed.
+                continue;
+            double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i),
+                                                            MusEGlobal::audio->curFramePos(),
+                                                            !MusEGlobal::automation ||
+                                                            plugin->track()->automationType() == MusECore::AUTO_OFF ||
+                                                            !plugin->controllerEnabled(i));
+            if (gp->type == GuiParam::GUI_SLIDER) {
+                {
+                    double sv = v;
+                    if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
+                        sv = MusECore::fast_log10(v) * 20.0;
+                    else
+                        if (LADSPA_IS_HINT_INTEGER(params[i].hint))
+                        {
+                            sv = rint(v);
+                            v = sv;
                         }
-                  widget->blockSignals(false);
-                  }
+                    if(((Slider*)(gp->actuator))->value() != sv)
+                    {
+                        gp->label->blockSignals(true);
+                        gp->actuator->blockSignals(true);
+                        ((Slider*)(gp->actuator))->setValue(sv);
+                        gp->label->setValue(v);
+                        gp->actuator->blockSignals(false);
+                        gp->label->blockSignals(false);
+                    }
+                }
             }
-      }
+            else if (gp->type == GuiParam::GUI_SWITCH) {
+                {
+                    bool b = (int)v;
+                    if(((CheckBox*)(gp->actuator))->isChecked() != b)
+                    {
+                        gp->actuator->blockSignals(true);
+                        ((CheckBox*)(gp->actuator))->setChecked(b);
+                        gp->actuator->blockSignals(false);
+                    }
+                }
+            }
+            else if (gp->type == GuiParam::GUI_ENUM) {
+                {
+                    float sv = static_cast<float>(v);
+                    ComboBoxPI *c = static_cast<ComboBoxPI*>(gp->actuator);
+                    if (c->currentData().toFloat() != sv)
+                    {
+                        int idx = c->findData(sv);
+                        gp->actuator->blockSignals(true);
+                        c->setCurrentIndex(idx);
+                        gp->actuator->blockSignals(false);
+                    }
+                }
+            }
+        }
+    }
+    else if (gw) {
+        for (unsigned long i = 0; i < nobj; ++i) {
+            if(gw[i].pressed) // Inhibit the controller stream if control is currently pressed.
+                continue;
+            QWidget* widget = gw[i].widget;
+            int type = gw[i].type;
+            unsigned long param = gw[i].param;
+            double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param),
+                                                            MusEGlobal::audio->curFramePos(),
+                                                            !MusEGlobal::automation ||
+                                                            plugin->track()->automationType() == MusECore::AUTO_OFF ||
+                                                            !plugin->controllerEnabled(param));
+            widget->blockSignals(true);
+            switch(type) {
+            case GuiWidgets::SLIDER:
+            {
+                if(((Slider*)widget)->value() != v)
+                    ((Slider*)widget)->setValue(v);
+            }
+                break;
+            case GuiWidgets::DOUBLE_LABEL:
+            {
+                if(((DoubleLabel*)widget)->value() != v)
+                    ((DoubleLabel*)widget)->setValue(v);
+            }
+                break;
+            case GuiWidgets::QCHECKBOX:
+            {
+                bool b = (bool)v;
+                if(((QCheckBox*)widget)->isChecked() != b)
+                    ((QCheckBox*)widget)->setChecked(b);
+            }
+                break;
+            case GuiWidgets::QCOMBOBOX:
+            {
+                int n = (int)v;
+                if(((QComboBox*)widget)->currentIndex() != n)
+                    ((QComboBox*)widget)->setCurrentIndex(n);
+            }
+                break;
+            }
+            widget->blockSignals(false);
+        }
+    }
+}
 
 //---------------------------------------------------------
 //   guiParamChanged

@@ -332,6 +332,10 @@ private:
   NatUISCaling _fixNativeUIScaling;
 };
 
+typedef enum {
+    PROP_NONE = -1, PROP_INT = 0, PROP_LONG, PROP_FLOAT, PROP_DOUBLE, PROP_BOOL, PROP_STRING, PROP_PATH
+} PropType;
+
 //---------------------------------------------------------
 //   PluginIBase
 //---------------------------------------------------------
@@ -399,6 +403,14 @@ class PluginIBase
       virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */}
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
+      virtual CtrlEnumValues *ctrlEnumValues(unsigned long i) const;
+      virtual QString portGroup(long unsigned int i) const;
+
+      virtual int propCnt();
+      virtual QString propLabel(int i) const;
+      virtual PropType propType(int i) const;
+      virtual bool propValues(int i, float &min, float &max, float &def) const;
+
       QString dssi_ui_filename() const;
 
       MusEGui::PluginGui* gui() const { return _gui; }
@@ -641,7 +653,7 @@ class PluginLoader : public QUiLoader
 
 struct GuiParam {
       enum {
-            GUI_SLIDER, GUI_SWITCH, GUI_METER
+            GUI_SLIDER, GUI_SWITCH, GUI_METER, GUI_ENUM
             };
       int type;
       int hint;
@@ -650,6 +662,23 @@ struct GuiParam {
       MusEGui::DoubleLabel* label;
       QWidget* actuator;  // Slider or Toggle Button (SWITCH)
       };
+
+//---------------------------------------------------------
+//   Widget for properties
+//---------------------------------------------------------
+
+struct GuiPropWidget {
+    typedef enum {
+        PROP_GUI_SPIN, PROP_GUI_SPIN_D, PROP_GUI_CHECKBOX, PROP_GUI_LINEEDIT, PROP_GUI_PATH
+    } PropWidgetType;
+
+    PropWidgetType wtype;
+    MusECore::PropType type;
+//    int hint;
+//    bool pressed;
+
+    QWidget* w;
+};
 
 //---------------------------------------------------------
 //   GuiWidgets
@@ -692,7 +721,9 @@ class PluginGui : public QMainWindow {
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
                      double &lower, double &upper, double &dlower, double &dupper, double &dval);
-      
+      void constructGUIFromFile(QFile& uifile);
+      void constructGUIFromPluginMetadata();
+
    protected:
       virtual void showEvent(QShowEvent *e);
       virtual void hideEvent(QHideEvent *e);
@@ -709,9 +740,10 @@ class PluginGui : public QMainWindow {
 //      void latencyOverrideValueChanged(int);
       void sliderChanged(double value, int id, int scrollMode);
       void labelChanged(double, int);
+      void comboChanged(unsigned long);
       void guiParamChanged(unsigned long int);
-      void ctrlPressed(double, int);
-      void ctrlReleased(double, int);
+      void sliderPressed(double, int);
+      void sliderReleased(double, int);
       void switchPressed(int);
       void switchReleased(int);
       void guiParamPressed(unsigned long int);

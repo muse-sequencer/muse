@@ -30,12 +30,12 @@ QStatusBar {
 
 /* QWhatsThat doesn't work at the moment (known problem)
  * Just in case Qt implements it in future... */
-QToolTip, QWhatsThat {
-    background-color: rgb(190,190,190);
+ QToolTip, QWhatsThat {
+    background-color: rgb(96, 211, 201);
     color: rgb(30,30,30);
     font-size: 10pt;
-}   
-
+}
+   
 QMenu {
     border: 1px solid rgb(0,90,160);
 }
