@@ -250,18 +250,21 @@ struct LV2MidiPort
 
 enum LV2ControlPortType
 {
-   LV2_PORT_DISCRETE = 1,
-   LV2_PORT_INTEGER,
-   LV2_PORT_CONTINUOUS,
-   LV2_PORT_LOGARITHMIC,
-   LV2_PORT_TRIGGER
+    LV2_PORT_DISCRETE = 1,
+    LV2_PORT_INTEGER,
+    LV2_PORT_CONTINUOUS,
+    LV2_PORT_LOGARITHMIC,
+    LV2_PORT_TRIGGER,
+    LV2_PORT_ENUMERATION
 };
 
 struct LV2ControlPort
 {
-   LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, const char *_s, LV2ControlPortType _ctype, bool _isCVPort = false) :
-      port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
-      isCVPort(_isCVPort)
+   LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, const char *_s,
+                    LV2ControlPortType _ctype, bool _isCVPort = false, CtrlEnumValues* scalePoints = nullptr,
+                    QString group = QString())
+       : port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
+         isCVPort(_isCVPort), scalePoints(scalePoints), group(group)
    {
       cName = strdup ( _n );
       cSym = strdup(_s);
@@ -269,7 +272,7 @@ struct LV2ControlPort
    LV2ControlPort ( const LV2ControlPort &other ) :
       port ( other.port ), index ( other.index ), defVal ( other.defVal ),
       minVal(other.minVal), maxVal(other.maxVal), cType(other.cType),
-      isCVPort(other.isCVPort)
+      isCVPort(other.isCVPort), scalePoints(other.scalePoints), group(other.group)
    {
       cName = strdup ( other.cName );
       cSym = strdup(other.cSym);
@@ -290,6 +293,8 @@ struct LV2ControlPort
    char *cSym; //cached port symbol
    LV2ControlPortType cType;
    bool isCVPort;
+   CtrlEnumValues* scalePoints;
+   QString group;
 };
 
 struct LV2AudioPort
@@ -353,6 +358,17 @@ class LV2OperationMessage
     LV2OperationMessage() : _type(ProgramChanged), _index(-1) { }
     LV2OperationMessage(Type type, int index = 0) : _type(type), _index(index) { }
 };
+
+
+typedef struct {
+    QString symbol;
+    QString label;
+    PropType type;
+    float min;             ///< Minimum value
+    float max;             ///< Maximum value
+    float def;             ///< Default value
+} LV2Property;
+
 
 class LV2Synth : public Synth
 {
@@ -435,6 +451,7 @@ private:
     float *_pluginControlsMin;
     float *_pluginControlsMax;
     std::map<QString, LilvNode *> _presets;
+    QVector<LV2Property*> properties;
 
 public:
     virtual Type synthType() const {
@@ -598,8 +615,15 @@ public:
     double paramOut ( unsigned long i ) const;
     const char *paramName ( unsigned long i );
     const char *paramOutName ( unsigned long i );
-    virtual CtrlValueType ctrlValueType ( unsigned long ) const;
-    virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
+    CtrlValueType ctrlValueType ( unsigned long ) const override;
+    CtrlList::Mode ctrlMode ( unsigned long ) const override;
+    CtrlEnumValues *ctrlEnumValues(unsigned long i) const override;
+    QString portGroup(long unsigned int i) const override;
+    int propCnt() override;
+    QString propLabel(int i) const override;
+    PropType propType(int i) const override;
+    bool propValues(int i, float &min, float &max, float &def) const override;
+
     virtual LADSPA_PortRangeHint range(unsigned long i);
     virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
     bool hasLatencyOutPort() const;

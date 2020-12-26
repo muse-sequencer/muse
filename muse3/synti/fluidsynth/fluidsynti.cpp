@@ -429,8 +429,8 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
       memcpy(chptr, &d, sizeof(double));
       chptr += sizeof(double);
 
-      // functions renamed in libfluidsynth 2, just for the fun ob breaking things...
-      // now (2.2) even the new ones are deprecated again, together with all the others setters/getters,
+      // functions renamed in libfluidsynth 2, just for the fun of breaking things...
+      // now (2.2) even the new ones are deprecated again, together with all the other setters/getters,
       //    all supposed to be removed in fs 3 - there will be lot of fun when fs 3 is out...
 #if FLUIDSYNTH_VERSION_MAJOR > 1
       d = fluid_synth_get_chorus_speed(fluidsynth);

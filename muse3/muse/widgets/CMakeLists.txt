@@ -55,6 +55,7 @@ QT5_WRAP_CPP (widget_mocs
 #       choose_sysex.h
       clipper_label.h
       colorframe.h
+      comboboxpi.h
       comboQuant.h  
 #       combobox.h  
 #       comment.h  
@@ -71,7 +72,7 @@ QT5_WRAP_CPP (widget_mocs
       doublespinbox.h  
 #       editevent.h      
 #       elided_label.h
-#       filedialog.h  
+#       filedialog.h
 #       genset.h  
 #       mdisettings.h  
 #       header.h  
@@ -202,6 +203,7 @@ file (GLOB widgets_source_files
       clipper_label.cpp
       colorframe.cpp
       comboQuant.cpp 
+      comboboxpi.cpp
 #       combobox.cpp  
 #       comment.cpp 
 #       compact_knob.cpp

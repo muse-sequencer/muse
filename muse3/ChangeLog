@@ -1,3 +1,5 @@
+26.12.2020
+    - New: Create generic LV2 UIs based on available plugin metadata. (kybos)
 25.12.2020
     - Added double click as a way to initiate changing shortcuts in the dialog (rj)
     - Changed default shortcut for SOLO track to META-N (From META-S as the system eats it 

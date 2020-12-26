@@ -55,8 +55,10 @@ const int AC_MUTE   = 2;
 
 inline unsigned long genACnum(unsigned long plugin, unsigned long ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
 
-enum CtrlValueType { VAL_LOG, VAL_LINEAR, VAL_INT, VAL_BOOL };
+enum CtrlValueType { VAL_LOG, VAL_LINEAR, VAL_INT, VAL_BOOL, VAL_ENUM };
 enum CtrlRecValueType { ARVT_VAL, ARVT_START, ARVT_STOP };
+
+typedef std::map<float, QString> CtrlEnumValues;
 
 //---------------------------------------------------------
 //   CtrlInterpolate
