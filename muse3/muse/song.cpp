@@ -149,6 +149,12 @@ void Song::putEvent(int pv)
             }
       }
 
+void Song::putEventCC(char cc)
+{
+    if (MusEGlobal::rcEnableCC)
+        rcCC = cc;
+}
+
 // REMOVE Tim. samplerate. Added. TODO
 #if 0
 //---------------------------------------------------------
@@ -1937,10 +1943,30 @@ void Song::beat()
                   else if (pitch == MusEGlobal::rcPlayNote)
                         setPlay(true);
                   }
+
             emit MusEGlobal::song->midiNote(pitch, velo);
             --noteFifoSize;
             }
+
+      if (MusEGlobal::rcEnableCC && rcCC > -1) {
+          int cc = rcCC & 0xff;
+          printf("*** CC in: %d\n", cc);
+          if (cc == MusEGlobal::rcStopCC)
+              setStop(true);
+          else if (cc == MusEGlobal::rcPlayCC)
+              setPlay(true);
+          else if (cc == MusEGlobal::rcRecordCC)
+              setRecord(true);
+          else if (cc == MusEGlobal::rcGotoLeftMarkCC)
+              setPos(CPOS, pos[LPOS].tick(), true, true, true);
+          //            else if (cc == MusEGlobal::rcForwardCC)
+          //                setPos(CPOS, pos[LPOS].tick(), true, true, true);
+          //            else if (cc == MusEGlobal::rcBackwardCC)
+          //                setPos(CPOS, pos[LPOS].tick(), true, true, true);
+          rcCC = -1;
       }
+
+}
 
 //---------------------------------------------------------
 //   setLen

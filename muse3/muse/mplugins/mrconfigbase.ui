@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>252</width>
-    <height>247</height>
+    <width>325</width>
+    <height>328</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,12 +25,9 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Insert rest (step rec) </string>
+           <string>Insert rest (step recording) </string>
           </property>
          </widget>
-        </item>
-        <item>
-         <widget class="MusEGui::PitchEdit" name="steprec_box" native="true"/>
         </item>
         <item>
          <spacer name="horizontalSpacer">
@@ -45,50 +42,31 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="MusEGui::PitchEdit" name="steprec_box" native="true">
+          <property name="toolTip">
+           <string>Note on value</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="sbInsertRestCC">
+          <property name="toolTip">
+           <string>Control change value</string>
+          </property>
+          <property name="maximum">
+           <number>127</number>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>
        <widget class="QGroupBox" name="GroupBox2">
         <property name="title">
-         <string/>
+         <string>Transport</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0" colspan="3">
-          <widget class="QCheckBox" name="b1">
-           <property name="text">
-            <string>On</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="TextLabel1">
-           <property name="text">
-            <string>Stop</string>
-           </property>
-           <property name="wordWrap">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="MusEGui::PitchEdit" name="sb1" native="true"/>
-         </item>
-         <item row="1" column="2">
-          <spacer name="Spacer1">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Expanding</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>101</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
          <item row="2" column="0">
           <widget class="QLabel" name="TextLabel2">
            <property name="text">
@@ -99,10 +77,14 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="MusEGui::PitchEdit" name="sb2" native="true"/>
+         <item row="0" column="4">
+          <widget class="QCheckBox" name="b2">
+           <property name="text">
+            <string>CC on</string>
+           </property>
+          </widget>
          </item>
-         <item row="2" column="2">
+         <item row="2" column="3">
           <spacer name="Spacer2">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -118,6 +100,38 @@
            </property>
           </spacer>
          </item>
+         <item row="4" column="3">
+          <spacer name="Spacer4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Expanding</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="4" column="1">
+          <widget class="MusEGui::PitchEdit" name="sb4" native="true"/>
+         </item>
+         <item row="2" column="1">
+          <widget class="MusEGui::PitchEdit" name="sb2" native="true"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="TextLabel1">
+           <property name="text">
+            <string>Stop</string>
+           </property>
+           <property name="wordWrap">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
          <item row="3" column="0">
           <widget class="QLabel" name="TextLabel3">
            <property name="text">
@@ -128,10 +142,17 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
-          <widget class="MusEGui::PitchEdit" name="sb3" native="true"/>
+         <item row="3" column="4">
+          <widget class="QSpinBox" name="sbGotoLeftMarkCC">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
          </item>
-         <item row="3" column="2">
+         <item row="1" column="1">
+          <widget class="MusEGui::PitchEdit" name="sb1" native="true"/>
+         </item>
+         <item row="3" column="3">
           <spacer name="Spacer3">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -147,6 +168,9 @@
            </property>
           </spacer>
          </item>
+         <item row="3" column="1">
+          <widget class="MusEGui::PitchEdit" name="sb3" native="true"/>
+         </item>
          <item row="4" column="0">
           <widget class="QLabel" name="TextLabel4">
            <property name="text">
@@ -157,11 +181,8 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
-          <widget class="MusEGui::PitchEdit" name="sb4" native="true"/>
-         </item>
-         <item row="4" column="2">
-          <spacer name="Spacer4">
+         <item row="1" column="3">
+          <spacer name="Spacer1">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -170,11 +191,39 @@
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>20</width>
+             <width>101</width>
              <height>20</height>
             </size>
            </property>
           </spacer>
+         </item>
+         <item row="2" column="4">
+          <widget class="QSpinBox" name="sbRecCC">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QSpinBox" name="sbStopCC">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="4">
+          <widget class="QSpinBox" name="sbPlayCC">
+           <property name="maximum">
+            <number>127</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="b1">
+           <property name="text">
+            <string>Note on</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

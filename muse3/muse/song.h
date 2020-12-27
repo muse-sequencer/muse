@@ -112,6 +112,8 @@ class Song : public QObject {
       int noteFifoWindex;
       int noteFifoRindex;
 
+      volatile char rcCC = -1; // CC remote control
+
       TempoFifo _tempoFifo; // External tempo changes, processed in heartbeat.
       
       MusECore::SongChangedStruct_t updateFlags;
@@ -218,6 +220,7 @@ class Song : public QObject {
       void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=NULL, const Part* p3=NULL, const Part* p4=NULL, const Part* p5=NULL, const Part* p6=NULL, const Part* p7=NULL, const Part* p8=NULL, const Part* p9=NULL);
 
       void putEvent(int pv);
+      void putEventCC(char cc);
       void endMsgCmd();
       void processMsg(AudioMsg* msg);
 

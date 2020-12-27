@@ -51,6 +51,13 @@ class MRConfig : public QWidget, public Ui::MRConfigBase {
       void setRcPlayNote(int);
       void setRcSteprecNote(int);
 
+      void setRcEnableCC(bool);
+      void setRcPlayCC();
+      void setRcStopCC();
+      void setRcRecordCC();
+      void setRcGotoLeftMarkCC();
+      void setRcInsertRestCC();
+
    public:
       MRConfig(QWidget* parent=0, Qt::WindowFlags fl = Qt::Widget);
       };
