@@ -47,7 +47,8 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   projectFileTypeCB->addItems(filters);
 
   QString proj_title = MusEGlobal::muse->projectTitle();
-  QString proj_path  = MusEGlobal::muse->projectPath();
+  //  QString proj_path  = MusEGlobal::muse->projectPath();
+  QString proj_path  = directoryPath;
   QString proj_ext   = MusEGlobal::muse->projectExtension();
   
   projectNameEdit->setText(proj_title); 
