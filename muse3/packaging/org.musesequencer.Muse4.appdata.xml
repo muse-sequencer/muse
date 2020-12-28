@@ -22,7 +22,7 @@
     </p>
   </description>
   
-  <launchable type="desktop-id">org.musesequencer.muse4.desktop</launchable>
+  <launchable type="desktop-id">org.musesequencer.Muse4.desktop</launchable>
   
   <screenshots>
     <screenshot type="default">
