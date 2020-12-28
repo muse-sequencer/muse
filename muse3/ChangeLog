@@ -1,3 +1,6 @@
+28.12.2020
+    - Fix: Relative paths for temporary files didn't work from AppImage,
+            e.g. when calling external wave editor. (kybos)
 26.12.2020
     - New: Create generic LV2 UIs based on available plugin metadata. (kybos)
 25.12.2020

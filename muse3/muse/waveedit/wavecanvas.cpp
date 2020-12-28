@@ -3101,6 +3101,8 @@ void WaveCanvas::editExternal(unsigned file_format, unsigned file_samplerate, un
       exttmpFile.write(file_channels, tmpdata, tmpdatalen, MusEGlobal::config.liveWaveUpdate);
       exttmpFile.close();
 
+      printf("Temporary file: %s\n", qPrintable(exttmpFileName));
+
       QProcess proc;
       QStringList arguments;
       arguments << exttmpFileName;
