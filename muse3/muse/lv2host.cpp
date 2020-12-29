@@ -206,6 +206,7 @@ typedef struct
     LilvNode *lv2_minimum;
     LilvNode *lv2_maximum;
     LilvNode *lv2_default;
+    LilvNode *pp_notOnGui;
     LilvNode *end;  ///< nullptr terminator for easy freeing of entire structure
 } CacheNodes;
 
@@ -351,6 +352,7 @@ void initLV2()
     lv2CacheNodes.lv2_minimum            = lilv_new_uri(lilvWorld, LV2_CORE__minimum);
     lv2CacheNodes.lv2_maximum            = lilv_new_uri(lilvWorld, LV2_CORE__maximum);
     lv2CacheNodes.lv2_default            = lilv_new_uri(lilvWorld, LV2_CORE__default);
+    lv2CacheNodes.pp_notOnGui            = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__notOnGUI);
     lv2CacheNodes.end                    = nullptr;
 
     lilv_world_load_all(lilvWorld);
@@ -2957,9 +2959,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
                     _cType = LV2_PORT_ENUMERATION;
                 }
             }
-            else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portTrigger)
-                    || lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
-                _cType = LV2_PORT_TRIGGER;
+            else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
+                _cType = LV2_PORT_TOGGLE;
             else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portDiscrete))
                 _cType = LV2_PORT_DISCRETE;
             else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portInteger))
@@ -2967,8 +2968,16 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portLogarithmic))
                 _cType = LV2_PORT_LOGARITHMIC;
 
+            bool notOnGui = false;
+            if (lilv_port_has_property(_handle, _port, lv2CacheNodes.pp_notOnGui))
+                notOnGui = true;
+
+            bool isTrigger = false;
+            if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portTrigger))
+                isTrigger = true;
+
             cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName, _portSym, _cType, isCVPort,
-                                             enumValues, groupString));
+                                             enumValues, groupString, isTrigger, notOnGui));
 
             if(std::isnan(_pluginControlsDefault [i]))
                 _pluginControlsDefault [i] = 0;
@@ -3420,7 +3429,7 @@ bool LV2SynthIF::init(LV2Synth *s)
         case LV2_PORT_LOGARITHMIC:
             vt = VAL_LOG;
             break;
-        case LV2_PORT_TRIGGER:
+        case LV2_PORT_TOGGLE:
             vt = VAL_BOOL;
             break;
         default:
@@ -5300,51 +5309,40 @@ const char *LV2SynthIF::paramOutName(long unsigned int i)
 
 CtrlEnumValues* LV2SynthIF::ctrlEnumValues(unsigned long i) const {
 
-    assert(i < _inportsControl);
+    if (i >= _inportsControl)
+        return nullptr;
 
-    return _synth->_controlInPorts [i].scalePoints;
+    return _controlInPorts [i].scalePoints;
 }
 
 QString LV2SynthIF::portGroup(long unsigned int i) const {
 
+    if (i >= _inportsControl)
+        return QString();
+
     return _controlInPorts[i].group;
 }
 
-int LV2SynthIF::propCnt() {
-    return _synth->properties.count();
-}
+bool LV2SynthIF::ctrlIsTrigger(long unsigned int i) const {
 
-QString LV2SynthIF::propLabel(int i) const {
-    if (i > _synth->properties.count())
-        return QString();
-
-    return  _synth->properties.at(i)->label;
-}
-
-PropType LV2SynthIF::propType(int i) const {
-    if (i > _synth->properties.count())
-        return PROP_NONE;
-
-    return  _synth->properties.at(i)->type;
-}
-
-bool LV2SynthIF::propValues(int i, float &min, float &max, float &def) const {
-    if (i > _synth->properties.count())
+    if (i >= _inportsControl)
         return false;
 
-    min = _synth->properties.at(i)->min;
-    max = _synth->properties.at(i)->max;
-    def = _synth->properties.at(i)->def;
-    return true;
+    return _controlInPorts[i].isTrigger;
+}
+
+bool LV2SynthIF::ctrlNotOnGui(long unsigned int i) const {
+
+    if (i >= _inportsControl)
+        return false;
+
+    return _controlInPorts[i].notOnGui;
 }
 
 
 CtrlValueType LV2SynthIF::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
-//    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
-//    assert(it != _synth->_idxToControlMap.end());
-//    i = it->second;
     assert(i < _inportsControl);
 
     switch(_synth->_controlInPorts [i].cType)
@@ -5359,7 +5357,7 @@ CtrlValueType LV2SynthIF::ctrlValueType(unsigned long i) const
     case LV2_PORT_LOGARITHMIC:
         vt = VAL_LOG;
         break;
-    case LV2_PORT_TRIGGER:
+    case LV2_PORT_TOGGLE:
         vt = VAL_BOOL;
         break;
     case LV2_PORT_ENUMERATION:
@@ -5375,9 +5373,6 @@ CtrlValueType LV2SynthIF::ctrlValueType(unsigned long i) const
 
 CtrlList::Mode LV2SynthIF::ctrlMode(unsigned long i) const
 {
-//    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
-//    assert(it != _synth->_idxToControlMap.end());
-//    i = it->second;
     assert(i < _inportsControl);
 
     return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
@@ -6073,7 +6068,7 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
     case LV2_PORT_LOGARITHMIC:
         vt = VAL_LOG;
         break;
-    case LV2_PORT_TRIGGER:
+    case LV2_PORT_TOGGLE:
         vt = VAL_BOOL;
         break;
     case LV2_PORT_ENUMERATION:

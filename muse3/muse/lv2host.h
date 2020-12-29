@@ -254,7 +254,7 @@ enum LV2ControlPortType
     LV2_PORT_INTEGER,
     LV2_PORT_CONTINUOUS,
     LV2_PORT_LOGARITHMIC,
-    LV2_PORT_TRIGGER,
+    LV2_PORT_TOGGLE,
     LV2_PORT_ENUMERATION
 };
 
@@ -262,9 +262,10 @@ struct LV2ControlPort
 {
    LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, const char *_s,
                     LV2ControlPortType _ctype, bool _isCVPort = false, CtrlEnumValues* scalePoints = nullptr,
-                    QString group = QString())
+                    QString group = QString(), bool isTrigger = false, bool notOnGui = false)
        : port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
-         isCVPort(_isCVPort), scalePoints(scalePoints), group(group)
+         isCVPort(_isCVPort), scalePoints(scalePoints), group(group), isTrigger(isTrigger),
+         notOnGui(notOnGui)
    {
       cName = strdup ( _n );
       cSym = strdup(_s);
@@ -272,7 +273,8 @@ struct LV2ControlPort
    LV2ControlPort ( const LV2ControlPort &other ) :
       port ( other.port ), index ( other.index ), defVal ( other.defVal ),
       minVal(other.minVal), maxVal(other.maxVal), cType(other.cType),
-      isCVPort(other.isCVPort), scalePoints(other.scalePoints), group(other.group)
+      isCVPort(other.isCVPort), scalePoints(other.scalePoints), group(other.group),
+      isTrigger(other.isTrigger), notOnGui(other.notOnGui)
    {
       cName = strdup ( other.cName );
       cSym = strdup(other.cSym);
@@ -295,6 +297,8 @@ struct LV2ControlPort
    bool isCVPort;
    CtrlEnumValues* scalePoints;
    QString group;
+   bool isTrigger;
+   bool notOnGui;
 };
 
 struct LV2AudioPort
@@ -451,7 +455,6 @@ private:
     float *_pluginControlsMin;
     float *_pluginControlsMax;
     std::map<QString, LilvNode *> _presets;
-    QVector<LV2Property*> properties;
 
 public:
     virtual Type synthType() const {
@@ -619,10 +622,8 @@ public:
     CtrlList::Mode ctrlMode ( unsigned long ) const override;
     CtrlEnumValues *ctrlEnumValues(unsigned long i) const override;
     QString portGroup(long unsigned int i) const override;
-    int propCnt() override;
-    QString propLabel(int i) const override;
-    PropType propType(int i) const override;
-    bool propValues(int i, float &min, float &max, float &def) const override;
+    bool ctrlIsTrigger(long unsigned int i) const override;
+    bool ctrlNotOnGui(long unsigned int i) const override;
 
     virtual LADSPA_PortRangeHint range(unsigned long i);
     virtual LADSPA_PortRangeHint rangeOut(unsigned long i);

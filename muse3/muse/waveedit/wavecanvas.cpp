@@ -1099,7 +1099,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                                         pt.y() - _stretchAutomation._startMovePoint.y());
                   if(delta_pt.x() == 0)
                     break;
-                  double prevNewVal, thisNewVal;
+                  double prevNewVal = 0, thisNewVal = 0;
                   double prevFrame, thisFrame, nextFrame, delta_fr, next_delta_fr;
                   MusECore::PendingOperationList operations;
                   StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
