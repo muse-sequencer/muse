@@ -405,11 +405,8 @@ class PluginIBase
       virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
       virtual CtrlEnumValues *ctrlEnumValues(unsigned long i) const;
       virtual QString portGroup(long unsigned int i) const;
-
-      virtual int propCnt();
-      virtual QString propLabel(int i) const;
-      virtual PropType propType(int i) const;
-      virtual bool propValues(int i, float &min, float &max, float &def) const;
+      virtual bool ctrlIsTrigger(long unsigned int i) const;
+      virtual bool ctrlNotOnGui(long unsigned int i) const;
 
       QString dssi_ui_filename() const;
 
@@ -662,23 +659,6 @@ struct GuiParam {
       MusEGui::DoubleLabel* label;
       QWidget* actuator;  // Slider or Toggle Button (SWITCH)
       };
-
-//---------------------------------------------------------
-//   Widget for properties
-//---------------------------------------------------------
-
-struct GuiPropWidget {
-    typedef enum {
-        PROP_GUI_SPIN, PROP_GUI_SPIN_D, PROP_GUI_CHECKBOX, PROP_GUI_LINEEDIT, PROP_GUI_PATH
-    } PropWidgetType;
-
-    PropWidgetType wtype;
-    MusECore::PropType type;
-//    int hint;
-//    bool pressed;
-
-    QWidget* w;
-};
 
 //---------------------------------------------------------
 //   GuiWidgets
