@@ -29,6 +29,7 @@
 #include <QString>
 #include <QRect>
 #include <QLine>
+#include <QValidator>
 
 #include "type_defs.h"
 
@@ -53,6 +54,8 @@ void enumerateJackMidiDevices();
 void populateMidiPorts();
 
 QString pitch2string(int v);
+int string2pitch(const QString &s);
+QValidator::State validatePitch(const QString &s);
 void dumpMPEvent(const MEvent* ev);
 Part* partFromSerialNumber(int serial);
 bool any_event_selected(const std::set<const Part*>&, bool in_range=false,

@@ -1924,31 +1924,46 @@ void Song::beat()
         (*is)->guiHeartBeat();
       
       while (noteFifoSize) {
-            int pv = recNoteFifo[noteFifoRindex];
-            noteFifoRindex = (noteFifoRindex + 1) % REC_NOTE_FIFO_SIZE;
-            int pitch = (pv >> 8) & 0xff;
-            int velo = pv & 0xff;
+          int pv = recNoteFifo[noteFifoRindex];
+          noteFifoRindex = (noteFifoRindex + 1) % REC_NOTE_FIFO_SIZE;
+          int pitch = (pv >> 8) & 0xff;
+          int velo = pv & 0xff;
 
-            //---------------------------------------------------
-            // filter midi remote control events
-            //---------------------------------------------------
+          //---------------------------------------------------
+          // filter midi remote control events
+          //---------------------------------------------------
 
-            if (MusEGlobal::rcEnable && velo != 0) {
-                  if (pitch == MusEGlobal::rcStopNote)
-                        setStop(true);
-                  else if (pitch == MusEGlobal::rcRecordNote)
-                        setRecord(true);
-                  else if (pitch == MusEGlobal::rcGotoLeftMarkNote)
-                        setPos(CPOS, pos[LPOS].tick(), true, true, true);
-                  else if (pitch == MusEGlobal::rcPlayNote)
-                        setPlay(true);
-                  }
+          bool consumed = false;
+          if (MusEGlobal::rcEnable && velo != 0) {
+              if (pitch == MusEGlobal::rcStopNote) {
+                  setStop(true);
+                  consumed = true;
+              } else if (pitch == MusEGlobal::rcRecordNote) {
+                  setRecord(true);
+                  consumed = true;
+              } else if (pitch == MusEGlobal::rcGotoLeftMarkNote) {
+                  setPos(CPOS, pos[LPOS].tick(), true, true, true);
+                  consumed = true;
+              } else if (pitch == MusEGlobal::rcPlayNote) {
+                  setPlay(true);
+                  consumed = true;
+              } else if (pitch == MusEGlobal::rcForwardNote) {
+                  forward();
+                  consumed = true;
+              } else if (pitch == MusEGlobal::rcBackwardNote) {
+                  rewind();
+                  consumed = true;
+              }
+          }
 
-            emit MusEGlobal::song->midiNote(pitch, velo);
-            --noteFifoSize;
-            }
+          if (!consumed)
+              emit MusEGlobal::song->midiNote(pitch, velo);
+
+          --noteFifoSize;
+      }
 
       if (MusEGlobal::rcEnableCC && rcCC > -1) {
+
           int cc = rcCC & 0xff;
           printf("*** CC in: %d\n", cc);
           if (cc == MusEGlobal::rcStopCC)
@@ -1959,13 +1974,13 @@ void Song::beat()
               setRecord(true);
           else if (cc == MusEGlobal::rcGotoLeftMarkCC)
               setPos(CPOS, pos[LPOS].tick(), true, true, true);
-          //            else if (cc == MusEGlobal::rcForwardCC)
-          //                setPos(CPOS, pos[LPOS].tick(), true, true, true);
-          //            else if (cc == MusEGlobal::rcBackwardCC)
-          //                setPos(CPOS, pos[LPOS].tick(), true, true, true);
+          else if (cc == MusEGlobal::rcForwardCC)
+              forward();
+          else if (cc == MusEGlobal::rcBackwardCC)
+              rewind();
+
           rcCC = -1;
       }
-
 }
 
 //---------------------------------------------------------

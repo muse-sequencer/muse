@@ -69,9 +69,10 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 	}
 	
 	// if incoming_pitch wasn't specified, set it to pitch
-	if (incoming_pitch == 1337) incoming_pitch=pitch;
+    if (incoming_pitch == 1337)
+        incoming_pitch=pitch;
 	
-	if (incoming_pitch!=MusEGlobal::rcSteprecNote) 
+    if (incoming_pitch != MusEGlobal::rcSteprecNote)
 	{
 		chord_timer->stop();
 
@@ -145,7 +146,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 	else  // equals if (incoming_pitch==MusEGlobal::rcSteprecNote)
 	{
 		bool held_notes=false;
-		if (note_held_down!=NULL)
+        if (note_held_down != nullptr)
 		{
 			for (int i=0;i<128;i++)
 			if (note_held_down[i]) { held_notes=true; break; }
@@ -193,7 +194,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 
 			// simply proceed, inserting a rest
 			Pos p(MusEGlobal::song->cpos() + step, true);
-      MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
+            MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
 			
 			return;
 		}

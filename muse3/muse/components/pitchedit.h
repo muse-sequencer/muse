@@ -37,8 +37,9 @@ class PitchEdit : public SpinBox {
       bool deltaMode;
 
    protected:
-      virtual QString textFromValue(int v) const;
-      virtual int valueFromText(const QString&) const;
+      QString textFromValue(int v) const override;
+      int valueFromText(const QString &s) const override;
+      QValidator::State validate(QString &input, int &pos) const override;
       
    public:
       PitchEdit(QWidget* parent=0);

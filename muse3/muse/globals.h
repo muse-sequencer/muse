@@ -213,7 +213,7 @@ extern unsigned char rcBackwardCC;
 extern unsigned char rcForwardCC;
 extern unsigned char rcStopCC;
 extern unsigned char rcPlayCC;
-extern unsigned char rcInsertPauseCC;
+//extern unsigned char rcInsertPauseCC;
 extern unsigned char rcRecordCC;
 
 extern int midiLearnPort;

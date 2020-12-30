@@ -326,7 +326,7 @@ unsigned char rcBackwardCC = 112;
 unsigned char rcForwardCC = 113;
 unsigned char rcStopCC = 114;
 unsigned char rcPlayCC = 115;
-unsigned char rcInsertPauseCC = 116;
+//unsigned char rcInsertPauseCC = 116;
 unsigned char rcRecordCC = 117;
 
 // REMOVE Tim. automation. Remove this.
