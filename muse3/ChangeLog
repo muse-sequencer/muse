@@ -1,3 +1,5 @@
+30.12.2020
+    - Fix issue #935: Track list toggling of solo/mute indicators. (kybos)
 28.12.2020
     - Fix: Relative paths for temporary files didn't work from AppImage,
             e.g. when calling external wave editor. (kybos)

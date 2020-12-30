@@ -2220,26 +2220,27 @@ void TList::mousePressEvent(QMouseEvent* ev)
         case COL_MUTE:
         {
             bool turnOff = (button == Qt::RightButton) || shift;
+            bool state = turnOff ? !t->off() : !t->mute();
 
-            if((t->selected() && tracks->countSelected() > 1) || ctrl)
+            if (((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
             {
                 // These are major operations not easily manually undoable. Let's make them undoable.
                 MusECore::Undo operations;
                 if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            toggleMute(operations, *myt, turnOff);
+                    for (const auto& it : *tracks) {
+                        if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            setMute(operations, it, turnOff, state);
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            toggleMute(operations, *myt, turnOff);
+                    for (const auto& it : *tracks) {
+                        if (it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            setMute(operations, it, turnOff, state);
                     }
                 }
-                if(!operations.empty())
+                if (!operations.empty())
                 {
                     MusEGlobal::song->applyOperationGroup(operations);
                     // Not required if undoable.
@@ -2249,16 +2250,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
             else { // toggle the clicked track
                 // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
                 MusECore::PendingOperationList operations;
-                if(turnOff) {
+                if (turnOff)
                     operations.add(MusECore::PendingOperationItem(t, !t->off(), MusECore::PendingOperationItem::SetTrackOff));
-                }
+                else if (t->off())
+                    operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackOff));
                 else
-                {
-                    if(t->off())
-                        operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackOff));
-                    else
-                        operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
-                }
+                    operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
+
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             }
 
@@ -2267,22 +2265,24 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
         case COL_SOLO:
         {
-            if((t->selected() && tracks->countSelected() > 1) || ctrl)
+            bool state = !t->solo();
+
+            if (((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
             {
                 // These are major operations not easily manually undoable. Let's make them undoable.
                 MusECore::Undo operations;
                 if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                    for (const auto& it : *tracks) {
+                        if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                    for (const auto& it : *tracks) {
+                        if (it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
                     }
                 }
                 if(!operations.empty())
@@ -2296,7 +2296,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
             {
                 // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
                 MusECore::PendingOperationList operations;
-                operations.add(MusECore::PendingOperationItem(t, !t->solo(), MusECore::PendingOperationItem::SetTrackSolo));
+                operations.add(MusECore::PendingOperationItem(t, state, MusECore::PendingOperationItem::SetTrackSolo));
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             }
             break;
@@ -2578,18 +2578,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
     redraw();
 }
 
-void TList::toggleMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff)
+void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
 {
-    if (turnOff) {
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, !t->off()));
-    }
+    if (turnOff)
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, state));
+    else if (t->off())
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, false));
     else
-    {
-        if (t->off())
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, false));
-        else
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, t, !t->mute()));
-    }
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, t, state));
 }
 
 void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
