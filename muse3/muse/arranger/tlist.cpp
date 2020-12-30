@@ -1863,6 +1863,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
     if (resizeFlag) {
         mode = RESIZE;
+
         int y  = ev->y();
         int ty = -ypos;
         sTrack = 0;
@@ -1879,11 +1880,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 }
                 else {
                     //printf("ogga ogga\n");
-
                     break;
                 }
-
-
                 //&& y < (ty)) DELETETHIS
                 //     break;
             }
@@ -2794,7 +2792,8 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         return;
     }
 
-    if ((((QInputEvent*)ev)->modifiers() | ev->buttons()) == 0) {
+    if (ev->buttons() == 0) {
+//        if ((((QInputEvent*)ev)->modifiers() | ev->buttons()) == 0) {
         int y = ev->y();
         int ty = -ypos;
         MusECore::TrackList* tracks = MusEGlobal::song->tracks();
@@ -2813,6 +2812,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
                     if (!resizeFlag) {
                         resizeFlag = true;
                         setCursor(QCursor(Qt::SplitVCursor));
+                        MusEGlobal::muse->setStatusBarText(tr("Draw to change the track height. Hold CTRL for all tracks, SHIFT for selected tracks."));
                     }
                     break;
                 }
@@ -2821,9 +2821,11 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         if (it == tracks->end() && resizeFlag) {
             setCursor(QCursor(Qt::ArrowCursor));
             resizeFlag = false;
+            MusEGlobal::muse->clearStatusBarText();
         }
         return;
     }
+
     curY      = ev->y();
     int delta = curY - startY;
     switch (mode) {
@@ -2852,18 +2854,37 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         break;
     case RESIZE:
     {
-        if(sTrack >= 0 && (unsigned) sTrack < MusEGlobal::song->tracks()->size())
+        if (sTrack >= 0 && (unsigned) sTrack < MusEGlobal::song->tracks()->size())
         {
-            MusECore::Track* t = MusEGlobal::song->tracks()->index(sTrack);
-            if(t)
-            {
-                int h  = t->height() + delta;
-                startY = curY;
-                if (h < MIN_TRACKHEIGHT)
-                    h = MIN_TRACKHEIGHT;
-                t->setHeight(h);
-                update();
-                MusEGlobal::song->update(SC_TRACK_RESIZED);
+            bool shift = ((QInputEvent*)ev)->modifiers() & Qt::SHIFT;
+            bool ctrl = ((QInputEvent*)ev)->modifiers() & Qt::CTRL;
+            bool done = false;
+            if (ctrl | shift) {
+                for (const auto& it : *MusEGlobal::song->tracks()) {
+                    if (shift && !it->selected())
+                        continue;
+                    int h  = it->height() + delta;
+                    h = qMax(h, MIN_TRACKHEIGHT);
+                    it->setHeight(h);
+                    done = true;
+                }
+                if (done) {
+                    startY = curY;
+                    update();
+                    MusEGlobal::song->update(SC_TRACK_RESIZED);
+                }
+            }
+            else {
+                MusECore::Track* t = MusEGlobal::song->tracks()->index(sTrack);
+                if (t) {
+                    int h  = t->height() + delta;
+                    startY = curY;
+                    if (h < MIN_TRACKHEIGHT)
+                        h = MIN_TRACKHEIGHT;
+                    t->setHeight(h);
+                    update();
+                    MusEGlobal::song->update(SC_TRACK_RESIZED);
+                }
             }
         }
     }
