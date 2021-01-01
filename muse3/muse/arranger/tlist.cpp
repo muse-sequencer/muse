@@ -1863,6 +1863,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
     if (resizeFlag) {
         mode = RESIZE;
+
         int y  = ev->y();
         int ty = -ypos;
         sTrack = 0;
@@ -1879,11 +1880,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 }
                 else {
                     //printf("ogga ogga\n");
-
                     break;
                 }
-
-
                 //&& y < (ty)) DELETETHIS
                 //     break;
             }
@@ -2220,26 +2218,27 @@ void TList::mousePressEvent(QMouseEvent* ev)
         case COL_MUTE:
         {
             bool turnOff = (button == Qt::RightButton) || shift;
+            bool state = turnOff ? !t->off() : !t->mute();
 
-            if((t->selected() && tracks->countSelected() > 1) || ctrl)
+            if (((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
             {
                 // These are major operations not easily manually undoable. Let's make them undoable.
                 MusECore::Undo operations;
                 if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            toggleMute(operations, *myt, turnOff);
+                    for (const auto& it : *tracks) {
+                        if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            setMute(operations, it, turnOff, state);
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            toggleMute(operations, *myt, turnOff);
+                    for (const auto& it : *tracks) {
+                        if (it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            setMute(operations, it, turnOff, state);
                     }
                 }
-                if(!operations.empty())
+                if (!operations.empty())
                 {
                     MusEGlobal::song->applyOperationGroup(operations);
                     // Not required if undoable.
@@ -2249,16 +2248,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
             else { // toggle the clicked track
                 // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
                 MusECore::PendingOperationList operations;
-                if(turnOff) {
+                if (turnOff)
                     operations.add(MusECore::PendingOperationItem(t, !t->off(), MusECore::PendingOperationItem::SetTrackOff));
-                }
+                else if (t->off())
+                    operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackOff));
                 else
-                {
-                    if(t->off())
-                        operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackOff));
-                    else
-                        operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
-                }
+                    operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
+
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             }
 
@@ -2267,22 +2263,24 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
         case COL_SOLO:
         {
-            if((t->selected() && tracks->countSelected() > 1) || ctrl)
+            bool state = !t->solo();
+
+            if (((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
             {
                 // These are major operations not easily manually undoable. Let's make them undoable.
                 MusECore::Undo operations;
                 if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->selected() && (*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                    for (const auto& it : *tracks) {
+                        if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
-                    for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt) {
-                        if ((*myt)->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, *myt, !(*myt)->solo()));
+                    for (const auto& it : *tracks) {
+                        if (it->type() != MusECore::Track::AUDIO_OUTPUT)
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
                     }
                 }
                 if(!operations.empty())
@@ -2296,7 +2294,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
             {
                 // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
                 MusECore::PendingOperationList operations;
-                operations.add(MusECore::PendingOperationItem(t, !t->solo(), MusECore::PendingOperationItem::SetTrackSolo));
+                operations.add(MusECore::PendingOperationItem(t, state, MusECore::PendingOperationItem::SetTrackSolo));
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             }
             break;
@@ -2578,18 +2576,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
     redraw();
 }
 
-void TList::toggleMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff)
+void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
 {
-    if (turnOff) {
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, !t->off()));
-    }
+    if (turnOff)
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, state));
+    else if (t->off())
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, false));
     else
-    {
-        if (t->off())
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, false));
-        else
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, t, !t->mute()));
-    }
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, t, state));
 }
 
 void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
@@ -2798,7 +2792,8 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         return;
     }
 
-    if ((((QInputEvent*)ev)->modifiers() | ev->buttons()) == 0) {
+    if (ev->buttons() == 0) {
+//        if ((((QInputEvent*)ev)->modifiers() | ev->buttons()) == 0) {
         int y = ev->y();
         int ty = -ypos;
         MusECore::TrackList* tracks = MusEGlobal::song->tracks();
@@ -2817,6 +2812,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
                     if (!resizeFlag) {
                         resizeFlag = true;
                         setCursor(QCursor(Qt::SplitVCursor));
+                        MusEGlobal::muse->setStatusBarText(tr("Draw to change the track height. Hold CTRL for all tracks, SHIFT for selected tracks."));
                     }
                     break;
                 }
@@ -2825,9 +2821,11 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         if (it == tracks->end() && resizeFlag) {
             setCursor(QCursor(Qt::ArrowCursor));
             resizeFlag = false;
+            MusEGlobal::muse->clearStatusBarText();
         }
         return;
     }
+
     curY      = ev->y();
     int delta = curY - startY;
     switch (mode) {
@@ -2856,18 +2854,37 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         break;
     case RESIZE:
     {
-        if(sTrack >= 0 && (unsigned) sTrack < MusEGlobal::song->tracks()->size())
+        if (sTrack >= 0 && (unsigned) sTrack < MusEGlobal::song->tracks()->size())
         {
-            MusECore::Track* t = MusEGlobal::song->tracks()->index(sTrack);
-            if(t)
-            {
-                int h  = t->height() + delta;
-                startY = curY;
-                if (h < MIN_TRACKHEIGHT)
-                    h = MIN_TRACKHEIGHT;
-                t->setHeight(h);
-                update();
-                MusEGlobal::song->update(SC_TRACK_RESIZED);
+            bool shift = ((QInputEvent*)ev)->modifiers() & Qt::SHIFT;
+            bool ctrl = ((QInputEvent*)ev)->modifiers() & Qt::CTRL;
+            bool done = false;
+            if (ctrl | shift) {
+                for (const auto& it : *MusEGlobal::song->tracks()) {
+                    if (shift && !it->selected())
+                        continue;
+                    int h  = it->height() + delta;
+                    h = qMax(h, MIN_TRACKHEIGHT);
+                    it->setHeight(h);
+                    done = true;
+                }
+                if (done) {
+                    startY = curY;
+                    update();
+                    MusEGlobal::song->update(SC_TRACK_RESIZED);
+                }
+            }
+            else {
+                MusECore::Track* t = MusEGlobal::song->tracks()->index(sTrack);
+                if (t) {
+                    int h  = t->height() + delta;
+                    startY = curY;
+                    if (h < MIN_TRACKHEIGHT)
+                        h = MIN_TRACKHEIGHT;
+                    t->setHeight(h);
+                    update();
+                    MusEGlobal::song->update(SC_TRACK_RESIZED);
+                }
             }
         }
     }

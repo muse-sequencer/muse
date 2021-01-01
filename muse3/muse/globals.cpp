@@ -416,49 +416,51 @@ void undoSetuid()
 //---------------------------------------------------------
 //   getUniqueTmpfileName
 //---------------------------------------------------------
-bool getUniqueTmpfileName(QString subDir, QString ext,QString& newFilename)
-      {
-      // Check if tmp-directory exists under project path
-      QString tmpInDir = museProject + "/" + subDir;
-      QFileInfo tmpdirfi(tmpInDir);
-      if (!tmpdirfi.isDir()) {
-            // Try to create a tmpdir
-            QDir projdir(museProject);
-            if (!projdir.mkdir(subDir)) {
-                  printf("Could not create tmp dir %s!\n", tmpInDir.toLatin1().data() );
-                  return false;
-                  }
-            }
+bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename)
+{
+    // Check if tmp-directory exists under project path
+    QString tmpInDir = museProject + "/" + subDir;
+    QDir absDir(tmpInDir);
+    tmpInDir = absDir.cleanPath(absDir.absolutePath());
 
-
-      tmpdirfi.setFile(tmpInDir);
-
-      if (!tmpdirfi.isWritable()) {
-            printf("Temp directory is not writable - aborting\n");
+    QFileInfo tmpdirfi(tmpInDir);
+    if (!tmpdirfi.isDir()) {
+        // Try to create a tmpdir
+        QDir projdir(museProject);
+        if (!projdir.mkdir(subDir)) {
+            printf("Could not create tmp dir %s!\n", tmpInDir.toLatin1().data() );
             return false;
-            }
+        }
+    }
 
-      QDir tmpdir = tmpdirfi.dir();
+    tmpdirfi.setFile(tmpInDir);
 
-      // Find a new filename
-      for (int i=0; i<10000; i++) {
-            QString filename = "muse_tmp";
-            filename.append(QString::number(i));
-            if (!ext.startsWith("."))
-                filename.append(".");
-            filename.append(ext);
+    if (!tmpdirfi.isWritable()) {
+        printf("Temp directory is not writable - aborting\n");
+        return false;
+    }
 
-            if (!tmpdir.exists(tmpInDir +"/" + filename)) {
-                  newFilename = tmpInDir + "/" + filename;
-                  if (debugMsg)
-                      printf("returning temporary filename %s\n", newFilename.toLatin1().data());
-                  return true;
-                  }
+    QDir tmpdir = tmpdirfi.dir();
 
-            }
+    // Find a new filename
+    for (int i=0; i<10000; i++) {
+        QString filename = "muse_tmp";
+        filename.append(QString::number(i));
+        if (!ext.startsWith("."))
+            filename.append(".");
+        filename.append(ext);
 
-      printf("Could not find a suitable tmpfilename (more than 10000 tmpfiles in tmpdir - clean up!\n");
-      return false;
-      }
+        if (!tmpdir.exists(tmpInDir +"/" + filename)) {
+            newFilename = tmpInDir + "/" + filename;
+            if (debugMsg)
+                printf("returning temporary filename %s\n", newFilename.toLatin1().data());
+            return true;
+        }
+
+    }
+
+    printf("Could not find a suitable tmpfilename (more than 10000 tmpfiles in tmpdir - clean up!\n");
+    return false;
+}
 
 } // namespace MusEGlobal

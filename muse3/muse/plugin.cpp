@@ -2044,24 +2044,16 @@ QString PluginIBase::portGroup(long unsigned int i) const {
     return QString();
 }
 
-int PluginIBase::propCnt() {
-    return 0;
-}
-QString PluginIBase::propLabel(int i) const {
+bool PluginIBase::ctrlIsTrigger(long unsigned int i) const {
     Q_UNUSED(i)
-    return QString();
-}
-PropType PluginIBase::propType(int i) const {
-    Q_UNUSED(i)
-    return PROP_NONE;
-}
-bool PluginIBase::propValues(int i, float &min, float &max, float &def) const {
-    Q_UNUSED(i)
-    Q_UNUSED(min)
-    Q_UNUSED(max)
-    Q_UNUSED(def)
     return false;
 }
+
+bool PluginIBase::ctrlNotOnGui(long unsigned int i) const {
+    Q_UNUSED(i)
+    return false;
+}
+
 
 QString PluginIBase::dssi_ui_filename() const
 {
@@ -3850,8 +3842,8 @@ void PluginGui::constructGUIFromPluginMetadata() {
 
 
     // input ports
-    unsigned long n  = plugin->parameters();
-    params = new GuiParam[n];
+    unsigned long paramCnt  = plugin->parameters();
+    params = new GuiParam[paramCnt];
 
     QFontMetrics fm = fontMetrics();
     int h           = fm.height() + 4;
@@ -3862,7 +3854,8 @@ void PluginGui::constructGUIFromPluginMetadata() {
 
     QString lastGroup;
 
-    for (unsigned long i = 0; i < n; ++i) {
+    for (unsigned long i = 0; i < paramCnt; ++i) {
+
         if (!i || plugin->portGroup(i) != lastGroup) {
             if (plugin->portGroup(i).isEmpty()) {
                 grid = new QGridLayout();
@@ -3888,16 +3881,21 @@ void PluginGui::constructGUIFromPluginMetadata() {
         double dval  = val;
         params[i].pressed = false;
         params[i].hint = range.HintDescriptor;
+        params[i].label = nullptr;
 
         getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
 
         if (LADSPA_IS_HINT_TOGGLED(range.HintDescriptor)
-                || plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_BOOL) {
+            || plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_BOOL) {
+
+            // TODO: There should be special handling for triggers (=button),
+            //   but I can't find any plugin with trigger property (kybos)
+            // if (plugin->ctrlIsTrigger(i))...
+
             params[i].type = GuiParam::GUI_SWITCH;
             label = new QLabel(QString(plugin->paramName(i)), nullptr);
             CheckBox* cb = new CheckBox(mw, i, "param");
             cb->setId(i);
-//            cb->setText(QString(plugin->paramName(i)));
             cb->setChecked(plugin->param(i) != 0.0);
             cb->setFixedHeight(h);
             params[i].actuator = cb;
@@ -3910,7 +3908,6 @@ void PluginGui::constructGUIFromPluginMetadata() {
             connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
             connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
             connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
-
         }
         else if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_ENUM) {
             label = new QLabel(QString(plugin->paramName(i)), nullptr);
@@ -3944,8 +3941,12 @@ void PluginGui::constructGUIFromPluginMetadata() {
             params[i].label = new DoubleLabel(val, lower, upper, nullptr);
             params[i].label->setFrame(true);
             params[i].label->setAlignment(Qt::AlignCenter);
-            params[i].label->setPrecision(2);
             params[i].label->setId(i);
+
+            if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_INT)
+                params[i].label->setPrecision(0);
+            else
+                params[i].label->setPrecision(2);
 
             // Let sliders all have different but unique colors
             // Some prime number magic
@@ -4002,19 +4003,27 @@ void PluginGui::constructGUIFromPluginMetadata() {
         }
 
         params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+
+        if (plugin->ctrlNotOnGui(i)) {
+            params[i].actuator->setVisible(false);
+            label->setVisible(false);
+            if (params[i].label)
+                params[i].label->setVisible(false);
+        }
     }
 
 
-    int n2  = plugin->parametersOut();
-    if (n2 > 0) {
-        paramsOut = new GuiParam[n2];
+    paramCnt  = plugin->parametersOut();
+    if (paramCnt > 0) {
+        paramsOut = new GuiParam[paramCnt];
 
         groupBox = new QGroupBox(tr("Output controls"));
         grid = new QGridLayout(groupBox);
+//        grid->setSpacing(8);
         groupBox->setLayout(grid);
         vbox->addWidget(groupBox);
 
-        for (int i = 0; i < n2; ++i) {
+        for (unsigned long i = 0; i < paramCnt; ++i) {
             QLabel* label = nullptr;
             LADSPA_PortRangeHint range = plugin->rangeOut(i);
             double lower = 0.0;     // default values
@@ -4061,9 +4070,9 @@ void PluginGui::constructGUIFromPluginMetadata() {
             paramsOut[i].actuator = m;
             label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
             paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-            grid->addWidget(label, n+i, 0);
-            grid->addWidget(paramsOut[i].label,    n+i, 1);
-            grid->addWidget(paramsOut[i].actuator, n+i, 2);
+            grid->addWidget(label, paramCnt+i, 0);
+            grid->addWidget(paramsOut[i].label,    paramCnt+i, 1);
+            grid->addWidget(paramsOut[i].actuator, paramCnt+i, 2);
         }
     }
 
@@ -4225,33 +4234,20 @@ void PluginGui::sliderPressed(double /*val*/, int param)
 
 void PluginGui::sliderReleased(double /*val*/, int param)
 {
-      MusECore::AutomationType at = MusECore::AUTO_OFF;
-      MusECore::AudioTrack* track = plugin->track();
-      if(track)
-        at = track->automationType();
-
-      int id = plugin->id();
-      if(track && id != -1)
-      {
+    MusECore::AudioTrack* track = plugin->track();
+    int id = plugin->id();
+    if(track && id != -1)
+    {
         id = MusECore::genACnum(id, param);
-        if(params[param].type == GuiParam::GUI_SLIDER)
-        {
-          double val = ((Slider*)params[param].actuator)->value();
-          if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-                val = muse_db2val(val);
-          else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-                val = rint(val);
-          track->stopAutoRecord(id, val);
-        }
-      }
+        double val = ((Slider*)params[param].actuator)->value();
+        if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
+            val = muse_db2val(val);
+        else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
+            val = rint(val);
+        track->stopAutoRecord(id, val);
+    }
 
-      // Special for switch - don't enable controller until transport stopped.
-      if ((at == MusECore::AUTO_OFF) ||
-          (at == MusECore::AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
-                                !MusEGlobal::audio->isPlaying()) ) )
-        plugin->enableController(param, true);
-
-      params[param].pressed = false;
+    params[param].pressed = false;
 }
 
 //---------------------------------------------------------
@@ -4271,23 +4267,17 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 
 void PluginGui::switchPressed(int param)
 {
-      params[param].pressed = true;
-      MusECore::AudioTrack* track = plugin->track();
-      int id = plugin->id();
-      if(id != -1)
-      {
+    params[param].pressed = true;
+    MusECore::AudioTrack* track = plugin->track();
+    int id = plugin->id();
+    if (track && id != -1)
+    {
         id = MusECore::genACnum(id, param);
-        if(params[param].type == GuiParam::GUI_SWITCH)
-        {
-          float val = (float)((CheckBox*)params[param].actuator)->isChecked();
-          if(track)
-          {
-            track->startAutoRecord(id, val);
-            track->setPluginCtrlVal(id, val);
-          }
-        }
-      }
-      plugin->enableController(param, false);
+        float val = (float)((CheckBox*)params[param].actuator)->isChecked();
+        track->startAutoRecord(id, val);
+        track->setPluginCtrlVal(id, val);
+    }
+    plugin->enableController(param, false);
 }
 
 //---------------------------------------------------------
@@ -4301,10 +4291,9 @@ void PluginGui::switchReleased(int param)
       if(track)
         at = track->automationType();
 
-      // Special for switch - don't enable controller until transport stopped.
+      // don't enable controller until transport stopped.
       if ((at == MusECore::AUTO_OFF) ||
-          (at == MusECore::AUTO_TOUCH && (params[param].type != GuiParam::GUI_SWITCH ||
-                                !MusEGlobal::audio->isPlaying()) ) )
+          (at == MusECore::AUTO_TOUCH && !MusEGlobal::audio->isPlaying()) )
         plugin->enableController(param, true);
 
       params[param].pressed = false;
