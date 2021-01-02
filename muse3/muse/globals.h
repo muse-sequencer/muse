@@ -204,6 +204,17 @@ extern unsigned char rcRecordNote;
 extern unsigned char rcGotoLeftMarkNote;
 extern unsigned char rcPlayNote;
 extern unsigned char rcSteprecNote;
+extern unsigned char rcForwardNote;
+extern unsigned char rcBackwardNote;
+
+extern bool rcEnableCC;
+extern unsigned char rcGotoLeftMarkCC;
+extern unsigned char rcBackwardCC;
+extern unsigned char rcForwardCC;
+extern unsigned char rcStopCC;
+extern unsigned char rcPlayCC;
+//extern unsigned char rcInsertPauseCC;
+extern unsigned char rcRecordCC;
 
 extern int midiLearnPort;
 extern int midiLearnChan;

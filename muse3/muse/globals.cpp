@@ -317,6 +317,18 @@ unsigned char rcRecordNote = 31;
 unsigned char rcGotoLeftMarkNote = 33;
 unsigned char rcPlayNote = 29;
 unsigned char rcSteprecNote = 36;
+unsigned char rcForwardNote = 26;
+unsigned char rcBackwardNote = 24;
+
+bool rcEnableCC = false;
+unsigned char rcGotoLeftMarkCC = 111;
+unsigned char rcBackwardCC = 112;
+unsigned char rcForwardCC = 113;
+unsigned char rcStopCC = 114;
+unsigned char rcPlayCC = 115;
+//unsigned char rcInsertPauseCC = 116;
+unsigned char rcRecordCC = 117;
+
 // REMOVE Tim. automation. Remove this.
 // Deprecated. MusEGlobal::automation is now fixed TRUE
 //   for now until we decide what to do with it.

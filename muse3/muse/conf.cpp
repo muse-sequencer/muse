@@ -497,6 +497,7 @@ static void readSeqConfiguration(Xml& xml, MetronomeSettings* metro_settings, bo
                               readConfigMidiDevice(xml);
                         else if (tag == "midiport")
                               readConfigMidiPort(xml, skipMidiPorts);
+
                         else if (tag == "rcStop")
                               MusEGlobal::rcStopNote = xml.parseInt();
                         else if (tag == "rcEnable")
@@ -509,6 +510,27 @@ static void readSeqConfiguration(Xml& xml, MetronomeSettings* metro_settings, bo
                               MusEGlobal::rcPlayNote = xml.parseInt();
                         else if (tag == "rcSteprec")
                               MusEGlobal::rcSteprecNote = xml.parseInt();
+                        else if (tag == "rcForward")
+                            MusEGlobal::rcForwardNote = xml.parseInt();
+                        else if (tag == "rcRewind")
+                            MusEGlobal::rcBackwardNote = xml.parseInt();
+
+                        else if (tag == "rcEnableCC")
+                            MusEGlobal::rcEnableCC = xml.parseInt();
+                        else if (tag == "rcStopCC")
+                            MusEGlobal::rcStopCC = xml.parseInt();
+                        else if (tag == "rcRecordCC")
+                            MusEGlobal::rcRecordCC = xml.parseInt();
+                        else if (tag == "rcGotoLeftCC")
+                            MusEGlobal::rcGotoLeftMarkCC = xml.parseInt();
+                        else if (tag == "rcPlayCC")
+                            MusEGlobal::rcPlayCC = xml.parseInt();
+//                        else if (tag == "rcInsertRest")
+//                            MusEGlobal::rcInsertPauseCC = xml.parseInt();
+                        else if (tag == "rcForwardCC")
+                            MusEGlobal::rcForwardCC = xml.parseInt();
+                        else if (tag == "rcRewindCC")
+                            MusEGlobal::rcBackwardCC = xml.parseInt();
                         else
                               xml.unknown("Seq");
                         break;
@@ -1558,7 +1580,18 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "rcRecord",   MusEGlobal::rcRecordNote);
       xml.intTag(level, "rcGotoLeft", MusEGlobal::rcGotoLeftMarkNote);
       xml.intTag(level, "rcPlay",     MusEGlobal::rcPlayNote);
-      xml.intTag(level, "rcSteprec",     MusEGlobal::rcSteprecNote);
+      xml.intTag(level, "rcSteprec",  MusEGlobal::rcSteprecNote);
+      xml.intTag(level, "rcForward",  MusEGlobal::rcForwardNote);
+      xml.intTag(level, "rcRewind",   MusEGlobal::rcBackwardNote);
+
+      xml.intTag(level, "rcEnableCC",   MusEGlobal::rcEnableCC);
+      xml.intTag(level, "rcStopCC",     MusEGlobal::rcStopCC);
+      xml.intTag(level, "rcRecordCC",   MusEGlobal::rcRecordCC);
+      xml.intTag(level, "rcGotoLeftCC", MusEGlobal::rcGotoLeftMarkCC);
+      xml.intTag(level, "rcPlayCC",     MusEGlobal::rcPlayCC);
+//      xml.intTag(level, "rcInsertRest", MusEGlobal::rcInsertPauseCC);
+      xml.intTag(level, "rcForwardCC",  MusEGlobal::rcForwardCC);
+      xml.intTag(level, "rcRewindCC",   MusEGlobal::rcBackwardCC);
 
       if (writePortInfo) {
             for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)

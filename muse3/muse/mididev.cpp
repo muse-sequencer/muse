@@ -366,7 +366,12 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
             MusEGlobal::song->putEvent(pv);
             }
-      
+      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER) {
+          char cc = static_cast<char>(event.dataA() & 0xff);
+          printf("*** Input CC: %d\n", cc);
+          MusEGlobal::song->putEventCC(cc);
+      }
+
       // Do not bother recording if it is NOT actually being used by a port.
       // Because from this point on, process handles things, by selected port.
       if(_port == -1)

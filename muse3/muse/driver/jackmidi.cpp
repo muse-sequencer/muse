@@ -536,6 +536,11 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
             int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
             MusEGlobal::song->putEvent(pv);
             }
+      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER) {
+          char cc = static_cast<char>(event.dataA() & 0xff);
+          printf("*** Input CC: %d\n", cc);
+          MusEGlobal::song->putEventCC(cc);
+      }
       
       //if(_recordFifo.put(MidiPlayEvent(event)))
       //  printf("MidiJackDevice::recordEvent: fifo overflow\n");

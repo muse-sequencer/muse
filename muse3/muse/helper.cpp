@@ -109,6 +109,55 @@ QString pitch2string(int v)
       return s + o;
       }
 
+//---------------------------------------------------------
+//   string2pitch
+//---------------------------------------------------------
+
+int string2pitch(const QString &s)
+{
+    if (validatePitch(s) != QValidator::Acceptable)
+        return 0;
+
+    QString p;
+    int oct = 0;
+    if (s.length() == 4) {
+        p = s.left(2);
+        oct = s.mid(2, 2).toInt();
+    } else if (s.length() == 3) {
+        if (s.at(1) == '#') {
+            p = s.left(2);
+            oct = s.mid(2, 1).toInt();
+        } else {
+            p = s.left(1);
+            oct = s.mid(1, 2).toInt();
+        }
+    } else {
+        p = s.left(1);
+        oct = s.mid(1, 1).toInt();
+    }
+
+    int cnt = 0;
+    for (const auto& it : vall) {
+        if (QString::compare(QString(it), p, Qt::CaseInsensitive) == 0)
+            break;
+        cnt++;
+    }
+
+    return (oct + 2) * 12 + cnt;
+}
+
+QValidator::State validatePitch(const QString &s) {
+    static const QRegularExpression regExp("\\A[A-H]#?-[12]|[a-h]#?[0-8]\\z");
+     Q_ASSERT(regExp.isValid());
+
+     const QRegularExpressionMatch match = regExp.match(s, 0, QRegularExpression::PartialPreferCompleteMatch);
+     if (match.hasMatch())
+         return QValidator::Acceptable;
+     else if (match.hasPartialMatch())
+         return QValidator::Intermediate;
+     else
+         return QValidator::Invalid;
+}
 
 //---------------------------------------------------------
 //   dumpMPEvent

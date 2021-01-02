@@ -45,11 +45,22 @@ class MRConfig : public QWidget, public Ui::MRConfigBase {
 
    private slots:
       void setRcEnable(bool);
-      void setRcStopNote(int);
-      void setRcRecordNote(int);
-      void setRcGotoLeftMarkNote(int);
-      void setRcPlayNote(int);
-      void setRcSteprecNote(int);
+      void setRcStopNote();
+      void setRcRecordNote();
+      void setRcGotoLeftMarkNote();
+      void setRcPlayNote();
+      void setRcSteprecNote();
+      void setRcForwardNote();
+      void setRcBackwardNote();
+
+      void setRcEnableCC(bool);
+      void setRcPlayCC();
+      void setRcStopCC();
+      void setRcRecordCC();
+      void setRcGotoLeftMarkCC();
+//      void setRcInsertRestCC();
+      void setRcForwardCC();
+      void setRcBackwardCC();
 
    public:
       MRConfig(QWidget* parent=0, Qt::WindowFlags fl = Qt::Widget);

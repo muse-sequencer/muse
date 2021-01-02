@@ -39,33 +39,6 @@ PitchEdit::PitchEdit(QWidget* parent)
       deltaMode = false;
       }
 
-// //---------------------------------------------------------
-// //   mapValueToText
-// //---------------------------------------------------------
-// 
-// QString PitchEdit::mapValueToText(int v)
-//       {
-//       if (deltaMode) {
-//             QString s;
-//             s.setNum(v);
-//             return s;
-//             }
-//       else
-//             return MusECore::pitch2string(v);
-//       }
-
-// //---------------------------------------------------------
-// //   mapTextToValue
-// //---------------------------------------------------------
-// 
-// int PitchEdit::mapTextToValue(bool* ok)
-//       {
-//       printf("PitchEdit: mapTextToValue: not impl.\n");
-//       if (ok)
-//             *ok = false;
-//       return 0;
-//       }
-
 //---------------------------------------------------------
 //   mapValueToText
 //---------------------------------------------------------
@@ -81,17 +54,31 @@ QString PitchEdit::textFromValue(int v) const
             return MusECore::pitch2string(v);
       }
 
+QValidator::State PitchEdit::validate(QString &input, int &) const
+{
+    if (input.isEmpty())
+        return QValidator::Intermediate;
+
+    return MusECore::validatePitch(input);
+}
+
 //---------------------------------------------------------
 //   mapTextToValue
 //---------------------------------------------------------
 
-int PitchEdit::valueFromText(const QString & /*text*/) const
+int PitchEdit::valueFromText(const QString &s) const
       {
-      printf("PitchEdit: valueFromText: not impl.\n");
-      //if (text)
-            //*text = false;
-      return 0;
-      }
+//      printf("PitchEdit: valueFromText: not impl.\n");
+//      //if (text)
+//            //*text = false;
+//      return 0;
+
+      if (deltaMode)
+            return s.toInt();
+      else
+            return MusECore::string2pitch(s);
+
+}
 
 //---------------------------------------------------------
 //   setDeltaMode
