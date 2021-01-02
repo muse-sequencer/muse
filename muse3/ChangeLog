@@ -1,3 +1,5 @@
+02.01.2021
+    - Add: Enable CC events for MIDI remote control (#566). (kybos)
 30.12.2020
     - Fix issue #935: Track list toggling of solo/mute indicators. (kybos)
     - Add: Resizing track height in track list now also works for 
