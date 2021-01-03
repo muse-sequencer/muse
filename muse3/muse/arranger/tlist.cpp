@@ -1596,8 +1596,26 @@ void TList::changeAutomation(QAction* act)
 {
     if(!editAutomation || editAutomation->isMidiTrack())
         return;
-    if(act->data().toInt() == -1)
+
+    if (act->data().toInt() == -1) {
+        MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
+        for (auto& it : *cll) {
+            MusECore::CtrlList *cl = it.second;
+            if (!cl->dontShow() && !cl->isVisible() && cl->size() > 0)
+                cl->setVisible(true);
+        }
         return;
+
+    } else if (act->data().toInt() == -2) {
+        MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
+        for (auto& it : *cll) {
+            MusECore::CtrlList *cl = it.second;
+            if (cl->isVisible())
+                cl->setVisible(false);
+        }
+        return;
+    }
+
     int colindex = act->data().toInt() & 0xff;
     int id = (act->data().toInt() & 0x00ffffff) >> 8;
     // Is it the midi control action or clear action item?
@@ -2001,6 +2019,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 int last_rackpos = -1;
                 bool internal_found = false;
                 bool synth_found = false;
+
+                p->addAction(new MusEGui::MenuTitleItem(tr("Automation Controls"), p));
+                act = p->addAction(tr("Show All with Events"));
+                act->setData(-1);
+                act = p->addAction(tr("Hide All"));
+                act->setData(-2);
+
                 for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
                     MusECore::CtrlList *cl = icll->second;
                     if (cl->dontShow())
@@ -2050,6 +2075,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     qp.fillRect(0,0,8,8,cl->color());
                     qp.setPen(Qt::black);
                     qp.drawRect(0,0,8,8);
+                    if (cl->size() > 0) {
+                        if (cl->color() == Qt::black)
+                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
+                        else
+                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
+                    }
                     QIcon icon(pix);
                     act->setIcon(icon);
                     //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
