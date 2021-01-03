@@ -206,6 +206,7 @@ class Plugin {
       virtual void range(unsigned long i, float*, float*) const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
+      virtual CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
 
       virtual const char* portName(unsigned long i) {
             return plugin ? plugin->PortNames[i] : 0;
@@ -571,6 +572,7 @@ class PluginI : public PluginIBase {
       unsigned long latencyOutPortIndex() const { return _latencyOutPort; }
       float latency() const;
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
+      CtrlEnumValues* ctrlEnumValues( unsigned long i) const { return _plugin->ctrlEnumValues(controls[i].idx); }
       CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
       virtual void setCustomData(const std::vector<QString> &customParams);
       };
