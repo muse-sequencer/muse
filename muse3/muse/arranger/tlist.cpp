@@ -691,7 +691,7 @@ void TList::returnPressed()
                                                                   editor->text()));
             }
         }
-        
+
         editTrack = nullptr;
     }
 
@@ -1197,7 +1197,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                 editTrack=t;
 
                 ctrl_num=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
-                
+
                 MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                 MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
                 const int chan = mt->outChannel();
@@ -1282,7 +1282,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
         }
 #endif
 #endif
-        
+
         QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
         if (ract == gact) {
             bool show = !synth->guiVisible();
@@ -2026,18 +2026,23 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 act = p->addAction(tr("Hide All"));
                 act->setData(-2);
 
-                for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
+                QList<const MusECore::CtrlList*> tmpList;
+                bool nextList = false;
+
+                for(MusECore::CtrlListList::iterator icll = cll->begin(); icll != cll->end(); ++icll) {
                     MusECore::CtrlList *cl = icll->second;
-                    if (cl->dontShow())
-                        continue;
+//                    if (cl->dontShow())
+//                        continue;
 
                     int ctrl = cl->id();
 
                     if(ctrl < AC_PLUGIN_CTL_BASE)
                     {
-                        if(!internal_found)
+                        if(!internal_found) {
                             p->addAction(new MusEGui::MenuTitleItem(tr("Internal"), p));
-                        internal_found = true;
+                            internal_found = true;
+                            nextList = true;
+                        }
                     }
                     else
                     {
@@ -2051,46 +2056,99 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                     QString s = ((MusECore::AudioTrack*)t)->efxPipe() ?
                                                 ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos) : QString();
                                     p->addAction(new MusEGui::MenuTitleItem(s, p));
+                                    last_rackpos = rackpos;
+                                    nextList = true;
                                 }
-                                last_rackpos = rackpos;
                             }
                         }
                         else
                         {
                             if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                                if(!synth_found)
+                                if(!synth_found) {
                                     p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p));
-                                synth_found = true;
+                                    synth_found = true;
+                                    nextList = true;
+                                }
                             }
                         }
                     }
 
-                    act = p->addAction(cl->name());
-                    act->setCheckable(true);
-                    act->setChecked(cl->isVisible());
+                    if (icll == cll->begin())
+                        nextList = false;
 
-                    QPixmap pix(8,8);
-                    QPainter qp(&pix);
-                    qp.fillRect(0,0,8,8,cl->color());
-                    qp.setPen(Qt::black);
-                    qp.drawRect(0,0,8,8);
-                    if (cl->size() > 0) {
-                        if (cl->color() == Qt::black)
-                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
-                        else
-                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
+                    if (!nextList) {
+                        if (!cl->dontShow())
+                            tmpList.append(cl);
+                        if (std::next(icll) != cll->end())
+                            continue;
                     }
-                    QIcon icon(pix);
-                    act->setIcon(icon);
-                    //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
 
-                    int data = ctrl<<8; // shift 8 bits
-                    data += 150; // illegal color > 100
-                    act->setData(data);
-                    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
-                    act->setMenu(m);
+                    nextList = false;
+                    if (tmpList.isEmpty())
+                        continue;
+
+                    std::sort(tmpList.begin(), tmpList.end(),
+                              [](const MusECore::CtrlList* a, const MusECore::CtrlList* b) -> bool { return a->name() < b->name(); });
+
+                    for (const auto& it : tmpList) {
+                        auto cl = it;
+                        int ctrl = cl->id();
+
+                        act = p->addAction(cl->name());
+                        act->setCheckable(true);
+                        act->setChecked(cl->isVisible());
+
+                        QPixmap pix(8,8);
+                        QPainter qp(&pix);
+                        qp.fillRect(0,0,8,8,cl->color());
+                        qp.setPen(Qt::black);
+                        qp.drawRect(0,0,8,8);
+                        if (cl->size() > 0) {
+                            if (cl->color() == Qt::black)
+                                qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
+                            else
+                                qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
+                        }
+                        QIcon icon(pix);
+                        act->setIcon(icon);
+
+                        int data = ctrl<<8; // shift 8 bits
+                        data += 150; // illegal color > 100
+                        act->setData(data);
+                        PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
+                        act->setMenu(m);
+
+                    }
+
+                    tmpList.clear();
+
+//                    act = p->addAction(cl->name());
+//                    act->setCheckable(true);
+//                    act->setChecked(cl->isVisible());
+
+//                    QPixmap pix(8,8);
+//                    QPainter qp(&pix);
+//                    qp.fillRect(0,0,8,8,cl->color());
+//                    qp.setPen(Qt::black);
+//                    qp.drawRect(0,0,8,8);
+//                    if (cl->size() > 0) {
+//                        if (cl->color() == Qt::black)
+//                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
+//                        else
+//                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
+//                    }
+//                    QIcon icon(pix);
+//                    act->setIcon(icon);
+//                    //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
+
+//                    int data = ctrl<<8; // shift 8 bits
+//                    data += 150; // illegal color > 100
+//                    act->setData(data);
+//                    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
+//                    act->setMenu(m);
                 }
+
                 connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
                 p->exec(QCursor::pos());
 
