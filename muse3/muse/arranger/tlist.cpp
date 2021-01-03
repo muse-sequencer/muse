@@ -94,6 +94,8 @@ static const int MIN_TRACKHEIGHT = 20;
 //static const int WHEEL_DELTA = 120;
 QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::green };
 QString colnames[] = { "Red", "Yellow", "Blue", "Black", "White", "Green"};
+enum { AUTO_INVALID = -1, AUTO_SHOW_ALL = 251, AUTO_HIDE_ALL = 252, AUTO_CLEAR_AUTO = 253, AUTO_CLEAR_MIDI = 254, AUTO_MIDI_ASSIGN = 255 };
+
 //---------------------------------------------------------
 //   TList
 //---------------------------------------------------------
@@ -1597,49 +1599,56 @@ void TList::changeAutomation(QAction* act)
     if(!editAutomation || editAutomation->isMidiTrack())
         return;
 
-    if (act->data().toInt() == -1) {
-        MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
-        for (auto& it : *cll) {
-            MusECore::CtrlList *cl = it.second;
-            if (!cl->dontShow() && !cl->isVisible() && cl->size() > 0)
-                cl->setVisible(true);
-        }
+    if (act->data().toInt() == AUTO_INVALID)
         return;
 
-    } else if (act->data().toInt() == -2) {
-        MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
+    bool setRead = false;
+
+    if (act->data().toInt() == AUTO_SHOW_ALL) {
+        MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
+        for (auto& it : *cll) {
+            MusECore::CtrlList *cl = it.second;
+            if (!cl->dontShow() && !cl->isVisible() && cl->size() > 0) {
+                cl->setVisible(true);
+                setRead = true;
+            }
+        }
+    }
+    else if (act->data().toInt() == AUTO_HIDE_ALL) {
+        MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
         for (auto& it : *cll) {
             MusECore::CtrlList *cl = it.second;
             if (cl->isVisible())
                 cl->setVisible(false);
         }
-        return;
     }
+    else {
+        int colindex = act->data().toInt() & 0xff;
+        int id = (act->data().toInt() & 0x00ffffff) >> 8;
+        // Is it the midi control action or clear action item?
+        if (colindex == AUTO_CLEAR_MIDI || colindex == AUTO_MIDI_ASSIGN)
+            return;
 
-    int colindex = act->data().toInt() & 0xff;
-    int id = (act->data().toInt() & 0x00ffffff) >> 8;
-    // Is it the midi control action or clear action item?
-    if (colindex == 254 || colindex == 255)
-        return;
+        if (colindex < 100)
+            return; // this was meant for changeAutomationColor
+        // one of these days I'll rewrite this so it's understandable
+        // this is just to get it up and running...
 
-    if (colindex < 100)
-        return; // this was meant for changeAutomationColor
-    // one of these days I'll rewrite this so it's understandable
-    // this is just to get it up and running...
-
-    MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
-    for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
-        MusECore::CtrlList *cl = icll->second;
-        if (id == cl->id())  // got it, change state
-            cl->setVisible(act->isChecked());
+        MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
+        for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
+            MusECore::CtrlList *cl = icll->second;
+            if (id == cl->id())  // got it, change state
+                cl->setVisible(act->isChecked());
+        }
+        setRead = true;
     }
 
     // if automation is OFF for the track we change it to READ as a convenience
     // hopefully this confuses users far less than not understanding why the
     // automation does not do anything.
-    if (((MusECore::AudioTrack*)editAutomation)->automationType() == MusECore::AUTO_OFF)
+    if (setRead && static_cast<MusECore::AudioTrack*>(editAutomation)->automationType() == MusECore::AUTO_OFF)
     {
-        MusEGlobal::audio->msgSetTrackAutomationType((MusECore::AudioTrack*)editAutomation, MusECore::AUTO_READ);
+        MusEGlobal::audio->msgSetTrackAutomationType(static_cast<MusECore::AudioTrack*>(editAutomation), MusECore::AUTO_READ);
         if (MusEGlobal::debugMsg)
             printf("Changing automation from OFF to READ\n");
     }
@@ -1654,14 +1663,14 @@ void TList::changeAutomationColor(QAction* act)
 {
     if(!editAutomation || editAutomation->isMidiTrack())
         return;
-    if(act->data().toInt() == -1)
+    if(act->data().toInt() == AUTO_INVALID)
         return;
     int colindex = act->data().toInt() & 0xff;
     int id = (act->data().toInt() & 0x00ffffff) >> 8;
 
     // Is it the clear automation action item?
     // (As commented below, we should rewrite this to make it easier to understand..)
-    if (colindex == 253)
+    if (colindex == AUTO_CLEAR_AUTO)
     {
         if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
                                  tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
@@ -1675,7 +1684,7 @@ void TList::changeAutomationColor(QAction* act)
 
 
     // Is it the clear midi control action item?
-    if(colindex == 254)
+    if(colindex == AUTO_CLEAR_MIDI)
     {
         MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
         MusECore::MidiAudioCtrlMap* macp = track->controller()->midiControls();
@@ -1707,7 +1716,7 @@ void TList::changeAutomationColor(QAction* act)
     }
 
     // Is it the midi control action item?
-    if(colindex == 255)
+    if(colindex == AUTO_MIDI_ASSIGN)
     {
         MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
         MusECore::MidiAudioCtrlMap* macm = track->controller()->midiControls();
@@ -1790,7 +1799,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     {
         QAction *act = m->addAction(tr("Assign"));
         act->setCheckable(false);
-        act->setData((id<<8) + 255); // Shift 8 bits. Make midi menu the last item at 255.
+        act->setData((id<<8) + AUTO_MIDI_ASSIGN); // Shift 8 bits. Make midi menu the last item at 255.
 
         MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
         MusECore::MidiAudioCtrlMap* macm = track->controller()->midiControls();
@@ -1802,7 +1811,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
         {
             QActionGroup* midi_actgrp = new QActionGroup(m);
             QAction *cact = midi_actgrp->addAction(tr("Clear"));
-            cact->setData((id<<8) + 254); // Shift 8 bits. Make clear the second-last item at 254
+            cact->setData((id<<8) + AUTO_CLEAR_MIDI); // Shift 8 bits. Make clear the second-last item at 254
             for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
             {
                 int port, chan, mctrl;
@@ -1815,7 +1824,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
                         .arg(MusECore::midiCtrlName(mctrl, true));
                 QAction *mact = midi_actgrp->addAction(s);
                 mact->setEnabled(false);
-                mact->setData(-1); // Not used
+                mact->setData(AUTO_INVALID); // Not used
             }
             m->addActions(midi_actgrp->actions());
         }
@@ -1823,7 +1832,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     m->addAction(new MenuTitleItem(tr("Other"), m));
     QAction *act = m->addAction(tr("Clear automation"));
     act->setCheckable(false);
-    act->setData((id<<8) + 253); // Shift 8 bits. Make clear menu item 253 (should enum this)
+    act->setData((id<<8) + AUTO_CLEAR_AUTO); // Shift 8 bits. Make clear menu item 253
 
     connect(m, SIGNAL(triggered(QAction*)), SLOT(changeAutomationColor(QAction*)));
     return m;
@@ -2020,11 +2029,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 bool internal_found = false;
                 bool synth_found = false;
 
-                p->addAction(new MusEGui::MenuTitleItem(tr("Automation Controls"), p));
+                p->addAction(new MusEGui::MenuTitleItem(tr("Automation Display"), p));
                 act = p->addAction(tr("Show All with Events"));
-                act->setData(-1);
+                act->setData(AUTO_SHOW_ALL);
                 act = p->addAction(tr("Hide All"));
-                act->setData(-2);
+                act->setData(AUTO_HIDE_ALL);
 
                 for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
                     MusECore::CtrlList *cl = icll->second;
