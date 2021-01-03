@@ -916,6 +916,7 @@ public:
     virtual double defaultValue ( unsigned long port ) const;
     virtual const char *portName ( unsigned long i );
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
+    virtual CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );

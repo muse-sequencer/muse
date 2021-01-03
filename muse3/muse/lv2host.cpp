@@ -6048,6 +6048,16 @@ const char *LV2PluginWrapper::portName(unsigned long i)
     return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
 }
 
+CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
+{
+    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+    assert(it != _synth->_idxToControlMap.end());
+    i = it->second;
+    assert(i < _controlInPorts);
+
+    return _synth->_controlInPorts [i].scalePoints;
+}
+
 CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
