@@ -1,9 +1,9 @@
 name: Mark and close stale issues
 
 on:
-  workflow_dispatch
-  #schedule:
-  #- cron: "0 12 * * SAT"
+  #workflow_dispatch
+  schedule:
+  - cron: "0 12 * * SAT"
 
 jobs:
   stale:
@@ -15,11 +15,11 @@ jobs:
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         # The message to post on the issue when tagging it. If none provided, will not mark issues stale.
-        stale-issue-message: 'This issue is stale because it has been open one year with no activity. Remove Stale label or comment or it will be closed in 30 days.'
+        stale-issue-message: 'This issue is stale because it has been inactive for two years. Remove Stale label or write a comment, otherwise it will be closed in 30 days.'
         # The message to post on the issue when closing it. If none provided, will not comment when closing an issue.
-        close-issue-message: 'Issue has been closed automatically after one year of inactivity.'
+        close-issue-message: 'Issue has been closed automatically after two years of inactivity. Feel free to reopen if the issue is still relevant for current MusE version.'
         # The number of days old an issue can be before marking it stale. Set to -1 to never mark issues or pull requests as stale automatically.
-        days-before-stale: 360 # optional, default is 60
+        days-before-stale: 720 # optional, default is 60
         # The number of days to wait to close an issue or pull request after it being marked stale. Set to -1 to never close stale issues.
         days-before-close: 30 # optional, default is 7
         # The label to apply when an issue is stale.
