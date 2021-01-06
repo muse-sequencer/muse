@@ -32,6 +32,8 @@
 #include "icons.h"
 #include "shortcuts.h"
 #include "action.h"
+#include "globals.h"
+#include "app.h"
 
 namespace MusEGui {
 
@@ -137,6 +139,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       addActions(actionGroup->actions());
       
       connect(actionGroup, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
+      connect(MusEGlobal::muse, &MusE::configChanged, this, &EditToolBar::configChanged);
 }
 
 void EditToolBar::initShortcuts() {
@@ -158,6 +161,24 @@ void EditToolBar::initShortcuts() {
     toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
 }
 
+void EditToolBar::configChanged() {
+
+    initShortcuts();
+
+    for (int i = 0; i < nactions; ++i) {
+        Action *a = actions[i];
+        ToolB* t = nullptr;
+        for (unsigned j = 0; j < sizeof(toolList)/sizeof(*toolList); ++j) {
+            if ((a->id() == (1 << j))) {
+                t = &toolList[j];
+                break;
+            }
+        }
+
+        a->setShortcut(shortcuts[toolShortcuts[a->id()]].key);
+        a->setToolTip(tr(t->tip) + " (" + a->shortcut().toString() + ")");
+    }
+}
 
 //---------------------------------------------------------
 //   toolChanged

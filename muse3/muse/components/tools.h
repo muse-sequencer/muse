@@ -80,6 +80,7 @@ class EditToolBar : public QToolBar {
       int nactions;
 
       void initShortcuts();
+      void configChanged();
 
    private slots:
       void toolChanged(QAction* action);
