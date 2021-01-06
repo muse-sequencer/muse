@@ -71,8 +71,8 @@
     <auxSliderColor2 r="225" g="143" b="0"></auxSliderColor2>
     <audioVolumeSliderColor2 r="25" g="25" b="15"></audioVolumeSliderColor2>
     <midiVolumeSliderColor2 r="25" g="25" b="15"></midiVolumeSliderColor2>
-    <audioVolumeHandleColor r="80" g="80" b="59"></audioVolumeHandleColor>
-    <midiVolumeHandleColor r="80" g="80" b="59"></midiVolumeHandleColor>
+    <audioVolumeHandleColor r="0" g="80" b="53"></audioVolumeHandleColor>
+    <midiVolumeHandleColor r="0" g="70" b="100"></midiVolumeHandleColor>
     <audioControllerSliderDefaultColor2 r="37" g="121" b="255"></audioControllerSliderDefaultColor2>
     <audioPropertySliderDefaultColor2 r="220" g="77" b="255"></audioPropertySliderDefaultColor2>
     <midiControllerSliderDefaultColor2 r="140" g="140" b="0"></midiControllerSliderDefaultColor2>
