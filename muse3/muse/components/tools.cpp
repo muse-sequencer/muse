@@ -139,7 +139,8 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
       addActions(actionGroup->actions());
       
       connect(actionGroup, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
-      connect(MusEGlobal::muse, &MusE::configChanged, this, &EditToolBar::configChanged);
+      // TODO kybos (to be checked, setShortcut is apparently causing crashes...)
+//      connect(MusEGlobal::muse, &MusE::configChanged, this, &EditToolBar::configChanged);
 }
 
 void EditToolBar::initShortcuts() {
