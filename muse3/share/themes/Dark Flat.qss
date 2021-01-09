@@ -38,6 +38,7 @@ QStatusBar {
    
 QMenu {
     border: 1px solid rgb(0,90,160);
+    /* menu-scrollable: true; */
 }
 
 QMenu::separator {
