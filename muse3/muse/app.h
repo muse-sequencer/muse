@@ -101,6 +101,7 @@ class SnooperDialog;
 class MasterEdit;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
+#define MENU_ADD_DIALOG INT_MAX
 
 
 //---------------------------------------------------------

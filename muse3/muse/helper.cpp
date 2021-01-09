@@ -1305,6 +1305,10 @@ QMenu* populateAddSynth(QWidget* parent)
   typedef std::multimap<std::string, int > asmap;
   typedef std::multimap<std::string, int >::iterator imap;
   
+  QAction *actDialog = new QAction("Show Dialog...");
+  actDialog->setData(MENU_ADD_DIALOG);
+  synp->addAction(actDialog);
+  synp->addSeparator();
   
   const int ntypes = MusECore::Synth::SYNTH_TYPE_END;
   asmap smaps[ntypes];

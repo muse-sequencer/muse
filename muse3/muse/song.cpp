@@ -58,6 +58,7 @@
 #endif
 #include "strntcpy.h"
 #include "name_factory.h"
+#include "synthdialog.h"
 
 // Forwards from header:
 #include <QAction>
@@ -231,80 +232,89 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
     int n = action->data().toInt();
     // Ignore negative numbers since this slot could be called by a menu or list etc. passing -1.
     if(n < 0)
-      return 0;                  
+        return nullptr;
     
+
     // Synth sub-menu id?
     if(n >= MENU_ADD_SYNTH_ID_BASE)
     {
-      n -= MENU_ADD_SYNTH_ID_BASE;
-      int ntype = n / MENU_ADD_SYNTH_ID_BASE;
-      if(ntype >= Synth::SYNTH_TYPE_END)
-        return 0;
-
-      // if we ever support Wine VSTs through some other means than through dssi-vst this must be adapted
-      if (ntype == MusECore::Synth::VST_SYNTH)
-        ntype=MusECore::Synth::DSSI_SYNTH;
-      if (ntype == MusECore::Synth::LV2_EFFECT)
-        ntype=MusECore::Synth::LV2_SYNTH; // the LV2_EFFECT is a specialization used in the menu only, we reassign it to regular LV2_SYNTH
-
-      n %= MENU_ADD_SYNTH_ID_BASE;
-      if(n >= (int)MusEGlobal::synthis.size())
-        return 0;
-        
-      if (MusEGlobal::debugMsg)
-        fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  
-        
-      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
-                                MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
-      if(!si)
-        return 0;
-      
-      if (MusEGlobal::config.unhideTracks) SynthI::setVisible(true);
-
-      // Add instance last in midi device list.
-      for (int i = 0; i < MusECore::MIDI_PORTS; ++i) 
-      {
-        MidiPort* port  = &MusEGlobal::midiPorts[i];
-        MidiDevice* dev = port->device();
-        if (dev==0) 
+        if (n == MENU_ADD_DIALOG) {
+            n = MusEGui::SynthDialog().getSynthIndex(nullptr);
+        }
+        else
         {
-          // This is a brand new instance. Set the instrument as well for convenience.
-          MusEGlobal::audio->msgSetMidiDevice(port, si, si);
-          // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
-          MusEGlobal::muse->changeConfig(true);
-          if (SynthI::visible()) {
+            n -= MENU_ADD_SYNTH_ID_BASE;
+            int ntype = n / MENU_ADD_SYNTH_ID_BASE;
+            if(ntype >= Synth::SYNTH_TYPE_END)
+                return nullptr;
+
+            // if we ever support Wine VSTs through some other means than through dssi-vst this must be adapted
+            if (ntype == MusECore::Synth::VST_SYNTH)
+                ntype=MusECore::Synth::DSSI_SYNTH;
+            if (ntype == MusECore::Synth::LV2_EFFECT)
+                ntype=MusECore::Synth::LV2_SYNTH; // the LV2_EFFECT is a specialization used in the menu only, we reassign it to regular LV2_SYNTH
+
+            n %= MENU_ADD_SYNTH_ID_BASE;
+            if(n >= (int)MusEGlobal::synthis.size())
+                return nullptr;
+
+            if (MusEGlobal::debugMsg)
+                fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());
+        }
+
+        SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
+                                  MusEGlobal::synthis[n]->name(), MusEGlobal::synthis[n]->synthType(), insertAt);
+        //      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
+        //                                MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
+        if(!si)
+            return nullptr;
+
+        if (MusEGlobal::config.unhideTracks) SynthI::setVisible(true);
+
+        // Add instance last in midi device list.
+        for (int i = 0; i < MusECore::MIDI_PORTS; ++i)
+        {
+            MidiPort* port  = &MusEGlobal::midiPorts[i];
+            MidiDevice* dev = port->device();
+            if (dev==nullptr)
+            {
+                // This is a brand new instance. Set the instrument as well for convenience.
+                MusEGlobal::audio->msgSetMidiDevice(port, si, si);
+                // Save settings. Use simple version - do NOT set style or stylesheet, this has nothing to do with that.
+                MusEGlobal::muse->changeConfig(true);
+                if (SynthI::visible()) {
+                    selectAllTracks(false);
+                    si->setSelected(true);
+                    update();
+                }
+                return si;
+            }
+        }
+        if (SynthI::visible()) {
             selectAllTracks(false);
             si->setSelected(true);
-            update();
-          }
-          return si;
+            update(SC_TRACK_SELECTION);
         }
-      }
-      if (SynthI::visible()) {
-        selectAllTracks(false);
-        si->setSelected(true);
-        update(SC_TRACK_SELECTION);
-      }
-      return si;
-    }  
+        return si;
+    }
     // Normal track.
     else
     {
-      // Ignore AUDIO_SOFTSYNTH (or anything greater, to allow for other entries in some menu), 
-      //  now that we have it as the synth menu id, since addTrack doesn't like it.
-      if((Track::TrackType)n >= Track::AUDIO_SOFTSYNTH)
-        return 0;
-      
-      Track* t = addTrack((Track::TrackType)n, insertAt);
-      if (t && t->isVisible()) {
-        selectAllTracks(false);
-        t->setSelected(true);
-        update(SC_TRACK_SELECTION);
-      }
-      return t;
-    }  
+        // Ignore AUDIO_SOFTSYNTH (or anything greater, to allow for other entries in some menu),
+        //  now that we have it as the synth menu id, since addTrack doesn't like it.
+        if((Track::TrackType)n >= Track::AUDIO_SOFTSYNTH)
+            return nullptr;
+
+        Track* t = addTrack((Track::TrackType)n, insertAt);
+        if (t && t->isVisible()) {
+            selectAllTracks(false);
+            t->setSelected(true);
+            update(SC_TRACK_SELECTION);
+        }
+        return t;
+    }
 }          
-          
+
 //---------------------------------------------------------
 //    createTrack
 //---------------------------------------------------------
