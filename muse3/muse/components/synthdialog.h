@@ -21,12 +21,21 @@ class SynthDialog : public QDialog {
 
     enum SynthCategory { SEL_CAT_ALL = 0, SEL_CAT_SYNTH = 1, SEL_CAT_EFFECT = 2 };
     enum SynthType { SEL_TYPE_MESS, SEL_TYPE_DSSI, SEL_TYPE_LV2, SEL_TYPE_VST, SEL_TYPE_ALL};
+    enum Tab { TAB_ALL = 0, TAB_FAV = 1 };
+    enum Col { COL_NAME = 0, COL_TYPE, COL_CAT, COL_AUTHOR, COL_DESC };
+    enum UserData { UDATA_INDEX = Qt::UserRole, UDATA_URI = Qt::UserRole + 1, UDATA_BASE = Qt::UserRole + 2 };
 
 public:
     explicit SynthDialog(QWidget* parent = nullptr);
     static MusECore::Synth* getSynth(QWidget* parent);
     static int getSynthIndex(QWidget* parent);
     MusECore::Synth* value();
+
+    static void writeFavConfiguration(int level, MusECore::Xml& xml);
+    static void readFavConfiguration(MusECore::Xml& xml);
+    static QSet<QByteArray> getSynthFavorites();
+    static QByteArray getHash(MusECore::Synth *synth);
+
 
 public slots:
     void accept();
@@ -35,26 +44,25 @@ public slots:
 private slots:
     void enableOkB();
     void tabChanged(int);
-    void fillPlugs();
+    void fillSynths();
     void filterType(int);
 
-    void plistContextMenu(const QPoint&);
-//    void groupMenuEntryToggled(int i);
+    void listContextMenu(const QPoint&);
     void categoryChanged(QAbstractButton *button);
 
 private:
     void saveSettings();
     void addToFavorites(QTreeWidgetItem *item);
+    void removeFavorites(QTreeWidgetItem *item);
+//    QByteArray getHash(MusECore::Synth *synth);
 
     static int selCategory;
     static int selType;
-    static int curTab; // 0 means "show all"
-    static QStringList sortItems;
+    static int curTab; //
+    static QStringList filterSavedItems;
     static QRect geometrySave;
     static QByteArray listSave;
-
-    static QVector<QTreeWidgetItem *> favs;
-//    QSet<int>* group_info; //holds the group-set of the plugin which shall be affected by the plistContextMenu.
+    static QSet<QByteArray> favs;
 
     Ui::SynthDialogBase ui;
 };

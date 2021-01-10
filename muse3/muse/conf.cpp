@@ -75,6 +75,7 @@
 #include "filedialog.h"
 #include "al/al.h"
 #include "shortcuts.h"
+#include "synthdialog.h"
 
 namespace MusECore {
 
@@ -1356,6 +1357,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.velocityPerNote = xml.parseInt();
                         else if (tag == "plugin_groups")
                               MusEGlobal::readPluginGroupConfiguration(xml);
+                        else if (tag == "synthDialogFavorites")
+                            MusEGui::SynthDialog::readFavConfiguration(xml);
                         else if (tag == "mixdownPath")
                               MusEGlobal::config.mixdownPath = xml.parse1();
                         else if (tag == "showNoteNamesInPianoRoll")
@@ -2128,6 +2131,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "useNativeStandardDialogs", MusEGlobal::config.useNativeStandardDialogs);
       
       MusEGlobal::writePluginGroupConfiguration(level, xml);
+      MusEGui::SynthDialog::writeFavConfiguration(level, xml);
 
       writeSeqConfiguration(level, xml, false);
 

@@ -55,6 +55,7 @@
 #include "drummap.h"
 #include "xml.h"
 #include "conf.h"
+#include "synthdialog.h"
 
 #include <strings.h>
 
@@ -1305,11 +1306,6 @@ QMenu* populateAddSynth(QWidget* parent)
   typedef std::multimap<std::string, int > asmap;
   typedef std::multimap<std::string, int >::iterator imap;
   
-  QAction *actDialog = new QAction("Show Dialog...");
-  actDialog->setData(MENU_ADD_DIALOG);
-  synp->addAction(actDialog);
-  synp->addSeparator();
-  
   const int ntypes = MusECore::Synth::SYNTH_TYPE_END;
   asmap smaps[ntypes];
   PopupMenu* mmaps[ntypes];
@@ -1318,6 +1314,9 @@ QMenu* populateAddSynth(QWidget* parent)
   
   MusECore::Synth* synth;
   MusECore::Synth::Type type;
+
+  QSet<QByteArray> favorites = SynthDialog::getSynthFavorites();
+  QVector<QAction*> favActions;
   
   int ii = 0;
   for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i)
@@ -1363,8 +1362,17 @@ QMenu* populateAddSynth(QWidget* parent)
         act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );
         if(!synth->uri().isEmpty())
           act->setToolTip(synth->uri());
+
+        if (!favorites.isEmpty() && favorites.contains(SynthDialog::getHash(synth)))
+            favActions.append(act);
       }  
     }
+  }
+
+  if (!favActions.isEmpty()) {
+      synp->addAction(new MusEGui::MenuTitleItem("Favorites", synp));
+      for (const auto& it : favActions)
+          synp->addAction(it);
   }
 
   return synp;
@@ -1428,13 +1436,17 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool /*evenIgn
       }
 
       if (populateAll || MusECore::SynthI::visible()) {
-        // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-        QMenu* synp = populateAddSynth(addTrack);
-//        synp->setIcon(*synthIcon);
-        synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth")));
+          QAction *actDialog = addTrack->addAction(*synthSVGIcon,
+                                                   qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth Dialog...")));
+          actDialog->setData(MusECore::Track::AUDIO_SOFTSYNTH);
 
-        // Add the sub-menu to the given menu.
-        addTrack->addMenu(synp);
+          // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
+          QMenu* synp = populateAddSynth(addTrack);
+          //        synp->setIcon(*synthIcon);
+          synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth")));
+
+          // Add the sub-menu to the given menu.
+          addTrack->addMenu(synp);
       }
 
       return grp;

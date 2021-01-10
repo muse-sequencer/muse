@@ -1,9 +1,9 @@
 #include <QMenu>
-#include <QInputDialog>
+//#include <QInputDialog>
+#include <QCryptographicHash>
 
-#include "globaldefs.h"
-#include "popupmenu.h"
-#include "menutitleitem.h"
+//#include "popupmenu.h"
+//#include "menutitleitem.h"
 
 #include "synthdialog.h"
 #include "gconfig.h"
@@ -14,11 +14,11 @@ namespace MusEGui {
 
 int SynthDialog::selType = SEL_TYPE_ALL;
 int SynthDialog::selCategory = SEL_CAT_ALL;
-int SynthDialog::curTab = 0;
-QStringList SynthDialog::sortItems = QStringList();
+int SynthDialog::curTab = TAB_ALL;
+QStringList SynthDialog::filterSavedItems = QStringList();
 QRect SynthDialog::geometrySave = QRect();
 QByteArray SynthDialog::listSave = QByteArray();
-QVector<QTreeWidgetItem *> SynthDialog:: favs = QVector<QTreeWidgetItem *>();
+QSet<QByteArray> SynthDialog::favs = QSet<QByteArray>();
 
 
 //---------------------------------------------------------
@@ -30,10 +30,8 @@ SynthDialog::SynthDialog(QWidget* parent)
     : QDialog(parent)
 {
     ui.setupUi(this);
-    // this dlg is called from the mixer strip so it would inherit the small font size
-    setStyleSheet("* {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
+    //    setStyleSheet("* {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
 
-//    group_info=nullptr;
     setWindowTitle(tr("MusE: Select Synth"));
 
     if(!geometrySave.isNull())
@@ -42,22 +40,7 @@ SynthDialog::SynthDialog(QWidget* parent)
     ui.tabBar->addTab("All");
     ui.tabBar->addTab("Favorites");
 
-    ui.pList->setColumnCount(5);
-
-    // "Note: In order to avoid performance issues, it is recommended that sorting
-    //   is enabled after inserting the items into the tree. Alternatively, you could
-    //   also insert the items into a list before inserting the items into the tree. "
-
-    QStringList headerLabels;
-    headerLabels << tr("Name");
-    headerLabels << tr("Type");
-    headerLabels << tr("Category");
-    headerLabels << tr("Description");
-    headerLabels << tr("URI");
-    //    headerLabels << tr("Maker");
-    //    headerLabels << tr("Copyright");
-
-    ui.pList->setHeaderLabels(headerLabels);
+//    ui.pList->setColumnCount(5);
 
     ui.pList->setRootIsDecorated(false);
     ui.pList->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -67,9 +50,7 @@ SynthDialog::SynthDialog(QWidget* parent)
     ui.pList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ui.okB->setDefault(true);
-    ui.okB->setFixedWidth(80);
     ui.okB->setEnabled(false);
-    ui.cancelB->setFixedWidth(80);
 
     ui.catButtonGroup->setId(ui.rbAll, 0);
     ui.catButtonGroup->setId(ui.rbSynths, 1);
@@ -82,7 +63,7 @@ SynthDialog::SynthDialog(QWidget* parent)
     }
 
     ui.tabBar->setCurrentIndex(curTab);
-//    ui.tabBar->setMovable(true);
+    //    ui.tabBar->setMovable(true);
 
     ui.pluginType->addItem("All", SEL_TYPE_ALL);
     ui.pluginType->addItem("MESS", SEL_TYPE_MESS);
@@ -95,27 +76,26 @@ SynthDialog::SynthDialog(QWidget* parent)
     for (int i=0; i < ui.pluginType->count(); i++) {
         if (selType == ui.pluginType->itemData(i).toInt()) {
             ui.pluginType->setCurrentIndex(i);
-            //printf("set current index to %d\n",i);
             break;
         }
     }
 
-    ui.sortBox->addItems(sortItems);
+    ui.filterBox->addItems(filterSavedItems);
 
-    fillPlugs();
+    fillSynths();
 
     ui.pList->setSortingEnabled(true);
 
     if(listSave.isEmpty())
     {
-        ui.pList->header()->resizeSection(0, 240);
-        ui.pList->header()->resizeSection(1, 40);
-        ui.pList->header()->resizeSection(2, 64);
-        ui.pList->header()->resizeSection(4, 200);
-        ui.pList->header()->resizeSection(5, 100);
+        ui.pList->header()->resizeSection(COL_NAME, 300);
+        ui.pList->header()->resizeSection(COL_TYPE, 50);
+        ui.pList->header()->resizeSection(COL_CAT, 64);
+        ui.pList->header()->resizeSection(COL_AUTHOR, 120);
+        ui.pList->header()->resizeSection(COL_DESC, 300);
 
-        ui.pList->header()->setSectionResizeMode(1, QHeaderView::Fixed);
-        ui.pList->header()->setSectionResizeMode(2, QHeaderView::Fixed);
+        //        ui.pList->header()->setSectionResizeMode(1, QHeaderView::Fixed);
+        //        ui.pList->header()->setSectionResizeMode(2, QHeaderView::Fixed);
 
         ui.pList->sortByColumn(0, Qt::AscendingOrder);
     }
@@ -124,52 +104,59 @@ SynthDialog::SynthDialog(QWidget* parent)
 
     connect(ui.pList,   SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(accept()));
     connect(ui.pList,   SIGNAL(itemClicked(QTreeWidgetItem*,int)), SLOT(enableOkB()));
-    connect(ui.pList,   SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(plistContextMenu(const QPoint&)));
+    connect(ui.pList,   SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(listContextMenu(const QPoint&)));
     connect(ui.cancelB, SIGNAL(clicked()), SLOT(reject()));
     connect(ui.okB,     SIGNAL(clicked()), SLOT(accept()));
     connect(ui.tabBar,  SIGNAL(currentChanged(int)), SLOT(tabChanged(int)));
-    //connect(tabBar,  SIGNAL(tabMoved(int,int)), SLOT(tabMoved(int,int)));
-    connect(ui.sortBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillPlugs()));
+    connect(ui.filterBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillSynths()));
     connect(ui.catButtonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked), this, &SynthDialog::categoryChanged);
 
-    ui.sortBox->setFocus();
+    ui.filterBox->setFocus();
 }
 
 void SynthDialog::filterType(int i)
 {
     selType = ui.pluginType->itemData(i).toInt();
-
-    fillPlugs();
+    fillSynths();
 }
 
-void SynthDialog::plistContextMenu(const QPoint& point)
+void SynthDialog::listContextMenu(const QPoint& )
 {
     QTreeWidgetItem* item = ui.pList->currentItem();
-    if (item)
-    {
-//        group_info = &MusEGlobal::plugin_groups.get(item->text(1), item->text(2));
-        QMenu* menu = new QMenu();
-//        QMenu* menu = new MusEGui::PopupMenu(this, true);
+    if (!item)
+        return;
+
+    QMenu* menu = new QMenu();
+
+    if (curTab == TAB_ALL) {
         menu->addAction(new QAction(tr("Add to Favorites"), menu));
-//        menu->addAction(new MusEGui::MenuTitleItem(tr("Add to Favorites"), menu));
-
-//            for (int i=1; i<ui.tabBar->count(); i++) // ignore the first tab ("All")
-//            {
-//                QAction* act=menu->addAction(ui.tabBar->tabText(i));
-//                act->setCheckable(true);
-//                act->setChecked(group_info->contains(i));
-//                connect(act, &QAction::toggled, [this, i]() { groupMenuEntryToggled(i); } );
-//            }
-
-        if (menu->exec(mapToGlobal(point)))
+        if (menu->exec(QCursor::pos()))
             addToFavorites(item);
-
-        delete menu;
+    } else {
+        menu->addAction(new QAction(tr("Remove from Favorites"), menu));
+        if (menu->exec(QCursor::pos()))
+            removeFavorites(item);
     }
+
+    delete menu;
 }
 
 void SynthDialog::addToFavorites(QTreeWidgetItem *item) {
-    favs.append(item);
+    QByteArray a = QCryptographicHash::hash(item->text(COL_NAME).toUtf8()
+                                            + item->data(COL_NAME, UDATA_URI).toString().toUtf8()
+                                            + item->data(COL_NAME, UDATA_BASE).toString().toUtf8(),
+                                            QCryptographicHash::Md5);
+    favs.insert(a);
+    item->setForeground(COL_NAME, Qt::red);
+}
+
+void SynthDialog::removeFavorites(QTreeWidgetItem *item) {
+    QByteArray a = QCryptographicHash::hash(item->text(COL_NAME).toUtf8()
+                                            + item->data(COL_NAME, UDATA_URI).toString().toUtf8()
+                                            + item->data(COL_NAME, UDATA_BASE).toString().toUtf8(),
+                                            QCryptographicHash::Md5);
+    favs.remove(a);
+    ui.pList->takeTopLevelItem(ui.pList->indexOfTopLevelItem(item));
 }
 
 //---------------------------------------------------------
@@ -187,13 +174,12 @@ void SynthDialog::enableOkB()
 
 MusECore::Synth* SynthDialog::value()
 {
-    //    QTreeWidgetItem* item = static_cast<PluginItem*>(ui.pList->currentItem());
     QTreeWidgetItem* item = ui.pList->currentItem();
     if (item) {
         return MusEGlobal::synthis.find(
-                    item->text(4).isNull() ? item->text(3) : QString(),
-                    !item->text(4).isNull() ? item->text(4) : QString(),
-                    item->text(0));
+                    item->data(COL_NAME, UDATA_URI).isNull() ? item->data(COL_NAME, UDATA_BASE).toString() : QString(),
+                    !item->data(COL_NAME, UDATA_URI).isNull() ? item->data(COL_NAME, UDATA_URI).toString() : QString(),
+                    item->text(COL_NAME));
     }
     printf("Synth not found\n");
     return nullptr;
@@ -205,15 +191,15 @@ MusECore::Synth* SynthDialog::value()
 
 void SynthDialog::saveSettings()
 {
-    if (!ui.sortBox->currentText().isEmpty()) {
+    if (!ui.filterBox->currentText().isEmpty()) {
         bool found = false;
-        foreach (QString item, sortItems)
-            if(item == ui.sortBox->currentText()) {
+        foreach (QString item, filterSavedItems)
+            if(item == ui.filterBox->currentText()) {
                 found = true;
                 break;
             }
         if(!found)
-            sortItems.push_front(ui.sortBox->currentText());
+            filterSavedItems.push_front(ui.filterBox->currentText());
     }
 
     QHeaderView* hdr = ui.pList->header();
@@ -246,10 +232,10 @@ void SynthDialog::reject()
 void SynthDialog::tabChanged(int index)
 {
     curTab = index;
-    fillPlugs();
+    fillSynths();
 }
 
-void SynthDialog::fillPlugs()
+void SynthDialog::fillSynths()
 {
 
     ui.pList->clear();
@@ -257,16 +243,18 @@ void SynthDialog::fillPlugs()
 
     QString type_name, cat_name;
 
-    if (curTab == 1 && favs.isEmpty())
+    if (curTab == TAB_FAV && favs.isEmpty())
         return;
 
-    int cnt = -1;
+    int index = -1;
     for (const auto& it : MusEGlobal::synthis)
     {
-        cnt++;
-//        if (curTab == 1 && favs.contains(it))
+        index++;
+        if (curTab == TAB_FAV && !favs.contains(getHash(it))) {
+            continue;
+        }
 
-        QString sb_txt = ui.sortBox->currentText().toLower();
+        QString sb_txt = ui.filterBox->currentText().toLower();
         if (!(sb_txt.isEmpty() || it->name().toLower().contains(sb_txt)))
             continue;
 
@@ -320,15 +308,20 @@ void SynthDialog::fillPlugs()
         }
 
         QTreeWidgetItem* item = new QTreeWidgetItem(ui.pList);
-        item->setText(0,  it->name());
-        item->setText(1,  type_name);
-        item->setText(2,  cat_name);
-        item->setText(3,  it->completeBaseName());
+        item->setText(COL_NAME,  it->name());
+        item->setText(COL_TYPE,  type_name);
+        item->setText(COL_CAT,  cat_name);
+        item->setText(COL_AUTHOR,  it->maker());
+        item->setText(COL_DESC,  it->description());
 
+        item->setData(COL_NAME, UDATA_INDEX, index);
         if(!it->uri().isEmpty())
-            item->setText(4, it->uri());
+            item->setData(COL_NAME, UDATA_URI, it->uri());
+        item->setData(COL_NAME, UDATA_BASE, it->completeBaseName());
 
-        item->setData(0, Qt::UserRole, cnt);
+        if (curTab == TAB_ALL && favs.contains(getHash(it))) {
+            item->setForeground(COL_NAME, Qt::red);
+        }
     }
 }
 
@@ -353,16 +346,66 @@ int SynthDialog::getSynthIndex(QWidget* parent)
     int rc = -1;
     int rv = dialog->exec();
     if(rv)
-    rc = dialog->ui.pList->currentItem()->data(0, Qt::UserRole).toInt();
+        rc = dialog->ui.pList->currentItem()->data(0, Qt::UserRole).toInt();
     delete dialog;
+
     return rc;
 }
 
 void SynthDialog::categoryChanged(QAbstractButton *button)
 {
     selCategory = ui.catButtonGroup->id(button);
-    fillPlugs();
+    fillSynths();
 }
 
-
+QByteArray SynthDialog::getHash(MusECore::Synth *synth)
+{
+    return QCryptographicHash::hash(synth->name().toUtf8()
+                                    + synth->uri().toUtf8()
+                                    + synth->completeBaseName().toUtf8(),
+                                    QCryptographicHash::Md5);
 }
+
+void SynthDialog::writeFavConfiguration(int level, MusECore::Xml& xml)
+{
+  xml.tag(level++, "synthDialogFavorites");
+
+  for (const auto& it : favs)
+    xml.strTag(level, "hash", QLatin1String(it.toHex()));
+
+  xml.etag(--level, "synthDialogFavorites");
+}
+
+void SynthDialog::readFavConfiguration(MusECore::Xml& xml)
+{
+    for (;;)
+    {
+        MusECore::Xml::Token token = xml.parse();
+        if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+            break;
+
+        const QString& tag = xml.s1();
+        switch (token)
+        {
+            case MusECore::Xml::TagStart:
+                if (tag=="hash")
+                    favs.insert(QByteArray::fromHex(xml.parse1().toLatin1()));
+                else
+                    xml.unknown("readSynthFavConfiguration");
+                break;
+
+            case MusECore::Xml::TagEnd:
+                if (tag == "synthDialogFavorites")
+                    return;
+
+            default:
+                break;
+        }
+    }
+}
+
+QSet<QByteArray> SynthDialog::getSynthFavorites() {
+    return favs;
+}
+
+} // namespace GUI

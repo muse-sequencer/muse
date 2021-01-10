@@ -236,10 +236,12 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
     
 
     // Synth sub-menu id?
-    if(n >= MENU_ADD_SYNTH_ID_BASE)
+    if(n >= MENU_ADD_SYNTH_ID_BASE || n == MusECore::Track::AUDIO_SOFTSYNTH)
     {
-        if (n == MENU_ADD_DIALOG) {
+        if (n == MusECore::Track::AUDIO_SOFTSYNTH) {
             n = MusEGui::SynthDialog().getSynthIndex(nullptr);
+            if (n < 0 || n >= static_cast<int>(MusEGlobal::synthis.size()))
+                return nullptr;
         }
         else
         {
