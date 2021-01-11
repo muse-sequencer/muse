@@ -22,8 +22,8 @@ class SynthDialog : public QDialog {
     enum SynthCategory { SEL_CAT_ALL = 0, SEL_CAT_SYNTH = 1, SEL_CAT_EFFECT = 2 };
     enum SynthType { SEL_TYPE_MESS, SEL_TYPE_DSSI, SEL_TYPE_LV2, SEL_TYPE_VST, SEL_TYPE_ALL};
     enum Tab { TAB_ALL = 0, TAB_FAV = 1 };
-    enum Col { COL_NAME = 0, COL_TYPE, COL_CAT, COL_AUTHOR, COL_DESC };
-    enum UserData { UDATA_INDEX = Qt::UserRole, UDATA_URI = Qt::UserRole + 1, UDATA_BASE = Qt::UserRole + 2 };
+    enum Col { COL_NAME = 0, COL_TYPE, COL_CAT, COL_AUTHOR, COL_VERSION, COL_URI };
+    enum UserData { UDATA_INDEX = Qt::UserRole, UDATA_HAS_URI = Qt::UserRole + 1, UDATA_NAME = Qt::UserRole + 2 };
 
 public:
     explicit SynthDialog(QWidget* parent = nullptr);
@@ -33,8 +33,7 @@ public:
 
     static void writeFavConfiguration(int level, MusECore::Xml& xml);
     static void readFavConfiguration(MusECore::Xml& xml);
-    static QSet<QByteArray> getSynthFavorites();
-    static QByteArray getHash(MusECore::Synth *synth);
+    static bool isFav(MusECore::Synth *synth);
 
 
 public slots:
@@ -42,7 +41,6 @@ public slots:
     void reject();
 
 private slots:
-    void enableOkB();
     void tabChanged(int);
     void fillSynths();
     void filterType(int);
@@ -50,15 +48,20 @@ private slots:
     void listContextMenu(const QPoint&);
     void categoryChanged(QAbstractButton *button);
 
+    void on_pbAddFav_clicked();
+
+    void on_pbRemoveFav_clicked();
+
 private:
+    bool favChanged;
     void saveSettings();
     void addToFavorites(QTreeWidgetItem *item);
-    void removeFavorites(QTreeWidgetItem *item);
+    void removeFavorite(QTreeWidgetItem *item);
 //    QByteArray getHash(MusECore::Synth *synth);
 
     static int selCategory;
     static int selType;
-    static int curTab; //
+    static int curTab;
     static QStringList filterSavedItems;
     static QRect geometrySave;
     static QByteArray listSave;

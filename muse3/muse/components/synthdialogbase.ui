@@ -30,12 +30,21 @@
     <number>3</number>
    </property>
    <item row="0" column="0">
-    <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,1,0" columnminimumwidth="140,0,0,120">
-     <property name="horizontalSpacing">
-      <number>20</number>
+    <layout class="QGridLayout" name="gridLayout" rowstretch="0,1,0" columnstretch="0,1,0,0" columnminimumwidth="120,0,120,120">
+     <property name="leftMargin">
+      <number>2</number>
      </property>
-     <property name="verticalSpacing">
+     <property name="topMargin">
       <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>2</number>
+     </property>
+     <property name="bottomMargin">
+      <number>10</number>
+     </property>
+     <property name="spacing">
+      <number>10</number>
      </property>
      <item row="1" column="0" colspan="4">
       <widget class="QTreeWidget" name="pList">
@@ -73,115 +82,134 @@
        </column>
        <column>
         <property name="text">
-         <string>Description</string>
+         <string>Version</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>URI / File</string>
         </property>
        </column>
       </widget>
      </item>
-     <item row="2" column="1">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>14</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Synth type:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="pluginType"/>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>10</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="0" colspan="4">
-      <widget class="QTabBar" name="tabBar" native="true"/>
-     </item>
      <item row="2" column="2">
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>14</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Filter:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="filterBox">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>10</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Favorites</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <property name="leftMargin">
+         <number>12</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>12</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="pbAddFav">
+          <property name="text">
+           <string>&amp;Add</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbRemoveFav">
+          <property name="text">
+           <string>&amp;Remove</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>Filters</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QFormLayout" name="formLayout">
+          <property name="verticalSpacing">
+           <number>20</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>14</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>API type</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="pluginType"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>14</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="filterBox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
      <item row="2" column="3">
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <property name="leftMargin">
-        <number>16</number>
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
        </property>
        <item>
         <widget class="QPushButton" name="okB">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="text">
-          <string>&amp;OK</string>
+          <string>&amp;Select</string>
+         </property>
+         <property name="default">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="cancelB">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -193,11 +221,17 @@
        </item>
       </layout>
      </item>
+     <item row="0" column="0" colspan="4">
+      <widget class="QTabBar" name="tabBar" native="true"/>
+     </item>
      <item row="2" column="0">
-      <widget class="QFrame" name="frame">
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Category</string>
+       </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <property name="leftMargin">
-         <number>16</number>
+         <number>9</number>
         </property>
         <item>
          <widget class="QRadioButton" name="rbAll">
