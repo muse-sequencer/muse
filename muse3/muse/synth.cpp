@@ -112,7 +112,7 @@ Synth* SynthList::find(const QString& fileCompleteBaseName, const QString& plugi
                   return *i;
             }
 
-      return 0;
+      return nullptr;
       }
 
 //--------------------------------

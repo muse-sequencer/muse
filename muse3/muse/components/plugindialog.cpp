@@ -44,9 +44,9 @@ PluginDialog::PluginDialog(QWidget* parent)
 {
     ui.setupUi(this);
     // this dlg is called from the mixer strip so it would inherit the small font size
-    setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
+    setStyleSheet("* {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
 
-      group_info=NULL;
+      group_info=nullptr;
       setWindowTitle(tr("MusE: Select Plugin"));
 
       if(!geometrySave.isNull())
@@ -225,7 +225,7 @@ void PluginDialog::plistContextMenu(const QPoint& point)
     if (selectedGroup!=0 && !group_info->contains(selectedGroup)) // we removed the entry from the currently visible group
       fillPlugs();
 
-    group_info=NULL;
+    group_info=nullptr;
   }
 }
 
@@ -305,7 +305,7 @@ MusECore::Plugin* PluginDialog::value()
           item->text(2));
       }
       printf("plugin not found\n");
-      return 0;
+      return nullptr;
 }
 
 //---------------------------------------------------------
@@ -509,7 +509,7 @@ void PluginDialog::fillPlugs()
 MusECore::Plugin* PluginDialog::getPlugin(QWidget* parent)
 {
       PluginDialog* dialog = new PluginDialog(parent);
-      MusECore::Plugin* p = 0;
+      MusECore::Plugin* p = nullptr;
       int rv = dialog->exec();
       if(rv)
         p = dialog->value();

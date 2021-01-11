@@ -138,6 +138,7 @@ QT5_WRAP_CPP (components_mocs
       #src_resampler_settings.h
 #       swidget.h  
       synctoolbar.h
+      synthdialog.h
       tb1.h  
 #       tempolabel.h
 #       text_edit.h
@@ -193,6 +194,7 @@ file (GLOB components_ui_files
       snooperbase.ui
       songinfo.ui  
       #src_resampler_settings_base.ui
+      synthdialogbase.ui
       synthconfigbase.ui  
       tracks_duplicate_base.ui
       unusedwavefiles.ui
@@ -301,6 +303,7 @@ file (GLOB components_source_files
       #src_resampler_settings.cpp
 #       swidget.cpp 
       synctoolbar.cpp
+      synthdialog.cpp
       tb1.cpp   
 #       tempolabel.cpp 
 #       text_edit.cpp
