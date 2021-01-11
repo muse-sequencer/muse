@@ -1,3 +1,5 @@
+06.01.2021
+    - Fix #940: Tool shortcuts not updating properly when changed. (kybos)
 03.01.2021
     - Fix #932: Add Show All with Events/Hide All to track automation menu.
         Modify control icon so it's clear which controls contain events. (kybos)
