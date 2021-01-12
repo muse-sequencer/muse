@@ -51,6 +51,7 @@
 #include "pcanvas.h"
 #include "globals.h"
 #include "icons.h"
+#include "ctrl.h"
 #include "event.h"
 #include "wave.h"
 #include "audio.h"
@@ -4378,43 +4379,22 @@ void PartCanvas::newAutomationVertex(QPoint pos)
   if (_tool != AutomationTool || automation.controllerState != addNewController)
     return;
 
-  Undo operations;
+  // get the current controller value at the frame pointed at
+  const int frame = MusEGlobal::tempomap.tick2frame(pos.x());
+  MusECore::CtrlInterpolate ctrlInterpolate;
+  automation.currentCtrlList->getInterpolation(frame, false, &ctrlInterpolate);
+  const double cvval = automation.currentCtrlList->interpolate(frame, ctrlInterpolate);
 
-  const int posy=mapy(pos.y());
-  const int tracky = mapy(automation.currentTrack->y());
-  const int trackHeight = automation.currentTrack->height();
-
-  const int mouseY = trackHeight - (posy - tracky)-2;
-  const double yfraction = ((double)mouseY)/automation.currentTrack->height();
-
-  double min, max;
-  automation.currentCtrlList->range(&min,&max);
-  double cvval;
-  if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-      cvval = valToLog(yfraction, min, max);
-      if (cvval< min) cvval=min;
-      if (cvval>max) cvval=max;
-  }
-  else {
-    // we need to set val between 0 and 1 (unless integer)
-    cvval = yfraction * (max-min) + min;
-    // 'Snap' to integer or boolean
-    if (automation.currentCtrlList->mode() == MusECore::CtrlList::DISCRETE)
-      cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
-    if (cvval< min) cvval=min;
-    if (cvval>max) cvval=max;
-  }
-
-  // Store the text.
+  // Keep a string for easy displaying of automation values
   automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(cvval);
 
-  const int frame = MusEGlobal::tempomap.tick2frame(pos.x());
+  Undo operations;
   operations.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame, cvval));
+
   automation.currentCtrlFrameList.clear();
   automation.currentCtrlFrameList.append(frame);
   automation.currentCtrlValid = true;
   automation.controllerState = movingController;
-
   automation.startMovePoint = pos;
 
   if(!operations.empty())
