@@ -1,3 +1,6 @@
+11.01.2021
+    - New: Selection dialog for Add synth track incl. favorites handling
+        in dialog and synth menu. (kybos)
 06.01.2021
     - Fix #940: Tool shortcuts not updating properly when changed. (kybos)
 03.01.2021
