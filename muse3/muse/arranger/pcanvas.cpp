@@ -4141,7 +4141,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
     if(closest_point_cl->valueType() == MusECore::VAL_LOG)
       //closest_point_value = MusECore::fast_log10(closest_point_value) * 20.0;
       closest_point_value = muse_val2dbr(closest_point_value); // Here we can use the slower but accurate function.
-    automation.currentText = QString("Param:%1 Value:%2").arg(closest_point_cl->name()).arg(closest_point_value);
+    automation.currentText = QString("Param:%1 Value:%2").arg(closest_point_cl->name()).arg(closest_point_value, 0, 'g', 3);
 
 // FIXME These are attempts to update only the necessary rectangles. No time for it ATM, not much choice but to do full update.
 #if 0
@@ -4297,7 +4297,11 @@ void PartCanvas::processAutomationMovements(QPoint inPos, bool slowMotion)
   }
 
   // Store the text.
-  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(cvval);
+  double displayCvVal =  cvval;
+  if(automation.currentCtrlList->valueType() == MusECore::VAL_LOG)
+    displayCvVal = muse_val2dbr(cvval);
+
+  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(displayCvVal, 0, 'g', 3);
 
   const int fl_sz = automation.currentCtrlFrameList.size();
   for(int i = 0; i < fl_sz; ++i)
@@ -4386,7 +4390,10 @@ void PartCanvas::newAutomationVertex(QPoint pos)
   const double cvval = automation.currentCtrlList->interpolate(frame, ctrlInterpolate);
 
   // Keep a string for easy displaying of automation values
-  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(cvval);
+  double displayCvVal =  cvval;
+  if(automation.currentCtrlList->valueType() == MusECore::VAL_LOG)
+    displayCvVal = muse_val2dbr(cvval);
+  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(displayCvVal, 0, 'g', 3);
 
   Undo operations;
   operations.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame, cvval));
