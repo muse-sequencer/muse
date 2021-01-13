@@ -869,26 +869,28 @@ void ArrangerView::populateAddTrack()
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
 
       int idx = 0;
-      trackAMidiAction = addGroup->actions()[idx++];
-      trackADrumAction = addGroup->actions()[idx++];
-      trackAWaveAction = addGroup->actions()[idx++];
-      trackAOutputAction = addGroup->actions()[idx++];
-      trackAGroupAction = addGroup->actions()[idx++];
-      trackAInputAction = addGroup->actions()[idx++];
-      trackAAuxAction = addGroup->actions()[idx++];
+      trackAMidiAction = addGroup->actions().at(idx++);
+      trackADrumAction = addGroup->actions().at(idx++);
+      trackAWaveAction = addGroup->actions().at(idx++);
+      trackAOutputAction = addGroup->actions().at(idx++);
+      trackAGroupAction = addGroup->actions().at(idx++);
+      trackAInputAction = addGroup->actions().at(idx++);
+      trackAAuxAction = addGroup->actions().at(idx++);
+      trackASynthAction = addGroup->actions().at(idx++);
 
       // populate insert track menu
       QActionGroup *insertGroup = MusEGui::populateAddTrack(insertTrack, true, true);
       connect(insertTrack, SIGNAL(triggered(QAction *)), SLOT(insertNewTrack(QAction *)));
 
       idx = 0;
-      trackIMidiAction = insertGroup->actions()[idx++];
-      trackIDrumAction = insertGroup->actions()[idx++];
-      trackIWaveAction = insertGroup->actions()[idx++];
-      trackIOutputAction = insertGroup->actions()[idx++];
-      trackIGroupAction = insertGroup->actions()[idx++];
-      trackIInputAction = insertGroup->actions()[idx++];
-      trackIAuxAction = insertGroup->actions()[idx++];
+      trackIMidiAction = insertGroup->actions().at(idx++);
+      trackIDrumAction = insertGroup->actions().at(idx++);
+      trackIWaveAction = insertGroup->actions().at(idx++);
+      trackIOutputAction = insertGroup->actions().at(idx++);
+      trackIGroupAction = insertGroup->actions().at(idx++);
+      trackIInputAction = insertGroup->actions().at(idx++);
+      trackIAuxAction = insertGroup->actions().at(idx++);
+      trackISynthAction = insertGroup->actions().at(idx++);
 
       // populate right click menu on trackList
       arranger->getTrackList()->populateAddTrack();
@@ -928,6 +930,7 @@ void ArrangerView::updateShortcuts()
       trackAGroupAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key);
       trackAInputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_INPUT].key);
       trackAAuxAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_AUX].key);
+      trackASynthAction->setShortcut(shortcuts[SHRT_ADD_SYNTH_TRACK].key);
 
       trackIMidiAction->setShortcut(shortcuts[SHRT_INSERT_MIDI_TRACK].key);
       trackIDrumAction->setShortcut(shortcuts[SHRT_INSERT_DRUM_TRACK].key);
@@ -936,6 +939,7 @@ void ArrangerView::updateShortcuts()
       trackIGroupAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_GROUP].key);
       trackIInputAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_INPUT].key);
       trackIAuxAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_AUX].key);
+      trackISynthAction->setShortcut(shortcuts[SHRT_INSERT_SYNTH_TRACK].key);
 
       editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       editDeselectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
