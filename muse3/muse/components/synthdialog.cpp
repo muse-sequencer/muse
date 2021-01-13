@@ -129,9 +129,16 @@ void SynthDialog::listContextMenu(const QPoint& )
     QMenu* menu = new QMenu();
 
     if (curTab == TAB_ALL) {
-        menu->addAction(new QAction(tr("Add to Favorites"), menu));
-        if (menu->exec(QCursor::pos()))
+        QAction *add = new QAction(tr("Add to Favorites"), menu);
+        QAction *remove = new QAction(tr("Remove from Favorites"), menu);
+        isFavItem(item) ? add->setEnabled(false) : remove->setEnabled(false);
+        menu->addAction(add);
+        menu->addAction(remove);
+        QAction *sel = menu->exec(QCursor::pos());
+        if (sel == add)
             addToFavorites(item);
+        else if (sel == remove)
+            removeFavorite(item);
     } else {
         menu->addAction(new QAction(tr("Remove from Favorites"), menu));
         if (menu->exec(QCursor::pos()))
@@ -143,10 +150,10 @@ void SynthDialog::listContextMenu(const QPoint& )
 
 void SynthDialog::addToFavorites(QTreeWidgetItem *item) {
 
-    QByteArray a = QCryptographicHash::hash(item->data(COL_NAME, UDATA_NAME).toString().toUtf8()
-                                            + item->text(COL_URI).toUtf8(),
-                                            QCryptographicHash::Md5);
-    favs.insert(a);
+    QByteArray hash = QCryptographicHash::hash(item->data(COL_NAME, UDATA_NAME).toString().toUtf8()
+                                               + item->text(COL_URI).toUtf8(),
+                                               QCryptographicHash::Md5);
+    favs.insert(hash);
     item->setForeground(COL_NAME, Qt::red);
 
     favChanged = true;
@@ -154,10 +161,10 @@ void SynthDialog::addToFavorites(QTreeWidgetItem *item) {
 
 void SynthDialog::removeFavorite(QTreeWidgetItem *item) {
 
-    QByteArray a = QCryptographicHash::hash(item->data(COL_NAME, UDATA_NAME).toString().toUtf8()
-                                            + item->text(COL_URI).toUtf8(),
-                                            QCryptographicHash::Md5);
-    favs.remove(a);
+    QByteArray hash = QCryptographicHash::hash(item->data(COL_NAME, UDATA_NAME).toString().toUtf8()
+                                               + item->text(COL_URI).toUtf8(),
+                                               QCryptographicHash::Md5);
+    favs.remove(hash);
 
     if (curTab == TAB_ALL)
         item->setForeground(COL_NAME, palette().text().color());
@@ -168,6 +175,17 @@ void SynthDialog::removeFavorite(QTreeWidgetItem *item) {
     }
 
     favChanged = true;
+}
+
+bool SynthDialog::isFavItem(QTreeWidgetItem *item)
+{
+    if (!item)
+        return false;
+
+    QByteArray hash = QCryptographicHash::hash(item->data(COL_NAME, UDATA_NAME).toString().toUtf8()
+                                               + item->text(COL_URI).toUtf8(),
+                                               QCryptographicHash::Md5);
+    return favs.contains(hash);
 }
 
 bool SynthDialog::isFav(MusECore::Synth *synth)

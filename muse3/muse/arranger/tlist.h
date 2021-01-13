@@ -93,7 +93,7 @@ class TList : public QWidget {
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
 
-      QMenu* addTrackMenu;
+      QMenu *addTrackMenu, *insertTrackMenu;
       Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
