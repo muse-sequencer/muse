@@ -865,7 +865,7 @@ void ArrangerView::updateScoreMenus()
 void ArrangerView::populateAddTrack()
 {
       // populate add track menu
-      QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true, true);
+      QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
 
       int idx = 0;
@@ -940,6 +940,8 @@ void ArrangerView::updateShortcuts()
       trackIInputAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_INPUT].key);
       trackIAuxAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_AUX].key);
       trackISynthAction->setShortcut(shortcuts[SHRT_INSERT_SYNTH_TRACK].key);
+
+      arranger->getTrackList()->populateAddTrack();
 
       editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       editDeselectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);

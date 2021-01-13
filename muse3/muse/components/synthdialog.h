@@ -35,7 +35,6 @@ public:
     static void readFavConfiguration(MusECore::Xml& xml);
     static bool isFav(MusECore::Synth *synth);
 
-
 public slots:
     void accept();
     void reject();
@@ -58,6 +57,7 @@ private:
     void addToFavorites(QTreeWidgetItem *item);
     void removeFavorite(QTreeWidgetItem *item);
 //    QByteArray getHash(MusECore::Synth *synth);
+    bool isFavItem(QTreeWidgetItem *item);
 
     static int selCategory;
     static int selType;
