@@ -65,7 +65,7 @@ struct shortcut
     const char* descr;
     const char* xml; //xml-tag for config-file
     int type;
-    shortcut() : key(0),  descr(NULL), xml(NULL), type(0) { }
+    shortcut() : key(0),  descr(nullptr), xml(nullptr), type(0) { }
 };
 
 struct shortcut_cg
@@ -205,7 +205,8 @@ enum {
 
     SHRT_ADD_MIDI_TRACK, //Default: Ctrl+J
     SHRT_ADD_DRUM_TRACK, //Default: Ctrl+k
-    SHRT_ADD_NEW_STYLE_DRUM_TRACK, //Default: undefined
+//    SHRT_ADD_NEW_STYLE_DRUM_TRACK, //Default: undefined
+    SHRT_ADD_SYNTH_TRACK,
     SHRT_ADD_WAVE_TRACK, //Default: undefined
     SHRT_ADD_AUDIO_OUTPUT, //Default: undefined
     SHRT_ADD_AUDIO_GROUP, //Default: undefined
@@ -214,7 +215,8 @@ enum {
 
     SHRT_INSERT_MIDI_TRACK, //Default: undefined
     SHRT_INSERT_DRUM_TRACK, //Default: undefined
-    SHRT_INSERT_NEW_STYLE_DRUM_TRACK, //Default: undefined
+//    SHRT_INSERT_NEW_STYLE_DRUM_TRACK, //Default: undefined
+    SHRT_INSERT_SYNTH_TRACK,
     SHRT_INSERT_WAVE_TRACK, //Default: undefined
     SHRT_INSERT_AUDIO_OUTPUT, //Default: undefined
     SHRT_INSERT_AUDIO_GROUP, //Default: undefined

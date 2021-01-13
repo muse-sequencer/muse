@@ -2376,8 +2376,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     // 1016 is occupied.
                     p->addSeparator();
                 }
-                addTrackMenu->setTitle(tr("Insert Track"));
-                p->addMenu(addTrackMenu);
+                insertTrackMenu->setTitle(tr("Insert Track"));
+                p->addMenu(insertTrackMenu);
                 QAction* act = p->exec(ev->globalPos(), nullptr);
                 if (act) {
                     //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
@@ -3097,6 +3097,8 @@ void TList::populateAddTrack()
 {
     addTrackMenu = new QMenu;
     MusEGui::populateAddTrack(addTrackMenu);
+    insertTrackMenu = new QMenu;
+    MusEGui::populateAddTrack(insertTrackMenu, false, true);
 }
 
 } // namespace MusEGui
