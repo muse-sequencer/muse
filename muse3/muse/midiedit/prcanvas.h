@@ -76,8 +76,8 @@ class PianoCanvas : public EventCanvas {
       bool noteHeldDown[128];
       
       MusECore::StepRec* steprec;
+      MusECore::Event* lastEditedEvent = 0;
 
-      
       virtual void viewMouseDoubleClickEvent(QMouseEvent*) override;
       virtual void drawItem(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) override;
       void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion()) override;
@@ -109,6 +109,7 @@ class PianoCanvas : public EventCanvas {
       QMenu* genItemPopup(MusEGui::CItem* item) override;
       void showNoteTooltip(QMouseEvent* event);
       void showStatusTip(QMouseEvent *event);
+      void setLastEdited(MusECore::Event& e);
 
    private slots:
       void midiNote(int pitch, int velo);

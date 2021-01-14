@@ -279,6 +279,7 @@ GlobalConfigValues config = {
       true,                         // optimize midi export file note offs
       true,                         // expRunningStatus; Save space by using running status
       true,                         // Split imported tracks into multiple parts.
+      false,                         // useLastEditedEvent
 // Obsolete. There is only 'New' drum tracks now.
 //       true,                         // importMidiNewStyleDrum
       true,                         // importDevNameMetas Import Prefer Device Name metas over port number metas if both exist.

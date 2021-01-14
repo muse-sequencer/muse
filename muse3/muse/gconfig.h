@@ -324,6 +324,7 @@ struct GlobalConfigValues {
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
       bool expRunningStatus;  // Save space by using running status
       bool importMidiSplitParts; // Split imported tracks into multiple parts.
+      bool useLastEditedEvent; // option to set event properties from last edited when adding events in pianoroll
 // Obsolete. There is only 'New' drum tracks now.
 //       bool importMidiNewStyleDrum; // Use new style drum tracks
       bool importDevNameMetas;    // Import Prefer Device Name metas over port number metas if both exist.
