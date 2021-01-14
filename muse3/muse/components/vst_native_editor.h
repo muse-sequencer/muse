@@ -74,7 +74,8 @@ class VstNativeEditor : public QWidget
     MusECore::VstNativeSynthIF* _sif;
     MusECore::VstNativePluginWrapper_State* _pstate;
     int resizeTimerId;
-        
+    bool m_fixScaling;
+
 protected:
 
     virtual void showEvent(QShowEvent *pShowEvent);
@@ -89,6 +90,8 @@ public:
 
     void open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativePluginWrapper_State *state);
     //void close();
+
+    bool fixScaling() { return m_fixScaling; }
 
 #if defined(Q_WS_X11)
     // Local X11 event filter.
