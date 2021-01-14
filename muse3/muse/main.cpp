@@ -40,6 +40,7 @@
 #include <QStringList>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QStyleHints>
 #include <QStandardPaths> 
 
 #include <iostream>
