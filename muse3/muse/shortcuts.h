@@ -51,7 +51,7 @@
 #define GLOBAL_SHRT    128  // Global shortcuts
 #define LMEDIT_SHRT    256  // List masteredit
 #define MEDIT_SHRT     512  // Master editor
-#define MIXER_SHRT    1024  // Master editor
+#define MIXER_SHRT    1024  // Mixer
 #define ALL_SHRT      2047  // All shortcuts
 #define INVIS_SHRT    2048  // Shortcuts not shown in the config-dialog. Hard-coded. To avoid conflicts
 

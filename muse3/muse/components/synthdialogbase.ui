@@ -49,10 +49,22 @@
      <item row="1" column="0" colspan="4">
       <widget class="QTreeWidget" name="pList">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <property name="itemsExpandable">
+        <bool>false</bool>
+       </property>
+       <property name="sortingEnabled">
+        <bool>false</bool>
        </property>
        <attribute name="headerCascadingSectionResizes">
         <bool>false</bool>
@@ -290,6 +302,18 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>filterBox</tabstop>
+  <tabstop>rbAll</tabstop>
+  <tabstop>rbSynths</tabstop>
+  <tabstop>rbEffects</tabstop>
+  <tabstop>pluginType</tabstop>
+  <tabstop>pbAddFav</tabstop>
+  <tabstop>pbRemoveFav</tabstop>
+  <tabstop>okB</tabstop>
+  <tabstop>cancelB</tabstop>
+  <tabstop>pList</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
  <buttongroups>
