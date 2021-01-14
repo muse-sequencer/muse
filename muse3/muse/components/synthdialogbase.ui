@@ -290,6 +290,18 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>filterBox</tabstop>
+  <tabstop>rbAll</tabstop>
+  <tabstop>rbSynths</tabstop>
+  <tabstop>rbEffects</tabstop>
+  <tabstop>pluginType</tabstop>
+  <tabstop>pbAddFav</tabstop>
+  <tabstop>pbRemoveFav</tabstop>
+  <tabstop>okB</tabstop>
+  <tabstop>cancelB</tabstop>
+  <tabstop>pList</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
  <buttongroups>
