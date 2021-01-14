@@ -1,6 +1,7 @@
 14.01.2021
     - Add: Improve Key Shortcuts maintenance dialog. Add filter for shorcuts,
         list contexts per shortcut. (kybos)
+    - Fix: HiDPI scaling for VST plugins. (kybos)
 13.01.2021
     - Add: Consistent shortcuts for Add track. Show shortcuts in menu. (kybos)
 11.01.2021
