@@ -61,8 +61,8 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    connect(scListView, SIGNAL(itemClicked(QTreeWidgetItem*, int )), this, SLOT(shortcutSelChanged(QTreeWidgetItem*, int)));
    connect(scListView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int )), this, SLOT(assignShortcut()));
 
-   connect(textFilter, SIGNAL(textEdited(QString)), this, SLOT(filterChanged(QString)));
-   connect(keyFilter, SIGNAL(textEdited(QString)), this, SLOT(filterKeysSChanged(QString)));
+   connect(textFilter, &QLineEdit::textEdited, this, &ShortcutConfig::filterChanged);
+   connect(keyFilter, &QLineEdit::textEdited, this, &ShortcutConfig::filterKeyChanged);
 
    okButton->setDefault(true);
    connect(defineButton, SIGNAL(pressed()), this, SLOT(assignShortcut()));
@@ -78,7 +78,7 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
 
    //Fill up category listview:
    SCListViewItem* newItem;
-   SCListViewItem* selItem = 0;
+   SCListViewItem* selItem = nullptr;
    for (int i=0; i < SHRT_NUM_OF_CATEGORIES; i++) {
          newItem = new SCListViewItem(cgListView, i);
          newItem->setText(COL_CATVIEW, shortcut_category[i].name);
@@ -88,42 +88,51 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    if(selItem)
      cgListView->setCurrentItem(selItem);
 
-   scListView->header()->resizeSection(COL_DESCR, 360);
-
    updateSCListView();
+
+   scListView->setSortingEnabled(true);
+
+   scListView->header()->resizeSection(COL_KEY, 120);
+   scListView->header()->resizeSection(COL_DESCR, 360);
+   scListView->header()->resizeSection(COL_CAT, 320);
+
+   scListView->sortByColumn(COL_DESCR, Qt::AscendingOrder);
    }
 
-void ShortcutConfig::filterChanged(QString newFilterText)
+void ShortcutConfig::filterChanged(QString)
 {
-  updateSCListView(newFilterText, QString());
+  updateSCListView();
 }
 
-void ShortcutConfig::filterKeyChanged(QString keyFilterText)
+void ShortcutConfig::filterKeyChanged(QString)
 {
-    updateSCListView(QString(), keyFilterText);
+    updateSCListView();
 }
 
-void ShortcutConfig::updateSCListView(QString filterText, QString filterKey)
+void ShortcutConfig::updateSCListView()
 {
     scListView->clear();
     SCListViewItem* newItem;
+
+    QString filterText = textFilter->text();
+    QString filterKey = keyFilter->text();
 
     for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
         if (shortcuts[i].type & current_category) {
 
             if ((filterText.isEmpty() || QString(shortcuts[i].descr).contains(filterText, Qt::CaseInsensitive))
-                    && (filterKey.isEmpty() || QString(shrtToStr(shortcuts[i].key)).contains(filterKey, Qt::CaseInsensitive)) )
+                    && (filterKey.isEmpty() || QString(shrtToStr(i)).contains(filterKey, Qt::CaseInsensitive)) )
             {
                 newItem = new SCListViewItem(scListView, i);
-                newItem->setText(COL_KEY, shrtToStr(shortcuts[i].key));
+                newItem->setText(COL_KEY, shrtToStr(i));
                 newItem->setText(COL_DESCR, qApp->translate("shortcuts", shortcuts[i].descr));
-                QString cats;
 
-                for (int j = 0; j < (SHRT_NUM_OF_CATEGORIES - 2); j++) {
+                QString cats;
+                for (int j = 0; j < (SHRT_NUM_OF_CATEGORIES - 1); j++) {
                     if (shortcuts[i].type & shortcut_category[j].id_flag) {
                       if (!cats.isEmpty())
                           cats += QStringLiteral("+");
-                        cats += shortcut_category[i].name;
+                        cats += shortcut_category[j].name;
                       }
                 }
                 newItem->setText(COL_CAT, cats);
@@ -134,7 +143,7 @@ void ShortcutConfig::updateSCListView(QString filterText, QString filterKey)
 
 void ShortcutConfig::assignShortcut()
       {
-      SCListViewItem* active = (SCListViewItem*) scListView->selectedItems()[0];
+      SCListViewItem* active = static_cast<SCListViewItem*>(scListView->selectedItems().at(0));
       int shortcutindex = active->getIndex();
       ShortcutCaptureDialog* sc = new ShortcutCaptureDialog(this, shortcutindex);
       int key = sc->exec();
@@ -150,7 +159,7 @@ void ShortcutConfig::assignShortcut()
 
 void ShortcutConfig::clearShortcut()
       {
-      SCListViewItem* active = (SCListViewItem*) scListView->selectedItems()[0];
+      SCListViewItem* active = static_cast<SCListViewItem*>(scListView->selectedItems().at(0));
       int shortcutindex = active->getIndex();
       shortcuts[shortcutindex].key = 0; //Cleared
       active->setText(COL_KEY,"");
@@ -159,18 +168,17 @@ void ShortcutConfig::clearShortcut()
       }
 
 void ShortcutConfig::categorySelChanged(QTreeWidgetItem* i, int /*column*/)
-      {
-            SCListViewItem* item = (SCListViewItem*) i;
-            current_category = shortcut_category[item->getIndex()].id_flag;
-            printf("category sel changed %d\n", current_category);
-            updateSCListView();
-      }
+{
+    SCListViewItem* item = static_cast<SCListViewItem*>(i);
+    current_category = shortcut_category[item->getIndex()].id_flag;
+    printf("category sel changed %d\n", current_category);
+    updateSCListView();
+}
 
 void ShortcutConfig::shortcutSelChanged(QTreeWidgetItem* in_item, int /*column*/)
       {
-
       defineButton->setEnabled(true);
-      SCListViewItem* active = (SCListViewItem*) in_item;
+      SCListViewItem* active = static_cast<SCListViewItem*>(in_item);
       int index = active->getIndex();
       if (shortcuts[index].key != 0)
             clearButton->setEnabled(true);

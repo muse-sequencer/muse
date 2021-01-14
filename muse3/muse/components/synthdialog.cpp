@@ -39,14 +39,7 @@ SynthDialog::SynthDialog(QWidget* parent)
     ui.tabBar->addTab("All");
     ui.tabBar->addTab("Favorites");
 
-    //    ui.pList->setColumnCount(5);
-
-    ui.pList->setRootIsDecorated(false);
-    ui.pList->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui.pList->setSelectionMode(QAbstractItemView::SingleSelection);
     ui.pList->setAlternatingRowColors(true);
-    ui.pList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    ui.pList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ui.okB->setDefault(true);
     ui.okB->setEnabled(false);
@@ -65,7 +58,6 @@ SynthDialog::SynthDialog(QWidget* parent)
     }
 
     ui.tabBar->setCurrentIndex(curTab);
-    //    ui.tabBar->setMovable(true);
 
     ui.pluginType->addItem("All", SEL_TYPE_ALL);
     ui.pluginType->addItem("MESS", SEL_TYPE_MESS);
@@ -97,7 +89,7 @@ SynthDialog::SynthDialog(QWidget* parent)
         ui.pList->header()->resizeSection(COL_VERSION, 64);
         ui.pList->header()->resizeSection(COL_URI, 300);
 
-        ui.pList->sortByColumn(0, Qt::AscendingOrder);
+        ui.pList->sortByColumn(COL_NAME, Qt::AscendingOrder);
     }
     else
         ui.pList->header()->restoreState(listSave);
@@ -110,8 +102,6 @@ SynthDialog::SynthDialog(QWidget* parent)
     connect(ui.tabBar,  SIGNAL(currentChanged(int)), SLOT(tabChanged(int)));
     connect(ui.filterBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillSynths()));
     connect(ui.catButtonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked), this, &SynthDialog::categoryChanged);
-
-    ui.filterBox->setFocus();
 }
 
 void SynthDialog::filterType(int i)

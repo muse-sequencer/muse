@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>993</width>
-    <height>525</height>
+    <width>1000</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,10 @@
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,0" columnminimumwidth="0,0">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetDefaultConstraint</enum>
+   </property>
    <item row="0" column="0">
     <widget class="QTreeWidget" name="cgListView">
      <property name="sizePolicy">
@@ -31,9 +34,15 @@
        <height>200</height>
       </size>
      </property>
+     <property name="rootIsDecorated">
+      <bool>false</bool>
+     </property>
+     <property name="itemsExpandable">
+      <bool>false</bool>
+     </property>
      <column>
       <property name="text">
-       <string>Shortcut Category</string>
+       <string>Shortcut Context</string>
       </property>
      </column>
     </widget>
@@ -41,8 +50,8 @@
    <item row="0" column="1">
     <widget class="QTreeWidget" name="scListView">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>1</horstretch>
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
@@ -55,10 +64,25 @@
      <property name="focusPolicy">
       <enum>Qt::StrongFocus</enum>
      </property>
+     <property name="textElideMode">
+      <enum>Qt::ElideRight</enum>
+     </property>
+     <property name="rootIsDecorated">
+      <bool>false</bool>
+     </property>
+     <attribute name="headerCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="headerMinimumSectionSize">
+      <number>120</number>
+     </attribute>
      <attribute name="headerDefaultSectionSize">
       <number>120</number>
      </attribute>
      <attribute name="headerShowSortIndicator" stdset="0">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="headerStretchLastSection">
       <bool>true</bool>
      </attribute>
      <column>
@@ -73,7 +97,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Category</string>
+       <string>Context</string>
       </property>
      </column>
     </widget>
@@ -83,7 +107,7 @@
      <item>
       <widget class="QLabel" name="keyFilterLabel">
        <property name="text">
-        <string>Filter shortcut</string>
+        <string>Shortcut</string>
        </property>
       </widget>
      </item>
@@ -113,7 +137,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>10</width>
+         <width>20</width>
          <height>20</height>
         </size>
        </property>
@@ -122,7 +146,7 @@
      <item>
       <widget class="QLabel" name="textFilterLabel">
        <property name="text">
-        <string>Filter description</string>
+        <string>Description</string>
        </property>
       </widget>
      </item>
@@ -132,7 +156,7 @@
     </layout>
    </item>
    <item row="2" column="0" colspan="2">
-    <layout class="QHBoxLayout">
+    <layout class="QHBoxLayout" name="hLayout">
      <item>
       <widget class="QPushButton" name="resetButton">
        <property name="toolTip">
@@ -182,6 +206,9 @@
        </property>
        <property name="shortcut">
         <string>Alt+D</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -246,7 +273,7 @@
         <string>Alt+O</string>
        </property>
        <property name="default">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>

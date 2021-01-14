@@ -69,9 +69,7 @@ class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
 
       int current_category;
 
-      void updateSCListView(QString filterText, QString filterKey);
-
-      void updateSCListView() { updateSCListView(textFilter->text(), keyFilter->text()); }
+      void updateSCListView();
 
       void closeEvent(QCloseEvent *e);
       void closing();
