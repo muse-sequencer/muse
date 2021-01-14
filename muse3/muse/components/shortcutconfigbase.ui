@@ -21,13 +21,13 @@
     <widget class="QTreeWidget" name="cgListView">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-       <horstretch>1</horstretch>
+       <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
      <property name="minimumSize">
       <size>
-       <width>105</width>
+       <width>120</width>
        <height>200</height>
       </size>
      </property>
@@ -42,7 +42,7 @@
     <widget class="QTreeWidget" name="scListView">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>2</horstretch>
+       <horstretch>1</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
@@ -52,6 +52,15 @@
        <height>230</height>
       </size>
      </property>
+     <property name="focusPolicy">
+      <enum>Qt::StrongFocus</enum>
+     </property>
+     <attribute name="headerDefaultSectionSize">
+      <number>120</number>
+     </attribute>
+     <attribute name="headerShowSortIndicator" stdset="0">
+      <bool>true</bool>
+     </attribute>
      <column>
       <property name="text">
        <string>Shortcut</string>
@@ -62,14 +71,58 @@
        <string>Description</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>Category</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item row="1" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QLabel" name="keyFilterLabel">
+       <property name="text">
+        <string>Filter shortcut</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="keyFilter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>230</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>10</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QLabel" name="textFilterLabel">
        <property name="text">
-        <string>Filter:</string>
+        <string>Filter description</string>
        </property>
       </widget>
      </item>
@@ -149,16 +202,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="applyButton">
-       <property name="text">
-        <string>&amp;Apply</string>
-       </property>
-       <property name="shortcut">
-        <string>Alt+A</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="textFileButton">
        <property name="text">
         <string>&amp;Printable file...</string>
@@ -185,12 +228,25 @@
       </spacer>
      </item>
      <item>
+      <widget class="QPushButton" name="applyButton">
+       <property name="text">
+        <string>&amp;Apply</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+A</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="okButton">
        <property name="text">
         <string>&amp;Ok</string>
        </property>
        <property name="shortcut">
         <string>Alt+O</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -199,6 +255,18 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>textFilter</tabstop>
+  <tabstop>keyFilter</tabstop>
+  <tabstop>cgListView</tabstop>
+  <tabstop>scListView</tabstop>
+  <tabstop>resetButton</tabstop>
+  <tabstop>clearButton</tabstop>
+  <tabstop>defineButton</tabstop>
+  <tabstop>textFileButton</tabstop>
+  <tabstop>applyButton</tabstop>
+  <tabstop>okButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
