@@ -2018,7 +2018,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 QAction* act = nullptr;
                 int last_rackpos = -1;
                 bool internal_found = false;
-                bool synth_found = false;
+//                bool synth_found = false;
 
                 p->addAction(new MusEGui::MenuTitleItem(tr("Automation Controls"), p));
                 act = p->addAction(tr("Show All with Events"));
@@ -2027,12 +2027,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 act->setData(-2);
 
                 QList<const MusECore::CtrlList*> tmpList;
-                bool nextList = false;
 
-                for(MusECore::CtrlListList::iterator icll = cll->begin(); icll != cll->end(); ++icll) {
-                    MusECore::CtrlList *cl = icll->second;
-//                    if (cl->dontShow())
-//                        continue;
+                for (const auto& icll : *cll) {
+                    MusECore::CtrlList *cl = icll.second;
+                    if (cl->dontShow())
+                        continue;
 
                     int ctrl = cl->id();
 
@@ -2041,7 +2040,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         if(!internal_found) {
                             p->addAction(new MusEGui::MenuTitleItem(tr("Internal"), p));
                             internal_found = true;
-                            nextList = true;
                         }
                     }
                     else
@@ -2057,7 +2055,6 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                                 ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos) : QString();
                                     p->addAction(new MusEGui::MenuTitleItem(s, p));
                                     last_rackpos = rackpos;
-                                    nextList = true;
                                 }
                             }
                         }
@@ -2065,28 +2062,43 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         {
                             if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                                if(!synth_found) {
-                                    p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p));
-                                    synth_found = true;
-                                    nextList = true;
-                                }
+                                tmpList.append(cl);
+                                continue;
                             }
                         }
                     }
 
-                    if (icll == cll->begin())
-                        nextList = false;
+                    act = p->addAction(cl->name());
+                    act->setCheckable(true);
+                    act->setChecked(cl->isVisible());
 
-                    if (!nextList) {
-                        if (!cl->dontShow())
-                            tmpList.append(cl);
-                        if (std::next(icll) != cll->end())
-                            continue;
+                    QPixmap pix(8,8);
+                    QPainter qp(&pix);
+                    qp.fillRect(0,0,8,8,cl->color());
+                    qp.setPen(Qt::black);
+                    qp.drawRect(0,0,8,8);
+                    if (cl->size() > 0) {
+                        if (cl->color() == Qt::black)
+                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
+                        else
+                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
                     }
+                    QIcon icon(pix);
+                    act->setIcon(icon);
+                    //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
 
-                    nextList = false;
-                    if (tmpList.isEmpty())
-                        continue;
+                    int data = ctrl<<8; // shift 8 bits
+                    data += 150; // illegal color > 100
+                    act->setData(data);
+                    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
+                    act->setMenu(m);
+                }
+
+
+
+                if (!tmpList.isEmpty()) {
+
+                    p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p));
 
                     std::sort(tmpList.begin(), tmpList.end(),
                               [](const MusECore::CtrlList* a, const MusECore::CtrlList* b) -> bool { return a->name() < b->name(); });
@@ -2118,35 +2130,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         act->setData(data);
                         PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
                         act->setMenu(m);
-
                     }
 
                     tmpList.clear();
-
-//                    act = p->addAction(cl->name());
-//                    act->setCheckable(true);
-//                    act->setChecked(cl->isVisible());
-
-//                    QPixmap pix(8,8);
-//                    QPainter qp(&pix);
-//                    qp.fillRect(0,0,8,8,cl->color());
-//                    qp.setPen(Qt::black);
-//                    qp.drawRect(0,0,8,8);
-//                    if (cl->size() > 0) {
-//                        if (cl->color() == Qt::black)
-//                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
-//                        else
-//                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
-//                    }
-//                    QIcon icon(pix);
-//                    act->setIcon(icon);
-//                    //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
-
-//                    int data = ctrl<<8; // shift 8 bits
-//                    data += 150; // illegal color > 100
-//                    act->setData(data);
-//                    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
-//                    act->setMenu(m);
                 }
 
                 connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
