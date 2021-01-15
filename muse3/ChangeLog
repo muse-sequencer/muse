@@ -1,3 +1,6 @@
+15.01.2021
+    - Fix #718: Missing strips/selections at first mixer display. (kybos)
+    - Fix: Missing simpledrums plugin, both normal build and AppImage. (kybos)
 14.01.2021
     - Add: Improve Key Shortcuts maintenance dialog. Add filter for shorcuts,
         list contexts per shortcut. (kybos)
