@@ -693,7 +693,7 @@ void TList::returnPressed()
                                                                   editor->text()));
             }
         }
-        
+
         editTrack = nullptr;
     }
 
@@ -1199,7 +1199,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                 editTrack=t;
 
                 ctrl_num=Arranger::custom_columns[section-COL_CUSTOM_MIDICTRL_OFFSET].ctrl;
-                
+
                 MusECore::MidiTrack* mt=(MusECore::MidiTrack*)t;
                 MusECore::MidiPort* mp = &MusEGlobal::midiPorts[mt->outPort()];
                 const int chan = mt->outChannel();
@@ -1284,7 +1284,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
         }
 #endif
 #endif
-        
+
         QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
         if (ract == gact) {
             bool show = !synth->guiVisible();
@@ -2023,11 +2023,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 p->disconnect();
                 p->clear();
                 p->setTitle(tr("Viewable automation"));
-                MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)t)->controller();
+                MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(t)->controller();
                 QAction* act = nullptr;
                 int last_rackpos = -1;
-                bool internal_found = false;
-                bool synth_found = false;
+                bool internalHeaderDone = false;
+                bool synthHeaderDone = false;
 
                 p->addAction(new MusEGui::MenuTitleItem(tr("Automation Display"), p));
                 act = p->addAction(tr("Show All with Events"));
@@ -2035,8 +2035,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 act = p->addAction(tr("Hide All"));
                 act->setData(AUTO_HIDE_ALL);
 
-                for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
-                    MusECore::CtrlList *cl = icll->second;
+                QList<const MusECore::CtrlList*> tmpList;
+
+                for (const auto& icll : *cll) {
+                    MusECore::CtrlList *cl = icll.second;
                     if (cl->dontShow())
                         continue;
 
@@ -2044,62 +2046,48 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                     if(ctrl < AC_PLUGIN_CTL_BASE)
                     {
-                        if(!internal_found)
+                        if(!internalHeaderDone) {
                             p->addAction(new MusEGui::MenuTitleItem(tr("Internal"), p));
-                        internal_found = true;
+                            internalHeaderDone = true;
+                        }
+                        addAutoMenuAction(p, cl);
                     }
                     else
                     {
-                        if(ctrl < (int)MusECore::genACnum(MusECore::MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.
+                        if (ctrl < static_cast<int>(MusECore::genACnum(MusECore::MAX_PLUGINS, 0)))  // The beginning of the special dssi synth controller block.
                         {
                             int rackpos = (ctrl - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
-                            if(rackpos < MusECore::PipelineDepth)
+                            if (rackpos < MusECore::PipelineDepth)
                             {
                                 if(rackpos != last_rackpos)
                                 {
-                                    QString s = ((MusECore::AudioTrack*)t)->efxPipe() ?
-                                                ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos) : QString();
+                                    outputAutoMenuSorted(p, tmpList);
+
+                                    QString s = static_cast<MusECore::AudioTrack*>(t)->efxPipe() ?
+                                                static_cast<MusECore::AudioTrack*>(t)->efxPipe()->name(rackpos) : QString();
                                     p->addAction(new MusEGui::MenuTitleItem(s, p));
+                                    last_rackpos = rackpos;
                                 }
-                                last_rackpos = rackpos;
                             }
+                            tmpList.append(cl);
                         }
                         else
                         {
-                            if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+                            if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                                if(!synth_found)
+                                if(!synthHeaderDone) {
+                                    outputAutoMenuSorted(p, tmpList);
                                     p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p));
-                                synth_found = true;
+                                    synthHeaderDone = true;
+                                }
+                                tmpList.append(cl);
                             }
                         }
                     }
-
-                    act = p->addAction(cl->name());
-                    act->setCheckable(true);
-                    act->setChecked(cl->isVisible());
-
-                    QPixmap pix(8,8);
-                    QPainter qp(&pix);
-                    qp.fillRect(0,0,8,8,cl->color());
-                    qp.setPen(Qt::black);
-                    qp.drawRect(0,0,8,8);
-                    if (cl->size() > 0) {
-                        if (cl->color() == Qt::black)
-                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
-                        else
-                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
-                    }
-                    QIcon icon(pix);
-                    act->setIcon(icon);
-                    //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
-
-                    int data = ctrl<<8; // shift 8 bits
-                    data += 150; // illegal color > 100
-                    act->setData(data);
-                    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
-                    act->setMenu(m);
                 }
+
+                outputAutoMenuSorted(p, tmpList);
+
                 connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
                 p->exec(QCursor::pos());
 
@@ -2616,7 +2604,48 @@ void TList::mousePressEvent(QMouseEvent* ev)
     redraw();
 }
 
-void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
+void TList::addAutoMenuAction(PopupMenu* p, const MusECore::CtrlList *cl) {
+    QAction *act = p->addAction(cl->name());
+    act->setCheckable(true);
+    act->setChecked(cl->isVisible());
+
+    QPixmap pix(8,8);
+    QPainter qp(&pix);
+    qp.fillRect(0,0,8,8,cl->color());
+    qp.setPen(Qt::black);
+    qp.drawRect(0,0,8,8);
+    if (cl->size() > 0) {
+        if (cl->color() == Qt::black)
+            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
+        else
+            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
+    }
+    QIcon icon(pix);
+    act->setIcon(icon);
+
+    int ctrl = cl->id();
+    int data = ctrl<<8; // shift 8 bits
+    data += 150; // illegal color > 100
+    act->setData(data);
+    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
+    act->setMenu(m);
+}
+
+void TList::outputAutoMenuSorted(PopupMenu* p, QList<const MusECore::CtrlList*> &tmpList) {
+
+    if (!tmpList.isEmpty()) {
+
+        std::sort(tmpList.begin(), tmpList.end(),
+                  [](const MusECore::CtrlList* a, const MusECore::CtrlList* b) -> bool { return a->name() < b->name(); });
+
+        for (const auto& it : tmpList)
+            addAutoMenuAction(p, it);
+
+        tmpList.clear();
+    }
+}
+
+    void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
 {
     if (turnOff)
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, state));

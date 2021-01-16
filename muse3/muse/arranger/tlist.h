@@ -139,6 +139,8 @@ class TList : public QWidget {
       void editTrackName(MusECore::Track *t);
       void setTrackChannel(MusECore::Track *t, bool isDelta, int channel, int delta, bool doAllTracks = false);
       void incrementController(MusECore::Track* t, int controllerType, int incrementValue);
+      void addAutoMenuAction(PopupMenu* p, const MusECore::CtrlList *cl);
+      void outputAutoMenuSorted(PopupMenu* p, QList<const MusECore::CtrlList *> &);
 
 
    protected:
