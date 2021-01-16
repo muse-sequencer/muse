@@ -1,3 +1,20 @@
+15.01.2021
+    - Fix #718: Missing strips/selections at first mixer display. (kybos)
+    - Fix: Missing simpledrums plugin, both normal build and AppImage. (kybos)
+14.01.2021
+    - Add: Improve Key Shortcuts maintenance dialog. Add filter for shorcuts,
+        list contexts per shortcut. (kybos)
+    - Fix: HiDPI scaling for VST plugins. (kybos)
+13.01.2021
+    - Add: Consistent shortcuts for Add track. Show shortcuts in menu. (kybos)
+11.01.2021
+    - New: Selection dialog for Add synth track incl. favorites handling
+        in dialog and synth menu. (kybos)
+06.01.2021
+    - Fix #940: Tool shortcuts not updating properly when changed. (kybos)
+03.01.2021
+    - Fix #932: Add Show All with Events/Hide All to track automation menu.
+        Modify control icon so it's clear which controls contain events. (kybos)
 02.01.2021
     - Add: Enable CC events for MIDI remote control (#566). (kybos)
 30.12.2020

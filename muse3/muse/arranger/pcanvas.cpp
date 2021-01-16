@@ -101,8 +101,8 @@ using std::set;
 namespace MusEGui {
 
 const int PartCanvas::_automationPointDetectDist = 4;
-const int PartCanvas::_automationPointWidthUnsel = 2;
-const int PartCanvas::_automationPointWidthSel = 3;
+const int PartCanvas::_automationPointWidthUnsel = 4;
+const int PartCanvas::_automationPointWidthSel = 6;
 
 //---------------------------------------------------------
 //   NPart

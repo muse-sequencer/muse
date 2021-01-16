@@ -101,7 +101,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
       cfg = c;
       oldAuxsSize = 0;
-      routingDialog = 0;
+      routingDialog = nullptr;
       setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding));
       setWindowTitle(cfg->name);
       setWindowIcon(*museIcon);
@@ -208,6 +208,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       connect(MusEGlobal::muse, &MusEGui::MusE::configChanged, [this]() { configChanged(); } );
 
       initMixer();
+      updateStripList();
+      updateSelectedStrips();
       redrawMixer();
 
       central->installEventFilter(this);
@@ -398,7 +400,7 @@ Strip* AudioMixerApp::findStripForTrack(StripList &sl, MusECore::Track *t)
       return *si;
   }
   DEBUG_MIXER(stderr, "AudioMixerApp::findStripForTrack - ERROR: there was no strip for this track!\n");
-  return NULL;
+  return nullptr;
 }
 
 void AudioMixerApp::fillStripListTraditional()
@@ -783,16 +785,16 @@ void AudioMixerApp::initMixer()
   }
   // NOTE: stripConfigList is the replacement for obsolete stripOrder string list.
   else if (!cfg->stripConfigList.empty()) {
-    const int sz = cfg->stripConfigList.size();
-    for (int i=0; i < sz; i++) {
-      const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
-      DEBUG_MIXER(stderr, "processing strip #:%d [%d][%d]\n", i, sc._serial, sc._visible);
-      if(!sc._deleted && !sc.isNull()) {
-        const MusECore::Track* t = tl->findSerial(sc._serial);
-        if(t)
-          addStrip(t, sc);
-        }
-    }
+      const int sz = cfg->stripConfigList.size();
+      for (int i=0; i < sz; i++) {
+          const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
+          DEBUG_MIXER(stderr, "processing strip #:%d [%d][%d]\n", i, sc._serial, sc._visible);
+          if(!sc._deleted && !sc.isNull()) {
+              const MusECore::Track* t = tl->findSerial(sc._serial);
+              if (t)
+                  addStrip(t, sc);
+          }
+      }
   }
   else {
     for (MusECore::ciTrack tli = tl->cbegin(); tli != tl->cend(); ++tli) {
@@ -909,7 +911,7 @@ bool AudioMixerApp::updateStripList()
 
 void AudioMixerApp::updateSelectedStrips()
 {
-  foreach(Strip *s, stripList)
+  for (Strip *s : stripList)
   {
     if(MusECore::Track* t = s->getTrack())
     {
@@ -1060,7 +1062,7 @@ void AudioMixerApp::toggleRouteDialog()
 
 void AudioMixerApp::showRouteDialog(bool on)
       {
-      if (on && routingDialog == 0) {
+      if (on && routingDialog == nullptr) {
             routingDialog = new MusEGui::RouteDialog(this);
             connect(routingDialog, &RouteDialog::closed, [this]() { routingDialogClosed(); } );
             }
@@ -1178,7 +1180,7 @@ void AudioMixerApp::clearStripSelection()
 
 void AudioMixerApp::selectNextStrip(bool isRight)
 {
-  Strip *prev = NULL;
+  Strip *prev = nullptr;
 
   for (int i = 0; i < mixerLayout->count(); i++)
   {
@@ -1233,7 +1235,7 @@ bool AudioMixerApp::eventFilter(QObject *obj,
                              QEvent *event)
 {
   DEBUG_MIXER(stderr, "eventFilter type %d\n", (int)event->type());
-    QKeyEvent *keyEvent = NULL;//event data, if this is a keystroke event
+    QKeyEvent *keyEvent = nullptr;//event data, if this is a keystroke event
     bool result = false;//return true to consume the keystroke
 
     if (event->type() == QEvent::KeyPress)

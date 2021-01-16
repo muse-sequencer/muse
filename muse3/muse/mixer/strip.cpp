@@ -1433,7 +1433,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     }
 
     QPoint pt = QCursor::pos();
-    act = menu->exec(pt, 0);
+    act = menu->exec(pt, nullptr);
     if (!act)
     {
       delete menu;

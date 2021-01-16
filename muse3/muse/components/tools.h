@@ -44,14 +44,12 @@ enum Tool {
    RangeTool=32,
    PanTool=64,
    ZoomTool=128,
-//   ScoreTool=256,
-//   QuantTool=512,
-   DrawTool=1024,
-   MuteTool=2048,
-   AutomationTool=4096,
-   CursorTool=8192,
-   StretchTool=16384,
-   SamplerateTool=32768
+   DrawTool=256,
+   MuteTool=512,
+   AutomationTool=1024,
+   CursorTool=2048,
+   StretchTool=4096,
+   SamplerateTool=8192
 };
 
 extern QMap<int,int> toolShortcuts;
@@ -80,6 +78,7 @@ class EditToolBar : public QToolBar {
       int nactions;
 
       void initShortcuts();
+      void configChanged();
 
    private slots:
       void toolChanged(QAction* action);

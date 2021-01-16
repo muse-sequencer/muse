@@ -39,15 +39,9 @@ class QCloseEvent;
 
 #include "ui_shortcutconfigbase.h"
 
-#define SHRT_CATEGORY_COL 0
 
 namespace MusEGui {
 
-enum
-      {
-      SHRT_SHRTCUT_COL = 0,
-      SHRT_DESCR_COL,
-      };
 
 class SCListViewItem : public QTreeWidgetItem {
       private:
@@ -63,12 +57,19 @@ class SCListViewItem : public QTreeWidgetItem {
 
 class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
       Q_OBJECT
-      private:
+
+    enum KeyViewCols
+          {
+          COL_KEY = 0,
+          COL_DESCR,
+          COL_CAT
+          };
+
+    static constexpr int COL_CATVIEW = 0;
+
       int current_category;
 
-      void updateSCListView(int category, QString filterText);
-
-      void updateSCListView() { updateSCListView(current_category, textFilter->text()); }
+      void updateSCListView();
 
       void closeEvent(QCloseEvent *e);
       void closing();
@@ -83,6 +84,7 @@ class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
       void resetAllClicked();
       void textFileClicked();
       void filterChanged(QString);
+      void filterKeyChanged(QString);
 
       protected:
       void reject();  

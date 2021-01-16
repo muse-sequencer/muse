@@ -1074,6 +1074,11 @@ CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
       return ladspaCtrlMode(plugin, i);
       }
 
+CtrlEnumValues* Plugin::ctrlEnumValues ( unsigned long ) const
+{
+    return nullptr;
+}
+
 void PluginGroups::shift_left(int first, int last)
 {
   for (int i=first; i<=last; i++)
@@ -3909,7 +3914,8 @@ void PluginGui::constructGUIFromPluginMetadata() {
             connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
             connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
         }
-        else if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_ENUM) {
+        else if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_ENUM
+                 && plugin->ctrlEnumValues(i)) {
             label = new QLabel(QString(plugin->paramName(i)), nullptr);
             params[i].type  = GuiParam::GUI_ENUM;
             ComboBoxPI* cmb = new ComboBoxPI(mw, i, "enum");

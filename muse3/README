@@ -186,7 +186,7 @@ details.
     7. Install in /usr/local:
         sudo make install
     8. Run:
-        muse3
+        muse3 (or muse4 for version 4)
   
   =============================
       Generic building MusE:

@@ -40,6 +40,7 @@
 #include <QStringList>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QStyleHints>
 #include <QStandardPaths> 
 
 #include <iostream>
@@ -800,6 +801,10 @@ int main(int argc, char* argv[])
 
         app.instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !MusEGlobal::config.showIconsInMenus);
         app.instance()->setAttribute(Qt::AA_DontUseNativeDialogs, !MusEGlobal::config.useNativeStandardDialogs);
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
+        app.styleHints()->setShowShortcutsInContextMenus(true);
+#endif
 
         //=================
         //  LADSPA paths:
