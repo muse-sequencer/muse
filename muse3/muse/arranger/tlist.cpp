@@ -905,56 +905,57 @@ void TList::incrementController(MusECore::Track* t, int controllerType, int incr
 
     mp->putControllerValue(midiTrack->outPort(), channel, controllerType, value, false);
 }
+
 void TList::volumeSelectedTracksSlot(int incrementValue)
 {
     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
     for (auto t: *tracks)
     {
-        if (t->type() == MusECore::Track::MIDI)
+        if (!t->selected())
+            continue;
+
+        if (t->type() == MusECore::Track::MIDI || t->type() == MusECore::Track::DRUM)
         {
             incrementController(t, MusECore::CTRL_VOLUME, incrementValue*2);
         }
         else
         {
             MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
-            if (at->selected())
-            {
-                float vol = at->volume();
-                float dbVol = muse_val2dbr(vol);
-                float newVolume = dbVol + float(incrementValue)/2;
-                if (newVolume < MusEGlobal::config.minSlider)
-                    newVolume = MusEGlobal::config.minSlider;
-                if (newVolume > 10.0)
-                    newVolume = 10.0;
-                at->setVolume(muse_db2val(newVolume));
-            }
+            float vol = at->volume();
+            float dbVol = muse_val2dbr(vol);
+            float newVolume = dbVol + float(incrementValue)/2;
+            if (newVolume < MusEGlobal::config.minSlider)
+                newVolume = MusEGlobal::config.minSlider;
+            if (newVolume > 10.0)
+                newVolume = 10.0;
+            at->setVolume(muse_db2val(newVolume));
         }
     }
 }
+
 void TList::panSelectedTracksSlot(int incrementValue)
 {
     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
     for (auto t : *tracks)
     {
-        if (t->type() == MusECore::Track::MIDI)
+        if (!t->selected())
+            continue;
+
+        if (t->type() == MusECore::Track::MIDI || t->type() == MusECore::Track::DRUM)
         {
             incrementController(t, MusECore::CTRL_PANPOT, incrementValue);
         }
         else
         {
             MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
-            if (at->selected())
-            {
-                float newPan = at->pan() + 0.01 * incrementValue;
-                if (newPan < -1.0)
-                    newPan = -1.0;
-                if (newPan > 1.0)
-                    newPan = 1.0;
-                at->setPan(newPan);
-            }
+            float newPan = at->pan() + 0.01 * incrementValue;
+            if (newPan < -1.0)
+                newPan = -1.0;
+            if (newPan > 1.0)
+                newPan = 1.0;
+            at->setPan(newPan);
         }
     }
-    //  update();
 }
 
 
@@ -977,7 +978,7 @@ void TList::editTrackName(MusECore::Track *t)
     int coly = t->y() - ypos;
     int colh = t->height();
     editTrack = t;
-    if (editor == 0) {
+    if (editor == nullptr) {
         editor = new QLineEdit(this);
         editor->setFrame(false);
         connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));
@@ -2905,7 +2906,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
             break;
     {
         MusECore::Track* t = y2Track(startY + ypos);
-        if (t == 0)
+        if (t == nullptr)
             mode = NORMAL;
         else {
             mode = DRAG;
