@@ -2017,8 +2017,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)t)->controller();
                 QAction* act = nullptr;
                 int last_rackpos = -1;
-                bool internal_found = false;
-//                bool synth_found = false;
+                bool internalHeaderDone = false;
+                bool synthHeaderDone = false;
 
                 p->addAction(new MusEGui::MenuTitleItem(tr("Automation Controls"), p));
                 act = p->addAction(tr("Show All with Events"));
@@ -2037,103 +2037,47 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                     if(ctrl < AC_PLUGIN_CTL_BASE)
                     {
-                        if(!internal_found) {
+                        if(!internalHeaderDone) {
                             p->addAction(new MusEGui::MenuTitleItem(tr("Internal"), p));
-                            internal_found = true;
+                            internalHeaderDone = true;
                         }
+                        addAutoMenuAction(p, cl);
                     }
                     else
                     {
-                        if(ctrl < (int)MusECore::genACnum(MusECore::MAX_PLUGINS, 0))  // The beginning of the special dssi synth controller block.
+                        if (ctrl < static_cast<int>(MusECore::genACnum(MusECore::MAX_PLUGINS, 0)))  // The beginning of the special dssi synth controller block.
                         {
                             int rackpos = (ctrl - AC_PLUGIN_CTL_BASE) >> AC_PLUGIN_CTL_BASE_POW;
-                            if(rackpos < MusECore::PipelineDepth)
+                            if (rackpos < MusECore::PipelineDepth)
                             {
                                 if(rackpos != last_rackpos)
                                 {
-                                    QString s = ((MusECore::AudioTrack*)t)->efxPipe() ?
-                                                ((MusECore::AudioTrack*)t)->efxPipe()->name(rackpos) : QString();
+                                    outputAutoMenuSorted(p, tmpList);
+
+                                    QString s = static_cast<MusECore::AudioTrack*>(t)->efxPipe() ?
+                                                static_cast<MusECore::AudioTrack*>(t)->efxPipe()->name(rackpos) : QString();
                                     p->addAction(new MusEGui::MenuTitleItem(s, p));
                                     last_rackpos = rackpos;
                                 }
                             }
+                            tmpList.append(cl);
                         }
                         else
                         {
-                            if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
+                            if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH)
                             {
+                                if(!synthHeaderDone) {
+                                    outputAutoMenuSorted(p, tmpList);
+                                    p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p));
+                                    synthHeaderDone = true;
+                                }
                                 tmpList.append(cl);
-                                continue;
                             }
                         }
                     }
-
-                    act = p->addAction(cl->name());
-                    act->setCheckable(true);
-                    act->setChecked(cl->isVisible());
-
-                    QPixmap pix(8,8);
-                    QPainter qp(&pix);
-                    qp.fillRect(0,0,8,8,cl->color());
-                    qp.setPen(Qt::black);
-                    qp.drawRect(0,0,8,8);
-                    if (cl->size() > 0) {
-                        if (cl->color() == Qt::black)
-                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
-                        else
-                            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
-                    }
-                    QIcon icon(pix);
-                    act->setIcon(icon);
-                    //act->setIconVisibleInMenu(true); //setToolTip(tr("click to show/unshow, submenu to select color"));
-
-                    int data = ctrl<<8; // shift 8 bits
-                    data += 150; // illegal color > 100
-                    act->setData(data);
-                    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
-                    act->setMenu(m);
                 }
 
-
-
-                if (!tmpList.isEmpty()) {
-
-                    p->addAction(new MusEGui::MenuTitleItem(tr("Synth"), p));
-
-                    std::sort(tmpList.begin(), tmpList.end(),
-                              [](const MusECore::CtrlList* a, const MusECore::CtrlList* b) -> bool { return a->name() < b->name(); });
-
-                    for (const auto& it : tmpList) {
-                        auto cl = it;
-                        int ctrl = cl->id();
-
-                        act = p->addAction(cl->name());
-                        act->setCheckable(true);
-                        act->setChecked(cl->isVisible());
-
-                        QPixmap pix(8,8);
-                        QPainter qp(&pix);
-                        qp.fillRect(0,0,8,8,cl->color());
-                        qp.setPen(Qt::black);
-                        qp.drawRect(0,0,8,8);
-                        if (cl->size() > 0) {
-                            if (cl->color() == Qt::black)
-                                qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
-                            else
-                                qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
-                        }
-                        QIcon icon(pix);
-                        act->setIcon(icon);
-
-                        int data = ctrl<<8; // shift 8 bits
-                        data += 150; // illegal color > 100
-                        act->setData(data);
-                        PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
-                        act->setMenu(m);
-                    }
-
-                    tmpList.clear();
-                }
+                outputAutoMenuSorted(p, tmpList);
 
                 connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
                 p->exec(QCursor::pos());
@@ -2651,7 +2595,48 @@ void TList::mousePressEvent(QMouseEvent* ev)
     redraw();
 }
 
-void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
+void TList::addAutoMenuAction(PopupMenu* p, const MusECore::CtrlList *cl) {
+    QAction *act = p->addAction(cl->name());
+    act->setCheckable(true);
+    act->setChecked(cl->isVisible());
+
+    QPixmap pix(8,8);
+    QPainter qp(&pix);
+    qp.fillRect(0,0,8,8,cl->color());
+    qp.setPen(Qt::black);
+    qp.drawRect(0,0,8,8);
+    if (cl->size() > 0) {
+        if (cl->color() == Qt::black)
+            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
+        else
+            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
+    }
+    QIcon icon(pix);
+    act->setIcon(icon);
+
+    int ctrl = cl->id();
+    int data = ctrl<<8; // shift 8 bits
+    data += 150; // illegal color > 100
+    act->setData(data);
+    PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
+    act->setMenu(m);
+}
+
+void TList::outputAutoMenuSorted(PopupMenu* p, QList<const MusECore::CtrlList*> &tmpList) {
+
+    if (!tmpList.isEmpty()) {
+
+        std::sort(tmpList.begin(), tmpList.end(),
+                  [](const MusECore::CtrlList* a, const MusECore::CtrlList* b) -> bool { return a->name() < b->name(); });
+
+        for (const auto& it : tmpList)
+            addAutoMenuAction(p, it);
+
+        tmpList.clear();
+    }
+}
+
+    void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
 {
     if (turnOff)
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, state));
