@@ -2023,7 +2023,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 p->disconnect();
                 p->clear();
                 p->setTitle(tr("Viewable automation"));
-                MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)t)->controller();
+                MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(t)->controller();
                 QAction* act = nullptr;
                 int last_rackpos = -1;
                 bool internalHeaderDone = false;

@@ -1,3 +1,5 @@
+16.01.2021
+    - Fix #933: Sort automation controls in menu. (kybos)
 15.01.2021
     - Fix #718: Missing strips/selections at first mixer display. (kybos)
     - Fix: Missing simpledrums plugin, both normal build and AppImage. (kybos)
