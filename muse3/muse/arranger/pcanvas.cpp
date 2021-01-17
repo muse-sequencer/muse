@@ -1522,7 +1522,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             curItem = (NPart*)items.begin()->second; // just grab the first part
       }
 
-      CItem* newItem = 0;
+      CItem* newItem = nullptr;
       bool singleSelection = isSingleSelection();
       bool add = false;
 
