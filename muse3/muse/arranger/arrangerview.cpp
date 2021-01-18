@@ -137,8 +137,10 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);
   editDuplicateSelTrackAction = new QAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"), this);
-  editMoveUpSelTrackAction = new QAction(tr("Move Up Selected"), this);
-  editMoveDownSelTrackAction = new QAction(tr("Move Down Selected"), this);
+  editMoveUpSelTrackAction = new QAction(tr("Move Selected Up"), this);
+  editMoveDownSelTrackAction = new QAction(tr("Move Selected Down"), this);
+  editMoveTopSelTrackAction = new QAction(tr("Move Selected to Top"), this);
+  editMoveBottomSelTrackAction = new QAction(tr("Move Selected to Bottom"), this);
 
   editShrinkPartsAction = new QAction(tr("Shrink Selected Parts to Events Length"), this);
   editExpandPartsAction = new QAction(tr("Expand Selected Parts to Events Length"), this);
@@ -238,6 +240,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuTracks->addAction(editDeleteSelectedAction);
   menuTracks->addAction(editMoveUpSelTrackAction);
   menuTracks->addAction(editMoveDownSelTrackAction);
+  menuTracks->addAction(editMoveTopSelTrackAction);
+  menuTracks->addAction(editMoveBottomSelTrackAction);
   menuEdit->addSeparator();
 
   menuEdit->addMenu(select);
@@ -336,6 +340,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editDuplicateSelTrackAction, &QAction::triggered, [this]() { cmd(CMD_DUPLICATE_TRACK); } );
   connect(editMoveUpSelTrackAction,    &QAction::triggered, [this]() { cmd(CMD_MOVEUP_TRACK); } );
   connect(editMoveDownSelTrackAction,  &QAction::triggered, [this]() { cmd(CMD_MOVEDOWN_TRACK); } );
+  connect(editMoveTopSelTrackAction,   &QAction::triggered, [this]() { cmd(CMD_MOVETOP_TRACK); } );
+  connect(editMoveBottomSelTrackAction, &QAction::triggered, [this]() { cmd(CMD_MOVEBOTTOM_TRACK); } );
 
   connect(editShrinkPartsAction,       &QAction::triggered, [this]() { cmd(CMD_SHRINK_PART); } );
   connect(editExpandPartsAction,       &QAction::triggered, [this]() { cmd(CMD_EXPAND_PART); } );
@@ -638,10 +644,16 @@ void ArrangerView::cmd(int cmd)
         break;
 
     case CMD_MOVEUP_TRACK:
-        arranger->getTrackList()->moveSelectedTracks(true);
+        arranger->getTrackList()->moveSelectedTracks(true, false);
         break;
     case CMD_MOVEDOWN_TRACK:
-        arranger->getTrackList()->moveSelectedTracks(false);
+        arranger->getTrackList()->moveSelectedTracks(false, false);
+        break;
+    case CMD_MOVETOP_TRACK:
+        arranger->getTrackList()->moveSelectedTracks(true, true);
+        break;
+    case CMD_MOVEBOTTOM_TRACK:
+        arranger->getTrackList()->moveSelectedTracks(false, true);
         break;
 
     case CMD_SELECT_ALL:
@@ -938,6 +950,8 @@ void ArrangerView::updateShortcuts()
       editDuplicateSelTrackAction->setShortcut(shortcuts[SHRT_DUPLICATE_TRACK].key);
       editMoveUpSelTrackAction->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
       editMoveDownSelTrackAction->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+      editMoveTopSelTrackAction->setShortcut(shortcuts[SHRT_MOVETOP_TRACK].key);
+      editMoveBottomSelTrackAction->setShortcut(shortcuts[SHRT_MOVEBOTTOM_TRACK].key);
 
       //editDeleteSelectedAction has no acceleration
       
@@ -1020,6 +1034,8 @@ void ArrangerView::selectionChanged()
       editDuplicateSelTrackAction->setEnabled(tflag);
       editMoveUpSelTrackAction->setEnabled(tflag);
       editMoveDownSelTrackAction->setEnabled(tflag);
+      editMoveTopSelTrackAction->setEnabled(tflag);
+      editMoveBottomSelTrackAction->setEnabled(tflag);
    
       editCutAction->setEnabled(pflag);
       editCopyAction->setEnabled(pflag);

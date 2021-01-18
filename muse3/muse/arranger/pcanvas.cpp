@@ -1586,7 +1586,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   add = true;
             //To get an idea of which track is above us:
             int stepsize = rmapxDev(1);
-            MusECore::Track* track = curItem->part()->track();//top->part()->track();
+            MusECore::Track* track = curItem->part()->track();
             track = y2Track(track->y() - 1);
 
             //If we're at topmost (no track above), leave
@@ -1594,12 +1594,12 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   return;
 
             int middle = curItem->x() + curItem->part()->lenTick()/2;
-            CItem *aboveL = 0, *aboveR = 0;
+            CItem *aboveL = nullptr, *aboveR = nullptr;
             //Upper limit: song end, lower limit: song start
             int ulimit  = MusEGlobal::song->len();
             int llimit = 0;
 
-            while (newItem == 0) {
+            while (newItem == nullptr) {
                   int y = track->y() + 2;
                   int xoffset = 0;
                   int xleft   = middle - xoffset;
@@ -1615,13 +1615,13 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
 
                   if ((aboveL || aboveR) != 0) { //We've hit something
-                        CItem* above  = 0;
-                        above = (aboveL !=0) ? aboveL : aboveR;
+                        CItem* above  = nullptr;
+                        above = (aboveL != nullptr) ? aboveL : aboveR;
                         newItem = above;
                   }
                   else { //We didn't hit anything. Move to track above, if there is one
                         track = y2Track(track->y() - 1);
-                        if (track == 0)
+                        if (track == nullptr)
                               return;
                   }
             }
@@ -1643,16 +1643,16 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if (!track)
                   return;
 
-            CItem *belowL = 0, *belowR = 0;
+            CItem *belowL = nullptr, *belowR = nullptr;
             //Upper limit: song end , lower limit: song start
             int ulimit = MusEGlobal::song->len();
             int llimit = 0;
-            while (newItem == 0) {
+            while (newItem == nullptr) {
                   int y = track->y() + 1;
                   int xoffset = 0;
                   int xleft   = middle - xoffset;
                   int xright  = middle + xoffset;
-                  while ((xleft > llimit || xright < ulimit)  && (belowL == 0) && (belowR == 0)) {
+                  while ((xleft > llimit || xright < ulimit)  && (belowL == nullptr) && (belowR == nullptr)) {
                         xoffset += stepsize;
                         xleft  = middle - xoffset;
                         xright = middle + xoffset;
@@ -1663,14 +1663,14 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
 
                   if ((belowL || belowR) != 0) { //We've hit something
-                        CItem* below = 0;
-                        below = (belowL !=0) ? belowL : belowR;
+                        CItem* below = nullptr;
+                        below = (belowL != nullptr) ? belowL : belowR;
                         newItem = below;
                   }
                   else {
                         //Get next track below, or abort if this is the lowest
                         track = y2Track(track->y() + track->height() + 1 );
-                        if (track == 0)
+                        if (track == nullptr)
                               return;
                   }
             }
