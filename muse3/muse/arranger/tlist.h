@@ -191,6 +191,7 @@ class TList : public QWidget {
       void setCurSelBorder(bool curSelBorder) { _curSelBorder = curSelBorder; }
       QColor curSelBorderColor() const { return _curSelBorderColor; }
       void setCurSelBorderColor(const QColor c) { _curSelBorderColor = c; }
+      void moveSelectedTracks(bool up, bool full);
       };
 
 } // namespace MusEGui

@@ -237,6 +237,10 @@ enum {
 
     SHRT_INSERTMEAS, //Ctrl+Shift+M - insert measures
     SHRT_DUPLICATE_TRACK, // Ctrl+Shift+D
+    SHRT_MOVEUP_TRACK,
+    SHRT_MOVEDOWN_TRACK,
+    SHRT_MOVETOP_TRACK,
+    SHRT_MOVEBOTTOM_TRACK,
 
     //Arranger tracks
     SHRT_SEL_TRACK_BELOW,

@@ -61,6 +61,7 @@
 #include "ctrl.h"
 #include "plugin.h"
 #include "operations.h"
+#include "shortcuts.h"
 
 
 #ifdef DSSI_SUPPORT
@@ -116,7 +117,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
     ypos = 0;
     editMode = false;
     editJustFinished=false;
-    setFocusPolicy(Qt::NoFocus);
+    setFocusPolicy(Qt::ClickFocus);
     setMouseTracking(true);
     header    = hdr;
 
@@ -776,7 +777,7 @@ void TList::ctrlValueFinished()
             }
         }
 
-        editTrack = 0;
+        editTrack = nullptr;
     }
 
     editMode = false;
@@ -978,7 +979,7 @@ void TList::editTrackName(MusECore::Track *t)
     int coly = t->y() - ypos;
     int colh = t->height();
     editTrack = t;
-    if (editor == 0) {
+    if (editor == nullptr) {
         editor = new QLineEdit(this);
         editor->setFrame(false);
         connect(editor, SIGNAL(editingFinished()), SLOT(returnPressed()));
@@ -1482,7 +1483,7 @@ void TList::keyPressEvent(QKeyEvent* e)
                 ctrl_edit->hide();
                 ctrl_edit->blockSignals(false);
             }
-            editTrack = 0;
+            editTrack = nullptr;
             editMode = false;
             setFocus();
             return;
@@ -1510,7 +1511,7 @@ void TList::moveSelection(int n)
     int nselect = tracks->countSelected();
     if (nselect != 1)
         return;
-    MusECore::Track* selTrack = 0;
+    MusECore::Track* selTrack = nullptr;
     for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
         MusECore::iTrack s = t;
         if ((*t)->selected()) {
@@ -2255,14 +2256,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 MusECore::Undo operations;
                 if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                 {
-                    for (const auto& it : *tracks) {
+                    for (const auto it : *tracks) {
                         if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
                             setMute(operations, it, turnOff, state);
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
-                    for (const auto& it : *tracks) {
+                    for (const auto it : *tracks) {
                         if (it->type() != MusECore::Track::AUDIO_OUTPUT)
                             setMute(operations, it, turnOff, state);
                     }
@@ -2300,14 +2301,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 MusECore::Undo operations;
                 if (t->selected() && tracks->countSelected() > 1) // toggle all selected tracks
                 {
-                    for (const auto& it : *tracks) {
+                    for (const auto it : *tracks) {
                         if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
                             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
-                    for (const auto& it : *tracks) {
+                    for (const auto it : *tracks) {
                         if (it->type() != MusECore::Track::AUDIO_OUTPUT)
                             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
                     }
@@ -2336,37 +2337,65 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 QMenu* p = new QMenu;
                 // Leave room for normal track IDs - base these at AUDIO_SOFTSYNTH.
                 int selCnt = MusEGlobal::song->countSelectedTracks();
-                p->addAction(*duplSelTrackSVGIcon, tr("Duplicate Track"))->setData(1005);
-                p->addAction(*minusSVGIcon, tr("Delete Track"))->setData(1001);
-                if(selCnt > 1){
-                    p->addAction(*duplSelTracksSVGIcon, tr("Duplicate Selected Tracks"))->setData(1004);
-                    p->addAction(*delSelTracksSVGIcon, tr("Delete Selected Tracks"))->setData(1003);
+
+                QAction *a;
+                a = p->addAction(*duplSelTrackSVGIcon, tr("Duplicate Track"));
+                a->setData(1005);
+                a = p->addAction(*minusSVGIcon, tr("Delete Track"));
+                a->setData(1001);
+
+                if (selCnt > 1){
+                    p->addSeparator();
+                    a = p->addAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"));
+                    a->setData(1004);
+                    a->setShortcut(shortcuts[SHRT_DUPLICATE_TRACK].key);
+                    a = p->addAction(*delSelTracksSVGIcon, tr("Delete Selected"));
+                    a->setData(1003);
                 }
-                p->addAction(*listeditSVGIcon, tr("Track Comment"))->setData(1002);
+
+                if (selCnt > 0) {
+                    p->addSeparator();
+                    a = p->addAction(tr("Move Selected Up"));
+                    a->setData(1006);
+                    a->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
+                    a = p->addAction(tr("Move Selected Down"));
+                    a->setData(1007);
+                    a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+                    a = p->addAction(tr("Move Selected to Top"));
+                    a->setData(1008);
+                    a->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
+                    a = p->addAction(tr("Move Selected to Bottom"));
+                    a->setData(1009);
+                    a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+                }
+
+                p->addSeparator();
+                a = p->addAction(*listeditSVGIcon, tr("Track Comment"));
+                a->setData(1002);
                 p->addSeparator();
 
                 if (t->type()==MusECore::Track::DRUM)
                 {
-                    QAction* tmp;
-                    tmp=p->addAction(tr("Save track's drumlist"));
-                    tmp->setData(1010);
-                    tmp->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
-                    tmp=p->addAction(tr("Load track's drumlist"));
-                    tmp->setData(1012);
-                    tmp=p->addAction(tr("Reset track's drumlist"));
-                    tmp->setData(1013);
-                    tmp->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
-                    tmp=p->addAction(tr("Reset track's drumlist-ordering"));
-                    tmp->setData(1016);
-                    tmp->setEnabled(!((MusECore::MidiTrack*)t)->drummap_ordering_tied_to_patch());
-                    tmp=p->addAction(tr("Copy track's drumlist to all selected tracks"));
-                    tmp->setData(1014);
-                    tmp->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
+                    a=p->addAction(tr("Save track's drumlist"));
+                    a->setData(1010);
+                    a->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
+                    a=p->addAction(tr("Load track's drumlist"));
+                    a->setData(1012);
+                    a=p->addAction(tr("Reset track's drumlist"));
+                    a->setData(1013);
+                    a->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
+                    a=p->addAction(tr("Reset track's drumlist-ordering"));
+                    a->setData(1016);
+                    a->setEnabled(!((MusECore::MidiTrack*)t)->drummap_ordering_tied_to_patch());
+                    a=p->addAction(tr("Copy track's drumlist to all selected tracks"));
+                    a->setData(1014);
+                    a->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
                     // 1016 is occupied.
                     p->addSeparator();
                 }
                 insertTrackMenu->setTitle(tr("Insert Track"));
                 p->addMenu(insertTrackMenu);
+
                 QAction* act = p->exec(ev->globalPos(), nullptr);
                 if (act) {
                     //fprintf(stderr, "TList::mousePressEvent act:%p\n", act);
@@ -2392,6 +2421,18 @@ void TList::mousePressEvent(QMouseEvent* ev)
                             break;
                         case 1005:
                             MusEGlobal::song->duplicateTracks(t);
+                            break;
+                        case 1006:
+                            moveSelectedTracks(true, false);
+                            break;
+                        case 1007:
+                            moveSelectedTracks(false, false);
+                            break;
+                        case 1008:
+                            moveSelectedTracks(true, true);
+                            break;
+                        case 1009:
+                            moveSelectedTracks(false, true);
                             break;
 
                         case 1010:
@@ -2906,7 +2947,7 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
             break;
     {
         MusECore::Track* t = y2Track(startY + ypos);
-        if (t == 0)
+        if (t == nullptr)
             mode = NORMAL;
         else {
             mode = DRAG;
@@ -2962,6 +3003,69 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
     }
 }
 
+void TList::moveSelectedTracks(bool up, bool full) {
+
+    // Move only visible? But the other track functions also work on hidden tracks
+    // (duplicate, delete...), so this seems more consistent (kybos)
+
+    MusECore::TrackList *tracks = MusEGlobal::song->tracks();
+
+    if (tracks->size() < 2 || tracks->countSelected() == 0
+            || (!up && tracks->back()->selected())
+            || (up && tracks->front()->selected()))
+        return;
+
+    if (MusEGlobal::audio->isPlaying()) {
+        MusEGlobal::muse->setStatusBarText(tr("Operation not available while playing"), 5000);
+        return;
+    }
+
+    MusECore::TrackList tracksTmp = *tracks;
+
+    unsigned delta = 1;
+    bool deltaFound = false;
+
+    if (up) {
+        for (const auto it : *tracks) {
+            if (!it->selected())
+                continue;
+
+            if (full & !deltaFound) {
+                delta = static_cast<unsigned>(tracks->index(it));
+                deltaFound = true;
+            }
+
+            unsigned sidx = static_cast<unsigned>(tracks->index(it));
+            unsigned i = delta;
+            while (i--) {
+                std::swap(tracksTmp[sidx], tracksTmp[sidx-1]);
+                sidx--;
+            }
+        }
+    } else {
+        for (auto it = tracks->rbegin(); it != tracks->rend(); it++) {
+            if (!(*it)->selected())
+                continue;
+
+            unsigned sidx = static_cast<unsigned>(tracks->index(*it));
+
+            if (full && !deltaFound) {
+                delta = static_cast<unsigned>(tracks->size()) - sidx - 1;
+                deltaFound = true;
+            }
+
+            unsigned i = delta;
+            while (i--) {
+                std::swap(tracksTmp[sidx], tracksTmp[sidx+1]);
+                sidx++;
+            }
+        }
+    }
+
+    MusEGlobal::song->tracks()->swap(tracksTmp);
+    MusEGlobal::song->update(SC_TRACK_MOVED);
+}
+
 //---------------------------------------------------------
 //   mouseReleaseEvent
 //---------------------------------------------------------
@@ -2987,41 +3091,45 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::MoveTrack, sTrack, dTrack));
             }
 
-            MusECore::TrackList *tracks = MusEGlobal::song->tracks();
-            if ( tracks->at(dTrack)->type() == MusECore::Track::AUDIO_AUX) {
+            // inconsistent, better keep the original aux knob order?
+            // - if aux track is moved in the mixer, the aux knobs are also NOT adjusted
+            // - if the drag action is undone, the aux knobs remain in the wrong order
 
-                MusECore::AuxList auxCopy; // = *MusEGlobal::song->auxs();
-                //MusEGlobal::song->auxs()->clear();
-                std::vector<int> oldAuxIndex;
+//            MusECore::TrackList *tracks = MusEGlobal::song->tracks();
+//            if ( tracks->at(dTrack)->type() == MusECore::Track::AUDIO_AUX) {
 
-                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
-                    if ((*t)->type() == MusECore::Track::AUDIO_AUX) {
-                        MusECore::AudioAux *ax = (MusECore::AudioAux*)*t;
-                        auxCopy.push_back(ax);
-                        oldAuxIndex.push_back(MusEGlobal::song->auxs()->index(ax)); // store old index
-                    }
-                }
-                // loop through all tracks and set the levels for all tracks
-                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
-                    MusECore::AudioTrack *trk = (MusECore::AudioTrack*)*t;
+//                MusECore::AuxList auxCopy; // = *MusEGlobal::song->auxs();
+//                //MusEGlobal::song->auxs()->clear();
+//                std::vector<int> oldAuxIndex;
 
-                    if (!trk->isMidiTrack() && trk->hasAuxSend())
-                    {
-                        std::vector<double> oldAuxValue;
-                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
-                            oldAuxValue.push_back(trk->auxSend(i));
-                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
-                            trk->setAuxSend(i, oldAuxValue[oldAuxIndex[i]] );
-                    }
-                    MusEGlobal::song->auxs()->clear();
-                    for (MusECore::iAudioAux t = auxCopy.begin(); t != auxCopy.end(); ++t) {
-                        MusEGlobal::song->auxs()->push_back(*t);
-                    }
-                }
+//                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+//                    if ((*t)->type() == MusECore::Track::AUDIO_AUX) {
+//                        MusECore::AudioAux *ax = (MusECore::AudioAux*)*t;
+//                        auxCopy.push_back(ax);
+//                        oldAuxIndex.push_back(MusEGlobal::song->auxs()->index(ax)); // store old index
+//                    }
+//                }
+//                // loop through all tracks and set the levels for all tracks
+//                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+//                    MusECore::AudioTrack *trk = (MusECore::AudioTrack*)*t;
 
-                MusEGlobal::song->update(SC_EVERYTHING);
+//                    if (!trk->isMidiTrack() && trk->hasAuxSend())
+//                    {
+//                        std::vector<double> oldAuxValue;
+//                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
+//                            oldAuxValue.push_back(trk->auxSend(i));
+//                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
+//                            trk->setAuxSend(i, oldAuxValue[oldAuxIndex[i]] );
+//                    }
+//                    MusEGlobal::song->auxs()->clear();
+//                    for (MusECore::iAudioAux t = auxCopy.begin(); t != auxCopy.end(); ++t) {
+//                        MusEGlobal::song->auxs()->push_back(*t);
+//                    }
+//                }
 
-            }
+//                MusEGlobal::song->update(SC_EVERYTHING);
+
+//            }
         }
     }
     if (mode != NORMAL) {

@@ -62,7 +62,8 @@ private:
         CMD_DELETE_TRACK, CMD_DUPLICATE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
         CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
         CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO,
-        CMD_RANGE_TO_SELECTION
+        CMD_RANGE_TO_SELECTION,
+        CMD_MOVEUP_TRACK, CMD_MOVEDOWN_TRACK, CMD_MOVETOP_TRACK, CMD_MOVEBOTTOM_TRACK
     };
 
     void closeEvent(QCloseEvent*) override;
@@ -92,6 +93,7 @@ private:
     QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;
     QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
     QAction *editDuplicateSelTrackAction;
+    QAction *editMoveUpSelTrackAction, *editMoveDownSelTrackAction, *editMoveTopSelTrackAction, *editMoveBottomSelTrackAction;
     QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
     QAction *editRangeToSelection;
     QAction *midiTransformerAction;
