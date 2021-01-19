@@ -1,3 +1,6 @@
+19.01.2021
+    - Add: Functions for moving multiple tracks in the track list (up,
+        down, top, bottom), incl. key shortcuts for each. (kybos)
 16.01.2021
     - Fix #933: Sort automation controls in menu. (kybos)
     - Fix: Crash when changing volume/pan by keyboard shortcut for drum

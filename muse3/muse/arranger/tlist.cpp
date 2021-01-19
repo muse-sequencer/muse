@@ -2344,7 +2344,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 a = p->addAction(*minusSVGIcon, tr("Delete Track"));
                 a->setData(1001);
 
-                if(selCnt > 1){
+                if (selCnt > 1){
                     p->addSeparator();
                     a = p->addAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"));
                     a->setData(1004);
@@ -2353,19 +2353,21 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     a->setData(1003);
                 }
 
-                p->addSeparator();
-                a = p->addAction(tr("Move Selected Up"));
-                a->setData(1006);
-                a->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
-                a = p->addAction(tr("Move Selected Down"));
-                a->setData(1007);
-                a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
-                a = p->addAction(tr("Move Selected to Top"));
-                a->setData(1008);
-                a->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
-                a = p->addAction(tr("Move Selected to Bottom"));
-                a->setData(1009);
-                a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+                if (selCnt > 0) {
+                    p->addSeparator();
+                    a = p->addAction(tr("Move Selected Up"));
+                    a->setData(1006);
+                    a->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
+                    a = p->addAction(tr("Move Selected Down"));
+                    a->setData(1007);
+                    a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+                    a = p->addAction(tr("Move Selected to Top"));
+                    a->setData(1008);
+                    a->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
+                    a = p->addAction(tr("Move Selected to Bottom"));
+                    a->setData(1009);
+                    a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+                }
 
                 p->addSeparator();
                 a = p->addAction(*listeditSVGIcon, tr("Track Comment"));
@@ -3089,41 +3091,45 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::MoveTrack, sTrack, dTrack));
             }
 
-            MusECore::TrackList *tracks = MusEGlobal::song->tracks();
-            if ( tracks->at(dTrack)->type() == MusECore::Track::AUDIO_AUX) {
+            // inconsistent, better keep the original aux knob order?
+            // - if aux track is moved in the mixer, the aux knobs are also NOT adjusted
+            // - if the drag action is undone, the aux knobs remain in the wrong order
 
-                MusECore::AuxList auxCopy; // = *MusEGlobal::song->auxs();
-                //MusEGlobal::song->auxs()->clear();
-                std::vector<int> oldAuxIndex;
+//            MusECore::TrackList *tracks = MusEGlobal::song->tracks();
+//            if ( tracks->at(dTrack)->type() == MusECore::Track::AUDIO_AUX) {
 
-                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
-                    if ((*t)->type() == MusECore::Track::AUDIO_AUX) {
-                        MusECore::AudioAux *ax = (MusECore::AudioAux*)*t;
-                        auxCopy.push_back(ax);
-                        oldAuxIndex.push_back(MusEGlobal::song->auxs()->index(ax)); // store old index
-                    }
-                }
-                // loop through all tracks and set the levels for all tracks
-                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
-                    MusECore::AudioTrack *trk = (MusECore::AudioTrack*)*t;
+//                MusECore::AuxList auxCopy; // = *MusEGlobal::song->auxs();
+//                //MusEGlobal::song->auxs()->clear();
+//                std::vector<int> oldAuxIndex;
 
-                    if (!trk->isMidiTrack() && trk->hasAuxSend())
-                    {
-                        std::vector<double> oldAuxValue;
-                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
-                            oldAuxValue.push_back(trk->auxSend(i));
-                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
-                            trk->setAuxSend(i, oldAuxValue[oldAuxIndex[i]] );
-                    }
-                    MusEGlobal::song->auxs()->clear();
-                    for (MusECore::iAudioAux t = auxCopy.begin(); t != auxCopy.end(); ++t) {
-                        MusEGlobal::song->auxs()->push_back(*t);
-                    }
-                }
+//                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+//                    if ((*t)->type() == MusECore::Track::AUDIO_AUX) {
+//                        MusECore::AudioAux *ax = (MusECore::AudioAux*)*t;
+//                        auxCopy.push_back(ax);
+//                        oldAuxIndex.push_back(MusEGlobal::song->auxs()->index(ax)); // store old index
+//                    }
+//                }
+//                // loop through all tracks and set the levels for all tracks
+//                for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+//                    MusECore::AudioTrack *trk = (MusECore::AudioTrack*)*t;
 
-                MusEGlobal::song->update(SC_EVERYTHING);
+//                    if (!trk->isMidiTrack() && trk->hasAuxSend())
+//                    {
+//                        std::vector<double> oldAuxValue;
+//                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
+//                            oldAuxValue.push_back(trk->auxSend(i));
+//                        for (unsigned i = 0 ; i < auxCopy.size(); i++)
+//                            trk->setAuxSend(i, oldAuxValue[oldAuxIndex[i]] );
+//                    }
+//                    MusEGlobal::song->auxs()->clear();
+//                    for (MusECore::iAudioAux t = auxCopy.begin(); t != auxCopy.end(); ++t) {
+//                        MusEGlobal::song->auxs()->push_back(*t);
+//                    }
+//                }
 
-            }
+//                MusEGlobal::song->update(SC_EVERYTHING);
+
+//            }
         }
     }
     if (mode != NORMAL) {
