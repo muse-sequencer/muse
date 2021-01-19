@@ -3126,7 +3126,7 @@ void TList::setHeader(Header* h)
 void TList::populateAddTrack()
 {
     addTrackMenu = new QMenu;
-    MusEGui::populateAddTrack(addTrackMenu);
+    MusEGui::populateAddTrack(addTrackMenu, false, false, true);
     insertTrackMenu = new QMenu;
     MusEGui::populateAddTrack(insertTrackMenu, false, true);
 }
