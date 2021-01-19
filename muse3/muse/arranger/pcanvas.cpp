@@ -3683,12 +3683,13 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       // Store first value for later
       double yfirst;
       {
+          double startVal = (ic == cl->end()) ? cl->curVal() : cl->begin()->second.val;
           if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-            yfirst = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
+            yfirst = logToVal(startVal, min, max); // represent volume between 0 and 1
             if (yfirst < 0) yfirst = 0.0;
           }
           else {
-            yfirst = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
+            yfirst = (startVal - min)/(max-min);  // we need to set curVal between 0 and 1
           }
           yfirst = oldY = bottom - rmapy_f(yfirst) * height;
       }
