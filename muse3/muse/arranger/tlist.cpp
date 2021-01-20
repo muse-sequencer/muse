@@ -1509,13 +1509,26 @@ void TList::moveSelection(int n)
     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
 
     int nselect = tracks->countSelected();
-    if (nselect != 1)
-        return;
+    if (nselect > 1) {
+      // remove selection for all but the first track
+      MusECore::Track* selTrack = nullptr;
+      for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
+
+        if (selTrack == nullptr) {
+          if ((*t)->selected())
+            selTrack = *t;
+        } else {
+          if ((*t)->selected())
+            (*t)->setSelected(false);
+        }
+      }
+    }
+
     MusECore::Track* selTrack = nullptr;
     for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
         MusECore::iTrack s = t;
         if ((*t)->selected()) {
-            if (n > 0) {
+            if (n > 0) { // Move down
                 while (n--) {
                     ++t;
                     if (t == tracks->end()) {
@@ -1531,7 +1544,7 @@ void TList::moveSelection(int n)
                     break;
                 }
             }
-            else {
+            else { // Move up
                 while (n++ != 0) {
                     if (t == tracks->begin())
                         break;

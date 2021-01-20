@@ -4420,7 +4420,7 @@ void MusE::importWave()
       if(!track)
       {
          QMessageBox::critical(this, QString("MusE"),
-                 tr("To import an audio file you have first to select a wave track"));
+                 tr("Failed to import wave track"));
                return;
 
       }

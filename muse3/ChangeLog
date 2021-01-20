@@ -6,6 +6,19 @@
     - Added a new dialog 'Save New Revision...' (SHIFT+R) for
       the case where you want to save but does not need the full
       create project dialog (rj)
+    - Fixed keyboard track selection after duplicating tracks,
+      it didn't like that multiple tracks was selected, if track
+      up/down is done while multiple are selected it now picks the
+      first instead of nothing at all. The source track is also
+      deselected (rj)
+    - Fixed automation point value printing for logarithmic values (rj)
+    - Changed automation add events to place them on the automation 
+      line instead of where the mouse is placed, which often is 
+      slightly offset (rj)
+    - Added the ability to cache midi event length when adding events
+      with the mouse, this is to speed up adding similar events as
+      it now will default to this length. Idea from a discussion
+      on linuxmusicians forum (rj)
 19.01.2021
     - Add: Functions for moving multiple tracks in the track list (up,
         down, top, bottom), incl. key shortcuts for each. (kybos)

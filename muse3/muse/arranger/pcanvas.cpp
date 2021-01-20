@@ -51,6 +51,7 @@
 #include "pcanvas.h"
 #include "globals.h"
 #include "icons.h"
+#include "ctrl.h"
 #include "event.h"
 #include "wave.h"
 #include "audio.h"
@@ -4141,7 +4142,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
     if(closest_point_cl->valueType() == MusECore::VAL_LOG)
       //closest_point_value = MusECore::fast_log10(closest_point_value) * 20.0;
       closest_point_value = muse_val2dbr(closest_point_value); // Here we can use the slower but accurate function.
-    automation.currentText = QString("Param:%1 Value:%2").arg(closest_point_cl->name()).arg(closest_point_value);
+    automation.currentText = QString("Param:%1 Value:%2").arg(closest_point_cl->name()).arg(closest_point_value, 0, 'g', 3);
 
 // FIXME These are attempts to update only the necessary rectangles. No time for it ATM, not much choice but to do full update.
 #if 0
@@ -4297,7 +4298,11 @@ void PartCanvas::processAutomationMovements(QPoint inPos, bool slowMotion)
   }
 
   // Store the text.
-  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(cvval);
+  double displayCvVal =  cvval;
+  if(automation.currentCtrlList->valueType() == MusECore::VAL_LOG)
+    displayCvVal = muse_val2dbr(cvval);
+
+  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(displayCvVal, 0, 'g', 3);
 
   const int fl_sz = automation.currentCtrlFrameList.size();
   for(int i = 0; i < fl_sz; ++i)
@@ -4379,43 +4384,25 @@ void PartCanvas::newAutomationVertex(QPoint pos)
   if (_tool != AutomationTool || automation.controllerState != addNewController)
     return;
 
-  Undo operations;
-
-  const int posy=mapy(pos.y());
-  const int tracky = mapy(automation.currentTrack->y());
-  const int trackHeight = automation.currentTrack->height();
-
-  const int mouseY = trackHeight - (posy - tracky)-2;
-  const double yfraction = ((double)mouseY)/automation.currentTrack->height();
-
-  double min, max;
-  automation.currentCtrlList->range(&min,&max);
-  double cvval;
-  if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-      cvval = valToLog(yfraction, min, max);
-      if (cvval< min) cvval=min;
-      if (cvval>max) cvval=max;
-  }
-  else {
-    // we need to set val between 0 and 1 (unless integer)
-    cvval = yfraction * (max-min) + min;
-    // 'Snap' to integer or boolean
-    if (automation.currentCtrlList->mode() == MusECore::CtrlList::DISCRETE)
-      cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
-    if (cvval< min) cvval=min;
-    if (cvval>max) cvval=max;
-  }
-
-  // Store the text.
-  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(cvval);
-
+  // get the current controller value at the frame pointed at
   const int frame = MusEGlobal::tempomap.tick2frame(pos.x());
+  MusECore::CtrlInterpolate ctrlInterpolate;
+  automation.currentCtrlList->getInterpolation(frame, false, &ctrlInterpolate);
+  const double cvval = automation.currentCtrlList->interpolate(frame, ctrlInterpolate);
+
+  // Keep a string for easy displaying of automation values
+  double displayCvVal =  cvval;
+  if(automation.currentCtrlList->valueType() == MusECore::VAL_LOG)
+    displayCvVal = muse_val2dbr(cvval);
+  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(displayCvVal, 0, 'g', 3);
+
+  Undo operations;
   operations.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame, cvval));
+
   automation.currentCtrlFrameList.clear();
   automation.currentCtrlFrameList.append(frame);
   automation.currentCtrlValid = true;
   automation.controllerState = movingController;
-
   automation.startMovePoint = pos;
 
   if(!operations.empty())

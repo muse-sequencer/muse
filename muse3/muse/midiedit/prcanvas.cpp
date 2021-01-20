@@ -82,6 +82,14 @@ NEvent::NEvent(const MusECore::Event& e, MusECore::Part* p, int y) : EItem(e, p)
       }
 
 
+
+void PianoCanvas::setLastEdited(MusECore::Event& e)
+{
+    if (lastEditedEvent==0)
+        lastEditedEvent = new MusECore::Event();
+    *lastEditedEvent = e.clone();
+}
+
 //---------------------------------------------------------
 //   addItem
 //---------------------------------------------------------
@@ -979,14 +987,22 @@ CItem* PianoCanvas::newItem(const QPoint& p, int state)
       if(!(state & Qt::ShiftModifier))
         tick  = editor->rasterVal1(tick);
       int len   = p.x() - tick;
+      int eventVelocity = curVelo;
+
+      // if option is enabled and there was a prior event we clone velocity and length from that event
+      if (MusEGlobal::config.useLastEditedEvent && lastEditedEvent != 0)
+      {
+          // curVelo = lastEditedEvent->velo(); currently not used, last changed velocity overrides it, haven't quite figured out how.
+          len = lastEditedEvent->lenTick();
+      }
+
       tick     -= curPart->tick();
       if (tick < 0)
-            //tick=0;
             return 0;
       MusECore::Event e =  MusECore::Event(MusECore::Note);
       e.setTick(tick);
       e.setPitch(pitch);
-      e.setVelo(curVelo);
+      e.setVelo(eventVelocity);
       e.setLenTick(len);
 
       NEvent *newEvent = new NEvent(e, curPart, pitch2y(pitch));
@@ -1033,6 +1049,7 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
         }
 
         MusEGlobal::song->applyOperationGroup(operations);
+        setLastEdited(event);
       }
       else // forbid action by not applying it
           songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
@@ -1091,6 +1108,8 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         /
             if (diff > 0) // part must be extended?
                 max_diff_len = qMax(event.tick() + len, max_diff_len);
         }
+
+        setLastEdited(newEvent);
     }
 
     if (max_diff_len > 0) {
@@ -1100,8 +1119,8 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         /
 
     //else forbid action by not performing it
     MusEGlobal::song->applyOperationGroup(operations);
-    songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is necessary
-    //to remove "forbidden" events from the list again
+    songChanged(SC_EVENT_MODIFIED); // this forces an update of the itemlist, which is necessary
+                                    // to remove "forbidden" events from the list again
 }
 
 //---------------------------------------------------------
@@ -1822,8 +1841,11 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
                   }
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
             already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
+
+            //setLastEdited(newEvent);
             }
       MusEGlobal::song->applyOperationGroup(operations);
+
       }
 
 //---------------------------------------------------------

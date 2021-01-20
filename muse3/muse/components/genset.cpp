@@ -179,6 +179,7 @@ void GlobalSettingsConfig::updateSettings()
                   }
             }
 
+      useLastEditedEventForNewEventsCheckBox->setChecked(MusEGlobal::config.useLastEditedEvent);
       autoSaveCheckBox->setChecked(MusEGlobal::config.autoSave);
       scrollableSubmenusCheckbox->setChecked(MusEGlobal::config.scrollableSubMenus);
       liveWaveUpdateCheckBox->setChecked(MusEGlobal::config.liveWaveUpdate);
@@ -328,6 +329,8 @@ void GlobalSettingsConfig::apply()
       int div            = midiDivisionSelect->currentIndex();
       const int new_div  = divisions[div];
       
+      MusEGlobal::config.useLastEditedEvent = useLastEditedEventForNewEventsCheckBox->isChecked();
+
       MusEGlobal::config.autoSave = autoSaveCheckBox->isChecked();
       MusEGlobal::config.scrollableSubMenus = scrollableSubmenusCheckbox->isChecked();
       MusEGlobal::config.liveWaveUpdate = liveWaveUpdateCheckBox->isChecked();

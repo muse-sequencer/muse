@@ -619,6 +619,8 @@ void Song::duplicateTracks(Track *t)
                 operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
             }
         }
+        t->setSelected(false);
+
     } else {
         for(TrackList::const_reverse_iterator it = tl.crbegin(); it != tl.crend(); ++it)
         {
@@ -637,6 +639,7 @@ void Song::duplicateTracks(Track *t)
                         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx, new_track));
                     }
                 }
+                track->setSelected(false);
             }
             --trackno;
         }

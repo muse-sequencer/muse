@@ -1077,6 +1077,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.importMidiSplitParts = xml.parseInt();
                         else if (tag == "importDevNameMetas")
                               MusEGlobal::config.importDevNameMetas = xml.parseInt();
+                        else if (tag == "useLastEditedEvent")
+                              MusEGlobal::config.useLastEditedEvent = xml.parseInt();
                         else if (tag == "importInstrNameMetas")
                               MusEGlobal::config.importInstrNameMetas = xml.parseInt();
                         else if (tag == "exportPortsDevices")
@@ -1990,7 +1992,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "monitoringAffectsLatency", MusEGlobal::config.monitoringAffectsLatency);
       xml.intTag(level, "commonProjectLatency", MusEGlobal::config.commonProjectLatency);
 
-
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
       xml.intTag(level, "guiRefresh", MusEGlobal::config.guiRefresh);
       
@@ -2003,6 +2004,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "expOptimNoteOffs", MusEGlobal::config.expOptimNoteOffs);
       xml.intTag(level, "importMidiSplitParts", MusEGlobal::config.importMidiSplitParts);
       xml.intTag(level, "importDevNameMetas", MusEGlobal::config.importDevNameMetas);
+      xml.intTag(level, "useLastEditedEvent", MusEGlobal::config.useLastEditedEvent);
       xml.intTag(level, "importInstrNameMetas", MusEGlobal::config.importInstrNameMetas);
       xml.intTag(level, "exportPortsDevices", MusEGlobal::config.exportPortsDevices);
       xml.intTag(level, "exportPortDeviceSMF0", MusEGlobal::config.exportPortDeviceSMF0);
