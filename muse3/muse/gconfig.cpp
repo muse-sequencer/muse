@@ -386,9 +386,10 @@ GlobalConfigValues config = {
       true,                         // showNoteNamesInPianoRoll
       true,                         // showNoteTooltipsCheckBox
       false,                        // selectionsUndoable Whether selecting parts or events is undoable.
-      true,                        // noPluginScaling
+      true,                         // noPluginScaling
       true,                         // keepTransportWindowOnTop
-      true                          // showStatusBar
+      true,                         // showStatusBar
+      6                             // recentListLength - number of files in recent menu
     };
 
 } // namespace MusEGlobal

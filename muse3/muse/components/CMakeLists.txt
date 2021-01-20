@@ -117,6 +117,7 @@ QT5_WRAP_CPP (components_mocs
       routedialog.h
       routepopup.h  
       #rubberband_settings.h
+      savenewrevisiondialog.h
       scroll_area.h
 #       scrollbar.h
 #       scrollscale.h  
@@ -189,6 +190,7 @@ file (GLOB components_ui_files
       projectcreate.ui
       routedialogbase.ui
       #rubberband_settings_base.ui
+      savenewrevisiondialog.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
       snooperbase.ui
@@ -280,6 +282,7 @@ file (GLOB components_source_files
       routedialog.cpp
       routepopup.cpp 
       #rubberband_settings.cpp
+      savenewrevisiondialog.cpp
 #       scldiv.cpp
 #       scldraw.cpp
 #       sclif.cpp

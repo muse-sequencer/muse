@@ -44,7 +44,6 @@ public:
     QString getSongInfo() const;
     bool getWriteTopwins() const;
     void setWriteTopwins(bool);
-    //QString getTemplatePath() const;
 
 signals:
 

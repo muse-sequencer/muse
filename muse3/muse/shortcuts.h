@@ -126,6 +126,7 @@ enum {
 
     //Main:
     SHRT_SAVE_AS, //Default: undefined
+    SHRT_SAVE_REVISION,
     SHRT_OPEN_RECENT, //Ctrl+1
     SHRT_LOAD_TEMPLATE, //Default: undefined
     SHRT_CONFIG_PRINTER, //Ctrl+P

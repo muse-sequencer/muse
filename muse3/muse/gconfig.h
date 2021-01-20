@@ -434,6 +434,7 @@ struct GlobalConfigValues {
       bool noPluginScaling;
       bool keepTransportWindowOnTop;
       bool showStatusBar;
+      int recentListLength;
       };
 
 

@@ -1,3 +1,11 @@
+20.01.2021
+    - Fixed bug in Create Project dialog where it would disregard 
+      the baseProject path. (rj)
+    - Added tooltips for the various non self evident buttons in
+      the Create Project dialog (rj)
+    - Added a new dialog 'Save New Revision...' (SHIFT+R) for
+      the case where you want to save but does not need the full
+      create project dialog (rj)
 19.01.2021
     - Add: Functions for moving multiple tracks in the track list (up,
         down, top, bottom), incl. key shortcuts for each. (kybos)
