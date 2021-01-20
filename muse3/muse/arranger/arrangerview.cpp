@@ -134,8 +134,13 @@ ArrangerView::ArrangerView(QWidget* parent)
   editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste Clone to Selected Trac&k"), this);
   editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (Show Dialo&g)..."), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
+
   editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);
   editDuplicateSelTrackAction = new QAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"), this);
+  editMoveUpSelTrackAction = new QAction(tr("Move Selected Up"), this);
+  editMoveDownSelTrackAction = new QAction(tr("Move Selected Down"), this);
+  editMoveTopSelTrackAction = new QAction(tr("Move Selected to Top"), this);
+  editMoveBottomSelTrackAction = new QAction(tr("Move Selected to Bottom"), this);
 
   editShrinkPartsAction = new QAction(tr("Shrink Selected Parts to Events Length"), this);
   editExpandPartsAction = new QAction(tr("Expand Selected Parts to Events Length"), this);
@@ -233,6 +238,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuTracks->addMenu(insertTrack);
   menuTracks->addAction(editDuplicateSelTrackAction);
   menuTracks->addAction(editDeleteSelectedAction);
+  menuTracks->addAction(editMoveUpSelTrackAction);
+  menuTracks->addAction(editMoveDownSelTrackAction);
+  menuTracks->addAction(editMoveTopSelTrackAction);
+  menuTracks->addAction(editMoveBottomSelTrackAction);
   menuEdit->addSeparator();
 
   menuEdit->addMenu(select);
@@ -326,8 +335,14 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editPasteCloneToTrackAction, &QAction::triggered, [this]() { cmd(CMD_PASTE_CLONE_TO_TRACK); } );
   connect(editPasteDialogAction,       &QAction::triggered, [this]() { cmd(CMD_PASTE_DIALOG); } );
   connect(editInsertEMAction,          &QAction::triggered, [this]() { cmd(CMD_INSERTMEAS); } );
+
   connect(editDeleteSelectedAction,    &QAction::triggered, [this]() { cmd(CMD_DELETE_TRACK); } );
   connect(editDuplicateSelTrackAction, &QAction::triggered, [this]() { cmd(CMD_DUPLICATE_TRACK); } );
+  connect(editMoveUpSelTrackAction,    &QAction::triggered, [this]() { cmd(CMD_MOVEUP_TRACK); } );
+  connect(editMoveDownSelTrackAction,  &QAction::triggered, [this]() { cmd(CMD_MOVEDOWN_TRACK); } );
+  connect(editMoveTopSelTrackAction,   &QAction::triggered, [this]() { cmd(CMD_MOVETOP_TRACK); } );
+  connect(editMoveBottomSelTrackAction, &QAction::triggered, [this]() { cmd(CMD_MOVEBOTTOM_TRACK); } );
+
   connect(editShrinkPartsAction,       &QAction::triggered, [this]() { cmd(CMD_SHRINK_PART); } );
   connect(editExpandPartsAction,       &QAction::triggered, [this]() { cmd(CMD_EXPAND_PART); } );
   connect(editCleanPartsAction,        &QAction::triggered, [this]() { cmd(CMD_CLEAN_PART); } );
@@ -628,6 +643,19 @@ void ArrangerView::cmd(int cmd)
         MusEGlobal::song->duplicateTracks();
         break;
 
+    case CMD_MOVEUP_TRACK:
+        arranger->getTrackList()->moveSelectedTracks(true, false);
+        break;
+    case CMD_MOVEDOWN_TRACK:
+        arranger->getTrackList()->moveSelectedTracks(false, false);
+        break;
+    case CMD_MOVETOP_TRACK:
+        arranger->getTrackList()->moveSelectedTracks(true, true);
+        break;
+    case CMD_MOVEBOTTOM_TRACK:
+        arranger->getTrackList()->moveSelectedTracks(false, true);
+        break;
+
     case CMD_SELECT_ALL:
     case CMD_SELECT_NONE:
     case CMD_SELECT_INVERT:
@@ -865,30 +893,32 @@ void ArrangerView::updateScoreMenus()
 void ArrangerView::populateAddTrack()
 {
       // populate add track menu
-      QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true, true);
+      QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
 
       int idx = 0;
-      trackAMidiAction = addGroup->actions()[idx++];
-      trackADrumAction = addGroup->actions()[idx++];
-      trackAWaveAction = addGroup->actions()[idx++];
-      trackAOutputAction = addGroup->actions()[idx++];
-      trackAGroupAction = addGroup->actions()[idx++];
-      trackAInputAction = addGroup->actions()[idx++];
-      trackAAuxAction = addGroup->actions()[idx++];
+      trackAMidiAction = addGroup->actions().at(idx++);
+      trackADrumAction = addGroup->actions().at(idx++);
+      trackAWaveAction = addGroup->actions().at(idx++);
+      trackAOutputAction = addGroup->actions().at(idx++);
+      trackAGroupAction = addGroup->actions().at(idx++);
+      trackAInputAction = addGroup->actions().at(idx++);
+      trackAAuxAction = addGroup->actions().at(idx++);
+      trackASynthAction = addGroup->actions().at(idx++);
 
       // populate insert track menu
       QActionGroup *insertGroup = MusEGui::populateAddTrack(insertTrack, true, true);
       connect(insertTrack, SIGNAL(triggered(QAction *)), SLOT(insertNewTrack(QAction *)));
 
       idx = 0;
-      trackIMidiAction = insertGroup->actions()[idx++];
-      trackIDrumAction = insertGroup->actions()[idx++];
-      trackIWaveAction = insertGroup->actions()[idx++];
-      trackIOutputAction = insertGroup->actions()[idx++];
-      trackIGroupAction = insertGroup->actions()[idx++];
-      trackIInputAction = insertGroup->actions()[idx++];
-      trackIAuxAction = insertGroup->actions()[idx++];
+      trackIMidiAction = insertGroup->actions().at(idx++);
+      trackIDrumAction = insertGroup->actions().at(idx++);
+      trackIWaveAction = insertGroup->actions().at(idx++);
+      trackIOutputAction = insertGroup->actions().at(idx++);
+      trackIGroupAction = insertGroup->actions().at(idx++);
+      trackIInputAction = insertGroup->actions().at(idx++);
+      trackIAuxAction = insertGroup->actions().at(idx++);
+      trackISynthAction = insertGroup->actions().at(idx++);
 
       // populate right click menu on trackList
       arranger->getTrackList()->populateAddTrack();
@@ -918,6 +948,10 @@ void ArrangerView::updateShortcuts()
       editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
       editDuplicateSelTrackAction->setShortcut(shortcuts[SHRT_DUPLICATE_TRACK].key);
+      editMoveUpSelTrackAction->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
+      editMoveDownSelTrackAction->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+      editMoveTopSelTrackAction->setShortcut(shortcuts[SHRT_MOVETOP_TRACK].key);
+      editMoveBottomSelTrackAction->setShortcut(shortcuts[SHRT_MOVEBOTTOM_TRACK].key);
 
       //editDeleteSelectedAction has no acceleration
       
@@ -928,6 +962,7 @@ void ArrangerView::updateShortcuts()
       trackAGroupAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key);
       trackAInputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_INPUT].key);
       trackAAuxAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_AUX].key);
+      trackASynthAction->setShortcut(shortcuts[SHRT_ADD_SYNTH_TRACK].key);
 
       trackIMidiAction->setShortcut(shortcuts[SHRT_INSERT_MIDI_TRACK].key);
       trackIDrumAction->setShortcut(shortcuts[SHRT_INSERT_DRUM_TRACK].key);
@@ -936,6 +971,9 @@ void ArrangerView::updateShortcuts()
       trackIGroupAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_GROUP].key);
       trackIInputAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_INPUT].key);
       trackIAuxAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_AUX].key);
+      trackISynthAction->setShortcut(shortcuts[SHRT_INSERT_SYNTH_TRACK].key);
+
+      arranger->getTrackList()->populateAddTrack();
 
       editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       editDeselectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
@@ -994,6 +1032,10 @@ void ArrangerView::selectionChanged()
 
       editDeleteSelectedAction->setEnabled(tflag);
       editDuplicateSelTrackAction->setEnabled(tflag);
+      editMoveUpSelTrackAction->setEnabled(tflag);
+      editMoveDownSelTrackAction->setEnabled(tflag);
+      editMoveTopSelTrackAction->setEnabled(tflag);
+      editMoveBottomSelTrackAction->setEnabled(tflag);
    
       editCutAction->setEnabled(pflag);
       editCopyAction->setEnabled(pflag);

@@ -1,3 +1,29 @@
+20.01.2021
+    - Fixed bug in Create Project dialog where it would disregard 
+      the baseProject path. (rj)
+    - Added tooltips for the various non self evident buttons in
+      the Create Project dialog (rj)
+    - Added a new dialog 'Save New Revision...' (SHIFT+R) for
+      the case where you want to save but does not need the full
+      create project dialog (rj)
+19.01.2021
+    - Add: Functions for moving multiple tracks in the track list (up,
+        down, top, bottom), incl. key shortcuts for each. (kybos)
+16.01.2021
+    - Fix #933: Sort automation controls in menu. (kybos)
+    - Fix: Crash when changing volume/pan by keyboard shortcut for drum
+        tracks.  (kybos)
+    - Fix: Changing volume/pan by keyboard shortcut also changed midi tracks
+        that were not selected. (kybos)
+15.01.2021
+    - Fix #718: Missing strips/selections at first mixer display. (kybos)
+    - Fix: Missing simpledrums plugin, both normal build and AppImage. (kybos)
+14.01.2021
+    - Add: Improve Key Shortcuts maintenance dialog. Add filter for shorcuts,
+        list contexts per shortcut. (kybos)
+    - Fix: HiDPI scaling for VST plugins. (kybos)
+13.01.2021
+    - Add: Consistent shortcuts for Add track. Show shortcuts in menu. (kybos)
 11.01.2021
     - New: Selection dialog for Add synth track incl. favorites handling
         in dialog and synth menu. (kybos)

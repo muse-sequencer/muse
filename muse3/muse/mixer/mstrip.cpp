@@ -1550,6 +1550,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       slider->setFrameColor(props.sliderFrameColor());
 
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+      slider->setMinimumHeight(80);
 
       _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
       _meterLayout->setMargin(0);

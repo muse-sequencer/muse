@@ -1605,6 +1605,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       slider->setFrameColor(props.sliderFrameColor());
 
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+      slider->setMinimumHeight(80);
 
       double track_vol = at->volume();
       if(track_vol == 0.0)

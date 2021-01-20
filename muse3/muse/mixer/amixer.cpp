@@ -208,6 +208,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       connect(MusEGlobal::muse, &MusEGui::MusE::configChanged, [this]() { configChanged(); } );
 
       initMixer();
+      updateStripList();
+      updateSelectedStrips();
       redrawMixer();
 
       central->installEventFilter(this);
@@ -783,16 +785,16 @@ void AudioMixerApp::initMixer()
   }
   // NOTE: stripConfigList is the replacement for obsolete stripOrder string list.
   else if (!cfg->stripConfigList.empty()) {
-    const int sz = cfg->stripConfigList.size();
-    for (int i=0; i < sz; i++) {
-      const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
-      DEBUG_MIXER(stderr, "processing strip #:%d [%d][%d]\n", i, sc._serial, sc._visible);
-      if(!sc._deleted && !sc.isNull()) {
-        const MusECore::Track* t = tl->findSerial(sc._serial);
-        if(t)
-          addStrip(t, sc);
-        }
-    }
+      const int sz = cfg->stripConfigList.size();
+      for (int i=0; i < sz; i++) {
+          const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
+          DEBUG_MIXER(stderr, "processing strip #:%d [%d][%d]\n", i, sc._serial, sc._visible);
+          if(!sc._deleted && !sc.isNull()) {
+              const MusECore::Track* t = tl->findSerial(sc._serial);
+              if (t)
+                  addStrip(t, sc);
+          }
+      }
   }
   else {
     for (MusECore::ciTrack tli = tl->cbegin(); tli != tl->cend(); ++tli) {
@@ -909,7 +911,7 @@ bool AudioMixerApp::updateStripList()
 
 void AudioMixerApp::updateSelectedStrips()
 {
-  foreach(Strip *s, stripList)
+  for (Strip *s : stripList)
   {
     if(MusECore::Track* t = s->getTrack())
     {

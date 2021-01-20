@@ -1523,7 +1523,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             curItem = (NPart*)items.begin()->second; // just grab the first part
       }
 
-      CItem* newItem = 0;
+      CItem* newItem = nullptr;
       bool singleSelection = isSingleSelection();
       bool add = false;
 
@@ -1587,7 +1587,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   add = true;
             //To get an idea of which track is above us:
             int stepsize = rmapxDev(1);
-            MusECore::Track* track = curItem->part()->track();//top->part()->track();
+            MusECore::Track* track = curItem->part()->track();
             track = y2Track(track->y() - 1);
 
             //If we're at topmost (no track above), leave
@@ -1595,12 +1595,12 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   return;
 
             int middle = curItem->x() + curItem->part()->lenTick()/2;
-            CItem *aboveL = 0, *aboveR = 0;
+            CItem *aboveL = nullptr, *aboveR = nullptr;
             //Upper limit: song end, lower limit: song start
             int ulimit  = MusEGlobal::song->len();
             int llimit = 0;
 
-            while (newItem == 0) {
+            while (newItem == nullptr) {
                   int y = track->y() + 2;
                   int xoffset = 0;
                   int xleft   = middle - xoffset;
@@ -1616,13 +1616,13 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
 
                   if ((aboveL || aboveR) != 0) { //We've hit something
-                        CItem* above  = 0;
-                        above = (aboveL !=0) ? aboveL : aboveR;
+                        CItem* above  = nullptr;
+                        above = (aboveL != nullptr) ? aboveL : aboveR;
                         newItem = above;
                   }
                   else { //We didn't hit anything. Move to track above, if there is one
                         track = y2Track(track->y() - 1);
-                        if (track == 0)
+                        if (track == nullptr)
                               return;
                   }
             }
@@ -1644,16 +1644,16 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if (!track)
                   return;
 
-            CItem *belowL = 0, *belowR = 0;
+            CItem *belowL = nullptr, *belowR = nullptr;
             //Upper limit: song end , lower limit: song start
             int ulimit = MusEGlobal::song->len();
             int llimit = 0;
-            while (newItem == 0) {
+            while (newItem == nullptr) {
                   int y = track->y() + 1;
                   int xoffset = 0;
                   int xleft   = middle - xoffset;
                   int xright  = middle + xoffset;
-                  while ((xleft > llimit || xright < ulimit)  && (belowL == 0) && (belowR == 0)) {
+                  while ((xleft > llimit || xright < ulimit)  && (belowL == nullptr) && (belowR == nullptr)) {
                         xoffset += stepsize;
                         xleft  = middle - xoffset;
                         xright = middle + xoffset;
@@ -1664,14 +1664,14 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   }
 
                   if ((belowL || belowR) != 0) { //We've hit something
-                        CItem* below = 0;
-                        below = (belowL !=0) ? belowL : belowR;
+                        CItem* below = nullptr;
+                        below = (belowL != nullptr) ? belowL : belowR;
                         newItem = below;
                   }
                   else {
                         //Get next track below, or abort if this is the lowest
                         track = y2Track(track->y() + track->height() + 1 );
-                        if (track == 0)
+                        if (track == nullptr)
                               return;
                   }
             }
@@ -3684,12 +3684,13 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       // Store first value for later
       double yfirst;
       {
+          double startVal = (ic == cl->end()) ? cl->curVal() : cl->begin()->second.val;
           if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-            yfirst = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
+            yfirst = logToVal(startVal, min, max); // represent volume between 0 and 1
             if (yfirst < 0) yfirst = 0.0;
           }
           else {
-            yfirst = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
+            yfirst = (startVal - min)/(max-min);  // we need to set curVal between 0 and 1
           }
           yfirst = oldY = bottom - rmapy_f(yfirst) * height;
       }

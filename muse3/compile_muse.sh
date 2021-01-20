@@ -31,5 +31,5 @@ fi
 cd build
 
 # to put the resulting binary in a specific location add -DCMAKE_INSTALL_PREFIX=<some location>
-cmake -DCMAKE_BUILD_TYPE=release .. && make clean all && echo "Build was OK, now enter the 'build' dir and run 'make install' as root"
+cmake -DCMAKE_BUILD_TYPE=release -DMODULES_BUILD_STATIC=ON .. && make clean all && echo "Build was OK, now enter the 'build' dir and run 'make install' as root"
 

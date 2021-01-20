@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>569</width>
-    <height>378</height>
+    <width>564</width>
+    <height>407</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Create Project</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Projects folder:</string>
+        <string>Base Project-folder:</string>
        </property>
       </widget>
      </item>
@@ -32,6 +32,9 @@
      </item>
      <item>
       <widget class="QToolButton" name="projDirToolButton">
+       <property name="toolTip">
+        <string>Change Project-folder</string>
+       </property>
        <property name="text">
         <string>...</string>
        </property>
@@ -39,14 +42,8 @@
      </item>
     </layout>
    </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="horizontalSpacing">
-      <number>6</number>
-     </property>
-     <property name="verticalSpacing">
-      <number>0</number>
-     </property>
+   <item row="1" column="0">
+    <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
@@ -54,30 +51,33 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="3">
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="projectNameEdit"/>
+     </item>
+     <item row="0" column="2">
       <widget class="QCheckBox" name="templateCheckBox">
+       <property name="toolTip">
+        <string>Checking this will cause the project to be saved in the templates folder</string>
+       </property>
        <property name="text">
         <string>Project is a Template</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="4" rowspan="2">
+     <item row="1" column="0" colspan="2">
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Minimum</enum>
-       </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>60</width>
+         <width>394</width>
          <height>20</height>
         </size>
        </property>
       </spacer>
      </item>
-     <item row="1" column="3">
+     <item row="1" column="2">
       <widget class="QCheckBox" name="winStateCheckbox">
        <property name="text">
         <string>Write window state</string>
@@ -87,19 +87,16 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="projectNameEdit"/>
-     </item>
     </layout>
    </item>
-   <item>
+   <item row="2" column="0">
     <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QLabel" name="label_4">
@@ -126,7 +123,7 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="4" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label">
@@ -157,9 +154,9 @@
      </item>
     </layout>
    </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
+   <item row="5" column="0">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
       <widget class="QLineEdit" name="storageDirEdit">
        <property name="palette">
         <palette>
@@ -293,6 +290,15 @@
           <colorrole role="ToolTipText">
            <brush brushstyle="SolidPattern">
             <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="PlaceholderText">
+           <brush brushstyle="NoBrush">
+            <color alpha="128">
              <red>0</red>
              <green>0</green>
              <blue>0</blue>
@@ -436,6 +442,15 @@
             </color>
            </brush>
           </colorrole>
+          <colorrole role="PlaceholderText">
+           <brush brushstyle="NoBrush">
+            <color alpha="128">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
          </inactive>
          <disabled>
           <colorrole role="WindowText">
@@ -573,6 +588,15 @@
             </color>
            </brush>
           </colorrole>
+          <colorrole role="PlaceholderText">
+           <brush brushstyle="NoBrush">
+            <color alpha="128">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
          </disabled>
         </palette>
        </property>
@@ -584,15 +608,21 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
       <widget class="QToolButton" name="browseDirButton">
+       <property name="toolTip">
+        <string>Edit folder for this project if you want it stored somewhere outside the regular Base Project-folder</string>
+       </property>
        <property name="text">
         <string>...</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="2">
       <widget class="QToolButton" name="restorePathButton">
+       <property name="toolTip">
+        <string>Restore project folder to what is set in the Base Project-folder</string>
+       </property>
        <property name="text">
         <string>...</string>
        </property>
@@ -600,18 +630,35 @@
      </item>
     </layout>
    </item>
-   <item>
+   <item row="6" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>Song information:</string>
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QPlainTextEdit" name="commentEdit"/>
+   <item row="7" column="0">
+    <widget class="QPlainTextEdit" name="commentEdit">
+     <property name="toolTip">
+      <string>Add any information about this song, it will be displayed when the song is opened.</string>
+     </property>
+    </widget>
    </item>
-   <item>
+   <item row="8" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">
@@ -636,7 +683,6 @@
   <tabstop>browseDirButton</tabstop>
   <tabstop>restorePathButton</tabstop>
   <tabstop>commentEdit</tabstop>
-  <tabstop>buttonBox</tabstop>
   <tabstop>projDirToolButton</tabstop>
   <tabstop>projDirLineEdit</tabstop>
  </tabstops>

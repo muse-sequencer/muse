@@ -80,6 +80,7 @@
 #endif
 #include "song.h"
 #include "components/routepopup.h"
+#include "components/savenewrevisiondialog.h"
 #include "components/songinfo.h"
 #include "ticksynth.h"
 #include "tempo.h"
@@ -167,7 +168,6 @@ extern void deleteIcons();
 static pthread_t watchdogThread;
 //ErrorHandler *error;
 
-#define PROJECT_LIST_LEN  6
 QStringList projectRecentList;
 
 #ifdef HAVE_LASH
@@ -326,7 +326,7 @@ void addProject(const QString& name)
     return;
 
   projectRecentList.push_front(name);
-  if (projectRecentList.size() > PROJECT_LIST_LEN)
+  if (projectRecentList.size() > MusEGlobal::config.recentListLength)
     projectRecentList.pop_back();
 
 }
@@ -591,6 +591,7 @@ MusE::MusE() : QMainWindow()
       fileSaveAction->setWhatsThis(tr("Click this button to save the song you are editing. You will be prompted for a file name."));
 
       fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
+      fileSaveRevisionAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save New Re&vision..."), this);
 
       fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("&Close"), this);
       
@@ -710,6 +711,7 @@ MusE::MusE() : QMainWindow()
 
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
       connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(saveAs()));
+      connect(fileSaveRevisionAction, SIGNAL(triggered()), SLOT(saveNewRevision()));
 
       connect(fileCloseAction, SIGNAL(triggered()), SLOT(fileClose()));
       
@@ -899,6 +901,7 @@ MusE::MusE() : QMainWindow()
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
       menu_file->addAction(fileSaveAsAction);
+      menu_file->addAction(fileSaveRevisionAction);
       menu_file->addSeparator();
       menu_file->addAction(fileCloseAction);
       menu_file->addSeparator();
@@ -1088,7 +1091,7 @@ MusE::MusE() : QMainWindow()
       }
       else
       {
-        for (int i = 0; i < PROJECT_LIST_LEN; ++i)
+        for (int i = 0; i < MusEGlobal::config.recentListLength; ++i)
         {
           if (projFile.atEnd()) {
             break;
@@ -2160,7 +2163,43 @@ float MusE::getCPULoad()
     return fCurCpuLoad;
 #endif
 }
+void MusE::saveNewRevision()
+{
+  if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )
+  {
+    saveAs();
+    return;
+  }
 
+  QString oldProjectFileName = project.filePath();
+
+  MusEGui::SaveNewRevisionDialog newRevision(MusEGlobal::muse, project);
+
+  QString newFilePath = newRevision.getNewRevision();
+
+  if (newFilePath.isEmpty())
+    return;
+
+  bool ok = save(newFilePath, true, writeTopwinState);
+  if (ok)
+  {
+    project.setFile(newFilePath);
+    _lastProjectFilePath = newFilePath;
+    _lastProjectWasTemplate = false;
+    _lastProjectLoadedConfig = true;
+    setWindowTitle(projectTitle(project.absoluteFilePath()));
+
+    // replace project in lastProjects
+    if (projectRecentList.contains(oldProjectFileName))
+      projectRecentList.removeAt(projectRecentList.indexOf(oldProjectFileName));
+
+    projectRecentList.push_front(newFilePath);
+    if (projectRecentList.size() > MusEGlobal::config.recentListLength)
+      projectRecentList.pop_back();
+
+    project.setFile(newFilePath);
+  }
+}
 //---------------------------------------------------------
 //   saveAs
 //---------------------------------------------------------
@@ -2671,7 +2710,8 @@ void MusE::selectProject(QAction* act)
       int id = act->data().toInt();
       if (id > projectRecentList.size()-1)
       {
-        fprintf(stderr, "THIS SHOULD NEVER HAPPEN: id(%i) < PROJECT_LIST_LEN(%i) in MusE::selectProject!\n",id, PROJECT_LIST_LEN);
+        fprintf(stderr, "THIS SHOULD NEVER HAPPEN: id(%i) < recent len(%i) in MusE::selectProject!\n",
+                id, MusEGlobal::config.recentListLength);
         return;
       }
       QString name = projectRecentList[id];
@@ -3602,6 +3642,7 @@ void MusE::updateConfiguration()
       fileNewFromTemplateAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_NEW_FROM_TEMPLATE].key);
       fileSaveAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE].key);
       fileSaveAsAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS].key);
+      fileSaveRevisionAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_REVISION].key);
 
       //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);    // Not used.
       fileImportMidiAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_IMPORT_MIDI].key);

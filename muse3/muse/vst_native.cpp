@@ -912,10 +912,16 @@ bool VstNativeSynthIF::init(Synth* s)
 
 bool VstNativeSynth::resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h)
 {
-  if(!editor || w <= 0 || h <= 0)
-    return false;
-  editor->setFixedSize(w, h);
-  return true;
+    if(!editor || w <= 0 || h <= 0)
+        return false;
+
+    if (editor->fixScaling() && editor->devicePixelRatio() >= 1.0) {
+        w = qRound((qreal)w / editor->devicePixelRatio());
+        h = qRound((qreal)h / editor->devicePixelRatio());
+    }
+
+    editor->setFixedSize(w, h);
+    return true;
 }
 
 //---------------------------------------------------------
@@ -1390,8 +1396,8 @@ void VstNativeSynthIF::showNativeGui(bool v)
                   | Qt::WindowSystemMenuHint
                   | Qt::WindowMinMaxButtonsHint
                   | Qt::WindowCloseButtonHint);
-          _editor = new MusEGui::VstNativeEditor(NULL, wflags);
-          _editor->open(this, 0);
+          _editor = new MusEGui::VstNativeEditor(nullptr, wflags);
+          _editor->open(this, nullptr);
         }
       }
       else

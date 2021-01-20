@@ -49,10 +49,22 @@
      <item row="1" column="0" colspan="4">
       <widget class="QTreeWidget" name="pList">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <property name="itemsExpandable">
+        <bool>false</bool>
+       </property>
+       <property name="sortingEnabled">
+        <bool>false</bool>
        </property>
        <attribute name="headerCascadingSectionResizes">
         <bool>false</bool>
@@ -132,13 +144,16 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <layout class="QFormLayout" name="formLayout">
+          <property name="horizontalSpacing">
+           <number>10</number>
+          </property>
           <property name="verticalSpacing">
            <number>20</number>
           </property>
           <property name="topMargin">
            <number>0</number>
           </property>
-          <item row="1" column="0">
+          <item row="0" column="0">
            <widget class="QLabel" name="label_2">
             <property name="maximumSize">
              <size>
@@ -151,11 +166,17 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="0" column="1">
            <widget class="QComboBox" name="pluginType"/>
           </item>
-          <item row="2" column="0">
+          <item row="1" column="0">
            <widget class="QLabel" name="label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>
@@ -167,7 +188,7 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="1" column="1">
            <widget class="QComboBox" name="filterBox">
             <property name="enabled">
              <bool>true</bool>
@@ -225,7 +246,7 @@
       <widget class="QTabBar" name="tabBar" native="true"/>
      </item>
      <item row="2" column="0">
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="groupBox1">
        <property name="title">
         <string>Category</string>
        </property>
@@ -281,6 +302,18 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>filterBox</tabstop>
+  <tabstop>rbAll</tabstop>
+  <tabstop>rbSynths</tabstop>
+  <tabstop>rbEffects</tabstop>
+  <tabstop>pluginType</tabstop>
+  <tabstop>pbAddFav</tabstop>
+  <tabstop>pbRemoveFav</tabstop>
+  <tabstop>okB</tabstop>
+  <tabstop>cancelB</tabstop>
+  <tabstop>pList</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
  <buttongroups>

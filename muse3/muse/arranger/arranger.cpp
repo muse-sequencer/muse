@@ -754,8 +754,8 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
                 if(!MusEGlobal::song->trackExists(t))
                 {
                   delete w;
-                  trackInfoWidget->addWidget(0, 1);
-                  selected = 0;
+                  trackInfoWidget->addWidget(nullptr, 1);
+                  selected = nullptr;
                   switchInfo(0);
                 } 
               }   
@@ -772,8 +772,8 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
                 if(!MusEGlobal::song->trackExists(t))
                 {
                   delete w;
-                  trackInfoWidget->addWidget(0, 2);
-                  selected = 0;
+                  trackInfoWidget->addWidget(nullptr, 2);
+                  selected = nullptr;
                   switchInfo(0);
                 } 
               }   

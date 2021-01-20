@@ -93,7 +93,7 @@ class TList : public QWidget {
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
 
-      QMenu* addTrackMenu;
+      QMenu *addTrackMenu, *insertTrackMenu;
       Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
@@ -139,6 +139,8 @@ class TList : public QWidget {
       void editTrackName(MusECore::Track *t);
       void setTrackChannel(MusECore::Track *t, bool isDelta, int channel, int delta, bool doAllTracks = false);
       void incrementController(MusECore::Track* t, int controllerType, int incrementValue);
+      void addAutoMenuAction(PopupMenu* p, const MusECore::CtrlList *cl);
+      void outputAutoMenuSorted(PopupMenu* p, QList<const MusECore::CtrlList *> &);
 
 
    protected:
@@ -189,6 +191,7 @@ class TList : public QWidget {
       void setCurSelBorder(bool curSelBorder) { _curSelBorder = curSelBorder; }
       QColor curSelBorderColor() const { return _curSelBorderColor; }
       void setCurSelBorderColor(const QColor c) { _curSelBorderColor = c; }
+      void moveSelectedTracks(bool up, bool full);
       };
 
 } // namespace MusEGui

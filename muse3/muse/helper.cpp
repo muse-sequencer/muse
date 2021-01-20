@@ -56,6 +56,7 @@
 #include "xml.h"
 #include "conf.h"
 #include "synthdialog.h"
+#include "shortcuts.h"
 
 #include <strings.h>
 
@@ -1386,67 +1387,80 @@ QMenu* populateAddSynth(QWidget* parent)
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool /*evenIgnoreDrumPreference*/)
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, bool addHeader)
       {
       QActionGroup* grp = new QActionGroup(addTrack);
+
       if (MusEGlobal::config.addHiddenTracks)
         populateAll=true;
 
+      if (addHeader)
+          addTrack->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Track")), addTrack));
+
       if (populateAll || MusECore::MidiTrack::visible()) {
         QAction* midi = addTrack->addAction(*pianorollSVGIcon,
-                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Midi Track")));
+                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Midi Track")));
         midi->setData(MusECore::Track::MIDI);
+        midi->setShortcut(shortcuts[insert ? SHRT_INSERT_MIDI_TRACK : SHRT_ADD_MIDI_TRACK].key);
         grp->addAction(midi);
 
-        QAction* newdrum = addTrack->addAction(*drumeditSVGIcon,
-                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
-        newdrum->setData(MusECore::Track::DRUM);
-        grp->addAction(newdrum);
+        QAction* drum = addTrack->addAction(*drumeditSVGIcon,
+                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Drum Track")));
+        drum->setData(MusECore::Track::DRUM);
+        drum->setShortcut(shortcuts[insert ? SHRT_INSERT_DRUM_TRACK : SHRT_ADD_DRUM_TRACK].key);
+        grp->addAction(drum);
       }
       if (populateAll || MusECore::WaveTrack::visible()) {
         QAction* wave = addTrack->addAction(*waveeditorSVGIcon,
-                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Wave Track")));
+                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Wave Track")));
        wave->setData(MusECore::Track::WAVE);
+       wave->setShortcut(shortcuts[insert ? SHRT_INSERT_WAVE_TRACK : SHRT_ADD_WAVE_TRACK].key);
        grp->addAction(wave);
       }
 
       if (populateAll || MusECore::AudioOutput::visible()) {
         QAction* aoutput = addTrack->addAction(*trackOutputSVGIcon,
-                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Output")));
+                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Output")));
         aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
+        aoutput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_OUTPUT : SHRT_ADD_AUDIO_OUTPUT].key);
         grp->addAction(aoutput);
       }
 
       if (populateAll || MusECore::AudioGroup::visible()) {
         QAction* agroup = addTrack->addAction(*trackGroupVGIcon,
-                                              qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Group")));
+                                              qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Group")));
         agroup->setData(MusECore::Track::AUDIO_GROUP);
+        agroup->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_GROUP : SHRT_ADD_AUDIO_GROUP].key);
         grp->addAction(agroup);
       }
 
       if (populateAll || MusECore::AudioInput::visible()) {
         QAction* ainput = addTrack->addAction(*trackInputSVGIcon,
-                                              qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Input")));
+                                              qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Input")));
         ainput->setData(MusECore::Track::AUDIO_INPUT);
+        ainput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_INPUT : SHRT_ADD_AUDIO_INPUT].key);
         grp->addAction(ainput);
       }
 
       if (populateAll || MusECore::AudioAux::visible()) {
         QAction* aaux = addTrack->addAction(*trackAuxSVGIcon,
-                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Aux Send")));
+                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Aux Send")));
         aaux->setData(MusECore::Track::AUDIO_AUX);
+        aaux->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_AUX : SHRT_ADD_AUDIO_AUX].key);
         grp->addAction(aaux);
       }
 
       if (populateAll || MusECore::SynthI::visible()) {
           addTrack->addSeparator();
-          QAction *actDialog = addTrack->addAction(*synthSVGIcon,
-                                                   qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth With Dialog...")));
-          actDialog->setData(MusECore::Track::AUDIO_SOFTSYNTH);
+          QAction *asynthd = addTrack->addAction(*synthSVGIcon,
+                                                   qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth (Show Dialog)...")));
+          asynthd->setData(MusECore::Track::AUDIO_SOFTSYNTH);
+          asynthd->setShortcut(shortcuts[insert ? SHRT_INSERT_SYNTH_TRACK : SHRT_ADD_SYNTH_TRACK].key);
+          grp->addAction(asynthd);
 
           // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
           QMenu* synp = populateAddSynth(addTrack);
-          synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth")));
+          synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth")));
 
           // Add the sub-menu to the given menu.
           addTrack->addMenu(synp);

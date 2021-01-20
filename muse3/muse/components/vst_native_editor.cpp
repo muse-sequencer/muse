@@ -91,9 +91,10 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
           _vstEventProc(0),
           _buttonPress(false),
         #endif
-          _sif(0)
+          _sif(nullptr)
 {
   setAttribute(Qt::WA_DeleteOnClose);
+  m_fixScaling = false;
   
   // TODO TEST Test if these might be helpful, especially opaque event.
             //setBackgroundRole(QPalette::NoRole);
@@ -133,24 +134,24 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
   vstPlug->dispatcher(vstPlug, effEditOpen, 0, value, ptr, 0.0f);
 
   const MusECore::PluginQuirks& quirks = _sif ? _sif->cquirks() : _pstate->pluginI->cquirks();
+  m_fixScaling = quirks.fixNativeUIScaling();
 
   if(vstPlug->dispatcher(vstPlug, effEditGetRect, 0, 0, &pRect, 0.0f))
   {
-          int w = pRect->right - pRect->left;
-          int h = pRect->bottom - pRect->top;
-          if (w > 0 && h > 0)
-          {
-              if (quirks.fixNativeUIScaling()) {
-                  w = qRound((qreal)w / qApp->devicePixelRatio());
-                  h = qRound((qreal)h / qApp->devicePixelRatio());
-              }
-
-                  QWidget::setMinimumSize(w, h);
-                  if((w != width()) || (h != height()))
-                  {
-                     setFixedSize(w, h);
-                  }
+      int w = pRect->right - pRect->left;
+      int h = pRect->bottom - pRect->top;
+      if (w > 0 && h > 0)
+      {
+          if (fixScaling() && devicePixelRatio() >= 1.0) {
+              w = qRound((qreal)w / devicePixelRatio());
+              h = qRound((qreal)h / devicePixelRatio());
+              setFixedSize(w, h);
+          } else {
+              QWidget::setMinimumSize(w, h);
+              if ((w != width()) || (h != height()))
+                  setFixedSize(w, h);
           }
+      }
   }
 
 

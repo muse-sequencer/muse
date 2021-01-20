@@ -128,7 +128,7 @@ class MusE : public QMainWindow
 
     // File menu actions
     QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *fileNewFromTemplateAction;
-    QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction;
+    QAction *fileSaveRevisionAction, *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction;
     QAction *fileImportPartAction, *fileImportWaveAction, *fileMoveWaveFiles, *quitAction;
     QAction *fileCloseAction;
     QAction *editSongInfoAction;
@@ -362,6 +362,7 @@ private slots:
     void toggleDocks(bool show);
 
 public slots:
+    void saveNewRevision();
     bool saveAs();
     void bounceToFile(MusECore::AudioOutput* ao = nullptr);
     void bounceToTrack(MusECore::AudioOutput* ao = nullptr);

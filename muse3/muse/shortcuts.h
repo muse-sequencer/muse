@@ -51,7 +51,7 @@
 #define GLOBAL_SHRT    128  // Global shortcuts
 #define LMEDIT_SHRT    256  // List masteredit
 #define MEDIT_SHRT     512  // Master editor
-#define MIXER_SHRT    1024  // Master editor
+#define MIXER_SHRT    1024  // Mixer
 #define ALL_SHRT      2047  // All shortcuts
 #define INVIS_SHRT    2048  // Shortcuts not shown in the config-dialog. Hard-coded. To avoid conflicts
 
@@ -65,7 +65,7 @@ struct shortcut
     const char* descr;
     const char* xml; //xml-tag for config-file
     int type;
-    shortcut() : key(0),  descr(NULL), xml(NULL), type(0) { }
+    shortcut() : key(0),  descr(nullptr), xml(nullptr), type(0) { }
 };
 
 struct shortcut_cg
@@ -126,6 +126,7 @@ enum {
 
     //Main:
     SHRT_SAVE_AS, //Default: undefined
+    SHRT_SAVE_REVISION,
     SHRT_OPEN_RECENT, //Ctrl+1
     SHRT_LOAD_TEMPLATE, //Default: undefined
     SHRT_CONFIG_PRINTER, //Ctrl+P
@@ -205,7 +206,8 @@ enum {
 
     SHRT_ADD_MIDI_TRACK, //Default: Ctrl+J
     SHRT_ADD_DRUM_TRACK, //Default: Ctrl+k
-    SHRT_ADD_NEW_STYLE_DRUM_TRACK, //Default: undefined
+//    SHRT_ADD_NEW_STYLE_DRUM_TRACK, //Default: undefined
+    SHRT_ADD_SYNTH_TRACK,
     SHRT_ADD_WAVE_TRACK, //Default: undefined
     SHRT_ADD_AUDIO_OUTPUT, //Default: undefined
     SHRT_ADD_AUDIO_GROUP, //Default: undefined
@@ -214,7 +216,8 @@ enum {
 
     SHRT_INSERT_MIDI_TRACK, //Default: undefined
     SHRT_INSERT_DRUM_TRACK, //Default: undefined
-    SHRT_INSERT_NEW_STYLE_DRUM_TRACK, //Default: undefined
+//    SHRT_INSERT_NEW_STYLE_DRUM_TRACK, //Default: undefined
+    SHRT_INSERT_SYNTH_TRACK,
     SHRT_INSERT_WAVE_TRACK, //Default: undefined
     SHRT_INSERT_AUDIO_OUTPUT, //Default: undefined
     SHRT_INSERT_AUDIO_GROUP, //Default: undefined
@@ -235,6 +238,10 @@ enum {
 
     SHRT_INSERTMEAS, //Ctrl+Shift+M - insert measures
     SHRT_DUPLICATE_TRACK, // Ctrl+Shift+D
+    SHRT_MOVEUP_TRACK,
+    SHRT_MOVEDOWN_TRACK,
+    SHRT_MOVETOP_TRACK,
+    SHRT_MOVEBOTTOM_TRACK,
 
     //Arranger tracks
     SHRT_SEL_TRACK_BELOW,

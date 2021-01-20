@@ -1372,6 +1372,7 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
             mainWin->resize(width, height);
         }
 
+        // this shouldn't be required
         QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
         if(ewWin != nullptr)
         {
@@ -1390,6 +1391,7 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
                 ewCent->resize(width, height);
             }
         }
+
         state->uiX11Size.setWidth(width);
         state->uiX11Size.setHeight(height);
 
@@ -1531,7 +1533,7 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
         if(strcmp(LV2_UI__X11UI, cUiUri) == 0)
         {
             bEmbed = true;
-            ewWin = new QWidget();
+//            ewWin = new QWidget();
 
 #ifdef LV2_GUI_USE_QWIDGET
             QVBoxLayout* layout = new QVBoxLayout();
@@ -1541,10 +1543,11 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
             win->setLayout(layout);
 
 #else
-            win->setCentralWidget(ewWin);
+//            win->setCentralWidget(ewWin);
 #endif
 
-            state->_ifeatures [synth->_fUiParent].data = (void*)ewWin->winId();
+            state->_ifeatures [synth->_fUiParent].data = (void*)win->winId();
+//            state->_ifeatures [synth->_fUiParent].data = (void*)ewWin->winId();
         }
         else if(strcmp(LV2_UI__GtkUI, cUiUri) == 0)
         {
@@ -1719,20 +1722,27 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                     }
                     else
                     {
+                        if (uiW) {
+                            QWindow *xwin = QWindow::fromWinId(reinterpret_cast<unsigned long>(uiW));
+                            ewWin = QWidget::createWindowContainer(xwin, win);
+                            state->pluginQWindow = xwin;
+                            win->setCentralWidget(ewWin);
+                        }
+
                         // Set the minimum size to the supplied uiX11Size.
-                         if (fixScaling && win->devicePixelRatio() >= 1.0) {
-                             state->uiX11Size.setWidth(qRound((qreal)state->uiX11Size.width() / win->devicePixelRatio()));
-                             state->uiX11Size.setHeight(qRound((qreal)state->uiX11Size.height() / win->devicePixelRatio()));
-                         }
+                        if (fixScaling && win->devicePixelRatio() >= 1.0) {
+                            state->uiX11Size.setWidth(qRound((qreal)state->uiX11Size.width() / win->devicePixelRatio()));
+                            state->uiX11Size.setHeight(qRound((qreal)state->uiX11Size.height() / win->devicePixelRatio()));
+                        }
 
-                         if (state->fixedSizeGui || state->noUserResizeGui)
-                             win->setFixedSize(state->uiX11Size.width(), state->uiX11Size.height());
-                         else
-                             win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
+                        if (state->fixedSizeGui || state->noUserResizeGui)
+                            win->setFixedSize(state->uiX11Size.width(), state->uiX11Size.height());
+                        else
+                            win->setMinimumSize(state->uiX11Size.width(), state->uiX11Size.height());
 
-
-                        if(state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
-                            win->resize(ewWin->size());
+                        // this shouldn't be required
+//                          if(ewWin && state->uiX11Size.width() == 0 || state->uiX11Size.height() == 0)
+//                              win->resize(ewWin->size());
                     }
                 }
 
