@@ -48,6 +48,7 @@
 #include <errno.h>
 #include <iostream>
 #include <algorithm>
+#include <typeinfo>
 
 #include "app.h"
 #include "master/lmaster.h"
