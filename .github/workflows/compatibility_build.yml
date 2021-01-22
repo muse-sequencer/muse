@@ -1,0 +1,58 @@
+name: Compatibility build
+
+#on: workflow_dispatch
+on: 
+  push:
+    branches:
+      - master
+env: 
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+
+    steps:
+    - uses: actions/checkout@v2
+                 
+    - name: Install Deps
+      run: |
+        sudo add-apt-repository ppa:beineri/opt-qt571-xenial
+        sudo apt-get update
+        sudo apt-get install libsndfile1-dev libsamplerate0-dev libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
+          libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev \
+          libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev \
+          liblilv-dev lv2-dev liblrdf0-dev
+        # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
+        sudo apt-get install mesa-common-dev libglu1-mesa-dev
+        sudo apt-get install qt57base qt57tools qt57svg
+        
+        sudo apt-get remove libsord-0-0 libserd-0-0
+                              
+    - name: Check Qt Installation
+      run: |
+        #cat /opt/qt57/bin/qt57-env.sh
+        QT_BASE_DIR=/opt/qt57
+        export QTDIR=$QT_BASE_DIR
+        export PATH=$QT_BASE_DIR/bin:$PATH
+        export LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
+        export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
+        
+        echo "$PATH" >> $GITHUB_PATH
+        echo "QT_BASE_DIR=$QT_BASE_DIR" >> $GITHUB_ENV
+        echo "QTDIR=$QT_BASE_DIR" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
+        
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        REPO_PATH=$GITHUB_WORKSPACE/muse3     
+        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr -DMODULES_BUILD_STATIC=ON
+        
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE -j3
