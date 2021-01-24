@@ -237,6 +237,8 @@ void PosToolbar::songChanged(MusECore::SongChangedStruct_t)
 
 void PosToolbar::showTickFrameToggled(bool checked) {
     if (checked) {
+        posTicks->setText(QString::number(MusEGlobal::audio->pos().tick()).rightJustified(10, '0'));
+        posFrames->setText(QString::number(MusEGlobal::audio->pos().frame()).rightJustified(10, '0'));
         posTicksAction->setVisible(true);
         posFramesAction->setVisible(true);
     } else {

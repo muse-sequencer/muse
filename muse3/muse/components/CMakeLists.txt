@@ -113,6 +113,7 @@ QT5_WRAP_CPP (components_mocs
       poslabel.h  
       postoolbar.h
       projectcreateimpl.h
+      raster_widgets.h
       rectoolbar.h
       routedialog.h
       routepopup.h  
@@ -278,6 +279,7 @@ file (GLOB components_source_files
       poslabel.cpp
       postoolbar.cpp
       projectcreateimpl.cpp
+      raster_widgets.cpp
       rectoolbar.cpp
       routedialog.cpp
       routepopup.cpp 

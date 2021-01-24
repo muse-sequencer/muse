@@ -1,3 +1,5 @@
+23.01.2021
+    - Fixed SimpleDrums not loading. Moved raster widgets into components folder. (Tim)
 20.01.2021
     - Fixed bug in Create Project dialog where it would disregard 
       the baseProject path. (rj)
