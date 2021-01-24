@@ -54,6 +54,8 @@
 #include "keyevent.h"
 #include "track.h"
 
+#include <QDebug>
+
 // REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_MIDI_ROUTE_PER_CHANNEL_
 
@@ -1326,6 +1328,14 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 
       const unsigned int pos_fr = _pos.frame() + latency_offset;
       const unsigned int next_pos_fr = pos_fr + frames;
+
+      const bool replaceMode = recording && track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE;
+      const bool rangeActive = MusEGlobal::song->loop() || (MusEGlobal::song->punchin() && MusEGlobal::song->punchout());
+      const bool punchinActive = MusEGlobal::song->punchin() && !MusEGlobal::song->punchout();
+      const bool punchoutActive = MusEGlobal::song->punchout() && !MusEGlobal::song->punchin();
+      const unsigned int rangeStart = MusEGlobal::song->lPos().tick();
+      const unsigned int rangeEnd = MusEGlobal::song->rPos().tick();
+
       
       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: pos_fr:%u next_pos_fr:%u\n", pos_fr, next_pos_fr);
       
@@ -1375,8 +1385,22 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                         if (ev.isNote() && track->drummap()[instr].mute)
                               continue;
                         }
-                  unsigned tick  = ev.tick() + offset;
+
+                  // test kybos
+                  if (replaceMode) {
+                      unsigned eventStart = ev.tick();
+//                      qDebug() << "*** TickStart: " << tickStart << "TickEnd: " << tickEnd
+//                               << "Is note off: " << ev.isNoteOff() << "Offset: " << offset;
+                      if (rangeActive && (eventStart > rangeStart && eventStart < rangeEnd))
+                          continue;
+                      else if (punchinActive && eventStart > rangeStart)
+                          continue;
+                      else if (punchoutActive && eventStart < rangeEnd)
+                          continue;
+                  }
                   
+                  unsigned tick  = ev.tick() + offset;
+
                   DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: event tick:%u\n", tick);
       
                   //-----------------------------------------------------------------
@@ -1745,15 +1769,24 @@ void Audio::processMidi(unsigned int frames)
             MidiTrack* track = *t;
             const int t_port = track->outPort();
             const int t_channel = track->outChannel();
-            MidiPort* mp = 0;
+            MidiPort* mp = nullptr;
             if(t_port >= 0 && t_port < MusECore::MIDI_PORTS)
               mp = &MusEGlobal::midiPorts[t_port];
-            MidiDevice* md = 0;
+            MidiDevice* md = nullptr;
             if(mp)
               md = mp->device();
+
             // only add track events if the track is unmuted and turned on
             if(!track->isMute() && !track->off())
             {
+                // test kybos
+//                qDebug() << "*** Track rec mode: " << track->recordFlag()
+//                         << (MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE)
+//                         << MusEGlobal::song->loop() << MusEGlobal::song->punchin() << MusEGlobal::song->punchout();
+                if(!(track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE
+                     && !MusEGlobal::song->loop() && !MusEGlobal::song->punchin() && !MusEGlobal::song->punchout()))
+                {
+
               if(playing)
               {
                 unsigned int lat_offset = 0;
@@ -1787,6 +1820,7 @@ void Audio::processMidi(unsigned int frames)
 
                 collectEvents(track, cur_tick, next_tick, frames, lat_offset);
               }
+            }
             }
 
             //
