@@ -24,14 +24,19 @@ jobs:
         sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-xenial
         sudo apt-get update
         sudo apt-get install libsndfile1-dev libsamplerate0-dev libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
-          libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev librtaudio-dev \
+          libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev \
           libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev
+        # librtaudio-dev
         # liblilv-dev lv2-dev liblrdf0-dev
         # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
         sudo apt-get install qt515base qt515tools qt515svg
         
         sudo apt-get remove libsord-0-0 libserd-0-0
+        
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio6_5.0.0~ds-2_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio-dev_5.0.0~ds-2_amd64.deb 
+        sudo apt-get install ./librtaudio6_5.0.0~ds-2_amd64.deb ./librtaudio-dev_5.0.0~ds-2_amd64.deb 
                       
     - name: Build lv2
       run: |     
