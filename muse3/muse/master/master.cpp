@@ -522,7 +522,7 @@ QMenu* Master::toolContextMenu()
     r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
 
     int editTools = static_cast<MasterEdit*>(editor)->getEditTools();
-    for (unsigned i = 0; i < gNumberOfTools; ++i) {
+    for (unsigned i = 0; i < static_cast<unsigned>(toolList.size()); ++i) {
         if ((editTools & (1 << i)) == 0)
             continue;
         QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));

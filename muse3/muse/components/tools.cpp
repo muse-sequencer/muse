@@ -67,7 +67,7 @@ static const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select 
 static const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool");
 static const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool");
 
-ToolB toolList[] = {
+QVector<ToolB> toolList = {
     {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pointer"),        infoPointer },
     {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pencil"),         infoPencil  },
     {&deleteIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Eraser"),         infoDel     },
@@ -87,8 +87,6 @@ ToolB toolList[] = {
 QMap<int,int> toolShortcuts;
 
 
-const unsigned gNumberOfTools = sizeof(toolList) / sizeof(ToolB);
-
 //---------------------------------------------------------
 //   EditToolBar
 //---------------------------------------------------------
@@ -102,22 +100,15 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
 
     initShortcuts();
 
-    nactions = 0;
-    for (unsigned i = 0; i < sizeof(toolList)/sizeof(*toolList); ++i) {
-        if ((tools & (1 << i))==0)
-            continue;
-        ++nactions;
-    }
-    actions = new Action*[nactions];
     bool first = true;
     int n = 0;
-    for (unsigned i = 0; i < sizeof(toolList)/sizeof(*toolList); ++i) {
+    for (unsigned i = 0; i < static_cast<unsigned>(toolList.size()); ++i) {
         if ((tools & (1 << i))==0)
             continue;
         ToolB* t = &toolList[i];
 
         Action* a = new Action(actionGroup, 1 << i, tr(t->tip).toLatin1().data(), true);
-        actions[n] = a;
+        actions.append(a);
         a->setIcon(**(t->icon));
         a->setShortcut(shortcuts[toolShortcuts[1 << i]].key);
         a->setToolTip(tr(t->tip) + " (" + a->shortcut().toString() + ")");
@@ -157,9 +148,7 @@ void EditToolBar::initShortcuts() {
 
 void EditToolBar::configChanged() {
 
-    for (int i = 0; i < nactions; ++i) {
-        Action *a = actions[i];
-
+    for (const auto& a : actions) {
         if (MusEGui::toolShortcuts.contains(a->id())) {
             a->setShortcut(shortcuts[toolShortcuts[a->id()]].key);
             int idx = a->toolTip().lastIndexOf('(');
@@ -186,7 +175,6 @@ void EditToolBar::toolChanged(QAction* action)
 
 EditToolBar::~EditToolBar()
 {
-    delete [] actions;
 }
 
 //---------------------------------------------------------
@@ -195,8 +183,7 @@ EditToolBar::~EditToolBar()
 
 void EditToolBar::set(int id)
 {
-    for (int i = 0; i < nactions; ++i) {
-        Action* action = actions[i];
+    for (const auto& action : actions) {
         if (action->id() == id) {
             action->setChecked(true);
             toolChanged(action);
@@ -211,8 +198,7 @@ void EditToolBar::set(int id)
 
 int EditToolBar::curTool()
 {
-    for (int i = 0; i < nactions; ++i) {
-        Action* action = actions[i];
+    for (const auto& action : actions) {
         if (action->isChecked())
             return action->id();
     }
