@@ -1952,7 +1952,7 @@ void Audio::processMidi(unsigned int frames)
                                 MidiRecordEvent event(rf.peek(i));
                                 int defaultPort = devport;
                                 int drumRecPitch=0; //prevent compiler warning: variable used without initialization
-                                MidiController *mc = 0;
+                                MidiController *mc = nullptr;
                                 int ctl = 0;
                                 int prePitch = 0, preVelo = 0;
 
@@ -2631,7 +2631,7 @@ void Audio::processPrecount(unsigned int frames)
     "_precountFramePos:%u precountMidiClickFrame:%u nextPrecountFramePos:%u clickno:%d\n",
     syncFrame, _pos.frame(), _precountFramePos, precountMidiClickFrame, nextPrecountFramePos, clickno);
     
-  MidiDevice* md = 0;
+  MidiDevice* md = nullptr;
   if(metro_settings->midiClickFlag)
     md = MusEGlobal::midiPorts[metro_settings->clickPort].device();
   
