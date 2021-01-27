@@ -59,13 +59,11 @@ const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | Glue
 
 struct ToolB {
       QIcon** icon;
-//      QPixmap** icon;
       const char* tip;
       const char* ltip;
       };
 
-extern ToolB toolList[];
-extern const unsigned gNumberOfTools;
+extern QVector<ToolB> toolList;
 
 //---------------------------------------------------------
 //   EditToolBar
@@ -74,8 +72,7 @@ extern const unsigned gNumberOfTools;
 class EditToolBar : public QToolBar {
       Q_OBJECT
     
-      Action** actions;
-      int nactions;
+      QVector<Action*> actions;
 
       void initShortcuts();
       void configChanged();
