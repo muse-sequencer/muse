@@ -110,6 +110,7 @@ class PianoRoll : public MidiEditor {
       
       QAction* speakerSingleNote;
       QAction* speakerChords;
+      QAction* speakerOnHoverSingleNote;
 
       QAction *addControllerAction;
 
@@ -186,6 +187,7 @@ class PianoRoll : public MidiEditor {
       void setSpeaker(bool);
       void setSpeakerSingleNoteMode(bool);
       void setSpeakerChordMode(bool);
+      void setSpeakerOnHoverSingleNote(bool);
       void setTime(unsigned);
       void follow(int pos);
       void songChanged1(MusECore::SongChangedStruct_t);

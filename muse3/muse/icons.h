@@ -233,6 +233,7 @@ extern QIcon* steprecSVGIcon;
 extern QIcon* speakerSVGIcon;
 extern QIcon* speakerSingleNoteSVGIcon;
 extern QIcon* speakerChordsSVGIcon;
+extern QIcon* speakerOnHoverSingleNoteSVGIcon;
 extern QIcon* filenewSVGIcon;
 extern QIcon* filetemplateSVGIcon;
 extern QIcon* fileopenSVGIcon;

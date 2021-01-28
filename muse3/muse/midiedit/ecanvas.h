@@ -72,7 +72,7 @@ class EventCanvas : public Canvas {
       Q_OBJECT
 
    public:
-     enum PlayEventsMode { PlayEventsSingleNote = 0, PlayEventsChords };
+     enum PlayEventsMode { PlayEventsSingleNote = 0, PlayEventsChords, PlayEventsOnHover };
 
    private:
       virtual void leaveEvent(QEvent*e);

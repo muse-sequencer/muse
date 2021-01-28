@@ -86,6 +86,7 @@
         <file>svg/speaker.svg</file>
         <file>svg/speaker_single_note.svg</file>
         <file>svg/speaker_chords.svg</file>
+        <file>svg/speaker_on_hover.svg</file>
         <file>svg/steprec.svg</file>
         <file>svg/filesave.svg</file>
         <file>svg/filenew.svg</file>

@@ -1253,7 +1253,7 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       stopPlayEvents();
 
       // play note:
-      if(_playEvents)
+      if(_playEvents && _playEventsMode != PlayEventsOnHover)
       {
         startPlayEvent(pitch, velocity);
       }
@@ -1872,6 +1872,9 @@ void PianoCanvas::mouseMove(QMouseEvent* event) {
 
     if (MusEGlobal::config.showStatusBar)
         showStatusTip(event);
+
+    if (_playEvents && _playEventsMode == PlayEventsOnHover)
+        playMouseOverEvent(event);
 }
 
 //---------------------------------------------------------
@@ -1970,6 +1973,26 @@ void PianoCanvas::showStatusTip(QMouseEvent* event) {
             MusEGlobal::muse->clearStatusBarText();
             hoverItem = nullptr;
         }
+    }
+}
+
+void PianoCanvas::playMouseOverEvent(QMouseEvent* event) {
+
+    static CItem* hoverItem = nullptr;
+    static Tool localTool;
+
+    CItem* item = findCurrentItem(event->pos());
+    if (item) {
+        if (hoverItem == item && localTool == _tool)
+            return;
+
+        hoverItem = item;
+        localTool = _tool;
+
+        startPlayEvent(item->event().pitch(), item->event().velo());
+    } else {
+        stopPlayEvents();
+        hoverItem = nullptr;
     }
 }
 

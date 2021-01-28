@@ -312,9 +312,12 @@ QIcon* undoSVGIcon;
 QIcon* redoSVGIcon;
 QIcon* midiinSVGIcon;
 QIcon* steprecSVGIcon;
+
 QIcon* speakerSVGIcon;
 QIcon* speakerSingleNoteSVGIcon;
 QIcon* speakerChordsSVGIcon;
+QIcon* speakerOnHoverSingleNoteSVGIcon;
+
 QIcon* filenewSVGIcon;
 QIcon* filetemplateSVGIcon;
 QIcon* fileopenSVGIcon;
@@ -700,6 +703,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     speakerSVGIcon    = icons.getSVG("speaker.svg");
     speakerSingleNoteSVGIcon = icons.getSVG("speaker_single_note.svg");
     speakerChordsSVGIcon     = icons.getSVG("speaker_chords.svg");
+    speakerOnHoverSingleNoteSVGIcon = icons.getSVG("speaker_on_hover.svg");
     whatsthisSVGIcon  = icons.getSVG("whatsthis.svg");
     infoSVGIcon       = icons.getSVG("info.svg");
     showFieldsSVGIcon = icons.getSVG("show_fields.svg");
@@ -994,6 +998,7 @@ void deleteIcons()
     delete speakerSVGIcon;
     delete speakerSingleNoteSVGIcon;
     delete speakerChordsSVGIcon;
+    delete speakerOnHoverSingleNoteSVGIcon;
 
     delete filenewSVGIcon;
     delete filetemplateSVGIcon;

@@ -363,10 +363,14 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       speaker->setPopupMode(QToolButton::MenuButtonPopup);
       speakerSingleNote = new QAction(*speakerSingleNoteSVGIcon, tr("Play single note"), this);
       speakerChords = new QAction(*speakerChordsSVGIcon, tr("Play chords"), this);
+      speakerOnHoverSingleNote = new QAction(*speakerOnHoverSingleNoteSVGIcon, tr("Play note on hover"), this);
+
       speakerPopupMenu->addAction(speakerSingleNote);
       speakerPopupMenu->addAction(speakerChords);
+      speakerPopupMenu->addAction(speakerOnHoverSingleNote);
       connect(speakerSingleNote, &QAction::triggered, [this](bool checked) { setSpeakerSingleNoteMode(checked); } );
       connect(speakerChords, &QAction::triggered, [this](bool checked) { setSpeakerChordMode(checked); } );
+      connect(speakerOnHoverSingleNote, &QAction::triggered, [this](bool checked) { setSpeakerOnHoverSingleNote(checked); } );
 
       tools->addWidget(speaker);
 
@@ -1825,6 +1829,10 @@ void PianoRoll::setSpeakerChordMode(bool)
 {
   setSpeakerMode(EventCanvas::PlayEventsChords);
 }
+void PianoRoll::setSpeakerOnHoverSingleNote(bool)
+{
+  setSpeakerMode(EventCanvas::PlayEventsOnHover);
+}
 
 void PianoRoll::setSpeakerMode(EventCanvas::PlayEventsMode mode)
 {
@@ -1838,6 +1846,9 @@ void PianoRoll::setSpeakerMode(EventCanvas::PlayEventsMode mode)
 
     case EventCanvas::PlayEventsChords:
       speaker->setIcon(*speakerChordsSVGIcon);
+    break;
+    case EventCanvas::PlayEventsOnHover:
+      speaker->setIcon(*speakerOnHoverSingleNoteSVGIcon);
     break;
   }
 }

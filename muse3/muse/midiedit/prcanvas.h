@@ -109,6 +109,7 @@ class PianoCanvas : public EventCanvas {
       QMenu* genItemPopup(MusEGui::CItem* item) override;
       void showNoteTooltip(QMouseEvent* event);
       void showStatusTip(QMouseEvent *event);
+      void playMouseOverEvent(QMouseEvent *event);
       void setLastEdited(MusECore::Event& e);
 
    private slots:

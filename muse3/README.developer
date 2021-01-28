@@ -41,24 +41,29 @@ packaging consistent and traceable.
    way to fix this (for now) is to untar the package, rename the folder (in this case) from 
    muse-3.0 to muse-3.0.1 and tar it back into muse-3.0.1.tar.gz.
 
-6. make a tag in git for this particular checkin when you are satisfied the release is correct
+6. create a releasenote, see old releases on github for format (or create a new one if there
+   is a better idea)
+
+7. add releasenote and tarball to github (and for good measure also sourceforge).
+   
+   Note: previosly we did git tagging as a step before the release.
+   As githubs release feature is a bit rigid with these things it seems a better
+   idea to create the tag using the release web-interface on github, see below for more
+   information about tag format.
+
+   = GIT TAGGING =
    From 4.0 release we use https://semver.org/ formatted tags.
-   For instance 4.0 pre release 2 is 4.0.0-pre2.
+   For instance 4.0 prerelease 2 is 4.0.0-pre2.
    'git tag -l' lists all of the previous tags. 
-   Use git tag -a <tag name> to create an annotated tag.
-   To push the tag to master: git push --tags
+   #Use git tag -a <tag name> to create an annotated tag.
+   #To push the tag to master: git push --tags
+   Use github release web instead, see above.
 
-7. create a releasenote
-
-8. upload both releasenote and tarball to the sourceforge page (or whatever is in fashion when 
-   it's time).
-   Update: Currently we upload to both sourceforge (because we always have and it's not a lot of work)
-   and to the Releases page on github.
-
-9. Update the frontpage and news page at https://muse-sequencer.github.io/.
+8. Update the frontpage and news page at https://muse-sequencer.github.io/.
    The frontpage is html and resides a specific git repo.
    The news page is in the muse github wiki.
 
-10.Update wikipedia to reflect the new release.
+9. Update wikipedia to reflect the new release.
 
-11. send out a release mail
+10. Send out a release mail to lmuse mailinglist and LAD, MusE forum on Linuxmusicians and the 
+   Linux Music News forum on same site.
