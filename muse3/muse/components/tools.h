@@ -63,7 +63,7 @@ struct ToolB {
       const char* ltip;
       };
 
-extern QVector<ToolB> toolList;
+extern const QVector<ToolB> toolList;
 
 //---------------------------------------------------------
 //   EditToolBar

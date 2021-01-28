@@ -67,7 +67,7 @@ static const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select 
 static const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool");
 static const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool");
 
-QVector<ToolB> toolList = {
+const QVector<ToolB> toolList = {
     {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pointer"),        infoPointer },
     {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pencil"),         infoPencil  },
     {&deleteIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Eraser"),         infoDel     },
@@ -105,7 +105,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
     for (unsigned i = 0; i < static_cast<unsigned>(toolList.size()); ++i) {
         if ((tools & (1 << i))==0)
             continue;
-        ToolB* t = &toolList[i];
+        const ToolB* t = &toolList[i];
 
         Action* a = new Action(actionGroup, 1 << i, tr(t->tip).toLatin1().data(), true);
         actions.append(a);
