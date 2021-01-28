@@ -61,7 +61,7 @@ struct ToolB {
     const char* ltip;
 };
 
-extern QVector<ToolB> toolList;
+extern const QVector<ToolB> toolList;
 
 //---------------------------------------------------------
 //   EditToolBar
@@ -73,7 +73,6 @@ class EditToolBar : public QToolBar {
     QActionGroup* actionGroup;
 
     void initShortcuts();
-    void configChanged();
 
 private slots:
     void toolChanged(QAction* action);
@@ -81,8 +80,9 @@ private slots:
 signals:
     void toolChanged(int);
 
-public slots:
-    void set(int id);
+   public slots:
+      void set(int id);
+      void configChanged();
 
 public:
     //EditToolBar(QMainWindow*, int, const char* name = 0);

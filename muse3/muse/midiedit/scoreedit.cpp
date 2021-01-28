@@ -258,6 +258,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     edit_tools->set(MusEGui::PointerTool);
     score_canvas->set_tool(MusEGui::PointerTool);
     connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
+    connect(MusEGlobal::muse, &MusE::configChanged, edit_tools, &EditToolBar::configChanged);
 
     QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
     steprec_tools->setObjectName("Score tools");

@@ -120,6 +120,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
+  connect(MusEGlobal::muse, &MusE::configChanged, editTools, &EditToolBar::configChanged);
 
 
 
