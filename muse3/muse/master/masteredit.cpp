@@ -266,6 +266,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       canvas->setFocus();
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));
+      connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
       connect(vscroll, SIGNAL(scrollChanged(int)),   canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)), canvas, SLOT(setYMag(int)));
 

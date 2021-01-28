@@ -75,7 +75,6 @@ class EditToolBar : public QToolBar {
       QVector<Action*> actions;
 
       void initShortcuts();
-      void configChanged();
 
    private slots:
       void toolChanged(QAction* action);
@@ -85,6 +84,7 @@ class EditToolBar : public QToolBar {
 
    public slots:
       void set(int id);
+      void configChanged();
 
    public:
       //EditToolBar(QMainWindow*, int, const char* name = 0);
