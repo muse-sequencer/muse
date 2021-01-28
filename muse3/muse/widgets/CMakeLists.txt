@@ -48,7 +48,7 @@
 QT5_WRAP_CPP (widget_mocs
 #       aboutbox_impl.h 
 #       arrangercolumns.h 
-      action.h
+#       action.h
 #       bigtime.h
 #       canvas.h  
       checkbox.h

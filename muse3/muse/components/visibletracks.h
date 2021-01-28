@@ -39,7 +39,7 @@ struct VisibleToolB {
       const char* ltip;
       };
 
-extern VisibleToolB visTrackList[];
+extern const QVector<VisibleToolB> visTrackList;
 
 //---------------------------------------------------------
 //   EditToolBar
@@ -47,8 +47,8 @@ extern VisibleToolB visTrackList[];
 
 class VisibleTracks : public QToolBar {
       Q_OBJECT
-      Action** actions;
-      int nactions;
+
+    QActionGroup* actions;
 
    private slots:
       void visibilityChanged(QAction* action);
