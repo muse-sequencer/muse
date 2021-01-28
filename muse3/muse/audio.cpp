@@ -1908,8 +1908,8 @@ void Audio::recordStop(bool restart, Undo* ops)
       {
         if(ao->recordFlag())
         {            
-          MusEGlobal::song->bounceOutput = 0;
-          ao->setRecFile(NULL); // if necessary, this automatically deletes _recFile
+          MusEGlobal::song->bounceOutput = nullptr;
+          ao->setRecFile(nullptr); // if necessary, this automatically deletes _recFile
           operations.push_back(UndoOp(UndoOp::SetTrackRecord, ao, false, true));  // True = non-undoable.
         }
       }  

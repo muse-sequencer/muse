@@ -31,7 +31,6 @@
 
 #include "icons.h"
 #include "shortcuts.h"
-#include "action.h"
 #include "globals.h"
 #include "app.h"
 
@@ -95,20 +94,20 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
     : QToolBar(tr("Edit Tools"), parent)
 {
     setObjectName("Edit Tools");
-    QActionGroup* actionGroup = new QActionGroup(parent);  // Parent needed.
+    actionGroup = new QActionGroup(parent);  // Parent needed.
     actionGroup->setExclusive(true);
 
     initShortcuts();
 
     bool first = true;
-    int n = 0;
     for (unsigned i = 0; i < static_cast<unsigned>(toolList.size()); ++i) {
         if ((tools & (1 << i))==0)
             continue;
         const ToolB* t = &toolList[i];
 
-        Action* a = new Action(actionGroup, 1 << i, tr(t->tip).toLatin1().data(), true);
-        actions.append(a);
+        QAction* a = new QAction(tr(t->tip).toLatin1().data(), actionGroup);
+        a->setData(1 << i);
+        a->setCheckable(true);
         a->setIcon(**(t->icon));
         a->setShortcut(shortcuts[toolShortcuts[1 << i]].key);
         a->setToolTip(tr(t->tip) + " (" + a->shortcut().toString() + ")");
@@ -117,7 +116,6 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
             a->setChecked(true);
             first = false;
         }
-        ++n;
     }
     actionGroup->setVisible(true);
     //action->addTo(this);
@@ -146,15 +144,15 @@ void EditToolBar::initShortcuts() {
 
 void EditToolBar::configChanged() {
 
-    for (const auto& a : actions) {
-        if (MusEGui::toolShortcuts.contains(a->id())) {
-            a->setShortcut(shortcuts[toolShortcuts[a->id()]].key);
+    for (const auto& a : actionGroup->actions()) {
+        if (MusEGui::toolShortcuts.contains(a->data().toInt())) {
+            a->setShortcut(shortcuts[toolShortcuts[a->data().toInt()]].key);
             int idx = a->toolTip().lastIndexOf('(');
             if (idx != -1)
                 a->setToolTip(a->toolTip().left(idx + 1) + a->shortcut().toString() + ")");
         }
         else
-            printf("Error: EditToolBar configChanged: Tool ID doesn't exist: %d\n", a->id());
+            printf("Error: EditToolBar configChanged: Tool ID doesn't exist: %d\n", a->data().toInt());
     }
 }
 
@@ -164,7 +162,7 @@ void EditToolBar::configChanged() {
 
 void EditToolBar::toolChanged(QAction* action)
 {
-    emit toolChanged(((Action*)action)->id());
+    emit toolChanged(action->data().toInt());
 }
 
 //---------------------------------------------------------
@@ -181,8 +179,8 @@ EditToolBar::~EditToolBar()
 
 void EditToolBar::set(int id)
 {
-    for (const auto& action : actions) {
-        if (action->id() == id) {
+    for (const auto& action : actionGroup->actions()) {
+        if (action->data().toInt() == id) {
             action->setChecked(true);
             toolChanged(action);
             return;
@@ -196,9 +194,9 @@ void EditToolBar::set(int id)
 
 int EditToolBar::curTool()
 {
-    for (const auto& action : actions) {
+    for (const auto& action : actionGroup->actions()) {
         if (action->isChecked())
-            return action->id();
+            return action->data().toInt();
     }
     return -1;
 }
