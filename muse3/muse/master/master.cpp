@@ -522,13 +522,13 @@ QMenu* Master::toolContextMenu()
     r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
 
     int editTools = static_cast<MasterEdit*>(editor)->getEditTools();
-    for (unsigned i = 0; i < static_cast<unsigned>(toolList.size()); ++i) {
+    for (unsigned i = 0; i < static_cast<unsigned>(EditToolBar::toolList.size()); ++i) {
         if ((editTools & (1 << i)) == 0)
             continue;
-        QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
+        QAction* act = r_menu->addAction(QIcon(**EditToolBar::toolList[i].icon), tr(EditToolBar::toolList[i].tip));
 
-        if (MusEGui::toolShortcuts.contains(1 << i)) {
-            act->setShortcut(MusEGui::shortcuts[MusEGui::toolShortcuts[1 << i]].key);
+        if (MusEGui::EditToolBar::toolShortcuts.contains(1 << i)) {
+            act->setShortcut(MusEGui::shortcuts[MusEGui::EditToolBar::toolShortcuts[1 << i]].key);
         }
 
         act->setData(editTools & (1 << i));
