@@ -29,6 +29,7 @@
 #include <QString>
 
 #include "type_defs.h"
+#include "tools.h"
 
 
 // Forward declarations:
@@ -170,6 +171,9 @@ class Arranger : public QWidget {
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
              CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK, CMD_PASTE_DIALOG, CMD_INSERT_EMPTYMEAS };
       
+      const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | GlueTool | MuteTool |
+              AutomationTool | PanTool | ZoomTool;
+
       struct custom_col_t
       {
         enum affected_pos_t {AFFECT_BEGIN, AFFECT_CPOS};

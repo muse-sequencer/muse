@@ -5045,8 +5045,8 @@ QMenu* ScoreCanvas::toolContextMenu()
             continue;
         QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
 
-        if (MusEGui::toolShortcuts.contains(1 << i)) {
-            act->setShortcut(MusEGui::shortcuts[MusEGui::toolShortcuts[1 << i]].key);
+        if (MusEGui::EditToolBar::toolShortcuts.contains(1 << i)) {
+            act->setShortcut(MusEGui::shortcuts[MusEGui::EditToolBar::toolShortcuts[1 << i]].key);
         }
 
         act->setData(scoreTools & (1 << i));

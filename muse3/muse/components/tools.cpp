@@ -83,12 +83,27 @@ const QVector<ToolB> toolList = {
     {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample rate"), infoSamplerate}
 };
 
-QMap<int,int> toolShortcuts;
-
 
 //---------------------------------------------------------
 //   EditToolBar
 //---------------------------------------------------------
+
+const QMap<int,int> EditToolBar::toolShortcuts = {
+    {PointerTool   , SHRT_TOOL_POINTER},
+    {PencilTool    , SHRT_TOOL_PENCIL},
+    {RubberTool    , SHRT_TOOL_RUBBER},
+    {CutTool       , SHRT_TOOL_SCISSORS},
+    {GlueTool      , SHRT_TOOL_GLUE},
+    {RangeTool     , SHRT_TOOL_RANGE},
+    {PanTool       , SHRT_TOOL_PAN},
+    {ZoomTool      , SHRT_TOOL_ZOOM},
+    {DrawTool      , SHRT_TOOL_LINEDRAW},
+    {MuteTool      , SHRT_TOOL_MUTE},
+    {AutomationTool, SHRT_TOOL_LINEDRAW},
+    {CursorTool    , SHRT_TOOL_CURSOR},
+    {StretchTool   , SHRT_TOOL_STRETCH},
+    {SamplerateTool, SHRT_TOOL_SAMPLERATE}
+};
 
 EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
     : QToolBar(tr("Edit Tools"), parent)
@@ -96,8 +111,6 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
     setObjectName("Edit Tools");
     actionGroup = new QActionGroup(parent);  // Parent needed.
     actionGroup->setExclusive(true);
-
-    initShortcuts();
 
     bool first = true;
     for (unsigned i = 0; i < static_cast<unsigned>(toolList.size()); ++i) {
@@ -125,27 +138,27 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
     connect(actionGroup, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
 }
 
-void EditToolBar::initShortcuts() {
-    toolShortcuts[PointerTool] = SHRT_TOOL_POINTER;
-    toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
-    toolShortcuts[RubberTool]  = SHRT_TOOL_RUBBER;
-    toolShortcuts[CutTool]     = SHRT_TOOL_SCISSORS;
-    toolShortcuts[GlueTool]    = SHRT_TOOL_GLUE;
-    toolShortcuts[RangeTool]   = SHRT_TOOL_RANGE;
-    toolShortcuts[PanTool]     = SHRT_TOOL_PAN;
-    toolShortcuts[ZoomTool]    = SHRT_TOOL_ZOOM;
-    toolShortcuts[DrawTool]    = SHRT_TOOL_LINEDRAW;
-    toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
-    toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
-    toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
-    toolShortcuts[StretchTool]  = SHRT_TOOL_STRETCH;
-    toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
-}
+//void EditToolBar::initShortcuts() {
+//    toolShortcuts[PointerTool] = SHRT_TOOL_POINTER;
+//    toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
+//    toolShortcuts[RubberTool]  = SHRT_TOOL_RUBBER;
+//    toolShortcuts[CutTool]     = SHRT_TOOL_SCISSORS;
+//    toolShortcuts[GlueTool]    = SHRT_TOOL_GLUE;
+//    toolShortcuts[RangeTool]   = SHRT_TOOL_RANGE;
+//    toolShortcuts[PanTool]     = SHRT_TOOL_PAN;
+//    toolShortcuts[ZoomTool]    = SHRT_TOOL_ZOOM;
+//    toolShortcuts[DrawTool]    = SHRT_TOOL_LINEDRAW;
+//    toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
+//    toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
+//    toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
+//    toolShortcuts[StretchTool]  = SHRT_TOOL_STRETCH;
+//    toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
+//}
 
 void EditToolBar::configChanged() {
 
     for (const auto& a : actionGroup->actions()) {
-        if (MusEGui::toolShortcuts.contains(a->data().toInt())) {
+        if (toolShortcuts.contains(a->data().toInt())) {
             a->setShortcut(shortcuts[toolShortcuts[a->data().toInt()]].key);
             int idx = a->toolTip().lastIndexOf('(');
             if (idx != -1)

@@ -50,11 +50,6 @@ enum Tool {
     SamplerateTool=8192
 };
 
-extern QMap<int,int> toolShortcuts;
-
-const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | GlueTool | MuteTool |
-        AutomationTool | PanTool | ZoomTool;
-
 struct ToolB {
     QIcon** icon;
     const char* tip;
@@ -72,8 +67,6 @@ class EditToolBar : public QToolBar {
     
     QActionGroup* actionGroup;
 
-    void initShortcuts();
-
 private slots:
     void toolChanged(QAction* action);
 
@@ -85,10 +78,11 @@ signals:
       void configChanged();
 
 public:
-    //EditToolBar(QMainWindow*, int, const char* name = 0);
     EditToolBar(QWidget* /*parent*/, int /*tools*/, const char* name = 0);  // Needs a parent !
     ~EditToolBar();
     int curTool();
+
+    static const QMap<int,int> toolShortcuts;
 };
 
 } // namespace MusEGui
