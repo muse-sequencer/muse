@@ -56,7 +56,7 @@ struct ToolB {
     const char* ltip;
 };
 
-extern const QVector<ToolB> toolList;
+//extern const QVector<ToolB> toolList;
 
 //---------------------------------------------------------
 //   EditToolBar
@@ -83,6 +83,7 @@ public:
     int curTool();
 
     static const QMap<int,int> toolShortcuts;
+    static const QVector<ToolB> toolList;
 };
 
 } // namespace MusEGui
