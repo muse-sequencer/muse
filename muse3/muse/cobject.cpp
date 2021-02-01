@@ -211,6 +211,9 @@ TopWin::~TopWin()
 {
     DEBUG_COBJECT(stderr, "TopWin dtor: %s\n", objectName().toLatin1().constData());
 
+    for (const auto& it : _toolbars)
+        delete it;
+
     if (mdisubwin)
         mdisubwin->close();
 }
