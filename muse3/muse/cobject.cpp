@@ -211,8 +211,15 @@ TopWin::~TopWin()
 {
     DEBUG_COBJECT(stderr, "TopWin dtor: %s\n", objectName().toLatin1().constData());
 
-    for (const auto& it : _toolbars)
-        delete it;
+    // Toolbars must be deleted explicitly to avoid memory leakage and corruption.
+    // For some reason (toolbar sharing?) they are reparented and thus
+    // not destroyed by the original parent topwin when closed.
+    for (auto& it : _toolbars) {
+        if (it) {
+            delete it;
+            it = nullptr;
+        }
+    }
 
     if (mdisubwin)
         mdisubwin->close();

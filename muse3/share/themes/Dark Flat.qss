@@ -190,6 +190,14 @@ QToolBar QLabel#PaddedValueLabel {
     height: 20px;
 }
 
+QCheckBox::indicator {
+    border: 2px solid rgb(70, 70, 70);
+}
+
+QCheckBox::indicator:checked {
+    background: rgb(0,140,210);
+}
+
 QFrame#SliderMeterFrameAudio,
 QFrame#SliderMeterFrameMidi {
     border-top: 1px solid rgb(60,60,60);
