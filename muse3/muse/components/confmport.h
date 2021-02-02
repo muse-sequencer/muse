@@ -31,10 +31,6 @@
 #include "type_defs.h"
 #include "synth.h"
 
-// Temporary for testing migration of some port list columns over to the new device list. 
-// Make permanent later.
-#define _USE_EXTRA_INSTANCE_COLUMNS_
-
 
 // Forward declarations:
 class QWidget;
@@ -76,20 +72,13 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       Q_OBJECT
       
       enum InstanceRoles { DeviceRole = Qt::UserRole, DeviceTypeRole = Qt::UserRole + 1};
-      #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
       enum DeviceColumns { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_INSTR, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS };
-      #else
-      enum DeviceColumns { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
-                           DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };
-      #endif     
-      #ifdef _USE_EXTRA_INSTANCE_COLUMNS_
       enum InstanceColumns { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_REC, INSTCOL_PLAY, INSTCOL_GUI, INSTCOL_INROUTES, INSTCOL_OUTROUTES, INSTCOL_STATE };
-      #else
-      enum InstanceColumns { INSTCOL_NAME = 0, INSTCOL_TYPE, INSTCOL_STATE };
-      #endif     
       
       PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
+      QTimer *guiTimer;
+      QIcon ledOn, ledOff;
       void setWhatsThis(QTableWidgetItem *item, int col);
       void setToolTip(QTableWidgetItem *item, int col);
       void setInstWhatsThis(QTableWidgetItem *item, int col);
@@ -116,6 +105,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void okClicked();
       void beforeDeviceContextShow(PopupMenu* menu, QAction* menuAction, QMenu* ctxMenu);
       void deviceContextTriggered(QAction*);
+      void checkGUIState();
       
    public slots:
       void closeEvent(QCloseEvent*e);
