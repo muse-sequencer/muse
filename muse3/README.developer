@@ -31,17 +31,20 @@ packaging consistent and traceable.
 4. now create the tarball from the build dir (could be a good idea to create a new build dir)
    $ make clean (otherwise the tarball will way too big)
    $ make package_source
-   feel free to ctrl-c out of this as soon as it is finished
+   feel free to ctrl-c out of this as soon as the .tar.gz build is done as it contines to make
+   a lot of variants that we do not use.
 
 5. verify that the built package has the right name and can be built
 
    NOTE: if you are making a point release (e.g. 3.0.1) the file name is based of the path so
    the package will be called muse-3.0.tar.gz while it really should be muse-3.0.1. Easiest 
-   way to fix this for now is to untar the package, rename the folder (in this case) from 
+   way to fix this (for now) is to untar the package, rename the folder (in this case) from 
    muse-3.0 to muse-3.0.1 and tar it back into muse-3.0.1.tar.gz.
 
 6. make a tag in git for this particular checkin when you are satisfied the release is correct
-   'git tag -l' lists all of the previous tags and gives a hint as to the format to use.
+   From 4.0 release we use https://semver.org/ formatted tags.
+   For instance 4.0 pre release 2 is 4.0.0-pre2.
+   'git tag -l' lists all of the previous tags. 
    Use git tag -a <tag name> to create an annotated tag.
    To push the tag to master: git push --tags
 
@@ -59,4 +62,3 @@ packaging consistent and traceable.
 10.Update wikipedia to reflect the new release.
 
 11. send out a release mail
-

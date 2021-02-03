@@ -31,93 +31,108 @@
 
 #include "icons.h"
 #include "shortcuts.h"
-#include "action.h"
 #include "globals.h"
 #include "app.h"
 
 namespace MusEGui {
 
-static const char* infoPointer = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pointer tool:\n"
-                                                                           "With the pointer tool you can:\n"
-                                                                           "  select parts\n"
-                                                                           "  move parts\n"
-                                                                           "  copy parts");
-static const char* infoPencil = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pencil tool:\n"
-                                                                          "With the pencil tool you can:\n"
-                                                                          "  create new parts\n"
-                                                                          "  modify length of parts");
-static const char* infoDel = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Delete tool:\n"
-                                                                       "With the delete tool you can delete parts");
-static const char* infoCut = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cut tool:\n"
-                                                                       "With the cut tool you can split a part");
-static const char* infoGlue = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Glue tool:\n"
-                                                                        "With the glue tool you can glue two parts");
-static const char* infoDraw = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Drawing tool");
-static const char* infoMute = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Muting tool:\n"
-                                                                        "Click on part to mute/unmute");
-static const char* infoAutomation = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Manipulate automation");
-static const char* infoCursor = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cursor (tracker mode) tool:\n"
-                                                                          "With the cursor tool you can:\n"
-                                                                          "  navigate with arrow keys\n"
-                                                                          "  use VBNM to place notes\n"
-                                                                          "  change step with 0 and 9");
-static const char* infoRange = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Range tool");
-static const char* infoPan = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Panning tool");
-static const char* infoZoom = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Zoom tool");
-static const char* infoStretch = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool");
-static const char* infoSamplerate = QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool");
-
-ToolB toolList[] = {
-    {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pointer"),        infoPointer },
-    {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pencil"),         infoPencil  },
-    {&deleteIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Eraser"),         infoDel     },
-    {&cutterIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cutter"),         infoCut     },
-    {&glueIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Glue"),           infoGlue    },
-    {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Range"),          infoRange   },
-    {&handIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pan"),            infoPan     },
-    {&zoomIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Zoom"),           infoZoom    },
-    {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Draw"),           infoDraw    },
-    {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Mute parts"),   infoMute    },
-    {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Edit automation"),infoAutomation},
-    {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor"),         infoCursor},
-    {&audioStretchIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Stretch"),  infoStretch},
-    {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample rate"), infoSamplerate}
-};
-
-QMap<int,int> toolShortcuts;
-
-
-const unsigned gNumberOfTools = sizeof(toolList) / sizeof(ToolB);
-
 //---------------------------------------------------------
 //   EditToolBar
 //---------------------------------------------------------
+
+// Icon / tooltip / whatsthis
+const QVector<ToolB> EditToolBar::toolList = {
+    {&pointerIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pointer"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pointer tool:\n"
+                                                  "With the pointer tool you can:\n"
+                                                  "  select parts\n"
+                                                  "  move parts\n"
+                                                  "  copy parts")
+    },
+    {&pencilIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pencil"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Pencil tool:\n"
+                                                  "With the pencil tool you can:\n"
+                                                  "  create new parts\n"
+                                                  "  modify length of parts")
+    },
+    {&deleteIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Eraser"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Delete tool:\n"
+                                                  "With the delete tool you can delete parts")
+    },
+    {&cutterIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cutter"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cut tool:\n"
+                                                  "With the cut tool you can split a part")
+    },
+    {&glueIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Glue"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Glue tool:\n"
+                                                  "With the glue tool you can glue two parts")},
+    {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Range"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Range tool")
+    },
+    {&handIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Pan"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Panning tool")
+    },
+    {&zoomIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Zoom"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Zoom tool")
+    },
+    {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Draw"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Drawing tool")
+    },
+    {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Mute parts"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Muting tool:\n"
+                                                  "Click on part to mute/unmute")
+    },
+    {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Edit automation"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Manipulate automation")
+    },
+    {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Cursor (tracker mode) tool:\n"
+                                               "With the cursor tool you can:\n"
+                                               "  navigate with arrow keys\n"
+                                               "  use VBNM to place notes\n"
+                                               "  change step with 0 and 9")
+    },
+    {&audioStretchIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Stretch"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool")
+    },
+    {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample rate"),
+        QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool")
+    }
+};
+
+const QMap<int,int> EditToolBar::toolShortcuts = {
+    {PointerTool   , SHRT_TOOL_POINTER},
+    {PencilTool    , SHRT_TOOL_PENCIL},
+    {RubberTool    , SHRT_TOOL_RUBBER},
+    {CutTool       , SHRT_TOOL_SCISSORS},
+    {GlueTool      , SHRT_TOOL_GLUE},
+    {RangeTool     , SHRT_TOOL_RANGE},
+    {PanTool       , SHRT_TOOL_PAN},
+    {ZoomTool      , SHRT_TOOL_ZOOM},
+    {DrawTool      , SHRT_TOOL_LINEDRAW},
+    {MuteTool      , SHRT_TOOL_MUTE},
+    {AutomationTool, SHRT_TOOL_LINEDRAW},
+    {CursorTool    , SHRT_TOOL_CURSOR},
+    {StretchTool   , SHRT_TOOL_STRETCH},
+    {SamplerateTool, SHRT_TOOL_SAMPLERATE}
+};
 
 EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
     : QToolBar(tr("Edit Tools"), parent)
 {
     setObjectName("Edit Tools");
-    QActionGroup* actionGroup = new QActionGroup(parent);  // Parent needed.
+    actionGroup = new QActionGroup(parent);  // Parent needed.
     actionGroup->setExclusive(true);
 
-    initShortcuts();
-
-    nactions = 0;
-    for (unsigned i = 0; i < sizeof(toolList)/sizeof(*toolList); ++i) {
-        if ((tools & (1 << i))==0)
-            continue;
-        ++nactions;
-    }
-    actions = new Action*[nactions];
     bool first = true;
-    int n = 0;
-    for (unsigned i = 0; i < sizeof(toolList)/sizeof(*toolList); ++i) {
+    for (unsigned i = 0; i < static_cast<unsigned>(toolList.size()); ++i) {
         if ((tools & (1 << i))==0)
             continue;
-        ToolB* t = &toolList[i];
+        const ToolB* t = &toolList[static_cast<int>(i)];
 
-        Action* a = new Action(actionGroup, 1 << i, tr(t->tip).toLatin1().data(), true);
-        actions[n] = a;
+        QAction* a = new QAction(tr(t->tip).toLatin1().data(), actionGroup);
+        a->setData(1 << i);
+        a->setCheckable(true);
         a->setIcon(**(t->icon));
         a->setShortcut(shortcuts[toolShortcuts[1 << i]].key);
         a->setToolTip(tr(t->tip) + " (" + a->shortcut().toString() + ")");
@@ -126,7 +141,6 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
             a->setChecked(true);
             first = false;
         }
-        ++n;
     }
     actionGroup->setVisible(true);
     //action->addTo(this);
@@ -134,40 +148,19 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
     addActions(actionGroup->actions());
 
     connect(actionGroup, SIGNAL(triggered(QAction*)), SLOT(toolChanged(QAction*)));
-    // TODO kybos (to be checked, setShortcut is apparently causing crashes...)
-    connect(MusEGlobal::muse, &MusE::configChanged, this, &EditToolBar::configChanged);
-}
-
-void EditToolBar::initShortcuts() {
-    toolShortcuts[PointerTool] = SHRT_TOOL_POINTER;
-    toolShortcuts[PencilTool]  = SHRT_TOOL_PENCIL;
-    toolShortcuts[RubberTool]  = SHRT_TOOL_RUBBER;
-    toolShortcuts[CutTool]     = SHRT_TOOL_SCISSORS;
-    toolShortcuts[GlueTool]    = SHRT_TOOL_GLUE;
-    toolShortcuts[RangeTool]   = SHRT_TOOL_RANGE;
-    toolShortcuts[PanTool]     = SHRT_TOOL_PAN;
-    toolShortcuts[ZoomTool]    = SHRT_TOOL_ZOOM;
-    toolShortcuts[DrawTool]    = SHRT_TOOL_LINEDRAW;
-    toolShortcuts[MuteTool]    = SHRT_TOOL_MUTE;
-    toolShortcuts[AutomationTool] = SHRT_TOOL_LINEDRAW;
-    toolShortcuts[CursorTool]  = SHRT_TOOL_CURSOR;
-    toolShortcuts[StretchTool]  = SHRT_TOOL_STRETCH;
-    toolShortcuts[SamplerateTool]  = SHRT_TOOL_SAMPLERATE;
 }
 
 void EditToolBar::configChanged() {
 
-    for (int i = 0; i < nactions; ++i) {
-        Action *a = actions[i];
-
-        if (MusEGui::toolShortcuts.contains(a->id())) {
-            a->setShortcut(shortcuts[toolShortcuts[a->id()]].key);
+    for (const auto& a : actionGroup->actions()) {
+        if (toolShortcuts.contains(a->data().toInt())) {
+            a->setShortcut(shortcuts[toolShortcuts[a->data().toInt()]].key);
             int idx = a->toolTip().lastIndexOf('(');
             if (idx != -1)
                 a->setToolTip(a->toolTip().left(idx + 1) + a->shortcut().toString() + ")");
         }
         else
-            printf("Error: EditToolBar configChanged: Tool ID doesn't exist: %d\n", a->id());
+            printf("Error: EditToolBar configChanged: Tool ID doesn't exist: %d\n", a->data().toInt());
     }
 }
 
@@ -177,7 +170,7 @@ void EditToolBar::configChanged() {
 
 void EditToolBar::toolChanged(QAction* action)
 {
-    emit toolChanged(((Action*)action)->id());
+    emit toolChanged(action->data().toInt());
 }
 
 //---------------------------------------------------------
@@ -186,7 +179,6 @@ void EditToolBar::toolChanged(QAction* action)
 
 EditToolBar::~EditToolBar()
 {
-    delete [] actions;
 }
 
 //---------------------------------------------------------
@@ -195,9 +187,8 @@ EditToolBar::~EditToolBar()
 
 void EditToolBar::set(int id)
 {
-    for (int i = 0; i < nactions; ++i) {
-        Action* action = actions[i];
-        if (action->id() == id) {
+    for (const auto& action : actionGroup->actions()) {
+        if (action->data().toInt() == id) {
             action->setChecked(true);
             toolChanged(action);
             return;
@@ -211,10 +202,9 @@ void EditToolBar::set(int id)
 
 int EditToolBar::curTool()
 {
-    for (int i = 0; i < nactions; ++i) {
-        Action* action = actions[i];
+    for (const auto& action : actionGroup->actions()) {
         if (action->isChecked())
-            return action->id();
+            return action->data().toInt();
     }
     return -1;
 }

@@ -33,68 +33,58 @@ class QIcon;
 
 namespace MusEGui {
 
-class Action;
-
 enum Tool {
-   PointerTool=1,
-   PencilTool=2,
-   RubberTool=4,
-   CutTool=8,
-   GlueTool=16,
-   RangeTool=32,
-   PanTool=64,
-   ZoomTool=128,
-   DrawTool=256,
-   MuteTool=512,
-   AutomationTool=1024,
-   CursorTool=2048,
-   StretchTool=4096,
-   SamplerateTool=8192
+    PointerTool=1,
+    PencilTool=2,
+    RubberTool=4,
+    CutTool=8,
+    GlueTool=16,
+    RangeTool=32,
+    PanTool=64,
+    ZoomTool=128,
+    DrawTool=256,
+    MuteTool=512,
+    AutomationTool=1024,
+    CursorTool=2048,
+    StretchTool=4096,
+    SamplerateTool=8192
 };
 
-extern QMap<int,int> toolShortcuts;
-
-const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | GlueTool | MuteTool |
-                          AutomationTool | PanTool | ZoomTool;
-
 struct ToolB {
-      QIcon** icon;
-//      QPixmap** icon;
-      const char* tip;
-      const char* ltip;
-      };
+    QIcon** icon;
+    const char* tip;
+    const char* ltip;
+};
 
-extern ToolB toolList[];
-extern const unsigned gNumberOfTools;
+//extern const QVector<ToolB> toolList;
 
 //---------------------------------------------------------
 //   EditToolBar
 //---------------------------------------------------------
 
 class EditToolBar : public QToolBar {
-      Q_OBJECT
+    Q_OBJECT
     
-      Action** actions;
-      int nactions;
+    QActionGroup* actionGroup;
 
-      void initShortcuts();
-      void configChanged();
+private slots:
+    void toolChanged(QAction* action);
 
-   private slots:
-      void toolChanged(QAction* action);
-
-   signals:
-      void toolChanged(int);
+signals:
+    void toolChanged(int);
 
    public slots:
       void set(int id);
+      void configChanged();
 
-   public:
-      //EditToolBar(QMainWindow*, int, const char* name = 0);
-      EditToolBar(QWidget* /*parent*/, int /*tools*/, const char* name = 0);  // Needs a parent !
-      ~EditToolBar();
-      int curTool();
-      };
+public:
+    EditToolBar(QWidget* /*parent*/, int /*tools*/, const char* name = 0);  // Needs a parent !
+    ~EditToolBar();
+    int curTool();
+
+    static const QMap<int,int> toolShortcuts;
+    static const QVector<ToolB> toolList;
+};
 
 } // namespace MusEGui
 

@@ -258,6 +258,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     edit_tools->set(MusEGui::PointerTool);
     score_canvas->set_tool(MusEGui::PointerTool);
     connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
+    connect(MusEGlobal::muse, &MusE::configChanged, edit_tools, &EditToolBar::configChanged);
 
     QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
     steprec_tools->setObjectName("Score tools");
@@ -5039,13 +5040,13 @@ QMenu* ScoreCanvas::toolContextMenu()
 
     r_menu->addAction(new MenuTitleItem(tr("Tools"), r_menu));
 
-    for (unsigned i = 0; i < gNumberOfTools; ++i) {
+    for (unsigned i = 0; i < static_cast<unsigned>(EditToolBar::toolList.size()); ++i) {
         if ((scoreTools & (1 << i)) == 0)
             continue;
-        QAction* act = r_menu->addAction(QIcon(**toolList[i].icon), tr(toolList[i].tip));
+        QAction* act = r_menu->addAction(QIcon(**EditToolBar::toolList[i].icon), tr(EditToolBar::toolList[i].tip));
 
-        if (MusEGui::toolShortcuts.contains(1 << i)) {
-            act->setShortcut(MusEGui::shortcuts[MusEGui::toolShortcuts[1 << i]].key);
+        if (MusEGui::EditToolBar::toolShortcuts.contains(1 << i)) {
+            act->setShortcut(MusEGui::shortcuts[MusEGui::EditToolBar::toolShortcuts[1 << i]].key);
         }
 
         act->setData(scoreTools & (1 << i));
