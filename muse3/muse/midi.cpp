@@ -1388,8 +1388,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 
                   // test kybos
                   if (replaceMode) {
-                      unsigned eventStart = ev.tick();
-//                      qDebug() << "*** TickStart: " << tickStart << "TickEnd: " << tickEnd
+                      unsigned eventStart = ev.tick() + partTick;
+//                      qDebug() << "*** TickStart: " << ev.tick() << "TickEnd: " << ev.tick() + ev.lenTick()
 //                               << "Is note off: " << ev.isNoteOff() << "Offset: " << offset;
                       if (rangeActive && (eventStart > rangeStart && eventStart < rangeEnd))
                           continue;
@@ -1780,47 +1780,43 @@ void Audio::processMidi(unsigned int frames)
             if(!track->isMute() && !track->off())
             {
                 // test kybos
-//                qDebug() << "*** Track rec mode: " << track->recordFlag()
-//                         << (MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE)
-//                         << MusEGlobal::song->loop() << MusEGlobal::song->punchin() << MusEGlobal::song->punchout();
-                if(!(track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE
-                     && !MusEGlobal::song->loop() && !MusEGlobal::song->punchin() && !MusEGlobal::song->punchout()))
+                if (!(recording && track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE
+                      && !MusEGlobal::song->loop() && !MusEGlobal::song->punchin() && !MusEGlobal::song->punchout()))
                 {
+                    if(playing)
+                    {
+                        unsigned int lat_offset = 0;
+                        unsigned int cur_tick = curTickPos;
+                        unsigned int next_tick = nextTickPos;
 
-              if(playing)
-              {
-                unsigned int lat_offset = 0;
-                unsigned int cur_tick = curTickPos;
-                unsigned int next_tick = nextTickPos;
+                        //--------------------------------------------------------------------
+                        // Account for the midi track's latency correction and/or compensation.
+                        //--------------------------------------------------------------------
+                        // TODO How to handle when external sync is on. For now, don't try to correct.
+                        if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+                        {
+                            const TrackLatencyInfo& li = track->getLatencyInfo(false);
+                            // This value is negative for correction.
+                            const float mlat = li._sourceCorrectionValue;
+                            if((int)mlat < 0)
+                            {
+                                // Convert to a positive offset.
+                                const unsigned int l = (unsigned int)(-mlat);
+                                if(l > lat_offset)
+                                    lat_offset = l;
+                            }
+                            if(lat_offset != 0)
+                            {
+                                Pos ppp(_pos.frame() + lat_offset, false);
+                                cur_tick = ppp.tick();
+                                ppp += frames;
+                                next_tick = ppp.tick();
+                            }
+                        }
 
-                //--------------------------------------------------------------------
-                // Account for the midi track's latency correction and/or compensation.
-                //--------------------------------------------------------------------
-                // TODO How to handle when external sync is on. For now, don't try to correct.
-                if(MusEGlobal::config.enableLatencyCorrection && !extsync)
-                {
-                  const TrackLatencyInfo& li = track->getLatencyInfo(false);
-                  // This value is negative for correction.
-                  const float mlat = li._sourceCorrectionValue;
-                  if((int)mlat < 0)
-                  {
-                    // Convert to a positive offset.
-                    const unsigned int l = (unsigned int)(-mlat);
-                    if(l > lat_offset)
-                      lat_offset = l;
-                  }
-                  if(lat_offset != 0)
-                  {
-                    Pos ppp(_pos.frame() + lat_offset, false);
-                    cur_tick = ppp.tick();
-                    ppp += frames;
-                    next_tick = ppp.tick();
-                  }
+                        collectEvents(track, cur_tick, next_tick, frames, lat_offset);
+                    }
                 }
-
-                collectEvents(track, cur_tick, next_tick, frames, lat_offset);
-              }
-            }
             }
 
             //
