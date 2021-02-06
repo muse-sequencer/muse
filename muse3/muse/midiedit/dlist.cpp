@@ -1784,7 +1784,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
       connect(dcanvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
 
-      setStatusTip(tr("Drum list: Edit instrument-specific settings."));
+      setStatusTip(tr("Drum list: Edit instrument-specific settings. Click in the Sound column to play the sounds at different velocities."));
 
       init(h, parent);
       }

@@ -274,7 +274,7 @@ configuration dialog</comment>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>This button and other transport related buttons are found on the Transport Panel</string>
+         <string>This button and other transport related buttons are found in the toolbar or on the Transport Panel.</string>
         </property>
        </widget>
       </item>
