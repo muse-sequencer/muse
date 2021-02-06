@@ -56,6 +56,26 @@ QMenu::indicator {
 }
 */
 
+QMenu::item {
+    padding: 3px 20px 3px 20px;
+}
+   
+QMenu::indicator { 
+    left: 2px;
+    border: 2px solid rgb(70, 70, 70);
+}
+QMenu::indicator:checked {
+    background: rgb(0,140,210);
+}
+  
+QMenu::icon {
+    border: 1px solid transparent;
+}
+
+QMenu::icon:checked { 
+    border: 1px solid orangered;
+}
+
 QMenu::item:selected, 
 QMenuBar::item:selected {
     background-color: rgb(0,90,160);
@@ -195,6 +215,15 @@ QCheckBox::indicator {
 }
 
 QCheckBox::indicator:checked {
+    background: rgb(0,140,210);
+}
+
+QRadioButton::indicator {
+    border: 2px solid rgb(70, 70, 70);
+    border-radius: 5px; 
+} 
+
+QRadioButton::indicator:checked {
     background: rgb(0,140,210);
 }
 

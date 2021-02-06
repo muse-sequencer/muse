@@ -59,6 +59,31 @@ QMenu::icon:checked {
 }
 */
 
+QMenu::item {
+    padding: 3px 20px 3px 20px;
+}
+   
+QMenu::indicator { 
+    left: 2px;
+    border: 1px solid rgb(70, 70, 70);
+}
+QMenu::indicator:checked {
+    background: rgb(0,140,210);
+}
+  
+QMenu::icon {
+    border: 1px solid transparent;
+}
+
+QMenu::icon:checked { 
+    border: 1px solid greenyellow;
+}
+
+QMenu::item:selected, 
+QMenuBar::item:selected {
+    background-color: rgb(0,90,160);
+}
+
 QMenu::item:selected, QMenuBar::item:selected {
     background-color: rgb(0,90,160);
 }
@@ -197,6 +222,23 @@ QWidget#ListEdit QTreeView {
     background-color: rgb(40,50,60);
 }
 */
+
+QCheckBox::indicator {
+    border: 1px solid rgb(70, 70, 70);
+}
+
+QCheckBox::indicator:checked {
+    background: rgb(0,140,210);
+}
+
+QRadioButton::indicator {
+    border: 1px solid rgb(70, 70, 70);
+    border-radius: 5px;
+} 
+
+QRadioButton::indicator:checked {
+    background: rgb(0,140,210);
+}
 
 QWidget#Rack {
     border: 1px solid rgb(0,120,86);
