@@ -218,13 +218,6 @@
            <number>6</number>
           </property>
           <item>
-           <widget class="QCheckBox" name="partShownames">
-            <property name="text">
-             <string>Show names</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QRadioButton" name="partShowevents">
             <property name="text">
              <string>Show e&amp;vents</string>
@@ -270,6 +263,13 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="partShownames">
+            <property name="text">
+             <string>Show names</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1206,10 +1206,7 @@
           <item>
            <widget class="QCheckBox" name="cascadeStylesheetsCheckBox">
             <property name="toolTip">
-             <string>If a user style sheet for one of  the MusE color schemes exists
-and is selected, it will be merged with the default style sheet
-for this scheme. The user style sheet takes precedence and 
-overwrites identical settings in the default style sheet.</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If a user style sheet for one of the MusE themes exists (in &lt;span style=&quot; font-style:italic;&quot;&gt;~/.../themes&lt;/span&gt; folder), it will be merged with the default style sheet for this theme. The user style sheet takes precedence and overwrites the corresponding values in the default style sheet.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Cascade default and user theme style sheets</string>
@@ -2027,7 +2024,6 @@ The font family is forced to 'Sans', which should
   <tabstop>applyButton</tabstop>
   <tabstop>okButton</tabstop>
   <tabstop>cancelButton</tabstop>
-  <tabstop>partShownames</tabstop>
   <tabstop>partShowevents</tabstop>
   <tabstop>partShowCakes</tabstop>
   <tabstop>eventNoteon</tabstop>
