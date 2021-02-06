@@ -64,6 +64,11 @@ QMenu::indicator {
     left: 2px;
     border: 2px solid rgb(70, 70, 70);
 }
+
+QMenu::indicator:exclusive { 
+    border-radius: 5px;
+}
+
 QMenu::indicator:checked {
     background: rgb(0,140,210);
 }
@@ -73,7 +78,7 @@ QMenu::icon {
 }
 
 QMenu::icon:checked { 
-    border: 1px solid orangered;
+    border: 1px solid yellow;
 }
 
 QMenu::item:selected, 
