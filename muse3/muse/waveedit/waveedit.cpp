@@ -78,8 +78,9 @@ extern QColor readColor(MusECore::Xml& xml);
 
 namespace MusEGui {
 
-static int waveEditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | 
-                           MusEGui::CutTool | MusEGui::RangeTool | PanTool | ZoomTool |
+static int waveEditTools = PointerTool | PencilTool | RubberTool |
+//                           CutTool | // unused
+                           RangeTool | PanTool | ZoomTool |
                            StretchTool | SamplerateTool;
 
 int WaveEdit::_rasterInit = 96;
