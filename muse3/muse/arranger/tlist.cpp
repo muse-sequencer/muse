@@ -62,6 +62,7 @@
 #include "plugin.h"
 #include "operations.h"
 #include "shortcuts.h"
+#include "drumedit.h"
 
 
 #ifdef DSSI_SUPPORT
@@ -3214,12 +3215,21 @@ void TList::setYPos(int y)
 void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType)
 {
     // MIDI -> NEW_DRUM or vice versa. added by flo.
-    {
-        MusEGlobal::audio->msgIdle(true);
-        t->setType(trackType);
-        MusEGlobal::audio->msgIdle(false);
-        MusEGlobal::song->update(SC_TRACK_MODIFIED);
+    if (trackType == MusECore::Track::DRUM) {
+        // reset view state to avoid broken UI (kybos)
+        auto state = MusECore::MidiPartViewState (0, 0, DrumEdit::DefXScale, DrumEdit::DefYScale);
+        // Include a velocity controller in the default initial view state.
+        state.addController(MusECore::MidiCtrlViewState(MusECore::CTRL_VELOCITY));
+        if (t->parts() && !t->parts()->empty()) {
+            for (const auto& it : *t->parts())
+                it.second->setViewState(state);
+        }
     }
+
+    MusEGlobal::audio->msgIdle(true);
+    t->setType(trackType);
+    MusEGlobal::audio->msgIdle(false);
+    MusEGlobal::song->update(SC_TRACK_MODIFIED);
 }
 
 void TList::instrPopupActivated(QAction* act)

@@ -72,6 +72,10 @@ class DrumEdit : public MidiEditor {
 
 public:
     enum group_mode_t { DONT_GROUP, GROUP_SAME_CHANNEL, GROUP_MAX };
+    static constexpr int DefXScale = -10;
+    static constexpr int DefYScale = 1;
+    static constexpr int MinYScale = -2;
+    static constexpr int MaxYScale = 1;
 
 private:
     group_mode_t _group_mode;

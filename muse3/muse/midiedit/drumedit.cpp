@@ -87,8 +87,10 @@ int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
 bool DrumEdit::_ignore_hide_init = false;
 
-static const int xscale = -10;
-static const int yscale = 1;
+//static const int xscale = -10;
+//static const int yscale = 1;
+//static const int MinYScale = -2;
+//static const int MaxYScale = 1;
 static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool | MusEGui::DrawTool | PanTool | ZoomTool;
 
 
@@ -230,8 +232,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       _raster = _rasterInit;
 
       const MusECore::PartList* part_list = parts();
-      // Default initial pianoroll view state.
-      _viewState = MusECore::MidiPartViewState (0, 0, xscale, yscale);
+      // Default initial view state.
+      _viewState = MusECore::MidiPartViewState (0, 0, MusEGui::DrumEdit::DefXScale, MusEGui::DrumEdit::DefYScale);
       // Include a velocity controller in the default initial view state.
       _viewState.addController(MusECore::MidiCtrlViewState(MusECore::CTRL_VELOCITY));
       if(part_list && !part_list->empty())
@@ -574,7 +576,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       gridS2->setSpacing(0);
       time                = new MusEGui::MTScale(_raster, split1w2, _viewState.xscale());
       canvas              = new DrumCanvas(this, split1w2, _viewState.xscale(), _viewState.yscale());
-      vscroll             = new MusEGui::ScrollScale(-2, 1, _viewState.yscale(),
+      vscroll             = new MusEGui::ScrollScale(MinYScale, MaxYScale, _viewState.yscale(),
                             dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH, Qt::Vertical, split1w2);
       canvas->setOrigin(_canvasXOrigin, 0);
       canvas->setCanvasTools(drumeditTools);
