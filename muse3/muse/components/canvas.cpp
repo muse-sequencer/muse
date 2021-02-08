@@ -888,22 +888,24 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       curItem = findCurrentItem(start);
 
       if (curItem && (button == Qt::MidButton)) {
+          if (_tool == PointerTool || _tool == PencilTool || _tool == RubberTool) {
             deleteItem(start); // changed from "start drag" to "delete" by flo93
             drag = DRAG_DELETE;
             setCursor();
             }
+      }
       else if (button == Qt::RightButton) {
             if (curItem) {
-                  if (ctrl && virt()) {       // Non-virt width is meaningless, such as drums.
-                        drag = DRAG_RESIZE;
+                  if (ctrl && virt() && (_tool == PointerTool || _tool == PencilTool || _tool == RubberTool)) {       // Non-virt width is meaningless, such as drums.
+                        drag = DRAG_OFF;
                         setCursor();
                         int dx = start.x() - curItem->x();
                         curItem->setWidth(dx);
                         start.setX(curItem->x());
                         deselectAll();
                         selectItem(curItem, true);
-//                         itemSelectionsChanged();
                         itemSelectionsChanged(nullptr, true);
+                        resizeItem(curItem, shift, false);
                         redraw();
                         }
                   else {
