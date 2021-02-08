@@ -1796,8 +1796,6 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
         QPixmap pix(10,10);
         QPainter p(&pix);
         p.fillRect(0,0,10,10,collist[i]);
-        p.setPen(Qt::black);
-        p.drawRect(0,0,10,10);
         QIcon icon(pix);
         QAction *act = col_actgrp->addAction(icon,colnames[i]);
         act->setCheckable(true);
@@ -2664,16 +2662,14 @@ void TList::addAutoMenuAction(PopupMenu* p, const MusECore::CtrlList *cl) {
     act->setCheckable(true);
     act->setChecked(cl->isVisible());
 
-    QPixmap pix(8,8);
+    QPixmap pix(10, 10);
     QPainter qp(&pix);
-    qp.fillRect(0,0,8,8,cl->color());
-    qp.setPen(Qt::black);
-    qp.drawRect(0,0,8,8);
+    qp.fillRect(0,0,10,10, cl->color());
     if (cl->size() > 0) {
         if (cl->color() == Qt::black)
-            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::gray);
+            qp.fillRect(2, 2, 6, 6, Qt::gray);
         else
-            qp.fillRect(QRectF(1.5, 1.5, 5., 5.), Qt::black);
+            qp.fillRect(2, 2, 6, 6, Qt::black);
     }
     QIcon icon(pix);
     act->setIcon(icon);
