@@ -1,6 +1,7 @@
 08.02.2021
     - Fix #959: Trim event length function in pianorol not working. (kybos)
     - Fix: Remove unused cutter tool from wave editor. (kybos)
+    - Fix: Automation menu icon drawing. (kybos)
 02.02.2021
     - Fix: Memory corruption by topwin toolbars. (kybos+rj)
     - Fix: Clean up and encapsulate Edit Tools code. (kybos)
