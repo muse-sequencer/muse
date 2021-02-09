@@ -46,18 +46,9 @@ QMenu::separator {
 	height: 1px;
 }
 
-/* breaks the menu with older Qt versions
-QMenu::item, QMenu::icon {
-	padding: 4px 6px;
-}
-
-QMenu::indicator {
-    left: 6px;
-}
-*/
-
+/* menu styling is incompatible between Qt releases */
 QMenu::item {
-    padding: 3px 20px 3px 20px;
+    padding: 3px 22px 3px 2px;
 }
    
 QMenu::indicator { 
