@@ -87,10 +87,10 @@ int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
 bool DrumEdit::_ignore_hide_init = false;
 
-//static const int xscale = -10;
-//static const int yscale = 1;
-//static const int MinYScale = -2;
-//static const int MaxYScale = 1;
+static const int DefXScale = -10;
+static const int DefYScale = 1;
+static const int MinYScale = -2;
+static const int MaxYScale = 1;
 static const int drumeditTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool | MusEGui::DrawTool | PanTool | ZoomTool;
 
 
@@ -233,17 +233,20 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       const MusECore::PartList* part_list = parts();
       // Default initial view state.
-      _viewState = MusECore::MidiPartViewState (0, 0, MusEGui::DrumEdit::DefXScale, MusEGui::DrumEdit::DefYScale);
+      _viewState = MusECore::MidiPartViewState (0, 0, DefXScale, qBound(MinYScale, DefYScale, MaxYScale));
       // Include a velocity controller in the default initial view state.
       _viewState.addController(MusECore::MidiCtrlViewState(MusECore::CTRL_VELOCITY));
       if(part_list && !part_list->empty())
       {
         // If the parts' view states have never been initialized before,
-        //  do it now with the desired pianoroll initial state.
-        for(MusECore::ciPart i = part_list->begin(); i != part_list->end(); ++i)
+        //  do it now with the desired initial state.
+        for(const auto& it : *part_list)
         {
-          if(!i->second->viewState().isValid())
-            i->second->setViewState(_viewState);
+          if(!it.second->viewState().isValid()) {
+            it.second->setViewState(_viewState);
+          } else if (it.second->viewState().yscale() < MinYScale || it.second->viewState().yscale() > MaxYScale) {
+              it.second->viewState().setYScale(DefYScale);
+          }
         }
         // Now take our initial view state from the first part found in the list.
         // Don't bother if not showing default controls, since something else
