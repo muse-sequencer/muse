@@ -2094,7 +2094,7 @@ void loadTheme(const QString& theme)
 #if QT_VERSION < QT_VERSION_CHECK(5, 12, 6)
     // ugly hack to cope with Qt's menu styling bugs (kybos)
     if (theme == "Dark Flat" || theme == "Deep Ocean")
-        sheet += "QMenu::item { padding-left: 20px; }";
+        sheet += "QMenu::item { padding-left: 22px; }";
 #endif
 
     qApp->setStyleSheet(sheet);

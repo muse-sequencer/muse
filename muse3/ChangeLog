@@ -1,3 +1,5 @@
+11.02.2021
+    - Fixed wrong exclusive indicators (radiobuttons) in some submenus. (kybos)
 08.02.2021
     - Fix #959: Trim event length function in pianorol not working. (kybos)
     - Fix: Remove unused cutter tool from wave editor. (kybos)

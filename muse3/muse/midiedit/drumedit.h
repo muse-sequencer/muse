@@ -172,7 +172,6 @@ private slots:
     void ctrlMenuAboutToHide();
     void gridOnChanged(bool);
 
-    void updateGroupingActions();
     void set_ignore_hide(bool);
     void showAllInstruments();
     void hideAllInstruments();

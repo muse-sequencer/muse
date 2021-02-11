@@ -252,7 +252,6 @@ class MusE : public QMainWindow
     void setUntitledProject();
     void setConfigDefaults();
 
-    void setFollow();
     void readConfigParts(MusECore::Xml& xml);
     void readToplevels(MusECore::Xml& xml);
     MusECore::PartList* getMidiPartsToEdit();

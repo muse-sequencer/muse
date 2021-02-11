@@ -405,7 +405,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         paste_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
         connect(paste_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE); } );
 
-        paste_dialog_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
+        paste_dialog_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("Paste (With Dialog)"));
         connect(paste_dialog_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE_DIALOG); } );
 
         edit_menu->addSeparator();

@@ -60,11 +60,11 @@ QMenu::icon:checked {
 */
 
 QMenu::item {
-    padding: 3px 22px 3px 2px;
+    padding: 3px 22px 3px 3px;
 }
    
 QMenu::indicator { 
-    left: 3px;
+    left: 4px;
     border: 1px solid rgb(70, 70, 70);
 }
 
@@ -77,7 +77,7 @@ QMenu::indicator:checked {
 }
   
 QMenu::icon {
-    left: 1px;
+    left: 2px;
     border: 1px solid transparent;
 }
 

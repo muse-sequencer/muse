@@ -262,10 +262,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuEdit->addSeparator();
       cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
-      copyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
+      copyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy Events in Range"));
       pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
-      pasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to current part"));
-      pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with Dialog)"));
+      pasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to Current Part"));
+      pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (With Dialog)"));
       menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete &Events"));
 
@@ -358,20 +358,27 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       settingsMenu->addSeparator();
 
       QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
-      groupNoneAction = menuGrouping->addAction(tr("Don't group"));
-      groupChanAction = menuGrouping->addAction(tr("Group by channel"));
-      groupMaxAction  = menuGrouping->addAction(tr("Group maximally"));
+      QActionGroup *groupAG = new QActionGroup(this);
+      groupAG->setExclusive(true);
+      groupNoneAction = groupAG->addAction(tr("Don't Group"));
+      groupChanAction = groupAG->addAction(tr("Group by Channel"));
+      groupMaxAction  = groupAG->addAction(tr("Group Maximally"));
+      menuGrouping->addActions(groupAG->actions());
+//      groupNoneAction = menuGrouping->addAction(tr("Don't Group"));
+//      groupChanAction = menuGrouping->addAction(tr("Group by Channel"));
+//      groupMaxAction  = menuGrouping->addAction(tr("Group Maximally"));
       QMenu* menuShowHide=settingsMenu->addMenu(tr("Show/Hide"));
-      QAction* ignoreHideAction = menuShowHide->addAction(tr("Also show hidden instruments"));
+      QAction* ignoreHideAction = menuShowHide->addAction(tr("Also Show Hidden Instruments"));
       menuShowHide->addSeparator();
-      QAction* showAllAction = menuShowHide->addAction(tr("Show all instruments"));
-      QAction* hideAllAction = menuShowHide->addAction(tr("Hide all instruments"));
-      QAction* hideUnusedAction = menuShowHide->addAction(tr("Only show used instruments"));
-      QAction* hideEmptyAction = menuShowHide->addAction(tr("Only show instruments with non-empty name or used instruments"));
+      QAction* showAllAction = menuShowHide->addAction(tr("Show All Instruments"));
+      QAction* hideAllAction = menuShowHide->addAction(tr("Hide All Instruments"));
+      QAction* hideUnusedAction = menuShowHide->addAction(tr("Only Show Used Instruments"));
+      QAction* hideEmptyAction = menuShowHide->addAction(tr("Only Show Instruments With Non-empty Name or Used Instruments"));
       settingsMenu->addSeparator();
 
       groupNoneAction->setCheckable(true);
       groupChanAction->setCheckable(true);
+      groupChanAction->setChecked(true);
       groupMaxAction ->setCheckable(true);
       ignoreHideAction->setCheckable(true);
       ignoreHideAction->setChecked(_ignore_hide);
@@ -386,9 +393,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(groupChanAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_CHAN); } );
       connect(groupMaxAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_GROUP_MAX); } );
 
-      updateGroupingActions();
-
-      addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
+      addControllerMenu = new PopupMenu(tr("Add Controller View"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       settingsMenu->addMenu(addControllerMenu);
       connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );
@@ -1579,9 +1584,9 @@ void DrumEdit::cmd(int cmd)
             //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
                                               // special nature (each drum has its own length)
 
-            case DrumCanvas::CMD_GROUP_NONE: _group_mode=DONT_GROUP; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-            case DrumCanvas::CMD_GROUP_CHAN: _group_mode=GROUP_SAME_CHANNEL; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
-            case DrumCanvas::CMD_GROUP_MAX: _group_mode=GROUP_MAX; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            case DrumCanvas::CMD_GROUP_NONE: _group_mode=DONT_GROUP; ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            case DrumCanvas::CMD_GROUP_CHAN: _group_mode=GROUP_SAME_CHANNEL; ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            case DrumCanvas::CMD_GROUP_MAX: _group_mode=GROUP_MAX; ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
 
             default: ((DrumCanvas*)(canvas))->cmd(cmd);
             }
@@ -2136,19 +2141,6 @@ void DrumEdit::ourDrumMapChanged(bool instrMapChanged)
     vscroll->range(&vmin, &vmax);
     vscroll->setRange(vmin, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH);
   }
-}
-
-void DrumEdit::updateGroupingActions()
-{
-  if (groupNoneAction==NULL || groupChanAction==NULL || groupMaxAction==NULL)
-  {
-    printf("THIS SHOULD NEVER HAPPEN: DrumEdit::updateGroupingActions() called, but one of the actions is NULL!\n");
-    return;
-  }
-
-  groupNoneAction->setChecked(_group_mode==DONT_GROUP);
-  groupChanAction->setChecked(_group_mode==GROUP_SAME_CHANNEL);
-  groupMaxAction ->setChecked(_group_mode==GROUP_MAX);
 }
 
 void DrumEdit::set_ignore_hide(bool val)
