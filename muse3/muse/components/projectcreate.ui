@@ -19,7 +19,7 @@
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Base project folder</string>
+        <string>Global project folder</string>
        </property>
       </widget>
      </item>
@@ -33,7 +33,7 @@
      <item>
       <widget class="QToolButton" name="projDirToolButton">
        <property name="toolTip">
-        <string>Change Project-folder</string>
+        <string>Change Global project folder</string>
        </property>
        <property name="text">
         <string>...</string>
@@ -57,7 +57,7 @@
      <item row="0" column="2">
       <widget class="QCheckBox" name="templateCheckBox">
        <property name="toolTip">
-        <string>Checking this will cause the project to be saved in the templates folder</string>
+        <string>Project will be saved in user's Templates folder</string>
        </property>
        <property name="text">
         <string>Project is a template</string>
@@ -104,7 +104,7 @@
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Project song file type</string>
+        <string>Main file type</string>
        </property>
       </widget>
      </item>
@@ -131,7 +131,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Project path to song file:</string>
+        <string>Path to main file:</string>
        </property>
       </widget>
      </item>
@@ -150,8 +150,11 @@
      </item>
      <item>
       <widget class="QCheckBox" name="createFolderCheckbox">
+       <property name="toolTip">
+        <string>Recommended especially for audio projects to keep all project files in one folder</string>
+       </property>
        <property name="text">
-        <string>&amp;Create project folder (recommended for audio projects)</string>
+        <string>&amp;Create project subfolder</string>
        </property>
       </widget>
      </item>
@@ -172,7 +175,7 @@
      <item row="0" column="1">
       <widget class="QToolButton" name="browseDirButton">
        <property name="toolTip">
-        <string>Edit folder for this project if you want it stored somewhere outside the regular Base project folder</string>
+        <string>Change folder for project files</string>
        </property>
        <property name="text">
         <string>...</string>
@@ -182,7 +185,7 @@
      <item row="0" column="2">
       <widget class="QToolButton" name="restorePathButton">
        <property name="toolTip">
-        <string>Restore project folder to what is set in the Base project folder</string>
+        <string>Reset to Global project folder</string>
        </property>
        <property name="text">
         <string>...</string>
@@ -194,14 +197,14 @@
    <item row="6" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Song information:</string>
+      <string>Project description:</string>
      </property>
     </widget>
    </item>
    <item row="7" column="0">
     <widget class="QPlainTextEdit" name="commentEdit">
      <property name="toolTip">
-      <string>Add any information about this song, it will be displayed when the song is opened.</string>
+      <string>Add information about the song. It will be displayed when the song is opened.</string>
      </property>
     </widget>
    </item>
