@@ -46,10 +46,28 @@ void SaveNewRevisionDialog::reject()
 
 QString SaveNewRevisionDialog::getNewRevision()
 {
+  QString baseName = _projectFileInfo.baseName();
+  QRegExp xRegExp("_\\d\\d\\d$");
+  int index = xRegExp.indexIn(baseName);
+
+  if(index > 0)
+  {
+    QString newNumberString = baseName.mid(index+1, baseName.size() - index);
+    int newNumber = newNumberString.toInt();
+    newNumber++;
+    QString newBaseName = baseName.mid(0, index) + QString("_%1").arg(newNumber,3, 10, QChar('0'));
+
+    return buildFilePath(newBaseName);
+  }
+  return "";
+}
+
+QString SaveNewRevisionDialog::getNewRevisionWithDialog()
+{
   ui->oldPath->setText(QString("%1\n").arg(_projectFileInfo.filePath()));
   ui->errorInfo->clear();
 
-  QString projectFileName = MusEGui::projectTitleFromFilename(_projectFileInfo.baseName());
+  QString projectFileName = MusEGui::projectTitleFromFilename(_projectFileInfo.baseName()) + "_001";
   ui->projectNameEdit->setText(projectFileName);
   ui->projectNameEdit->setFocus();
   show();

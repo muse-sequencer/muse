@@ -21,6 +21,7 @@ public:
   ~SaveNewRevisionDialog();
 
   QString getNewRevision();
+  QString getNewRevisionWithDialog();
 
 private slots:
   void accept() override;

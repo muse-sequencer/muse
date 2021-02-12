@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>487</width>
-    <height>159</height>
+    <height>161</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Save new revision of song:</string>
+      <string>Save new revision of song. Suggested number appended to name:</string>
      </property>
     </widget>
    </item>
@@ -29,7 +29,11 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="projectNameEdit"/>
+    <widget class="QLineEdit" name="projectNameEdit">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Suggested index appended on the format: _000. &lt;/p&gt;&lt;p&gt;Do not change unless you know what you are doing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="errorInfo">
