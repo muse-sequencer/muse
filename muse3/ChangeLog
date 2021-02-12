@@ -1,3 +1,5 @@
+12.02.2021
+    - Fix #836: Don't play existing midi events in replace mode. (kybos)
 11.02.2021
     - Fixed wrong exclusive indicators (radiobuttons) in some submenus. (kybos)
 08.02.2021
