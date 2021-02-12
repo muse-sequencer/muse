@@ -54,8 +54,6 @@
 #include "keyevent.h"
 #include "track.h"
 
-#include <QDebug>
-
 // REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_MIDI_ROUTE_PER_CHANNEL_
 
@@ -1329,10 +1327,11 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
       const unsigned int pos_fr = _pos.frame() + latency_offset;
       const unsigned int next_pos_fr = pos_fr + frames;
 
+      // at least one punch is set at this point
       const bool replaceMode = recording && track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE;
-      const bool rangeActive = MusEGlobal::song->loop() || (MusEGlobal::song->punchin() && MusEGlobal::song->punchout());
-      const bool punchinActive = MusEGlobal::song->punchin() && !MusEGlobal::song->punchout();
-      const bool punchoutActive = MusEGlobal::song->punchout() && !MusEGlobal::song->punchin();
+      const bool punchboth = MusEGlobal::song->punchin() && MusEGlobal::song->punchout();
+      const bool punchin = MusEGlobal::song->punchin() && !MusEGlobal::song->punchout();
+      const bool punchout = MusEGlobal::song->punchout() && !MusEGlobal::song->punchin();
       const unsigned int rangeStart = MusEGlobal::song->lPos().tick();
       const unsigned int rangeEnd = MusEGlobal::song->rPos().tick();
 
@@ -1386,16 +1385,13 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                               continue;
                         }
 
-                  // test kybos
                   if (replaceMode) {
                       unsigned eventStart = ev.tick() + partTick;
-//                      qDebug() << "*** TickStart: " << ev.tick() << "TickEnd: " << ev.tick() + ev.lenTick()
-//                               << "Is note off: " << ev.isNoteOff() << "Offset: " << offset;
-                      if (rangeActive && (eventStart > rangeStart && eventStart < rangeEnd))
+                      if (punchboth && (eventStart >= rangeStart && eventStart < rangeEnd))
                           continue;
-                      else if (punchinActive && eventStart > rangeStart)
+                      else if (punchin && eventStart >= rangeStart)
                           continue;
-                      else if (punchoutActive && eventStart < rangeEnd)
+                      else if (punchout && eventStart < rangeEnd)
                           continue;
                   }
                   
@@ -1779,9 +1775,9 @@ void Audio::processMidi(unsigned int frames)
             // only add track events if the track is unmuted and turned on
             if(!track->isMute() && !track->off())
             {
-                // test kybos
+                // don't render existing events in replace mode (except when punch is active - to be filtered later)
                 if (!(recording && track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE
-                      && !MusEGlobal::song->loop() && !MusEGlobal::song->punchin() && !MusEGlobal::song->punchout()))
+                      && !MusEGlobal::song->punchin() && !MusEGlobal::song->punchout()))
                 {
                     if(playing)
                     {
