@@ -169,16 +169,16 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       editCopyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
       connect(editCopyAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_COPY); } );
       
-      editCopyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
+      editCopyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy Events in Range"));
       connect(editCopyRangeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_COPY_RANGE); } );
       
       editPasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
       connect(editPasteAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE); } );
       
-      editPasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to current part"));
+      editPasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to Current Part"));
       connect(editPasteToCurPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE_TO_CUR_PART); } );
 
-      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
+      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (With Dialog)"));
       connect(editPasteDialogAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE_DIALOG); } );
       
       menuEdit->addSeparator();
@@ -305,7 +305,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       eventColor->addActions(actgrp->actions());
       
 //      menuConfig->addSeparator();
-      addControllerMenu = new PopupMenu(tr("Add controller view"), this, true);
+      addControllerMenu = new PopupMenu(tr("Add Controller View"), this, true);
       addControllerMenu->setIcon(*midiControllerNewSVGIcon);
       menuConfig->addMenu(addControllerMenu);
       connect(addControllerMenu, &QMenu::aboutToShow, [this]() { ctrlMenuAboutToShow(); } );

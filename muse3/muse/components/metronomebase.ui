@@ -120,7 +120,7 @@
        <item>
         <widget class="QLabel" name="textLabel3">
          <property name="text">
-          <string>Hint: Enable metronome in Transportpanel</string>
+          <string>Hint: Enable metronome in the toolbar or in the Transport panel.</string>
          </property>
          <property name="wordWrap">
           <bool>false</bool>

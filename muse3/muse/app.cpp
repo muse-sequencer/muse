@@ -674,13 +674,15 @@ MusE::MusE() : QMainWindow()
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
       settingsShortcutsAction = new QAction(*MusEGui::keySVGIcon, tr("Keyboard Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
-      dontFollowAction = new QAction(tr("Don't Follow Song"), this);
+      QActionGroup *followAG = new QActionGroup(this);
+      followAG->setExclusive(true);
+      dontFollowAction = new QAction(tr("Don't Follow Song"), followAG);
       dontFollowAction->setCheckable(true);
-      followPageAction = new QAction(tr("Follow Page"), this);
+      followPageAction = new QAction(tr("Follow Page"), followAG);
       followPageAction->setCheckable(true);
-      followPageAction->setChecked(true);
-      followCtsAction = new QAction(tr("Follow Continuous"), this);
+      followCtsAction = new QAction(tr("Follow Continuous"), followAG);
       followCtsAction->setCheckable(true);
+      followPageAction->setChecked(true);
 
       rewindOnStopAction=new QAction(tr("Rewind on Stop"), this);
       rewindOnStopAction->setCheckable(true);
@@ -1013,9 +1015,7 @@ MusE::MusE() : QMainWindow()
       menuSettings->addAction(settingsShortcutsAction);
       menuSettings->addSeparator();
       menuSettings->addMenu(follow);
-      follow->addAction(dontFollowAction);
-      follow->addAction(followPageAction);
-      follow->addAction(followCtsAction);
+      follow->addActions(followAG->actions());
       menuSettings->addAction(rewindOnStopAction);
       menuSettings->addAction(settingsMetronomeAction);
       menuSettings->addSeparator();
@@ -1739,19 +1739,6 @@ void MusE::setConfigDefaults()
       {
       MusECore::readConfiguration();    // used for reading midi files
       MusEGlobal::song->dirty = false;
-      }
-
-//---------------------------------------------------------
-//   setFollow
-//---------------------------------------------------------
-
-void MusE::setFollow()
-      {
-      MusECore::Song::FollowMode fm = MusEGlobal::song->follow();
-
-      dontFollowAction->setChecked(fm == MusECore::Song::NO);
-      followPageAction->setChecked(fm == MusECore::Song::JUMP);
-      followCtsAction->setChecked(fm == MusECore::Song::CONTINUOUS);
       }
 
 //---------------------------------------------------------
@@ -2946,15 +2933,12 @@ void MusE::cmd(int cmd)
       switch(cmd) {
             case CMD_FOLLOW_NO:
                   MusEGlobal::song->setFollow(MusECore::Song::NO);
-                  setFollow();
                   break;
             case CMD_FOLLOW_JUMP:
                   MusEGlobal::song->setFollow(MusECore::Song::JUMP);
-                  setFollow();
                   break;
             case CMD_FOLLOW_CONTINUOUS:
                   MusEGlobal::song->setFollow(MusECore::Song::CONTINUOUS);
-                  setFollow();
                   break;
             }
       }
@@ -4220,6 +4204,7 @@ void MusE::updateWindowMenu()
     for (const auto& it : toplevels) {
         if (it->isMdiWin()) {
             QAction* temp = menuWindows->addAction(it->windowTitle());
+            temp->setIcon(it->typeIcon(it->type()));
             QWidget* tlw = static_cast<QWidget*>(it);
             connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
 
@@ -4239,6 +4224,7 @@ void MusE::updateWindowMenu()
                 sep = true;
             }
             QAction* temp = menuWindows->addAction(it->windowTitle());
+            temp->setIcon(it->typeIcon(it->type()));
             QWidget* tlw = static_cast<QWidget*>(it);
             connect(temp, &QAction::triggered, [this, tlw]() { bringToFront(tlw); } );
         }

@@ -787,13 +787,13 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
 
           popup->setToolTipsVisible(true);
 
-          QAction* act = popup->addAction(tr("Hide this instrument"));
+          QAction* act = popup->addAction(tr("Hide This Instrument"));
           if(!shown)
             act->setEnabled(false);
           act->setData(HideInstrumentID);
           act->setToolTip(tr("This turns a blue eye into a crossed eye"));
 
-          act = popup->addAction(tr("Show this instrument"));
+          act = popup->addAction(tr("Show This Instrument"));
           if(!hidden)
             act->setEnabled(false);
           act->setData(ShowInstrumentID);
@@ -801,72 +801,72 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
 
           popup->addSeparator();
 
-          act = popup->addAction(tr("Set field"));
+          act = popup->addAction(tr("Set Field"));
           //act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
           act->setData(SetFieldID);
           act->setToolTip(tr("Sets a field"));
 
-          act = popup->addAction(tr("Set row"));
+          act = popup->addAction(tr("Set Row"));
           //act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
           act->setData(SetItemID);
           act->setToolTip(tr("Sets a row"));
 
-          act = popup->addAction(tr("Set column"));
+          act = popup->addAction(tr("Set Column"));
           act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
           act->setData(SetColumnID);
           act->setToolTip(tr("Sets a whole column to the field"));
 
-          act = popup->addAction(tr("Set list"));
+          act = popup->addAction(tr("Set List"));
           //act->setEnabled(field != MusECore::WorkingDrumMapEntry::ENoteField);
           act->setData(SetMapID);
           act->setToolTip(tr("Sets the whole list"));
 
           popup->addSeparator();
 
-          act = popup->addAction(tr("Reset field"));
+          act = popup->addAction(tr("Reset Field"));
           act->setEnabled(track_override || track_def_override);
           act->setData(ResetFieldID);
           act->setToolTip(tr("Resets a field in a row to default patch or instrument value"));
 
-          act = popup->addAction(tr("Reset row"));
+          act = popup->addAction(tr("Reset Row"));
           act->setEnabled(all_fields_track_override || all_fields_track_def_override);
           act->setData(ResetItemID);
           act->setToolTip(tr("Resets a row to the instrument values"));
 
-          act = popup->addAction(tr("Reset column"));
+          act = popup->addAction(tr("Reset Column"));
           //act->setEnabled(!all_fields_track_def_override);
           act->setData(ResetColumnID);
           act->setToolTip(tr("Resets a whole column to the instrument values"));
 
-          act = popup->addAction(tr("Reset list"));
+          act = popup->addAction(tr("Reset List"));
           act->setEnabled(has_overrides);
           act->setData(ResetMapID);
           act->setToolTip(tr("Resets the whole list to the instrument values"));
 
           popup->addSeparator();
           
-          act = popup->addAction(tr("Reset track's drum list"));
+          act = popup->addAction(tr("Reset Track's Drum List"));
           act->setEnabled(dcanvas->hasOverrides(instrument));
           act->setData(ResetAllPatchMapsID);
           act->setToolTip(tr("Resets all lists on all patches to the instrument values"));
 
           popup->addSeparator();
 
-          act = popup->addAction(tr("Promote field to default patch"));
+          act = popup->addAction(tr("Promote Field to Default Patch"));
           act->setData(SetDefaultFieldID);
           act->setToolTip(tr("Promotes a field in a row to the default patch"));
 
-          act = popup->addAction(tr("Promote row to default patch"));
+          act = popup->addAction(tr("Promote Row to Default Patch"));
           act->setData(SetDefaultItemID);
           act->setToolTip(tr("Promotes a row to the default patch"));
 
-          act = popup->addAction(tr("Promote column to default patch"));
+          act = popup->addAction(tr("Promote Column to Default Patch"));
           act->setData(SetDefaultColumnID);
-          act->setToolTip(tr("Promotes a column to the default patch"));
+          act->setToolTip(tr("Promotes a Column to the Default Patch"));
 
-          act = popup->addAction(tr("Promote list to default patch"));
+          act = popup->addAction(tr("Promote List to Default Patch"));
           act->setData(SetDefaultMapID);
-          act->setToolTip(tr("Promotes the whole list to the default patch"));
+          act->setToolTip(tr("Promotes the Whole List to the Default Patch"));
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_
           popup->addSeparator();
@@ -1784,7 +1784,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_)
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
       connect(dcanvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
 
-      setStatusTip(tr("Drum list: Edit instrument-specific settings."));
+      setStatusTip(tr("Drum list: Edit instrument-specific settings. Click in the Sound column to play the sounds at different velocities."));
 
       init(h, parent);
       }

@@ -46,22 +46,13 @@ QMenu::separator {
 	height: 1px;
 }
 
-/* breaks the menu with older Qt versions
-QMenu::item, QMenu::icon {
-	padding: 4px 6px;
-}
-
-QMenu::indicator {
-    left: 6px;
-}
-*/
-
+/* menu styling is incompatible between Qt releases */
 QMenu::item {
-    padding: 3px 20px 3px 20px;
+    padding: 3px 22px 3px 7px;
 }
    
 QMenu::indicator { 
-    left: 2px;
+    left: 6px;
     border: 2px solid rgb(70, 70, 70);
 }
 
@@ -74,6 +65,7 @@ QMenu::indicator:checked {
 }
   
 QMenu::icon {
+    left: 4px;
     border: 1px solid transparent;
 }
 
