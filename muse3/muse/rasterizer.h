@@ -125,7 +125,7 @@ class RasterizerModel : public QAbstractTableModel
     // The external rasterizer array used in this model.
     const Rasterizer *_rasterizer;
     // Maximum number of rows. If set to -1, all rows are included.
-    int _maxRows;         
+    int _maxRows = 0;
     // How text is displayed.
     DisplayFormat _displayFormat;
 

@@ -82,7 +82,7 @@ details.
       Optional:
   =============================
   
-      - ALSA >= 0.9.0  Advanced Linux Sound Architecture (development files) 
+      - ALSA >= 0.9.0  Advanced Linux Sound Architecture (development files) 
           http://www.alsa-project.org/
 
       - fluidsynth >= 1.0.3 (formerly known as iiwusynth) (development files) 
@@ -148,13 +148,22 @@ details.
       Building MusE under Debian/Ubuntu:
   =================================
 
-    1. Install tools:
-    sudo apt-get install\
-         git build-essential cmake
-    2. Clone muse source:
-    git clone https://github.com/muse-sequencer/muse.git
+    1. Install build tools:
+
+       sudo apt-get install git build-essential cmake
+
+    2 Get muse source (unless you already have it).
+
+       Choose one of the below:
+         a. Download the latest muse source distribution from
+           https://muse-sequencer.github.io/
+
+         b. Clone muse source:
+           git clone https://github.com/muse-sequencer/muse.git
+
     3. Install libraries:
-	sudo apt-get install\
+
+       sudo apt-get install\
          libsndfile1-dev\
          libsamplerate0-dev\
          libjack-jackd2-dev\
@@ -177,16 +186,26 @@ details.
          librubberband-dev\
          python3-dev\
          python3-pyqt5
+
     4. Change directory:
-        cd muse/muse3
+
+       cd muse/muse3
+
     5. Compile:
-        ./compile_muse.sh
+
+       ./compile_muse.sh
+
     6. Change directory:
-        cd build
+
+       cd build
+
     7. Install in /usr/local:
-        sudo make install
+
+       sudo make install
+
     8. Run:
-        muse3 (or muse4 for version 4)
+
+       muse4
   
   =============================
       Generic building MusE:

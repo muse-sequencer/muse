@@ -36,7 +36,7 @@ namespace Awl {
 class PitchEdit : public QSpinBox {
       Q_OBJECT
 
-      bool deltaMode;
+      bool deltaMode = false;
 
    protected:
       virtual QString textFromValue(int v) const;

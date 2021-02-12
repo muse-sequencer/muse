@@ -245,6 +245,7 @@ void globalCut(bool onlySelectedTracks)
             }
 
       MusEGlobal::song->applyOperationGroup(operations);
+      MusEGlobal::song->setPos(MusECore::Song::RPOS, lpos);
       }
 
 //---------------------------------------------------------
