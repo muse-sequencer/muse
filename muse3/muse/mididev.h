@@ -273,7 +273,6 @@ class MidiDevice {
       virtual bool putEvent(const MidiPlayEvent& ev, 
                                 LatencyType latencyType, 
                                 EventBufferType bufferType = UserBuffer);
-//      EventBufferType bufferType = UserBuffer);
       MidiOutputParams* curOutParamNums(int chan) { return &_curOutParamNums[chan]; }
       void resetCurOutParamNums(int chan = -1); // Reset channel's current parameter numbers to -1. All channels if chan = -1.
       
