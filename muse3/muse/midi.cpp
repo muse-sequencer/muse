@@ -1326,6 +1326,15 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 
       const unsigned int pos_fr = _pos.frame() + latency_offset;
       const unsigned int next_pos_fr = pos_fr + frames;
+
+      // at least one punch is set at this point
+      const bool replaceMode = recording && track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE;
+      const bool punchboth = MusEGlobal::song->punchin() && MusEGlobal::song->punchout();
+      const bool punchin = MusEGlobal::song->punchin() && !MusEGlobal::song->punchout();
+      const bool punchout = MusEGlobal::song->punchout() && !MusEGlobal::song->punchin();
+      const unsigned int rangeStart = MusEGlobal::song->lPos().tick();
+      const unsigned int rangeEnd = MusEGlobal::song->rPos().tick();
+
       
       DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: pos_fr:%u next_pos_fr:%u\n", pos_fr, next_pos_fr);
       
@@ -1375,8 +1384,19 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                         if (ev.isNote() && track->drummap()[instr].mute)
                               continue;
                         }
-                  unsigned tick  = ev.tick() + offset;
+
+                  if (replaceMode) {
+                      unsigned eventStart = ev.tick() + partTick;
+                      if (punchboth && (eventStart >= rangeStart && eventStart < rangeEnd))
+                          continue;
+                      else if (punchin && eventStart >= rangeStart)
+                          continue;
+                      else if (punchout && eventStart < rangeEnd)
+                          continue;
+                  }
                   
+                  unsigned tick  = ev.tick() + offset;
+
                   DEBUG_MIDI_TIMING(stderr, "Audio::collectEvents: event tick:%u\n", tick);
       
                   //-----------------------------------------------------------------
@@ -1745,48 +1765,54 @@ void Audio::processMidi(unsigned int frames)
             MidiTrack* track = *t;
             const int t_port = track->outPort();
             const int t_channel = track->outChannel();
-            MidiPort* mp = 0;
+            MidiPort* mp = nullptr;
             if(t_port >= 0 && t_port < MusECore::MIDI_PORTS)
               mp = &MusEGlobal::midiPorts[t_port];
-            MidiDevice* md = 0;
+            MidiDevice* md = nullptr;
             if(mp)
               md = mp->device();
+
             // only add track events if the track is unmuted and turned on
             if(!track->isMute() && !track->off())
             {
-              if(playing)
-              {
-                unsigned int lat_offset = 0;
-                unsigned int cur_tick = curTickPos;
-                unsigned int next_tick = nextTickPos;
-
-                //--------------------------------------------------------------------
-                // Account for the midi track's latency correction and/or compensation.
-                //--------------------------------------------------------------------
-                // TODO How to handle when external sync is on. For now, don't try to correct.
-                if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+                // don't render existing events in replace mode (except when punch is active - to be filtered later)
+                if (!(recording && track->recordFlag() && MusEGlobal::song->recMode() == MusEGlobal::song->REC_REPLACE
+                      && !MusEGlobal::song->punchin() && !MusEGlobal::song->punchout()))
                 {
-                  const TrackLatencyInfo& li = track->getLatencyInfo(false);
-                  // This value is negative for correction.
-                  const float mlat = li._sourceCorrectionValue;
-                  if((int)mlat < 0)
-                  {
-                    // Convert to a positive offset.
-                    const unsigned int l = (unsigned int)(-mlat);
-                    if(l > lat_offset)
-                      lat_offset = l;
-                  }
-                  if(lat_offset != 0)
-                  {
-                    Pos ppp(_pos.frame() + lat_offset, false);
-                    cur_tick = ppp.tick();
-                    ppp += frames;
-                    next_tick = ppp.tick();
-                  }
-                }
+                    if(playing)
+                    {
+                        unsigned int lat_offset = 0;
+                        unsigned int cur_tick = curTickPos;
+                        unsigned int next_tick = nextTickPos;
 
-                collectEvents(track, cur_tick, next_tick, frames, lat_offset);
-              }
+                        //--------------------------------------------------------------------
+                        // Account for the midi track's latency correction and/or compensation.
+                        //--------------------------------------------------------------------
+                        // TODO How to handle when external sync is on. For now, don't try to correct.
+                        if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+                        {
+                            const TrackLatencyInfo& li = track->getLatencyInfo(false);
+                            // This value is negative for correction.
+                            const float mlat = li._sourceCorrectionValue;
+                            if((int)mlat < 0)
+                            {
+                                // Convert to a positive offset.
+                                const unsigned int l = (unsigned int)(-mlat);
+                                if(l > lat_offset)
+                                    lat_offset = l;
+                            }
+                            if(lat_offset != 0)
+                            {
+                                Pos ppp(_pos.frame() + lat_offset, false);
+                                cur_tick = ppp.tick();
+                                ppp += frames;
+                                next_tick = ppp.tick();
+                            }
+                        }
+
+                        collectEvents(track, cur_tick, next_tick, frames, lat_offset);
+                    }
+                }
             }
 
             //
@@ -1918,7 +1944,7 @@ void Audio::processMidi(unsigned int frames)
                                 MidiRecordEvent event(rf.peek(i));
                                 int defaultPort = devport;
                                 int drumRecPitch=0; //prevent compiler warning: variable used without initialization
-                                MidiController *mc = 0;
+                                MidiController *mc = nullptr;
                                 int ctl = 0;
                                 int prePitch = 0, preVelo = 0;
 
@@ -2597,7 +2623,7 @@ void Audio::processPrecount(unsigned int frames)
     "_precountFramePos:%u precountMidiClickFrame:%u nextPrecountFramePos:%u clickno:%d\n",
     syncFrame, _pos.frame(), _precountFramePos, precountMidiClickFrame, nextPrecountFramePos, clickno);
     
-  MidiDevice* md = 0;
+  MidiDevice* md = nullptr;
   if(metro_settings->midiClickFlag)
     md = MusEGlobal::midiPorts[metro_settings->clickPort].device();
   
