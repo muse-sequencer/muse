@@ -2388,18 +2388,18 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                 if (t->type()==MusECore::Track::DRUM)
                 {
-                    a=p->addAction(tr("Save track's drumlist"));
+                    a=p->addAction(tr("Save Track's Drumlist"));
                     a->setData(1010);
                     a->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
-                    a=p->addAction(tr("Load track's drumlist"));
+                    a=p->addAction(tr("Load Track's Drumlist"));
                     a->setData(1012);
-                    a=p->addAction(tr("Reset track's drumlist"));
+                    a=p->addAction(tr("Reset Track's Drumlist"));
                     a->setData(1013);
                     a->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
-                    a=p->addAction(tr("Reset track's drumlist-ordering"));
+                    a=p->addAction(tr("Reset Track's Drumlist Ordering"));
                     a->setData(1016);
                     a->setEnabled(!((MusECore::MidiTrack*)t)->drummap_ordering_tied_to_patch());
-                    a=p->addAction(tr("Copy track's drumlist to all selected tracks"));
+                    a=p->addAction(tr("Copy Track's Drumlist to All Selected Tracks"));
                     a->setData(1014);
                     a->setEnabled(!static_cast<MusECore::MidiTrack*>(t)->workingDrumMap()->empty());
                     // 1016 is occupied.
