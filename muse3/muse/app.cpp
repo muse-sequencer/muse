@@ -592,8 +592,9 @@ MusE::MusE() : QMainWindow()
       fileSaveAction->setWhatsThis(tr("Click this button to save the song you are editing. You will be prompted for a file name."));
 
       fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
-      fileSaveAsNewProjectAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As New Project..."), this);
+      fileSaveAsNewProjectAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save As New &Project..."), this);
       fileSaveRevisionAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save New Re&vision"), this);
+      fileSaveAsTemplateAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save As Te&mplate..."), this);
 
       fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("&Close"), this);
       
@@ -696,7 +697,7 @@ MusE::MusE() : QMainWindow()
 
       //-------- Help Actions
       helpManualAction = new QAction(tr("&Manual (wiki)..."), this);
-      helpHomepageAction = new QAction(tr("&MusE Homepage..."), this);
+      helpHomepageAction = new QAction(tr("MusE &Homepage..."), this);
       helpDidYouKnow = new QAction(tr("&Did You Know?"), this);
 
       helpReportAction = new QAction(tr("&Report Bug..."), this);
@@ -717,6 +718,7 @@ MusE::MusE() : QMainWindow()
       connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(saveAs()));
       connect(fileSaveAsNewProjectAction, SIGNAL(triggered()), SLOT(saveAsNewProject()));
       connect(fileSaveRevisionAction, SIGNAL(triggered()), SLOT(saveNewRevision()));
+      connect(fileSaveAsTemplateAction, SIGNAL(triggered()), SLOT(saveAsTemplate()));
 
       connect(fileCloseAction, SIGNAL(triggered()), SLOT(fileClose()));
       
@@ -906,8 +908,9 @@ MusE::MusE() : QMainWindow()
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
       menu_file->addAction(fileSaveAsAction);
-      menu_file->addAction(fileSaveAsNewProjectAction);
       menu_file->addAction(fileSaveRevisionAction);
+      menu_file->addAction(fileSaveAsNewProjectAction);
+      menu_file->addAction(fileSaveAsTemplateAction);
       menu_file->addSeparator();
       menu_file->addAction(fileCloseAction);
       menu_file->addSeparator();
@@ -2157,7 +2160,6 @@ float MusE::getCPULoad()
 
 void MusE::saveAsNewProject()
 {
-  // TODO - take care of adjusting path if we aren't in the project ROOT.
   auto storedProject = project;
   project = QFileInfo();
   auto storedMusEProject = MusEGlobal::museProject;
@@ -2270,7 +2272,33 @@ bool MusE::saveAs(bool overrideProjectSaveDialog)
 
   return ok;
 }
+//---------------------------------------------------------
+//   saveAsTemplate
+//---------------------------------------------------------
 
+void MusE::saveAsTemplate()
+{
+  QString templatesDir = MusEGlobal::configPath + QString("/") + "templates";
+
+  printf ("templates dir %s\n", templatesDir.toLatin1().data());
+
+  QDir dirmanipulator;
+  if (!dirmanipulator.mkpath(templatesDir)) {
+    QMessageBox::warning(this,"Path error","Could not create templates directory", QMessageBox::Ok);
+    return;
+  }
+  QString name;
+  name = MusEGui::getSaveFileName(QString("templates"), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"), &writeTopwinState, MFileDialog::USER_VIEW);
+  if (name.isEmpty())
+    return;
+
+  auto finalPath = QFileInfo(name).absolutePath();
+  if (!dirmanipulator.mkpath(finalPath)) {
+    QMessageBox::warning(this,"Path error","Can't create final project path", QMessageBox::Ok);
+    return;
+  }
+  save(name, true, false);
+}
 //---------------------------------------------------------
 //   startEditor
 //---------------------------------------------------------
@@ -3660,7 +3688,7 @@ void MusE::updateConfiguration()
       fileSaveAsAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS].key);
       fileSaveAsNewProjectAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS_NEW_PROJECT].key);
       fileSaveRevisionAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_REVISION].key);
-
+      fileSaveAsTemplateAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS_TEMPLATE].key);
       //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);    // Not used.
       fileImportMidiAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_IMPORT_MIDI].key);
       fileExportMidiAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_EXPORT_MIDI].key);
