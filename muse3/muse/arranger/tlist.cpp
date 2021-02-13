@@ -2375,10 +2375,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
                     a = p->addAction(tr("Move Selected to Top"));
                     a->setData(1008);
-                    a->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
+                    a->setShortcut(shortcuts[SHRT_MOVETOP_TRACK].key);
                     a = p->addAction(tr("Move Selected to Bottom"));
                     a->setData(1009);
-                    a->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
+                    a->setShortcut(shortcuts[SHRT_MOVEBOTTOM_TRACK].key);
                 }
 
                 p->addSeparator();
