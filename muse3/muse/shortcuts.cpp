@@ -98,6 +98,8 @@ void initShortCuts()
       defShrt(SHRT_SAVE_AS,               0 , QT_TRANSLATE_NOOP("shortcuts", "File: Save as"), ARRANG_SHRT, "save_project_as");
       defShrt(SHRT_SAVE_AS_NEW_PROJECT,   0 , QT_TRANSLATE_NOOP("shortcuts", "File: Save as new project"), ARRANG_SHRT, "save_new_project_as");
       defShrt(SHRT_SAVE_REVISION,         Qt::SHIFT + Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "File: Save revision"), ARRANG_SHRT, "save_project_new_revision");
+      defShrt(SHRT_SAVE_AS_TEMPLATE,      0 , QT_TRANSLATE_NOOP("shortcuts", "File: Save as template"), ARRANG_SHRT, "save_project_template");
+
       defShrt(SHRT_LOAD_TEMPLATE,         0 , QT_TRANSLATE_NOOP("shortcuts", "File: Load template"), ARRANG_SHRT, "load_template");
 //      defShrt(SHRT_CONFIG_PRINTER,        Qt::CTRL + Qt::Key_P, QT_TRANSLATE_NOOP("shortcuts", "Configure printer"), ARRANG_SHRT, "config_printer");
       defShrt(SHRT_IMPORT_MIDI,           0 , QT_TRANSLATE_NOOP("shortcuts", "File: Import midi file"), ARRANG_SHRT, "import_midi");

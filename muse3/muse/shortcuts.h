@@ -128,6 +128,7 @@ enum {
     SHRT_SAVE_AS, //Default: undefined
     SHRT_SAVE_AS_NEW_PROJECT,
     SHRT_SAVE_REVISION,
+    SHRT_SAVE_AS_TEMPLATE,
     SHRT_OPEN_RECENT, //Ctrl+1
     SHRT_LOAD_TEMPLATE, //Default: undefined
     SHRT_CONFIG_PRINTER, //Ctrl+P

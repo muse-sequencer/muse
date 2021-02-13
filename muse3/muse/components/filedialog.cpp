@@ -146,13 +146,11 @@ void MFileDialog::userToggled(bool flag)
             buttons.readMidiPortsButton->setChecked(true);
             readMidiPortsSaved = true;
             if (lastUserDir.isEmpty()) {
-                  //lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
-                  lastUserDir = MusEGlobal::configPath + QString("/") + baseDir; // Initialize if first time    // p4.0.39
+                  lastUserDir = MusEGlobal::configPath + QString("/") + baseDir; // Initialize if first time
                   }
 
             if (testDirCreate(this, lastUserDir))
-                  //setDirectory(MusEGlobal::museUser);
-                  setDirectory(MusEGlobal::configPath);  // p4.0.39
+                  setDirectory(MusEGlobal::configPath);
             else
                   setDirectory(lastUserDir);
 

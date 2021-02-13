@@ -1,3 +1,5 @@
+13.02.2021
+    - New: Menu option to Save As Template (rj) 
 12.02.2021
     - Fix: Reworked Save As..., Project dialog and Save Revision. (rj)
       Project dialog is now only used on the initial save, after that
