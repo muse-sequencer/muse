@@ -2165,7 +2165,6 @@ void MusE::saveAsNewProject()
   saveAs(true);
   if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )
   {
-    printf("rejected - RESTORE OLD PROJECT!\n");
     // change was rejected, restore the old project
     project = storedProject;
     MusEGlobal::museProject = storedMusEProject;
