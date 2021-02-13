@@ -592,7 +592,8 @@ MusE::MusE() : QMainWindow()
       fileSaveAction->setWhatsThis(tr("Click this button to save the song you are editing. You will be prompted for a file name."));
 
       fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
-      fileSaveRevisionAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save New Re&vision..."), this);
+      fileSaveAsNewProjectAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As New Project..."), this);
+      fileSaveRevisionAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save New Re&vision"), this);
 
       fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("&Close"), this);
       
@@ -714,6 +715,7 @@ MusE::MusE() : QMainWindow()
 
       connect(fileSaveAction, SIGNAL(triggered()), SLOT(save()));
       connect(fileSaveAsAction, SIGNAL(triggered()), SLOT(saveAs()));
+      connect(fileSaveAsNewProjectAction, SIGNAL(triggered()), SLOT(saveAsNewProject()));
       connect(fileSaveRevisionAction, SIGNAL(triggered()), SLOT(saveNewRevision()));
 
       connect(fileCloseAction, SIGNAL(triggered()), SLOT(fileClose()));
@@ -904,6 +906,7 @@ MusE::MusE() : QMainWindow()
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
       menu_file->addAction(fileSaveAsAction);
+      menu_file->addAction(fileSaveAsNewProjectAction);
       menu_file->addAction(fileSaveRevisionAction);
       menu_file->addSeparator();
       menu_file->addAction(fileCloseAction);
@@ -2151,6 +2154,23 @@ float MusE::getCPULoad()
     return fCurCpuLoad;
 #endif
 }
+
+void MusE::saveAsNewProject()
+{
+  // TODO - take care of adjusting path if we aren't in the project ROOT.
+  auto storedProject = project;
+  project = QFileInfo();
+  auto storedMusEProject = MusEGlobal::museProject;
+  MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+  saveAs(true);
+  if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )
+  {
+    // change was rejected, restore the old project
+    project = storedProject;
+    MusEGlobal::museProject = storedMusEProject;
+  }
+}
+
 void MusE::saveNewRevision()
 {
   if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )
@@ -2159,11 +2179,17 @@ void MusE::saveNewRevision()
     return;
   }
 
+  QString newFilePath = "";
   QString oldProjectFileName = project.filePath();
-
   MusEGui::SaveNewRevisionDialog newRevision(MusEGlobal::muse, project);
 
-  QString newFilePath = newRevision.getNewRevision();
+  newFilePath = newRevision.getNewRevision();
+
+  if (newFilePath.isEmpty())
+  {
+    // could not set revision automatically, open dialog.
+    newFilePath = newRevision.getNewRevisionWithDialog();
+  }
 
   if (newFilePath.isEmpty())
     return;
@@ -2192,53 +2218,58 @@ void MusE::saveNewRevision()
 //   saveAs
 //---------------------------------------------------------
 
-bool MusE::saveAs()
-      {
-      QString name;
-        if (MusEGlobal::config.useProjectSaveDialog) {
-            MusEGui::ProjectCreateImpl pci(MusEGlobal::muse);
-            pci.setWriteTopwins(writeTopwinState);
-            if (pci.exec() == QDialog::Rejected) {
-              return false;
-            }
+bool MusE::saveAs(bool overrideProjectSaveDialog)
+{
+  QString name;
+  // if this is the initial save and ProjectDialog is enabled, use that.
+  if (overrideProjectSaveDialog ||
+      (MusEGlobal::config.useProjectSaveDialog && MusEGlobal::museProject == MusEGlobal::museProjectInitPath))
+  {
+    MusEGui::ProjectCreateImpl pci(MusEGlobal::muse);
+    pci.setWriteTopwins(writeTopwinState);
+    if (pci.exec() == QDialog::Rejected) {
+      return false;
+    }
 
-            MusEGlobal::song->setSongInfo(pci.getSongInfo(), true);
-            name = pci.getProjectPath();
-            writeTopwinState=pci.getWriteTopwins();
-          } else {
-            name = MusEGui::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"), &writeTopwinState);
-            if (name.isEmpty())
-              return false;
-          }
+    MusEGlobal::song->setSongInfo(pci.getSongInfo(), true);
+    name = pci.getProjectPath();
+    writeTopwinState=pci.getWriteTopwins();
+  }
+  else
+  {
+    name = MusEGui::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"), &writeTopwinState);
+    if (name.isEmpty())
+      return false;
+  }
 
-        MusEGlobal::museProject = QFileInfo(name).absolutePath();
-        QDir dirmanipulator;
-        if (!dirmanipulator.mkpath(MusEGlobal::museProject)) {
-          QMessageBox::warning(this,"Path error","Can't create project path", QMessageBox::Ok);
-          return false;
-        }
+  MusEGlobal::museProject = QFileInfo(name).absolutePath();
+  QDir dirmanipulator;
+  if (!dirmanipulator.mkpath(MusEGlobal::museProject)) {
+    QMessageBox::warning(this,"Path error","Can't create project path", QMessageBox::Ok);
+    return false;
+  }
 
-      bool ok = false;
-      if (!name.isEmpty()) {
-            QString tempOldProj = MusEGlobal::museProject;
-            MusEGlobal::museProject = QFileInfo(name).absolutePath();
-            ok = save(name, true, writeTopwinState);
-            if (ok) {
-                  project.setFile(name);
-                  _lastProjectFilePath = name;
-                  _lastProjectWasTemplate = false;
-                  _lastProjectLoadedConfig = true;
-                  setWindowTitle(projectTitle(project.absoluteFilePath()));
-                  addProject(name);
-                  }
-            else
-                  MusEGlobal::museProject = tempOldProj;
+  bool ok = false;
+  if (!name.isEmpty()) {
+    QString tempOldProj = MusEGlobal::museProject;
+    MusEGlobal::museProject = QFileInfo(name).absolutePath();
+    ok = save(name, true, writeTopwinState);
+    if (ok) {
+      project.setFile(name);
+      _lastProjectFilePath = name;
+      _lastProjectWasTemplate = false;
+      _lastProjectLoadedConfig = true;
+      setWindowTitle(projectTitle(project.absoluteFilePath()));
+      addProject(name);
+    }
+    else
+      MusEGlobal::museProject = tempOldProj;
 
-            QDir::setCurrent(MusEGlobal::museProject);
-            }
+    QDir::setCurrent(MusEGlobal::museProject);
+  }
 
-      return ok;
-      }
+  return ok;
+}
 
 //---------------------------------------------------------
 //   startEditor
@@ -3627,6 +3658,7 @@ void MusE::updateConfiguration()
       fileNewFromTemplateAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_NEW_FROM_TEMPLATE].key);
       fileSaveAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE].key);
       fileSaveAsAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS].key);
+      fileSaveAsNewProjectAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_AS_NEW_PROJECT].key);
       fileSaveRevisionAction->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_SAVE_REVISION].key);
 
       //menu_file->setShortcut(MusEGui::shortcuts[MusEGui::SHRT_OPEN_RECENT].key, menu_ids[CMD_OPEN_RECENT]);    // Not used.
