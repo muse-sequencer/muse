@@ -4,6 +4,7 @@
       the Save As dialog is used. For very quick Save As operation, 
       use the Save Revision alternative which will increase a number
       at the end of the name to save a new version as quickly as possible.
+    - Fix #836: Don't play existing midi events in replace mode. (kybos)
 11.02.2021
     - Fixed wrong exclusive indicators (radiobuttons) in some submenus. (kybos)
 08.02.2021
