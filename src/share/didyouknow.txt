@@ -13,7 +13,7 @@ Just store the song as a template using the project dialog.
 
 It's possible to create midi filters or generators in any<br>
 language, see instructions and examples under <br>
-muse3/share/scripts in the source.
+src/share/scripts in the source.
 
 Click on the automation column in the track list to make<br>
 automation lines visible for a specific parameter.
@@ -44,7 +44,7 @@ shift+space (default shortcut), a new track is created and the recording is<br>
 restarted from the initial position.<br>
 If recording was done on multiple tracks, all the armed tracks will be duplicated.
 
-MusE 3.x defaults to connecting to Pulse Audio instead of Jack to ease startup<br>
+MusE 4.x defaults to connecting to Pulse Audio instead of Jack to ease startup<br>
 for new users. To connect to Jack change the default sound output on the<br>
 Audio configuration tab in Global Settings.<br>
-Or use the command line overrides to start the specific interface you wish.
+Or use the command line overrides to start the specific driver you wish to use.

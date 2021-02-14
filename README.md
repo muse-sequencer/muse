@@ -16,13 +16,13 @@ Installation from source code:
 Stable source code releases are [here](https://github.com/muse-sequencer/muse/releases).
 Or one of the git branches can be cloned, built, and installed.
 
-Installation instructions are in the [README](muse3/README) file.
+Installation instructions are in the [README](src/README) file.
 
 Documentation:
 --------------
-[LICENSE](muse3/COPYING)
-[AUTHORS](muse3/AUTHORS)
+[LICENSE](src/COPYING)
+[AUTHORS](src/AUTHORS)
 
-These and other important documents, READMEs, and addendums are in the [muse3](muse3) directory.
+These and other important documents, READMEs, and addendums are in the [src](src) directory.
 
 The official MusE Manual (work in progress) has migrated to the wiki and can be found [here](https://github.com/muse-sequencer/muse/wiki/Documentation).

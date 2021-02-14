@@ -17,9 +17,9 @@ It is available in it's original formatting here:
     Support files:
 
         Required dependencies
-        Fix make paths script (place it in muse/muse3)
-        Compile components script (place it in muse/muse3)
-        Compile Muse script (place it in muse/muse3)
+        Fix make paths script (place it in muse/src)
+        Compile components script (place it in muse/src)
+        Compile Muse script (place it in muse/src)
         Pack script (TODO)
 
 
@@ -91,7 +91,7 @@ It is available in it's original formatting here:
     4. Build Muse
     cd /usr/src
     git clone --recurse-submodules -b master git://github.com/muse-sequencer/muse.git
-    cd /usr/src/muse/muse3
+    cd /usr/src/muse/src
     export LIBRARY_PATH=/mingw64/lib
     export CPATH=/mingw64/include
     # Copy here the files compile_muse_mingw.sh and CMakeLists.txt
