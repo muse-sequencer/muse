@@ -277,6 +277,7 @@ void initShortCuts()
       defShrt(SHRT_EVENT_COLOR,      Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Edit: Change Event Color"), PROLL_SHRT + SCORE_SHRT, "change_event_color");
       defShrt(SHRT_MOVE_PLAY_TO_NOTE,    Qt::CTRL + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Move: Move to selected note"), PROLL_SHRT + DEDIT_SHRT, "move_to_note");
 
+      defShrt(SHRT_USE_LAST_EDITED_EVENT, Qt::SHIFT + Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "Edit: Use Last Edited event"), PROLL_SHRT, "use_last_edited_event");
 
       // Shortcuts for tools
       // global

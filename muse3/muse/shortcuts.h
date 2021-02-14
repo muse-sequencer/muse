@@ -359,6 +359,8 @@ enum {
 
     SHRT_MOVE_PLAY_TO_NOTE,
 
+    SHRT_USE_LAST_EDITED_EVENT,
+
     // Shortcuts for tools
     // global
     SHRT_TOOL_POINTER,  //

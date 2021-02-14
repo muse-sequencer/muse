@@ -1,3 +1,6 @@
+14.02.2021
+    - Rework: Removed LastEditedEvent from configuration and added it (rj)
+      to the pianoroll specific edit menu instead + shortcut.
 13.02.2021
     - New: Menu option to Save As Template (rj) 
 12.02.2021

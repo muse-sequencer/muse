@@ -260,7 +260,14 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       QAction* funcLegatoAction = menuFunctions->addAction(tr("Legato"));
       connect(funcLegatoAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_LEGATO); } );
-            
+
+      menuEdit->addSeparator();
+      editUseLastEditEventAction = menuEdit->addAction(tr("Use Last Event Length"));
+      editUseLastEditEventAction->setCheckable(true);
+      editUseLastEditEventAction->setChecked(MusEGlobal::config.useLastEditedEvent);
+      connect(editUseLastEditEventAction, &QAction::triggered, [this]() {
+        MusEGlobal::config.useLastEditedEvent = editUseLastEditEventAction->isChecked();
+      } );
 
       //----------------------
       // Scripts:
@@ -1896,6 +1903,8 @@ void PianoRoll::initShortcuts()
       funcNoteShiftAction->setShortcut(shortcuts[SHRT_NOTE_SHIFT].key);
       funcSetFixedLenAction->setShortcut(shortcuts[SHRT_FIXED_LEN].key);
       funcDelOverlapsAction->setShortcut(shortcuts[SHRT_DELETE_OVERLAPS].key);
+
+      editUseLastEditEventAction->setShortcut(shortcuts[SHRT_USE_LAST_EDITED_EVENT].key);
       
       }
 

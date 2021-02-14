@@ -83,7 +83,9 @@ class PianoRoll : public MidiEditor {
       QAction* editPasteToCurPartAction;
       QAction* editPasteDialogAction; 
       QAction* editDelEventsAction;
-      
+
+      QAction* editUseLastEditEventAction;
+
       QAction* selectAllAction; 
       QAction* selectNoneAction;
       QAction* selectInvertAction;
