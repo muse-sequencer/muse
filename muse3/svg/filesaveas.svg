@@ -2,14 +2,9 @@
 <svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
  <path d="m13.824 30.409-1.8238-1.8465v-25.394h39.656v25.486l-3.5627 3.6009h-32.446zm31.677-5.6698v-0.66713h-27.346v1.3343h27.346zm0-5.2481v-0.66713h-27.346v1.3343h27.346zm0-5.2481v-0.66713h-27.346v1.3343h27.346zm0-5.2481v-0.66713h-27.346v1.3343h27.346z" fill="#fff" stroke="#fff" stroke-linejoin="round" stroke-width="2" style="paint-order:stroke fill markers"/>
  <path d="m18.252 61.087v-17.409l2.8862-2.6783h25.976l2.8862 2.6783v17.409" fill="#b3b3b3"/>
- <path d="m26.016 57.664v-12.364h6.984v12.364z" fill="#24356b" fill-rule="evenodd"/>
+ <path d="m26.016 57.664v-12.364h6.984v12.364z" fill="#006680" fill-rule="evenodd"/>
  <path d="m11.334 3.1316v26.777l3.9712 4.0165h33.093l3.9712-4.0165v-26.777" fill="none"/>
- <path d="m60.37 31.989v28.887h-11.589v-16.743l-2.9614-2.9923h-24.011l-2.958 2.9957v16.74h-1.4468l-5.1985-0.08434-4.5421-4.7895-4.292-4.0304 0.11118-17.321c0.047456-7.393-0.055562-17.515-0.055562-22.495v-9.0525h7.6702v25.851l4.2949 4.3423h33.016l4.2924-4.3448v-25.849h7.6702v28.887z" fill="#3251a4" stroke="#373748" stroke-width=".12856"/>
+ <path d="m60.37 31.989v28.887h-11.589v-16.743l-2.9614-2.9923h-24.011l-2.958 2.9957v16.74h-1.4468l-5.1985-0.08434-4.5421-4.7895-4.292-4.0304 0.11118-17.321c0.047456-7.393-0.055562-17.515-0.055562-22.495v-9.0525h7.6702v25.851l4.2949 4.3423h33.016l4.2924-4.3448v-25.849h7.6702v28.887z" fill="#006680" stroke="#373748" stroke-width=".12856"/>
  <path d="m60.742 61.18v-58.437h-57.773l0.19924 49.208 9.0079 9.1806 49.149 0.16695" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="1.0016"/>
- <g display="none" fill="#806600" stroke="#806600" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.0016">
-  <circle cx="19.939" cy="25.012" r="2.3579" style="paint-order:stroke fill markers"/>
-  <circle cx="32.36" cy="25.011" r="2.3579" style="paint-order:stroke fill markers"/>
-  <circle cx="44.907" cy="25.247" r="2.3579" style="paint-order:stroke fill markers"/>
- </g>
- <text transform="scale(1.1273 .8871)" x="18.70022" y="34.460735" fill="#806600" font-family="sans-serif" font-size="37.629px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="18.70022" y="34.460735" fill="#806600" font-family="sans-serif" font-size="37.629px" font-weight="bold" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal">?</tspan></text>
+ <path d="m34 22.541h-5.9973v-0.81404q0-1.3622 0.54823-2.4089 0.54823-1.0632 2.3092-2.6913l1.0632-0.96359q0.94695-0.86388 1.3789-1.6281 0.44856-0.7642 0.44856-1.5284 0-1.163-0.79742-1.8108-0.79742-0.66452-2.2262-0.66452-1.3457 0-2.9073 0.56484-1.5616 0.54823-3.2561 1.6447v-5.2165q2.0102-0.69775 3.6715-1.03 1.6613-0.33226 3.2063-0.33226 4.0536 0 6.1801 1.6613 2.1265 1.6447 2.1265 4.8178 0 1.6281-0.64791 2.9239-0.64791 1.2792-2.2095 2.7578l-1.0632 0.94695q-1.1297 1.03-1.4786 1.6613-0.34888 0.61468-0.34888 1.3622zm-5.9973 2.4587h5.9973v5.9142h-5.9973z" fill="#006680" stroke-width=".90418" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
 </svg>

@@ -155,5 +155,8 @@
         <file>svg/delete_sel_tracks.svg</file>
         <file>svg/duplicate_sel_track.svg</file>
         <file>svg/duplicate_sel_tracks.svg</file>
+        <file>svg/filesave_revision.svg</file>
+        <file>svg/filesave_project.svg</file>
+        <file>svg/filesave_template.svg</file>
     </qresource>
 </RCC>

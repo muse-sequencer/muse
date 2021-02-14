@@ -592,9 +592,9 @@ MusE::MusE() : QMainWindow()
       fileSaveAction->setWhatsThis(tr("Click this button to save the song you are editing. You will be prompted for a file name."));
 
       fileSaveAsAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save &As..."), this);
-      fileSaveAsNewProjectAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save As New &Project..."), this);
-      fileSaveRevisionAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save New Re&vision"), this);
-      fileSaveAsTemplateAction = new QAction(*MusEGui::filesaveasSVGIcon, tr("Save As Te&mplate..."), this);
+      fileSaveAsNewProjectAction = new QAction(*MusEGui::filesaveProjectSVGIcon, tr("Save As New &Project..."), this);
+      fileSaveRevisionAction = new QAction(*MusEGui::filesaveRevisionSVGIcon, tr("Save New Re&vision"), this);
+      fileSaveAsTemplateAction = new QAction(*MusEGui::filesaveTemplateSVGIcon, tr("Save As Te&mplate..."), this);
 
       fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("&Close"), this);
       

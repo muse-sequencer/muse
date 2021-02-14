@@ -320,6 +320,9 @@ QIcon* filetemplateSVGIcon;
 QIcon* fileopenSVGIcon;
 QIcon* filesaveSVGIcon;
 QIcon* filesaveasSVGIcon;
+QIcon* filesaveProjectSVGIcon;
+QIcon* filesaveTemplateSVGIcon;
+QIcon* filesaveRevisionSVGIcon;
 QIcon* filecloseSVGIcon;
 QIcon* appexitSVGIcon;
 QIcon* whatsthisSVGIcon;
@@ -716,6 +719,9 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     fileopenSVGIcon    = icons.getSVG("fileopen.svg");
     filesaveSVGIcon    = icons.getSVG("filesave.svg");
     filesaveasSVGIcon  = icons.getSVG("filesaveas.svg");
+    filesaveRevisionSVGIcon = icons.getSVG("filesave_revision.svg");
+    filesaveTemplateSVGIcon = icons.getSVG("filesave_template.svg");
+    filesaveProjectSVGIcon  = icons.getSVG("filesave_project.svg");
     filecloseSVGIcon   = icons.getSVG("fileclose.svg");
     appexitSVGIcon     = icons.getSVG("appexit.svg");
 
@@ -1000,6 +1006,9 @@ void deleteIcons()
     delete fileopenSVGIcon;
     delete filesaveSVGIcon;
     delete filesaveasSVGIcon;
+    delete filesaveProjectSVGIcon;
+    delete filesaveTemplateSVGIcon;
+    delete filesaveRevisionSVGIcon;
     delete filecloseSVGIcon;
     delete appexitSVGIcon;
     delete whatsthisSVGIcon;
