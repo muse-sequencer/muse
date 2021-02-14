@@ -607,7 +607,7 @@ MusE::MusE() : QMainWindow()
 
       quitAction = new QAction(*MusEGui::appexitSVGIcon, tr("&Quit"), this);
 
-      editSongInfoAction = new QAction(*MusEGui::listeditSVGIcon, tr("Song Info..."), this);
+      editSongInfoAction = new QAction(*MusEGui::listeditSVGIcon, tr("Edit Project Description..."), this);
 
       //-------- View Actions
       viewTransportAction = new QAction(*MusEGui::transportSVGIcon, tr("Transport Panel"), this);
