@@ -308,6 +308,7 @@ extern QIcon* routeSourceSVGIcon;
 extern QIcon* routeDestSVGIcon;
 
 extern QIcon* gridOnSVGIcon;
+extern QIcon* rangeToSelectionSVGIcon;
 
 //----------------------------------
 // Cursors

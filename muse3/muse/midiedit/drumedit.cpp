@@ -289,7 +289,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       menuSelect->addSeparator();
 
-      selectRangeToSelectionAction = menuSelect->addAction(tr("Set &Range to Selection"));
+      selectRangeToSelectionAction = menuSelect->addAction(*rangeToSelectionSVGIcon, tr("Set &Range to Selection"));
       connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_RANGE_TO_SELECTION); } );
 
       if (parts()->size() > 1) {

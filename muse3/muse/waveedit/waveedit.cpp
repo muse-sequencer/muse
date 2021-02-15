@@ -168,7 +168,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       menuEdit->addSeparator();
 
-      selectRangeToSelectionAction = menuEdit->addAction(tr("Set &Range to Selection"));
+      selectRangeToSelectionAction = menuEdit->addAction(*rangeToSelectionSVGIcon, tr("Set &Range to Selection"));
       connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_RANGE_TO_SELECTION); } );
 
       // only 1 part can be opened

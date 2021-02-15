@@ -158,5 +158,6 @@
         <file>svg/filesave_revision.svg</file>
         <file>svg/filesave_project.svg</file>
         <file>svg/filesave_template.svg</file>
+        <file>svg/range_to_selection.svg</file>
     </qresource>
 </RCC>
