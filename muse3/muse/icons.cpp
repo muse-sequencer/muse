@@ -390,6 +390,9 @@ QIcon* routeDestSVGIcon;
 
 QIcon* gridOnSVGIcon;
 QIcon* rangeToSelectionSVGIcon;
+QIcon* quantizeSVGIcon;
+
+QIcon* dummySVGIcon;
 
 //----------------------------------
 // Cursors
@@ -785,6 +788,11 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
     gridOnSVGIcon = icons.getSVG("grid_on.svg");
     rangeToSelectionSVGIcon = icons.getSVG("range_to_selection.svg");
+    quantizeSVGIcon = icons.getSVG("quantize.svg");
+
+    QPixmap px(10,10);
+    px.fill(Qt::transparent);
+    dummySVGIcon = new QIcon(px);
 
     //----------------------------------
     // Cursors
@@ -1081,6 +1089,9 @@ void deleteIcons()
 
     delete gridOnSVGIcon;
     delete rangeToSelectionSVGIcon;
+    delete quantizeSVGIcon;
+
+    delete dummySVGIcon;
 
     //----------------------------------
     // Cursors

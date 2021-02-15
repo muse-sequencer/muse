@@ -318,13 +318,16 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 //      menuFunctions->setTearOffEnabled(true);
 
-      fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
+      quantizeAction = menuFunctions->addAction(*quantizeSVGIcon, tr("Quantize"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
       crescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
-      quantizeAction = menuFunctions->addAction(tr("Quantize"));
-      QAction* eraseEventAction = menuFunctions->addAction(tr("Erase Event"));
       QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes"));
       QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
+      QAction* eraseEventAction = menuFunctions->addAction(tr("Erase Events"));
+
+      menuFunctions->addSeparator();
+
+      fixedAction = menuFunctions->addAction(*dummySVGIcon, tr("Set Length to Drummap Value"));
 
       connect(fixedAction,       &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_FIXED_LEN); } );
       connect(veloAction,        &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_MODIFY_VELOCITY); } );
