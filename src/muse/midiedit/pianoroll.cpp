@@ -188,7 +188,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       menuEdit->addSeparator();
 
-      menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
+      menuSelect = menuEdit->addMenu(tr("&Select"));
 
       selectAllAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select &All"));
       connect(selectAllAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_ALL); } );
@@ -209,7 +209,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       menuSelect->addSeparator();
 
-      selectRangeToSelectionAction = menuSelect->addAction(tr("Set &Range to Selection"));
+      selectRangeToSelectionAction = menuSelect->addAction(*rangeToSelectionSVGIcon, tr("Set &Range to Selection"));
       connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_RANGE_TO_SELECTION); } );
 
       if (parts()->size() > 1) {
@@ -231,33 +231,35 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
 //      menuFunctions->setTearOffEnabled(true);
       
-      funcQuantizeAction = menuFunctions->addAction(tr("Quantize"));
+      funcQuantizeAction = menuFunctions->addAction(*quantizeSVGIcon, tr("Quantize"));
       connect(funcQuantizeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_QUANTIZE); } );
       
-      funcGateTimeAction = menuFunctions->addAction(tr("Modify Note Length"));
-      connect(funcGateTimeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_MODIFY_GATE_TIME); } );
-      
-      funcModVelAction = menuFunctions->addAction(tr("Modify Velocity"));
+      funcModVelAction = menuFunctions->addAction(tr("Change Event Velocity"));
       connect(funcModVelAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_MODIFY_VELOCITY); } );
-      
+
       funcCrescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
       connect(funcCrescAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_CRESCENDO); } );
-      
-      funcTransposeAction = menuFunctions->addAction(tr("Transpose"));
-      connect(funcTransposeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_TRANSPOSE); } );
-            
-      funcEraseEventAction = menuFunctions->addAction(tr("Erase Events"));
-      connect(funcEraseEventAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_ERASE_EVENT); } );
-      
-      funcNoteShiftAction = menuFunctions->addAction(tr("Move Notes"));
+
+      funcNoteShiftAction = menuFunctions->addAction(tr("Move Events"));
       connect(funcNoteShiftAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_NOTE_SHIFT); } );
-            
-      funcSetFixedLenAction = menuFunctions->addAction(tr("Set Fixed Length"));
-      connect(funcSetFixedLenAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_FIXED_LEN); } );
-      
+
       funcDelOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
       connect(funcDelOverlapsAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_DELETE_OVERLAPS); } );
 
+      funcEraseEventAction = menuFunctions->addAction(tr("Erase Events"));
+      connect(funcEraseEventAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_ERASE_EVENT); } );
+
+      menuFunctions->addSeparator();
+
+      funcGateTimeAction = menuFunctions->addAction(tr("Change Event Length"));
+      connect(funcGateTimeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_MODIFY_GATE_TIME); } );
+      
+      funcSetFixedLenAction = menuFunctions->addAction(tr("Set Fixed Length"));
+      connect(funcSetFixedLenAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_FIXED_LEN); } );
+
+      funcTransposeAction = menuFunctions->addAction(tr("Transpose"));
+      connect(funcTransposeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_TRANSPOSE); } );
+      
       QAction* funcLegatoAction = menuFunctions->addAction(tr("Legato"));
       connect(funcLegatoAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_LEGATO); } );
 

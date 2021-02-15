@@ -40,13 +40,18 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
 
     if (onlyIfSelected) // if this is set means we are probably inside a midi editor and we ask again to be sure
     {
-        if(QMessageBox::question(parent, QString("Process events"),
-                                 tr("Do you want to process ALL or only selected events?"), tr("&Selected"), tr("&All"),
-                                 QString(), 0, 1 ) == 1)
-        {
+        QMessageBox m;
+        m.setText(tr("Do you want to process all or only selected events?"));
+        m.addButton(tr("&Selected"), QMessageBox::YesRole);
+        m.addButton(tr("&All"), QMessageBox::NoRole);
+        m.addButton(tr("&Cancel"), QMessageBox::RejectRole);
+        m.exec();
+        if (m.buttonRole(m.clickedButton()) == QMessageBox::RejectRole)
+            return;
+        else if (m.buttonRole(m.clickedButton()) == QMessageBox::NoRole)
             onlyIfSelected = false;
-        }
     }
+
     QProgressDialog progress(parent);
     progress.setLabelText("Process parts");
     progress.setRange(0,parts->size());

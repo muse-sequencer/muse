@@ -415,7 +415,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
         edit_menu->addSeparator();
 
-        QMenu* select_menu = edit_menu->addMenu(QIcon(*selectIcon), tr("&Select"));
+        QMenu* select_menu = edit_menu->addMenu(tr("&Select"));
 
             select_all_action = select_menu->addAction(QIcon(*select_allIcon), tr("Select &All"));
             connect(select_all_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_ALL); } );
@@ -437,15 +437,18 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));
 
-        func_quantize_action = functions_menu->addAction(tr("&Quantize"));
-        func_notelen_action = functions_menu->addAction(tr("Change Note &Length"));
+        func_quantize_action = functions_menu->addAction(*quantizeSVGIcon, tr("&Quantize"));
         func_velocity_action = functions_menu->addAction(tr("Change Note &Velocity"));
         func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"));
-        func_transpose_action = functions_menu->addAction(tr("Transpose"));
-        func_erase_action = functions_menu->addAction(tr("Erase Events"));
         func_move_action = functions_menu->addAction(tr("Move Notes"));
-        func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"));
         func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"));
+        func_erase_action = functions_menu->addAction(tr("Erase Events"));
+
+        functions_menu->addSeparator();
+
+        func_notelen_action = functions_menu->addAction(tr("Change Note &Length"));
+        func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"));
+        func_transpose_action = functions_menu->addAction(tr("Transpose"));
         func_legato_action = functions_menu->addAction(tr("Legato"));
 
         connect(func_quantize_action,     &QAction::triggered, [this]() { menu_command(CMD_QUANTIZE); } );
