@@ -92,7 +92,6 @@ extern QPixmap* veloPerNote_OnIcon;
 extern QPixmap* veloPerNote_OffIcon;
 
 extern QPixmap* midi_transformIcon;
-extern QPixmap* selectIcon;
 extern QPixmap* select_allIcon;
 extern QPixmap* select_all_parts_on_trackIcon;
 extern QPixmap* select_deselect_allIcon;

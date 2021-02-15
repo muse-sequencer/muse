@@ -163,7 +163,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       selectAllAction = menuEdit->addAction(QIcon(*select_allIcon), tr("Select &All"));
       connect(selectAllAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_ALL); } );
 
-      selectNoneAction = menuEdit->addAction(QIcon(*select_allIcon), tr("&Deselect All"));
+      selectNoneAction = menuEdit->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
       connect(selectNoneAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NONE); } );
 
       menuEdit->addSeparator();

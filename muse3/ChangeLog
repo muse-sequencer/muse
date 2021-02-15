@@ -1,3 +1,8 @@
+15.02.2021
+    - Fix: Consistent sorting and terminology of all Functions menus. (kybos)
+    - Fix: Dummy icon to work around Qt>5.12 menu styling bugs. (kybos)
+    - Fix: Script popup couldn't be cancelled. (kybos)
+    - Add: New vector icons for Quantize/Set range to selection. (kybos)
 14.02.2021
     - Rework: Removed LastEditedEvent from configuration and added it (rj)
       to the pianoroll specific edit menu instead + shortcut.

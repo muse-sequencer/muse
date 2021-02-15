@@ -188,7 +188,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       menuEdit->addSeparator();
 
-      menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
+      menuSelect = menuEdit->addMenu(tr("&Select"));
 
       selectAllAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select &All"));
       connect(selectAllAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_ALL); } );

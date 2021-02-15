@@ -415,7 +415,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
         edit_menu->addSeparator();
 
-        QMenu* select_menu = edit_menu->addMenu(QIcon(*selectIcon), tr("&Select"));
+        QMenu* select_menu = edit_menu->addMenu(tr("&Select"));
 
             select_all_action = select_menu->addAction(QIcon(*select_allIcon), tr("Select &All"));
             connect(select_all_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_ALL); } );

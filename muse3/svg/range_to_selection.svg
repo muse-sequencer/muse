@@ -2,7 +2,7 @@
 <svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
  <g stroke-linecap="round">
   <rect x="5" y="47" width="55" height="14" fill-rule="evenodd" stroke="#0a8" stroke-dashoffset="37.795" stroke-width="2.191" style="paint-order:fill markers stroke"/>
-  <path d="m15 3.5833-12 11.417h12m0 25v-36.417" fill="#00aad4" stroke="#00aad4" stroke-linejoin="round" stroke-width="3"/>
-  <path d="m49 3.5833 12 11.417h-12m0 25v-36.417" fill="#00aad4" stroke="#00aad4" stroke-linejoin="round" stroke-width="3"/>
+  <path d="m15 3h-12l12 12m0 25v-37" fill="#00aad4" stroke="#00aad4" stroke-linejoin="round" stroke-width="3"/>
+  <path d="m49 3h12l-12 12m0 25v-37" fill="#00aad4" stroke="#00aad4" stroke-linejoin="round" stroke-width="3"/>
  </g>
 </svg>

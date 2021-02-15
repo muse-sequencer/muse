@@ -278,7 +278,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(deleteAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_DEL); } );
 
       menuEdit->addSeparator();
-      menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
+      menuSelect = menuEdit->addMenu(tr("&Select"));
 
       sallAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select All"));
       snoneAction = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("Select None"));
@@ -373,7 +373,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       QMenu* menuShowHide=settingsMenu->addMenu(tr("Show/Hide"));
       QAction* ignoreHideAction = menuShowHide->addAction(tr("Also Show Hidden Instruments"));
       menuShowHide->addSeparator();
-      QAction* showAllAction = menuShowHide->addAction(tr("Show All Instruments"));
+      QAction* showAllAction = menuShowHide->addAction(*dummySVGIcon, tr("Show All Instruments"));
       QAction* hideAllAction = menuShowHide->addAction(tr("Hide All Instruments"));
       QAction* hideUnusedAction = menuShowHide->addAction(tr("Only Show Used Instruments"));
       QAction* hideEmptyAction = menuShowHide->addAction(tr("Only Show Instruments With Non-empty Name or Used Instruments"));

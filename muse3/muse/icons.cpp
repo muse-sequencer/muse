@@ -101,7 +101,6 @@
 #include "xpm/velo_per_note.xpm"
 
 #include "xpm/midi_transform.xpm"
-#include "xpm/select.xpm"
 #include "xpm/select_all.xpm"
 #include "xpm/select_all_parts_on_track.xpm"
 #include "xpm/select_deselect_all.xpm"
@@ -180,7 +179,6 @@ QIcon* ledGreenIcon;
 QIcon* ledDarkGreenIcon;
 
 QPixmap* midi_transformIcon;
-QPixmap* selectIcon;
 QPixmap* select_allIcon;
 QPixmap* select_all_parts_on_trackIcon;
 QPixmap* select_deselect_allIcon;
@@ -539,7 +537,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     veloPerNote_OffIcon  = new QPixmap(velo_all_xpm);
 
     midi_transformIcon            = new QPixmap(midi_transform_xpm);
-    selectIcon                    = new QPixmap(select_xpm);
     select_allIcon                = new QPixmap(select_all_xpm);
     select_all_parts_on_trackIcon = new QPixmap(select_all_parts_on_track_xpm);
     select_deselect_allIcon       = new QPixmap(select_deselect_all);
@@ -878,7 +875,6 @@ void deleteIcons()
     delete veloPerNote_OffIcon;
 
     delete midi_transformIcon;
-    delete selectIcon;
     delete select_allIcon;
     delete select_all_parts_on_trackIcon;
     delete select_deselect_allIcon;
