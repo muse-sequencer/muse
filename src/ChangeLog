@@ -1,3 +1,7 @@
+16.02.2021
+    - LinuxVST synths: Replaced songfile midistate with customData state block. (Tim)
+      Uses compressed base64 just like several of our other areas.
+      Old songs with midistate still load and are converted upon saving.
 15.02.2021
     *** MusE 4.0pre3 *** 
     - Fix: Consistent sorting and terminology of all Functions menus. (kybos)

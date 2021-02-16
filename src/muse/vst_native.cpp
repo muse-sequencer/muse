@@ -925,6 +925,71 @@ bool VstNativeSynth::resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h
 }
 
 //---------------------------------------------------------
+//   vstconfWrite
+//---------------------------------------------------------
+
+void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml)
+{
+   if(hasChunks())
+   {
+      //---------------------------------------------
+      // dump current state of synth
+      //---------------------------------------------
+      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
+              name.toLatin1().constData(), vstVersion());
+      unsigned long len = 0;
+      void* p = 0;
+      len = plugin->dispatcher(plugin, 23 /* effGetChunk */, 0, 0, &p, 0.0);
+
+      if (len)
+      {
+         QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
+
+         // Weee! Compression!
+         QByteArray outEnc64 = qCompress(arrOut).toBase64();
+         
+         QString customData(outEnc64);
+         for (int pos=0; pos < customData.size(); pos+=150)
+         {
+            customData.insert(pos++,'\n'); // add newlines for readability
+         }
+         xml.strTag(level, "customData", customData);
+      }
+   }
+}
+
+//---------------------------------------------------------
+//   vstconfSet
+//---------------------------------------------------------
+
+void VstNativeSynth::vstconfSet(AEffect *plugin, const std::vector<QString> &customParams)
+{
+   if(customParams.size() == 0)
+      return;
+
+   if(!hasChunks())
+   {
+      return;
+   }
+
+   for(size_t i = 0; i < customParams.size(); i++)
+   {
+      QString param = customParams [i];
+      param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
+      QByteArray paramIn;
+      paramIn.append(param.toUtf8());
+      // Try to uncompress the data.
+      QByteArray dec64 = qUncompress(QByteArray::fromBase64(paramIn));
+      // Failed? Try uncompressed.
+      if(dec64.isEmpty())
+        dec64 = QByteArray::fromBase64(paramIn);
+      
+      plugin->dispatcher(plugin, 24 /* effSetChunk */, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
+      break; //one customData tag includes all data in base64
+   }
+}
+
+//---------------------------------------------------------
 //   hostCallback
 //---------------------------------------------------------
 
@@ -2084,39 +2149,7 @@ int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned
 void VstNativeSynthIF::write(int level, Xml& xml) const
 {
 //#ifndef VST_VESTIGE_SUPPORT
-  if(_synth->hasChunks())
-  {
-    //---------------------------------------------
-    // dump current state of synth
-    //---------------------------------------------
-    fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n", name().toLatin1().constData(), _synth->vstVersion());
-    unsigned long len = 0;
-    void* p = 0;
-    len = dispatch(23 /* effGetChunk */, 0, 0, &p, 0.0); // index 0: is bank 1: is program
-    if (len)
-    {
-      xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);
-      xml.nput(level++, "<event type=\"%d\"", Sysex);
-      // 10 = 2 bytes header + "VSTSAVE" + 1 byte flags (compression etc)
-      xml.nput(" datalen=\"%d\">\n", len+10);
-      xml.nput(level, "");
-      xml.nput("%02x %02x ", (char)MUSE_SYNTH_SYSEX_MFG_ID, (char)VST_NATIVE_SYNTH_UNIQUE_ID); // Wrap in a proper header
-      xml.nput("56 53 54 53 41 56 45 "); // embed a save marker "string 'VSTSAVE'
-      xml.nput("%02x ", (char)0); // No flags yet, only uncompressed supported for now. TODO
-      for (unsigned long int i = 0; i < len; ++i)
-      {
-        if (i && (((i+10) % 16) == 0))
-        {
-          xml.nput("\n");
-          xml.nput(level, "");
-        }
-        xml.nput("%02x ", ((char*)(p))[i] & 0xff);
-      }
-      xml.nput("\n");
-      xml.tag(level--, "/event");
-      xml.etag(level--, "midistate");
-    }
-  }
+  _synth->vstconfWrite(_plugin, name(), level, xml);
 //#else
 //  fprintf(stderr, "support for vst chunks not compiled in!\n");
 //#endif
@@ -2128,6 +2161,15 @@ void VstNativeSynthIF::write(int level, Xml& xml) const
   int params = _plugin->numParams;
   for (int i = 0; i < params; ++i)
     xml.doubleTag(level, "param", _plugin->getParameter(_plugin, i));
+}
+
+//---------------------------------------------------------
+//   setCustomData
+//---------------------------------------------------------
+
+void VstNativeSynthIF::setCustomData(const std::vector< QString > &customParams)
+{
+  _synth->vstconfSet(_plugin, customParams);
 }
 
 //---------------------------------------------------------
@@ -2457,6 +2499,11 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
               //if(e.len() >= 9)
               if(e.len() >= 10)
               {
+
+                //---------------------------------------------------------------------
+                // NOTICE: Obsolete. Replaced by customData block. Keep for old songs!
+                //         We should never arrive here with a newer song now.
+                //---------------------------------------------------------------------
                 if (QString((const char*)(data + 2)).startsWith("VSTSAVE"))
                 {
                   if(_synth->hasChunks())
@@ -2482,83 +2529,10 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
             }
           }
         }
-
-        // DELETETHIS, 50 clean it up or fix it?
-        /*
-        // p3.3.39 Read the state of current bank and program and all input control values.
-        // TODO: Needs to be better. See write().
-        //else
-        if (QString((const char*)e.data()).startsWith("PARAMSAVE"))
-        {
-          #ifdef VST_NATIVE_DEBUG
-          fprintf(stderr, "VstNativeSynthIF::processEvent midi event is ME_SYSEX PARAMSAVE\n");
-          #endif
-
-          unsigned long dlen = e.len() - 9; // Minus "PARAMSAVE"
-          if(dlen > 0)
-          {
-            //if(dlen < 2 * sizeof(unsigned long))
-            if(dlen < (2 + 2 * sizeof(unsigned long))) // Version major and minor bytes, bank and program.
-              fprintf(stderr, "VstNativeSynthIF::processEvent Error: PARAMSAVE data length does not include at least version major and minor, bank and program!\n");
-            else
-            {
-              // Not required, yet.
-              //char vmaj = *((char*)(e.data() + 9));  // After "PARAMSAVE"
-              //char vmin = *((char*)(e.data() + 10));
-
-              unsigned long* const ulp = (unsigned long*)(e.data() + 11);  // After "PARAMSAVE" + version major and minor.
-              // TODO: TODO: Set plugin bank and program.
-              _curBank = ulp[0];
-              _curProgram = ulp[1];
-
-              dlen -= (2 + 2 * sizeof(unsigned long)); // After the version major and minor, bank and program.
-
-              if(dlen > 0)
-              {
-                if((dlen % sizeof(float)) != 0)
-                  fprintf(stderr, "VstNativeSynthIF::processEvent Error: PARAMSAVE float data length not integral multiple of float size!\n");
-                else
-                {
-                  const unsigned long n = dlen / sizeof(float);
-                  if(n != synth->_controlInPorts)
-                    fprintf(stderr, "VstNativeSynthIF::processEvent Warning: PARAMSAVE number of floats:%lu != number of controls:%lu\n", n, synth->_controlInPorts);
-
-                  // Point to location after "PARAMSAVE", version major and minor, bank and progam.
-                  float* const fp = (float*)(e.data() + 9 + 2 + 2 * sizeof(unsigned long));
-
-                  for(unsigned long i = 0; i < synth->_controlInPorts && i < n; ++i)
-                  {
-                    const float v = fp[i];
-                    controls[i].val = v;
-                  }
-                }
-              }
-            }
-          }
-          // Event not filled.
-          return false;
-        }
-        */
         //else
         {
           // FIXME TODO: Sysex support.
           return false;
-
-          //int len = e.len();
-          //char ca[len + 2];
-          //ca[0] = 0xF0;      // FIXME Stack overflow with big dumps. Use std::vector<char> or something else.
-          //memcpy(ca + 1, (const char*)e.data(), len);
-          //ca[len + 1] = 0xF7;
-          //len += 2;
-
-          // NOTE: There is a limit on the size of a sysex. Got this:
-          // "VstNativeSynthIF::processEvent midi event is ME_SYSEX"
-          // "WARNING: MIDI event of type ? decoded to 367 bytes, discarding"
-          // That might be ALSA doing that.
-//           snd_seq_ev_clear(event);
-//           event->queue = SND_SEQ_QUEUE_DIRECT;
-//           snd_seq_ev_set_sysex(event, len,
-//             (unsigned char*)ca);
         }
       }
     break;
@@ -3539,59 +3513,13 @@ bool VstNativePluginWrapper::nativeGuiVisible(const PluginI *p) const
 void VstNativePluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
-   if(_synth->hasChunks())
-   {
-      //---------------------------------------------
-      // dump current state of synth
-      //---------------------------------------------
-      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n", name().toLatin1().constData(), _synth->vstVersion());
-      unsigned long len = 0;
-      void* p = 0;
-      len = dispatch(state, 23 /* effGetChunk */, 0, 0, &p, 0.0); // index 0: is bank 1: is program
-      if (len)
-      {
-         QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
-
-         // Weee! Compression!
-         QByteArray outEnc64 = qCompress(arrOut).toBase64();
-         
-         QString customData(outEnc64);
-         for (int pos=0; pos < customData.size(); pos+=150)
-         {
-            customData.insert(pos++,'\n'); // add newlines for readability
-         }
-         xml.strTag(level, "customData", customData);
-      }
-
-   }
+   _synth->vstconfWrite(state->plugin, name(), level, xml); // index 0: is bank 1: is program
 }
 
 void VstNativePluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
 {
-   if(customParams.size() == 0)
-      return;
-
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
-   if(!_synth->hasChunks())
-   {
-      return;
-   }
-
-   for(size_t i = 0; i < customParams.size(); i++)
-   {
-      QString param = customParams [i];
-      param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
-      QByteArray paramIn;
-      paramIn.append(param.toUtf8());
-      // Try to uncompress the data.
-      QByteArray dec64 = qUncompress(QByteArray::fromBase64(paramIn));
-      // Failed? Try uncompressed.
-      if(dec64.isEmpty())
-        dec64 = QByteArray::fromBase64(paramIn);
-      
-      dispatch(state, 24 /* effSetChunk */, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
-      break; //one customData tag includes all data in base64
-   }
+  _synth->vstconfSet(state->plugin, customParams);
 }
 
 void VstNativePluginWrapper_State::heartBeat()

@@ -76,6 +76,10 @@ typedef intptr_t VstIntPtr;
 
 #include <semaphore.h>
 
+#include <vector>
+#include <QString>
+#include <QFileInfo>
+
 #endif // VST_NATIVE_SUPPORT
 
 namespace MusEGui {
@@ -160,6 +164,8 @@ class VstNativeSynth : public Synth {
       static void guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
       static bool resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h);
 
+      void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
+      void vstconfSet(AEffect *plugin, const std::vector<QString> & customParams);
       };
 
 //---------------------------------------------------------
@@ -275,6 +281,7 @@ class VstNativeSynthIF : public SynthIF
       LADSPA_PortRangeHint rangeOut(unsigned long i);
       CtrlValueType ctrlValueType(unsigned long i) const;
       CtrlList::Mode ctrlMode(unsigned long i) const;
+      void setCustomData ( const std::vector<QString> & );
       };
 
 class VstNativePluginWrapper_State : public QObject
