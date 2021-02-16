@@ -109,7 +109,7 @@ jobs:
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
       run: |
-        REPO_PATH=$GITHUB_WORKSPACE/muse3     
+        REPO_PATH=$GITHUB_WORKSPACE/src     
         cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=/usr -DMODULES_BUILD_STATIC=ON
         
     - name: Build
