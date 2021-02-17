@@ -1,4 +1,7 @@
-muse3/build
 *~
-muse3/*.kdev4
-muse3/CMakeLists.txt.user
+src/build*
+src/*.kdev4
+src/CMakeLists.txt.user
+build*
+*.code-workspace
+src/*.code-workspace
