@@ -233,7 +233,7 @@ void Scripts::populateScriptMenu(QMenu* menuScripts)
         menuScripts->addSeparator();
     }
 
-    QAction* refreshScriptsAction = menuScripts->addAction(tr("Reload script names from disc"));
+    QAction* refreshScriptsAction = menuScripts->addAction(tr("Reload Script Names from Disc"));
     refreshScriptsAction->setIcon(*MusEGui::fileopenSVGIcon);
     connect(refreshScriptsAction, &QAction::triggered, [this, menuScripts]() { populateScriptMenu(menuScripts); } );
 

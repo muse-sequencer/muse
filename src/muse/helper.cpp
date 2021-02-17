@@ -1720,7 +1720,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       // Don't allow editing instrument if it's a synth
       if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
       {
-        stext = QWidget::tr("Edit instrument ...");
+        stext = QWidget::tr("Edit Instrument...");
 // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
 #if QT_VERSION >= 0x050b00
         fmw = menu->fontMetrics().horizontalAdvance(stext);
@@ -1729,7 +1729,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
 #endif
         if(fmw > est_width)
           est_width = fmw;
-        menu->addAction(QIcon(*midi_edit_instrumentIcon), QWidget::tr("Edit instrument ..."))->setData(edit_ins);
+        menu->addAction(QIcon(*midi_edit_instrumentIcon), QWidget::tr("Edit Instrument..."))->setData(edit_ins);
         menu->addSeparator();
       }
       

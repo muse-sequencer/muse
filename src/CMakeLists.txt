@@ -139,9 +139,6 @@ if (GIT_FOUND)
         EXEC_PROGRAM( ${GIT_EXECUTABLE}
             ARGS "log -1 --format='%ci'"
             OUTPUT_VARIABLE MusE_GITDATE )
-#        EXEC_PROGRAM( ${GIT_EXECUTABLE}
-#            ARGS "log -1 --format='%t'"
-#            OUTPUT_VARIABLE MusE_GITHASH )
         EXEC_PROGRAM( ${GIT_EXECUTABLE}
             ARGS "rev-parse --abbrev-ref HEAD"
             OUTPUT_VARIABLE MusE_GITBRANCH )
@@ -149,7 +146,6 @@ if (GIT_FOUND)
             ARGS "describe --dirty --always"
             OUTPUT_VARIABLE MusE_GITDESCRIBE )
         SET(MusE_GITSTRING "${MusE_GITBRANCH} | ${MusE_GITDESCRIBE} | ${MusE_GITDATE}")
-#        SET(MusE_GITSTRING "git: ${MusE_GITBRANCH} - ${MusE_GITHASH} - ${MusE_GITDATE}")
     else (IS_GIT_REPO EQUAL 0)
         SET(MusE_GITSTRING "")
     endif (IS_GIT_REPO EQUAL 0)
@@ -158,7 +154,7 @@ else (GIT_FOUND)
 endif (GIT_FOUND)
 
 
-option ( ENABLE_RTAUDIO     "Multi platform rtaudio audio compatibility fallback" ON)
+option ( ENABLE_RTAUDIO      "Multi platform rtaudio audio compatibility fallback" ON)
 option ( ENABLE_ALSA         "Enable Advanced Linux Sound Architecture (ALSA)" ON)
 option ( ENABLE_LASH         "Enable LASH Audio Session Handler (or LADISH compatibility layer)"     ON)
 option ( ENABLE_LRDF         "Enable LADSPA RDF (lrdf) Provides extra info for LADSPA plugins"  ON)

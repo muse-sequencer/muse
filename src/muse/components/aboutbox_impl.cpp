@@ -43,35 +43,39 @@ AboutBoxImpl::AboutBoxImpl()
   QString version(VERSION);
   QString gitstring(GITSTRING);
 
-  versionLabel->setText("Version: " + version + (gitstring.isEmpty() ? "" : "\ngit: " + gitstring));
+  QString verStr("Version: " + version);
+  if (!gitstring.isEmpty())
+      verStr += "\ngit: " + gitstring;
+  else if (!qEnvironmentVariableIsEmpty("APPDIR"))
+      verStr += "\nAppImage";
 
-  QString systemInfo="";
+  versionLabel->setText(verStr);
+
+/* System info tab */
+  internalDebugInformation->append("\n*** Build info ***");
+
+  if (!gitstring.isEmpty()) {
+      QStringList sl = gitstring.split(" | ");
+      internalDebugInformation->append(QString("Branch:\t\t%1").arg(sl.at(0)));
+      internalDebugInformation->append(QString("Tag:\t\t%1").arg(sl.at(1)));
+      internalDebugInformation->append(QString("Commit timestamp:\t%1").arg(sl.at(2)));
+  }
 
 #ifdef LV2_SUPPORT
-  systemInfo.append("\t\tLV2 support enabled.\n");
+  internalDebugInformation->append("LV2 support:\t\tEnabled");
 #endif
 #ifdef DSSI_SUPPORT
-  systemInfo.append("\t\tDSSI support enabled.\n");
+  internalDebugInformation->append("DSSI support:\t\tEnabled");
 #endif
 #ifdef VST_NATIVE_SUPPORT
   #ifdef VST_VESTIGE_SUPPORT
-    systemInfo.append("\t\tNative VST support enabled using VESTIGE compatibility header.\n");
+    internalDebugInformation->append("Native VST support:\tEnabled (using VESTIGE compatibility layer)");
   #else
-    systemInfo.append("\t\tNative VST support enabled using Steinberg VSTSDK.\n");
+    internalDebugInformation->append("Native VST support:\tEnabled (using Steinberg VSTSDK)");
   #endif
 #endif
 
-    if (!gitstring.isEmpty()) {
-        QStringList sl = gitstring.split(" | ");
-        internalDebugInformation->append("GIT");
-        internalDebugInformation->append(QString("Branch:\t\t%1").arg(sl.at(0)));
-        internalDebugInformation->append(QString("Tag:\t\t%1").arg(sl.at(1)));
-        internalDebugInformation->append(QString("Commit timestamp:\t%1").arg(sl.at(2)));
-    }
-
-    internalDebugInformation->append("\nBuild info");
-    internalDebugInformation->append(systemInfo);
-    internalDebugInformation->append("Runtime information\n");
+    internalDebugInformation->append("\n*** Runtime information ***");
     internalDebugInformation->append(QString("Running audio driver:\t%1").arg(MusEGlobal::audioDevice->driverName()));
 
 #ifdef HAVE_RTAUDIO
@@ -79,19 +83,19 @@ AboutBoxImpl::AboutBoxImpl()
       internalDebugInformation->append(QString("RT audio driver:\t%1").arg(((MusECore::RtAudioDevice*)MusEGlobal::audioDevice)->driverBackendName()));
     }
 #endif
-    internalDebugInformation->append(QString("Sample rate\t\t%1").arg(MusEGlobal::sampleRate));
-    internalDebugInformation->append(QString("Segment size\t\t%1").arg(MusEGlobal::segmentSize));
-    internalDebugInformation->append(QString("Segment count\t%1").arg(MusEGlobal::segmentCount));
+    internalDebugInformation->append(QString("Sample rate:\t\t%1").arg(MusEGlobal::sampleRate));
+    internalDebugInformation->append(QString("Segment size:\t%1").arg(MusEGlobal::segmentSize));
+    internalDebugInformation->append(QString("Segment count:\t%1").arg(MusEGlobal::segmentCount));
 
-    internalDebugInformation->append("\nTimer");
+    internalDebugInformation->append("\n*** Timer ***");
     if ((MusEGlobal::midiSeq)) {
-        internalDebugInformation->append(QString("Name\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerName()));
-        internalDebugInformation->append(QString("Freq\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerFreq()));
+        internalDebugInformation->append(QString("Type:\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerName()));
+        internalDebugInformation->append(QString("Frequency:\t\t%1").arg(MusEGlobal::midiSeq->getTimer()->getTimerFreq()));
     } else {
-        internalDebugInformation->append("no timer information available as midiSeq is not instantiated");
+        internalDebugInformation->append("No timer information available as midiSeq is not instantiated.");
     }
 
-    internalDebugInformation->append("\nMiscellaneous");
+    internalDebugInformation->append("\n*** Miscellaneous ***");
     internalDebugInformation->append(QString("debugMode:\t\t%1").arg(MusEGlobal::debugMode?"true":"false"));
     internalDebugInformation->append(QString("midInputTrace:\t%1").arg(MusEGlobal::midiInputTrace?"true":"false"));
     internalDebugInformation->append(QString("midiOutputTrace:\t%1").arg(MusEGlobal::midiOutputTrace?"true":"false"));

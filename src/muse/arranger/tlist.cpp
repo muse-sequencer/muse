@@ -2044,7 +2044,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 bool synthHeaderDone = false;
 
                 p->addAction(new MusEGui::MenuTitleItem(tr("Automation Display"), p));
-                act = p->addAction(tr("Show All with Events"));
+                act = p->addAction(*dummySVGIcon, tr("Show All with Events"));
                 act->setData(AUTO_SHOW_ALL);
                 act = p->addAction(tr("Hide All"));
                 act->setData(AUTO_HIDE_ALL);
@@ -2376,7 +2376,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     a = p->addAction(tr("Move Selected to Top"));
                     a->setData(1008);
                     a->setShortcut(shortcuts[SHRT_MOVETOP_TRACK].key);
-                    a = p->addAction(tr("Move Selected to Bottom"));
+                    a = p->addAction(*dummySVGIcon, tr("Move Selected to Bottom"));
                     a->setData(1009);
                     a->setShortcut(shortcuts[SHRT_MOVEBOTTOM_TRACK].key);
                 }

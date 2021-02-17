@@ -353,7 +353,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
               [this](int id) { execUserScript(id); } );
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
+      settingsMenu->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
 
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(fullscreenAction);

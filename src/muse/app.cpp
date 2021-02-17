@@ -598,8 +598,8 @@ MusE::MusE() : QMainWindow()
 
       fileCloseAction = new QAction(*MusEGui::filecloseSVGIcon, tr("&Close"), this);
       
-      fileImportMidiAction = new QAction(tr("Import Midifile..."), this);
-      fileExportMidiAction = new QAction(tr("Export Midifile..."), this);
+      fileImportMidiAction = new QAction(tr("Import Midi File..."), this);
+      fileExportMidiAction = new QAction(tr("Export Midi File..."), this);
       fileImportPartAction = new QAction(tr("Import Part..."), this);
 
       fileImportWaveAction = new QAction(tr("Import Audio File..."), this);
@@ -696,14 +696,14 @@ MusE::MusE() : QMainWindow()
       settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports/Soft Synths..."), this);
 
       //-------- Help Actions
-      helpManualAction = new QAction(tr("&Manual (wiki)..."), this);
+      helpManualAction = new QAction(tr("&Manual (Wiki)..."), this);
       helpHomepageAction = new QAction(tr("MusE &Homepage..."), this);
       helpDidYouKnow = new QAction(tr("&Did You Know?"), this);
 
       helpReportAction = new QAction(tr("&Report Bug..."), this);
       helpAboutAction = new QAction(tr("&About MusE..."), this);
 
-      helpSnooperAction = new QAction(tr("Snooper (developer tool)..."), this);
+      helpSnooperAction = new QAction(tr("Snooper (Developer Tool)..."), this);
 
       //---- Connections
       //-------- File connections

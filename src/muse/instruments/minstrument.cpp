@@ -1152,7 +1152,7 @@ void MidiInstrument::populateInstrPopup(MusEGui::PopupMenu* menu, int port, bool
       const MidiInstrument* dev_synth_instr = nullptr;
       QAction* act;
 
-      act = menu->addAction(QIcon(*MusEGui::midi_edit_instrumentIcon), QWidget::tr("Edit instrument ..."));
+      act = menu->addAction(QIcon(*MusEGui::midi_edit_instrumentIcon), QWidget::tr("Edit Instrument..."));
       act->setData(100);
       menu->addSeparator();
 

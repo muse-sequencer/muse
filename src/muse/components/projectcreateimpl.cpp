@@ -83,7 +83,7 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   connect(projectFileTypeCB,SIGNAL(currentIndexChanged(int)), this, SLOT(updateDirectoryPath()));
   connect(buttonBox, SIGNAL(accepted()), this, SLOT(ok()));
   projectNameEdit->setPlaceholderText("<Project Name>");
-  commentEdit->setPlaceholderText("<Add information about project here>");
+  commentEdit->setPlaceholderText("<Add information about your project here>");
   updateDirectoryPath();
   projectNameEdit->setFocus();
   show();

@@ -73,7 +73,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>7</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -1166,8 +1166,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>571</width>
-            <height>547</height>
+            <width>565</width>
+            <height>553</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1955,8 +1955,8 @@ Turn off to reduce clutter.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>545</width>
-               <height>494</height>
+               <width>543</width>
+               <height>512</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout">

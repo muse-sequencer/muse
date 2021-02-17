@@ -931,7 +931,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       act_split->setData(OP_SPLIT);
       QAction *act_glue = partPopup->addAction(*glueIconSVG, tr("Glue"));
       act_glue->setData(OP_GLUE);
-      QAction *act_superglue = partPopup->addAction(*glueIconSVG, tr("Super glue (merge selection)"));
+      QAction *act_superglue = partPopup->addAction(*glueIconSVG, tr("Super Glue (Merge Selection)"));
       act_superglue->setData(OP_GLUESELECTION);
       QAction *act_declone = partPopup->addAction(tr("De-clone"));
       act_declone->setData(OP_DECLONE);
@@ -942,23 +942,23 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startPianoEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
-                  QAction *act_mexport = partPopup->addAction(tr("Save part to disk..."));
+                  QAction *act_mexport = partPopup->addAction(tr("Save Part to Disk..."));
                   act_mexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
             case MusECore::Track::DRUM: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
-                  QAction *act_dexport = partPopup->addAction(tr("Save part to disk..."));
+                  QAction *act_dexport = partPopup->addAction(tr("Save Part to Disk..."));
                   act_dexport->setData(OP_SAVEPARTTODISK);
                   }
                   break;
             case MusECore::Track::WAVE: {
-                  QAction *act_wedit = partPopup->addAction(*waveeditorSVGIcon, tr("Wave edit..."));
+                  QAction *act_wedit = partPopup->addAction(*waveeditorSVGIcon, tr("Wave Edit..."));
                   act_wedit->setData(OP_WAVEEDIT);
-                  QAction *act_wexport = partPopup->addAction(tr("Save part to disk..."));
+                  QAction *act_wexport = partPopup->addAction(tr("Save Part to Disk..."));
                   act_wexport->setData(OP_SAVEPARTTODISK);
-                  QAction *act_wfinfo = partPopup->addAction(tr("File info..."));
+                  QAction *act_wfinfo = partPopup->addAction(tr("File Info..."));
                   act_wfinfo->setData(OP_FILEINFO);
                   QAction *act_wfnorm = partPopup->addAction(tr("Normalize"));
                   act_wfnorm->setData(OP_NORMALIZE);

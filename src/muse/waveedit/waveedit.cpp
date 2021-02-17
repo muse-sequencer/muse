@@ -219,10 +219,10 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       act = menuFunctions->addAction(tr("Normalize Selection"));
       connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_NORMALIZE); } );
       
-      act = menuFunctions->addAction(tr("Fade In Selection"));
+      act = menuFunctions->addAction(tr("Fade-in Selection"));
       connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_FADE_IN); } );
       
-      act = menuFunctions->addAction(tr("Fade Out Selection"));
+      act = menuFunctions->addAction(tr("Fade-out Selection"));
       connect(act, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_FADE_OUT); } );
       
       act = menuFunctions->addAction(tr("Reverse Selection"));
@@ -230,7 +230,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
+      settingsMenu->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
 
       settingsMenu->addAction(subwinAction);
 //      settingsMenu->addAction(shareAction);
@@ -243,7 +243,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       QActionGroup* actgrp = new QActionGroup(this);
       actgrp->setExclusive(true);
       
-      evColorNormalAction = actgrp->addAction(tr("&Part colors"));
+      evColorNormalAction = actgrp->addAction(tr("&Part Colors"));
       evColorNormalAction->setCheckable(true);
       connect(evColorNormalAction, &QAction::triggered, [this]() { eventColorModeChanged(0); } );
       

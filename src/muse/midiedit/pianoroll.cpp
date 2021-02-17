@@ -286,7 +286,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
               [this](int id) { execUserScript(id); } );
 
       menuConfig = menuBar()->addMenu(tr("&Display"));
-      menuConfig->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
+      menuConfig->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
 
       menuConfig->addAction(subwinAction);
 //      menuConfig->addAction(shareAction);
@@ -303,11 +303,11 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       evColorBlueAction->setCheckable(true);
       connect(evColorBlueAction, &QAction::triggered, [this]() { eventColorModeChanged(MidiEventColorMode::blueEvents); } );
       
-      evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
+      evColorPitchAction = actgrp->addAction(tr("&Pitch Colors"));
       evColorPitchAction->setCheckable(true);
       connect(evColorPitchAction, &QAction::triggered, [this]() { eventColorModeChanged(MidiEventColorMode::pitchColorEvents); } );
       
-      evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
+      evColorVelAction = actgrp->addAction(tr("&Velocity Colors"));
       evColorVelAction->setCheckable(true);
       connect(evColorVelAction, &QAction::triggered, [this]() { eventColorModeChanged(MidiEventColorMode::velocityColorEvents); } );
       

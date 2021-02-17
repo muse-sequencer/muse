@@ -78,11 +78,11 @@ const QVector<ToolB> EditToolBar::toolList = {
     {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Draw"),
         QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Drawing tool")
     },
-    {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Mute parts"),
+    {&mutePartsIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Mute Parts"),
         QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Muting tool:\n"
                                                   "Click on part to mute/unmute")
     },
-    {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Edit automation"),
+    {&drawIconSVG,    QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Edit Automation"),
         QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Manipulate automation")
     },
     {&cursorIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Cursor"),
@@ -95,7 +95,7 @@ const QVector<ToolB> EditToolBar::toolList = {
     {&audioStretchIconSVG,  QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Stretch"),
         QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Stretch tool")
     },
-    {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample rate"),
+    {&audioResampleIconSVG, QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Sample Rate"),
         QT_TRANSLATE_NOOP("MusEGui::EditToolBar", "Select Sample rate tool")
     }
 };

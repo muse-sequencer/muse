@@ -165,7 +165,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
 
       //---------Pulldown Menu----------------------------
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Display"));
-      settingsMenu->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
+      settingsMenu->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
       settingsMenu->addAction(subwinAction);
 //      settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);

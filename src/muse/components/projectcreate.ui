@@ -204,7 +204,7 @@
    <item row="7" column="0">
     <widget class="QPlainTextEdit" name="commentEdit">
      <property name="toolTip">
-      <string>Add information about the song. It will be displayed when the song is opened.</string>
+      <string>Description will be displayed when project is opened</string>
      </property>
     </widget>
    </item>

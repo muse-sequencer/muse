@@ -141,7 +141,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editMoveUpSelTrackAction = new QAction(tr("Move Selected Up"), this);
   editMoveDownSelTrackAction = new QAction(tr("Move Selected Down"), this);
   editMoveTopSelTrackAction = new QAction(tr("Move Selected to Top"), this);
-  editMoveBottomSelTrackAction = new QAction(tr("Move Selected to Bottom"), this);
+  editMoveBottomSelTrackAction = new QAction(*dummySVGIcon, tr("Move Selected to Bottom"), this);
 
   editShrinkPartsAction = new QAction(tr("Shrink Selected Parts to Events Length"), this);
   editExpandPartsAction = new QAction(tr("Expand Selected Parts to Events Length"), this);
@@ -283,7 +283,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   QAction* func_cresc_action =        functions_menu->addAction(tr("Crescendo/Decrescendo"));
   QAction* func_move_action =         functions_menu->addAction(tr("Move Events in Parts"));
   QAction* func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlapping Events"));
-  QAction* func_erase_action =        functions_menu->addAction(tr("Erase Events From Parts"));
+  QAction* func_erase_action =        functions_menu->addAction(tr("Erase Events from Parts"));
 
   functions_menu->addSeparator();
 
@@ -324,7 +324,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
   QMenu* menuSettings = menuBar()->addMenu(tr("&Display"));
-  menuSettings->menuAction()->setStatusTip(tr("Display menu: View-specific display options."));
+  menuSettings->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
   menuSettings->addAction(*mixerSVGIcon, tr("Toggle &Mixer Strip"), this, SLOT(toggleMixerStrip()),
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
