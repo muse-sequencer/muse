@@ -43,6 +43,8 @@ add_library ( liste ${MODULES_BUILD}
       ${liste_mocs}
       )
 
+add_dependencies(liste components)
+
 ##
 ## Append to the list of translations
 ##
