@@ -30,6 +30,84 @@
        <string>Arranger</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="ButtonGroup3">
+         <property name="title">
+          <string>Parts</string>
+         </property>
+         <layout class="QVBoxLayout">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="leftMargin">
+           <number>11</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>11</number>
+          </property>
+          <property name="bottomMargin">
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="partShowevents">
+            <property name="text">
+             <string>Select e&amp;vents to show:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="partShowCakes">
+            <property name="text">
+             <string>Show Ca&amp;kewalk style</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Maximum</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>30</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="partCakeStretch">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>y-stretch</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="partShownames">
+            <property name="text">
+             <string>Show part names</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="0" column="1" rowspan="2">
         <widget class="QGroupBox" name="eventButtonGroup">
          <property name="title">
@@ -103,7 +181,7 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
+       <item row="4" column="0" colspan="2">
         <widget class="QGroupBox" name="GroupBox2">
          <property name="title">
           <string>Background picture</string>
@@ -158,10 +236,40 @@
          </layout>
         </widget>
        </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Grid</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QCheckBox" name="gridAlwaysShowH">
+            <property name="text">
+             <string>Always show horizontal lines</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="arrGrid">
+            <property name="text">
+             <string>Show snap grid</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="gridAlwaysShowBeats">
+            <property name="text">
+             <string>Always show beat lines, even if there are no grid lines there</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="1" column="0">
         <widget class="QGroupBox" name="waveGroupBox">
          <property name="title">
-          <string>Wave Drawing in Parts</string>
+          <string>Wave drawing in parts</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <property name="topMargin">
@@ -189,103 +297,23 @@
          <zorder>radioButtonDrawOutline</zorder>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QCheckBox" name="gridAlwaysShowH">
-         <property name="text">
-          <string>Always show horizontal lines</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="ButtonGroup3">
+       <item row="2" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string>Parts</string>
+          <string>Part colors</string>
          </property>
-         <layout class="QVBoxLayout">
-          <property name="spacing">
-           <number>6</number>
-          </property>
-          <property name="leftMargin">
-           <number>11</number>
-          </property>
-          <property name="topMargin">
-           <number>2</number>
-          </property>
-          <property name="rightMargin">
-           <number>11</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <widget class="QRadioButton" name="partShowevents">
+           <widget class="QCheckBox" name="cbUseTrackColorForParts">
             <property name="text">
-             <string>Show e&amp;vents</string>
+             <string>Use the color of corresponding track type</string>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="partShowCakes">
-            <property name="text">
-             <string>Show Ca&amp;kewalk style</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Maximum</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>30</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="partCakeStretch">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>y-stretch</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="partShownames">
-            <property name="text">
-             <string>Show names</string>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QCheckBox" name="arrGrid">
-         <property name="text">
-          <string>Show snap grid</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <widget class="QCheckBox" name="gridAlwaysShowBeats">
-         <property name="text">
-          <string>Always show beat lines, even if there are no grid lines there</string>
-         </property>
         </widget>
        </item>
       </layout>
@@ -2033,7 +2061,6 @@ The font family is forced to 'Sans', which should
   <tabstop>eventPitchbend</tabstop>
   <tabstop>eventProgramchange</tabstop>
   <tabstop>eventSpecial</tabstop>
-  <tabstop>arrGrid</tabstop>
  </tabstops>
  <resources/>
  <connections>

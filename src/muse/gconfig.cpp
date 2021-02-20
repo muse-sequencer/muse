@@ -328,6 +328,7 @@ GlobalConfigValues config = {
       true,                         // canvasShowGrid;
       false,                        // canvasShowGridHorizontalAlways
       false,                        // canvasShowGridBeatsAlways
+      true,                         // useTrackColorForParts
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
 //      QString(""),                  // default styleSheetFile

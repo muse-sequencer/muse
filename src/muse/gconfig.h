@@ -24,7 +24,8 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define NUM_PARTCOLORS 18
+#define NUM_PARTCOLORS 19
+#define PART_COLOR_VAR 18
 #define NUM_FONTS 7
 
 #include <QColor>
@@ -58,15 +59,6 @@ struct FntFac {
     static constexpr double F5 = 0.8;
     static constexpr double F6 = 0.8;
 };
-
-// Obsolete. There is only 'New' drum tracks now.
-// enum drumTrackPreference_t
-// {
-//   PREFER_OLD = 0,
-//   PREFER_NEW = 1,
-//   ONLY_OLD = 2,
-//   ONLY_NEW = 3
-// };
 
 // Or'd together
 enum ExportPortsDevices_t
@@ -361,6 +353,7 @@ struct GlobalConfigValues {
       bool canvasShowGrid;
       bool canvasShowGridHorizontalAlways;
       bool canvasShowGridBeatsAlways;
+      bool useTrackColorForParts;
       QString canvasBgPixmap;
       QStringList canvasCustomBgList;
 //      QString styleSheetFile;
