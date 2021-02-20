@@ -1733,19 +1733,18 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       
       
 void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames)
-//static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true)
 {
      for (int i = 0; i < 16; ++i) {
             xml.colorTag(level, QString("palette") + QString::number(i), MusEGlobal::config.palette[i]);
             }
 
-      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
+      for (int i = 0; i < NUM_PARTCOLORS-1; ++i) {
             xml.colorTag(level, QString("partColor") + QString::number(i), MusEGlobal::config.partColors[i]);
             }
 
       if(partColorNames)
       {
-        for (int i = 0; i < NUM_PARTCOLORS; ++i) {
+        for (int i = 0; i < NUM_PARTCOLORS-1; ++i) {
               xml.strTag(level, QString("partColorName") + QString::number(i), MusEGlobal::config.partColorNames[i]);
               }
       }

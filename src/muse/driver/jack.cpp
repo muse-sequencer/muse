@@ -1425,7 +1425,7 @@ bool JackAudioDevice::disconnect(void* src, void* dst)
         return false;
       const char* sn = jack_port_name((jack_port_t*) src);
       const char* dn = jack_port_name((jack_port_t*) dst);
-      if (sn == 0 || dn == 0) {
+      if (sn == nullptr || dn == nullptr) {
             fprintf(stderr, "JackAudio::disconnect: unknown jack ports\n");
             return false;
             }

@@ -134,7 +134,7 @@ void Scale::read(Xml& xml)
 Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
       {
       int id = -1;
-      Part* npart = 0;
+      Part* npart = nullptr;
       QUuid uuid;
       bool uuidvalid = false;
       bool clone = true;
@@ -179,7 +179,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                                   if(!track || cpt->type() != track->type())
                                   {
                                     xml.skip("part");
-                                    return 0;
+                                    return nullptr;
                                   }
                                 }
                                 else // ...else we want to paste to the part's original track.
@@ -194,7 +194,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                                     {
                                       // No luck. Just return.
                                       xml.skip("part");
-                                      return 0;
+                                      return nullptr;
                                     }
                                   }
                                 }
@@ -220,7 +220,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                             if(!track) // A clone was not created from any matching
                             {          // part. Create a non-clone part now.
                               xml.skip("part");
-                              return 0;
+                              return nullptr;
                             }
                             // If we're pasting to selected track and the 'wave'
                             //  variable is valid, check for mismatch...
@@ -231,7 +231,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                                 (!wave && track->type() == Track::WAVE))
                               {
                                 xml.skip("part");
-                                return 0;
+                                return nullptr;
                               }
                             }
 
@@ -242,7 +242,7 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                             else
                             {
                               xml.skip("part");
-                              return 0;
+                              return nullptr;
                             }
 
                             // Signify a new non-clone part was created.
@@ -288,8 +288,13 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                               }
                         else if (tag == "selected")
                               npart->setSelected(xml.parseInt());
-                        else if (tag == "color")
-                              npart->setColorIndex(xml.parseInt());
+                        else if (tag == "color") {
+                            int i = xml.parseInt();
+                            if (i >= NUM_PARTCOLORS)
+                                npart->setColorIndex(0);
+                            else
+                                npart->setColorIndex(i);
+                        }
                         else if (tag == "mute")
                               npart->setMute(xml.parseInt());
                         else if (tag == "event")

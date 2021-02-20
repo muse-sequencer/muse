@@ -921,9 +921,15 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            QAction *act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
-            act_color->setData(OP_PARTCOLORBASE+i);
-            }
+          QAction *act_color = nullptr;
+          if (i == PART_COLOR_VAR) {
+              colorPopup->addSeparator();
+              act_color = colorPopup->addAction(tr("Track Color"));
+          } else {
+              act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
+          }
+          act_color->setData(OP_PARTCOLORBASE+i);
+      }
 
       QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("Delete"));
       act_delete->setData(OP_DELETE);
@@ -1922,11 +1928,10 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       int rbx_c = rbx > mrxe_0 ? mrxe_0 : rbx;
 
       QColor partColor;
-//      int cidx = part->colorIndex();
       if (part->colorIndex() == PART_COLOR_VAR)
           partColor = part->track()->color();
       else
-        partColor = MusEGlobal::config.partColors[part->colorIndex()];
+          partColor = MusEGlobal::config.partColors[part->colorIndex()];
 
       if (item->isMoving())
       {
@@ -2214,7 +2219,12 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&, const 
         p.setPen(pen);
         
         MusECore::Part* part = ((NPart*)item)->part();
-        QColor c(part->mute() ? Qt::white : MusEGlobal::config.partColors[part->colorIndex()]);
+        QColor partColor;
+        if (part->colorIndex() == PART_COLOR_VAR)
+            partColor = part->track()->color();
+        else
+            partColor = MusEGlobal::config.partColors[part->colorIndex()];
+        QColor c(part->mute() ? Qt::white : partColor);
         c.setAlpha(128);  // Fix this regardless of config.globalAlphaBlend setting. Should be OK.
         p.setBrush(c);
         MusECore::TrackList* tl = MusEGlobal::song->tracks();

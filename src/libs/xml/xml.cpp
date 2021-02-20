@@ -47,8 +47,8 @@ const int Xml::_latestMinorVersion = 3;   // Latest known songfile minor version
 Xml::Xml(FILE* _f)
       {
       f          = _f;
-      _destStr   = 0;
-      _destIODev = 0;
+      _destStr   = nullptr;
+      _destIODev = nullptr;
       _line      = 0;
       _col       = 0;
       level      = 0;
@@ -62,9 +62,9 @@ Xml::Xml(FILE* _f)
 
 Xml::Xml(const char* buf)
       {
-      f         = 0;
-      _destStr  = 0;
-      _destIODev = 0;
+      f         = nullptr;
+      _destStr  = nullptr;
+      _destIODev = nullptr;
       _line     = 0;
       _col      = 0;
       level     = 0;
@@ -77,8 +77,8 @@ Xml::Xml(const char* buf)
 
 Xml::Xml(QString* s)
       {
-      f         = 0;
-      _destIODev = 0;
+      f         = nullptr;
+      _destIODev = nullptr;
       _line     = 0;
       _col      = 0;
       level     = 0;
@@ -93,8 +93,8 @@ Xml::Xml(QString* s)
 
 Xml::Xml(QIODevice* d)
       {
-      f         = 0;
-      _destStr   = 0;
+      f         = nullptr;
+      _destStr   = nullptr;
       _destIODev = d;
       _line     = 0;
       _col      = 0;
@@ -122,7 +122,7 @@ void Xml::next()
       if (*bufptr == 0) {
         
             if((!f && !_destIODev) ||
-               (f && fgets(lbuffer, 512, f) == 0) ||
+               (f && fgets(lbuffer, 512, f) == nullptr) ||
                (_destIODev && _destIODev->readLine(lbuffer, 512) <= 0))
             {
               c = EOF;
@@ -726,7 +726,7 @@ void Xml::dump(QString &dump)
         fpos_t pos;
         fgetpos(f, &pos);
         rewind(f);
-        while(fgets(lbuffer, 512, f) != 0)
+        while(fgets(lbuffer, 512, f) != nullptr)
             dump.append(lbuffer);
         fsetpos(f, &pos);
       }

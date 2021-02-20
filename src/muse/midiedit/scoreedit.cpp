@@ -530,7 +530,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     score_canvas->goto_tick(initPos,true);
     score_canvas->setFocus();
 
-    if (name!=NULL)
+    if (name!=nullptr)
         set_name(name, false, true);
     else
         init_name();
@@ -1574,8 +1574,8 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
     mouse_inserts_notes=true;
     undo_started=false;
 
-    selected_part=NULL;
-    dragged_event_part=NULL;
+    selected_part=nullptr;
+    dragged_event_part=nullptr;
 
     last_len=384;
     new_len=-1; // will be initialized with new_len_init by ScoreEdit::ScoreEdit();
@@ -1939,8 +1939,9 @@ void ScoreCanvas::init_pixmaps()
         mycolors = new QColor[NUM_MYCOLORS];
 
         mycolors[DEFAULT] = palette().color(QPalette::WindowText);
-        for (int i = 0; i < NUM_PARTCOLORS; i++)
+        for (int i = 0; i < NUM_PARTCOLORS-1; i++)
             mycolors[i] = MusEGlobal::config.partColors[i];
+        mycolors[PART_COLOR_VAR] = MusEGlobal::config.midiTrackBg;
         mycolors[HIGHLIGHTED_PIXMAP] = Qt::red;
         mycolors[SELECTED_PIXMAP] = QColor(255,160,0);
 

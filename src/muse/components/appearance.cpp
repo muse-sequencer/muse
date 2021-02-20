@@ -200,7 +200,7 @@ Appearance::Appearance(QWidget* parent)
       aid = new IdListViewItem(0, itemList, "Arranger");
       id = new IdListViewItem(0, aid, "PartColors");
 
-           for(int i = 0; i < NUM_PARTCOLORS; ++i)
+           for(int i = 0; i < NUM_PARTCOLORS-1; ++i)
              new IdListViewItem(0x600 + i, id, MusEGlobal::config.partColorNames[i]);
            
       id = new IdListViewItem(0, aid, "Track List");
@@ -408,7 +408,7 @@ QColor* Appearance::globalConfigColorFromId(int id) const
   if(id == 0) 
     return nullptr;
     
-  if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
+  if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS-1))
     return &MusEGlobal::config.partColors[id & 0xff];
   else
   {
@@ -1042,7 +1042,7 @@ void Appearance::colorNameEditFinished()
   QString etxt = colorNameLineEdit->text();
   QString txt = item->text(0);
   // We only support part color names, for now.
-  if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
+  if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS-1))
     config->partColorNames[id & 0xff] = etxt;
   if(etxt != txt)
     item->setText(0, etxt);
@@ -1521,7 +1521,7 @@ void Appearance::colorItemSelectionChanged()
       }
             
       bool enle = false;
-      if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS))
+      if(id >= 0x600 && id < (0x600 + NUM_PARTCOLORS-1))
       {
         lastSelectedColorItem = item;
         enle = true;
