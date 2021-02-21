@@ -1939,9 +1939,8 @@ void ScoreCanvas::init_pixmaps()
         mycolors = new QColor[NUM_MYCOLORS];
 
         mycolors[DEFAULT] = palette().color(QPalette::WindowText);
-        for (int i = 0; i < NUM_PARTCOLORS-1; i++)
+        for (int i = 0; i < NUM_PARTCOLORS; i++)
             mycolors[i] = MusEGlobal::config.partColors[i];
-        mycolors[PART_COLOR_VAR] = MusEGlobal::config.midiTrackBg;
         mycolors[HIGHLIGHTED_PIXMAP] = Qt::red;
         mycolors[SELECTED_PIXMAP] = QColor(255,160,0);
 

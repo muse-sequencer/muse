@@ -288,13 +288,8 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                               }
                         else if (tag == "selected")
                               npart->setSelected(xml.parseInt());
-                        else if (tag == "color") {
-                            int i = xml.parseInt();
-                            if (i >= NUM_PARTCOLORS)
-                                npart->setColorIndex(0);
-                            else
-                                npart->setColorIndex(i);
-                        }
+                        else if (tag == "color")
+                               npart->setColorIndex(xml.parseInt());
                         else if (tag == "mute")
                               npart->setMute(xml.parseInt());
                         else if (tag == "event")

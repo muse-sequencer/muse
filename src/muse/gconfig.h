@@ -24,8 +24,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define NUM_PARTCOLORS 19
-#define PART_COLOR_VAR 18
+#define NUM_PARTCOLORS 18
 #define NUM_FONTS 7
 
 #include <QColor>

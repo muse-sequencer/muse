@@ -1738,13 +1738,13 @@ void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames
             xml.colorTag(level, QString("palette") + QString::number(i), MusEGlobal::config.palette[i]);
             }
 
-      for (int i = 0; i < NUM_PARTCOLORS-1; ++i) {
+      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             xml.colorTag(level, QString("partColor") + QString::number(i), MusEGlobal::config.partColors[i]);
             }
 
       if(partColorNames)
       {
-        for (int i = 0; i < NUM_PARTCOLORS-1; ++i) {
+        for (int i = 0; i < NUM_PARTCOLORS; ++i) {
               xml.strTag(level, QString("partColorName") + QString::number(i), MusEGlobal::config.partColorNames[i]);
               }
       }

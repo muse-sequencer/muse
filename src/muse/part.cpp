@@ -526,11 +526,7 @@ Part::Part(Track* t)
       _track      = t;
       _selected   = false;
       _mute       = false;
-
-      if (MusEGlobal::config.useTrackColorForParts)
-          _colorIndex = PART_COLOR_VAR;
-      else
-          _colorIndex = 0;
+      _colorIndex = 0;
       }
 
 Part::~Part()

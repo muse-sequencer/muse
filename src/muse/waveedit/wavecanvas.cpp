@@ -691,7 +691,7 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
                 {
                   default:
                   case 0:
-                    if (curPart->colorIndex() == PART_COLOR_VAR)
+                    if (curPart->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
                         c = curPart->track()->color();
                     else
                         c = MusEGlobal::config.partColors[curPart->colorIndex()];

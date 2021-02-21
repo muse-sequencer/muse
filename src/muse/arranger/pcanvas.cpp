@@ -764,7 +764,10 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
                   return nullptr;
             }
       pa->setName(track->name());
-      pa->setColorIndex(PART_COLOR_VAR);
+      if (MusEGlobal::config.useTrackColorForParts)
+          pa->setColorIndex(0);
+      else
+          pa->setColorIndex(curColorIndex);
       np = new NPart(pa);
       return np;
       }
@@ -828,7 +831,10 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
           {
             new_part->setTick(p->tick());
             new_part->setName(track->name());
-            new_part->setColorIndex(PART_COLOR_VAR);
+            if (MusEGlobal::config.useTrackColorForParts)
+                new_part->setColorIndex(0);
+            else
+                new_part->setColorIndex(curColorIndex);
             delete p;
             npart->setPart(new_part);
             p = new_part;
@@ -922,13 +928,14 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
           QAction *act_color = nullptr;
-          if (i == PART_COLOR_VAR) {
-              colorPopup->addSeparator();
-              act_color = colorPopup->addAction(tr("Track Color"));
-          } else {
+          if (i == 0 && MusEGlobal::config.useTrackColorForParts)
+              act_color = colorPopup->addAction(MusECore::colorRect(npart->track()->color(), 80, 80), tr("Track Color"));
+          else
               act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
-          }
           act_color->setData(OP_PARTCOLORBASE+i);
+
+          if (i == 0)
+              colorPopup->addSeparator();
       }
 
       QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("Delete"));
@@ -1122,18 +1129,16 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    case OP_PARTCOLORBASE ... NUM_PARTCOLORS+20:
    {
       curColorIndex = n - 20;
-      bool selfound = false;
-      //Loop through all parts and set color on selected:
-      for (iCItem i = items.begin(); i != items.end(); i++) {
-         if (i->second->isSelected()) {
-            selfound = true;
-            i->second->part()->setColorIndex(curColorIndex);
-         }
-      }
 
-      // If no items selected, use the one clicked on.
-      if(!selfound)
-         item->part()->setColorIndex(curColorIndex);
+      if (item->isSelected()) {
+          //Loop through all parts and set color on selected:
+          for (const auto& it : items) {
+              if (it.second->isSelected())
+                  it.second->part()->setColorIndex(curColorIndex);
+          }
+      } else {
+          item->part()->setColorIndex(curColorIndex);
+      }
 
       MusEGlobal::song->update(SC_PART_MODIFIED);
       redraw();
@@ -1928,7 +1933,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       int rbx_c = rbx > mrxe_0 ? mrxe_0 : rbx;
 
       QColor partColor;
-      if (part->colorIndex() == PART_COLOR_VAR)
+      if (part->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
           partColor = part->track()->color();
       else
           partColor = MusEGlobal::config.partColors[part->colorIndex()];
@@ -2220,7 +2225,7 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&, const 
         
         MusECore::Part* part = ((NPart*)item)->part();
         QColor partColor;
-        if (part->colorIndex() == PART_COLOR_VAR)
+        if (part->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
             partColor = part->track()->color();
         else
             partColor = MusEGlobal::config.partColors[part->colorIndex()];
@@ -2272,7 +2277,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
   {
     int part_r, part_g, part_b, brightness;
 
-    if (pt->colorIndex() == PART_COLOR_VAR)
+    if (pt->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
         pt->track()->color().getRgb(&part_r, &part_g, &part_b);
     else
         MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
