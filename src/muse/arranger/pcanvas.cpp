@@ -1151,6 +1151,20 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    delete pl;
 }
 
+void PartCanvas::setPartColor(int idx)
+{
+    curColorIndex = idx;
+
+    //Loop through all parts and set color on selected:
+    for (const auto& it : items) {
+        if (it.second->isSelected())
+            it.second->part()->setColorIndex(curColorIndex);
+    }
+
+    MusEGlobal::song->update(SC_PART_MODIFIED);
+    redraw();
+}
+
 //---------------------------------------------------------
 //   viewMousePressEvent
 //---------------------------------------------------------

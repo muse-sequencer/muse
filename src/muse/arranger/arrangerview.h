@@ -45,6 +45,7 @@ namespace MusEGui {
 
 class EditToolBar;
 class VisibleTracks;
+class PartColorToolbar;
 class Arranger;
 class Xml;
 
@@ -73,6 +74,7 @@ private:
 
     EditToolBar* editTools;
     VisibleTracks* visTracks;
+    PartColorToolbar *partColorToolBar;
 
     Arranger* arranger;
 

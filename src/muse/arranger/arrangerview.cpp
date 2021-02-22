@@ -73,6 +73,7 @@
 #include "event_tag_list.h"
 #include "xml.h"
 #include "tools.h"
+#include "partcolortoolbar.h"
 
 namespace MusEGui {
 
@@ -110,6 +111,11 @@ ArrangerView::ArrangerView(QWidget* parent)
   editTools->setObjectName("arrangerTools");
 
   addToolBar(visTracks);
+
+  partColorToolBar = new PartColorToolbar(this);
+  addToolBar(partColorToolBar);
+  connect(partColorToolBar, SIGNAL(partColorTriggered(int)), arranger->getCanvas(), SLOT(setPartColor(int)));
+  connect(MusEGlobal::muse, SIGNAL(configChanged()), partColorToolBar, SLOT(configChanged()));
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
   connect(visTracks, SIGNAL(visibilityChanged()), MusEGlobal::song, SLOT(update()) );
