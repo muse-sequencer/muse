@@ -2382,7 +2382,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 }
 
                 p->addSeparator();
-                a = p->addAction(*listeditSVGIcon, tr("Track Comment"));
+                a = p->addAction(*listeditSVGIcon, tr("Track Comment..."));
                 a->setData(1002);
                 p->addSeparator();
 
