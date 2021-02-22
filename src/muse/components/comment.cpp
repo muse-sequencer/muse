@@ -61,7 +61,7 @@ TrackComment::TrackComment(MusECore::Track* t, QWidget* parent)
       textentry->setText(track->comment());
       textentry->moveCursor(QTextCursor::End);
       connect(textentry, SIGNAL(textChanged()), SLOT(textChanged()));
-      label1->setText(tr("Track Comment:"));
+      label1->setText(tr("Track comment"));
       label2->setText(track->name());
       }
 

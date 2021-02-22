@@ -104,14 +104,14 @@ QString EventCanvas::getCaption() const
 
     QString s;
     if (editor->parts()->size() > 1)
-        s = "<" + curPart->name()
-                + QString("> %1-%2 (%3:%4)")
+        s = curPart->name()
+                + QString(" (%1-%2) [%3:%4]")
                 .arg(bar1+1)
                 .arg(bar2+1)
                 .arg(editor->parts()->index(curPart) + 1)
                 .arg(editor->parts()->size());
     else
-        s = "<" + curPart->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
+        s = curPart->name() + QString(" (%1-%2)").arg(bar1+1).arg(bar2+1);
     return s;
 }
 
