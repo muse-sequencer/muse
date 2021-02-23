@@ -1095,9 +1095,9 @@ void Strip::updateLabelStyleSheet()
 //     label->setWordWrap(false);
 
   QString stxt;
-  QColor c(track->labelColor());
 
   if (label->style3d()) {
+      QColor c(track->labelColor());
       QColor c2(c.lighter());
       c.setAlpha(190);
       c2.setAlpha(190);
@@ -1106,9 +1106,13 @@ void Strip::updateLabelStyleSheet()
                      "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
               .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
   } else {
-      stxt = "QWidget { background-color:" + c.name() + ";";
+      QColor c(track->color());
+      stxt = "* { background-color:" + c.name() + ";";
+//      if (c.lightness() < 170)
+//          stxt += QStringLiteral("color: rgb(255,255,255);");
+//      else
+//          stxt += QStringLiteral("color: rgb(0,0,0);");
   }
-  //stxt += QString("color: rgb(0, 0, 0);");
   stxt += MusECore::font2StyleSheet(fnt) + "}";
   stxt += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
 

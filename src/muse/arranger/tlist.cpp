@@ -331,7 +331,7 @@ void TList::paint(const QRect& r)
         }
         else {
             bg = track->color();
-            if (bg.value() < 200)
+            if (bg.lightness() < 170)
                 p.setPen(Qt::white);
             else
                 p.setPen(Qt::black);

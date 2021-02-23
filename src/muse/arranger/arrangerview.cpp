@@ -245,8 +245,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   QMenu* menuTracks = menuEdit->addMenu(tr("&Tracks"));
   menuTracks->addMenu(addTrack);
   menuTracks->addMenu(insertTrack);
+  menuTracks->addSeparator();
   menuTracks->addAction(editDuplicateSelTrackAction);
   menuTracks->addAction(editDeleteSelectedAction);
+  menuTracks->addSeparator();
   menuTracks->addAction(editMoveUpSelTrackAction);
   menuTracks->addAction(editMoveDownSelTrackAction);
   menuTracks->addAction(editMoveTopSelTrackAction);

@@ -2201,7 +2201,7 @@ bool Track::selectEvents(bool select, unsigned long t0, unsigned long t1)
 //---------------------------------------------------------
 
 void Track::writeProperties(int level, Xml& xml) const
-      {
+{
       xml.strTag(level, "name", _name);
       if (!_comment.isEmpty())
             xml.strTag(level, "comment", _comment);
@@ -2218,7 +2218,9 @@ void Track::writeProperties(int level, Xml& xml) const
             xml.intTag(level, "selected", _selected);
             xml.intTag(level, "selectionOrder", _selectionOrder);
       }
-      }
+      if (m_color.isValid())
+          xml.strTag(level, "color", m_color.name());
+}
 
 //---------------------------------------------------------
 //   Track::readProperties
@@ -2255,6 +2257,11 @@ bool Track::readProperties(Xml& xml, const QString& tag)
             _selected = xml.parseInt();
       else if (tag == "selectionOrder")
             _selectionOrder = xml.parseInt();
+      else if (tag == "color") {
+          QString c = xml.parse1();
+          if (QColor::isValidColor(c))
+              m_color.setNamedColor(c);
+      }
       else
             return true;
       return false;
