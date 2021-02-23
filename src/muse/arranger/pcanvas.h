@@ -223,6 +223,7 @@ class PartCanvas : public Canvas {
       void soloSelectedTracks();
       void volumeSelectedTracks(int);
       void panSelectedTracks(int);
+      void curPartColorIndexChanged(int);
 
       void startEditor(MusECore::PartList*, int);
 
@@ -244,6 +245,7 @@ class PartCanvas : public Canvas {
       void redirKeypress(QKeyEvent* e) { keyPress(e); }
       void controllerChanged(MusECore::Track *t, int CtrlId);
       void setPartColor(int idx);
+      void setCurrentColorIndex(int idx);
 };
 
 } // namespace MusEGui

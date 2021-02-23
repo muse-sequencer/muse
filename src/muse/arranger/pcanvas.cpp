@@ -320,6 +320,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                               deselectAll();
                               part->setSelected(true);
                               np->setSelected(true);
+                              part->setColorIndex(curColorIndex);
                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
                               }
                               break;
@@ -764,10 +765,7 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
                   return nullptr;
             }
       pa->setName(track->name());
-      if (MusEGlobal::config.useTrackColorForParts)
-          pa->setColorIndex(0);
-      else
-          pa->setColorIndex(curColorIndex);
+      pa->setColorIndex(curColorIndex);
       np = new NPart(pa);
       return np;
       }
@@ -831,10 +829,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
           {
             new_part->setTick(p->tick());
             new_part->setName(track->name());
-            if (MusEGlobal::config.useTrackColorForParts)
-                new_part->setColorIndex(0);
-            else
-                new_part->setColorIndex(curColorIndex);
+            new_part->setColorIndex(curColorIndex);
             delete p;
             npart->setPart(new_part);
             p = new_part;
@@ -929,7 +924,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
           QAction *act_color = nullptr;
           if (i == 0 && MusEGlobal::config.useTrackColorForParts)
-              act_color = colorPopup->addAction(MusECore::colorRect(npart->track()->color(), 80, 80), tr("Track Color"));
+              act_color = colorPopup->addAction(*tracktypeSVGIcon, tr("Track Color"));
           else
               act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
           act_color->setData(OP_PARTCOLORBASE+i);
@@ -1140,6 +1135,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
           item->part()->setColorIndex(curColorIndex);
       }
 
+      emit curPartColorIndexChanged(curColorIndex);
       MusEGlobal::song->update(SC_PART_MODIFIED);
       redraw();
       break;
@@ -1163,6 +1159,11 @@ void PartCanvas::setPartColor(int idx)
 
     MusEGlobal::song->update(SC_PART_MODIFIED);
     redraw();
+}
+
+void PartCanvas::setCurrentColorIndex(int idx)
+{
+    curColorIndex = idx;
 }
 
 //---------------------------------------------------------

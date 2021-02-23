@@ -20,9 +20,11 @@ public:
 
 signals:
     void partColorTriggered(int);
+    void partColorIndexChanged(int);
 
 public slots:
     void configChanged();
+    void setCurrentIndex(int idx);
 };
 
 } // namespace MusEGui

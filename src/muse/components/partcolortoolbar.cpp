@@ -14,7 +14,8 @@ PartColorToolbar::PartColorToolbar(QWidget *parent)
 {
     setObjectName("Part color toolbar");
 
-    buttonAction = addAction(tr("Part color"));
+    buttonAction = addAction(tr("Current part color"));
+//    buttonAction->setToolTip(tr("Current part color, used for new parts. Click to set to selected parts."));
     if (MusEGlobal::config.useTrackColorForParts)
         buttonAction->setIcon(*tracktypeSVGIcon);
     else
@@ -31,10 +32,10 @@ PartColorToolbar::PartColorToolbar(QWidget *parent)
     if (tb)
         tb->setPopupMode(QToolButton::MenuButtonPopup);
 
-    buttonAction->setStatusTip(tr("Select current part color from drop-down menu. Click button to set color to selected parts."));
+    buttonAction->setStatusTip(tr("Current part color, used for newly created parts. Select from drop-down menu. Click button to set current color to selected parts."));
 
     connect(colorPopup, &QMenu::triggered, this, &PartColorToolbar::popupActionTriggered);
-    connect(buttonAction, &QAction::triggered, [this](){ emit partColorTriggered(buttonAction->data().toInt()); });
+    connect(buttonAction, &QAction::triggered, this, [this](){ emit partColorTriggered(buttonAction->data().toInt()); });
 }
 
 void PartColorToolbar::popupActionTriggered(QAction *a)
@@ -46,6 +47,8 @@ void PartColorToolbar::popupActionTriggered(QAction *a)
         buttonAction->setIcon(*tracktypeSVGIcon);
     else
         buttonAction->setIcon(MusECore::colorRect(MusEGlobal::config.partColors[a->data().toInt()], 80, 80));
+
+    emit partColorIndexChanged(idx);
 }
 
 void PartColorToolbar::buildMenu()
@@ -69,6 +72,15 @@ void PartColorToolbar::configChanged() {
     buildMenu();
 
     int idx = buttonAction->data().toInt();
+    if (idx == 0 && MusEGlobal::config.useTrackColorForParts)
+        buttonAction->setIcon(*tracktypeSVGIcon);
+    else
+        buttonAction->setIcon(MusECore::colorRect(MusEGlobal::config.partColors[idx], 80, 80));
+}
+
+void PartColorToolbar::setCurrentIndex(int idx) {
+    buttonAction->setData(idx);
+
     if (idx == 0 && MusEGlobal::config.useTrackColorForParts)
         buttonAction->setIcon(*tracktypeSVGIcon);
     else

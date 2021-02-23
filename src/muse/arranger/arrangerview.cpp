@@ -115,6 +115,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   partColorToolBar = new PartColorToolbar(this);
   addToolBar(partColorToolBar);
   connect(partColorToolBar, SIGNAL(partColorTriggered(int)), arranger->getCanvas(), SLOT(setPartColor(int)));
+  connect(partColorToolBar, SIGNAL(partColorIndexChanged(int)), arranger->getCanvas(), SLOT(setCurrentColorIndex(int)));
+  connect(arranger->getCanvas(), SIGNAL(curPartColorIndexChanged(int)), partColorToolBar, SLOT(setCurrentIndex(int)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), partColorToolBar, SLOT(configChanged()));
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
