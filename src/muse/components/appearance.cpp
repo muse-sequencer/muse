@@ -280,7 +280,7 @@ Appearance::Appearance(QWidget* parent)
            new IdListViewItem(0x305, id, "Wave nonselected part");
 
       aid = new IdListViewItem(0, itemList, "Mixer");
-      id = new IdListViewItem(0, aid, "Track labels");
+      id = new IdListViewItem(0, aid, "Track labels (theme-dependent");
 
       new IdListViewItem(0x501, id, "Midi");
       new IdListViewItem(0x502, id, "Drum");

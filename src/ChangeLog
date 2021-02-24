@@ -1,3 +1,10 @@
+24.02.2021
+    - New: Ability to assign custom colors to individual tracks. (kybos)
+    - New: Part colors follow the track color if not overridden individually.
+           Old behaviour can be restored in Appearance->Arranger. (kybos) 
+    - New: Part color toolbar. Drowdown to select current part color,
+            button to assign current color (or track color) to selected parts. (kybos)
+    - Fix: Parts created by double-click in range ignoring current part color. (kybos)
 16.02.2021
     - LinuxVST synths: Replaced songfile midistate with customData state block. (Tim)
       Uses compressed base64 just like several of our other areas.
@@ -24,15 +31,15 @@
 11.02.2021
     - Fixed wrong exclusive indicators (radiobuttons) in some submenus. (kybos)
 08.02.2021
-    - Fix #959: Trim event length function in pianorol not working. (kybos)
+    - Fix #959: Trim event length function in pianoroll not working. (kybos)
     - Fix: Remove unused cutter tool from wave editor. (kybos)
     - Fix: Automation menu icon drawing. (kybos)
     - Fix #960: Wrong zoom level after track type change MIDI->Drum. (kybos)
 02.02.2021
     - Fix: Memory corruption by topwin toolbars. (kybos+rj)
     - Fix: Clean up and encapsulate Edit Tools code. (kybos)
-    - Fix:Dark Flat theme: Improve visibility of checkboxes. (kybos)
-    - Fix #265: Midi device dlg native GUI led not reflecting the state. (kybos)
+    - Fix: Dark Flat theme: Improve visibility of checkboxes. (kybos)
+    - Fix #265: Midi device dlg: Native GUI led not reflecting the display state. (kybos)
 25.01.2021
     *** MusE 4.0pre2 ***     
 23.01.2021

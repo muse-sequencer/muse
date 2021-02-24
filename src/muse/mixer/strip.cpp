@@ -1132,7 +1132,7 @@ void Strip::updateLabelStyleSheet()
   } else {
       QColor c(track->color());
       stxt = "QLabel { background-color:" + c.name() + ";";
-      if (c.lightness() < 170)
+      if (c.lightness() < 64)
           stxt += QStringLiteral("color: white;");
       else
           stxt += QStringLiteral("color: black;");
