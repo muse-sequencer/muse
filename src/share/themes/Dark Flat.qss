@@ -311,10 +311,11 @@ QWidget#MidiStripTabWidget QTabBar::tab {
 }
 
 QWidget#MidiStripTabWidget QTabBar::tab:selected {
-    border-color: rgb(0,120,200);
+    /* border-color: rgb(255, 208, 0); */
+    border-color: rgb(0, 165, 180);
     border-bottom: none;
     /* background-color: rgb(40,40,40); */
-    background-color: rgb(0,90,160);
+    background-color: rgb(0, 100, 109);
     /* color: coral; */
     margin-left: -2px;
     margin-right: -2px;

@@ -89,7 +89,7 @@ class LCDPatchEdit : public QFrame
 
     QColor _readoutColor;
     QColor _bgColor;
-//    QColor _bgActiveColor;
+    QColor _bgActiveColor;
     QColor _borderColor;
 
     bool _style3d;
@@ -178,6 +178,7 @@ class LCDPatchEdit : public QFrame
 
     void setReadoutColor(const QColor& c) { _readoutColor = c; update(); }
     void setBgColor(const QColor& c) { _bgColor = c; update(); }
+    void setBgActiveColor(const QColor& c) { _bgActiveColor = c; update(); }
     void setBorderColor(const QColor& c) { _borderColor = c; update(); }
     void setStyle3d(const bool s) { _style3d = s; }
     void setRadius(const int r) { _radius = r; }

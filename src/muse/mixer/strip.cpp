@@ -1131,6 +1131,8 @@ void Strip::updateLabelStyleSheet()
               .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
   } else {
       QColor c(track->color());
+      if (c.lightness() < 170)
+        c = c.lighter(130);
       stxt = "QLabel { background-color:" + c.name() + ";";
       if (c.lightness() < 64)
           stxt += QStringLiteral("color: white;");
@@ -1153,7 +1155,7 @@ void Strip::setLabelText()
         return;
 
       QFontMetrics fm = fontMetrics();
-      QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width());
+      QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width() - 4);
 
       label->setText(elidedText);
       if (elidedText != track->name())

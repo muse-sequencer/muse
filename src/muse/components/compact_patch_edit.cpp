@@ -177,7 +177,7 @@ void CompactPatchEdit::setBgColor(const QColor& c)
 void CompactPatchEdit::setBgActiveColor(const QColor& c)
 {
     _patchNameLabel->setBgActiveColor(c);
-//    _patchEdit->setBgActiveColor(c);
+    _patchEdit->setBgActiveColor(c);
 }
 void CompactPatchEdit::setBorderColor(const QColor& c)
 {
