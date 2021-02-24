@@ -30,6 +30,7 @@
 #include <QFrame>
 #include <QVBoxLayout>
 #include <QSize>
+#include <QLabel>
 
 #include "type_defs.h"
 #include "globaldefs.h"
@@ -611,13 +612,14 @@ class ElidedLabelComponentDescriptor : public ComponentDescriptor
 //   TrackNameLabel
 //---------------------------------------------------------
 
-class TrackNameLabel : public ElidedTextLabel
+class TrackNameLabel : public QLabel
 {
   Q_OBJECT
 
     Q_PROPERTY(bool style3d READ style3d WRITE setStyle3d)
 
     bool _style3d;
+    bool _hovered;
 
   protected:
     static const int _expandIconWidth;
@@ -629,14 +631,16 @@ class TrackNameLabel : public ElidedTextLabel
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseReleaseEvent(QMouseEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
+    virtual void leaveEvent(QEvent*);
+    virtual void enterEvent(QEvent*);
 
   signals:
     void doubleClicked();
     void expandClicked();
 
   public:
-    TrackNameLabel(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = Qt::Widget);
-    TrackNameLabel(const QString & text, QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = Qt::Widget);
+    TrackNameLabel(QWidget* parent = nullptr);
+//    TrackNameLabel(const QString & text, QWidget* parent = 0, const char* name = 0, Qt::WindowFlags f = Qt::Widget);
 
     int style3d() const { return _style3d; }
     void setStyle3d(int style3d) { _style3d = style3d; }

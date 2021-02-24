@@ -100,6 +100,7 @@ QT5_WRAP_CPP (components_mocs
       # mtrackinfo.h
       nentry.h  
       noteinfo.h  
+      partcolortoolbar.h
       pastedialog.h
       pasteeventsdialog.h
       pitchedit.h  
@@ -266,6 +267,7 @@ file (GLOB components_source_files
       mtscale_flo.cpp 
       nentry.cpp 
       noteinfo.cpp 
+      partcolortoolbar.cpp
       pastedialog.cpp
       pasteeventsdialog.cpp
       pitchedit.cpp 

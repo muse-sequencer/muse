@@ -89,6 +89,7 @@ class Track {
       static int _snGen;
       QString _comment;
       PartList _parts;
+      QColor m_color;
 
       void init(int channels = 0);
       void internal_assign(const Track&, int flags);
@@ -173,7 +174,9 @@ class Track {
       static QColor trackTypeColor(TrackType);
       static QColor trackTypeLabelColor(TrackType);
       QIcon* icon() const { return trackTypeIcon(type()); }
-      QColor color() const { return trackTypeColor(type()); }
+      QColor color() const { return m_color.isValid() ? m_color : trackTypeColor(type()); }
+      void setColor(const QColor c) { m_color = c; }
+      void resetColor() { m_color = QColor(); }
       QColor labelColor() const { return trackTypeLabelColor(type()); }
 
       QString comment() const         { return _comment; }

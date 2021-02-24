@@ -135,8 +135,8 @@ Appearance::Appearance(QWidget* parent)
       itemList->setContextMenuPolicy(Qt::CustomContextMenu);
       connect(itemList, SIGNAL(customContextMenuRequested(QPoint)), SLOT(colorListCustomContextMenuReq(QPoint)));
       
-      color  = 0;
-      _colorDialog = 0;
+      color  = nullptr;
+      _colorDialog = nullptr;
       config = new MusEGlobal::GlobalConfigValues;
       backupConfig = new MusEGlobal::GlobalConfigValues;
 
@@ -147,8 +147,8 @@ Appearance::Appearance(QWidget* parent)
       _configChangedTimer->setInterval(500);
       connect(_configChangedTimer, SIGNAL(timeout()), SLOT(configChangeTimeOut()));
       
-      lastSelectedColorItem = 0;
-      lastSelectedBgItem = 0;
+      lastSelectedColorItem = nullptr;
+      lastSelectedBgItem = nullptr;
       
       fontName0->setToolTip(tr("Main application font, and default font\n"
                                "for any controls not defined here."));
@@ -280,7 +280,7 @@ Appearance::Appearance(QWidget* parent)
            new IdListViewItem(0x305, id, "Wave nonselected part");
 
       aid = new IdListViewItem(0, itemList, "Mixer");
-      id = new IdListViewItem(0, aid, "Track labels");
+      id = new IdListViewItem(0, aid, "Track labels (theme-dependent");
 
       new IdListViewItem(0x501, id, "Midi");
       new IdListViewItem(0x502, id, "Drum");
@@ -656,6 +656,8 @@ void Appearance::resetValues()
       gridAlwaysShowH->setChecked(config->canvasShowGridHorizontalAlways);
       gridAlwaysShowBeats->setChecked(config->canvasShowGridBeatsAlways);
 
+      cbUseTrackColorForParts->setChecked(config->useTrackColorForParts);
+
 //      qtStyleComboBox->clear();
 ////      QString cs = MusEGlobal::muse->style()->objectName();
 ////      cs = cs.toLower();
@@ -940,6 +942,7 @@ bool Appearance::apply()
       config->canvasShowGrid = arrGrid->isChecked();
       config->canvasShowGridHorizontalAlways = gridAlwaysShowH->isChecked();
       config->canvasShowGridBeatsAlways = gridAlwaysShowBeats->isChecked();
+      config->useTrackColorForParts = cbUseTrackColorForParts->isChecked();
       config->globalAlphaBlend = globalAlphaVal->value();
       config->maxAliasedPointSize = maxAliasedPointSize->value();
       config->autoAdjustFontSize = cbAutoAdjustFontSize->isChecked();

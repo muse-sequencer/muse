@@ -320,6 +320,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                               deselectAll();
                               part->setSelected(true);
                               np->setSelected(true);
+                              part->setColorIndex(curColorIndex);
                               MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, part));
                               }
                               break;
@@ -737,13 +738,13 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
         len = 0;
       unsigned trackIndex = y2pitch(pos.y());
       if (trackIndex >= tracks->size())
-            return 0;
+            return nullptr;
       MusECore::Track* track = tracks->index(trackIndex);
       if(!track)
-        return 0;
+        return nullptr;
 
-      MusECore::Part* pa  = 0;
-      NPart* np = 0;
+      MusECore::Part* pa = nullptr;
+      NPart* np = nullptr;
       switch(track->type()) {
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
@@ -761,7 +762,7 @@ CItem* PartCanvas::newItem(const QPoint& pos, int key_modifiers)
             case MusECore::Track::AUDIO_GROUP:
             case MusECore::Track::AUDIO_AUX:
             case MusECore::Track::AUDIO_SOFTSYNTH:
-                  return 0;
+                  return nullptr;
             }
       pa->setName(track->name());
       pa->setColorIndex(curColorIndex);
@@ -807,7 +808,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
         }
         else
         {
-          MusECore::Part* new_part = 0;
+          MusECore::Part* new_part = nullptr;
           switch(track->type())
           {
                 case MusECore::Track::MIDI:
@@ -921,9 +922,16 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            QAction *act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
-            act_color->setData(OP_PARTCOLORBASE+i);
-            }
+          QAction *act_color = nullptr;
+          if (i == 0 && MusEGlobal::config.useTrackColorForParts)
+              act_color = colorPopup->addAction(*tracktypeSVGIcon, tr("Track Color"));
+          else
+              act_color = colorPopup->addAction(MusECore::colorRect(MusEGlobal::config.partColors[i], 80, 80), MusEGlobal::config.partColorNames[i]);
+          act_color->setData(OP_PARTCOLORBASE+i);
+
+          if (i == 0)
+              colorPopup->addSeparator();
+      }
 
       QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("Delete"));
       act_delete->setData(OP_DELETE);
@@ -1116,19 +1124,18 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    case OP_PARTCOLORBASE ... NUM_PARTCOLORS+20:
    {
       curColorIndex = n - 20;
-      bool selfound = false;
-      //Loop through all parts and set color on selected:
-      for (iCItem i = items.begin(); i != items.end(); i++) {
-         if (i->second->isSelected()) {
-            selfound = true;
-            i->second->part()->setColorIndex(curColorIndex);
-         }
+
+      if (item->isSelected()) {
+          //Loop through all parts and set color on selected:
+          for (const auto& it : items) {
+              if (it.second->isSelected())
+                  it.second->part()->setColorIndex(curColorIndex);
+          }
+      } else {
+          item->part()->setColorIndex(curColorIndex);
       }
 
-      // If no items selected, use the one clicked on.
-      if(!selfound)
-         item->part()->setColorIndex(curColorIndex);
-
+      emit curPartColorIndexChanged(curColorIndex);
       MusEGlobal::song->update(SC_PART_MODIFIED);
       redraw();
       break;
@@ -1138,6 +1145,25 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       break;
    }
    delete pl;
+}
+
+void PartCanvas::setPartColor(int idx)
+{
+    curColorIndex = idx;
+
+    //Loop through all parts and set color on selected:
+    for (const auto& it : items) {
+        if (it.second->isSelected())
+            it.second->part()->setColorIndex(curColorIndex);
+    }
+
+    MusEGlobal::song->update(SC_PART_MODIFIED);
+    redraw();
+}
+
+void PartCanvas::setCurrentColorIndex(int idx)
+{
+    curColorIndex = idx;
 }
 
 //---------------------------------------------------------
@@ -1921,7 +1947,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       int lbx_c = lbx < mrxs_0 ? mrxs_0 : lbx;
       int rbx_c = rbx > mrxe_0 ? mrxe_0 : rbx;
 
-      int cidx = part->colorIndex();
+      QColor partColor;
+      if (part->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+          partColor = part->track()->color();
+      else
+          partColor = MusEGlobal::config.partColors[part->colorIndex()];
+
       if (item->isMoving())
       {
             QColor c(Qt::gray);
@@ -1956,9 +1987,14 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       }
       else
       {
-            QColor c(MusEGlobal::config.partColors[cidx]);
-            c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
+          QColor c = partColor;
+//          if (cidx == PART_COLOR_VAR)
+//              c = part->track()->color();
+//          else
+//            c = MusEGlobal::config.partColors[cidx];
+
+          c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+          brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
       }
 
       int h = mbbr.height();
@@ -2017,7 +2053,9 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         // Draw remaining 'hidden events' decorations with 'jagged' edges...
 
         int part_r, part_g, part_b, brightness, color_brightness;
-        MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+
+//        MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+        partColor.getRgb(&part_r, &part_g, &part_b);
         brightness =  part_r*29 + part_g*59 + part_b*12;
         if ((brightness >= 12000 && !item_selected))
           color_brightness=96; //0;    // too light: use dark color
@@ -2077,7 +2115,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
         p.setBrush(Qt::NoBrush);
 
-        QColor pc((part->mute() || item->isMoving())? Qt::white : MusEGlobal::config.partColors[cidx]);
+        QColor pc((part->mute() || item->isMoving())? Qt::white : partColor);
         QPen penSelect1H(pc);
         QPen penSelect2H(pc, 2.0);
         QPen penSelect1V(pc);
@@ -2169,7 +2207,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             //  get the lowest colour in the gradient used to draw the part.
             QRect tr = mbbr;
             tr.setX(tr.x() + 3);
-            MusECore::gGradientFromQColor(MusEGlobal::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+            MusECore::gGradientFromQColor(partColor, tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             bool rev = brightness >= 12000 && !item_selected;
             p.setFont(MusEGlobal::config.fonts[2]);
@@ -2201,7 +2239,12 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&, const 
         p.setPen(pen);
         
         MusECore::Part* part = ((NPart*)item)->part();
-        QColor c(part->mute() ? Qt::white : MusEGlobal::config.partColors[part->colorIndex()]);
+        QColor partColor;
+        if (part->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+            partColor = part->track()->color();
+        else
+            partColor = MusEGlobal::config.partColors[part->colorIndex()];
+        QColor c(part->mute() ? Qt::white : partColor);
         c.setAlpha(128);  // Fix this regardless of config.globalAlphaBlend setting. Should be OK.
         p.setBrush(c);
         MusECore::TrackList* tl = MusEGlobal::song->tracks();
@@ -2248,7 +2291,12 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
   if(pt)
   {
     int part_r, part_g, part_b, brightness;
-    MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
+
+    if (pt->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+        pt->track()->color().getRgb(&part_r, &part_g, &part_b);
+    else
+        MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
+
     brightness =  part_r*29 + part_g*59 + part_b*12;
     if (brightness >= 12000 && !selected) {
       eventColor=MusEGlobal::config.partMidiDarkEventColor;

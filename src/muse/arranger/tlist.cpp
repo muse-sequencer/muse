@@ -32,6 +32,7 @@
 #include <QIcon>
 #include <QToolTip>
 #include <QList>
+#include <QColorDialog>
 
 #include "popupmenu.h"
 #include "globals.h"
@@ -261,6 +262,10 @@ void TList::paint(const QRect& r)
     QFont fit(font());
     fit.setItalic(true);
 
+    QFont fbd(font());
+    fbd.setBold(true);
+
+
     //---------------------------------------------------
     //    Tracks
     //---------------------------------------------------
@@ -325,39 +330,11 @@ void TList::paint(const QRect& r)
             p.setPen(MusEGlobal::config.selectTrackFg);
         }
         else {
-            switch(type) {
-            case MusECore::Track::MIDI:
-                bg = MusEGlobal::config.midiTrackBg;
-                break;
-            case MusECore::Track::DRUM:
-                bg = MusEGlobal::config.newDrumTrackBg;
-                break;
-            case MusECore::Track::WAVE:
-                bg = MusEGlobal::config.waveTrackBg;
-                break;
-            case MusECore::Track::AUDIO_OUTPUT:
-                bg = MusEGlobal::config.outputTrackBg;
-                break;
-            case MusECore::Track::AUDIO_INPUT:
-                bg = MusEGlobal::config.inputTrackBg;
-                break;
-            case MusECore::Track::AUDIO_GROUP:
-                bg = MusEGlobal::config.groupTrackBg;
-                break;
-            case MusECore::Track::AUDIO_AUX:
-                bg = MusEGlobal::config.auxTrackBg;
-                break;
-            case MusECore::Track::AUDIO_SOFTSYNTH: {
-                MusECore::SynthI *s = (MusECore::SynthI*)track;
-                if(s->synth())
-                    bg = MusEGlobal::config.synthTrackBg;
-                else
-                    bg = QColor(198, 77, 79);
-                break;
-            }
-            }
-
-            p.setPen(palette().color(QPalette::Active, QPalette::Text));
+            bg = track->color();
+            if (bg.lightness() < 170)
+                p.setPen(Qt::white);
+            else
+                p.setPen(Qt::black);
         }
         p.fillRect(x1, yy, w, trackHeight, bg);
 
@@ -391,7 +368,11 @@ void TList::paint(const QRect& r)
             {
                 switch (section) {
                 case COL_TRACK_IDX:
+                    if (track->selected())
+                        p.setFont(fbd);
                     p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, QString::number(MusEGlobal::song->tracks()->index(track) + 1));
+                    if (p.font().bold())
+                        p.setFont(font());
                     break;
 
                 case COL_INPUT_MONITOR:
@@ -403,9 +384,6 @@ void TList::paint(const QRect& r)
                 case COL_RECORD:
                     // TODO: audio output is a trigger, not an indicator/toggle, this should be made clear
                     if (track->canRecord()) {
-//                        if (track->type() == MusECore::Track::AUDIO_OUTPUT)
-//                            filesaveSVGIcon->paint(&p, svg_r, Qt::AlignCenter);
-//                        else
                         (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                     }
                     break;
@@ -449,7 +427,11 @@ void TList::paint(const QRect& r)
                     break;
 
                 case COL_NAME:
+                    if (track->selected())
+                        p.setFont(fbd);
                     p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, track->name());
+                    if (p.font().bold())
+                        p.setFont(font());
                     break;
 
                 case COL_OCHANNEL:
@@ -2384,6 +2366,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 p->addSeparator();
                 a = p->addAction(*listeditSVGIcon, tr("Track Comment..."));
                 a->setData(1002);
+
+                p->addSeparator();
+                a = p->addAction(tr("Set Track Color..."));
+                a->setData(1020);
+                a = p->addAction(tr("Reset Track Color to Default"));
+                a->setData(1021);
                 p->addSeparator();
 
                 if (t->type()==MusECore::Track::DRUM)
@@ -2445,6 +2433,33 @@ void TList::mousePressEvent(QMouseEvent* ev)
                             break;
                         case 1009:
                             moveSelectedTracks(false, true);
+                            break;
+                        case 1020:
+                        {
+                            QColor c = QColorDialog::getColor(t->color());
+                            if (c.isValid()) {
+                                if (t->selected())
+                                    for (const auto& it : *tracks) {
+                                        if (it->selected())
+                                            it->setColor(c);
+                                    }
+                                else
+                                    t->setColor(c);
+                                MusEGlobal::song->update(SC_TRACK_MODIFIED);
+                            }
+                        }
+                            break;
+                        case 1021:
+                        {
+                            if (t->selected())
+                                for (const auto& it : *tracks) {
+                                    if (it->selected())
+                                        it->resetColor();
+                                }
+                            else
+                                t->resetColor();
+                            MusEGlobal::song->update(SC_TRACK_MODIFIED);
+                        }
                             break;
 
                         case 1010:

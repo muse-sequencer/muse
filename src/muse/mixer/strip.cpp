@@ -842,26 +842,27 @@ void ComponentRack::configChanged()
 
 const int TrackNameLabel::_expandIconWidth = 14;
 
-TrackNameLabel::TrackNameLabel(QWidget* parent, const char* name, Qt::WindowFlags f)
- : ElidedTextLabel(parent, name, f)
+TrackNameLabel::TrackNameLabel(QWidget* parent)
+ : QLabel(parent)
 {
     _style3d = true;
     _hasExpandIcon = false;
     _expandIconPressed = false;
+    _hovered = false;
 }
 
-TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
- : ElidedTextLabel(text, parent, name, f)
-{
-    _style3d = true;
-    _hasExpandIcon = false;
-    _expandIconPressed = false;
-}
+//TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
+// : QLabel(text, parent, name, f)
+//{
+//    _style3d = true;
+//    _hasExpandIcon = false;
+//    _expandIconPressed = false;
+//}
 
 void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
 {
   ev->accept();
-  if(hasExpandIcon() && hovered() && ev->pos().x() < _expandIconWidth)
+  if (hasExpandIcon() && _hovered && (ev->pos().x() < _expandIconWidth))
     return;
   
   emit doubleClicked();
@@ -870,9 +871,9 @@ void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
 void TrackNameLabel::paintEvent(QPaintEvent* ev)
 {
   ev->ignore();
-  ElidedTextLabel::paintEvent(ev);
+  QLabel::paintEvent(ev);
 
-  if(!hasExpandIcon() || !hovered())
+  if(!hasExpandIcon() || !_hovered)
     return;
 
   if(rect().width() <= 0 || rect().height() <= 0)
@@ -894,7 +895,7 @@ void TrackNameLabel::paintEvent(QPaintEvent* ev)
 
 void TrackNameLabel::mousePressEvent(QMouseEvent* ev)
 {
-  if(hasExpandIcon() && hovered() && ev->pos().x() < _expandIconWidth)
+  if (hasExpandIcon() && _hovered && (ev->pos().x() < _expandIconWidth))
   {
     _expandIconPressed = true;
     ev->accept();
@@ -903,7 +904,7 @@ void TrackNameLabel::mousePressEvent(QMouseEvent* ev)
   else
   {
     ev->ignore();
-    ElidedTextLabel::mousePressEvent(ev);
+    QLabel::mousePressEvent(ev);
   }
 }
 
@@ -917,22 +918,45 @@ void TrackNameLabel::mouseReleaseEvent(QMouseEvent* ev)
   else
   {
     ev->ignore();
-    ElidedTextLabel::mouseReleaseEvent(ev);
+    QLabel::mouseReleaseEvent(ev);
   }
 }
 
 void TrackNameLabel::mouseMoveEvent(QMouseEvent* ev)
 {
-  if(_expandIconPressed)
-  {
-    ev->accept();
-  }
-  else
-  {
-    ev->ignore();
-    ElidedTextLabel::mouseMoveEvent(ev);
-  }
+    if(_expandIconPressed)
+    {
+        ev->accept();
+    }
+    else
+    {
+        ev->ignore();
+        QLabel::mouseMoveEvent(ev);
+    }
 }
+
+void TrackNameLabel::leaveEvent(QEvent *e)
+{
+    if(_hovered)
+    {
+        _hovered = false;
+        update();
+    }
+    e->ignore();
+    QLabel::leaveEvent(e);
+}
+
+void TrackNameLabel::enterEvent(QEvent *e)
+{
+    if (!_hovered) {
+        _hovered = true;
+        update();
+    }
+    e->ignore();
+    QLabel::enterEvent(e);
+}
+
+
 
 //---------------------------------------------------------
 //   Strip
@@ -1095,9 +1119,9 @@ void Strip::updateLabelStyleSheet()
 //     label->setWordWrap(false);
 
   QString stxt;
-  QColor c(track->labelColor());
 
   if (label->style3d()) {
+      QColor c(track->labelColor());
       QColor c2(c.lighter());
       c.setAlpha(190);
       c2.setAlpha(190);
@@ -1106,9 +1130,13 @@ void Strip::updateLabelStyleSheet()
                      "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
               .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
   } else {
-      stxt = "QWidget { background-color:" + c.name() + ";";
+      QColor c(track->color());
+      stxt = "QLabel { background-color:" + c.name() + ";";
+      if (c.lightness() < 64)
+          stxt += QStringLiteral("color: white;");
+      else
+          stxt += QStringLiteral("color: black;");
   }
-  //stxt += QString("color: rgb(0, 0, 0);");
   stxt += MusECore::font2StyleSheet(fnt) + "}";
   stxt += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
 
@@ -1123,12 +1151,21 @@ void Strip::setLabelText()
 {
       if(!track)
         return;
-      label->setText(track->name());
+
+      QFontMetrics fm = fontMetrics();
+      QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width());
+
+      label->setText(elidedText);
+      if (elidedText != track->name())
+          label->setToolTip(track->name());
+      else
+          label->setToolTip(QString());
+
       if(track->isSynthTrack())
       {
         MusECore::SynthI *s = static_cast<MusECore::SynthI*>(track);
         if(!s->uri().isEmpty())
-          label->setTooltipText(QString(" \n") + s->uri());
+          label->setToolTip(QString(track->name() + "\n") + s->uri());
       }
 
       updateLabelStyleSheet();
@@ -1246,7 +1283,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       //---------------------------------------------
 
       label = new TrackNameLabel(this);
-      label->setElideMode(Qt::ElideMiddle);
+//      label->setElideMode(Qt::ElideMiddle);
       label->setFocusPolicy(Qt::NoFocus);
       label->setObjectName(track->cname());
       label->setContentsMargins(0, 0, 0, 0);

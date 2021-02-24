@@ -1106,6 +1106,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.canvasShowGridHorizontalAlways = xml.parseInt();
                         else if (tag == "canvasShowGridBeatsAlways")
                               MusEGlobal::config.canvasShowGridBeatsAlways = xml.parseInt();
+                        else if (tag == "useTrackColorForParts")
+                              MusEGlobal::config.useTrackColorForParts = xml.parseInt();
                         else if (tag == "canvasBgPixmap")
                               MusEGlobal::config.canvasBgPixmap = xml.parse1();
                         else if (tag == "canvasCustomBgList")
@@ -1731,7 +1733,6 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       
       
 void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames)
-//static void writeConfigurationColors(int level, MusECore::Xml& xml, bool partColorNames = true)
 {
      for (int i = 0; i < 16; ++i) {
             xml.colorTag(level, QString("palette") + QString::number(i), MusEGlobal::config.palette[i]);
@@ -2121,6 +2122,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "canvasShowGrid", MusEGlobal::config.canvasShowGrid);
       xml.intTag(level, "canvasShowGridHorizontalAlways", MusEGlobal::config.canvasShowGridHorizontalAlways);
       xml.intTag(level, "canvasShowGridBeatsAlways", MusEGlobal::config.canvasShowGridBeatsAlways);
+      xml.intTag(level, "useTrackColorForParts", MusEGlobal::config.useTrackColorForParts);
       xml.strTag(level, "canvasBgPixmap", MusEGlobal::config.canvasBgPixmap);
       xml.strTag(level, "canvasCustomBgList", MusEGlobal::config.canvasCustomBgList.join(";"));
 

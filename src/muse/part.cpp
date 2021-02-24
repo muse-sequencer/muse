@@ -34,6 +34,7 @@
 #include "midiport.h"
 #include "drummap.h"
 #include "midictrl.h"
+#include "gconfig.h"
 
 // Forwards from header:
 #include "track.h"
@@ -507,7 +508,7 @@ Part* PartList::find(int idx)
       for (iPart i = begin(); i != end(); ++i, ++index)
             if (index == idx)
                   return i->second;
-      return 0;
+      return nullptr;
       }
 
 //---------------------------------------------------------
@@ -519,7 +520,7 @@ Part::Part(Track* t)
       _hiddenEvents = NoEventsHidden;
       _prevClone = this;
       _nextClone = this;
-      _backupClone = NULL;
+      _backupClone = nullptr;
       _sn = newSn();
       _clonemaster_sn = _sn;
       _track      = t;
