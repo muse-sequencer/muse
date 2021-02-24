@@ -337,192 +337,192 @@ QSize ElidedLabel::sizeHint() const
 
 
 
-// ==============================================================================
+//// ==============================================================================
 
 
 
-ElidedTextLabel::ElidedTextLabel(QWidget* parent,
-                         const char* name,
-                         Qt::WindowFlags flags
-                         )
-    : QFrame(parent, flags)
-{
-  setObjectName(name);
-  setMouseTracking(true);
-  setEnabled(true);
-  setFocusPolicy(Qt::StrongFocus);
-  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+//ElidedTextLabel::ElidedTextLabel(QWidget* parent,
+//                         const char* name,
+//                         Qt::WindowFlags flags
+//                         )
+//    : QFrame(parent, flags)
+//{
+//  setObjectName(name);
+//  setMouseTracking(true);
+//  setEnabled(true);
+//  setFocusPolicy(Qt::StrongFocus);
+//  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-  //setAutoFillBackground(false);
-  //setAttribute(Qt::WA_NoSystemBackground);
-  //setAttribute(Qt::WA_StaticContents);
-  // This is absolutely required for speed! Otherwise painfully slow because of full background
-  //  filling, even when requesting small udpdates! Background is drawn by us.
-  //setAttribute(Qt::WA_OpaquePaintEvent);
+//  //setAutoFillBackground(false);
+//  //setAttribute(Qt::WA_NoSystemBackground);
+//  //setAttribute(Qt::WA_StaticContents);
+//  // This is absolutely required for speed! Otherwise painfully slow because of full background
+//  //  filling, even when requesting small udpdates! Background is drawn by us.
+//  //setAttribute(Qt::WA_OpaquePaintEvent);
 
-  _elideMode = Qt::ElideNone;
-  _alignment = Qt::AlignLeft | Qt::AlignVCenter;
-  _id = -1;
-  _hasOffMode = false;
-  _off = false;
-  _hovered = false;
-}
+//  _elideMode = Qt::ElideNone;
+//  _alignment = Qt::AlignLeft | Qt::AlignVCenter;
+//  _id = -1;
+//  _hasOffMode = false;
+//  _off = false;
+//  _hovered = false;
+//}
 
-ElidedTextLabel::ElidedTextLabel(const QString& text,
-                         QWidget* parent, 
-                         const char* name,
-                         Qt::WindowFlags flags)
-    : QFrame(parent, flags), 
-    _text(text) 
-{
-  setObjectName(name);
-  setMouseTracking(true);
-  setEnabled(true);
-  setFocusPolicy(Qt::StrongFocus);
-  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+//ElidedTextLabel::ElidedTextLabel(const QString& text,
+//                         QWidget* parent,
+//                         const char* name,
+//                         Qt::WindowFlags flags)
+//    : QFrame(parent, flags),
+//    _text(text)
+//{
+//  setObjectName(name);
+//  setMouseTracking(true);
+//  setEnabled(true);
+//  setFocusPolicy(Qt::StrongFocus);
+//  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-  //setAutoFillBackground(false);
-  //setAttribute(Qt::WA_NoSystemBackground);
-  //setAttribute(Qt::WA_StaticContents);
-  // This is absolutely required for speed! Otherwise painfully slow because of full background
-  //  filling, even when requesting small udpdates! Background is drawn by us.
-  //setAttribute(Qt::WA_OpaquePaintEvent);
+//  //setAutoFillBackground(false);
+//  //setAttribute(Qt::WA_NoSystemBackground);
+//  //setAttribute(Qt::WA_StaticContents);
+//  // This is absolutely required for speed! Otherwise painfully slow because of full background
+//  //  filling, even when requesting small udpdates! Background is drawn by us.
+//  //setAttribute(Qt::WA_OpaquePaintEvent);
 
-  _elideMode = Qt::ElideNone;
-  _alignment = Qt::AlignLeft | Qt::AlignVCenter;
-  _id = -1;
-  _hasOffMode = false;
-  _off = false;
-  _hovered = false;
+//  _elideMode = Qt::ElideNone;
+//  _alignment = Qt::AlignLeft | Qt::AlignVCenter;
+//  _id = -1;
+//  _hasOffMode = false;
+//  _off = false;
+//  _hovered = false;
   
-  setToolTip(_text + _tooltipText);
-}
+//  setToolTip(_text + _tooltipText);
+//}
 
-void ElidedTextLabel::keyPressEvent(QKeyEvent* e)
-{
-  switch (e->key())
-  {
-    case Qt::Key_Escape:
-      // Don't let ancestor grab it, let it pass up the chain.
-      e->ignore();
-      return;
-    break;
+//void ElidedTextLabel::keyPressEvent(QKeyEvent* e)
+//{
+//  switch (e->key())
+//  {
+//    case Qt::Key_Escape:
+//      // Don't let ancestor grab it, let it pass up the chain.
+//      e->ignore();
+//      return;
+//    break;
 
-    case Qt::Key_Enter:
-    case Qt::Key_Return:
-      e->accept();
-      emit returnPressed(pos(), _id, e->modifiers());
-      return;
-    break;
+//    case Qt::Key_Enter:
+//    case Qt::Key_Return:
+//      e->accept();
+//      emit returnPressed(pos(), _id, e->modifiers());
+//      return;
+//    break;
 
-    default:
-    break;
-  }
+//    default:
+//    break;
+//  }
 
-  e->ignore();
-  return QFrame::keyPressEvent(e);
-}
+//  e->ignore();
+//  return QFrame::keyPressEvent(e);
+//}
 
-void ElidedTextLabel::setOff(bool v)
-{
-  if(v && !_hasOffMode)
-    _hasOffMode = true;
-  if(_off == v)
-    return;
-  _off = v;
-  update();
-  //emit valueStateChanged(value(), isOff(), id(), d_scrollMode);
-}
+//void ElidedTextLabel::setOff(bool v)
+//{
+//  if(v && !_hasOffMode)
+//    _hasOffMode = true;
+//  if(_off == v)
+//    return;
+//  _off = v;
+//  update();
+//  //emit valueStateChanged(value(), isOff(), id(), d_scrollMode);
+//}
 
-void ElidedTextLabel::setHasOffMode(bool v)
-{
-  _hasOffMode = v;
-  setOff(false);
-}
+//void ElidedTextLabel::setHasOffMode(bool v)
+//{
+//  _hasOffMode = v;
+//  setOff(false);
+//}
 
-void ElidedTextLabel::paintEvent(QPaintEvent* ev)
-{
-  QFrame::paintEvent(ev);
-  ev->accept();
+//void ElidedTextLabel::paintEvent(QPaintEvent* ev)
+//{
+//  QFrame::paintEvent(ev);
+//  ev->accept();
 
-  if(rect().width() <= 0 || rect().height() <= 0)
-    return;
+//  if(rect().width() <= 0 || rect().height() <= 0)
+//    return;
 
-  QPainter p(this);
+//  QPainter p(this);
 
-  p.save();
-  const QRect r = rect();
-  const QRect ar = r.adjusted(1, 1, -1, -1);
+//  p.save();
+//  const QRect r = rect();
+//  const QRect ar = r.adjusted(1, 1, -1, -1);
 
-  if (hasFocus())
-        {
-        if (_hovered)
-              p.setPen(QPen(QColor(239,239,239)));
-        else
-              p.setPen(QPen(Qt::white));
-        }
-  else if (_hovered)
-        p.setPen(QPen(QColor(48,48,48)));
-  else
-        p.setPen(QPen(Qt::black));
+//  if (hasFocus())
+//        {
+//        if (_hovered)
+//              p.setPen(QPen(QColor(239,239,239)));
+//        else
+//              p.setPen(QPen(Qt::white));
+//        }
+//  else if (_hovered)
+//        p.setPen(QPen(QColor(48,48,48)));
+//  else
+//        p.setPen(QPen(Qt::black));
 
-  p.setRenderHint(QPainter::Antialiasing);
-  QFontMetrics fm = p.fontMetrics();
-  QString elidedText = fm.elidedText(_text, _elideMode, r.width());
-//   painter.drawText(QPoint(0, fm.ascent()), elidedText);
+//  p.setRenderHint(QPainter::Antialiasing);
+//  QFontMetrics fm = p.fontMetrics();
+//  QString elidedText = fm.elidedText(_text, _elideMode, r.width());
+////   painter.drawText(QPoint(0, fm.ascent()), elidedText);
 
-  p.drawText(ar, _alignment, elidedText);
-  p.restore();
-}
+//  p.drawText(ar, _alignment, elidedText);
+//  p.restore();
+//}
   
-void ElidedTextLabel::setText(const QString& txt) 
-{ 
-  if(_text == txt)
-    return;
-  _text = txt; 
-  setToolTip(_text + _tooltipText);
-}
+//void ElidedTextLabel::setText(const QString& txt)
+//{
+//  if(_text == txt)
+//    return;
+//  _text = txt;
+//  setToolTip(_text + _tooltipText);
+//}
 
-void ElidedTextLabel::setTooltipText(const QString& txt) 
-{ 
-  if(_tooltipText == txt)
-    return;
-  _tooltipText = txt; 
-  setToolTip(_text + _tooltipText);
-}
+//void ElidedTextLabel::setTooltipText(const QString& txt)
+//{
+//  if(_tooltipText == txt)
+//    return;
+//  _tooltipText = txt;
+//  setToolTip(_text + _tooltipText);
+//}
 
-void ElidedTextLabel::leaveEvent(QEvent *e)
-{
-  if(_hovered)
-  {
-    _hovered = false;
-    update();
-  }
-  e->ignore();
-  QFrame::leaveEvent(e);
-}
+//void ElidedTextLabel::leaveEvent(QEvent *e)
+//{
+//  if(_hovered)
+//  {
+//    _hovered = false;
+//    update();
+//  }
+//  e->ignore();
+//  QFrame::leaveEvent(e);
+//}
 
-void ElidedTextLabel::mouseMoveEvent(QMouseEvent *e)
-{
-  e->ignore();
-  QFrame::mouseMoveEvent(e);
-//   e->accept();
-  if(!_hovered)
-  {
-    _hovered = true;
-    update();
-  }
-}
+//void ElidedTextLabel::mouseMoveEvent(QMouseEvent *e)
+//{
+//  e->ignore();
+//  QFrame::mouseMoveEvent(e);
+////   e->accept();
+//  if(!_hovered)
+//  {
+//    _hovered = true;
+//    update();
+//  }
+//}
 
-QSize ElidedTextLabel::sizeHint() const
-{
-// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
-#if QT_VERSION >= 0x050b00
-  QSize sz(fontMetrics().horizontalAdvance(_text) + 8, fontMetrics().height() + 4);
-#else
-  QSize sz(fontMetrics().width(_text) + 8, fontMetrics().height() + 4);
-#endif
-  return sz;
-}
+//QSize ElidedTextLabel::sizeHint() const
+//{
+//// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+//#if QT_VERSION >= 0x050b00
+//  QSize sz(fontMetrics().horizontalAdvance(_text) + 8, fontMetrics().height() + 4);
+//#else
+//  QSize sz(fontMetrics().width(_text) + 8, fontMetrics().height() + 4);
+//#endif
+//  return sz;
+//}
 
 } // namespace MusEGui

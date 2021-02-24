@@ -2445,6 +2445,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                     }
                                 else
                                     t->setColor(c);
+                                MusEGlobal::song->update(SC_TRACK_MODIFIED);
                             }
                         }
                             break;
@@ -2457,6 +2458,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                 }
                             else
                                 t->resetColor();
+                            MusEGlobal::song->update(SC_TRACK_MODIFIED);
                         }
                             break;
 

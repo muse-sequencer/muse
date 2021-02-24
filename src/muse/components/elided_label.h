@@ -147,90 +147,90 @@ class ElidedLabel : public QFrame
     void setFontIgnoreDimensions(bool ignoreHeight, bool ignoreWidth = false);
 };
 
-//---------------------------------------------------------
-//   ElidedTextLabel
-//---------------------------------------------------------
+////---------------------------------------------------------
+////   ElidedTextLabel
+////---------------------------------------------------------
 
-class ElidedTextLabel : public QFrame
-{
-  Q_OBJECT
-  // FIXME: Found some problems here: If this was enabled, text() was
-  //        intermittently including accelerator key characters, causing
-  //        for example midi controller stream text rapid flickering
-  //        between normal and accelerator key text.
-  //       Maybe it should be const QString& ?
-  //Q_PROPERTY(QString text READ text WRITE setText)
+//class ElidedTextLabel : public QFrame
+//{
+//  Q_OBJECT
+//  // FIXME: Found some problems here: If this was enabled, text() was
+//  //        intermittently including accelerator key characters, causing
+//  //        for example midi controller stream text rapid flickering
+//  //        between normal and accelerator key text.
+//  //       Maybe it should be const QString& ?
+//  //Q_PROPERTY(QString text READ text WRITE setText)
 
-  //Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
+//  //Q_PROPERTY(Qt::TextElideMode elideMode READ elideMode WRITE setElideMode)
 
-  private:
-    int _id;
-    bool _hasOffMode;
-    bool _off;
-    Qt::TextElideMode _elideMode;
-    Qt::Alignment _alignment;
-    QString _text;
-    QString _tooltipText;
-    // Whether the mouse is over the entire control.
-    bool _hovered;
+//  private:
+//    int _id;
+//    bool _hasOffMode;
+//    bool _off;
+//    Qt::TextElideMode _elideMode;
+//    Qt::Alignment _alignment;
+//    QString _text;
+//    QString _tooltipText;
+//    // Whether the mouse is over the entire control.
+//    bool _hovered;
 
-    bool autoAdjustFontSize();
+//    bool autoAdjustFontSize();
     
-  protected:
-    virtual void paintEvent(QPaintEvent*);
-    virtual void mouseMoveEvent(QMouseEvent*);
-    virtual void leaveEvent(QEvent*);
-    virtual void keyPressEvent(QKeyEvent*);
+//  protected:
+//    virtual void paintEvent(QPaintEvent*);
+//    virtual void mouseMoveEvent(QMouseEvent*);
+//    virtual void leaveEvent(QEvent*);
+//    virtual void keyPressEvent(QKeyEvent*);
 
-  signals:
-    void returnPressed(QPoint p, int id, Qt::KeyboardModifiers keys);
+//  signals:
+//    void returnPressed(QPoint p, int id, Qt::KeyboardModifiers keys);
 
-  public:
-    explicit ElidedTextLabel(
-      QWidget* parent = 0,
-      const char* name = 0,
-      Qt::WindowFlags flags = Qt::Widget
-      );
+//  public:
+//    explicit ElidedTextLabel(
+//      QWidget* parent = 0,
+//      const char* name = 0,
+//      Qt::WindowFlags flags = Qt::Widget
+//      );
   
-    explicit ElidedTextLabel(
-      const QString& text,
-      QWidget* parent = 0,
-      const char* name = 0,
-      Qt::WindowFlags flags = Qt::Widget
-      );
+//    explicit ElidedTextLabel(
+//      const QString& text,
+//      QWidget* parent = 0,
+//      const char* name = 0,
+//      Qt::WindowFlags flags = Qt::Widget
+//      );
   
-    virtual QSize sizeHint() const;
+//    virtual QSize sizeHint() const;
     
-    int id() const             { return _id; }
-    void setId(int i)          { _id = i; }
+//    int id() const             { return _id; }
+//    void setId(int i)          { _id = i; }
     
-    Qt::TextElideMode elideMode() const { return _elideMode; }
-    void setElideMode(Qt::TextElideMode mode) { _elideMode = mode; update(); }
+//    Qt::TextElideMode elideMode() const { return _elideMode; }
+//    void setElideMode(Qt::TextElideMode mode) { _elideMode = mode; update(); }
 
-    Qt::Alignment alignment() const { return _alignment; }
-    void setAlignment(Qt::Alignment align) { _alignment = align; update(); }
+//    Qt::Alignment alignment() const { return _alignment; }
+//    void setAlignment(Qt::Alignment align) { _alignment = align; update(); }
 
-    bool hasOffMode() const { return _hasOffMode; }
-    void setHasOffMode(bool v);
-    bool isOff() const { return _off; }
-    // Sets the off state and emits valueStateChanged signal if required.
-    void setOff(bool v);
-    // Both value and off state changed combined into one setter.
-    // By default it is assumed that setting a value naturally implies resetting the 'off' state to false.
-    // Emits valueChanged and valueStateChanged signals if required.
-    // Note setOff and SliderBase::setValue are also available.
-    //void setValueState(double v, bool off = false, ConversionMode mode = ConvertDefault);
+//    bool hasOffMode() const { return _hasOffMode; }
+//    void setHasOffMode(bool v);
+//    bool isOff() const { return _off; }
+//    // Sets the off state and emits valueStateChanged signal if required.
+//    void setOff(bool v);
+//    // Both value and off state changed combined into one setter.
+//    // By default it is assumed that setting a value naturally implies resetting the 'off' state to false.
+//    // Emits valueChanged and valueStateChanged signals if required.
+//    // Note setOff and SliderBase::setValue are also available.
+//    //void setValueState(double v, bool off = false, ConversionMode mode = ConvertDefault);
 
-    QString text() const { return _text; }
-    void setText(const QString& txt);
+//    QString text() const { return _text; }
+//    void setText(const QString& txt);
 
-    // This tooltip text is appened to the normal text, to form a compound tooltip.
-    QString tooltipText() const { return _tooltipText; }
-    void setTooltipText(const QString& txt);
+//    // This tooltip text is appened to the normal text, to form a compound tooltip.
+//    QString tooltipText() const { return _tooltipText; }
+//    void setTooltipText(const QString& txt);
     
-    // Whether the mouse is over the entire control.
-    bool hovered() const { return _hovered; }
-};
+//    // Whether the mouse is over the entire control.
+//    bool hovered() const { return _hovered; }
+//};
 
 
 } // namespace MusEGui
