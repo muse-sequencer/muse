@@ -30,8 +30,10 @@
 #include <QSlider>
 #include <QToolButton>
 #include <QToolTip>
+#include <QStyle>
 
 #include "scrollscale.h"
+#include "icons.h"
 
 namespace MusEGui {
 
@@ -199,7 +201,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	noScale     = false;
 	_page        = 0;
 	_pages       = 1;
-	pageButtons = false;
+    pageButtons = false;
 	showMagFlag = true;
 	scaleMin    = s1;
 	scaleMax    = s2;
@@ -216,6 +218,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
   
 	//fprintf(stderr, "ScrollScale: cs:%d cur:%f\n", cs, cur);
 	scale  = new QSlider (o);
+    scale->setObjectName("ScrollBarScaleSlider");
 	// Added by Tim. For some reason focus was on. 
 	// It messes up tabbing, and really should have a shortcut instead.
 	scale->setFocusPolicy(Qt::NoFocus);  
@@ -246,8 +249,27 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	box->setContentsMargins(0, 0, 0, 0);
 	box->setSpacing(0);  
 	box->addWidget ( scroll, 10 );
+
+    int w = style()->pixelMetric(QStyle::PM_ScrollBarExtent);;
+    scaleUp = new QToolButton;
+    scaleUp->setObjectName("ScrollBarScaleButton");
+    scaleUp->setFixedSize(w, w);
+    scaleUp->setIcon (*plusSVGIcon);
+    scaleUp->setToolTip(tr("Increase zoom level"));
+    connect(scaleUp, &QToolButton::clicked, this, [this](){ stepScale(true); });
+    scaleDown = new QToolButton;
+    scaleDown->setObjectName("ScrollBarScaleButton");
+    scaleDown->setFixedSize(w, w);
+    scaleDown->setIcon (*minusSVGIcon);
+    scaleDown->setToolTip(tr("Decrease zoom level"));
+    connect(scaleDown, &QToolButton::clicked, this, [this](){ stepScale(false); });
+
+    box->addSpacing(2);
+    box->addWidget(scaleDown);
 	box->addWidget ( scale, 5 );
-	setLayout(box);
+    box->addWidget(scaleUp);
+
+    setLayout(box);
 	connect ( scale, SIGNAL ( valueChanged ( int ) ), SLOT ( setScale ( int ) ) );
 	connect ( scroll, SIGNAL ( valueChanged ( int ) ), SIGNAL ( scrollChanged ( int ) ) );
 }
