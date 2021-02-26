@@ -41,6 +41,7 @@
 #include <QMimeData>
 #include <QDrag>
 #include <QStringList>
+#include <QInputDialog>
 
 #include "muse_math.h"
 #include "fastlog.h"
@@ -992,19 +993,46 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
 void PartCanvas::renameItem(CItem *item)
 {
-  editPart = (NPart*)(item);
-  QRect r = map(curItem->bbox());
-  if (lineEditor == 0) {
-    lineEditor = new QLineEdit(this);
-    lineEditor->setFrame(true);
-    connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
-  }
-  lineEditor->setText(editPart->name());
-  lineEditor->setFocus();
-  lineEditor->show();
-  lineEditor->setGeometry(r);
-  editMode = true;
+    NPart* p = static_cast<NPart*>(item);
+    if (p->isSelected()) {
+        const QString oldname = p->name();
+
+        QInputDialog dlg(this);
+        dlg.setWindowTitle(tr("Part Name"));
+        dlg.setLabelText(tr("Enter part name:"));
+        dlg.setTextValue(oldname);
+
+        const int rc = dlg.exec();
+        if(rc == QDialog::Rejected)
+            return;
+
+        const QString newname = dlg.textValue();
+
+        if(newname == oldname)
+            return;
+
+        for (const auto& it : *MusEGlobal::song->tracks()) {
+            for (const auto& ip : *it->parts()) {
+                if (ip.second->selected())
+                    ip.second->setName(newname);
+            }
+        }
+    } else {
+        editPart = (NPart*)(item);
+        QRect r = map(curItem->bbox());
+        if (lineEditor == 0) {
+            lineEditor = new QLineEdit(this);
+            lineEditor->setFrame(true);
+            connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
+        }
+        lineEditor->setText(editPart->name());
+        lineEditor->setFocus();
+        lineEditor->show();
+        lineEditor->setGeometry(r);
+        editMode = true;
+    }
 }
+
 //---------------------------------------------------------
 //   itemPopup
 //---------------------------------------------------------
