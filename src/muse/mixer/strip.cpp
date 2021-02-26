@@ -1047,7 +1047,7 @@ void Strip::changeTrackName()
     if ((*i)->name() == newname)
     {
       QMessageBox::critical(this,
-        tr("MusE: bad trackname"),
+        tr("MusE: Bad Trackname"),
         tr("Please choose a unique track name"),
         QMessageBox::Ok,
         Qt::NoButton,

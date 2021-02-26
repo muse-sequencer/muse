@@ -963,7 +963,7 @@ namespace MusEGui {
 
 MusECore::Part* MusE::readPart(MusECore::Xml& xml)
       {
-      MusECore::Part* part = 0;
+      MusECore::Part* part = nullptr;
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -975,7 +975,7 @@ MusECore::Part* MusE::readPart(MusECore::Xml& xml)
                         {
                         int trackIdx, partIdx;
                         sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
-                        MusECore::Track* track = NULL;
+                        MusECore::Track* track = nullptr;
                         //check if track index is in bounds before getting it (danvd)
                         if(trackIdx < (int)MusEGlobal::song->tracks()->size())
                         {
@@ -1010,6 +1010,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
         switch (token) {
         case MusECore::Xml::Error:
         case MusECore::Xml::End:
+            delete pl;
             return;
         case MusECore::Xml::TagStart:
             if (tag == "part") {
@@ -1049,21 +1050,14 @@ void MusE::readToplevels(MusECore::Xml& xml)
                     pl = new MusECore::PartList;
                 }
             }
-//            else if (tag == "listeditor") {
-//                if(!pl->empty())
-//                {
-//                    startListEditor(pl);
-////                    toplevels.back()->readStatus(xml);
-//                    pl = new MusECore::PartList;
-//                }
-//            }
             else if (tag == "master") {
                 startMasterEditor();
                 toplevels.back()->readStatus(xml);
             }
             else if (tag == "arrangerview") {
                 TopWin* tw = toplevels.findType(TopWin::ARRANGER);
-                    tw->readStatus(xml);
+                tw->readStatus(xml);
+                tw->showMaximized();
             }
             else if (tag == "waveedit") {
                 if(!pl->empty())
