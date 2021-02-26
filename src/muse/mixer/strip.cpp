@@ -1026,9 +1026,10 @@ void Strip::changeTrackName()
   const QString oldname = track->name();
 
   QInputDialog dlg(this);
-  dlg.setWindowTitle(tr("Name"));
+  dlg.setWindowTitle(tr("Track Name"));
   dlg.setLabelText(tr("Enter track name:"));
   dlg.setTextValue(oldname);
+  // set standard font size explicitly, otherwise the font is too small (inherited from mixer strip)
   dlg.setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
   const int res = dlg.exec();
