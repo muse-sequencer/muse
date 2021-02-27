@@ -4370,7 +4370,7 @@ list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
 
 QString MusE::projectTitle(QString name)
 {
-  return tr("MusE: Song: ") + MusEGui::projectTitleFromFilename(name);
+  return tr("MusE Project: ") + MusEGui::projectTitleFromFilename(name);
 }
 
 QString MusE::projectTitle() const

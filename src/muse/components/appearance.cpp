@@ -152,16 +152,13 @@ Appearance::Appearance(QWidget* parent)
       
       fontName0->setToolTip(tr("Main application font, and default font\n"
                                "for any controls not defined here."));
-      fontName1->setToolTip(tr("Mixer strips and effects racks.\n"
-                               "Midi track info panel.\n"
-                               "Midi control panel entry box."));
+      fontName1->setToolTip(tr("Mixer strips and effects racks."));
       fontName2->setToolTip(tr("Arranger part name overlay."));
       fontName3->setToolTip(tr("Time scale upper, and time signature.\n"
                                "Controller graph and S/X buttons."));
       fontName4->setToolTip(tr("Time scale lower."));
       fontName5->setToolTip(tr("Tempo scale, and markers."));
-      fontName6->setToolTip(tr("Mixer labels. Auto-font-sizing up to chosen font size.\n"
-                               "Word-breaking but only with spaces."));
+      fontName6->setToolTip(tr("Mixer labels. Auto-font-sizing up to chosen font size."));
       fontSize6->setToolTip(tr("Maximum mixer label auto-font-sizing font size."));
       
       globalAlphaSlider->setToolTip(tr("Global opacity (opposite of transparency)."));

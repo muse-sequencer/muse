@@ -811,7 +811,6 @@ class Strip : public QFrame {
       MusECore::Track* getTrack() const { return track; }
       void setHighLight(bool highlight);
       QString getLabelText();
-      void updateLabelStyleSheet();
 
 // Setting to zero is deprecated. Use default constructor, new in Qt 5.15.
 #if QT_VERSION >= 0x050f00

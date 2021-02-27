@@ -63,7 +63,7 @@
     <inputTrackBg r="226" g="93" b="93"></inputTrackBg>
     <groupTrackBg r="134" g="134" b="0"></groupTrackBg>
     <auxTrackBg r="112" g="135" b="96"></auxTrackBg>
-    <synthTrackBg r="204" g="126" b="84"></synthTrackBg>
+    <synthTrackBg r="190" g="105" b="79"></synthTrackBg>
     <sliderBarDefaultColor r="0" g="90" b="160"></sliderBarDefaultColor>
     <sliderDefaultColor2 r="40" g="40" b="40"></sliderDefaultColor2>
     <panSliderColor2 r="0" g="129" b="180"></panSliderColor2>
@@ -83,7 +83,7 @@
     <midiMeterPrimaryColor r="0" g="255" b="0"></midiMeterPrimaryColor>
     <meterBackgroundColor r="20" g="20" b="20"></meterBackgroundColor>
     <rackItemBackgroundColor r="90" g="90" b="90"></rackItemBackgroundColor>
-    <rackItemBgActiveColor r="170" g="48" b="0"></rackItemBgActiveColor>
+    <rackItemBgActiveColor r="0" g="115" b="67"></rackItemBgActiveColor>
     <rackItemFontColor r="15" g="15" b="15"></rackItemFontColor>
     <rackItemFontActiveColor r="255" g="255" b="255"></rackItemFontActiveColor>
     <rackItemBorderColor r="40" g="40" b="40"></rackItemBorderColor>

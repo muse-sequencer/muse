@@ -2356,7 +2356,7 @@ void Song::clear(bool signal, bool clear_all)
 
 void Song::cleanupForQuit()
 {
-      bounceTrack    = 0;
+      bounceTrack = nullptr;
 
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Song::cleanupForQuit...\n");
