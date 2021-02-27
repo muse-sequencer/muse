@@ -63,7 +63,7 @@
     <inputTrackBg r="226" g="93" b="93"></inputTrackBg>
     <groupTrackBg r="134" g="134" b="0"></groupTrackBg>
     <auxTrackBg r="112" g="135" b="96"></auxTrackBg>
-    <synthTrackBg r="204" g="126" b="84"></synthTrackBg>
+    <synthTrackBg r="250" g="115" b="73"></synthTrackBg>
     <sliderBarDefaultColor r="0" g="90" b="160"></sliderBarDefaultColor>
     <sliderDefaultColor2 r="40" g="40" b="40"></sliderDefaultColor2>
     <panSliderColor2 r="0" g="129" b="180"></panSliderColor2>

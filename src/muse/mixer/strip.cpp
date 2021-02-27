@@ -1091,88 +1091,61 @@ void Strip::paintEvent(QPaintEvent * ev)
 }
 
 //---------------------------------------------------------
-//   updateStyleSheet
-//---------------------------------------------------------
-
-void Strip::updateLabelStyleSheet()
-{
-  if(!track)
-    return;
-
-  QFont fnt(MusEGlobal::config.fonts[6]);
-//   const bool need_word_wrap =
-//     !MusECore::autoAdjustFontSize(label, label->text(), fnt, false, true,
-//                                 fnt.pointSize(), 7);
-  MusECore::autoAdjustFontSize(label, label->text(), fnt, false, true,
-                                fnt.pointSize(), 7);
-
-  // Set the label's font.
-  // Note that this is effectively useless if a stylesheet font is set.
-  // When reading font(), it returns what the stylesheet says.
-  // But we set it here anyway, in case stylesheets are not used.
-  label->setFont(fnt);
-
-//   if(need_word_wrap)
-//     label->setWordWrap(true);
-// //     label->setWordWrapMode(QTextOption::WrapAnywhere);
-//   else
-// //     label->setWordWrapMode(QTextOption::NoWrap);
-//     label->setWordWrap(false);
-
-  QString stxt;
-
-  if (label->style3d()) {
-      QColor c(track->labelColor());
-      QColor c2(c.lighter());
-      c.setAlpha(190);
-      c2.setAlpha(190);
-
-      stxt = QString("* { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
-                     "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
-              .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
-  } else {
-      QColor c(track->color());
-      if (c.lightness() < 170)
-        c = c.lighter(130);
-      stxt = "QLabel { background-color:" + c.name() + ";";
-      if (c.lightness() < 64)
-          stxt += QStringLiteral("color: white;");
-      else
-          stxt += QStringLiteral("color: black;");
-  }
-  stxt += MusECore::font2StyleSheet(fnt) + "}";
-  stxt += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
-
-  label->setStyleSheet(stxt);
-}
-
-//---------------------------------------------------------
 //   setLabelText
 //---------------------------------------------------------
 
 void Strip::setLabelText()
 {
-      if(!track)
+    if(!track)
         return;
 
-      QFontMetrics fm = fontMetrics();
-      QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width() - 4);
+    QFont fnt(MusEGlobal::config.fonts[6]);
 
-      label->setText(elidedText);
-      if (elidedText != track->name())
-          label->setToolTip(track->name());
-      else
-          label->setToolTip(QString());
+    const bool fit = MusECore::autoAdjustFontSize(label, track->name(), fnt,
+                                                  false, true, fnt.pointSize(), 7);
+    if (fit) {
+        label->setText(track->name());
+        label->setToolTip(QString());
+    } else {
+        QFontMetrics fm = QFontMetrics(fnt);
+        QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width());
+        label->setText(elidedText);
+        label->setToolTip(track->name());
+    }
 
-      if(track->isSynthTrack())
-      {
+    if (track->isSynthTrack()) {
         MusECore::SynthI *s = static_cast<MusECore::SynthI*>(track);
         if(!s->uri().isEmpty())
-          label->setToolTip(QString(track->name() + "\n") + s->uri());
-      }
+            label->setToolTip(QString(track->name() + "\n") + s->uri());
+    }
 
-      updateLabelStyleSheet();
+    QString stxt;
+
+    if (label->style3d()) {
+        QColor c(track->labelColor());
+        QColor c2(c.lighter());
+        c.setAlpha(190);
+        c2.setAlpha(190);
+
+        stxt = QString("* { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
+                       "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
+                .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
+    } else {
+        QColor c(track->color());
+        if (c.lightness() < 170)
+            c = c.lighter(130);
+        stxt = "QLabel { background-color:" + c.name() + ";";
+        if (c.lightness() < 64)
+            stxt += QStringLiteral("color: white;");
+        else
+            stxt += QStringLiteral("color: black;");
+    }
+    stxt += MusECore::font2StyleSheet(fnt) + "}";
+    stxt += "QToolTip {font-size:" + QString::number(qApp->font().pointSize()) + "pt}";
+
+    label->setStyleSheet(stxt);
 }
+
 
 //---------------------------------------------------------
 //   muteToggled
@@ -1286,9 +1259,8 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       //---------------------------------------------
 
       label = new TrackNameLabel(this);
-//      label->setElideMode(Qt::ElideMiddle);
       label->setFocusPolicy(Qt::NoFocus);
-      label->setObjectName(track->cname());
+      label->setObjectName("TrackNameLabel");
       label->setContentsMargins(0, 0, 0, 0);
       label->setAlignment(Qt::AlignCenter);
       label->setAutoFillBackground(true);
@@ -1297,7 +1269,6 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
           label->setLineWidth(2);
           label->setFrameStyle(Sunken | StyledPanel);
           label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
-          //label->setWordWrap(true); // This is set dynamically.
       } else {
           label->setFrameStyle(NoFrame);
           label->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed));
