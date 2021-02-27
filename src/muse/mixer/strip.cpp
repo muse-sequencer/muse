@@ -1132,7 +1132,7 @@ void Strip::setLabelText()
                 .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
     } else {
         QColor c(track->color());
-        if (c.lightness() < 170)
+        if (c.lightness() < 150)
             c = c.lighter(130);
         stxt = "QLabel { background-color:" + c.name() + ";";
         if (c.lightness() < 64)

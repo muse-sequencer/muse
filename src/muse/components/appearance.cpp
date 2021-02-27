@@ -152,9 +152,7 @@ Appearance::Appearance(QWidget* parent)
       
       fontName0->setToolTip(tr("Main application font, and default font\n"
                                "for any controls not defined here."));
-      fontName1->setToolTip(tr("Mixer strips and effects racks.\n"
-                               "Midi track info panel.\n"
-                               "Midi control panel entry box."));
+      fontName1->setToolTip(tr("Mixer strips and effects racks."));
       fontName2->setToolTip(tr("Arranger part name overlay."));
       fontName3->setToolTip(tr("Time scale upper, and time signature.\n"
                                "Controller graph and S/X buttons."));
