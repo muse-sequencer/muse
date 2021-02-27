@@ -2499,9 +2499,10 @@ void MidiStrip::heartBeat()
           MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
           const int chan = t->outChannel();
           MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_VOLUME, chan, false);
-          if(mctl)
-            m_val = double(mctl->maxVal()) * muse_db2val(m_val / 2.0);
-          
+          if(!mctl)
+              return;
+
+          m_val = double(mctl->maxVal()) * muse_db2val(m_val / 2.0);
           m_val += double(mctl->bias());
           
           if(m_val < double(mctl->minVal()))
@@ -2542,7 +2543,10 @@ void MidiStrip::heartBeat()
 
 void MidiStrip::updateControls()
 {
-  MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(track);
+  MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(track);
+  if (!mt)
+      return;
+
   const int channel  = mt->outChannel();
   const int port  = mt->outPort();
   if(channel < 0 || channel >= MusECore::MUSE_MIDI_CHANNELS || port < 0 || port >= MusECore::MIDI_PORTS)

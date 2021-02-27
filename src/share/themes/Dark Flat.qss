@@ -329,7 +329,6 @@ QWidget#MidiStripTabWidget QTabBar::tab:last:selected {
     margin-right: 0;
 }
 
-
 QWidget#MidiStripTabWidget QTabBar::tab:!selected {
     margin-top: 1px; 
 }
@@ -340,6 +339,9 @@ QWidget#MidiStripTabWidget QTabBar::tab:focus {
     border-bottom: none;
 }
 
+QWidget#ScrollBarScaleButton {
+    border: 1px solid gray;
+}
 
 
 /*** MusE properties ***/

@@ -55,6 +55,7 @@ class ScrollScale : public QWidget {
       QLabel* pageNo;
       bool invers;
       double logbase;
+      QToolButton *scaleUp, *scaleDown;
 
       virtual void resizeEvent(QResizeEvent*);
 

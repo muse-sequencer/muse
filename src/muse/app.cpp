@@ -1611,6 +1611,14 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             addProject(project.absoluteFilePath());
             setWindowTitle(projectTitle(project.absoluteFilePath()));
             }
+
+      for (const auto& it : toplevels) {
+          if (it->isMdiWin() && it->type() == TopWin::ARRANGER) {
+              mdiArea->setActiveSubWindow(it->getMdiWin());
+              break;
+          }
+      }
+
       MusEGlobal::song->dirty = false;
       progress->setValue(30);
       qApp->processEvents();
@@ -1645,17 +1653,10 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       showMixer1(MusEGlobal::config.mixer1Visible);
       showMixer2(MusEGlobal::config.mixer2Visible);
 
-// REMOVE Tim. Removed. Already taken care of by settings. Reinstated! MDI window was
-//  not restoring on project reload. Didn't want to have to re-enable this, IIRC there
-//  was a problem with using this (interference with other similar competing settings),
-//  but here we go... Quick tested OK with normal and 'Borland/Mac' GUI modes.
-
 // Loading a file should not manipulate the geometry of the main window (kybos)
 //      resize(MusEGlobal::config.geometryMain.size());
 //      move(MusEGlobal::config.geometryMain.topLeft());
 
-//      if (MusEGlobal::config.transportVisible)
-//            transport->show();
       transport->move(MusEGlobal::config.geometryTransport.topLeft());
       showTransport(MusEGlobal::config.transportVisible);
 
