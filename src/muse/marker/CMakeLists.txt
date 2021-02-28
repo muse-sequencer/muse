@@ -66,7 +66,6 @@ set_target_properties( marker
 ##
 target_link_libraries ( marker
       ${QT_LIBRARIES}
-      awl
       icons
       )
 

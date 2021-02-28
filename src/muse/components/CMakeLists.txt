@@ -66,7 +66,7 @@ QT5_WRAP_CPP (components_mocs
       compact_slider.h  
       confmport.h
       copy_on_write.h
-#       cpu_toolbar.h
+      cpu_toolbar.h
 #       ctrlcombo.h  
       custom_widget_actions.h
       dentry.h  
@@ -122,7 +122,7 @@ QT5_WRAP_CPP (components_mocs
       savenewrevisiondialog.h
       scroll_area.h
 #       scrollbar.h
-#       scrollscale.h  
+      scrollscale.h  
       shortcutcapturedialog.h  
       shortcutconfig.h  
       sigedit.h  
@@ -231,7 +231,7 @@ file (GLOB components_source_files
       compact_slider.cpp 
       confmport.cpp
       copy_on_write.cpp
-#       cpu_toolbar.cpp
+      cpu_toolbar.cpp
 #       ctrlcombo.cpp 
       custom_widget_actions.cpp
       dentry.cpp 

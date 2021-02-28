@@ -70,8 +70,6 @@ set_target_properties( master
 ##
 target_link_libraries ( master
       ${QT_LIBRARIES}
-      al
-      awl
       widgets
       )
 

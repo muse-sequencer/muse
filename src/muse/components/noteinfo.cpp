@@ -26,7 +26,6 @@
 #include "config.h"
 #include "noteinfo.h"
 #include "posedit.h"
-//#include "awl/pitchedit.h"
 #include "song.h"
 #include "globals.h"
 #include "pitchedit.h"

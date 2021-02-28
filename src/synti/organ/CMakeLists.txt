@@ -77,7 +77,6 @@ set_target_properties ( organ
 ##
 target_link_libraries(organ
       synti
-      # awl
       ${QT_LIBRARIES}
       mpevent_module
       )

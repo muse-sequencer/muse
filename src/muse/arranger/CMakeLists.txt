@@ -71,7 +71,6 @@ set_target_properties( arranger
 #
 target_link_libraries ( arranger
       ${QT_LIBRARIES}
-      awl
       mixer
       widgets
       )
