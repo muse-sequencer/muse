@@ -188,6 +188,7 @@ void GlobalSettingsConfig::updateSettings()
       lineEditStyleHackCheckBox->setChecked(MusEGlobal::config.lineEditStyleHack);
       showNoteNamesCheckBox->setChecked(MusEGlobal::config.showNoteNamesInPianoRoll);
       showNoteTooltipsCheckBox->setChecked(MusEGlobal::config.showNoteTooltips);
+      showTimeScaleBeatNumbersCheckBox->setChecked(MusEGlobal::config.showTimeScaleBeatNumbers);
       preferMidiVolumeDbCheckBox->setChecked(MusEGlobal::config.preferMidiVolumeDb);
       warnIfBadTimingCheckBox->setChecked(MusEGlobal::config.warnIfBadTiming);
       warnOnFileVersionsCheckBox->setChecked(MusEGlobal::config.warnOnFileVersions);
@@ -337,6 +338,7 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.lineEditStyleHack = lineEditStyleHackCheckBox->isChecked();
       MusEGlobal::config.showNoteNamesInPianoRoll = showNoteNamesCheckBox->isChecked();
       MusEGlobal::config.showNoteTooltips = showNoteTooltipsCheckBox->isChecked();
+      MusEGlobal::config.showTimeScaleBeatNumbers = showTimeScaleBeatNumbersCheckBox->isChecked();
       MusEGlobal::config.preferMidiVolumeDb = preferMidiVolumeDbCheckBox->isChecked();
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
@@ -351,7 +353,6 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.borderlessMouse = borderlessMouseCheckBox->isChecked();
       MusEGlobal::config.velocityPerNote = velocityPerNoteCheckBox->isChecked();
       MusEGlobal::config.noPluginScaling = revertPluginNativeGUIScalingCheckBox->isChecked();
-//      MusEGlobal::config.openMDIWinMaximized = openMDIWinMaximizedCheckBox->isChecked();
       MusEGlobal::config.keepTransportWindowOnTop = keepTransportWindowOnTopCheckBox->isChecked();
       MusEGlobal::config.showStatusBar = showStatusBarCheckBox->isChecked();
 

@@ -1882,7 +1882,14 @@ Turn off to reduce clutter.</string>
           <item>
            <widget class="QCheckBox" name="showNoteTooltipsCheckBox">
             <property name="text">
-             <string>Show note tooltips in midi editors</string>
+             <string>Show note and control value tooltips in midi editors</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="showTimeScaleBeatNumbersCheckBox">
+            <property name="text">
+             <string>Show beat numbers in time scale</string>
             </property>
            </widget>
           </item>

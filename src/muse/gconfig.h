@@ -53,7 +53,7 @@ namespace MusEGlobal {
 struct FntFac {
     static constexpr double F1 = 0.7;
     static constexpr double F2 = 0.8;
-    static constexpr double F3 = 1.0;
+    static constexpr double F3 = 0.9;
     static constexpr double F4 = 0.8;
     static constexpr double F5 = 0.8;
     static constexpr double F6 = 0.8;
@@ -420,6 +420,7 @@ struct GlobalConfigValues {
       QString mixdownPath;
       bool showNoteNamesInPianoRoll;
       bool showNoteTooltips;
+      bool showTimeScaleBeatNumbers;
       // Whether selecting parts or events is undoable.
       // If set, it can be somewhat tedious for the user to step through all the undo/redo items.
       bool selectionsUndoable;

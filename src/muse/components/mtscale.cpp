@@ -43,7 +43,8 @@ MTScale::MTScale(int r, QWidget* parent, int xs, bool _mode)
    : View(parent, xs, 1)
       {
       waveMode = _mode;
-      setStatusTip(tr("Bar scale: Set position (LMB) and range markers (left: CTRL+LMB or MMB, right: CTRL+RMB or RMB). Hold SHIFT to set (LMB) or delete (RMB) custom markers."));
+      setToolTip(tr("Time scale.\nYou can hide beat numbers in Global settings->GUI."));
+      setStatusTip(tr("Time scale: Set position (LMB) and range markers (left: CTRL+LMB or MMB, right: CTRL+RMB or RMB). Hold SHIFT to set (LMB) or delete (RMB) custom markers."));
       barLocator = false;
       raster = r;
       if (waveMode) {
@@ -418,12 +419,12 @@ void MTScale::drawTickRaster(
                   for (int beat = beat_start_beat; beat < z; beat++) {
                         int xx = MusEGlobal::sigmap.bar2tick(bar, beat, 0);
                         
-                        int xx_e = MusEGlobal::sigmap.bar2tick(bar, beat + 1, 0);
+//                        int xx_e = MusEGlobal::sigmap.bar2tick(bar, beat + 1, 0);
 
                         if (waveMode)
                               xx = MusEGlobal::tempomap.tick2frame(xx);
-                        if (waveMode)
-                              xx_e = MusEGlobal::tempomap.tick2frame(xx_e);
+//                        if (waveMode)
+//                              xx_e = MusEGlobal::tempomap.tick2frame(xx_e);
                         
                         const ViewXCoordinate xx_v(xx, false);
                         const int mxx = asMapped(xx_v)._value;
@@ -461,7 +462,10 @@ void MTScale::drawTickRaster(
                           
                           p.drawLine(mxx, y1, mxx, mbottom);
                         }
-                              
+
+                        if (beat != 0 && !MusEGlobal::config.showTimeScaleBeatNumbers)
+                            continue;
+
                         QString s;
                         s.setNum(num);
                         int brw = p.fontMetrics().boundingRect(s).width();
@@ -489,9 +493,9 @@ void MTScale::drawTickRaster(
 
                           p.drawText(asQRectMapped(br_txt), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
                         }
-                        }
                   }
             }
+      }
 
       //p.setWorldMatrixEnabled(true);
       p.setWorldMatrixEnabled(wmtxen);
@@ -573,8 +577,6 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
             if (mm != marker->end()) {
                   
                   if(waveMode) 
-// Hm, mistake?
-//                     xe = MusEGlobal::tempomap.tick2frame(mm->second.frame());
                     xe = mm->second.frame();
                   else
                     xe = mm->second.tick();

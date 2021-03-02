@@ -130,7 +130,6 @@ class TList : public QWidget {
       void paint(const QRect& r);
       void redraw(const QRect& r);
       MusECore::Track* y2Track(int) const;
-//      void classesPopupMenu(MusECore::Track*, int x, int y, bool allSelected);
       MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       PopupMenu* colorMenu(QColor c, int id, QWidget* parent);

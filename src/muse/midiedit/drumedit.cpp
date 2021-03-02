@@ -641,6 +641,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       setHeaderToolTips();
       setHeaderWhatsThis();
+      setHeaderStatusTip();
 
       if (_ignore_hide)
         header->showSection(DList::COL_HIDE);
@@ -828,20 +829,20 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
 //---------------------------------------------------------
 void DrumEdit::midiNote(int pitch, int velo)
 {
-  if (MusEGlobal::debugMsg)
-      printf("DrumEdit::midiNote: pitch=%i, velo=%i\n", pitch, velo);
-  int index=0;
+    if (MusEGlobal::debugMsg)
+        printf("DrumEdit::midiNote: pitch=%i, velo=%i\n", pitch, velo);
 
-  //      *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
+    //      *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
-  if ((DrumCanvas*)(canvas)->midiin())
-  {
-    for (index = 0; index < get_instrument_map().size(); ++index) {
-      if (get_instrument_map().at(index).pitch == pitch)
-        break;
+    if ((DrumCanvas*)(canvas)->midiin())
+    {
+        int index=0;
+        for (index = 0; index < get_instrument_map().size(); ++index) {
+            if (get_instrument_map().at(index).pitch == pitch)
+                break;
+        }
+        dlist->setCurDrumInstrument(index);
     }
-    dlist->setCurDrumInstrument(index);
-  }
 }
 //---------------------------------------------------------
 //   horizontalZoom

@@ -1,9 +1,11 @@
+02.03.2021
+    - New: Option to hide beat numbers in the Time scale. (kybos)
 28.02.2021
     - Moved scrollscale.cpp/h and cpu_toolbar.cpp/h from widgets to components. (Tim)
       They use our icon library, which cannot be allowed in the widgets module ATM.
     - Removed unused Awl and AL linking from several CMakeLists text files.
 26.02.2021
-    - Add: Multi renaming for selected parts. (kybos)
+    - New: Multi renaming for selected parts. (kybos)
 25.02.2021
     - New: Add zoom buttons to scroll bars. (kybos)
 24.02.2021

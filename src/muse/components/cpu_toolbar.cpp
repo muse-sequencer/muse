@@ -145,18 +145,6 @@ CpuToolbar::CpuToolbar(const QString& title, QWidget* parent)
 void CpuToolbar::init()
 {
     setObjectName("CpuLoadToolbar");
-    //   setToolTip(tr("CPU load averaged over each gui-update period, DSP load read from JACK and finally, number of xruns (reset by clicking)"));
-    //   MusEGlobal::cpuLoadAction = new QWidgetAction(cpuLoadToolbar);
-    //   MusEGlobal::cpuLoadAction->setWhatsThis(tr("Measured CPU load"));
-    //   MusEGlobal::cpuLoadAction->setObjectName("CpuLoadToolbarAction");
-    //   QToolButton *cpuToolBtn = new QToolButton(this);
-    //   cpuToolBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    //   cpuToolBtn->setText(tr("No CPU load data"));
-    //   cpuToolBtn->setIcon(*cpuIcon);
-    //   cpuToolBtn->setObjectName("CpuLoadToolbarButton");
-    //   ((QWidgetAction *)MusEGlobal::cpuLoadAction)->setDefaultWidget(cpuToolBtn);
-    //   addAction(MusEGlobal::cpuLoadAction);
-    //   connect(cpuToolBtn, SIGNAL(clicked(bool)), this, SLOT(resetXrunsCounter()));
 
     _resetButton = new QToolButton(this);
     _resetButton->setToolButtonStyle(Qt::ToolButtonIconOnly);

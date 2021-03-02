@@ -455,53 +455,53 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths) const
 //   writeFont
 //---------------------------------------------------------
 
-void Song::writeFont(int level, Xml& xml, const char* name,
-   const QFont& font) const
-      {
-      xml.nput(level, "<%s family=\"%s\" size=\"%d\"",
-         name, Xml::xmlString(font.family()).toLatin1().constData(), font.pointSize());
-      if (font.weight() != QFont::Normal)
-            xml.nput(" weight=\"%d\"", font.weight());
-      if (font.italic())
-            xml.nput(" italic=\"1\"");
-      xml.nput(" />\n");
-      }
+//void Song::writeFont(int level, Xml& xml, const char* name,
+//   const QFont& font) const
+//      {
+//      xml.nput(level, "<%s family=\"%s\" size=\"%d\"",
+//         name, Xml::xmlString(font.family()).toLatin1().constData(), font.pointSize());
+//      if (font.weight() != QFont::Normal)
+//            xml.nput(" weight=\"%d\"", font.weight());
+//      if (font.italic())
+//            xml.nput(" italic=\"1\"");
+//      xml.nput(" />\n");
+//      }
 
 //---------------------------------------------------------
 //   readFont
 //---------------------------------------------------------
 
-QFont Song::readFont(Xml& xml, const char* name)
-      {
-      QFont f;
-      for (;;) {
-            Xml::Token token = xml.parse();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return f;
-                  case Xml::TagStart:
-                        xml.unknown("readFont");
-                        break;
-                  case Xml::Attribut:
-                        if (xml.s1() == "family")
-                              f.setFamily(xml.s2());
-                        else if (xml.s1() == "size")
-                              f.setPointSize(xml.s2().toInt());
-                        else if (xml.s1() == "weight")
-                              f.setWeight(xml.s2().toInt());
-                        else if (xml.s1() == "italic")
-                              f.setItalic(xml.s2().toInt());
-                        break;
-                  case Xml::TagEnd:
-                        if (xml.s1() == name)
-                              return f;
-                  default:
-                        break;
-                  }
-            }
-      return f;
-      }
+//QFont Song::readFont(Xml& xml, const char* name)
+//      {
+//      QFont f;
+//      for (;;) {
+//            Xml::Token token = xml.parse();
+//            switch (token) {
+//                  case Xml::Error:
+//                  case Xml::End:
+//                        return f;
+//                  case Xml::TagStart:
+//                        xml.unknown("readFont");
+//                        break;
+//                  case Xml::Attribut:
+//                        if (xml.s1() == "family")
+//                              f.setFamily(xml.s2());
+//                        else if (xml.s1() == "size")
+//                              f.setPointSize(xml.s2().toInt());
+//                        else if (xml.s1() == "weight")
+//                              f.setWeight(xml.s2().toInt());
+//                        else if (xml.s1() == "italic")
+//                              f.setItalic(xml.s2().toInt());
+//                        break;
+//                  case Xml::TagEnd:
+//                        if (xml.s1() == name)
+//                              return f;
+//                  default:
+//                        break;
+//                  }
+//            }
+//      return f;
+//      }
 
 //---------------------------------------------------------
 //   readMarker

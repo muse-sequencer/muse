@@ -234,9 +234,9 @@ class Song : public QObject {
 
       void read(Xml&, bool isTemplate=false);
       void write(int, Xml&) const;
-      void writeFont(int level, Xml& xml, const char* name,
-         const QFont& font) const;
-      QFont readFont(Xml& xml, const char* name);
+//      void writeFont(int level, Xml& xml, const char* name,
+//         const QFont& font) const;
+//      QFont readFont(Xml& xml, const char* name);
       // After a song file is successfully loaded with read(), some items which
       //  reference other items in the file need to be resolved. (Mixer strip configs etc.)
       void resolveSongfileReferences();

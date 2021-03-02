@@ -2994,8 +2994,8 @@ void TList::mouseMoveEvent(QMouseEvent* ev)
         {
             bool shift = ((QInputEvent*)ev)->modifiers() & Qt::SHIFT;
             bool ctrl = ((QInputEvent*)ev)->modifiers() & Qt::CTRL;
-            bool done = false;
             if (ctrl | shift) {
+                bool done = false;
                 for (const auto& it : *MusEGlobal::song->tracks()) {
                     if (shift && !it->selected())
                         continue;
@@ -3195,38 +3195,6 @@ void TList::setYPos(int y)
     scroll(0, delta);
 }
 
-//---------------------------------------------------------
-//   classesPopupMenu
-//---------------------------------------------------------
-
-//void TList::classesPopupMenu(MusECore::Track* tIn, int x, int y, bool allSelected)
-//{
-//    QMenu p;
-//    p.clear();
-//    p.addAction(*pianorollSVGIcon, tr("Midi"))->setData(MusECore::Track::MIDI);
-//    p.addAction(*drumeditSVGIcon, tr("Drum"))->setData(MusECore::Track::DRUM);
-//    QAction* act = p.exec(mapToGlobal(QPoint(x, y)), nullptr);
-
-//    if (!act)
-//        return;
-
-//    int n = act->data().toInt();
-
-//    if (!allSelected) {
-//        changeTrackToType(tIn,MusECore::Track::TrackType(n));
-//    }
-//    else
-//    {
-//        MusECore::TrackList *tracks = MusEGlobal::song->tracks();
-//        for (MusECore::iTrack myt = tracks->begin(); myt != tracks->end(); ++myt)
-//        {
-//            if ((*myt)->selected() && (*myt)->isMidiTrack())
-//                changeTrackToType(*myt,MusECore::Track::TrackType(n));
-
-//        } // track for-loop
-//    }
-//}
-
 void TList::changeTrackToType(MusECore::Track *t, MusECore::Track::TrackType trackType)
 {
     // MIDI -> NEW_DRUM or vice versa. added by flo.
@@ -3258,6 +3226,7 @@ void TList::populateAddTrack()
 {
     addTrackMenu = new QMenu;
     MusEGui::populateAddTrack(addTrackMenu, false, false, true);
+
     insertTrackMenu = new QMenu;
     MusEGui::populateAddTrack(insertTrackMenu, false, true);
 }

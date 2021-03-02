@@ -22,7 +22,7 @@ Adding effects will add more automatable parameters to the<br>
 automation column.
 
 Most functions in MusE are reachable from the keyboard.<br>
-See 'Configure Shortcuts' under 'MusE Settings'.<br>
+See 'Keyboard Shortcuts...' under 'Settings'.<br>
 For instance: A - pointer, D - draw, R - erase, S - cut.<br>
 A full list of all shortcuts, formatted for printing (sort of)<br>
 is available from the Shortcut dialog.

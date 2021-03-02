@@ -1748,37 +1748,6 @@ void Appearance::paletteClicked(int id)
             }
       }
 
-////---------------------------------------------------------
-////   browseStyleSheet
-////---------------------------------------------------------
-
-//void Appearance::browseStyleSheet()
-//{
-//      QString path;
-//      if(!config->styleSheetFile.isEmpty())
-//      {
-//        QFileInfo info(config->styleSheetFile);
-//        path = info.absolutePath();
-//      }
-      
-//      QString file = MusEGui::getOpenFileName(QString("themes"), MusEGlobal::stylesheet_file_pattern, this,
-//                                              tr("Select style sheet"), nullptr, MusEGui::MFileDialog::GLOBAL_VIEW);
-//      if (!file.isEmpty()) {
-//          styleSheetPath->setText(file);
-//          config->styleSheetFile = file;
-//      }
-//}
-
-
-////---------------------------------------------------------
-////   setDefaultStyleSheet
-////---------------------------------------------------------
-
-//void Appearance::setDefaultStyleSheet()
-//{
-//      styleSheetPath->clear();
-//}
-
 //---------------------------------------------------------
 //   browseFont
 //---------------------------------------------------------
@@ -1827,7 +1796,7 @@ void Appearance::on_pbSetFontFamily_clicked()
 
 void Appearance::on_helpButton_clicked()
 {
-    QString s("https://github.com/muse-sequencer/muse/wiki/style-sheets-and-colours");
+    QString s("https://github.com/muse-sequencer/muse/wiki/ui-customizing");
     MusEGlobal::muse->launchBrowser(s);
 }
 
