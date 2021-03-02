@@ -43,7 +43,6 @@ MTScale::MTScale(int r, QWidget* parent, int xs, bool _mode)
    : View(parent, xs, 1)
       {
       waveMode = _mode;
-      setToolTip(tr("Time scale.\nYou can hide beat numbers in Global settings->GUI."));
       setStatusTip(tr("Time scale: Set position (LMB) and range markers (left: CTRL+LMB or MMB, right: CTRL+RMB or RMB). Hold SHIFT to set (LMB) or delete (RMB) custom markers."));
       barLocator = false;
       raster = r;
