@@ -246,25 +246,25 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 		scroll->setMinimumHeight ( 50 );
 		scale->setMaximumHeight ( 70 );
 	}
-	box->setContentsMargins(0, 0, 0, 0);
-	box->setSpacing(0);  
-	box->addWidget ( scroll, 10 );
+    box->setContentsMargins(0, 0, 0, 0);
+    box->setSpacing(0);
+    box->addWidget ( scroll, 10 );
 
     int w = style()->pixelMetric(QStyle::PM_ScrollBarExtent);;
     scaleUp = new QToolButton;
     scaleUp->setObjectName("ScrollBarScaleButton");
-    scaleUp->setFixedSize(w, w);
+    scaleUp->setMaximumSize(w, w);
     scaleUp->setIcon (*plusSVGIcon);
     scaleUp->setToolTip(tr("Increase zoom level"));
     connect(scaleUp, &QToolButton::clicked, this, [this](){ stepScale(true); });
     scaleDown = new QToolButton;
     scaleDown->setObjectName("ScrollBarScaleButton");
-    scaleDown->setFixedSize(w, w);
+    scaleDown->setMaximumSize(w, w);
     scaleDown->setIcon (*minusSVGIcon);
     scaleDown->setToolTip(tr("Decrease zoom level"));
     connect(scaleDown, &QToolButton::clicked, this, [this](){ stepScale(false); });
 
-    box->addSpacing(2);
+    box->addSpacing(3);
     box->addWidget(scaleDown);
 	box->addWidget ( scale, 5 );
     box->addWidget(scaleUp);
