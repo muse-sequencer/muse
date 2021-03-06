@@ -36,7 +36,7 @@
     <partColor16 r="0" g="63" b="63"></partColor16>
     <partColor17 r="170" g="85" b="0"></partColor17>
     <partCanvasBg r="30" g="40" b="50"></partCanvasBg>
-    <dummyPartColor r="80" g="90" b="100"></dummyPartColor>
+    <dummyPartColor r="40" g="50" b="60"></dummyPartColor>
     <partCanvasCoarseRaster r="80" g="80" b="80"></partCanvasCoarseRaster>
     <partCanvasBeatRaster r="60" g="60" b="60"></partCanvasBeatRaster>
     <partCanvasFineRaster r="49" g="49" b="49"></partCanvasFineRaster>
@@ -69,19 +69,19 @@
     <panSliderColor2 r="0" g="120" b="86"></panSliderColor2>
     <gainSliderColor2 r="0" g="120" b="86"></gainSliderColor2>
     <auxSliderColor2 r="0" g="120" b="86"></auxSliderColor2>
-    <audioVolumeSliderColor2 r="0" g="0" b="0"></audioVolumeSliderColor2>
-    <midiVolumeSliderColor2 r="0" g="0" b="0"></midiVolumeSliderColor2>
+    <audioVolumeSliderColor2 r="10" g="20" b="30"></audioVolumeSliderColor2>
+    <midiVolumeSliderColor2 r="10" g="20" b="30"></midiVolumeSliderColor2>
     <audioVolumeHandleColor r="15" g="82" b="148"></audioVolumeHandleColor>
     <midiVolumeHandleColor r="15" g="82" b="148"></midiVolumeHandleColor>
     <audioControllerSliderDefaultColor2 r="0" g="120" b="86"></audioControllerSliderDefaultColor2>
     <audioPropertySliderDefaultColor2 r="0" g="120" b="86"></audioPropertySliderDefaultColor2>
     <midiControllerSliderDefaultColor2 r="0" g="120" b="86"></midiControllerSliderDefaultColor2>
     <midiPropertySliderDefaultColor2 r="0" g="120" b="86"></midiPropertySliderDefaultColor2>
-    <midiPatchReadoutColor r="0" g="255" b="127"></midiPatchReadoutColor>
+    <midiPatchReadoutColor r="85" g="255" b="127"></midiPatchReadoutColor>
     <knobFontColor r="190" g="190" b="190"></knobFontColor>
     <audioMeterPrimaryColor r="0" g="255" b="0"></audioMeterPrimaryColor>
     <midiMeterPrimaryColor r="0" g="255" b="0"></midiMeterPrimaryColor>
-    <meterBackgroundColor r="30" g="40" b="50"></meterBackgroundColor>
+    <meterBackgroundColor r="10" g="20" b="30"></meterBackgroundColor>
     <rackItemBackgroundColor r="30" g="40" b="50"></rackItemBackgroundColor>
     <rackItemBgActiveColor r="0" g="120" b="86"></rackItemBgActiveColor>
     <rackItemFontColor r="128" g="128" b="128"></rackItemFontColor>

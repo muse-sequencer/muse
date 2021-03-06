@@ -211,7 +211,7 @@ QToolBar QLabel#PosTicks,
 QToolBar QLabel#PosFrames,
 QToolBar QLabel#PaddedValueLabel {
     background-color: rgb(30,40,50);
-    border: 1px solid rgb(0,100,210);
+    border: 1px solid rgb(0,90,160);
     border-radius: 2px;
     height: 20px;
 }
@@ -247,7 +247,7 @@ QRadioButton::indicator:checked {
 }
 
 QWidget#Rack {
-    border: 1px solid rgb(0,120,86);
+    border: 1px solid rgb(0,90,160);
     /* border: 1px solid rgb(24,151,255); */
 }
 
@@ -329,6 +329,52 @@ QWidget#MidiStripTabWidget QTabBar::tab:focus {
     border-bottom: none;
 }
 
+/* Scroll bars */
+QScrollBar:horizontal {
+    border: none;
+    background-color: rgb(20, 30, 40);
+    height: 14px;
+    margin: 1px 1px 1px 1px;
+}
+QScrollBar::handle:horizontal {
+    border-radius: 2px;
+    border-color: rgb(0, 90, 160);
+    border-width: 1px; 
+    border-style: solid; 
+    background-color: rgb(20, 30, 40); 
+    /* min-width: 25px; */
+}     
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0;
+    height: 0;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background-color: rgb(20, 30, 40);
+    width: 14px;
+    margin: 1px 1px 1px 1px;
+}
+QScrollBar::handle:vertical {
+    border-radius: 2px;
+    border-color: rgb(0, 90, 160);
+    border-width: 1px; 
+    border-style: solid; 
+    background-color: rgb(20, 30, 40); 
+    /* min-height: 25px; */
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    width: 0;
+    height: 0;
+}
+
+QWidget#ScrollScaleZoomButton {
+    width: 8px;
+    height: 8px;
+    border: none;
+}
+
 
 /*** MusE properties ***/
 
@@ -378,7 +424,7 @@ MusEGui--AudioStripProperties {
     qproperty-meterWidthPerChannel: true;
 */
 	qproperty-meterFrame: true;
-	qproperty-meterFrameColor: rgb(25,144,255);
+	qproperty-meterFrameColor: rgb(15,82,148);
 /* Spacing between meters
     qproperty-meterSpacing: 4;
 */
@@ -405,7 +451,7 @@ MusEGui--MidiStripProperties {
 	qproperty-sliderFrameColor: rgb(15,82,148);
     qproperty-meterWidth: 10;
 	qproperty-meterFrame: true;
-	qproperty-meterFrameColor: rgb(25,144,255);
+	qproperty-meterFrameColor: rgb(15,82,148);
 }
 
 MusEGui--Meter {

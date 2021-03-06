@@ -1130,6 +1130,7 @@ void Strip::setLabelText()
         stxt = QString("* { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1,"
                        "stop:0.263158 rgba(%1, %2, %3, %4), stop:0.7547368 rgba(%5, %6, %7, %8));")
                 .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha()).arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
+        stxt += QString("color: black;");
     } else {
         QColor c(track->color());
         if (c.lightness() < 150)
