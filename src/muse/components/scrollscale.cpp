@@ -207,8 +207,8 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	scaleMax    = s2;
 	minVal      = min_;
 	maxVal      = max_;
-	up          = 0;
-	down        = 0;
+    up          = nullptr;
+    down        = nullptr;
 	logbase     = bas;
 	invers      = inv;
 	scaleVal    = 0;
@@ -218,7 +218,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
   
 	//fprintf(stderr, "ScrollScale: cs:%d cur:%f\n", cs, cur);
 	scale  = new QSlider (o);
-    scale->setObjectName("ScrollBarScaleSlider");
+    scale->setObjectName("ScrollScaleZoomSlider");
 	// Added by Tim. For some reason focus was on. 
 	// It messes up tabbing, and really should have a shortcut instead.
 	scale->setFocusPolicy(Qt::NoFocus);  
@@ -252,19 +252,19 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 
     int w = style()->pixelMetric(QStyle::PM_ScrollBarExtent);;
     scaleUp = new QToolButton;
-    scaleUp->setObjectName("ScrollBarScaleButton");
+    scaleUp->setObjectName("ScrollScaleZoomButton");
     scaleUp->setMaximumSize(w, w);
     scaleUp->setIcon (*plusSVGIcon);
     scaleUp->setToolTip(tr("Increase zoom level"));
     connect(scaleUp, &QToolButton::clicked, this, [this](){ stepScale(true); });
     scaleDown = new QToolButton;
-    scaleDown->setObjectName("ScrollBarScaleButton");
+    scaleDown->setObjectName("ScrollScaleZoomButton");
     scaleDown->setMaximumSize(w, w);
     scaleDown->setIcon (*minusSVGIcon);
     scaleDown->setToolTip(tr("Decrease zoom level"));
     connect(scaleDown, &QToolButton::clicked, this, [this](){ stepScale(false); });
 
-    box->addSpacing(3);
+    box->addSpacing(4);
     box->addWidget(scaleDown);
 	box->addWidget ( scale, 5 );
     box->addWidget(scaleUp);
@@ -285,7 +285,7 @@ void ScrollScale::setPageButtons ( bool flag )
 
 	if ( flag )
 	{
-		if ( up == 0 )
+		if ( up == nullptr )
 		{
 			up = new QToolButton;
 			up->setIcon ( QIcon(":/svg/up_vee.svg") );

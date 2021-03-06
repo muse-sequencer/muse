@@ -160,5 +160,9 @@
         <file>svg/filesave_template.svg</file>
         <file>svg/range_to_selection.svg</file>
         <file>svg/quantize.svg</file>
+        <file>svg/scroll_down.svg</file>
+        <file>svg/scroll_left.svg</file>
+        <file>svg/scroll_right.svg</file>
+        <file>svg/scroll_up.svg</file>
     </qresource>
 </RCC>
