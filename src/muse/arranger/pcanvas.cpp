@@ -1983,13 +1983,16 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       else
           partColor = MusEGlobal::config.partColors[part->colorIndex()];
 
+      int gradS = MusEGlobal::config.partGradientStrength + 100;
+      gradS = qBound(100, gradS, 200);
+
       if (item->isMoving())
       {
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
             QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
             gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            gradient.setColorAt(1, c.darker(gradS));
             brush = QBrush(gradient);
       }
       else
@@ -2012,7 +2015,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
             QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
             gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            gradient.setColorAt(1, c.darker(gradS));
             brush = QBrush(gradient);
       }
       else
@@ -2025,15 +2028,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
           // TODO (kybos)
-         if (useGradients) {
-             QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
-             gradient.setColorAt(0, c);
-             gradient.setColorAt(1, c.darker(120));
-             brush = QBrush(gradient);
-
-//             brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
-         } else
-             brush.setColor(c);
+          QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
+          gradient.setColorAt(0, c);
+          gradient.setColorAt(1, c.darker(gradS));
+          brush = QBrush(gradient);
+          //             brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
       }
 
       int h = mbbr.height();
@@ -3681,16 +3680,19 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
           QColor c(MusEGlobal::config.dummyPartColor);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
           // TODO (kybos)
-          if (useGradients) {
-              QLinearGradient gradient(mbb_gr.x(), mbb_gr.y(), mbb_gr.x(), mbb_gr.y() + mbb_gr.height());    // Inside the border
-              gradient.setColorAt(0, c);
-              gradient.setColorAt(1, c.darker(120));
-              QBrush brush(gradient);
-              p.fillRect(mbr_gr, brush);
-          } else {
-              QBrush brush(c);
-              p.fillRect(mbr_gr, brush);
-          }
+          //          if (useGradients) {
+          int gradS = MusEGlobal::config.partGradientStrength + 100;
+          gradS = qBound(100, gradS, 200);
+
+          QLinearGradient gradient(mbb_gr.x(), mbb_gr.y(), mbb_gr.x(), mbb_gr.y() + mbb_gr.height());    // Inside the border
+          gradient.setColorAt(0, c);
+          gradient.setColorAt(1, c.darker(120));
+          QBrush brush(gradient);
+          p.fillRect(mbr_gr, brush);
+          //          } else {
+          //              QBrush brush(c);
+          //              p.fillRect(mbr_gr, brush);
+          //          }
       }
 
       int mx0_lim = mbbx;

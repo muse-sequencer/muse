@@ -289,6 +289,8 @@ struct GlobalConfigValues {
       bool cascadeStylesheets;
       bool showIconsInMenus;
       bool useNativeStandardDialogs;
+      int trackGradientStrength;
+      int partGradientStrength;
 
       bool enableAlsaMidiDriver; // Whether to enable the ALSA midi driver
       int division;

@@ -338,15 +338,14 @@ void TList::paint(const QRect& r)
                 p.setPen(Qt::black);
         }
 
-        // TODO kybos
-//        QBrush br = QBrush(MusECore::gGradientFromQColor(bg, QPointF(x1, yy), QPointF(x1, yy+trackHeight)));
+        int gradS = MusEGlobal::config.trackGradientStrength + 100;
+        gradS = qBound(100, gradS, 200);
         QLinearGradient gradient(x1, yy, x1, yy+trackHeight);
         gradient.setColorAt(0, bg);
-        gradient.setColorAt(1, bg.darker(110));
+        gradient.setColorAt(1, bg.darker(gradS));
         QBrush br(gradient);
 
         p.fillRect(x1, yy, w, trackHeight, br);
-//        p.fillRect(x1, yy, w, trackHeight, bg);
 
         if (track->selected() && _sel3d) {
             mask.setStart(QPointF(0, yy));
