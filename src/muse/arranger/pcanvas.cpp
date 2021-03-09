@@ -89,6 +89,8 @@
 #include "part.h"
 #include "citem.h"
 
+#include <QDebug>
+
 using MusECore::Undo;
 using MusECore::UndoOp;
 
@@ -101,8 +103,6 @@ using MusECore::UndoOp;
 using std::set;
 
 namespace MusEGui {
-
-static const bool useGradients = true;
 
 const int PartCanvas::_automationPointDetectDist = 4;
 const int PartCanvas::_automationPointWidthUnsel = 4;
@@ -1984,7 +1984,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
           partColor = MusEGlobal::config.partColors[part->colorIndex()];
 
       int gradS = MusEGlobal::config.partGradientStrength + 100;
-      gradS = qBound(100, gradS, 200);
+      gradS = qBound(100, gradS, 300);
 
       if (item->isMoving())
       {
@@ -2021,18 +2021,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       else
       {
           QColor c = partColor;
-//          if (cidx == PART_COLOR_VAR)
-//              c = part->track()->color();
-//          else
-//            c = MusEGlobal::config.partColors[cidx];
-
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-          // TODO (kybos)
           QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
           gradient.setColorAt(0, c);
           gradient.setColorAt(1, c.darker(gradS));
           brush = QBrush(gradient);
-          //             brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
       }
 
       int h = mbbr.height();
@@ -2088,19 +2081,36 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
           p.drawConvexPolygon(points, pts);
         }
 
-        // Draw remaining 'hidden events' decorations with 'jagged' edges...
+        {
+            int part_r, part_g, part_b, brightness, color_brightness;
+                partColor.getRgb(&part_r, &part_g, &part_b);
+            brightness =  part_r*29 + part_g*59 + part_b*12;
+            if ((brightness >= 12000 && !item_selected))
+              color_brightness=96; //0;    // too light: use dark color
+                else
+              color_brightness=180; //255;   // too dark: use lighter color
+            QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+//            p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
+            // Draw remaining 'hidden events' decorations with 'jagged' edges...
+//            if ((brightness >= 12000 && !item_selected))
+//                color_brightness=30; //0;    // too light: use dark color
+//            else
+//                color_brightness=127; //255;   // too dark: use lighter color
+//            QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+            //        p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
+//            QColor c;
+//            qDebug() << partColor.value();
+//            if (partColor.value() > 170 && !item_selected)
+//                c.setRgb(255,0,0,MusEGlobal::config.globalAlphaBlend);
+//            c.setRgb(100,100,100,MusEGlobal::config.globalAlphaBlend);
+//            else
+//                c.setRgb(160,160,160,MusEGlobal::config.globalAlphaBlend);
+            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker(gradS));
+            p.setBrush(QBrush(gradient));
+        }
 
-        int part_r, part_g, part_b, brightness, color_brightness;
-
-//        MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
-        partColor.getRgb(&part_r, &part_g, &part_b);
-        brightness =  part_r*29 + part_g*59 + part_b*12;
-        if ((brightness >= 12000 && !item_selected))
-          color_brightness=96; //0;    // too light: use dark color
-        else
-          color_brightness=180; //255;   // too dark: use lighter color
-        QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
-        p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
         if(het & MusECore::Part::RightEventsHidden)
         {
           pts = 0;
@@ -2237,29 +2247,15 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         QLine l3(lbx_c, ye_0, rbx_c, ye_0);
         p.drawLine(l3);  // Bottom line
 
-      if (MusEGlobal::config.canvasShowPartType & 1) {     // show names
-            // draw name
-            // FN: Set text color depending on part color (black / white)
-            int part_r, part_g, part_b, brightness;
-            // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
-            //  get the lowest colour in the gradient used to draw the part.
+        if (MusEGlobal::config.canvasShowPartType & 1) {     // show names
             QRect tr = mbbr;
             tr.setX(tr.x() + 3);
-            MusECore::gGradientFromQColor(partColor, tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
-            brightness =  part_r*29 + part_g*59 + part_b*12;
-            bool rev = brightness >= 12000 && !item_selected;
             p.setFont(MusEGlobal::config.fonts[2]);
-            if (rev)
-              p.setPen(Qt::white);
-            else
-              p.setPen(Qt::black);
+            p.setPen(Qt::black);
             p.drawText(tr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
-            if (rev)
-              p.setPen(Qt::black);
-            else
-              p.setPen(Qt::white);
+            p.setPen(Qt::white);
             p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
-            }
+        }
 
       p.setWorldMatrixEnabled(true);
       }
@@ -3679,20 +3675,14 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
           
           QColor c(MusEGlobal::config.dummyPartColor);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-          // TODO (kybos)
-          //          if (useGradients) {
           int gradS = MusEGlobal::config.partGradientStrength + 100;
-          gradS = qBound(100, gradS, 200);
+          gradS = qBound(100, gradS, 300);
 
           QLinearGradient gradient(mbb_gr.x(), mbb_gr.y(), mbb_gr.x(), mbb_gr.y() + mbb_gr.height());    // Inside the border
           gradient.setColorAt(0, c);
-          gradient.setColorAt(1, c.darker(120));
+          gradient.setColorAt(1, c.darker(gradS));
           QBrush brush(gradient);
           p.fillRect(mbr_gr, brush);
-          //          } else {
-          //              QBrush brush(c);
-          //              p.fillRect(mbr_gr, brush);
-          //          }
       }
 
       int mx0_lim = mbbx;

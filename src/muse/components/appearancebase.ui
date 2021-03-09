@@ -1390,7 +1390,7 @@
             <item>
              <widget class="QSpinBox" name="partGradientSpin">
               <property name="maximum">
-               <number>100</number>
+               <number>200</number>
               </property>
              </widget>
             </item>
