@@ -332,20 +332,15 @@ void TList::paint(const QRect& r)
         }
         else {
             bg = track->color();
-            if (bg.lightness() < 170)
+            if (bg.value() < 230)
                 p.setPen(Qt::white);
             else
                 p.setPen(Qt::black);
         }
 
-        int gradS = MusEGlobal::config.trackGradientStrength + 100;
-        gradS = qBound(100, gradS, 200);
-        QLinearGradient gradient(x1, yy, x1, yy+trackHeight);
-        gradient.setColorAt(0, bg);
-        gradient.setColorAt(1, bg.darker(gradS));
-        QBrush br(gradient);
-
-        p.fillRect(x1, yy, w, trackHeight, br);
+        p.fillRect(x1, yy, w, trackHeight,
+                   MusECore::getGradientFromColor(bg, QPoint(x1,yy), QPoint(x1, yy+trackHeight),
+                                qBound(0, MusEGlobal::config.trackGradientStrength, 100)));
 
         if (track->selected() && _sel3d) {
             mask.setStart(QPointF(0, yy));

@@ -1983,17 +1983,13 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       else
           partColor = MusEGlobal::config.partColors[part->colorIndex()];
 
-      int gradS = MusEGlobal::config.partGradientStrength + 100;
-      gradS = qBound(100, gradS, 300);
+      int gradS = qBound(0, MusEGlobal::config.partGradientStrength, 200);
 
       if (item->isMoving())
       {
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker(gradS));
-            brush = QBrush(gradient);
+            brush = MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS);
       }
       else
       if (item_selected)
@@ -2013,19 +2009,13 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       {
             QColor c(Qt::white);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker(gradS));
-            brush = QBrush(gradient);
+            brush = MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS);
       }
       else
       {
           QColor c = partColor;
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-          QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
-          gradient.setColorAt(0, c);
-          gradient.setColorAt(1, c.darker(gradS));
-          brush = QBrush(gradient);
+          brush = MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS);
       }
 
       int h = mbbr.height();
@@ -3675,14 +3665,8 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
           
           QColor c(MusEGlobal::config.dummyPartColor);
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-          int gradS = MusEGlobal::config.partGradientStrength + 100;
-          gradS = qBound(100, gradS, 300);
-
-          QLinearGradient gradient(mbb_gr.x(), mbb_gr.y(), mbb_gr.x(), mbb_gr.y() + mbb_gr.height());    // Inside the border
-          gradient.setColorAt(0, c);
-          gradient.setColorAt(1, c.darker(gradS));
-          QBrush brush(gradient);
-          p.fillRect(mbr_gr, brush);
+          p.fillRect(mbr_gr, MusECore::getGradientFromColor(c, mbb_gr.topLeft(), mbb_gr.bottomLeft(),
+                                        qBound(0, MusEGlobal::config.partGradientStrength, 200)));
       }
 
       int mx0_lim = mbbx;

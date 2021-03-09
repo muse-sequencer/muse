@@ -740,6 +740,15 @@ QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPoin
   return gradient;
 }
 
+QGradient getGradientFromColor(const QColor& c, const QPoint& start, const QPoint& stop, const int strength)
+{
+    QLinearGradient gradient(start, stop);
+    gradient.setColorAt(0, c.lighter(100 + strength/2));
+    gradient.setColorAt(.5, c);
+    gradient.setColorAt(1, c.darker(100 + strength/2));
+    return std::move(gradient);
+}
+
 QPainterPath roundedPath(const QRect& r, int xrad, int yrad, Corner roundCorner)
 {
   return roundedPath(r.x(), r.y(),
