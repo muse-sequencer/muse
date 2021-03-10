@@ -332,10 +332,10 @@ void TList::paint(const QRect& r)
         }
         else {
             bg = track->color();
-            if (bg.value() < 230)
-                p.setPen(Qt::white);
-            else
+            if (MusECore::isColorBright(bg))
                 p.setPen(Qt::black);
+            else
+                p.setPen(Qt::white);
         }
 
         p.fillRect(x1, yy, w, trackHeight,

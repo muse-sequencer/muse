@@ -2072,33 +2072,15 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         }
 
         {
-            int part_r, part_g, part_b, brightness, color_brightness;
-                partColor.getRgb(&part_r, &part_g, &part_b);
-            brightness =  part_r*29 + part_g*59 + part_b*12;
-            if ((brightness >= 12000 && !item_selected))
-              color_brightness=96; //0;    // too light: use dark color
-                else
-              color_brightness=180; //255;   // too dark: use lighter color
-            QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
-//            p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
             // Draw remaining 'hidden events' decorations with 'jagged' edges...
-//            if ((brightness >= 12000 && !item_selected))
-//                color_brightness=30; //0;    // too light: use dark color
-//            else
-//                color_brightness=127; //255;   // too dark: use lighter color
-//            QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
-            //        p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
-//            QColor c;
-//            qDebug() << partColor.value();
-//            if (partColor.value() > 170 && !item_selected)
-//                c.setRgb(255,0,0,MusEGlobal::config.globalAlphaBlend);
-//            c.setRgb(100,100,100,MusEGlobal::config.globalAlphaBlend);
-//            else
-//                c.setRgb(160,160,160,MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker(gradS));
-            p.setBrush(QBrush(gradient));
+            int color_brightness;
+            if (MusECore::isColorBright(partColor) && !item_selected)
+                color_brightness=96; //0;    // too light: use dark color
+            else
+                color_brightness=180; //255;   // too dark: use lighter color
+            QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+            // p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
+            p.setBrush(MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS));
         }
 
         if(het & MusECore::Part::RightEventsHidden)
