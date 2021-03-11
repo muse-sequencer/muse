@@ -746,23 +746,22 @@ QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPoin
 QGradient getGradientFromColor(const QColor& c, const QPoint& start, const QPoint& stop, const int strength)
 {
     QLinearGradient gradient(start, stop);
-    gradient.setColorAt(0, c);
-    gradient.setColorAt(1, c.darker(100 + strength));
-// this doesn't work so well with light colors...
-//    gradient.setColorAt(0, c.lighter(100 + strength/2));
-//    gradient.setColorAt(.5, c);
-//    gradient.setColorAt(1, c.darker(100 + strength/2));
+
+    gradient.setColorAt(0, c.lighter(100 + strength/3));
+    gradient.setColorAt(.5, c);
+    gradient.setColorAt(1, c.darker(100 + strength/3*2));
+
     return std::move(gradient);
 }
 
 bool isColorBright(const QColor& c)
 {
-    return getPerceivedLuminance(c) > 150;
+    return getPerceivedLuminance(c) > 140;
 }
 
 int getPerceivedLuminance(const QColor& c)
 {
-    // a fairly good approximation of perceived luminance
+    // a fairly good approximation of perceived luminance (kybos)
     return qSqrt(c.red() * c.red() * .241 +
                  c.green() * c.green() * .691 +
                  c.blue() * c.blue() * .068);
