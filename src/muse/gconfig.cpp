@@ -253,8 +253,8 @@ GlobalConfigValues config = {
       false,                        // cascadeStylesheets
       true,                         // showIconsInMenus
       true,                         // useNativeStandardDialogs
-      12,                           // trackGradientStrength
-      24,                           // partGradientStrength
+      16,                           // trackGradientStrength
+      64,                           // partGradientStrength
       
       false,                        // enableAlsaMidiDriver Whether to enable the ALSA midi driver
       384,                          // division;

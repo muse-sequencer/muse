@@ -757,7 +757,7 @@ QGradient getGradientFromColor(const QColor& c, const QPoint& start, const QPoin
 
 bool isColorBright(const QColor& c)
 {
-    return getPerceivedLuminance(c) > 145;
+    return getPerceivedLuminance(c) > 150;
 }
 
 int getPerceivedLuminance(const QColor& c)
