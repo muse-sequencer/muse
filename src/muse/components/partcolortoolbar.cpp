@@ -10,7 +10,7 @@
 namespace MusEGui {
 
 PartColorToolbar::PartColorToolbar(QWidget *parent)
-    : QToolBar(parent)
+    : QToolBar(tr("Part Colors"), parent)
 {
     setObjectName("Part color toolbar");
 
