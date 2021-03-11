@@ -807,7 +807,7 @@ MusE::MusE() : QMainWindow()
       //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
       //          instead of /appending/ with addToolBar().
 
-      tools = addToolBar(tr("File buttons"));
+      tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File buttons");
       tools->addAction(fileNewAction);
       tools->addAction(fileNewFromTemplateAction);
@@ -818,7 +818,7 @@ MusE::MusE() : QMainWindow()
       tools->addAction(whatsthis);
 
       QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
-      undoToolbar->setObjectName("Undo/Redo tools");
+      undoToolbar->setObjectName("Undo/Redo");
       undoToolbar->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
@@ -829,7 +829,7 @@ MusE::MusE() : QMainWindow()
       metronomeToolbar->setObjectName("Metronome tool");
       metronomeToolbar->addAction(MusEGlobal::metronomeAction);
 
-      cpuLoadToolbar = new CpuToolbar(tr("Cpu load"), this);
+      cpuLoadToolbar = new CpuToolbar(tr("Cpu Load"), this);
       addToolBar(cpuLoadToolbar);
       cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));

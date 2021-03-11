@@ -146,8 +146,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     //          toolbar with the same object name, it /replaces/ it using insertToolBar(),
     //          instead of /appending/ with addToolBar().
 
-    QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-    undo_tools->setObjectName("Undo/Redo tools");
+    QToolBar* undo_tools=addToolBar(tr("Undo/Redo"));
+    undo_tools->setObjectName("Undo/Redo");
     undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
     QToolBar* panic_toolbar = addToolBar(tr("Panic"));

@@ -57,7 +57,7 @@ const QVector<VisibleToolB> visTrackList = {
 
 
 VisibleTracks::VisibleTracks(QWidget* parent, const char*)
-    : QToolBar(tr("Visible track types"), parent)
+    : QToolBar(tr("Visible Track Types"), parent)
 {
     setObjectName("Visible track types");
     actions = new QActionGroup(parent);  // Parent needed.

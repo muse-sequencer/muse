@@ -113,6 +113,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   addToolBar(visTracks);
 
   partColorToolBar = new PartColorToolbar(this);
+  partColorToolBar->setObjectName("partColors");
   addToolBar(partColorToolBar);
   connect(partColorToolBar, SIGNAL(partColorTriggered(int)), arranger->getCanvas(), SLOT(setPartColor(int)));
   connect(partColorToolBar, SIGNAL(partColorIndexChanged(int)), arranger->getCanvas(), SLOT(setCurrentColorIndex(int)));
