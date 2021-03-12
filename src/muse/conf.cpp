@@ -1210,6 +1210,12 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "cursorSize")
                             MusEGlobal::config.cursorSize = xml.parseInt();
 
+                        else if (tag == "trackGradientStrength")
+                            MusEGlobal::config.trackGradientStrength = xml.parseInt();
+
+                        else if (tag == "partGradientStrength")
+                            MusEGlobal::config.partGradientStrength = xml.parseInt();
+
                         else if (tag == "cascadeStylesheets")
                             MusEGlobal::config.cascadeStylesheets = xml.parseInt();
 
@@ -2133,6 +2139,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "iconSize", MusEGlobal::config.iconSize);
       xml.intTag(level, "cursorSize", MusEGlobal::config.cursorSize);
+      xml.intTag(level, "trackGradientStrength", MusEGlobal::config.trackGradientStrength);
+      xml.intTag(level, "partGradientStrength", MusEGlobal::config.partGradientStrength);
       xml.intTag(level, "cascadeStylesheets", MusEGlobal::config.cascadeStylesheets);
       xml.intTag(level, "showIconsInMenus", MusEGlobal::config.showIconsInMenus);
       xml.intTag(level, "useNativeStandardDialogs", MusEGlobal::config.useNativeStandardDialogs);

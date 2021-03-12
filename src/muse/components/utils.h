@@ -48,6 +48,9 @@ extern QString u32bitmap2String(unsigned int bm);
 extern unsigned int string2u32bitmap(const QString& str);
 extern bool autoAdjustFontSize(QFrame* w, const QString& s, QFont& targetFont, bool ignoreWidth = false, bool ignoreHeight = false, int max = 10, int min = 4);
 extern QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPointF& finalStop);
+extern QGradient getGradientFromColor(const QColor& c, const QPoint& start, const QPoint& stop, const int strength);
+extern bool isColorBright(const QColor& c);
+extern int getPerceivedLuminance(const QColor& c);
 
 extern int num2cols(int min, int max);
 extern QFrame* hLine(QWidget* parent);

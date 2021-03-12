@@ -1242,6 +1242,26 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="cbShowIconsInMenus">
+            <property name="text">
+             <string>Show icons in menus</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cbUseNativeStandardDialogs">
+            <property name="text">
+             <string>Use native standard dialogs</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
             <property name="bottomMargin">
              <number>0</number>
@@ -1320,24 +1340,61 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="cbShowIconsInMenus">
-            <property name="text">
-             <string>Show icons in menus</string>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <property name="spacing">
+             <number>6</number>
             </property>
-            <property name="checked">
-             <bool>true</bool>
+            <property name="bottomMargin">
+             <number>0</number>
             </property>
-           </widget>
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Track gradient strength</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="trackGradientSpin">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="cbUseNativeStandardDialogs">
-            <property name="text">
-             <string>Use native standard dialogs</string>
+           <layout class="QHBoxLayout" name="horizontalLayout_11">
+            <property name="bottomMargin">
+             <number>0</number>
             </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
+            <item>
+             <widget class="QLabel" name="label_8">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Part gradient strength</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="partGradientSpin">
+              <property name="maximum">
+               <number>200</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

@@ -89,6 +89,8 @@
 #include "part.h"
 #include "citem.h"
 
+#include <QDebug>
+
 using MusECore::Undo;
 using MusECore::UndoOp;
 
@@ -1930,9 +1932,9 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       int xs_1 = xs_0 + 1;
       if(xs_1 > xe_0)
         xs_1 = xe_0;
-      int xs_2 = xs_0 + 2;
-      if(xs_2 > xe_0)
-        xs_2 = xe_0;
+//      int xs_2 = xs_0 + 2;
+//      if(xs_2 > xe_0)
+//        xs_2 = xe_0;
       int xs_j = xs_0 + 8;
       if(xs_j > xe_0)
         xs_j = xe_0;
@@ -1940,31 +1942,31 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       int xe_1 = xe_0 - 1;
       if(xe_1 < xs_0)
         xe_1 = xs_0;
-      int xe_2 = xe_0 - 2;
-      if(xe_2 < xs_0)
-        xe_2 = xs_0;
+//      int xe_2 = xe_0 - 2;
+//      if(xe_2 < xs_0)
+//        xe_2 = xs_0;
       int xe_j = xe_0 - 8;
       if(xe_j < xs_0)
         xe_j = xs_0;
 
       int ys_0 = mbbr.y();
       int ye_0 = ys_0 + mbbr.height();
-      int ys_1 = ys_0 + 1;
-      if(ys_1 > ye_0)
-        ys_1 = ye_0;
-      int ys_2 = ys_0 + 2;
-      if(ys_2 > ye_0)
-        ys_2 = ye_0;
-      int ys_3 = ys_0 + 3;
-      if(ys_3 > ye_0)
-        ys_3 = ye_0;
+//      int ys_1 = ys_0 + 1;
+//      if(ys_1 > ye_0)
+//        ys_1 = ye_0;
+//      int ys_2 = ys_0 + 2;
+//      if(ys_2 > ye_0)
+//        ys_2 = ye_0;
+//      int ys_3 = ys_0 + 3;
+//      if(ys_3 > ye_0)
+//        ys_3 = ye_0;
 
-      int ye_1 = ye_0 - 1;
-      if(ye_1 < ys_0)
-        ye_1 = ys_0;
-      int ye_2 = ye_0 - 2;
-      if(ye_2 < ys_0)
-        ye_2 = ys_0;
+//      int ye_1 = ye_0 - 1;
+//      if(ye_1 < ys_0)
+//        ye_1 = ys_0;
+//      int ye_2 = ye_0 - 2;
+//      if(ye_2 < ys_0)
+//        ye_2 = ys_0;
 
       int mrxs_0 = mr.x();
       int mrxe_0 = mrxs_0 + mr.width();
@@ -1981,14 +1983,13 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       else
           partColor = MusEGlobal::config.partColors[part->colorIndex()];
 
+      int gradS = qBound(0, MusEGlobal::config.partGradientStrength, 200);
+
       if (item->isMoving())
       {
             QColor c(Qt::gray);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
-            brush = QBrush(gradient);
+            brush = MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS);
       }
       else
       if (item_selected)
@@ -2008,21 +2009,13 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       {
             QColor c(Qt::white);
             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-            QLinearGradient gradient(mbbr.topLeft(), mbbr.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
-            brush = QBrush(gradient);
+            brush = MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS);
       }
       else
       {
           QColor c = partColor;
-//          if (cidx == PART_COLOR_VAR)
-//              c = part->track()->color();
-//          else
-//            c = MusEGlobal::config.partColors[cidx];
-
           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-          brush = QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft()));
+          brush = MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS);
       }
 
       int h = mbbr.height();
@@ -2078,19 +2071,18 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
           p.drawConvexPolygon(points, pts);
         }
 
-        // Draw remaining 'hidden events' decorations with 'jagged' edges...
+        {
+            // Draw remaining 'hidden events' decorations with 'jagged' edges...
+            int color_brightness;
+            if (MusECore::isColorBright(partColor) && !item_selected)
+                color_brightness=96; //0;    // too light: use dark color
+            else
+                color_brightness=180; //255;   // too dark: use lighter color
+            QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+            // p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
+            p.setBrush(MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS));
+        }
 
-        int part_r, part_g, part_b, brightness, color_brightness;
-
-//        MusEGlobal::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
-        partColor.getRgb(&part_r, &part_g, &part_b);
-        brightness =  part_r*29 + part_g*59 + part_b*12;
-        if ((brightness >= 12000 && !item_selected))
-          color_brightness=96; //0;    // too light: use dark color
-        else
-          color_brightness=180; //255;   // too dark: use lighter color
-        QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
-        p.setBrush(QBrush(MusECore::gGradientFromQColor(c, mbbr.topLeft(), mbbr.bottomLeft())));
         if(het & MusECore::Part::RightEventsHidden)
         {
           pts = 0;
@@ -2227,29 +2219,15 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         QLine l3(lbx_c, ye_0, rbx_c, ye_0);
         p.drawLine(l3);  // Bottom line
 
-      if (MusEGlobal::config.canvasShowPartType & 1) {     // show names
-            // draw name
-            // FN: Set text color depending on part color (black / white)
-            int part_r, part_g, part_b, brightness;
-            // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
-            //  get the lowest colour in the gradient used to draw the part.
+        if (MusEGlobal::config.canvasShowPartType & 1) {     // show names
             QRect tr = mbbr;
             tr.setX(tr.x() + 3);
-            MusECore::gGradientFromQColor(partColor, tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
-            brightness =  part_r*29 + part_g*59 + part_b*12;
-            bool rev = brightness >= 12000 && !item_selected;
             p.setFont(MusEGlobal::config.fonts[2]);
-            if (rev)
-              p.setPen(Qt::white);
-            else
-              p.setPen(Qt::black);
+            p.setPen(Qt::black);
             p.drawText(tr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
-            if (rev)
-              p.setPen(Qt::black);
-            else
-              p.setPen(Qt::white);
+            p.setPen(Qt::white);
             p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
-            }
+        }
 
       p.setWorldMatrixEnabled(true);
       }
@@ -3667,13 +3645,10 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& /*m
 //             fprintf(stderr, "\n...gradient in range. Drawing gradient at:\nmbr_gr.x:%8d\t\tmbr_gr.y:%8d\t\tmbr_gr.w:%8d\t\tmbr_gr.h:%8d\n\n",
 //                     mbr_gr.x(), mbr_gr.y(), mbr_gr.width(), mbr_gr.height());
           
-        QColor c(MusEGlobal::config.dummyPartColor);
-        c.setAlpha(MusEGlobal::config.globalAlphaBlend);
-        QLinearGradient gradient(mbb_gr.x(), mbb_gr.y(), mbb_gr.x(), mbb_gr.y() + mbb_gr.height());    // Inside the border
-        gradient.setColorAt(0, c);
-        gradient.setColorAt(1, c.darker());
-        QBrush brush(gradient);
-        p.fillRect(mbr_gr, brush);
+          QColor c(MusEGlobal::config.dummyPartColor);
+          c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+          p.fillRect(mbr_gr, MusECore::getGradientFromColor(c, mbb_gr.topLeft(), mbb_gr.bottomLeft(),
+                                        qBound(0, MusEGlobal::config.partGradientStrength, 200)));
       }
 
       int mx0_lim = mbbx;
@@ -3755,7 +3730,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       line_color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       QPen pen1(line_color);
       pen1.setCosmetic(true);
-      QString txt;
+//      QString txt;
 
       // Store first value for later
       double yfirst;
@@ -3903,8 +3878,8 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
 
     double min, max;
     cl->range(&min,&max);
-    const QColor line_col(cl->color());
-    const QColor vtx_col(line_col.red() ^ 255, line_col.green() ^ 255, line_col.blue() ^ 255);
+//    const QColor line_col(cl->color());
+//    const QColor vtx_col(line_col.red() ^ 255, line_col.green() ^ 255, line_col.blue() ^ 255);
 
     for(MusECore::ciCtrl ic = cl->begin(); ic != cl->end(); ++ic)
     {
@@ -3966,7 +3941,7 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
       const QColor line_col = cl->color();
       QColor txt_bk((line_col.red() + line_col.green() + line_col.blue()) / 3 >= 128 ? Qt::black : Qt::white);
       txt_bk.setAlpha(150);
-      QString txt;
+//      QString txt;
 
       // Store first value for later
       double yfirst;

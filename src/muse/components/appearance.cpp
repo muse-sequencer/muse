@@ -694,6 +694,12 @@ void Appearance::resetValues()
       cursorSizeSpin->blockSignals(true);
       cursorSizeSpin->setValue(config->cursorSize);
       cursorSizeSpin->blockSignals(false);
+      trackGradientSpin->blockSignals(true);
+      trackGradientSpin->setValue(config->trackGradientStrength);
+      trackGradientSpin->blockSignals(false);
+      partGradientSpin->blockSignals(true);
+      partGradientSpin->setValue(config->partGradientStrength);
+      partGradientSpin->blockSignals(false);
 
       cascadeStylesheetsCheckBox->setChecked(config->cascadeStylesheets);
       cbShowIconsInMenus->setChecked(config->showIconsInMenus);
@@ -952,6 +958,14 @@ bool Appearance::apply()
       if (config->cursorSize != cursorSizeSpin->value()) {
           restart_required = true;
           config->cursorSize = cursorSizeSpin->value();
+      }
+
+      if (config->trackGradientStrength != trackGradientSpin->value()) {
+          config->trackGradientStrength = trackGradientSpin->value();
+      }
+
+      if (config->partGradientStrength != partGradientSpin->value()) {
+          config->partGradientStrength = partGradientSpin->value();
       }
 
       if (config->cascadeStylesheets != cascadeStylesheetsCheckBox->isChecked()) {

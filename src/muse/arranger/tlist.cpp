@@ -64,6 +64,7 @@
 #include "operations.h"
 #include "shortcuts.h"
 #include "drumedit.h"
+#include "utils.h"
 
 
 #ifdef DSSI_SUPPORT
@@ -331,12 +332,15 @@ void TList::paint(const QRect& r)
         }
         else {
             bg = track->color();
-            if (bg.lightness() < 170)
-                p.setPen(Qt::white);
-            else
+            if (MusECore::isColorBright(bg))
                 p.setPen(Qt::black);
+            else
+                p.setPen(Qt::white);
         }
-        p.fillRect(x1, yy, w, trackHeight, bg);
+
+        p.fillRect(x1, yy, w, trackHeight,
+                   MusECore::getGradientFromColor(bg, QPoint(x1,yy), QPoint(x1, yy+trackHeight),
+                                qBound(0, MusEGlobal::config.trackGradientStrength, 100)));
 
         if (track->selected() && _sel3d) {
             mask.setStart(QPointF(0, yy));

@@ -1133,10 +1133,10 @@ void Strip::setLabelText()
         stxt += QString("color: black;");
     } else {
         QColor c(track->color());
-        if (c.lightness() < 150)
+        if (!MusECore::isColorBright(c))
             c = c.lighter(130);
         stxt = "QLabel { background-color:" + c.name() + ";";
-        if (c.lightness() < 64)
+        if (MusECore::getPerceivedLuminance(c) < 64)
             stxt += QStringLiteral("color: white;");
         else
             stxt += QStringLiteral("color: black;");
@@ -3099,7 +3099,7 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
         // ScrDirect mode is one-time only on press with modifier.
         //if(scrollMode != SliderBase::ScrDirect)
-          at->recordAutomation(id, d_cur_val);
+        at->recordAutomation(id, d_cur_val);
         at->setParam(id, d_cur_val);  // Schedules a timed control change.
         at->enableController(id, false);
 

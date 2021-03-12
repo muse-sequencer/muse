@@ -31,6 +31,7 @@
 #include <QMimeData>
 #include <QPainter>
 #include <QFileInfo>
+#include <QtMath>
 
 #include "audio.h"
 #include "audiodev.h"
@@ -38,6 +39,8 @@
 #include "utils.h"
 #include "xml.h"
 #include "gconfig.h"
+
+#include <QDebug>
 
 namespace MusECore {
 
@@ -738,6 +741,30 @@ QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPoin
   gradient.setColorAt(1, c1);
   
   return gradient;
+}
+
+QGradient getGradientFromColor(const QColor& c, const QPoint& start, const QPoint& stop, const int strength)
+{
+    QLinearGradient gradient(start, stop);
+
+    gradient.setColorAt(0, c.lighter(100 + strength/3));
+    gradient.setColorAt(.5, c);
+    gradient.setColorAt(1, c.darker(100 + strength/3*2));
+
+    return std::move(gradient);
+}
+
+bool isColorBright(const QColor& c)
+{
+    return getPerceivedLuminance(c) > 140;
+}
+
+int getPerceivedLuminance(const QColor& c)
+{
+    // a fairly good approximation of perceived luminance (kybos)
+    return qSqrt(c.red() * c.red() * .241 +
+                 c.green() * c.green() * .691 +
+                 c.blue() * c.blue() * .068);
 }
 
 QPainterPath roundedPath(const QRect& r, int xrad, int yrad, Corner roundCorner)
