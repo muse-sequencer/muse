@@ -676,6 +676,7 @@ MusE::MusE() : QMainWindow()
       settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
       settingsShortcutsAction = new QAction(*MusEGui::keySVGIcon, tr("Keyboard Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
+      follow->setObjectName("CheckmarkOnly");
       QActionGroup *followAG = new QActionGroup(this);
       followAG->setExclusive(true);
       dontFollowAction = new QAction(tr("Don't Follow Song"), followAG);
@@ -4948,6 +4949,12 @@ void MusE::setStatusBarText(const QString &message, int timeout) {
 void MusE::clearStatusBarText() {
     if (MusEGlobal::config.showStatusBar)
         statusBar()->clearMessage();
+}
+
+QMenu* MusE::createPopupMenu() {
+    QMenu* menu= QMainWindow::createPopupMenu();
+    menu->setObjectName("CheckmarkOnly");
+    return menu;
 }
 
 } //namespace MusEGui

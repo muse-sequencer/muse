@@ -483,6 +483,8 @@ public:
 
     void launchBrowser(QString &whereTo);
 
+    QMenu* createPopupMenu() override;
+
 #ifdef HAVE_LASH
     void lash_idle_cb ();
 #endif

@@ -473,6 +473,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
     color_menu = settings_menu->addMenu(tr("Note Head &Colors"));
             color_actions = new QActionGroup(this);
+            color_actions->setObjectName("CheckmarkOnly");
             color_black_action = color_menu->addAction(tr("&Default"));
             color_velo_action =  color_menu->addAction(tr("&Velocity"));
             color_part_action =  color_menu->addAction(tr("&Part"));
@@ -500,6 +501,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
             }
 
         QMenu* preamble_menu = settings_menu->addMenu(tr("Set Up &Preamble"));
+        preamble_menu->setObjectName("CheckmarkOnly");
+
             preamble_keysig_action = preamble_menu->addAction(tr("Display &Key Signature"));
             preamble_timesig_action =  preamble_menu->addAction(tr("Display &Time Signature"));
             connect(preamble_keysig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_keysig_slot(bool)));

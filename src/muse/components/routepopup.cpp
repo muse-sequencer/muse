@@ -3448,6 +3448,7 @@ void RoutePopupMenu::prepare()
   connect(this, SIGNAL(triggered(QAction*)), SLOT(routePopupActivated(QAction*)));
   
   QAction* route_act = addAction(tr("Open advanced router..."));
+  route_act->setIcon(*dummySVGIcon);
   route_act->setCheckable(false);
   route_act->setData(_OPEN_ROUTING_DIALOG_);
 

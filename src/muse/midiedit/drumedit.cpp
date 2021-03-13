@@ -361,6 +361,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       settingsMenu->addSeparator();
 
       QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
+      menuGrouping->setObjectName("CheckmarkOnly");
       QActionGroup *groupAG = new QActionGroup(this);
       groupAG->setExclusive(true);
       groupNoneAction = groupAG->addAction(tr("Don't Group"));
