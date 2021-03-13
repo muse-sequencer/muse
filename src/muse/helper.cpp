@@ -2091,12 +2091,13 @@ void loadTheme(const QString& theme)
             sheet = QString::fromUtf8(suser.data());
     }
 
-// ugly hacks to cope with Qt's menu styling bugs (kybos)
+// QTBUG-78238, QTBUG-80506 etc.
 #if QT_VERSION < QT_VERSION_CHECK(5, 12, 6)
     if (theme == "Dark Flat" || theme == "Deep Ocean")
         sheet += "QMenu::item { padding-left: 26px; }";
-#else
-    sheet += "QMenu#CheckmarkOnly::item { padding-left: 26px; }";
+#elif QT_VERSION < QT_VERSION_CHECK(5, 14, 1) //
+    if (theme == "Dark Flat" || theme == "Deep Ocean")
+        sheet += "QMenu#CheckmarkOnly::item { padding-left: 26px; }";
 #endif
 
     qApp->setStyleSheet(sheet);
