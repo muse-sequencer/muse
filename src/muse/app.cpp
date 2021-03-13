@@ -4951,4 +4951,10 @@ void MusE::clearStatusBarText() {
         statusBar()->clearMessage();
 }
 
+QMenu* MusE::createPopupMenu() {
+    QMenu* menu= QMainWindow::createPopupMenu();
+    menu->setObjectName("CheckmarkOnly");
+    return menu;
+}
+
 } //namespace MusEGui

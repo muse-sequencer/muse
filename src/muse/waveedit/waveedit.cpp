@@ -238,7 +238,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       settingsMenu->addSeparator();
 
-      eventColor = settingsMenu->addMenu(tr("&Event Color"));      
+      eventColor = settingsMenu->addMenu(tr("&Event Color"));
+      eventColor->setObjectName("CheckmarkOnly");
       
       QActionGroup* actgrp = new QActionGroup(this);
       actgrp->setExclusive(true);

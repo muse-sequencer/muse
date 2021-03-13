@@ -295,6 +295,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       menuConfig->addSeparator();
 
       eventColor = menuConfig->addMenu(tr("&Event Color"));
+      eventColor->setObjectName("CheckmarkOnly");
       
       QActionGroup* actgrp = new QActionGroup(this);
       actgrp->setExclusive(true);
