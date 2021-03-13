@@ -2095,8 +2095,8 @@ void loadTheme(const QString& theme)
 #if QT_VERSION < QT_VERSION_CHECK(5, 12, 6)
     if (theme == "Dark Flat" || theme == "Deep Ocean")
         sheet += "QMenu::item { padding-left: 26px; }";
-#elif
-    QMenu#CheckmarkOnly::item { padding-left: 26px; };
+#else
+    sheet += "QMenu#CheckmarkOnly::item { padding-left: 26px; }";
 #endif
 
     qApp->setStyleSheet(sheet);
