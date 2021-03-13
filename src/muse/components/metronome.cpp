@@ -52,6 +52,7 @@ MetronomePresetItemWidget::MetronomePresetItemWidget(
     _hasFixedIconSize(hasFixedIconSize), _margin(margin), _accents(mas)
 {
   setObjectName(name);
+  setAttribute(Qt::WA_TranslucentBackground);
   _iconSize = QSize(10, 10);
 }
 
@@ -149,7 +150,7 @@ void MetronomePresetItemWidget::paintEvent(QPaintEvent* ev)
     ico = acc2 ? _onIcon : _offIcon;
     if(ico)
       ico->paint(&p, r, Qt::AlignCenter, mode, state);
-    
+
   }
 }
 
