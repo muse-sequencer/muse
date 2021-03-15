@@ -295,7 +295,7 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
    
   if(_action->isSelected())
     p.fillRect(rect(), palette().highlight());
-  
+
   if(_action->hasCheckBox())
   {
     QStyle* st = style() ? style() : QApplication::style();
@@ -313,7 +313,7 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
         option.palette = palette();
         st->drawControl(QStyle::CE_CheckBox, &option, &p);
     }
-  }  
+  }
   
   if(!_action->actionText().isEmpty())
   {

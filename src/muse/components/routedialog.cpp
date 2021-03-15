@@ -3740,21 +3740,7 @@ void RouteDialog::addItems()
             }
 
             QBrush br;
-            if(r->jackPort)
-            {
-              if(routeList->alternatingRowColors())
-              {
-                const int idx = routeList->indexOfTopLevelItem(routesItem);
-                br = (idx != -1 && (idx & 0x01)) ? routeList->palette().alternateBase() : routeList->palette().base();
-              }
-              else
-                br = routeList->palette().base();
-              
-              routesItem->setBackground(ROUTE_SRC_COL, br);
-              routesItem->setForeground(ROUTE_SRC_COL, routeList->palette().windowText());
-            }
-            else
-            {
+            if(!r->jackPort) {
               br = QBrush(Qt::red);
               routesItem->setBackground(ROUTE_SRC_COL, br);
             }
@@ -3856,21 +3842,7 @@ void RouteDialog::addItems()
             }
             
             QBrush br;
-            if(r->jackPort)
-            {
-              if(routeList->alternatingRowColors())
-              {
-                const int idx = routeList->indexOfTopLevelItem(routesItem);
-                br = (idx != -1 && (idx & 0x01)) ? routeList->palette().alternateBase() : routeList->palette().base();
-              }
-              else
-                br = routeList->palette().base();
-              
-              routesItem->setBackground(ROUTE_DST_COL, br);
-              routesItem->setForeground(ROUTE_DST_COL, routeList->palette().windowText());
-            }
-            else
-            {
+            if(!r->jackPort) {
               br = QBrush(Qt::red);
               routesItem->setBackground(ROUTE_DST_COL, br);
             }
