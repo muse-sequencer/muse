@@ -273,7 +273,8 @@ QMdiArea > QTabBar::tab:hover {
 }
 
 QMdiArea > QTabBar::tab:selected {
-    color: DodgerBlue;
+    /* color: rgb(75, 183, 255); */
+    color: orange;
 }
 
 QWidget#MidiStripTabWidget::pane {
@@ -321,7 +322,7 @@ QScrollBar:horizontal {
 }
 QScrollBar::handle:horizontal {
     border-radius: 2px;
-    border-color: rgb(0, 90, 160);
+    border-color: rgb(50,70,90);
     border-width: 1px; 
     border-style: solid; 
     background-color: rgb(20, 30, 40); 
@@ -340,7 +341,7 @@ QScrollBar:vertical {
 }
 QScrollBar::handle:vertical {
     border-radius: 2px;
-    border-color: rgb(0, 90, 160);
+    border-color: rgb(50,70,90);
     border-width: 1px; 
     border-style: solid; 
     background-color: rgb(20, 30, 40); 
