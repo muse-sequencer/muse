@@ -3739,11 +3739,13 @@ void RouteDialog::addItems()
               routeList->blockSignals(false);
             }
 
-            QBrush br;
-            if(!r->jackPort) {
-              br = QBrush(Qt::red);
-              routesItem->setBackground(ROUTE_SRC_COL, br);
-            }
+            // If there is no jack port, warn the user that the port is 'Unavailable' by colouring it.
+            // Otherwise, if the port re-appears at some point, restore the item colour to the original colour.
+            if(r->jackPort)
+              // From help: "Setting a default-constructed brush will let the view use the default color from the style."
+              routesItem->setBackground(ROUTE_SRC_COL, QBrush());
+            else
+              routesItem->setBackground(ROUTE_SRC_COL, QBrush(Qt::red));
           }
           break;
           
@@ -3841,11 +3843,13 @@ void RouteDialog::addItems()
               routeList->blockSignals(false);
             }
             
-            QBrush br;
-            if(!r->jackPort) {
-              br = QBrush(Qt::red);
-              routesItem->setBackground(ROUTE_DST_COL, br);
-            }
+            // If there is no jack port, warn the user that the port is 'Unavailable' by colouring it.
+            // Otherwise, if the port re-appears at some point, restore the item colour to the original colour.
+            if(r->jackPort)
+              // From help: "Setting a default-constructed brush will let the view use the default color from the style."
+              routesItem->setBackground(ROUTE_DST_COL, QBrush());
+            else
+              routesItem->setBackground(ROUTE_DST_COL, QBrush(Qt::red));
           }
           break;
           
