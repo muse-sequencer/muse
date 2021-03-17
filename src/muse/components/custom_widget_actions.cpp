@@ -33,6 +33,7 @@
 #include <QMenu>
 #include <QGraphicsWidget>
 #include <QMouseEvent>
+#include <QCheckBox>
 
 #include "menutitlewidgets.h"
 #include "icons.h"
@@ -241,7 +242,10 @@ MenuItemControlWidget::MenuItemControlWidget(RoutingMatrixWidgetAction* action, 
              : QWidget(parent)
 {
   _action = action;
+  setObjectName("MidiRouteMenuItem");
   setMouseTracking(true);
+  ensurePolished();
+  m_highColor = m_highColor.isValid() ? m_highColor : palette().highlight().color();
 }
 
 void MenuItemControlWidget::elementRect(QRect* checkbox_rect, QRect* label_rect) const
@@ -256,15 +260,17 @@ void MenuItemControlWidget::elementRect(QRect* checkbox_rect, QRect* label_rect)
       QStyleOptionButton option;
       option.state = QStyle::State_Active | QStyle::State_Enabled | QStyle::State_HasFocus |
                       (_action->checkBoxChecked() ? QStyle::State_On : QStyle::State_Off);
-      checkbox_sz = st->sizeFromContents(QStyle::CT_CheckBox, &option, QSize(0, 0)); //, q);
+//      checkbox_sz = st->sizeFromContents(QStyle::CT_CheckBox, &option, QSize(0, 0)); //, q);
+      checkbox_sz = st->subElementRect(QStyle::SE_CheckBoxIndicator, &option).size();
     }
   }
 
   const QFontMetrics txt_fm(_action->font());
   const QSize txt_sz = txt_fm.size(Qt::TextSingleLine, _action->actionText().isEmpty() ? "8" : _action->actionText());
   const int menu_item_h = txt_sz.height() > checkbox_sz.height() ? txt_sz.height() : checkbox_sz.height();
+
   if(checkbox_rect)
-    *checkbox_rect = QRect(0, 0, checkbox_sz.width(), menu_item_h);
+    *checkbox_rect = QRect(0, qMax(0, (menu_item_h - checkbox_sz.height()) / 2), checkbox_sz.width(), checkbox_sz.height()); //menu_item_h);
   if(label_rect)
     *label_rect = QRect(0, 0, txt_sz.width(), menu_item_h);
 }
@@ -292,9 +298,9 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
   QRect lbl_ctrl_rect;
   
   elementRect(&cb_ctrl_rect, &lbl_ctrl_rect);
-   
+
   if(_action->isSelected())
-    p.fillRect(rect(), palette().highlight());
+    p.fillRect(rect(), m_highColor);
 
   if(_action->hasCheckBox())
   {
@@ -306,12 +312,15 @@ void MenuItemControlWidget::paintEvent(QPaintEvent*)
                       (_action->isEnabled() ? QStyle::State_Enabled : QStyle::State_ReadOnly) |  // Or State_None?
                       (_action->checkBoxChecked() ? QStyle::State_On : QStyle::State_Off) |
                       (_action->menuItemPressed() ? QStyle::State_Sunken : QStyle::State_None);
-        option.rect = QRect(_action->actionHMargin + cb_ctrl_rect.x(), 
-                            cb_ctrl_rect.y(), 
-                            cb_ctrl_rect.width(), 
+        option.rect = QRect(_action->actionHMargin + cb_ctrl_rect.x(),
+                            cb_ctrl_rect.y(),
+                            cb_ctrl_rect.width(),
                             cb_ctrl_rect.height());
         option.palette = palette();
-        st->drawControl(QStyle::CE_CheckBox, &option, &p);
+
+        QCheckBox cb;
+        st->drawPrimitive(QStyle::PE_IndicatorCheckBox, &option, &p, &cb);
+//        st->drawControl(QStyle::CE_CheckBox, &option, &p);
     }
   }
   
@@ -337,7 +346,10 @@ SwitchBarActionWidget::SwitchBarActionWidget(RoutingMatrixWidgetAction* action, 
   : QWidget(parent)
 {
   _action = action;
+  setObjectName("SwitchBarActionWidget");
   setMouseTracking(true);
+  ensurePolished();
+  m_highColor = m_highColor.isValid() ? m_highColor : palette().highlight().color();
 }
 
 QSize SwitchBarActionWidget::sizeHint() const
@@ -371,7 +383,8 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
     if(col == _action->array()->pressedColumn())
       p.fillRect(r, palette().dark());
     else if(col == _action->array()->activeColumn())
-      p.fillRect(r, palette().highlight());
+      p.fillRect(r, m_highColor);
+
     const QPixmap* pm = _action->array()->value(col) ? _action->onPixmap() : _action->offPixmap();
     const int pm_w = pm ? pm->width() : _action->maxPixmapGeometry().width();
     const int pm_h = pm ? pm->height() : _action->maxPixmapGeometry().height();

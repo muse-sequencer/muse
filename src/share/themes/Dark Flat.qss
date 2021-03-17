@@ -78,6 +78,12 @@ QMenuBar::item:selected {
     background-color: rgb(0,90,160);
 }
 
+#MidiRouteMenuItem, 
+#SwitchBarActionWidget {
+    qproperty-highColor: rgb(0,90,160);
+}
+
+
 QDockWidget::title {
     text-align: center;
     background-color: rgb(60,60,60);

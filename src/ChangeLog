@@ -1,3 +1,6 @@
+17.03.2021
+    - Fix: Midi routes popup: Custom painted elements like checkboxes 
+            and menu item highlighting ignored stylesheets. (kybos)
 15.03.2021
     - Fixed advanced router 'Unavailable' item colour and restoration colour. (Tim)
 12.03.2021

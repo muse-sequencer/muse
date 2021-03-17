@@ -240,9 +240,12 @@ class RoutingMatrixWidgetAction;
 class MenuItemControlWidget : public QWidget 
 { 
   Q_OBJECT
+
+    Q_PROPERTY(QColor highColor READ highColor WRITE setHighColor)
       
   private:
     RoutingMatrixWidgetAction* _action;
+    QColor m_highColor;
       
   protected:
     QSize sizeHint() const;
@@ -252,6 +255,9 @@ class MenuItemControlWidget : public QWidget
     MenuItemControlWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
     // Returns, in the passed rectangle pointers, the rectangles of the checkbox, and/or item text label.
     void elementRect(QRect* checkbox_rect = 0, QRect* label_rect = 0) const;
+
+    QColor highColor() const { return m_highColor; }
+    void setHighColor(const QColor c) { m_highColor = c; }
 };
       
 //---------------------------------------------------------
@@ -262,15 +268,21 @@ class MenuItemControlWidget : public QWidget
 class SwitchBarActionWidget : public QWidget {
     Q_OBJECT
       
+    Q_PROPERTY(QColor highColor READ highColor WRITE setHighColor)
+
   private:
     RoutingMatrixWidgetAction* _action;
-    
+    QColor m_highColor;
+
   protected:
     QSize sizeHint() const;
     void paintEvent(QPaintEvent*);
     
   public:
     SwitchBarActionWidget(RoutingMatrixWidgetAction* action, QWidget* parent = 0);
+
+    QColor highColor() const { return m_highColor; }
+    void setHighColor(const QColor c) { m_highColor = c; }
 };
       
 //---------------------------------------------------------

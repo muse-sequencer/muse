@@ -52,7 +52,7 @@ QMenu::item {
    
 QMenu::indicator { 
     left: 6px;
-    border: 1px solid rgb(70, 70, 70);
+    border: 2px solid rgb(70, 70, 70);
 }
 
 QMenu::indicator:exclusive { 
@@ -60,7 +60,7 @@ QMenu::indicator:exclusive {
 }
 
 QMenu::indicator:checked {
-    background: rgb(0,140,210);
+    background: orange;
 }
   
 QMenu::icon {
@@ -76,6 +76,12 @@ QMenu::item:selected,
 QMenuBar::item:selected {
     background-color: rgb(0,90,160);
 }
+
+#MidiRouteMenuItem, 
+#SwitchBarActionWidget {
+    qproperty-highColor: rgb(0,90,160);
+}
+
 
 QDockWidget::title {
     text-align: center;
@@ -213,20 +219,20 @@ QWidget#ListEdit QTreeView {
 */
 
 QCheckBox::indicator {
-    border: 1px solid rgb(70, 70, 70);
+    border: 2px solid rgb(70, 70, 70);
 }
 
 QCheckBox::indicator:checked {
-    background: rgb(0,140,210);
+    background: orange;
 }
 
 QRadioButton::indicator {
-    border: 1px solid rgb(70, 70, 70);
+    border: 2px solid rgb(70, 70, 70);
     border-radius: 5px;
 } 
 
 QRadioButton::indicator:checked {
-    background: rgb(0,140,210);
+    background: orange;
 }
 
 QWidget#Rack {
