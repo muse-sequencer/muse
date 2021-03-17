@@ -1,8 +1,12 @@
 17.03.2021
     - Fix: Midi routes popup: Custom painted elements like checkboxes 
             and menu item highlighting ignored stylesheets. (kybos)
+16.03.2021
+    - Advanced router: Added 'Unavailable' colour to Jack audio ports. (Tim)
 15.03.2021
     - Fixed advanced router 'Unavailable' item colour and restoration colour. (Tim)
+13.03.2021
+    - Fix: Metronome accents list not showing highlighted items. (kybos)
 12.03.2021
     - New: Settings to set gradient strength for track list and parts. (kybos)
 02.03.2021

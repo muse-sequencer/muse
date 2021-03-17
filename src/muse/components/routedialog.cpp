@@ -3203,6 +3203,24 @@ void RouteDialog::addItems()
             routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
           routeList->blockSignals(false);
         }
+
+        switch(r->type)
+        {
+          case MusECore::Route::JACK_ROUTE: 
+            // If there is no jack port, warn the user that the port is 'Unavailable' by colouring it.
+            // Otherwise, if the port re-appears at some point, restore the item colour to the original colour.
+            if(r->jackPort)
+              // From help: "Setting a default-constructed brush will let the view use the default color from the style."
+              routesItem->setBackground(ROUTE_SRC_COL, QBrush());
+            else
+              routesItem->setBackground(ROUTE_SRC_COL, QBrush(Qt::red));
+          break;
+
+          case MusECore::Route::MIDI_DEVICE_ROUTE: 
+          case MusECore::Route::MIDI_PORT_ROUTE: 
+          case MusECore::Route::TRACK_ROUTE: 
+          break;  
+        }
       }
 
       //
@@ -3348,6 +3366,24 @@ void RouteDialog::addItems()
           if(QPixmap* dst_pm = dst.icon(false, false))
             routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
           routeList->blockSignals(false);
+        }
+
+        switch(r->type)
+        {
+          case MusECore::Route::JACK_ROUTE: 
+            // If there is no jack port, warn the user that the port is 'Unavailable' by colouring it.
+            // Otherwise, if the port re-appears at some point, restore the item colour to the original colour.
+            if(r->jackPort)
+              // From help: "Setting a default-constructed brush will let the view use the default color from the style."
+              routesItem->setBackground(ROUTE_DST_COL, QBrush());
+            else
+              routesItem->setBackground(ROUTE_DST_COL, QBrush(Qt::red));
+          break;  
+
+          case MusECore::Route::MIDI_DEVICE_ROUTE: 
+          case MusECore::Route::MIDI_PORT_ROUTE: 
+          case MusECore::Route::TRACK_ROUTE: 
+          break;  
         }
       }
     }
@@ -3651,6 +3687,7 @@ void RouteDialog::addItems()
 //       mdname = QString::number(md->midiPort() + 1) + QString(":");
 //     mdname += md->name();
     QString mdname = md->name();
+
     //
     // DESTINATION section:
     //

@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:osb="http://www.openswatchbook.org/uri/2009/osb" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
- <metadata>
-  <rdf:RDF>
-   <cc:Work rdf:about="">
-    <dc:format>image/svg+xml</dc:format>
-    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:title/>
-   </cc:Work>
-  </rdf:RDF>
- </metadata>
- <g stroke="#000" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="5" y="5.1596" width="54.748" height="11.84" fill="#ffd42a" style="paint-order:stroke fill markers"/>
-  <rect x="5" y="47" width="54.748" height="11.912" fill="#a08" style="paint-order:stroke fill markers"/>
-  <rect x="5" y="26.218" width="54.748" height="11.782" fill="#08a" style="paint-order:stroke fill markers"/>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:osb="http://www.openswatchbook.org/uri/2009/osb">
+ <g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+  <rect x="5" y="4.0712" width="54.748" height="11.84" fill="#0cf" style="paint-order:stroke fill markers"/>
+  <rect x="5" y="33.912" width="54.748" height="11.912" fill="#fc0" style="paint-order:stroke fill markers"/>
+  <rect x="5" y="19.13" width="54.748" height="11.782" fill="#0fc" style="paint-order:stroke fill markers"/>
+  <rect x="5" y="49" width="54.748" height="11.912" fill="#f59" style="paint-order:stroke fill markers"/>
  </g>
 </svg>
