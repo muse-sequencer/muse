@@ -1,3 +1,6 @@
+20.03.2021
+    - Fix: Improve spacings in global settings dialog. (kybos)
+    - New: QSS properties for routing popup colors. (kybos)
 17.03.2021
     - Fix: Midi routes popup: Custom painted elements like checkboxes 
             and menu item highlighting ignored stylesheets. (kybos)

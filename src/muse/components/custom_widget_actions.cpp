@@ -287,7 +287,7 @@ QSize MenuItemControlWidget::sizeHint() const
   const int cb_h = cb_ctrl_rect.y() + cb_ctrl_rect.height();
   const int l_h = lbl_ctrl_rect.y() + lbl_ctrl_rect.height();
   const int h = l_h > cb_h ? l_h : cb_h;
-  return QSize(cb_w + l_w, h);
+  return QSize(cb_w + l_w, h + 1); // add 1 to height to reduce misalignment against the switch widget
 }
 
 void MenuItemControlWidget::paintEvent(QPaintEvent*)
@@ -381,9 +381,9 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
   {
     const QRect r = _action->array()->rect(col);
     if(col == _action->array()->pressedColumn())
-      p.fillRect(r, palette().dark());
+      p.fillRect(r.adjusted(0,-1,0,2), palette().dark());
     else if(col == _action->array()->activeColumn())
-      p.fillRect(r, m_highColor);
+      p.fillRect(r.adjusted(0,-1,0,2), m_highColor);
 
     const QPixmap* pm = _action->array()->value(col) ? _action->onPixmap() : _action->offPixmap();
     const int pm_w = pm ? pm->width() : _action->maxPixmapGeometry().width();
@@ -418,15 +418,21 @@ void SwitchBarActionWidget::paintEvent(QPaintEvent* /*event*/)
       path.addRoundedRect(x, y, pm_w, pm_h, 30, 30);
       if(_action->array()->value(col))
       {
-        //QRadialGradient gradient(50, 50, 50, 50, 50);
-        QLinearGradient gradient(x + 1, y + 1, x + pm_w - 2, y + pm_h - 2);
-        gradient.setColorAt(0, clr1);
-        gradient.setColorAt(1, clr2);
-        QBrush brush(gradient);  
-        
-        p.fillPath(path, brush);
+          if (m_checkedColor.isValid()) {
+              p.fillPath(path, m_checkedColor);
+          } else {
+              //QRadialGradient gradient(50, 50, 50, 50, 50);
+              QLinearGradient gradient(x + 1, y + 1, x + pm_w - 2, y + pm_h - 2);
+              gradient.setColorAt(0, clr1);
+              gradient.setColorAt(1, clr2);
+              QBrush brush(gradient);
+              p.fillPath(path, brush);
+          }
       }
-      p.setPen(col == _action->array()->activeColumn() ? palette().highlightedText().color() : palette().text().color());
+      if (m_borderColor.isValid())
+          p.setPen(m_borderColor);
+      else
+          p.setPen(col == _action->array()->activeColumn() ? palette().highlightedText().color() : palette().text().color());
       p.drawPath(path);
     }
   }

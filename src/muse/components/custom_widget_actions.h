@@ -269,10 +269,14 @@ class SwitchBarActionWidget : public QWidget {
     Q_OBJECT
       
     Q_PROPERTY(QColor highColor READ highColor WRITE setHighColor)
+    Q_PROPERTY(QColor checkedColor READ checkedColor WRITE setCheckedColor)
+    Q_PROPERTY(QColor borderColor READ borderColor WRITE setBorderColor)
 
   private:
     RoutingMatrixWidgetAction* _action;
     QColor m_highColor;
+    QColor m_checkedColor;
+    QColor m_borderColor;
 
   protected:
     QSize sizeHint() const;
@@ -283,6 +287,10 @@ class SwitchBarActionWidget : public QWidget {
 
     QColor highColor() const { return m_highColor; }
     void setHighColor(const QColor c) { m_highColor = c; }
+    QColor checkedColor() const { return m_checkedColor; }
+    void setCheckedColor(const QColor c) { m_checkedColor = c; }
+    QColor borderColor() const { return m_borderColor; }
+    void setBorderColor(const QColor c) { m_borderColor = c; }
 };
       
 //---------------------------------------------------------

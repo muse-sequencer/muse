@@ -1474,7 +1474,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       iR = new QPushButton(this);
       iR->setIcon(*routingInputSVGIcon);
       iR->setObjectName("InputRouteButton");
-      iR->setStatusTip(tr("Intput routing. Press F1 for help."));
+      iR->setStatusTip(tr("Input routing. Hold CTRL to keep menu open. Press F1 for help."));
       iR->setFocusPolicy(Qt::NoFocus);
       iR->setToolTip(MusEGlobal::inputRoutingToolTipBase);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
@@ -1485,7 +1485,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       oR = new QPushButton(this);
       oR->setIcon(*routingOutputSVGIcon);
       oR->setObjectName("OutputRouteButton");
-      oR->setStatusTip(tr("Output routing. Press F1 for help."));
+      oR->setStatusTip(tr("Output routing. Hold CTRL to keep menu open. Press F1 for help."));
       oR->setFocusPolicy(Qt::NoFocus);
       oR->setToolTip(MusEGlobal::outputRoutingToolTipBase);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));

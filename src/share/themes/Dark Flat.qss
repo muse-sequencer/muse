@@ -53,7 +53,7 @@ QMenu::item {
    
 QMenu::indicator { 
     left: 6px;
-    border: 2px solid rgb(70, 70, 70);
+    border: 2px solid rgb(110, 110, 110);
 }
 
 QMenu::indicator:exclusive { 
@@ -61,7 +61,7 @@ QMenu::indicator:exclusive {
 }
 
 QMenu::indicator:checked {
-    background: rgb(0,140,210);
+    background: rgb(0, 204, 255);
 }
   
 QMenu::icon {
@@ -81,6 +81,11 @@ QMenuBar::item:selected {
 #MidiRouteMenuItem, 
 #SwitchBarActionWidget {
     qproperty-highColor: rgb(0,90,160);
+}
+
+#SwitchBarActionWidget {
+    qproperty-borderColor:rgb(120, 120, 120);
+    qproperty-checkedColor: rgb(0, 204, 255);
 }
 
 
@@ -214,20 +219,20 @@ QToolBar QLabel#PaddedValueLabel {
 }
 
 QCheckBox::indicator {
-    border: 2px solid rgb(70, 70, 70);
+    border: 2px solid rgb(110, 110, 110);
 }
 
 QCheckBox::indicator:checked {
-    background: rgb(0,140,210);
+    background: rgb(0, 204, 255);
 }
 
 QRadioButton::indicator {
-    border: 2px solid rgb(70, 70, 70);
+    border: 2px solid rgb(110, 110, 110);
     border-radius: 5px; 
 } 
 
 QRadioButton::indicator:checked {
-    background: rgb(0,140,210);
+    background: rgb(0, 204, 255);
 }
 
 QFrame#SliderMeterFrameAudio,

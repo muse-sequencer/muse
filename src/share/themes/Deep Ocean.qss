@@ -1,5 +1,5 @@
 QWidget {
-    background-color: rgb(20,30,40);
+    background-color: rgb(24,34,44);
     color: rgb(220,220,220);
 }
 
@@ -52,7 +52,7 @@ QMenu::item {
    
 QMenu::indicator { 
     left: 6px;
-    border: 2px solid rgb(70, 70, 70);
+    border: 2px solid rgb(90, 90, 90);
 }
 
 QMenu::indicator:exclusive { 
@@ -60,7 +60,7 @@ QMenu::indicator:exclusive {
 }
 
 QMenu::indicator:checked {
-    background: orange;
+    background: aqua;
 }
   
 QMenu::icon {
@@ -80,6 +80,11 @@ QMenuBar::item:selected {
 #MidiRouteMenuItem, 
 #SwitchBarActionWidget {
     qproperty-highColor: rgb(0,90,160);
+}
+
+#SwitchBarActionWidget {
+    qproperty-borderColor:rgb(100, 100, 100);
+    qproperty-checkedColor: aqua;
 }
 
 
@@ -109,7 +114,7 @@ QToolBar QToolButton:checked {
 }
 
 QToolBar QToolButton:hover {
-    background-color: rgb(0,127,255);
+    border-color: orange;
     border-width: 1px;
     border-radius: 2px;
     padding: 2px;
@@ -219,20 +224,20 @@ QWidget#ListEdit QTreeView {
 */
 
 QCheckBox::indicator {
-    border: 2px solid rgb(70, 70, 70);
+    border: 2px solid rgb(90, 90, 90);
 }
 
 QCheckBox::indicator:checked {
-    background: orange;
+    background: aqua;
 }
 
 QRadioButton::indicator {
-    border: 2px solid rgb(70, 70, 70);
+    border: 2px solid rgb(90, 90, 90);
     border-radius: 5px;
 } 
 
 QRadioButton::indicator:checked {
-    background: orange;
+    background: aqua;
 }
 
 QWidget#Rack {
@@ -261,7 +266,7 @@ QWidget#Strip > QAbstractButton:checked {
 }
 
 QWidget#Strip > QAbstractButton:hover {
-    background-color: rgb(0,127,255);
+    border-color: orange;
 }
 
 QWidget#Strip > QAbstractButton:!enabled {

@@ -89,7 +89,7 @@ void RoutePopupMenu::addGroupingChannelsAction(PopupMenu* lb)
   name_wa->array()->setExclusiveToggle(false);
   name_wa->array()->headerSetVisible(false);
   name_wa->array()->setText(0, tr("Mono "));
-  name_wa->array()->setText(1, tr("Stereo"));
+  name_wa->array()->setText(1, tr("Stereo "));
   switch(MusEGlobal::config.routerGroupingChannels)
   {
     case 1:
