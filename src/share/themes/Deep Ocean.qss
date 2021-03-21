@@ -275,8 +275,8 @@ QWidget#Strip > QAbstractButton:!enabled {
 
 
 QTreeView, QListView {
-    alternate-background-color: rgb(60,60,60);
-    background: rgb(30,30,30);
+    alternate-background-color: rgb(30,40,50);
+    /* background: rgb(24,34,44); */
  }
 
 QMdiArea > QTabBar::tab:hover {
