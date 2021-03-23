@@ -62,6 +62,10 @@ QMenu::indicator:exclusive {
 QMenu::indicator:checked {
     background: aqua;
 }
+
+QMenu::indicator:unchecked {
+    background: transparent;
+}
   
 QMenu::icon {
     left: 4px;
