@@ -1,3 +1,5 @@
+25.03.2021
+    - Fix: Wrong radiobuttons in Visible audio effects submenu. (kybos)
 20.03.2021
     - Fix: Improve spacings in global settings dialog. (kybos)
     - New: QSS properties for routing popup colors. (kybos)

@@ -1396,34 +1396,37 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 
     menu->addAction(new MenuTitleItem(tr("Configuration"), menu));
 
-    QAction* act = menu->addAction(tr("Prefer knobs, not sliders"));
+    QAction* act = menu->addAction(tr("Prefer Knobs, Not Sliders"));
     act->setData(int(2));
     act->setCheckable(true);
     act->setChecked(MusEGlobal::config.preferKnobsVsSliders);
 
-    act = menu->addAction(tr("Show values in controls"));
+    act = menu->addAction(tr("Show Values in Controls"));
     act->setData(int(3));
     act->setCheckable(true);
     act->setChecked(MusEGlobal::config.showControlValues);
 
-    act = menu->addAction(tr("Prefer midi volume as decibels"));
+    act = menu->addAction(tr("Prefer Midi Volume As Decibels"));
     act->setData(int(4));
     act->setCheckable(true);
     act->setChecked(MusEGlobal::config.preferMidiVolumeDb);
 
     menu->addSeparator();
 
-    act = menu->addAction(tr("Monitor on record-arm automatically"));
+    act = menu->addAction(tr("Monitor on Record-arm Automatically"));
     act->setData(int(5));
     act->setCheckable(true);
     act->setChecked(MusEGlobal::config.monitorOnRecord);
 
-    QMenu* audioEffectsRackVisibleItemsMenu = new QMenu(tr("Visible audio effects"));
+    QMenu* audioEffectsRackVisibleItemsMenu = new QMenu(tr("Visible Audio Effects"));
+    QActionGroup* agroup = new QActionGroup(this);
+    agroup->setExclusive(true);
     for(int i = 0; i <= MusECore::PipelineDepth; ++i)
     {
       act = audioEffectsRackVisibleItemsMenu->addAction(QString::number(i));
       act->setData(int(5000 + i));
       act->setCheckable(true);
+      act->setActionGroup(agroup);
       if(i == MusEGlobal::config.audioEffectsRackVisibleItems)
         act->setChecked(MusEGlobal::config.monitorOnRecord);
     }
@@ -1431,7 +1434,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
     
     menu->addAction(new MenuTitleItem(tr("Actions"), menu));
 
-    act = menu->addAction(tr("Change track name"));
+    act = menu->addAction(tr("Change Track Name"));
     act->setData(int(1001));
 
     if(!_isEmbedded)
@@ -1440,7 +1443,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 //      act = menu->addAction(tr("Remove track"));
 //      act->setData(int(0));
 //      menu->addSeparator();
-      act = menu->addAction(tr("Hide strip"));
+      act = menu->addAction(tr("Hide Strip"));
       act->setData(int(1));
     }
 

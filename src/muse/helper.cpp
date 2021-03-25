@@ -2056,6 +2056,9 @@ QRect normalizeQRect(const QRect& rect)
 
 void loadTheme(const QString& theme)
 {
+    if (theme.isEmpty())
+        return;
+
     if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadTheme: %s\n", theme.toLatin1().constData());
 
