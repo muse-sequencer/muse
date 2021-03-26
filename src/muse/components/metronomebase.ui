@@ -1150,32 +1150,6 @@ Only user presets can be deleted.</string>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="precountPrerecord">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>Not supported yet</string>
-         </property>
-         <property name="text">
-          <string>Prerecord</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="precountPreroll">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>Not supported yet</string>
-         </property>
-         <property name="text">
-          <string>Preroll</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -1271,8 +1245,6 @@ Only user presets can be deleted.</string>
   <tabstop>precountBars</tabstop>
   <tabstop>precountFromMastertrack</tabstop>
   <tabstop>precountSigZ</tabstop>
-  <tabstop>precountPrerecord</tabstop>
-  <tabstop>precountPreroll</tabstop>
   <tabstop>precountSigN</tabstop>
   <tabstop>buttonApply</tabstop>
   <tabstop>buttonOk</tabstop>

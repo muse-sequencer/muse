@@ -382,8 +382,6 @@ void MetronomeConfig::updateValues()
       precountSigN->blockSignals(true);
       precountOnPlay->blockSignals(true);
       precountMuteMetronome->blockSignals(true);
-      precountPrerecord->blockSignals(true);
-      precountPreroll->blockSignals(true);
 
       midiClick->blockSignals(true);
       audioBeep->blockSignals(true);
@@ -427,8 +425,6 @@ void MetronomeConfig::updateValues()
       precountSigN->setValue(metro_settings->precountSigN);
       precountOnPlay->setChecked(metro_settings->precountOnPlay);
       precountMuteMetronome->setChecked(metro_settings->precountMuteMetronome);
-      precountPrerecord->setChecked(metro_settings->precountPrerecord);
-      precountPreroll->setChecked(metro_settings->precountPreroll);
       
       midiClick->setChecked(metro_settings->midiClickFlag);
       audioBeep->setChecked(metro_settings->audioClickFlag);
@@ -476,8 +472,6 @@ void MetronomeConfig::updateValues()
       precountSigN->blockSignals(false);
       precountOnPlay->blockSignals(false);
       precountMuteMetronome->blockSignals(false);
-      precountPrerecord->blockSignals(false);
-      precountPreroll->blockSignals(false);
 
       midiClick->blockSignals(false);
       audioBeep->blockSignals(false);
@@ -563,8 +557,6 @@ void MetronomeConfig::apply()
       metro_settings->precountSigN      = precountSigN->value();
       metro_settings->precountOnPlay    = precountOnPlay->isChecked();
       metro_settings->precountMuteMetronome = precountMuteMetronome->isChecked();
-      metro_settings->precountPrerecord = precountPrerecord->isChecked();
-      metro_settings->precountPreroll   = precountPreroll->isChecked();
 
       metro_settings->midiClickFlag      = midiClick->isChecked();
       metro_settings->audioClickFlag     = audioBeep->isChecked();
