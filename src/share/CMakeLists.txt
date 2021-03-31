@@ -37,4 +37,4 @@ ADD_SUBDIRECTORY(themes)
 ADD_SUBDIRECTORY(metronome)
 ADD_SUBDIRECTORY(rdf)
 
-install (FILES didyouknow.txt splash.png DESTINATION ${MusE_SHARE_DIR} )
+install (FILES didyouknow.txt splash.jpg DESTINATION ${MusE_SHARE_DIR} )
