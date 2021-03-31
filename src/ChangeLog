@@ -1,3 +1,6 @@
+31.03.2021
+    - Fix: Don't load presets for lv2 plugins at program start
+            to reduce start-up time and save resources. (kybos)
 25.03.2021
     - Fix: Wrong radiobuttons in Visible audio effects submenu. (kybos)
 20.03.2021

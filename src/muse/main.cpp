@@ -1121,13 +1121,12 @@ int main(int argc, char* argv[])
         //-------------------------------------------------------
 
         QString splash_prefix;
-        QSplashScreen* muse_splash = NULL;
+        QSplashScreen* muse_splash = nullptr;
         if (MusEGlobal::config.showSplashScreen) {
-            QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.png");
+            QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.jpg");
 
             if (!splsh.isNull()) {
-                muse_splash = new QSplashScreen(splsh,
-                  Qt::WindowStaysOnTopHint);
+                muse_splash = new QSplashScreen(splsh, Qt::WindowStaysOnTopHint);
                 muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
                 muse_splash->show();
                 splash_prefix = QString("MusE ") + QString(VERSION);
@@ -1541,13 +1540,14 @@ int main(int argc, char* argv[])
 
         if(muse_splash)
         {
+
           // From this point on, slap a timer on it so that it stays up for few seconds,
           //  since closing it now might be too short display time.
           // It will auto-destory itself.
           QTimer* stimer = new QTimer(muse_splash);
           muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
           stimer->setSingleShot(true);
-          stimer->start(3000);
+          stimer->start(2000);
         }
 
         //--------------------------------------------------
