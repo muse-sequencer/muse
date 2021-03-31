@@ -1144,7 +1144,8 @@ int main(int argc, char* argv[])
 
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" Creating plugin cache files..."));
+            muse_splash->showMessage(splash_prefix + QString(" Creating plugin cache files..."),
+                                     Qt::AlignLeft, Qt::white);
           qApp->processEvents();
         }
 
@@ -1214,7 +1215,8 @@ int main(int argc, char* argv[])
         
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" Initializing audio system..."));
+          muse_splash->showMessage(splash_prefix + QString(" Initializing audio system..."),
+                                   Qt::AlignLeft, Qt::white);
           qApp->processEvents();
         }
         
@@ -1235,7 +1237,8 @@ int main(int argc, char* argv[])
 
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" Initializing audio driver..."));
+          muse_splash->showMessage(splash_prefix + QString(" Initializing audio driver..."),
+                                   Qt::AlignLeft, Qt::white);
           qApp->processEvents();
         }
 
@@ -1383,7 +1386,8 @@ int main(int argc, char* argv[])
         
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" Initializing midi devices..."));
+          muse_splash->showMessage(splash_prefix + QString(" Initializing midi devices..."),
+                                   Qt::AlignLeft, Qt::white);
           qApp->processEvents();
         }
 
@@ -1409,7 +1413,8 @@ int main(int argc, char* argv[])
 
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" Initializing plugins..."));
+          muse_splash->showMessage(splash_prefix + QString(" Initializing plugins..."),
+                                   Qt::AlignLeft, Qt::white);
           qApp->processEvents();
         }
 
@@ -1464,7 +1469,8 @@ int main(int argc, char* argv[])
           {
             if(muse_splash)
             {
-              muse_splash->showMessage(splash_prefix + QString(" Initializing LASH support..."));
+              muse_splash->showMessage(splash_prefix + QString(" Initializing LASH support..."),
+                                       Qt::AlignLeft, Qt::white);
               qApp->processEvents();
             }
 
@@ -1495,7 +1501,8 @@ int main(int argc, char* argv[])
 
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" populating track types..."));
+          muse_splash->showMessage(splash_prefix + QString(" populating track types..."),
+                                   Qt::AlignLeft, Qt::white);
           qApp->processEvents();
         }
 
