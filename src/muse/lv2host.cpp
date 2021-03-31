@@ -2322,7 +2322,10 @@ void LV2Synth::lv2state_populatePresetsMenu(LV2PluginWrapper_State *state, MusEG
     LV2Synth *synth = state->synth;
     //this is good by slow down menu population.
     //So it's called only on changes (preset save/manual update)
-    //LV2Synth::lv2state_UnloadLoadPresets(synth, true);
+    // kybos: The menu build-up is slow anyway when there are many presets.
+    // Better load the presets here for one plugin than on the program start for hundreds of them.
+    // The presets are now loaded exactly once in the function below (only on the first call), unless updated
+    LV2Synth::lv2state_UnloadLoadPresets(synth, true);
     MusEGui::MenuTitleItem *actPresetActionsHeader = new MusEGui::MenuTitleItem(QObject::tr("Preset actions"), menu);
     menu->addAction(actPresetActionsHeader);
     QAction *actSave = menu->addAction(QObject::tr("Save preset..."));
@@ -2613,6 +2616,11 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
 {
     assert(synth != nullptr);
 
+    static bool s_loaded = false;
+
+    if (load && !update && s_loaded)
+        return;
+
     //std::cerr << "LV2Synth::lv2state_UnloadLoadPresets:  handling <" << synth->_name.toStdString() << ">" << std::endl;
 
     std::map<QString, LilvNode *>::iterator it;
@@ -2644,7 +2652,7 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
             }
         }
 
-        //scan for preserts
+        //scan for presets
         LilvNodes* presets = lilv_plugin_get_related(synth->_handle, lv2CacheNodes.lv2_psetPreset);
         LILV_FOREACH(nodes, i, presets)
         {
@@ -2668,9 +2676,8 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
             }
         }
         lilv_nodes_free(presets);
-
+        s_loaded = true;
     }
-
 }
 
 
@@ -3159,7 +3166,9 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
 
     _presets.clear();
 
-    LV2Synth::lv2state_UnloadLoadPresets(this, true);
+// This is very slow, especially when done on start up for several hundreds lv2 plugins like here.
+// Better load the presets for individual plugin only when its menu is populated (kybos).
+//    LV2Synth::lv2state_UnloadLoadPresets(this, true);
 
     _isConstructed = true;
 }
