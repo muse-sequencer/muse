@@ -1128,9 +1128,8 @@ int main(int argc, char* argv[])
             if (!splsh.isNull()) {
                 muse_splash = new QSplashScreen(splsh, Qt::WindowStaysOnTopHint);
                 muse_splash->setAttribute(Qt::WA_DeleteOnClose);  // Possibly also Qt::X11BypassWindowManagerHint
+                splash_prefix = QString("MusE ") + QString(VERSION) + ":";
                 muse_splash->show();
-                splash_prefix = QString("MusE ") + QString(VERSION);
-                muse_splash->showMessage(splash_prefix);
             }
         }
         
@@ -1145,7 +1144,7 @@ int main(int argc, char* argv[])
         if(muse_splash)
         {
             muse_splash->showMessage(splash_prefix + QString(" Creating plugin cache files..."),
-                                     Qt::AlignLeft, Qt::white);
+                                     Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
 
@@ -1216,7 +1215,7 @@ int main(int argc, char* argv[])
         if(muse_splash)
         {
           muse_splash->showMessage(splash_prefix + QString(" Initializing audio system..."),
-                                   Qt::AlignLeft, Qt::white);
+                                   Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
         
@@ -1238,7 +1237,7 @@ int main(int argc, char* argv[])
         if(muse_splash)
         {
           muse_splash->showMessage(splash_prefix + QString(" Initializing audio driver..."),
-                                   Qt::AlignLeft, Qt::white);
+                                   Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
 
@@ -1387,7 +1386,7 @@ int main(int argc, char* argv[])
         if(muse_splash)
         {
           muse_splash->showMessage(splash_prefix + QString(" Initializing midi devices..."),
-                                   Qt::AlignLeft, Qt::white);
+                                   Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
 
@@ -1414,7 +1413,7 @@ int main(int argc, char* argv[])
         if(muse_splash)
         {
           muse_splash->showMessage(splash_prefix + QString(" Initializing plugins..."),
-                                   Qt::AlignLeft, Qt::white);
+                                   Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
 
@@ -1470,7 +1469,7 @@ int main(int argc, char* argv[])
             if(muse_splash)
             {
               muse_splash->showMessage(splash_prefix + QString(" Initializing LASH support..."),
-                                       Qt::AlignLeft, Qt::white);
+                                       Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
               qApp->processEvents();
             }
 
@@ -1501,8 +1500,8 @@ int main(int argc, char* argv[])
 
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" populating track types..."),
-                                   Qt::AlignLeft, Qt::white);
+          muse_splash->showMessage(splash_prefix + QString(" Populating track types..."),
+                                   Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
 
@@ -1547,14 +1546,12 @@ int main(int argc, char* argv[])
 
         if(muse_splash)
         {
+            muse_splash->showMessage(splash_prefix + QString(" Click to close splash screen..."),
+                                     Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
 
           // From this point on, slap a timer on it so that it stays up for few seconds,
           //  since closing it now might be too short display time.
-          // It will auto-destory itself.
-          QTimer* stimer = new QTimer(muse_splash);
-          muse_splash->connect(stimer, SIGNAL(timeout()), muse_splash, SLOT(close()));
-          stimer->setSingleShot(true);
-          stimer->start(2000);
+            QTimer::singleShot(3000, muse_splash, SLOT(close()));
         }
 
         //--------------------------------------------------

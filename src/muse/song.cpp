@@ -1322,7 +1322,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                                 selectedTracks.push_back(*it);
                             }
                       }
-                if (!alreadyRecEnabled && selectedTracks.size() >0) {
+                if (!alreadyRecEnabled && !selectedTracks.empty()) {
                       // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
                       MusECore::PendingOperationList operations;
                       foreach (Track *t, selectedTracks)
@@ -1338,12 +1338,17 @@ void Song::setRecord(bool f, bool autoRecEnable)
                       // do nothing
                       }
                 else  {
-                      // if there are no tracks, do not enable record
-                      if (!waves()->size() && !midis()->size()) {
-                            fprintf(stderr, "No track to select, won't enable record\n");
-                            f = false;
-                            }
-                      }
+                    // if there no tracks or no track is selected, warn the user and don't enable record
+                    if (selectedTracks.empty()) {
+                        QMessageBox::warning(nullptr, "MusE", tr("At least one track must be enabled for recording first."));
+                        f = false;
+                    }
+//                      // if there are no tracks, do not enable record
+//                      if (waves()->empty() && midis()->empty()) {
+//                            fprintf(stderr, "No track to select, won't enable record\n");
+//                            f = false;
+//                            }
+                }
                 // prepare recording of wave files for all record enabled wave tracks
                 for (MusECore::iWaveTrack i = wtl->begin(); i != wtl->end(); ++i) {
                       if((*i)->recordFlag()) // || (selectedTracks.find(*i)!=wtl->end() && autoRecEnable)) // prepare if record flag or if it is set to recenable
@@ -1368,10 +1373,11 @@ void Song::setRecord(bool f, bool autoRecEnable)
                         f = false;
                         }
 #endif
-                  }
+            }
             else {
                   bounceTrack = 0;
-                  }
+            }
+
             if (MusEGlobal::audio->isPlaying() && f)
                   f = false;
             recordFlag = f;
