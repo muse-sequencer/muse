@@ -2969,6 +2969,18 @@ bool checkPluginCacheFiles(
     filepath_set fpset;
     findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
 
+    const QByteArray appDir = qgetenv("APPDIR"); // running in AppImage
+    if (!appDir.isEmpty()) {
+        const int prefix = appDir.length();
+        filepath_set fpset_tmp;
+        for (auto& it : fpset) {
+            if (it.first.left(prefix) == appDir)
+                fpset_tmp.insert(filepath_set_pair(it.first.right(it.first.length() - prefix), it.second));
+        }
+        fpset.swap(fpset_tmp);
+    }
+
+
     //-------------------------------------------------------------------------
     // Gather the unique (non-duplicate) plugin file paths found in our cache.
     //-------------------------------------------------------------------------
@@ -2990,6 +3002,17 @@ bool checkPluginCacheFiles(
       if(ifpset == fpset.end() || ifpset->second != icfps->second)
       {
         cache_dirty = true;
+
+        if (debugStdErr) {
+            std::fprintf(stderr, "Setting cache to dirty due to missing or modified plugins:\n");
+            if(ifpset == fpset.end())
+                std::fprintf(stderr, "Missing plugin: %s:\n", icfps->first.toLatin1().data());
+            else
+                std::fprintf(stderr, "Modified plugin: %s Cache ts: %ld File ts: %ld\n",
+                             icfps->first.toLatin1().data(),
+                             icfps->second,
+                             ifpset->second);
+        }
         break;
       }
       // Done with the current plugin file path. Erase it.
