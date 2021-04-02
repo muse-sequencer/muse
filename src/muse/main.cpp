@@ -41,7 +41,9 @@
 #include <QStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
-#include <QStandardPaths> 
+#include <QStandardPaths>
+#include <QTime>
+#include <QDebug>
 
 #include <iostream>
 
@@ -548,7 +550,10 @@ CommandLineParseResult parseCommandLine(
 //---------------------------------------------------------
 
 int main(int argc, char* argv[])
-      {
+{
+      QTime timer;
+      timer.start();
+
       // Get the separator used for file paths.
       const QChar list_separator = QDir::listSeparator();
 
@@ -637,6 +642,9 @@ int main(int argc, char* argv[])
 //          const QString appStyleObjName = def_style->objectName();
 //          MusEGui::Appearance::getSetDefaultStyle(&appStyleObjName);
 //        }
+
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Read configuration...";
 
         app.setOrganizationName(ORGANIZATION_NAME);
         app.setOrganizationDomain(ORGANIZATION_DOMAIN);
@@ -1113,6 +1121,9 @@ int main(int argc, char* argv[])
 //        MusEGui::updateThemeAndStyle();
 
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Load theme...";
+
         MusEGui::loadTheme(MusEGlobal::config.theme);
 //        MusEGui::loadThemeColors(MusEGlobal::config.theme);
 
@@ -1147,6 +1158,9 @@ int main(int argc, char* argv[])
                                      Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
+
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Scan plugins...";
 
         bool do_rescan = false;
         if(force_plugin_rescan)
@@ -1209,6 +1223,8 @@ int main(int argc, char* argv[])
         //   END Plugin scanning
         //-------------------------------------------------------
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init audio...";
 
         AL::initDsp();
         
@@ -1390,6 +1406,9 @@ int main(int argc, char* argv[])
           qApp->processEvents();
         }
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init MIDI...";
+
 // REMOVE Tim. startup. Removed 2019/02/21. It's been six years since 1.9.9.5 release.
 //        Remove this waiting part at some point if we're all good...
 //
@@ -1417,18 +1436,34 @@ int main(int argc, char* argv[])
           qApp->processEvents();
         }
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init plugins...";
+
         if (MusEGlobal::loadPlugins)
               MusECore::initPlugins();
+
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init VST plugins...";
 
         if (MusEGlobal::loadVST)
               MusECore::initVST();
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init native VST plugins...";
+
         if (MusEGlobal::loadNativeVST)
               MusECore::initVST_Native();
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init DSSI plugins...";
+
         if(MusEGlobal::loadDSSI)
               MusECore::initDSSI();
+
   #ifdef LV2_SUPPORT
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init LV2 plugins...";
+
         if(MusEGlobal::loadLV2)
               MusECore::initLV2();
   #endif
@@ -1438,6 +1473,9 @@ int main(int argc, char* argv[])
         // TODO Future: Will need to keep it around if we ever switch to using the list all the time
         //       instead of separate global plugin and synth lists.
         MusEPlugin::pluginList.clear();
+
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init OSC / metronome...";
 
         MusECore::initOSC();
 
@@ -1462,6 +1500,9 @@ int main(int argc, char* argv[])
         MusECore::enumerateJackMidiDevices();
 
   #ifdef HAVE_LASH
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Init LASH...";
+
         {
           MusEGui::lash_client = 0;
           if(MusEGlobal::useLASH)
@@ -1498,14 +1539,20 @@ int main(int argc, char* argv[])
               }
 #endif
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Populating Track context menu...";
+
         if(muse_splash)
         {
-          muse_splash->showMessage(splash_prefix + QString(" Populating track types..."),
+          muse_splash->showMessage(splash_prefix + QString(" Populating Track context menu..."),
                                    Qt::AlignLeft|Qt::AlignBottom, Qt::yellow);
           qApp->processEvents();
         }
 
         MusEGlobal::muse->populateAddTrack(); // could possibly be done in a thread.
+
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Show GUI...";
 
         MusEGlobal::muse->show();
 
@@ -1554,6 +1601,9 @@ int main(int argc, char* argv[])
             QTimer::singleShot(3000, muse_splash, SLOT(close()));
         }
 
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Load default project";
+
         //--------------------------------------------------
         // Load the default song.
         //--------------------------------------------------
@@ -1573,6 +1623,11 @@ int main(int argc, char* argv[])
         //--------------------------------------------------
         // Start the application...
         //--------------------------------------------------
+
+        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                 << "Start application loop...";
+
+        qDebug() << "Total start-up time:" << timer.elapsed() << "ms";
 
         rv = app.exec();
 

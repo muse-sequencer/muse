@@ -1229,7 +1229,6 @@ void MusE::populateAddTrack()
 {
   arrangerView->populateAddTrack();
   arrangerView->updateShortcuts();
-
 }
 
 void MusE::blinkTimerSlot()
