@@ -250,7 +250,7 @@ GlobalConfigValues config = {
 
       18,                           // iconSize
       18,                           // cursorSize (for custom cursors)
-      false,                        // cascadeStylesheets
+      true,                         // cascadeStylesheets
       true,                         // showIconsInMenus
       true,                         // useNativeStandardDialogs
       16,                           // trackGradientStrength
