@@ -1180,6 +1180,9 @@ int main(int argc, char* argv[])
           MusEGlobal::config.pluginCacheTriggerRescan = false;
         }
         
+        if (MusEGlobal::debugMsg)
+            qDebug() << "Cache path for plugin scan:" << new_plugin_cache_path;
+
         // Scan all known plugins from the cache file, or if it does not exist
         //  create the cache file by reading plugins in a safe 'sandbox'.
         MusEPlugin::PluginScanInfoStruct::PluginType_t types = MusEPlugin::PluginScanInfoStruct::PluginTypeNone;
