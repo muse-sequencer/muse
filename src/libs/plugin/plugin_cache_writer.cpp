@@ -2969,17 +2969,15 @@ bool checkPluginCacheFiles(
     filepath_set fpset;
     findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
 
-    const QByteArray appDir = qgetenv("APPDIR"); // running in AppImage
-    if (!appDir.isEmpty()) {
-        const int prefix = appDir.length();
-        filepath_set fpset_tmp;
-        for (auto& it : fpset) {
-            if (it.first.left(prefix) == appDir)
-                fpset_tmp.insert(filepath_set_pair(it.first.right(it.first.length() - prefix), it.second));
+    bool isAppimage = !qEnvironmentVariableIsEmpty("APPDIR");
+    if (isAppimage) {
+        for (auto it = fpset.begin(); it != fpset.end(); ) {
+            if (it->first.contains("/usr/lib/muse-"))
+                fpset.erase(it++);
+            else
+                ++it;
         }
-        fpset.swap(fpset_tmp);
     }
-
 
     //-------------------------------------------------------------------------
     // Gather the unique (non-duplicate) plugin file paths found in our cache.
@@ -2996,11 +2994,17 @@ bool checkPluginCacheFiles(
     // Check for missing or altered plugins.
     //---------------------------------------
 
+//    bool isAppimage = !qEnvironmentVariableIsEmpty("APPDIR");
+
     for(filepath_set::iterator icfps = cache_fpset.begin(); icfps != cache_fpset.end(); ++icfps)
     {
       filepath_set::iterator ifpset = fpset.find(icfps->first);
       if(ifpset == fpset.end() || ifpset->second != icfps->second)
       {
+          // ignore own ladspa plugins (dynamic path)
+          if (isAppimage && icfps->first.contains("/usr/lib/muse-"))
+              continue;
+
         cache_dirty = true;
 
         if (debugStdErr) {
@@ -3025,6 +3029,7 @@ bool checkPluginCacheFiles(
 
     // Any remaining items in fpset must be 'new' plugins.
     if(!cache_dirty && !fpset.empty()) {
+
       if(debugStdErr)
       {
         std::fprintf(stderr, "Setting cache to dirty due to NEW plugins:\n");
