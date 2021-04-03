@@ -551,9 +551,6 @@ CommandLineParseResult parseCommandLine(
 
 int main(int argc, char* argv[])
 {
-      QTime timer;
-      timer.start();
-
       // Get the separator used for file paths.
       const QChar list_separator = QDir::listSeparator();
 
@@ -594,6 +591,9 @@ int main(int argc, char* argv[])
       while(is_restarting)
       {
         is_restarting = false;
+
+        QTime timer;
+        timer.start();
 
         // Make working copies of the arguments.
         const int argument_count = argc;
@@ -1661,6 +1661,10 @@ int main(int argc, char* argv[])
         // Grab the restart flag before deleting muse.
         is_restarting = MusEGlobal::muse->restartingApp();
         
+        if (is_restarting)
+            qDebug() << "\n->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                     << "Restarting application...";
+
         {
           // If the current project file name exists, set the last_project_filename
           //  variable so that if restarting, it starts with that file.
