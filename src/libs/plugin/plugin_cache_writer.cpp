@@ -36,7 +36,7 @@
 #include <sys/stat.h>
 
 #include <map>
-  
+
 #include <cstdio>
 #include <cstring>
 #include <cstdint>
@@ -127,7 +127,7 @@ bool scanLadspaPorts(
     PluginPortInfo port_info;
     port_info._name = PLUGIN_SET_CSTRING(ladspa_descr->PortNames[k]);
     port_info._index = k;
-  
+
     const LADSPA_PortRangeHint range_hint = ladspa_descr->PortRangeHints[k];
     LADSPA_PortRangeHintDescriptor range_hint_desc = range_hint.HintDescriptor;
 
@@ -143,16 +143,16 @@ bool scanLadspaPorts(
 //       //        !LADSPA_IS_HINT_TOGGLED(range_hint_desc))
 //       port_info._valueType = PluginPortInfo::LinearVal;
 
-    
+
     if(LADSPA_IS_HINT_LOGARITHMIC(range_hint_desc))
       port_info._valueFlags |= PluginPortInfo::LogVal;
-    
+
     if(LADSPA_IS_HINT_TOGGLED(range_hint_desc))
       port_info._valueFlags |= PluginPortInfo::ToggledVal;
-    
+
     if(LADSPA_IS_HINT_INTEGER(range_hint_desc))
       port_info._valueFlags |= PluginPortInfo::IntegerVal;
-    
+
 //     if(LADSPA_IS_HINT_TOGGLED(range_hint_desc))
 //     {
 //       port_info._min = 0.0f;
@@ -164,7 +164,7 @@ bool scanLadspaPorts(
     {
       if(LADSPA_IS_HINT_SAMPLE_RATE(range_hint_desc))
         port_info._flags |= PluginPortInfo::ScaleBySamplerate;
-      
+
       if(LADSPA_IS_HINT_BOUNDED_BELOW(range_hint_desc))
       {
         port_info._min =  range_hint.LowerBound; // * m;
@@ -174,7 +174,7 @@ bool scanLadspaPorts(
       {
         //port_info._min = 0.0f;
       }
-      
+
       if(LADSPA_IS_HINT_BOUNDED_ABOVE(range_hint_desc))
       {
         port_info._max =  range_hint.UpperBound; // * m;
@@ -189,7 +189,7 @@ bool scanLadspaPorts(
 
     if(LADSPA_IS_HINT_HAS_DEFAULT(range_hint_desc))
       port_info._valueFlags |= PluginPortInfo::HasDefault;
-    
+
     LADSPA_Data default_val = PluginPortInfo::defaultPortValue;
     if(LADSPA_IS_HINT_DEFAULT_MINIMUM(range_hint_desc))
       default_val = range_hint.LowerBound;
@@ -305,7 +305,7 @@ bool scanLadspaPorts(
           enum_list.insert(std::pair<float, PluginPortEnumValue>(enum_val._value, enum_val));
         }
         lrdf_free_setting_values(defs);
-        
+
         // Copy the sorted enumeration values to the vector enumeration list.
         EnumValueList dst_list;
         for(std::map<float, PluginPortEnumValue, std::less<float>>::const_iterator iel = enum_list.begin();
@@ -330,16 +330,16 @@ bool scanLadspaPorts(
 //         for(unsigned int i = 0; i < set_uris->count; ++i)
 //         {
 //           defs = lrdf_get_setting_values(set_uris->items[i]);
-//           
-//           
+//
+//
 //           lrdf_free_setting_values(defs);
 //         }
 //       }
-      
+
     }
 
 #endif // HAVE_LRDF
-    
+
     info->_portList.push_back(port_info);
   }
 
@@ -347,10 +347,10 @@ bool scanLadspaPorts(
   info->_outports = op;
   info->_controlInPorts = cip;
   info->_controlOutPorts = cop;
-  
+
   if((info->_inports != info->_outports) || LADSPA_IS_INPLACE_BROKEN(ladspa_descr->Properties))
     info->_requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
-  
+
   return true;
 }
 
@@ -383,7 +383,7 @@ bool scanLadspaDescriptor(
 //                     info->_label.toLatin1().constData(),
 //                     MusEPlugin::getCString(info->_label)
 //                    );
-  
+
   if(do_ports)
   {
     scanLadspaPorts(ladspa_descr, info, do_rdf);
@@ -427,16 +427,16 @@ bool scanLadspaDescriptor(
         }
       }
     }
-    
+
     info->_inports = ip;
     info->_outports = op;
     info->_controlInPorts = cip;
     info->_controlOutPorts = cop;
-    
+
     if((info->_inports != info->_outports) || LADSPA_IS_INPLACE_BROKEN(ladspa_descr->Properties))
       info->_requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
   }
-  
+
   return true;
 }
 
@@ -485,7 +485,7 @@ bool writeLadspaInfo (
       continue;
     writePluginScanInfo(level, xml, info, do_ports);
   }
-  
+
 #ifdef HAVE_LRDF
   if(do_ports)
     lrdf_cleanup();
@@ -682,7 +682,7 @@ bool writeDssiInfo(const char* filename, DSSI_Descriptor_Function dssi, bool do_
       continue;
     writePluginScanInfo(level, xml, info, do_ports);
   }
-  
+
 #ifdef HAVE_LRDF
   if(do_ports)
     lrdf_cleanup();
@@ -720,9 +720,9 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
       }
 
       // No instance found. So we are just scanning for plugins...
-    
+
       DEBUG_PLUGIN_SCAN(stderr, "plugin_scan: vstNativeHostCallback eff:%p opcode:%ld\n", effect, (unsigned long)opcode);
-      
+
       switch (opcode) {
             case audioMasterAutomate:
                   // index, value, returns 0
@@ -850,7 +850,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
 
             case audioMasterCloseFileSelector:
                   return 0;
-                  
+
 #ifdef VST_FORCE_DEPRECATED
 #ifndef VST_2_4_EXTENSIONS // deprecated in 2.4
 
@@ -924,7 +924,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   return 0;
 #endif
 #endif
-                  
+
             default:
                   break;
             }
@@ -976,7 +976,7 @@ static void setVstParameterInfo(
     std::strncpy(label_buf, props.label, VstLabelLen);
         label_buf[VstLabelLen] = 0;
     port_info->_name = PLUGIN_SET_CSTRING(label_buf);
-    
+
     char shlabel_buf[VstShortLabelLen + 1];
         shlabel_buf[0] = 0;
     std::strncpy(shlabel_buf, props.label, VstShortLabelLen);
@@ -1006,7 +1006,7 @@ bool scanLinuxVstPorts(AEffect *plugin, PluginScanInfoStruct* info)
 
   if((info->_inports != info->_outports) || !(plugin->flags & effFlagsCanReplacing))
     info->_requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
-  
+
   unsigned long k = 0;
   for(int i = 0; i < plugin->numInputs; ++i)
   {
@@ -1016,7 +1016,7 @@ bool scanLinuxVstPorts(AEffect *plugin, PluginScanInfoStruct* info)
     info->_portList.push_back(port_info);
     ++k;
   }
-  
+
   for(int i = 0; i < plugin->numOutputs; ++i)
   {
     PluginPortInfo port_info;
@@ -1025,7 +1025,7 @@ bool scanLinuxVstPorts(AEffect *plugin, PluginScanInfoStruct* info)
     info->_portList.push_back(port_info);
     ++k;
   }
-  
+
   for(int i = 0; i < plugin->numParams; ++i)
   {
     PluginPortInfo port_info;
@@ -1033,7 +1033,7 @@ bool scanLinuxVstPorts(AEffect *plugin, PluginScanInfoStruct* info)
     port_info._type = PluginPortInfo::ControlPort | PluginPortInfo::InputPort;
     // Notice the 'i' not 'k'.
     setVstParameterInfo(plugin, i, &port_info);
-    
+
     info->_portList.push_back(port_info);
     ++k;
   }
@@ -1088,12 +1088,12 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
     info->_description = PLUGIN_SET_CSTRING(buffer);
 
   vendorVersion = plugin->dispatcher(plugin, effGetVendorVersion, 0, 0, NULL, 0);
-  
+
   buffer[0] = 0;
   sprintf(buffer, "%d.%d.%d", vendorVersion >> 16, vendorVersion >> 8, vendorVersion & 0xff);
   if(buffer[0])
     info->_version = PLUGIN_SET_CSTRING(buffer);
-  
+
   setPluginScanFileInfo(filename, info);
 
   // Some (older) plugins don't have any of these strings. We only have the filename to use.
@@ -1104,25 +1104,25 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
     info->_description = info->_label;
 
   info->_name = info->_label;
-  
+
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
-  
+
   info->_type = PluginScanInfoStruct::PluginTypeLinuxVST;
   info->_class = PluginScanInfoStruct::PluginClassEffect;
   info->_uniqueID = plugin->uniqueID;
   info->_subID = id;
-  
+
   info->_apiVersionMajor = vst_version;
   info->_apiVersionMinor = 0;
   info->_pluginVersionMajor = (vendorVersion >> 16) & 0xff;
   //info->_pluginVersionMinor = (vendorVersion >> 8) & 0xff;
   info->_pluginVersionMinor = vendorVersion & 0xffff;
   //info->_pluginVersionMicro = vendorVersion & 0xff;
-  
+
   if(plugin->flags & 32 /*effFlagsProgramChunks*/)
     info->_pluginFlags |= PluginScanInfoStruct::HasChunks;
-  
+
   if(do_ports)
   {
     scanLinuxVstPorts(plugin, info);
@@ -1172,7 +1172,7 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
       info->_vstPluginFlags |= MusECore::canVstMidiProgramNames;
   }
 
-  if((plugin->flags & effFlagsIsSynth) || 
+  if((plugin->flags & effFlagsIsSynth) ||
     (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0))
   {
     info->_class |= PluginScanInfoStruct::PluginClassInstrument;
@@ -1280,10 +1280,10 @@ bool writeLinuxVstInfo(
 //               _end:
 //               if(handle && !bDontDlCLose)
 //                   dlclose(handle);
-// 
+//
 //               sem_post(&_vstIdLock);
 //               _vstIdLock.release();
-  
+
   return true;
 }
 
@@ -1303,7 +1303,7 @@ bool writeUnknownPluginInfo (
   info._type = PluginScanInfoStruct::PluginTypeUnknown;
   //info._fileIsBad = true;
   writePluginScanInfo(level, xml, info, false);
-  
+
   return true;
 }
 
@@ -1313,8 +1313,15 @@ bool writeUnknownPluginInfo (
 
 void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStruct& info, bool writePorts)
       {
+    // remove dynamic part of the path of internal plugins when running in AppImage
+    const QByteArray appDir = qgetenv("APPDIR");
+    QString fp = PLUGIN_GET_QSTRING(info.filePath());
+    if (!appDir.isEmpty() && fp.left(appDir.length()) == appDir)
+        fp = fp.remove(0, appDir.length());
+
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\"",
-         MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info.filePath())).toLatin1().constData(),
+         MusECore::Xml::xmlString(fp).toLatin1().constData(),
+//              MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info.filePath())).toLatin1().constData(),
          MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info._label)).toLatin1().constData());
 
       if(!PLUGIN_STRING_EMPTY(info._uri))
@@ -1324,7 +1331,7 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
         xml.longLongTag(level, "filetime", info._fileTime);
       if(info._fileIsBad)
         xml.intTag(level, "fileIsBad", info._fileIsBad);
-      
+
       xml.intTag(level, "type", info._type);
       xml.intTag(level, "class", info._class);
       if(info._uniqueID != 0)
@@ -1451,7 +1458,7 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
 
             if(port_info._flags != PluginPortInfo::NoPortFlags)
               xml.intTag(level, "flags", port_info._flags);
-            
+
             if(port_info._valueFlags != PluginPortInfo::NoValueFlags)
               xml.intTag(level, "valFlags", port_info._valueFlags);
 
@@ -1538,7 +1545,7 @@ static bool pluginScan(
   const QByteArray tmpfilename_ba = tmpfilename.toLocal8Bit();
   // Close the temp file. It exists until tmpfile goes out of scope.
   tmpfile.close();
-  
+
   if(debugStdErr)
     std::fprintf(stderr, "\nChecking file: <%s>\n", filename_ba.constData());
 
@@ -1559,7 +1566,7 @@ static bool pluginScan(
   process.start(prog, args);
 
   bool fail = false;
-  
+
 //   if(!process.waitForStarted(4000))
 //   {
 //     std::fprintf(stderr, "pluginScan: waitForStarted failed\n");
@@ -1626,7 +1633,7 @@ static bool pluginScan(
     std::fprintf(stderr, "\npluginScan FAILED: Scan exit code not 0: file: %s\n\n", filename_ba.constData());
     fail = true;
   }
-  
+
   if(!fail)
   {
     // Open the temp file again...
@@ -1642,12 +1649,12 @@ static bool pluginScan(
                   tmpfilename_ba.constData());
       fail = true;
     }
-    
+
     if(!fail)
     {
       // Create an xml object based on the file.
       MusECore::Xml xml(&infile);
-      
+
       // Read the list of plugins found in the xml.
       // For now we don't supply a separate scanEnums flag in pluginScan(), so just use scanPorts instead.
       if(readPluginScan(xml, list, scanPorts, scanPorts))
@@ -1658,13 +1665,13 @@ static bool pluginScan(
 
       // Close the temp file.
       infile.close();
-      
+
       // Now going out of scope destroys the temporary file...
       if(!fail)
         return true;
     }
   }
-  
+
   //---------------------------------------------------------------
   // Plugin failed scanning. Add it to the list but mark it as bad!
   //---------------------------------------------------------------
@@ -1722,7 +1729,7 @@ static void scanPluginDir(
         scanPluginDir(fi.filePath(), types, list, scanPorts, debugStdErr, recurseLevel + 1);
       else
         pluginScan(fi.filePath(), types, list, scanPorts, debugStdErr);
-      
+
       ++it;
     }
   }
@@ -1779,9 +1786,9 @@ void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   #else
     std::fprintf(stderr, "Initializing Native VST support. Using Steinberg VSTSDK.\n");
   #endif
-    
+
 //   sem_init(&_vstIdLock, 0, 1);
-  
+
   QStringList sl = pluginGetLinuxVstDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
     scanPluginDir(*it, PluginScanInfoStruct::PluginTypeAll, list, scanPorts, debugStdErr);
@@ -1904,7 +1911,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
     info->_pluginFlags |= PluginScanInfoStruct::HasFreewheelPort;
     info->_freewheelPortIdx = lilv_port_get_index(plugin, lilvFreeWheelPort);
   }
-    
+
   if(lilv_plugin_has_latency(plugin))
   {
     info->_pluginFlags |= PluginScanInfoStruct::HasLatencyPort;
@@ -1928,11 +1935,11 @@ void scanLv2Ports(const LilvPlugin *plugin,
   {
     PluginPortInfo port_info;
     port_info._index = k;
-    
+
     const LilvPort *lilvPort = lilv_plugin_get_port_by_index(plugin, k);
     LilvNode *nPname = lilv_port_get_name(plugin, lilvPort);
     const LilvNode *nPsym = lilv_port_get_symbol(plugin, lilvPort);
-    
+
     char cAutoGenPortName [1024];
     char cAutoGenPortSym [1024];
     memset(cAutoGenPortName, 0, sizeof(cAutoGenPortName));
@@ -1941,7 +1948,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
     snprintf(cAutoGenPortSym, sizeof(cAutoGenPortSym) - 1, "autoport#%u", (unsigned)k);
     const char *_portName = cAutoGenPortName;
     const char *_portSym = cAutoGenPortSym;
-    
+
     if(nPname)
       _portName = lilv_node_as_string(nPname);
     if(nPsym)
@@ -1969,16 +1976,16 @@ void scanLv2Ports(const LilvPlugin *plugin,
         lilv_node_free(nPname);
       continue;
     }
-    
+
     bool isCVPort = lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_CVPort);
-    
+
     if(isCVPort)
       port_info._flags |= PluginPortInfo::IsCVPort;
 
     if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_ControlPort) || isCVPort)
     {
       port_info._type |= PluginPortInfo::ControlPort;
-      
+
 //       port_info._valueType = PluginPortInfo::LinearVal;
 //       if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portDiscrete))
 //         port_info._valueFlags = PluginPortInfo::IntegerVal;
@@ -2004,7 +2011,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
 
       if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portLogarithmic))
         port_info._valueFlags |= PluginPortInfo::LogVal;
-      
+
       // "If a port doesn't have a minimum, maximum or default value,
       //  or the port's type is not float, the corresponding array element
       //  will be set to NAN."
@@ -2030,7 +2037,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
         pluginControlsDefault[k] = 1;
         pluginControlsMin[k] = 0;
         pluginControlsMax[k] = 1;
-        port_info._valueFlags |= 
+        port_info._valueFlags |=
           (PluginPortInfo::HasDefault | PluginPortInfo::HasMin | PluginPortInfo::HasMax);
       }
       // It's a normal control port. Do the values depend on the current sample rate?
@@ -2038,11 +2045,11 @@ void scanLv2Ports(const LilvPlugin *plugin,
       {
         port_info._flags |= PluginPortInfo::ScaleBySamplerate;
       }
-      
+
       port_info._min = pluginControlsMin[k];
       port_info._max = pluginControlsMax[k];
       port_info._defaultVal = pluginControlsDefault[k];
-      
+
       // Read any value enumerations...
       LilvScalePoints* scale_points;
       scale_points = lilv_port_get_scale_points(plugin, lilvPort);
@@ -2050,7 +2057,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
       {
         // Map for ensuring the enumerations are sorted by increasing value.
         std::map<float, PluginPortEnumValue, std::less<float> > enum_list;
-      
+
         LilvIter* sp_it = lilv_scale_points_begin(scale_points);
         while(!lilv_scale_points_is_end(scale_points, sp_it))
         {
@@ -2142,13 +2149,13 @@ void scanLv2Ports(const LilvPlugin *plugin,
     {
       port_info._flags |= PluginPortInfo::IsFreewheel;
     }
-    
+
     if((info->_pluginFlags & PluginScanInfoStruct::HasLatencyPort) &&
        k == info->_latencyPortIdx)
     {
       port_info._flags |= PluginPortInfo::IsLatency;
     }
-    
+
     info->_portList.push_back(port_info);
   }
 
@@ -2158,7 +2165,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
   info->_controlOutPorts = cop;
   info->_eventInPorts = eip;
   info->_eventOutPorts = eop;
-  
+
   if((info->_inports != info->_outports) || lilv_plugin_has_feature(plugin, lv2CacheNodes.lv2_InPlaceBroken))
     info->_requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
 }
@@ -2172,19 +2179,19 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 //   static unsigned long FakeLv2UniqueID = 1;
 
-  
+
   LilvNode *nameNode = lilv_plugin_get_name(plugin);
   const LilvNode *uriNode = lilv_plugin_get_uri(plugin);
 
   if(!nameNode)
     return;
-  
+
   if(!lilv_node_is_string(nameNode))
   {
     lilv_node_free(nameNode);
     return;
   }
-  
+
   const char *pluginName = lilv_node_as_string(nameNode);
   const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
   LilvNodes *fts = lilv_plugin_get_required_features(plugin);
@@ -2252,7 +2259,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   {
     info._class |= PluginScanInfoStruct::PluginClassEffect;
   }
-  
+
   if(LilvNode *nAuthor = lilv_plugin_get_author_name(plugin))
   {
     info._maker = PLUGIN_SET_CSTRING(lilv_node_as_string(nAuthor));
@@ -2273,7 +2280,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       info._pluginFlags |= PluginScanInfoStruct::HasFreewheelPort;
       info._freewheelPortIdx = lilv_port_get_index(plugin, lilvFreeWheelPort);
     }
-      
+
     if(lilv_plugin_has_latency(plugin))
     {
       info._pluginFlags |= PluginScanInfoStruct::HasLatencyPort;
@@ -2304,12 +2311,12 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       }
 
       bool isCVPort = lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_CVPort);
-      
+
       if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_ControlPort) || isCVPort)
       {
         if(is_output)
           ++cop;
-        else 
+        else
           ++cip;
       }
       else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_AudioPort))
@@ -2323,7 +2330,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       {
         if(is_output)
           ++eop;
-        else 
+        else
           ++eip;
         if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
           info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
@@ -2332,7 +2339,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       {
         if(is_output)
           ++eop;
-        else 
+        else
           ++eip;
         if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
           info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
@@ -2370,9 +2377,9 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
     lilv_node_free(nameNode);
     return;
   }
-  
+
   list->add(new PluginScanInfo(info));
-  
+
   lilv_free((void*)lfp); // Must free.
   lilv_node_free(nameNode);
 }
@@ -2387,10 +2394,10 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
 void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
   std::set<std::string> supportedFeatures;
-  
+
   // REMOVE Tim. lv2. Added.
   //LV2_Feature* feats[SIZEOF_ARRAY(lv2Features) + 1];
- 
+
   unsigned long int feat = 0;
   for(; feat < SIZEOF_ARRAY(lv2Features); feat++)
   {
@@ -2401,7 +2408,7 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   }
   // REMOVE Tim. lv2. Added.
   //feats[feat] = nullptr;
-  
+
   LilvWorld *lilvWorld = 0;
   lilvWorld = lilv_world_new();
   if(!lilvWorld)
@@ -2469,17 +2476,17 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 //     //
 //     // No crash so far. Done with instance. Close it - free it.
 //     lilv_instance_free(handle);
-    
+
     // Now go ahead and scan the textual descriptions of the plugin.
     scanLv2Plugin(plugin, list, supportedFeatures, scanPorts, debugStdErr);
-    
+
     pit = lilv_plugins_next(plugins, pit);
   }
 
    for(LilvNode **n = (LilvNode **)&lv2CacheNodes; *n; ++n)
      lilv_node_free(*n);
 
-    
+
   lilv_world_free(lilvWorld);
   lilvWorld = NULL;
 }
@@ -2507,15 +2514,15 @@ void scanAllPlugins(
   if(types & (PluginScanInfoStruct::PluginTypeLADSPA))
     // Now do LADSPA plugins...
     scanLadspaPlugins(museGlobalLib, list, scanPorts, debugStdErr);
-  
+
   if(types & (PluginScanInfoStruct::PluginTypeMESS))
     // Now do MESS plugins...
     scanMessPlugins(museGlobalLib, list, scanPorts, debugStdErr);
-  
+
   if(types & (PluginScanInfoStruct::PluginTypeLinuxVST))
     // Now do LinuxVST plugins...
     scanLinuxVSTPlugins(list, scanPorts, debugStdErr);
-  
+
   if(types & (PluginScanInfoStruct::PluginTypeLV2))
     // Now do LV2 plugins...
     scanLv2Plugins(list, scanPorts, debugStdErr);
@@ -2570,7 +2577,7 @@ static QString findPluginFilesDir(
       {
         fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
       }
-      
+
       ++it;
     }
   }
@@ -2709,13 +2716,13 @@ static void findLv2PluginFile(const LilvPlugin *plugin,
 static void findLv2PluginFiles(filepath_set& fplist, bool debugStdErr)
 {
   std::set<std::string> supportedFeatures;
-  
+
   unsigned long int feat = 0;
   for(; feat < SIZEOF_ARRAY(lv2Features); feat++)
   {
     supportedFeatures.insert(lv2Features [feat].URI);
   }
-  
+
   LilvWorld *lilvWorld = 0;
   lilvWorld = lilv_world_new();
   if(!lilvWorld)
@@ -2820,7 +2827,7 @@ bool writePluginCacheFile(
                  scanOutPath.toLatin1().constData());
      scanOutDir.mkpath(".");
   }
-  
+
   QFile targ_qfile(targ_filepath);
   if(!targ_qfile.open(QIODevice::WriteOnly | QIODevice::Text))
   {
@@ -2833,7 +2840,7 @@ bool writePluginCacheFile(
       int level = 0;
       xml.header();
       level = xml.putFileVersion(level);
-      
+
       for(ciPluginScanList ips = list.begin(); ips != list.end(); ++ips)
       {
         PluginScanInfoRef inforef = *ips;
@@ -2843,16 +2850,16 @@ bool writePluginCacheFile(
         if(infos._type & types)
           writePluginScanInfo(level, xml, infos, writePorts);
       }
-      
+
       xml.tag(1, "/muse");
-      
+
       DEBUG_PLUGIN_SCAN(stderr, "writePluginCacheFile: targ_qfile closing filename:%s\n",
                       filename.toLatin1().constData());
       targ_qfile.close();
 
       res = true;
   }
-  
+
   return res;
 }
 
@@ -2871,14 +2878,14 @@ bool createPluginCacheFile(
 {
   // Scan all plugins into the list.
   scanAllPlugins(museGlobalLib, list, writePorts, debugStdErr, type);
-  
+
   // Write the list's cache file.
   if(!writePluginCacheFile(path, QString(pluginCacheFilename(type)), *list, writePorts, types))
   {
     std::fprintf(stderr, "createCacheFile: writePluginCacheFile() failed: filename:%s\n", pluginCacheFilename(type));
     return false;
   }
-    
+
   return true;
 }
 
@@ -2905,28 +2912,28 @@ bool createPluginCacheFiles(
   if(types & PluginScanInfoStruct::PluginTypeLADSPA)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeLADSPA, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeLADSPA | PluginScanInfoStruct::PluginTypeDSSIVST, debugStdErr);
-    
+
   if(types & PluginScanInfoStruct::PluginTypeLinuxVST)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeLinuxVST, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeLinuxVST, debugStdErr);
-    
+
   if(types & PluginScanInfoStruct::PluginTypeMESS)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeMESS, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeMESS, debugStdErr);
-    
+
   // SPECIAL for LV2: No need for a cache file. Do not create one here. Read directly into the list later.
   //if(types & PluginScanInfoStruct::PluginTypeLV2)
   //  createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeLV2, list, writePorts,
   //    museGlobalLib, PluginScanInfoStruct::PluginTypeLV2, debugStdErr);
-    
+
   if(types & PluginScanInfoStruct::PluginTypeVST)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeVST, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeVST, debugStdErr);
-    
+
   if(types & PluginScanInfoStruct::PluginTypeUnknown)
     createPluginCacheFile(path, PluginScanInfoStruct::PluginTypeUnknown, list, writePorts,
       museGlobalLib, PluginScanInfoStruct::PluginTypeUnknown, debugStdErr);
-    
+
   return true;
 }
 
@@ -2969,16 +2976,6 @@ bool checkPluginCacheFiles(
     filepath_set fpset;
     findPluginFiles(museGlobalLib, fpset, debugStdErr, types);
 
-    bool isAppimage = !qEnvironmentVariableIsEmpty("APPDIR");
-    if (isAppimage) {
-        for (auto it = fpset.begin(); it != fpset.end(); ) {
-            if (it->first.contains("/usr/lib/muse-"))
-                fpset.erase(it++);
-            else
-                ++it;
-        }
-    }
-
     //-------------------------------------------------------------------------
     // Gather the unique (non-duplicate) plugin file paths found in our cache.
     //-------------------------------------------------------------------------
@@ -2989,34 +2986,25 @@ bool checkPluginCacheFiles(
       const PluginScanInfoStruct& infos = inforef->info();
       cache_fpset.insert(filepath_set_pair(PLUGIN_GET_QSTRING(infos.filePath()), infos._fileTime));
     }
-  
+
     //---------------------------------------
     // Check for missing or altered plugins.
     //---------------------------------------
 
-//    bool isAppimage = !qEnvironmentVariableIsEmpty("APPDIR");
+    const QByteArray appDir = qgetenv("APPDIR");
 
     for(filepath_set::iterator icfps = cache_fpset.begin(); icfps != cache_fpset.end(); ++icfps)
     {
-      filepath_set::iterator ifpset = fpset.find(icfps->first);
+        QString search = icfps->first;
+        // AppImage: Prepend dynamic part of path to internal plugins
+        if (!appDir.isEmpty() && search.left(14) == "/usr/lib/muse-")
+            search = appDir + search;
+
+      filepath_set::iterator ifpset = fpset.find(search);
+//                filepath_set::iterator ifpset = fpset.find(icfps->first);
       if(ifpset == fpset.end() || ifpset->second != icfps->second)
       {
-          // ignore own ladspa plugins (dynamic path)
-          if (isAppimage && icfps->first.contains("/usr/lib/muse-"))
-              continue;
-
         cache_dirty = true;
-
-        if (debugStdErr) {
-            std::fprintf(stderr, "Setting cache to dirty due to missing or modified plugins:\n");
-            if(ifpset == fpset.end())
-                std::fprintf(stderr, "Missing plugin: %s:\n", icfps->first.toLatin1().data());
-            else
-                std::fprintf(stderr, "Modified plugin: %s Cache ts: %ld File ts: %ld\n",
-                             icfps->first.toLatin1().data(),
-                             icfps->second,
-                             ifpset->second);
-        }
         break;
       }
       // Done with the current plugin file path. Erase it.
@@ -3029,7 +3017,6 @@ bool checkPluginCacheFiles(
 
     // Any remaining items in fpset must be 'new' plugins.
     if(!cache_dirty && !fpset.empty()) {
-
       if(debugStdErr)
       {
         std::fprintf(stderr, "Setting cache to dirty due to NEW plugins:\n");
@@ -3070,12 +3057,12 @@ bool checkPluginCacheFiles(
     if(!targ_qfile.remove())
       std::fprintf(stderr, "Error: Deleting obsolete LV2 plugin cache file failed!\n");
   }
-  
+
   // SPECIAL for LV2: No need for a cache file.
   // Bring LV2 plugins directly into the list, after all the cache scanning and creation.
   if(types & PluginScanInfoStruct::PluginTypeLV2)
     scanLv2Plugins(list, writePorts, debugStdErr);
-  
+
   return res;
 }
 
