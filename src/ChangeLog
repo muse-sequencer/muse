@@ -1,3 +1,5 @@
+03.04.2021
+    - Fix: Appimage start time: Avoid updating plugin cache on every start. (kybos)
 31.03.2021
     - Fix: Don't load presets for lv2 plugins at program start
             to reduce start-up time and save resources. (kybos)
