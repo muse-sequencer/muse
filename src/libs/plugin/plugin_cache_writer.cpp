@@ -1321,7 +1321,6 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
 
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\"",
          MusECore::Xml::xmlString(fp).toLatin1().constData(),
-//              MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info.filePath())).toLatin1().constData(),
          MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info._label)).toLatin1().constData());
 
       if(!PLUGIN_STRING_EMPTY(info._uri))
@@ -3001,10 +3000,21 @@ bool checkPluginCacheFiles(
             search = appDir + search;
 
       filepath_set::iterator ifpset = fpset.find(search);
-//                filepath_set::iterator ifpset = fpset.find(icfps->first);
       if(ifpset == fpset.end() || ifpset->second != icfps->second)
       {
         cache_dirty = true;
+
+        if (debugStdErr) {
+            std::fprintf(stderr, "Setting cache to dirty due to missing or modified plugins:\n");
+            if(ifpset == fpset.end())
+                std::fprintf(stderr, "Missing plugin: %s:\n", icfps->first.toLatin1().data());
+            else
+                std::fprintf(stderr, "Modified plugin: %s Cache ts: %ld File ts: %ld\n",
+                             icfps->first.toLatin1().data(),
+                             icfps->second,
+                             ifpset->second);
+        }
+
         break;
       }
       // Done with the current plugin file path. Erase it.
