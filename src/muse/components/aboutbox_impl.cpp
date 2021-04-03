@@ -44,10 +44,10 @@ AboutBoxImpl::AboutBoxImpl()
   QString gitstring(GITSTRING);
 
   QString verStr("Version: " + version);
+  if (!qEnvironmentVariableIsEmpty("APPDIR"))
+      verStr += " (AppImage)";
   if (!gitstring.isEmpty())
       verStr += "\ngit: " + gitstring;
-  else if (!qEnvironmentVariableIsEmpty("APPDIR"))
-      verStr += "\nAppImage";
 
   versionLabel->setText(verStr);
 
