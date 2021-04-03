@@ -1315,9 +1315,10 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
       {
     // remove dynamic part of the path of internal plugins when running in AppImage
     const QByteArray appDir = qgetenv("APPDIR");
+    const int appDirLen = appDir.length();
     QString fp = PLUGIN_GET_QSTRING(info.filePath());
-    if (!appDir.isEmpty() && fp.left(appDir.length()) == appDir)
-        fp = fp.remove(0, appDir.length());
+    if (!appDir.isEmpty() && fp.left(appDirLen) == appDir)
+        fp = fp.remove(0, appDirLen);
 
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\"",
          MusECore::Xml::xmlString(fp).toLatin1().constData(),
@@ -3009,7 +3010,7 @@ bool checkPluginCacheFiles(
             if(ifpset == fpset.end())
                 std::fprintf(stderr, "Missing plugin: %s:\n", icfps->first.toLatin1().data());
             else
-                std::fprintf(stderr, "Modified plugin: %s Cache ts: %ld File ts: %ld\n",
+                std::fprintf(stderr, "Modified plugin: %s (Cache ts: %ld / File ts: %ld)\n",
                              icfps->first.toLatin1().data(),
                              icfps->second,
                              ifpset->second);
