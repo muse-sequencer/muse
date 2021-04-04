@@ -22,9 +22,9 @@
 
 #include "operations.h"
 #include "song.h"
-#include "pos.h"
 #include "globals.h"
 #include "synth.h"
+#include "muse_time.h"
 
 // Forwards from header:
 #include "tempo.h" 
@@ -194,6 +194,9 @@ unsigned int PendingOperationItem::getIndex() const
     case ModifyTempoList:
     case ModifySigList:
     case ModifyKeyList:
+    case ModifyEventList:
+    case ModifyMidiCtrlValList:
+
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
     
@@ -1125,54 +1128,34 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
     case ModifyPartStart:
     {
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartStart part:%p old_val:%d new_val:%u\n", _part, _part->frame(), _posLenVal);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartStart part:%p old_val:%d new_val:%u\n", _part, _part->posValue(), _posLenVal);
 
-      // Go through all events and adjust their position from the new start of the part
-
-      int newPartStart = _posLenVal;
-      int oldPartStart = _part->posValue();
-      int startPosChange = oldPartStart - newPartStart;
-      auto partType = _part->partType();
-
-      auto& eventList = _part->nonconst_events();
-      EventList eventsToMove;
-
-      for (EventList::iterator eventIterator = eventList.begin(); eventIterator != eventList.end(); eventIterator++)
+      // Since we are modifying a part's position we must remove the part from the list
+      //  and reinsert it afterwards for proper sorting (position is the sorting key).
+      if(_part->track() && _iPart != _part->track()->parts()->end())
       {
-          // first event in a wave part must be extended.
-          if (eventIterator == eventList.begin() && partType == Part::WavePartType)
-          {
-              auto waveEvent = (Event&)eventIterator->second;
-              if (waveEvent.spos() - startPosChange < 0) {
-                  startPosChange = waveEvent.spos();
-                  newPartStart = oldPartStart - startPosChange;
-              }
-              waveEvent.setSpos(waveEvent.spos() - startPosChange);
-              waveEvent.setLenFrame(waveEvent.lenFrame() + startPosChange);
-
-              eventsToMove.add(waveEvent);
-          }
-          else // all other events are treated equally
-          {
-              auto event = (Event&)eventIterator->second;
-              auto posValue = event.posValue();
-              event.setPosValue(posValue + startPosChange);
-              eventsToMove.add(event);
-          }
+        _part->track()->parts()->erase(_iPart);
+        flags |= SC_PART_REMOVED;
       }
 
-      // recreate event list
-      eventList.clear();
-      for (auto& eventToMove : eventsToMove)
+      // Was an event list supplied to be wholesale swapped?
+      if(_event_list)
       {
-        eventList.add(eventToMove.second);
+        // Since the original event list is not an allocated pointer, there are no pointers to quickly exchange.
+        // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
+        // Transfers the original list back to _event_list so it can be deleted in the non-RT stage.
+        (&_part->nonconst_events())->swap(*_event_list);
+        flags |= (SC_EVENT_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED);
       }
 
-      _part->setPosValue(newPartStart);
-      _part->setLenValue(_part->lenValue() + startPosChange);
-
+      _part->setLenValue(_lenVal);
+      _part->setPosValue(_posLenVal);
+      if(_part->track())
+      {
+        _part->track()->parts()->add(_part);
+        flags |= SC_PART_INSERTED;
+      }
       flags |= SC_PART_MODIFIED;
-      flags |= SC_EVENT_MODIFIED;
     }
     break;
 
@@ -1180,30 +1163,20 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyPartLength part:%p old_val:%d new_val:%u\n", _part, _part->lenValue(), _posLenVal);
 
-      // If we are extending a wave part the underlying event (containing the wave file, also must be extended)
-      if (_part->partType() == MusECore::Part::WavePartType) {
-
-        // find the event that exists at the end of the part (if there is one) and extend it
-        EventList& eventList = _part->nonconst_events();
-
-        // find event with largest framepos
-        Event& lastEvent = eventList.begin()->second;
-        for (auto ci = eventList.cbegin(); ci != eventList.cend(); ++ci) {
-          if ( ((Event&)ci->second).frame() > lastEvent.frame())
-          {
-              lastEvent = ci->second;
-          }
-        }
-        // not entirely correct if the event does not start at part start
-        // but maybe it is enough as the event will be long enough.
-        lastEvent.setLenValue(_posLenVal);
+      // Was an event list supplied to be wholesale swapped?
+      if(_event_list)
+      {
+        // Since the original event list is not an allocated pointer, there are no pointers to quickly exchange.
+        // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
+        // Transfers the original list back to _event_list so it can be deleted in the non-RT stage.
+        (&_part->nonconst_events())->swap(*_event_list);
+        flags |= (SC_EVENT_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED);
       }
-
       _part->setLenValue(_posLenVal);
       flags |= SC_PART_MODIFIED;
     }
     break;
-    
+
     case MovePart:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage MovePart part:%p track:%p new_pos:%u\n", _part, _track, _posLenVal);
       if(_track)
@@ -1229,10 +1202,10 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
 
     case SelectPart:
 #ifdef _PENDING_OPS_DEBUG_
-      fprintf(stderr, "PendingOperationItem::executeRTStage SelectPart part:%p select:%u\n", _part, _posLenVal);
+      fprintf(stderr, "PendingOperationItem::executeRTStage SelectPart part:%p select:%u\n", _part, _boolA);
 #endif      
       if(_part)
-        _part->setSelected(_posLenVal);
+        _part->setSelected(_boolA);
       
       flags |= SC_PART_SELECTION;
     break;
@@ -1280,19 +1253,42 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
 
     
+    case ModifyEventList:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyEventList: orig eventlist:%p new eventlist:%p\n", 
+                       _orig_event_list, _event_list);
+      if(_orig_event_list && _event_list)
+      {
+        // Since the original event list is not an allocated pointer, there are no pointers to quickly exchange.
+        // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
+        // Transfers the original list back to _event_list so it can be deleted in the non-RT stage.
+        _orig_event_list->swap(*_event_list);
+        flags |= (SC_EVENT_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED);
+      }
+    break;
+    
     case AddMidiCtrlValList:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlValList: mcvll:%p mcvl:%p chan:%d\n", _mcvll, _mcvl, _intA);
       _mcvll->add(_intA, _mcvl);
       flags |= SC_MIDI_CONTROLLER_ADD;
     break;
+    case ModifyMidiCtrlValList:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiCtrlValList: orig_mcvl:%p mcvl:%p\n", _orig_mcvl, _mcvl);
+      if(_orig_mcvl && _mcvl)
+      {
+        // Since the original list is not an allocated pointer, there are no pointers to quickly exchange.
+        // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
+        // Transfers the original list back to _mcvl so it can be deleted in the non-RT stage.
+        _orig_mcvl->swap(*_mcvl);
+        // No song changed flags are required to be set here.
+      }
+    break;
     case AddMidiCtrlVal:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddMidiCtrlVal: mcvl:%p part:%p tick:%u val:%d\n", _mcvl, _part, _posLenVal, _intB);
       // Do not attempt to add cached events which are outside of the part.
-      // Or to muted parts, or muted tracks, or 'off' tracks.
+      // But do allow muted parts, and muted tracks, and 'off' tracks. Otherwise adding values
+      //  to muted parts fails to add them when unmuted. The cache mechanism catches this anyways.
       if(_posLenVal >= _part->posValue() &&
-         _posLenVal < _part->posValue() + _part->lenValue() &&
-         !_part->mute() && 
-         (!_part->track() || (!_part->track()->isMute() && !_part->track()->off())))
+         _posLenVal < _part->posValue() + _part->lenValue())
          // FIXME FINDMICHJETZT XTicks!!
         _mcvl->insert(MidiCtrlValListInsertPair_t(_posLenVal, MidiCtrlVal(_part, _intB)));
       // No song changed flags are required to be set here.
@@ -1361,8 +1357,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
         // Transfers the original list back to _tempo_list so it can be deleted in the non-RT stage.
         _orig_tempo_list->swap(*_tempo_list);
+        flags |= SC_TEMPO;
       }
-      flags |= SC_TEMPO;
     break;
     
     
@@ -1390,8 +1386,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
         // Transfers the original list back to _sig_list so it can be deleted in the non-RT stage.
         _orig_sig_list->swap(*_sig_list);
+        flags |= SC_SIG;
       }
-      flags |= SC_SIG;
     break;
     
     
@@ -1405,8 +1401,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         // Instead use swap() which is also constant in time. Just like quickly exchanging pointers.
         // Transfers the original list back to _sig_list so it can be deleted in the non-RT stage.
         _orig_key_list->swap(*_key_list);
+        flags |= SC_KEY;
       }
-      flags |= SC_KEY;
     break;
 
     
@@ -1604,6 +1600,25 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
   SongChangedStruct_t flags = 0;
   switch(_type)
   {
+    case ModifyPartStart:
+    case ModifyPartLength:
+      // At this point _event_list contains all the items that were in the original event list, via swap(). Delete it now.
+      if(_event_list)
+        delete _event_list;
+    break;
+
+    case ModifyEventList:
+      // At this point _event_list contains all the items that were in the original event list, via swap(). Delete it now.
+      if(_event_list)
+        delete _event_list;
+    break;
+
+    case ModifyMidiCtrlValList:
+      // At this point _mcvl contains all the items that were in the original event list, via swap(). Delete it now.
+      if(_mcvl)
+        delete _mcvl;
+    break;
+
     case AddRoute:
       if(MusEGlobal::song->connectJackRoutes(_src_route, _dst_route))
         flags |= SC_ROUTE;
@@ -2208,7 +2223,7 @@ bool PendingOperationList::add(PendingOperationItem op)
         if(poi._type == PendingOperationItem::SelectPart && poi._part == op._part)  
         {
           // Simply replace the value.
-          poi._intA = op._intA;
+          poi._boolA = op._boolA;
           // An operation will still take place.
           return true;
         }
@@ -2223,6 +2238,95 @@ bool PendingOperationList::add(PendingOperationItem op)
           poi._posLenVal = op._posLenVal;
           // An operation will still take place.
           return true;
+        }
+      break;
+      
+      case PendingOperationItem::ModifyPartStart:
+        if(poi._type == PendingOperationItem::ModifyPartStart)
+        {
+          // If the given list is not null and is already part of a previous ModifyPartStart command,
+          //  it's an error, the list would be deleted twice.
+          if(poi._part != op._part && op._event_list && op._event_list == poi._event_list)
+          {
+            ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifyPartStart: Same _event_list for two different parts. Ignoring.\n");
+            return false;
+          }
+          
+          if(poi._part == op._part)
+          {
+            // From here on in this block no matter what, we are re-using the existing command.
+
+            // Simply replace the values.
+            poi._posLenVal = op._posLenVal;
+            poi._lenVal = op._lenVal;
+
+            // If a list was given use it otherwise if no list was given don't touch the existing list.
+            if(op._event_list)
+            {
+              // If the given list is the same as the existing list, it's really an error. We'll let it go but don't touch the existing list.
+              // It should be safe to proceed without worrying about deleting the existing or given list here since it would be impossible
+              //  to allocate the same pointer twice, beforehand.
+              if(op._event_list == poi._event_list)
+              {
+                //ERROR_OPERATIONS(stderr, "MusE warning: PendingOperationList::add(): ModifyPartStart: Double _event_list. Ignoring second list.\n");
+                //return false;
+              }
+              else
+              {
+                // Done with the existing original replacement list. If it exists, delete it.
+                if(poi._event_list)
+                  delete poi._event_list;
+                // Replace the existing list pointer with the given one.
+                poi._event_list = op._event_list;
+              }
+            }
+            // An operation will still take place.
+            return true;
+          }
+        }
+      break;
+      
+      case PendingOperationItem::ModifyPartLength:
+        if(poi._type == PendingOperationItem::ModifyPartLength)
+        {
+          // If the given list is not null and is already part of a previous ModifyPartLength command,
+          //  it's an error, the list would be deleted twice.
+          if(poi._part != op._part && op._event_list && op._event_list == poi._event_list)
+          {
+            ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): ModifyPartLength: Same _event_list for two different parts. Ignoring.\n");
+            return false;
+          }
+          
+          if(poi._part == op._part)
+          {
+            // From here on in this block no matter what, we are re-using the existing command.
+
+            // Simply replace the value.
+            poi._posLenVal = op._posLenVal;
+
+            // If a list was given use it otherwise if no list was given don't touch the existing list.
+            if(op._event_list)
+            {
+              // If the given list is the same as the existing list, it's really an error. We'll let it go but don't touch the existing list.
+              // It should be safe to proceed without worrying about deleting the existing or given list here since it would be impossible
+              //  to allocate the same pointer twice, beforehand.
+              if(op._event_list == poi._event_list)
+              {
+                //ERROR_OPERATIONS(stderr, "MusE warning: PendingOperationList::add(): ModifyPartLength: Double _event_list. Ignoring second list.\n");
+                //return false;
+              }
+              else
+              {
+                // Done with the existing original replacement list. If it exists, delete it.
+                if(poi._event_list)
+                  delete poi._event_list;
+                // Replace the existing list pointer with the given one.
+                poi._event_list = op._event_list;
+              }
+            }
+            // An operation will still take place.
+            return true;
+          }
         }
       break;
       
@@ -2277,6 +2381,27 @@ bool PendingOperationList::add(PendingOperationItem op)
           // An operation will still take place.
           return true;
         }
+      break;
+      
+      case PendingOperationItem::ModifyEventList:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyEventList && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           (poi._orig_event_list == op._orig_event_list || poi._event_list == op._event_list))
+//         {
+//           // Simply replace the list.
+//           poi._event_list = op._event_list; 
+      break;
+
+      
+      case PendingOperationItem::ModifyMidiCtrlValList:
+// TODO Not quite right yet.
+//         if(poi._type == PendingOperationItem::ModifyMidiCtrlValList && 
+//           // If attempting to repeatedly modify the same list, or, if progressively modifying (list to list to list etc).
+//           (poi._orig_mcvl == op._orig_mcvl || poi._mcvl == op._mcvl))
+//         {
+//           // Simply replace the list.
+//           poi._mcvl = op._mcvl; 
       break;
       
       case PendingOperationItem::AddMidiCtrlVal:
@@ -3119,6 +3244,144 @@ void PendingOperationList::movePartOperation(PartList *partlist, Part* part, uns
   
   addPartPortCtrlEvents(part, new_pos, part->lenValue(), track);
 }
+
+void PendingOperationList::modifyPartStartOperation(
+  Part* part, unsigned int new_pos, unsigned int new_len, int64_t events_offset, Pos::TType events_offset_time_type)
+{
+  if(!part->track())
+    return;
+    
+  PartList* partlist = part->track()->parts();
+  iPart ip = partlist->end();
+  for (ip = partlist->begin(); ip != partlist->end(); ++ip) {
+        if (ip->second == part) 
+              break;
+        }
+  if(ip == partlist->end())
+  {
+    fprintf(stderr, "THIS SHOULD NEVER HAPPEN: could not find part in PendingOperationList::modifyPartStartOperation()!\n");
+    return;
+  }
+    
+  EventList* new_el = nullptr;
+  // If we are dragging the part's events with the border, their positions relative to the border don't change.
+  // If we are not dragging the events, their positions relative to the border change so we MUST move ALL the events.
+  if(events_offset != 0)
+  {
+    // Compose a complete new list to quickly swap with the existing list.
+    const EventList& el = part->events();
+    new_el = new EventList();
+    for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+    {
+      Event e = ie->second.clone();
+      if(e.pos().type() == events_offset_time_type)
+      {
+        // NOTE: Don't alter the offset here or below in the conversions. It messes with the ability of the undo system
+        //        to properly undo a movement. It also breaks the rule that all clone parts MUST have the same event times.
+        //       Checks and limits should be done before calling this function.
+        //if((int64_t)e.posValue() + events_offset < 0)
+        //  e.setPosValue(0);
+        //else
+          e.setPosValue(e.posValue() + events_offset);
+      }
+      else
+      {
+        // In case the event and part pos types differ, the event dominates.
+        const unsigned int new_part_pos_val = Pos::convert(new_pos, part->type(), e.pos().type());
+        const unsigned int old_abs_ev_pos_val = Pos::convert(e.posValue() + new_part_pos_val, e.pos().type(), events_offset_time_type);
+        const unsigned int new_abs_ev_pos_val = Pos::convert(old_abs_ev_pos_val + events_offset, events_offset_time_type, e.pos().type());
+        const unsigned int new_ev_pos_val = new_abs_ev_pos_val - new_part_pos_val;
+        e.setPosValue(new_ev_pos_val);
+        
+      }
+      new_el->add(e);
+    }
+  }
+
+  // If we are dragging the part's events with the border, we must update the midi controller cache.
+  // If we are not dragging the events, their absolute positions don't change so there should be no need to update the cache.
+  // First half of the midi controller cache update:
+  removePartPortCtrlEvents(part, part->track());
+
+  add(PendingOperationItem(ip, part, new_pos, new_len, new_el, PendingOperationItem::ModifyPartStart));
+
+  // Second half of the midi controller cache update:
+  // The operation will catch and ignore events which are outside of the part.
+  // In case the new_pos and events_offset types differ, the events_offset dominates.
+  const unsigned int new_cache_offset = 
+    Pos::convert(events_offset + Pos::convert(new_pos, part->type(), events_offset_time_type),
+                 events_offset_time_type, Pos::TICKS);
+  addPartPortCtrlEvents(part, new_cache_offset, part->lenValue(), part->track());
+}
+
+void PendingOperationList::modifyPartLengthOperation(
+  Part* part, unsigned int new_len, int64_t events_offset, Pos::TType events_offset_time_type)
+{
+  if(!part->track())
+    return;
+    
+  PartList* partlist = part->track()->parts();
+  iPart ip = partlist->end();
+  for (ip = partlist->begin(); ip != partlist->end(); ++ip) {
+        if (ip->second == part) 
+              break;
+        }
+  if(ip == partlist->end())
+  {
+    fprintf(stderr, "THIS SHOULD NEVER HAPPEN: could not find part in PendingOperationList::modifyPartLengthOperation()!\n");
+    return;
+  }
+    
+  EventList* new_el = nullptr;
+  // If we are dragging the part's events with the border, their positions relative to the border change so we MUST move ALL the events.
+  // If we are not dragging the events, their positions relative to the border don't change.
+  if(events_offset != 0)
+  {
+    // Compose a complete new list to quickly swap with the existing list.
+    const EventList& el = part->events();
+    new_el = new EventList();
+    for(ciEvent ie = el.cbegin(); ie != el.cend(); ++ie)
+    {
+      Event e = ie->second.clone();
+      if(e.pos().type() == events_offset_time_type)
+      {
+        // NOTE: Don't alter the offset here or below in the conversions. It messes with the ability of the undo system
+        //        to properly undo a movement. It also breaks the rule that all clone parts MUST have the same event times.
+        //       Checks and limits should be done before calling this function.
+        //if((int64_t)e.posValue() + events_offset < 0)
+        //  e.setPosValue(0);
+        //else
+          e.setPosValue(e.posValue() + events_offset);
+      }
+      else
+      {
+        // In case the event and part pos types differ, the event dominates.
+        const unsigned int part_pos_val = part->posValue(e.pos().type());
+        const unsigned int old_abs_ev_pos_val = Pos::convert(e.posValue() + part_pos_val, e.pos().type(), events_offset_time_type);
+        const unsigned int new_abs_ev_pos_val = Pos::convert(old_abs_ev_pos_val + events_offset, events_offset_time_type, e.pos().type());
+        const unsigned int new_ev_pos_val = new_abs_ev_pos_val - part_pos_val;
+        e.setPosValue(new_ev_pos_val);
+      }
+      new_el->add(e);
+    }
+  }
+
+  // If we are dragging the part's events with the border, we must update the midi controller cache.
+  // If we are not dragging the events, their absolute positions don't change so there should be no need to update the cache.
+  // First half of the midi controller cache update:
+  removePartPortCtrlEvents(part, part->track());
+
+  add(PendingOperationItem(ip, part, new_len, new_el, PendingOperationItem::ModifyPartLength));
+
+  // Second half of the midi controller cache update:
+  // The operation will catch and ignore events which are outside of the part.
+  // In case the new_pos and events_offset types differ, the events_offset dominates.
+  const unsigned int new_cache_offset = 
+    Pos::convert(events_offset + part->posValue(events_offset_time_type), events_offset_time_type, Pos::TICKS);
+
+  addPartPortCtrlEvents(part, new_cache_offset, part->lenValue(), part->track());
+}
+
 
 //---------------------------------------------------------
 //   addTrackAuxSendOperation

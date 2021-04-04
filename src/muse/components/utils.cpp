@@ -33,6 +33,10 @@
 #include <QFileInfo>
 #include <QtMath>
 
+// Forwards from header:
+#include <QFrame>
+#include <QWidget>
+
 #include "audio.h"
 #include "audiodev.h"
 #include "part.h"
@@ -1052,6 +1056,34 @@ QString font2StyleSheet(const QFont& fnt)
     sz = QString("%1px").arg(fnt.pixelSize());
   
   return QString("font: %1 %2 %3 \"%4\"; ").arg(wt).arg(st).arg(sz).arg(fnt.family());
+}
+
+void drawSegmentedHLine(QPainter* p, int x1, int x2, int y, int segLength, int /*offset*/)
+{
+  const int num_segs = (x2 - x1) / segLength;
+  const int fin_seg = (x2 - x1) % segLength;
+
+  int seg_x = x1;
+  for(int i = 0; i < num_segs; ++i)
+  {
+    p->drawLine(seg_x, y, seg_x + segLength - 1, y);
+    seg_x += segLength;
+  }
+  p->drawLine(seg_x, y, seg_x + fin_seg, y);
+}
+
+void drawSegmentedVLine(QPainter* p, int x, int y1, int y2, int segLength, int /*offset*/)
+{
+  const int num_segs = (y2 - y1) / segLength;
+  const int fin_seg = (y2 - y1) % segLength;
+
+  int seg_y = y1;
+  for(int i = 0; i < num_segs; ++i)
+  {
+    p->drawLine(x, seg_y, x, seg_y + segLength - 1);
+    seg_y += segLength;
+  }
+  p->drawLine(x, seg_y, x, seg_y + fin_seg);
 }
 
 } // namespace MusECore

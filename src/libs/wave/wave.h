@@ -198,6 +198,8 @@ class SndFile {
       bool sampleRateDiffers() const;
       // Convert a frame position to its resampled or stretched position.
       sf_count_t convertPosition(sf_count_t pos) const;
+      // Convert a resampled or stretched frame position to its unresampled or unstretched position.
+      sf_count_t unConvertPosition(sf_count_t pos) const;
       // Returns whether ANY stretch event has a stretch ratio other than 1.0 
       //  ie. the map is stretched, a stretcher must be engaged.
       bool isStretched() const;
@@ -336,6 +338,8 @@ class SndFileR {
       inline bool sampleRateDiffers() const { return sf ? sf->sampleRateDiffers() : false; };
       // Convert a frame position to its resampled or stretched position.
       inline sf_count_t convertPosition(sf_count_t pos) const { return sf ? sf->convertPosition(pos) : pos; };
+      // Convert a resampled or stretched frame position to its unresampled or unstretched position.
+      inline sf_count_t unConvertPosition(sf_count_t pos) const { return sf ? sf->unConvertPosition(pos) : pos; };
       // Returns whether ANY stretch event has a stretch ratio other than 1.0 
       //  ie. the map is stretched, a stretcher must be engaged.
       bool isStretched() const { return sf ? sf->isStretched() : false; }

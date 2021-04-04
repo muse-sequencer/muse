@@ -199,7 +199,7 @@ void globalCut(bool onlySelectedTracks)
                                     operations.push_back(UndoOp(UndoOp::DeleteEvent,ie->second, part, false, false));
                       }
                       // TODO FIXME Suspect this section may need a wee bit more rework with the events above...
-                      operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), len, Pos::TICKS));  
+                      operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), len, 0, Pos::TICKS));  
                   }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) > rpos)) {
                         //----------------------

@@ -106,11 +106,6 @@ CItem* DrumCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       DEvent* ev = new DEvent(event, part, instr);
       items.add(ev);
       
-      int diff = event.endTick()-part->lenTick();
-      if (diff > 0)  {// too short part? extend it
-            part->setLenTick(part->lenTick()+diff);
-            }
-      
       return ev;
       }
 

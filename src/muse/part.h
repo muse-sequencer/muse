@@ -121,7 +121,7 @@ public:
 
 class Part : public PosLen {
    public:
-      enum HiddenEventsType { NoEventsHidden = 0, LeftEventsHidden, RightEventsHidden };
+      enum HiddenEventsType { NoEventsHidden = 0x00, LeftEventsHidden = 0x01, RightEventsHidden = 0x02};
       enum PartType { MidiPartType = 0x01, WavePartType = 0x02 };
       
       static Part* readFromXml(Xml&, Track*, bool doClone = false, bool toTrack = true);

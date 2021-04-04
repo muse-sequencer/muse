@@ -46,6 +46,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdint.h>
 #ifdef _WIN32
 #include "mman.h"
 #include "mman.c"
@@ -1437,7 +1438,7 @@ void shrink_parts(int raster)
 				if (len<min_len) len=min_len;
 				
 				if (len < part->second->lenTick())
-					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenValue(), len, Pos::TICKS));
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenValue(), len, 0, Pos::TICKS));
 			}
 	
 	MusEGlobal::song->applyOperationGroup(operations);
@@ -1459,7 +1460,7 @@ void schedule_resize_all_same_len_clone_parts(const Part* part, unsigned new_len
 		do
 		{
 			if (part_it->lenValue()==old_len && !already_done.contains(part_it))
-				operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, old_len, new_len, part->type()));
+				operations.push_back(UndoOp(UndoOp::ModifyPartLength, part_it, old_len, new_len, 0, part->type()));
 			
 			part_it=part_it->nextClone();
 		} while (part_it!=part);
@@ -1489,7 +1490,7 @@ void expand_parts(int raster)
 				if (len<min_len) len=min_len;
 								
 				if (len > part->second->lenTick())
-					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenValue(), len, Pos::TICKS));
+					operations.push_back(UndoOp(UndoOp::ModifyPartLength, part->second, part->second->lenValue(), len, 0, Pos::TICKS));
 			}
 			
 	MusEGlobal::song->applyOperationGroup(operations);
@@ -3179,9 +3180,19 @@ PartList* getSelectedWaveParts()
 //---------------------------------------------------------
 
 void resize_part(
-  Track* track, Part* originalPart, unsigned int len, MusECore::ResizeDirection resizeDirection,
-  unsigned int newTickPos, bool doClones)
+  Track* track, Part* originalPart, unsigned int newTickPosOrLen, MusECore::ResizeDirection resizeDirection,
+  bool doClones, bool dragEvents)
       {
+
+      // Are the events to be offset?
+      const bool use_events_offset =
+        (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT && dragEvents) ||
+        (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT && !dragEvents);
+
+      // Under this condition we MUST do all clones. The RULE is that event times, which are relative to the part start,
+      //   must be the same in all clones.
+      if(use_events_offset)
+        doClones = true;
 
       switch(track->type()) {
             case Track::WAVE:
@@ -3190,30 +3201,114 @@ void resize_part(
                   {
                   Undo operations;
                                                                         
-                  auto origLen = originalPart->lenValue();
-                  auto origPosValue = originalPart->posValue();
-                  auto newFramePos = MusEGlobal::tempomap.tick2frame(newTickPos);
+                  const Pos::TType newPosOrLenType = Pos::TType::TICKS;
+                  const unsigned int origPosValue = originalPart->posValue();
+                  const unsigned int newOrigPosValue = Pos::convert(newTickPosOrLen, newPosOrLenType, originalPart->type());
+                  // The amount to shift a part. The int64_t cast ensures we preserve the unsigned range.
+                  const int64_t origPosValueDiff = (int64_t)newOrigPosValue - (int64_t)origPosValue;
+                  const Pos::TType events_offset_time_type = originalPart->type();
+                  const unsigned int origPosValueConverted = originalPart->posValue(newPosOrLenType);
+                  const unsigned int newOrigEndPosValue = Pos::convert(origPosValueConverted + newTickPosOrLen, newPosOrLenType, originalPart->type());
+                  const unsigned int newOrigLenValue = newOrigEndPosValue - origPosValue;
+
+                  const unsigned int origLenValue = originalPart->lenValue();
+                  const int64_t origLenValueDiff = (int64_t)newOrigLenValue - (int64_t)origLenValue;
+
+                  int64_t events_offset = 0L;
+                  if(use_events_offset)
+                  {
+                    switch(resizeDirection)
+                    {
+                      case MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT:
+                        events_offset = origLenValueDiff;
+                      break;
+                      case MusECore::ResizeDirection::RESIZE_TO_THE_LEFT:
+                        events_offset = -origPosValueDiff;
+                      break;
+                    }
+                  }
+
+                  // Check to see if the events offset would move events before time zero, and limit if so.
+                  if(use_events_offset)
+                  {
+                    const EventList& el = originalPart->events();
+                    const ciEvent iev = el.cbegin();
+                    if(iev != el.cend())
+                    {
+                      const Event first_ev = iev->second;
+
+                      // In case the event and part pos types differ, the event dominates.
+                      unsigned int new_part_pos_val;
+                      switch(resizeDirection)
+                      {
+                        // If resizing to the right, just use the original part position, converted.
+                        case MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT:
+                          new_part_pos_val = originalPart->posValue(first_ev.pos().type());
+                        break;
+                        // If resizing to the left, use the new part position, converted.
+                        case MusECore::ResizeDirection::RESIZE_TO_THE_LEFT:
+                          new_part_pos_val = Pos::convert(newTickPosOrLen, newPosOrLenType, first_ev.pos().type());
+                        break;
+                      }
+
+                      const unsigned int old_abs_ev_pos_val = 
+                        Pos::convert(first_ev.posValue() + new_part_pos_val, first_ev.pos().type(), events_offset_time_type);
+
+                      if((int64_t)old_abs_ev_pos_val + events_offset < 0L)
+                        events_offset = -(int64_t)old_abs_ev_pos_val;
+
+                      const unsigned int new_abs_ev_pos_val = 
+                        Pos::convert((int64_t)old_abs_ev_pos_val + events_offset, events_offset_time_type, first_ev.pos().type());
+
+                      if(new_abs_ev_pos_val < new_part_pos_val)
+                        events_offset = -(int64_t)first_ev.pos().posValue();
+                    }
+                  }
 
                   auto currentPart = originalPart;
 
                   do
                   {
-                      if(currentPart->lenValue() == origLen && resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+                      if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
                       {
-                        operations.push_back(UndoOp(UndoOp::ModifyPartLength, currentPart, origLen, len, Pos::TICKS));
+                        const unsigned int pos_val = currentPart->posValue(originalPart->type());
+                        const unsigned int new_end_pos_val = Pos::convert(pos_val + newOrigLenValue, originalPart->type(), currentPart->type());
+                        const unsigned int new_len_val = new_end_pos_val - pos_val;
+                        operations.push_back(
+                          UndoOp(UndoOp::ModifyPartLength, currentPart,
+                                 currentPart->lenValue(), 
+                                 new_len_val, 
+                                 // The amount to shift all events in the part.
+                                 events_offset, 
+                                 // The position type of the amount to shift all events in the part.
+                                 originalPart->type()));
                       }
-                      if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+                      else if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
                       {
-                          if (currentPart->type() == Pos::FRAMES)
+                          const unsigned int pos_val = currentPart->posValue(originalPart->type());
+                          const unsigned int end_pos_val = currentPart->endValue(originalPart->type());
+                          unsigned int new_pos_val, new_len_val;
+                          if((int64_t)pos_val + origPosValueDiff < 0L)
                           {
-                              operations.push_back(
-                                UndoOp(UndoOp::ModifyPartStart, currentPart, origPosValue, newFramePos, Pos::FRAMES));
+                            new_pos_val = 0;
+                            new_len_val = Pos::convert((int64_t)end_pos_val - ((int64_t)pos_val + origPosValueDiff),
+                                                       originalPart->type(), currentPart->type()) - new_pos_val;
                           }
-                          else // MIDIs
+                          else
                           {
-                              operations.push_back(
-                                UndoOp(UndoOp::ModifyPartStart, currentPart, origPosValue, newTickPos, Pos::TICKS));
+                            new_pos_val = Pos::convert((int64_t)pos_val + origPosValueDiff, originalPart->type(), currentPart->type());
+                            new_len_val = currentPart->endValue() - new_pos_val;
                           }
+                          operations.push_back(
+                            UndoOp(UndoOp::ModifyPartStart, currentPart,
+                                    currentPart->posValue(),
+                                    new_pos_val,
+                                    currentPart->lenValue(),
+                                    new_len_val,
+                                    // The amount to shift all events in the part.
+                                    events_offset,
+                                    // The position type of the amount to shift all events in the part.
+                                    originalPart->type()));
                       }
 
                       currentPart = currentPart->nextClone();

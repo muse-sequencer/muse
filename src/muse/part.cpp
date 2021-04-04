@@ -885,6 +885,25 @@ int MidiPart::hasHiddenEvents() const
   }
   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
   return _hiddenEvents;
+
+// TODO An idea for left-border hidden events with unsigned integer positions. 
+// It actually worked, as far as the left hidden events arrow, but really it can't work without much bigger switchovers to integer math.
+//
+//   unsigned int len = lenTick();
+//   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
+// 
+//   const int c_comp = LeftEventsHidden | RightEventsHidden;
+//   for(ciEvent ev=_events.begin(); ev!=_events.end(); ++ev)
+//   {
+//     // Is the time value less than zero? Note the conversion to signed here!
+//     if(signed(ev->second.tick()) < 0)
+//       _hiddenEvents |= LeftEventsHidden;  // Cache the result for later.
+//     if(signed(ev->second.endTick()) > signed(len))
+//       _hiddenEvents |= RightEventsHidden;  // Cache the result for later.
+//     if(_hiddenEvents == c_comp)
+//       break;
+//   }
+//   return _hiddenEvents;
 }
 
 //---------------------------------------------------------
@@ -894,7 +913,39 @@ int MidiPart::hasHiddenEvents() const
 
 int WavePart::hasHiddenEvents() const
 {
-  return NoEventsHidden;
+  unsigned int len = lenFrame();
+
+  // TODO: For now, we don't support events before the left border, only events past the right border.
+  for(ciEvent ev=_events.begin(); ev!=_events.end(); ev++)
+  {
+    if(ev->second.endFrame() > len)
+    {
+      _hiddenEvents = RightEventsHidden;  // Cache the result for later.
+      return _hiddenEvents;
+    }  
+  }
+  _hiddenEvents = NoEventsHidden;  // Cache the result for later.
+  return _hiddenEvents;
+
+
+// TODO An idea for left-border hidden events with unsigned integer positions. 
+// It actually worked, as far as the left hidden events arrow, but really it can't work without much bigger switchovers to integer math.
+//
+//   unsigned int len = lenFrame();
+//   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
+// 
+//   const int c_comp = LeftEventsHidden | RightEventsHidden;
+//   for(ciEvent ev=_events.begin(); ev!=_events.end(); ++ev)
+//   {
+//     // Is the time value less than zero? Note the conversion to signed here!
+//     if(signed(ev->second.frame()) < 0)
+//       _hiddenEvents |= LeftEventsHidden;  // Cache the result for later.
+//     if(signed(ev->second.endFrame()) > signed(len))
+//       _hiddenEvents |= RightEventsHidden;  // Cache the result for later.
+//     if(_hiddenEvents == c_comp)
+//       break;
+//   }
+//   return _hiddenEvents;
 }
 
 bool WavePart::openAllEvents()

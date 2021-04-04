@@ -27,7 +27,8 @@
 #include "citem.h"
 #include "view.h"
 #include "tools.h"
-#include "undo.h"
+#include "type_defs.h"
+
 #include "event_tag_list.h"
 
 #include <QPoint>
@@ -42,6 +43,10 @@ class QTimer;
 class QWheelEvent;
 class QMouseEvent;
 class QKeyEvent;
+
+namespace MusECore {
+class Undo;
+}
 
 namespace MusEGui {
 

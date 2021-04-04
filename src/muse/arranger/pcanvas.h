@@ -182,8 +182,8 @@ class PartCanvas : public Canvas {
                              bool toTrack = true, unsigned int* finalPosPtr = NULL,
                              std::set<MusECore::Track*>* affected_tracks = NULL);
       void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame,
-                           unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight);
-      void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&);
+                           unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight, bool selected);
+      void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&, bool selected);
       void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events,
                         MusECore::MidiTrack* mt, MusECore::MidiPart* midipart,
                         const QRect& r, int pTick, int from, int to, bool selected);

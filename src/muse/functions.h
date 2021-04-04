@@ -419,8 +419,8 @@ PartList* getSelectedWaveParts();
 PartList* getSelectedParts();
 
 // called from GUI thread, calls applyOperationGroup.
-void resize_part(Track* t, Part* p, unsigned int size, MusECore::ResizeDirection resizeDirection,
-                   unsigned int newTickPos, bool doClones=false);
+void resize_part(Track* t, Part* p, unsigned int newTickPosOrLen, MusECore::ResizeDirection resizeDirection,
+                   bool doClones = false, bool dragEvents = false);
 
 // internal
 QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);

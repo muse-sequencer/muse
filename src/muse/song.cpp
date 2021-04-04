@@ -1056,7 +1056,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             // Round the end up (again) using the Arranger part snap raster value. 
             endTick   = MusEGlobal::sigmap.raster2(endTick, MusEGlobal::muse->arrangerRaster());
             
-            operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), endTick, Pos::TICKS));
+            operations.push_back(UndoOp(UndoOp::ModifyPartLength, part, part->lenValue(), endTick, 0, Pos::TICKS));
       }
             
 
@@ -3591,7 +3591,7 @@ void Song::connectMidiPorts()
             if(!MusEGlobal::audioDevice->findPort(route_name))
               continue;
             //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-              MusEGlobal::audioDevice->connect(our_port_name, route_name);
+            MusEGlobal::audioDevice->connect(our_port_name, route_name);
           }  
         }
       }    

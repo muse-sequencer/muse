@@ -709,21 +709,36 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
         break;
 
       case UndoOp::ModifyPartStart:
-          if(uo.type == UndoOp::ModifyPartStart && uo.part == n_op.part)
-          {
-              printf("UndoOp::ModifyPartStart\n");
-              // Simply replace the new value.
-              uo.new_partlen_or_pos = n_op.new_partlen_or_pos;
-              return;
-          }
+          // TODO: events_offset is a difference requiring accumulation not simple replacement,
+          //        and events_offset_time_type might be different requiring conversion. 
+//           if(uo.type == UndoOp::ModifyPartStart)
+//           {
+//             if(uo.part == n_op.part)
+//             {
+//               // Simply replace the new values.
+//               uo.new_partlen_or_pos = n_op.new_partlen_or_pos;
+//               uo.new_partlen = n_op.new_partlen;
+//               uo.events_offset = n_op.events_offset;
+//               uo.events_offset_time_type = n_op.events_offset_time_type;
+//               return;
+//             }
+//           }
           break;
+
       case UndoOp::ModifyPartLength:
-          if(uo.type == UndoOp::ModifyPartLength && uo.part == n_op.part)  
-          {
-            // Simply replace the new value.
-            uo.new_partlen_or_pos = n_op.new_partlen_or_pos;
-            return;  
-          }
+          // TODO: events_offset is a difference requiring accumulation not simple replacement,
+          //        and events_offset_time_type might be different requiring conversion. 
+//           if(uo.type == UndoOp::ModifyPartLength)
+//           {
+//             if(uo.part == n_op.part)
+//             {
+//               // Simply replace the new values.
+//               uo.new_partlen_or_pos = n_op.new_partlen_or_pos;
+//               uo.events_offset = n_op.events_offset;
+//               uo.events_offset_time_type = n_op.events_offset_time_type;
+//               return;
+//             }
+//           }
         break;
         
         case UndoOp::MovePart:
@@ -1598,46 +1613,65 @@ bool Song::applyOperation(const UndoOp& op, OperationType type, void* sender)
 	return applyOperationGroup(operations, type, sender);
 }
 
-
 bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
 {
   bool ret = false;
   if (!group.empty())
   {
+    // We don't use this here in applyOperationGroup or its call sequence.
+    undoMode = false;
+
     switch(type)
     {
       case OperationExecute:
       case OperationUndoable:
-        undoMode = false;
       break;
       
       case OperationExecuteUpdate:
       case OperationUndoableUpdate:
-        // Clear the updateFlags and set sender.
-        updateFlags = SongChangedStruct_t(0, 0, sender);
-        undoMode = false;
-      break;
-        
       case OperationUndoMode:
-        undoMode = true;
-        // Also clears updateFlags and sets sender for us.
-        startUndo(sender);
+          // Clear the updateFlags and set sender.
+          updateFlags = SongChangedStruct_t(0, 0, sender);
       break;
     }
 
+    // Execute the given operations. This can add or remove operations in the group.
     MusEGlobal::audio->msgExecuteOperationGroup(group);
     
+    // Check whether there are actually any undoable operations in the group.
+    // There shouldn't be any non-undoables left in the list, they are removed at execution,
+    //  but we'll double check here which also checks list emptiness.
+    bool has_undoables = false;
+    for(ciUndoOp iu = group.cbegin(); iu != group.cend(); ++iu) {
+      if(!iu->_noUndo) {
+        has_undoables = true;
+        break;
+      }
+    }
+
     switch(type)
     {
       case OperationExecute:
       case OperationExecuteUpdate:
       break;
-      
+        
+      case OperationUndoMode:
+        // NOTE: If there are only non-undoables, there is NOTHING to redo (or undo).
+        //       Prevent one-time non-undoable operations from wiping out the redo list!
+        if(has_undoables) {
+          // The following does the same as startUndo but without clearing the updateFlags:
+          // redo must be invalidated when a new undo is started
+          redoList->clearDelete();
+          MusEGlobal::redoAction->setEnabled(false);
+          setUndoRedoText();
+          undoList->push_back(Undo());
+        }
+      // FALLTHROUGH
       case OperationUndoable:
       case OperationUndoableUpdate:
-      case OperationUndoMode:
         // append all elements from "group" to the end of undoList->back().
-        if(!undoList->empty())
+        // Only if there are undoable items.
+        if(has_undoables && !undoList->empty())
         {
           Undo& curUndo = undoList->back();
           curUndo.insert(curUndo.end(), group.begin(), group.end());
@@ -1651,19 +1685,22 @@ bool Song::applyOperationGroup(Undo& group, OperationType type, void* sender)
     {
       case OperationExecute:
       case OperationUndoable:
-        ret = false;
       break;
       
       case OperationExecuteUpdate:
       case OperationUndoableUpdate:
         emit songChanged(updateFlags);
-        ret = false;
       break;
       
       case OperationUndoMode:
-        // Also emits songChanged and resets undoMode.
-        endUndo(0);
-        ret = true;
+        if(has_undoables) {
+          // Also emits songChanged and resets undoMode.
+          endUndo(0);
+          ret = true;
+        }
+        else {
+          emit songChanged(updateFlags);
+        }
       break;
     }
   }
@@ -1961,26 +1998,23 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, bool selected_, bool sel_old_,
 UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, unsigned int new_len_or_pos,
                Pos::TType new_time_type_, const Track* oTrack, const Track* nTrack, bool noUndo)
 {
-    assert(type_== ModifyPartLength || type_== MovePart || type_ == ModifyPartStart);
+    assert(type_== MovePart);
     assert(part_);
 
     type = type_;
     part = part_;
     _noUndo = noUndo;
-    if(type_== MovePart)
-    {
-      track = nTrack;
-      oldTrack = oTrack;
-      // Make sure both tracks exist.
-      if(!track && !oldTrack)
-        track = oldTrack = part->track();
-      else if(!oldTrack)
-        oldTrack = track;
-      else if(!track)
-        track = oldTrack;
-      assert(oldTrack);
-      assert(track);
-    }
+    track = nTrack;
+    oldTrack = oTrack;
+    // Make sure both tracks exist.
+    if(!track && !oldTrack)
+      track = oldTrack = part->track();
+    else if(!oldTrack)
+      oldTrack = track;
+    else if(!track)
+      track = oldTrack;
+    assert(oldTrack);
+    assert(track);
     old_partlen_or_pos = old_len_or_pos;
     new_partlen_or_pos = new_len_or_pos;
     switch(part->type())
@@ -1992,10 +2026,7 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, u
           break;
           
           case Pos::TICKS:
-            if(type_== ModifyPartLength)
-              new_partlen_or_pos = MusEGlobal::tempomap.deltaTick2frame(part->tick(), part->tick() + new_partlen_or_pos);
-            else
-              new_partlen_or_pos = MusEGlobal::tempomap.tick2frame(new_partlen_or_pos);
+            new_partlen_or_pos = MusEGlobal::tempomap.tick2frame(new_partlen_or_pos);
           break;  
         }
       break;
@@ -2004,10 +2035,7 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, u
         switch(new_time_type_)
         {
           case Pos::FRAMES:
-            if(type_== ModifyPartLength)
-              new_partlen_or_pos = MusEGlobal::tempomap.deltaFrame2tick(part->frame(), part->frame() + new_partlen_or_pos);
-            else
-              new_partlen_or_pos = MusEGlobal::tempomap.frame2tick(new_partlen_or_pos);
+            new_partlen_or_pos = MusEGlobal::tempomap.frame2tick(new_partlen_or_pos);
           break;
 
           case Pos::TICKS:
@@ -2015,6 +2043,39 @@ UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len_or_pos, u
         }
       break;
     }
+}
+
+
+UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_pos, unsigned int new_pos, unsigned int old_len, unsigned int new_len,
+               int64_t events_offset_, Pos::TType new_time_type_, bool noUndo)
+{
+    assert(type_ == ModifyPartStart);
+    assert(part_);
+
+    type = type_;
+    part = part_;
+    _noUndo = noUndo;
+    events_offset = events_offset_;
+    events_offset_time_type = new_time_type_;
+    old_partlen_or_pos = old_pos;
+    new_partlen_or_pos = new_pos;
+    old_partlen = old_len;
+    new_partlen = new_len;
+}
+
+UndoOp::UndoOp(UndoType type_, const Part* part_, unsigned int old_len, unsigned int new_len,
+               int64_t events_offset_, Pos::TType new_time_type_, bool noUndo)
+{
+    assert(type_== ModifyPartLength);
+    assert(part_);
+
+    type = type_;
+    part = part_;
+    _noUndo = noUndo;
+    events_offset = events_offset_;
+    events_offset_time_type = new_time_type_;
+    old_partlen_or_pos = old_len;
+    new_partlen_or_pos = new_len;
 }
 
 UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* part_, bool doCtrls_, bool doClones_, bool noUndo)
@@ -2511,21 +2572,27 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyPartLength: 
-                        pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
-                        pendingOperations.add(PendingOperationItem(editable_part, i->old_partlen_or_pos, PendingOperationItem::ModifyPartLength));
-                        pendingOperations.addPartPortCtrlEvents(
-                          editable_part, editable_part->tick(),
-                          i->old_partlen_or_pos, editable_part->track());
+                        {
+                        pendingOperations.modifyPartLengthOperation(
+                          editable_part, i->old_partlen_or_pos, -i->events_offset, i->events_offset_time_type);
                         updateFlags |= SC_PART_MODIFIED;
+                        // If the part had events, then treat it as if they were added/removed with separate Add/DeleteEvent operations.
+                        // Even if they will be added/deleted later in this operations group with actual separate Add/DeleteEvent operations,
+                        //  that's an SC_EVENT_ADDED/REMOVED anyway, so hopefully no harm.
+                        if(i->events_offset != 0 && !editable_part->events().empty())
+                          updateFlags |= (SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED);
+                        }
                         break;
                   case UndoOp::ModifyPartStart:
                         {
-                        pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
-                        pendingOperations.add(PendingOperationItem(editable_part, i->old_partlen_or_pos, PendingOperationItem::ModifyPartStart));
-                        pendingOperations.addPartPortCtrlEvents(
-                          editable_part, editable_part->tick(), i->old_partlen_or_pos,
-                          editable_part->track());
+                        pendingOperations.modifyPartStartOperation(
+                          editable_part, i->old_partlen_or_pos, i->old_partlen, -i->events_offset, i->events_offset_time_type);
                         updateFlags |= SC_PART_MODIFIED;
+                        // If the part had events, then treat it as if they were added/removed with separate Add/DeleteEvent operations.
+                        // Even if they will be added/deleted later in this operations group with actual separate Add/DeleteEvent operations,
+                        //  that's an SC_EVENT_ADDED/REMOVED anyway, so hopefully no harm.
+                        if(i->events_offset != 0 && !editable_part->events().empty())
+                          updateFlags |= (SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED);
                         }
                         break;
 
@@ -3392,12 +3459,14 @@ void Song::executeOperationGroup1(Undo& operations)
 
                   case UndoOp::ModifyPartStart:
                       {
-                         pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
-                         pendingOperations.add(PendingOperationItem(editable_part, i->new_partlen_or_pos, PendingOperationItem::ModifyPartStart));
-                         pendingOperations.addPartPortCtrlEvents(
-                           editable_part, editable_part->posValue(), i->new_partlen_or_pos,
-                                           editable_part->track());
-                         updateFlags |= SC_PART_MODIFIED;
+                        pendingOperations.modifyPartStartOperation(
+                          editable_part, i->new_partlen_or_pos, i->new_partlen, i->events_offset, i->events_offset_time_type);
+                        updateFlags |= SC_PART_MODIFIED;
+                        // If the part had events, then treat it as if they were added/removed with separate Add/DeleteEvent operations.
+                        // Even if they will be added/deleted later in this operations group with actual separate Add/DeleteEvent operations,
+                        //  that's an SC_EVENT_ADDED/REMOVED anyway, so hopefully no harm.
+                        if(i->events_offset != 0 && !editable_part->events().empty())
+                          updateFlags |= (SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED);
                       }
                       break;
                   case UndoOp::ModifyPartLength: 
@@ -3416,12 +3485,14 @@ void Song::executeOperationGroup1(Undo& operations)
                             updateFlags |= SC_EVERYTHING;  // set all flags   // TODO Refine this! Too many flags.  // REMOVE Tim.
                             //updateFlags |= SC_SONG_LEN;
                           }
-                          pendingOperations.removePartPortCtrlEvents(editable_part, editable_part->track());
-                          pendingOperations.add(PendingOperationItem(editable_part, i->new_partlen_or_pos, PendingOperationItem::ModifyPartLength));
-                          pendingOperations.addPartPortCtrlEvents(
-                            editable_part, editable_part->posValue(), i->new_partlen_or_pos,
-                                            editable_part->track());
+                          pendingOperations.modifyPartLengthOperation(
+                            editable_part, i->new_partlen_or_pos, i->events_offset, i->events_offset_time_type);
                           updateFlags |= SC_PART_MODIFIED;
+                          // If the part had events, then treat it as if they were added/removed with separate Add/DeleteEvent operations.
+                          // Even if they will be added/deleted later in this operations group with actual separate Add/DeleteEvent operations,
+                          //  that's an SC_EVENT_ADDED/REMOVED anyway, so hopefully no harm.
+                          if(i->events_offset != 0 && !editable_part->events().empty())
+                            updateFlags |= (SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED);
                         }
                         break;
                         

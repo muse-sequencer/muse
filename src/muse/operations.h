@@ -26,6 +26,7 @@
 #include <list> 
 #include <map> 
 #include <set>
+#include <stdint.h>
 
 #include "type_defs.h"
 #include "muse_time.h"
@@ -40,6 +41,7 @@
 #include "marker/marker.h"
 #include "instruments/minstrument.h"
 #include "wave.h"
+#include "pos.h"
 
 namespace MusECore {
 
@@ -159,8 +161,11 @@ struct PendingOperationItem
     SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
     ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
     AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartStart, ModifyPartLength,  ModifyPartName,
-    AddEvent,          DeleteEvent,  SelectEvent,
+    AddEvent,          DeleteEvent,  SelectEvent,  ModifyEventList,
+    
     AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
+    ModifyMidiCtrlValList,
+
     RemapDrumControllers,
     AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
     ModifyTempoList,   SetStaticTempo,        SetGlobalTempo, 
@@ -194,6 +199,8 @@ struct PendingOperationItem
   };
   
   union {
+    EventList* _orig_event_list;
+    MidiCtrlValList* _orig_mcvl;
     MidiCtrlValListList* _mcvll;
     CtrlListList* _aud_ctrl_list_list;
     TempoList* _orig_tempo_list;
@@ -212,6 +219,7 @@ struct PendingOperationItem
   };
             
   union {
+    EventList* _event_list;
     MidiInstrument* _midi_instrument;
     MidiDevice* _midi_device;
     Track* _track;
@@ -268,6 +276,7 @@ struct PendingOperationItem
   union {
     int _intB;
     unsigned int _uintB;
+    unsigned int _lenVal;
     unsigned int _marker_tick;
     int _to_idx;
     int _address_port;
@@ -403,11 +412,22 @@ struct PendingOperationItem
     
   PendingOperationItem(Part* part, const QString* new_name, PendingOperationType type = ModifyPartName)
     { _type = type; _part = part; _name = new_name; }
-    
-  // Type is ModifyPartLength, SelectPart, ModifyPartStart or some (likely) future boolean or int operation.
-  // For ModifyPartLength and ModifyPartStart, v must already be in the part's time domain (ticks or frames).
-  PendingOperationItem(Part* part, unsigned int v, PendingOperationType type)
-    { _type = type; _part = part; _posLenVal = v; }
+
+  PendingOperationItem(Part* part, bool v, PendingOperationType type = SelectPart)
+    { _type = type; _part = part; _boolA = v; }
+
+  // new_pos and new_len must already be in the part's time domain (ticks or frames).
+  // The new_event_list can be set to null, or if the part's events are to be dragged with the border
+  //  it can be supplied to do a wholesale fast constant-time swap of the event lists.
+  PendingOperationItem(iPart ip, Part* part, unsigned int new_pos, unsigned int new_len,
+                       EventList* new_event_list, PendingOperationType type = ModifyPartStart)
+    { _type = type; _iPart = ip, _part = part; _event_list = new_event_list; _posLenVal = new_pos; _lenVal = new_len; }
+
+  // new_len must already be in the part's time domain (ticks or frames).
+  // The new_event_list can be set to null, or if the part's events are to be dragged with the border
+  //  it can be supplied to do a wholesale fast constant-time swap of the event lists.
+  PendingOperationItem(iPart ip, Part* part, unsigned int new_len, EventList* new_event_list, PendingOperationType type = ModifyPartLength)
+    { _type = type; _iPart = ip, _part = part; _event_list = new_event_list; _posLenVal = new_len; }
   
   // Erases ip from part->track()->parts(), then adds part to new_track. NOTE: ip may be part->track()->parts()->end().
   // new_pos must already be in the part's time domain (ticks or frames).
@@ -438,6 +458,9 @@ struct PendingOperationItem
   PendingOperationItem(MidiCtrlValListList* mcvll, MidiCtrlValList* mcvl, int channel, int control_num, PendingOperationType type = AddMidiCtrlValList)
     { _type = type; _mcvll = mcvll; _mcvl = mcvl; _intA = channel; _intB = control_num; }
     
+  PendingOperationItem(const iCtrlList& ictl_l, CtrlList* ctrl_l, PendingOperationType type = ModifyAudioCtrlValList)
+    { _type = type; _iCtrlList = ictl_l; _aud_ctrl_list = ctrl_l; }
+    
   PendingOperationItem(MidiCtrlValList* mcvl, Part* part, unsigned int tick, int val, PendingOperationType type = AddMidiCtrlVal)
     { _type = type; _mcvl = mcvl; _part = part; 
         _posLenVal = tick; _intB = val; }
@@ -450,8 +473,8 @@ struct PendingOperationItem
     { _type = type; _mcvl = mcvl; _imcv = imcv; _intA = val; }
 
     
-  PendingOperationItem(const iCtrlList& ictl_l, CtrlList* ctrl_l, PendingOperationType type = ModifyAudioCtrlValList)
-    { _type = type; _iCtrlList = ictl_l; _aud_ctrl_list = ctrl_l; }
+  PendingOperationItem(MidiCtrlValList* orig_mcvl, MidiCtrlValList* mcvl, PendingOperationType type = ModifyMidiCtrlValList)
+    { _type = type; _orig_mcvl = orig_mcvl; _mcvl = mcvl; }
     
   PendingOperationItem(CtrlList* ctrl_l, unsigned int frame, double ctrl_val, PendingOperationType type = AddAudioCtrlVal)
     { _type = type; _aud_ctrl_list = ctrl_l; _posLenVal = frame; _ctl_dbl_val = ctrl_val; }
@@ -583,6 +606,8 @@ class PendingOperationList : public std::list<PendingOperationItem>
     void addPartOperation(PartList *partlist, Part* part); 
     void delPartOperation(PartList *partlist, Part* part);
     void movePartOperation(PartList *partlist, Part* part, unsigned int new_pos, Track* track = 0);
+    void modifyPartStartOperation(Part* part, unsigned int new_pos, unsigned int new_len, int64_t events_offset, Pos::TType events_offset_time_type);
+    void modifyPartLengthOperation(Part* part, unsigned int new_len, int64_t events_offset, Pos::TType events_offset_time_type);
 
     void addTrackAuxSendOperation(AudioTrack *atrack, int n);
     

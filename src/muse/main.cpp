@@ -44,6 +44,7 @@
 #include <QStandardPaths>
 #include <QTime>
 #include <QDebug>
+#include <QElapsedTimer>
 
 #include <iostream>
 
@@ -592,7 +593,8 @@ int main(int argc, char* argv[])
       {
         is_restarting = false;
 
-        QTime timer;
+        //QTime timer; // Deprecated
+        QElapsedTimer timer;
         timer.start();
 
         // Make working copies of the arguments.

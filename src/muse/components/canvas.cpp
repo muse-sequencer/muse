@@ -53,6 +53,7 @@
 #include <QWheelEvent>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include "undo.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
@@ -1757,13 +1758,8 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                   if (curItem) {
                       if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
                           if (!supportsMultipleResize) {
-                              QPoint rpos = QPoint(raster(pos).x(), curItem->y());
+                              QPoint rpos = QPoint(!shift ? raster(pos).x() : pos.x(), curItem->y());
                               resizeToTheLeft(rpos);
-                              curItem->move(start);
-                              // Even though we only move the primary position here,
-                              //  set the mp as well.
-                              // Removed. Interferes with PartCanvas::resizeItem wanting old mp.
-                              //curItem->setMp(curItem->pos());
                           }
                       }
                       resizeItem(curItem, shift, ctrl);
@@ -2004,7 +2000,7 @@ void Canvas::resizeSelected(const int &dist, const bool left)
             continue;
 
         if (left) {
-            QPoint mp(qMin(it.second->pos().x() + it.second->width() - 2, it.second->x() + dist), it.second->y());
+            QPoint mp(qMin(it.second->x() + it.second->width() - 2, it.second->x() + dist), it.second->y());
             it.second->setTopLeft(mp);
 
         } else {
@@ -2021,7 +2017,6 @@ void Canvas::resizeToTheLeft(const QPoint &pos)
    int dx = end.x() - newX;
    curItem->setWidth(dx);
    QPoint mp(newX, curItem->y());
-   curItem->setMp(mp);
    curItem->move(mp);
    //fprintf(stderr, "newX=%d, dx=%d\n", newX, dx);
 }

@@ -130,19 +130,8 @@ WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : EItem(
 
 CItem* WaveCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       {
-      if (signed(event.frame())<0) {
-            printf("ERROR: trying to add event before current part!\n");
-            return NULL;
-      }
-
       WEvent* ev = new WEvent(event, part, height());  
       items.add(ev);
-
-      int diff = event.frame()-part->lenFrame();
-      if (diff > 0)  {// too short part? extend it
-            part->setLenFrame(part->lenFrame()+diff);
-            }
-      
       return ev;
       }
 
@@ -159,6 +148,7 @@ WaveCanvas::WaveCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
 
       colorMode = 0;
       button = 0;
+      supportsResizeToTheLeft = true;
       
       editor = pr;
       setVirt(true);
@@ -1402,6 +1392,8 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       
       QPen pen;
       pen.setCosmetic(true);
+      const QColor left_ch_color(0, 170, 255);
+      const QColor right_ch_color(Qt::red);
       
       int x1 = mapx(ubrwp.x());
       int x2 = mapx(ubrwp.x() + ubrwp.width());
@@ -1424,10 +1416,15 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       int sx, ex;
 
-      sx = event.frame() + px + xScale/2;
+      // Changed. Possible BUG ? Why the half nudge?
+      // sx = event.frame() + px + xScale/2;
+      sx = event.frame() + px;
       ex = sx + event.lenFrame();
       sx = sx / xScale - xpos - xorg;
       ex = ex / xScale - xpos - xorg;
+      
+      if(sx >= x2 || ex < x1)
+        return;
 
       if (sx < x1)
             sx = x1;
@@ -1446,10 +1443,6 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 //               ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
 //       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
 //               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-// //       vbbr.dump("vbbr:");
-// //       vbbr_exp.dump("vbbr_exp:");
-// //       vr.dump("vr:");
-// //       vbr.dump("vbr:");
       
       QBrush brush;
       if (item->isMoving())
@@ -1476,113 +1469,161 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
           p.fillRect(sx, y1, ex - sx + 1, y2, brush);
       }
 
+      int ev_channels = 0;
+      int wav_sx = 0;
+      int wav_ex = 0;
+      int wsx = 0;
+      int wex = 0;
+      bool wave_visible = false;
+
       MusECore::SndFileR f = event.sndFile();
       if(!f.isNull())
       {
-        int ev_channels = f.channels();
-        if (ev_channels == 0) {
-              p.setWorldMatrixEnabled(wmtxen);
-              printf("WaveCnvas::drawItem: ev_channels==0! %s\n", f.name().toLatin1().constData());
-              return;
-              }
+        ev_channels = f.channels();
+        if (ev_channels > 0) {
 
-        int h   = hh / (ev_channels * 2);
-        int cc  = hh % (ev_channels * 2) ? 0 : 1;
+          int h   = hh / (ev_channels * 2);
+          int cc  = hh % (ev_channels * 2) ? 0 : 1;
 
-        unsigned peoffset = px + event.frame() - ev_spos;
+          unsigned peoffset = px + event.frame() - ev_spos;
 
-        const sf_count_t smps = f.samples();
+          const sf_count_t smps = f.samples();
 
-//         fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
-//                 rect.x(), rect.width(),
-//                 rr.x(), rr.width(),
-//                 mr.x(), mr.width(),
-//                 pos,
-//                 sx, ex);
+          if(-ev_spos < smps && ev_spos <= smps)
+          {
+            wave_visible = true;
+            wav_sx = -ev_spos;
+            wav_ex = smps - ev_spos;
+            if(wav_sx < 0)
+              wav_sx = 0;
+            wav_sx += event.frame() + wp->frame();
 
-        for (int i = sx; i < ex; i++) {
-              int y = h;
-              MusECore::SampleV sa[f.channels()];
-              if((ev_spos + f.convertPosition(pos)) > smps)
-                break;
-              // Seek the file only once, not with every read!
-              if(i == sx)
-              {
-                if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, ev_spos) == -1)
-                  break;
-              }
-              f.readConverted(sa, xScale, pos, ev_spos);
-
-              pos += xScale;
-              if (pos < 0)
-                    continue;
-
-              int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
-              int selectionStopPos  = selectionStop  - peoffset;
-
-              for (int k = 0; k < ev_channels; ++k) {
-                    int kk = k % f.channels();
-                    int peak = (sa[kk].peak * (h - 1)) / yScale;
-                    int rms  = (sa[kk].rms  * (h - 1)) / yScale;
-                    if (peak > h)
-                          peak = h;
-                    if (rms > h)
-                          rms = h;
-                    QColor peak_color = MusEGlobal::config.wavePeakColor;
-                    QColor rms_color  = MusEGlobal::config.waveRmsColor;
-
-                    if ((ev_spos + pos) > selectionStartPos && (ev_spos + pos) <= selectionStopPos) {
-                          peak_color = MusEGlobal::config.wavePeakColorSelected;
-                          rms_color  = MusEGlobal::config.waveRmsColorSelected;
-                          QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);
-                          if(!l_inv.isNull())
-                          {
-                            // Draw inverted
-                            pen.setColor(QColor(Qt::black));
-                            p.setPen(pen);
-                            p.drawLine(l_inv);
-                          }
-                        }
-
-                    QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mbrwp);
-                    if(!l_peak.isNull())
-                    {
-                      pen.setColor(peak_color);
-                      p.setPen(pen);
-                      p.drawLine(l_peak);
-                    }
-
-                    QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mbrwp);
-                    if(!l_rms.isNull())
-                    {
-                      pen.setColor(rms_color);
-                      p.setPen(pen);
-                      p.drawLine(l_rms);
-                    }
-
-                    y += 2 * h;
-                  }
-              }
-
-        int hn = hh / ev_channels;
-        int hhn = hn / 2;
-        for (int i = 0; i < ev_channels; ++i) {
-              int h2     = hn * i;
-              int center = hhn + h2;
-              if(center >= y1 && center < y2)
-              {
-                pen.setColor(QColor(i & 1 ? Qt::red : Qt::blue));
-                p.setPen(pen);
-                p.drawLine(sx, center, ex, center);
-              }
-              if(i != 0 && h2 >= y1 && h2 < y2)
-              {
-                pen.setColor(QColor(Qt::black));
-                p.setPen(pen);
-                p.drawLine(sx, h2, ex, h2);
-              }
+            wav_ex = f.unConvertPosition(wav_ex);
+            if(wav_ex >= (int)event.lenFrame())
+            {
+              wav_ex = event.lenFrame();
+              if(wav_ex > 0)
+                --wav_ex;
             }
-      }
+            wav_ex += event.frame() + wp->frame();
+
+            wav_sx = wav_sx / xScale - xpos - xorg;
+            wav_ex = wav_ex / xScale - xpos - xorg;
+            wsx = wav_sx < x1 ? x1 : wav_sx;
+            wex = wav_ex > x2 ? x2 : wav_ex;
+          }
+
+  //         fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
+  //                 rect.x(), rect.width(),
+  //                 rr.x(), rr.width(),
+  //                 mr.x(), mr.width(),
+  //                 pos,
+  //                 sx, ex);
+
+          for (int i = sx; i < ex; i++) {
+                int y = h;
+                MusECore::SampleV sa[f.channels()];
+                if((ev_spos + f.convertPosition(pos)) > smps)
+                  break;
+                // Seek the file only once, not with every read!
+                if(i == sx)
+                {
+                  if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, ev_spos) == -1)
+                    break;
+                }
+                f.readConverted(sa, xScale, pos, ev_spos);
+
+                pos += xScale;
+                if (pos < 0)
+                      continue;
+
+                int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
+                int selectionStopPos  = selectionStop  - peoffset;
+
+                for (int k = 0; k < ev_channels; ++k) {
+                      int kk = k % f.channels();
+                      int peak = (sa[kk].peak * (h - 1)) / yScale;
+                      int rms  = (sa[kk].rms  * (h - 1)) / yScale;
+                      if (peak > h)
+                            peak = h;
+                      if (rms > h)
+                            rms = h;
+                      QColor peak_color = MusEGlobal::config.wavePeakColor;
+                      QColor rms_color  = MusEGlobal::config.waveRmsColor;
+
+                      if ((ev_spos + pos) > selectionStartPos && (ev_spos + pos) <= selectionStopPos) {
+                            peak_color = MusEGlobal::config.wavePeakColorSelected;
+                            rms_color  = MusEGlobal::config.waveRmsColorSelected;
+                            QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);
+                            if(!l_inv.isNull())
+                            {
+                              // Draw inverted
+                              pen.setColor(QColor(Qt::black));
+                              p.setPen(pen);
+                              p.drawLine(l_inv);
+                            }
+                          }
+
+                      QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mbrwp);
+                      if(!l_peak.isNull())
+                      {
+                        pen.setColor(peak_color);
+                        p.setPen(pen);
+                        p.drawLine(l_peak);
+                      }
+
+                      QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mbrwp);
+                      if(!l_rms.isNull())
+                      {
+                        pen.setColor(rms_color);
+                        p.setPen(pen);
+                        p.drawLine(l_rms);
+                      }
+
+                      y += 2 * h;
+                    }
+                }
+
+            // Only if there's something to draw.
+            if(wave_visible && wsx <= wex && wsx < x2 && wex >= x1)
+            {
+              const int hn = hh / ev_channels;
+              const int hhn = hn / 2;
+              for (int i = 0; i < ev_channels; ++i) {
+                    const int h2     = hn * i;
+                    const int center = hhn + h2;
+                    if(center >= y1 && center < y2)
+                    {
+                      pen.setColor(QColor(i & 1 ? right_ch_color : left_ch_color));
+                      p.setPen(pen);
+                      p.drawLine(wsx, center, wex, center);
+                    }
+                  }
+            }
+          }
+        }
+
+        const int h2 = hh / 2;
+        if(h2 >= y1 && h2 < y2)
+        {
+          pen.setColor(QColor(Qt::black));
+          p.setPen(pen);
+          // Draw the complete line only if there are an even number of channels (space for the line in the middle).
+          // Ensure a complete line is drawn even if there is no sound file or channels.
+          if((ev_channels & 1) == 0)
+            p.drawLine(sx, h2, ex, h2);
+          else
+          {
+            // Draw only the required two segments of the line.
+            if(wave_visible)
+            {
+              if(sx < wsx)
+                p.drawLine(sx, h2, wsx - 1, h2);
+              if(wex < ex)
+                p.drawLine(wex + 1, h2, ex, h2);
+            }
+          }
+        }
 
       //
       // Draw custom dashed borders around the wave event
@@ -2150,8 +2191,10 @@ void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimen
 
       if (noSnap)
             len = wevent->width();
-      else {
+      else
+      {
             unsigned frame = event.frame() + part->frame();
+
             // Normally frame to tick methods round down. But here we need it to 'snap'
             //  the frame from either side of a tick to the tick. So round to nearest.
             len = MusEGlobal::tempomap.tick2frame(
@@ -2164,6 +2207,12 @@ void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimen
       MusECore::Undo operations;
       int diff = event.frame() + len - part->lenFrame();
       
+      if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+          int x = qMax(0, wevent->x());
+          int nframe = qMax(0u, x - part->frame());
+          newEvent.setFrame(nframe);
+      }
+
       if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         newEvent.setLenFrame(len);
@@ -2181,6 +2230,7 @@ void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimen
       songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is necessary
                                       //to remove "forbidden" events from the list again
       }
+
 
 //---------------------------------------------------------
 //   deleteItem

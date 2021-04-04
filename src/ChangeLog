@@ -1,3 +1,19 @@
+04.04.2021
+    - Part resizing and other fixes. (Tim)
+      Rewrite of part resizing routines, esp to the left.
+      No longer possible to have hidden events before left border,
+       would require integer negative event times. Too much work ATM.
+      When resizing, use Ctrl key to choose whether to 'drag' all
+       events along with the border.
+    - Midi controller cache: Fixed problems when parts or tracks muted,
+       or tracks off. Cache was not updated properly.
+    - Undo/Redo: Fixed a problem where the Redo list was cleared 
+       and the Redo button was disabled even when only non-undoable
+       operations were executed, such as simply when stopping the
+       transport (which executes non-undoable EnableAllAudioControllers).
+    - Arranger and Wave Editor: Embellished wave drawing with dotted
+       event boundary lines and coloured wave boundary lines.
+      (Due to a Qt drawing bug, I had to break up long patterned lines!)
 03.04.2021
     - Fix: Appimage start time: Avoid updating plugin cache on every start. (kybos)
 31.03.2021

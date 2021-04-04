@@ -153,6 +153,11 @@ typedef int64_t EventID_t;
 #define MUSE_INVALID_EVENT_ID   -1
 #define MUSE_INVALID_POSITION   INT_MAX
 
+enum class ResizeDirection {
+      RESIZE_TO_THE_LEFT,
+      RESIZE_TO_THE_RIGHT
+};
+
 enum RelevantSelectedEvents { NoEventsRelevant = 0x00, NotesRelevant = 0x01, ControllersRelevant = 0x02,
                 SysexRelevant = 0x04, MetaRelevant = 0x08, WaveRelevant = 0x10,
                 AllEventsRelevant = NotesRelevant | ControllersRelevant |

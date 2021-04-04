@@ -29,14 +29,17 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 #include <QFont>
-#include <QFrame>
 #include <QString>
-#include <QWidget>
 #include <QGradient>
 #include <QPointF>
 #include <QColor>
 #include <QPainterPath>
 #include <QIcon>
+
+// Forward declarations:
+class QFrame;
+class QWidget;
+class QPainter;
 
 namespace MusECore {
 
@@ -71,6 +74,17 @@ extern bool getUniqueFileName(const QString& filename, QString& newAbsFilePath);
 
 extern QString font2StyleSheet(const QFont& fnt);
 extern QString font2StyleSheetFull(const QFont& fnt);
+
+// These two functions are intended to solve an apparent BUG in Qt's patterned line drawing.
+// Artifacts are left over at the end of the line, causing smearing when scrolled.
+// It only happens with long 1 pixel wide patterned lines. 2 or more pixels wide, or solid lines, or short lines, are OK.
+// The solution is to break the line up into segments.
+// segLength should be a multiple of the pattern length so that the segments are drawn cleanly and contiguous.
+// For example with a pattern of one dot and two dashes, 21 is a good value.
+// segLength should be a fairly low value, say in the 20's, because the bug only occurs with longer lines.
+// Thus by segmenting the line into say 20's, it never gets a chance to exhibit the artifacts seen with longer lines.
+extern void drawSegmentedHLine(QPainter* p, int x1, int x2, int y, int segLength, int offset = 0);
+extern void drawSegmentedVLine(QPainter* p, int x, int y1, int y2, int segLength, int offset = 0);
 
 } // namespace MusECore
 

@@ -45,6 +45,7 @@
 #include "gconfig.h"
 #include "helper.h"
 #include "app.h"
+#include "type_defs.h"
 
 // Forwards from header:
 #include <QDragEnterEvent>
@@ -96,18 +97,13 @@ void PianoCanvas::setLastEdited(MusECore::Event& e)
 
 CItem* PianoCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       {
-      if (signed(event.tick())<0) {
-            printf("ERROR: trying to add event before current part!\n");
-            return NULL;
-      }
+//       if (signed(event.tick())<0) {
+//             printf("ERROR: trying to add event before current part!\n");
+//             return NULL;
+//       }
 
       NEvent* ev = new NEvent(event, part, pitch2y(event.pitch()));
       items.add(ev);
-
-      int diff = event.tick()-part->lenTick();
-      if (diff > 0)  {// too short part? extend it
-            part->setLenTick(part->lenTick()+diff);
-            }
 
       return ev;
       }

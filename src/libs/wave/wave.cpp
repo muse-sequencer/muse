@@ -1125,11 +1125,38 @@ sf_count_t SndFile::convertPosition(sf_count_t pos) const
     if(_staticAudioConverter->capabilities() & AudioConverter::SampleRate)
       type |= StretchListItem::SamplerateEvent;
 
+    // Apply sample rate conversion BEFORE unsquishing.
     if(_staticAudioConverter->capabilities() & AudioConverter::SampleRate)
       new_pos *= sampleRateRatio();
     
     if(type != 0)
       new_pos = _stretchList->unSquish(new_pos, type);
+  }
+
+  return new_pos;
+}
+
+//---------------------------------------------------------
+//   unConvertPosition
+//---------------------------------------------------------
+
+sf_count_t SndFile::unConvertPosition(sf_count_t pos) const
+{
+  double new_pos = pos;
+  if(useConverter() && _staticAudioConverter && _stretchList)
+  {
+    int type = 0;
+    if(_staticAudioConverter->capabilities() & AudioConverter::Stretch)
+      type |= StretchListItem::StretchEvent;
+    if(_staticAudioConverter->capabilities() & AudioConverter::SampleRate)
+      type |= StretchListItem::SamplerateEvent;
+
+    if(type != 0)
+      new_pos = _stretchList->squish(new_pos, type);
+
+    // Apply sample rate conversion AFTER squishing.
+    if(_staticAudioConverter->capabilities() & AudioConverter::SampleRate)
+      new_pos /= sampleRateRatio();
   }
 
   return new_pos;
