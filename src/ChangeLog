@@ -1,3 +1,13 @@
+05.04.2021
+    - Fix: Record button: Inconsistencies between button state and 
+        internal record flag state in many situations. (kybos)
+    - Fix: Inconsistent state of (pseudo-)record-arm icon and mixer strip button in Audio 
+        output tracks after loading of some files. (kybos)
+    - Fix #717: Record button mustn't be activated when no track is record-armed
+        (a warning message is displayed now). 
+        Record button is automatically deactivated when no track is armed. (kybos)
+    - Fix: Don't allow deselecting all tracks, as this hides the mixer
+        strip which then can't receive events and gets out-of-sync. (kybos) 
 04.04.2021
     - Part resizing and other fixes. (Tim)
       Rewrite of part resizing routines, esp to the left.

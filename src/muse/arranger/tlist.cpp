@@ -1923,8 +1923,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
     {
         mode = START_DRAG;  // Allow a track drag to start.
 
-        if (ctrl)
+        if (ctrl) {
+            if (tracks->countSelected() == 1 && tracks->currentSelection() == t)
+                return;
+
             t->setSelected(!t->selected());
+        }
 
         else if (shift) {
             if (tracks->countSelected() == 1 && tracks->currentSelection() == t)

@@ -1291,9 +1291,12 @@ void Song::setRecord(bool f, bool autoRecEnable)
 
       if (f && MusEGlobal::config.useProjectSaveDialog && MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) { // check that there is a project stored before commencing
         // no project, we need to create one.
-        if (!MusEGlobal::muse->saveAs())
+        if (!MusEGlobal::muse->saveAs()) {
+            MusEGlobal::recordAction->setChecked(false);
           return; // could not store project, won't enable record
+        }
       }
+
       if (recordFlag != f) {
             if (f && autoRecEnable) {
                 bool alreadyRecEnabled = false;
@@ -1340,7 +1343,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
                 else  {
                     // if there no tracks or no track is selected, warn the user and don't enable record
                     if (selectedTracks.empty()) {
-                        QMessageBox::warning(nullptr, "MusE", tr("At least one track must be enabled for recording first."));
+                        QMessageBox::warning(nullptr, "MusE", tr("Record: At least one track must be armed for recording first."));
                         f = false;
                     }
 //                      // if there are no tracks, do not enable record
@@ -2350,7 +2353,7 @@ void Song::clear(bool signal, bool clear_all)
       initNewDrumMap();
       if (signal) {
             emit loopChanged(false);
-            recordChanged(false);
+            emit recordChanged(false);
             emit songChanged(-1);  
             }
       }

@@ -2234,6 +2234,8 @@ bool Track::readProperties(Xml& xml, const QString& tag)
             _comment = xml.parse1();
       else if (tag == "record") {
             bool recordFlag = xml.parseInt();
+            if (type() == TrackType::AUDIO_OUTPUT)
+                recordFlag = false;
             setRecordFlag1(recordFlag);
             setRecordFlag2(recordFlag);
             }

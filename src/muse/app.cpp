@@ -1429,6 +1429,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       _arranger->clear();      // clear track info
       if (clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
             return;
+
+      MusEGlobal::recordAction->setChecked(false);
+
       progress->setValue(20);
       qApp->processEvents();
 
@@ -1698,6 +1701,8 @@ void MusE::fileClose()
     //   _arranger->clear();      // clear track info
     if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
         return;
+
+    MusEGlobal::recordAction->setChecked(false);
 
     //setConfigDefaults();
     QString name(MusEGui::getUniqueUntitledName());

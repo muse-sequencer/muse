@@ -2982,7 +2982,7 @@ bool AudioTrack::setRecordFlag1(bool f)
               //  recording, the _recFile pointer is made into an event,
               //  then _recFile is made zero before this function is called.
               QString s = _recFile->path();
-              setRecFile(NULL);
+              setRecFile(nullptr);
 
               remove(s.toLatin1().constData());
               if(MusEGlobal::debugMsg)

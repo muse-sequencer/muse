@@ -592,7 +592,11 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                         else if (tag == "punchout")
                               setPunchout(xml.parseInt());
                         else if (tag == "record")
-                              setRecord(xml.parseInt());
+                        // This doesn't work as there are no tracks yet at this point and this is checked
+                        // in setRecord. So better make it clear and explicit.
+                        // (Using the default autoRecEnable==true would seem wrong too at this point.)
+                        // setRecord(xml.parseInt());
+                              setRecord(false);
                         else if (tag == "solo")
                               soloFlag = xml.parseInt();
                         else if (tag == "type")          // Obsolete.

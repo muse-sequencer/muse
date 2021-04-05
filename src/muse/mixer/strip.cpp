@@ -969,13 +969,25 @@ void TrackNameLabel::enterEvent(QEvent *e)
 //---------------------------------------------------------
 
 void Strip::setRecordFlag(bool flag)
-      {
-      if (record) {
-            record->blockSignals(true);
-            record->setChecked(flag);
-            record->blockSignals(false);
-            }
-      }
+{
+    if (record) {
+        record->blockSignals(true);
+        record->setChecked(flag);
+        record->blockSignals(false);
+    }
+
+    if (!flag) {
+        for (const auto& it : *MusEGlobal::song->midis()) {
+            if (it->recordFlag())
+                return;;
+        }
+        for (const auto& it : *MusEGlobal::song->waves()) {
+            if (it->recordFlag())
+                return;;
+        }
+        MusEGlobal::song->setRecord(false);
+    }
+}
 
 //---------------------------------------------------------
 //   resetPeaks
