@@ -164,5 +164,10 @@
         <file>svg/scroll_left.svg</file>
         <file>svg/scroll_right.svg</file>
         <file>svg/scroll_up.svg</file>
+        <file>svg/clear.svg</file>
+        <file>svg/downmix_off.svg</file>
+        <file>svg/downmix_on.svg</file>
+        <file>svg/downmix_track.svg</file>
+        <file>svg/restart.svg</file>
     </qresource>
 </RCC>

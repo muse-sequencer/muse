@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16mm" height="16mm" fill-rule="evenodd" stroke-linejoin="round" stroke-width="28.222" preserveAspectRatio="xMidYMid" version="1.2" viewBox="0 0 1600 1600" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:ooo="http://xml.openoffice.org/svg/export">
+ <defs class="TextShapeIndex">
+ </defs>
+ <defs class="EmbeddedBulletChars">
+ </defs>
+  <g class="Master_Slide">
+  </g>
+ <rect class="BoundingBox" x="-419" y="47" width="2439" height="1507" fill="none"/><path d="m65 335 269-270 465 466 466-466 270 269-466 466 466 466-270 269-466-466-465 466-269-270 465-465zm-466 465zm2402 0z" fill="#f33"/><path d="m65 335 269-270 465 466 466-466 270 269-466 466 466 466-270 269-466-466-465 466-269-270 465-465z" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="35"/><rect class="BoundingBox" x="182" y="132" width="637" height="1337" fill="none"/>
+</svg>

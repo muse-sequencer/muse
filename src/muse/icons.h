@@ -100,10 +100,6 @@ extern QPixmap* select_inside_loopIcon;
 extern QPixmap* select_invert_selectionIcon;
 extern QPixmap* select_outside_loopIcon;
 
-extern QPixmap* audio_bounce_to_fileIcon;
-extern QPixmap* audio_bounce_to_trackIcon;
-extern QPixmap* audio_restartaudioIcon;
-extern QPixmap* automation_clear_dataIcon;
 extern QPixmap* automation_mixerIcon;
 extern QPixmap* automation_take_snapshotIcon;
 extern QPixmap* midi_edit_instrumentIcon;
@@ -309,6 +305,12 @@ extern QIcon* routeDestSVGIcon;
 extern QIcon* gridOnSVGIcon;
 extern QIcon* rangeToSelectionSVGIcon;
 extern QIcon* quantizeSVGIcon;
+extern QIcon* clearSVGIcon;
+extern QIcon* downmixOffSVGIcon;
+extern QIcon* downmixOnSVGIcon;
+extern QIcon* downmixTrackSVGIcon;
+extern QIcon* downmixStateSVGIcon;
+extern QIcon* restartSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

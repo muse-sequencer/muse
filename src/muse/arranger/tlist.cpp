@@ -386,9 +386,11 @@ void TList::paint(const QRect& r)
                     break;
 
                 case COL_RECORD:
-                    // TODO: audio output is a trigger, not an indicator/toggle, this should be made clear
                     if (track->canRecord()) {
-                        (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                        if (track->type() == MusECore::Track::AUDIO_OUTPUT)
+                            (track->recordFlag() ? downmixOnSVGIcon : downmixOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
+                        else
+                            (track->recordFlag() ? recArmOnSVGIcon : recArmOffSVGIcon)->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                     }
                     break;
 
@@ -1413,9 +1415,9 @@ void TList::showAudioOutPopupMenu(MusECore::Track* t, int x, int y)
 
     PopupMenu* p = new PopupMenu;
 
-    QAction* actTrack = p->addAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Record Downmix to Selected Wave Track"));
+    QAction* actTrack = p->addAction(*MusEGui::downmixTrackSVGIcon, tr("Record Downmix to Selected Wave Track"));
     actTrack->setEnabled(!MusEGlobal::audio->bounce());
-    QAction* actFile = p->addAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Record Downmix to a File..."));
+    QAction* actFile = p->addAction(*MusEGui::downmixOnSVGIcon, tr("Record Downmix to a File..."));
     actFile->setEnabled(!MusEGlobal::audio->bounce());
 
     QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
@@ -2372,7 +2374,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 }
 
                 p->addSeparator();
-                a = p->addAction(*listeditSVGIcon, tr("Track Comment..."));
+                a = p->addAction(tr("Track Comment..."));
                 a->setData(1002);
 
                 p->addSeparator();

@@ -1293,7 +1293,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
         // no project, we need to create one.
         if (!MusEGlobal::muse->saveAs()) {
             MusEGlobal::recordAction->setChecked(false);
-          return; // could not store project, won't enable record
+            return; // could not store project, won't enable record
         }
       }
 

@@ -977,13 +977,9 @@ void Strip::setRecordFlag(bool flag)
     }
 
     if (!flag) {
-        for (const auto& it : *MusEGlobal::song->midis()) {
-            if (it->recordFlag())
-                return;;
-        }
-        for (const auto& it : *MusEGlobal::song->waves()) {
-            if (it->recordFlag())
-                return;;
+        for (const auto& it : *MusEGlobal::song->tracks()) {
+            if (it->canRecord() && it->recordFlag())
+                return;
         }
         MusEGlobal::song->setRecord(false);
     }
@@ -1019,8 +1015,8 @@ void Strip::recordToggled(bool val)
           record->blockSignals(false);
         }
       }
-      return;
     }
+    return;
   }
 
   MusEGlobal::song->setRecordFlag(track, val);

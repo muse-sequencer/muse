@@ -607,7 +607,7 @@ MusE::MusE() : QMainWindow()
 
       quitAction = new QAction(*MusEGui::appexitSVGIcon, tr("&Quit"), this);
 
-      editSongInfoAction = new QAction(*MusEGui::listeditSVGIcon, tr("Edit Project Description..."), this);
+      editSongInfoAction = new QAction(tr("Edit Project Description..."), this);
 
       //-------- View Actions
       viewTransportAction = new QAction(*MusEGui::transportSVGIcon, tr("Transport Panel"), this);
@@ -658,9 +658,9 @@ MusE::MusE() : QMainWindow()
       midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels."));
 
       //-------- Audio Actions
-      audioBounce2TrackAction = new QAction(QIcon(*MusEGui::audio_bounce_to_trackIcon), tr("Record Downmix to Selected Wave Track"), this);
-      audioBounce2FileAction = new QAction(QIcon(*MusEGui::audio_bounce_to_fileIcon), tr("Record Downmix to a File..."), this);
-      audioRestartAction = new QAction(QIcon(*MusEGui::audio_restartaudioIcon), tr("Restart Audio"), this);
+      audioBounce2TrackAction = new QAction(*MusEGui::downmixTrackSVGIcon, tr("Record Downmix to Selected Wave Track"), this);
+      audioBounce2FileAction = new QAction(*MusEGui::downmixOnSVGIcon, tr("Record Downmix to a File..."), this);
+      audioRestartAction = new QAction(*MusEGui::restartSVGIcon, tr("Restart Audio"), this);
 
       //-------- Automation Actions
 // REMOVE Tim. automation. Removed.
@@ -669,7 +669,7 @@ MusE::MusE() : QMainWindow()
 //       autoMixerAction = new QAction(QIcon(*MusEGui::automation_mixerIcon), tr("Mixer Automation"), this);
 //       autoMixerAction->setCheckable(true);
       autoSnapshotAction = new QAction(QIcon(*MusEGui::automation_take_snapshotIcon), tr("Take Automation Snapshot"), this);
-      autoClearAction = new QAction(QIcon(*MusEGui::automation_clear_dataIcon), tr("Clear Automation Data"), this);
+      autoClearAction = new QAction(*MusEGui::clearSVGIcon, tr("Clear Automation Data"), this);
 
        //-------- Settings Actions
       settingsGlobalAction = new QAction(*MusEGui::settingsSVGIcon, tr("Global Settings..."), this);

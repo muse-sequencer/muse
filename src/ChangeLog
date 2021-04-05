@@ -8,6 +8,9 @@
         Record button is automatically deactivated when no track is armed. (kybos)
     - Fix: Don't allow deselecting all tracks, as this hides the mixer
         strip which then can't receive events and gets out-of-sync. (kybos) 
+    - Fix: Add own icon for Audio output Downmix trigger to avoid confusion
+        with the arm-record indicators. (kybos)
+    - Add: New vector icons. (kybos)
 04.04.2021
     - Part resizing and other fixes. (Tim)
       Rewrite of part resizing routines, esp to the left.

@@ -32,10 +32,6 @@
 #include <QApplication>
 
 #include "xpm/track_comment.xpm"
-#include "xpm/audio_bounce_to_file.xpm"
-#include "xpm/audio_bounce_to_track.xpm"
-#include "xpm/audio_restartaudio.xpm"
-#include "xpm/automation_clear_data.xpm"
 #include "xpm/automation_mixer.xpm"
 #include "xpm/automation_take_snapshot.xpm"
 #include "xpm/midi_edit_instrument.xpm"
@@ -187,10 +183,6 @@ QPixmap* select_inside_loopIcon;
 QPixmap* select_invert_selectionIcon;
 QPixmap* select_outside_loopIcon;
 
-QPixmap* audio_bounce_to_fileIcon;
-QPixmap* audio_bounce_to_trackIcon;
-QPixmap* audio_restartaudioIcon;
-QPixmap* automation_clear_dataIcon;
 QPixmap* automation_mixerIcon;
 QPixmap* automation_take_snapshotIcon;
 QPixmap* midi_edit_instrumentIcon;
@@ -389,6 +381,13 @@ QIcon* routeDestSVGIcon;
 QIcon* gridOnSVGIcon;
 QIcon* rangeToSelectionSVGIcon;
 QIcon* quantizeSVGIcon;
+QIcon* clearSVGIcon;
+QIcon* downmixOffSVGIcon;
+QIcon* downmixOnSVGIcon;
+QIcon* downmixTrackSVGIcon;
+QIcon* downmixStateSVGIcon;
+QIcon* restartSVGIcon;
+
 
 QIcon* dummySVGIcon;
 
@@ -545,10 +544,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     select_invert_selectionIcon   = new QPixmap(select_invert_selection);
     select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
 
-    audio_bounce_to_fileIcon                      = new QPixmap(audio_bounce_to_file_xpm);
-    audio_bounce_to_trackIcon                     = new QPixmap(audio_bounce_to_track_xpm);
-    audio_restartaudioIcon                        = new QPixmap(audio_restartaudio_xpm);
-    automation_clear_dataIcon                     = new QPixmap(automation_clear_data_xpm);
     automation_mixerIcon                          = new QPixmap(automation_mixer_xpm);
     automation_take_snapshotIcon                  = new QPixmap(automation_take_snapshot_xpm);
     midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
@@ -786,6 +781,13 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     gridOnSVGIcon = icons.getSVG("grid_on.svg");
     rangeToSelectionSVGIcon = icons.getSVG("range_to_selection.svg");
     quantizeSVGIcon = icons.getSVG("quantize.svg");
+    clearSVGIcon = icons.getSVG("clear.svg");
+    downmixOffSVGIcon = icons.getSVG("downmix_off.svg");
+    downmixOnSVGIcon = icons.getSVG("downmix_on.svg");
+    downmixTrackSVGIcon = icons.getSVG("downmix_track.svg");
+    downmixStateSVGIcon = icons.getSVG("downmix_off.svg");
+    icons.addSVG(downmixStateSVGIcon, "downmix_on.svg");
+    restartSVGIcon = icons.getSVG("restart.svg");
 
     QPixmap px(10,10);
     px.fill(Qt::transparent);
@@ -883,10 +885,6 @@ void deleteIcons()
     delete select_invert_selectionIcon;
     delete select_outside_loopIcon;
 
-    delete audio_bounce_to_fileIcon;
-    delete audio_bounce_to_trackIcon;
-    delete audio_restartaudioIcon;
-    delete automation_clear_dataIcon;
     delete automation_mixerIcon;
     delete automation_take_snapshotIcon;
     delete midi_edit_instrumentIcon;
@@ -1086,6 +1084,12 @@ void deleteIcons()
     delete gridOnSVGIcon;
     delete rangeToSelectionSVGIcon;
     delete quantizeSVGIcon;
+    delete clearSVGIcon;
+    delete downmixOffSVGIcon;
+    delete downmixOnSVGIcon;
+    delete downmixTrackSVGIcon;
+    delete downmixStateSVGIcon;
+    delete restartSVGIcon;
 
     delete dummySVGIcon;
 

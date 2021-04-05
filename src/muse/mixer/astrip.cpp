@@ -1751,7 +1751,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       if (track->canRecord()) {
           //            record  = new IconButton(recArmOnSVGIcon, recArmOffSVGIcon, nullptr, nullptr, false, true);
           record  = new QPushButton(this);
-          record->setIcon(*recArmStateSVGIcon);
+          if (type == MusECore::Track::AUDIO_OUTPUT)
+              record->setIcon(*downmixStateSVGIcon);
+          else
+              record->setIcon(*recArmStateSVGIcon);
           record->setFocusPolicy(Qt::NoFocus);
           record->setCheckable(true);
           if (type == MusECore::Track::AUDIO_OUTPUT)
