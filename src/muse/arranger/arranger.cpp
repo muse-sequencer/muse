@@ -596,7 +596,7 @@ void Arranger::initTracklistHeader()
     //: Channel
     header->setColumnLabel(tr("Ch"), TList::COL_OCHANNEL);
     //: Time lock
-    header->setColumnLabel(tr("T"), TList::COL_TIMELOCK);
+//    header->setColumnLabel(tr("T"), TList::COL_TIMELOCK);
     header->setColumnLabel(tr("Automation"), TList::COL_AUTOMATION);
     header->setColumnLabel(tr("Clef"), TList::COL_CLEF);
     for (unsigned i = 0; i < custom_columns.size(); i++)
@@ -611,7 +611,7 @@ void Arranger::initTracklistHeader()
     header->setSectionResizeMode(TList::COL_NAME, QHeaderView::Interactive);
     header->setSectionResizeMode(TList::COL_OPORT, QHeaderView::Interactive);
     header->setSectionResizeMode(TList::COL_OCHANNEL, QHeaderView::Fixed);
-    header->setSectionResizeMode(TList::COL_TIMELOCK, QHeaderView::Fixed);
+//    header->setSectionResizeMode(TList::COL_TIMELOCK, QHeaderView::Fixed);
     header->setSectionResizeMode(TList::COL_AUTOMATION, QHeaderView::Interactive);
     header->setSectionResizeMode(TList::COL_CLEF, QHeaderView::Interactive);
     for (unsigned i = 0; i < custom_columns.size(); i++)
@@ -619,7 +619,7 @@ void Arranger::initTracklistHeader()
 
     // 04/18/17 Time lock remains unused. Disabled until a use is found.
     // Plans were to use it (or not) when time stretching / pitch shifting work is done.
-    header->setSectionHidden(TList::COL_TIMELOCK, true);
+//    header->setSectionHidden(TList::COL_TIMELOCK, true);
 
     setHeaderToolTips();
     setHeaderWhatsThis();
@@ -681,7 +681,7 @@ void Arranger::setHeaderSizes()
     header->resizeSection(TList::COL_NAME, qMax(header->sectionSizeHint(TList::COL_NAME) + fw, 100));
     header->resizeSection(TList::COL_OPORT, qMax(header->sectionSizeHint(TList::COL_OPORT) + fw, 60));
     header->resizeSection(TList::COL_OCHANNEL, header->sectionSizeHint(TList::COL_OCHANNEL) + fw);
-    header->resizeSection(TList::COL_TIMELOCK, header->sectionSizeHint(TList::COL_TIMELOCK) + fw);
+//    header->resizeSection(TList::COL_TIMELOCK, header->sectionSizeHint(TList::COL_TIMELOCK) + fw);
     header->resizeSection(TList::COL_AUTOMATION, qMax(header->sectionSizeHint(TList::COL_AUTOMATION) + fw, 80));
     header->resizeSection(TList::COL_CLEF, qMax(header->sectionSizeHint(TList::COL_CLEF) + fw, 50));
 

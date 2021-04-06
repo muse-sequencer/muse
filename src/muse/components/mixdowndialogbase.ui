@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MusE: Set Mixdown Wavefile</string>
+   <string>Set Downmix Wavefile</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <rect width="65" height="65" fill="#fff" fill-rule="evenodd" style="paint-order:fill markers stroke"/>
+ <g fill="none" stroke="#333">
+  <g transform="matrix(1,0,0,1.125,0,-1.25)" stroke-width="1.8856">
+   <path d="m0 10h64"/>
+   <path d="m0 50h64"/>
+   <path d="m0 40h64"/>
+   <path d="m0 30h64"/>
+   <path d="m0 20h64"/>
+  </g>
+  <g transform="matrix(1,0,0,1.125,0,-1.25)" stroke-width="1.8856">
+   <path d="m5 10v40"/>
+   <path d="m60 10v40"/>
+  </g>
+  <path d="m25 24.45h15" stroke-width="5"/>
+ </g>
+</svg>

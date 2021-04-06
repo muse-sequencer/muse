@@ -166,10 +166,10 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
 //    small helper function for "draw()" below
 //---------------------------------------------------------
 
-static void drawCenteredPixmap(QPainter& p, const QPixmap* pm, const QRect& r)
-{
-    p.drawPixmap(r.x() + (r.width() - pm->width())/2, r.y() + (r.height() - pm->height())/2, *pm);
-}
+//static void drawCenteredPixmap(QPainter& p, const QPixmap* pm, const QRect& r)
+//{
+//    p.drawPixmap(r.x() + (r.width() - pm->width())/2, r.y() + (r.height() - pm->height())/2, *pm);
+//}
 
 //---------------------------------------------------------
 //   paintEvent
@@ -425,12 +425,11 @@ void TList::paint(const QRect& r)
                                 soloOnAloneSVGIcon->paint(&p, svg_r, Qt::AlignCenter, QIcon::Normal, QIcon::On);
                     break;
 
-                case COL_TIMELOCK: // unused
-                    if (track->isMidiTrack()
-                            && track->locked()) {
-                        drawCenteredPixmap(p, lockIcon, r);
-                    }
-                    break;
+//                case COL_TIMELOCK: // unused
+//                    if (track->isMidiTrack() && track->locked()) {
+//                        drawCenteredPixmap(p, lockIcon, r);
+//                    }
+//                    break;
 
                 case COL_NAME:
                     if (track->selected())
@@ -1415,9 +1414,9 @@ void TList::showAudioOutPopupMenu(MusECore::Track* t, int x, int y)
 
     PopupMenu* p = new PopupMenu;
 
-    QAction* actTrack = p->addAction(*MusEGui::downmixTrackSVGIcon, tr("Record Downmix to Selected Wave Track"));
+    QAction* actTrack = p->addAction(*MusEGui::downmixTrackSVGIcon, tr("Render Downmix to Selected Wave Track"));
     actTrack->setEnabled(!MusEGlobal::audio->bounce());
-    QAction* actFile = p->addAction(*MusEGui::downmixOnSVGIcon, tr("Record Downmix to a File..."));
+    QAction* actFile = p->addAction(*MusEGui::downmixOnSVGIcon, tr("Render Downmix to a File..."));
     actFile->setEnabled(!MusEGlobal::audio->bounce());
 
     QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);
@@ -2536,17 +2535,17 @@ void TList::mousePressEvent(QMouseEvent* ev)
             break;
         }
 
-        case COL_TIMELOCK:
-        {
-            if(!t->isMidiTrack())
-            {
-                mode = START_DRAG;  // Allow a track drag to start.
-                break;
-            }
-            t->setLocked(!t->locked());
+//        case COL_TIMELOCK:
+//        {
+//            if(!t->isMidiTrack())
+//            {
+//                mode = START_DRAG;  // Allow a track drag to start.
+//                break;
+//            }
+//            t->setLocked(!t->locked());
 
-            break;
-        }
+//            break;
+//        }
 
         case COL_OCHANNEL:
         {

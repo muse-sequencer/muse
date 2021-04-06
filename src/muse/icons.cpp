@@ -31,21 +31,10 @@
 #include <QDir>
 #include <QApplication>
 
-#include "xpm/track_comment.xpm"
-#include "xpm/automation_mixer.xpm"
-#include "xpm/automation_take_snapshot.xpm"
 #include "xpm/midi_edit_instrument.xpm"
-#include "xpm/midi_init_instr.xpm"
-#include "xpm/midi_inputplugins_midi_input_filter.xpm"
-#include "xpm/midi_inputplugins_midi_input_transform.xpm"
-#include "xpm/midi_inputplugins_remote_control.xpm"
-#include "xpm/midi_inputplugins_transpose.xpm"
-#include "xpm/midi_local_off.xpm"
-#include "xpm/midi_reset_instr.xpm"
 #include "xpm/settings_appearance_settings.xpm"
 #include "xpm/settings_midifileexport.xpm"
 #include "xpm/settings_midisync.xpm"
-#include "xpm/view_marker.xpm"
 
 #include "xpm/delete.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase.xpm"
@@ -66,10 +55,6 @@
 #include "xpm/eye.xpm"
 #include "xpm/eye_gray.xpm"
 #include "xpm/eye_crossed.xpm"
-
-#include "xpm/up.xpm"
-#include "xpm/down.xpm"
-#include "xpm/lock.xpm"
 
 #include "xpm/editcutS.xpm"
 #include "xpm/editcopyS.xpm"
@@ -93,10 +78,7 @@
 #include "xpm/cliplistS.xpm"
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
-#include "xpm/velo_all.xpm"
-#include "xpm/velo_per_note.xpm"
 
-#include "xpm/midi_transform.xpm"
 #include "xpm/select_all.xpm"
 #include "xpm/select_all_parts_on_track.xpm"
 #include "xpm/select_deselect_all.xpm"
@@ -106,7 +88,6 @@
 
 #include "xpm/muse_icon.xpm"
 #include "xpm/about_muse.xpm"
-#include "xpm/muse_leftside_logo.xpm"
 
 #include "xpm/global.xpm"
 #include "xpm/project.xpm"
@@ -120,12 +101,9 @@
 
 namespace MusEGui {
 
-QPixmap* track_commentIcon;
 QPixmap* cliplistSIcon;
 QPixmap* deltaOnIcon;
 QPixmap* deltaOffIcon;
-QPixmap* veloPerNote_OnIcon;
-QPixmap* veloPerNote_OffIcon;
 
 QPixmap* routesInIcon;
 QPixmap* routesOutIcon;
@@ -146,9 +124,6 @@ QPixmap* muteIcon;
 QPixmap* eyeIcon;
 QPixmap* eyeCrossedIcon;
 QPixmap* eyeGrayIcon;
-QPixmap* upIcon;
-QPixmap* downIcon;
-QPixmap* lockIcon;
 
 QIcon* editcutIconSet;
 QIcon* editcopyIconSet;
@@ -174,7 +149,6 @@ QPixmap* orangedot12x12Icon;
 QIcon* ledGreenIcon;
 QIcon* ledDarkGreenIcon;
 
-QPixmap* midi_transformIcon;
 QPixmap* select_allIcon;
 QPixmap* select_all_parts_on_trackIcon;
 QPixmap* select_deselect_allIcon;
@@ -183,24 +157,13 @@ QPixmap* select_inside_loopIcon;
 QPixmap* select_invert_selectionIcon;
 QPixmap* select_outside_loopIcon;
 
-QPixmap* automation_mixerIcon;
-QPixmap* automation_take_snapshotIcon;
 QPixmap* midi_edit_instrumentIcon;
-QPixmap* midi_init_instrIcon;
-QPixmap* midi_inputplugins_midi_input_filterIcon;
-QPixmap* midi_inputplugins_midi_input_transformIcon;
-QPixmap* midi_inputplugins_remote_controlIcon;
-QPixmap* midi_inputplugins_transposeIcon;
-QPixmap* midi_local_offIcon;
-QPixmap* midi_reset_instrIcon;
 QPixmap* settings_appearance_settingsIcon;
 QPixmap* settings_midifileexportIcon;
 QPixmap* settings_midisyncIcon;
-QPixmap* view_markerIcon;
 
 QPixmap* museIcon;
 QPixmap* aboutMuseImage;
-QPixmap* museLeftSideLogo;
 
 QIcon* globalIcon;
 QIcon* projectIcon;
@@ -324,7 +287,6 @@ QIcon* metaSVGIcon;
 QIcon* ctrlSVGIcon;
 QIcon* sysexSVGIcon;
 QIcon* tracktypeSVGIcon;
-QIcon* mixerstripSVGIcon;
 QIcon* pianorollSVGIcon;
 QIcon* arrangerSVGIcon;
 QIcon* waveeditorSVGIcon;
@@ -387,7 +349,19 @@ QIcon* downmixOnSVGIcon;
 QIcon* downmixTrackSVGIcon;
 QIcon* downmixStateSVGIcon;
 QIcon* restartSVGIcon;
+QIcon* snapshotSVGIcon;
+QIcon* emptyBarSVGIcon;
+QIcon* lockSVGIcon;
 
+QIcon* midiResetSVGIcon;
+QIcon* midiInitSVGIcon;
+QIcon* midiLocalOffSVGIcon;
+
+QIcon* midiTransformSVGIcon;
+QIcon* midiInputTransformSVGIcon;
+QIcon* midiInputTransposeSVGIcon;
+QIcon* midiInputFilterSVGIcon;
+QIcon* midiInputRemoteSVGIcon;
 
 QIcon* dummySVGIcon;
 
@@ -480,7 +454,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
     Icons icons(gpath, upath);
 
-    track_commentIcon = new QPixmap(track_comment_xpm);
     deleteIcon        = new QPixmap(delete_xpm);
     midiCtrlMergeEraseIcon          = new QPixmap(midi_ctrl_graph_merge_erase_xpm);
     midiCtrlMergeEraseInclusiveIcon = new QPixmap(midi_ctrl_graph_merge_erase_inclusive_xpm);
@@ -495,9 +468,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     eyeIcon      = new QPixmap(eye_xpm);
     eyeCrossedIcon = new QPixmap(eye_crossed_xpm);
     eyeGrayIcon  = new QPixmap(eye_gray_xpm);
-    upIcon       = new QPixmap(up_xpm);
-    downIcon     = new QPixmap(down_xpm);
-    lockIcon     = new QPixmap(lock_xpm);
 
     editcutIconSet       = new QIcon(QPixmap(editcutS_xpm)); // ddskrjo
     editcopyIconSet      = new QIcon(QPixmap(editcopyS_xpm));
@@ -532,10 +502,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     cliplistSIcon        = new QPixmap(cliplistS_xpm);
     deltaOnIcon          = new QPixmap(delta_on_xpm);
     deltaOffIcon         = new QPixmap(delta_off_xpm);
-    veloPerNote_OnIcon   = new QPixmap(velo_per_note_xpm);
-    veloPerNote_OffIcon  = new QPixmap(velo_all_xpm);
 
-    midi_transformIcon            = new QPixmap(midi_transform_xpm);
     select_allIcon                = new QPixmap(select_all_xpm);
     select_all_parts_on_trackIcon = new QPixmap(select_all_parts_on_track_xpm);
     select_deselect_allIcon       = new QPixmap(select_deselect_all);
@@ -544,24 +511,13 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     select_invert_selectionIcon   = new QPixmap(select_invert_selection);
     select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
 
-    automation_mixerIcon                          = new QPixmap(automation_mixer_xpm);
-    automation_take_snapshotIcon                  = new QPixmap(automation_take_snapshot_xpm);
     midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
-    midi_init_instrIcon                           = new QPixmap(midi_init_instr_xpm);
-    midi_inputplugins_midi_input_filterIcon       = new QPixmap(midi_inputplugins_midi_input_filter_xpm);
-    midi_inputplugins_midi_input_transformIcon    = new QPixmap(midi_inputplugins_midi_input_transform_xpm);
-    midi_inputplugins_remote_controlIcon          = new QPixmap(midi_inputplugins_remote_control_xpm);
-    midi_inputplugins_transposeIcon               = new QPixmap(midi_inputplugins_transpose_xpm);
-    midi_local_offIcon                            = new QPixmap(midi_local_off_xpm);
-    midi_reset_instrIcon                          = new QPixmap(midi_reset_instr_xpm);
     settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
     settings_midifileexportIcon                   = new QPixmap(settings_midifileexport_xpm);
     settings_midisyncIcon                         = new QPixmap(settings_midisync_xpm);
-    view_markerIcon                               = new QPixmap(view_marker_xpm);
 
     museIcon                                      = new QPixmap(muse_icon_xpm);
     aboutMuseImage                                = new QPixmap(about_muse_xpm);
-    museLeftSideLogo                              = new QPixmap(muse_leftside_logo_xpm);
 
     globalIcon                                    = new QIcon(QPixmap(global_xpm));
     userIcon                                      = new QIcon(QPixmap(user_xpm));
@@ -708,7 +664,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     ctrlSVGIcon       = icons.getSVG("ctrl.svg");
     sysexSVGIcon      = icons.getSVG("sysex.svg");
     tracktypeSVGIcon  = icons.getSVG("tracktype.svg");
-    mixerstripSVGIcon = icons.getSVG("mixerstrip.svg");
 
     filenewSVGIcon     = icons.getSVG("filenew.svg");
     filetemplateSVGIcon = icons.getSVG("filefromtemplate.svg");
@@ -788,6 +743,19 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     downmixStateSVGIcon = icons.getSVG("downmix_off.svg");
     icons.addSVG(downmixStateSVGIcon, "downmix_on.svg");
     restartSVGIcon = icons.getSVG("restart.svg");
+    snapshotSVGIcon = icons.getSVG("snapshot.svg");
+    emptyBarSVGIcon = icons.getSVG("empty_bar.svg");
+    lockSVGIcon = icons.getSVG("lock.svg");
+
+    midiResetSVGIcon = icons.getSVG("midi_reset.svg");
+    midiInitSVGIcon = icons.getSVG("midi_init.svg");
+    midiLocalOffSVGIcon = icons.getSVG("midi_local_off.svg");
+
+    midiTransformSVGIcon = icons.getSVG("midi_transform.svg");
+    midiInputTransformSVGIcon = icons.getSVG("midi_input_transform.svg");
+    midiInputTransposeSVGIcon = icons.getSVG("midi_input_transpose.svg");
+    midiInputFilterSVGIcon = icons.getSVG("midi_input_filter.svg");
+    midiInputRemoteSVGIcon = icons.getSVG("midi_input_remote.svg");
 
     QPixmap px(10,10);
     px.fill(Qt::transparent);
@@ -828,7 +796,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
 void deleteIcons()
 {
-    delete track_commentIcon;
     delete deleteIcon;
     delete midiCtrlMergeEraseIcon;
     delete midiCtrlMergeEraseInclusiveIcon;
@@ -840,9 +807,6 @@ void deleteIcons()
     delete dot1Icon;
     delete cursorIcon;
     delete muteIcon;
-    delete upIcon;
-    delete downIcon;
-    delete lockIcon;
 
     delete editcutIconSet;
     delete editcopyIconSet;
@@ -873,10 +837,7 @@ void deleteIcons()
     delete cliplistSIcon;
     delete deltaOnIcon;
     delete deltaOffIcon;
-    delete veloPerNote_OnIcon;
-    delete veloPerNote_OffIcon;
 
-    delete midi_transformIcon;
     delete select_allIcon;
     delete select_all_parts_on_trackIcon;
     delete select_deselect_allIcon;
@@ -885,24 +846,13 @@ void deleteIcons()
     delete select_invert_selectionIcon;
     delete select_outside_loopIcon;
 
-    delete automation_mixerIcon;
-    delete automation_take_snapshotIcon;
     delete midi_edit_instrumentIcon;
-    delete midi_init_instrIcon;
-    delete midi_inputplugins_midi_input_filterIcon;
-    delete midi_inputplugins_midi_input_transformIcon;
-    delete midi_inputplugins_remote_controlIcon;
-    delete midi_inputplugins_transposeIcon;
-    delete midi_local_offIcon;
-    delete midi_reset_instrIcon;
     delete settings_appearance_settingsIcon;
     delete settings_midifileexportIcon;
     delete settings_midisyncIcon;
-    delete view_markerIcon;
 
     delete museIcon;
     delete aboutMuseImage;
-    delete museLeftSideLogo;
     delete globalIcon;
     delete userIcon;
     delete projectIcon;
@@ -1024,7 +974,6 @@ void deleteIcons()
     delete ctrlSVGIcon;
     delete sysexSVGIcon;
     delete tracktypeSVGIcon;
-    delete mixerstripSVGIcon;
 
     delete pencilIconSVG;
     delete glueIconSVG;
@@ -1090,6 +1039,19 @@ void deleteIcons()
     delete downmixTrackSVGIcon;
     delete downmixStateSVGIcon;
     delete restartSVGIcon;
+    delete snapshotSVGIcon;
+    delete emptyBarSVGIcon;
+    delete lockSVGIcon;
+
+    delete midiResetSVGIcon;
+    delete midiInitSVGIcon;
+    delete midiLocalOffSVGIcon;
+
+    delete midiTransformSVGIcon;
+    delete midiInputTransformSVGIcon;
+    delete midiInputTransposeSVGIcon;
+    delete midiInputFilterSVGIcon;
+    delete midiInputRemoteSVGIcon;
 
     delete dummySVGIcon;
 

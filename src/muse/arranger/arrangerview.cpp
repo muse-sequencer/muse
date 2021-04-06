@@ -143,7 +143,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editPasteToTrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to Selected &Track"), this);
   editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste Clone to Selected Trac&k"), this);
   editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (Show Dialo&g)..."), this);
-  editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
+  editInsertEMAction = new QAction(*emptyBarSVGIcon, tr("&Insert Empty Measure"), this);
 
   editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);
   editDuplicateSelTrackAction = new QAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"), this);
@@ -211,7 +211,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   openCurrentTrackSynthGuiAction =  new QAction(*noscaleSVGIcon[0], tr("Open Synth Plugin GUI..."), this);
 
-  midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform..."), this);
+  midiTransformerAction = new QAction(*midiTransformSVGIcon, tr("Midi &Transform..."), this);
 
 
   //-------- Structure Actions
@@ -271,7 +271,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuPaste->addAction(editPasteCloneToTrackAction);
   menuPaste->addAction(editPasteDialogAction);
 
-  menuEdit->addSeparator();
   menuEdit->addAction(editInsertEMAction);
   menuEdit->addSeparator();
   

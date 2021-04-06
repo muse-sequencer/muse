@@ -72,7 +72,7 @@ class TList : public QWidget {
           COL_NAME,
           COL_OPORT,
           COL_OCHANNEL,
-          COL_TIMELOCK,
+//          COL_TIMELOCK,
           COL_AUTOMATION,
           COL_CLEF,
           COL_CUSTOM_MIDICTRL_OFFSET,

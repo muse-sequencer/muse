@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g fill="none" stroke="#00aad4" stroke-dashoffset="37.795" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m5 16.367h13.5l6.5-7.9266h13.5l7 7.9266h13.5v39.633h-54z" stroke-width="8" style="paint-order:fill markers stroke"/>
+  <circle cx="32.306" cy="34.885" r="9.1436" stroke-width="6" style="paint-order:fill markers stroke"/>
+ </g>
+</svg>

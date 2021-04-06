@@ -123,7 +123,7 @@ void MarkerItem::setName(const QString& s)
 
 void MarkerItem::setLock(bool lck)
 {
-    setIcon(COL_LOCK, lck ? QIcon(*lockIcon) : QIcon());
+    setIcon(COL_LOCK, lck ? QIcon(*lockSVGIcon) : QIcon());
 }
 
 //---------------------------------------------------------
@@ -228,7 +228,7 @@ MarkerView::MarkerView(QWidget* parent)
     editSMPTE->setToolTip(tr("Edit SMPTE timecode"));
 
     lock = new QToolButton;
-    lock->setIcon(*lockIcon);
+    lock->setIcon(*lockSVGIcon);
     lock->setCheckable(true);
     lock->setToolTip(tr("Toggle timecode editing"));
 

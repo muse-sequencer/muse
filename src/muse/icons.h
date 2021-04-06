@@ -34,7 +34,6 @@ class QCursor;
 
 namespace MusEGui {
 
-extern QPixmap* track_commentIcon;
 extern QPixmap* deleteIcon;
 extern QPixmap* dotIcon;
 extern QPixmap* dothIcon;
@@ -49,9 +48,6 @@ extern QPixmap* muteIcon;
 extern QPixmap* eyeIcon;
 extern QPixmap* eyeCrossedIcon;
 extern QPixmap* eyeGrayIcon;
-extern QPixmap* upIcon;
-extern QPixmap* downIcon;
-extern QPixmap* lockIcon;
 
 extern QIcon* editcutIconSet;
 extern QIcon* editcopyIconSet;
@@ -88,10 +84,7 @@ extern QPixmap* orangedot12x12Icon;
 extern QPixmap* cliplistSIcon;
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
-extern QPixmap* veloPerNote_OnIcon;
-extern QPixmap* veloPerNote_OffIcon;
 
-extern QPixmap* midi_transformIcon;
 extern QPixmap* select_allIcon;
 extern QPixmap* select_all_parts_on_trackIcon;
 extern QPixmap* select_deselect_allIcon;
@@ -100,24 +93,13 @@ extern QPixmap* select_inside_loopIcon;
 extern QPixmap* select_invert_selectionIcon;
 extern QPixmap* select_outside_loopIcon;
 
-extern QPixmap* automation_mixerIcon;
-extern QPixmap* automation_take_snapshotIcon;
 extern QPixmap* midi_edit_instrumentIcon;
-extern QPixmap* midi_init_instrIcon;
-extern QPixmap* midi_inputplugins_midi_input_filterIcon;
-extern QPixmap* midi_inputplugins_midi_input_transformIcon;
-extern QPixmap* midi_inputplugins_remote_controlIcon;
-extern QPixmap* midi_inputplugins_transposeIcon;
-extern QPixmap* midi_local_offIcon;
-extern QPixmap* midi_reset_instrIcon;
 extern QPixmap* settings_appearance_settingsIcon;
 extern QPixmap* settings_midifileexportIcon;
 extern QPixmap* settings_midisyncIcon;
-extern QPixmap* view_markerIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* aboutMuseImage;
-extern QPixmap* museLeftSideLogo;
 
 extern QIcon* globalIcon;
 extern QIcon* projectIcon;
@@ -125,12 +107,6 @@ extern QIcon* userIcon;
 
 extern QIcon* pianoNewIcon;
 extern QIcon* presetsNewIcon;
-
-//extern QPixmap* routerFilterSourceIcon;
-//extern QPixmap* routerFilterDestinationIcon;
-//extern QPixmap* routerFilterSourceRoutesIcon;
-//extern QPixmap* routerFilterDestinationRoutesIcon;
-//extern QPixmap* routerViewSplitterIcon;
 
 
 //----------------------------------
@@ -247,7 +223,6 @@ extern QIcon* metaSVGIcon;
 extern QIcon* ctrlSVGIcon;
 extern QIcon* sysexSVGIcon;
 extern QIcon* tracktypeSVGIcon;
-extern QIcon* mixerstripSVGIcon;
 
 extern QIcon* pencilIconSVG;
 extern QIcon* glueIconSVG;
@@ -311,6 +286,19 @@ extern QIcon* downmixOnSVGIcon;
 extern QIcon* downmixTrackSVGIcon;
 extern QIcon* downmixStateSVGIcon;
 extern QIcon* restartSVGIcon;
+extern QIcon* snapshotSVGIcon;
+extern QIcon* emptyBarSVGIcon;
+extern QIcon* lockSVGIcon;
+
+extern QIcon* midiResetSVGIcon;
+extern QIcon* midiInitSVGIcon;
+extern QIcon* midiLocalOffSVGIcon;
+
+extern QIcon* midiTransformSVGIcon;
+extern QIcon* midiInputTransformSVGIcon;
+extern QIcon* midiInputTransposeSVGIcon;
+extern QIcon* midiInputFilterSVGIcon;
+extern QIcon* midiInputRemoteSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

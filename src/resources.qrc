@@ -101,7 +101,6 @@
         <file>svg/note.svg</file>
         <file>svg/sysex.svg</file>
         <file>svg/tracktype.svg</file>
-        <file>svg/mixerstrip.svg</file>
         <file>svg/drop_down_triangle.svg</file>
         <file>svg/expand_left_right.svg</file>
         <file>svg/down_vee.svg</file>
@@ -169,5 +168,16 @@
         <file>svg/downmix_on.svg</file>
         <file>svg/downmix_track.svg</file>
         <file>svg/restart.svg</file>
+        <file>svg/snapshot.svg</file>
+        <file>svg/empty_bar.svg</file>
+        <file>svg/midi_init.svg</file>
+        <file>svg/midi_local_off.svg</file>
+        <file>svg/midi_reset.svg</file>
+        <file>svg/midi_input_filter.svg</file>
+        <file>svg/midi_input_remote.svg</file>
+        <file>svg/midi_input_transform.svg</file>
+        <file>svg/midi_input_transpose.svg</file>
+        <file>svg/midi_transform.svg</file>
+        <file>svg/lock.svg</file>
     </qresource>
 </RCC>

@@ -362,7 +362,7 @@ GlobalConfigValues config = {
       true,                         // addHiddenTracks
       true,                         // unhideTracks
       true,                         // smartFocus
-      20,                           // trackHeight
+      24,                           // trackHeight
       true,                         // borderlessMouse
       false,                        // autoSave
       false,                        // scrollableSubMenus

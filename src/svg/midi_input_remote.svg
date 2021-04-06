@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g fill="#fff" fill-rule="evenodd" stroke-dashoffset="37.795" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m3 61h58v-58h-58v58z" stroke="#08a" stroke-width="6" style="paint-order:fill markers stroke"/>
+  <g stroke="#000">
+   <rect transform="rotate(45)" x="33.304" y="-9.635" width="24" height="33" rx="4" ry="3.8824" stroke-width="3" style="paint-order:fill markers stroke"/>
+   <g stroke-width="2">
+    <circle transform="rotate(45)" cx="38.982" cy="-5.135" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="51.705" cy="-5.0909" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="45.344" cy="-5.0909" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="38.893" cy="18.794" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="51.572" cy="18.838" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="45.232" cy="18.838" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="38.896" cy="13.391" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="51.619" cy="13.435" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="45.257" cy="13.435" r=".5" style="paint-order:fill markers stroke"/>
+    <circle transform="rotate(45)" cx="45.259" cy="4.2583" r="4.5" style="paint-order:fill markers stroke"/>
+   </g>
+  </g>
+  <g stroke="#d40000" stroke-width="2">
+   <path transform="rotate(45)" d="m38.804-13.635a12.5 12.5 0 0 1 12.5 0" style="paint-order:fill markers stroke"/>
+   <path transform="rotate(45)" d="m37.804-18.635a15.5 15.5 0 0 1 15.5 0" style="paint-order:fill markers stroke"/>
+   <path transform="rotate(45)" d="m35.804-23.635a19.5 19.5 0 0 1 19.5 0" style="paint-order:fill markers stroke"/>
+  </g>
+ </g>
+</svg>

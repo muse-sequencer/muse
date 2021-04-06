@@ -342,12 +342,14 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
       enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QMenu* menu = new QMenu;
-      QAction* newAction = menu->addAction(tr("New"));
+      QAction* newAction = menu->addAction(*dummySVGIcon, tr("New"));
       QAction* changeAction = menu->addAction(tr("Change"));
-      QAction* upAction = menu->addAction(QIcon(*upIcon), tr("Move Up"));//,   UP, UP);
-      QAction* downAction = menu->addAction(QIcon(*downIcon), tr("Move Down"));//, DOWN, DOWN);
+      QAction* upAction = menu->addAction(tr("Move Up"));//,   UP, UP);
+      QAction* downAction = menu->addAction(tr("Move Down"));//, DOWN, DOWN);
       QAction* removeAction = menu->addAction(tr("Remove"));//,    REMOVE, REMOVE);
+      menu->addSeparator();
       QAction* bypassAction = menu->addAction(tr("Bypass"));//,    BYPASS, BYPASS);
+      menu->addSeparator();
       QAction* showGuiAction = menu->addAction(tr("Show Generic GUI"));//,  SHOW, SHOW);
       QAction* showNativeGuiAction = menu->addAction(tr("Show Native GUI"));//,  SHOW_NATIVE, SHOW_NATIVE);
       QAction* saveAction = menu->addAction(tr("Save Preset"));

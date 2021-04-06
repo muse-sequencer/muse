@@ -642,24 +642,24 @@ MusE::MusE() : QMainWindow()
 
       //-------- Midi Actions
       midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
-      midiInputPlugins = new QMenu(tr("Input Plugins"), this);
-      midiTrpAction = new QAction(QIcon(*MusEGui::midi_inputplugins_transposeIcon), tr("Transpose..."), this);
-      midiInputTrfAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_transformIcon), tr("Midi Input Transform..."), this);
-      midiInputFilterAction = new QAction(QIcon(*MusEGui::midi_inputplugins_midi_input_filterIcon), tr("Midi Input Filter..."), this);
-      midiRemoteAction = new QAction(QIcon(*MusEGui::midi_inputplugins_remote_controlIcon), tr("Midi Remote Control..."), this);
+//      midiInputPlugins = new QMenu(tr("Input Plugins"), this);
+      midiTrpAction = new QAction(*MusEGui::midiInputTransposeSVGIcon, tr("Input Transpose..."), this);
+      midiInputTrfAction = new QAction(*MusEGui::midiInputTransformSVGIcon, tr("Input Transform..."), this);
+      midiInputFilterAction = new QAction(*MusEGui::midiInputFilterSVGIcon, tr("Input Filter..."), this);
+      midiRemoteAction = new QAction(*MusEGui::midiInputRemoteSVGIcon, tr("Remote Control..."), this);
 #ifdef BUILD_EXPERIMENTAL
       midiRhythmAction = new QAction(QIcon(*midi_inputplugins_random_rhythm_generatorIcon), tr("Rhythm Generator"), this);
 #endif
-      midiResetInstAction = new QAction(QIcon(*MusEGui::midi_reset_instrIcon), tr("Reset Instrument"), this);
+      midiResetInstAction = new QAction(*MusEGui::midiResetSVGIcon, tr("Reset Instrument"), this);
       midiResetInstAction->setStatusTip(tr("Send 'note-off' command to all midi channels."));
-      midiInitInstActions = new QAction(QIcon(*MusEGui::midi_init_instrIcon), tr("Init Instrument"), this);
+      midiInitInstActions = new QAction(*MusEGui::midiInitSVGIcon, tr("Init Instrument"), this);
       midiInitInstActions->setStatusTip(tr("Send initialization messages as found in instrument definition."));
-      midiLocalOffAction = new QAction(QIcon(*MusEGui::midi_local_offIcon), tr("Local Off"), this);
+      midiLocalOffAction = new QAction(*MusEGui::midiLocalOffSVGIcon, tr("Local Off"), this);
       midiLocalOffAction->setStatusTip(tr("Send 'local-off' command to all midi channels."));
 
       //-------- Audio Actions
-      audioBounce2TrackAction = new QAction(*MusEGui::downmixTrackSVGIcon, tr("Record Downmix to Selected Wave Track"), this);
-      audioBounce2FileAction = new QAction(*MusEGui::downmixOnSVGIcon, tr("Record Downmix to a File..."), this);
+      audioBounce2TrackAction = new QAction(*MusEGui::downmixTrackSVGIcon, tr("Render Downmix to Selected Wave Track"), this);
+      audioBounce2FileAction = new QAction(*MusEGui::downmixOnSVGIcon, tr("Render Downmix to a File..."), this);
       audioRestartAction = new QAction(*MusEGui::restartSVGIcon, tr("Restart Audio"), this);
 
       //-------- Automation Actions
@@ -668,7 +668,7 @@ MusE::MusE() : QMainWindow()
 //   for now until we decide what to do with it.
 //       autoMixerAction = new QAction(QIcon(*MusEGui::automation_mixerIcon), tr("Mixer Automation"), this);
 //       autoMixerAction->setCheckable(true);
-      autoSnapshotAction = new QAction(QIcon(*MusEGui::automation_take_snapshotIcon), tr("Take Automation Snapshot"), this);
+      autoSnapshotAction = new QAction(*MusEGui::snapshotSVGIcon, tr("Take Automation Snapshot"), this);
       autoClearAction = new QAction(*MusEGui::clearSVGIcon, tr("Clear Automation Data"), this);
 
        //-------- Settings Actions
@@ -962,11 +962,17 @@ MusE::MusE() : QMainWindow()
       trailingMenus.push_back(menu_functions);
 
       menu_functions->addAction(midiEditInstAction);
-      menu_functions->addMenu(midiInputPlugins);
-      midiInputPlugins->addAction(midiTrpAction);
-      midiInputPlugins->addAction(midiInputTrfAction);
-      midiInputPlugins->addAction(midiInputFilterAction);
-      midiInputPlugins->addAction(midiRemoteAction);
+
+      menu_functions->addSeparator();
+//      menu_functions->addMenu(midiInputPlugins);
+      menu_functions->addAction(midiTrpAction);
+      menu_functions->addAction(midiInputTrfAction);
+      menu_functions->addAction(midiInputFilterAction);
+      menu_functions->addAction(midiRemoteAction);
+//      midiInputPlugins->addAction(midiTrpAction);
+//      midiInputPlugins->addAction(midiInputTrfAction);
+//      midiInputPlugins->addAction(midiInputFilterAction);
+//      midiInputPlugins->addAction(midiRemoteAction);
 #ifdef BUILD_EXPERIMENTAL
       midiInputPlugins->addAction(midiRhythmAction);
 #endif
@@ -3412,8 +3418,8 @@ bool MusE::checkRegionNotNull()
       int end   = MusEGlobal::song->rPos().frame();
       if (end - start <= 0) {
             QMessageBox::critical(this,
-               tr("MusE: Record Downmix"),
-               tr("Set left and right markers for recording range")
+               tr("Render Downmix"),
+               tr("Set left and right markers for downmix range")
                );
             return true;
             }

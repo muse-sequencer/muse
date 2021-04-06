@@ -202,7 +202,7 @@ class MusE : public QMainWindow
     QMenu* menu_functions; // *menuScriptPlugins;
 
     QMenu* follow;
-    QMenu* midiInputPlugins;
+//    QMenu* midiInputPlugins;
 
     QWidget* midiPortConfig;
     QWidget* softSynthesizerConfig;
