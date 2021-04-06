@@ -1,3 +1,6 @@
+06.04.2021
+    - Add: Many new vector icons as replacement for old pixel-based ones. (kybos)
+    - Fix: Improve visibility of custom drop-down triangles on dark background. (kybos)
 05.04.2021
     - Fix: Record button: Inconsistencies between button state and 
         internal record flag state in many situations. (kybos)
