@@ -2123,22 +2123,7 @@ void loadThemeColors(const QString& theme)
     }
 
     MusECore::readConfiguration(qPrintable(configColorPath));
-
 }
-
-//---------------------------------------------------------
-//   updateThemeAndStyle
-//    Call when the theme or stylesheet part of the configuration has changed,
-//     to actually switch them.
-//---------------------------------------------------------
-
-//void updateThemeAndStyle()
-//{
-//  // Note that setting a stylesheet completely takes over the font until blanked again.
-////  qApp->setFont(MusEGlobal::config.fonts[0]); // has no effect
-////    loadQtStyle(MusEGlobal::config.style);
-//  loadTheme(MusEGlobal::config.theme);
-//}
 
 
 } // namespace MusEGui

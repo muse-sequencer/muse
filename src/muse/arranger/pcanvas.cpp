@@ -959,6 +959,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startPianoEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
                   partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin()->scoreSubmenu);
+                  partPopup->addSeparator();
                   QAction *act_mexport = partPopup->addAction(tr("Save Part to Disk..."));
                   act_mexport->setData(OP_SAVEPARTTODISK);
                   }
@@ -966,6 +967,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
             case MusECore::Track::DRUM: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startListEditAction);
+                  partPopup->addSeparator();
                   QAction *act_dexport = partPopup->addAction(tr("Save Part to Disk..."));
                   act_dexport->setData(OP_SAVEPARTTODISK);
                   }
