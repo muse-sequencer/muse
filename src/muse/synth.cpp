@@ -270,7 +270,7 @@ static SynthI* createSynthInstance(
   const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
       {
       Synth* s = findSynth(sclass, uri, label, type);
-      SynthI* si = 0;
+      SynthI* si = nullptr;
       if (s) {
             si = new SynthI();
             QString n;
@@ -282,7 +282,7 @@ static SynthI* createSynthInstance(
                   fprintf(stderr, "createSynthInstance: synthi class:%s label:%s can not be created\n", sclass.toLatin1().constData(), label.toLatin1().constData());
                   QMessageBox::warning(0,"Synth instantiation error!",
                               "Synth: " + label + " can not be created!");
-                  return 0;
+                  return nullptr;
                }
             }
       else {
@@ -321,11 +321,11 @@ void* MessSynth::instantiate(const QString& instanceName)
 
       // load Synti dll
       void* handle = dlopen(path, RTLD_NOW);
-      if (handle == 0) {
+      if (handle == nullptr) {
             fprintf(stderr, "Synth::instantiate: dlopen(%s) failed: %s\n",
                path, dlerror());
             MusEGlobal::undoSetuid();
-            return 0;
+            return nullptr;
             }
             
       MESS_Descriptor_Function msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
@@ -338,14 +338,14 @@ void* MessSynth::instantiate(const QString& instanceName)
                      "Are you sure this is a MESS plugin file?\n",
                      info.filePath().toLatin1().constData(), txt);
                   MusEGlobal::undoSetuid();
-                  return 0;
+                  return nullptr;
                   }
             }
       _descr = msynth();
-      if (_descr == 0) {
+      if (_descr == nullptr) {
             fprintf(stderr, "Synth::instantiate: no MESS descr found\n");
             MusEGlobal::undoSetuid();
-            return 0;
+            return nullptr;
             }
       QByteArray configPathBA      = MusEGlobal::configPath.toLatin1();
       QByteArray cachePathBA       = MusEGlobal::cachePath.toLatin1();
@@ -639,7 +639,7 @@ bool MessSynthIF::init(Synth* s, SynthI* si)
       {
       _mess = (Mess*)((MessSynth*)s)->instantiate(si->name());
 
-      return (_mess == 0);
+      return (_mess != nullptr);
       }
 
 int MessSynthIF::channels() const
@@ -658,11 +658,14 @@ int MessSynthIF::totalInChannels() const
       }
 
 SynthIF* MessSynth::createSIF(SynthI* si)
-      {
-      MessSynthIF* sif = new MessSynthIF(si);
-      sif->init(this, si);
-      return sif;
-      }
+{
+    MessSynthIF* sif = new MessSynthIF(si);
+    if (!sif->init(this, si)) {
+        delete sif;
+        sif = nullptr;
+    }
+    return sif;
+}
 
 //---------------------------------------------------------
 //   initInstance
@@ -686,7 +689,7 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
       _sif        = s->createSIF(this);
 
       //Andrew Deryabin: add check for NULL here to get rid of segfaults
-      if(_sif == NULL)
+      if(_sif == nullptr)
       {
          return true; //true if error (?)
       }
@@ -962,7 +965,7 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& uri,
       {
       SynthI* si = createSynthInstance(sclass, uri, label, type);
       if(!si)
-        return 0;
+        return nullptr;
 
       int idx = insertAt ? _tracks.index(insertAt) : -1;
 
