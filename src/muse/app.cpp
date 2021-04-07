@@ -692,8 +692,8 @@ MusE::MusE() : QMainWindow()
       rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
 
       settingsMetronomeAction = new QAction(*MusEGui::metronomeOnSVGIcon, tr("Metronome..."), this);
-      settingsMidiSyncAction = new QAction(QIcon(*MusEGui::settings_midisyncIcon), tr("Midi Sync..."), this);
-      settingsMidiIOAction = new QAction(QIcon(*MusEGui::settings_midifileexportIcon), tr("Midi File Import/Export..."), this);
+      settingsMidiSyncAction = new QAction(*MusEGui::midiSyncSVGIcon, tr("Midi Sync..."), this);
+      settingsMidiIOAction = new QAction(*MusEGui::midiExportImportSVGIcon, tr("Midi File Import/Export..."), this);
       settingsMidiPortAction = new QAction(*MusEGui::ankerSVGIcon, tr("Midi Ports/Soft Synths..."), this);
 
       //-------- Help Actions

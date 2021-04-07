@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(32 30.196)" fill="#918a6f" stroke="#000" stroke-linejoin="round" stroke-width="2">
+  <path d="m27.32-13.66-34.32 6.4648-0.32051 38.176 34.641-10z"/>
+  <path d="m27.32-13.66-21.32-11.535-33.32 4.2147 20.32 13.785z"/>
+  <path d="m-7-7.1955-20.32-13.785v34.641l20 17.32z"/>
+ </g>
+ <g fill="none" stroke="#000" stroke-width="1px">
+  <path d="m25 35 34-7"/>
+  <path d="m25 47 34-8"/>
+  <path d="m25 35-20-13"/>
+  <path d="m25 47-20-14"/>
+ </g>
+</svg>

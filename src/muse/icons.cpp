@@ -33,8 +33,6 @@
 
 #include "xpm/midi_edit_instrument.xpm"
 #include "xpm/settings_appearance_settings.xpm"
-#include "xpm/settings_midifileexport.xpm"
-#include "xpm/settings_midisync.xpm"
 
 #include "xpm/delete.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase.xpm"
@@ -159,8 +157,6 @@ QPixmap* select_outside_loopIcon;
 
 QPixmap* midi_edit_instrumentIcon;
 QPixmap* settings_appearance_settingsIcon;
-QPixmap* settings_midifileexportIcon;
-QPixmap* settings_midisyncIcon;
 
 QPixmap* museIcon;
 QPixmap* aboutMuseImage;
@@ -356,12 +352,13 @@ QIcon* lockSVGIcon;
 QIcon* midiResetSVGIcon;
 QIcon* midiInitSVGIcon;
 QIcon* midiLocalOffSVGIcon;
-
 QIcon* midiTransformSVGIcon;
 QIcon* midiInputTransformSVGIcon;
 QIcon* midiInputTransposeSVGIcon;
 QIcon* midiInputFilterSVGIcon;
 QIcon* midiInputRemoteSVGIcon;
+QIcon* midiSyncSVGIcon;
+QIcon* midiExportImportSVGIcon;
 
 QIcon* dummySVGIcon;
 
@@ -513,8 +510,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
     midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
     settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
-    settings_midifileexportIcon                   = new QPixmap(settings_midifileexport_xpm);
-    settings_midisyncIcon                         = new QPixmap(settings_midisync_xpm);
 
     museIcon                                      = new QPixmap(muse_icon_xpm);
     aboutMuseImage                                = new QPixmap(about_muse_xpm);
@@ -750,12 +745,13 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midiResetSVGIcon = icons.getSVG("midi_reset.svg");
     midiInitSVGIcon = icons.getSVG("midi_init.svg");
     midiLocalOffSVGIcon = icons.getSVG("midi_local_off.svg");
-
     midiTransformSVGIcon = icons.getSVG("midi_transform.svg");
     midiInputTransformSVGIcon = icons.getSVG("midi_input_transform.svg");
     midiInputTransposeSVGIcon = icons.getSVG("midi_input_transpose.svg");
     midiInputFilterSVGIcon = icons.getSVG("midi_input_filter.svg");
     midiInputRemoteSVGIcon = icons.getSVG("midi_input_remote.svg");
+    midiSyncSVGIcon = icons.getSVG("midi_sync.svg");
+    midiExportImportSVGIcon = icons.getSVG("midi_import_export.svg");
 
     QPixmap px(10,10);
     px.fill(Qt::transparent);
@@ -848,8 +844,6 @@ void deleteIcons()
 
     delete midi_edit_instrumentIcon;
     delete settings_appearance_settingsIcon;
-    delete settings_midifileexportIcon;
-    delete settings_midisyncIcon;
 
     delete museIcon;
     delete aboutMuseImage;
@@ -1052,6 +1046,8 @@ void deleteIcons()
     delete midiInputTransposeSVGIcon;
     delete midiInputFilterSVGIcon;
     delete midiInputRemoteSVGIcon;
+    delete midiSyncSVGIcon;
+    delete midiExportImportSVGIcon;
 
     delete dummySVGIcon;
 

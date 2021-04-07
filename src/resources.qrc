@@ -179,5 +179,7 @@
         <file>svg/midi_input_transpose.svg</file>
         <file>svg/midi_transform.svg</file>
         <file>svg/lock.svg</file>
+        <file>svg/midi_import_export.svg</file>
+        <file>svg/midi_sync.svg</file>
     </qresource>
 </RCC>

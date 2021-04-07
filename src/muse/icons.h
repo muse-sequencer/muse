@@ -95,8 +95,6 @@ extern QPixmap* select_outside_loopIcon;
 
 extern QPixmap* midi_edit_instrumentIcon;
 extern QPixmap* settings_appearance_settingsIcon;
-extern QPixmap* settings_midifileexportIcon;
-extern QPixmap* settings_midisyncIcon;
 
 extern QPixmap* museIcon;
 extern QPixmap* aboutMuseImage;
@@ -293,12 +291,13 @@ extern QIcon* lockSVGIcon;
 extern QIcon* midiResetSVGIcon;
 extern QIcon* midiInitSVGIcon;
 extern QIcon* midiLocalOffSVGIcon;
-
 extern QIcon* midiTransformSVGIcon;
 extern QIcon* midiInputTransformSVGIcon;
 extern QIcon* midiInputTransposeSVGIcon;
 extern QIcon* midiInputFilterSVGIcon;
 extern QIcon* midiInputRemoteSVGIcon;
+extern QIcon* midiSyncSVGIcon;
+extern QIcon* midiExportImportSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

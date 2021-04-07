@@ -514,7 +514,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
             preamble_keysig_action->setChecked(ScoreCanvas::preamble_contains_keysig_init);
             preamble_timesig_action->setChecked(ScoreCanvas::preamble_contains_timesig_init);
 
-        QAction* set_name_action = settings_menu->addAction(tr("Set Score &Name"));
+        QAction* set_name_action = settings_menu->addAction(*dummySVGIcon, tr("Set Score &Name..."));
         connect(set_name_action, &QAction::triggered, [this]() { menu_command(CMD_SET_NAME); } );
 
     config_changed();  // set configuration values, initialize shortcuts
@@ -791,7 +791,7 @@ void ScoreEdit::menu_command(int cmd)
         case CMD_SET_NAME:
         {
             bool ok;
-            QString newname = QInputDialog::getText(this, tr("Enter the new score title"),
+            QString newname = QInputDialog::getText(this, tr("Set Score Name"),
                                                 tr("Enter the new score title"), QLineEdit::Normal,
                                                 name, &ok);
             if (ok)
