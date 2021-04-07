@@ -1,3 +1,6 @@
+07.04.2021
+    - Fix: Crash when MESS synth can't be instantiated. Now the (existing) 
+        warning popup is displayed (as originally intended). (kybos)
 06.04.2021
     - Add: Many new vector icons as replacement for old pixel-based ones. (kybos)
     - Fix: Improve visibility of custom drop-down triangles on dark background. (kybos)
