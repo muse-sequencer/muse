@@ -5,6 +5,7 @@ on:
     inputs:
       tag:
         description: 'Release tag'
+        default: '4.0.0'
         required: true
 #on: push
 #  push:
