@@ -48,13 +48,33 @@ void setPluginScanFileInfo(const QString& filename, PluginScanInfoStruct* info)
 {
   if(filename.isEmpty())
     return;
+
   const QFileInfo fi(filename);
+
+  // AppImage: Replace dynamic path part of internal plugins
+  const QByteArray appDir = qgetenv("APPDIR");
+  const QString intpath = "/usr/lib/muse-";
+  QString path = PLUGIN_SET_QSTRING(fi.path());
+  QString abspath = PLUGIN_SET_QSTRING(fi.absolutePath());
+  if (!appDir.isEmpty()) {
+      if (path.contains(intpath)) {
+          path.remove(0, path.indexOf(intpath));
+          path = appDir + path;
+      }
+      if (abspath.contains(intpath)) {
+          abspath.remove(0, abspath.indexOf(intpath));
+          abspath = appDir + abspath;
+      }
+  }
+
   info->_completeBaseName = PLUGIN_SET_QSTRING(fi.completeBaseName());
   info->_baseName         = PLUGIN_SET_QSTRING(fi.baseName());
   info->_suffix           = PLUGIN_SET_QSTRING(fi.suffix());
   info->_completeSuffix   = PLUGIN_SET_QSTRING(fi.completeSuffix());
-  info->_absolutePath     = PLUGIN_SET_QSTRING(fi.absolutePath());
-  info->_path             = PLUGIN_SET_QSTRING(fi.path());
+  info->_absolutePath     = abspath;
+  info->_path             = path;
+//  info->_absolutePath     = PLUGIN_SET_QSTRING(fi.absolutePath());
+//  info->_path             = PLUGIN_SET_QSTRING(fi.path());
   info->_fileTime         = fi.lastModified().toMSecsSinceEpoch();
 }
 
