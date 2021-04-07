@@ -2,9 +2,9 @@ name: Create AppImage latest
 
 #on: workflow_dispatch
 on: 
-  push
-  #  branches:
-   #   - master
+  push:
+    branches:
+      - master
 #on: 
 #  schedule:
 #    - cron: '0 7 * * MON'
