@@ -260,12 +260,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuEdit->addActions(MusEGlobal::undoRedo->actions());
 
       menuEdit->addSeparator();
-      cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
-      copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
-      copyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy Events in Range"));
-      pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
-      pasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to Current Part"));
-      pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (With Dialog)"));
+      cutAction = menuEdit->addAction(*cutSVGIcon, tr("C&ut"));
+      copyAction = menuEdit->addAction(*copySVGIcon, tr("&Copy"));
+      copyRangeAction = menuEdit->addAction(tr("Copy Events in Range"));
+      pasteAction = menuEdit->addAction(*pasteSVGIcon, tr("&Paste"));
+      pasteToCurPartAction = menuEdit->addAction(tr("Paste to Current Part"));
+      pasteDialogAction = menuEdit->addAction(tr("Paste (With Dialog)"));
       menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete &Events"));
 

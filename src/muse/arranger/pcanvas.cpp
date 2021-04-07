@@ -906,11 +906,11 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       partPopup->addAction(new MenuTitleItem(tr("Part"), partPopup));
 
-      QAction *act_cut = partPopup->addAction(*editcutIconSet, tr("C&ut"));
+      QAction *act_cut = partPopup->addAction(*cutSVGIcon, tr("C&ut"));
       act_cut->setData(OP_CUT);
       act_cut->setShortcut(Qt::CTRL+Qt::Key_X);
 
-      QAction *act_copy = partPopup->addAction(*editcopyIconSet, tr("&Copy"));
+      QAction *act_copy = partPopup->addAction(*copySVGIcon, tr("&Copy"));
       act_copy->setData(OP_COPY);
       act_copy->setShortcut(Qt::CTRL+Qt::Key_C);
 

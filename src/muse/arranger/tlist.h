@@ -93,23 +93,23 @@ class TList : public QWidget {
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
 
-      QMenu *addTrackMenu, *insertTrackMenu;
+      QMenu *addTrackMenu{}, *insertTrackMenu{};
       Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
       QSpinBox* chan_edit;
       QSpinBox* ctrl_edit;
-      int ctrl_num;
-      unsigned ctrl_at_tick;
+      int ctrl_num{};
+      unsigned ctrl_at_tick{};
       MusECore::Track* editTrack;
-      MusECore::Track* editAutomation;
+      MusECore::Track* editAutomation{};
 
 
-      int startY;
-      int curY;
-      int sTrack;
-      int dragHeight;
-      int dragYoff;
+      int startY{};
+      int curY{};
+      int sTrack{};
+      int dragHeight{};
+      int dragYoff{};
 
       enum { NORMAL, START_DRAG, DRAG, RESIZE} mode;
 

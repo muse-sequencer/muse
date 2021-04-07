@@ -163,22 +163,22 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       
       menuEdit->addSeparator();
       
-      editCutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("C&ut"));
+      editCutAction = menuEdit->addAction(*cutSVGIcon, tr("C&ut"));
       connect(editCutAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_CUT); } );
       
-      editCopyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
+      editCopyAction = menuEdit->addAction(*copySVGIcon, tr("&Copy"));
       connect(editCopyAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_COPY); } );
       
-      editCopyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy Events in Range"));
+      editCopyRangeAction = menuEdit->addAction(tr("Copy Events in Range"));
       connect(editCopyRangeAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_COPY_RANGE); } );
       
-      editPasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
+      editPasteAction = menuEdit->addAction(*pasteSVGIcon, tr("&Paste"));
       connect(editPasteAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE); } );
       
-      editPasteToCurPartAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste to Current Part"));
+      editPasteToCurPartAction = menuEdit->addAction(tr("Paste to Current Part"));
       connect(editPasteToCurPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE_TO_CUR_PART); } );
 
-      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (With Dialog)"));
+      editPasteDialogAction = menuEdit->addAction(tr("Paste (With Dialog)"));
       connect(editPasteDialogAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_PASTE_DIALOG); } );
       
       menuEdit->addSeparator();

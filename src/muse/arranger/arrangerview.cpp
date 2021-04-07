@@ -134,15 +134,15 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
   //-------- Edit Actions
-  editDeleteAction = new QAction(QIcon(*deleteIcon), tr("D&elete"), this);
-  editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
-  editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
-  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("Copy in Range"), this);
-  editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
-  editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste C&lone"), this);
-  editPasteToTrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to Selected &Track"), this);
-  editPasteCloneToTrackAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste Clone to Selected Trac&k"), this);
-  editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (Show Dialo&g)..."), this);
+  editDeleteAction = new QAction(*clearSVGIcon, tr("D&elete"), this);
+  editCutAction = new QAction(*cutSVGIcon, tr("C&ut"), this);
+  editCopyAction = new QAction(*copySVGIcon, tr("&Copy"), this);
+  editCopyRangeAction = new QAction(tr("Copy in Range"), this);
+  editPasteAction = new QAction(*pasteSVGIcon, tr("&Paste"), this);
+  editPasteCloneAction = new QAction(tr("Paste C&lone"), this);
+  editPasteToTrackAction = new QAction(tr("Paste to Selected &Track"), this);
+  editPasteCloneToTrackAction = new QAction(tr("Paste Clone to Selected Trac&k"), this);
+  editPasteDialogAction = new QAction(tr("Paste (Show Dialo&g)..."), this);
   editInsertEMAction = new QAction(*emptyBarSVGIcon, tr("&Insert Empty Measure"), this);
 
   editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);

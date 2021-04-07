@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient9643" x1="35" x2="35" y1="61" y2="45" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#0fc" offset="0"/>
+   <stop stop-color="#008066" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g transform="matrix(1.1086 0 0 .9286 -9.4134 1.5599)" display="none" fill="#59f" stroke="#000080" stroke-width="1.0942" aria-label="?">
+  <path d="m47.417 37.376h5.7945v7.2503h-5.7945zm5.6233-4.196h-5.452v-4.3959q0-2.883 0.79925-4.7384t3.3683-4.3102l2.569-2.5405q1.627-1.5129 2.3407-2.8545 0.74216-1.3416 0.74216-2.7403 0-2.5405-1.8839-4.1104-1.8554-1.5699-4.9382-1.5699-2.255 0-4.824 0.99906-2.5405 0.99906-5.3093 2.9115v-5.3664q2.6832-1.627 5.4235-2.4263 2.7688-0.79925 5.7089-0.79925 5.2522 0 8.4206 2.7688 3.197 2.7688 3.197 7.3074 0 2.1694-1.0276 4.139-1.0276 1.941-3.5966 4.3959l-2.5119 2.4548q-1.3416 1.3416-1.9125 2.1123-0.54235 0.74216-0.7707 1.4558-0.17127 0.59944-0.2569 1.4558-0.08563 0.85634-0.08563 2.3407z" fill="#59f" stroke="#000080" stroke-width="1.0942"/>
+ </g>
+ <g transform="matrix(.98186 0 0 .98186 -6.839 -2.9297)" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.037">
+  <rect x="10" y="10" width="45" height="49" rx="4" ry="4" fill="#deaa87" stop-color="#000000"/>
+  <path d="m25 5-5 10h25l-5-10z" fill="#4d4d4d"/>
+ </g>
+ <rect x="10" y="45" width="51" height="16" fill="url(#linearGradient9643)" stop-color="#000000" stroke="#000" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -299,6 +299,10 @@ extern QIcon* midiInputRemoteSVGIcon;
 extern QIcon* midiSyncSVGIcon;
 extern QIcon* midiExportImportSVGIcon;
 
+extern QIcon* cutSVGIcon;
+extern QIcon* copySVGIcon;
+extern QIcon* pasteSVGIcon;
+
 extern QIcon* dummySVGIcon;
 
 //----------------------------------

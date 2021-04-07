@@ -360,6 +360,10 @@ QIcon* midiInputRemoteSVGIcon;
 QIcon* midiSyncSVGIcon;
 QIcon* midiExportImportSVGIcon;
 
+QIcon* cutSVGIcon;
+QIcon* copySVGIcon;
+QIcon* pasteSVGIcon;
+
 QIcon* dummySVGIcon;
 
 //----------------------------------
@@ -753,6 +757,10 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midiSyncSVGIcon = icons.getSVG("midi_sync.svg");
     midiExportImportSVGIcon = icons.getSVG("midi_import_export.svg");
 
+    cutSVGIcon = icons.getSVG("cut.svg");
+    copySVGIcon = icons.getSVG("copy.svg");
+    pasteSVGIcon = icons.getSVG("paste.svg");
+
     QPixmap px(10,10);
     px.fill(Qt::transparent);
     dummySVGIcon = new QIcon(px);
@@ -1048,6 +1056,10 @@ void deleteIcons()
     delete midiInputRemoteSVGIcon;
     delete midiSyncSVGIcon;
     delete midiExportImportSVGIcon;
+
+    delete cutSVGIcon;
+    delete copySVGIcon;
+    delete pasteSVGIcon;
 
     delete dummySVGIcon;
 

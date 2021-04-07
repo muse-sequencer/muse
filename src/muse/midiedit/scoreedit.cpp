@@ -393,19 +393,19 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         edit_menu->addActions(MusEGlobal::undoRedo->actions());
         edit_menu->addSeparator();
 
-        cut_action = edit_menu->addAction(QIcon(*editcutIconSet), tr("C&ut"));
+        cut_action = edit_menu->addAction(*cutSVGIcon, tr("C&ut"));
         connect(cut_action, &QAction::triggered, [this]() { menu_command(CMD_CUT); } );
 
-        copy_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
+        copy_action = edit_menu->addAction(*copySVGIcon, tr("&Copy"));
         connect(copy_action, &QAction::triggered, [this]() { menu_command(CMD_COPY); } );
 
-        copy_range_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("Copy Events in Range"));
+        copy_range_action = edit_menu->addAction(tr("Copy Events in Range"));
         connect(copy_range_action, &QAction::triggered, [this]() { menu_command(CMD_COPY_RANGE); } );
 
-        paste_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
+        paste_action = edit_menu->addAction(*pasteSVGIcon, tr("&Paste"));
         connect(paste_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE); } );
 
-        paste_dialog_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("Paste (With Dialog)"));
+        paste_dialog_action = edit_menu->addAction(tr("Paste (With Dialog)"));
         connect(paste_dialog_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE_DIALOG); } );
 
         edit_menu->addSeparator();

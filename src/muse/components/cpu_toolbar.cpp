@@ -148,7 +148,7 @@ void CpuToolbar::init()
 
     _resetButton = new QToolButton(this);
     _resetButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    _resetButton->setIcon(QIcon(":/xpm/cpu.xpm"));
+    _resetButton->setIcon(QIcon(":/svg/cpu.svg"));
     _resetButton->setObjectName("CpuLoadToolbarButton");
     _resetButton->setToolTip(tr("CPU load averaged over each GUI update period\nDSP load read from JACK\nNumber of xruns\n(click to reset)"));
 
