@@ -1,8 +1,8 @@
 name: Create AppImage latest
 
-on: workflow_dispatch
-#on: 
- # push:
+#on: workflow_dispatch
+on: 
+  push
   #  branches:
    #   - master
 #on: 
