@@ -1313,15 +1313,8 @@ bool writeUnknownPluginInfo (
 
 void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStruct& info, bool writePorts)
       {
-//    // remove dynamic part of the path of internal plugins when running in AppImage
-//    const QByteArray appDir = qgetenv("APPDIR");
-//    const int appDirLen = appDir.length();
-    QString fp = PLUGIN_GET_QSTRING(info.filePath());
-//    if (!appDir.isEmpty() && fp.left(appDirLen) == appDir)
-//        fp = fp.remove(0, appDirLen);
-
       xml.tag(level++, "plugin file=\"%s\" label=\"%s\"",
-         MusECore::Xml::xmlString(fp).toLatin1().constData(),
+         MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info.filePath())).toLatin1().constData(),
          MusECore::Xml::xmlString(PLUGIN_GET_QSTRING(info._label)).toLatin1().constData());
 
       if(!PLUGIN_STRING_EMPTY(info._uri))
@@ -2991,19 +2984,9 @@ bool checkPluginCacheFiles(
     // Check for missing or altered plugins.
     //---------------------------------------
 
-    const QByteArray appDir = qgetenv("APPDIR");
-
     for(filepath_set::iterator icfps = cache_fpset.begin(); icfps != cache_fpset.end(); ++icfps)
     {
-        QString search = icfps->first;
-//        // AppImage: Prepend dynamic part of path to internal plugins
-//        if (!appDir.isEmpty() && search.contains("/usr/lib/muse-")) {
-////            if (!appDir.isEmpty() && search.left(14) == "/usr/lib/muse-")
-//            search.remove(0, search.indexOf("/usr/lib/muse-"));
-//            search = appDir + search;
-//        }
-
-      filepath_set::iterator ifpset = fpset.find(search);
+      filepath_set::iterator ifpset = fpset.find(icfps->first);
       if(ifpset == fpset.end() || ifpset->second != icfps->second)
       {
         cache_dirty = true;
