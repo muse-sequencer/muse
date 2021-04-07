@@ -48,13 +48,34 @@ void setPluginScanFileInfo(const QString& filename, PluginScanInfoStruct* info)
 {
   if(filename.isEmpty())
     return;
+
   const QFileInfo fi(filename);
+
+  // AppImage: Adjust dynamic path prefix of internal plugins
+  const QByteArray appDir = qgetenv("APPDIR");
+  QString path = fi.path();
+  QString absPath = fi.absolutePath();
+  if (!appDir.isEmpty()) {
+      const QString intLibPath = QString(LIBDIR);
+      int idx;
+      if ((idx = path.indexOf(intLibPath)) > 0) {
+          path.remove(0, idx);
+          path = appDir + path;
+      }
+      if ((idx = absPath.indexOf(intLibPath)) > 0) {
+          absPath.remove(0, idx);
+          absPath = appDir + absPath;
+      }
+  }
+
   info->_completeBaseName = PLUGIN_SET_QSTRING(fi.completeBaseName());
   info->_baseName         = PLUGIN_SET_QSTRING(fi.baseName());
   info->_suffix           = PLUGIN_SET_QSTRING(fi.suffix());
   info->_completeSuffix   = PLUGIN_SET_QSTRING(fi.completeSuffix());
-  info->_absolutePath     = PLUGIN_SET_QSTRING(fi.absolutePath());
-  info->_path             = PLUGIN_SET_QSTRING(fi.path());
+  info->_absolutePath     = PLUGIN_SET_QSTRING(absPath);
+  info->_path             = PLUGIN_SET_QSTRING(path);
+//  info->_absolutePath     = PLUGIN_SET_QSTRING(fi.absolutePath());
+//  info->_path             = PLUGIN_SET_QSTRING(fi.path());
   info->_fileTime         = fi.lastModified().toMSecsSinceEpoch();
 }
 
