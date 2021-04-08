@@ -1447,10 +1447,8 @@ void CtrlCanvas::setCursor()
                 else
                 {
                     if(_dragType == MOVE_MOVE)
-                        //View::setCursor(QCursor(*midiCtrlMergeEraseWysiwygIcon, 0, 0));
                         View::setCursor(*editpasteSCursor);
                     else
-                        //View::setCursor(QCursor(*midiCtrlMergeCopyEraseWysiwygIcon, 0, 0));
                         View::setCursor(*editpasteCloneSCursor);
                 }
             }
@@ -3605,46 +3603,46 @@ void CtrlCanvas::setPerNoteVeloMode(bool v)
 
 void CtrlCanvas::populateMergeOptions(PopupMenu* menu)
 {
-  menu->addAction(new MenuTitleItem(tr("Merge options"), menu));
+  menu->addAction(new MenuTitleItem(tr("Merge Options"), menu));
   
-  QAction* act = menu->addAction(QIcon(*midiCtrlMergeEraseIcon), tr("Erase target"));
+  QAction* act = menu->addAction(QIcon(*midiCtrlMergeEraseIcon), tr("Erase Target"));
   act->setData(ContextIdErase);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeErase);
   act->setToolTip(tr("Erase target events between source events"));
   
-  act = menu->addAction(QIcon(*midiCtrlMergeEraseWysiwygIcon), tr("Erase target WYSIWYG"));
+  act = menu->addAction(QIcon(*midiCtrlMergeEraseWysiwygIcon), tr("Erase Target WYSIWYG"));
   act->setData(ContextIdEraseWysiwyg);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg);
   act->setToolTip(tr("Include last source item width when erasing"));
   
-  act = menu->addAction(QIcon(*midiCtrlMergeEraseInclusiveIcon), tr("Erase target inclusive"));
+  act = menu->addAction(QIcon(*midiCtrlMergeEraseInclusiveIcon), tr("Erase Target Inclusive"));
   act->setData(ContextIdEraseInclusive);
   act->setCheckable(true);
   act->setChecked(MusEGlobal::config.midiCtrlGraphMergeEraseInclusive);
   act->setToolTip(tr("Include entire source range when erasing"));
   
-  menu->addAction(new MenuTitleItem(tr("Merge actions"), menu));
+  menu->addAction(new MenuTitleItem(tr("Merge Actions"), menu));
   
   const bool is_mv = !moving.empty();
   
-  act = menu->addAction(QIcon(*editpasteSIcon), tr("Merge"));
+  act = menu->addAction(*pasteSVGIcon, tr("Merge Dragged Items"));
   act->setData(ContextIdMerge);
   act->setCheckable(false);
-  act->setToolTip(tr("Merge the dragged items"));
+//  act->setToolTip(tr("Merge the dragged items"));
   act->setEnabled(is_mv);
   
-  act = menu->addAction(QIcon(*editpasteCloneSIcon), tr("Merge a copy"));
+  act = menu->addAction(*copySVGIcon, tr("Merge Copy of Dragged Items"));
   act->setData(ContextIdMergeCopy);
   act->setCheckable(false);
-  act->setToolTip(tr("Merge a copy of the dragged items"));
+//  act->setToolTip(tr("Merge a copy of the dragged items"));
   act->setEnabled(is_mv);
   
-  act = menu->addAction(*filecloseSVGIcon, tr("Cancel drag"));
+  act = menu->addAction(*clearSVGIcon, tr("Cancel Drag"));
   act->setData(ContextIdCancelDrag);
   act->setCheckable(false);
-  act->setToolTip(tr("Cancel dragging the items"));
+//  act->setToolTip(tr("Cancel dragging the items"));
   act->setEnabled(is_mv);
 }
 

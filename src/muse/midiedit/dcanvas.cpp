@@ -844,7 +844,8 @@ void DrumCanvas::drawTopItem(QPainter& p, const QRect&, const QRegion&)
 
     int y = mapy(TH * cursorPos.y());
 
-    p.drawPixmap(mapx(cursorPos.x())-TH/2,y,TH,TH, *cursorIcon);
+//    p.drawPixmap(mapx(cursorPos.x())-TH/2,y,TH,TH, *cursorIconSVG);
+    cursorIconSVG->paint(&p, mapx(cursorPos.x())-TH/2, y, TH, TH);
     // need to figure out a coordinate system for the cursor, complicated stuff.
   }
 

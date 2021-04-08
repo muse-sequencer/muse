@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <linearGradient id="linearGradient9643" x1="35" x2="35" y1="61" y2="45" gradientTransform="translate(-7 -21)" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#80e5ff" offset="0"/>
+   <stop stop-color="#08a" offset="1"/>
+  </linearGradient>
+  <linearGradient id="linearGradient9643-3" x1="35" x2="35" y1="61" y2="45" gradientTransform="translate(.65701 .62915)" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#0fc" offset="0"/>
+   <stop stop-color="#008066" offset="1"/>
+  </linearGradient>
+ </defs>
+ <rect x="3" y="24" width="51" height="16" fill="url(#linearGradient9643)" stop-color="#000000" stroke="#000" stroke-linecap="round" stroke-linejoin="round"/>
+ <rect x="10.657" y="45.629" width="51" height="16" fill="url(#linearGradient9643-3)" stop-color="#000000" stroke="#000" stroke-linecap="round" stroke-linejoin="round"/>
+ <g transform="matrix(1 0 0 1.0526 0 -.052632)" fill="#00aad4" shape-rendering="auto" stroke="#00aad4">
+  <path d="m20 20v-18h-10l10 10" color="#000000" color-rendering="auto" dominant-baseline="auto" image-rendering="auto" solid-color="#000000" stop-color="#000000" stroke-width="1.9494" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;font-variation-settings:normal;inline-size:0;isolation:auto;mix-blend-mode:normal;shape-margin:0;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+  <path d="m7.5859 1 11.414 11.414v7.5859h2v-19z" color="#000000" color-rendering="auto" dominant-baseline="auto" image-rendering="auto" solid-color="#000000" stop-color="#000000" stroke-width=".97468" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;font-variation-settings:normal;inline-size:0;isolation:auto;mix-blend-mode:normal;shape-margin:0;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+ </g>
+ <g>
+  <path d="m20 24v16" fill="none" stroke="#000"/>
+  <path d="m40 24v16" fill="none" stroke="#000"/>
+  <g transform="matrix(1 0 0 1.0526 0 -.052632)" fill="#00aad4" shape-rendering="auto" stroke="#00aad4" stroke-width=".97468">
+   <path d="m40 20v-18h10l-10 10" color="#000000" color-rendering="auto" dominant-baseline="auto" image-rendering="auto" solid-color="#000000" stop-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;font-variation-settings:normal;inline-size:0;isolation:auto;mix-blend-mode:normal;shape-margin:0;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+   <path d="m39 1v19h2v-7.5859l11.414-11.414z" color="#000000" color-rendering="auto" dominant-baseline="auto" image-rendering="auto" solid-color="#000000" stop-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;font-variation-settings:normal;inline-size:0;isolation:auto;mix-blend-mode:normal;shape-margin:0;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+  </g>
+ </g>
+</svg>

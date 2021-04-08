@@ -184,5 +184,11 @@
         <file>svg/copy.svg</file>
         <file>svg/cut.svg</file>
         <file>svg/cpu.svg</file>
+        <file>svg/paste_dialog.svg</file>
+        <file>svg/paste_clone.svg</file>
+        <file>svg/copy_range.svg</file>
+        <file>svg/paste_clone_selected_track.svg</file>
+        <file>svg/paste_selected_track.svg</file>
+        <file>svg/delete.svg</file>
     </qresource>
 </RCC>

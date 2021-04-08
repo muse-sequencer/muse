@@ -134,16 +134,16 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
   //-------- Edit Actions
-  editDeleteAction = new QAction(*clearSVGIcon, tr("D&elete"), this);
+  editDeleteAction = new QAction(*deleteSVGIcon, tr("D&elete"), this);
   editCutAction = new QAction(*cutSVGIcon, tr("C&ut"), this);
   editCopyAction = new QAction(*copySVGIcon, tr("&Copy"), this);
-  editCopyRangeAction = new QAction(tr("Copy in Range"), this);
+  editCopyRangeAction = new QAction(*copyRangeSVGIcon, tr("Copy in Range"), this);
   editPasteAction = new QAction(*pasteSVGIcon, tr("&Paste"), this);
-  editPasteCloneAction = new QAction(tr("Paste C&lone"), this);
-  editPasteToTrackAction = new QAction(tr("Paste to Selected &Track"), this);
-  editPasteCloneToTrackAction = new QAction(tr("Paste Clone to Selected Trac&k"), this);
-  editPasteDialogAction = new QAction(tr("Paste (Show Dialo&g)..."), this);
-  editInsertEMAction = new QAction(*emptyBarSVGIcon, tr("&Insert Empty Measure"), this);
+  editPasteCloneAction = new QAction(*pasteCloneSVGIcon, tr("Paste C&lone"), this);
+  editPasteToTrackAction = new QAction(*pasteSelectedTrackSVGIcon, tr("Paste to Selected &Track"), this);
+  editPasteCloneToTrackAction = new QAction(*pasteCloneSelectedTrackSVGIcon, tr("Paste Clone to Selected Trac&k"), this);
+  editPasteDialogAction = new QAction(*pasteDialogSVGIcon, tr("Paste (With Dialo&g)..."), this);
+  editInsertEMAction = new QAction(*emptyBarSVGIcon, tr("&Insert Empty Bar"), this);
 
   editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);
   editDuplicateSelTrackAction = new QAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"), this);
@@ -159,7 +159,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   addTrack = new QMenu(tr("Add Track"), this);
   insertTrack = new QMenu(tr("Insert Track"), this);
-  select = new QMenu(tr("Se&lect"), this);
+  select = new QMenu(tr("Se&lect Parts"), this);
 
   editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
   editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);

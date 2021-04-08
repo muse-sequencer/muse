@@ -51,29 +51,29 @@ class PixmapButton;
 //   PixmapButtonsWidgetAction
 //---------------------------------------------------------
 
-class PixmapButtonsWidgetAction : public QWidgetAction { 
-      Q_OBJECT
-   private:
+//class PixmapButtonsWidgetAction : public QWidgetAction {
+//      Q_OBJECT
+//   private:
       
-      QString _text;
-      QBitArray _current;
-      QPixmap* _onPixmap;
-      QPixmap* _offPixmap;
-      QList<PixmapButton*> _chan_buttons;
+//      QString _text;
+//      QBitArray _current;
+//      QPixmap* _onPixmap;
+//      QPixmap* _offPixmap;
+//      QList<PixmapButton*> _chan_buttons;
       
-   private slots:
-     void chanClickMap(int);
+//   private slots:
+//     void chanClickMap(int);
      
-   public:
-      PixmapButtonsWidgetAction(const QString& text, 
-                              QPixmap* on_pixmap, QPixmap* off_pixmap, 
-                              const QBitArray& initial,
-                              QWidget* parent = 0);
+//   public:
+//      PixmapButtonsWidgetAction(const QString& text,
+//                              QPixmap* on_pixmap, QPixmap* off_pixmap,
+//                              const QBitArray& initial,
+//                              QWidget* parent = 0);
       
-      QWidget* createWidget(QWidget* parent);
-      QBitArray currentState() const { return _current; }
-      void setCurrentState(const QBitArray& state); 
-      };
+//      QWidget* createWidget(QWidget* parent);
+//      QBitArray currentState() const { return _current; }
+//      void setCurrentState(const QBitArray& state);
+//      };
 
       
 //---------------------------------------------------------

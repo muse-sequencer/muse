@@ -31,33 +31,21 @@ class QCursor;
 // NOTICE: Although it is tempting to use multi-icons (addPixmap, addFile etc.),
 //          certain styles do not support it, such as QtCurve.
 //         Therefore the separate icons must be manually set upon each state.
+// No longer relevant, arbitrary styles not supported any more (MusE 4.0)
 
 namespace MusEGui {
 
-extern QPixmap* deleteIcon;
 extern QPixmap* dotIcon;
 extern QPixmap* dothIcon;
 extern QPixmap* dot1Icon;
 
-extern QPixmap* cursorIcon;
 extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
 
-extern QPixmap* muteIcon;
 extern QPixmap* eyeIcon;
 extern QPixmap* eyeCrossedIcon;
 extern QPixmap* eyeGrayIcon;
-
-extern QIcon* editcutIconSet;
-extern QIcon* editcopyIconSet;
-extern QIcon* editpasteIconSet;
-extern QIcon* editpaste2TrackIconSet;
-extern QIcon* editpasteCloneIconSet;
-extern QIcon* editpasteClone2TrackIconSet;
-
-extern QPixmap* editpasteSIcon;
-extern QPixmap* editpasteCloneSIcon;
 
 extern QPixmap* record1_Icon;
 
@@ -65,8 +53,6 @@ extern QPixmap* routesInIcon;
 extern QPixmap* routesOutIcon;
 extern QPixmap* routesMidiInIcon;
 extern QPixmap* routesMidiOutIcon;
-
-extern QPixmap* toggle_small_Icon;
 
 extern QIcon* ledGreenIcon;
 extern QIcon* ledDarkGreenIcon;
@@ -302,6 +288,12 @@ extern QIcon* midiExportImportSVGIcon;
 extern QIcon* cutSVGIcon;
 extern QIcon* copySVGIcon;
 extern QIcon* pasteSVGIcon;
+extern QIcon* pasteDialogSVGIcon;
+extern QIcon* pasteCloneSVGIcon;
+extern QIcon* copyRangeSVGIcon;
+extern QIcon* deleteSVGIcon;
+extern QIcon* pasteSelectedTrackSVGIcon;
+extern QIcon* pasteCloneSelectedTrackSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

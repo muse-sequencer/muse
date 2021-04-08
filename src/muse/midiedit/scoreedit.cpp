@@ -399,18 +399,18 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
         copy_action = edit_menu->addAction(*copySVGIcon, tr("&Copy"));
         connect(copy_action, &QAction::triggered, [this]() { menu_command(CMD_COPY); } );
 
-        copy_range_action = edit_menu->addAction(tr("Copy Events in Range"));
+        copy_range_action = edit_menu->addAction(*copyRangeSVGIcon, tr("Copy Events in Range"));
         connect(copy_range_action, &QAction::triggered, [this]() { menu_command(CMD_COPY_RANGE); } );
 
         paste_action = edit_menu->addAction(*pasteSVGIcon, tr("&Paste"));
         connect(paste_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE); } );
 
-        paste_dialog_action = edit_menu->addAction(tr("Paste (With Dialog)"));
+        paste_dialog_action = edit_menu->addAction(*pasteDialogSVGIcon, tr("Paste (With Dialog)..."));
         connect(paste_dialog_action, &QAction::triggered, [this]() { menu_command(CMD_PASTE_DIALOG); } );
 
         edit_menu->addSeparator();
 
-        del_action = edit_menu->addAction(tr("Delete &Events"));
+        del_action = edit_menu->addAction(*deleteSVGIcon, tr("Delete &Events"));
         connect(del_action, &QAction::triggered, [this]() { menu_command(CMD_DEL); } );
 
         edit_menu->addSeparator();

@@ -139,13 +139,13 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       QMenu* menuEdit = menuBar()->addMenu(tr("&Edit"));
       
-      cutAction = menuEdit->addAction(tr("C&ut"));
+      cutAction = menuEdit->addAction(*cutSVGIcon, tr("C&ut"));
       connect(cutAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_CUT); } );
 
-      copyAction = menuEdit->addAction(tr("&Copy"));
+      copyAction = menuEdit->addAction(*copySVGIcon, tr("&Copy"));
       connect(copyAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_COPY); } );
 
-      pasteAction = menuEdit->addAction(tr("&Paste"));
+      pasteAction = menuEdit->addAction(*pasteSVGIcon, tr("&Paste"));
       connect(pasteAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_PASTE); } );
 
       menuEdit->addSeparator();

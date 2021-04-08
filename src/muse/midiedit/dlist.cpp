@@ -428,14 +428,8 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                               if(isWorkingItem == MusECore::WorkingDrumMapEntry::NoOverride)
                                 p.fillRect(r, override_col);
                               if (dm->mute) {
-//                                    p.setPen(Qt::red);
-                                    const QPixmap& pm = *muteIcon;
-                                    p.drawPixmap(
-                                       r.x() + r.width()/2 - pm.width()/2,
-                                       r.y() + r.height()/2 - pm.height()/2,
-                                       pm);
-//                                    p.setPen(Qt::black);
-                                    }
+                                  muteOnSVGIcon->paint(&p, r.x() + 1, r.y() + 1, r.width() - 2, r.height() - 2);
+                              }
                               break;
                         case COL_NAME:
                               {

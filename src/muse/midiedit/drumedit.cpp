@@ -262,12 +262,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuEdit->addSeparator();
       cutAction = menuEdit->addAction(*cutSVGIcon, tr("C&ut"));
       copyAction = menuEdit->addAction(*copySVGIcon, tr("&Copy"));
-      copyRangeAction = menuEdit->addAction(tr("Copy Events in Range"));
+      copyRangeAction = menuEdit->addAction(*copyRangeSVGIcon, tr("Copy Events in Range"));
       pasteAction = menuEdit->addAction(*pasteSVGIcon, tr("&Paste"));
-      pasteToCurPartAction = menuEdit->addAction(tr("Paste to Current Part"));
-      pasteDialogAction = menuEdit->addAction(tr("Paste (With Dialog)"));
+      pasteToCurPartAction = menuEdit->addAction(*pasteSelectedTrackSVGIcon, tr("Paste to Current Part"));
+      pasteDialogAction = menuEdit->addAction(*pasteDialogSVGIcon, tr("Paste (With Dialog)..."));
       menuEdit->addSeparator();
-      deleteAction = menuEdit->addAction(tr("Delete &Events"));
+      deleteAction = menuEdit->addAction(*deleteSVGIcon, tr("Delete &Events"));
 
       connect(cutAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_CUT); } );
       connect(copyAction, &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_COPY); } );

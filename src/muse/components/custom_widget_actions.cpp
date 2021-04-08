@@ -49,95 +49,95 @@ namespace MusEGui {
 //   PixmapButtonsWidgetAction
 //---------------------------------------------------------
 
-PixmapButtonsWidgetAction::PixmapButtonsWidgetAction(const QString& text, QPixmap* on_pixmap, QPixmap* off_pixmap, const QBitArray& initial, QWidget* parent)
-  : QWidgetAction(parent)
-      {
-        _onPixmap = on_pixmap;
-        _offPixmap = off_pixmap;
-        _current = initial;
-        _text = text;
-        // Just to be safe, set to -1 instead of default 0.
-        setData(-1);
-      }
+//PixmapButtonsWidgetAction::PixmapButtonsWidgetAction(const QString& text, QPixmap* on_pixmap, QPixmap* off_pixmap, const QBitArray& initial, QWidget* parent)
+//  : QWidgetAction(parent)
+//      {
+//        _onPixmap = on_pixmap;
+//        _offPixmap = off_pixmap;
+//        _current = initial;
+//        _text = text;
+//        // Just to be safe, set to -1 instead of default 0.
+//        setData(-1);
+//      }
 
-QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
-{
-  const int channels = _current.size();
-  QWidget* lw = new QWidget(parent);
-  QHBoxLayout* layout = new QHBoxLayout(lw);
+//QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
+//{
+//  const int channels = _current.size();
+//  QWidget* lw = new QWidget(parent);
+//  QHBoxLayout* layout = new QHBoxLayout(lw);
 
-  layout->setSpacing(0);
+//  layout->setSpacing(0);
   
-  QLabel* lbl = new QLabel(_text, lw);
-  lbl->setAlignment(Qt::AlignCenter);
-  layout->addWidget(lbl); 
+//  QLabel* lbl = new QLabel(_text, lw);
+//  lbl->setAlignment(Qt::AlignCenter);
+//  layout->addWidget(lbl);
   
-  layout->addSpacing(8);
-  layout->addStretch();
+//  layout->addSpacing(8);
+//  layout->addStretch();
       
-  PixmapButton* pb = new PixmapButton(toggle_small_Icon, toggle_small_Icon, 2, lw);  // Margin  = 2
-  layout->addWidget(pb); 
-  layout->addSpacing(6);
-  connect(pb, &PixmapButton::pressed, [this, channels]() { chanClickMap(channels); } );
+//  PixmapButton* pb = new PixmapButton(toggle_small_Icon, toggle_small_Icon, 2, lw);  // Margin  = 2
+//  layout->addWidget(pb);
+//  layout->addSpacing(6);
+//  connect(pb, &PixmapButton::pressed, [this, channels]() { chanClickMap(channels); } );
   
-  for(int i = 0; i < channels; ++i)
-  {
-    bool set = _current.at(i);
-    PixmapButton* b = new PixmapButton(_onPixmap, _offPixmap, 2, lw);  // Margin  = 2
-    _chan_buttons.append(b);
-    b->setCheckable(true);
-    b->setDown(set);
-    connect(b, &PixmapButton::pressed, [this, i]() { chanClickMap(i); } );
-    if((i != 0) && (i % 4 == 0))
-      layout->addSpacing(6);
-    layout->addWidget(b); 
-  }
+//  for(int i = 0; i < channels; ++i)
+//  {
+//    bool set = _current.at(i);
+//    PixmapButton* b = new PixmapButton(_onPixmap, _offPixmap, 2, lw);  // Margin  = 2
+//    _chan_buttons.append(b);
+//    b->setCheckable(true);
+//    b->setDown(set);
+//    connect(b, &PixmapButton::pressed, [this, i]() { chanClickMap(i); } );
+//    if((i != 0) && (i % 4 == 0))
+//      layout->addSpacing(6);
+//    layout->addWidget(b);
+//  }
 
-  return lw;
-}
+//  return lw;
+//}
 
-void PixmapButtonsWidgetAction::chanClickMap(int idx)
-{
-  const int channels = _current.size();
-  const int buttons_sz = _chan_buttons.size();
-  if(idx == channels)  // One past end = Toggle all button.
-  {
-    int allch = 0;
-    for(; allch < channels; ++allch)
-    {
-      if(!_current.at(allch))
-        break;
-    }
-    if(allch == channels)
-      _current.fill(false);
-    else
-      _current.fill(true);
+//void PixmapButtonsWidgetAction::chanClickMap(int idx)
+//{
+//  const int channels = _current.size();
+//  const int buttons_sz = _chan_buttons.size();
+//  if(idx == channels)  // One past end = Toggle all button.
+//  {
+//    int allch = 0;
+//    for(; allch < channels; ++allch)
+//    {
+//      if(!_current.at(allch))
+//        break;
+//    }
+//    if(allch == channels)
+//      _current.fill(false);
+//    else
+//      _current.fill(true);
     
-    // Set and redraw the buttons.
-    for(int i = 0; i < buttons_sz; ++i)
-      _chan_buttons.at(i)->setDown(allch != channels);
-  }
-  else
-  {
-    for(int i = 0; i < channels && i < buttons_sz; ++i)
-    {
-      if(_chan_buttons.at(i)->isChecked())
-        _current.setBit(i);
-      else
-        _current.clearBit(i);
-    }
-  }
-}
+//    // Set and redraw the buttons.
+//    for(int i = 0; i < buttons_sz; ++i)
+//      _chan_buttons.at(i)->setDown(allch != channels);
+//  }
+//  else
+//  {
+//    for(int i = 0; i < channels && i < buttons_sz; ++i)
+//    {
+//      if(_chan_buttons.at(i)->isChecked())
+//        _current.setBit(i);
+//      else
+//        _current.clearBit(i);
+//    }
+//  }
+//}
 
-void PixmapButtonsWidgetAction::setCurrentState(const QBitArray& state)
-{
-    _current = state;
-    const int channels = _current.size();
-    const int buttons_sz = _chan_buttons.size();
-    // Set and redraw the buttons.
-    for(int i = 0; i < channels && i < buttons_sz; ++i)
-      _chan_buttons.at(i)->setDown(_current.at(i));
-}
+//void PixmapButtonsWidgetAction::setCurrentState(const QBitArray& state)
+//{
+//    _current = state;
+//    const int channels = _current.size();
+//    const int buttons_sz = _chan_buttons.size();
+//    // Set and redraw the buttons.
+//    for(int i = 0; i < channels && i < buttons_sz; ++i)
+//      _chan_buttons.at(i)->setDown(_current.at(i));
+//}
 
 
 //---------------------------------------------------------

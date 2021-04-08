@@ -34,7 +34,6 @@
 #include "xpm/midi_edit_instrument.xpm"
 #include "xpm/settings_appearance_settings.xpm"
 
-#include "xpm/delete.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase_inclusive.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase_wysiwyg.xpm"
@@ -43,7 +42,6 @@
 #include "xpm/dot.xpm"
 #include "xpm/doth.xpm"
 #include "xpm/dot1.xpm"
-#include "xpm/cursor.xpm"
 
 #include "xpm/routing_input_button_slim_4.xpm"
 #include "xpm/routing_output_button_slim_4.xpm"
@@ -54,15 +52,6 @@
 #include "xpm/eye_gray.xpm"
 #include "xpm/eye_crossed.xpm"
 
-#include "xpm/editcutS.xpm"
-#include "xpm/editcopyS.xpm"
-#include "xpm/editpasteS.xpm"
-#include "xpm/editmuteS.xpm"
-#include "xpm/editpastecloneS.xpm"
-#include "xpm/editpaste2trackS.xpm"
-#include "xpm/editpasteclone2trackS.xpm"
-
-#include "xpm/toggle_small.xpm"
 #include "xpm/greendot.xpm"
 #include "xpm/greendot12x12.xpm"
 #include "xpm/reddot.xpm"
@@ -108,7 +97,6 @@ QPixmap* routesOutIcon;
 QPixmap* routesMidiInIcon;
 QPixmap* routesMidiOutIcon;
 
-QPixmap* deleteIcon;
 QPixmap* midiCtrlMergeEraseIcon;
 QPixmap* midiCtrlMergeEraseInclusiveIcon;
 QPixmap* midiCtrlMergeEraseWysiwygIcon;
@@ -117,23 +105,10 @@ QPixmap* record1_Icon;
 QPixmap* dotIcon;
 QPixmap* dothIcon;
 QPixmap* dot1Icon;
-QPixmap* cursorIcon;
-QPixmap* muteIcon;
 QPixmap* eyeIcon;
 QPixmap* eyeCrossedIcon;
 QPixmap* eyeGrayIcon;
 
-QIcon* editcutIconSet;
-QIcon* editcopyIconSet;
-QIcon* editpasteIconSet;
-QIcon* editpaste2TrackIconSet;
-QIcon* editpasteCloneIconSet;
-QIcon* editpasteClone2TrackIconSet;
-
-QPixmap* editpasteSIcon;
-QPixmap* editpasteCloneSIcon;
-
-QPixmap* toggle_small_Icon;
 QPixmap* greendotIcon;
 QPixmap* greendot12x12Icon;
 QPixmap* reddotIcon;
@@ -363,6 +338,12 @@ QIcon* midiExportImportSVGIcon;
 QIcon* cutSVGIcon;
 QIcon* copySVGIcon;
 QIcon* pasteSVGIcon;
+QIcon* pasteDialogSVGIcon;
+QIcon* pasteCloneSVGIcon;
+QIcon* copyRangeSVGIcon;
+QIcon* deleteSVGIcon;
+QIcon* pasteSelectedTrackSVGIcon;
+QIcon* pasteCloneSelectedTrackSVGIcon;
 
 QIcon* dummySVGIcon;
 
@@ -455,7 +436,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
     Icons icons(gpath, upath);
 
-    deleteIcon        = new QPixmap(delete_xpm);
     midiCtrlMergeEraseIcon          = new QPixmap(midi_ctrl_graph_merge_erase_xpm);
     midiCtrlMergeEraseInclusiveIcon = new QPixmap(midi_ctrl_graph_merge_erase_inclusive_xpm);
     midiCtrlMergeEraseWysiwygIcon   = new QPixmap(midi_ctrl_graph_merge_erase_wysiwyg_xpm);
@@ -464,27 +444,14 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     dotIcon      = new QPixmap(dot_xpm);
     dothIcon     = new QPixmap(doth_xpm);
     dot1Icon     = new QPixmap(dot1_xpm);
-    cursorIcon   = new QPixmap(cursor_xpm);
-    muteIcon     = new QPixmap(editmuteS_xpm);
     eyeIcon      = new QPixmap(eye_xpm);
     eyeCrossedIcon = new QPixmap(eye_crossed_xpm);
     eyeGrayIcon  = new QPixmap(eye_gray_xpm);
-
-    editcutIconSet       = new QIcon(QPixmap(editcutS_xpm)); // ddskrjo
-    editcopyIconSet      = new QIcon(QPixmap(editcopyS_xpm));
-    editpasteIconSet     = new QIcon(QPixmap(editpasteS_xpm));
-    editpaste2TrackIconSet = new QIcon(QPixmap(editpaste2trackS_xpm));
-    editpasteCloneIconSet  = new QIcon(QPixmap(editpastecloneS_xpm));
-    editpasteClone2TrackIconSet = new QIcon(QPixmap(editpasteclone2trackS_xpm)); // ..
-    editpasteSIcon      = new QPixmap(editpasteS_xpm);
-    editpasteCloneSIcon = new QPixmap(editpastecloneS_xpm);
 
     routesInIcon         = new QPixmap(routing_input_button_slim_4_xpm);
     routesOutIcon        = new QPixmap(routing_output_button_slim_4_xpm);
     routesMidiInIcon     = new QPixmap(routing_midi_input_button_slim_xpm);
     routesMidiOutIcon    = new QPixmap(routing_midi_output_button_slim_xpm);
-
-    toggle_small_Icon    = new QPixmap(toggle_small_xpm);
 
     greendotIcon         = new QPixmap(greendot_xpm);
     greendot12x12Icon    = new QPixmap(greendot12x12_xpm);
@@ -760,6 +727,12 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     cutSVGIcon = icons.getSVG("cut.svg");
     copySVGIcon = icons.getSVG("copy.svg");
     pasteSVGIcon = icons.getSVG("paste.svg");
+    pasteDialogSVGIcon = icons.getSVG("paste_dialog.svg");
+    pasteCloneSVGIcon = icons.getSVG("paste_clone.svg");
+    copyRangeSVGIcon = icons.getSVG("copy_range.svg");
+    deleteSVGIcon = icons.getSVG("delete.svg");
+    pasteSelectedTrackSVGIcon = icons.getSVG("paste_selected_track.svg");
+    pasteCloneSelectedTrackSVGIcon = icons.getSVG("paste_clone_selected_track.svg");
 
     QPixmap px(10,10);
     px.fill(Qt::transparent);
@@ -769,8 +742,8 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     // Cursors
     //----------------------------------
 
-    editpasteSCursor = new QCursor(QPixmap(*editpasteSIcon).scaled(qRound(dpr * cursorSize), qRound(dpr * cursorSize)));
-    editpasteCloneSCursor = new QCursor(QPixmap(*editpasteCloneSIcon).scaled(qRound(dpr * cursorSize), qRound(dpr * cursorSize)));
+    editpasteSCursor = new QCursor(pasteSVGIcon->pixmap(QSize(cursorSize, cursorSize)));
+    editpasteCloneSCursor = new QCursor(copySVGIcon->pixmap(QSize(cursorSize, cursorSize)));
 
     // tool cursors
     pencilCursor     = new QCursor(pencilIconSVG->pixmap(QSize(cursorSize, cursorSize)), 0, qRound(dpr * (cursorSize - 1)));
@@ -800,7 +773,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
 void deleteIcons()
 {
-    delete deleteIcon;
     delete midiCtrlMergeEraseIcon;
     delete midiCtrlMergeEraseInclusiveIcon;
     delete midiCtrlMergeEraseWysiwygIcon;
@@ -809,25 +781,11 @@ void deleteIcons()
     delete dotIcon;
     delete dothIcon;
     delete dot1Icon;
-    delete cursorIcon;
-    delete muteIcon;
-
-    delete editcutIconSet;
-    delete editcopyIconSet;
-    delete editpasteIconSet;
-    delete editpaste2TrackIconSet;
-    delete editpasteCloneIconSet;
-    delete editpasteClone2TrackIconSet;
-
-    delete editpasteSIcon;
-    delete editpasteCloneSIcon;
 
     delete routesInIcon;
     delete routesOutIcon;
     delete routesMidiInIcon;
     delete routesMidiOutIcon;
-
-    delete toggle_small_Icon;
 
     delete ledGreenIcon;
     delete ledDarkGreenIcon;
@@ -1060,6 +1018,12 @@ void deleteIcons()
     delete cutSVGIcon;
     delete copySVGIcon;
     delete pasteSVGIcon;
+    delete pasteDialogSVGIcon;
+    delete pasteCloneSVGIcon;
+    delete copyRangeSVGIcon;
+    delete deleteSVGIcon;
+    delete pasteSelectedTrackSVGIcon;
+    delete pasteCloneSelectedTrackSVGIcon;
 
     delete dummySVGIcon;
 
