@@ -190,5 +190,8 @@
         <file>svg/paste_clone_selected_track.svg</file>
         <file>svg/paste_selected_track.svg</file>
         <file>svg/delete.svg</file>
+        <file>svg/eye_grey.svg</file>
+        <file>svg/eye_crossed.svg</file>
+        <file>svg/eye.svg</file>
     </qresource>
 </RCC>

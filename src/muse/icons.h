@@ -43,10 +43,6 @@ extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
 
-extern QPixmap* eyeIcon;
-extern QPixmap* eyeCrossedIcon;
-extern QPixmap* eyeGrayIcon;
-
 extern QPixmap* record1_Icon;
 
 extern QPixmap* routesInIcon;
@@ -67,7 +63,6 @@ extern QPixmap* bluedot12x12Icon;
 extern QPixmap* orangedotIcon;
 extern QPixmap* orangedot12x12Icon;
 
-extern QPixmap* cliplistSIcon;
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
 
@@ -294,6 +289,10 @@ extern QIcon* copyRangeSVGIcon;
 extern QIcon* deleteSVGIcon;
 extern QIcon* pasteSelectedTrackSVGIcon;
 extern QIcon* pasteCloneSelectedTrackSVGIcon;
+
+extern QIcon* eyeIcon;
+extern QIcon* eyeCrossedIcon;
+extern QIcon* eyeGreyIcon;
 
 extern QIcon* dummySVGIcon;
 

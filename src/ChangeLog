@@ -1,3 +1,5 @@
+09.04.2021
+    - Fix: Drum list: Drag mode activated after every context menu call. (kybos)
 07.04.2021
     - Fix: Crash when MESS synth can't be instantiated. Now the (existing) 
         warning popup is displayed (as originally intended). (kybos)

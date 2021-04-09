@@ -364,8 +364,13 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                               break;
                         case COL_HIDE:
                         {
-                              //  isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, VolField);
+                              if(dcanvas)
+                                  isWorkingItem = dcanvas->isWorkingMapInstrument(instrument, WorkingDrumMapEntry::HideField);
+                              if(isWorkingItem == MusECore::WorkingDrumMapEntry::NoOverride)
+                                  p.fillRect(r, override_col);
+
                               doOverrideFill = false;
+
                               if(dcanvas)
                               {
                                 bool hidden=false;
@@ -383,40 +388,24 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                                 if (!hidden && !shown)
                                   printf("THIS SHOULD NEVER HAPPEN: in DList::draw(): instrument %i's track group is empty. strange...\n", instrument);
 
-                                const QPixmap* pm = nullptr;
+                                const QIcon* pm = nullptr;
 
                                 if (shown && !hidden)
                                       pm = eyeIcon;
                                 else if (!shown && hidden)
                                       pm = eyeCrossedIcon;
                                 else if (shown && hidden)
-                                      pm = eyeGrayIcon;
+                                      pm = eyeGreyIcon;
                                 else //if (!shown && !hidden)
                                       pm = nullptr;
 
                                 if (pm)
-                                {
-                                // p.setPen(Qt::red);
-                                  p.drawPixmap(
-                                    r.x() + r.width()/2 - pm->width()/2,
-                                    r.y() + r.height()/2 - pm->height()/2,
-                                    *pm);
-                                // p.setPen(Qt::black);
-                                }
+                                    pm->paint(&p, r.x(), r.y(), r.width(), r.height());
                               }
                               else
                               {
-                                const QPixmap* pm = dm->hide ? eyeCrossedIcon : eyeIcon;
-                                if (dm->hide)
-                                  pm = eyeCrossedIcon;
-                                else
-                                  pm = eyeIcon;
-                                // p.setPen(Qt::red);
-                                p.drawPixmap(
-                                  r.x() + r.width()/2 - pm->width()/2,
-                                  r.y() + r.height()/2 - pm->height()/2,
-                                  *pm);
-                                // p.setPen(Qt::black);
+                                const QIcon* pm = dm->hide ? eyeCrossedIcon : eyeIcon;
+                                pm->paint(&p, r.x(), r.y(), r.width(), r.height());
                               }
                                     
                               break;
@@ -726,9 +715,12 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       MusECore::DrumMap* dm = &ourDrumMap[instrument];
       MusECore::DrumMap dm_old = *dm;
 
-      startY = y;
-      sInstrument = instrument;
-      drag   = START_DRAG;
+      // restrict to left button, otherwise drag starts after every context menu call
+      if(button == Qt::LeftButton) {
+          startY = y;
+          sInstrument = instrument;
+          drag   = START_DRAG;
+      }
 
       DrumColumn col = DrumColumn(x2col(x));
 

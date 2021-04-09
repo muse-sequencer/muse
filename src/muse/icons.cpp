@@ -48,10 +48,6 @@
 #include "xpm/routing_midi_input_button_slim.xpm"
 #include "xpm/routing_midi_output_button_slim.xpm"
 
-#include "xpm/eye.xpm"
-#include "xpm/eye_gray.xpm"
-#include "xpm/eye_crossed.xpm"
-
 #include "xpm/greendot.xpm"
 #include "xpm/greendot12x12.xpm"
 #include "xpm/reddot.xpm"
@@ -62,7 +58,6 @@
 #include "xpm/orangedot.xpm"
 #include "xpm/orangedot12x12.xpm"
 
-#include "xpm/cliplistS.xpm"
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
 
@@ -88,7 +83,6 @@
 
 namespace MusEGui {
 
-QPixmap* cliplistSIcon;
 QPixmap* deltaOnIcon;
 QPixmap* deltaOffIcon;
 
@@ -105,9 +99,6 @@ QPixmap* record1_Icon;
 QPixmap* dotIcon;
 QPixmap* dothIcon;
 QPixmap* dot1Icon;
-QPixmap* eyeIcon;
-QPixmap* eyeCrossedIcon;
-QPixmap* eyeGrayIcon;
 
 QPixmap* greendotIcon;
 QPixmap* greendot12x12Icon;
@@ -139,7 +130,6 @@ QPixmap* aboutMuseImage;
 QIcon* globalIcon;
 QIcon* projectIcon;
 QIcon* userIcon;
-
 
 QIcon* pianoNewIcon;
 QIcon* presetsNewIcon;
@@ -345,6 +335,10 @@ QIcon* deleteSVGIcon;
 QIcon* pasteSelectedTrackSVGIcon;
 QIcon* pasteCloneSelectedTrackSVGIcon;
 
+QIcon* eyeIcon;
+QIcon* eyeCrossedIcon;
+QIcon* eyeGreyIcon;
+
 QIcon* dummySVGIcon;
 
 //----------------------------------
@@ -444,9 +438,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     dotIcon      = new QPixmap(dot_xpm);
     dothIcon     = new QPixmap(doth_xpm);
     dot1Icon     = new QPixmap(dot1_xpm);
-    eyeIcon      = new QPixmap(eye_xpm);
-    eyeCrossedIcon = new QPixmap(eye_crossed_xpm);
-    eyeGrayIcon  = new QPixmap(eye_gray_xpm);
 
     routesInIcon         = new QPixmap(routing_input_button_slim_4_xpm);
     routesOutIcon        = new QPixmap(routing_output_button_slim_4_xpm);
@@ -467,7 +458,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     orangedotIcon        = new QPixmap(orangedot_xpm);
     orangedot12x12Icon   = new QPixmap(orangedot12x12_xpm);
 
-    cliplistSIcon        = new QPixmap(cliplistS_xpm);
     deltaOnIcon          = new QPixmap(delta_on_xpm);
     deltaOffIcon         = new QPixmap(delta_off_xpm);
 
@@ -479,18 +469,18 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     select_invert_selectionIcon   = new QPixmap(select_invert_selection);
     select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
 
-    midi_edit_instrumentIcon                      = new QPixmap(midi_edit_instrument_xpm);
-    settings_appearance_settingsIcon              = new QPixmap(settings_appearance_settings_xpm);
+    midi_edit_instrumentIcon         = new QPixmap(midi_edit_instrument_xpm);
+    settings_appearance_settingsIcon = new QPixmap(settings_appearance_settings_xpm);
 
-    museIcon                                      = new QPixmap(muse_icon_xpm);
-    aboutMuseImage                                = new QPixmap(about_muse_xpm);
+    museIcon                         = new QPixmap(muse_icon_xpm);
+    aboutMuseImage                   = new QPixmap(about_muse_xpm);
 
-    globalIcon                                    = new QIcon(QPixmap(global_xpm));
-    userIcon                                      = new QIcon(QPixmap(user_xpm));
-    projectIcon                                   = new QIcon(QPixmap(project_xpm));
+    globalIcon                       = new QIcon(QPixmap(global_xpm));
+    userIcon                         = new QIcon(QPixmap(user_xpm));
+    projectIcon                      = new QIcon(QPixmap(project_xpm));
 
-    pianoNewIcon                                  = new QIcon(QPixmap(pianoNew_xpm));
-    presetsNewIcon                                = new QIcon(QPixmap(presetsNew_xpm));
+    pianoNewIcon                     = new QIcon(QPixmap(pianoNew_xpm));
+    presetsNewIcon                   = new QIcon(QPixmap(presetsNew_xpm));
 
     //----------------------------------
     //   SVG...
@@ -734,6 +724,10 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     pasteSelectedTrackSVGIcon = icons.getSVG("paste_selected_track.svg");
     pasteCloneSelectedTrackSVGIcon = icons.getSVG("paste_clone_selected_track.svg");
 
+    eyeIcon = icons.getSVG("eye.svg");
+    eyeCrossedIcon = icons.getSVG("eye_crossed.svg");
+    eyeGreyIcon = icons.getSVG("eye_grey.svg");
+
     QPixmap px(10,10);
     px.fill(Qt::transparent);
     dummySVGIcon = new QIcon(px);
@@ -796,7 +790,6 @@ void deleteIcons()
     delete bluedotIcon;
     delete orangedotIcon;
 
-    delete cliplistSIcon;
     delete deltaOnIcon;
     delete deltaOffIcon;
 
@@ -1024,6 +1017,10 @@ void deleteIcons()
     delete deleteSVGIcon;
     delete pasteSelectedTrackSVGIcon;
     delete pasteCloneSelectedTrackSVGIcon;
+
+    delete eyeIcon;
+    delete eyeCrossedIcon;
+    delete eyeGreyIcon;
 
     delete dummySVGIcon;
 
