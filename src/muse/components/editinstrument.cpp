@@ -3510,12 +3510,12 @@ int EditInstrument::checkDirty(MusECore::MidiInstrument* i, bool isClose)
         n = QMessageBox::warning(this, tr("MusE"),
          tr("The current Instrument contains unsaved data\n"
          "Save Current Instrument?"),
-         tr("&Save"), tr("&Nosave"), tr("&Abort"), 0, 2);
+         tr("&Save"), tr("&Don't save"), tr("&Abort"), 0, 2);
       else
         n = QMessageBox::warning(this, tr("MusE"),
          tr("The current Instrument contains unsaved data\n"
          "Save Current Instrument?"),
-         tr("&Save"), tr("&Nosave"), 0, 1);
+         tr("&Save"), tr("&Don't save"), 0, 1);
       if (n == 0) {
             if (i->filePath().isEmpty())
             {

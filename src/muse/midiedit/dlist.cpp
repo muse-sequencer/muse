@@ -1812,6 +1812,11 @@ void DList::viewMouseMoveEvent(QMouseEvent* ev)
       emit pitchChanged(dInstrument);
       setPitch(dInstrument);
 
+      if (!(ev->buttons() & Qt::LeftButton)) {
+          drag = NORMAL;
+          return;
+      }
+
       int delta = curY - startY;
       switch (drag) {
             case START_DRAG: // this cannot happen if ourDrumMapSize==0

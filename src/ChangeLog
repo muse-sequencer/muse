@@ -1,8 +1,11 @@
+10.04.2021
+    - Fix: Drum list: Drag mode activated after field editing. (kybos)
+    - Fix: Drum list: Crash in tooltip display with some show/hide options. (kybos)
 09.04.2021
     - Fix: Drum list: Drag mode activated after every context menu call. (kybos)
 07.04.2021
     - Fix: Crash when MESS synth can't be instantiated. Now the (existing) 
-        warning popup is displayed (as originally intended). (kybos)
+        warning popup is displayed instead (as originally intended). (kybos)
 06.04.2021
     - Add: Many new vector icons as replacement for old pixel-based ones. (kybos)
     - Fix: Improve visibility of custom drop-down triangles on dark background. (kybos)

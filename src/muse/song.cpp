@@ -3618,7 +3618,7 @@ void Song::connectMidiPorts()
             if(!MusEGlobal::audioDevice->findPort(route_name))
               continue;
             //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-              MusEGlobal::audioDevice->connect(route_name, our_port_name);
+            MusEGlobal::audioDevice->connect(route_name, our_port_name);
           }
         }
       }
@@ -3658,7 +3658,7 @@ void Song::connectAudioPorts()
         if(!MusEGlobal::audioDevice->findPort(route_name))
           continue;
         //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-          MusEGlobal::audioDevice->connect(our_port_name, route_name);
+        MusEGlobal::audioDevice->connect(our_port_name, route_name);
       }
     }
   }
@@ -3686,7 +3686,7 @@ void Song::connectAudioPorts()
         if(!MusEGlobal::audioDevice->findPort(route_name))
           continue;
         //if(!MusEGlobal::audioDevice->portConnectedTo(our_port, route_name))
-          MusEGlobal::audioDevice->connect(route_name, our_port_name);
+        MusEGlobal::audioDevice->connect(route_name, our_port_name);
       }
     }
   }

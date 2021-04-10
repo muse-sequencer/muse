@@ -1896,51 +1896,62 @@ void DrumCanvas::showNoteTooltip(QMouseEvent* event) {
 
     static CItem* hoverItem = nullptr;
 
-    if (_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool)) {
+    if (!(_tool & (MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::CursorTool)))
+        return;
 
-        QString str;
-        CItem* item = findCurrentItem(event->pos());
-        if (item && hoverItem == item)
-            return;
+    CItem* item = findCurrentItem(event->pos());
+    if (item && hoverItem == item)
+        return;
 
-        int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
-        if (track()->drummap()[pitch].name.isEmpty())
-            str = MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")";
-        else
-            str = track()->drummap()[pitch].name + " (" + MusECore::pitch2string(pitch)
-                    + "/" + QString::number(pitch) + ")";
+    // careful, drum list can be hidden/reduced by various display options
+    // int pitch = drumEditor->get_instrument_map()[y2pitch(event->pos().y())].pitch;
+    const auto& imap = drumEditor->get_instrument_map();
+    if (imap.isEmpty())
+        return;
 
-        if (item) {
-            hoverItem = item;
+    const int ipitch = y2pitch(event->pos().y());
+    if (ipitch < 0 || ipitch >= imap.size())
+        return;
 
-            MusECore::Pos start(item->event().tick() + item->part()->tick());
+    const int pitch = imap.at(ipitch).pitch;
 
-            int bar, beat, tick, hour, min, sec, msec;
+    QString str;
+    if (track()->drummap()[pitch].name.isEmpty())
+        str = MusECore::pitch2string(pitch) + " (" + QString::number(pitch) + ")";
+    else
+        str = track()->drummap()[pitch].name + " (" + MusECore::pitch2string(pitch)
+                + "/" + QString::number(pitch) + ")";
 
-            start.mbt(&bar, &beat, &tick);
-            QString str_bar = QString("%1.%2.%3")
-                    .arg(bar + 1,  4, 10, QLatin1Char('0'))
-                    .arg(beat + 1, 2, 10, QLatin1Char('0'))
-                    .arg(tick,     3, 10, QLatin1Char('0'));
+    if (item) {
+        hoverItem = item;
 
-            start.msmu(&hour, &min, &sec, &msec, nullptr);
-            QString str_time = QString("%1:%2:%3.%4")
-                    .arg(hour,  2, 10, QLatin1Char('0'))
-                    .arg(min,   2, 10, QLatin1Char('0'))
-                    .arg(sec,   2, 10, QLatin1Char('0'))
-                    .arg(msec,  3, 10, QLatin1Char('0'));
+        MusECore::Pos start(item->event().tick() + item->part()->tick());
 
-            str = tr("Note: ") + str + "\n"
+        int bar, beat, tick, hour, min, sec, msec;
+
+        start.mbt(&bar, &beat, &tick);
+        QString str_bar = QString("%1.%2.%3")
+                .arg(bar + 1,  4, 10, QLatin1Char('0'))
+                .arg(beat + 1, 2, 10, QLatin1Char('0'))
+                .arg(tick,     3, 10, QLatin1Char('0'));
+
+        start.msmu(&hour, &min, &sec, &msec, nullptr);
+        QString str_time = QString("%1:%2:%3.%4")
+                .arg(hour,  2, 10, QLatin1Char('0'))
+                .arg(min,   2, 10, QLatin1Char('0'))
+                .arg(sec,   2, 10, QLatin1Char('0'))
+                .arg(msec,  3, 10, QLatin1Char('0'));
+
+        str = tr("Note: ") + str + "\n"
                     + tr("Velocity: ") + QString::number(item->event().velo()) + "\n"
                     + tr("Start (bar): ") +  str_bar + "\n"
                     + tr("Start (time): ") + str_time;
 
-        } else {
-            hoverItem = nullptr;
-        }
-
-        QToolTip::showText(QPoint(event->globalX(), event->globalY() + 10), str);
+    } else {
+        hoverItem = nullptr;
     }
+
+    QToolTip::showText(QPoint(event->globalX(), event->globalY() + 10), str);
 }
 
 void DrumCanvas::showStatusTip(QMouseEvent* event) {
