@@ -41,7 +41,6 @@
 #include "xpm/record1.xpm"
 #include "xpm/dot.xpm"
 #include "xpm/doth.xpm"
-#include "xpm/dot1.xpm"
 
 #include "xpm/routing_input_button_slim_4.xpm"
 #include "xpm/routing_output_button_slim_4.xpm"
@@ -437,7 +436,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     record1_Icon = new QPixmap(record1_xpm);
     dotIcon      = new QPixmap(dot_xpm);
     dothIcon     = new QPixmap(doth_xpm);
-    dot1Icon     = new QPixmap(dot1_xpm);
 
     routesInIcon         = new QPixmap(routing_input_button_slim_4_xpm);
     routesOutIcon        = new QPixmap(routing_output_button_slim_4_xpm);
@@ -774,7 +772,6 @@ void deleteIcons()
     delete record1_Icon;
     delete dotIcon;
     delete dothIcon;
-    delete dot1Icon;
 
     delete routesInIcon;
     delete routesOutIcon;

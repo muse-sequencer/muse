@@ -1967,16 +1967,16 @@ void MusE::closeEvent(QCloseEvent* event)
     // Cleanup temporary wavefiles + peakfiles used for undo
     for (std::list<QString>::iterator i = MusECore::temporaryWavFiles.begin(); i != MusECore::temporaryWavFiles.end(); i++) {
         QString filename = *i;
-        QFileInfo f(filename);
-        QDir d = f.dir();
+        QFileInfo fi(filename);
+        QDir d = fi.dir();
         d.remove(filename);
-        d.remove(f.completeBaseName() + ".wca");
+        d.remove(fi.completeBaseName() + ".wca");
     }
 
     if(MusEGlobal::usePythonBridge)
     {
         fprintf(stderr, "Stopping MusE Pybridge...\n");
-        if(stopPythonBridge() == false)
+        if(!stopPythonBridge())
             fprintf(stderr, "MusE: Could not stop Python bridge\n");
         else
             fprintf(stderr, "MusE: Pybridge stopped\n");

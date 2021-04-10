@@ -26,7 +26,7 @@
 #include <QCommandLineOption>
 #include <QDir>
 #include <QFile>
-#include <QFileInfo>
+//#include <QFileInfo>
 #include <QFileInfoList>
 #include <QDirIterator>
 #include <QKeyEvent>
@@ -38,7 +38,7 @@
 #include <QIcon>
 #include <QString>
 #include <QStringList>
-#include <QStyle>
+//#include <QStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
 #include <QStandardPaths>
@@ -46,7 +46,7 @@
 #include <QDebug>
 #include <QElapsedTimer>
 
-#include <iostream>
+//#include <iostream>
 
 #include <time.h>
 #ifndef _WIN32
@@ -96,19 +96,19 @@ extern bool initRtAudio(bool forceDefault = false);
 extern bool initJackAudio();
 extern void initMidiController();
 extern void initMetronome();
-extern void initOSC();
+//extern void initOSC();
 extern void initVST();
 extern void initVST_Native();
-extern void initPlugins();
+//extern void initPlugins();
 extern void initDSSI();
 #ifdef LV2_SUPPORT
 extern void initLV2();
 extern void deinitLV2();
 #endif
-extern bool readConfiguration();
+//extern bool readConfiguration();
 
-extern void initMidiSequencer();   
-extern void exitMidiSequencer();
+//extern void initMidiSequencer();
+//extern void exitMidiSequencer();
 extern void initAudio();
 extern void initAudioPrefetch();   
 extern void initMidiSynth();
@@ -164,7 +164,7 @@ class MuseApplication : public QApplication {
 #endif
             }
 
-      bool notify(QObject* receiver, QEvent* event) {
+      bool notify(QObject* receiver, QEvent* event) override {
          const bool flag = QApplication::notify(receiver, event);
          const QEvent::Type type = event->type();
          if (type == QEvent::KeyPress) {
@@ -237,7 +237,7 @@ static QString localeList()
 void fallbackDummy() {
 
   fprintf(stderr, "Falling back to dummy audio driver\n");
-  QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find selected <b>audio server</b>.<br><br>"
+  QMessageBox::critical(nullptr, "MusE fatal error", "MusE <b>failed</b> to find selected <b>audio server</b>.<br><br>"
                                                   "<i>MusE will continue <b>without audio support</b> (-a switch)!</i>");
   MusEGlobal::realTimeScheduling = true;
   MusECore::initDummyAudio();
@@ -600,14 +600,14 @@ int main(int argc, char* argv[])
         // Make working copies of the arguments.
         const int argument_count = argc;
         int argc_copy = argc;
-        char** argv_copy = 0;
+        char** argv_copy = nullptr;
         if(argument_count > 0)
         {
           argv_copy = (char**)malloc(argument_count * sizeof(char*));
           int len = 0;
           for(int i = 0; i < argument_count; ++i)
           {
-            argv_copy[i] = 0;
+            argv_copy[i] = nullptr;
             if(argv[i])
             {
               len = strlen(argv[i]);
@@ -1073,10 +1073,10 @@ int main(int argc, char* argv[])
 //         argc_copy -= optind;
 //         ++argc_copy;
 
-        srand(time(0));   // initialize random number generator
+        srand(time(nullptr));   // initialize random number generator
         //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
 
-        static QTranslator translator(0);
+        static QTranslator translator(nullptr);
         {
           QString locale(QLocale::system().name());
           if (locale_override.length() >0 )
@@ -1084,10 +1084,10 @@ int main(int argc, char* argv[])
           if (locale != "C") {
               QString loc("muse_");
               loc += locale;
-              if (translator.load(loc, QString(".")) == false) {
+              if (!translator.load(loc, QString("."))) {
                     QString lp(MusEGlobal::museGlobalShare);
                     lp += QString("/locale");
-                    if (translator.load(loc, lp) == false) {
+                    if (!translator.load(loc, lp)) {
                           fprintf(stderr, "no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
                     }
               }
@@ -1695,9 +1695,9 @@ int main(int argc, char* argv[])
         MusEGlobal::muse = nullptr;
 
         // These are owned by muse and deleted above. Reset to zero now.
-        MusEGlobal::undoRedo = 0;
-        MusEGlobal::undoAction = 0;
-        MusEGlobal::redoAction = 0;
+        MusEGlobal::undoRedo = nullptr;
+        MusEGlobal::undoAction = nullptr;
+        MusEGlobal::redoAction = nullptr;
 
         // Reset the option index.
         // NOTE: See optind manual for special resetting values.

@@ -37,7 +37,6 @@ namespace MusEGui {
 
 extern QPixmap* dotIcon;
 extern QPixmap* dothIcon;
-extern QPixmap* dot1Icon;
 
 extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
