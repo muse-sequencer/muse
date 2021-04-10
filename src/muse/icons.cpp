@@ -48,14 +48,10 @@
 #include "xpm/routing_midi_output_button_slim.xpm"
 
 #include "xpm/greendot.xpm"
-#include "xpm/greendot12x12.xpm"
 #include "xpm/reddot.xpm"
 #include "xpm/darkgreendot.xpm"
 #include "xpm/bluedot.xpm"
-#include "xpm/bluedot12x12.xpm"
-#include "xpm/graydot12x12.xpm"
 #include "xpm/orangedot.xpm"
-#include "xpm/orangedot12x12.xpm"
 
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
@@ -100,14 +96,10 @@ QPixmap* dothIcon;
 QPixmap* dot1Icon;
 
 QPixmap* greendotIcon;
-QPixmap* greendot12x12Icon;
 QPixmap* reddotIcon;
 QPixmap* darkgreendotIcon;
-QPixmap* graydot12x12Icon;
 QPixmap* bluedotIcon;
-QPixmap* bluedot12x12Icon;
 QPixmap* orangedotIcon;
-QPixmap* orangedot12x12Icon;
 
 QIcon* ledGreenIcon;
 QIcon* ledDarkGreenIcon;
@@ -443,7 +435,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     routesMidiOutIcon    = new QPixmap(routing_midi_output_button_slim_xpm);
 
     greendotIcon         = new QPixmap(greendot_xpm);
-    greendot12x12Icon    = new QPixmap(greendot12x12_xpm);
     reddotIcon           = new QPixmap(reddot_xpm);
     darkgreendotIcon     = new QPixmap(darkgreendot_xpm);
 
@@ -451,10 +442,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     ledDarkGreenIcon     = new QIcon(*darkgreendotIcon);
 
     bluedotIcon          = new QPixmap(bluedot_xpm);
-    bluedot12x12Icon     = new QPixmap(bluedot12x12_xpm);
-    graydot12x12Icon     = new QPixmap(graydot12x12_xpm);
     orangedotIcon        = new QPixmap(orangedot_xpm);
-    orangedot12x12Icon   = new QPixmap(orangedot12x12_xpm);
 
     deltaOnIcon          = new QPixmap(delta_on_xpm);
     deltaOffIcon         = new QPixmap(delta_off_xpm);

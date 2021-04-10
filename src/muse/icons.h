@@ -53,14 +53,10 @@ extern QIcon* ledGreenIcon;
 extern QIcon* ledDarkGreenIcon;
 
 extern QPixmap* greendotIcon;
-extern QPixmap* greendot12x12Icon;
 extern QPixmap* reddotIcon;
 extern QPixmap* darkgreendotIcon;
-extern QPixmap* graydot12x12Icon;
 extern QPixmap* bluedotIcon;
-extern QPixmap* bluedot12x12Icon;
 extern QPixmap* orangedotIcon;
-extern QPixmap* orangedot12x12Icon;
 
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;

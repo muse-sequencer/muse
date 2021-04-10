@@ -516,24 +516,24 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
 
                                       if(found)
                                       {
-                                        int rx = r.x() + 1;
-                                        int ry = r.y() + r.height()/2 - 3;
-                                        int rw = 6;
-                                        int rh = 6;
+                                        p.save();
+                                        p.setPen(Qt::black);
                                         if(used)
                                         {
                                           if(off)
-                                            p.drawPixmap(rx, ry, rw, rh, *greendot12x12Icon);
+                                              p.setBrush(Qt::green);
                                           else
-                                            p.drawPixmap(rx, ry, rw, rh, *orangedot12x12Icon);
+                                              p.setBrush(Qt::yellow);
                                         }
                                         else
                                         {
                                           if(off)
-                                            p.drawPixmap(rx, ry, rw, rh, *graydot12x12Icon);
+                                              p.setBrush(Qt::gray);
                                           else
-                                            p.drawPixmap(rx, ry, rw, rh, *bluedot12x12Icon);
+                                              p.setBrush(Qt::blue);
                                         }
+                                        p.drawEllipse(QPointF(r.x()+5, r.y()+r.height()/2), 2.5, 2.5);
+                                        p.restore();
                                       }
                                     }
                                   }

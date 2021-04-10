@@ -376,8 +376,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuShowHide->addSeparator();
       QAction* showAllAction = menuShowHide->addAction(*dummySVGIcon, tr("Show All Instruments"));
       QAction* hideAllAction = menuShowHide->addAction(tr("Hide All Instruments"));
-      QAction* hideUnusedAction = menuShowHide->addAction(tr("Only Show Used Instruments"));
-      QAction* hideEmptyAction = menuShowHide->addAction(tr("Only Show Instruments With Non-empty Name or Used Instruments"));
+      QAction* hideUnusedAction = menuShowHide->addAction(tr("Show Only Used Instruments"));
+      QAction* hideEmptyAction = menuShowHide->addAction(tr("Show Only Named and Used Instruments"));
       settingsMenu->addSeparator();
 
       groupNoneAction->setCheckable(true);
@@ -2168,12 +2168,12 @@ void DrumEdit::showAllInstruments()
   using MusECore::MidiTrack;
 
   QSet<MidiTrack*> tracks;
-  for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-    tracks.insert((MidiTrack*)p->second->track());
+  for (const auto& it : *parts())
+    tracks.insert((MidiTrack*)it.second->track());
 
-  for (QSet<MidiTrack*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
+  for (auto& it : tracks)
   {
-    MidiTrack* track=*it;
+    MidiTrack* track = it;
 
     for (int i=0;i<128;i++)
       track->drummap()[i].hide=false;
@@ -2187,12 +2187,12 @@ void DrumEdit::hideAllInstruments()
   using MusECore::MidiTrack;
 
   QSet<MidiTrack*> tracks;
-  for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-    tracks.insert((MidiTrack*)p->second->track());
+  for (const auto& it : *parts())
+    tracks.insert((MidiTrack*)it.second->track());
 
-  for (QSet<MidiTrack*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
+  for (auto& it : tracks)
   {
-    MidiTrack* track=*it;
+    MidiTrack* track = it;
 
     for (int i=0;i<128;i++)
       track->drummap()[i].hide=true;
@@ -2204,31 +2204,31 @@ void DrumEdit::hideAllInstruments()
 void DrumEdit::hideUnusedInstruments()
 {
   using MusECore::MidiTrack;
-  using MusECore::ciEvent;
-  using MusECore::EventList;
-  using MusECore::ciPart;
 
   QSet<MidiTrack*> tracks;
-  for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-    tracks.insert((MidiTrack*)p->second->track());
+  for (const auto& it : *parts())
+    tracks.insert((MidiTrack*)it.second->track());
 
-  for (QSet<MidiTrack*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
+  for (auto& it : tracks)
   {
-    MidiTrack* track=*it;
+    MidiTrack* track = it;
 
     bool hide[128];
-    for (int i=0;i<128;i++) hide[i]=true;
+    for (int i=0; i<128; i++)
+        hide[i]=true;
 
-    for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-      if (p->second->track() == track)
+    for (const auto& itp : *parts())
+      if (itp.second->track() == track)
       {
-        const EventList& el = p->second->events();
-        for (ciEvent ev=el.begin(); ev!=el.end(); ev++)
-          hide[ev->second.pitch()]=false;
+        for (const auto& ev : itp.second->events()) {
+            if (ev.second.type() != MusECore::Note)
+                continue;
+            hide[ev.second.pitch()] = false;
+        }
       }
 
-    for (int i=0;i<128;i++)
-      track->drummap()[i].hide=hide[i];
+    for (int i=0; i<128; i++)
+      track->drummap()[i].hide = hide[i];
   }
 
   MusEGlobal::song->update(SC_DRUMMAP);
@@ -2236,35 +2236,35 @@ void DrumEdit::hideUnusedInstruments()
 
 void DrumEdit::hideEmptyInstruments()
 {
-  using MusECore::MidiTrack;
-  using MusECore::ciEvent;
-  using MusECore::EventList;
-  using MusECore::ciPart;
+    using MusECore::MidiTrack;
 
-  QSet<MidiTrack*> tracks;
-  for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-    tracks.insert((MidiTrack*)p->second->track());
+    QSet<MidiTrack*> tracks;
+    for (const auto& it : *parts())
+        tracks.insert((MidiTrack*)it.second->track());
 
-  for (QSet<MidiTrack*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
-  {
-    MidiTrack* track=*it;
+    for (auto& it : tracks)
+    {
+        MidiTrack* track = it;
 
-    bool hide[128];
-    for (int i=0;i<128;i++) hide[i]=track->drummap()[i].name.isEmpty();
+        bool hide[128];
+        for (int i=0; i<128; i++)
+            hide[i]=track->drummap()[i].name.isEmpty();
 
-    for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-      if (p->second->track() == track)
-      {
-        const EventList& el = p->second->events();
-        for (ciEvent ev=el.begin(); ev!=el.end(); ev++)
-          hide[ev->second.pitch()]=false;
-      }
+        for (const auto& itp : *parts())
+            if (itp.second->track() == track)
+            {
+                for (const auto& ev : itp.second->events()) {
+                    if (ev.second.type() != MusECore::Note)
+                        continue;
+                    hide[ev.second.pitch()] = false;
+                }
+            }
 
-    for (int i=0;i<128;i++)
-      track->drummap()[i].hide=hide[i];
-  }
+        for (int i=0; i<128;i++)
+            track->drummap()[i].hide=hide[i];
+    }
 
-  MusEGlobal::song->update(SC_DRUMMAP);
+    MusEGlobal::song->update(SC_DRUMMAP);
 }
 
 //---------------------------------------------------------

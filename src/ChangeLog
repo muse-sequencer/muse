@@ -1,6 +1,7 @@
 10.04.2021
     - Fix: Drum list: Drag mode activated after field editing. (kybos)
     - Fix: Drum list: Crash in tooltip display with some show/hide options. (kybos)
+    - Fix: Drum list: Crashes in Show used/named instruments display options. (kybos)
 09.04.2021
     - Fix: Drum list: Drag mode activated after every context menu call. (kybos)
 07.04.2021
