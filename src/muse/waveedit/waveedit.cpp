@@ -171,18 +171,16 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       selectRangeToSelectionAction = menuEdit->addAction(*rangeToSelectionSVGIcon, tr("Set &Range to Selection"));
       connect(selectRangeToSelectionAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_RANGE_TO_SELECTION); } );
 
-      // only 1 part can be opened
-      //      if (parts()->size() > 1) {
-      //          menuEdit->addSeparator();
-      //          selectNextPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-      //          selectPrevPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
-      //          connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
-      //          connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_PREV_PART); } );
-      //      } else {
-      //          selectPrevPartAction = nullptr;
-      //          selectNextPartAction = nullptr;
-      //      }
-
+      if (parts()->size() > 1) {
+          menuEdit->addSeparator();
+          selectNextPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
+          selectPrevPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
+          connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
+          connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_PREV_PART); } );
+      } else {
+          selectPrevPartAction = nullptr;
+          selectNextPartAction = nullptr;
+      }
 
       menuFunctions = menuBar()->addMenu(tr("Func&tions"));
 
@@ -496,10 +494,10 @@ void WaveEdit::initShortcuts()
       //selectInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
       //selectOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
 
-//      if (selectPrevPartAction && selectNextPartAction) {
-//          selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
-//          selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
-//      }
+      if (selectPrevPartAction && selectNextPartAction) {
+          selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
+          selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
+      }
 
       selectRangeToSelectionAction->setShortcut(shortcuts[SHRT_LOCATORS_TO_SELECTION].key);
       

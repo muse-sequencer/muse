@@ -38,6 +38,7 @@
 
 #include "drum_ordering.h"
 #include "globals.h"
+#include "config.h"
 
 #include <QMessageBox>
 
@@ -90,9 +91,18 @@ void addPortCtrlEvents(MidiTrack* t, bool drum_ctls, bool non_drum_ctls)
     for(ciEvent ie = el.begin(); ie != el.end(); ++ie)
     {
       const Event& ev = ie->second;
-      // Added by T356. Do not add events which are past the end of the part.
+      // Do not add events which are past the end of the part.
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if((int)ev.tick() >= (int)len)
+#else
       if(ev.tick() >= len)
+#endif
         break;
+
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if((int)ev.tick() < 0)
+        continue;
+#endif
                     
       if(ev.type() == Controller)
       {

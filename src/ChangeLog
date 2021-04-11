@@ -1,3 +1,13 @@
+11.04.2021
+    * Reinstated part left border resizing: Further to 04.04.2021. (Tim)
+      Extensive re-writes and alterations of much code to support it.
+      Extensively tested with wave and midi parts.
+      Perhaps most important, class EL (EventList) is now sorted by signed integer.
+      ANY BUGS SHOULD only occur when there are left border hidden events, otherwise
+       it SHOULD behave normally.
+      Should be OK to use but still some areas need attention such as 'functions',
+       merging and splitting, and more.
+    - Wave Editor: Reinstated 'Next part' and 'Previous part'.
 10.04.2021
     - Fix: Drum list: Drag mode activated after field editing. (kybos)
     - Fix: Drum list: Crash in tooltip display with some show/hide options. (kybos)

@@ -46,6 +46,7 @@
 #cmakedefine HAVE_EXP10
 #cmakedefine HAVE_EXP10F
 #cmakedefine HAVE_EXP10L
+#cmakedefine ALLOW_LEFT_HIDDEN_EVENTS
 // #cmakedefine HAVE_M_PI
 
 #define VERSION             "${MusE_VERSION_FULL}"

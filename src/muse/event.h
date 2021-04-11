@@ -35,6 +35,7 @@
 #include "pos.h"
 #include "mpevent.h"
 #include "wave.h"
+#include "config.h"
 
 namespace MusECore {
 
@@ -178,7 +179,14 @@ typedef FindMidiCtlsList_t::iterator iFindMidiCtlsList;
 typedef FindMidiCtlsList_t::const_iterator ciFindMidiCtlsList;
 typedef std::pair <iFindMidiCtlsList, bool> FindMidiCtlsListInsResPair_t;
 
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+// NOTE: Signed integer comparison (at least) to support sorting negative event times.
+//       Really need to change the whole thing to signed.
+typedef std::multimap <unsigned, Event, std::less<int> > EL;
+#else
 typedef std::multimap <unsigned, Event, std::less<unsigned> > EL;
+#endif
+
 typedef EL::iterator iEvent;
 typedef EL::const_iterator ciEvent;
 typedef std::pair <ciEvent, ciEvent> cEventRange;

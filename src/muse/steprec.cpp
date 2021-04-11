@@ -201,7 +201,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 	}
 	
 	steprec_record_foot:
-	if (!((lasttick > part->lenTick()) && part->hasHiddenEvents())) // allowed?
+	if (!((lasttick > part->lenTick()) && (part->hasHiddenEvents() & Part::RightEventsHidden))) // allowed?
 	{
 		if (lasttick > part->lenTick()) // we have to expand the part?
 			schedule_resize_all_same_len_clone_parts(part, lasttick, operations);

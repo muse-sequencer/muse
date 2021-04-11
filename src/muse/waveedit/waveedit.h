@@ -70,8 +70,8 @@ class WaveEdit : public MidiEditor {
       QAction* copyAction;
       QAction* copyPartRegionAction;
       QAction* pasteAction;
-//      QAction* selectPrevPartAction;
-//      QAction* selectNextPartAction;
+      QAction* selectPrevPartAction;
+      QAction* selectNextPartAction;
       QAction* selectRangeToSelectionAction;
       QAction* adjustWaveOffsetAction;
 

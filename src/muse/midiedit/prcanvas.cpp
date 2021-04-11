@@ -868,7 +868,7 @@ MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Dra
   for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
     MusECore::Part* opart = ip2c->first;
-    if (opart->hasHiddenEvents())
+    if (opart->hasHiddenEvents() & MusECore::Part::RightEventsHidden)
     {
 			forbidden=true;
 			break;
@@ -1034,7 +1034,7 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
       MusECore::Undo operations;
       int diff = event.endTick()-part->lenTick();
 
-      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
+      if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
       {
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
 
@@ -1096,7 +1096,7 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         /
             newEvent.setTick(ntick);
         }
 
-        if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
+        if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
         {
             newEvent.setLenTick(len);
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, nevent->part(), false, false));

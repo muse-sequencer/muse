@@ -35,6 +35,7 @@
 #include "drummap.h"
 #include "midictrl.h"
 #include "gconfig.h"
+#include "config.h"
 
 // Forwards from header:
 #include "track.h"
@@ -278,9 +279,17 @@ void addPortCtrlEvents(Part* part, bool doClones)
       for(ciEvent ie = p->events().begin(); ie != p->events().end(); ++ie)
       {
         const Event& ev = ie->second;
-        // Added by T356. Do not add events which are past the end of the part.
+        // Do not add events which are past the end of the part.
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+        if((int)ev.tick() >= (int)len)
+#else
         if(ev.tick() >= len)
+#endif
           break;
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+        if((int)ev.tick() < 0)
+          continue;
+#endif
                           
         if(ev.type() == Controller)
         {
@@ -352,126 +361,6 @@ void removePortCtrlEvents(Part* part, bool doClones)
       break;
   }
 }
-
-// void removePortCtrlEvents(Part* part, Track* track, PendingOperationList& ops)
-// {
-//   if(!track || !track->isMidiTrack())
-//     return;
-//   for(ciEvent ie = part->events().begin(); ie != part->events().end(); ++ie)
-//   {
-//     removePortCtrlEvents(ie->second, part, track, ops);
-//   }
-// }
-// 
-// void modifyPortCtrlEvents(const Event& old_event, const Event& event, Part* part, PendingOperationList& ops)
-// {
-//   Track* t = part->track();
-//   if(!t || !t->isMidiTrack())
-//     return;
-//   if(old_event.type() != Controller || event.type() != Controller)
-//     return;
-//   MidiTrack* mt = static_cast<MidiTrack*>(t);
-//   
-//   unsigned int tck_erase  = old_event.tick() + part->tick();
-//   int cntrl_erase = old_event.dataA();
-//   int val_erase = old_event.dataB();
-//   iMidiCtrlVal imcv_erase;
-//   bool found_erase = false;
-// 
-//   // Is it a drum controller old_event, according to the track port's instrument?
-//   int ch_erase;
-//   MidiPort* mp_erase;
-//   mt->mappedPortChanCtrl(&cntrl_erase, nullptr, &mp_erase, &ch_erase);
-// 
-//   
-//   MidiCtrlValListList* mcvll_erase = mp_erase->controller();
-//   MidiCtrlValList* mcvl_erase = 0;
-//   iMidiCtrlValList cl_erase = mcvll_erase->find(ch_erase, cntrl_erase);
-//   if(cl_erase == mcvll_erase->end()) 
-//   {
-//     if(MusEGlobal::debugMsg)
-//       printf("deleteController: controller %d(0x%x) for channel %d not found size %zd\n",
-//               cntrl_erase, cntrl_erase, ch_erase, mcvll_erase->size());
-//   }
-//   else
-//   {
-//     mcvl_erase = cl_erase->second;
-//     imcv_erase = mcvl_erase->findMCtlVal(tck_erase, part, val_erase);
-//     if(imcv_erase == mcvl_erase->end()) 
-//     {
-//       if(MusEGlobal::debugMsg)
-//         printf("MidiCtrlValList::delMCtlVal(tick:%u val:%d): not found (size %zd)\n", tck_erase, val_erase, mcvl_erase->size());
-//     }
-//     else
-//       found_erase = true;
-//   }
-// 
-//   unsigned int tck_add  = event.tick() + part->tick();
-//   int cntrl_add = event.dataA();
-//   int val_add   = event.dataB();
-//   
-//   
-//   // FIXME FIXME CHECK THIS
-//   //
-//   //  Why wasn't 'ch' given its own 'ch_add' variable in the original code?
-//   //  And why did 'mp_add' default to mp_erase above. 
-//   //  That means the channel and port would have defaulted to the ones
-//   //   being erased above, not the track's. That can't be right !
-//   
-//   
-//   // Is it a drum controller event, according to the track port's instrument?
-//   int ch_add;
-//   MidiPort* mp_add;
-//   mt->mappedPortChanCtrl(&cntrl_add, nullptr, &mp_add, &ch_add);
-// 
-//   MidiCtrlValList* mcvl_add;
-//   MidiCtrlValListList* mcvll_add = mp_add->controller();
-//   iMidiCtrlValList imcvll_add = mcvll_add->find(ch_add, cntrl_add);
-//   if(imcvll_add == mcvll_add->end()) 
-//   {
-//     if(found_erase)
-//       ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
-//     PendingOperationItem poi(mcvll_add, 0, ch_add, cntrl_add, PendingOperationItem::AddMidiCtrlValList);
-//     if(ops.findAllocationOp(poi) == ops.end())
-//     {
-//       poi._mcvl = new MidiCtrlValList(cntrl_add);
-//       ops.add(poi);
-//     }
-//     // The operation will catch and ignore events which are past the end of the part.
-//     ops.add(PendingOperationItem(poi._mcvl, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
-//     return;
-//   }
-//   else
-//   {
-//     mcvl_add = imcvll_add->second;
-//     iMidiCtrlVal imcv_add = mcvl_add->findMCtlVal(tck_add, part, val_add);
-//     if(imcv_add != mcvl_add->end()) 
-//     {
-//       if(tck_erase == tck_add && mcvl_erase == mcvl_add)
-//       {
-//         // The operation will catch and ignore events which are past the end of the part.
-//         ops.add(PendingOperationItem(mcvl_add, imcv_add, val_add, PendingOperationItem::ModifyMidiCtrlVal));
-//       }
-//       else
-//       {
-//         if(found_erase)
-//         {
-//           ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
-//         }
-//         // The operation will catch and ignore events which are past the end of the part.
-//         ops.add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
-//       }
-//       return;
-//     }
-//     else
-//     {
-//       if(found_erase)
-//         ops.add(PendingOperationItem(mcvl_erase, imcv_erase, PendingOperationItem::DeleteMidiCtrlVal));
-//       // The operation will catch and ignore events which are past the end of the part.
-//       ops.add(PendingOperationItem(mcvl_add, part, tck_add, val_add, PendingOperationItem::AddMidiCtrlVal));
-//     }
-//   }
-// }
 
 //---------------------------------------------------------
 //   addEvent
@@ -698,8 +587,13 @@ void Song::addPart(Part* part)
       // adjust song len:
       unsigned int epos = part->tick() + part->lenTick();
 
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)epos > (int)len())
+#else
       if (epos > len())
-            _len = epos;
+#endif
+        _len = epos;
+
       part->track()->addPart(part);
       
       // Indicate do not do clones.
@@ -872,6 +766,26 @@ void MidiPart::dump(int n) const
 
 int MidiPart::hasHiddenEvents() const
 {
+  // TODO An idea for left-border hidden events with unsigned integer positions. 
+  // It actually worked, as far as the left hidden events arrow, but really it can't work without much bigger switchovers to integer math.
+  // I guess we'll try it like this.
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+  unsigned int len = lenTick();
+  _hiddenEvents = NoEventsHidden;  // Cache the result for later.
+
+  const int c_comp = LeftEventsHidden | RightEventsHidden;
+  for(ciEvent ev=_events.begin(); ev!=_events.end(); ++ev)
+  {
+    // Is the time value less than zero? Note the conversion to signed here!
+    if(signed(ev->second.tick()) < 0)
+      _hiddenEvents |= LeftEventsHidden;  // Cache the result for later.
+    if(signed(ev->second.endTick()) > signed(len))
+      _hiddenEvents |= RightEventsHidden;  // Cache the result for later.
+    if(_hiddenEvents == c_comp)
+      break;
+  }
+  return _hiddenEvents;
+#else
   unsigned int len = lenTick();
 
   // TODO: For now, we don't support events before the left border, only events past the right border.
@@ -885,25 +799,7 @@ int MidiPart::hasHiddenEvents() const
   }
   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
   return _hiddenEvents;
-
-// TODO An idea for left-border hidden events with unsigned integer positions. 
-// It actually worked, as far as the left hidden events arrow, but really it can't work without much bigger switchovers to integer math.
-//
-//   unsigned int len = lenTick();
-//   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
-// 
-//   const int c_comp = LeftEventsHidden | RightEventsHidden;
-//   for(ciEvent ev=_events.begin(); ev!=_events.end(); ++ev)
-//   {
-//     // Is the time value less than zero? Note the conversion to signed here!
-//     if(signed(ev->second.tick()) < 0)
-//       _hiddenEvents |= LeftEventsHidden;  // Cache the result for later.
-//     if(signed(ev->second.endTick()) > signed(len))
-//       _hiddenEvents |= RightEventsHidden;  // Cache the result for later.
-//     if(_hiddenEvents == c_comp)
-//       break;
-//   }
-//   return _hiddenEvents;
+#endif
 }
 
 //---------------------------------------------------------
@@ -913,6 +809,26 @@ int MidiPart::hasHiddenEvents() const
 
 int WavePart::hasHiddenEvents() const
 {
+  // An idea for left-border hidden events with unsigned integer positions. 
+  // It actually worked, as far as the left hidden events arrow, but really it can't work without much bigger switchovers to integer math.
+  // I guess we'll try it like this.
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+  unsigned int len = lenFrame();
+  _hiddenEvents = NoEventsHidden;  // Cache the result for later.
+
+  const int c_comp = LeftEventsHidden | RightEventsHidden;
+  for(ciEvent ev=_events.begin(); ev!=_events.end(); ++ev)
+  {
+    // Is the time value less than zero? Note the conversion to signed here!
+    if(signed(ev->second.frame()) < 0)
+      _hiddenEvents |= LeftEventsHidden;  // Cache the result for later.
+    if(signed(ev->second.endFrame()) > signed(len))
+      _hiddenEvents |= RightEventsHidden;  // Cache the result for later.
+    if(_hiddenEvents == c_comp)
+      break;
+  }
+  return _hiddenEvents;
+#else
   unsigned int len = lenFrame();
 
   // TODO: For now, we don't support events before the left border, only events past the right border.
@@ -926,26 +842,7 @@ int WavePart::hasHiddenEvents() const
   }
   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
   return _hiddenEvents;
-
-
-// TODO An idea for left-border hidden events with unsigned integer positions. 
-// It actually worked, as far as the left hidden events arrow, but really it can't work without much bigger switchovers to integer math.
-//
-//   unsigned int len = lenFrame();
-//   _hiddenEvents = NoEventsHidden;  // Cache the result for later.
-// 
-//   const int c_comp = LeftEventsHidden | RightEventsHidden;
-//   for(ciEvent ev=_events.begin(); ev!=_events.end(); ++ev)
-//   {
-//     // Is the time value less than zero? Note the conversion to signed here!
-//     if(signed(ev->second.frame()) < 0)
-//       _hiddenEvents |= LeftEventsHidden;  // Cache the result for later.
-//     if(signed(ev->second.endFrame()) > signed(len))
-//       _hiddenEvents |= RightEventsHidden;  // Cache the result for later.
-//     if(_hiddenEvents == c_comp)
-//       break;
-//   }
-//   return _hiddenEvents;
+#endif
 }
 
 bool WavePart::openAllEvents()
