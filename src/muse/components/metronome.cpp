@@ -735,7 +735,7 @@ void MetronomeConfig::configureAccentButtons(int beats)
     }
     for(int i = 0; i < beats; ++i)
     {
-      IconButton* b = new IconButton(ledGreenIcon, ledDarkGreenIcon, 0, 0, false, true);
+      IconButton* b = new IconButton(ledGreenSVGIcon, ledGreenDarkSVGIcon, 0, 0, false, true);
       b->setCheckable(true);
       connect(b, &IconButton::clicked, [this]() { changeAccents(); } );
       accent1ButtonsLayout->addWidget(b);
@@ -771,7 +771,7 @@ void MetronomeConfig::configureAccentButtons(int beats)
     }
     for(int i = 0; i < beats; ++i)
     {
-      IconButton* b = new IconButton(ledGreenIcon, ledDarkGreenIcon, 0, 0, false, true);
+      IconButton* b = new IconButton(ledGreenSVGIcon, ledGreenDarkSVGIcon, 0, 0, false, true);
       b->setCheckable(true);
       connect(b, &IconButton::clicked, [this]() { changeAccents(); } );
       accent2ButtonsLayout->addWidget(b);
@@ -910,7 +910,7 @@ bool MetronomeConfig::addAccentPreset(int beats, const MusECore::MetroAccentsStr
   QListWidgetItem* new_item = new QListWidgetItem();
   MetronomePresetItemWidget* new_widget =
     new MetronomePresetItemWidget(
-      ledGreenIcon, ledDarkGreenIcon, mas, true, 4, accentPresets, "MetronomePresetItemWidget");
+      ledGreenSVGIcon, ledGreenDarkSVGIcon, mas, true, 4, accentPresets, "MetronomePresetItemWidget");
   new_item->setData(BeatsRole, beats);
   new_item->setData(PresetIdRole, qlonglong(mas.id()));
   new_item->setData(PresetTypeRole, mas._type);

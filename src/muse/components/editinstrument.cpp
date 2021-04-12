@@ -81,6 +81,8 @@ enum {
       COL_HNUM, COL_LNUM, COL_MIN, COL_MAX, COL_DEF, COL_DRUM_DEF, COL_SHOW_MIDI, COL_SHOW_DRUM
       };
 
+static const QSize ledSize(16, 16);
+
 //---------------------------------------------------------
 //   InitListItem
 //---------------------------------------------------------
@@ -306,7 +308,8 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       connect(initAddButton, SIGNAL(clicked(bool)), SLOT(initListAddClicked()));
       connect(initDeleteButton, SIGNAL(clicked(bool)), SLOT(initListDeleteClicked()));
 
-      ctrlValidLabel->setPixmap(*greendotIcon);
+      ctrlValidLabel->setPixmap(ledGreenSVGIcon->pixmap(ledSize));
+//      ctrlValidLabel->setPixmap(*greendotIcon);
 
       connect(patchFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
       connect(lbankFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
@@ -2110,7 +2113,7 @@ void EditInstrument::controllerChanged()
       spinBoxDefault->blockSignals(false);
       spinBoxDrumDefault->blockSignals(false);
 
-      ctrlValidLabel->setPixmap(*greendotIcon);
+      ctrlValidLabel->setPixmap(ledGreenSVGIcon->pixmap(ledSize));
       enableNonCtrlControls(true);
       }
 
@@ -2224,12 +2227,12 @@ void EditInstrument::ctrlTypeChanged(int idx)
       // Check if either a per-note controller, or else a regular controller already exists.
       if(!cl->ctrlAvailable(new_num, c))
       {
-        ctrlValidLabel->setPixmap(*reddotIcon);
+        ctrlValidLabel->setPixmap(ledRedSVGIcon->pixmap(ledSize));
         enableNonCtrlControls(false);
         return;
       }
 
-      ctrlValidLabel->setPixmap(*greendotIcon);
+      ctrlValidLabel->setPixmap(ledGreenSVGIcon->pixmap(ledSize));
 
       if(t == MusECore::midiControllerType(c->num()))
       {
@@ -2501,11 +2504,11 @@ void EditInstrument::ctrlNumChanged()
       // Check if either a per-note controller, or else a regular controller already exists.
       if(!cl->ctrlAvailable(new_num, c))
       {
-        ctrlValidLabel->setPixmap(*reddotIcon);
+        ctrlValidLabel->setPixmap(ledRedSVGIcon->pixmap(ledSize));
         enableNonCtrlControls(false);
         return;
       }
-      ctrlValidLabel->setPixmap(*greendotIcon);
+      ctrlValidLabel->setPixmap(ledGreenSVGIcon->pixmap(ledSize));
       enableNonCtrlControls(true);
       if(cl->del(c->num()) == 0)
         printf("EditInstrument::ctrlNumChanged Warning: Erase failed! Proceeding anyway.\n");

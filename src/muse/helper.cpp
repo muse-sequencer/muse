@@ -1798,11 +1798,11 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
           est_width = fmw;
 
         if (i->used && !i->off)
-          menu->addAction(QIcon(*orangedotIcon), i->s)->setData(i->num);
+          menu->addAction(*ledYellowSVGIcon, i->s)->setData(i->num);
         else if (i->used)
-          menu->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
+          menu->addAction(*ledGreenSVGIcon, i->s)->setData(i->num);
         else if(!i->off)
-          menu->addAction(QIcon(*bluedotIcon), i->s)->setData(i->num);
+          menu->addAction(*ledBlueSVGIcon, i->s)->setData(i->num);
         else
           menu->addAction(i->s)->setData(i->num);
       }
@@ -1866,11 +1866,11 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
           est_width = fmw;
         
         if (i->used && !i->off)
-          menu->addAction(QIcon(*orangedotIcon), i->s)->setData(i->num);
+          menu->addAction(*ledYellowSVGIcon, i->s)->setData(i->num);
         else if (i->used)
-          menu->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
+          menu->addAction(*ledGreenSVGIcon, i->s)->setData(i->num);
         else if(!i->off)
-          menu->addAction(QIcon(*bluedotIcon), i->s)->setData(i->num);
+          menu->addAction(*ledBlueSVGIcon, i->s)->setData(i->num);
         else
           menu->addAction(i->s)->setData(i->num);
       }

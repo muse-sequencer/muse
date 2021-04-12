@@ -38,20 +38,10 @@
 #include "xpm/midi_ctrl_graph_merge_erase_inclusive.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase_wysiwyg.xpm"
 
-#include "xpm/record1.xpm"
-#include "xpm/dot.xpm"
-#include "xpm/doth.xpm"
-
 #include "xpm/routing_input_button_slim_4.xpm"
 #include "xpm/routing_output_button_slim_4.xpm"
 #include "xpm/routing_midi_input_button_slim.xpm"
 #include "xpm/routing_midi_output_button_slim.xpm"
-
-#include "xpm/greendot.xpm"
-#include "xpm/reddot.xpm"
-#include "xpm/darkgreendot.xpm"
-#include "xpm/bluedot.xpm"
-#include "xpm/orangedot.xpm"
 
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
@@ -82,20 +72,6 @@ QPixmap* routesMidiOutIcon;
 QPixmap* midiCtrlMergeEraseIcon;
 QPixmap* midiCtrlMergeEraseInclusiveIcon;
 QPixmap* midiCtrlMergeEraseWysiwygIcon;
-
-QPixmap* record1_Icon;
-QPixmap* dotIcon;
-QPixmap* dothIcon;
-QPixmap* dot1Icon;
-
-QPixmap* greendotIcon;
-QPixmap* reddotIcon;
-QPixmap* darkgreendotIcon;
-QPixmap* bluedotIcon;
-QPixmap* orangedotIcon;
-
-QIcon* ledGreenIcon;
-QIcon* ledDarkGreenIcon;
 
 QPixmap* midi_edit_instrumentIcon;
 QPixmap* settings_appearance_settingsIcon;
@@ -325,6 +301,13 @@ QIcon* selectOutsideLoopSVGIcon;
 QIcon* selectInvertSVGIcon;
 QIcon* deselectAllSVGIcon;
 
+QIcon* ledGreenSVGIcon;
+QIcon* ledGreenDarkSVGIcon;
+QIcon* ledRedSVGIcon;
+QIcon* ledBlueSVGIcon;
+QIcon* ledYellowSVGIcon;
+QIcon* ledOffSVGIcon;
+
 QIcon* dummySVGIcon;
 
 //----------------------------------
@@ -420,24 +403,10 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midiCtrlMergeEraseInclusiveIcon = new QPixmap(midi_ctrl_graph_merge_erase_inclusive_xpm);
     midiCtrlMergeEraseWysiwygIcon   = new QPixmap(midi_ctrl_graph_merge_erase_wysiwyg_xpm);
 
-    record1_Icon = new QPixmap(record1_xpm);
-    dotIcon      = new QPixmap(dot_xpm);
-    dothIcon     = new QPixmap(doth_xpm);
-
     routesInIcon         = new QPixmap(routing_input_button_slim_4_xpm);
     routesOutIcon        = new QPixmap(routing_output_button_slim_4_xpm);
     routesMidiInIcon     = new QPixmap(routing_midi_input_button_slim_xpm);
     routesMidiOutIcon    = new QPixmap(routing_midi_output_button_slim_xpm);
-
-    greendotIcon         = new QPixmap(greendot_xpm);
-    reddotIcon           = new QPixmap(reddot_xpm);
-    darkgreendotIcon     = new QPixmap(darkgreendot_xpm);
-
-    ledGreenIcon         = new QIcon(*greendotIcon);
-    ledDarkGreenIcon     = new QIcon(*darkgreendotIcon);
-
-    bluedotIcon          = new QPixmap(bluedot_xpm);
-    orangedotIcon        = new QPixmap(orangedot_xpm);
 
     deltaOnIcon          = new QPixmap(delta_on_xpm);
     deltaOffIcon         = new QPixmap(delta_off_xpm);
@@ -711,6 +680,13 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     selectInvertSVGIcon = icons.getSVG("select_invert.svg");
     deselectAllSVGIcon = icons.getSVG("deselect_all.svg");
 
+    ledGreenSVGIcon = icons.getSVG("led_green.svg");
+    ledGreenDarkSVGIcon = icons.getSVG("led_green_dark.svg");
+    ledRedSVGIcon = icons.getSVG("led_red.svg");
+    ledBlueSVGIcon = icons.getSVG("led_blue.svg");
+    ledYellowSVGIcon = icons.getSVG("led_yellow.svg");
+    ledOffSVGIcon = icons.getSVG("led_off.svg");
+
     QPixmap px(10,10);
     px.fill(Qt::transparent);
     dummySVGIcon = new QIcon(px);
@@ -754,23 +730,10 @@ void deleteIcons()
     delete midiCtrlMergeEraseInclusiveIcon;
     delete midiCtrlMergeEraseWysiwygIcon;
 
-    delete record1_Icon;
-    delete dotIcon;
-    delete dothIcon;
-
     delete routesInIcon;
     delete routesOutIcon;
     delete routesMidiInIcon;
     delete routesMidiOutIcon;
-
-    delete ledGreenIcon;
-    delete ledDarkGreenIcon;
-
-    delete greendotIcon;
-    delete reddotIcon;
-    delete darkgreendotIcon;
-    delete bluedotIcon;
-    delete orangedotIcon;
 
     delete deltaOnIcon;
     delete deltaOffIcon;
@@ -1005,6 +968,13 @@ void deleteIcons()
     delete selectOutsideLoopSVGIcon;
     delete selectInvertSVGIcon;
     delete deselectAllSVGIcon;
+
+    delete ledGreenSVGIcon;
+    delete ledGreenDarkSVGIcon;
+    delete ledRedSVGIcon;
+    delete ledBlueSVGIcon;
+    delete ledYellowSVGIcon;
+    delete ledOffSVGIcon;
 
     delete dummySVGIcon;
 

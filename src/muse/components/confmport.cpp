@@ -1082,8 +1082,8 @@ MPConfig::MPConfig(QWidget* parent)
       connect(guiTimer, &QTimer::timeout, this, &MPConfig::checkGUIState);
       guiTimer->start(500);
 
-      ledOn = QIcon(*dotIcon);
-      ledOff = QIcon(*dothIcon);
+      ledOn = *ledGreenSVGIcon;
+      ledOff = *ledOffSVGIcon;
 
       connect(instanceList, SIGNAL(itemPressed(QTableWidgetItem*)), SLOT(deviceItemClicked(QTableWidgetItem*)));
       connect(instanceList, SIGNAL(itemSelectionChanged()),         SLOT(deviceSelectionChanged()));

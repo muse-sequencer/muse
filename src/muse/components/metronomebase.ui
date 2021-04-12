@@ -27,6 +27,9 @@
        <string>Preferences</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_9">
+       <property name="spacing">
+        <number>12</number>
+       </property>
        <item>
         <widget class="QFrame" name="frame">
          <property name="frameShape">
@@ -147,6 +150,9 @@
        <string>Audio</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>12</number>
+       </property>
        <item>
         <layout class="QHBoxLayout" name="qhbl_4">
          <item>
@@ -183,6 +189,9 @@
        </item>
        <item>
         <layout class="QGridLayout" name="gridLayout_x">
+         <property name="spacing">
+          <number>9</number>
+         </property>
          <item row="6" column="3">
           <widget class="QComboBox" name="accent2SampleCombo"/>
          </item>
@@ -457,6 +466,9 @@
        <string>MIDI</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>12</number>
+       </property>
        <item>
         <widget class="QCheckBox" name="midiClick">
          <property name="text">
@@ -469,6 +481,12 @@
        </item>
        <item>
         <layout class="QGridLayout" name="gridLayout" columnminimumwidth="0,0,20,0,0,0">
+         <property name="horizontalSpacing">
+          <number>9</number>
+         </property>
+         <property name="verticalSpacing">
+          <number>12</number>
+         </property>
          <item row="0" column="0">
           <widget class="QSpinBox" name="measureNote">
            <property name="maximum">
@@ -934,6 +952,9 @@ Only user presets can be deleted.</string>
        <string>Precount</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <property name="spacing">
+        <number>12</number>
+       </property>
        <item>
         <widget class="QCheckBox" name="precountEnable">
          <property name="enabled">

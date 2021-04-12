@@ -35,28 +35,14 @@ class QCursor;
 
 namespace MusEGui {
 
-extern QPixmap* dotIcon;
-extern QPixmap* dothIcon;
-
 extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
-
-extern QPixmap* record1_Icon;
 
 extern QPixmap* routesInIcon;
 extern QPixmap* routesOutIcon;
 extern QPixmap* routesMidiInIcon;
 extern QPixmap* routesMidiOutIcon;
-
-extern QIcon* ledGreenIcon;
-extern QIcon* ledDarkGreenIcon;
-
-extern QPixmap* greendotIcon;
-extern QPixmap* reddotIcon;
-extern QPixmap* darkgreendotIcon;
-extern QPixmap* bluedotIcon;
-extern QPixmap* orangedotIcon;
 
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
@@ -290,6 +276,13 @@ extern QIcon* selectInsideLoopSVGIcon;
 extern QIcon* selectOutsideLoopSVGIcon;
 extern QIcon* selectInvertSVGIcon;
 extern QIcon* deselectAllSVGIcon;
+
+extern QIcon* ledGreenSVGIcon;
+extern QIcon* ledGreenDarkSVGIcon;
+extern QIcon* ledRedSVGIcon;
+extern QIcon* ledBlueSVGIcon;
+extern QIcon* ledYellowSVGIcon;
+extern QIcon* ledOffSVGIcon;
 
 extern QIcon* dummySVGIcon;
 
