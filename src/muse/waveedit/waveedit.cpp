@@ -173,8 +173,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       if (parts()->size() > 1) {
           menuEdit->addSeparator();
-          selectNextPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-          selectPrevPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
+          selectNextPartAction = menuEdit->addAction(*nextPartSVGIcon, tr("&Next Part"));
+          selectPrevPartAction = menuEdit->addAction(*lastPartSVGIcon, tr("&Previous Part"));
           connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_NEXT_PART); } );
           connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_SELECT_PREV_PART); } );
       } else {
