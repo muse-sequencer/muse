@@ -391,11 +391,11 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                                 const QIcon* pm = nullptr;
 
                                 if (shown && !hidden)
-                                      pm = eyeIcon;
+                                      pm = eyeSVGIcon;
                                 else if (!shown && hidden)
-                                      pm = eyeCrossedIcon;
+                                      pm = eyeCrossedSVGIcon;
                                 else if (shown && hidden)
-                                      pm = eyeGreyIcon;
+                                      pm = eyeGreySVGIcon;
                                 else //if (!shown && !hidden)
                                       pm = nullptr;
 
@@ -404,7 +404,7 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
                               }
                               else
                               {
-                                const QIcon* pm = dm->hide ? eyeCrossedIcon : eyeIcon;
+                                const QIcon* pm = dm->hide ? eyeCrossedSVGIcon : eyeSVGIcon;
                                 pm->paint(&p, r.x(), r.y(), r.width(), r.height());
                               }
                                     

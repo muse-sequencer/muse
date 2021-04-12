@@ -280,12 +280,11 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuEdit->addSeparator();
       menuSelect = menuEdit->addMenu(tr("&Select"));
 
-      sallAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select All"));
-      snoneAction = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("Select None"));
-      invAction = menuSelect->addAction(QIcon(*select_invert_selectionIcon), tr("Invert"));
-      menuSelect->addSeparator();
-      inAction = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("Inside Loop"));
-      outAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("Outside Loop"));
+      sallAction = menuSelect->addAction(*selectAllSVGIcon, tr("Select All"));
+      snoneAction = menuSelect->addAction(*deselectAllSVGIcon, tr("Deselect All"));
+      invAction = menuSelect->addAction(*selectInvertSVGIcon, tr("Invert"));
+      inAction = menuSelect->addAction(*selectInsideLoopSVGIcon, tr("Inside Loop"));
+      outAction = menuSelect->addAction(*selectOutsideLoopSVGIcon, tr("Outside Loop"));
 
       menuSelect->addSeparator();
 
@@ -294,8 +293,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       if (parts()->size() > 1) {
           menuEdit->addSeparator();
-          nextAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Next Part"));
-          prevAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("Previous Part"));
+          nextAction = menuEdit->addAction(*nextPartSVGIcon, tr("Next Part"));
+          prevAction = menuEdit->addAction(*lastPartSVGIcon, tr("Previous Part"));
           connect(prevAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_PREV_PART); } );
           connect(nextAction,  &QAction::triggered, [this]() { cmd(DrumCanvas::CMD_SELECT_NEXT_PART); } );
       } else {

@@ -190,21 +190,21 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       menuSelect = menuEdit->addMenu(tr("&Select"));
 
-      selectAllAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select &All"));
+      selectAllAction = menuSelect->addAction(*selectAllSVGIcon, tr("Select &All"));
       connect(selectAllAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_ALL); } );
       
-      selectNoneAction = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
+      selectNoneAction = menuSelect->addAction(*deselectAllSVGIcon, tr("&Deselect All"));
       connect(selectNoneAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NONE); } );
       
-      selectInvertAction = menuSelect->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
+      selectInvertAction = menuSelect->addAction(*selectInvertSVGIcon, tr("Invert &Selection"));
       connect(selectInvertAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_INVERT); } );
       
       menuSelect->addSeparator();
       
-      selectInsideLoopAction = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
+      selectInsideLoopAction = menuSelect->addAction(*selectInsideLoopSVGIcon, tr("&Inside Loop"));
       connect(selectInsideLoopAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_ILOOP); } );
       
-      selectOutsideLoopAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
+      selectOutsideLoopAction = menuSelect->addAction(*selectOutsideLoopSVGIcon, tr("&Outside Loop"));
       connect(selectOutsideLoopAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_OLOOP); } );
       
       menuSelect->addSeparator();
@@ -214,8 +214,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       if (parts()->size() > 1) {
           menuEdit->addSeparator();
-          selectNextPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-          selectPrevPartAction = menuEdit->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
+          selectNextPartAction = menuEdit->addAction(*nextPartSVGIcon, tr("&Next Part"));
+          selectPrevPartAction = menuEdit->addAction(*lastPartSVGIcon, tr("&Previous Part"));
           connect(selectPrevPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_PREV_PART); } );
           connect(selectNextPartAction, &QAction::triggered, [this]() { cmd(PianoCanvas::CMD_SELECT_NEXT_PART); } );
       } else {

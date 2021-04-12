@@ -1792,7 +1792,7 @@ void DrumCanvas::rebuildOurDrumMap()
 
   // from now, we assume that every track_group's entry only groups tracks with identical
   // drum maps, but not necessarily identical hide-lists together.
-  QList< std::pair<MidiTrack*,int> > ignore_order_entries;
+  QVector< std::pair<MidiTrack*,int> > ignore_order_entries;
   for (global_drum_ordering_t::iterator order_it=global_drum_ordering.begin(); order_it!=global_drum_ordering.end(); order_it++)
   {
     // if this entry should be ignored, ignore it.

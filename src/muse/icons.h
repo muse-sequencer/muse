@@ -61,14 +61,6 @@ extern QPixmap* orangedotIcon;
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
 
-extern QPixmap* select_allIcon;
-extern QPixmap* select_all_parts_on_trackIcon;
-extern QPixmap* select_deselect_allIcon;
-extern QIcon*   icon_select_deselect_all;
-extern QPixmap* select_inside_loopIcon;
-extern QPixmap* select_invert_selectionIcon;
-extern QPixmap* select_outside_loopIcon;
-
 extern QPixmap* midi_edit_instrumentIcon;
 extern QPixmap* settings_appearance_settingsIcon;
 
@@ -285,9 +277,19 @@ extern QIcon* deleteSVGIcon;
 extern QIcon* pasteSelectedTrackSVGIcon;
 extern QIcon* pasteCloneSelectedTrackSVGIcon;
 
-extern QIcon* eyeIcon;
-extern QIcon* eyeCrossedIcon;
-extern QIcon* eyeGreyIcon;
+extern QIcon* eyeSVGIcon;
+extern QIcon* eyeCrossedSVGIcon;
+extern QIcon* eyeGreySVGIcon;
+
+extern QIcon* nextPartSVGIcon;
+extern QIcon* lastPartSVGIcon;
+
+extern QIcon* selectAllSVGIcon;
+extern QIcon* selectAllTrackSVGIcon;
+extern QIcon* selectInsideLoopSVGIcon;
+extern QIcon* selectOutsideLoopSVGIcon;
+extern QIcon* selectInvertSVGIcon;
+extern QIcon* deselectAllSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

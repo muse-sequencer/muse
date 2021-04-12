@@ -54,7 +54,6 @@ class CompactComboBox;
 class CompactKnob;
 class CompactSlider;
 class CompactToolButton;
-class IconButton;
 class Meter;
 
 //---------------------------------------------

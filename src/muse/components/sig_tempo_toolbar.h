@@ -37,7 +37,6 @@ class QToolButton;
 namespace MusEGui
 {
   class TempoEdit;
-  class IconButton;
   class SigEdit;
 
   class TempoToolbar : public QToolBar

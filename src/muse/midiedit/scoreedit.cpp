@@ -417,21 +417,21 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
         QMenu* select_menu = edit_menu->addMenu(tr("&Select"));
 
-            select_all_action = select_menu->addAction(QIcon(*select_allIcon), tr("Select &All"));
+            select_all_action = select_menu->addAction(*selectAllSVGIcon, tr("Select &All"));
             connect(select_all_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_ALL); } );
 
-            select_none_action = select_menu->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
+            select_none_action = select_menu->addAction(*deselectAllSVGIcon, tr("&Deselect All"));
             connect(select_none_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_NONE); } );
 
-            select_invert_action = select_menu->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
+            select_invert_action = select_menu->addAction(*selectInvertSVGIcon, tr("Invert &Selection"));
             connect(select_invert_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_INVERT); } );
 
             select_menu->addSeparator();
 
-            select_iloop_action = select_menu->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
+            select_iloop_action = select_menu->addAction(*selectInsideLoopSVGIcon, tr("&Inside Loop"));
             connect(select_iloop_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_ILOOP); } );
 
-            select_oloop_action = select_menu->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
+            select_oloop_action = select_menu->addAction(*selectOutsideLoopSVGIcon, tr("&Outside Loop"));
             connect(select_oloop_action, &QAction::triggered, [this]() { menu_command(CMD_SELECT_OLOOP); } );
 
 

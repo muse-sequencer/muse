@@ -193,5 +193,13 @@
         <file>svg/eye_grey.svg</file>
         <file>svg/eye_crossed.svg</file>
         <file>svg/eye.svg</file>
+        <file>svg/next_part.svg</file>
+        <file>svg/last_part.svg</file>
+        <file>svg/select_inside_loop.svg</file>
+        <file>svg/select_outside_loop.svg</file>
+        <file>svg/deselect_all.svg</file>
+        <file>svg/select_all.svg</file>
+        <file>svg/select_invert.svg</file>
+        <file>svg/select_all_track.svg</file>
     </qresource>
 </RCC>

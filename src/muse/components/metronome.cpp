@@ -743,9 +743,11 @@ void MetronomeConfig::configureAccentButtons(int beats)
     // Add one more button - the 'clear all' button.
     if(beats > 0)
     {
-      IconButton* b = new IconButton(icon_select_deselect_all, icon_select_deselect_all, 0, 0, false, true);
-      connect(b, &IconButton::clicked, [this]() { clearAccents(MusECore::MetroAccent::Accent1); } );
-      accent1ButtonsLayout->addWidget(b);
+        QToolButton *b = new QToolButton(this);
+        b->setIcon(*clearSVGIcon);
+        b->setToolTip(tr("Clear"));
+        connect(b, &QToolButton::clicked, [this]() { clearAccents(MusECore::MetroAccent::Accent1); } );
+        accent1ButtonsLayout->addWidget(b);
     }
   }
 
@@ -777,9 +779,11 @@ void MetronomeConfig::configureAccentButtons(int beats)
     // Add one more button - the 'clear all' button.
     if(beats > 0)
     {
-      IconButton* b = new IconButton(icon_select_deselect_all, icon_select_deselect_all, 0, 0, false, true);
-      connect(b, &IconButton::clicked, [this]() { clearAccents(MusECore::MetroAccent::Accent2); } );
-      accent2ButtonsLayout->addWidget(b);
+        QToolButton *b = new QToolButton(this);
+        b->setIcon(*clearSVGIcon);
+        b->setToolTip(tr("Clear"));
+        connect(b, &QToolButton::clicked, [this]() { clearAccents(MusECore::MetroAccent::Accent2); } );
+        accent2ButtonsLayout->addWidget(b);
     }
   }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <rect x="4.2065" y="4.2065" width="55.587" height="55.587" fill="none" stop-color="#000000" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m31.999 32c14.786-14.786 26.899-26.885 26.917-26.885 0.01784 0 0.03243 12.098 0.03243 26.885v26.885h-53.833z" fill="#fff" stop-color="#000000" stroke-width="0"/>
+  <g stroke="#000">
+   <path d="m5 5h54v54h-54z" fill="none" stop-color="#000000" stroke-linecap="round" stroke-linejoin="round"/>
+   <g>
+    <path d="m5.5244 32v-26.472h52.997l-26.467 26.472c-14.557 14.559-26.481 26.472-26.499 26.472s-0.031849-11.912-0.031849-26.472z" stop-color="#000000" stroke-linecap="square" stroke-width=".1"/>
+    <path d="m52 32a20 20 0 0 1-20 20 20 20 0 0 1-20-20 20 20 0 0 1 20-20 20 20 0 0 1 20 20z" fill="#fff" stop-color="#000000" stroke-linecap="square" stroke-width=".2"/>
+    <path d="m47 17-30 30" fill="none" stroke-width=".1"/>
+    <path d="m30.032 51.811c-3.2608-0.40291-5.7538-1.2371-8.3394-2.7903-0.97354-0.58482-2.2949-1.5777-3.0627-2.3012l-0.61872-0.58308 28.107-28.126 0.59661 0.62186c0.32814 0.34202 0.88526 1.0099 1.238 1.4842 5.5152 7.4147 5.2221 17.514-0.71608 24.675-3.1169 3.7585-7.7622 6.3085-12.639 6.9383-0.99219 0.12813-3.7855 0.17806-4.566 0.08162z" stop-color="#000000" stroke-linecap="square" stroke-width=".1"/>
+   </g>
+  </g>
+ </g>
+</svg>

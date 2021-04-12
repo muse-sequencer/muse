@@ -56,13 +56,6 @@
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
 
-#include "xpm/select_all.xpm"
-#include "xpm/select_all_parts_on_track.xpm"
-#include "xpm/select_deselect_all.xpm"
-#include "xpm/select_inside_loop.xpm"
-#include "xpm/select_invert_selection.xpm"
-#include "xpm/select_outside_loop.xpm"
-
 #include "xpm/muse_icon.xpm"
 #include "xpm/about_muse.xpm"
 
@@ -103,14 +96,6 @@ QPixmap* orangedotIcon;
 
 QIcon* ledGreenIcon;
 QIcon* ledDarkGreenIcon;
-
-QPixmap* select_allIcon;
-QPixmap* select_all_parts_on_trackIcon;
-QPixmap* select_deselect_allIcon;
-QIcon*   icon_select_deselect_all;
-QPixmap* select_inside_loopIcon;
-QPixmap* select_invert_selectionIcon;
-QPixmap* select_outside_loopIcon;
 
 QPixmap* midi_edit_instrumentIcon;
 QPixmap* settings_appearance_settingsIcon;
@@ -326,9 +311,19 @@ QIcon* deleteSVGIcon;
 QIcon* pasteSelectedTrackSVGIcon;
 QIcon* pasteCloneSelectedTrackSVGIcon;
 
-QIcon* eyeIcon;
-QIcon* eyeCrossedIcon;
-QIcon* eyeGreyIcon;
+QIcon* eyeSVGIcon;
+QIcon* eyeCrossedSVGIcon;
+QIcon* eyeGreySVGIcon;
+
+QIcon* nextPartSVGIcon;
+QIcon* lastPartSVGIcon;
+
+QIcon* selectAllSVGIcon;
+QIcon* selectAllTrackSVGIcon;
+QIcon* selectInsideLoopSVGIcon;
+QIcon* selectOutsideLoopSVGIcon;
+QIcon* selectInvertSVGIcon;
+QIcon* deselectAllSVGIcon;
 
 QIcon* dummySVGIcon;
 
@@ -446,14 +441,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
 
     deltaOnIcon          = new QPixmap(delta_on_xpm);
     deltaOffIcon         = new QPixmap(delta_off_xpm);
-
-    select_allIcon                = new QPixmap(select_all_xpm);
-    select_all_parts_on_trackIcon = new QPixmap(select_all_parts_on_track_xpm);
-    select_deselect_allIcon       = new QPixmap(select_deselect_all);
-    icon_select_deselect_all      = new QIcon(*select_deselect_allIcon);
-    select_inside_loopIcon        = new QPixmap(select_inside_loop_xpm);
-    select_invert_selectionIcon   = new QPixmap(select_invert_selection);
-    select_outside_loopIcon       = new QPixmap(select_outside_loop_xpm);
 
     midi_edit_instrumentIcon         = new QPixmap(midi_edit_instrument_xpm);
     settings_appearance_settingsIcon = new QPixmap(settings_appearance_settings_xpm);
@@ -710,9 +697,19 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     pasteSelectedTrackSVGIcon = icons.getSVG("paste_selected_track.svg");
     pasteCloneSelectedTrackSVGIcon = icons.getSVG("paste_clone_selected_track.svg");
 
-    eyeIcon = icons.getSVG("eye.svg");
-    eyeCrossedIcon = icons.getSVG("eye_crossed.svg");
-    eyeGreyIcon = icons.getSVG("eye_grey.svg");
+    eyeSVGIcon = icons.getSVG("eye.svg");
+    eyeCrossedSVGIcon = icons.getSVG("eye_crossed.svg");
+    eyeGreySVGIcon = icons.getSVG("eye_grey.svg");
+
+    nextPartSVGIcon = icons.getSVG("next_part.svg");
+    lastPartSVGIcon = icons.getSVG("last_part.svg");
+
+    selectAllSVGIcon = icons.getSVG("select_all.svg");
+    selectAllTrackSVGIcon = icons.getSVG("select_all_track.svg");
+    selectInsideLoopSVGIcon = icons.getSVG("select_inside_loop.svg");
+    selectOutsideLoopSVGIcon = icons.getSVG("select_outside_loop.svg");
+    selectInvertSVGIcon = icons.getSVG("select_invert.svg");
+    deselectAllSVGIcon = icons.getSVG("deselect_all.svg");
 
     QPixmap px(10,10);
     px.fill(Qt::transparent);
@@ -777,14 +774,6 @@ void deleteIcons()
 
     delete deltaOnIcon;
     delete deltaOffIcon;
-
-    delete select_allIcon;
-    delete select_all_parts_on_trackIcon;
-    delete select_deselect_allIcon;
-    delete icon_select_deselect_all;
-    delete select_inside_loopIcon;
-    delete select_invert_selectionIcon;
-    delete select_outside_loopIcon;
 
     delete midi_edit_instrumentIcon;
     delete settings_appearance_settingsIcon;
@@ -1003,9 +992,19 @@ void deleteIcons()
     delete pasteSelectedTrackSVGIcon;
     delete pasteCloneSelectedTrackSVGIcon;
 
-    delete eyeIcon;
-    delete eyeCrossedIcon;
-    delete eyeGreyIcon;
+    delete eyeSVGIcon;
+    delete eyeCrossedSVGIcon;
+    delete eyeGreySVGIcon;
+
+    delete nextPartSVGIcon;
+    delete lastPartSVGIcon;
+
+    delete selectAllSVGIcon;
+    delete selectAllTrackSVGIcon;
+    delete selectInsideLoopSVGIcon;
+    delete selectOutsideLoopSVGIcon;
+    delete selectInvertSVGIcon;
+    delete deselectAllSVGIcon;
 
     delete dummySVGIcon;
 

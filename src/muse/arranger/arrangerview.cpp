@@ -161,12 +161,12 @@ ArrangerView::ArrangerView(QWidget* parent)
   insertTrack = new QMenu(tr("Insert Track"), this);
   select = new QMenu(tr("Se&lect Parts"), this);
 
-  editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
-  editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
-  editInvertSelectionAction = new QAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"), this);
-  editInsideLoopAction = new QAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"), this);
-  editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
-  editAllPartsAction = new QAction(QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
+  editSelectAllAction = new QAction(*selectAllSVGIcon, tr("Select &All"), this);
+  editDeselectAllAction = new QAction(*deselectAllSVGIcon, tr("&Deselect All"), this);
+  editInvertSelectionAction = new QAction(*selectInvertSVGIcon, tr("Invert &Selection"), this);
+  editInsideLoopAction = new QAction(*selectInsideLoopSVGIcon, tr("&Inside Loop"), this);
+  editOutsideLoopAction = new QAction(*selectOutsideLoopSVGIcon, tr("&Outside Loop"), this);
+  editAllPartsAction = new QAction(*selectAllTrackSVGIcon, tr("All &Parts on Track"), this);
   editRangeToSelection = new QAction(*rangeToSelectionSVGIcon, tr("Set &Range to Selection"), this);
 
   select->addAction(editSelectAllAction);
