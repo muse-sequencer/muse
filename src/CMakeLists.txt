@@ -199,6 +199,11 @@ option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files 
 option ( MODULES_BUILD_STATIC "Build type of internal modules"                                   OFF)
 
 
+# This has far-reaching consequences. It allows events to be hidden before left part borders.
+# It causes many places to interpret the unsigned integer event time values as signed integers
+#  so that we can support negative event time values relative to a part's left border.
+# TODO: Make it a user settable flag? Or only devs can change it? Or just make it permanent later if it works OK?
+SET (ALLOW_LEFT_HIDDEN_EVENTS true)
 
 if ( MODULES_BUILD_STATIC )
       SET(MODULES_BUILD STATIC )

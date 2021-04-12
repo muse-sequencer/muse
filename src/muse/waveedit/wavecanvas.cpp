@@ -73,6 +73,7 @@
 #include "helper.h"
 #include "sig.h"
 #include "wave_helper.h"
+#include "config.h"
 
 #include "menutitleitem.h"
 #include "audio_converter_settings.h"
@@ -208,7 +209,11 @@ void WaveCanvas::updateItems()
         for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
               const MusECore::Event& e = i->second;
               // Do not add events which are past the end of the part.
-              if(e.frame() > len)      
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+              if((int)e.frame() + (int)e.lenFrame() < 0 || (int)e.frame() >= (int)len)
+#else
+              if(e.frame() > len)   
+#endif
                 break;
               
               if (e.type() == MusECore::Wave) {
@@ -2004,7 +2009,7 @@ MusECore::Undo WaveCanvas::moveCanvasItems(CItemMap& items, int /*dp*/, int dx, 
   for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
     MusECore::Part* opart = ip2c->first;
-    if (opart->hasHiddenEvents())
+    if (opart->hasHiddenEvents() & MusECore::Part::RightEventsHidden)
     {
         forbidden=true;
         break;
@@ -2159,7 +2164,7 @@ void WaveCanvas::newItem(CItem* item, bool noSnap)
       MusECore::Undo operations;
       int diff = event.endFrame() - part->lenFrame();
       
-      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
+      if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
       {
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
         
@@ -2213,7 +2218,7 @@ void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimen
           newEvent.setFrame(nframe);
       }
 
-      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
+      if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
       {
         newEvent.setLenFrame(len);
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,newEvent, event, wevent->part(), false, false));
@@ -2498,43 +2503,42 @@ void WaveCanvas::cmd(int cmd)
                 setRangeToSelection();
                 break;
 
-// only one part currently possible
-//            case CMD_SELECT_PREV_PART:     // select previous part
-//                  {
-//                    MusECore::Part* pt = editor->curCanvasPart();
-//                    MusECore::Part* newpt = pt;
-//                    MusECore::PartList* pl = editor->parts();
-//                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-//                      if(ip->second == pt)
-//                      {
-//                        if(ip == pl->begin())
-//                          ip = pl->end();
-//                        --ip;
-//                        newpt = ip->second;
-//                        break;
-//                      }
-//                    if(newpt != pt)
-//                      editor->setCurCanvasPart(newpt);
-//                  }
-//                  break;
-//            case CMD_SELECT_NEXT_PART:     // select next part
-//                  {
-//                    MusECore::Part* pt = editor->curCanvasPart();
-//                    MusECore::Part* newpt = pt;
-//                    MusECore::PartList* pl = editor->parts();
-//                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
-//                      if(ip->second == pt)
-//                      {
-//                        ++ip;
-//                        if(ip == pl->end())
-//                          ip = pl->begin();
-//                        newpt = ip->second;
-//                        break;
-//                      }
-//                    if(newpt != pt)
-//                      editor->setCurCanvasPart(newpt);
-//                  }
-//                  break;
+            case CMD_SELECT_PREV_PART:     // select previous part
+                 {
+                   MusECore::Part* pt = editor->curCanvasPart();
+                   MusECore::Part* newpt = pt;
+                   MusECore::PartList* pl = editor->parts();
+                   for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                     if(ip->second == pt)
+                     {
+                       if(ip == pl->begin())
+                         ip = pl->end();
+                       --ip;
+                       newpt = ip->second;
+                       break;
+                     }
+                   if(newpt != pt)
+                     editor->setCurCanvasPart(newpt);
+                 }
+                 break;
+            case CMD_SELECT_NEXT_PART:     // select next part
+                 {
+                   MusECore::Part* pt = editor->curCanvasPart();
+                   MusECore::Part* newpt = pt;
+                   MusECore::PartList* pl = editor->parts();
+                   for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                     if(ip->second == pt)
+                     {
+                       ++ip;
+                       if(ip == pl->end())
+                         ip = pl->begin();
+                       newpt = ip->second;
+                       break;
+                     }
+                   if(newpt != pt)
+                     editor->setCurCanvasPart(newpt);
+                 }
+                 break;
                  
             case CMD_ADJUST_WAVE_OFFSET:
                   adjustWaveOffset();

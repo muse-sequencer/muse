@@ -447,7 +447,7 @@ bool modify_notelen(const set<const Part*>& parts, int range, int rate, int offs
 			if (len <= 0)
 				len = 1;
 			
-			if ((event.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
+			if ((event.tick()+len > part->lenTick()) && (!(part->hasHiddenEvents() & Part::RightEventsHidden)))
 				partlen[part]=event.tick()+len; // schedule auto-expanding
 				
 			if (event.lenTick() != len)
@@ -664,7 +664,7 @@ bool move_notes(const set<const Part*>& parts, int range, signed int ticks)
 			
 			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
 			{
-				if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
+				if (part->hasHiddenEvents() & Part::RightEventsHidden) // auto-expanding is forbidden, clip
 				{
 					if (part->lenTick() > newEvent.tick())
 						newEvent.setLenTick(part->lenTick() - newEvent.tick());
@@ -1144,7 +1144,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 										
 										if (e.endTick() > dest_part->lenTick()) // event exceeds part?
 										{
-											if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
+											if (dest_part->hasHiddenEvents() & Part::RightEventsHidden) // auto-expanding is forbidden?
 											{
 												if (e.tick() < dest_part->lenTick())
 													e.setLenTick(dest_part->lenTick() - e.tick()); // clip
@@ -2009,7 +2009,7 @@ bool modify_notelen_items(TagEventList* tag_list, int rate, int offset)
       if (len <= 0)
         len = 1;
       
-      if ((e.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
+      if ((e.tick()+len > part->lenTick()) && (!(part->hasHiddenEvents() & Part::RightEventsHidden)))
         partlen[part] = e.tick() + len; // schedule auto-expanding
         
       if (e.lenTick() != len)
@@ -2117,7 +2117,7 @@ bool move_items(TagEventList* tag_list, signed int ticks)
       
       if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
       {
-        if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
+        if (part->hasHiddenEvents() & Part::RightEventsHidden) // auto-expanding is forbidden, clip
         {
           if (part->lenTick() > newEvent.tick())
             newEvent.setLenTick(part->lenTick() - newEvent.tick());
@@ -2609,7 +2609,7 @@ void pasteEventList(
       // Don't bother with expansion if these are new parts.
       if (!create_new_part && e.endPosValue() > dest_part_len_value) // event exceeds part?
       {
-        if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
+        if (dest_part->hasHiddenEvents() & Part::RightEventsHidden) // auto-expanding is forbidden?
         {
           if (e.posValue(time_type) < dest_part_len_value)
             e.setLenValue(dest_part_len_value - e.posValue(time_type), time_type); // clip
@@ -3200,7 +3200,85 @@ void resize_part(
             case Track::DRUM:
                   {
                   Undo operations;
-                                                                        
+
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+                  const Pos::TType newPosOrLenType = Pos::TType::TICKS;
+                  const unsigned int origPosValue = originalPart->posValue();
+                  const unsigned int newOrigPosValue = Pos::convert(newTickPosOrLen, newPosOrLenType, originalPart->type());
+                  // The amount to shift a part. The int64_t cast ensures we preserve the unsigned range.
+                  const int64_t origPosValueDiff = (int64_t)newOrigPosValue - (int64_t)origPosValue;
+                  const unsigned int origPosValueConverted = originalPart->posValue(newPosOrLenType);
+                  const unsigned int newOrigEndPosValue = 
+                    Pos::convert(origPosValueConverted + newTickPosOrLen, newPosOrLenType, originalPart->type());
+                  const unsigned int newOrigLenValue = newOrigEndPosValue - origPosValue;
+
+                  const unsigned int origLenValue = originalPart->lenValue();
+                  const int64_t origLenValueDiff = (int64_t)newOrigLenValue - (int64_t)origLenValue;
+
+                  int64_t events_offset = 0L;
+                  if(use_events_offset)
+                  {
+                    switch(resizeDirection)
+                    {
+                      case MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT:
+                        events_offset = origLenValueDiff;
+                      break;
+                      case MusECore::ResizeDirection::RESIZE_TO_THE_LEFT:
+                        events_offset = -origPosValueDiff;
+                      break;
+                    }
+                  }
+
+                  auto currentPart = originalPart;
+
+                  do
+                  {
+                      if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+                      {
+                        const unsigned int pos_val = currentPart->posValue(originalPart->type());
+                        const unsigned int new_end_pos_val = Pos::convert(pos_val + newOrigLenValue, originalPart->type(), currentPart->type());
+                        const unsigned int new_len_val = new_end_pos_val - pos_val;
+                        operations.push_back(
+                          UndoOp(UndoOp::ModifyPartLength, currentPart,
+                                currentPart->lenValue(), 
+                                new_len_val, 
+                                // The amount to shift all events in the part.
+                                events_offset, 
+                                // The position type of the amount to shift all events in the part.
+                                originalPart->type()));
+                      }
+                      else if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+                      {
+                          const unsigned int pos_val = currentPart->posValue(originalPart->type());
+                          const unsigned int end_pos_val = currentPart->endValue(originalPart->type());
+                          unsigned int new_pos_val, new_len_val;
+                          if((int64_t)pos_val + origPosValueDiff < 0L)
+                          {
+                            new_pos_val = 0;
+                            new_len_val = Pos::convert((int64_t)end_pos_val - ((int64_t)pos_val + origPosValueDiff),
+                                                      originalPart->type(), currentPart->type()) - new_pos_val;
+                          }
+                          else
+                          {
+                            new_pos_val = Pos::convert((int64_t)pos_val + origPosValueDiff, originalPart->type(), currentPart->type());
+                            new_len_val = currentPart->endValue() - new_pos_val;
+                          }
+                          operations.push_back(
+                            UndoOp(UndoOp::ModifyPartStart, currentPart,
+                                    currentPart->posValue(),
+                                    new_pos_val,
+                                    currentPart->lenValue(),
+                                    new_len_val,
+                                    // The amount to shift all events in the part.
+                                    events_offset,
+                                    // The position type of the amount to shift all events in the part.
+                                    originalPart->type()));
+                      }
+
+                      currentPart = currentPart->nextClone();
+
+                  } while (doClones && (currentPart != originalPart));
+#else
                   const Pos::TType newPosOrLenType = Pos::TType::TICKS;
                   const unsigned int origPosValue = originalPart->posValue();
                   const unsigned int newOrigPosValue = Pos::convert(newTickPosOrLen, newPosOrLenType, originalPart->type());
@@ -3276,12 +3354,12 @@ void resize_part(
                         const unsigned int new_len_val = new_end_pos_val - pos_val;
                         operations.push_back(
                           UndoOp(UndoOp::ModifyPartLength, currentPart,
-                                 currentPart->lenValue(), 
-                                 new_len_val, 
-                                 // The amount to shift all events in the part.
-                                 events_offset, 
-                                 // The position type of the amount to shift all events in the part.
-                                 originalPart->type()));
+                                currentPart->lenValue(), 
+                                new_len_val, 
+                                // The amount to shift all events in the part.
+                                events_offset, 
+                                // The position type of the amount to shift all events in the part.
+                                originalPart->type()));
                       }
                       else if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
                       {
@@ -3292,7 +3370,7 @@ void resize_part(
                           {
                             new_pos_val = 0;
                             new_len_val = Pos::convert((int64_t)end_pos_val - ((int64_t)pos_val + origPosValueDiff),
-                                                       originalPart->type(), currentPart->type()) - new_pos_val;
+                                                      originalPart->type(), currentPart->type()) - new_pos_val;
                           }
                           else
                           {
@@ -3314,6 +3392,7 @@ void resize_part(
                       currentPart = currentPart->nextClone();
 
                   } while (doClones && (currentPart != originalPart));
+#endif
                   
                   MusEGlobal::song->applyOperationGroup(operations);
                   break;

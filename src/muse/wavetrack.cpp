@@ -35,6 +35,7 @@
 #include "al/dsp.h"
 #include "audioprefetch.h"
 #include "latency_compensator.h"
+#include "config.h"
 
 // Turn on some cool terminal 'peak' meters for debugging
 //  presence of actual audio at various places
@@ -116,7 +117,23 @@ void WaveTrack::seekData(sf_count_t pos)
             for (iEvent ie = el.begin(); ie != el.end(); ++ie) {
                   Event& event = ie->second;
                   unsigned e_spos  = event.frame() + p_spos;
-                  sf_count_t offset = pos - e_spos;
+                  sf_count_t offset = 0;
+                  
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+                  const sf_count_t e_pos_diff = (sf_count_t)(int)event.frame();
+                  if(pos < (sf_count_t)(int)p_spos)
+                  {
+                    if(e_pos_diff < 0)
+                      offset = -e_pos_diff;
+                  }
+                  else
+                  {
+                    offset = pos - (sf_count_t)(int)e_spos;
+                  }
+#else
+                  offset = pos - e_spos;
+#endif
+
                   if(offset < 0)
                     offset = 0;
                   event.seekAudio(offset);
@@ -165,10 +182,17 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
                     unsigned nn      = event.lenFrame();
                     unsigned e_epos  = e_spos + nn;
 
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+                    if ((int64_t)(pos + n) < (int64_t)(int)e_spos)
+                      break;
+                    if ((int64_t)pos >= (int64_t)(int)e_epos)
+                      continue;
+#else
                     if (pos + n < e_spos)
                       break;
                     if (pos >= e_epos)
                       continue;
+#endif
 
                     int offset = e_spos - pos;
 

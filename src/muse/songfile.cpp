@@ -52,6 +52,7 @@
 #include "conf.h"
 #include "keyevent.h"
 #include "gconfig.h"
+#include "config.h"
 
 namespace MusEGlobal {
 MusECore::CloneList cloneList;
@@ -302,21 +303,20 @@ Part* Part::readFromXml(Xml& xml, Track* track, bool doClone, bool toTrack)
                                   type = Note;
                                 Event e(type);
                                 e.read(xml);
-                                // stored tickpos for event has absolute value. However internally
-                                // tickpos is relative to start of part, we substract tick().
-                                // TODO: better handling for wave event
-                                e.move( -npart->tick() );
-                                int tick = e.tick();
-
-                                if(tick < 0)
+                                // stored pos for event has absolute value. However internally
+                                // pos is relative to start of part, we substract part pos.
+                                // In case the event and part pos types differ, the event dominates.
+                                e.setPosValue(e.posValue() - npart->posValue(e.pos().type()));
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+                                npart->addEvent(e);
+#else
+                                const int posval = e.posValue();
+                                if(posval < 0)
                                 {
-                                  printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
-                                    tick, npart->name().toLatin1().constData());
+                                  printf("readClone: warning: event at posval:%d not in part:%s, discarded\n",
+                                    posval, npart->name().toLatin1().constData());
                                 }
-                                else
-                                {
-                                  npart->addEvent(e);
-                                }
+#endif
                               }
                               else // ...Otherwise a clone was created, so we don't need the events.
                                 xml.skip(tag);

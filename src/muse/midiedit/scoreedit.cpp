@@ -4424,7 +4424,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
                     unsigned newpartlen=dragged_event_part->lenTick();
                     if (tmp.endTick() > dragged_event_part->lenTick())
                     {
-                        if (dragged_event_part->hasHiddenEvents()) // do not allow autoexpand
+                        if (dragged_event_part->hasHiddenEvents() & MusECore::Part::RightEventsHidden) // do not allow autoexpand
                         {
                             tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
                             if (debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;

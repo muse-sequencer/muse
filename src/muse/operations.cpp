@@ -25,6 +25,7 @@
 #include "globals.h"
 #include "synth.h"
 #include "muse_time.h"
+#include "config.h"
 
 // Forwards from header:
 #include "tempo.h" 
@@ -1287,8 +1288,13 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       // Do not attempt to add cached events which are outside of the part.
       // But do allow muted parts, and muted tracks, and 'off' tracks. Otherwise adding values
       //  to muted parts fails to add them when unmuted. The cache mechanism catches this anyways.
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if((int)_posLenVal >= (int)_part->posValue() &&
+         (int)_posLenVal < (int)_part->posValue() + (int)_part->lenValue())
+#else
       if(_posLenVal >= _part->posValue() &&
          _posLenVal < _part->posValue() + _part->lenValue())
+#endif
          // FIXME FINDMICHJETZT XTicks!!
         _mcvl->insert(MidiCtrlValListInsertPair_t(_posLenVal, MidiCtrlVal(_part, _intB)));
       // No song changed flags are required to be set here.
@@ -3039,7 +3045,11 @@ bool PendingOperationList::removePartPortCtrlEvents(const Event& event, Part* pa
           // Let's throw up the error only if we were expecting the cache event to be there,
           //  as is the case when the tick is inside the part. When the tick is NOT inside the part
           //  a cache event should really not be there. But if one is found it should be deleted anyway.
-          if(tck < part->lenTick())
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+          if((int)tck >= (int)part->tick() && (int)tck < (int)part->tick() + (int)part->lenTick())
+#else
+          if(tck < part->tick() + part->lenTick())
+#endif
             fprintf(stderr, "removePartPortCtrlEvents: (tick: %u): not found (size %zd)\n", tck, mcvl->size());
           return false;
           }
@@ -3292,7 +3302,6 @@ void PendingOperationList::modifyPartStartOperation(
         const unsigned int new_abs_ev_pos_val = Pos::convert(old_abs_ev_pos_val + events_offset, events_offset_time_type, e.pos().type());
         const unsigned int new_ev_pos_val = new_abs_ev_pos_val - new_part_pos_val;
         e.setPosValue(new_ev_pos_val);
-        
       }
       new_el->add(e);
     }

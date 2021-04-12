@@ -261,7 +261,7 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
   for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
     MusECore::Part* opart = ip2c->first;
-    if (opart->hasHiddenEvents())
+    if (opart->hasHiddenEvents() & MusECore::Part::RightEventsHidden)
     {
 			forbidden=true;
 			break;
@@ -526,7 +526,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
     
     // Indicate do undo, and do not do port controller values and clone parts.
     int diff = event.endTick()-part->lenTick();
-    if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
+    if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
     {
       if(found)
       {

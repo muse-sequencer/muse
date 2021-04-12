@@ -726,8 +726,8 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
       }
    }
      
-   // Force all clones to be done (true) until we have a key we can use for it.
-   MusECore::resize_part(t, p, newPosOrLen, resizeDirection, true, ctrl);
+   // Do not force all clones to be done (false) until we have a key we can use for it.
+   MusECore::resize_part(t, p, newPosOrLen, resizeDirection, false, ctrl);
 }
 
 //---------------------------------------------------------
@@ -2301,9 +2301,11 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
   QColor eventColor;
   QPen pen;
   pen.setCosmetic(true);
-
+  unsigned int pt_len = 0;
+  
   if(pt)
   {
+    pt_len = pt->lenTick();
     int part_r, part_g, part_b, brightness;
 
     if (pt->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
@@ -2349,6 +2351,12 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
                           type == MusECore::Controller && a == MusECore::CTRL_AFTERTOUCH)
                       || ((MusEGlobal::config.canvasShowPartEvent & 64) && (type == MusECore::Sysex || type == MusECore::Meta))
                       ) {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+                          if((int)i->first < 0)
+                            continue;
+                          if((int)i->first >= (int)pt_len)
+                            break;
+#endif
                           int t = i->first + pTick;
                           int th = mt->height();
                           if(t >= r.left() && t <= r.right())
@@ -2369,71 +2377,102 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       p.setPen(pen);
             
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PITCH BEND
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+            if((int)i->first < 0)
+              continue;
+            if((int)i->first >= (int)pt_len)
+              break;
+#endif
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
             if (type == MusECore::Controller) {
                   int ctrl_type=i->second.dataA();
-                  int val=i->second.dataB();
-
-                  int th = int(mt->height() * 0.75); // only draw on three quarters
-                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
-
                   if (ctrl_type == MusECore::CTRL_PITCH)
+                  {
+                    int val=i->second.dataB();
+
+                    int th = int(mt->height() * 0.75); // only draw on three quarters
+                    int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
                     p.drawLine(t, hoffset + r.y() + th/2, t, hoffset + r.y() - val*th/8192/2 + th/2);
+                  }
             }
       }
 
       pen.setColor(QColor(192,color_brightness/2,color_brightness/2));
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PAN
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+            if((int)i->first < 0)
+              continue;
+            if((int)i->first >= (int)pt_len)
+              break;
+#endif
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
             if (type == MusECore::Controller) {
                   int ctrl_type=i->second.dataA();
-                  int val=i->second.dataB();
-
-                  int th = int(mt->height() * 0.75); // only draw on three quarters
-                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
-
                   if (ctrl_type == 10)
+                  {
+                    int val=i->second.dataB();
+
+                    int th = int(mt->height() * 0.75); // only draw on three quarters
+                    int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
                     p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
+                  }
             }
       }
 
       pen.setColor(QColor(color_brightness/2,192,color_brightness/2));
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // VOLUME
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+            if((int)i->first < 0)
+              continue;
+            if((int)i->first >= (int)pt_len)
+              break;
+#endif
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
             if (type == MusECore::Controller) {
                   int ctrl_type=i->second.dataA();
-                  int val=i->second.dataB();
-
-                  int th = int(mt->height() * 0.75); // only draw on three quarters
-                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
-
                   if (ctrl_type == 7)
+                  {
+                    int val=i->second.dataB();
+
+                    int th = int(mt->height() * 0.75); // only draw on three quarters
+                    int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
                     p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
+                  }
             }
       }
 
       pen.setColor(QColor(0,0,255));
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PROGRAM CHANGE
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+            if((int)i->first < 0)
+              continue;
+            if((int)i->first >= (int)pt_len)
+              break;
+#endif
             int t  = i->first + pTick;
 
             MusECore::EventType type = i->second.type();
             if (type == MusECore::Controller) {
                   int ctrl_type=i->second.dataA();
-
-                  int th = int(mt->height() * 0.75); // only draw on three quarters
-                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
-
                   if (ctrl_type == MusECore::CTRL_PROGRAM)
+                  {
+                    int th = int(mt->height() * 0.75); // only draw on three quarters
+                    int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
                     p.drawLine(t, hoffset + r.y(), t, hoffset + r.y() + th);
+                  }                  
             }
       }
 
@@ -2513,6 +2552,12 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       pen.setColor(eventColor);
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+            if((int)i->first < 0)
+              continue;
+            if((int)i->first >= (int)pt_len)
+              break;
+#endif
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
 
@@ -2545,7 +2590,19 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
    const int h = rectHeight >> 1;
    const int x1 = startX;
    const int x2 = endX;
-   int postick = MusEGlobal::tempomap.frame2tick(rootFrame + startFrame);
+   if((int)startFrame + (int)lengthFrames < 0)
+     return;
+   
+   int hiddenOffset = 0;
+   int evAbsFrameLim = rootFrame + startFrame;
+   if(evAbsFrameLim < 0)
+   {
+     hiddenOffset = -evAbsFrameLim;
+     evAbsFrameLim = 0;
+   }
+   
+   int postick = MusEGlobal::tempomap.frame2tick(evAbsFrameLim);
+   
    const int event_x = mapx(postick);
    const int event_ex = mapx(MusEGlobal::tempomap.frame2tick(rootFrame + startFrame + lengthFrames));
    if(event_x >= x2 || event_ex < x1)
@@ -2598,20 +2655,20 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
       {
         wave_visible = true;
         wav_sx = -samplePos;
-        wav_ex = smps - samplePos;
+        wav_ex = smps - samplePos - hiddenOffset;
         if(wav_sx < 0)
           wav_sx = 0;
-        wav_sx += startFrame + rootFrame;
+        wav_sx += evAbsFrameLim;
         wav_sx = MusEGlobal::tempomap.frame2tick(wav_sx);
 
         wav_ex = f.unConvertPosition(wav_ex);
-        if(wav_ex >= (int)lengthFrames)
+        if(wav_ex >= (int)lengthFrames - hiddenOffset)
         {
-          wav_ex = lengthFrames;
+          wav_ex = lengthFrames - hiddenOffset;
           if(wav_ex > 0)
             --wav_ex;
         }
-        wav_ex += startFrame + rootFrame;
+        wav_ex += evAbsFrameLim;
         wav_ex = MusEGlobal::tempomap.frame2tick(wav_ex);
 
         wav_sx = mapx(wav_sx);
@@ -2797,6 +2854,286 @@ void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int sampleP
       MusECore::drawSegmentedVLine(&p, event_ex, startY, endY - 1, pix_per_seg);
   }
 }
+
+// TODO REMOVE Tim. wave. An attempt to re-write this method, in progress...
+// void PartCanvas::drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame, unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight, bool selected)
+// {
+//    const int endY = startY + rectHeight;
+//    const int h = rectHeight >> 1;
+//    const int x1 = startX;
+//    const int x2 = endX;
+//    const int md_x1 = mapxDev(startX);
+//    const int md_x2 = mapxDev(endX);
+//    const int md_x1_fr = MusEGlobal::tempomap.tick2frame(md_x1);
+//    const int md_x2_fr = MusEGlobal::tempomap.tick2frame(md_x2);
+//    const int event_abs_fr = rootFrame + startFrame;
+//    const int event_abs_e_fr = event_abs_fr + lengthFrames;
+//    if(event_abs_fr >= md_x2_fr || event_abs_e_fr < md_x1_fr)
+//      return;
+//    
+//    int postick = MusEGlobal::tempomap.frame2tick(rootFrame + startFrame);
+//    const int event_x = mapx(postick);
+//    const int event_ex = mapx(MusEGlobal::tempomap.frame2tick(rootFrame + startFrame + lengthFrames));
+//    if(event_x >= x2 || event_ex < x1)
+//      return;
+// //    int sx = event_x;
+// //    int ex = event_ex;
+// //    if(sx < x1)
+// //      sx = x1;
+// //    if(ex > x2)
+// //      ex = x2;
+// 
+//    int ev_s_fr = event_abs_fr;
+//    int ev_e_fr = event_abs_e_fr;
+//    if(ev_s_fr < md_x1_fr)
+//      ev_s_fr = md_x1_fr;
+//    if(ev_e_fr > md_x2_fr)
+//      ev_e_fr = md_x2_fr;
+// 
+//    int sx = mapx(MusEGlobal::tempomap.frame2tick(ev_s_fr));
+//    int ex = mapx(MusEGlobal::tempomap.frame2tick(ev_e_fr));
+// 
+//    
+//    // Whether space permits displaying all channels or combining them into one.
+//    const bool multichan_disp = h >= 20;
+//    const int center = startY + rectHeight / 2;
+//    const QColor left_ch_color(0, 170, 255);
+//    const QColor right_ch_color(Qt::red);
+//    const QColor combo_ch_color(220, 120, 255);
+// 
+//   int xScale;
+//   int pos;
+//   int tickstep = rmapxDev(1);
+//   int drawoffset;
+//   if((x1 - event_x) < 0) {
+//     drawoffset = 0;
+//   }
+//   else {
+//     drawoffset = rmapxDev(x1 - event_x);
+//   }
+//   postick += drawoffset;
+//   pos = MusEGlobal::tempomap.tick2frame(postick) - rootFrame - startFrame;
+// 
+//   QPen pen;
+//   pen.setCosmetic(true);
+//   
+//   unsigned channels = 0;
+//   int wav_sx = 0;
+//   int wav_ex = 0;
+//   int wsx = 0;
+//   int wex = 0;
+//   bool wave_visible = false;
+// 
+//   if(!f.isNull())
+//   {
+//     channels = f.channels();
+//     if(channels > 0)
+//     {
+//       const sf_count_t smps = f.samples();
+// 
+//       if(-samplePos < smps && samplePos <= smps)
+//       {
+//         wave_visible = true;
+//         wav_sx = -samplePos;
+//         wav_ex = smps - samplePos;
+//         if(wav_sx < 0)
+//           wav_sx = 0;
+//         wav_sx += startFrame + rootFrame;
+//         wav_sx = MusEGlobal::tempomap.frame2tick(wav_sx);
+// 
+//         wav_ex = f.unConvertPosition(wav_ex);
+//         if(wav_ex >= (int)lengthFrames)
+//         {
+//           wav_ex = lengthFrames;
+//           if(wav_ex > 0)
+//             --wav_ex;
+//         }
+//         wav_ex += startFrame + rootFrame;
+//         wav_ex = MusEGlobal::tempomap.frame2tick(wav_ex);
+// 
+//         wav_sx = mapx(wav_sx);
+//         wav_ex = mapx(wav_ex);
+//         wsx = wav_sx < x1 ? x1 : wav_sx;
+//         wex = wav_ex > x2 ? x2 : wav_ex;
+//       }
+// 
+//       if (!multichan_disp) {
+//             //    combine multi channels into one waveform
+//             int y = startY + h;
+//             int cc = rectHeight % 2 ? 0 : 1;
+//             for (int i = sx; i < ex; ++i) {
+//                   MusECore::SampleV sa[channels];
+//                   xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
+//                   if((samplePos + f.convertPosition(pos)) > smps)
+//                     break;
+//                   // Seek the file only once, not with every read!
+//                   if(i == sx)
+//                   {
+//                     if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, samplePos) == -1)
+//                       break;
+//                   }
+//                   f.readConverted(sa, xScale, pos, samplePos, true, false);
+// 
+//                   postick += tickstep;
+//                   pos += xScale;
+//                   int peak = 0;
+//                   int rms  = 0;
+//                   for (unsigned k = 0; k < channels; ++k) {
+//                         if (sa[k].peak > peak)
+//                               peak = sa[k].peak;
+//                         rms += sa[k].rms;
+//                         }
+//                   rms /= channels;
+//                   peak = (peak * (rectHeight-2)) >> 9;
+//                   rms  = (rms  * (rectHeight-2)) >> 9;
+//                   int outer = peak;
+//                   int inner = peak -1; //-1 < 0 ? 0 : peak -1;
+//                   pen.setColor(MusEGlobal::config.partWaveColorPeak);
+//                   p.setPen(pen);
+//                   p.drawLine(i, y - outer - cc, i, y + outer);
+//                   pen.setColor(MusEGlobal::config.partWaveColorRms);
+//                   p.setPen(pen);
+//                   if (MusEGlobal::config.waveDrawing == MusEGlobal::WaveRmsPeak)
+//                     p.drawLine(i, y - rms - cc, i, y + rms);
+//                   else // WaveOutLine
+//                     p.drawLine(i, y - inner - cc, i, y + inner);
+//                   }
+// 
+//                   // Only if there's something to draw.
+//                   if(wave_visible && wsx <= wex && wsx < x2 && wex >= x1)
+//                   {  
+//                     // If two (or more) channels combine blue (cyan) and red into say, magenta.
+//                     pen.setColor(QColor(channels > 1 ? combo_ch_color : left_ch_color));
+//                     p.setPen(pen);
+//                     p.drawLine(wsx, center, wex, center);
+//                   }
+//             }
+//       else {
+//             //  multi channel display
+//             int hm = rectHeight / (channels * 2);
+//             int cc = rectHeight % (channels * 2) ? 0 : 1;
+//             for (int i = sx; i < ex; ++i) {
+//                   int y  = startY + hm;
+//                   MusECore::SampleV sa[channels];
+//                   xScale = MusEGlobal::tempomap.deltaTick2frame(postick, postick + tickstep);
+//                   if((samplePos + f.convertPosition(pos)) > smps)
+//                     break;
+//                   // Seek the file only once, not with every read!
+//                   if(i == sx)
+//                   {
+//                     if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, samplePos) == -1)
+//                       break;
+//                   }
+//                   f.readConverted(sa, xScale, pos, samplePos, true, false);
+// 
+//                   postick += tickstep;
+//                   pos += xScale;
+//                   for (unsigned k = 0; k < channels; ++k) {
+//                         int peak = (sa[k].peak * (hm - 1)) >> 8;
+//                         int rms  = (sa[k].rms  * (hm - 1)) >> 8;
+//                         int outer = peak;
+//                         int inner = peak -1; //-1 < 0 ? 0 : peak -1;
+//                         pen.setColor(MusEGlobal::config.partWaveColorPeak);
+//                         p.setPen(pen);
+//                         p.drawLine(i, y - outer - cc , i, y + outer);
+//                         pen.setColor(MusEGlobal::config.partWaveColorRms);
+//                         p.setPen(pen);
+//                         if (MusEGlobal::config.waveDrawing == MusEGlobal::WaveRmsPeak)
+//                           p.drawLine(i, y - rms - cc, i, y + rms);
+//                         else // WaveOutLine
+//                           p.drawLine(i, y - inner - cc, i, y + inner);
+//                         y  += 2 * hm;
+//                         }
+//                   }
+// 
+//                   // Only if there's something to draw.
+//                   if(wave_visible && wsx <= wex && wsx < x2 && wex >= x1)
+//                   {  
+//                     const int hn = rectHeight / channels;
+//                     const int hhn = hn / 2;
+//                     for (unsigned int i = 0; i < channels; ++i) {
+//                           const int h2     = hn * i;
+//                           const int finY = startY + hhn + h2;
+//                           if(finY >= startY && finY < endY)
+//                           {
+//                             pen.setColor(QColor(i & 1 ? right_ch_color : left_ch_color));
+//                             p.setPen(pen);
+//                             p.drawLine(wsx, finY, wex, finY);
+//                           }
+//                         }
+//                   }
+//             }
+//     }
+//    }
+// 
+//   pen.setColor(selected ? Qt::white : Qt::black);
+//   QVector<qreal> customDashPattern;
+//   customDashPattern << 1.0 << 2.0;
+//   pen.setDashPattern(customDashPattern);
+//   const int pix_per_seg = 21;
+// 
+//   //fprintf(stderr, "x1:%d x2:%d startY:%d endY:%d rectHeight:%d y:%d h:%d event_x:%d event_ex:%d"
+//   //                " rootFrame:%d startFrame:%d lengthFrames:%d sx:%d ex:%d wav_sx:%d wav_ex:%d wsx:%d wex:%d\n",
+//   //        x1, x2, startY, endY, rectHeight, y(), height(), event_x, event_ex,
+//   //        rootFrame, startFrame, lengthFrames, sx, ex, wav_sx, wav_ex, wsx, wex);
+// 
+//   // Draw the complete line only if there are an even number of channels (space for the line in the middle).
+//   // Ensure a complete line is drawn even if there is no sound file or channels.
+//   if((channels & 1) == 0 && multichan_disp)
+//   {
+//     if(sx > event_x)
+//     {
+//       //fprintf(stderr, "Single line. Setting dash offset:%d\n", (sx - event_x) % 3);
+//       pen.setDashOffset((sx - event_x) % 3);
+//     }
+//     p.setPen(pen);
+//     MusECore::drawSegmentedHLine(&p, sx, ex, center, pix_per_seg);
+//   }
+//   else
+//   {
+//     // Draw only the required two segments of the line.
+//     if(wave_visible)
+//     {
+//       if(sx < wsx)
+//       {
+//         if(sx > event_x)
+//         {
+//           //fprintf(stderr, "Line segment 1. Setting dash offset:%d\n", (sx - event_x) % 3);
+//           pen.setDashOffset((sx - event_x) % 3);
+//         }
+//         p.setPen(pen);
+//         MusECore::drawSegmentedHLine(&p, sx, wsx - 1, center, pix_per_seg);
+//       }
+//       if(wex < ex)
+//       {
+//         if(sx > wex + 1)
+//         {
+//           //fprintf(stderr, "Line segment 2. Setting dash offset:%d\n", (sx - wex + 1) % 3);
+//           pen.setDashOffset((sx - wex + 1) % 3);
+//         }
+//         p.setPen(pen);
+//         MusECore::drawSegmentedHLine(&p, wex + 1, ex, center, pix_per_seg);
+//       }
+//     }
+//   }
+// 
+//   //
+//   // Draw custom dashed borders around the wave event
+//   //
+// 
+//   if(endY > startY)
+//   {
+//     // Reset offset back to zero.
+//     pen.setDashOffset(0);
+//     p.setPen(pen);
+//     // Left line:
+//     if(event_x >= x1 && event_x <= x2)
+//       MusECore::drawSegmentedVLine(&p, event_x, startY, endY - 1, pix_per_seg);
+//     // Right line:
+//     if(event_ex >= x1 && event_ex <= x2)
+//       MusECore::drawSegmentedVLine(&p, event_ex, startY, endY - 1, pix_per_seg);
+//   }
+// }
 
 //---------------------------------------------------------
 //   drawWavePart
