@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <rect x="1" y="1" width="62" height="62" fill="#fea" fill-rule="evenodd" stroke="#000" stroke-linejoin="round" style="paint-order:fill markers stroke"/>
+  <path d="m23 36h25.175v-4.0399l12.171 10.504-12.171 9.6957v-4.0399h-25.175z" fill="#0f0" stroke="#000" stroke-width=".99998"/>
+  <path d="m42 6c-6.5184-2.3771-13.941-2.275-20.707 0.87514-13.533 6.3002-19.425 22.458-13.125 35.991 6.3002 13.533 22.457 19.425 35.989 13.125l-2.3468-5.044c-10.807 5.0314-23.568 0.37784-28.6-10.43-5.0314-10.807-0.37784-23.568 10.43-28.6 10.807-5.0314 23.568-0.37784 28.6 10.43l5.0423-2.3474c-3.1501-6.7664-8.7641-11.623-15.282-14z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill-rule="evenodd" image-rendering="auto" shape-rendering="auto" solid-color="#000000" stop-color="#000000" stroke-width="0" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;font-variation-settings:normal;inline-size:0;isolation:auto;mix-blend-mode:normal;paint-order:fill markers stroke;shape-margin:0;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+  <g transform="translate(1.1497 -.30879)" fill-rule="evenodd" stroke-width="0">
+   <ellipse transform="scale(-1)" cx="-15.528" cy="-27.636" rx="2.692" ry="2.692" style="paint-order:fill markers stroke"/>
+   <ellipse transform="scale(-1)" cx="-47.21" cy="-27.46" rx="2.692" ry="2.692" style="paint-order:fill markers stroke"/>
+   <ellipse transform="scale(-1)" cx="-41.109" cy="-19.328" rx="2.692" ry="2.692" style="paint-order:fill markers stroke"/>
+   <ellipse transform="scale(-1)" cx="-31.479" cy="-16.103" rx="2.692" ry="2.692" style="paint-order:fill markers stroke"/>
+   <ellipse transform="scale(-1)" cx="-21.844" cy="-19.505" rx="2.692" ry="2.692" style="paint-order:fill markers stroke"/>
+  </g>
+ </g>
+</svg>

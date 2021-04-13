@@ -39,11 +39,6 @@ extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
 
-extern QPixmap* routesInIcon;
-extern QPixmap* routesOutIcon;
-extern QPixmap* routesMidiInIcon;
-extern QPixmap* routesMidiOutIcon;
-
 extern QPixmap* deltaOnIcon;
 extern QPixmap* deltaOffIcon;
 
@@ -283,6 +278,11 @@ extern QIcon* ledRedSVGIcon;
 extern QIcon* ledBlueSVGIcon;
 extern QIcon* ledYellowSVGIcon;
 extern QIcon* ledOffSVGIcon;
+
+extern QIcon* routeInSVGIcon;
+extern QIcon* routeOutSVGIcon;
+extern QIcon* routeInMidiSVGIcon;
+extern QIcon* routeOutMidiSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

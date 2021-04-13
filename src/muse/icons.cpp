@@ -38,11 +38,6 @@
 #include "xpm/midi_ctrl_graph_merge_erase_inclusive.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase_wysiwyg.xpm"
 
-#include "xpm/routing_input_button_slim_4.xpm"
-#include "xpm/routing_output_button_slim_4.xpm"
-#include "xpm/routing_midi_input_button_slim.xpm"
-#include "xpm/routing_midi_output_button_slim.xpm"
-
 #include "xpm/delta_on.xpm"
 #include "xpm/delta_off.xpm"
 
@@ -63,11 +58,6 @@ namespace MusEGui {
 
 QPixmap* deltaOnIcon;
 QPixmap* deltaOffIcon;
-
-QPixmap* routesInIcon;
-QPixmap* routesOutIcon;
-QPixmap* routesMidiInIcon;
-QPixmap* routesMidiOutIcon;
 
 QPixmap* midiCtrlMergeEraseIcon;
 QPixmap* midiCtrlMergeEraseInclusiveIcon;
@@ -308,6 +298,11 @@ QIcon* ledBlueSVGIcon;
 QIcon* ledYellowSVGIcon;
 QIcon* ledOffSVGIcon;
 
+QIcon* routeInSVGIcon;
+QIcon* routeOutSVGIcon;
+QIcon* routeInMidiSVGIcon;
+QIcon* routeOutMidiSVGIcon;
+
 QIcon* dummySVGIcon;
 
 //----------------------------------
@@ -402,11 +397,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midiCtrlMergeEraseIcon          = new QPixmap(midi_ctrl_graph_merge_erase_xpm);
     midiCtrlMergeEraseInclusiveIcon = new QPixmap(midi_ctrl_graph_merge_erase_inclusive_xpm);
     midiCtrlMergeEraseWysiwygIcon   = new QPixmap(midi_ctrl_graph_merge_erase_wysiwyg_xpm);
-
-    routesInIcon         = new QPixmap(routing_input_button_slim_4_xpm);
-    routesOutIcon        = new QPixmap(routing_output_button_slim_4_xpm);
-    routesMidiInIcon     = new QPixmap(routing_midi_input_button_slim_xpm);
-    routesMidiOutIcon    = new QPixmap(routing_midi_output_button_slim_xpm);
 
     deltaOnIcon          = new QPixmap(delta_on_xpm);
     deltaOffIcon         = new QPixmap(delta_off_xpm);
@@ -687,6 +677,11 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     ledYellowSVGIcon = icons.getSVG("led_yellow.svg");
     ledOffSVGIcon = icons.getSVG("led_off.svg");
 
+    routeInSVGIcon = icons.getSVG("route_in.svg");
+    routeOutSVGIcon = icons.getSVG("route_out.svg");
+    routeInMidiSVGIcon = icons.getSVG("route_in_midi.svg");
+    routeOutMidiSVGIcon = icons.getSVG("route_out_midi.svg");
+
     QPixmap px(10,10);
     px.fill(Qt::transparent);
     dummySVGIcon = new QIcon(px);
@@ -729,11 +724,6 @@ void deleteIcons()
     delete midiCtrlMergeEraseIcon;
     delete midiCtrlMergeEraseInclusiveIcon;
     delete midiCtrlMergeEraseWysiwygIcon;
-
-    delete routesInIcon;
-    delete routesOutIcon;
-    delete routesMidiInIcon;
-    delete routesMidiOutIcon;
 
     delete deltaOnIcon;
     delete deltaOffIcon;
@@ -975,6 +965,11 @@ void deleteIcons()
     delete ledBlueSVGIcon;
     delete ledYellowSVGIcon;
     delete ledOffSVGIcon;
+
+    delete routeInSVGIcon;
+    delete routeOutSVGIcon;
+    delete routeInMidiSVGIcon;
+    delete routeOutMidiSVGIcon;
 
     delete dummySVGIcon;
 

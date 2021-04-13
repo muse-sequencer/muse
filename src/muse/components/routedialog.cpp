@@ -3113,8 +3113,8 @@ void RouteDialog::addItems()
           newDstList->blockSignals(false);
           //dstCatItem->setExpanded(true); // REMOVE Tim. For test only.
         }
-        if(QPixmap* r_pm = r.icon(false, false))
-          item->setIcon(ROUTE_NAME_COL, QIcon(*r_pm));
+        if(QIcon* r_pm = r.icon(false, false))
+          item->setIcon(ROUTE_NAME_COL, *r_pm);
         
         if(dst_chans != 0)
         {
@@ -3197,10 +3197,10 @@ void RouteDialog::addItems()
           routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
           routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
           routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
-          if(QPixmap* src_pm = src.icon(true, false))
-            routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
-          if(QPixmap* dst_pm = dst.icon(false, false))
-            routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+          if(QIcon* src_pm = src.icon(true, false))
+            routesItem->setIcon(ROUTE_SRC_COL, *src_pm);
+          if(QIcon* dst_pm = dst.icon(false, false))
+            routesItem->setIcon(ROUTE_DST_COL, *dst_pm);
           routeList->blockSignals(false);
         }
 
@@ -3265,8 +3265,8 @@ void RouteDialog::addItems()
           item->setTextAlignment(ROUTE_NAME_COL, align_flags);
           newSrcList->blockSignals(false);
         }
-        if(QPixmap* r_pm = r.icon(true, false))
-          item->setIcon(ROUTE_NAME_COL, QIcon(*r_pm));
+        if(QIcon* r_pm = r.icon(true, false))
+          item->setIcon(ROUTE_NAME_COL, *r_pm);
         
         if(src_chans != 0
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -3361,10 +3361,10 @@ void RouteDialog::addItems()
           routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
           routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
           routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
-          if(QPixmap* src_pm = src.icon(true, false))
-            routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
-          if(QPixmap* dst_pm = dst.icon(false, false))
-            routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+          if(QIcon* src_pm = src.icon(true, false))
+            routesItem->setIcon(ROUTE_SRC_COL, *src_pm);
+          if(QIcon* dst_pm = dst.icon(false, false))
+            routesItem->setIcon(ROUTE_DST_COL, *dst_pm);
           routeList->blockSignals(false);
         }
 
@@ -3447,10 +3447,10 @@ void RouteDialog::addItems()
         routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
         routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
         routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
-        if(QPixmap* src_pm = src.icon(true, true))
-          routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
-        if(QPixmap* dst_pm = dst.icon(false, true))
-          routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+        if(QIcon* src_pm = src.icon(true, true))
+          routesItem->setIcon(ROUTE_SRC_COL, *src_pm);
+        if(QIcon* dst_pm = dst.icon(false, true))
+          routesItem->setIcon(ROUTE_DST_COL, *dst_pm);
         routeList->blockSignals(false);
       }
     }
@@ -3648,10 +3648,10 @@ void RouteDialog::addItems()
               routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
               routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
               routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
-              if(QPixmap* src_pm = src.icon(true, true))
-                routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
-              if(QPixmap* dst_pm = dst.icon(false, true))
-                routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+              if(QIcon* src_pm = src.icon(true, true))
+                routesItem->setIcon(ROUTE_SRC_COL, *src_pm);
+              if(QIcon* dst_pm = dst.icon(false, true))
+                routesItem->setIcon(ROUTE_DST_COL, *dst_pm);
               routeList->blockSignals(false);
             }
 //             if(!r->jackPort)
@@ -3769,10 +3769,10 @@ void RouteDialog::addItems()
               routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
               routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
               routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
-              if(QPixmap* src_pm = src.icon(true, true))
-                routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
-              if(QPixmap* dst_pm = dst.icon(false, true))
-                routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+              if(QIcon* src_pm = src.icon(true, true))
+                routesItem->setIcon(ROUTE_SRC_COL, *src_pm);
+              if(QIcon* dst_pm = dst.icon(false, true))
+                routesItem->setIcon(ROUTE_DST_COL, *dst_pm);
               routeList->blockSignals(false);
             }
 
@@ -3873,10 +3873,10 @@ void RouteDialog::addItems()
               routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
               routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(src));
               routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(dst));
-              if(QPixmap* src_pm = src.icon(true, true))
-                routesItem->setIcon(ROUTE_SRC_COL, QIcon(*src_pm));
-              if(QPixmap* dst_pm = dst.icon(false, true))
-                routesItem->setIcon(ROUTE_DST_COL, QIcon(*dst_pm));
+              if(QIcon* src_pm = src.icon(true, true))
+                routesItem->setIcon(ROUTE_SRC_COL, *src_pm);
+              if(QIcon* dst_pm = dst.icon(false, true))
+                routesItem->setIcon(ROUTE_DST_COL, *dst_pm);
               routeList->blockSignals(false);
             }
             
@@ -3935,7 +3935,7 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
-          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesInIcon));
+          srcCatItem->setIcon(ROUTE_NAME_COL, *routeInSVGIcon);
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
@@ -3978,7 +3978,7 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
-          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesOutIcon));
+          dstCatItem->setIcon(ROUTE_NAME_COL, *routeOutSVGIcon);
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -3993,8 +3993,8 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
-      const QIcon src_ico(*routesInIcon);
-      const QIcon dst_ico(*routesOutIcon);
+//      const QIcon src_ico(*routesInIcon);
+//      const QIcon dst_ico(*routesOutIcon);
       for(MusECore::ciRoute i = in_rl.begin(); i != in_rl.end(); ++i)
       {
         const MusECore::Route& in_r = *i;
@@ -4017,8 +4017,8 @@ void RouteDialog::addItems()
             routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
             routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
             routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
-            routesItem->setIcon(ROUTE_SRC_COL, src_ico);
-            routesItem->setIcon(ROUTE_DST_COL, dst_ico);
+            routesItem->setIcon(ROUTE_SRC_COL, *routeInSVGIcon);
+            routesItem->setIcon(ROUTE_DST_COL, *routeOutSVGIcon);
             routeList->blockSignals(false);
           }
         }
@@ -4055,7 +4055,7 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
-          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesMidiInIcon));
+          srcCatItem->setIcon(ROUTE_NAME_COL, *routeInMidiSVGIcon);
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
@@ -4098,7 +4098,7 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
-          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*routesMidiOutIcon));
+          dstCatItem->setIcon(ROUTE_NAME_COL, *routeOutMidiSVGIcon);
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -4113,8 +4113,8 @@ void RouteDialog::addItems()
         item->setTextAlignment(ROUTE_NAME_COL, align_flags);
         newDstList->blockSignals(false);
       }
-      const QIcon src_ico(*routesMidiInIcon);
-      const QIcon dst_ico(*routesMidiOutIcon);
+//      const QIcon src_ico(*routesMidiInIcon);
+//      const QIcon dst_ico(*routesMidiOutIcon);
       for(MusECore::ciRoute i = in_rl.begin(); i != in_rl.end(); ++i)
       {
         const MusECore::Route& in_r = *i;
@@ -4137,8 +4137,8 @@ void RouteDialog::addItems()
             routesItem->setTextAlignment(ROUTE_DST_COL, align_flags);
             routesItem->setData(ROUTE_SRC_COL, RouteDialog::RouteRole, QVariant::fromValue(in_r));
             routesItem->setData(ROUTE_DST_COL, RouteDialog::RouteRole, QVariant::fromValue(out_r));
-            routesItem->setIcon(ROUTE_SRC_COL, src_ico);
-            routesItem->setIcon(ROUTE_DST_COL, dst_ico);
+            routesItem->setIcon(ROUTE_SRC_COL, *routeInMidiSVGIcon);
+            routesItem->setIcon(ROUTE_DST_COL, *routeOutMidiSVGIcon);
             routeList->blockSignals(false);
           }
         }

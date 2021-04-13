@@ -1387,12 +1387,12 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             if(md->deviceType() == MusECore::MidiDevice::JACK_MIDI)
             {
               if(md->rwFlags() & 1)  
-                or_item->setIcon(QIcon(*routesMidiOutIcon));
+                or_item->setIcon(*routeOutMidiSVGIcon);
               else  
                 or_item->setIcon(QIcon());
               
               if(md->rwFlags() & 2)  
-                ir_item->setIcon(QIcon(*routesMidiInIcon));
+                ir_item->setIcon(*routeInMidiSVGIcon);
               else
                 ir_item->setIcon(QIcon());
             }
