@@ -145,7 +145,7 @@ class Route {
       // Returns a suitable icon for the route based on type, track type etc.
       // isSource determines whether to return an in-facing icon or an out-facing icon.
       // isMidi determines whether to return an audio or midi themed icon.
-      QPixmap* icon(bool isSource = true, bool isMidi = false) const;
+      QIcon *icon(bool isSource = true, bool isMidi = false) const;
       // Create string name representation.
       // preferred_name_or_alias (mainly for Jack routes): -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       QString name(int preferred_name_or_alias = -1) const;

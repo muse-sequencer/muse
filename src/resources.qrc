@@ -207,5 +207,11 @@
         <file>svg/led_yellow.svg</file>
         <file>svg/led_red.svg</file>
         <file>svg/led_green.svg</file>
+        <file>svg/route_in_midi.svg</file>
+        <file>svg/route_out.svg</file>
+        <file>svg/route_in.svg</file>
+        <file>svg/route_out_midi.svg</file>
+        <file>svg/midi_port.svg</file>
+        <file>svg/router.svg</file>
     </qresource>
 </RCC>

@@ -1,8 +1,75 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
- <circle cx="31.788" cy="31.937" r="30.01" fill="#d40000" style="paint-order:stroke fill markers"/>
- <g transform="matrix(1.6675 0 0 1.6675 -22.406 -29.597)" fill="#fff" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.3973">
-  <path d="m25 29 15 15"/>
-  <path d="m40 29-15 15"/>
- </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="SVGRoot"
+   width="64px"
+   height="64px"
+   version="1.1"
+   viewBox="0 0 64 64"
+   sodipodi:docname="appexit.svg"
+   inkscape:version="1.0.2 (1.0.2+r75+1)">
+  <metadata
+     id="metadata1558">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1556" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="640"
+     inkscape:window-height="480"
+     id="namedview1554"
+     showgrid="true"
+     inkscape:zoom="12.078125"
+     inkscape:cx="32"
+     inkscape:cy="32"
+     inkscape:current-layer="SVGRoot">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2121" />
+  </sodipodi:namedview>
+  <circle
+     cx="31.788"
+     cy="31.937"
+     r="30.01"
+     fill="#d40000"
+     style="paint-order:stroke fill markers"
+     id="circle1545" />
+  <g
+     transform="matrix(1.3689,0,0,1.3689,-12.7015,-18.6981)"
+     fill="#ffffff"
+     stroke="#ffffff"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke-width="6.57462"
+     id="g1551">
+    <path
+       d="M 25,29 40,44"
+       id="path1547"
+       style="stroke-width:6.57462" />
+    <path
+       d="M 40,29 25,44"
+       id="path1549"
+       style="stroke-width:6.57462" />
+  </g>
 </svg>

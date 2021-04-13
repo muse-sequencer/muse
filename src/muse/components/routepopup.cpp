@@ -3447,8 +3447,8 @@ void RoutePopupMenu::prepare()
    
   connect(this, SIGNAL(triggered(QAction*)), SLOT(routePopupActivated(QAction*)));
   
-  QAction* route_act = addAction(tr("Open advanced router..."));
-  route_act->setIcon(*dummySVGIcon);
+  QAction* route_act = addAction(tr("Advanced Router..."));
+  route_act->setIcon(*routerSVGIcon);
   route_act->setCheckable(false);
   route_act->setData(_OPEN_ROUTING_DIALOG_);
 
@@ -3479,7 +3479,7 @@ void RoutePopupMenu::prepare()
           act->setCheckable(false);
           act->setData(-1);
         }
-        act = addAction(QIcon(*ankerSVGIcon), tr("Open midi config..."));
+        act = addAction(QIcon(*ankerSVGIcon), tr("Midi Ports/Soft Synths..."));
         act->setCheckable(false);
         act->setData(_OPEN_MIDI_CONFIG_);
       }
@@ -3493,9 +3493,9 @@ void RoutePopupMenu::prepare()
   addSeparator();
   
   if(_isOutMenu)
-    addAction(new MenuTitleItem(tr("Output routes:"), this));
+    addAction(new MenuTitleItem(tr("Output Routes:"), this));
   else
-    addAction(new MenuTitleItem(tr("Input routes:"), this));
+    addAction(new MenuTitleItem(tr("Input Routes:"), this));
   //addSeparator();
   
   switch(_route.type)
@@ -3517,9 +3517,9 @@ void RoutePopupMenu::prepare()
           if(!il->empty())
           {
             addSeparator();
-            addAction(new MenuTitleItem(tr("Soloing chain"), this)); 
+            addAction(new MenuTitleItem(tr("Soloing Chain"), this));
             RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
-            subp->setTitle(tr("Audio returns")); 
+            subp->setTitle(tr("Audio Returns"));
             for(MusECore::ciAudioInput ai = il->begin(); ai != il->end(); ++ai)
             {
               // Add omni route:
@@ -3719,9 +3719,9 @@ void RoutePopupMenu::prepare()
                 // Display using separate menu for audio inputs:
                 //
                 addSeparator();
-                addAction(new MenuTitleItem(tr("Soloing chain"), this)); 
+                addAction(new MenuTitleItem(tr("Soloing Chain"), this));
                 RoutePopupMenu* subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
-                subp->setTitle(tr("Audio returns")); 
+                subp->setTitle(tr("Audio Returns"));
                 addMenu(subp);
                 gid = addInPorts(t, subp, gid, -1, -1, true);  
                 //
@@ -3811,18 +3811,18 @@ void RoutePopupMenu::prepare()
                 // Display using separate menus for midi ports and audio outputs:
                 //
                 addSeparator();
-                addAction(new MenuTitleItem(tr("Soloing chain"), this));
+                addAction(new MenuTitleItem(tr("Soloing Chain"), this));
                 if(!MusEGlobal::song->outputs()->empty())
                 {
                   subp = new RoutePopupMenu(_route, this, _isOutMenu, _broadcastChanges);
-                  subp->setTitle(tr("Audio sends")); 
+                  subp->setTitle(tr("Audio Sends"));
                   addMenu(subp);
                   gid = addOutPorts(t, subp, gid, -1, -1, false);  
                 }
                 if(!MusEGlobal::song->midis()->empty())
                 {
                   subp = new RoutePopupMenu(_route, this, true, _broadcastChanges);
-                  subp->setTitle(tr("Midi sends")); 
+                  subp->setTitle(tr("Midi Sends"));
                   addMenu(subp);
                   addMidiTracks(t, subp, false);
                   //
