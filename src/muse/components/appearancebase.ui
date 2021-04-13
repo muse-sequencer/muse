@@ -1275,7 +1275,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Icon size</string>
+               <string>Toolbar icon size</string>
               </property>
              </widget>
             </item>

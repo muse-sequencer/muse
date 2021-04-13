@@ -201,5 +201,11 @@
         <file>svg/select_all.svg</file>
         <file>svg/select_invert.svg</file>
         <file>svg/select_all_track.svg</file>
+        <file>svg/led_green_dark.svg</file>
+        <file>svg/led_off.svg</file>
+        <file>svg/led_blue.svg</file>
+        <file>svg/led_yellow.svg</file>
+        <file>svg/led_red.svg</file>
+        <file>svg/led_green.svg</file>
     </qresource>
 </RCC>

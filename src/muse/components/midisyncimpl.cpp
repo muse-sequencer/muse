@@ -355,7 +355,7 @@ void MidiSyncConfig::heartBeat()
             {
               lvi->_inDet = true;
               lvi->_curDet = false;
-              lvi->setIcon(DEVCOL_IN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_IN, *ledGreenSVGIcon);
             }  
           }
           else
@@ -364,14 +364,14 @@ void MidiSyncConfig::heartBeat()
             {
               lvi->_curDet = false;
               lvi->_inDet = false;
-              lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_IN, *ledOffSVGIcon);
             }  
           }
           
           if(port == MusEGlobal::config.curMidiSyncInPort)
-            lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
+            lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
           else
-            lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
+            lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
           
           sdet = MusEGlobal::midiPorts[port].syncInfo().tickDetect();
           if(sdet)
@@ -379,7 +379,7 @@ void MidiSyncConfig::heartBeat()
             if(!lvi->_tickDet)
             {
               lvi->_tickDet = true;
-              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_TICKIN, *ledGreenSVGIcon);
             }  
           } 
           else
@@ -387,7 +387,7 @@ void MidiSyncConfig::heartBeat()
             if(lvi->_tickDet)
             {
               lvi->_tickDet = false;
-              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_TICKIN, *ledOffSVGIcon);
             }  
           }
         
@@ -397,7 +397,7 @@ void MidiSyncConfig::heartBeat()
             if(!lvi->_MRTDet)
             {
               lvi->_MRTDet = true;
-              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_MRTIN, *ledGreenSVGIcon);
             }  
           } 
           else
@@ -405,7 +405,7 @@ void MidiSyncConfig::heartBeat()
             if(lvi->_MRTDet)
             {
               lvi->_MRTDet = false;
-              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_MRTIN, *ledOffSVGIcon);
             }  
           }
         
@@ -417,7 +417,7 @@ void MidiSyncConfig::heartBeat()
             if(!lvi->_MMCDet)
             {
               lvi->_MMCDet = true;
-              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_MMCIN, *ledGreenSVGIcon);
             }
             // MMC locate command can contain SMPTE format type. Update now.
             if(!mtcdet && lvi->_recMTCtype != type)
@@ -448,7 +448,7 @@ void MidiSyncConfig::heartBeat()
             if(lvi->_MMCDet)
             {
               lvi->_MMCDet = false;
-              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_MMCIN, *ledOffSVGIcon);
             }  
           }
           
@@ -458,7 +458,7 @@ void MidiSyncConfig::heartBeat()
             {
               lvi->_MTCDet = true;
               lvi->_curMTCDet = false;
-              lvi->setIcon(DEVCOL_MTCIN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_MTCIN, *ledGreenSVGIcon);
             }
             
             if(lvi->_recMTCtype != type)
@@ -490,15 +490,15 @@ void MidiSyncConfig::heartBeat()
             {
               lvi->_MTCDet = false;
               lvi->_curMTCDet = false;
-              lvi->setIcon(DEVCOL_MTCIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_MTCIN, *ledOffSVGIcon);
             }  
           }
         }
         
         //MusECore::MidiDevice* dev = lvi->device();
         //bool sdet = dev->syncInfo().MCSyncDetect();
-        //if(lvi->pixmap(DEVCOL_IN) != (sdet ? *dotIcon : *dothIcon))
-        //  lvi->setIcon(DEVCOL_IN, QIcon( sdet ? *dotIcon : *dothIcon));
+        //if(lvi->pixmap(DEVCOL_IN) != (sdet ? *ledGreenSVGIcon : *ledOffSVGIcon)
+        //  lvi->setIcon(DEVCOL_IN, QIcon( sdet ? *ledGreenSVGIcon : *ledOffSVGIcon);
         
       }
             
@@ -718,47 +718,47 @@ void MidiSyncConfig::updateSyncInfoLV()
               {
                 lvi->_curDet = false;
                 lvi->_inDet = true;
-                lvi->setIcon(DEVCOL_IN, QIcon( *dotIcon));
+                lvi->setIcon(DEVCOL_IN, *ledGreenSVGIcon);
               }
             }
             else
             {
               lvi->_curDet = false;
               lvi->_inDet = false;
-              lvi->setIcon(DEVCOL_IN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_IN, *ledOffSVGIcon);
             }
             
             if(i == MusEGlobal::config.curMidiSyncInPort)
-              lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
+              lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
             else
-              lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
             
             if(portsi.tickDetect())
             {
               lvi->_tickDet = true;
-              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_TICKIN, *ledGreenSVGIcon);
             }
             else
             {
               lvi->_tickDet = false;
-              lvi->setIcon(DEVCOL_TICKIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_TICKIN, *ledOffSVGIcon);
             }
 
             if(portsi.MRTDetect())
             {
               lvi->_MRTDet = true;
-              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_MRTIN, *ledGreenSVGIcon);
             }
             else
             {
               lvi->_MRTDet = false;
-              lvi->setIcon(DEVCOL_MRTIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_MRTIN, *ledOffSVGIcon);
             }
 
             if(portsi.MMCDetect())
             {
               lvi->_MMCDet = true;
-              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dotIcon));
+              lvi->setIcon(DEVCOL_MMCIN, *ledGreenSVGIcon);
               // MMC locate command can have SMPTE format bits...
               if(lvi->_recMTCtype != portsi.recMTCtype())
               {
@@ -785,7 +785,7 @@ void MidiSyncConfig::updateSyncInfoLV()
             else
             {
               lvi->_MMCDet = false;
-              lvi->setIcon(DEVCOL_MMCIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_MMCIN, *ledOffSVGIcon);
             }
 
             if(portsi.MTCDetect())
@@ -793,7 +793,7 @@ void MidiSyncConfig::updateSyncInfoLV()
               {
                 lvi->_curMTCDet = false;
                 lvi->_MTCDet = true;
-                lvi->setIcon(DEVCOL_MTCIN, QIcon( *dotIcon));
+                lvi->setIcon(DEVCOL_MTCIN, *ledGreenSVGIcon);
               }
                 
               if(lvi->_recMTCtype != portsi.recMTCtype())
@@ -822,23 +822,23 @@ void MidiSyncConfig::updateSyncInfoLV()
             {
               lvi->_curMTCDet = false;
               lvi->_MTCDet = false;
-              lvi->setIcon(DEVCOL_MTCIN, QIcon( *dothIcon));
+              lvi->setIcon(DEVCOL_MTCIN, *ledOffSVGIcon);
               //lvi->setText(DEVCOL_MTCTYPE, "--");
             }
 
             lvi->setText(DEVCOL_RID,    QString().setNum(lvi->_idIn) );
-            lvi->setIcon(DEVCOL_RCLK, QIcon( lvi->_recMC ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_RMRT, QIcon( lvi->_recMRT ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_RMMC, QIcon( lvi->_recMMC ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_RMTC, QIcon( lvi->_recMTC ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_RREWSTART, QIcon( lvi->_recRewOnStart ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_RCLK, lvi->_recMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setIcon(DEVCOL_RMRT, lvi->_recMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setIcon(DEVCOL_RMMC, lvi->_recMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setIcon(DEVCOL_RMTC, lvi->_recMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setIcon(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
             
             lvi->setText(DEVCOL_TID,          QString().setNum(lvi->_idOut) );
-            lvi->setIcon(DEVCOL_TCLK, QIcon(lvi->_sendMC ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_TMRT, QIcon(lvi->_sendMRT ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_TMMC, QIcon(lvi->_sendMMC ? *dotIcon : *dothIcon));
-            lvi->setIcon(DEVCOL_TMTC, QIcon(lvi->_sendMTC ? *dotIcon : *dothIcon));
-            //lvi->setIcon(DEVCOL_TREWSTART, QIcon(  lvi->_sendContNotStart ? *dotIcon : *dothIcon));
+            lvi->setIcon(DEVCOL_TCLK, lvi->_sendMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setIcon(DEVCOL_TMRT, lvi->_sendMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setIcon(DEVCOL_TMMC, lvi->_sendMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setIcon(DEVCOL_TMTC, lvi->_sendMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            //lvi->setIcon(DEVCOL_TREWSTART, QIcon(  lvi->_sendContNotStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
             
             addDevice(lvi, devicesListView);
       }
@@ -915,11 +915,11 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                     MidiSyncLViewItem* prev_lvi = 
                       (MidiSyncLViewItem*)devicesListView->topLevelItem(MusEGlobal::config.curMidiSyncInPort);
                     if(prev_lvi)
-                      prev_lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *dothIcon));
+                      prev_lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
                     
                     // Set the current sync port and turn on the port's light.
                     MusEGlobal::config.curMidiSyncInPort = no;
-                    lvi->setIcon(DEVCOL_SYNC_TO, QIcon( *record1_Icon));
+                    lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
                     setDirty();
                   }  
                   break;
@@ -937,54 +937,54 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   break;
             case DEVCOL_RCLK:
                   lvi->_recMC = (lvi->_recMC ? false : true);
-                  lvi->setIcon(DEVCOL_RCLK, QIcon( lvi->_recMC ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_RCLK, lvi->_recMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_RMRT:
                   lvi->_recMRT = (lvi->_recMRT ? false : true);
-                  lvi->setIcon(DEVCOL_RMRT, QIcon( lvi->_recMRT ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_RMRT, lvi->_recMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_RMMC:
                   lvi->_recMMC = (lvi->_recMMC ? false : true);
-                  lvi->setIcon(DEVCOL_RMMC, QIcon( lvi->_recMMC ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_RMMC, lvi->_recMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_RMTC:
                   lvi->_recMTC = (lvi->_recMTC ? false : true);
-                  lvi->setIcon(DEVCOL_RMTC, QIcon( lvi->_recMTC ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_RMTC, lvi->_recMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_RREWSTART:
                   lvi->_recRewOnStart = (lvi->_recRewOnStart ? false : true);
-                  lvi->setIcon(DEVCOL_RREWSTART, QIcon( lvi->_recRewOnStart ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_TID:
                   break;
             case DEVCOL_TCLK:
                   lvi->_sendMC = (lvi->_sendMC ? false : true);
-                  lvi->setIcon(DEVCOL_TCLK, QIcon( lvi->_sendMC ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_TCLK, lvi->_sendMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_TMRT:
                   lvi->_sendMRT = (lvi->_sendMRT ? false : true);
-                  lvi->setIcon(DEVCOL_TMRT, QIcon( lvi->_sendMRT ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_TMRT, lvi->_sendMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_TMMC:
                   lvi->_sendMMC = (lvi->_sendMMC ? false : true);
-                  lvi->setIcon(DEVCOL_TMMC, QIcon( lvi->_sendMMC ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_TMMC, lvi->_sendMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             case DEVCOL_TMTC:
                   lvi->_sendMTC = (lvi->_sendMTC ? false : true);
-                  lvi->setIcon(DEVCOL_TMTC, QIcon( lvi->_sendMTC ? *dotIcon : *dothIcon));
+                  lvi->setIcon(DEVCOL_TMTC, lvi->_sendMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
                   setDirty();
                   break;
             //case DEVCOL_TREWSTART:
             //      lvi->_sendContNotStart = (lvi->_sendContNotStart ? false : true);
-            //      lvi->setIcon(DEVCOL_TREWSTART, QIcon( lvi->_sendContNotStart ? *dotIcon : *dothIcon));
+            //      lvi->setIcon(DEVCOL_TREWSTART, QIcon( lvi->_sendContNotStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
             //      setDirty();
             //      break;
       }
