@@ -439,7 +439,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       midiin  = new QToolButton();
       midiin->setToolTip(tr("Midi input"));
-      midiin->setIcon(*midiinSVGIcon);
+      midiin->setIcon(*midiInSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);

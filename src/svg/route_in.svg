@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
- <g>
-  <rect x="1" y="1" width="62" height="62" fill="#fea" fill-rule="evenodd" stroke="#000" stroke-linecap="square" style="paint-order:normal"/>
-  <rect x="1" y="1" width="62" height="62" display="none" fill="#fff" fill-rule="evenodd" stroke-width="0" style="paint-order:fill markers stroke"/>
-  <path d="m11 7.066v10.651h5.4118v-5.7351h35.176v40.145h-35.176v-5.7351h-5.4118v10.651h46v-49.977z" color="#000000" color-rendering="auto" dominant-baseline="auto" image-rendering="auto" shape-rendering="auto" solid-color="#000000" stop-color="#000000" stroke-width="0" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;font-variation-settings:normal;inline-size:0;isolation:auto;mix-blend-mode:normal;shape-margin:0;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
-  <path d="m6.8776 24.479h27.122v-5.1303l13.852 13.339-13.852 12.313v-5.1303h-27.122z" fill="#ff3000" stroke="#000"/>
+ <g stroke="#000">
+  <rect x="1" y="1" width="62" height="62" fill="#fff" fill-rule="evenodd" stroke-linecap="square" style="paint-order:normal"/>
+  <path d="m16 8.1524v10.188h4.7059v-5.4857h30.588v38.4h-30.588v-5.4857h-4.7059v10.188h40v-47.804z" color="#000000" color-rendering="auto" dominant-baseline="auto" image-rendering="auto" shape-rendering="auto" solid-color="#000000" stop-color="#000000" stroke-width="2" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;font-variation-settings:normal;inline-size:0;isolation:auto;mix-blend-mode:normal;shape-margin:0;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+  <path d="m6 28h24v-7l13 11-13 11v-7h-24z"/>
  </g>
 </svg>

@@ -211,5 +211,7 @@
         <file>svg/route_out.svg</file>
         <file>svg/route_in.svg</file>
         <file>svg/route_out_midi.svg</file>
+        <file>svg/midi_port.svg</file>
+        <file>svg/router.svg</file>
     </qresource>
 </RCC>

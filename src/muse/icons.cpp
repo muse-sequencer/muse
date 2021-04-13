@@ -166,7 +166,7 @@ QIcon* punchinSVGIcon;
 QIcon* punchoutSVGIcon;
 QIcon* undoSVGIcon;
 QIcon* redoSVGIcon;
-QIcon* midiinSVGIcon;
+QIcon* midiInSVGIcon;
 QIcon* steprecSVGIcon;
 QIcon* speakerSVGIcon;
 QIcon* speakerSingleNoteSVGIcon;
@@ -302,6 +302,8 @@ QIcon* routeInSVGIcon;
 QIcon* routeOutSVGIcon;
 QIcon* routeInMidiSVGIcon;
 QIcon* routeOutMidiSVGIcon;
+QIcon* midiPortSVGIcon;
+QIcon* routerSVGIcon;
 
 QIcon* dummySVGIcon;
 
@@ -538,7 +540,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     punchoutSVGIcon   = icons.getSVG("punchout.svg");
     undoSVGIcon       = icons.getSVG("undo.svg");
     redoSVGIcon       = icons.getSVG("redo.svg");
-    midiinSVGIcon     = icons.getSVG("midiin.svg");
+    midiInSVGIcon     = icons.getSVG("midiin.svg");
     steprecSVGIcon    = icons.getSVG("steprec.svg");
     speakerSVGIcon    = icons.getSVG("speaker.svg");
     speakerSingleNoteSVGIcon = icons.getSVG("speaker_single_note.svg");
@@ -681,6 +683,8 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     routeOutSVGIcon = icons.getSVG("route_out.svg");
     routeInMidiSVGIcon = icons.getSVG("route_in_midi.svg");
     routeOutMidiSVGIcon = icons.getSVG("route_out_midi.svg");
+    midiPortSVGIcon = icons.getSVG("midi_port.svg");
+    routerSVGIcon = icons.getSVG("router.svg");
 
     QPixmap px(10,10);
     px.fill(Qt::transparent);
@@ -829,7 +833,7 @@ void deleteIcons()
     delete punchoutSVGIcon;
     delete undoSVGIcon;
     delete redoSVGIcon;
-    delete midiinSVGIcon;
+    delete midiInSVGIcon;
     delete steprecSVGIcon;
     delete speakerSVGIcon;
     delete speakerSingleNoteSVGIcon;
@@ -970,6 +974,8 @@ void deleteIcons()
     delete routeOutSVGIcon;
     delete routeInMidiSVGIcon;
     delete routeOutMidiSVGIcon;
+    delete midiPortSVGIcon;
+    delete routerSVGIcon;
 
     delete dummySVGIcon;
 

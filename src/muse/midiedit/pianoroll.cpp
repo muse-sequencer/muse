@@ -356,7 +356,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
       midiin  = new QToolButton();
       midiin->setToolTip(tr("Midi input"));
-      midiin->setIcon(*midiinSVGIcon);
+      midiin->setIcon(*midiInSVGIcon);
       midiin->setCheckable(true);
       midiin->setFocusPolicy(Qt::NoFocus);
       tools->addWidget(midiin);

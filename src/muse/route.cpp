@@ -748,30 +748,25 @@ static QString track2name(const Track* n)
 
 QIcon* Route::icon(bool isSource, bool isMidi) const
 {
-    // temporary hack until all icons are SVG
-//    static QPixmap* ankerIcon = new QPixmap(MusEGui::ankerSVGIcon->pixmap(QSize(16, 16)));
-
     switch(type)
     {
     case TRACK_ROUTE:
         if(track)
             return track->icon();
-//        return new QPixmap(track->icon()->pixmap(16,16));
         break;
 
     case JACK_ROUTE:
         if(isMidi)
             return isSource ? MusEGui::routeInMidiSVGIcon : MusEGui::routeOutMidiSVGIcon;
-//        return isSource ? MusEGui::routesMidiInIcon : MusEGui::routesMidiOutIcon;
         else
             return isSource ? MusEGui::routeInSVGIcon : MusEGui::routeOutSVGIcon;
-//        return isSource ? MusEGui::routesInIcon : MusEGui::routesOutIcon;
 
     case MIDI_DEVICE_ROUTE:
-        break;
+        return MusEGui::midiInSVGIcon;
+//        break;
 
     case MIDI_PORT_ROUTE:
-        return MusEGui::ankerSVGIcon;
+        return MusEGui::midiPortSVGIcon;
     }
     return nullptr;
 }

@@ -146,7 +146,7 @@ extern QIcon* punchinSVGIcon;
 extern QIcon* punchoutSVGIcon;
 extern QIcon* undoSVGIcon;
 extern QIcon* redoSVGIcon;
-extern QIcon* midiinSVGIcon;
+extern QIcon* midiInSVGIcon;
 extern QIcon* steprecSVGIcon;
 extern QIcon* speakerSVGIcon;
 extern QIcon* speakerSingleNoteSVGIcon;
@@ -283,6 +283,8 @@ extern QIcon* routeInSVGIcon;
 extern QIcon* routeOutSVGIcon;
 extern QIcon* routeInMidiSVGIcon;
 extern QIcon* routeOutMidiSVGIcon;
+extern QIcon* midiPortSVGIcon;
+extern QIcon* routerSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

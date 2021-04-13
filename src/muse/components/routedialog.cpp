@@ -3489,7 +3489,7 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
-          dstCatItem->setIcon(ROUTE_NAME_COL, QIcon(*ankerSVGIcon));
+          dstCatItem->setIcon(ROUTE_NAME_COL, *midiPortSVGIcon);
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -3588,7 +3588,7 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
-          srcCatItem->setIcon(ROUTE_NAME_COL, QIcon(*ankerSVGIcon));
+          srcCatItem->setIcon(ROUTE_NAME_COL, *midiPortSVGIcon);
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
@@ -3718,6 +3718,7 @@ void RouteDialog::addItems()
           dstCatItem->setFont(ROUTE_NAME_COL, fnt);
           dstCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           dstCatItem->setExpanded(true);
+          dstCatItem->setIcon(ROUTE_NAME_COL, *midiInSVGIcon);
           newDstList->blockSignals(false);
         }
         newDstList->blockSignals(true);
@@ -3824,6 +3825,7 @@ void RouteDialog::addItems()
           srcCatItem->setFont(ROUTE_NAME_COL, fnt);
           srcCatItem->setTextAlignment(ROUTE_NAME_COL, align_flags);
           srcCatItem->setExpanded(true);
+          srcCatItem->setIcon(ROUTE_NAME_COL, *midiInSVGIcon);
           newSrcList->blockSignals(false);
         }
         newSrcList->blockSignals(true);
