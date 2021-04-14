@@ -1729,7 +1729,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
 #endif
         if(fmw > est_width)
           est_width = fmw;
-        menu->addAction(QIcon(*midi_edit_instrumentIcon), QWidget::tr("Edit Instrument..."))->setData(edit_ins);
+        menu->addAction(*editInstrumentSVGIcon, QWidget::tr("Edit Instrument..."))->setData(edit_ins);
         menu->addSeparator();
       }
       

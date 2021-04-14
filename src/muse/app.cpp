@@ -641,7 +641,7 @@ MusE::MusE() : QMainWindow()
 //      master->addAction(masterListAction);
 
       //-------- Midi Actions
-      midiEditInstAction = new QAction(QIcon(*MusEGui::midi_edit_instrumentIcon), tr("Edit Instrument..."), this);
+      midiEditInstAction = new QAction(*MusEGui::editInstrumentSVGIcon, tr("Edit Instrument..."), this);
 //      midiInputPlugins = new QMenu(tr("Input Plugins"), this);
       midiTrpAction = new QAction(*MusEGui::midiInputTransposeSVGIcon, tr("Input Transpose..."), this);
       midiInputTrfAction = new QAction(*MusEGui::midiInputTransformSVGIcon, tr("Input Transform..."), this);
@@ -673,7 +673,7 @@ MusE::MusE() : QMainWindow()
 
        //-------- Settings Actions
       settingsGlobalAction = new QAction(*MusEGui::settingsSVGIcon, tr("Global Settings..."), this);
-      settingsAppearanceAction = new QAction(QIcon(*MusEGui::settings_appearance_settingsIcon), tr("Appearance..."), this);
+      settingsAppearanceAction = new QAction(*MusEGui::appearanceSVGIcon, tr("Appearance..."), this);
       settingsShortcutsAction = new QAction(*MusEGui::keySVGIcon, tr("Keyboard Shortcuts..."), this);
       follow = new QMenu(tr("Follow Song"), this);
       follow->setObjectName("CheckmarkOnly");

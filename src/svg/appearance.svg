@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <rect x="1" y="1" width="62" height="62" fill="none" stroke="#000" stroke-linecap="square" stroke-width="2"/>
+  <rect transform="rotate(45)" x="33.462" y="-12.5" width="25" height="25" fill-rule="evenodd" stroke="#000" stroke-linecap="square" stroke-width="2"/>
+  <g fill="none" stroke="#000" stroke-width="2">
+   <path d="m32 50-31-31"/>
+   <path d="m15 32 31-31"/>
+   <path d="m33 15 30 30"/>
+  </g>
+  <path d="m50 33-30 30" fill="#f00" stroke="#000" stroke-width="2"/>
+  <g fill="none" stroke="#000" stroke-width="2">
+   <path d="m20 1v27"/>
+   <path d="m38 20h25"/>
+   <path d="m45 38v25"/>
+   <path d="m27 45h-26"/>
+  </g>
+  <g fill-rule="evenodd" stroke-width="0">
+   <path d="m8.2763 24.776-6.253-6.2535v-16.484h16.971v24.529l-4.4645 4.4619z" fill="#f00"/>
+   <path d="m21.027 13.263v-11.225h22.495l-11.225 11.225c-6.1738 6.1739-11.235 11.225-11.247 11.225-0.01222 0-0.02223-5.0514-0.02223-11.225z" fill="#f60"/>
+   <path d="m36.21 16.755-2.2528-2.2541 12.461-12.462h15.513v16.971h-23.468z" fill="#ff0"/>
+   <path d="m51.192 31.737-10.695-10.695h21.434v10.695c0 5.8822-0.01001 10.695-0.02223 10.695-0.01223 0-4.8349-4.8127-10.717-10.695z" fill="#0f0"/>
+   <path d="m46.021 50.188v-11.777l4.4627-4.4653 11.447 11.446v16.573h-15.91z" fill="#00d4aa"/>
+   <path d="m33.199 51.27c5.8821-5.8822 10.705-10.695 10.717-10.695 0.01223 0 0.02223 4.8127 0.02223 10.695v10.695h-21.434z" fill="#0cf"/>
+   <path d="m2.0423 54.01v-7.955h24.526l4.4653 4.4627-11.446 11.447h-17.546z" fill="#2a7fff"/>
+   <path d="m2.0423 32.731v-11.203l11.181 11.181c6.1496 6.1495 11.181 11.191 11.181 11.203 0 0.01223-5.0315 0.02223-11.181 0.02223h-11.181z" fill="#c0f"/>
+  </g>
+ </g>
+</svg>

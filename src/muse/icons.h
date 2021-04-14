@@ -39,12 +39,6 @@ extern QPixmap* midiCtrlMergeEraseIcon;
 extern QPixmap* midiCtrlMergeEraseInclusiveIcon;
 extern QPixmap* midiCtrlMergeEraseWysiwygIcon;
 
-extern QPixmap* deltaOnIcon;
-extern QPixmap* deltaOffIcon;
-
-extern QPixmap* midi_edit_instrumentIcon;
-extern QPixmap* settings_appearance_settingsIcon;
-
 extern QPixmap* museIcon;
 extern QPixmap* aboutMuseImage;
 
@@ -285,6 +279,10 @@ extern QIcon* routeInMidiSVGIcon;
 extern QIcon* routeOutMidiSVGIcon;
 extern QIcon* midiPortSVGIcon;
 extern QIcon* routerSVGIcon;
+
+extern QIcon* appearanceSVGIcon;
+extern QIcon* editInstrumentSVGIcon;
+extern QIcon* deltaSVGIcon;
 
 extern QIcon* dummySVGIcon;
 

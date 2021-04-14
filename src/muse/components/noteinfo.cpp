@@ -30,7 +30,6 @@
 #include "globals.h"
 #include "pitchedit.h"
 #include "icons.h"
-#include "pixmap_button.h"
 #include "pos.h"
 
 namespace MusEGui {
@@ -50,10 +49,12 @@ NoteInfo::NoteInfo(QWidget* parent)
       _returnMode = false;
       deltaMode = false;
 
-      deltaButton = new PixmapButton(deltaOnIcon, deltaOffIcon, 2);
+      deltaButton = new QToolButton(this);
       deltaButton->setFocusPolicy(Qt::NoFocus);
       deltaButton->setCheckable(true);
-      deltaButton->setToolTip(tr("Delta/Absolute mode"));
+      deltaButton->setIcon(*deltaSVGIcon);
+      deltaButton->setToolTip(tr("Absolute/Delta mode"));
+      deltaButton->setStatusTip(tr("Use Delta mode to edit event parameters relative to their current values (switched on automatically when multiple events are selected)."));
       addWidget(deltaButton);
       
       QLabel* label = new QLabel(tr("Start"));

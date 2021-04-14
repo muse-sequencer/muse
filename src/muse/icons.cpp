@@ -21,25 +21,15 @@
 //
 //=========================================================
 
-// NOTICE: Although it is tempting to use multi-icons (addPixmap, addFile etc.),
-//          certain styles do not support it, such as QtCurve.
-//         Therefore the separate icons must be manually set upon each state.
-
 #include <QPixmap>
 #include <QIcon>
 #include <QCursor>
 #include <QDir>
 #include <QApplication>
 
-#include "xpm/midi_edit_instrument.xpm"
-#include "xpm/settings_appearance_settings.xpm"
-
 #include "xpm/midi_ctrl_graph_merge_erase.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase_inclusive.xpm"
 #include "xpm/midi_ctrl_graph_merge_erase_wysiwyg.xpm"
-
-#include "xpm/delta_on.xpm"
-#include "xpm/delta_off.xpm"
 
 #include "xpm/muse_icon.xpm"
 #include "xpm/about_muse.xpm"
@@ -56,15 +46,9 @@
 
 namespace MusEGui {
 
-QPixmap* deltaOnIcon;
-QPixmap* deltaOffIcon;
-
 QPixmap* midiCtrlMergeEraseIcon;
 QPixmap* midiCtrlMergeEraseInclusiveIcon;
 QPixmap* midiCtrlMergeEraseWysiwygIcon;
-
-QPixmap* midi_edit_instrumentIcon;
-QPixmap* settings_appearance_settingsIcon;
 
 QPixmap* museIcon;
 QPixmap* aboutMuseImage;
@@ -305,6 +289,10 @@ QIcon* routeOutMidiSVGIcon;
 QIcon* midiPortSVGIcon;
 QIcon* routerSVGIcon;
 
+QIcon* appearanceSVGIcon;
+QIcon* editInstrumentSVGIcon;
+QIcon* deltaSVGIcon;
+
 QIcon* dummySVGIcon;
 
 //----------------------------------
@@ -399,12 +387,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midiCtrlMergeEraseIcon          = new QPixmap(midi_ctrl_graph_merge_erase_xpm);
     midiCtrlMergeEraseInclusiveIcon = new QPixmap(midi_ctrl_graph_merge_erase_inclusive_xpm);
     midiCtrlMergeEraseWysiwygIcon   = new QPixmap(midi_ctrl_graph_merge_erase_wysiwyg_xpm);
-
-    deltaOnIcon          = new QPixmap(delta_on_xpm);
-    deltaOffIcon         = new QPixmap(delta_off_xpm);
-
-    midi_edit_instrumentIcon         = new QPixmap(midi_edit_instrument_xpm);
-    settings_appearance_settingsIcon = new QPixmap(settings_appearance_settings_xpm);
 
     museIcon                         = new QPixmap(muse_icon_xpm);
     aboutMuseImage                   = new QPixmap(about_muse_xpm);
@@ -686,6 +668,10 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     midiPortSVGIcon = icons.getSVG("midi_port.svg");
     routerSVGIcon = icons.getSVG("router.svg");
 
+    appearanceSVGIcon = icons.getSVG("appearance.svg");
+    editInstrumentSVGIcon = icons.getSVG("edit_instrument.svg");
+    deltaSVGIcon = icons.getSVG("delta.svg");
+
     QPixmap px(10,10);
     px.fill(Qt::transparent);
     dummySVGIcon = new QIcon(px);
@@ -728,12 +714,6 @@ void deleteIcons()
     delete midiCtrlMergeEraseIcon;
     delete midiCtrlMergeEraseInclusiveIcon;
     delete midiCtrlMergeEraseWysiwygIcon;
-
-    delete deltaOnIcon;
-    delete deltaOffIcon;
-
-    delete midi_edit_instrumentIcon;
-    delete settings_appearance_settingsIcon;
 
     delete museIcon;
     delete aboutMuseImage;
@@ -976,6 +956,10 @@ void deleteIcons()
     delete routeOutMidiSVGIcon;
     delete midiPortSVGIcon;
     delete routerSVGIcon;
+
+    delete appearanceSVGIcon;
+    delete editInstrumentSVGIcon;
+    delete deltaSVGIcon;
 
     delete dummySVGIcon;
 

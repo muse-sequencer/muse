@@ -45,7 +45,7 @@ class QSize;
 
 namespace MusEGui {
 
-class PixmapButton;  
+//class PixmapButton;
 
 //---------------------------------------------------------
 //   PixmapButtonsWidgetAction

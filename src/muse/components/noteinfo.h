@@ -27,7 +27,6 @@
 #include "posedit.h"
 #include "pitchedit.h"
 #include "spinbox.h"
-#include "pixmap_button.h"
 
 class QWidget;
 
@@ -40,7 +39,6 @@ namespace MusEGui {
 class PosEdit;
 class PitchEdit;
 class SpinBox;
-class PixmapButton;
 
 //---------------------------------------------------------
 //   NoteInfo
@@ -54,7 +52,7 @@ class NoteInfo : public QToolBar {
       PitchEdit* selPitch;
       SpinBox* selVelOn;
       SpinBox* selVelOff;
-      PixmapButton* deltaButton;
+      QToolButton* deltaButton;
       bool _returnMode;
       bool deltaMode;
       bool _enabled;
