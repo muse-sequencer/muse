@@ -321,7 +321,7 @@ bool MusE::seqRestart()
 //   addProject to recent list
 //---------------------------------------------------------
 
-void addProject(const QString& name)
+void MusE::addProjectToRecentList(const QString& name)
 {
   if (projectRecentList.contains(name))
     return;
@@ -330,6 +330,22 @@ void addProject(const QString& name)
   if (projectRecentList.size() > MusEGlobal::config.recentListLength)
     projectRecentList.pop_back();
 
+  saveProjectRecentList();
+}
+
+void MusE::saveProjectRecentList()
+{
+    // save "Open Recent" list
+    QString prjPath(MusEGlobal::configPath);
+    prjPath += "/projects";
+    QFile f(prjPath);
+    f.open(QIODevice::WriteOnly | QIODevice::Text);
+    if (f.exists()) {
+        QTextStream out(&f);
+        for (int i = 0; i < projectRecentList.size(); ++i) {
+            out << projectRecentList[i] << "\n";
+        }
+    }
 }
 
 //---------------------------------------------------------
@@ -1617,7 +1633,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             _lastProjectFilePath = QString();
             }
       if (!songTemplate) {
-            addProject(project.absoluteFilePath());
+            addProjectToRecentList(project.absoluteFilePath());
             setWindowTitle(projectTitle(project.absoluteFilePath()));
             }
 
@@ -1929,17 +1945,6 @@ void MusE::closeEvent(QCloseEvent* event)
 
     writeGlobalConfiguration();
 
-    // save "Open Recent" list
-    QString prjPath(MusEGlobal::configPath);
-    prjPath += "/projects";
-    QFile f(prjPath);
-    f.open(QIODevice::WriteOnly | QIODevice::Text);
-    if (f.exists()) {
-        QTextStream out(&f);
-        for (int i = 0; i < projectRecentList.size(); ++i) {
-            out << projectRecentList[i] << "\n";
-        }
-    }
     if(MusEGlobal::debugMsg)
         fprintf(stderr, "MusE: Exiting JackAudio\n");
     MusECore::exitJackAudio();
@@ -2274,7 +2279,7 @@ bool MusE::saveAs(bool overrideProjectSaveDialog)
       _lastProjectWasTemplate = false;
       _lastProjectLoadedConfig = true;
       setWindowTitle(projectTitle(project.absoluteFilePath()));
-      addProject(name);
+      addProjectToRecentList(name);
     }
     else
       MusEGlobal::museProject = tempOldProj;

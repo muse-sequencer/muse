@@ -422,6 +422,9 @@ public slots:
     bool startPythonBridge();
     bool stopPythonBridge();
 
+    void addProjectToRecentList(const QString& name);
+    void saveProjectRecentList();
+
 public:
     MusE();
 

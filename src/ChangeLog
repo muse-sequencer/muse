@@ -1,3 +1,6 @@
+16.04.2021
+    - Save recent list as soon as a new file has been opened, this to eliminate the possibility
+      that the update was lost incase MusE was not properly terminated (rj)
 15.04.2021
     - Looping: Fixed silent wave tracks when Jack transport off or non-Jack driver used. (Tim)
       Each AudioDevice class gets a new transportRelocateOrPlayDelay() method. For Jack it is
