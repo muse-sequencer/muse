@@ -2110,7 +2110,7 @@ void JackAudioDevice::setSyncTimeout(unsigned usec)
 //   transportSyncToPlayDelay
 //   The number of frames which the driver waits to switch to PLAY
 //    mode after the audio sync function says it is ready to roll.
-//   For example Jack Transport waits one cycle while our own tranport does not.
+//   For example Jack Transport waits one cycle while our own transport does not.
 //---------------------------------------------------------
 
 unsigned JackAudioDevice::transportSyncToPlayDelay() const
@@ -2118,9 +2118,19 @@ unsigned JackAudioDevice::transportSyncToPlayDelay() const
   // If Jack transport is being used, it delays by one cycle.
   if(MusEGlobal::config.useJackTransport)
     return MusEGlobal::segmentSize;
-  return 0;
+  // Otherwise return our internal transport's value.
+  return AudioDevice::transportSyncToPlayDelay();
 }
       
+unsigned JackAudioDevice::transportRelocateOrPlayDelay() const
+{ 
+  // If Jack transport is being used, it delays by two cycles.
+  if(MusEGlobal::config.useJackTransport)
+    return 2 * MusEGlobal::segmentSize;
+  // Otherwise return our internal transport's value.
+  return AudioDevice::transportRelocateOrPlayDelay();
+}
+
 //---------------------------------------------------------
 //   getState
 //---------------------------------------------------------

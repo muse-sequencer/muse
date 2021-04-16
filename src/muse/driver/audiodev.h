@@ -155,8 +155,13 @@ class AudioDevice {
       virtual void setSyncTimeout(unsigned usec) { _syncTimeout = (float)usec / 1000000.0; }
       // The number of frames that the driver waits to switch to PLAY
       //  mode after the audio sync function says it is ready to roll.
-      // For example Jack Transport waits one cycle while our own tranport does not.
-      virtual unsigned transportSyncToPlayDelay() const { return 0; }
+      // For example Jack Transport waits one cycle while our own transport does not.
+      virtual unsigned transportSyncToPlayDelay() const;
+      // The number of frames that the driver waits to relocate or switch to PLAY
+      //  mode after the a call to relocation or seek.
+      // For example Jack Transport waits two cycles while our own transport does not.
+      virtual unsigned transportRelocateOrPlayDelay() const;
+
       virtual int getState() { return _dummyState; }
       virtual unsigned getCurFrame() const { return _dummyPos; }
       virtual void startTransport();

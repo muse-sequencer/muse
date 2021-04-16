@@ -43,6 +43,8 @@
 
 // For debugging output: Uncomment the fprintf section.
 #define WAVETRACK_DEBUG(dev, format, args...) // fprintf(dev, format, ##args)
+// For debugging transport timing: Uncomment the fprintf section.
+#define WAVETRACK_DEBUG_TRANSPORT_SYNC(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusECore {
 
@@ -397,9 +399,14 @@ bool WaveTrack::getPrefetchData(
     const int64_t corr_frame_pos     = framePos - i_correction;
     const int64_t corr_frame_end_pos = framePos - i_correction + nframe;
 
+    WAVETRACK_DEBUG_TRANSPORT_SYNC(stderr,
+      "WaveTrack::getPrefetchData: framePos:%ld i_correction:%d nframe:%ld corr_frame_pos:%ld corr_frame_end_pos:%ld pos:%ld\n",
+      framePos, i_correction, nframe, corr_frame_pos, corr_frame_end_pos, pos);
+
     // Do we need to RETARD, or ADVANCE, the stream?
     if(corr_frame_end_pos <= pos)
     {
+      WAVETRACK_DEBUG_TRANSPORT_SYNC(stderr, " RETARDING: corr_frame_end_pos <= pos\n");
       // Allow the stream to RETARD. (That is, let our requested frame catch up to the stream.)
       return false;
     }
@@ -408,6 +415,8 @@ bool WaveTrack::getPrefetchData(
       // Allow the stream to ADVANCE if necessary. (That is, let the stream catch up to our requested frame.)
       while(corr_frame_pos >= pos + nframe)
       {
+        WAVETRACK_DEBUG_TRANSPORT_SYNC(stderr, " ADVANCING: corr_frame_pos >= pos + nframe\n");
+
         // Done with buffer, remove it.
         _prefetchFifo.remove();
 

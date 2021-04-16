@@ -1,3 +1,10 @@
+15.04.2021
+    - Looping: Fixed silent wave tracks when Jack transport off or non-Jack driver used. (Tim)
+      Each AudioDevice class gets a new transportRelocateOrPlayDelay() method. For Jack it is
+       2 * segment size and for other drivers such as as RT (Pulse) or dummy driver it is zero.
+      The looping code now uses this value to look ahead, it was a fixed value before.
+      TODO: This still does not fix looping the Jack audio driver with MusE latency correction
+             enabled, causing mis-aligned or silent playback. That bug fix is still WIP...
 11.04.2021
     * Reinstated part left border resizing: Further to 04.04.2021. (Tim)
       Extensive re-writes and alterations of much code to support it.

@@ -35,6 +35,9 @@
 #include "audio.h"
 #include "sync.h"
 
+// For debugging transport timing: Uncomment the fprintf section.
+#define AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(dev, format, args...) // fprintf(dev, format, ##args);
+
 namespace MusEGlobal {
 MusECore::AudioPrefetch* audioPrefetch = nullptr;
 }
@@ -210,7 +213,10 @@ void AudioPrefetch::prefetch(bool doSeek)
 
             // Nothing to fill?
             if(empty_count <= 0)
+            {
+              AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "AudioPrefetch::prefetch: empty_count <= 0!\n");
               continue;
+            }
 
             unsigned int write_pos = track->prefetchWritePos();
             if (write_pos == ~0U) {
@@ -221,12 +227,19 @@ void AudioPrefetch::prefetch(bool doSeek)
             int ch           = track->channels();
             float* bp[ch];
 
+            AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "AudioPrefetch::prefetch: Filling empty_count:%d do_loops:%d lpos_frame:%d rpos_frame:%d\n",
+                    empty_count, do_loops, lpos_frame, rpos_frame);
+
             // Fill up the empty buffers.
             for(int i = 0; i < empty_count; ++i)
             {
               if(do_loops)
               {
                 unsigned n = rpos_frame - write_pos;
+
+                AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "  write_pos:%d n:%d segmentSize:%d\n",
+                        write_pos, n, MusEGlobal::segmentSize);
+
                 if (n < MusEGlobal::segmentSize)
                 {
                   // adjust loop start so we get exact loop len

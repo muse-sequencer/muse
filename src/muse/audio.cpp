@@ -817,7 +817,9 @@ void Audio::process(unsigned frames)
             //
             if (state == PLAY && MusEGlobal::song->loop() && !bounce() && !MusEGlobal::extSyncFlag) {
                   const Pos& loop = MusEGlobal::song->rPos();
-                  unsigned n = loop.frame() - samplePos - (3 * frames);
+                  // The extra 'frames' worth is because we are calling the relocation from here within the process routine,
+                  //  so there will be a one cycle (extra) delay before the next sync call (sync is called just before process).
+                  unsigned n = loop.frame() - samplePos - MusEGlobal::audioDevice->transportRelocateOrPlayDelay() - frames;
                   if (n < frames) {
                         // loop end in current cycle
                         unsigned lpos = MusEGlobal::song->lPos().frame();

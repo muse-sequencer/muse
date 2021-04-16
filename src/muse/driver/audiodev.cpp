@@ -31,7 +31,7 @@
 #include "pos.h"
 
 namespace MusECore {
-  
+
 AudioDevice::AudioDevice()
 {
   _dummyState = Audio::STOP;
@@ -121,7 +121,7 @@ bool AudioDevice::processTransport(unsigned int frames)
       }
     }
   }
-  
+
   // Now call the audio process.
   // Don't process while we're syncing. ToDO: May need to deliver silence in process!
   //if(jackAudio->getState() != Audio::START_PLAY)
@@ -132,6 +132,16 @@ bool AudioDevice::processTransport(unsigned int frames)
     _dummyPos += frames;
         
   return true;
+}
+
+unsigned AudioDevice::transportSyncToPlayDelay() const
+{ 
+  return 0;
+}
+
+unsigned AudioDevice::transportRelocateOrPlayDelay() const
+{ 
+  return 0;
 }
 
 void AudioDevice::startTransport()
