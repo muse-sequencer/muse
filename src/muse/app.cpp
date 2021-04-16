@@ -317,10 +317,6 @@ bool MusE::seqRestart()
     return true;
 }
 
-//---------------------------------------------------------
-//   addProject to recent list
-//---------------------------------------------------------
-
 void MusE::addProjectToRecentList(const QString& name)
 {
   if (projectRecentList.contains(name))
@@ -3459,7 +3455,7 @@ MusE::lash_idle_cb ()
             _lastProjectWasTemplate = false;
             _lastProjectLoadedConfig = true;
             setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(project.absoluteFilePath())));
-            addProject(ss.toLatin1());
+            addProjectToRecentList(ss.toLatin1());
             MusEGlobal::museProject = QFileInfo(ss.toLatin1()).absolutePath();
             QDir::setCurrent(MusEGlobal::museProject);
           }
