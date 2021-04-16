@@ -48,6 +48,24 @@ namespace MusECore {
 
 RtAudioDevice* rtAudioDevice = 0;
 
+void FreewheelingTransportThread::run()
+{
+
+  while (rtAudioDevice->freewheelMode())
+  {
+    if(MusEGlobal::audio->isRunning())
+    {
+      rtAudioDevice->setCriticalVariables(MusEGlobal::segmentSize);
+
+      // Use our built-in transport, which INCLUDES the necessary
+      //  calls to Audio::sync() and ultimately Audio::process(),
+      //  and increments the built-in play position.
+      rtAudioDevice->processTransport(MusEGlobal::segmentSize);
+    }
+
+  }
+}
+
 RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       {
       fprintf(stderr, "Init RtAudioDevice\n");
@@ -55,6 +73,9 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       // Make sure the AL namespace variables mirror our variables.
       AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = MusEGlobal::config.deviceAudioBufSize;
+
+      _freewheelMode = false;
+      _transportThread = NULL;
 
       _start_timeUS = systemTimeUS();
       _criticalVariablesIdx = 0;
@@ -114,6 +135,25 @@ void exitRtAudio()
   MusEGlobal::audioDevice = NULL;
 }
 
+void RtAudioDevice::setFreewheel(bool v) {
+  _freewheelMode = v;
+
+  if (v)
+  {
+    // enter freewheeling
+    if (_transportThread != NULL)
+    {
+      // deleting previous transport thread
+      delete _transportThread;
+    }
+    _transportThread = new FreewheelingTransportThread();
+    _transportThread->start();
+  }
+
+  MusEGlobal::audio->setFreewheel(v);
+
+}
+
 
 //---------------------------------------------------------
 //   initRtAudio
@@ -132,6 +172,11 @@ bool initRtAudio(bool forceDefault = false)
 int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
          double /*streamTime*/, RtAudioStreamStatus /* status */, void * /* userData */ )
 {
+  if (rtAudioDevice->freewheelMode()) {
+    // we are freewheeling do nothing here
+    return 0;
+  }
+
   rtAudioDevice->setCriticalVariables(nBufferFrames);
   
   if(MusEGlobal::audio->isRunning()) {

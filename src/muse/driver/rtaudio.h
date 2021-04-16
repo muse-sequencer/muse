@@ -18,6 +18,7 @@
 //
 //=========================================================
 
+#include <QThread>
 #include "audiodev.h"
 #include "large_int.h"
 #include <rtaudio/RtAudio.h>
@@ -27,6 +28,14 @@
 #define DEBUG_RTAUDIO(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusECore {
+
+
+class FreewheelingTransportThread : public QThread
+{
+public:
+  void run() override;
+};
+
 
 //---------------------------------------------------------
 //   RtAudioDevice
@@ -47,6 +56,8 @@ class RtAudioDevice : public AudioDevice {
       uint64_t _timeUSAtCycleStart[2];
       unsigned _frameCounter[2];
       unsigned _criticalVariablesIdx;
+      bool _freewheelMode;
+      FreewheelingTransportThread *_transportThread;
 
    public:
       // Time in microseconds at which the driver was created.
@@ -316,7 +327,9 @@ class RtAudioDevice : public AudioDevice {
       virtual bool isRealtime() { return MusEGlobal::realTimeScheduling; }
       virtual int realtimePriority() const { return 40; }
 
-      virtual void setFreewheel(bool) {}
+      bool freewheelMode() const { return _freewheelMode; }
+      virtual void setFreewheel(bool v);
+
       virtual int setMaster(bool, bool /*unconditional*/ = false) { return 1; }
 };
 

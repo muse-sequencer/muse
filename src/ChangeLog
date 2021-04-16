@@ -1,3 +1,5 @@
+16.04.2021
+    - Added freewheeling support for rtaudio backend (rj)
 15.04.2021
     - Looping: Fixed silent wave tracks when Jack transport off or non-Jack driver used. (Tim)
       Each AudioDevice class gets a new transportRelocateOrPlayDelay() method. For Jack it is
