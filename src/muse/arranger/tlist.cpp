@@ -1237,7 +1237,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
         MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(t);
         PopupMenu* p = new PopupMenu;
 
-        QAction* cact = p->addAction(*MusEGui::ankerSVGIcon, tr("Configure MIDI Ports/Soft Synths..."));
+        QAction* cact = p->addAction(*MusEGui::ankerSVGIcon, tr("MIDI Ports/Soft Synths..."));
         p->addSeparator();
 
         if(!synth->synth())

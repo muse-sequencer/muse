@@ -478,7 +478,7 @@ MusE::MusE() : QMainWindow()
       MusEGlobal::redoAction = new QAction(*MusEGui::redoSVGIcon, tr("Re&do"),
         MusEGlobal::undoRedo);
 
-      MusEGlobal::undoAction->setWhatsThis(tr("Undo last change to song"));
+      MusEGlobal::undoAction->setWhatsThis(tr("Undo last change to project"));
       MusEGlobal::redoAction->setWhatsThis(tr("Redo last undo"));
       MusEGlobal::undoAction->setEnabled(false);
       MusEGlobal::redoAction->setEnabled(false);
@@ -830,25 +830,24 @@ MusE::MusE() : QMainWindow()
       whatsthis->setIcon(*whatsthisSVGIcon);
       tools->addAction(whatsthis);
 
-      QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
-      undoToolbar->setObjectName("Undo/Redo");
-      undoToolbar->addActions(MusEGlobal::undoRedo->actions());
+      QToolBar* undo_tools = addToolBar(tr("Undo/Redo"));
+      undo_tools->setObjectName("Undo/Redo");
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
-      QToolBar* panicToolbar = addToolBar(tr("Panic"));
-      panicToolbar->setObjectName("Panic tool");
-      panicToolbar->addAction(MusEGlobal::panicAction);
+      QToolBar* panic_toolbar = addToolBar(tr("Panic"));
+      panic_toolbar->setObjectName("Panic tool");
+      panic_toolbar->addAction(MusEGlobal::panicAction);
 
-      QToolBar* metronomeToolbar = addToolBar(tr("Metronome"));
-      metronomeToolbar->setObjectName("Metronome tool");
-      metronomeToolbar->addAction(MusEGlobal::metronomeAction);
+      QToolBar* metronome_toolbar = addToolBar(tr("Metronome"));
+      metronome_toolbar->setObjectName("Metronome tool");
+      metronome_toolbar->addAction(MusEGlobal::metronomeAction);
 
       cpuLoadToolbar = new CpuToolbar(tr("Cpu Load"), this);
       addToolBar(cpuLoadToolbar);
       cpuLoadToolbar->hide(); // hide as a default, the info is now in status bar too
       connect(cpuLoadToolbar, SIGNAL(resetClicked()), SLOT(resetXrunsCounter()));
 
-      QToolBar* songpos_tb = new QToolBar;
-      songpos_tb = addToolBar(tr("Timeline"));
+      QToolBar* songpos_tb = addToolBar(tr("Timeline"));
       songpos_tb->setObjectName("Timeline tool");
       songpos_tb->addWidget(new MusEGui::SongPosToolbarWidget(songpos_tb));
       songpos_tb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -880,9 +879,9 @@ MusE::MusE() : QMainWindow()
       requiredToolbars.push_back(tools);
       requiredToolbars.push_back(cpuLoadToolbar);
 
-      optionalToolbars.push_back(undoToolbar);
-      optionalToolbars.push_back(panicToolbar);
-      optionalToolbars.push_back(metronomeToolbar);
+      optionalToolbars.push_back(undo_tools);
+      optionalToolbars.push_back(panic_toolbar);
+      optionalToolbars.push_back(metronome_toolbar);
       optionalToolbars.push_back(songpos_tb);
       optionalToolbars.push_back(nullptr);  // Toolbar break
       optionalToolbars.push_back(transportToolbar);
