@@ -1,3 +1,5 @@
+17.04.2021
+    - Fix: Memory leak with Timeline toolbar. (kybos)
 16.04.2021
     - Save recent list as soon as a new file has been opened, this to eliminate the possibility
       that the update was lost incase MusE was not properly terminated (rj)
