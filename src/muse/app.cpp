@@ -2221,10 +2221,7 @@ void MusE::saveNewRevision()
     // replace project in lastProjects
     if (projectRecentList.contains(oldProjectFileName))
       projectRecentList.removeAt(projectRecentList.indexOf(oldProjectFileName));
-
-    projectRecentList.push_front(newFilePath);
-    if (projectRecentList.size() > MusEGlobal::config.recentListLength)
-      projectRecentList.pop_back();
+    addProjectToRecentList(newFilePath);
 
     project.setFile(newFilePath);
   }
