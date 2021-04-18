@@ -1464,7 +1464,7 @@ RouteTreeWidgetItem* RouteTreeWidget::findItem(const MusECore::Route& r, int typ
     }
     ++ii;
   }
-  return NULL;
+  return nullptr;
 }
 
 RouteTreeWidgetItem* RouteTreeWidget::findCategoryItem(const QString& name)
@@ -1897,8 +1897,8 @@ RouteDialog::RouteDialog(QWidget* parent)
   
   //newSrcList->viewport()->setLayoutDirection(Qt::LeftToRight);
   
-  //_srcFilterItem = NULL;
-  //_dstFilterItem = NULL;
+  //_srcFilterItem = nullptr;
+  //_dstFilterItem = nullptr;
 
   srcItemDelegate = new RoutingItemDelegate(true, newSrcList, this);
   dstItemDelegate = new RoutingItemDelegate(false, newDstList, this);
@@ -2752,7 +2752,7 @@ void RouteDialog::connectClicked()
 
   if(!operations.empty())
   {
-    operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+    operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations, true,
       upd_trk_props ? (SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0)) : 0);
 //     MusEGlobal::song->update(SC_ROUTE | (upd_trk_props ? SC_MIDI_TRACK_PROP : 0));

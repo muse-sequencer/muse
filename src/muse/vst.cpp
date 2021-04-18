@@ -81,7 +81,7 @@ long vstHostCallback(AEffect* effect,
             case audioMasterIdle:
                   // call application idle routine (this will
                   // call effEditIdle for all open editors too)
-                  effect->dispatcher(effect, effEditIdle, 0, 0, NULL, 0.0f);
+                  effect->dispatcher(effect, effEditIdle, 0, 0, nullptr, 0.0f);
                   return 0;
 
             case audioMasterPinConnected:
@@ -260,7 +260,7 @@ long vstHostCallback(AEffect* effect,
 
             case audioMasterUpdateDisplay:
                   // something has changed, update 'multi-fx' display
-                  effect->dispatcher(effect, effEditIdle, 0, 0, NULL, 0.0f);
+                  effect->dispatcher(effect, effEditIdle, 0, 0, nullptr, 0.0f);
                   return 0;
 
             case audioMasterBeginEdit:
@@ -459,7 +459,7 @@ void* VstSynth::instantiate()
 
       /* set program to zero */
 
-      plugin->dispatcher (plugin, effSetProgram, 0, 0, NULL, 0.0f);
+      plugin->dispatcher (plugin, effSetProgram, 0, 0, nullptr, 0.0f);
 
       if (fst_run_editor(fst)) {
             printf("Synth::instantiate: cannot create gui");

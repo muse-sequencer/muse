@@ -61,8 +61,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   _currentChannel = 0;
 
   //FX
-  _chorusSuperWidget = NULL;
-  _reverbSuperWidget = NULL;
+  _chorusSuperWidget = nullptr;
+  _reverbSuperWidget = nullptr;
 
   tColor = new TCOLOR;
   bColor = new BCOLOR;
@@ -1738,7 +1738,7 @@ void DeicsOnzeGui::deleteSetDialog() {
   while(!_deicsOnze->_set->_categoryVector.empty())
     delete(*_deicsOnze->_set->_categoryVector.begin());
   setSet();
-  //_currentQLVCategory = NULL;
+  //_currentQLVCategory = nullptr;
   presetListView->clear();
   subcategoryListView->clear();
   updateCategoryName("NONE", false);

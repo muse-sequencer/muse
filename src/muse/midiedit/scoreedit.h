@@ -295,8 +295,8 @@ class FloEvent
 			num=num_;
 			denom=denom_;
 			tick=ti;
-			source_event=NULL;
-			source_part=NULL;
+			source_event=nullptr;
+			source_part=nullptr;
 			
 			len=vel=pitch=0xdeadbeef; //unused, but valgrind complains if uninited
 			key=MusECore::KEY_C;
@@ -308,8 +308,8 @@ class FloEvent
 			key=k;
 			minor = isMinor;
 			tick=ti;
-			source_event=NULL;
-			source_part=NULL;
+			source_event=nullptr;
+			source_part=nullptr;
 			
 			pitch=vel=len=num=denom=0xdeadbeef; //unused, but valgrind complains if uninited
 		}
@@ -352,7 +352,7 @@ class FloItem
 		
 
 		
-		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, const MusECore::Part* part=NULL, const MusECore::Event* event=NULL)
+		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, const MusECore::Part* part=nullptr, const MusECore::Event* event=NULL)
 		{
 			pos=p;
 			dots=d;
@@ -375,8 +375,8 @@ class FloItem
 			num=num_;
 			denom=denom_;
 			begin_tick=-1;
-			source_event=NULL;
-			source_part=NULL;
+			source_event=nullptr;
+			source_part=nullptr;
 		}
 		
 		FloItem(typeEnum t, MusECore::key_enum k, bool isMinor)
@@ -385,8 +385,8 @@ class FloItem
 			key=k;
 			minor = isMinor;
 			begin_tick=-1;
-			source_event=NULL;
-			source_part=NULL;
+			source_event=nullptr;
+			source_part=nullptr;
 		}
 		
 		FloItem(typeEnum t)
@@ -399,8 +399,8 @@ class FloItem
 			ausweich=false;
 			is_tie_dest=false;
 			begin_tick=-1;
-			source_event=NULL;
-			source_part=NULL;
+			source_event=nullptr;
+			source_part=nullptr;
 		}
 		
 		FloItem()
@@ -411,8 +411,8 @@ class FloItem
 			ausweich=false;
 			is_tie_dest=false;
 			begin_tick=-1;
-			source_event=NULL;
-			source_part=NULL;
+			source_event=nullptr;
+			source_part=nullptr;
 		}
 		
 		bool operator==(const FloItem& that)

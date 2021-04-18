@@ -177,7 +177,7 @@ void EventCanvas::updateItems()
     storedEvent=curItem->event();
     partSn=curItem->part()->sn();
   }
-  curItem=NULL;
+  curItem=nullptr;
   
   items.clearDelete();
   start_tick  = INT_MAX;

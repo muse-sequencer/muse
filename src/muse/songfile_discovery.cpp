@@ -36,7 +36,7 @@ SongfileDiscoveryWaveItem::SongfileDiscoveryWaveItem(const QString& filename)
   {
     _sfinfo.format = 0;
     SNDFILE* sf = sf_open(_filename.toLocal8Bit().constData(), SFM_READ, &_sfinfo);
-    _valid = sf != NULL;
+    _valid = sf != nullptr;
     if(sf)
       sf_close(sf);
   }

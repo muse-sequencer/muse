@@ -142,8 +142,8 @@ QString MidiAlsaDevice::open()
         return _state;
       }
       
-      snd_seq_port_info_t *pinfo = NULL;
-      snd_seq_port_subscribe_t* subs = NULL;
+      snd_seq_port_info_t *pinfo = nullptr;
+      snd_seq_port_subscribe_t* subs = nullptr;
 
       DEBUG_PRST_ROUTES(stderr, "MidiAlsaDevice::open Getting port info: address: %d:%d\n", adr.client, adr.port);
       if(adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN)

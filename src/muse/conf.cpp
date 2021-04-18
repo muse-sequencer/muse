@@ -664,7 +664,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                                 MusEGlobal::config.timebaseMaster = xml.parseInt();
                                 
                                 // Set this one-time flag to true so that when setMaster is called,
-                                //  it forces master. audioDevice may be NULL, esp. at startup,
+                                //  it forces master. audioDevice may be nullptr, esp. at startup,
                                 //  so this flag is necessary for the next valid call to setMaster.
                                 MusEGlobal::timebaseMasterForceFlag = true;
                                 if(MusEGlobal::audioDevice)

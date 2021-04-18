@@ -681,8 +681,8 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
    case SS_SYSEX_GET_INIT_DATA:
    {
       int initdata_len = 0;
-      const byte* tmp_initdata = NULL;
-      ///byte* event_data = NULL;
+      const byte* tmp_initdata = nullptr;
+      ///byte* event_data = nullptr;
 
       getInitData(&initdata_len, &tmp_initdata);
       ///int totlen = initdata_len + 1;
@@ -693,7 +693,7 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
 
       ///memcpy(event_data + 1, tmp_initdata, initdata_len);
       ///delete[] tmp_initdata;
-      ///tmp_initdata = NULL;
+      ///tmp_initdata = nullptr;
 
       ///MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, event_data, totlen);
       MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, tmp_initdata + 1, initdata_len - 1);  // Strip MFG ID.

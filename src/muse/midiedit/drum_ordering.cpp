@@ -112,7 +112,7 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xm
   using MusECore::ciTrack;
   
   entry_t entry;
-  entry.first=NULL;
+  entry.first=nullptr;
   entry.second=-1;
   
 	for (;;)
@@ -170,7 +170,7 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_item(MusECore::Xml&
   using MusECore::ciTrack;
 
   entry_t entry;
-  entry.first=NULL;
+  entry.first=nullptr;
   entry.second=-1;
 
   int trk_idx = -1;

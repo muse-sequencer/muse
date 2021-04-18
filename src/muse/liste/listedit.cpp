@@ -714,7 +714,7 @@ void ListEdit::editInsertSysEx()
     if(!curPart)
         return;
 
-    MusECore::MidiInstrument* minstr = NULL;
+    MusECore::MidiInstrument* minstr = nullptr;
     if(curPart->track())
         minstr = MusEGlobal::midiPorts[curPart->track()->outPort()].instrument();
     MusECore::Event event = EditSysexDialog::getEvent(curPart->tick(), MusECore::Event(), this, minstr);
@@ -808,7 +808,7 @@ void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
         break;
     case MusECore::Sysex:
     {
-        MusECore::MidiInstrument* minstr = NULL;
+        MusECore::MidiInstrument* minstr = nullptr;
         if(part->track())
             minstr = MusEGlobal::midiPorts[part->track()->outPort()].instrument();
         nevent = EditSysexDialog::getEvent(tick, event, this, minstr);
@@ -898,7 +898,7 @@ void ListEdit::cmd(int cmd)
 
         MusECore::Undo operations;
 
-        EventListItem *deletedEvent=NULL;
+        EventListItem *deletedEvent=nullptr;
         for (int row = 0; row < liste->topLevelItemCount(); ++row) {
             QTreeWidgetItem* i = liste->topLevelItem(row);
             EventListItem *item = (EventListItem *) i;

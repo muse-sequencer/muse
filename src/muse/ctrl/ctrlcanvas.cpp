@@ -126,7 +126,7 @@ static int computeY(const MusECore::MidiController* mc, int val, int height)
 
 CEvent::CEvent() : CItem()
 {
-  _part = NULL;
+  _part = nullptr;
   _val = 0;
   ex = 0;
 }
@@ -892,8 +892,8 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
     }
     
     MusECore::MidiTrack* mt = part->track();
-    MusECore::MidiPort* mp = NULL;
-    MusECore::MidiController* mp_mc = NULL;
+    MusECore::MidiPort* mp = nullptr;
+    MusECore::MidiController* mp_mc = nullptr;
     int chan;
     int di = 0;
     int n = 0;
@@ -1190,7 +1190,7 @@ void CtrlCanvas::updateItemSelections()
 
 void CtrlCanvas::startMoving(const QPoint& pos, int dir, bool rasterize)
       {
-      CItem* first_item = NULL;
+      CItem* first_item = nullptr;
       for (iCItemList i = items.begin(); i != items.end(); ++i) {
             CItem* item = *i;
             if (item->isSelected() && item->part() == curPart) {
@@ -1332,7 +1332,7 @@ void CtrlCanvas::endMoveItems()
       | (MusECore::FunctionPasteNeverNewPart)
       ),
     // Paste into this part instead of the original part(s).
-    //NULL,
+    //nullptr,
     curPart,
     // Number of copies to paste.
     1,
@@ -1661,7 +1661,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
       {
-      _movingItemUnderCursor = NULL;
+      _movingItemUnderCursor = nullptr;
 
       if(!_controller || curDrumPitch==-2)
       {
@@ -1741,7 +1741,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
                         if (drag == DRAG_MOVE)
                               deselectAll();
                         selectItem(curItem);
-                        itemSelectionsChanged(NULL, drag == DRAG_MOVE);
+                        itemSelectionsChanged(nullptr, drag == DRAG_MOVE);
                         redraw();
                         }
                         
@@ -1784,7 +1784,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
 
             case DRAG_OFF:
             {
-              _movingItemUnderCursor = NULL;
+              _movingItemUnderCursor = nullptr;
               const int tickstep = rmapxDev(1);
               for(iCItemList i = moving.begin(); i != moving.end(); ++i)
               {
@@ -1874,7 +1874,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                         selectItem(curItem);
                     }
 
-                    itemSelectionsChanged(NULL, !ctrlKey);
+                    itemSelectionsChanged(nullptr, !ctrlKey);
                     redraw();
                   }
                   
@@ -1922,7 +1922,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                                 }  
                             }
                       drag = DRAG_OFF;
-                      itemSelectionsChanged(NULL, !ctrlKey);
+                      itemSelectionsChanged(nullptr, !ctrlKey);
                     }
                     
                     redraw();
@@ -3448,7 +3448,7 @@ CEvent* CtrlCanvas::findCurrentItem(const QPoint& p, const int tickstep, const i
               return item;
             }  
         }
-  return NULL;
+  return nullptr;
 }
 
 void CtrlCanvas::showCursor(bool show)

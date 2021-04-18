@@ -238,7 +238,7 @@ class CtrlList : public CtrlList_t {
       double interpolate(unsigned int frame, const CtrlInterpolate& interp);
       
       double value(unsigned int frame, bool cur_val_only = false,
-                   unsigned int* nextFrame = NULL, bool* nextFrameValid = NULL) const;  
+                   unsigned int* nextFrame = nullptr, bool* nextFrameValid = NULL) const;  
       void add(unsigned int frame, double value);
       void del(unsigned int frame);
       void read(Xml& xml);
@@ -286,7 +286,7 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
       MidiAudioCtrlMap* midiControls() { return &_midi_controls; }  
       
       double value(int ctrlId, unsigned int frame, bool cur_val_only = false,
-                   unsigned int* nextFrame = NULL, bool* nextFrameValid = NULL) const;   
+                   unsigned int* nextFrame = nullptr, bool* nextFrameValid = NULL) const;   
       void updateCurValues(unsigned int frame);
       void clearAllAutomation() {
             for(iCtrlList i = begin(); i != end(); ++i)

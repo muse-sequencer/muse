@@ -1034,7 +1034,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                               deselect_all = true;
                               // selectItem() will be called in viewMouseReleaseEvent().
                               }
-                        itemSelectionsChanged(NULL, deselect_all);
+                        itemSelectionsChanged(nullptr, deselect_all);
                         redraw();
                   }
                   break;
@@ -1227,7 +1227,7 @@ void Canvas::scrollTimerDone()
         if(!doHMove && !doVMove)
         {
           delete scrollTimer;
-          scrollTimer=NULL;
+          scrollTimer=nullptr;
           doScroll = false;
           return;
         }  
@@ -1446,8 +1446,8 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   drag = DRAG_LASSO;
                   setCursor();
                   // proceed with DRAG_LASSO:
-                  // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
-                  // FALLTHROUGH
+                  // NOTE: Error suppressor for c++17:
+                  [[ fallthrough ]];
             case DRAG_LASSO:
                   {
                   // Update the old lasso region.

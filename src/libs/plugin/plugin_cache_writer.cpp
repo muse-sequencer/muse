@@ -465,7 +465,7 @@ bool writeLadspaInfo (
       ba_rdfs_uris.append((sch + rdfs.at(i)).toLocal8Bit());
       uris[i] = ba_rdfs_uris.at(i).constData();
     }
-    uris[rdfs_sz] = NULL;
+    uris[rdfs_sz] = nullptr;
     if(lrdf_read_files(uris))
       std::fprintf(stderr, "writeLadspaInfo: lrdf_read_files() Failed\n");
     else
@@ -662,7 +662,7 @@ bool writeDssiInfo(const char* filename, DSSI_Descriptor_Function dssi, bool do_
       ba_rdfs_uris.append((sch + rdfs.at(i)).toLocal8Bit());
       uris[i] = ba_rdfs_uris.at(i).constData();
     }
-    uris[rdfs_sz] = NULL;
+    uris[rdfs_sz] = nullptr;
     if(lrdf_read_files(uris))
       std::fprintf(stderr, "writeDssiInfo: lrdf_read_files() Failed\n");
     else
@@ -1070,7 +1070,7 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
     DEBUG_PLUGIN_SCAN(stderr, "Plugin does not support processReplacing\n");
   }
 
-  plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
+  plugin->dispatcher(plugin, effOpen, 0, 0, nullptr, 0);
 
   buffer[0] = 0;
   plugin->dispatcher(plugin, effGetEffectName, 0, 0, buffer, 0);
@@ -1087,7 +1087,7 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
   if (buffer[0])
     info->_description = PLUGIN_SET_CSTRING(buffer);
 
-  vendorVersion = plugin->dispatcher(plugin, effGetVendorVersion, 0, 0, NULL, 0);
+  vendorVersion = plugin->dispatcher(plugin, effGetVendorVersion, 0, 0, nullptr, 0);
 
   buffer[0] = 0;
   sprintf(buffer, "%d.%d.%d", vendorVersion >> 16, vendorVersion >> 8, vendorVersion & 0xff);
@@ -1106,7 +1106,7 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
   info->_name = info->_label;
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-  vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+  vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, nullptr, 0.0f);
 
   info->_type = PluginScanInfoStruct::PluginTypeLinuxVST;
   info->_class = PluginScanInfoStruct::PluginClassEffect;
@@ -1178,7 +1178,7 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
     info->_class |= PluginScanInfoStruct::PluginClassInstrument;
   }
 
-  plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
+  plugin->dispatcher(plugin, effClose, 0, 0, nullptr, 0);
 
   return true;
 }
@@ -1195,7 +1195,7 @@ bool writeLinuxVstInfo(
   currentPluginId = 0;
 // bool bDontDlCLose = false;
 
-  AEffect *plugin = NULL;
+  AEffect *plugin = nullptr;
 
   plugin = lvst(vstNativeHostCallback);
   if(!plugin)
@@ -1243,8 +1243,8 @@ bool writeLinuxVstInfo(
         if(plugin)
         {
           // TODO: Is effClose necessary? Try removing.
-          //plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
-          plugin = NULL;
+          //plugin->dispatcher(plugin, effClose, 0, 0, nullptr, 0);
+          plugin = nullptr;
         }
 
         currentPluginId = it->first;
@@ -1273,9 +1273,9 @@ bool writeLinuxVstInfo(
   }
 
 
-  //plugin->dispatcher(plugin, effMainsChanged, 0, 0, NULL, 0);
+  //plugin->dispatcher(plugin, effMainsChanged, 0, 0, nullptr, 0);
 //   if(plugin)
-//       plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
+//       plugin->dispatcher(plugin, effClose, 0, 0, nullptr, 0);
 
 //               _end:
 //               if(handle && !bDontDlCLose)
@@ -1579,7 +1579,7 @@ static bool pluginScan(
     std::fprintf(stderr, "\npluginScan FAILED: waitForFinished: file: %s\n\n", filename_ba.constData());
     while (1) {
       QMessageBox::StandardButton btn = QMessageBox::warning(
-          NULL, QMessageBox::tr("Plugin Scanner"),
+          nullptr, QMessageBox::tr("Plugin Scanner"),
           QMessageBox::tr("Checking Plugin %1 is taking a very long time, do you want to keep waiting for it to finish, or skip this plugin?").arg(filename),
           QMessageBox::Retry|QMessageBox::Abort, QMessageBox::Retry);
 
@@ -2435,7 +2435,7 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
   lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
   lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
-  lv2CacheNodes.end                    = NULL;
+  lv2CacheNodes.end                    = nullptr;
 
   lilv_world_load_all(lilvWorld);
   const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
@@ -2481,7 +2481,7 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 
 
   lilv_world_free(lilvWorld);
-  lilvWorld = NULL;
+  lilvWorld = nullptr;
 }
 #else
 void scanLv2Plugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
@@ -2743,7 +2743,7 @@ static void findLv2PluginFiles(filepath_set& fplist, bool debugStdErr)
   }
 
   lilv_world_free(lilvWorld);
-  lilvWorld = NULL;
+  lilvWorld = nullptr;
 }
 #else
 static void findLv2PluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)

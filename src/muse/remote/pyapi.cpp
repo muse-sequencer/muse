@@ -185,7 +185,7 @@ Part* findPartBySerial(int sn)
                   }
             }
 
-      return NULL;
+      return nullptr;
 }
 //------------------------------------------------------------
 // Get parts from track
@@ -429,7 +429,7 @@ PyObject* modifyPart(PyObject*, PyObject* part)
 {
       int id = getPythonPartId(part);
 
-      Part* opart = NULL;
+      Part* opart = nullptr;
       // Verify a part with that id actually exists, then get it
       TrackList* tracks = MusEGlobal::song->tracks();
       for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
@@ -1089,7 +1089,7 @@ PyMethodDef g_methodDefinitions[] =
 
       { "getDivision", getDivision, METH_VARARGS, "Number of ticks per 1/4 (?)" },
 
-      {NULL, NULL, 0, NULL}
+      {nullptr, nullptr, 0, NULL}
 };
 
 bool PyroServerThread::initServer()
@@ -1119,7 +1119,7 @@ bool PyroServerThread::initServer()
       int i = 0;
       while(g_methodDefinitions[i].ml_name && g_methodDefinitions[i].ml_meth)
       {
-        po_new_func = PyCFunction_NewEx(&g_methodDefinitions[i], (PyObject*)NULL, po_mod_name);
+        po_new_func = PyCFunction_NewEx(&g_methodDefinitions[i], (PyObject*)nullptr, po_mod_name);
         PyDict_SetItemString(po_mod_dict, g_methodDefinitions[i].ml_name, po_new_func);
         ++i;
       }

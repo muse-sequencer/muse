@@ -36,7 +36,7 @@
 //-----------------------------------------------------------
 // Constructor destructor
 //-----------------------------------------------------------
-Preset::Preset() {_subcategory=NULL;_isUsed=false;initPreset();}
+Preset::Preset() {_subcategory=nullptr;_isUsed=false;initPreset();}
 Preset::Preset(Subcategory* sub) {
     _subcategory=sub;
     _isUsed=false;
@@ -133,14 +133,14 @@ void Category::linkSet(Set* s) {
 //----------------------------------------------------------
 // Subcategory constructor and destruction
 //----------------------------------------------------------
-Subcategory::Subcategory() {_category=NULL;}
+Subcategory::Subcategory() {_category=nullptr;}
 Subcategory::Subcategory(Category* cat) {
     _category=cat;
     _isUsed=false;
     if(cat) cat->_subcategoryVector.push_back(this);
 }
 Subcategory::Subcategory(const std::string name) {
-    _category=NULL;
+    _category=nullptr;
     _isUsed=false;
     _subcategoryName=name;
 }
@@ -168,7 +168,7 @@ Subcategory::~Subcategory() {
 //--------------------------------------------------------
 // Category constructor destructor
 //--------------------------------------------------------
-Category::Category() {_set=NULL;_isUsed=false;}
+Category::Category() {_set=nullptr;_isUsed=false;}
 Category::Category(Set* s) {
     _set=s;
     _isUsed=false;
@@ -402,7 +402,7 @@ Preset* Subcategory::findPreset(int prog) {
     for(pvi=_presetVector.begin(); pvi!=_presetVector.end(); pvi++) {
 	if((*pvi)->prog==prog) return(*pvi);
     }
-    return NULL;
+    return nullptr;
 }
 Preset* Category::findPreset(int lbank, int prog) {
     Subcategory* s=findSubcategory(lbank);
@@ -418,7 +418,7 @@ Preset* Set::findPreset(int hbank, int lbank, int prog) {
 	Preset* p=c->findPreset(lbank, prog);
 	if(p) return(p);
     }
-    return NULL;
+    return nullptr;
 }
 
 //---------------------------------------------------------
@@ -506,7 +506,7 @@ Subcategory* Set::findSubcategory(int hbank, int lbank) {
     s = c->findSubcategory(lbank);
     return s;
   }
-  else return NULL;
+  else return nullptr;
 }
 
 //---------------------------------------------------------

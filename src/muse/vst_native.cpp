@@ -439,7 +439,7 @@ VstNativeSynth::VstNativeSynth(const QFileInfo& fi, const QString& uri, AEffect*
   
   _flags = 0;
   _vst_version = 0;
-  _vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+  _vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, nullptr, 0.0f);
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
   if(_vst_version >= 2)
   {
@@ -479,7 +479,7 @@ VstNativeSynth::VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info)
           info._requiredFeatures)
 {
 //   _handle = dlHandle;
-  _handle = NULL;
+  _handle = nullptr;
   _id = info._subID;
   _hasGui = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasGui;
   _inports = info._inports;
@@ -513,7 +513,7 @@ void VstNativeSynth::incInstances(int val)
       #endif
 
       dlclose(_handle);
-      _handle = NULL;
+      _handle = nullptr;
     }
     iIdx.clear();
     oIdx.clear();
@@ -545,7 +545,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
     if(hnd == NULL)
     {
       fprintf(stderr, "dlopen(%s) failed: %s\n", path, dlerror());
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -565,7 +565,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
       fprintf(stderr, "ERROR: VST entrypoints \"" NEW_PLUGIN_ENTRY_POINT "\" or \""
                       OLD_PLUGIN_ENTRY_POINT "\" not found in library\n");
       dlclose(hnd);
-      return NULL;
+      return nullptr;
     }
     else if(MusEGlobal::debugMsg)
     {
@@ -590,7 +590,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
     fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", path);
     if(_id == 0)
       dlclose(hnd);
-    return NULL;
+    return nullptr;
   }
   else if(MusEGlobal::debugMsg)
     fprintf(stderr, "plugin instantiated\n");
@@ -600,7 +600,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
     fprintf(stderr, "Not a VST plugin in library \"%s\"\n", path);
     if(_id == 0)
       dlclose(hnd);
-    return NULL;
+    return nullptr;
   }
   else if(MusEGlobal::debugMsg)
     fprintf(stderr, "plugin is a VST\n");
@@ -621,7 +621,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   plugin->user = userData;
 
   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-  //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, NULL, 0.0f);
+  //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, nullptr, 0.0f);
   /*if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
   {
     if(MusEGlobal::debugMsg)
@@ -636,11 +636,11 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   return plugin;
 /*
 _error:
-  //plugin->dispatcher(plugin, effMainsChanged, 0, 0, NULL, 0);
-  plugin->dispatcher(plugin, effClose, 0, 0, NULL, 0);
+  //plugin->dispatcher(plugin, effMainsChanged, 0, 0, nullptr, 0);
+  plugin->dispatcher(plugin, effClose, 0, 0, nullptr, 0);
   if(_id == 0)
     dlclose(hnd);
-  return NULL;
+  return nullptr;
   */
 }
 
@@ -651,15 +651,15 @@ _error:
 
 bool VstNativeSynth::openPlugin(AEffect* plugin)
 {
-  plugin->dispatcher(plugin, effOpen, 0, 0, NULL, 0);
+  plugin->dispatcher(plugin, effOpen, 0, 0, nullptr, 0);
 
   // work around to get airwave to work (author contacted so maybe another solution will
   // reveal itself)
-  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
-  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
-  plugin->dispatcher(plugin, effMainsChanged, 0, 1, NULL, 0.0f);
+  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, nullptr, MusEGlobal::sampleRate);
+  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, nullptr, 0.0f);
+  plugin->dispatcher(plugin, effMainsChanged, 0, 1, nullptr, 0.0f);
 
-  //plugin->dispatcher(plugin, effSetProgram, 0, 0, NULL, 0.0f); // REMOVE Tim. Or keep?
+  //plugin->dispatcher(plugin, effSetProgram, 0, 0, nullptr, 0.0f); // REMOVE Tim. Or keep?
   return true;
 }
 
@@ -681,17 +681,17 @@ SynthIF* VstNativeSynth::createSIF(SynthI* s)
 VstNativeSynthIF::VstNativeSynthIF(SynthI* s) : SynthIF(s)
 {
       _guiVisible = false;
-      _gw = NULL;
-      _synth = NULL;
-      _plugin = NULL;
+      _gw = nullptr;
+      _synth = nullptr;
+      _plugin = nullptr;
       _active = false;
-      _editor = NULL;
+      _editor = nullptr;
       _inProcess = false;
-       _controls = NULL;
+       _controls = nullptr;
 //       controlsOut = 0;
-      _audioInBuffers = NULL;
-      _audioInSilenceBuf = NULL;
-      _audioOutBuffers = NULL;
+      _audioInBuffers = nullptr;
+      _audioInSilenceBuf = nullptr;
+      _audioOutBuffers = nullptr;
       userData.pstate = 0;
       userData.sif = this;
 }
@@ -835,8 +835,8 @@ bool VstNativeSynthIF::init(Synth* s)
           memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
       }
 
-      _controls = NULL;
-      _gw = NULL;
+      _controls = nullptr;
+      _gw = nullptr;
       unsigned long controlPorts = _synth->inControls();
       if(controlPorts != 0)
       {
@@ -881,7 +881,7 @@ bool VstNativeSynthIF::init(Synth* s)
           cl = icl->second;
           _controls[i].val = cl->curVal();
           
-          if(dispatch(26 /*effCanBeAutomated*/, i, 0, NULL, 0.0f) == 1)
+          if(dispatch(26 /*effCanBeAutomated*/, i, 0, nullptr, 0.0f) == 1)
           {
             double v = cl->curVal();
             if(v != _plugin->getParameter(_plugin, i))
@@ -1030,7 +1030,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       // call application idle routine (this will
       // call effEditIdle for all open editors too)
       //_plugin->updateParamValues(false);
-      //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
+      //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
       ///idleEditor();  // REMOVE Tim. Or keep.
       return 0;
 
@@ -1281,7 +1281,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       else if(userData->pstate)
          vstPlug = userData->pstate->plugin;
 
-      vstPlug->dispatcher(vstPlug, effEditIdle, 0, 0, NULL, 0.0f);  // ?
+      vstPlug->dispatcher(vstPlug, effEditIdle, 0, 0, nullptr, 0.0f);  // ?
 
       return 0;
    }
@@ -1397,7 +1397,7 @@ void VstNativeSynthIF::idleEditor()
 #endif
 
   // REMOVE Tim. Or keep.
-  //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
+  //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
   //if(_editor)
   //  _editor->update();
 }
@@ -1416,11 +1416,11 @@ void VstNativeSynthIF::guiHeartBeat()
   if(_plugin && _active)
   {
 //#ifdef VST_FORCE_DEPRECATED   // REMOVE Tim. Or keep
-    //_plugin->dispatcher(_plugin, effIdle, 0, 0, NULL, 0.0f);
+    //_plugin->dispatcher(_plugin, effIdle, 0, 0, nullptr, 0.0f);
 //#endif
      if(_guiVisible)
      {
-       _plugin->dispatcher(_plugin, effEditIdle, 0, 0, NULL, 0.0f);
+       _plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
        if(_editor)
          _editor->update();
      }
@@ -1470,7 +1470,7 @@ void VstNativeSynthIF::showNativeGui(bool v)
         if(_editor)
         {
           _editor->close();
-          //_editor = NULL;  // No - done in editorDeleted.
+          //_editor = nullptr;  // No - done in editorDeleted.
         }
       }
       _guiVisible = v;
@@ -1530,7 +1530,7 @@ void VstNativeSynthIF::editorClosed()
 
 void VstNativeSynthIF::editorDeleted()
 {
-  _editor = NULL;
+  _editor = nullptr;
 }
 
 //---------------------------------------------------------
@@ -1740,14 +1740,14 @@ void VstNativeSynthIF::deactivate3()
       if(_editor)
       {
         delete _editor;
-        _editor = NULL;
+        _editor = nullptr;
         _guiVisible = false;
       }
 
       deactivate();
       if (_plugin) {
-            _plugin->dispatcher (_plugin, effClose, 0, 0, NULL, 0);
-            _plugin = NULL;
+            _plugin->dispatcher (_plugin, effClose, 0, 0, nullptr, 0);
+            _plugin = nullptr;
             }
       }
 
@@ -1760,7 +1760,7 @@ void VstNativeSynthIF::queryPrograms()
       char buf[256];
       programs.clear();
       int num_progs = _plugin->numPrograms;
-      int iOldIndex = dispatch(effGetProgram, 0, 0, NULL, 0.0f);
+      int iOldIndex = dispatch(effGetProgram, 0, 0, nullptr, 0.0f);
       bool need_restore = false;
       for(int prog = 0; prog < num_progs; ++prog)
       {
@@ -1771,7 +1771,7 @@ void VstNativeSynthIF::queryPrograms()
         if(dispatch(effGetProgramNameIndexed, prog, -1, buf, 0.0f) == 0)  
         {
 //#endif
-          dispatch(effSetProgram, 0, prog, NULL, 0.0f);
+          dispatch(effSetProgram, 0, prog, nullptr, 0.0f);
           dispatch(effGetProgramName, 0, 0, buf, 0.0f);
           need_restore = true;
 //#ifndef VST_VESTIGE_SUPPORT
@@ -1792,7 +1792,7 @@ void VstNativeSynthIF::queryPrograms()
       // Restore current program.
       if(need_restore) // && num_progs > 0)
       { 
-        dispatch(effSetProgram, 0, iOldIndex, NULL, 0.0f);
+        dispatch(effSetProgram, 0, iOldIndex, nullptr, 0.0f);
         fprintf(stderr, "FIXME: VstNativeSynthIF::queryPrograms(): effGetProgramNameIndexed returned 0. Used ugly effSetProgram/effGetProgramName instead\n");
       }
 }
@@ -1833,15 +1833,15 @@ void VstNativeSynthIF::doSelectProgram(int bankH, int bankL, int prog)
   //{
     // "host calls this before a new program (effSetProgram) is loaded"
 #ifndef VST_VESTIGE_SUPPORT
-    //if(dispatch(effBeginSetProgram, 0, 0, NULL, 0.0f) == 1)  // TESTED: Usually it did not acknowledge. So IGNORE it.
-    dispatch(effBeginSetProgram, 0, 0, NULL, 0.0f);
+    //if(dispatch(effBeginSetProgram, 0, 0, nullptr, 0.0f) == 1)  // TESTED: Usually it did not acknowledge. So IGNORE it.
+    dispatch(effBeginSetProgram, 0, 0, nullptr, 0.0f);
     //{
 #endif      
-      dispatch(effSetProgram, 0, p, NULL, 0.0f);
-      //dispatch(effSetProgram, 0, prog, NULL, 0.0f);
+      dispatch(effSetProgram, 0, p, nullptr, 0.0f);
+      //dispatch(effSetProgram, 0, prog, nullptr, 0.0f);
       // "host calls this after the new program (effSetProgram) has been loaded"
 #ifndef VST_VESTIGE_SUPPORT
-      dispatch(effEndSetProgram, 0, 0, NULL, 0.0f);
+      dispatch(effEndSetProgram, 0, 0, nullptr, 0.0f);
     //}
     //else
     //  fprintf(stderr, "VstNativeSynthIF::doSelectProgram bankH:%d bankL:%d prog:%d Effect did not acknowledge effBeginSetProgram\n", bankH, bankL, prog);
@@ -2284,7 +2284,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
       #endif
 
       int hb, lb;
-      synti->currentProg(chn, NULL, &lb, &hb);
+      synti->currentProg(chn, nullptr, &lb, &hb);
       synti->setCurrentProg(chn, a & 0xff, lb, hb);
       doSelectProgram(hb, lb, a);
       return false;  // Event pointer not filled. Return false.
@@ -2328,7 +2328,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
       if(a == CTRL_LBANK)
       {
         int hb, pr;
-        synti->currentProg(chn, &pr, NULL, &hb);
+        synti->currentProg(chn, &pr, nullptr, &hb);
         synti->setCurrentProg(chn, pr, b & 0xff, hb);
         doSelectProgram(hb, b, pr);
         // Event pointer not filled. Return false.
@@ -2658,7 +2658,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       ciCtrlList icl = icl_first;
       for(unsigned long k = 0; k < in_ctrls; ++k)
       {
-        CtrlList* cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : NULL;
+        CtrlList* cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
         CtrlInterpolate& ci = _controls[k].interp;
         // Always refresh the interpolate struct at first, since things may have changed.
         // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
@@ -2729,7 +2729,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
         if(_controls[k].val != new_val)
         {
           _controls[k].val = new_val;
-          if(dispatch(26 /*effCanBeAutomated*/, k, 0, NULL, 0.0f) == 1)
+          if(dispatch(26 /*effCanBeAutomated*/, k, 0, nullptr, 0.0f) == 1)
           {
             if(_plugin->getParameter(_plugin, k) != new_val)
               _plugin->setParameter(_plugin, k, new_val);
@@ -2800,7 +2800,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       {
         _controls[v.idx].val = v.value;   // Might as well at least update these.
 // #ifndef VST_VESTIGE_SUPPORT
-//         if(dispatch(effCanBeAutomated, v.idx, 0, NULL, 0.0f) == 1)
+//         if(dispatch(effCanBeAutomated, v.idx, 0, nullptr, 0.0f) == 1)
 //         {
 // #endif
 //           if(v.value != _plugin->getParameter(_plugin, v.idx))
@@ -3030,14 +3030,14 @@ void VstNativeSynthIF::updateControllers() { }
 void VstNativeSynthIF::activate()
 {
   // Set some default properties
-  dispatch(effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
-  dispatch(effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
+  dispatch(effSetSampleRate, 0, 0, nullptr, MusEGlobal::sampleRate);
+  dispatch(effSetBlockSize, 0, MusEGlobal::segmentSize, nullptr, 0.0f);
   //for (unsigned short i = 0; i < instances(); ++i) {
-  //        dispatch(i, effMainsChanged, 0, 1, NULL, 0.0f);
-  dispatch(effMainsChanged, 0, 1, NULL, 0.0f);
+  //        dispatch(i, effMainsChanged, 0, 1, nullptr, 0.0f);
+  dispatch(effMainsChanged, 0, 1, nullptr, 0.0f);
 #ifndef VST_VESTIGE_SUPPORT
-  //dispatch(i, effStartProcess, 0, 0, NULL, 0.0f);
-  dispatch(effStartProcess, 0, 0, NULL, 0.0f);
+  //dispatch(i, effStartProcess, 0, 0, nullptr, 0.0f);
+  dispatch(effStartProcess, 0, 0, nullptr, 0.0f);
 #endif
   //}
 
@@ -3060,11 +3060,11 @@ void VstNativeSynthIF::deactivate()
   _active = false;
   //for (unsigned short i = 0; i < instances(); ++i) {
 #ifndef VST_VESTIGE_SUPPORT
-  //dispatch(i, effStopProcess, 0, 0, NULL, 0.0f);
-  dispatch(effStopProcess, 0, 0, NULL, 0.0f);
+  //dispatch(i, effStopProcess, 0, 0, nullptr, 0.0f);
+  dispatch(effStopProcess, 0, 0, nullptr, 0.0f);
 #endif
-  //dispatch(i, effMainsChanged, 0, 0, NULL, 0.0f);
-  dispatch(effMainsChanged, 0, 0, NULL, 0.0f);
+  //dispatch(i, effMainsChanged, 0, 0, nullptr, 0.0f);
+  dispatch(effMainsChanged, 0, 0, nullptr, 0.0f);
   //}
 }
 
@@ -3142,8 +3142,8 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures
    }
 
 
-   _fakeLd.PortNames = NULL;
-   _fakeLd.PortRangeHints = NULL;
+   _fakeLd.PortNames = nullptr;
+   _fakeLd.PortRangeHints = nullptr;
    _fakeLd.PortDescriptors = _fakePds;
    _fakeLd.Properties = 0;
    plugin = &_fakeLd;
@@ -3153,12 +3153,12 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures
    _isLV2Synth = false;
 
 #ifdef DSSI_SUPPORT
-   dssi_descr = NULL;
+   dssi_descr = nullptr;
 #endif
 
    fi = _synth->info;
    _uri = _synth->uri();
-   ladspa = NULL;
+   ladspa = nullptr;
    _handle = 0;
    _references = 0;
    _instNo     = 0;
@@ -3310,12 +3310,12 @@ void VstNativePluginWrapper::activate(LADSPA_Handle handle)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
    // Set some default properties
-   dispatch(state, effSetSampleRate, 0, 0, NULL, MusEGlobal::sampleRate);
-   dispatch(state, effSetBlockSize, 0, MusEGlobal::segmentSize, NULL, 0.0f);
+   dispatch(state, effSetSampleRate, 0, 0, nullptr, MusEGlobal::sampleRate);
+   dispatch(state, effSetBlockSize, 0, MusEGlobal::segmentSize, nullptr, 0.0f);
    //for (unsigned short i = 0; i < instances(); ++i) {
-   //        dispatch(i, effMainsChanged, 0, 1, NULL, 0.0f);
-   dispatch(state, effMainsChanged, 0, 1, NULL, 0.0f);
-   dispatch(state, 71 /*effStartProcess*/, 0, 0, NULL, 0.0f);
+   //        dispatch(i, effMainsChanged, 0, 1, nullptr, 0.0f);
+   dispatch(state, effMainsChanged, 0, 1, nullptr, 0.0f);
+   dispatch(state, 71 /*effStartProcess*/, 0, 0, nullptr, 0.0f);
 
    if(state->plugin->getParameter)
    {
@@ -3335,8 +3335,8 @@ void VstNativePluginWrapper::deactivate(LADSPA_Handle handle)
       return;
    }
    state->active = false;
-   dispatch(state, 72 /*effStopProcess*/, 0, 0, NULL, 0.0f);
-   dispatch(state, effMainsChanged, 0, 0, NULL, 0.0f);
+   dispatch(state, 72 /*effStopProcess*/, 0, 0, nullptr, 0.0f);
+   dispatch(state, effMainsChanged, 0, 0, nullptr, 0.0f);
 }
 
 void VstNativePluginWrapper::cleanup(LADSPA_Handle handle)
@@ -3349,13 +3349,13 @@ void VstNativePluginWrapper::cleanup(LADSPA_Handle handle)
    if(state->editor)
    {
      state->editor->close();
-     state->editor = NULL;
+     state->editor = nullptr;
      state->guiVisible = false;
    }
 
    if (state->plugin)
    {
-      dispatch(state, effClose, 0, 0, NULL, 0);
+      dispatch(state, effClose, 0, 0, nullptr, 0);
       state->plugin = 0;
    }
 
@@ -3393,7 +3393,7 @@ void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float 
             continue;
          }
          state->inControlLastValues [i] = state->pluginI->controls [i].val;
-         if(dispatch(state, 26 /*effCanBeAutomated*/, i, 0, NULL, 0.0f) == 1)
+         if(dispatch(state, 26 /*effCanBeAutomated*/, i, 0, nullptr, 0.0f) == 1)
          {
             if(state->plugin->getParameter && state->plugin->setParameter)
             {
@@ -3488,7 +3488,7 @@ void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
                                   | Qt::WindowSystemMenuHint
                                   | Qt::WindowMinMaxButtonsHint
                                   | Qt::WindowCloseButtonHint);
-         state->editor = new MusEGui::VstNativeEditor(NULL, wflags);
+         state->editor = new MusEGui::VstNativeEditor(nullptr, wflags);
          state->editor->open(0, state);
       }
    }
@@ -3497,7 +3497,7 @@ void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
       if(state->editor)
       {
          state->editor->close();
-         //_editor = NULL;  // No - done in editorDeleted.
+         //_editor = nullptr;  // No - done in editorDeleted.
       }
    }
    state->guiVisible = bShow;
@@ -3528,7 +3528,7 @@ void VstNativePluginWrapper_State::heartBeat()
    {
       if(guiVisible)
       {
-        plugin->dispatcher(plugin, effEditIdle, 0, 0, NULL, 0.0f);
+        plugin->dispatcher(plugin, effEditIdle, 0, 0, nullptr, 0.0f);
         if(editor)
           editor->update();
       }

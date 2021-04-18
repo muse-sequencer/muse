@@ -82,7 +82,7 @@ class CItem {
 
       virtual MusECore::Event event() const   { return MusECore::Event();  }
       virtual void setEvent(const MusECore::Event&) { }
-      virtual MusECore::Part* part() const    { return NULL; }
+      virtual MusECore::Part* part() const    { return nullptr; }
       virtual void setPart(MusECore::Part*)   { }
       };
 

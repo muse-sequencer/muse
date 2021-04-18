@@ -97,7 +97,7 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       if ( dac->getDeviceCount() < 1 ) {
 
         fprintf (stderr, "\nNo audio devices found!\n");
-        QMessageBox::warning(NULL,"No sound device.","RtAudio did not find any audio device - run muse in midi-only mode if there is audio capable device.", QMessageBox::Ok);
+        QMessageBox::warning(nullptr,"No sound device.","RtAudio did not find any audio device - run muse in midi-only mode if there is audio capable device.", QMessageBox::Ok);
       }
 }
 
@@ -110,8 +110,8 @@ void exitRtAudio()
 {
   if(rtAudioDevice)
     delete rtAudioDevice;
-  rtAudioDevice = NULL;
-  MusEGlobal::audioDevice = NULL;
+  rtAudioDevice = nullptr;
+  MusEGlobal::audioDevice = nullptr;
 }
 
 
@@ -163,7 +163,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
   if (rtAudioDevice->inputPortsList.size() >= 1) {
 
     MuseRtAudioPort *left = rtAudioDevice->inputPortsList.at(0);
-    MuseRtAudioPort *right = NULL;
+    MuseRtAudioPort *right = nullptr;
     if (rtAudioDevice->inputPortsList.size() >= 2) {
        right= rtAudioDevice->inputPortsList.at(1);
     }

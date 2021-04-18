@@ -57,12 +57,12 @@ BItem::BItem(const QPoint&p, const QRect& r) : CItem()
 
 PItem::PItem(const QPoint& p, const QRect& r) : BItem(p, r)
 {
-  _part = NULL;
+  _part = nullptr;
 }
 
 PItem::PItem() : BItem()
 {
-  _part = NULL;
+  _part = nullptr;
 }
 
 PItem::PItem(MusECore::Part* p) : BItem()

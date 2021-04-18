@@ -534,7 +534,7 @@ static void writeInitSeqOrInstrNameMeta(int port, int channel, MPEventList* mpel
     {
       EventList* el = instr->midiInit();
       if(!el->empty())
-        addEventList(*el, mpel, NULL, NULL, port, channel); // No track or part passed for init sequences
+        addEventList(*el, mpel, nullptr, nullptr, port, channel); // No track or part passed for init sequences
     }
 
     //--------------------------

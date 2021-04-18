@@ -113,7 +113,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
 #ifdef DSSI_SUPPORT
     if(!found)
     {
-      DSSI_Descriptor_Function dssi = NULL;
+      DSSI_Descriptor_Function dssi = nullptr;
       if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI)
       {
         dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
@@ -143,7 +143,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
     // Check if it's a MESS plugin...
     if(!found)
     {
-      MESS_Descriptor_Function msynth = NULL;
+      MESS_Descriptor_Function msynth = nullptr;
       if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeMESS)
       {
         msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
@@ -170,7 +170,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
     // Check if it's a LADSPA plugin...
     if(!found)
     {
-      LADSPA_Descriptor_Function ladspa = NULL;
+      LADSPA_Descriptor_Function ladspa = nullptr;
       if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA)
       {
         ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
@@ -198,7 +198,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
 #ifdef VST_NATIVE_SUPPORT
     if(!found)
     {
-      LinuxVST_Instance_Function getInstance = NULL;
+      LinuxVST_Instance_Function getInstance = nullptr;
       if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST)
       {
         getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);

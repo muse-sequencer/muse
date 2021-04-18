@@ -85,8 +85,8 @@
 #define DEBUG_TRANSPORT_SYNC(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
-MusECore::Audio* audio = NULL;
-MusECore::AudioDevice* audioDevice = NULL;   // current audio device in use
+MusECore::Audio* audio = nullptr;
+MusECore::AudioDevice* audioDevice = nullptr;   // current audio device in use
 extern unsigned int volatile midiExtSyncTicks;   
 }
 
@@ -790,7 +790,7 @@ void Audio::process(unsigned frames)
                 !MusEGlobal::tempomap.masterFlag() &&
                 !MusEGlobal::extSyncFlag &&
                 static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
-                  frames, NULL, NULL, NULL, &curr_jt_tick, &next_jt_ticks);
+                  frames, nullptr, nullptr, nullptr, &curr_jt_tick, &next_jt_ticks);
             // NOTE: I would rather trust the reported current tick than rely solely on the stream of 
             // tempos to correctly advance to the next position (which did actually test OK anyway).
             if(use_jack_timebase)
@@ -1589,7 +1589,7 @@ void Audio::seek(const Pos& p)
           !MusEGlobal::tempomap.masterFlag() &&
           !MusEGlobal::extSyncFlag &&
           static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
-              MusEGlobal::segmentSize, NULL, NULL, NULL, &curr_jt_tick, NULL))
+              MusEGlobal::segmentSize, nullptr, nullptr, nullptr, &curr_jt_tick, NULL))
           curTickPos = curr_jt_tick;
         else
   #endif

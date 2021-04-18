@@ -134,7 +134,7 @@ class JackAudioDevice : public AudioDevice {
       virtual void setPortName(void* p, const char* n);
       // preferred_name_or_alias: -1: No preference 0: Prefer canonical name 1: Prefer 1st alias 2: Prefer 2nd alias.
       virtual char* portName(void* port, char* str, int str_size, int preferred_name_or_alias = -1);
-      virtual const char* canonicalPortName(void* port) { if(!port) return NULL; return jack_port_name((jack_port_t*)port); }
+      virtual const char* canonicalPortName(void* port) { if(!port) return nullptr; return jack_port_name((jack_port_t*)port); }
       virtual void* findPort(const char* name);
       virtual unsigned int portLatency(void* port, bool capture) const;
       virtual float* getBuffer(void* port, unsigned long nframes) {

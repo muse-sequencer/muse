@@ -220,7 +220,7 @@ void enumerateJackMidiDevices()
           // Get a good routing name.
           MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
           
-          const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, good_name); // Persistent route.
+          const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, good_name); // Persistent route.
           // If audio is running, this calls jack_connect() and waits for the audio thread to execute addRoute().
           // If audio is not running, this directly executes addRoute(), bypassing the audio messaging system,
           //  and jack_connect() is not called.
@@ -249,7 +249,7 @@ void enumerateJackMidiDevices()
         {
           // Get a good routing name.
           MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
-          const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, good_name); // Persistent route.
+          const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, good_name); // Persistent route.
           if(!dev->inRoutes()->contains(srcRoute))
             operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
         }  
@@ -258,7 +258,7 @@ void enumerateJackMidiDevices()
   }
   if(!operations.empty())
   {
-    //operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
+    //operations.add(MusECore::PendingOperationItem((TrackList*)nullptr, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
     //MusEGlobal::song->update(SC_ROUTE);
   }
@@ -374,8 +374,8 @@ void enumerateJackMidiDevices()
                 dev = MidiJackDevice::createJackMidiDevice(QString(), 3); // Let it pick the name
                 if(dev)
                 {
-                  const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, r_good_name); // Persistent route.
-                  const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, w_good_name); // Persistent route.
+                  const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, r_good_name); // Persistent route.
+                  const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, w_good_name); // Persistent route.
                   // We only want to add the route, not call jack_connect - jack may not have been activated yet.
                   // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
                   // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
@@ -400,7 +400,7 @@ void enumerateJackMidiDevices()
         dev = MidiJackDevice::createJackMidiDevice(QString(), 1); // Let it pick the name
         if(dev)
         {
-          const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, w_good_name); // Persistent route.
+          const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, w_good_name); // Persistent route.
           // We only want to add the route, not call jack_connect - jack may not have been activated yet.
           // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
           // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
@@ -425,7 +425,7 @@ void enumerateJackMidiDevices()
         {
           // Get a good routing name.
           MusEGlobal::audioDevice->portName(r_port, r_good_name, ROUTE_PERSISTENT_NAME_SIZE);
-          const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, r_good_name); // Persistent route.
+          const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, r_good_name); // Persistent route.
           if(!dev->inRoutes()->contains(srcRoute))
             operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
         }      
@@ -435,7 +435,7 @@ void enumerateJackMidiDevices()
   
   if(!operations.empty())
   {
-    //operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
+    //operations.add(MusECore::PendingOperationItem((TrackList*)nullptr, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
     //MusEGlobal::song->update(SC_ROUTE);
   }
@@ -552,7 +552,7 @@ Part* partFromSerialNumber(int serial)
 	}
 	
 	printf("ERROR: partFromSerialNumber(%i) wasn't able to find an appropriate part!\n",serial);
-	return NULL;
+	return nullptr;
 }
 
 bool any_event_selected(const set<const Part*>& parts, bool in_range, RelevantSelectedEvents_t relevant)
@@ -713,7 +713,7 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
 			case Xml::TagStart:
 				if (tag == "entry")  // then read that entry with a nested loop
         {
-          DrumMap* dm=NULL;
+          DrumMap* dm=nullptr;
           DrumMap temporaryMap;
           for (;;) // nested loop
           {

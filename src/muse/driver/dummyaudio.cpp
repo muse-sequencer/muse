@@ -239,8 +239,8 @@ void exitDummyAudio()
 {
       if(dummyAudio)
         delete dummyAudio;
-      dummyAudio = NULL;      
-      MusEGlobal::audioDevice = NULL;      
+      dummyAudio = nullptr;      
+      MusEGlobal::audioDevice = nullptr;      
 }
 
 
@@ -357,7 +357,7 @@ bool DummyAudioDevice::start(int priority)
       if(rv)
       {  
         if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
-          rv = pthread_create(&dummyThread, NULL, dummyLoop, this); 
+          rv = pthread_create(&dummyThread, nullptr, dummyLoop, this); 
       }
       
       if(rv)

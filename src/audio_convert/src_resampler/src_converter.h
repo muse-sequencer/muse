@@ -119,7 +119,7 @@ class SRCAudioConverterSettings : public AudioConverterSettings
     SRCAudioConverterOptions* realtimeOptions() { return &_realtimeOptions; }
     SRCAudioConverterOptions* guiOptions() { return &_guiOptions; }
     
-    int executeUI(ModeType mode, QWidget* parent = NULL, bool isLocal = false);
+    int executeUI(ModeType mode, QWidget* parent = nullptr, bool isLocal = false);
     void read(Xml&);
     void write(int, Xml&) const;
     // Returns whether to use these settings or defer to default settings.
@@ -197,8 +197,8 @@ class SRCResamplerSettingsDialog : public QDialog, public Ui::SRCResamplerSettin
       enum buttonId { DefaultsButtonId, ConverterButtonId, OkButtonId, CancelButtonId };
       SRCResamplerSettingsDialog(
         MusECore::AudioConverterSettings::ModeType mode, 
-        QWidget* parent = NULL, 
-        MusECore::AudioConverterSettings* settings = NULL, 
+        QWidget* parent = nullptr, 
+        MusECore::AudioConverterSettings* settings = nullptr, 
         bool isLocal = false);
       };
 

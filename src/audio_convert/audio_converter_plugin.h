@@ -109,7 +109,7 @@ class AudioConverterPlugin {
             if(plugin && plugin->createSettings)
               return plugin->createSettings(isLocal);
             else 
-              return NULL;
+              return nullptr;
             }
       };
 
@@ -241,7 +241,7 @@ class AudioConverterSettingsI {
       bool isDefault()
       { return _settings ? _settings->isDefault() : true; } // Act like it's default.
       
-      int executeUI(AudioConverterSettings::ModeType mode, QWidget* parent = NULL, bool isLocal = false)
+      int executeUI(AudioConverterSettings::ModeType mode, QWidget* parent = nullptr, bool isLocal = false)
       { return _settings ? _settings->executeUI(mode, parent, isLocal) : 0; }
       
       void read(Xml& xml) { if(_settings) _settings->read(xml); }

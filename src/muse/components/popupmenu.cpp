@@ -362,7 +362,7 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
    
    QAction* action = actionAt(e->pos());
    if (!(action && action == activeAction() && !action->isSeparator() && action->isEnabled()))
-      action=NULL;
+      action=nullptr;
 
 #ifdef POPUP_MENU_DISABLE_STAY_OPEN
    if (action && action->menu() != NULL  &&  action->isCheckable())

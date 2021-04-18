@@ -196,7 +196,7 @@ void MPConfig::changeDefInputRoutes(QAction* act)
         
         if(!operations.empty())
         {
-          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //           MusEGlobal::song->update(SC_ROUTE);
         }
@@ -334,7 +334,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         
         if(!operations.empty())
         {
-          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //           MusEGlobal::song->update(SC_ROUTE);
         }        
@@ -839,7 +839,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   }
                   
                   // Do these always, regardless of operations - the device has changed.
-                  operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+                  operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
                   //if(!operations.empty())
                     MusEGlobal::audio->msgExecutePendingOperations(operations, true, SC_EVERYTHING);
 //                   MusEGlobal::song->update();

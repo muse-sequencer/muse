@@ -527,7 +527,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
         const double down_fact = 0.996540262;
 
         float *sp1, *sp2, *dp1, *dp2;
-        sp1 = sp2 = dp1 = dp2 = NULL;
+        sp1 = sp2 = dp1 = dp2 = nullptr;
         double _volume, v, _pan, v1, v2;
 
         if(trackChans == 1)
@@ -2291,11 +2291,11 @@ void AudioTrack::setTotalOutChannels(int num)
             if(_dataBuffers[i])
             {
               free(_dataBuffers[i]);
-              _dataBuffers[i] = NULL;
+              _dataBuffers[i] = nullptr;
             }
           }
           delete[] _dataBuffers;
-          _dataBuffers = NULL;
+          _dataBuffers = nullptr;
         }
 
         _totalOutChannels = num;
@@ -2314,11 +2314,11 @@ void AudioTrack::setTotalOutChannels(int num)
               if(outBuffers[i])
               {
                 free(outBuffers[i]);
-                outBuffers[i] = NULL;
+                outBuffers[i] = nullptr;
               }
             }
             delete[] outBuffers;
-            outBuffers = NULL;
+            outBuffers = nullptr;
           }
         }
 

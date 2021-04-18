@@ -129,7 +129,7 @@ void AudioConverterSettingsDialog::enableSettingsButtons()
     {
       QListWidgetItem* sel_item = selections.first();
       int id = sel_item->data(Qt::UserRole).toInt();
-      if(id >= 0 && _pluginList->find(NULL, id))
+      if(id >= 0 && _pluginList->find(nullptr, id))
         enable = true;
     }
   }

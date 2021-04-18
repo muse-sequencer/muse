@@ -152,8 +152,8 @@ inline unsigned long SynthIF::parametersOut() const             { return 0; }
 inline void SynthIF::setParam(unsigned long, double)       { }
 inline double SynthIF::param(unsigned long) const              { return 0.0; }
 inline double SynthIF::paramOut(unsigned long) const          { return 0.0; }
-inline const char* SynthIF::paramName(unsigned long)          { return NULL; }
-inline const char* SynthIF::paramOutName(unsigned long)       { return NULL; }
+inline const char* SynthIF::paramName(unsigned long)          { return nullptr; }
+inline const char* SynthIF::paramOutName(unsigned long)       { return nullptr; }
 LADSPA_PortRangeHint SynthIF::range(unsigned long)
 {
   LADSPA_PortRangeHint h;
@@ -3921,7 +3921,7 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
           {
             int hb;
             int lb;
-            synti->currentProg(chn, NULL, &lb, &hb);
+            synti->currentProg(chn, nullptr, &lb, &hb);
             synti->setCurrentProg(chn, a & 0xff, lb, hb);
             // Only if there's something to change...
             //if(hb < 128 || lb < 128 || a < 128)
@@ -3991,7 +3991,7 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
             {
               int hb;
               int pr;
-              synti->currentProg(chn, &pr, NULL, &hb);
+              synti->currentProg(chn, &pr, nullptr, &hb);
               synti->setCurrentProg(chn, pr, b & 0xff, hb);
               // Only if there's something to change...
               //if(hb < 128 || b < 128 || pr < 128)

@@ -203,7 +203,7 @@ void Part::rechainClone()
     if(_backupClone)
     {
         this->chainClone(_backupClone);
-        _backupClone = NULL;
+        _backupClone = nullptr;
     }
 }
 

@@ -93,7 +93,7 @@ FunctionDialogReturnCrescendo crescendo_items_dialog(const FunctionDialogMode& m
 {
   if (MusEGlobal::song->rPos() <= MusEGlobal::song->lPos())
   {
-    QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
+    QMessageBox::warning(nullptr, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
     return FunctionDialogReturnCrescendo();
   }
   
@@ -819,7 +819,7 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
                     start_tick=ev->second.tick();
 
     if (start_tick == INT_MAX)
-        return NULL;
+        return nullptr;
 
     //---------------------------------------------------
     //    write events as XML into tmp file
@@ -917,7 +917,7 @@ bool paste_notes(const Part* paste_into_part)
 		return false;
 		
 	paste_notes(MusEGui::paste_events_dialog->max_distance, MusEGui::paste_events_dialog->always_new_part,
-	            MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
+	            MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : nullptr,
 	            MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster);
 	
 	return true;
@@ -1095,7 +1095,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 								
 								if (create_new_part)
 								{
-									dest_part = NULL;
+									dest_part = nullptr;
 									Part* newpart = dest_track->newPart();
 									if(newpart)
 									{
@@ -1593,7 +1593,7 @@ bool merge_parts(const set<const Part*>& parts)
 		const Track* track=*t_it;
 
 		unsigned begin=INT_MAX, end=0;
-		const Part* first_part=NULL;
+		const Part* first_part=nullptr;
 		
 		// find begin of the first and end of the last part
 		for (set<const Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
@@ -2355,13 +2355,13 @@ bool cut_items(TagEventList* tag_list)
 QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mode)
 {
     if(tag_list->empty())
-      return NULL;
+      return nullptr;
   
     QTemporaryFile tmp;
     if(!tmp.open())
     {
         fprintf(stderr, "cut_or_copy_tagged_items_to_mime(): ERROR: Failed to open temporary file\n");
-        return NULL;
+        return nullptr;
     }
     
     const Pos start_pos = tag_list->globalStats().evrange();
@@ -2430,7 +2430,7 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 								| (MusEGui::paste_events_dialog->ctrl_erase_inclusive ? FunctionEraseItemsInclusive : FunctionNoOptions)
 								| (MusEGui::paste_events_dialog->always_new_part ?      FunctionPasteAlwaysNewPart : FunctionNoOptions)
 								| (MusEGui::paste_events_dialog->never_new_part ?       FunctionPasteNeverNewPart : FunctionNoOptions)),
-							MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
+							MusEGui::paste_events_dialog->into_single_part ? paste_into_part : nullptr,
 							MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster,
 							AllEventsRelevant,
 							-1 /*paste to ctrl num*/
@@ -2495,8 +2495,8 @@ void pasteEventList(
   const bool erase_controllers_inclusive = options._flags & FunctionEraseItemsInclusive;
   
   const Pos::TType time_type = wave_mode ? Pos::FRAMES : Pos::TICKS;
-  Track* dest_track = NULL;
-  const Part* old_dest_part = NULL;
+  Track* dest_track = nullptr;
+  const Part* old_dest_part = nullptr;
   
   // Be sure to subtract the position of the very first event of interest.
   // This is exactly what the copy/cut functions do before they write the results
@@ -2521,7 +2521,7 @@ void pasteEventList(
     
     if (create_new_part)
     {
-      dest_part = NULL;
+      dest_part = nullptr;
       Part* newpart = dest_track->newPart();
       if(newpart)
       {
@@ -3030,7 +3030,7 @@ void paste_items_at(
     
     for(ciTagEventList itl = tag_list->cbegin(); itl != tag_list->cend(); ++itl)
     {
-      const Part* dest_part = NULL;
+      const Part* dest_part = nullptr;
       const Part* src_part = itl->first;
       
       if (paste_into_part == NULL)

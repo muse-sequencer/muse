@@ -90,7 +90,7 @@ void initMidiDevices()
       {
         if(initMidiAlsa())
           {
-          QMessageBox::critical(NULL, "MusE fatal error.", "MusE failed to initialize the\n" 
+          QMessageBox::critical(nullptr, "MusE fatal error.", "MusE failed to initialize the\n" 
                                                           "Alsa midi subsystem, check\n"
                                                           "your configuration.");
           exit(-1);
@@ -100,7 +100,7 @@ void initMidiDevices()
       
       if(initMidiJack())
           {
-          QMessageBox::critical(NULL, "MusE fatal error.", "MusE failed to initialize the\n" 
+          QMessageBox::critical(nullptr, "MusE fatal error.", "MusE failed to initialize the\n" 
                                                           "Jack midi subsystem, check\n"
                                                           "your configuration.");
           exit(-1);

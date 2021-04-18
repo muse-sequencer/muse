@@ -4015,11 +4015,11 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
     if ( (dynamic_cast<MusEGui::TopWin*>(ptr) != nullptr) || // *ptr is a TopWin or a derived class
          (ptr==this) )                               // the main window is selected
       break;
-    ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns NULL, which stops the loop
+    ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns nullptr, which stops the loop
   }
 
   MusEGui::TopWin* win=dynamic_cast<MusEGui::TopWin*>(ptr);
-  // ptr is either NULL, this or the pointer to a TopWin
+  // ptr is either nullptr, this or the pointer to a TopWin
 
   // if the main win or some deleting topwin is selected,
   // don't treat that as "none", but also don't handle it

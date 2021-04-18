@@ -148,12 +148,12 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   //FX
   MusESimplePlugin::Plugin* p;
   p = MusESimplePlugin::plugins.find("freeverb", "freeverb1");
-  _pluginIReverb = NULL;
+  _pluginIReverb = nullptr;
   if(p) initPluginReverb(p);
-  _pluginIChorus = NULL;
+  _pluginIChorus = nullptr;
   p = MusESimplePlugin::plugins.find("doublechorus", "doublechorus1");
   if(p) initPluginChorus(p);
-  _pluginIDelay = NULL;
+  _pluginIDelay = nullptr;
   p = MusESimplePlugin::plugins.find("pandelay", "pandelay");
   if(p) initPluginDelay(p);
 
@@ -164,7 +164,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _delayFilter = new LowFilter();
   
   _initialPreset = new 
-    Preset(new Subcategory(new Category(NULL, "NONE", 0), "NONE", 0), 0);
+    Preset(new Subcategory(new Category(nullptr, "NONE", 0), "NONE", 0), 0);
   for(int c = 0; c < NBRCHANNELS; c++) {
     _preset[c]=_initialPreset;
     setPreset(c);
@@ -1303,8 +1303,8 @@ void DeicsOnze::loadSutulaPresets()
     int k;
     int nhBank, nlBank, nPreset;
     Preset* presetTemp;
-    Subcategory* subcategoryTemp = NULL;
-    Category* categoryTemp = NULL;
+    Subcategory* subcategoryTemp = nullptr;
+    Category* categoryTemp = nullptr;
 
     if(!_set) _set=new Set("Sutula Bank");
 
@@ -2663,7 +2663,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
                               (const unsigned char*)&dataBuildRev, 1);
     _gui->writeEvent(evSysexBuildRev);
   }
-  else _pluginIReverb = NULL;
+  else _pluginIReverb = nullptr;
   //chorus
   _global.isChorusActivated = (bool)data[NUM_IS_CHORUS_ON];
   unsigned char *dataChorusAct = new unsigned char[2];
@@ -2696,7 +2696,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
                               (const unsigned char*)&dataBuildCho, 1);
     _gui->writeEvent(evSysexBuildCho);
   }
-  else _pluginIChorus = NULL;
+  else _pluginIChorus = nullptr;
   //delay
   _global.isDelayActivated = (bool)data[NUM_IS_DELAY_ON];
   unsigned char *dataDelayAct = new unsigned char[2];
@@ -3718,9 +3718,9 @@ const char* DeicsOnze::getPatchName(int ch, int val, bool) const {
 //   getPatchInfo
 //---------------------------------------------------------
 const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
-  Preset* preset = NULL;
-  Subcategory* sub = NULL;
-  Category* cat = NULL;
+  Preset* preset = nullptr;
+  Subcategory* sub = nullptr;
+  Category* cat = nullptr;
   if(p) {
     _patch.hbank = p->hbank;
     _patch.lbank = p->lbank;
@@ -3783,7 +3783,7 @@ const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
 	    }
 	    return getPatchInfo(0, &_patch);
 	  }
-	  else return NULL;
+	  else return nullptr;
 	}	  
       }
     }

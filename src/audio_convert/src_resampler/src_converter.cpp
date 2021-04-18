@@ -612,7 +612,7 @@ void SRCAudioConverterSettings::read(Xml& xml)
             case Xml::TagStart:
                   if(mode != -1)
                   {
-                    SRCAudioConverterOptions* opts = NULL;
+                    SRCAudioConverterOptions* opts = nullptr;
                     switch(mode)
                     {
                       case AudioConverterSettings::OfflineMode:
@@ -677,7 +677,7 @@ SRCResamplerSettingsDialog::SRCResamplerSettingsDialog(
 
   OKButton->setEnabled(false);
   
-  _options = NULL;
+  _options = nullptr;
   if(settings)
   {
     MusECore::SRCAudioConverterSettings* src_settings = 

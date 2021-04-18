@@ -2970,7 +2970,7 @@ void PendingOperationList::addPartPortCtrlEvents(
     mt->mappedPortChanCtrl(&cntrl, nullptr, &mp, &ch);
 
     MidiCtrlValListList* mcvll = mp->controller();
-    MidiCtrlValList* mcvl = NULL;
+    MidiCtrlValList* mcvl = nullptr;
     iMidiCtrlValList imcvll = mcvll->find(ch, cntrl);
     if(imcvll == mcvll->end()) 
     {

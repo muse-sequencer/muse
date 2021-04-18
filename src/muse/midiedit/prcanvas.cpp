@@ -99,7 +99,7 @@ CItem* PianoCanvas::addItem(MusECore::Part* part, const MusECore::Event& event)
       {
 //       if (signed(event.tick())<0) {
 //             printf("ERROR: trying to add event before current part!\n");
-//             return NULL;
+//             return nullptr;
 //       }
 
       NEvent* ev = new NEvent(event, part, pitch2y(event.pitch()));

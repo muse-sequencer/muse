@@ -364,7 +364,7 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
 
-      _recFile = NULL;
+      _recFile = nullptr;
 
       internal_assign(t, flags | ASSIGN_PROPERTIES);
       }
@@ -3031,7 +3031,7 @@ bool AudioTrack::prepareRecording()
 
       if(_recFile->openWrite())
             {
-            QMessageBox::critical(NULL, "MusE write error.", "Error creating target wave file\n"
+            QMessageBox::critical(nullptr, "MusE write error.", "Error creating target wave file\n"
                                                             "Check your configuration.");
             return false;
 

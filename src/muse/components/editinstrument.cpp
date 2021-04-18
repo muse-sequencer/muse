@@ -343,7 +343,7 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       dlist_grid->addWidget(dlist_header, 0, 0);
       dlist_grid->addWidget(dlist_vscroll, 1,1);
 
-      dlist=NULL;
+      dlist=nullptr;
 
       changeInstrument();
 
@@ -562,7 +562,7 @@ void EditInstrument::patchActivated(const QModelIndex& idx)
     {
       dlist->hide();
       delete dlist;
-      dlist=NULL;
+      dlist=nullptr;
     }
 
     dlist=new DList(dlist_header,dlistContainer,1,dm);
@@ -622,7 +622,7 @@ void EditInstrument::delPatchCollection()
     {
       dlist->hide();
       delete dlist;
-      dlist=NULL;
+      dlist=nullptr;
     }
 
     dlist_header->hide();
@@ -1434,7 +1434,7 @@ void EditInstrument::changeInstrument()
   {
     dlist->hide();
     delete dlist;
-    dlist=NULL;
+    dlist=nullptr;
   }
 
   dlist_header->hide();
@@ -3905,7 +3905,7 @@ QMenu* EditInstrument::createPopupPatchList(bool drum)
   if(patchpopup->actions().count() == 0)
   {
     delete patchpopup;
-    return NULL;
+    return nullptr;
   }
 
   return patchpopup;

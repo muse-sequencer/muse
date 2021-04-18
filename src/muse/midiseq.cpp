@@ -60,7 +60,7 @@
 #include "large_int.h"
 
 namespace MusEGlobal {
-MusECore::MidiSeq* midiSeq = NULL;
+MusECore::MidiSeq* midiSeq = nullptr;
 }
 
 namespace MusECore {
@@ -80,7 +80,7 @@ void exitMidiSequencer()
   {
     //MusEGlobal::midiSeqRunning = false; // Done in stop.
     delete MusEGlobal::midiSeq;
-    MusEGlobal::midiSeq = NULL;
+    MusEGlobal::midiSeq = nullptr;
   }
 }
 
@@ -262,7 +262,7 @@ signed int MidiSeq::selectTimer()
     delete timer;
 #endif
 
-    timer=NULL;
+    timer=nullptr;
     QMessageBox::critical( 0, /*tr*/(QString("Failed to start timer!")),
               /*tr*/(QString("No functional timer was available.\n"
                          "RTC timer not available, check if /dev/rtc is available and readable by current user\n"
@@ -281,7 +281,7 @@ bool MidiSeq::deleteTimer()
   if(timer)
   {
     delete timer;
-    timer = NULL;
+    timer = nullptr;
     return true;
   }
   return false;

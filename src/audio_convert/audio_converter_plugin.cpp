@@ -146,7 +146,7 @@ AudioConverterPlugin* AudioConverterPluginList::find(const char* name, int ID, i
 {
   const bool id_valid = (ID != -1);
   const bool caps_valid = (capabilities != -1);
-  AudioConverterPlugin* cap_res = NULL;
+  AudioConverterPlugin* cap_res = nullptr;
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     AudioConverterPlugin* plugin = *i;
@@ -173,9 +173,9 @@ AudioConverterPlugin* AudioConverterPluginList::find(const char* name, int ID, i
 AudioConverterPlugin::AudioConverterPlugin(const QFileInfo* f, const AudioConverterDescriptor* d)
 {
   fi = *f;
-  plugin = NULL;
-  _descriptorFunction = NULL;
-  _handle = NULL;
+  plugin = nullptr;
+  _descriptorFunction = nullptr;
+  _handle = nullptr;
   _references = 0;
   _instNo     = 0;
   _label = QString(d->_label);
@@ -206,13 +206,13 @@ AudioConverterPlugin::~AudioConverterPlugin()
     
   if(_handle)
   {
-    DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: _handle is not NULL, closing library...\n");
+    DEBUG_AUDIOCONVERT(stderr, "AudioConverterPlugin dtor: _handle is not nullptr, closing library...\n");
     dlclose(_handle);
   }
   
-  _handle = NULL;
-  _descriptorFunction = NULL;
-  plugin = NULL;
+  _handle = nullptr;
+  _descriptorFunction = nullptr;
+  plugin = nullptr;
 }
 
 
@@ -233,9 +233,9 @@ int AudioConverterPlugin::incReferences(int val)
       dlclose(_handle);
     }
 
-    _handle = NULL;
-    _descriptorFunction = NULL;
-    plugin = NULL;
+    _handle = nullptr;
+    _descriptorFunction = nullptr;
+    plugin = nullptr;
 
 #endif
     
@@ -283,7 +283,7 @@ int AudioConverterPlugin::incReferences(int val)
   if(!plugin)
   {
     dlclose(_handle);
-    _handle = NULL;
+    _handle = nullptr;
     _references = 0;
     ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::incReferences Error: %s no plugin!\n", fi.filePath().toLatin1().constData());
     return 0;
@@ -345,9 +345,9 @@ AudioConverterPluginI::~AudioConverterPluginI()
 
 void AudioConverterPluginI::init()
 {
-  _plugin           = NULL;
+  _plugin           = nullptr;
   instances         = 0;
-  handle            = NULL;
+  handle            = nullptr;
   _channels         = 0;
 }
 
@@ -392,7 +392,7 @@ bool AudioConverterPluginI::initPluginInstance(AudioConverterPlugin* plug,
   
   handle = new AudioConverterHandle[instances];
   for(int i = 0; i < instances; ++i)
-    handle[i] = NULL;
+    handle[i] = nullptr;
 
   for(int i = 0; i < instances; ++i)
   {
@@ -514,8 +514,8 @@ AudioConverterSettingsI::~AudioConverterSettingsI()
 
 void AudioConverterSettingsI::init()
 {
-  _plugin    = NULL;
-  _settings  = NULL;
+  _plugin    = nullptr;
+  _settings  = nullptr;
 }
 
 void AudioConverterSettingsI::assign(const AudioConverterSettingsI& other)

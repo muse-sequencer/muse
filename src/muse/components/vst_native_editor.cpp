@@ -57,7 +57,7 @@ static XEventProc getXEventProc ( Display *pDisplay, Window w )
         int iSize;
         unsigned long iBytes, iCount;
         unsigned char *pData;
-        XEventProc eventProc = NULL;
+        XEventProc eventProc = nullptr;
         Atom aType, aName = XInternAtom(pDisplay, "_XEventProc", false);
 
         g_bXError = false;
@@ -248,18 +248,18 @@ void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
    }*/
    if(_sif)
    {
-     _sif->dispatch(effEditClose, 0, 0, NULL, 0.0f);
+     _sif->dispatch(effEditClose, 0, 0, nullptr, 0.0f);
      _sif->editorClosed();
      _sif->editorDeleted();
-     _sif = NULL;
+     _sif = nullptr;
    }
 
    if(_pstate)
    {
-      _pstate->plugin->dispatcher(_pstate->plugin, effEditClose, 0, 0, NULL, 0.0f);
+      _pstate->plugin->dispatcher(_pstate->plugin, effEditClose, 0, 0, nullptr, 0.0f);
       _pstate->editorClosed();
       _pstate->editorDeleted();
-      _pstate = NULL;
+      _pstate = nullptr;
    }
 
    QWidget::closeEvent(pCloseEvent);

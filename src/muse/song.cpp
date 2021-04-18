@@ -115,8 +115,8 @@ Song::Song(const char* name)
       redoList     = new UndoList(false); // "false" means "redoList"
       _markerList  = new MarkerList;
       _globalPitchShift = 0;
-      bounceTrack = NULL;
-      bounceOutput = NULL;
+      bounceTrack = nullptr;
+      bounceOutput = nullptr;
       showSongInfo=true;
       clearDrumMap(); // One-time only early init
       clear(false);
@@ -3991,7 +3991,7 @@ void Song::restartRecording(bool discard)
       Track *cTrk = _tracks[i];
       if(!cTrk->recordFlag())
         continue;
-      Track *nTrk = NULL;
+      Track *nTrk = nullptr;
       if(!discard)
       {
         if(!new_track_names.genUniqueNames(cTrk->type(), cTrk->name(), 1))

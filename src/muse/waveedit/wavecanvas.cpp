@@ -188,7 +188,7 @@ void WaveCanvas::updateItems()
     storedEvent=curItem->event();
     partSn=curItem->part()->sn();
   }
-  curItem=NULL;
+  curItem=nullptr;
   
   items.clearDelete();
   startSample  = INT_MAX;

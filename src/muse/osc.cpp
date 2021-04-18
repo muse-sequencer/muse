@@ -396,8 +396,8 @@ OscIF::OscIF()
   _oscGuiVisible = false;
   
   old_prog=old_bank=0xDEADBEEF;
-  old_control=NULL;
-  control_port_mapper=NULL;
+  old_control=nullptr;
+  control_port_mapper=nullptr;
   maxDssiPort=0;
 }
 

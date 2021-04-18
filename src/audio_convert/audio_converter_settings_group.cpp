@@ -146,7 +146,7 @@ AudioConverterSettingsI* AudioConverterSettingsGroup::find(int ID) const
 
 void AudioConverterSettingsGroup::readItem(Xml& xml, AudioConverterPluginList* plugList)
 {
-      AudioConverterSettingsI* setI = NULL;
+      AudioConverterSettingsI* setI = nullptr;
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -237,13 +237,13 @@ void AudioConverterSettingsGroup::write(int level, Xml& xml, AudioConverterPlugi
   
   if(_options._preferredResampler != AudioConverterSettingsGroupOptions::defaultOptions._preferredResampler)
   {
-    if(AudioConverterPlugin* plugin = plugList->find(NULL, _options._preferredResampler))
+    if(AudioConverterPlugin* plugin = plugList->find(nullptr, _options._preferredResampler))
       xml.strTag(level, "preferredResampler", plugin->name().toLatin1().constData());
   }
   
   if(_options._preferredShifter != AudioConverterSettingsGroupOptions::defaultOptions._preferredShifter)
   {
-    if(AudioConverterPlugin* plugin = plugList->find(NULL, _options._preferredShifter))
+    if(AudioConverterPlugin* plugin = plugList->find(nullptr, _options._preferredShifter))
       xml.strTag(level, "preferredShifter", plugin->name().toLatin1().constData());
   }
   

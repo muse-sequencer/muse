@@ -209,9 +209,9 @@ struct LV2ControlPort
    ~LV2ControlPort()
    {
       free ( cName );      
-      cName = NULL;
+      cName = nullptr;
       free(cSym);
-      cSym = NULL;
+      cSym = nullptr;
    }
    const LilvPort *port;
    uint32_t index; //plugin real port index
@@ -334,7 +334,7 @@ class Lv2Plugin : public Plugin
     uint32_t _fPrgHost;
     uint32_t _fMakePath;
     uint32_t _fMapPath;
-    //const LilvNode *_pluginUIType = NULL;
+    //const LilvNode *_pluginUIType = nullptr;
     LV2_URID _uTime_Position;
     LV2_URID _uTime_frame;
     LV2_URID _uTime_speed;
@@ -546,8 +546,8 @@ struct LV2PluginWrapper_State {
       songDirtyPending(false),
       uiIsOpening(false)
    {
-      extHost.plugin_human_id = NULL;
-      extHost.ui_closed = NULL;
+      extHost.plugin_human_id = nullptr;
+      extHost.ui_closed = nullptr;
       uiResize.handle = (LV2UI_Feature_Handle)this;
 // TODO: UI
 //       uiResize.ui_resize = LV2Synth::lv2ui_Resize;

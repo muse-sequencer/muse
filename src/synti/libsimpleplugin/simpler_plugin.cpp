@@ -208,7 +208,7 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
       {
       SP_TRACE_IN
       
-      _plugin = NULL;
+      _plugin = nullptr;
       
       _label = QString(d->Label);
       _name = QString(d->Name);
@@ -319,7 +319,7 @@ int LadspaPlugin::incReferences(int val)
     }
 
     _libHandle = 0;
-    _plugin = NULL;
+    _plugin = nullptr;
     _pIdx.clear();
     _poIdx.clear();
     _iIdx.clear();
@@ -434,7 +434,7 @@ int LadspaPlugin::incReferences(int val)
 void* LadspaPlugin::instantiate(float sampleRate, void*)
 {
   if(!_plugin)
-    return NULL;
+    return nullptr;
   bool success = false;
   LADSPA_Handle h = _plugin->instantiate(_plugin, sampleRate);
   success = (h != NULL);
@@ -1031,7 +1031,7 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
 
   _handle = new LADSPA_Handle[_instances];
   for(int i = 0; i < _instances; ++i)
-    _handle[i]=NULL;
+    _handle[i]=nullptr;
 
   for(int i = 0; i < _instances; ++i)
   {
@@ -1233,7 +1233,7 @@ void LadspaPluginI::setChannels(int chans)
               // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert().
               // Whoever uses these will have to check instance count or null handle, and try to gracefully fix it and allow a song save.
               for(int k = i; k < ni; ++k)
-                handles[i] = NULL;
+                handles[i] = nullptr;
               ni = i + 1;
               //channel = ?;
               break;

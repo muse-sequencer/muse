@@ -1011,7 +1011,7 @@ MusECore::Part* read_part(MusECore::Xml& xml, QString tag_name="part")
                 {
                     int trackIdx, partIdx;
                     if (tag=="none")
-                        part=NULL;
+                        part=nullptr;
                     else
                     {
                         sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
@@ -3874,7 +3874,7 @@ list<int> calc_accidentials(MusECore::key_enum key, clef_t clef, MusECore::key_e
     int bass_sharp_pos[]={8,5,9,6,3,7,4};
     int bass_b_pos[]={4,7,3,6,2,5,1};
 
- int* accidential_pos = NULL;
+ int* accidential_pos = nullptr;
 
     switch (clef)
     {
@@ -4130,7 +4130,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                 {
                     if (mouse_inserts_notes)
                     {
-                        const MusECore::Part* curr_part = NULL;
+                        const MusECore::Part* curr_part = nullptr;
                         set<const MusECore::Part*> possible_dests=staff_it->parts_at_tick(tick);
 
                         if (!possible_dests.empty())
