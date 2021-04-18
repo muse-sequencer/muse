@@ -1086,8 +1086,16 @@ void CtrlCanvas::updateItems()
               {
                     const MusECore::Event& e = i->second;
                     // Do not add events which are past the end of the part.
-                    if(e.tick() >= len)
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+                    if((int)e.tick() /*+ (int)e.lenTick()*/ < 0)
+                      continue;
+                    if((int)e.tick() >= (int)len)
                       break;
+#else
+                    if(e.tick() > len)   
+                      break;
+#endif
+              
                     
                     if(_cnum == MusECore::CTRL_VELOCITY && e.type() == MusECore::Note) 
                     {

@@ -1,5 +1,6 @@
 17.04.2021
     - Fix: Memory leak with Timeline toolbar. (kybos)
+    - Fix neglect at 11.04.2021: No editor events shown if any hidden events at left. (Tim)
 16.04.2021
     - Save recent list as soon as a new file has been opened, this to eliminate the possibility
       that the update was lost incase MusE was not properly terminated (rj)

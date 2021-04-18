@@ -210,11 +210,14 @@ void WaveCanvas::updateItems()
               const MusECore::Event& e = i->second;
               // Do not add events which are past the end of the part.
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-              if((int)e.frame() + (int)e.lenFrame() < 0 || (int)e.frame() >= (int)len)
+              if((int)e.frame() + (int)e.lenFrame() < 0)
+                continue;
+              if((int)e.frame() >= (int)len)
+                break;
 #else
               if(e.frame() > len)   
-#endif
                 break;
+#endif
               
               if (e.type() == MusECore::Wave) {
                     CItem* temp = addItem(part, e);
