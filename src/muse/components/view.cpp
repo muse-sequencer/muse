@@ -419,7 +419,7 @@ void View::paint(const QRect& r, const QRegion& rg)
 //         fprintf(stderr, "  #%d: x:%d y:%d w:%d h:%d\n", rg_r_cnt, rg_r.x(), rg_r.y(), rg_r.width(), rg_r.height());
 //       }   
 
-      p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing, false);
+      p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, false);
       
       if (bgPixmap.isNull())
             p.fillRect(rr, brush);

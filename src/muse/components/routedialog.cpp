@@ -848,7 +848,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
                     opt.state |= QStyle::State_On;
                 break;
               }
-              st->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &opt, painter);
+              st->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &opt, painter);
             }
             
             // Draw the icon.
