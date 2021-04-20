@@ -598,7 +598,7 @@ QRect MapperControlDelegate::getItemRectangle(const QStyleOptionViewItem& option
     // Taken from QStyledItemDelegate source. 
     QStyleOptionViewItemV4 opt = option;
     initStyleOption(&opt, index);
-    const QWidget* widget = NULL;
+    const QWidget* widget = nullptr;
     const QStyleOptionViewItemV3* v3 = qstyleoption_cast<const QStyleOptionViewItemV3*>(&option);
     if(v3)
       widget = v3->widget;
@@ -1285,7 +1285,7 @@ ControlMapperDialog::ControlMapperDialog(MusECore::Track* t, QWidget* parent)
   }
   MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(_track);
   _actrls = atrack->controller();
-  _mctrls = NULL;  
+  _mctrls = nullptr;
   if(_track->type() == MusECore::Track::AUDIO_SOFTSYNTH)
   {
     MusECore::SynthI* si = static_cast<MusECore::SynthI*>(_track);

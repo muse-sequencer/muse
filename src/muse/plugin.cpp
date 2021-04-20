@@ -1289,7 +1289,7 @@ void Pipeline::initBuffers()
     {
 #ifdef _WIN32
       buffer[i] = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
-      if(buffer[i] == NULL)
+      if(buffer[i] == nullptr)
       {
          fprintf(stderr, "ERROR: Pipeline ctor: _aligned_malloc returned error: NULL. Aborting!\n");
          abort();
@@ -2527,7 +2527,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
 #ifdef _WIN32
       _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
-      if(_audioInSilenceBuf == NULL)
+      if(_audioInSilenceBuf == nullptr)
       {
          fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioInSilenceBuf _aligned_malloc returned error: NULL. Aborting!\n");
          abort();
@@ -2553,7 +2553,7 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       }
 #ifdef _WIN32
       _audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
-      if(_audioOutDummyBuf == NULL)
+      if(_audioOutDummyBuf == nullptr)
       {
          fprintf(stderr, "ERROR: PluginI::initPluginInstance: _audioOutDummyBuf _aligned_malloc returned error: NULL. Aborting!\n");
          abort();

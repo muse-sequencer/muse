@@ -405,7 +405,7 @@ class Song : public QObject {
       void removePart(Part* part);
       void changePart(Part*, Part*);
 
-      void normalizeWaveParts(Part *partCursor = NULL);
+      void normalizeWaveParts(Part *partCursor = nullptr);
 
       //-----------------------------------------
       //   track manipulations

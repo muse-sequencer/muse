@@ -173,7 +173,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
       
       QByteArray ba = synti->name().toLatin1();
       const char* sub = strstr(p, ba.constData());
-      if(sub == NULL) 
+      if(sub == nullptr)
         continue;
 
       if(!synti->sif() || !synti->synth() || synti->synth()->synthType() != MusECore::Synth::DSSI_SYNTH)
@@ -234,7 +234,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
         
         QByteArray ba = instance->label().toLatin1();
         const char* sub = strstr(p, ba.constData());
-        if(sub == NULL) 
+        if(sub == nullptr)
           continue;
           
         Plugin* plugin = instance->plugin();

@@ -1125,7 +1125,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       if(a == CTRL_HBANK)
       {
         int lb, pr;
-        synti->currentProg(chn, &pr, &lb, NULL);
+        synti->currentProg(chn, &pr, &lb, nullptr);
         synti->setCurrentProg(chn, pr, lb, b & 0xff);
         doSelectProgram(_handle, b, lb, pr);
         // Event pointer not filled. Return false.

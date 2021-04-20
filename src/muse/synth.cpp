@@ -3970,7 +3970,7 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
             {
               int lb;
               int pr;
-              synti->currentProg(chn, &pr, &lb, NULL);
+              synti->currentProg(chn, &pr, &lb, nullptr);
               synti->setCurrentProg(chn, pr, lb, b & 0xff);
               // Only if there's something to change...
               //if(b < 128 || lb < 128 || pr < 128)

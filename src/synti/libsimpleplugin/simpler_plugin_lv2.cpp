@@ -203,7 +203,7 @@ LV2_URID Synth_Urid_Map(LV2_URID_Unmap_Handle _host_data, const char *uri)
 //    LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
    Lv2Plugin *_synth = reinterpret_cast<Lv2Plugin *>(_host_data);
 
-   if(_synth == NULL)   //broken plugin
+   if(_synth == nullptr)   //broken plugin
    {
       return 0;
    }
@@ -216,7 +216,7 @@ const char *Synth_Urid_Unmap(LV2_URID_Unmap_Handle _host_data, LV2_URID id)
 //    LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
    Lv2Plugin *_synth = reinterpret_cast<Lv2Plugin *>(_host_data);
 
-   if(_synth == NULL)   //broken plugin
+   if(_synth == nullptr)   //broken plugin
    {
       return NULL;
    }
@@ -230,7 +230,7 @@ LV2_URID Synth_Uri_Map(LV2_URI_Map_Callback_Data _host_data, const char *, const
 //    LV2Synth *_synth = reinterpret_cast<LV2Synth *>(_host_data);
    Lv2Plugin *_synth = reinterpret_cast<Lv2Plugin *>(_host_data);
 
-   if(_synth == NULL)   //broken plugin
+   if(_synth == nullptr)   //broken plugin
    {
       return 0;
    }
@@ -244,29 +244,29 @@ static CacheNodes lv2CacheNodes;
 
 LV2_Feature lv2Features [] =
 {
-   {LV2_F_URID_MAP, NULL},
-   {LV2_F_URID_UNMAP, NULL},
+   {LV2_F_URID_MAP, nullptr},
+   {LV2_F_URID_UNMAP, nullptr},
 #ifdef LV2_URI_MAP_SUPPORT
-   {LV2_F_URI_MAP, NULL},
+   {LV2_F_URI_MAP, nullptr},
 #endif
-   {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
-   {LV2_F_FIXED_BLOCK_LENGTH, NULL},
-   {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
-   {LV2_F_COARSE_BLOCK_LENGTH, NULL},
-   {LV2_F_UI_PARENT, NULL},
-   {LV2_F_INSTANCE_ACCESS, NULL},
-   {LV2_F_UI_EXTERNAL_HOST, NULL},
-   {LV2_UI_EXTERNAL_DEPRECATED, NULL},
-   {LV2_F_WORKER_SCHEDULE, NULL},
-   {LV2_F_UI_IDLE, NULL},
-   {LV2_F_OPTIONS, NULL},
-   {LV2_UI__resize, NULL},
-   {LV2_PROGRAMS__Host, NULL},
-   {LV2_LOG__log, NULL},
-   {LV2_STATE__makePath, NULL},
-   {LV2_STATE__mapPath, NULL},
-   {LV2_F_STATE_CHANGED, NULL},
-   {LV2_F_DATA_ACCESS, NULL} //must be the last always!
+   {LV2_F_BOUNDED_BLOCK_LENGTH, nullptr},
+   {LV2_F_FIXED_BLOCK_LENGTH, nullptr},
+   {LV2_F_POWER_OF_2_BLOCK_LENGTH, nullptr},
+   {LV2_F_COARSE_BLOCK_LENGTH, nullptr},
+   {LV2_F_UI_PARENT, nullptr},
+   {LV2_F_INSTANCE_ACCESS, nullptr},
+   {LV2_F_UI_EXTERNAL_HOST, nullptr},
+   {LV2_UI_EXTERNAL_DEPRECATED, nullptr},
+   {LV2_F_WORKER_SCHEDULE, nullptr},
+   {LV2_F_UI_IDLE, nullptr},
+   {LV2_F_OPTIONS, nullptr},
+   {LV2_UI__resize, nullptr},
+   {LV2_PROGRAMS__Host, nullptr},
+   {LV2_LOG__log, nullptr},
+   {LV2_STATE__makePath, nullptr},
+   {LV2_STATE__mapPath, nullptr},
+   {LV2_F_STATE_CHANGED, nullptr},
+   {LV2_F_DATA_ACCESS, nullptr} //must be the last always!
 };
 
 std::set<std::string> supportedFeatures;
@@ -331,7 +331,7 @@ void initLV2()
    lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
    lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
    lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
-   lv2CacheNodes.end                    = NULL;
+   lv2CacheNodes.end                    = nullptr;
 
    lilv_world_load_all(lilvWorld);
    const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
@@ -363,7 +363,7 @@ void initLV2()
          if(MusEGlobal::debugMsg)
            std::cerr << "Found LV2 plugin: " << pluginName << std::endl;
          // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
-         const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
+         const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), nullptr);
          if(MusEGlobal::debugMsg)
            std::cerr << "Library path: " << lfp << std::endl;
 
@@ -456,7 +456,7 @@ void initLV2()
                LilvNode *nAuthor = lilv_plugin_get_author_name(plugin);
                QString author;
 
-               if(nAuthor != NULL)
+               if(nAuthor != nullptr)
                {
                   author = lilv_node_as_string(nAuthor);
                   lilv_node_free(nAuthor);
@@ -497,7 +497,7 @@ void initLV2()
          lilv_free((void*)lfp); // Must free.
       }
 
-      if(nameNode != NULL)
+      if(nameNode != nullptr)
       {
          lilv_node_free(nameNode);
       }
@@ -527,16 +527,16 @@ void deinitLV2()
 // #endif
 
    lilv_world_free(lilvWorld);
-   lilvWorld = NULL;
+   lilvWorld = nullptr;
 
 }
 
 // void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)contr;
-//    assert(state != NULL); //this shouldn't happen
-//    assert(state->widget != NULL); // this too
-//    assert(state->pluginWindow != NULL);
+//    assert(state != nullptr); //this shouldn't happen
+//    assert(state->widget != nullptr); // this too
+//    assert(state->pluginWindow != nullptr);
 // 
 //    state->pluginWindow->setClosing(true);
 // 
@@ -546,15 +546,15 @@ void deinitLV2()
 // 
 // void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
 // {
-//    if(state != NULL && state->uiDesc != NULL && state->uiDesc->port_event != NULL && state->uiInst != NULL)
+//    if(state != nullptr && state->uiDesc != nullptr && state->uiDesc->port_event != nullptr && state->uiInst != nullptr)
 //    {      
 //       size_t numControls = 0;
-//       MusECore::Port *controls = NULL;
+//       MusECore::Port *controls = nullptr;
 //       size_t numControlsOut = 0;
-//       MusECore::Port *controlsOut = NULL;
+//       MusECore::Port *controlsOut = nullptr;
 //       LV2Synth *synth = state->synth;
 // 
-//       if(state->plugInst != NULL)
+//       if(state->plugInst != nullptr)
 //       {
 //          numControls = state->plugInst->controlPorts;
 //          controls = state->plugInst->controls;
@@ -562,7 +562,7 @@ void deinitLV2()
 //          controlsOut = state->plugInst->controlsOut;
 // 
 //       }
-//       else if(state->sif != NULL)
+//       else if(state->sif != nullptr)
 //       {
 //          numControls = state->sif->_inportsControl;
 //          controls = state->sif->_controls;
@@ -572,12 +572,12 @@ void deinitLV2()
 // 
 //       if(numControls > 0)
 //       {
-//          assert(controls != NULL);
+//          assert(controls != nullptr);
 //       }
 // 
 //       if(numControlsOut > 0)
 //       {
-//          assert(controlsOut != NULL);
+//          assert(controlsOut != nullptr);
 //       }
 //       for(uint32_t i = 0; i < numControls; ++i)
 //       {
@@ -652,7 +652,7 @@ void Lv2Plugin::lv2_FillFeatures(LV2_Feature *features, LV2_Feature **ppfeatures
    {
       features [i] = _features [i];
 
-      if(features [i].URI == NULL)
+      if(features [i].URI == nullptr)
       {
          break;
       }
@@ -663,7 +663,7 @@ void Lv2Plugin::lv2_FillFeatures(LV2_Feature *features, LV2_Feature **ppfeatures
       }
       else if(i == _fInstanceAccess)
       {
-         features [i].data = NULL;
+         features [i].data = nullptr;
       }
       else if(i == _fExtUiHost)
       {
@@ -702,8 +702,8 @@ void Lv2Plugin::lv2_FillFeatures(LV2_Feature *features, LV2_Feature **ppfeatures
       ppfeatures [i] = &features [i];
    }
 
-//    _ppifeatures [i] = NULL;
-   ppfeatures [i] = NULL;
+//    _ppifeatures [i] = nullptr;
+   ppfeatures [i] = nullptr;
 }
 
 void Lv2Plugin::lv2state_FillFeatures(LV2PluginWrapper_State *state)
@@ -719,26 +719,26 @@ void Lv2Plugin::lv2state_FillFeatures(LV2PluginWrapper_State *state)
    state->wrkSched.handle = (LV2_Worker_Schedule_Handle)state;
 //    state->wrkSched.schedule_work = LV2Synth::lv2wrk_scheduleWork;
    state->wrkSched.schedule_work = lv2wrk_scheduleWork;
-   state->wrkIface = NULL;
+   state->wrkIface = nullptr;
    state->wrkThread = new LV2PluginWrapper_Worker(state);
 
-   state->extHost.plugin_human_id = state->human_id = NULL;
+   state->extHost.plugin_human_id = state->human_id = nullptr;
    state->extHost.ui_closed = LV2Synth::lv2ui_ExtUi_Closed;
 
-   state->extData.data_access = NULL;
+   state->extData.data_access = nullptr;
 
    for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
    {
       _ifeatures [i] = synth->_features [i];
 
-      if(_ifeatures [i].URI == NULL)
+      if(_ifeatures [i].URI == nullptr)
       {
          break;
       }
 
       if(i == synth->_fInstanceAccess)
       {
-         _ifeatures [i].data = NULL;
+         _ifeatures [i].data = nullptr;
       }
       else if(i == synth->_fExtUiHost)
       {
@@ -776,7 +776,7 @@ void Lv2Plugin::lv2state_FillFeatures(LV2PluginWrapper_State *state)
       _ppifeatures [i] = &_ifeatures [i];
    }
 
-   _ppifeatures [i] = NULL;
+   _ppifeatures [i] = nullptr;
 
    state->curBpm = 0.0;//double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
    state->curIsPlaying = MusEGlobal::audio->isPlaying();
@@ -793,13 +793,13 @@ void Lv2Plugin::lv2state_FillFeatures(LV2PluginWrapper_State *state)
 // 
 //    state->_ifeatures [synth->_fInstanceAccess].data = lilv_instance_get_handle(state->handle);
 // 
-//    if(descr->extension_data != NULL)
+//    if(descr->extension_data != nullptr)
 //    {
 //       state->extData.data_access = descr->extension_data;
 //    }
 //    else
 //    {
-//       state->_ppifeatures [synth->_fDataAccess] = NULL;
+//       state->_ppifeatures [synth->_fDataAccess] = nullptr;
 //    }
 // 
 //    state->controlsNameMap.clear();
@@ -901,7 +901,7 @@ void Lv2Plugin::lv2state_FillFeatures(LV2PluginWrapper_State *state)
 //    state->wrkIface = (LV2_Worker_Interface *)lilv_instance_get_extension_data(state->handle, LV2_F_WORKER_INTERFACE);
 //    //query for programs interface   
 //    state->prgIface = (LV2_Programs_Interface *)lilv_instance_get_extension_data(state->handle, LV2_PROGRAMSNEW__Interface);
-//    if(state->prgIface != NULL)
+//    if(state->prgIface != nullptr)
 //    {
 //       state->newPrgIface = true;
 //    }
@@ -922,68 +922,68 @@ void Lv2Plugin::lv2state_FillFeatures(LV2PluginWrapper_State *state)
 // TODO: UI
 // void Lv2Plugin::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 // {
-//    if(state->uiDesc != NULL && state->uiInst != NULL)
+//    if(state->uiDesc != nullptr && state->uiInst != nullptr)
 //       state->uiDesc->cleanup(state->uiInst);
 // 
-//    state->uiInst = *(void **)(&state->uiDesc) = NULL;
+//    state->uiInst = *(void **)(&state->uiDesc) = nullptr;
 // 
 // // #ifdef HAVE_GTK2
-// //    if(state->gtk2Plug != NULL)
+// //    if(state->gtk2Plug != nullptr)
 // //      MusEGui::lv2Gtk2Helper_gtk_widget_destroy(state->gtk2Plug);
 // // #endif      
 // 
-//    state->gtk2Plug = NULL;
+//    state->gtk2Plug = nullptr;
 // 
-//    if(state->uiDlHandle != NULL)
+//    if(state->uiDlHandle != nullptr)
 //    {
 //       dlclose(state->uiDlHandle);
-//       state->uiDlHandle = NULL;
+//       state->uiDlHandle = nullptr;
 //    }
 // 
 // }
 
 void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 {
-   assert(state != NULL);
+   assert(state != nullptr);
 
 // TODO: wrk
 //    state->wrkThread->setClosing();
 //    state->wrkThread->wait();
    delete state->wrkThread;
 
-   if(state->human_id != NULL)
+   if(state->human_id != nullptr)
       free(state->human_id);
    if(state->lastControls)
    {
       delete [] state->lastControls;
-      state->lastControls = NULL;
+      state->lastControls = nullptr;
    }
    if(state->controlsMask)
    {
       delete [] state->controlsMask;
-      state->controlsMask = NULL;
+      state->controlsMask = nullptr;
    }
 
    if(state->controlTimers)
    {
       delete [] state->controlTimers;
-      state->controlTimers = NULL;
+      state->controlTimers = nullptr;
 
    }
 
    if(state->lastControlsOut)
    {
       delete [] state->lastControlsOut;
-      state->lastControlsOut = NULL;
+      state->lastControlsOut = nullptr;
    }
 
 // TODO: UI
    //lv2ui_FreeDescriptors(state);
 
-   if(state->handle != NULL)
+   if(state->handle != nullptr)
    {
       lilv_instance_free(state->handle);
-      state->handle = NULL;
+      state->handle = nullptr;
    }
 
    delete state;
@@ -1137,7 +1137,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //          do
 //          {
 //             uint32_t frames, type, size;
-//             uint8_t *data = NULL;
+//             uint8_t *data = nullptr;
 // #ifdef LV2_EVENT_BUFFER_SUPPORT
 //             uint32_t subframes;
 //             if(!state->midiOutPorts [j].buffer->read(&frames, &subframes, &type, &size, &data))
@@ -1156,7 +1156,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //                   state->songDirtyPending = true;
 //                }
 //             }
-//             if(state->uiInst == NULL)
+//             if(state->uiInst == nullptr)
 //             {
 //                continue;
 //             }
@@ -1185,22 +1185,22 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // 
 // void LV2Synth::lv2ui_PostShow(LV2PluginWrapper_State *state)
 // {
-//    assert(state->pluginWindow != NULL);
-//    assert(state->uiDesc != NULL);   
-//    assert(state->uiInst != NULL);
+//    assert(state->pluginWindow != nullptr);
+//    assert(state->uiDesc != nullptr);
+//    assert(state->uiInst != nullptr);
 // 
-//    if(state->uiDesc->port_event != NULL)
+//    if(state->uiDesc->port_event != nullptr)
 //    {
 //       uint32_t numControls = 0;
-//       Port *controls = NULL;
+//       Port *controls = nullptr;
 // 
-//       if(state->plugInst != NULL)
+//       if(state->plugInst != nullptr)
 //       {
 //          numControls = state->plugInst->controlPorts;
 //          controls = state->plugInst->controls;
 // 
 //       }
-//       else if(state->sif != NULL)
+//       else if(state->sif != nullptr)
 //       {
 //          numControls = state->sif->_inportsControl;
 //          controls = state->sif->_controls;
@@ -1208,7 +1208,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // 
 //       if(numControls > 0)
 //       {
-//          assert(controls != NULL);
+//          assert(controls != nullptr);
 //       }
 // 
 // 
@@ -1234,11 +1234,11 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-//    if(state->widget != NULL && state->hasGui)
+//    if(state->widget != nullptr && state->hasGui)
 //    {
 //       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
 //       QWidget *ewWin = ((LV2PluginWrapper_Window *)state->widget)->findChild<QWidget *>();
-//       if(ewWin != NULL)
+//       if(ewWin != nullptr)
 //       {
 //          ewWin->resize(width, height);
 //       }
@@ -1250,7 +1250,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // #else
 //          QWidget *ewCent= ((LV2PluginWrapper_Window *)state->widget)->centralWidget();
 // #endif
-//          if(ewCent != NULL)
+//          if(ewCent != nullptr)
 //          {
 //             ewCent->resize(width, height);
 //          }
@@ -1265,9 +1265,9 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // void LV2Synth::lv2ui_Gtk2AllocateCb(int width, int height, void *arg)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
-//    if(state == NULL)
+//    if(state == nullptr)
 //       return;
-//    if(!state->gtk2AllocateCompleted && state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+//    if(!state->gtk2AllocateCompleted && state->widget != nullptr && state->hasGui && state->gtk2Plug != nullptr)
 //    {
 //       state->gtk2AllocateCompleted = true;
 //       ((LV2PluginWrapper_Window *)state->widget)->setMinimumSize(width, height);
@@ -1277,9 +1277,9 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // void LV2Synth::lv2ui_Gtk2ResizeCb(int width, int height, void *arg)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)arg;
-//    if(state == NULL)
+//    if(state == nullptr)
 //       return;
-//    if(!state->gtk2ResizeCompleted && state->widget != NULL && state->hasGui && state->gtk2Plug != NULL)
+//    if(!state->gtk2ResizeCompleted && state->widget != nullptr && state->hasGui && state->gtk2Plug != nullptr)
 //    {
 //       state->gtk2ResizeCompleted = true;
 //       ((LV2PluginWrapper_Window *)state->widget)->resize(width, height);
@@ -1289,13 +1289,13 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow)
 // {
 //    LV2Synth* synth = state->synth;
-//    LV2PluginWrapper_Window *win = NULL;
+//    LV2PluginWrapper_Window *win = nullptr;
 // 
 //    if(synth->_pluginUiTypes.size() == 0)
 //       return;
 // 
 //    //state->uiTimer->stopNextTime();
-//    if(state->pluginWindow != NULL)
+//    if(state->pluginWindow != nullptr)
 //       state->pluginWindow->stopNextTime();
 // 
 //    if(!bShow)
@@ -1303,12 +1303,12 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //    
 //    LV2_PLUGIN_UI_TYPES::iterator itUi;
 // 
-//    if((state->uiCurrent == NULL) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_ASK_ALWAYS)
+//    if((state->uiCurrent == nullptr) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_ASK_ALWAYS)
 //    {
-//       state->uiCurrent = NULL;
+//       state->uiCurrent = nullptr;
 //       state->gtk2ResizeCompleted = false;
 //       state->gtk2AllocateCompleted = false;
-//       QAction *aUiTypeSelected = NULL;
+//       QAction *aUiTypeSelected = nullptr;
 //       if((synth->_pluginUiTypes.size() == 1) || MusEGlobal::config.lv2UiBehavior == MusEGlobal::CONF_LV2_UI_USE_FIRST)
 //       {
 //         state->uiCurrent = synth->_pluginUiTypes.begin()->first;
@@ -1316,7 +1316,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //       else
 //       {
 //          QMenu mGuisPopup;
-//          MusEGui::MenuTitleItem *aUiTypeHeader = new MusEGui::MenuTitleItem(QObject::tr("Select gui type"), NULL);
+//          MusEGui::MenuTitleItem *aUiTypeHeader = new MusEGui::MenuTitleItem(QObject::tr("Select gui type"), nullptr);
 //          aUiTypeHeader->setEnabled(false);
 //          QFont fHeader;
 //          fHeader.setBold(true);
@@ -1328,13 +1328,13 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //          {
 //             const LilvUI *selectedUi = itUi->first;
 //             const LilvNode *pluginUiType = itUi->second.second;
-//             QAction *aUiType = new QAction(QString(lilv_node_as_string(pluginUiType)), NULL);
+//             QAction *aUiType = new QAction(QString(lilv_node_as_string(pluginUiType)), nullptr);
 //             aUiType->setData(QVariant(reinterpret_cast<qlonglong>(selectedUi)));
 //             mGuisPopup.addAction(aUiType);
 //          }
 // 
 //          aUiTypeSelected = mGuisPopup.exec(QCursor::pos());
-//          if(aUiTypeSelected == NULL)
+//          if(aUiTypeSelected == nullptr)
 //          {
 //             return;
 //          }
@@ -1351,7 +1351,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //    const LilvUI *selectedUi = itUi->first;
 //    bool bExtUi = itUi->second.first;
 //    const LilvNode *pluginUiType = itUi->second.second;
-//    state->uiIdleIface = NULL;
+//    state->uiIdleIface = nullptr;
 //    if(bExtUi)
 //    {
 //       state->hasGui = false;
@@ -1372,7 +1372,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //    state->uiX11Size.setWidth(0);
 //    state->uiX11Size.setHeight(0);
 // 
-//    if(win != NULL)
+//    if(win != nullptr)
 //    {
 //       state->widget = win;
 //       state->pluginWindow = win;
@@ -1380,12 +1380,12 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //       const char *cUiTypeUri = lilv_node_as_uri(lilv_ui_get_uri(selectedUi));
 //       bool bEmbed = false;
 //       bool bGtk = false;
-//       QWidget *ewWin = NULL;
+//       QWidget *ewWin = nullptr;
 // #ifdef HAVE_GTK2
-//       QWindow *x11QtWindow = NULL;
+//       QWindow *x11QtWindow = nullptr;
 // #endif
-//       state->gtk2Plug = NULL;
-//       state->_ifeatures [synth->_fUiParent].data = NULL;
+//       state->gtk2Plug = nullptr;
+//       state->_ifeatures [synth->_fUiParent].data = nullptr;
 //       if(strcmp(LV2_UI__X11UI, cUiUri) == 0)
 //       {
 //          bEmbed = true;         
@@ -1432,13 +1432,13 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //       }      
 //       else //external uis
 //       {
-//          state->_ifeatures [synth->_fUiParent].data = NULL;
+//          state->_ifeatures [synth->_fUiParent].data = nullptr;
 //       }
 // 
 //       //now open ui library file
 // 
 //       // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
-//       const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), NULL);
+//       const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), nullptr);
 // // REMOVE Tim. LV2. Changed. TESTING. RESTORE. Qt4 versions of synthv1,drumk,? crashes on Qt5.
 // // TESTED: On my system it gets much farther into the call now, dozens of Qt4 calls into it, 
 // //          but ultimately still ends up crashing on a call to dlopen libkdecore.5 for some reason.
@@ -1447,7 +1447,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //       state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEEPBIND);
 //       
 //       lilv_free((void*)uiPath); // Must free.
-//       if(state->uiDlHandle == NULL)
+//       if(state->uiDlHandle == nullptr)
 //       {
 //          win->stopNextTime();
 //          return;
@@ -1456,33 +1456,33 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //       //find lv2 ui descriptor function and call it to get ui descriptor struct
 //       LV2UI_DescriptorFunction lv2fUiDesc;
 //       *(void **)(&lv2fUiDesc) = dlsym(state->uiDlHandle, "lv2ui_descriptor");
-//       if(lv2fUiDesc == NULL)
+//       if(lv2fUiDesc == nullptr)
 //       {
 //          win->stopNextTime();
 //          return;
 //       }
 // 
-//       state->uiDesc = NULL;
+//       state->uiDesc = nullptr;
 // 
 //       for(uint32_t i = 0; ;++i)
 //       {
 //          state->uiDesc = lv2fUiDesc(i);
-//          if(state->uiDesc == NULL)
+//          if(state->uiDesc == nullptr)
 //             break;
 // 
 //          if(strcmp(state->uiDesc->URI, cUiTypeUri) == 0) //found selected ui
 //             break;
 //       }
 // 
-//       if(state->uiDesc == NULL)
+//       if(state->uiDesc == nullptr)
 //       {
 //          win->stopNextTime();
 //          return;
 //       }
 // 
-//       void *uiW = NULL;
+//       void *uiW = nullptr;
 //       // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
-//       const char* bundle_path = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi)), NULL);
+//       const char* bundle_path = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi)), nullptr);
 //       state->uiInst = state->uiDesc->instantiate(state->uiDesc,
 //                                                  lilv_node_as_uri(lilv_plugin_get_uri(synth->_handle)),
 //                                                  bundle_path,
@@ -1494,15 +1494,15 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 // 
 //       lilv_free((void*)bundle_path); // Must free.
 //       
-//       if(state->uiInst != NULL)
+//       if(state->uiInst != nullptr)
 //       {
-//          state->uiIdleIface = NULL;
-//          state->uiPrgIface = NULL;
-//          if(state->uiDesc->extension_data != NULL)
+//          state->uiIdleIface = nullptr;
+//          state->uiPrgIface = nullptr;
+//          if(state->uiDesc->extension_data != nullptr)
 //          {
 //             state->uiIdleIface = (LV2UI_Idle_Interface *)state->uiDesc->extension_data(LV2_F_UI_IDLE);
 //             state->uiPrgIface = (LV2_Programs_UI_Interface *)state->uiDesc->extension_data(LV2_PROGRAMSNEW__UIInterface);
-//             if(state->uiPrgIface != NULL)
+//             if(state->uiPrgIface != nullptr)
 //             {
 //                state->newPrgIface = true;
 //             }
@@ -1587,13 +1587,13 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //       }
 // 
 //    }
-//    if(win != NULL)
+//    if(win != nullptr)
 //    {
 //       win->stopNextTime();
 //    }
-//    state->pluginWindow = NULL;
-//    state->widget = NULL;
-//    state->uiCurrent = NULL;
+//    state->pluginWindow = nullptr;
+//    state->widget = nullptr;
+//    state->uiCurrent = nullptr;
 // 
 //    //no ui is shown
 //    state->hasExternalGui = state->hasGui = false;
@@ -1608,7 +1608,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //    LV2Synth *synth = state->synth;
 //    const char *cKey = synth->unmapUrid(key);
 // 
-//    assert(cKey != NULL); //should'n happen
+//    assert(cKey != nullptr); //should'n happen
 // 
 //    QString strKey = QString(cKey);
 //    it = state->iStateValues.find(strKey);
@@ -1623,7 +1623,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //          QByteArray valArr = it.value().second.toByteArray();
 //          if(sType.compare(QString(LV2_ATOM__Path)) == 0) //prepend project folder to abstract path
 //          {
-//             QString plugFolder = ((state->sif != NULL) ? state->sif->name() : state->plugInst->name()) + QString("/");
+//             QString plugFolder = ((state->sif != nullptr) ? state->sif->name() : state->plugInst->name()) + QString("/");
 //             QString strPath = QString::fromUtf8(valArr.data());
 //             QFile ff(strPath);
 //             QFileInfo fiPath(ff);
@@ -1644,7 +1644,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //          size_t numValues = state->numStateValues;
 //          for(i = 0; i < numValues; ++i)
 //          {
-//             if(state->tmpValues [i] == NULL)
+//             if(state->tmpValues [i] == nullptr)
 //                break;
 //          }
 //          assert(i < numValues); //sanity check
@@ -1672,7 +1672,7 @@ void Lv2Plugin::lv2state_FreeState(LV2PluginWrapper_State *state)
 //       LV2Synth *synth = state->synth;
 //       const char *uriKey = synth->unmapUrid(key);
 //       const char *uriType = synth->unmapUrid(type);
-//       assert(uriType != NULL && uriKey != NULL); //FIXME: buggy plugin or uridBiMap realization?
+//       assert(uriType != nullptr && uriKey != nullptr); //FIXME: buggy plugin or uridBiMap realization?
 //       QString strKey = QString(uriKey);
 //       QMap<QString, QPair<QString, QVariant> >::const_iterator it = state->iStateValues.find(strKey);
 //       if(it == state->iStateValues.end())
@@ -1723,12 +1723,12 @@ LV2_Worker_Status Lv2Plugin::lv2wrk_respond(LV2_Worker_Respond_Handle handle, ui
 //    state->iStateValues.clear();
 //    state->numStateValues = 0;
 // 
-//    if(state->iState != NULL)
+//    if(state->iState != nullptr)
 //    {
 //       state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore, state, LV2_STATE_IS_POD, state->_ppifeatures);
 //    }
 // 
-//    if(state->sif != NULL) // write control ports values only for synths
+//    if(state->sif != nullptr) // write control ports values only for synths
 //    {
 //       for(size_t c = 0; c < state->sif->_inportsControl; c++)
 //       {
@@ -1736,7 +1736,7 @@ LV2_Worker_Status Lv2Plugin::lv2wrk_respond(LV2_Worker_Respond_Handle handle, ui
 //       }
 //    }
 // 
-//    if(state->uiCurrent != NULL)
+//    if(state->uiCurrent != nullptr)
 //    {
 //       const char *cUiUri = lilv_node_as_uri(lilv_ui_get_uri(state->uiCurrent));
 //       state->iStateValues.insert(QString(cUiUri), QPair<QString, QVariant>(QString(""), QVariant(QString(cUiUri))));
@@ -1774,18 +1774,18 @@ LV2_Worker_Status Lv2Plugin::lv2wrk_respond(LV2_Worker_Respond_Handle handle, ui
 // 
 //    size_t numValues = state->iStateValues.size();
 //    state->numStateValues = numValues;
-//    if(state->iState != NULL && numValues > 0)
+//    if(state->iState != nullptr && numValues > 0)
 //    {
 //       state->tmpValues = new char*[numValues];;
 //       memset(state->tmpValues, 0, numValues * sizeof(char *));
 //       state->iState->restore(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateRetreive, state, 0, state->_ppifeatures);
 //       for(size_t i = 0; i < numValues; ++i)
 //       {
-//          if(state->tmpValues [i] != NULL)
+//          if(state->tmpValues [i] != nullptr)
 //             delete [] state->tmpValues [i];
 //       }
 //       delete [] state->tmpValues;
-//       state->tmpValues = NULL;
+//       state->tmpValues = nullptr;
 //    }
 // 
 //    QMap<QString, QPair<QString, QVariant> >::const_iterator it;
@@ -1810,7 +1810,7 @@ LV2_Worker_Status Lv2Plugin::lv2wrk_respond(LV2_Worker_Respond_Handle handle, ui
 //          }
 //          else
 //          {
-//             if(state->sif != NULL) //setting control value only for synths
+//             if(state->sif != nullptr) //setting control value only for synths
 //             {
 // 
 //                bool ok = false;
@@ -1847,15 +1847,15 @@ unsigned Lv2Plugin::lv2ui_IsSupported(const char *, const char *ui_type_uri)
 
 // void LV2Synth::lv2prg_updatePrograms(LV2PluginWrapper_State *state)
 // {
-//    assert(state != NULL);
+//    assert(state != nullptr);
 //    state->index2prg.clear();
 //    state->prg2index.clear();
-//    if(state->prgIface != NULL)
+//    if(state->prgIface != nullptr)
 //    {
 //       uint32_t iPrg = 0;
-//       const LV2_Program_Descriptor *pDescr = NULL;
+//       const LV2_Program_Descriptor *pDescr = nullptr;
 //       while((pDescr = state->prgIface->get_program(
-//                 lilv_instance_get_handle(state->handle), iPrg)) != NULL)
+//                 lilv_instance_get_handle(state->handle), iPrg)) != nullptr)
 //       {
 //         // 16384 banks arranged as 128 hi and lo banks each with up to the first 128 programs supported.
 //         uint32_t hb = pDescr->bank >> 8;
@@ -1899,7 +1899,7 @@ int Lv2Plugin::lv2_vprintf(LV2_Log_Handle, LV2_URID, const char *fmt, va_list ap
 char *Lv2Plugin::lv2state_makePath(LV2_State_Make_Path_Handle handle, const char *path)
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-   assert(state != NULL);
+   assert(state != nullptr);
 
    QFile ff(path);
    QFileInfo fiPath(ff);
@@ -1909,7 +1909,7 @@ char *Lv2Plugin::lv2state_makePath(LV2_State_Make_Path_Handle handle, const char
       return strdup(path);
    }
 
-   QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+   QString plugName = (state->sif != nullptr) ? state->sif->name() : state->plugInst->name();
    
   //-------------------------------------------------
   // TODO: Get rid of global! Keep a local version.   
@@ -1927,7 +1927,7 @@ char *Lv2Plugin::lv2state_makePath(LV2_State_Make_Path_Handle handle, const char
 char *Lv2Plugin::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const char *absolute_path)
 {
    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-   assert(state != NULL);
+   assert(state != nullptr);
 
    //some plugins do not support abstract paths properly,
    //so return duplicate without modification for now
@@ -1939,7 +1939,7 @@ char *Lv2Plugin::lv2state_abstractPath(LV2_State_Map_Path_Handle handle, const c
    {
       resPath = resPath.mid(rIdx + 1);
    }
-   QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+   QString plugName = (state->sif != nullptr) ? state->sif->name() : state->plugInst->name();
    QDir dir;
    QString prjPath = MusEGlobal::museProject + QString("/") + plugName;
    dir.mkpath(prjPath);
@@ -2005,8 +2005,8 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
 // 
-//    assert(state != NULL); //this shouldn't happen
-//    assert(state->inst != NULL || state->sif != NULL); // this too
+//    assert(state != nullptr); //this shouldn't happen
+//    assert(state->inst != nullptr || state->sif != nullptr); // this too
 // 
 //    if(protocol != 0 && protocol != state->synth->_uAtom_EventTransfer)
 //    {
@@ -2047,8 +2047,8 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 //    // with 'modulo' events which slip in 'under the wire' before processing the ring buffers.
 //    ce.frame = MusEGlobal::audio->curFrame();
 // 
-//    ControlFifo *_controlFifo = NULL;
-//    if(state->inst != NULL)
+//    ControlFifo *_controlFifo = nullptr;
+//    if(state->inst != nullptr)
 //    {
 //       _controlFifo = &state->plugInst->_controlFifo;
 //       if(fromUi)
@@ -2070,7 +2070,7 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 //          //state->plugInst->enableController(cport, false);
 //       }
 //    }
-//    else if(state->sif != NULL)
+//    else if(state->sif != nullptr)
 //    {
 //       _controlFifo = &state->sif->_controlFifo;
 //       if(fromUi)
@@ -2096,7 +2096,7 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 //       state->controlTimers [cport] = 1000 / 30; //  1 sec controllers will not be send to guis
 //    }
 // 
-//    assert(_controlFifo != NULL);
+//    assert(_controlFifo != nullptr);
 //    if(_controlFifo->put(ce))
 //      std::cerr << "LV2Synth::lv2state_PortWrite: fifo overflow: in control number:" << cport << std::endl;
 // 
@@ -2110,7 +2110,7 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 // void LV2Synth::lv2state_setPortValue(const char *port_symbol, void *user_data, const void *value, uint32_t size, uint32_t type)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)user_data;
-//    assert(state != NULL);
+//    assert(state != nullptr);
 //    std::map<QString, size_t>::iterator it = state->controlsSymMap.find(QString::fromUtf8(port_symbol).toLower());
 //    if(it != state->controlsSymMap.end())
 //    {
@@ -2147,25 +2147,25 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 // const void *LV2Synth::lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)user_data;
-//    assert(state != NULL);
+//    assert(state != nullptr);
 //    std::map<QString, size_t>::iterator it = state->controlsSymMap.find(QString::fromUtf8(port_symbol).toLower());
 //    *size = *type = 0;
 //    if(it != state->controlsSymMap.end())
 //    {
 //       size_t ctrlNum = it->second;
-//       MusECore::Port *controls = NULL;
+//       MusECore::Port *controls = nullptr;
 // 
-//       if(state->plugInst != NULL)
+//       if(state->plugInst != nullptr)
 //       {
 //          controls = state->plugInst->controls;
 // 
 //       }
-//       else if(state->sif != NULL)
+//       else if(state->sif != nullptr)
 //       {
 //          controls = state->sif->_controls;
 //       }
 // 
-//       if(controls != NULL)
+//       if(controls != nullptr)
 //       {
 //          *size = sizeof(float);
 //          *type = state->atomForge.Float;
@@ -2195,7 +2195,7 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 //                              + presetName + QString(".lv2/");
 //          QString presetFile = synthName + QString("_") + presetName
 //                               + QString(".ttl");
-//          QString plugName = (state->sif != NULL) ? state->sif->name() : state->plugInst->name();
+//          QString plugName = (state->sif != nullptr) ? state->sif->name() : state->plugInst->name();
 //          QString plugFileDirName = MusEGlobal::museProject + QString("/") + plugName;
 //          char *cPresetName = strdup(presetName.toUtf8().constData());
 //          char *cPresetDir = strdup(presetDir.toUtf8().constData());
@@ -2204,13 +2204,13 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 //          LilvState* const lilvState = lilv_state_new_from_instance(state->synth->_handle, state->handle, &state->synth->_lv2_urid_map,
 //                                                                    cPlugFileDirName, cPresetDir, cPresetDir, cPresetDir,
 //                                                                    LV2Synth::lv2state_getPortValue, state,
-//                                                                    LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE, NULL);
+//                                                                    LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE, nullptr);
 // 
 //          lilv_state_set_label(lilvState, cPresetName);
 // 
 //          lilv_state_save(lilvWorld, &state->synth->_lv2_urid_map,
 //                          &state->synth->_lv2_urid_unmap,
-//                          lilvState, NULL, cPresetDir,
+//                          lilvState, nullptr, cPresetDir,
 //                          cPresetFile);
 // 
 //          lilv_state_free(lilvState);
@@ -2232,7 +2232,7 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 //    LilvState* lilvState = lilv_state_new_from_world(lilvWorld, &state->synth->_lv2_urid_map, preset);
 //    if(lilvState)
 //    {
-//       lilv_state_restore(lilvState, state->handle, LV2Synth::lv2state_setPortValue, state, 0, NULL);
+//       lilv_state_restore(lilvState, state->handle, LV2Synth::lv2state_setPortValue, state, 0, nullptr);
 //       lilv_state_free(lilvState);
 //    }
 // 
@@ -2240,7 +2240,7 @@ char *Lv2Plugin::lv2state_absolutePath(LV2_State_Map_Path_Handle handle, const c
 
 void Lv2Plugin::lv2state_UnloadLoadPresets(Lv2Plugin *synth, bool load, bool update)
 {
-   assert(synth != NULL);
+   assert(synth != nullptr);
 
    //std::cerr << "Lv2Plugin::lv2state_UnloadLoadPresets:  handling <" << synth->_name.toStdString() << ">" << std::endl;
 
@@ -2282,8 +2282,8 @@ void Lv2Plugin::lv2state_UnloadLoadPresets(Lv2Plugin *synth, bool load, bool upd
          std::cerr << "\tPreset: " << lilv_node_as_uri(preset) << std::endl;
 #endif
          lilv_world_load_resource(lilvWorld, preset);
-         LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, NULL);
-         if (pLabels != NULL)
+         LilvNodes* pLabels = lilv_world_find_nodes(lilvWorld, preset, lv2CacheNodes.lv2_rdfsLabel, nullptr);
+         if (pLabels != nullptr)
          {
             const LilvNode* pLabel = lilv_nodes_get_first(pLabels);
             synth->_presets.insert(std::make_pair(lilv_node_as_string(pLabel), lilv_node_duplicate(preset)));
@@ -2333,7 +2333,7 @@ void Lv2Plugin::lv2state_UnloadLoadPresets(Lv2Plugin *synth, bool load, bool upd
 //         MidiPlayEvent event(0, port, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, rv);
 //         //MusEGlobal::midiPorts[port].sendEvent(event);
 //         MusEGlobal::midiPorts[port].sendHwCtrlState(event, false);
-//         if(state->sif->id() != -1 && state->sif->_controls != NULL)
+//         if(state->sif->id() != -1 && state->sif->_controls != nullptr)
 //         {
 //            for(unsigned long k = 0; k < state->sif->_inportsControl; ++k)
 //            {
@@ -2401,7 +2401,7 @@ Lv2Plugin::Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString a
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
+      {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, nullptr}
 
    };
 
@@ -2432,7 +2432,7 @@ Lv2Plugin::Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString a
    {
       _features [i] = lv2Features [i];
 
-      if(_features [i].URI == NULL)
+      if(_features [i].URI == nullptr)
       {
          break;
       }
@@ -2606,7 +2606,7 @@ Lv2Plugin::Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString a
       }
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_AudioPort))
       {
-         aPorts->push_back(LV2AudioPort(_port, i, NULL, _portName));
+         aPorts->push_back(LV2AudioPort(_port, i, nullptr, _portName));
       }
 #ifdef LV2_EVENT_BUFFER_SUPPORT
       else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.ev_EventPort))
@@ -2641,7 +2641,7 @@ Lv2Plugin::Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString a
    for(uint32_t i = 0; i < _controlInPorts.size(); ++i)
    {
       _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [i].index, i));
-      if(lilvFreeWheelPort != NULL)
+      if(lilvFreeWheelPort != nullptr)
       {
          if(lilv_port_get_index(_handle, _controlInPorts [i].port) == lilv_port_get_index(_handle, lilvFreeWheelPort))
          {
@@ -2659,8 +2659,8 @@ Lv2Plugin::Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString a
       _isSynth = true;
    }
 
-   const LilvNode *pluginUIType = NULL;
-   _uis = NULL;
+   const LilvNode *pluginUIType = nullptr;
+   _uis = nullptr;
 
 
    _uis = lilv_plugin_get_uis(_handle);
@@ -2749,25 +2749,25 @@ Lv2Plugin::~Lv2Plugin()
    if(_ppfeatures)
    {
       delete [] _ppfeatures;
-      _ppfeatures = NULL;
+      _ppfeatures = nullptr;
    }
 
    if(_features)
    {
       delete [] _features;
-      _features = NULL;
+      _features = nullptr;
    }
 
 //    if(_options)
 //    {
 //       delete [] _options;
-//       _options = NULL;
+//       _options = nullptr;
 //    }
 
-   if(_uis != NULL)
+   if(_uis != nullptr)
    {
       lilv_uis_free(_uis);
-      _uis = NULL;
+      _uis = nullptr;
    }
 }
 
@@ -2785,7 +2785,7 @@ void* Lv2Plugin::instantiate(float sampleRate, void* data)
 //    _segSize = segment_size;
 //   bool success = false;
 //   LADSPA_Handle h = plugin->instantiate(plugin, _sampleRate);
-//   success = (h != NULL);
+//   success = (h != nullptr);
 //   if (success)
 //         SP_DBG_LADSPA2("Plugin instantiated", label().toLatin1().constData());
 //   return h;
@@ -2797,10 +2797,10 @@ void* Lv2Plugin::instantiate(float sampleRate, void* data)
 //    //use LV2Synth features as template
 // 
 //    _state = new LV2PluginWrapper_State;
-//    _state->inst = NULL;
-//    _state->widget = NULL;
-//    _state->uiInst = NULL;
-//    _state->plugInst = NULL;
+//    _state->inst = nullptr;
+//    _state->widget = nullptr;
+//    _state->uiInst = nullptr;
+//    _state->plugInst = nullptr;
 //    _state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
 //    _state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
 //    _state->sif = this;
@@ -2820,20 +2820,20 @@ void* Lv2Plugin::instantiate(float sampleRate, void* data)
    LV2PluginWrapper_State *state = static_cast<LV2PluginWrapper_State*>(data);
    LilvInstance* inst = lilv_plugin_instantiate(_handle, sampleRate, state->_ppifeatures);
 
-//    if(_handle == NULL)
+//    if(_handle == nullptr)
 //    {
 //       delete [] _state->_ppifeatures;
-//       _state->_ppifeatures = NULL;
+//       _state->_ppifeatures = nullptr;
 //       delete [] _state->_ifeatures;
-//       _state->_ifeatures = NULL;
+//       _state->_ifeatures = nullptr;
 //       return false;
 //    }
-//    if(inst == NULL)
+//    if(inst == nullptr)
 //    {
 //       delete [] ppifeatures;
-//       //ppifeatures = NULL;
+//       //ppifeatures = nullptr;
 //       delete [] ifeatures;
-//       //ifeatures = NULL;
+//       //ifeatures = nullptr;
 //       return NULL;
 //    }
 
@@ -2862,7 +2862,7 @@ void* Lv2Plugin::instantiate(float sampleRate, void* data)
 //    }
 //    else
 //    {
-//       _controls = NULL;
+//       _controls = nullptr;
 //    }
 // 
 //    if(_outportsControl != 0)
@@ -2871,7 +2871,7 @@ void* Lv2Plugin::instantiate(float sampleRate, void* data)
 //    }
 //    else
 //    {
-//       _controlsOut = NULL;
+//       _controlsOut = nullptr;
 //    }
 // 
 //    _synth->midiCtl2PortMap.clear();
@@ -3078,7 +3078,7 @@ int Lv2Plugin::incReferences(int val)
     }
 
     _libHandle = 0;
-    //_plugin = NULL;
+    //_plugin = nullptr;
 //     _pIdx.clear();
 //     _poIdx.clear();
 //     _iIdx.clear();
@@ -3105,7 +3105,7 @@ int Lv2Plugin::incReferences(int val)
 //       for(unsigned long i = 0;; ++i)
 //       {
 //         descr = ladspadf(i);
-//         if(descr == NULL)
+//         if(descr == nullptr)
 //           break;
 // 
 //         QString desc_label(descr->Label);
@@ -3117,7 +3117,7 @@ int Lv2Plugin::incReferences(int val)
 //       }
 //     }
 // 
-//     if(_plugin != NULL)
+//     if(_plugin != nullptr)
 //     {
 //       _name = QString(_plugin->Name);
 //       _uniqueID = _plugin->UniqueID;
@@ -3167,7 +3167,7 @@ int Lv2Plugin::incReferences(int val)
 //     }
 //   }
 
-//   if(_plugin == NULL)
+//   if(_plugin == nullptr)
 //   {
 //     dlclose(_libHandle);
 //     _libHandle = 0;
@@ -3194,7 +3194,7 @@ int Lv2Plugin::incReferences(int val)
 //    if(!sif->init(this))
 //    {
 //       delete sif;
-//       sif = NULL;
+//       sif = nullptr;
 //    }
 // 
 //    return sif;
@@ -3212,15 +3212,15 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 
 // LV2SynthIF::~LV2SynthIF()
 // {
-//    if(_state != NULL)
+//    if(_state != nullptr)
 //    {
 //       _state->deleteLater = true;
 //       //_uiState->uiTimer->stopNextTime(false);
-//       if(_state->pluginWindow != NULL)
+//       if(_state->pluginWindow != nullptr)
 //          _state->pluginWindow->stopNextTime();
 //       else
 //          LV2Synth::lv2state_FreeState(_state);
-//       _state = NULL;
+//       _state = nullptr;
 // 
 //    }
 // 
@@ -3244,13 +3244,13 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    if(_audioInBuffers)
 //    {
 //       delete [] _audioInBuffers;
-//       _audioInBuffers = NULL;
+//       _audioInBuffers = nullptr;
 //    }
 // 
 //    if(_audioOutBuffers)
 //    {
 //       delete [] _audioOutBuffers;
-//       _audioOutBuffers = NULL;
+//       _audioOutBuffers = nullptr;
 //    }
 // 
 //    if(_controls)
@@ -3266,34 +3266,34 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    if(_ppifeatures)
 //    {
 //       delete [] _ppifeatures;
-//       _ppifeatures = NULL;
+//       _ppifeatures = nullptr;
 //    }
 // 
 //    if(_ifeatures)
 //    {
 //       delete [] _ifeatures;
-//       _ifeatures = NULL;
+//       _ifeatures = nullptr;
 //    }
 // }
 // 
 // LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
 // {
-//    _synth = NULL;
-//    _handle = NULL;
-//    _audioInBuffers = NULL;
-//    _audioOutBuffers = NULL;
+//    _synth = nullptr;
+//    _handle = nullptr;
+//    _audioInBuffers = nullptr;
+//    _audioOutBuffers = nullptr;
 //    _inports = 0;
 //    _outports = 0;
-//    _controls = NULL;
-//    _controlsOut = NULL;
+//    _controls = nullptr;
+//    _controlsOut = nullptr;
 //    _inportsControl = 0;
 //    _outportsControl = 0;
 //    _inportsMidi = 0,
 //    _outportsMidi = 0,
-//    _audioInSilenceBuf = NULL;
-//    _ifeatures = NULL;
-//    _ppifeatures = NULL;
-//    _state = NULL;
+//    _audioInSilenceBuf = nullptr;
+//    _ifeatures = nullptr;
+//    _ppifeatures = nullptr;
+//    _state = nullptr;
 // }
 // 
 // bool LV2SynthIF::init(LV2Synth *s)
@@ -3303,10 +3303,10 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    //use LV2Synth features as template
 // 
 //    _state = new LV2PluginWrapper_State;
-//    _state->inst = NULL;
-//    _state->widget = NULL;
-//    _state->uiInst = NULL;
-//    _state->plugInst = NULL;
+//    _state->inst = nullptr;
+//    _state->widget = nullptr;
+//    _state->uiInst = nullptr;
+//    _state->plugInst = nullptr;
 //    _state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
 //    _state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
 //    _state->sif = this;
@@ -3316,12 +3316,12 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // 
 //    _state->handle = _handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, _state->_ppifeatures);
 // 
-//    if(_handle == NULL)
+//    if(_handle == nullptr)
 //    {
 //       delete [] _state->_ppifeatures;
-//       _state->_ppifeatures = NULL;
+//       _state->_ppifeatures = nullptr;
 //       delete [] _state->_ifeatures;
-//       _state->_ifeatures = NULL;
+//       _state->_ifeatures = nullptr;
 //       return false;
 //    }
 // 
@@ -3343,7 +3343,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    }
 //    else
 //    {
-//       _controls = NULL;
+//       _controls = nullptr;
 //    }
 // 
 //    if(_outportsControl != 0)
@@ -3352,7 +3352,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    }
 //    else
 //    {
-//       _controlsOut = NULL;
+//       _controlsOut = nullptr;
 //    }
 // 
 //    _synth->midiCtl2PortMap.clear();
@@ -4041,7 +4041,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // #endif
 // 
 //       int hb, lb;
-//       synti->currentProg(chn, NULL, &lb, &hb);
+//       synti->currentProg(chn, nullptr, &lb, &hb);
 //       synti->setCurrentProg(chn, a & 0xff, lb, hb);
 //       doSelectProgram(chn, hb, lb, a); 
 // 
@@ -4080,7 +4080,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //       if(a == CTRL_HBANK)
 //       {
 //         int lb, pr;
-//         synti->currentProg(chn, &pr, &lb, NULL);
+//         synti->currentProg(chn, &pr, &lb, nullptr);
 //         synti->setCurrentProg(chn, pr, lb, b & 0xff);
 //         doSelectProgram(chn, b, lb, pr);
 //         // Event pointer not filled. Return false.
@@ -4090,7 +4090,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //       if(a == CTRL_LBANK)
 //       {
 //         int hb, pr;
-//         synti->currentProg(chn, &pr, NULL, &hb);
+//         synti->currentProg(chn, &pr, nullptr, &hb);
 //         synti->setCurrentProg(chn, pr, b & 0xff, hb);
 //         doSelectProgram(chn, hb, b, pr);
 //         // Event pointer not filled. Return false.
@@ -4643,7 +4643,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //             for(size_t j = 0; j < _inportsControl; ++j)
 //             {
 //                uint32_t idx = _controlInPorts [j].index;
-//                if(_state->pluginCVPorts [idx] != NULL)
+//                if(_state->pluginCVPorts [idx] != nullptr)
 //                {
 //                   float cvVal = _controls [j].val;
 //                   for(size_t jj = 0; jj < nsamp; ++jj)
@@ -4670,7 +4670,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //             {
 //                _state->wrkIface->work_response(lilv_instance_get_handle(_handle), _state->wrkDataSize, _state->wrkDataBuffer);
 //                _state->wrkDataSize = 0;
-//                _state->wrkDataBuffer = NULL;
+//                _state->wrkDataBuffer = nullptr;
 //                _state->wrkEndWork = false;
 //             }
 // 
@@ -4690,7 +4690,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // 
 // void LV2SynthIF::getNativeGeometry(int *x, int *y, int *w, int *h) const
 // {
-//    if(_state->pluginWindow != NULL && !_state->hasExternalGui)
+//    if(_state->pluginWindow != nullptr && !_state->hasExternalGui)
 //    {
 //       QRect g = _state->pluginWindow->geometry();
 //       if(x) *x = g.x();
@@ -4785,13 +4785,13 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // 
 // bool LV2SynthIF::nativeGuiVisible() const
 // {
-//    if(_state != NULL)
+//    if(_state != nullptr)
 //    {
 //       if(_state->hasExternalGui)
 //       {
-//          return (_state->widget != NULL);
+//          return (_state->widget != nullptr);
 //       }
-//       else if(_state->hasGui && _state->widget != NULL)
+//       else if(_state->hasGui && _state->widget != nullptr)
 //       {
 //          return ((QWidget *)_state->widget)->isVisible();
 //       }
@@ -4829,7 +4829,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //       const uint32_t patch = (patch_bank << 8) | extPrg.prog;
 //       
 //       std::map<int, MusEGui::PopupMenu *>::iterator itS = submenus.find(patch_bank);
-//       MusEGui::PopupMenu *submenu= NULL;
+//       MusEGui::PopupMenu *submenu= nullptr;
 //       if(itS != submenus.end())
 //       {
 //           submenu = itS->second;
@@ -4935,9 +4935,9 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // 
 // void LV2SynthIF::showNativeGui(bool bShow)
 // {
-//    if(track() != NULL)
+//    if(track() != nullptr)
 //    {
-//       if(_state->human_id != NULL)
+//       if(_state->human_id != nullptr)
 //       {
 //          free(_state->human_id);
 //       }
@@ -5116,9 +5116,9 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // 
 // void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
 // {
-//   if(_state->plugInst != NULL)
+//   if(_state->plugInst != nullptr)
 //     _state->plugInst->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
-//   else if(_state->sif != NULL)
+//   else if(_state->sif != nullptr)
 //     _state->sif->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
 //   
 //   e->ignore();
@@ -5128,9 +5128,9 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
 // {
 //   int x = 0, y = 0, w = 0, h = 0;
-//   if(_state->plugInst != NULL)
+//   if(_state->plugInst != nullptr)
 //     _state->plugInst->savedNativeGeometry(&x, &y, &w, &h);
-//   else if(_state->sif != NULL)
+//   else if(_state->sif != nullptr)
 //     _state->sif->savedNativeGeometry(&x, &y, &w, &h);
 //   
 // #ifdef QT_SHOW_POS_BUG_WORKAROUND
@@ -5197,18 +5197,18 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // 
 // void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 // {
-//    assert(_state != NULL);
+//    assert(_state != nullptr);
 //    event->accept();
 // 
 //    stopUpdateTimer();
 // 
-//    //if(_state->gtk2Plug != NULL)
+//    //if(_state->gtk2Plug != nullptr)
 //    //{
-//       if(_state->pluginQWindow != NULL)
+//       if(_state->pluginQWindow != nullptr)
 //       {
 //         _state->pluginQWindow->setParent(NULL);
 //         delete _state->pluginQWindow;
-//         _state->pluginQWindow = NULL;
+//         _state->pluginQWindow = nullptr;
 //       }
 //    //}
 // 
@@ -5220,10 +5220,10 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    else
 //    {
 //       //_state->uiTimer->stopNextTime(false);
-//       _state->widget = NULL;
-//       _state->pluginWindow = NULL;
+//       _state->widget = nullptr;
+//       _state->pluginWindow = nullptr;
 //       _state->uiDoSelectPrg = false;
-//       _state->uiPrgIface = NULL;
+//       _state->uiPrgIface = nullptr;
 // 
 //       LV2Synth::lv2ui_FreeDescriptors(_state);
 //    }
@@ -5300,7 +5300,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    if(_state->uiIsOpening || _state->uiDoSelectPrg)
 //    {
 //       _state->uiDoSelectPrg = false;
-//       if(_state->uiPrgIface != NULL && (_state->uiPrgIface->select_program != NULL || _state->uiPrgIface->select_program_for_channel != NULL))
+//       if(_state->uiPrgIface != nullptr && (_state->uiPrgIface->select_program != nullptr || _state->uiPrgIface->select_program_for_channel != nullptr))
 //       {
 //          if(_state->newPrgIface)
 //             _state->uiPrgIface->select_program_for_channel(lilv_instance_get_handle(_state->handle), _state->uiChannel, (uint32_t)_state->uiBank, (uint32_t)_state->uiProg);
@@ -5313,11 +5313,11 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    _state->uiIsOpening = false;
 //    
 //    //call ui idle callback if any
-//    if(_state->uiIdleIface != NULL)
+//    if(_state->uiIdleIface != nullptr)
 //    {
 //       int iRet = _state->uiIdleIface->idle(_state->uiInst);
 //       if(iRet != 0) // ui don't want us to call it's idle callback any more
-//          _state->uiIdleIface = NULL;
+//          _state->uiIdleIface = nullptr;
 //    }
 // 
 //    if(_state->hasExternalGui)
@@ -5385,8 +5385,8 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //       _fakePds [_synth->_controlOutPorts [i].index] = LADSPA_PORT_OUTPUT | LADSPA_PORT_CONTROL;
 //    }   
 // 
-//    _fakeLd.PortNames = NULL;
-//    _fakeLd.PortRangeHints = NULL;
+//    _fakeLd.PortNames = nullptr;
+//    _fakeLd.PortRangeHints = nullptr;
 //    _fakeLd.PortDescriptors = _fakePds;
 //    _fakeLd.Properties = 0;
 //    plugin = &_fakeLd;
@@ -5396,11 +5396,11 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    _isVstNativeSynth = false;
 // 
 // #ifdef DSSI_SUPPORT
-//    dssi_descr = NULL;
+//    dssi_descr = nullptr;
 // #endif
 // 
 //    fi = _synth->info;
-//    ladspa = NULL;
+//    ladspa = nullptr;
 //    _handle = 0;
 //    _references = 0;
 //    _instNo     = 0;
@@ -5459,18 +5459,18 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // {
 //    LV2PluginWrapper_State *state = new LV2PluginWrapper_State;
 //    state->inst = this;
-//    state->widget = NULL;
-//    state->uiInst = NULL;
+//    state->widget = nullptr;
+//    state->uiInst = nullptr;
 //    state->plugInst = plugi;
 //    state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
 //    state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
-//    state->sif = NULL;
+//    state->sif = nullptr;
 //    state->synth = _synth;
 //    LV2Synth::lv2state_FillFeatures(state);
 // 
 //    state->handle = lilv_plugin_instantiate(_synth->_handle, (double)MusEGlobal::sampleRate, state->_ppifeatures);
 // 
-//    if(state->handle == NULL)
+//    if(state->handle == nullptr)
 //    {
 //       delete [] state->_ppifeatures;
 //       delete [] state->_ifeatures;
@@ -5511,12 +5511,12 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // }
 // void LV2PluginWrapper::cleanup(LADSPA_Handle handle)
 // {
-//    if(handle != NULL)
+//    if(handle != nullptr)
 //    {      
 //       LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
 // 
 //       state->deleteLater = true;
-//       if(state->pluginWindow != NULL)
+//       if(state->pluginWindow != nullptr)
 //          state->pluginWindow->stopNextTime();
 //       else
 //          LV2Synth::lv2state_FreeState(state);
@@ -5539,7 +5539,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    for(size_t j = 0; j < state->plugInst->controlPorts; ++j)
 //    {
 //       uint32_t idx = state->synth->_controlInPorts [j].index;
-//       if(state->pluginCVPorts [idx] != NULL)
+//       if(state->pluginCVPorts [idx] != nullptr)
 //       {
 //          float cvVal = state->plugInst->controls [j].val;
 //          for(size_t jj = 0; jj < n; ++jj)
@@ -5553,7 +5553,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    for(size_t j = 0; j < state->plugInst->controlOutPorts; ++j)
 //    {
 //       uint32_t idx = state->synth->_controlOutPorts [j].index;
-//       if(state->pluginCVPorts [idx] != NULL)
+//       if(state->pluginCVPorts [idx] != nullptr)
 //       {
 //          float cvVal = state->plugInst->controlsOut [j].val;
 //          for(size_t jj = 0; jj < n; ++jj)
@@ -5575,7 +5575,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //       state->wrkEndWork = false;
 //       state->wrkIface->work_response(lilv_instance_get_handle(state->handle), state->wrkDataSize, state->wrkDataBuffer);
 //       state->wrkDataSize = 0;
-//       state->wrkDataBuffer = NULL;
+//       state->wrkDataBuffer = nullptr;
 //    }
 // 
 //    LV2Synth::lv2audio_postProcessMidiPorts(state, n);
@@ -5668,9 +5668,9 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 //    assert(p->instances > 0);
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
 // 
-//    if(p->track() != NULL)
+//    if(p->track() != nullptr)
 //    {
-//       if(state->human_id != NULL)
+//       if(state->human_id != nullptr)
 //       {
 //          free(state->human_id);
 //       }
@@ -5685,13 +5685,13 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // {
 //    assert(p->instances > 0);
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
-//    return (state->widget != NULL);
+//    return (state->widget != nullptr);
 // }
 // 
 // void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-//    assert(state != NULL);
+//    assert(state != nullptr);
 // 
 //    if(_controlInPorts == 0)
 //       return;
@@ -5707,7 +5707,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-//    assert(state != NULL);
+//    assert(state != nullptr);
 // 
 //    LV2Synth::lv2conf_write(state, level, xml);
 // }
@@ -5715,7 +5715,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // void LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
 // {
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-//    assert(state != NULL);
+//    assert(state != nullptr);
 // 
 //    LV2Synth::lv2conf_set(state, customParams);
 // }
@@ -5724,7 +5724,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // {
 //    assert(p->instances > 0);
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
-//    assert(state != NULL);
+//    assert(state != nullptr);
 // 
 //    LV2Synth::lv2state_populatePresetsMenu(state, menu);
 // 
@@ -5734,7 +5734,7 @@ const char *Lv2Plugin::unmapUrid(LV2_URID id)
 // {
 //    assert(p->instances > 0);
 //    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
-//    assert(state != NULL);
+//    assert(state != nullptr);
 // 
 //    LV2Synth::lv2state_applyPreset(state, static_cast<LilvNode *>(preset));
 // 
@@ -5771,7 +5771,7 @@ void LV2PluginWrapper_Worker::makeWork()
    {
       const void *dataBuffer = _state->wrkDataBuffer;
       uint32_t dataSize = _state->wrkDataSize;
-      _state->wrkDataBuffer = NULL;
+      _state->wrkDataBuffer = nullptr;
       _state->wrkDataSize = 0;
       if(_state->wrkIface->work(lilv_instance_get_handle(_state->handle),
 //                                 LV2Synth::lv2wrk_respond,
@@ -5781,7 +5781,7 @@ void LV2PluginWrapper_Worker::makeWork()
                                 dataBuffer) != LV2_WORKER_SUCCESS)
       {
          _state->wrkEndWork = false;
-         _state->wrkDataBuffer = NULL;
+         _state->wrkDataBuffer = nullptr;
          _state->wrkDataSize = 0;
       }
    }
@@ -5929,7 +5929,7 @@ bool LV2EvBuf::write(uint32_t frames, uint32_t subframes, uint32_t type, uint32_
 bool LV2EvBuf::read(uint32_t *frames, uint32_t *subframes, uint32_t *type, uint32_t *size, uint8_t **data)
 {
    *frames = *subframes = *type = *size = 0;
-   *data = NULL;
+   *data = nullptr;
    if(_isInput)
       return false;
 #ifdef LV2_EVENT_BUFFER_SUPPORT
@@ -6161,16 +6161,16 @@ const char *LV2UridBiMap::unmap(uint32_t id)
 void Lv2PluginI::init()
 {
   _handle = 0;
-//   _features = NULL;
-//   _ppfeatures = NULL;
-  _options = NULL;
-  _state = NULL;
+//   _features = nullptr;
+//   _ppfeatures = nullptr;
+  _options = nullptr;
+  _state = nullptr;
 
 //   _state = new LV2PluginWrapper_State;
-// //   _state->inst = NULL;
-//   _state->widget = NULL;
-//   _state->uiInst = NULL;
-//   _state->plugInst = NULL;
+// //   _state->inst = nullptr;
+//   _state->widget = nullptr;
+//   _state->uiInst = nullptr;
+//   _state->plugInst = nullptr;
 //   _state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
 //   _state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
 //   _state->sif = this;
@@ -6197,7 +6197,7 @@ void Lv2PluginI::init()
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_NOM_BLKLEN), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SEQ_SIZE), sizeof(int32_t), uridBiMap.map(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_CORE__sampleRate), sizeof(double), uridBiMap.map(LV2_ATOM__Double), &_sampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
+      {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, nullptr}
 
    };
 
@@ -6245,32 +6245,32 @@ Lv2PluginI::~Lv2PluginI()
 //    if(_ppfeatures)
 //    {
 //       delete [] _ppfeatures;
-//       _ppfeatures = NULL;
+//       _ppfeatures = nullptr;
 //    }
 // 
 //    if(_features)
 //    {
 //       delete [] _features;
-//       _features = NULL;
+//       _features = nullptr;
 //    }
 
    if(_options)
    {
       delete [] _options;
-      _options = NULL;
+      _options = nullptr;
    }
 
 // TODO: UI
-//    if(_uis != NULL)
+//    if(_uis != nullptr)
 //    {
 //       lilv_uis_free(_uis);
-//       _uis = NULL;
+//       _uis = nullptr;
 //    }
  
  
  
  
-   if(_state != NULL)
+   if(_state != nullptr)
    {
      // TODO: Be sure the state gets deleted later, wherever that is...
       _state->deleteLater = true;
@@ -6278,12 +6278,12 @@ Lv2PluginI::~Lv2PluginI()
       //_uiState->uiTimer->stopNextTime(false);
 
 // TODO: UI
-//       if(_state->pluginWindow != NULL)
+//       if(_state->pluginWindow != nullptr)
 //          _state->pluginWindow->stopNextTime();
 //       else
          Lv2Plugin::lv2state_FreeState(_state);
          
-      _state = NULL;
+      _state = nullptr;
    }
 
    LV2_AUDIO_PORTS::iterator _itA = _audioInPorts.begin();
@@ -6306,13 +6306,13 @@ Lv2PluginI::~Lv2PluginI()
    if(_audioInBuffers)
    {
       delete [] _audioInBuffers;
-      _audioInBuffers = NULL;
+      _audioInBuffers = nullptr;
    }
 
    if(_audioOutBuffers)
    {
       delete [] _audioOutBuffers;
-      _audioOutBuffers = NULL;
+      _audioOutBuffers = nullptr;
    }
 
    if(_controls)
@@ -6328,13 +6328,13 @@ Lv2PluginI::~Lv2PluginI()
 //    if(_ppfeatures)
 //    {
 //       delete [] _ppfeatures;
-//       _ppfeatures = NULL;
+//       _ppfeatures = nullptr;
 //    }
 // 
 //    if(_features)
 //    {
 //       delete [] _features;
-//       _features = NULL;
+//       _features = nullptr;
 //    }
 }
 
@@ -6345,7 +6345,7 @@ void Lv2PluginI::lv2_FillFeatures(LV2_Feature *features, LV2_Feature **ppfeature
    {
       features [i] = _features [i];
 
-      if(features [i].URI == NULL)
+      if(features [i].URI == nullptr)
       {
          break;
       }
@@ -6356,7 +6356,7 @@ void Lv2PluginI::lv2_FillFeatures(LV2_Feature *features, LV2_Feature **ppfeature
       }
       else if(i == _fInstanceAccess)
       {
-         features [i].data = NULL;
+         features [i].data = nullptr;
       }
       else if(i == _fExtUiHost)
       {
@@ -6395,8 +6395,8 @@ void Lv2PluginI::lv2_FillFeatures(LV2_Feature *features, LV2_Feature **ppfeature
       ppfeatures [i] = &features [i];
    }
 
-//    _ppifeatures [i] = NULL;
-   ppfeatures [i] = NULL;
+//    _ppifeatures [i] = nullptr;
+   ppfeatures [i] = nullptr;
 }
 
 
@@ -6424,10 +6424,10 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
 
   
   _state = new LV2PluginWrapper_State;
-//   _state->inst = NULL;
-  _state->widget = NULL;
-  _state->uiInst = NULL;
-  _state->plugInst = NULL;
+//   _state->inst = nullptr;
+  _state->widget = nullptr;
+  _state->uiInst = nullptr;
+  _state->plugInst = nullptr;
   _state->_ifeatures = new LV2_Feature[SIZEOF_ARRAY(lv2Features)];
   _state->_ppifeatures = new LV2_Feature *[SIZEOF_ARRAY(lv2Features) + 1];
   _state->sif = this;
@@ -6454,7 +6454,7 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
       {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_NOM_BLKLEN), sizeof(int32_t), lv2plug->mapUrid(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_P_SEQ_SIZE), sizeof(int32_t), lv2plug->mapUrid(LV2_ATOM__Int), &_segSize},
       {LV2_OPTIONS_INSTANCE, 0, lv2plug->mapUrid(LV2_CORE__sampleRate), sizeof(double), lv2plug->mapUrid(LV2_ATOM__Double), &_dSampleRate},
-      {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}
+      {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, nullptr}
 
    };
 
@@ -6469,9 +6469,9 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
    if (_plugin->incReferences(1)==0)
    {
       delete [] _state->_ppifeatures;
-      _state->_ppifeatures = NULL;
+      _state->_ppifeatures = nullptr;
       delete [] _state->_ifeatures;
-      _state->_ifeatures = NULL;
+      _state->_ifeatures = nullptr;
       return true;
    }
 
@@ -6482,21 +6482,21 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
    //LilvInstance* inst = static_cast<LilvInstance*>(plug->instantiate(sampleRate, _state));
    _state->handle = _handle = static_cast<LilvInstance*>(plug->instantiate(sampleRate, _state));
 
-   if(_handle == NULL)
+   if(_handle == nullptr)
    {
       _plugin->incReferences(-1);
       delete [] _state->_ppifeatures;
-      _state->_ppifeatures = NULL;
+      _state->_ppifeatures = nullptr;
       delete [] _state->_ifeatures;
-      _state->_ifeatures = NULL;
+      _state->_ifeatures = nullptr;
       return true;
    }
-//    if(inst == NULL)
+//    if(inst == nullptr)
 //    {
 //       delete [] ppifeatures;
-//       //ppifeatures = NULL;
+//       //ppifeatures = nullptr;
 //       delete [] ifeatures;
-//       //ifeatures = NULL;
+//       //ifeatures = nullptr;
 //       return NULL;
 //    }
 
@@ -6556,7 +6556,7 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
     #endif
 
     _handle[i] = _plugin->instantiate(_sampleRate);
-    if(_handle[i] == NULL)
+    if(_handle[i] == nullptr)
       return true;
   }
 

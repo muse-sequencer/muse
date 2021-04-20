@@ -40,7 +40,7 @@ namespace MusECore {
      {
      if(TIMER_DEBUG)
        fprintf(stderr,"QtTimer::QtTimer(this=%p) called\n",this);
-     innerTimer = NULL;
+     innerTimer = nullptr;
      timeoutms = 10;
      readPipe=-1;
      writePipe=-1;

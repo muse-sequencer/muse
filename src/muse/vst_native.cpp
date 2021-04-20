@@ -539,10 +539,10 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   void* hnd = _handle;
   //int vst_version;
 
-  if(hnd == NULL)
+  if(hnd == nullptr)
   {
     hnd = dlopen(path, RTLD_NOW);
-    if(hnd == NULL)
+    if(hnd == nullptr)
     {
       fprintf(stderr, "dlopen(%s) failed: %s\n", path, dlerror());
       return nullptr;
@@ -758,7 +758,7 @@ bool VstNativeSynthIF::init(Synth* s)
         {
 #ifdef _WIN32
           _audioOutBuffers[k] = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
-          if(_audioOutBuffers[k] == NULL)
+          if(_audioOutBuffers[k] == nullptr)
           {
              fprintf(stderr, "ERROR: VstNativeSynthIF::init: _aligned_malloc returned error: NULL. Aborting!\n");
              abort();
@@ -789,7 +789,7 @@ bool VstNativeSynthIF::init(Synth* s)
         {
 #ifdef _WIN32
           _audioInBuffers[k] = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
-          if(_audioInBuffers[k] == NULL)
+          if(_audioInBuffers[k] == nullptr)
           {
              fprintf(stderr, "ERROR: VstNativeSynthIF::init: _aligned_malloc returned error: NULL. Aborting!\n");
              abort();
@@ -813,7 +813,7 @@ bool VstNativeSynthIF::init(Synth* s)
         
 #ifdef _WIN32
         _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float *) * MusEGlobal::segmentSize);
-        if(_audioInSilenceBuf == NULL)
+        if(_audioInSilenceBuf == nullptr)
         {
            fprintf(stderr, "ERROR: VstNativeSynthIF::init: _aligned_malloc returned error: NULL. Aborting!\n");
            abort();
@@ -2318,7 +2318,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
       if(a == CTRL_HBANK)
       {
         int lb, pr;
-        synti->currentProg(chn, &pr, &lb, NULL);
+        synti->currentProg(chn, &pr, &lb, nullptr);
         synti->setCurrentProg(chn, pr, lb, b & 0xff);
         doSelectProgram(b, lb, pr);
         // Event pointer not filled. Return false.

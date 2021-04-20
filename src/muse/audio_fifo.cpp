@@ -94,7 +94,7 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos, floa
             }
 #ifdef _WIN32
             b->buffer = (float *) _aligned_malloc(16, sizeof(float *) * n);
-            if(b->buffer == NULL)
+            if(b->buffer == nullptr)
             {
                fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
                return true;

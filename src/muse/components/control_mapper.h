@@ -49,7 +49,7 @@ class ColorListEditor : public QComboBox
   Q_PROPERTY(QColor color READ color WRITE setColor USER true)
 
   public:
-    ColorListEditor(QWidget *widget = NULL);
+    ColorListEditor(QWidget *widget = nullptr);
 
   public:
     QColor color() const;
@@ -83,7 +83,7 @@ class MidiCtrlDelegateEditor : public QWidget
     void activated(int ctrlNum);
 
   public:
-    MidiCtrlDelegateEditor(QWidget* parent = NULL);
+    MidiCtrlDelegateEditor(QWidget* parent = nullptr);
     virtual ~MidiCtrlDelegateEditor();
     int  controlNum() const;
     void setControlNum(int ctrlNum);
@@ -111,7 +111,7 @@ class ColorChooserEditor : public QWidget
   public:
     static QColor colorChooserList[];
 
-    ColorChooserEditor(QWidget* parent = NULL);
+    ColorChooserEditor(QWidget* parent = nullptr);
     virtual ~ColorChooserEditor();
     QColor color() const;
     void setColor(QColor c);
@@ -155,11 +155,11 @@ class MapperControlDelegate : public QStyledItemDelegate
     // Need this. For some reason when using CurrentChanged trigger, createEditor is called upon opening the dialog, yet nothing is selected.
     bool _firstPress; 
 
-    QRect getItemRectangle(const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement subElement, QWidget* editor = NULL) const;
-    bool subElementHitTest(const QPoint& point, const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement* subElement, QWidget* editor = NULL) const;
+    QRect getItemRectangle(const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement subElement, QWidget* editor = nullptr) const;
+    bool subElementHitTest(const QPoint& point, const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement* subElement, QWidget* editor = nullptr) const;
     
   public:
-    MapperControlDelegate(QWidget *parent = NULL);
+    MapperControlDelegate(QWidget *parent = nullptr);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
               const QModelIndex &index) const;
@@ -217,7 +217,7 @@ public:
     enum MapperControlCols { C_NAME=0, C_ASSIGN_PORT, C_ASSIGN_CHAN, C_MCTL_NUM, C_MCTL_H, C_MCTL_L, C_COL_END };
     enum UserRolesExt { UserRole2 = Qt::UserRole+1 };
     
-    ControlMapperDialog(MusECore::Track* t, QWidget* parent = NULL);
+    ControlMapperDialog(MusECore::Track* t, QWidget* parent = nullptr);
     ~ControlMapperDialog();
 //     int port() const { return _port; }
 //     int chan() const { return _chan; }

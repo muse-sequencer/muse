@@ -437,7 +437,7 @@ Track* Song::createTrack(Track::TrackType type, bool setDefaults)
 
               MidiPort* mp = &MusEGlobal::midiPorts[i];
 
-              if (mp->device() != NULL) {
+              if (mp->device() != nullptr) {
 
                 mt->setOutPort(i);
                 break;
@@ -3802,9 +3802,9 @@ void Song::insertTrack0(Track* track, int idx)
                       // Is the source an Aux Track or else does it have Aux Tracks routed to it?
                       // Update this track's aux ref count.     p4.0.37
                       if(r->track->auxRefCount())
-                        track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                        track->updateAuxRoute( r->track->auxRefCount(), nullptr );
                       else if(r->track->type() == Track::AUDIO_AUX)
-                        track->updateAuxRoute( 1, NULL );
+                        track->updateAuxRoute( 1, nullptr );
                     }
                     break;
                     case Route::MIDI_PORT_ROUTE:
@@ -3825,9 +3825,9 @@ void Song::insertTrack0(Track* track, int idx)
                       // Is this track an Aux Track or else does it have Aux Tracks routed to it?
                       // Update the other track's aux ref count and all tracks it is connected to.
                       if(track->auxRefCount())
-                        r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                        r->track->updateAuxRoute( track->auxRefCount(), nullptr );
                       else if(track->type() == Track::AUDIO_AUX)
-                        r->track->updateAuxRoute( 1, NULL );
+                        r->track->updateAuxRoute( 1, nullptr );
                     }
                     break;
                     case Route::MIDI_PORT_ROUTE:

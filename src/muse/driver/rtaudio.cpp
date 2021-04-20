@@ -177,7 +177,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
 
       left->buffer[i] = floatInputBuffer[i*2];
 
-      if (right != NULL) {
+      if (right != nullptr) {
         right->buffer[i] = floatInputBuffer[i*2+1];
       }
     }

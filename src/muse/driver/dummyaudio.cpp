@@ -198,7 +198,7 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       
 #ifdef _WIN32
   buffer = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-  if(buffer == NULL)
+  if(buffer == nullptr)
   {
       fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned error: NULL. Aborting!\n");
       abort();

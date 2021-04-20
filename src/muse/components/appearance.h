@@ -150,7 +150,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       Appearance(QWidget* parent=0);
       ~Appearance();
       void resetValues();
-      static QString& getSetDefaultStyle(const QString *newStyle = NULL);
+      static QString& getSetDefaultStyle(const QString *newStyle = nullptr);
 private slots:
       void on_pbSetFontFamily_clicked();
 

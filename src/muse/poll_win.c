@@ -47,7 +47,7 @@ is_socket(int fd)
 	if (fd < 3)
 		return 0;
 	WSANETWORKEVENTS events;
-	return (WSAEnumNetworkEvents((SOCKET)fd, NULL, &events) == 0);
+	return (WSAEnumNetworkEvents((SOCKET)fd, nullptr, &events) == 0);
 }
 
 static int
@@ -176,7 +176,7 @@ poll(struct pollfd *pfds, nfds_t nfds, int timeout_ms)
 	HANDLE handles[FD_SETSIZE];
 	int num_handles;
 
-	if (pfds == NULL) {
+	if (pfds == nullptr) {
 		errno = EINVAL;
 		return -1;
 	}

@@ -1070,12 +1070,12 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 						Track* dest_track;
 						const Part* old_dest_part;
 						
-						if (paste_into_part == NULL)
+						if (paste_into_part == nullptr)
 							dest_part = partFromSerialNumber(part_id);
 						else
 							dest_part=paste_into_part;
 						
-						if (dest_part == NULL)
+						if (dest_part == nullptr)
 						{
 							printf("ERROR: destination part wasn't found. ignoring these events\n");
 						}
@@ -2917,12 +2917,12 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
           }
           
           const Part* dest_part;
-          if (paste_into_part == NULL)
+          if (paste_into_part == nullptr)
             dest_part = partFromSerialNumber(part_id);
           else
             dest_part=paste_into_part;
           
-          if (dest_part == NULL)
+          if (dest_part == nullptr)
           {
             printf("ERROR: destination part wasn't found. ignoring these events\n");
             break;
@@ -3033,14 +3033,14 @@ void paste_items_at(
       const Part* dest_part = nullptr;
       const Part* src_part = itl->first;
       
-      if (paste_into_part == NULL)
+      if (paste_into_part == nullptr)
         // Paste to original source part.
         dest_part = src_part;
       else
         // Paste to specific part.
         dest_part=paste_into_part;
 
-      if (dest_part == NULL)
+      if (dest_part == nullptr)
       {
         printf("paste_items_at(): ERROR: destination part wasn't found. ignoring these events\n");
         continue;

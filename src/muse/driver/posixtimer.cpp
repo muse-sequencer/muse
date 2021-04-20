@@ -127,8 +127,8 @@ unsigned long PosixTimer::setTimerFreq(unsigned long freq)
   new_value.it_interval.tv_sec = sec;
   new_value.it_interval.tv_nsec = nsec;
 
-  //if(timerfd_settime(fd, TFD_TIMER_ABSTIME, &new_value, NULL) == -1)
-  if(timerfd_settime(timerFd, 0 /* Relative */, &new_value, NULL) == -1)
+  //if(timerfd_settime(fd, TFD_TIMER_ABSTIME, &new_value, nullptr) == -1)
+  if(timerfd_settime(timerFd, 0 /* Relative */, &new_value, nullptr) == -1)
   {
     fprintf(stderr, "PosixTimer::setTimerFreq(): timerfd_settime failed. sec:%ld nsec:%ld\n", sec, nsec);
     return 0;
@@ -187,7 +187,7 @@ bool PosixTimer::startTimer()
   // Start the timer.
   curr_value.it_value.tv_sec = curr_value.it_interval.tv_sec;
   curr_value.it_value.tv_nsec = curr_value.it_interval.tv_nsec;
-  if(timerfd_settime(timerFd, 0 /* Relative */, &curr_value, NULL) == -1)
+  if(timerfd_settime(timerFd, 0 /* Relative */, &curr_value, nullptr) == -1)
   {
     fprintf(stderr, "PosixTimer::startTimer(): timerfd_settime failed. cur interval sec:%ld nsec:%ld\n",
             curr_value.it_interval.tv_sec, curr_value.it_interval.tv_nsec);
@@ -211,7 +211,7 @@ bool PosixTimer::stopTimer()
   // Stop the timer.
   curr_value.it_value.tv_sec = 0;
   curr_value.it_value.tv_nsec = 0;
-  if(timerfd_settime(timerFd, 0 /* Relative */, &curr_value, NULL) == -1)
+  if(timerfd_settime(timerFd, 0 /* Relative */, &curr_value, nullptr) == -1)
   {
     fprintf(stderr, "PosixTimer::stopTimer(): timerfd_settime failed. cur interval sec:%ld nsec:%ld\n",
             curr_value.it_interval.tv_sec, curr_value.it_interval.tv_nsec);

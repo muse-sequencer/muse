@@ -1199,7 +1199,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
     
 #ifdef ALSA_SUPPORT
       addALSADevice->blockSignals(true);
-      addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
+      addALSADevice->setChecked(MusEGlobal::midiSeq != nullptr);
       addALSADevice->blockSignals(false);
 #endif
 

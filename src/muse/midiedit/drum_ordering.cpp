@@ -154,7 +154,7 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xm
 
   end_of_read_single:
   
-  if (entry.first == NULL)
+  if (entry.first == nullptr)
     fprintf(stderr, "ERROR: global_drum_ordering_t::read_single() couldn't find the specified track!\n");
   
   if (entry.second < 0 || entry.second > 127)

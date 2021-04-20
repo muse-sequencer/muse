@@ -116,7 +116,7 @@ void AudioTrack::initBuffers()
     {
 #ifdef _WIN32
       outBuffers[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-      if(outBuffers[i] == NULL)
+      if(outBuffers[i] == nullptr)
       {
           fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc returned error: NULL. Aborting!\n");
           abort();
@@ -149,7 +149,7 @@ void AudioTrack::initBuffers()
     {
 #ifdef _WIN32
       outBuffersExtraMix[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-      if(outBuffersExtraMix[i] == NULL)
+      if(outBuffersExtraMix[i] == nullptr)
       {
           fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc outBuffersMonoMix returned error: NULL. Aborting!\n");
           abort();
@@ -182,7 +182,7 @@ void AudioTrack::initBuffers()
     {
 #ifdef _WIN32
       _dataBuffers[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-      if(_dataBuffers[i] == NULL)
+      if(_dataBuffers[i] == nullptr)
       {
           fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc _dataBuffers returned error: NULL. Aborting!\n");
           abort();
@@ -212,7 +212,7 @@ void AudioTrack::initBuffers()
   {
 #ifdef _WIN32
     audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-    if(audioInSilenceBuf == NULL)
+    if(audioInSilenceBuf == nullptr)
     {
       fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc returned error: NULL. Aborting!\n");
       abort();
@@ -238,7 +238,7 @@ void AudioTrack::initBuffers()
   {
 #ifdef _WIN32
     audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-    if(audioOutDummyBuf == NULL)
+    if(audioOutDummyBuf == nullptr)
     {
       fprintf(stderr, "ERROR: AudioTrack::init_buffers: _aligned_malloc returned error: NULL. Aborting!\n");
       abort();
@@ -2768,7 +2768,7 @@ AudioAux::AudioAux()
         {
 #ifdef _WIN32
           buffer[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-          if(buffer[i] == NULL)
+          if(buffer[i] == nullptr)
           {
             fprintf(stderr, "ERROR: AudioAux ctor: _aligned_malloc returned error: NULL. Aborting!\n");
             abort();
@@ -2804,7 +2804,7 @@ AudioAux::AudioAux(const AudioAux& t, int flags)
         {
 #ifdef _WIN32
           buffer[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-          if(buffer[i] == NULL)
+          if(buffer[i] == nullptr)
           {
             fprintf(stderr, "ERROR: AudioAux ctor: _aligned_malloc returned error: NULL. Aborting!\n");
             abort();
@@ -2922,7 +2922,7 @@ void AudioAux::setChannels(int n)
     {
 #ifdef _WIN32
       buffer[i] = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-      if(buffer[i] == NULL)
+      if(buffer[i] == nullptr)
       {
         fprintf(stderr, "ERROR: AudioTrack::setChannels: _aligned_malloc returned error: NULL. Aborting!\n");
         abort();

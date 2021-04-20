@@ -1284,7 +1284,7 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
             else if(dst.type == Route::JACK_ROUTE) 
             {
               // Allow direct Jack connections! Pass the port names here instead of ports so that 
-              //  persistent routes (where jackPort = NULL) can be removed.
+              //  persistent routes (where jackPort = nullptr) can be removed.
               return MusEGlobal::audioDevice && MusEGlobal::audioDevice->portsCanDisconnect(src.persistentJackPortName, dst.persistentJackPortName);
             }
             else
@@ -1309,7 +1309,7 @@ bool routeCanDisconnect(const Route& src, const Route& dst)
             else if(src.type == Route::JACK_ROUTE) 
             {
               // Allow direct Jack disconnections! Pass the port names here instead of ports so that 
-              //  persistent routes (where jackPort = NULL) can be removed.
+              //  persistent routes (where jackPort = nullptr) can be removed.
               return MusEGlobal::audioDevice && MusEGlobal::audioDevice->portsCanDisconnect(src.persistentJackPortName, dst.persistentJackPortName);
             }
             else
@@ -2234,7 +2234,7 @@ bool isCircularRoutePath(Track* src, Track* dst)
   if(dst)
   {  
     src->setNodeTraversed(true);
-    rv = isCircularRoutePath(dst, NULL);
+    rv = isCircularRoutePath(dst, nullptr);
     src->setNodeTraversed(false);
     return rv;
   }
@@ -2252,7 +2252,7 @@ bool isCircularRoutePath(Track* src, Track* dst)
     Track* t = (*i).track;
     //if(t->isMidiTrack())
     //  continue;
-    rv = isCircularRoutePath(src, NULL);
+    rv = isCircularRoutePath(src, nullptr);
     if(rv)
       break; 
   }

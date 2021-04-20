@@ -478,7 +478,7 @@ bool writeLadspaInfo (
   for(unsigned long i = 0;; ++i)
   {
     descr = ladspa(i);
-    if(descr == NULL)
+    if(descr == nullptr)
       break;
     PluginScanInfoStruct info;
     if(!scanLadspaDescriptor(filename, descr, &info, do_ports, do_rdf))
@@ -1865,29 +1865,29 @@ static CacheNodes lv2CacheNodes;
 
 LV2_Feature lv2Features [] =
 {
-   {LV2_F_URID_MAP, NULL},
-   {LV2_F_URID_UNMAP, NULL},
-   {LV2_F_URI_MAP, NULL},
-   {LV2_F_BOUNDED_BLOCK_LENGTH, NULL},
-   {LV2_F_FIXED_BLOCK_LENGTH, NULL},
-   {LV2_F_POWER_OF_2_BLOCK_LENGTH, NULL},
-   {LV2_F_COARSE_BLOCK_LENGTH, NULL},
-   {LV2_F_UI_PARENT, NULL},
-   {LV2_F_INSTANCE_ACCESS, NULL},
-   {LV2_F_UI_EXTERNAL_HOST, NULL},
-   {LV2_UI_EXTERNAL_DEPRECATED, NULL},
-   {LV2_F_WORKER_SCHEDULE, NULL},
-   {LV2_F_UI_IDLE, NULL},
-   {LV2_F_OPTIONS, NULL},
-   {LV2_UI__resize, NULL},
-   {LV2_PROGRAMS__Host, NULL},
-   {LV2_LOG__log, NULL},
+   {LV2_F_URID_MAP, nullptr},
+   {LV2_F_URID_UNMAP, nullptr},
+   {LV2_F_URI_MAP, nullptr},
+   {LV2_F_BOUNDED_BLOCK_LENGTH, nullptr},
+   {LV2_F_FIXED_BLOCK_LENGTH, nullptr},
+   {LV2_F_POWER_OF_2_BLOCK_LENGTH, nullptr},
+   {LV2_F_COARSE_BLOCK_LENGTH, nullptr},
+   {LV2_F_UI_PARENT, nullptr},
+   {LV2_F_INSTANCE_ACCESS, nullptr},
+   {LV2_F_UI_EXTERNAL_HOST, nullptr},
+   {LV2_UI_EXTERNAL_DEPRECATED, nullptr},
+   {LV2_F_WORKER_SCHEDULE, nullptr},
+   {LV2_F_UI_IDLE, nullptr},
+   {LV2_F_OPTIONS, nullptr},
+   {LV2_UI__resize, nullptr},
+   {LV2_PROGRAMS__Host, nullptr},
+   {LV2_LOG__log, nullptr},
 #ifdef LV2_MAKE_PATH_SUPPORT
-   {LV2_STATE__makePath, NULL},
+   {LV2_STATE__makePath, nullptr},
 #endif
-   {LV2_STATE__mapPath, NULL},
-   {LV2_F_STATE_CHANGED, NULL},
-   {LV2_F_DATA_ACCESS, NULL} //must be the last always!
+   {LV2_STATE__mapPath, nullptr},
+   {LV2_F_STATE_CHANGED, nullptr},
+   {LV2_F_DATA_ACCESS, nullptr} //must be the last always!
 };
 
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
@@ -2186,7 +2186,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   }
 
   const char *pluginName = lilv_node_as_string(nameNode);
-  const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
+  const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), nullptr);
   LilvNodes *fts = lilv_plugin_get_required_features(plugin);
   LilvIter *nit = lilv_nodes_begin(fts);
   bool shouldLoad = true;
@@ -2664,7 +2664,7 @@ static void findLv2PluginFile(const LilvPlugin *plugin,
     return;
   }
 
-  const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), NULL);
+  const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), nullptr);
   LilvNodes *fts = lilv_plugin_get_required_features(plugin);
   LilvIter *nit = lilv_nodes_begin(fts);
   bool shouldLoad = true;

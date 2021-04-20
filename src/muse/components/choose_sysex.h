@@ -51,7 +51,7 @@ class ChooseSysexDialog : public QDialog, public Ui::ChooseSysexBase {
       void sysexChanged(QListWidgetItem*, QListWidgetItem*);
 
    public:
-      ChooseSysexDialog(QWidget* parent = nullptr, MusECore::MidiInstrument* instr = NULL);
+      ChooseSysexDialog(QWidget* parent = nullptr, MusECore::MidiInstrument* instr = nullptr);
       MusECore::SysEx* sysex() { return _sysex; }
       };
 

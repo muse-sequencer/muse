@@ -750,11 +750,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                       // Update this track's aux ref count.
                       if(r->track->auxRefCount())
                       {
-                        _track->updateAuxRoute(r->track->auxRefCount(), NULL);
+                        _track->updateAuxRoute(r->track->auxRefCount(), nullptr);
                       }
                       else if(r->track->type() == Track::AUDIO_AUX)
                       {
-                        _track->updateAuxRoute(1, NULL);
+                        _track->updateAuxRoute(1, nullptr);
                       }
                     }
                     break;
@@ -779,11 +779,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                       // Update the other track's aux ref count and all tracks it is connected to.
                       if(_track->auxRefCount())
                       {
-                        r->track->updateAuxRoute(_track->auxRefCount(), NULL);
+                        r->track->updateAuxRoute(_track->auxRefCount(), nullptr);
                       }
                       else if(_track->type() == Track::AUDIO_AUX)
                       {
-                        r->track->updateAuxRoute(1, NULL);
+                        r->track->updateAuxRoute(1, nullptr);
                       }
                     }
                     break;
@@ -963,11 +963,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                       // Update this track's aux ref count.
                       if(r->track->auxRefCount())
                       {
-                        _track->updateAuxRoute(-r->track->auxRefCount(), NULL);
+                        _track->updateAuxRoute(-r->track->auxRefCount(), nullptr);
                       }
                       else if(r->track->type() == Track::AUDIO_AUX)
                       {
-                        _track->updateAuxRoute(-1, NULL);
+                        _track->updateAuxRoute(-1, nullptr);
                       }
                     }
                     break;
@@ -992,11 +992,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
                       // Update the other track's aux ref count and all tracks it is connected to.
                       if(_track->auxRefCount())
                       {
-                        r->track->updateAuxRoute(-_track->auxRefCount(), NULL);
+                        r->track->updateAuxRoute(-_track->auxRefCount(), nullptr);
                       }
                       else if(_track->type() == Track::AUDIO_AUX)
                       {
-                        r->track->updateAuxRoute(-1, NULL);
+                        r->track->updateAuxRoute(-1, nullptr);
                       }
                     }
                     break;
@@ -2987,8 +2987,8 @@ void PendingOperationList::addPartPortCtrlEvents(
       mcvl = imcvll->second;
     }
 
-    //assert(mcvl != NULL); //FIXME: Can this happen? (danvd). UPDATE: Yes, it can (danvd)
-    if(mcvl != NULL)
+    //assert(mcvl != nullptr); //FIXME: Can this happen? (danvd). UPDATE: Yes, it can (danvd)
+    if(mcvl != nullptr)
     {
       // The operation will catch and ignore events which are past the end of the part.
       add(PendingOperationItem(mcvl, part, tck, val, PendingOperationItem::AddMidiCtrlVal));
