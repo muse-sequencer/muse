@@ -23,7 +23,7 @@
 #include "midi_editor_layout.h"
 
 #include <QSpacerItem>
-#include <QWidgetItem>
+//#include <QWidgetItem>
 
 namespace MusEGui {
 

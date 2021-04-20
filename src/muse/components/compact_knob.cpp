@@ -29,23 +29,23 @@
 #include "popup_double_spinbox.h"
 #include "compact_knob.h"
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "muse_math.h"
 #include "mmath.h"
 #include "gconfig.h"
 
 #include <QPalette>
 #include <QLinearGradient>
-#include <QLocale>
+//#include <QLocale>
 #include <QFlags>
 #include <QToolTip>
 #include <QString>
 #include <QFontMetrics>
-#include <QResizeEvent>
+//#include <QResizeEvent>
 #include <QPainter>
 #include <QEvent>
-#include <QPaintEvent>
-#include <QMouseEvent>
+//#include <QPaintEvent>
+//#include <QMouseEvent>
 #include <QKeyEvent>
 
 // For debugging output: Uncomment the fprintf section.

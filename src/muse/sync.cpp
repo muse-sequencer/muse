@@ -22,14 +22,14 @@
 //
 //=========================================================
 
-#include <stdlib.h>
+//#include <stdlib.h>
 #include "muse_math.h"
 
 #include "sync.h"
 #include "song.h"
 #include "utils.h"
 #include "midiport.h"
-#include "mididev.h"
+//#include "mididev.h"
 #include "globals.h"
 #include "midiseq.h"
 #include "audio.h"

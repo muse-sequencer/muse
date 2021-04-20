@@ -36,7 +36,7 @@
 
 #include <QKeyEvent>
 #include <QKeySequence>
-#include <QInputEvent>
+//#include <QInputEvent>
 #include <QChar>
 #include <QApplication>
 #include <QtWidgets>

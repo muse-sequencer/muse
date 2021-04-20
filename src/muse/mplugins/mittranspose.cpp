@@ -27,7 +27,7 @@
 #include "mittranspose.h"
 #include "song.h"
 #include "mpevent.h"
-#include "pitchedit.h"
+//#include "pitchedit.h"
 #include "xml.h"
 #include "globals.h"
 

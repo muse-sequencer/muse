@@ -91,7 +91,7 @@ class RhythmGen;
 class ScoreEdit;
 class ShortcutConfig;
 class TopWin;
-class TopLevelList;
+//class TopLevelList;
 class Transport;
 class VisibleTracks;
 class RouteDialog;
@@ -113,18 +113,18 @@ class MusE : public QMainWindow
     enum {CMD_FOLLOW_NO, CMD_FOLLOW_JUMP, CMD_FOLLOW_CONTINUOUS };
 
     //File menu items:
-    enum { CMD_OPEN_RECENT=0, CMD_LOAD_TEMPLATE, CMD_SAVE_AS, CMD_IMPORT_MIDI,
-           CMD_EXPORT_MIDI, CMD_IMPORT_PART, CMD_IMPORT_AUDIO, CMD_QUIT, CMD_OPEN_DRUMS, CMD_OPEN_WAVE,
-           CMD_OPEN_LIST, CMD_OPEN_LIST_MASTER, CMD_GLOBAL_CONFIG,
-           CMD_OPEN_GRAPHIC_MASTER, CMD_OPEN_MIDI_TRANSFORM, CMD_TRANSPOSE,
-           CMD_GLOBAL_CUT, CMD_GLOBAL_INSERT, CMD_GLOBAL_SPLIT, CMD_COPY_RANGE,
-           CMD_CUT_EVENTS, CMD_CONFIG_SHORTCUTS, CMD_CONFIG_METRONOME, CMD_CONFIG_MIDISYNC,
-           CMD_MIDI_FILE_CONFIG, CMD_APPEARANCE_SETTINGS, CMD_CONFIG_MIDI_PORTS, CMD_CONFIG_AUDIO_PORTS,
-           CMD_MIDI_EDIT_INSTRUMENTS, CMD_MIDI_RESET, CMD_MIDI_INIT, CMD_MIDI_LOCAL_OFF,
-           CMD_MIXER_SNAPSHOT, CMD_MIXER_AUTOMATION_CLEAR, CMD_OPEN_HELP, CMD_OPEN_HOMEPAGE,
-           CMD_OPEN_BUG, CMD_START_WHATSTHIS,
-           CMD_AUDIO_BOUNCE_TO_FILE, CMD_AUDIO_BOUNCE_TO_TRACK, CMD_AUDIO_RESTART,
-           CMD_LAST };
+//    enum { CMD_OPEN_RECENT=0, CMD_LOAD_TEMPLATE, CMD_SAVE_AS, CMD_IMPORT_MIDI,
+//           CMD_EXPORT_MIDI, CMD_IMPORT_PART, CMD_IMPORT_AUDIO, CMD_QUIT, CMD_OPEN_DRUMS, CMD_OPEN_WAVE,
+//           CMD_OPEN_LIST, CMD_OPEN_LIST_MASTER, CMD_GLOBAL_CONFIG,
+//           CMD_OPEN_GRAPHIC_MASTER, CMD_OPEN_MIDI_TRANSFORM, CMD_TRANSPOSE,
+//           CMD_GLOBAL_CUT, CMD_GLOBAL_INSERT, CMD_GLOBAL_SPLIT, CMD_COPY_RANGE,
+//           CMD_CUT_EVENTS, CMD_CONFIG_SHORTCUTS, CMD_CONFIG_METRONOME, CMD_CONFIG_MIDISYNC,
+//           CMD_MIDI_FILE_CONFIG, CMD_APPEARANCE_SETTINGS, CMD_CONFIG_MIDI_PORTS, CMD_CONFIG_AUDIO_PORTS,
+//           CMD_MIDI_EDIT_INSTRUMENTS, CMD_MIDI_RESET, CMD_MIDI_INIT, CMD_MIDI_LOCAL_OFF,
+//           CMD_MIXER_SNAPSHOT, CMD_MIXER_AUTOMATION_CLEAR, CMD_OPEN_HELP, CMD_OPEN_HOMEPAGE,
+//           CMD_OPEN_BUG, CMD_START_WHATSTHIS,
+//           CMD_AUDIO_BOUNCE_TO_FILE, CMD_AUDIO_BOUNCE_TO_TRACK, CMD_AUDIO_RESTART,
+//           CMD_LAST };
 
     // File menu actions
     QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *fileNewFromTemplateAction;
@@ -197,8 +197,8 @@ class MusE : public QMainWindow
 
     // when adding a menu to the main window, remember adding it to
     // either the leadingMenus or trailingMenus list!
-    QMenu *menu_file, *menuView, *menuSettings, *menuWindows, *menu_help;
-    QMenu* menu_audio, *menuUtils;
+    QMenu *menu_file, *menuView, *menuSettings, *menuWindows, *menuHelp;
+    QMenu* menu_audio; // *menuUtils;
     QMenu* menu_functions; // *menuScriptPlugins;
 
     QMenu* follow;
@@ -242,7 +242,7 @@ class MusE : public QMainWindow
     // Set to restart MusE (almost) from scratch before calling close().
     bool _isRestartingApp;
 
-    bool readMidi(FILE*);
+//    bool readMidi(FILE*);
     void read(MusECore::Xml& xml, bool doReadMidiPorts, bool isTemplate);
     void processTrack(MusECore::MidiTrack* track);
 
@@ -253,7 +253,7 @@ class MusE : public QMainWindow
     void setUntitledProject();
     void setConfigDefaults();
 
-    void readConfigParts(MusECore::Xml& xml);
+//    void readConfigParts(MusECore::Xml& xml);
     void readToplevels(MusECore::Xml& xml);
     MusECore::PartList* getMidiPartsToEdit();
     MusECore::Part* readPart(MusECore::Xml& xml);
@@ -443,7 +443,7 @@ public:
     int arrangerRaster() const;
 
     ArrangerView* getArrangerView() const { return arrangerView; }
-    QRect configGeometryMain;
+//    QRect configGeometryMain;
     QProgressDialog *progress;
     bool importMidi(const QString name, bool merge);
     void kbAccel(int);
@@ -466,11 +466,11 @@ public:
     QString projectTitle() const;
     QString projectPath() const;
     QString projectExtension() const;
-    QWidget* mixer1Window();
-    QWidget* mixer2Window();
-    QWidget* transportWindow();
-    QWidget* bigtimeWindow();
-    bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
+//    QWidget* mixer1Window();
+//    QWidget* mixer2Window();
+//    QWidget* transportWindow();
+//    QWidget* bigtimeWindow();
+    bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track = nullptr);
     void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
     void showTransport(bool flag);
     bool restoreState(const QByteArray &state, int version = 0);
@@ -493,7 +493,7 @@ public:
 #endif
 };
 
-extern void addProject(const QString& name);
+//extern void addProject(const QString& name);
 
 } // namespace MusEGui
 

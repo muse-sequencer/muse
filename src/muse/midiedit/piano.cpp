@@ -23,9 +23,7 @@
 
 #include <QToolTip>
 
-#include <stdio.h>
-
-#include <map>
+//#include <stdio.h>
 
 #include "piano.h"
 #include "globals.h"
@@ -33,16 +31,16 @@
 #include "midiport.h"
 #include "track.h"
 #include "midictrl.h"
-#include "icons.h"
+//#include "icons.h"
 #include "utils.h"
 #include "gconfig.h"
 
 // Forwards from header:
 #include <QEvent>
 #include <QMouseEvent>
-#include <QWheelEvent>
+//#include <QWheelEvent>
 #include <QPainter>
-#include <QPixmap>
+//#include <QPixmap>
 #include "midieditor.h"
 
 namespace MusEGui {

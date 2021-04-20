@@ -39,8 +39,8 @@
 // Forwards from header:
 #include <QWidget>
 #include <QMouseEvent>
-#include <QContextMenuEvent>
-#include <QHideEvent>
+//#include <QContextMenuEvent>
+//#include <QHideEvent>
 #include <QEvent>
 
 // For debugging output: Uncomment the fprintf section.

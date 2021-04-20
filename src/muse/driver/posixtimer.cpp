@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include "posixtimer.h"
+//#include "posixtimer.h"
 
 #ifdef POSIX_TIMER_SUPPORT
 

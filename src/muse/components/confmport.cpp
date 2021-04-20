@@ -29,7 +29,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#include <QActionGroup>
+//#include <QActionGroup>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QHeaderView>
@@ -64,12 +64,12 @@
 // Forwards from header:
 #include <QWidget>
 #include <QTreeWidget>
-#include <QTableWidget>
+//#include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QMenu>
 #include <QAction>
 #include "popupmenu.h"
-#include "xml.h"
+//#include "xml.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);

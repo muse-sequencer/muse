@@ -128,7 +128,7 @@ private:
     QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
     QAction *prevAction, *nextAction;
     QAction *groupNoneAction, *groupChanAction, *groupMaxAction;
-    QAction *addControllerAction;
+//    QAction *addControllerAction;
     QAction *startListEditAction;
     QAction* selectRangeToSelectionAction;
 
@@ -136,7 +136,7 @@ private:
     void setupNewCtrl(CtrlEdit* ctrlEdit);
 
     void closeEvent(QCloseEvent*) override;
-    QWidget* genToolbar(QWidget* parent);
+//    QWidget* genToolbar(QWidget* parent);
     void keyPressEvent(QKeyEvent*) override;
 
     void setHeaderToolTips();

@@ -26,13 +26,13 @@
 // 02111-1301, USA or point your web browser to http://www.gnu.org.
 //=========================================================
 
-#include <unistd.h>
+//#include <unistd.h>
 #include <stdlib.h>
-#include <signal.h>
+//#include <signal.h>
 
 #include <list>
 
-#include "common_defs.h"
+//#include "common_defs.h"
 #include "vamgui.h"
 #include "vam.h"
 
@@ -44,7 +44,7 @@
 
 #include "xml.h"
 #include "muse/midi_consts.h"
-#include "midictrl_consts.h"
+//#include "midictrl_consts.h"
 
 const char *vam_ctrl_names[] = {
   "DCO1_PITCHMOD", "DCO1_WAVEFORM", "DCO1_FM", "DCO1_PWM",

@@ -22,12 +22,12 @@
 
 #include <errno.h>
 
-#include <QIcon>
+//#include <QIcon>
 #include <QMessageBox>
-#include <QPixmap>
+//#include <QPixmap>
 #include <QSplitter>
 #include <QStringList>
-#include <QHeaderView>
+//#include <QHeaderView>
 
 #include "icons.h"
 #include "filedialog.h"

@@ -21,7 +21,7 @@
 //=========================================================
 
 #include "siglabel.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 #define TIMER1    400
 #define TIMER2    200
@@ -33,7 +33,7 @@
 #include "globals.h"
 #include "gconfig.h"
 #include <QMouseEvent>
-#include <QWheelEvent>
+//#include <QWheelEvent>
 #include <QLabel>
 
 namespace MusEGui {

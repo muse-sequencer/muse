@@ -22,7 +22,7 @@
 //=========================================================
 
 #include "cobject.h"
-#include "gui.h"
+//#include "gui.h"
 #include "globals.h"
 #include "app.h"
 #include "shortcuts.h"
@@ -37,12 +37,12 @@
 #include "synctoolbar.h"
 
 #include <QMenuBar>
-#include <QWidgetAction>
-#include <QLabel>
+//#include <QWidgetAction>
+//#include <QLabel>
 
 // Forwards from header:
 #include <QMdiSubWindow>
-#include <QFocusEvent>
+//#include <QFocusEvent>
 #include <QCloseEvent>
 #include <QToolBar>
 #include <QAction>

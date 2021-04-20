@@ -29,7 +29,7 @@
 
 #ifdef ALSA_SUPPORT
 
-#include <climits>
+//#include <climits>
 #include <stdio.h>
 
 #include "globals.h"

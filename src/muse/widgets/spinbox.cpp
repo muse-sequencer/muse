@@ -23,7 +23,7 @@
 #include <QKeyEvent>
 #include <QEvent>
 #include <QLineEdit>
-#include <QMouseEvent>
+//#include <QMouseEvent>
 #include "spinbox.h"
 
 namespace MusEGui {

@@ -29,7 +29,7 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QPalette>
+//#include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
 #include <QScrollBar>
@@ -52,10 +52,10 @@
 #include "lv2host.h"
 #endif
 
-#include <QDragEnterEvent>
-#include <QDragLeaveEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
+//#include <QDragEnterEvent>
+//#include <QDragLeaveEvent>
+//#include <QDropEvent>
+//#include <QMouseEvent>
 #include <QEvent>
 #include "track.h"
 #include "background_painter.h"
@@ -677,8 +677,8 @@ void EffectRack::dropEvent(QDropEvent *event)
                     if(!spipe)
                       return;
 
-                    QListWidgetItem *i = ser->itemAt(ser->getDragPos());
-                    int idx0 = ser->row(i);
+                    QListWidgetItem *it = ser->itemAt(ser->getDragPos());
+                    int idx0 = ser->row(it);
                     if (!(*spipe)[idx0] || 
                         (idx == idx0 && (ser == this || ser->getTrack()->name() == track->name())))
                       return; 
@@ -775,9 +775,9 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
               
               int distance = (dragPos-event->pos()).manhattanLength();
               if (distance > QApplication::startDragDistance()) {
-                    QListWidgetItem *i = itemAt( event->pos() );
-                    if (i) {
-                      int idx = row(i);
+                    QListWidgetItem *it = itemAt(event->pos() );
+                    if (it) {
+                      int idx = row(it);
                       startDragItem(idx);
                   }
               }

@@ -28,7 +28,7 @@
 #include "midiport.h"
 #include "midi_consts.h"
 #include "popupmenu.h"
-#include "gconfig.h"
+//#include "gconfig.h"
 #include "wave.h"
 #include "operations.h"
 #include "metronome_class.h"

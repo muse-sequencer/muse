@@ -1,8 +1,8 @@
 #include "sigspinbox.h"
 #include "sig.h"
 #include <QKeyEvent>
-#include <QMouseEvent>
-#include <stdio.h>
+//#include <QMouseEvent>
+//#include <stdio.h>
 #include <QLineEdit>
 #include <QStyle>
 #include <QStyleOption>

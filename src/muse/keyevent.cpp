@@ -22,12 +22,12 @@
 //=========================================================
 
 #include <stdio.h>
-#include <errno.h>
+//#include <errno.h>
 #include "muse_math.h"
 
 #include "key.h"
 #include "globals.h"
-#include "gconfig.h"
+//#include "gconfig.h"
 #include "xml.h"
 #include "keyevent.h"
 

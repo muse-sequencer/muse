@@ -33,8 +33,8 @@
 #include "wave.h"
 #include "midiport.h"
 #include "drummap.h"
-#include "midictrl.h"
-#include "gconfig.h"
+//#include "midictrl.h"
+//#include "gconfig.h"
 #include "config.h"
 
 // Forwards from header:

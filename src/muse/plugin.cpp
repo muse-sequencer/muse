@@ -35,7 +35,7 @@
 #include <QToolBar>
 #include <QMessageBox>
 #include <QByteArray>
-#include <QToolButton>
+//#include <QToolButton>
 #include <QComboBox>
 #include <QGroupBox>
 
@@ -43,7 +43,7 @@
 #include "gconfig.h"
 #include "filedialog.h"
 #include "slider.h"
-#include "midictrl_consts.h"
+//#include "midictrl_consts.h"
 #include "plugin.h"
 #include "controlfifo.h"
 #include "icons.h"
@@ -55,7 +55,7 @@
 #include "meter.h"
 #include "utils.h"
 #include "pluglist.h"
-#include "gui.h"
+//#include "gui.h"
 #include "pluginsettings.h"
 
 #ifdef LV2_SUPPORT
@@ -69,14 +69,14 @@
 #include "audio.h"
 #include "al/dsp.h"
 
-#include "muse_math.h"
+//#include "muse_math.h"
 
 // Forwards from header:
 #include <QScrollArea>
-#include <QShowEvent>
+//#include <QShowEvent>
 #include <QHideEvent>
 #include <QAction>
-#include <QSpinBox>
+//#include <QSpinBox>
 #include "xml.h"
 #include "plugin_list.h"
 #include "track.h"
@@ -4744,9 +4744,9 @@ void PluginGui::guiParamChanged(unsigned long int idx)
             QWidget* widget = gw[i].widget;
             if (widget == w || param != gw[i].param)
                   continue;
-            int type   = gw[i].type;
+            int typ   = gw[i].type;
             widget->blockSignals(true);
-            switch(type) {
+            switch(typ) {
                   case GuiWidgets::SLIDER:
                         ((Slider*)widget)->setValue(val);
                         break;
@@ -5071,32 +5071,32 @@ static void readPluginGroupMap(MusECore::Xml& xml)
 
                     for (;;)
                     {
-                        MusECore::Xml::Token token = xml.parse();
-                        if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+                        MusECore::Xml::Token tok = xml.parse();
+                        if (tok == MusECore::Xml::Error || tok == MusECore::Xml::End)
                             break;
 
-                        const QString& tag = xml.s1();
-                        switch (token)
+                        const QString& tg = xml.s1();
+                        switch (tok)
                         {
                             case MusECore::Xml::TagStart:
-                                if (tag=="lib")
+                                if (tg == "lib")
                                 {
                                     lib=xml.parse1();
                                     read_lib=true;
                                 }
-                                else if (tag=="label")
+                                else if (tg == "label")
                                 {
                                     label=xml.parse1();
                                     read_label=true;
                                 }
-                                else if (tag=="group")
+                                else if (tg == "group")
                                     groups.insert(xml.parseInt());
                                 else
                                     xml.unknown("readPluginGroupMap");
                                 break;
 
                             case MusECore::Xml::TagEnd:
-                                if (tag == "entry")
+                                if (tg == "entry")
                                     goto done_reading_entry;
 
                             default:

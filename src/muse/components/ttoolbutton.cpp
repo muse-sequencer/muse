@@ -27,8 +27,8 @@
 #include <QMargins>
 
 #include "ttoolbutton.h"
-#include "gconfig.h"
-#include "icons.h"
+//#include "gconfig.h"
+//#include "icons.h"
 
 namespace MusEGui {
 

@@ -3,7 +3,7 @@
 
 #include "synthdialog.h"
 #include "gconfig.h"
-#include "icons.h"
+//#include "icons.h"
 #include "app.h"
 
 

@@ -77,9 +77,9 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+//#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <fcntl.h>
 #include <sord/sord.h>
 
 
@@ -2009,12 +2009,11 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
             if(qVal.type() == QVariant::String) // plugin ui uri
             {
                 QString sUiUri = qVal.toString();
-                LV2_PLUGIN_UI_TYPES::iterator it;
-                for(it = state->synth->_pluginUiTypes.begin(); it != state->synth->_pluginUiTypes.end(); ++it)
+                for(const auto &iter : state->synth->_pluginUiTypes)
                 {
-                    if(sUiUri == QString(lilv_node_as_uri(lilv_ui_get_uri(it->first))))
+                    if(sUiUri == QString(lilv_node_as_uri(lilv_ui_get_uri(iter.first))))
                     {
-                        state->uiCurrent = it->first;
+                        state->uiCurrent = iter.first;
                         break;
                     }
                 }
@@ -2028,10 +2027,10 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
                     float val = (float)qVal.toDouble(&ok);
                     if(ok)
                     {
-                        std::map<QString, size_t>::iterator it = state->controlsNameMap.find(name.toLower());
-                        if(it != state->controlsNameMap.end())
+                        const auto& iter = state->controlsNameMap.find(name.toLower());
+                        if(iter != state->controlsNameMap.end())
                         {
-                            size_t ctrlNum = it->second;
+                            size_t ctrlNum = iter->second;
                             state->sif->_controls [ctrlNum].val = state->sif->_controls [ctrlNum].tmpVal = val;
 
                         }
@@ -2895,17 +2894,17 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
 
     lilv_plugin_get_port_ranges_float(_handle, _pluginControlsMin, _pluginControlsMax, _pluginControlsDefault);
 
-    for(uint32_t i = 0; i < numPorts; i++)
+    for(uint32_t j = 0; j < numPorts; j++)
     {
-        const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, i);
+        const LilvPort *_port = lilv_plugin_get_port_by_index(_handle, j);
         LilvNode *_nPname = lilv_port_get_name(_handle, _port);
         const LilvNode *_nPsym = lilv_port_get_symbol(_handle, _port);
         char cAutoGenPortName [1024];
         char cAutoGenPortSym [1024];
         memset(cAutoGenPortName, 0, sizeof(cAutoGenPortName));
         memset(cAutoGenPortSym, 0, sizeof(cAutoGenPortSym));
-        snprintf(cAutoGenPortName, sizeof(cAutoGenPortName) - 1, "autoport #%u", i);
-        snprintf(cAutoGenPortSym, sizeof(cAutoGenPortSym) - 1, "autoport#%u", i);
+        snprintf(cAutoGenPortName, sizeof(cAutoGenPortName) - 1, "autoport #%u", j);
+        snprintf(cAutoGenPortSym, sizeof(cAutoGenPortSym) - 1, "autoport#%u", j);
         const char *_portName = cAutoGenPortName;
         const char *_portSym = cAutoGenPortSym;
 
@@ -2993,33 +2992,33 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portTrigger))
                 isTrigger = true;
 
-            cPorts->push_back(LV2ControlPort(_port, i, 0.0f, _portName, _portSym, _cType, isCVPort,
+            cPorts->push_back(LV2ControlPort(_port, j, 0.0f, _portName, _portSym, _cType, isCVPort,
                                              enumValues, groupString, isTrigger, notOnGui));
 
-            if(std::isnan(_pluginControlsDefault [i]))
-                _pluginControlsDefault [i] = 0;
-            if(std::isnan(_pluginControlsMin [i]))
-                _pluginControlsMin [i] = 0;
-            if(std::isnan(_pluginControlsMax [i]))
-                _pluginControlsMax [i] = 0;
+            if(std::isnan(_pluginControlsDefault [j]))
+                _pluginControlsDefault [j] = 0;
+            if(std::isnan(_pluginControlsMin [j]))
+                _pluginControlsMin [j] = 0;
+            if(std::isnan(_pluginControlsMax [j]))
+                _pluginControlsMax [j] = 0;
 
             if(isCVPort)
             {
-                _pluginControlsDefault [i] = 1;
-                _pluginControlsMin [i] = 0;
-                _pluginControlsMax [i] = 1;
+                _pluginControlsDefault [j] = 1;
+                _pluginControlsMin [j] = 0;
+                _pluginControlsMax [j] = 1;
             }
             else if (lilv_port_has_property (_handle, _port, lv2CacheNodes.lv2_SampleRate))
             {
-                _pluginControlsDefault [i] *= MusEGlobal::sampleRate;
-                _pluginControlsMin [i] *= MusEGlobal::sampleRate;
-                _pluginControlsMax [i] *= MusEGlobal::sampleRate;
+                _pluginControlsDefault [j] *= MusEGlobal::sampleRate;
+                _pluginControlsMin [j] *= MusEGlobal::sampleRate;
+                _pluginControlsMax [j] *= MusEGlobal::sampleRate;
             }
 
         }
         else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_AudioPort))
         {
-            aPorts->push_back(LV2AudioPort(_port, i, nullptr, _portName));
+            aPorts->push_back(LV2AudioPort(_port, j, nullptr, _portName));
         }
 #ifdef LV2_EVENT_BUFFER_SUPPORT
         else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.ev_EventPort))
@@ -3027,7 +3026,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             bool portSupportsTimePos = lilv_port_supports_event(_handle, _port, lv2CacheNodes.lv2_TimePosition);
             if(portSupportsTimePos)
               _usesTimePosition = true;
-            mPorts->push_back(LV2MidiPort(_port, i, _portName, true /* old api is on */,portSupportsTimePos));
+            mPorts->push_back(LV2MidiPort(_port, j, _portName, true /* old api is on */,portSupportsTimePos));
         }
 #endif
         else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.atom_AtomPort))
@@ -3036,9 +3035,9 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             if(portSupportsTimePos)
               _usesTimePosition = true;
 #ifdef LV2_EVENT_BUFFER_SUPPORT
-            mPorts->push_back(LV2MidiPort(_port, i, _portName, false /* old api is off */, portSupportsTimePos));
+            mPorts->push_back(LV2MidiPort(_port, j, _portName, false /* old api is off */, portSupportsTimePos));
 #else
-            mPorts->push_back(LV2MidiPort(_port, i, _portName, portSupportsTimePos));
+            mPorts->push_back(LV2MidiPort(_port, j, _portName, portSupportsTimePos));
 #endif
         }
         else if(!optional)
@@ -3056,15 +3055,15 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
     }
 
     const uint32_t ci_sz = _controlInPorts.size();
-    for(uint32_t i = 0; i < ci_sz; ++i)
+    for(uint32_t j = 0; j < ci_sz; ++j)
     {
-        _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [i].index, i));
+        _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [j].index, j));
         if(lilvFreeWheelPort != nullptr)
         {
-            if(lilv_port_get_index(_handle, _controlInPorts [i].port) == lilv_port_get_index(_handle, lilvFreeWheelPort))
+            if(lilv_port_get_index(_handle, _controlInPorts [j].port) == lilv_port_get_index(_handle, lilvFreeWheelPort))
             {
                 _hasFreeWheelPort = true;
-                _freeWheelPortIndex = i;
+                _freeWheelPortIndex = j;
             }
         }
     }
@@ -3072,12 +3071,12 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
     if(has_latency_port)
     {
         const uint32_t co_sz = _controlOutPorts.size();
-        for(uint32_t i = 0; i < co_sz; ++i)
+        for(uint32_t j = 0; j < co_sz; ++j)
         {
-            if(_controlOutPorts [i].index == latency_port)
+            if(_controlOutPorts [j].index == latency_port)
             {
                 _hasLatencyPort = true;
-                _latencyPortIndex = i;
+                _latencyPortIndex = j;
             }
         }
     }
@@ -3523,11 +3522,11 @@ bool LV2SynthIF::init(LV2Synth *s)
                 abort();
             }
 #else
-            int rv = posix_memalign((void **)&_audioInBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
+            int rvl = posix_memalign((void **)&_audioInBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
 
-            if(rv != 0)
+            if(rvl != 0)
             {
-                fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+                fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rvl);
                 abort();
             }
 #endif
@@ -3563,11 +3562,11 @@ bool LV2SynthIF::init(LV2Synth *s)
                 abort();
             }
 #else
-            int rv = posix_memalign((void **)&_audioOutBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
+            int rvl = posix_memalign((void **)&_audioOutBuffers [i], 16, sizeof(float) * MusEGlobal::segmentSize);
 
-            if(rv != 0)
+            if(rvl != 0)
             {
-                fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+                fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rvl);
                 abort();
             }
 #endif

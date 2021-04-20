@@ -30,7 +30,7 @@
 #include "type_defs.h"
 #include "gconfig.h"
 
-#define EFX_HEIGHT     16
+//#define EFX_HEIGHT     16
 
 
 // Forward declarations:
@@ -111,8 +111,7 @@ class AudioMixerApp : public QMainWindow {
       QAction* showAuxTracksId;
       QAction* showSyntiTracksId;
 
-      bool mixerClicked;
-      // Current local state of knobs versus sliders preference global setting.
+    // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
       // Hack flag to prevent overwriting the config geometry when resizing.
       bool _resizeFlag;
@@ -129,9 +128,9 @@ class AudioMixerApp : public QMainWindow {
       void updateSelectedStrips();
       void moveConfig(const Strip* s, int new_pos);
 
-      enum UpdateAction {
-            NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
-            };
+//      enum UpdateAction {
+//            NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
+//            };
       void initMixer();
       void addStripsTraditionalLayout();
       void addStripToLayoutIfVisible(Strip *s);

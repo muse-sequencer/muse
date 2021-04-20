@@ -27,11 +27,11 @@
 #include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
-#include <QFileInfoList>
+//#include <QFileInfoList>
 #include <QFileDevice>
 #include <QProcess>
 #include <QByteArray>
-#include <QByteArrayList>
+//#include <QByteArrayList>
 #include <QStringList>
 #include <sys/stat.h>
 
@@ -39,10 +39,10 @@
 
 #include <cstdio>
 #include <cstring>
-#include <cstdint>
+//#include <cstdint>
 #include "muse_math.h"
 
-#include "plugin_rdf.h"
+//#include "plugin_rdf.h"
 #include "plugin_cache_writer.h"
 #include "plugin_cache_reader.h"
 
@@ -75,16 +75,16 @@
 
 #include "lv2/lv2plug.in/ns/ext/data-access/data-access.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
-#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
-#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
+//#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
+//#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
 #include "lv2/lv2plug.in/ns/ext/buf-size/buf-size.h"
 #include "lv2/lv2plug.in/ns/ext/event/event.h"
 #include "lv2/lv2plug.in/ns/ext/options/options.h"
 #include "lv2/lv2plug.in/ns/ext/parameters/parameters.h"
-#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
-#include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
+//#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
+//#include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-#include "lv2/lv2plug.in/ns/ext/state/state.h"
+//#include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/time/time.h"
 #include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
@@ -93,11 +93,11 @@
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
-#include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
+//#include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
 
-#include <sord/sord.h>
+//#include <sord/sord.h>
 
 #endif // LV2_SUPPORT
 
@@ -1824,7 +1824,7 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 #define LV2_UI_HOST_URI LV2_F_UI_Qt5_UI
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
-#define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
+//#define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 #define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 
 //uri cache structure.

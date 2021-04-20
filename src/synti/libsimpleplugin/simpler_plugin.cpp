@@ -29,7 +29,7 @@
 #include <QtWidgets>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <dlfcn.h>
 #include <string>
 

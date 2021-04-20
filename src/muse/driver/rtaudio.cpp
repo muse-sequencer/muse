@@ -20,29 +20,29 @@
 
 #include <QMessageBox>
 #include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <pthread.h>
-#include <sys/poll.h>
-#include <sys/time.h>
+//#include <stdlib.h>
+//#include <errno.h>
+//#include <stdarg.h>
+//#include <pthread.h>
+//#include <sys/poll.h>
+//#include <sys/time.h>
 #include <unistd.h>
 #include "muse_math.h"
 
-#include "config.h"
+//#include "config.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "globals.h"
 #include "song.h"
 // #include "driver/alsatimer.h"
-#include "pos.h"
+//#include "pos.h"
 #include "gconfig.h"
 //#include "utils.h"
 #include "al/al.h"
 #include "rtaudio.h"
 
-#define MASTER_LEFT (void*)1
-#define MASTER_RIGHT (void*)2
+//#define MASTER_LEFT (void*)1
+//#define MASTER_RIGHT (void*)2
 
 namespace MusECore {
 

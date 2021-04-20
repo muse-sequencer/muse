@@ -26,7 +26,7 @@
 #endif
 #include <stdio.h>
 #include <unistd.h>
-#include <limits.h>
+//#include <limits.h>
 
 #include "audioprefetch.h"
 #include "globals.h"

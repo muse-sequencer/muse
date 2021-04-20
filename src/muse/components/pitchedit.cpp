@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "pitchedit.h"
 #include "helper.h"
 

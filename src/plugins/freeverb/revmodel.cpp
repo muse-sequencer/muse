@@ -11,7 +11,7 @@
 // Reverb model implementation
 //
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "revmodel.h"
 
 //---------------------------------------------------------

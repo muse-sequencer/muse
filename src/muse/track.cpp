@@ -40,15 +40,15 @@
 #include "globals.h"
 #include "config.h"
 
-#include <QMessageBox>
+//#include <QMessageBox>
 
 // Forwards from header:
 #include "midiport.h"
-#include "plugin.h"
+//#include "plugin.h"
 #include "xml.h"
 #include "midiedit/drummap.h"
 #include "minstrument.h"
-#include "latency_compensator.h"
+//#include "latency_compensator.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_

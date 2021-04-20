@@ -30,7 +30,7 @@
 #include <QMenuBar>
 #include <QSettings>
 #include <QCursor>
-#include <QRect>
+//#include <QRect>
 
 #include "app.h"
 #include "waveedit.h"
@@ -51,13 +51,13 @@
 // Forwards from header:
 #include <QMenu>
 #include <QWidget>
-#include <QKeyEvent>
+//#include <QKeyEvent>
 #include <QCloseEvent>
 #include <QAction>
 #include <QSlider>
 #include <QToolButton>
 #include <QPoint>
-#include <QToolBar>
+//#include <QToolBar>
 #include <QModelIndex>
 #include "part.h"
 #include "xml.h"

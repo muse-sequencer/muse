@@ -34,7 +34,7 @@
 #include <linux/mc146818rtc.h>
 #else
 #include <linux/rtc.h>
-#include <poll.h>
+//#include <poll.h>
 #endif
 #include <stdio.h>
 #include <fcntl.h>

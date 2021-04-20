@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 
 #include <QWidget>
 #include <QPainter>

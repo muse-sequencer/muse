@@ -33,14 +33,14 @@
 
 #include <limits.h>
 
-#include <QActionGroup>
+//#include <QActionGroup>
 #include <QGridLayout>
 #include <QLabel>
 #include <QMenuBar>
 #include <QMenu>
 #include <QList>
-#include <QHeaderView>
-#include <QListView>
+//#include <QHeaderView>
+//#include <QListView>
 
 // Forwards from header:
 #include <QCloseEvent>

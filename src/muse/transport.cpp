@@ -21,7 +21,7 @@
 //
 //=========================================================
 
-#include <QAction>
+//#include <QAction>
 #include <QVBoxLayout>
 
 #include "song.h"
@@ -33,7 +33,7 @@
 #include "gconfig.h"
 #include "app.h"
 #include "audio.h"
-#include "globaldefs.h"
+//#include "globaldefs.h"
 #include "operations.h"
 #include "tempo.h"
 #include "audiodev.h"
@@ -41,17 +41,17 @@
 
 // Forwards from header:
 #include <QComboBox>
-#include <QHBoxLayout>
+//#include <QHBoxLayout>
 #include <QLabel>
 #include <QSlider>
-#include <QMouseEvent>
+//#include <QMouseEvent>
 #include <QToolButton>
-#include <QKeyEvent>
+//#include <QKeyEvent>
 #include "sig.h"
 #include "pos.h"
 #include "posedit.h"
 #include "doublelabel.h"
-#include "siglabel.h"
+//#include "siglabel.h"
 #include "pixmap_button.h"
 #include "tempolabel.h"
 #include "sigedit.h"

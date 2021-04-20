@@ -22,8 +22,8 @@
 //
 //=========================================================
 
-#include <errno.h>
-#include <limits.h>
+//#include <errno.h>
+//#include <limits.h>
 
 #include <set>
 #include <utility>
@@ -572,7 +572,7 @@ void MusE::importController(int channel, MusECore::MidiPort* mport, int n)
       MusECore::iMidiCtrlValList i = vll->find(channel, n);
       if (i != vll->end())
             return;           // controller does already exist
-      MusECore::MidiController* ctrl = 0;
+      MusECore::MidiController* ctrl = nullptr;
 
       // Search the instrument's controller lists (including midnam controllers).
       const int patch = mport->hwCtrlState(channel, MusECore::CTRL_PROGRAM);

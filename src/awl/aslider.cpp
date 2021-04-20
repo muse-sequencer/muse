@@ -24,7 +24,7 @@
 #include "aslider.h"
 
 #include <QKeyEvent>
-#include <QWheelEvent>
+//#include <QWheelEvent>
 
 #include "muse_math.h"
 

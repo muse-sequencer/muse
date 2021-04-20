@@ -24,15 +24,15 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QGridLayout>
-#include <QKeyEvent>
+//#include <QKeyEvent>
 #include <QList>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSizeGrip>
-#include <QWhatsThis>
+//#include <QWhatsThis>
 #include <QSettings>
 #include <QCursor>
-#include <QRect>
+//#include <QRect>
 #include <QMimeData>
 #include <QLabel>
 
@@ -50,7 +50,7 @@
 #include "gconfig.h"
 #include "functions.h"
 #include "helper.h"
-#include "menutitleitem.h"
+//#include "menutitleitem.h"
 #include "operations.h"
 #include "trackinfo_layout.h"
 #include "midi_editor_layout.h"
@@ -60,7 +60,7 @@
 #include <QAction>
 #include <QCloseEvent>
 #include <QMenu>
-#include <QKeyEvent>
+//#include <QKeyEvent>
 #include <QToolButton>
 #include <QWidget>
 #include <QComboBox>

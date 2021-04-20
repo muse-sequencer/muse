@@ -22,7 +22,7 @@
 //=========================================================
 
 #include <stdio.h>
-#include <errno.h>
+//#include <errno.h>
 #include "muse_math.h"
 
 #include "tempo.h"

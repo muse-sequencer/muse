@@ -23,7 +23,7 @@
 
 #include <QActionGroup>
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "visibletracks.h"
 #include "icons.h"
 #include "track.h"

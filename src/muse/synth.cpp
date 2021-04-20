@@ -23,20 +23,20 @@
 
 #include <QMessageBox>
 
-#include "config.h"
+//#include "config.h"
 #ifndef _WIN32
-#include <sys/wait.h>
-#include <sys/mman.h>
+//#include <sys/wait.h>
+//#include <sys/mman.h>
 #endif
-#include <signal.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <errno.h>
+//#include <signal.h>
+//#include <pthread.h>
+//#include <unistd.h>
+//#include <errno.h>
 #include <vector>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <dlfcn.h>
 #include <stdio.h>
-#include <string>
+//#include <string>
 
 #include <QDir>
 #include <QString>
@@ -48,8 +48,8 @@
 #include "audio.h"
 #include "event.h"
 #include "mpevent.h"
-#include "audio.h"
-#include "midiseq.h"
+//#include "audio.h"
+//#include "midiseq.h"
 #include "midictrl.h"
 #include "midiitransform.h"
 #include "mitplugin.h"

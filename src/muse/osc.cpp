@@ -36,7 +36,7 @@
 #include <errno.h>
 #include "muse_math.h"
 
-#include <QFileInfo>
+//#include <QFileInfo>
 #include <QString>
 #include <QStringList>
 
@@ -58,9 +58,9 @@
 #include "track.h"
 #include "song.h"
 #include "synth.h"
-#include "app.h"
+//#include "app.h"
 #include "globals.h"
-#include "globaldefs.h"
+//#include "globaldefs.h"
 
 #endif   // OSC_SUPPORT
 

@@ -29,7 +29,7 @@
 
 // Forwards from header:
 #include "tempo.h" 
-#include "sig.h" 
+//#include "sig.h"
 #include "keyevent.h"
 #include "midiport.h"
 #include "metronome_class.h"

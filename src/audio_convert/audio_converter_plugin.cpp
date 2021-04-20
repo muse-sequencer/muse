@@ -26,7 +26,7 @@
 #include <QDir>
 #include <QString>
 #include <QFileInfo>
-#include <QFileInfoList>
+//#include <QFileInfoList>
 #include <QByteArray>
 
 #include <string.h>

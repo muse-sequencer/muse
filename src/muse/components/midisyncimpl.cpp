@@ -25,9 +25,9 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QStringList>
-#include <QTimer>
+//#include <QTimer>
 #include <QHeaderView>
-#include <QComboBox>
+//#include <QComboBox>
 #include <QTreeWidget>
 
 #include "app.h"

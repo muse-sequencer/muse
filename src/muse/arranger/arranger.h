@@ -33,9 +33,9 @@
 
 
 // Forward declarations:
-class QKeyEvent;
-class QPoint;
-class QComboBox;
+//class QKeyEvent;
+//class QPoint;
+//class QComboBox;
 class QScrollBar;
 class QVBoxLayout;
 class QHBoxLayout;
@@ -60,8 +60,8 @@ class SpinBox;
 class Splitter;
 class TrackInfoWidget;
 class TList;
-class ArrangerCanvasLayout;
-class ArrangerHScrollLayout;
+//class ArrangerCanvasLayout;
+//class ArrangerHScrollLayout;
 class PartCanvas;
 class CompactToolButton;
 class RasterizerModel;
@@ -78,7 +78,7 @@ class Arranger : public QWidget {
 
       ArrangerView* _parentWin;
       QWidget* editor;
-      int _quant, _raster;
+      int _raster;
       RasterizerModel *_rasterizerModel;
       RasterLabelCombo* _rasterCombo;
       PartCanvas* canvas;
@@ -113,8 +113,6 @@ class Arranger : public QWidget {
       
       unsigned cursVal;
       void genTrackInfo(TrackInfoWidget*);
-      void genMidiTrackInfo();
-      void genWaveTrackInfo();
       void switchInfo(int);
       void trackInfoSongChange(MusECore::SongChangedStruct_t flags);
       void setHeaderToolTips();

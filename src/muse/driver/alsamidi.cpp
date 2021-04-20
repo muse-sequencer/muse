@@ -569,37 +569,37 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
               break;
         case ME_CONTROLLER:
         {
-            int a = ev.dataA();
-            int b = ev.dataB();
-            int chn = ev.channel();
+            int al = ev.dataA();
+            int bl = ev.dataB();
+            int chnl = ev.channel();
 
-            if(a == CTRL_PITCH)
-              snd_seq_ev_set_pitchbend(&event, chn, b);
-            else if((a | 0xff) == CTRL_POLYAFTER)
-              snd_seq_ev_set_keypress(&event, chn, a & 0x7f, b & 0x7f);
-            else if(a == CTRL_AFTERTOUCH)
-              snd_seq_ev_set_chanpress(&event, chn, b);
-            else if(a == CTRL_PROGRAM) {
-                        _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
-                        int hb = (b >> 16) & 0xff;
-                        int lb = (b >> 8) & 0xff;
-                        int pr = b & 0xff;
-                        _curOutParamNums[chn].setCurrentProg(pr, lb, hb);
+            if(al == CTRL_PITCH)
+              snd_seq_ev_set_pitchbend(&event, chnl, bl);
+            else if((al | 0xff) == CTRL_POLYAFTER)
+              snd_seq_ev_set_keypress(&event, chnl, al & 0x7f, bl & 0x7f);
+            else if(al == CTRL_AFTERTOUCH)
+              snd_seq_ev_set_chanpress(&event, chnl, bl);
+            else if(al == CTRL_PROGRAM) {
+                        _curOutParamNums[chnl].resetParamNums();  // Probably best to reset.
+                        int hb = (bl >> 16) & 0xff;
+                        int lb = (bl >> 8) & 0xff;
+                        int pr = bl & 0xff;
+                        _curOutParamNums[chnl].setCurrentProg(pr, lb, hb);
                         if(hb != 0xff)
                         {
-                          snd_seq_ev_set_controller(&event, chn, CTRL_HBANK, hb);
+                          snd_seq_ev_set_controller(&event, chnl, CTRL_HBANK, hb);
                           if(putAlsaEvent(&event))
                             return true;
                         }
                         if(lb != 0xff)
                         {
-                          snd_seq_ev_set_controller(&event, chn, CTRL_LBANK, lb);
+                          snd_seq_ev_set_controller(&event, chnl, CTRL_LBANK, lb);
                           if(putAlsaEvent(&event))
                             return true;
                         }
                         if(pr != 0xff)
                         {
-                          snd_seq_ev_set_pgmchange(&event, chn, pr);
+                          snd_seq_ev_set_pgmchange(&event, chnl, pr);
                           if(putAlsaEvent(&event))
                             return true;
                         }
@@ -614,79 +614,79 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
 //        the difference between the two techniques, and possibly make it work...
 //       Also see the corresponding define in MidiAlsaDevice::putMidiEvent().
 #if 0
-                  snd_seq_ev_set_controller(&event, chn, a, b);
+                  snd_seq_ev_set_controller(&event, chnl, al, bl);
 #else
 
-            else if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
-                  if(a == CTRL_HRPN)
-                    _curOutParamNums[chn].setRPNH(b);
-                  else if(a == CTRL_LRPN)
-                    _curOutParamNums[chn].setRPNL(b);
-                  else if(a == CTRL_HNRPN)
-                    _curOutParamNums[chn].setNRPNH(b);
-                  else if(a == CTRL_LNRPN)
-                    _curOutParamNums[chn].setNRPNL(b);
-                  else if(a == CTRL_HBANK)
+            else if (al < CTRL_14_OFFSET) {          // 7 Bit Controller
+                  if(al == CTRL_HRPN)
+                    _curOutParamNums[chnl].setRPNH(bl);
+                  else if(al == CTRL_LRPN)
+                    _curOutParamNums[chnl].setRPNL(bl);
+                  else if(al == CTRL_HNRPN)
+                    _curOutParamNums[chnl].setNRPNH(bl);
+                  else if(al == CTRL_LNRPN)
+                    _curOutParamNums[chnl].setNRPNL(bl);
+                  else if(al == CTRL_HBANK)
                   {
-                    _curOutParamNums[chn].setBANKH(b);
-                    _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+                    _curOutParamNums[chnl].setBANKH(bl);
+                    _curOutParamNums[chnl].resetParamNums();  // Probably best to reset.
                   }
-                  else if(a == CTRL_LBANK)
+                  else if(al == CTRL_LBANK)
                   {
-                    _curOutParamNums[chn].setBANKL(b);
-                    _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+                    _curOutParamNums[chnl].setBANKL(bl);
+                    _curOutParamNums[chnl].resetParamNums();  // Probably best to reset.
                   }
-                  else if(a == CTRL_RESET_ALL_CTRL)
-                    _curOutParamNums[chn].resetParamNums();  // Probably best to reset.
+                  else if(al == CTRL_RESET_ALL_CTRL)
+                    _curOutParamNums[chnl].resetParamNums();  // Probably best to reset.
                     
-                  snd_seq_ev_set_controller(&event, chn, a, b);
+                  snd_seq_ev_set_controller(&event, chnl, al, bl);
                   }
-            else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
+            else if (al < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
+                  int ctrlH = (al >> 8) & 0x7f;
+                  int ctrlL = al & 0x7f;
 #if 0                  
-                  int dataH = (b >> 7) & 0x7f;
-                  int dataL = b & 0x7f;
-                  snd_seq_ev_set_controller(&event, chn, ctrlH, dataH);
+                  int dataH = (bl >> 7) & 0x7f;
+                  int dataL = bl & 0x7f;
+                  snd_seq_ev_set_controller(&event, chnl, ctrlH, dataH);
                   if(putAlsaEvent(&event))
                     return true;
-                  snd_seq_ev_set_controller(&event, chn, ctrlL, dataL);
+                  snd_seq_ev_set_controller(&event, chnl, ctrlL, dataL);
                   return putAlsaEvent(&event);
 #else
-                  snd_seq_event_t ev;
-                  snd_seq_ev_clear(&ev);
-                  ev.queue   = SND_SEQ_QUEUE_DIRECT;
-                  ev.source  = musePort;
-                  ev.dest    = adr;
+                  snd_seq_event_t evt;
+                  snd_seq_ev_clear(&evt);
+                evt.queue   = SND_SEQ_QUEUE_DIRECT;
+                evt.source  = musePort;
+                evt.dest    = adr;
                   int n = (ctrlH << 7) + ctrlL;
-                  snd_seq_ev_set_controller(&ev, chn, n, b);
-                  ev.type = SND_SEQ_EVENT_CONTROL14;
-                  return putAlsaEvent(&ev);
+                  snd_seq_ev_set_controller(&evt, chnl, n, bl);
+                evt.type = SND_SEQ_EVENT_CONTROL14;
+                  return putAlsaEvent(&evt);
 #endif
                   
                   }
-            else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  int data = b & 0x7f;
-                  if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
+            else if (al < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
+                  int ctrlH = (al >> 8) & 0x7f;
+                  int ctrlL = al & 0x7f;
+                  int data = bl & 0x7f;
+                  if(ctrlL != _curOutParamNums[chnl].RPNL || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setRPNL(ctrlL);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, ctrlL);
+                    _curOutParamNums[chnl].setRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LRPN, ctrlL);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(ctrlH != _curOutParamNums[chnl].RPNH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setRPNH(ctrlH);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, ctrlH);
+                    _curOutParamNums[chnl].setRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HRPN, ctrlH);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(data != _curOutParamNums[chnl].DATAH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setDATAH(data);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, data);
+                    _curOutParamNums[chnl].setDATAH(data);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HDATA, data);
                     if(putAlsaEvent(&event))
                       return true;
                   }
@@ -695,146 +695,146 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
                   //  events do not upset the last *RPN controller.  Tim.
                   if(MusEGlobal::config.midiSendNullParameters)
                   {
-                    _curOutParamNums[chn].setRPNH(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, 0x7f);
+                    _curOutParamNums[chnl].setRPNH(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                     
-                    _curOutParamNums[chn].setRPNL(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, 0x7f);
+                    _curOutParamNums[chnl].setRPNL(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                   }
                   return false;
                 }
-            else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  int data = b & 0x7f;
-                  if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
+            else if (al < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
+                  int ctrlH = (al >> 8) & 0x7f;
+                  int ctrlL = al & 0x7f;
+                  int data = bl & 0x7f;
+                  if(ctrlL != _curOutParamNums[chnl].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setNRPNL(ctrlL);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, ctrlL);
+                    _curOutParamNums[chnl].setNRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LNRPN, ctrlL);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(ctrlH != _curOutParamNums[chnl].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setNRPNH(ctrlH);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, ctrlH);
+                    _curOutParamNums[chnl].setNRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HNRPN, ctrlH);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(data != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(data != _curOutParamNums[chnl].DATAH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setDATAH(data);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, data);
+                    _curOutParamNums[chnl].setDATAH(data);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HDATA, data);
                     if(putAlsaEvent(&event))
                       return true;
                   }
 
                   if(MusEGlobal::config.midiSendNullParameters)
                   {
-                    _curOutParamNums[chn].setNRPNH(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, 0x7f);
+                    _curOutParamNums[chnl].setNRPNH(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HNRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                     
-                    _curOutParamNums[chn].setNRPNL(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, 0x7f);
+                    _curOutParamNums[chnl].setNRPNL(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LNRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                   }
                   return false;
                   }
-            else if (a < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
+            else if (al < CTRL_RPN14_OFFSET)      // Unaccounted for internal controller
                   return true;
-            else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
-                  int dataH = (b >> 7) & 0x7f;
-                  int dataL = b & 0x7f;
-                  if(ctrlL != _curOutParamNums[chn].RPNL || !MusEGlobal::config.midiOptimizeControllers)
+            else if (al < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
+                  int ctrlH = (al >> 8) & 0x7f;
+                  int ctrlL = al & 0x7f;
+                  int dataH = (bl >> 7) & 0x7f;
+                  int dataL = bl & 0x7f;
+                  if(ctrlL != _curOutParamNums[chnl].RPNL || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setRPNL(ctrlL);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, ctrlL);
+                    _curOutParamNums[chnl].setRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LRPN, ctrlL);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(ctrlH != _curOutParamNums[chn].RPNH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(ctrlH != _curOutParamNums[chnl].RPNH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setRPNH(ctrlH);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, ctrlH);
+                    _curOutParamNums[chnl].setRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HRPN, ctrlH);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(dataH != _curOutParamNums[chnl].DATAH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setDATAH(dataH);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, dataH);
+                    _curOutParamNums[chnl].setDATAH(dataH);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HDATA, dataH);
                     if(putAlsaEvent(&event))
                         return true;
                   }
-                  if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
+                  if(dataL != _curOutParamNums[chnl].DATAL || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setDATAL(dataL);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LDATA, dataL);
+                    _curOutParamNums[chnl].setDATAL(dataL);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LDATA, dataL);
                     if(putAlsaEvent(&event))
                         return true;
                   }
 
                   if(MusEGlobal::config.midiSendNullParameters)
                   {
-                    _curOutParamNums[chn].setRPNH(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HRPN, 0x7f);
+                    _curOutParamNums[chnl].setRPNH(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                     
-                    _curOutParamNums[chn].setRPNL(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LRPN, 0x7f);
+                    _curOutParamNums[chnl].setRPNL(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                   }
                   return false;
                   }
-            else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
-                  int ctrlH = (a >> 8) & 0x7f;
-                  int ctrlL = a & 0x7f;
+            else if (al < CTRL_NONE_OFFSET) {     // NRPN14 Controller
+                  int ctrlH = (al >> 8) & 0x7f;
+                  int ctrlL = al & 0x7f;
 #if 0
-                  int dataH = (b >> 7) & 0x7f;
-                  int dataL = b & 0x7f;
-                  if(ctrlL != _curOutParamNums[chn].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
+                  int dataH = (bl >> 7) & 0x7f;
+                  int dataL = bl & 0x7f;
+                  if(ctrlL != _curOutParamNums[chnl].NRPNL || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setNRPNL(ctrlL);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, ctrlL);
+                    _curOutParamNums[chnl].setNRPNL(ctrlL);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LNRPN, ctrlL);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(ctrlH != _curOutParamNums[chn].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(ctrlH != _curOutParamNums[chnl].NRPNH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setNRPNH(ctrlH);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, ctrlH);
+                    _curOutParamNums[chnl].setNRPNH(ctrlH);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HNRPN, ctrlH);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(dataH != _curOutParamNums[chn].DATAH || !MusEGlobal::config.midiOptimizeControllers)
+                  if(dataH != _curOutParamNums[chnl].DATAH || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setDATAH(dataH);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HDATA, dataH);
+                    _curOutParamNums[chnl].setDATAH(dataH);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HDATA, dataH);
                     if(putAlsaEvent(&event))
                       return true;
                   }
-                  if(dataL != _curOutParamNums[chn].DATAL || !MusEGlobal::config.midiOptimizeControllers)
+                  if(dataL != _curOutParamNums[chnl].DATAL || !MusEGlobal::config.midiOptimizeControllers)
                   {
-                    _curOutParamNums[chn].setDATAL(dataL);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LDATA, dataL);
+                    _curOutParamNums[chnl].setDATAL(dataL);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LDATA, dataL);
                     if(putAlsaEvent(&event))
                       return true;
                   }
 
 #else                  
                   int n = (ctrlH << 7) + ctrlL;
-                  snd_seq_ev_set_controller(&event, chn, n, b);
+                  snd_seq_ev_set_controller(&event, chnl, n, bl);
                   event.type = SND_SEQ_EVENT_NONREGPARAM;
                   if(putAlsaEvent(&event))
                     return true;
@@ -842,20 +842,20 @@ bool MidiAlsaDevice::processEvent(const MidiPlayEvent& ev)
                   
                   if(MusEGlobal::config.midiSendNullParameters)
                   {
-                    _curOutParamNums[chn].setNRPNH(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_HNRPN, 0x7f);
+                    _curOutParamNums[chnl].setNRPNH(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_HNRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                     
-                    _curOutParamNums[chn].setNRPNL(0x7f);
-                    snd_seq_ev_set_controller(&event, chn, CTRL_LNRPN, 0x7f);
+                    _curOutParamNums[chnl].setNRPNL(0x7f);
+                    snd_seq_ev_set_controller(&event, chnl, CTRL_LNRPN, 0x7f);
                     if(putAlsaEvent(&event))
                       return true;
                   }
                   return false;
                   }
             else {
-                  fprintf(stderr, "MidiAlsaDevice::processEvent: unknown controller type 0x%x\n", a);
+                  fprintf(stderr, "MidiAlsaDevice::processEvent: unknown controller type 0x%x\n", al);
                   return true;
                   }
 #endif

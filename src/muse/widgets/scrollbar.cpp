@@ -24,7 +24,7 @@
 #include "scrollbar.h"
 
 #include <QWheelEvent>
-#include <QResizeEvent>
+//#include <QResizeEvent>
 
 namespace MusEGui {
 

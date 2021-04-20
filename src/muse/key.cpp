@@ -24,7 +24,7 @@
 #include <QPainter>
 #include <QPoint>
 
-#include <stdio.h>
+//#include <stdio.h>
 
 #include "key.h"
 #include "globals.h"

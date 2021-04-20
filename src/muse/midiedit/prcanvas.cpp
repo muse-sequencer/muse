@@ -27,16 +27,14 @@
 #include <QPair>
 #include <QToolTip>
 
-#include <set>
-
-#include <limits.h>
+//#include <limits.h>
 #include <stdio.h>
 #include "muse_math.h"
-#include <errno.h>
+//#include <errno.h>
 
 #include "prcanvas.h"
-#include "view.h"
-#include "mpevent.h"
+//#include "view.h"
+//#include "mpevent.h"
 #include "globals.h"
 #include "cmd.h"
 #include "song.h"
@@ -48,17 +46,17 @@
 #include "type_defs.h"
 
 // Forwards from header:
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QMouseEvent>
+//#include <QDragEnterEvent>
+//#include <QDropEvent>
+//#include <QMouseEvent>
 #include <QDragMoveEvent>
-#include <QDragLeaveEvent>
-#include <QResizeEvent>
+//#include <QDragLeaveEvent>
+//#include <QResizeEvent>
 #include <QPainter>
 #include <QWidget>
 #include "part.h"
 #include "event.h"
-#include "pianoroll.h"
+//#include "pianoroll.h"
 #include "midieditor.h"
 #include "citem.h"
 #include "scrollscale.h"
