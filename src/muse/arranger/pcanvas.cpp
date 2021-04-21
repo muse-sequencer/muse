@@ -2352,9 +2352,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
                       || ((MusEGlobal::config.canvasShowPartEvent & 64) && (type == MusECore::Sysex || type == MusECore::Meta))
                       ) {
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-                          if((int)i->first < 0 || (int)i->first < from)
+                          if((int)i->first < 0 /*|| (int)i->first < from*/)
                             continue;
-                          if((pt && (int)i->first >= (int)pt_len) || (int)i->first >= to)
+                          if((pt && (int)i->first >= (int)pt_len) /*|| (int)i->first >= to*/)
                             break;
 #endif
                           int t = i->first + pTick;
@@ -2378,9 +2378,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
             
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PITCH BEND
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-            if((int)i->first < 0 || (int)i->first < from)
+            if((int)i->first < 0 /*|| (int)i->first < from*/)
               continue;
-            if((pt && (int)i->first >= (int)pt_len) || (int)i->first >= to)
+            if((pt && (int)i->first >= (int)pt_len) /*|| (int)i->first >= to*/)
               break;
 #endif
             int t  = i->first + pTick;
@@ -2404,9 +2404,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PAN
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-            if((int)i->first < 0 || (int)i->first < from)
+            if((int)i->first < 0 /*|| (int)i->first < from*/)
               continue;
-            if((pt && (int)i->first >= (int)pt_len) || (int)i->first >= to)
+            if((pt && (int)i->first >= (int)pt_len) /*|| (int)i->first >= to*/)
               break;
 #endif
             int t  = i->first + pTick;
@@ -2430,9 +2430,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // VOLUME
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-            if((int)i->first < 0 || (int)i->first < from)
+            if((int)i->first < 0 /*|| (int)i->first < from*/)
               continue;
-            if((pt && (int)i->first >= (int)pt_len) || (int)i->first >= to)
+            if((pt && (int)i->first >= (int)pt_len) /*|| (int)i->first >= to*/)
               break;
 #endif
             int t  = i->first + pTick;
@@ -2456,9 +2456,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) { // PROGRAM CHANGE
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-            if((int)i->first < 0 || (int)i->first < from)
+            if((int)i->first < 0 /*|| (int)i->first < from*/)
               continue;
-            if((pt && (int)i->first >= (int)pt_len) || (int)i->first >= to)
+            if((pt && (int)i->first >= (int)pt_len) /*|| (int)i->first >= to*/)
               break;
 #endif
             int t  = i->first + pTick;
@@ -2553,9 +2553,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       p.setPen(pen);
       for (MusECore::ciEvent i = events.begin(); i != ito; ++i) {
 #ifdef ALLOW_LEFT_HIDDEN_EVENTS
-            if((int)i->first < 0 || (int)i->first < from)
+            if((int)i->first < 0 /*|| (int)i->first < from*/)
               continue;
-            if((pt && (int)i->first >= (int)pt_len) || (int)i->first >= to)
+            if((pt && (int)i->first >= (int)pt_len) /*|| (int)i->first >= to*/)
               break;
 #endif
             int t  = i->first + pTick;
