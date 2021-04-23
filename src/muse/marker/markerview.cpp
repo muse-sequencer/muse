@@ -23,9 +23,9 @@
 #include "sig.h"
 
 #include "markerview.h"
-#include "xml.h"
+//#include "xml.h"
 #include "globals.h"
-#include "sync.h"
+//#include "sync.h"
 #include "icons.h"
 #include "song.h"
 #include "posedit.h"
@@ -34,7 +34,7 @@
 #include "pos.h"
 #include "shortcuts.h"
 
-#include <cstdint>
+//#include <cstdint>
 
 #include <QCloseEvent>
 #include <QGroupBox>
@@ -42,7 +42,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
-#include <QHBoxLayout>
+//#include <QHBoxLayout>
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>

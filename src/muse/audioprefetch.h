@@ -45,7 +45,7 @@ class AudioPrefetch : public Thread {
       AudioPrefetch(const char* name);
       
       ~AudioPrefetch();
-      virtual void start(int, void* pty = NULL);
+      virtual void start(int, void* pty = nullptr);
 
       void msgTick(bool isRecTick, bool isPlayTick);
       void msgSeek(unsigned samplePos, bool force=false);

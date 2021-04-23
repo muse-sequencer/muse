@@ -26,8 +26,8 @@
 #include <QDialog>
 // #include <QWidget>
 #include <QListWidget>
-#include <QListWidgetItem>
-#include <QPushButton>
+//#include <QListWidgetItem>
+//#include <QPushButton>
 #include <QList>
 
 #include "audio_converter_settings.h"

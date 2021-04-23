@@ -22,10 +22,10 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 
 #include <QFileDialog>
-#include <QFileInfo>
+//#include <QFileInfo>
 #include <QRect>
 #include <QShowEvent>
 #include <QString>
@@ -38,19 +38,19 @@
 #include "icons.h"
 #include "helper.h"
 #include "filedialog.h"
-#include "al/al.h"
+//#include "al/al.h"
 #include "undo.h"
 
 #include "song.h"
 #include "operations.h"
 #include "audio.h"
 #include "audio_converter_settings.h"
-#include "audio_convert/audio_converter_plugin.h"
+//#include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 
 // Forwards from header:
 #include <QButtonGroup>
-#include <QShowEvent>
+//#include <QShowEvent>
 #include <QWidget>
 
 namespace MusEGui {

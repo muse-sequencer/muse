@@ -26,29 +26,29 @@
 
 #include <QMessageBox>
 #include <stdio.h>
-#include <unistd.h>
-#include <errno.h>
+//#include <unistd.h>
+//#include <errno.h>
 
 #include "midictrl.h"
 #include "song.h"
 #include "midi_consts.h"
 #include "midiport.h"
 #include "mididev.h"
-#include "config.h"
+//#include "config.h"
 #include "gconfig.h"
 #include "globals.h"
 #include "audio.h"
 #include "audiodev.h"
-#include "midiseq.h"
+//#include "midiseq.h"
 #include "midiitransform.h"
 #include "mitplugin.h"
-#include "part.h"
+//#include "part.h"
 #include "drummap.h"
 #include "helper.h"
 #include "ticksynth.h"
 
 // Forwards from header:
-#include "xml.h"
+//#include "xml.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_

@@ -26,7 +26,7 @@
 #include "muse/midi_consts.h"
 
 #include <QThread>
-#include <unistd.h>
+//#include <unistd.h>
 
 SignalGui::SignalGui()
 {

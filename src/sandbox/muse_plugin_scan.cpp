@@ -29,7 +29,7 @@
 #include <dlfcn.h>
 
 #include "config.h"
-#include "globaldefs.h"
+//#include "globaldefs.h"
 #include "plugin_cache_writer.h"
 #include "xml.h"
 
@@ -47,7 +47,7 @@
 #define __cdecl
 #endif
 
-#include "aeffectx.h"
+//#include "aeffectx.h"
 
 //#include <semaphore.h>
 //#include <QSemaphore>

@@ -22,17 +22,17 @@
 //=========================================================
 
 #include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
+//#include <errno.h>
+//#include <unistd.h>
+//#include <stdlib.h>
 
 #include <QActionGroup>
 #include <QDir>
 #include <QFileInfo>
-#include <QToolButton>
+//#include <QToolButton>
 
 #include "globals.h"
-#include "config.h"
+//#include "config.h"
 
 namespace MusEGlobal {
 

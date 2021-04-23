@@ -23,7 +23,7 @@
 #include "citem.h"
 #include "undo.h"
 #include "song.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 // Forwards from header:
 #include "part.h"

@@ -23,7 +23,7 @@
 #include "midieditor.h"
 #include "globals.h"
 #include "midiedit/ecanvas.h"
-#include "waveedit/waveview.h"
+//#include "waveedit/waveview.h"
 #include "scrollscale.h"
 #include "mtscale.h"
 #include "xml.h"
@@ -32,7 +32,7 @@
 #include "song.h"
 
 #include "trackinfo_layout.h"
-#include "icons.h"
+//#include "icons.h"
 #include "astrip.h"
 #include "mstrip.h"
 #include "gconfig.h"
@@ -40,10 +40,10 @@
 #include "rasterizer.h"
 
 #include <QRect>
-#include <QColor>
+//#include <QColor>
 #include <QGridLayout>
 #include <QPainter>
-#include <QPixmap>
+//#include <QPixmap>
 #include <QList>
 
 // For debugging output: Uncomment the fprintf section.

@@ -452,7 +452,7 @@ void BigTime::resizeEvent(QResizeEvent *ev)
 void BigTime::setFgColor(QColor c)
 {
     QPalette newpalette(palette());
-    newpalette.setColor(QPalette::Foreground, c);
+    newpalette.setColor(QPalette::WindowText, c);
     setPalette(newpalette);
 
     barLabel->setPalette(newpalette);

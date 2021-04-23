@@ -24,7 +24,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QFileInfoList>
+//#include <QFileInfoList>
 
 #include "plugin_rdf.h"
 #include "config.h"
@@ -33,7 +33,7 @@
   #include <lrdf.h>
 #endif // HAVE_LRDF
 
-#include <cstring>
+//#include <cstring>
 #include <cstdlib>
 
 // For debugging output: Uncomment the fprintf section.

@@ -4,7 +4,7 @@
 #include "partcolortoolbar.h"
 #include "icons.h"
 #include "gconfig.h"
-#include "config.h"
+//#include "config.h"
 #include "utils.h"
 
 namespace MusEGui {

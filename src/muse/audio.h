@@ -355,7 +355,7 @@ class Audio {
       //           together at the last frame.
       unsigned int extClockHistoryTick2Frame(unsigned int tick) const;
       unsigned int extClockHistoryFrame2Tick(unsigned int frame) const;
-      void recordStop(bool restart = false, Undo* operations = NULL);
+      void recordStop(bool restart = false, Undo* operations = nullptr);
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
       void initDevices(bool force = true);

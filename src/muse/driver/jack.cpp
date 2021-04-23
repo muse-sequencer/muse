@@ -87,7 +87,7 @@ extern void undoSetuid();
 
 bool checkAudioDevice()
       {
-      if (audioDevice == NULL) {
+      if (audioDevice == nullptr) {
             if(debugMsg)
               fprintf(stderr, "Muse:checkAudioDevice: no audioDevice\n");
             return false;
@@ -204,7 +204,7 @@ JackCallbackFifo jackCallbackFifo;
 //---------------------------------------------------------
 inline bool checkJackClient(jack_client_t* _client)
       {
-      if (_client == NULL) {
+      if (_client == nullptr) {
             fprintf(stderr, "Panic! no _client!\n");
             return false;
             }
@@ -1216,7 +1216,7 @@ void JackAudioDevice::checkNewRouteConnections(jack_port_t* our_port, int channe
         }
         if(!found) 
         {
-          Route r(Route::JACK_ROUTE, 0, jp, channel, 0, 0, NULL);
+          Route r(Route::JACK_ROUTE, 0, jp, channel, 0, 0, nullptr);
           // Find a better name.
           portName(jp, r.persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
           DEBUG_PRST_ROUTES(stderr, " adding route: route_jp:%p portname:%s route_persistent_name:%s\n", 

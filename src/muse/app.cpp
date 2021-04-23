@@ -27,11 +27,11 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QWhatsThis>
-#include <QSettings>
+//#include <QSettings>
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <QSocketNotifier>
-#include <QStyleFactory>
+//#include <QStyleFactory>
 #include <QTextStream>
 #include <QInputDialog>
 #include <QAction>
@@ -46,9 +46,9 @@
 #include <samplerate.h>
 
 #include <errno.h>
-#include <iostream>
+//#include <iostream>
 #include <algorithm>
-#include <typeinfo>
+//#include <typeinfo>
 
 #include "app.h"
 #include "master/lmaster.h"
@@ -58,13 +58,13 @@
 #include "audioprefetch.h"
 // FIXME Move cliplist into components ?
 #include "cliplist/cliplist.h"
-#include "debug.h"
+//#include "debug.h"
 #include "components/didyouknow.h"
 #include "drumedit.h"
 #include "components/filedialog.h"
 #include "gconfig.h"
 #include "globals.h"
-#include "gui.h"
+//#include "gui.h"
 #include "helper.h"
 #include "wave_helper.h"
 #include "icons.h"
@@ -88,7 +88,7 @@
 #include "tlist.h"
 #include "waveedit.h"
 #include "components/projectcreateimpl.h"
-#include "widgets/menutitleitem.h"
+//#include "widgets/menutitleitem.h"
 #include "components/unusedwavefiles.h"
 #include "functions.h"
 #include "components/songpos_toolbar.h"
@@ -110,16 +110,16 @@
 #include <QCloseEvent>
 #include <QMenu>
 #include <QToolBar>
-#include <QToolButton>
+//#include <QToolButton>
 #include <QProgressDialog>
 #include <QTimer>
-#include <QMdiSubWindow>
+//#include <QMdiSubWindow>
 #include <QDockWidget>
 #include "track.h"
-#include "minstrument.h"
+//#include "minstrument.h"
 #include "midiport.h"
 #include "part.h"
-#include "synth.h"
+//#include "synth.h"
 #include "undo.h"
 #include "appearance.h"
 #include "arranger.h"
@@ -128,9 +128,9 @@
 #include "bigtime.h"
 //#include "cliplist.h"
 #include "editinstrument.h"
-#include "tools.h"
+//#include "tools.h"
 #include "genset.h"
-#include "mrconfig.h"
+//#include "mrconfig.h"
 #include "marker/markerview.h"
 #include "metronome.h"
 #include "conf.h"
@@ -176,8 +176,8 @@ QStringList projectRecentList;
 lash_client_t * lash_client = 0;
 #endif /* HAVE_LASH */
 
-int watchAudioPrefetch, watchMidi;
-pthread_t splashThread;
+//int watchAudioPrefetch, watchMidi;
+//pthread_t splashThread;
 
 
 
@@ -1051,21 +1051,21 @@ MusE::MusE() : QMainWindow()
       //    popup Help
       //---------------------------------------------------
 
-      menu_help = new QMenu(tr("&Help"), this);
-      menuBar()->addMenu(menu_help);
-      trailingMenus.push_back(menu_help);
+      menuHelp = new QMenu(tr("&Help"), this);
+      menuBar()->addMenu(menuHelp);
+      trailingMenus.push_back(menuHelp);
 
-      menu_help->addAction(helpManualAction);
-      menu_help->addAction(whatsthis);
-      menu_help->addAction(helpHomepageAction);
-      menu_help->addAction(helpDidYouKnow);
-      menu_help->addSeparator();
-      menu_help->addAction(helpReportAction);
-      menu_help->addAction(helpSnooperAction);
-      menu_help->addSeparator();
-      menu_help->addAction(helpAboutAction);
+      menuHelp->addAction(helpManualAction);
+      menuHelp->addAction(whatsthis);
+      menuHelp->addAction(helpHomepageAction);
+      menuHelp->addAction(helpDidYouKnow);
+      menuHelp->addSeparator();
+      menuHelp->addAction(helpReportAction);
+      menuHelp->addAction(helpSnooperAction);
+      menuHelp->addSeparator();
+      menuHelp->addAction(helpAboutAction);
 
-      menu_help->addAction(tr("About &Qt..."), qApp, SLOT(aboutQt()));
+      menuHelp->addAction(tr("About &Qt..."), qApp, SLOT(aboutQt()));
 
       //---------------------------------------------------
       //    Central Widget
@@ -3882,11 +3882,11 @@ void MusE::mixer2Closed()
       }
 
 
-QWidget* MusE::mixer1Window()     { return mixer1; }
-QWidget* MusE::mixer2Window()     { return mixer2; }
+//QWidget* MusE::mixer1Window()     { return mixer1; }
+//QWidget* MusE::mixer2Window()     { return mixer2; }
 
-QWidget* MusE::transportWindow() { return transport; }
-QWidget* MusE::bigtimeWindow()   { return bigtime; }
+//QWidget* MusE::transportWindow() { return transport; }
+//QWidget* MusE::bigtimeWindow()   { return bigtime; }
 
 //---------------------------------------------------------
 //   findUnusedWaveFiles
@@ -4356,25 +4356,25 @@ void MusE::toggleRewindOnStop(bool onoff)
   MusEGlobal::config.useRewindOnStop = onoff;
 }
 
-list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
-{
-  QList<QMdiSubWindow*> wins = mdiarea->subWindowList();
-  list<QMdiSubWindow*> result;
-
-  // always put the arranger at the top of the list, if visible
-
-  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
-    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
-      if (dynamic_cast<MusEGui::TopWin*>((*it)->widget())->type()==MusEGui::TopWin::ARRANGER)
-        result.push_back(*it);
-
-  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
-    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
-      if (dynamic_cast<MusEGui::TopWin*>((*it)->widget())->type()!=MusEGui::TopWin::ARRANGER)
-        result.push_back(*it);
-
-  return result;
-}
+//list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
+//{
+//  QList<QMdiSubWindow*> wins = mdiarea->subWindowList();
+//  list<QMdiSubWindow*> result;
+//
+//  // always put the arranger at the top of the list, if visible
+//
+//  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
+//    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
+//      if (dynamic_cast<MusEGui::TopWin*>((*it)->widget())->type()==MusEGui::TopWin::ARRANGER)
+//        result.push_back(*it);
+//
+//  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
+//    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
+//      if (dynamic_cast<MusEGui::TopWin*>((*it)->widget())->type()!=MusEGui::TopWin::ARRANGER)
+//        result.push_back(*it);
+//
+//  return result;
+//}
 
 QString MusE::projectTitle(QString name)
 {

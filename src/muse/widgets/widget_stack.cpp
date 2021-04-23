@@ -22,7 +22,7 @@
 //=========================================================
 
 #include "widget_stack.h"
-#include "scrollbar.h"
+//#include "scrollbar.h"
 
 #include <QWheelEvent>
 #include <QVBoxLayout>

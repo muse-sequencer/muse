@@ -79,7 +79,7 @@
 #include "plugin_cache_writer.h"
 #include "pluglist.h"
 #include "metronome_class.h"
-#include "audio_convert/audio_converter_plugin.h"
+//#include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "wave.h"
 #include "conf.h"

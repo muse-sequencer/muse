@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 
 #include <QWidget>
 #include <QLayoutItem>
@@ -33,7 +33,7 @@
 #include "splitter.h"
 #include "scrollbar.h"
 #include "widget_stack.h"
-#include "scrollscale.h"
+//#include "scrollscale.h"
 #include "ttoolbutton.h"
 
 namespace MusEGui {

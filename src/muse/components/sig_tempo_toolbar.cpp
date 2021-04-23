@@ -26,7 +26,6 @@
 #include "sigedit.h"
 #include "song.h"
 #include "icons.h"
-#include "pixmap_button.h"
 #include "sig.h"
 #include "tempo.h"
 

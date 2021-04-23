@@ -38,8 +38,8 @@
 #include "gconfig.h"
 #include "al/al.h"
 
-#include <string.h>
-#include <QAction>
+//#include <string.h>
+//#include <QAction>
 #include <set>
 
 // Forwards from header:

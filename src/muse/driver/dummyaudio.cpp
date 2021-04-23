@@ -24,21 +24,21 @@
 #include <stdlib.h>
 #include "muse_math.h"
 #include <errno.h>
-#include <stdarg.h>
+//#include <stdarg.h>
 #include <pthread.h>
 #ifndef _WIN32
-#include <sys/poll.h>
+//#include <sys/poll.h>
 #endif
-#include <sys/time.h>
+//#include <sys/time.h>
 #include <unistd.h>
 
-#include "config.h"
+//#include "config.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "globals.h"
 #include "song.h"
 // #include "driver/alsatimer.h"
-#include "pos.h"
+//#include "pos.h"
 #include "gconfig.h"
 #include "large_int.h"
 #include "al/al.h"
@@ -198,7 +198,7 @@ DummyAudioDevice::DummyAudioDevice() : AudioDevice()
       
 #ifdef _WIN32
   buffer = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
-  if(buffer == NULL)
+  if(buffer == nullptr)
   {
       fprintf(stderr, "ERROR: DummyAudioDevice ctor: _aligned_malloc returned error: NULL. Aborting!\n");
       abort();

@@ -32,7 +32,7 @@
 #include <sys/mman.h>
 #include <sys/poll.h>
 #endif
-#include <fcntl.h>
+//#include <fcntl.h>
 
 #include "globals.h"
 #include "errno.h"

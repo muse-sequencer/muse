@@ -22,19 +22,19 @@
 //=========================================================
 
 #include <stdio.h>
-#include <errno.h>
+//#include <errno.h>
 #include <limits.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
 #ifndef _WIN32
 #include <sys/mman.h>
 #endif
 
 #include <QByteArray>
-#include <QSet>
+//#include <QSet>
 #include <QMimeData>
 
-#include "xml.h"
+//#include "xml.h"
 #include "ecanvas.h"
 #include "song.h"
 #include "shortcuts.h"
@@ -47,7 +47,7 @@
 #include "config.h"
 
 // Forwards from header:
-#include <QDropEvent>
+//#include <QDropEvent>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QToolTip>

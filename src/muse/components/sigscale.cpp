@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <limits.h>
+//#include <limits.h>
 
 #include <QWidget>
 #include <QMouseEvent>

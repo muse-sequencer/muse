@@ -24,10 +24,10 @@
 #include "tools.h"
 
 #include <QActionGroup>
-#include <QAction>
+//#include <QAction>
 #include <QPixmap>
 #include <QWidget>
-#include <QIcon>
+//#include <QIcon>
 
 #include "icons.h"
 #include "shortcuts.h"

@@ -29,7 +29,7 @@
 
 #include "simplechorusmodel.h"
 #include "muse_math.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 #define ABS(x) (x>=0?x:-x)
 

@@ -22,8 +22,8 @@
 
 #include <QDir>
 #include <QDirIterator>
-#include <QFileInfo>
-#include <QFileInfoList>
+//#include <QFileInfo>
+//#include <QFileInfoList>
 #include <QFile>
 
 #include "metronome_class.h"

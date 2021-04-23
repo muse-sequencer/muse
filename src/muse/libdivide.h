@@ -572,7 +572,7 @@ static uint64_t libdivide_128_div_64_to_64(uint64_t u1, uint64_t u0, uint64_t v,
     // If overflow, set rem. to an impossible value,
     // and return the largest possible quotient
     if (u1 >= v) {
-        if (r != NULL)
+        if (r != nullptr)
             *r = (uint64_t) -1;
         return (uint64_t) -1;
     }
@@ -624,7 +624,7 @@ static uint64_t libdivide_128_div_64_to_64(uint64_t u1, uint64_t u0, uint64_t v,
     }
 
     // If remainder is wanted, return it
-    if (r != NULL)
+    if (r != nullptr)
         *r = (un21 * b + un0 - q0 * v) >> s;
 
     return q1 * b + q0;

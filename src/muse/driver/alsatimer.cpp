@@ -29,7 +29,7 @@
 
 #ifdef ALSA_SUPPORT
 
-#include <climits>
+//#include <climits>
 #include <stdio.h>
 
 #include "globals.h"
@@ -159,7 +159,7 @@ signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
 
   count = snd_timer_poll_descriptors_count(handle);
   fds = (pollfd *)calloc(count, sizeof(pollfd));
-  if (fds == NULL) {
+  if (fds == nullptr) {
     fprintf(stderr, "AlsaTimer::initTimer(): malloc error\n");
     return -1;
     }

@@ -28,7 +28,7 @@
 //===========================================================================
 
 #include "deicsonze.h"
-#include "deicsonzeplugin.h"
+//#include "deicsonzeplugin.h"
 #include "libsimpleplugin/simpler_plugin.h"
 //#include "ctrl.h"
 #include "fastlog.h"

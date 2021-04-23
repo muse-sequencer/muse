@@ -242,7 +242,7 @@ SimpleSynth::SimpleSynth(int sr)
       i+=2;
    }
 
-   pthread_mutex_init(&SS_LoaderMutex, NULL);
+   pthread_mutex_init(&SS_LoaderMutex, nullptr);
    SS_TRACE_OUT
 }
 

@@ -29,9 +29,9 @@
 #include <QIcon>
 #include <QMessageBox>
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "metronome.h"
-#include "midi_consts.h"
+//#include "midi_consts.h"
 #include "ticksynth.h"
 
 #include "globals.h"

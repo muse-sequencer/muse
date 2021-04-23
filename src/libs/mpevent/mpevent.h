@@ -31,7 +31,7 @@
 #include <cstddef>
 
 // Play events ring buffer size
-#define MIDI_FIFO_SIZE    4096         
+//#define MIDI_FIFO_SIZE    4096
 
 // Record events ring buffer size
 #define MIDI_REC_FIFO_SIZE  256

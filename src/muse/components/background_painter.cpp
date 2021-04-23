@@ -22,7 +22,7 @@
 //=========================================================
 
 #include <QBrush>
-#include <QLinearGradient>
+//#include <QLinearGradient>
 
 #include "gconfig.h"
 #include "background_painter.h"

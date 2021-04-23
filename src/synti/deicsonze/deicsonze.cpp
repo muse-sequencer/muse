@@ -1318,7 +1318,7 @@ void DeicsOnze::loadSutulaPresets()
     QString presetPath("/home/a-lin/sources/svnMusEDev/lmuse/muse/synti/deicsonze/ARCH_ALIN");
 
     file = fopen (presetPath.toLatin1().constData(), "rt");
-    if (file == NULL) {
+    if (file == nullptr) {
 	printf("can't open ");
 	printf("%s", presetPath.toLatin1().constData());
 	printf("\n");

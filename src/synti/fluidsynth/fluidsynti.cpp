@@ -833,7 +833,7 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
                   "name", &psetName,
                   "bank", &bank,
                   "program", &program,
-                  NULL);
+                  nullptr);
 
 
     //fprintf(stderr, "psetName:%s bank:%d program:%d\n", psetName, bank, program);
@@ -864,12 +864,12 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
       g_object_get (pZone,
                     "link-item", &inst,
                     "note-range-set", &pRangeSet,
-                    NULL);
+                    nullptr);
 
       // Get instrument name and global zone note range
       g_object_get (inst,
                     "name", &instName,
-                    NULL);
+                    nullptr);
 
       //fprintf(stderr, "\tinstName:%s\n", instName);
 
@@ -891,12 +891,12 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
         g_object_get (iZone,
                       "note-range-set", &iRangeSet,
                       "link-item", &samp,
-                      NULL);
+                      nullptr);
 
         // Get instrument name and global zone note range
         g_object_get (samp,
                       "name", &sampName,
-                      NULL);
+                      nullptr);
 
         if (pRangeSet)
           ipatch_sf2_gen_item_get_amount (IPATCH_SF2_GEN_ITEM (pZone), IPATCH_SF2_GEN_NOTE_RANGE, &pNoteRange);
@@ -972,7 +972,7 @@ static void loadNoteSampleNames(FluidSoundFont& font)
     return;
   }
   
-  sf2 = ipatch_sf2_reader_load(sf2_reader, NULL);
+  sf2 = ipatch_sf2_reader_load(sf2_reader, nullptr);
   if(!sf2)
   {
     ipatch_file_close(fhandle);

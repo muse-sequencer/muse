@@ -24,15 +24,15 @@
 //
 //=========================================================
 
-#include <unistd.h>
-#include <stdlib.h>
-#include <list>
+//#include <unistd.h>
+//#include <stdlib.h>
+//#include <list>
 
 #include <QCheckBox>
 #include <QSlider>
 #include <QSpinBox>
 
-#include "common_defs.h"
+//#include "common_defs.h"
 #include "organgui.h"
 #include "muse/midi_consts.h"
 #include "midictrl_consts.h"

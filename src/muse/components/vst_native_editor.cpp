@@ -27,7 +27,7 @@
 
 #include "vst_native_editor.h"
 #include "vst_native.h"
-#include "gconfig.h"
+//#include "gconfig.h"
 
 #include <QtGlobal>
 #if defined(Q_WS_X11)

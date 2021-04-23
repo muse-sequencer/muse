@@ -40,15 +40,15 @@
 #include "globals.h"
 #include "config.h"
 
-#include <QMessageBox>
+//#include <QMessageBox>
 
 // Forwards from header:
 #include "midiport.h"
-#include "plugin.h"
+//#include "plugin.h"
 #include "xml.h"
 #include "midiedit/drummap.h"
 #include "minstrument.h"
-#include "latency_compensator.h"
+//#include "latency_compensator.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -474,7 +474,7 @@ void Track::updateAuxRoute(int refInc, Track* dst)
   if(dst)
   {  
     _nodeTraversed = true;
-    dst->updateAuxRoute(refInc, NULL);
+    dst->updateAuxRoute(refInc, nullptr);
     _nodeTraversed = false;
     return;
   }  
@@ -505,7 +505,7 @@ void Track::updateAuxRoute(int refInc, Track* dst)
     if( !(*i).isValid() || (*i).type != Route::TRACK_ROUTE )
       continue;
     Track* t = (*i).track;
-    t->updateAuxRoute(refInc, NULL);
+    t->updateAuxRoute(refInc, nullptr);
   }
   
   _nodeTraversed = false;
@@ -884,7 +884,7 @@ void MidiTrack::init()
       // will override this setting
       for (int i = MusECore::MIDI_PORTS - 1; i > -1; i--)
       {
-        if (MusEGlobal::midiPorts[i].device() != NULL)
+        if (MusEGlobal::midiPorts[i].device() != nullptr)
         {
           _outPort = i;
           break;

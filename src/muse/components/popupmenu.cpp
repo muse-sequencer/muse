@@ -39,8 +39,8 @@
 // Forwards from header:
 #include <QWidget>
 #include <QMouseEvent>
-#include <QContextMenuEvent>
-#include <QHideEvent>
+//#include <QContextMenuEvent>
+//#include <QHideEvent>
 #include <QEvent>
 
 // For debugging output: Uncomment the fprintf section.
@@ -365,12 +365,12 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
       action=nullptr;
 
 #ifdef POPUP_MENU_DISABLE_STAY_OPEN
-   if (action && action->menu() != NULL  &&  action->isCheckable())
+   if (action && action->menu() != nullptr  &&  action->isCheckable())
       action->activate(QAction::Trigger);
 
    QMenu::mouseReleaseEvent(e);
 
-   if (action && action->menu() != NULL  &&  action->isCheckable())
+   if (action && action->menu() != nullptr  &&  action->isCheckable())
       close();
 
    return;

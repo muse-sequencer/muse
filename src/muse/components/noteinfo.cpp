@@ -23,7 +23,7 @@
 #include <QLabel>
 #include <QWidget>
 
-#include "config.h"
+//#include "config.h"
 #include "noteinfo.h"
 #include "posedit.h"
 #include "song.h"

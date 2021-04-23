@@ -389,7 +389,7 @@ void AudioTrack::processTrackCtrls(unsigned pos, int trackChans, unsigned nframe
       ciCtrlList icl = cll->begin();
       for(unsigned long k = 0; k < _controlPorts; ++k)
       {
-        CtrlList* cl = (icl != cll->end() ? icl->second : NULL);
+        CtrlList* cl = (icl != cll->end() ? icl->second : nullptr);
         CtrlInterpolate& ci = _controls[k].interp;
         // Always refresh the interpolate struct at first, since things may have changed.
         // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.

@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "ctrledit.h"
 #include "ctrlcanvas.h"
 #include "midieditor.h"
@@ -29,7 +29,7 @@
 #include "vscale.h"
 #include "ctrlpanel.h"
 #include "globals.h"
-#include "gconfig.h"
+//#include "gconfig.h"
 
 #include <QHBoxLayout>
 

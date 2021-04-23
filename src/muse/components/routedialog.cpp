@@ -848,7 +848,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
                     opt.state |= QStyle::State_On;
                 break;
               }
-              st->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &opt, painter);
+              st->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &opt, painter);
             }
             
             // Draw the icon.
@@ -3428,7 +3428,7 @@ void RouteDialog::addItems()
       if(port != i)
         continue;
       non_route_found = true;
-      const MusECore::Route src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, mt, chan, -1, -1, NULL);
+      const MusECore::Route src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, mt, chan, -1, -1, nullptr);
       const MusECore::Route dst(i, chan);
       const QString srcName = mt->displayName() + QString(" [") + QString::number(chan) + QString("]");
       const QString dstName = mdname;

@@ -44,7 +44,7 @@
 #include "wave.h"
 
 
-#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
+//#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
 #include "time_stretch.h"
 #include "audio_convert/audio_converter_settings_group.h"
@@ -279,7 +279,7 @@ class Song : public QObject {
       iMarker getMarkerAt(unsigned t);
       void removeMarker(const Marker&);
       void setMarkerName(const Marker&, const QString&);
-      void setMarkerPos(const Marker&, const Pos& pos);
+      void setMarkerPos(const Marker&, const Pos& position);
       void setMarkerLock(const Marker&, bool);
 
       //-----------------------------------------
@@ -405,7 +405,7 @@ class Song : public QObject {
       void removePart(Part* part);
       void changePart(Part*, Part*);
 
-      void normalizeWaveParts(Part *partCursor = NULL);
+      void normalizeWaveParts(Part *partCursor = nullptr);
 
       //-----------------------------------------
       //   track manipulations

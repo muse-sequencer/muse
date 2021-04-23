@@ -42,7 +42,7 @@
 #include <QDir>
 #include <QFile>
 #include <QMessageBox>
-#include <QString>
+//#include <QString>
 
 #include "shortcutconfig.h"
 #include "shortcutcapturedialog.h"

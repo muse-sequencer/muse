@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <stdlib.h>
+//#include <stdlib.h>
 #include "muse_math.h"
 
 #include <QApplication>
@@ -28,7 +28,7 @@
 
 #include <limits.h>
 #include "poslabel.h"
-#include "sync.h"
+//#include "sync.h"
 #include "sig.h"
 #include "tempo.h"
 #include "globals.h"

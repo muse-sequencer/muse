@@ -23,8 +23,8 @@
 
 #include <QString>
 #include <QMouseEvent>
-#include <QKeyEvent>
-#include <QResizeEvent>
+//#include <QKeyEvent>
+//#include <QResizeEvent>
 
 #include "text_edit.h"
 

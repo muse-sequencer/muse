@@ -4105,7 +4105,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                              << "x-drag-operation will be "<<mouse_x_drag_operation<<endl
                              << "pointer to part is "<<set_it->source_part << endl;
 
-                if (set_it->source_part == NULL) cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_it->source_part is NULL!" << endl;
+                if (set_it->source_part == nullptr) cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_it->source_part is NULL!" << endl;
 
 
 

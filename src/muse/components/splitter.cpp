@@ -24,7 +24,7 @@
 #include "xml.h"
 
 #include <QList>
-#include <QStringList>
+//#include <QStringList>
 
 namespace MusEGui {
 

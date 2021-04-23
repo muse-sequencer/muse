@@ -1589,7 +1589,7 @@ void Audio::seek(const Pos& p)
           !MusEGlobal::tempomap.masterFlag() &&
           !MusEGlobal::extSyncFlag &&
           static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice)->timebaseQuery(
-              MusEGlobal::segmentSize, nullptr, nullptr, nullptr, &curr_jt_tick, NULL))
+              MusEGlobal::segmentSize, nullptr, nullptr, nullptr, &curr_jt_tick, nullptr))
           curTickPos = curr_jt_tick;
         else
   #endif

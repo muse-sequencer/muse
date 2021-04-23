@@ -28,12 +28,12 @@
 #include <QApplication>
 
 #include <stdio.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #ifndef _WIN32
-#include <sys/ioctl.h>
+//#include <sys/ioctl.h>
 #include <poll.h>
 #endif
-#include "muse_math.h"
+//#include "muse_math.h"
 #include <errno.h>
 
 #include "config.h"
@@ -44,9 +44,9 @@
 #else
 #include "driver/alsatimer.h"
 #include "driver/rtctimer.h"
-#include "driver/posixtimer.h"
+//#include "driver/posixtimer.h"
 #endif
-#include "midi_consts.h"
+//#include "midi_consts.h"
 #include "midiseq.h"
 #include "midiport.h"
 #include "mididev.h"

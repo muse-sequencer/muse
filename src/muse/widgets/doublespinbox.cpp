@@ -21,7 +21,7 @@
 
 #include <QKeyEvent>
 #include <QLineEdit>
-#include <QMouseEvent>
+//#include <QMouseEvent>
 #include "doublespinbox.h"
 
 namespace MusEGui {

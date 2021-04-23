@@ -33,7 +33,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStyle>
-#include <QToolButton>
+//#include <QToolButton>
 #include <QApplication>
 
 // Forwards from header:
@@ -44,13 +44,13 @@
 #include <QMenu>
 #include <QTimer>
 #include <QKeyEvent>
-#include <QCloseEvent>
+//#include <QCloseEvent>
 #include <QAction>
 #include "tempo.h"
 #include "sig.h"
 #include "posedit.h"
 #include "sigedit.h"
-#include "xml.h"
+//#include "xml.h"
 
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1
