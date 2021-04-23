@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="64" height="64" shape-rendering="crispEdges" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="64" height="64" shape-rendering="crispEdges" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
  <defs>
   <linearGradient id="linearGradient2757" x1="34.676" x2="28" y1="18.183" y2="59" gradientTransform="matrix(1.1608 0 .17337 1 -10.057 -.183)" gradientUnits="userSpaceOnUse">
-   <stop stop-color="#00d455" offset="0"/>
-   <stop stop-color="#008034" offset="1"/>
+   <stop stop-color="#0f6" offset="0"/>
+   <stop stop-color="#00993e" offset="1"/>
   </linearGradient>
  </defs>
- <metadata>
-  <rdf:RDF>
-   <cc:Work rdf:about="">
-    <dc:format>image/svg+xml</dc:format>
-    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:title/>
-   </cc:Work>
-  </rdf:RDF>
- </metadata>
  <path d="m56.18 59 0.30838-43.529a1.9786 1.9786 45.097 0 0-1.9858-1.9926l-25.081 0.09261a2.5408 2.5408 37.997 0 1-2.4769-1.9349l-0.46992-1.9139a2.5505 2.5505 38.102 0 0-2.4769-1.9423h-15.635a2.0142 2.0142 135.2 0 0-2.0142 1.9999l-0.34869 49.22" fill="#d7f4e2" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"/>
  <path d="m5.0544 59c-0.83768-13.093-1.5984-24.377-2.316-38.004-0.087122-1.6545 1.1881-2.9957 2.8449-2.9957 16.272 7.91e-4 36.578 7.91e-4 52.847 0 1.6569-8e-5 2.8959 1.3389 2.766 2.9907-1.0118 12.875-2.0239 25.011-3.0399 38.009-17.699 1e-3 -35.4 1e-3 -53.102 0z" fill="url(#linearGradient2757)" stroke="#000" stroke-linejoin="round" stroke-width="1.7"/>
 </svg>

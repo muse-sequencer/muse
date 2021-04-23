@@ -237,7 +237,7 @@ void AudioPrefetch::prefetch(bool doSeek)
               {
                 unsigned n = rpos_frame - write_pos;
 
-                AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "  write_pos:%d n:%d segmentSize:%d\n",
+                AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "  do loops: write_pos:%d n:%d segmentSize:%d\n",
                         write_pos, n, MusEGlobal::segmentSize);
 
                 if (n < MusEGlobal::segmentSize)
@@ -246,6 +246,8 @@ void AudioPrefetch::prefetch(bool doSeek)
                   if (n > lpos_frame)
                         n = 0;
                   write_pos = lpos_frame - n;
+                  AUDIO_PREFETCH_DEBUG_TRANSPORT_SYNC(stderr, "  looping: new write_pos:%d\n", write_pos);
+
                   track->setPrefetchWritePos(write_pos);
                   track->seekData(write_pos);
                 }

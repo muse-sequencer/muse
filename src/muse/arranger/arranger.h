@@ -222,8 +222,9 @@ class Arranger : public QWidget {
       ArrangerView* parentWin() const { return _parentWin; }
 
       int rasterVal() const;
-
       bool setRasterVal(int);
+
+      int currentPartColorIndex() const;
 
       TList *getTrackList() { return list; }
       };

@@ -2220,10 +2220,7 @@ void MusE::saveNewRevision()
     // replace project in lastProjects
     if (projectRecentList.contains(oldProjectFileName))
       projectRecentList.removeAt(projectRecentList.indexOf(oldProjectFileName));
-
-    projectRecentList.push_front(newFilePath);
-    if (projectRecentList.size() > MusEGlobal::config.recentListLength)
-      projectRecentList.pop_back();
+    addProjectToRecentList(newFilePath);
 
     project.setFile(newFilePath);
   }
@@ -4793,6 +4790,13 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 int MusE::arrangerRaster() const
 {
   return _arranger->rasterVal();
+}
+
+int MusE::currentPartColorIndex() const
+{
+  if(_arranger)
+    return _arranger->currentPartColorIndex();
+  return 0;
 }
 
 

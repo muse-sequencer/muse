@@ -441,6 +441,7 @@ public:
     void setRestartingApp(bool v) { _isRestartingApp = v;}
     Arranger* arranger() const { return _arranger; }
     int arrangerRaster() const;
+    int currentPartColorIndex() const;
 
     ArrangerView* getArrangerView() const { return arrangerView; }
     QRect configGeometryMain;

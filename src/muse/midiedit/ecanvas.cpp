@@ -44,6 +44,7 @@
 #include "gconfig.h"
 #include "globals.h"
 #include "midiport.h"
+#include "config.h"
 
 // Forwards from header:
 #include <QDropEvent>
@@ -198,8 +199,15 @@ void EventCanvas::updateItems()
         for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
               MusECore::Event e = i->second;
               // Do not add events which are past the end of the part.
-              if(e.tick() > len)      
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+              if((int)e.tick() /*+ (int)e.lenTick()*/ < 0)
+                continue;
+              if((int)e.tick() >= (int)len)
                 break;
+#else
+              if(e.tick() > len)   
+                break;
+#endif
               
               if (e.isNote()) {
                     CItem* temp = addItem(part, e);
