@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
- <path d="m10 6v51a2 2 45 0 0 2 2h41a2 2 135 0 0 2-2v-36a4.8284 4.8284 67.5 0 0-1.4142-3.4142l-12.172-12.172a4.8284 4.8284 22.5 0 0-3.4142-1.4142h-26a2 2 135 0 0-2 2z" fill="#fff" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
- <path d="m39.14 4.67v15h15" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient1421" x1="8" x2="57" y1="31.5" y2="31.5" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#fff" offset="0"/>
+   <stop stop-color="#b2b2b2" offset="1"/>
+  </linearGradient>
+ </defs>
+ <path d="m9 4.7778v53.444a2 2 45 0 0 2 2h43a2 2 135 0 0 2-2v-37.778a4.8284 4.8284 67.5 0 0-1.4142-3.4142l-12.838-12.838a4.8284 4.8284 22.5 0 0-3.4142-1.4142h-27.333a2 2 135 0 0-2 2z" fill="url(#linearGradient1421)" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+ <path d="m38 4v16h17" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+ <path d="m39.031 11.43v-7.5594l0.26308 0.063341c0.87774 0.21133 1.1112 0.42415 7.9986 7.2916 5.9707 5.9534 7.3318 7.3804 7.3318 7.6868 0 0.04231-3.5085 0.07694-7.7967 0.07694h-7.7967z" fill="#fff" fill-rule="evenodd" stroke-width="0"/>
 </svg>
