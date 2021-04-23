@@ -1027,15 +1027,8 @@ QPoint View::mapDev(const QPoint& r) const
 
 void View::mapDev(const QRegion& rg_in, QRegion& rg_out) const
 {
-#if QT_VERSION >= 0x050800
-  for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
-    rg_out += mapDev(*i);
-#else  
-  const QVector<QRect> rects = rg_in.rects();
-  const int sz = rects.size();
-  for(int i = 0; i < sz; ++i)
-    rg_out += mapDev(rects.at(i));
-#endif
+  for (const auto& it : rg_in)
+    rg_out += mapDev(it);
 }
 
 #if 0
@@ -1172,15 +1165,8 @@ QPoint View::map(const QPoint& p) const
 
 void View::map(const QRegion& rg_in, QRegion& rg_out) const
 {
-#if QT_VERSION >= 0x050800
-  for(QRegion::const_iterator i = rg_in.begin(); i != rg_in.end(); ++i)
-    rg_out += map(*i);
-#else  
-  const QVector<QRect> rects = rg_in.rects();
-  const int sz = rects.size();
-  for(int i = 0; i < sz; ++i)
-    rg_out += map(rects.at(i));
-#endif
+  for (const auto& it : rg_in)
+    rg_out += map(it);
 }
       
 int View::mapx(int x) const
