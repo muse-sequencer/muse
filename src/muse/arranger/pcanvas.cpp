@@ -2303,15 +2303,23 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
   pen.setCosmetic(true);
   unsigned int pt_len = 0;
   
-  if(pt)
   {
-    pt_len = pt->lenTick();
     int part_r, part_g, part_b, brightness;
 
-    if (pt->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
-        pt->track()->color().getRgb(&part_r, &part_g, &part_b);
-    else
-        MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
+    if(pt)
+    {
+      pt_len = pt->lenTick();
+      if (pt->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+          pt->track()->color().getRgb(&part_r, &part_g, &part_b);
+      else
+          MusEGlobal::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
+    }
+    else {
+      if(curColorIndex == 0 && MusEGlobal::config.useTrackColorForParts)
+        mt->color().getRgb(&part_r, &part_g, &part_b);
+      else
+        MusEGlobal::config.partColors[curColorIndex].getRgb(&part_r, &part_g, &part_b);
+    }
 
     brightness =  part_r*29 + part_g*59 + part_b*12;
     if (brightness >= 12000 && !selected) {
@@ -2322,10 +2330,6 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, const MusECore::EventLi
       eventColor=MusEGlobal::config.partMidiLightEventColor;
       color_brightness=200; //160;   // too dark: use lighter color
     }
-  }
-  else {
-    eventColor=QColor(80,80,80);
-    color_brightness=80;
   }
 
   if (MusEGlobal::config.canvasShowPartType & 2) {      // show events
@@ -3983,7 +3987,11 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& mr, const QRegion&)
           continue;
         if (track->recordFlag()) {
            p.setPen(pen);
-           QColor c(MusEGlobal::config.partColors[0]);
+           QColor c;
+           if(curColorIndex == 0 && MusEGlobal::config.useTrackColorForParts)
+             c = track->color();
+           else
+             c = MusEGlobal::config.partColors[curColorIndex];
            c.setAlpha(MusEGlobal::config.globalAlphaBlend);
            QLinearGradient gradient(QPoint(startx,yPos), QPoint(startx,yPos+th));
            gradient.setColorAt(0, c);
@@ -5045,5 +5053,9 @@ void PartCanvas::setRangeToSelection() {
     }
 }
 
+int PartCanvas::currentPartColorIndex() const
+{
+  return curColorIndex;
+}
 
 } // namespace MusEGui

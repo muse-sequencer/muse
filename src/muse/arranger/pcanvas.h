@@ -240,6 +240,7 @@ class PartCanvas : public Canvas {
       void cmd(int);
       void songIsClearing();
       void setRangeToSelection();
+      int currentPartColorIndex() const;
       
    public slots:
       void redirKeypress(QKeyEvent* e) { keyPress(e); }

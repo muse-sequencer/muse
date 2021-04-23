@@ -1007,6 +1007,17 @@ int Arranger::rasterVal() const
 }
 
 //---------------------------------------------------------
+//   currentPartColorIndex
+//---------------------------------------------------------
+
+int Arranger::currentPartColorIndex() const
+{
+  if(canvas)
+    return canvas->currentPartColorIndex();
+  return 0;
+}
+
+//---------------------------------------------------------
 //   setRasterVal
 //---------------------------------------------------------
 

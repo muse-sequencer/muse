@@ -1028,6 +1028,8 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, const EventList& events, unsigned
             newpart->setTick(startTick);
             newpart->setLenTick(endTick - startTick);
             newpart->setName(mt->name());
+            newpart->setColorIndex(MusEGlobal::muse->currentPartColorIndex());
+
             // copy events
             for (ciEvent i = s; i != e; ++i) {
                   const Event& old = i->second;
@@ -1186,6 +1188,7 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       part->setFrame(sframe);
       part->setLenFrame(eframe - sframe);
       part->setName(track->name());
+      part->setColorIndex(MusEGlobal::muse->currentPartColorIndex());
 
       // create Event
       MusECore::Event event(MusECore::Wave);

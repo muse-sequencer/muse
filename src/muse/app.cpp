@@ -4792,6 +4792,13 @@ int MusE::arrangerRaster() const
   return _arranger->rasterVal();
 }
 
+int MusE::currentPartColorIndex() const
+{
+  if(_arranger)
+    return _arranger->currentPartColorIndex();
+  return 0;
+}
+
 
 bool MusE::restoreState(const QByteArray &state, int version) {
 
