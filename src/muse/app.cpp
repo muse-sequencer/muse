@@ -931,7 +931,6 @@ MusE::MusE() : QMainWindow()
       menu_file->addAction(fileImportMidiAction);
       menu_file->addAction(fileExportMidiAction);
       menu_file->addAction(fileImportPartAction);
-      menu_file->addSeparator();
       menu_file->addAction(fileImportWaveAction);
       menu_file->addSeparator();
       menu_file->addAction(fileMoveWaveFiles);

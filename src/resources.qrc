@@ -78,9 +78,6 @@
         <file>svg/punchout.svg</file>
         <file>svg/redo.svg</file>
         <file>svg/undo.svg</file>
-        <file>svg/noscale1.svg</file>
-        <file>svg/noscale2.svg</file>
-        <file>svg/noscale3.svg</file>
         <file>svg/midiin.svg</file>
         <file>svg/speaker.svg</file>
         <file>svg/speaker_single_note.svg</file>
@@ -216,5 +213,6 @@
         <file>svg/edit_instrument.svg</file>
         <file>svg/appearance.svg</file>
         <file>svg/delta.svg</file>
+        <file>svg/synth_gui.svg</file>
     </qresource>
 </RCC>

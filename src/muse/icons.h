@@ -199,7 +199,7 @@ extern QIcon* trackOutputSVGIcon;
 extern QIcon* trackAuxSVGIcon;
 extern QIcon* trackGroupVGIcon;
 
-extern QIcon* noscaleSVGIcon[3];
+extern QIcon* synthGuiSVGIcon;
 extern QIcon* ankerSVGIcon;
 extern QIcon* settingsSVGIcon;
 extern QIcon* transportSVGIcon;

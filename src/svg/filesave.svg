@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
- <path d="m2.475 2.136s0.055783 32.718-0.058538 50.506l4.4368 4.1643 4.6931 4.9515 5.3734 0.08679h1.4957v-17.301l3.0561-3.0964h24.816l3.0601 3.0924v17.305h11.976v-29.856l0.0021 0.0021v-29.854z" fill="#008acb" stroke-width="0"/>
+<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient849" x1="53.7" x2="53.605" y1="2.2846" y2="61.753" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#1fbbff" offset="0"/>
+   <stop stop-color="#006fa5" offset="1"/>
+  </linearGradient>
+ </defs>
+ <path d="m2.475 2.136s0.055783 32.718-0.058538 50.506l4.4368 4.1643 4.6931 4.9515 5.3734 0.08679h1.4957v-17.301l3.0561-3.0964h24.816l3.0601 3.0924v17.305h11.976v-29.856l0.0021 0.0021v-29.854z" fill="url(#linearGradient849)" stroke-width="0"/>
  <g stroke="#000">
   <path d="m18.252 62.23v-18.398l2.8862-2.8305h25.976l2.8862 2.8305v18.398" fill="#b3b3b3"/>
   <path d="m61.473 2h-59.239l0.2043 50.457 9.2365 9.4136 50.097 0.11041z" fill="none" stroke-linejoin="round" stroke-width="1.2"/>

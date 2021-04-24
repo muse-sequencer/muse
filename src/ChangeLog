@@ -1,3 +1,5 @@
+24.04.2021
+    - Fix: Drum list: Disable grouping options when no different tracks are involved. (kybos) 
 23.04.2021
     - Part colours: Fixed 'live' recording virtual part overlay, and eventual created part. (Tim)
       Both now obey the chosen current part colour on the Arranger toolbar.
