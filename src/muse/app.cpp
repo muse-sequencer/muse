@@ -700,6 +700,7 @@ MusE::MusE() : QMainWindow()
       followPageAction->setChecked(true);
 
       rewindOnStopAction=new QAction(tr("Rewind on Stop"), this);
+      rewindOnStopAction->setShortcut(shortcuts[SHRT_TOGGLE_REWINDONSTOP].key);
       rewindOnStopAction->setCheckable(true);
       rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
 
