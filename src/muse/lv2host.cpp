@@ -6069,7 +6069,7 @@ const char *LV2PluginWrapper::portName(unsigned long i)
 
 const CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 {
-    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+    const auto& it = _synth->_idxToControlMap.find(i);
     assert(it != _synth->_idxToControlMap.end());
     i = it->second;
     assert(i < _controlInPorts);
@@ -6080,7 +6080,7 @@ const CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
-    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+    const auto& it = _synth->_idxToControlMap.find(i);
     assert(it != _synth->_idxToControlMap.end());
     i = it->second;
     assert(i < _controlInPorts);
