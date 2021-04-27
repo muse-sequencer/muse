@@ -295,7 +295,7 @@ struct LV2ControlPort
    char *cSym; //cached port symbol
    LV2ControlPortType cType;
    bool isCVPort;
-   CtrlEnumValues* scalePoints;
+   const CtrlEnumValues* scalePoints;
    QString group;
    bool isTrigger;
    bool notOnGui;
@@ -620,7 +620,7 @@ public:
     const char *paramOutName ( unsigned long i );
     CtrlValueType ctrlValueType ( unsigned long ) const override;
     CtrlList::Mode ctrlMode ( unsigned long ) const override;
-    CtrlEnumValues *ctrlEnumValues(unsigned long i) const override;
+    const CtrlEnumValues *ctrlEnumValues(unsigned long i) const override;
     QString portGroup(long unsigned int i) const override;
     bool ctrlIsTrigger(long unsigned int i) const override;
     bool ctrlNotOnGui(long unsigned int i) const override;
@@ -916,7 +916,7 @@ public:
     virtual double defaultValue ( unsigned long port ) const;
     virtual const char *portName ( unsigned long i );
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
-    virtual CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
+    virtual const CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
