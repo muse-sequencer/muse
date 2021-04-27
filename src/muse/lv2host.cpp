@@ -283,6 +283,7 @@ LV2_Feature lv2Features [] =
 };
 
 std::vector<LV2Synth *> synthsToFree;
+QVector<CtrlEnumValues *> enumsToFree;
 
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
 
@@ -521,18 +522,16 @@ void initLV2()
 
 void deinitLV2()
 {
+    for(auto& i: enumsToFree)
+        delete i;
+    enumsToFree.clear();
 
-    for(size_t i = 0; i < synthsToFree.size(); i++)
-    {
-        delete synthsToFree [i];
-
-    }
+    for(auto& i: synthsToFree)
+        delete i;
     synthsToFree.clear();
 
     for(LilvNode **n = (LilvNode **)&lv2CacheNodes; *n; ++n)
-    {
         lilv_node_free(*n);
-    }
 
 #ifdef HAVE_GTK2
     MusEGui::lv2Gtk2Helper_deinit();
@@ -540,7 +539,6 @@ void deinitLV2()
 
     lilv_world_free(lilvWorld);
     lilvWorld = nullptr;
-
 }
 
 void LV2Synth::lv2ui_ExtUi_Closed(LV2UI_Controller contr)
@@ -2948,6 +2946,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
                 if (!groupName)
                     groupName = lilv_world_get(lilvWorld, group, lv2CacheNodes.lv2_rdfsLabel, nullptr);
                 groupString = lilv_node_as_string(groupName);
+                lilv_node_free(groupName);
                 lilv_node_free(group);
 
 //                if (!groupString.isEmpty() && !portGroups.contains(groupString))
@@ -2974,6 +2973,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
                     }
                     lilv_scale_points_free(scalePoints);
                     _cType = LV2_PORT_ENUMERATION;
+                    enumsToFree.append(enumValues);
                 }
             }
             else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
@@ -5326,7 +5326,7 @@ const char *LV2SynthIF::paramOutName(long unsigned int i)
     return _controlOutPorts [i].cName;
 }
 
-CtrlEnumValues* LV2SynthIF::ctrlEnumValues(unsigned long i) const {
+const CtrlEnumValues* LV2SynthIF::ctrlEnumValues(unsigned long i) const {
 
     if (i >= _inportsControl)
         return nullptr;
@@ -6067,9 +6067,9 @@ const char *LV2PluginWrapper::portName(unsigned long i)
     return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
 }
 
-CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
+const CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 {
-    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+    const auto& it = _synth->_idxToControlMap.find(i);
     assert(it != _synth->_idxToControlMap.end());
     i = it->second;
     assert(i < _controlInPorts);
@@ -6080,7 +6080,7 @@ CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
-    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
+    const auto& it = _synth->_idxToControlMap.find(i);
     assert(it != _synth->_idxToControlMap.end());
     i = it->second;
     assert(i < _controlInPorts);
