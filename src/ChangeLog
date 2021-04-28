@@ -1,3 +1,7 @@
+28.04.2021
+    - Fix: Number of bars not updating when midi resolution is changed. (kybos)
+27.04.2021
+    - Fix some memory leaks found by Valgrind. (kybos)
 26.04.2021
     - Added shortcut for RewindOnStop to menu item (rj)
 24.04.2021
