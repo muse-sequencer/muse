@@ -1,6 +1,7 @@
 29.04.2021
     - Fix: Track list: "Move single armed track with selection" function trying to arm 
         invalid tracks. (kybos)
+    - Fix: Deactivate recording button when last armed track is deleted. (kybos)
 28.04.2021
     - Fix: Number of bars not updating when midi resolution is changed. (kybos)
 27.04.2021

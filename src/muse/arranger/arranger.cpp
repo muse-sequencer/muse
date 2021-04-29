@@ -761,7 +761,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
               }   
             } 
           }
-          
+
           {
             MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(2));
             if(w)
@@ -779,6 +779,16 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
               }   
             } 
           }
+
+            bool trackArmed = false;
+            for (const auto& it : *MusEGlobal::song->tracks()) {
+                if (it->canRecord() && it->recordFlag()) {
+                    trackArmed = true;
+                    break;
+                }
+            }
+            if (!trackArmed)
+                MusEGlobal::song->setRecord(false);
         }
         
         // Try these, may need more/less. 
