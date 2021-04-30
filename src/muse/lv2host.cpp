@@ -5521,6 +5521,9 @@ bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
 
 void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
 {
+    if (_state->deleteLater || _closing)
+        return;
+
     if(_state->plugInst != nullptr)
         _state->plugInst->saveNativeGeometry(geometry().x(), geometry().y(), geometry().width(), geometry().height());
     else if(_state->sif != nullptr)
@@ -5759,7 +5762,7 @@ void LV2PluginWrapper_Window::updateGui()
 void LV2PluginWrapper_Window::stopFromGuiThread()
 {
     stopUpdateTimer();
-    emit close();
+    close();
 }
 
 void LV2PluginWrapper_Window::startFromGuiThread()

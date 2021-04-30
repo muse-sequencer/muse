@@ -1,3 +1,5 @@
+30.04.2021
+    - Fix #986: Crash in lv2 plugins when removed while native GUI is open. (kybos)
 29.04.2021
     - Fix: Track list: "Move single armed track with selection" function trying to arm 
         invalid tracks. (kybos)
