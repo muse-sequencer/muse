@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 
-#include "muse_math.h"
+//#include "muse_math.h"
 #include "track.h"
 #include "event.h"
 #include "audio.h"
@@ -34,7 +34,7 @@
 #include "gconfig.h"
 #include "al/dsp.h"
 #include "audioprefetch.h"
-#include "latency_compensator.h"
+//#include "latency_compensator.h"
 #include "config.h"
 
 // Turn on some cool terminal 'peak' meters for debugging

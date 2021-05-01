@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 
 //#include <QtWidgets>
 //#include <QDoubleValidator>

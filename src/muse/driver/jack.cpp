@@ -87,7 +87,7 @@ extern void undoSetuid();
 
 bool checkAudioDevice()
       {
-      if (audioDevice == NULL) {
+      if (audioDevice == nullptr) {
             if(debugMsg)
               fprintf(stderr, "Muse:checkAudioDevice: no audioDevice\n");
             return false;
@@ -107,9 +107,9 @@ muse_atomic_t atomicGraphChangedPending;
 bool jack1_port_by_name_workaround = false;
 
 // Function pointers obtained with dlsym:
-jack_get_version_type             jack_get_version_fp = NULL;  
-jack_port_set_name_type           jack_port_set_name_fp = NULL;
-jack_port_rename_type             jack_port_rename_fp = NULL;
+jack_get_version_type             jack_get_version_fp = nullptr;  
+jack_port_set_name_type           jack_port_set_name_fp = nullptr;
+jack_port_rename_type             jack_port_rename_fp = nullptr;
 
 // REMOVE Tim. latency. Added. TESTING.
 // Jack BUG ? :
@@ -204,7 +204,7 @@ JackCallbackFifo jackCallbackFifo;
 //---------------------------------------------------------
 inline bool checkJackClient(jack_client_t* _client)
       {
-      if (_client == NULL) {
+      if (_client == nullptr) {
             fprintf(stderr, "Panic! no _client!\n");
             return false;
             }
@@ -812,8 +812,8 @@ static void port_connect_callback(jack_port_id_t a, jack_port_id_t b, int isConn
     }
     else
     {
-      ev.port_A = NULL;
-      ev.port_B = NULL;
+      ev.port_A = nullptr;
+      ev.port_B = nullptr;
     }
     
     jackCallbackFifo.put(ev);
@@ -905,7 +905,7 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
       if(our_port && jack_port_connected_to(our_port, route_jpname)) 
       {
         // The ports are connected. Keep the route node but update its jack port pointer if necessary.
-        const char* s = NULL;
+        const char* s = nullptr;
         if(jp != ir->jackPort)
         {
           DEBUG_PRST_ROUTES(stderr, "processJackCallbackEvents: Ports connected. Modifying route: our_port:%p old_route_jp:%p new_route_jp:%p route_persistent_name:%s\n", 
@@ -945,7 +945,7 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
           {
             DEBUG_PRST_ROUTES(stderr, "processJackCallbackEvents: Ports not connected, ret=ModifyRouteNode. Modifying route: our_port:%p route_jp:%p found_jp:%p route_persistent_name:%s\n", 
                       our_port, ir->jackPort, jp, route_jpname);
-            operations.add(PendingOperationItem(Route(Route::JACK_ROUTE, 0, NULL, ir->channel, 0, 0, ir->persistentJackPortName), &(*ir), PendingOperationItem::ModifyRouteNode));
+            operations.add(PendingOperationItem(Route(Route::JACK_ROUTE, 0, nullptr, ir->channel, 0, 0, ir->persistentJackPortName), &(*ir), PendingOperationItem::ModifyRouteNode));
           }
         }
         else 
@@ -1003,7 +1003,7 @@ void JackAudioDevice::processJackCallbackEvents(const Route& our_node, jack_port
       {
         DEBUG_PRST_ROUTES(stderr, "processJackCallbackEvents: Port non-existent. Modifying route: our_port:%p route_jp:%p route_persistent_name:%s\n", 
                 our_port, ir->jackPort, route_jpname);
-        operations.add(PendingOperationItem(Route(Route::JACK_ROUTE, 0, NULL, ir->channel, 0, 0, ir->persistentJackPortName), &(*ir), PendingOperationItem::ModifyRouteNode));
+        operations.add(PendingOperationItem(Route(Route::JACK_ROUTE, 0, nullptr, ir->channel, 0, 0, ir->persistentJackPortName), &(*ir), PendingOperationItem::ModifyRouteNode));
       }
     }
   }
@@ -1216,7 +1216,7 @@ void JackAudioDevice::checkNewRouteConnections(jack_port_t* our_port, int channe
         }
         if(!found) 
         {
-          Route r(Route::JACK_ROUTE, 0, jp, channel, 0, 0, NULL);
+          Route r(Route::JACK_ROUTE, 0, jp, channel, 0, 0, nullptr);
           // Find a better name.
           portName(jp, r.persistentJackPortName, ROUTE_PERSISTENT_NAME_SIZE);
           DEBUG_PRST_ROUTES(stderr, " adding route: route_jp:%p portname:%s route_persistent_name:%s\n", 
@@ -1348,7 +1348,7 @@ void* JackAudioDevice::registerInPort(const char* name, bool midi)
       {
       DEBUG_JACK(stderr, "registerInPort()\n");
       if(!checkJackClient(_client) || !name || name[0] == '\0') 
-        return NULL;
+        return nullptr;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       void* p = jack_port_register(_client, name, type, JackPortIsInput, 0);
       DEBUG_PRST_ROUTES(stderr, "JACK: registerInPort: <%s> %p\n", name, p);
@@ -1363,7 +1363,7 @@ void* JackAudioDevice::registerOutPort(const char* name, bool midi)
       {
       DEBUG_JACK(stderr, "registerOutPort()\n");
       if(!checkJackClient(_client) || !name || name[0] == '\0') 
-        return NULL;
+        return nullptr;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       void* p = jack_port_register(_client, name, type, JackPortIsOutput, 0);
       DEBUG_PRST_ROUTES(stderr, "JACK: registerOutPort: <%s> %p\n", name, p);
@@ -2299,7 +2299,7 @@ void* JackAudioDevice::findPort(const char* name)
       {
       DEBUG_JACK(stderr, "JackAudioDevice::findPort(%s)\n", name);
       if(!checkJackClient(_client) || !name || name[0] == '\0') 
-        return NULL;
+        return nullptr;
       void* p = jack_port_by_name(_client, name);
       return p;
       }
@@ -2311,7 +2311,7 @@ void* JackAudioDevice::findPort(const char* name)
 int JackAudioDevice::setMaster(bool f, bool unconditional)
 {
   // Check this one-time hack flag so that it forces master.
-  // MusEGlobal::audioDevice may be NULL, esp. at startup when loading a song file,
+  // MusEGlobal::audioDevice may be nullptr, esp. at startup when loading a song file,
   //  so this flag is necessary for the next valid call to setMaster.
   if(MusEGlobal::timebaseMasterForceFlag)
   {
@@ -2383,7 +2383,7 @@ void exitJackAudio()
             
       DEBUG_JACK(stderr, "exitJackAudio() after delete jackAudio\n");
       
-      MusEGlobal::audioDevice = NULL;      
+      MusEGlobal::audioDevice = nullptr;      
       muse_atomic_destroy(&atomicGraphChangedPending);
       }
     

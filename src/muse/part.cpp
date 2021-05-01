@@ -33,8 +33,8 @@
 #include "wave.h"
 #include "midiport.h"
 #include "drummap.h"
-#include "midictrl.h"
-#include "gconfig.h"
+//#include "midictrl.h"
+//#include "gconfig.h"
 #include "config.h"
 
 // Forwards from header:
@@ -203,7 +203,7 @@ void Part::rechainClone()
     if(_backupClone)
     {
         this->chainClone(_backupClone);
-        _backupClone = NULL;
+        _backupClone = nullptr;
     }
 }
 

@@ -23,7 +23,7 @@
 #include <stdio.h>
 
 #include <QTableWidget>
-#include <QTableWidgetItem>
+//#include <QTableWidgetItem>
 #include <QHeaderView>
 
 #include "comboQuant.h"

@@ -372,8 +372,8 @@ class RoutingItemDelegate : public QStyledItemDelegate
     // Need this. For some reason when using CurrentChanged trigger, createEditor is called upon opening the dialog, yet nothing is selected.
     bool _firstPress; 
 
-    QRect getItemRectangle(const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement subElement, QWidget* editor = NULL) const;
-    bool subElementHitTest(const QPoint& point, const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement* subElement, QWidget* editor = NULL) const;
+    QRect getItemRectangle(const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement subElement, QWidget* editor = nullptr) const;
+    bool subElementHitTest(const QPoint& point, const QStyleOptionViewItem& option, const QModelIndex& index, QStyle::SubElement* subElement, QWidget* editor = nullptr) const;
     
   public:
     RoutingItemDelegate(bool is_input, RouteTreeWidget* tree, QWidget *parent = 0);

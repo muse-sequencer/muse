@@ -882,7 +882,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
           MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
           port_name = good_name;
         }
-        MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, -1, -1, -1, port_name);
+        MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, port_name);
         
         act->setData(QVariant::fromValue(dst));   
         if(rl->exists(r))
@@ -916,7 +916,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
             MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
             port_name = good_name;
           }
-          MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, NULL, i, -1, -1, port_name);
+          MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, nullptr, i, -1, -1, port_name);
           
           act->setData(QVariant::fromValue(dst));   
           for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 

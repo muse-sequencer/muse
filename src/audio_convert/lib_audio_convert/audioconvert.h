@@ -58,7 +58,7 @@ class AudioConverterSettings
     
     virtual void assign(const AudioConverterSettings&) = 0;
     
-    virtual int executeUI(ModeType mode, QWidget* parent = NULL, bool isLocal = false) = 0;
+    virtual int executeUI(ModeType mode, QWidget* parent = nullptr, bool isLocal = false) = 0;
     virtual void read(Xml&) = 0;
     virtual void write(int, Xml&) const = 0;
     // Returns whether to use these settings or defer to default settings.

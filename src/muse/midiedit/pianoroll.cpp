@@ -24,9 +24,9 @@
 #include <QSplitter>
 #include <QSizeGrip>
 #include <QLabel>
-#include <QToolTip>
+//#include <QToolTip>
 #include <QMenuBar>
-#include <QWhatsThis>
+//#include <QWhatsThis>
 #include <QApplication>
 #include <QClipboard>
 #include <QGridLayout>
@@ -34,7 +34,7 @@
 #include <QScrollArea>
 #include <QSettings>
 #include <QCursor>
-#include <QRect>
+//#include <QRect>
 #include <QPixmap>
 
 #include <stdio.h>
@@ -53,24 +53,24 @@
 #include "audio.h"
 #include "functions.h"
 #include "helper.h"
-#include "menutitleitem.h"
+//#include "menutitleitem.h"
 #include "operations.h"
 
 #include "cmd.h"
 #include "shortcuts.h"
 
 #include "trackinfo_layout.h"
-#include "midi_editor_layout.h"
+//#include "midi_editor_layout.h"
 
 // Forwards from header:
 #include <QAction>
 #include <QMenu>
-#include <QToolBar>
+//#include <QToolBar>
 #include <QToolButton>
 #include <QWidget>
 #include <QPoint>
 #include <QCloseEvent>
-#include <QKeyEvent>
+//#include <QKeyEvent>
 #include "cobject.h"
 #include "event.h"
 #include "xml.h"

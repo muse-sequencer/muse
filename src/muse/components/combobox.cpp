@@ -27,7 +27,7 @@
 #include <QAction>
 #include <QMenu>
 #include <QMouseEvent>
-#include <QWheelEvent>
+//#include <QWheelEvent>
 #include <QString>
 
 namespace MusEGui {

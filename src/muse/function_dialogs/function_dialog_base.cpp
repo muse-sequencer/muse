@@ -34,8 +34,8 @@ namespace MusEGui {
 FunctionDialogBase::FunctionDialogBase(QWidget* parent)
   : QDialog(parent)
 {
-  _range_container = NULL;
-  _parts_container = NULL;
+  _range_container = nullptr;
+  _parts_container = nullptr;
   _range_group = new QButtonGroup;
   _parts_group = new QButtonGroup;
   _range_group->setExclusive(true);

@@ -30,7 +30,7 @@
 #include "xml.h"
 #include "tempo.h"
 #include "globals.h"
-#include "sync.h"
+//#include "sync.h"
 #include "sig.h"
 
 namespace MusEGlobal {

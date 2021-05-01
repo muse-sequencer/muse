@@ -22,11 +22,11 @@
 
 #include "floatentry.h"
 #include "fastlog.h"
-#include "gconfig.h"
+//#include "gconfig.h"
 
 #include <QLineEdit>
 #include <QMouseEvent>
-#include <QContextMenuEvent>
+//#include <QContextMenuEvent>
 #include <QTimer>
 
 #include "muse_math.h"

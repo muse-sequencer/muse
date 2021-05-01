@@ -220,7 +220,7 @@ void enumerateJackMidiDevices()
           // Get a good routing name.
           MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
           
-          const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, good_name); // Persistent route.
+          const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, good_name); // Persistent route.
           // If audio is running, this calls jack_connect() and waits for the audio thread to execute addRoute().
           // If audio is not running, this directly executes addRoute(), bypassing the audio messaging system,
           //  and jack_connect() is not called.
@@ -249,7 +249,7 @@ void enumerateJackMidiDevices()
         {
           // Get a good routing name.
           MusEGlobal::audioDevice->portName(port, good_name, ROUTE_PERSISTENT_NAME_SIZE);
-          const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, good_name); // Persistent route.
+          const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, good_name); // Persistent route.
           if(!dev->inRoutes()->contains(srcRoute))
             operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
         }  
@@ -258,7 +258,7 @@ void enumerateJackMidiDevices()
   }
   if(!operations.empty())
   {
-    //operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
+    //operations.add(MusECore::PendingOperationItem((TrackList*)nullptr, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
     //MusEGlobal::song->update(SC_ROUTE);
   }
@@ -374,8 +374,8 @@ void enumerateJackMidiDevices()
                 dev = MidiJackDevice::createJackMidiDevice(QString(), 3); // Let it pick the name
                 if(dev)
                 {
-                  const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, r_good_name); // Persistent route.
-                  const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, w_good_name); // Persistent route.
+                  const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, r_good_name); // Persistent route.
+                  const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, w_good_name); // Persistent route.
                   // We only want to add the route, not call jack_connect - jack may not have been activated yet.
                   // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
                   // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
@@ -400,7 +400,7 @@ void enumerateJackMidiDevices()
         dev = MidiJackDevice::createJackMidiDevice(QString(), 1); // Let it pick the name
         if(dev)
         {
-          const Route dstRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, w_good_name); // Persistent route.
+          const Route dstRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, w_good_name); // Persistent route.
           // We only want to add the route, not call jack_connect - jack may not have been activated yet.
           // If it has been, we should be calling our graph changed handler soon, it will handle actual connections.
           // If audio is not running yet, this directly executes addRoute(), bypassing the audio messaging system,
@@ -425,7 +425,7 @@ void enumerateJackMidiDevices()
         {
           // Get a good routing name.
           MusEGlobal::audioDevice->portName(r_port, r_good_name, ROUTE_PERSISTENT_NAME_SIZE);
-          const Route srcRoute(Route::JACK_ROUTE, -1, NULL, -1, -1, -1, r_good_name); // Persistent route.
+          const Route srcRoute(Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, r_good_name); // Persistent route.
           if(!dev->inRoutes()->contains(srcRoute))
             operations.add(MusECore::PendingOperationItem(dev->inRoutes(), srcRoute, MusECore::PendingOperationItem::AddRouteNode));
         }      
@@ -435,7 +435,7 @@ void enumerateJackMidiDevices()
   
   if(!operations.empty())
   {
-    //operations.add(MusECore::PendingOperationItem((TrackList*)NULL, PendingOperationItem::UpdateSoloStates));
+    //operations.add(MusECore::PendingOperationItem((TrackList*)nullptr, PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations); // Don't update here.
     //MusEGlobal::song->update(SC_ROUTE);
   }
@@ -552,7 +552,7 @@ Part* partFromSerialNumber(int serial)
 	}
 	
 	printf("ERROR: partFromSerialNumber(%i) wasn't able to find an appropriate part!\n",serial);
-	return NULL;
+	return nullptr;
 }
 
 bool any_event_selected(const set<const Part*>& parts, bool in_range, RelevantSelectedEvents_t relevant)
@@ -713,20 +713,20 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
 			case Xml::TagStart:
 				if (tag == "entry")  // then read that entry with a nested loop
         {
-          DrumMap* dm=NULL;
+          DrumMap* dm=nullptr;
           DrumMap temporaryMap;
           for (;;) // nested loop
           {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token)
+            Xml::Token tokeni = xml.parse();
+            const QString& tagi = xml.s1();
+            switch (tokeni)
             {
               case Xml::Error:
               case Xml::End:
                 goto end_of_nested_for;
 
               case Xml::Attribut:
-                if (tag == "pitch")
+                if (tagi == "pitch")
                 {
                   int pitch = xml.s2().toInt() & 0x7f;
                   if (pitch < 0 || pitch > 127)
@@ -739,33 +739,33 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                 break;
 
               case Xml::TagStart:
-                if (dm==NULL && compatibility == false)
-                  printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tag, but sub-tags follow in read_new_style_drummap()!\n");
-                else if (dm ==NULL && compatibility == true)
+                if (dm==nullptr && compatibility == false)
+                  printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tagi, but sub-tags follow in read_new_style_drummap()!\n");
+                else if (dm ==nullptr && compatibility == true)
                 {
                    dm = &temporaryMap;
                 }
-                if (tag == "name")
+                if (tagi == "name")
                   dm->name = xml.parse(QString("name"));
-                else if (tag == "vol")
+                else if (tagi == "vol")
                   dm->vol = (unsigned char)xml.parseInt();
-                else if (tag == "quant")
+                else if (tagi == "quant")
                   dm->quant = xml.parseInt();
-                else if (tag == "len")
+                else if (tagi == "len")
                   dm->len = xml.parseInt();
-                else if (tag == "channel")
+                else if (tagi == "channel")
                   dm->channel = xml.parseInt();
-                else if (tag == "port")
+                else if (tagi == "port")
                   dm->port = xml.parseInt();
-                else if (tag == "lv1")
+                else if (tagi == "lv1")
                   dm->lv1 = xml.parseInt();
-                else if (tag == "lv2")
+                else if (tagi == "lv2")
                   dm->lv2 = xml.parseInt();
-                else if (tag == "lv3")
+                else if (tagi == "lv3")
                   dm->lv3 = xml.parseInt();
-                else if (tag == "lv4")
+                else if (tagi == "lv4")
                   dm->lv4 = xml.parseInt();
-                else if (tag == "enote") {
+                else if (tagi == "enote") {
                   dm->enote = xml.parseInt();
                   if (compatibility) {
                       int pitch = temporaryMap.enote;
@@ -774,18 +774,18 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                       dm->anote = pitch;
                   }
                 }
-                else if (tag == "anote")
+                else if (tagi == "anote")
                   dm->anote = xml.parseInt();
-                else if (tag == "mute")
+                else if (tagi == "mute")
                   dm->mute = xml.parseInt();
-                else if (tag == "hide")
+                else if (tagi == "hide")
                   dm->hide = xml.parseInt();
                 else
                   xml.unknown("read_new_style_drummap");
                 break;
 
               case Xml::TagEnd:
-                if (tag == "entry")
+                if (tagi == "entry")
                   goto end_of_nested_for;
 
               default:
@@ -1579,9 +1579,9 @@ QString getUniqueUntitledName()
       nfb = fbase;
       if(MusEGlobal::config.projectStoreInFolder) 
         nfb += "/" + nfn;
-      QFileInfo fi(nfb + "/" + nfn + ".med");
-      if(!fi.exists())
-        return fi.filePath();
+      QFileInfo fii(nfb + "/" + nfn + ".med");
+      if(!fii.exists())
+        return fii.filePath();
   }    
 
   printf("MusE error: Could not make untitled project name (10000 or more untitled projects in project dir - clean up!\n");

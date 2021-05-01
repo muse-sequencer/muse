@@ -21,67 +21,67 @@
 //
 //=========================================================
 
-#include "config.h"
+//#include "config.h"
 
 #include <stdio.h>
 #include <limits.h>
 #include "muse_math.h"
 
-#include <QComboBox>
+//#include <QComboBox>
 #include <QGridLayout>
-#include <QKeyEvent>
+//#include <QKeyEvent>
 #include <QLabel>
 #include <QList>
-#include <QMainWindow>
+//#include <QMainWindow>
 #include <QScrollBar>
 #include <QToolBar>
-#include <QVBoxLayout>
+//#include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
 #include <QCursor>
 #include <QPoint>
-#include <QRect>
+//#include <QRect>
 #include <QSettings>
 
 #include "arranger.h"
 #include "song.h"
 #include "app.h"
 #include "midiport.h"
-#include "mididev.h"
+//#include "mididev.h"
 #include "utils.h"
 #include "globals.h"
 #include "globaldefs.h"
 #include "icons.h"
-#include "utils.h"
+//#include "utils.h"
 #include "widget_stack.h"
 #include "audio.h"
-#include "event.h"
+//#include "event.h"
 #include "midiseq.h"
-#include "midictrl.h"
-#include "mpevent.h"
+//#include "midictrl.h"
+//#include "mpevent.h"
 #include "gconfig.h"
 #include "mixer/astrip.h"
 #include "mixer/mstrip.h"
 #include "shortcuts.h"
-#include "ttoolbutton.h"
+//#include "ttoolbutton.h"
 
 // Forwards from header:
-#include <QKeyEvent>
-#include <QPoint>
-#include <QComboBox>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+//#include <QKeyEvent>
+//#include <QPoint>
+//#include <QComboBox>
+//#include <QScrollBar>
+//#include <QVBoxLayout>
+//#include <QHBoxLayout>
 #include <QScrollArea>
 #include <QToolButton>
 #include "track.h"
-#include "part.h"
+//#include "part.h"
 #include "xml.h"
 #include "rasterizer.h"
-#include "lcombo.h"
+//#include "lcombo.h"
 #include "mtscale.h"
 #include "arrangerview.h"
-#include "astrip.h"
+//#include "astrip.h"
 #include "header.h"
 #include "poslabel.h"
 #include "scrollscale.h"

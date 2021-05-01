@@ -792,7 +792,7 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
 //                                      QString("Can't find soundfont: %1 - Choose soundfont").arg(filename),
 //                                      fn,
 //                                      QString("Soundfonts (*.sf2);;All files (*)"));
-//              QMessageBox::warning(NULL,"No sound font found.","Could not open soundfont: " + fn, QMessageBox::Ok);
+//              QMessageBox::warning(nullptr,"No sound font found.","Could not open soundfont: " + fn, QMessageBox::Ok);
 
               fprintf(stderr, "Warning: Could not open soundfont: %s\n", fn.toLatin1().constData());
 
@@ -826,14 +826,14 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
   ipatch_list_init_iter (presets, &pIter);
 
   // Iterate over presets in list
-  for (pset = ipatch_item_first (&pIter); pset != NULL; pset = ipatch_item_next (&pIter))
+  for (pset = ipatch_item_first (&pIter); pset != nullptr; pset = ipatch_item_next (&pIter))
   {
     // Get name of preset, MIDI bank, and MIDI program number
     g_object_get (pset,
                   "name", &psetName,
                   "bank", &bank,
                   "program", &program,
-                  NULL);
+                  nullptr);
 
 
     //fprintf(stderr, "psetName:%s bank:%d program:%d\n", psetName, bank, program);
@@ -858,18 +858,18 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
     ipatch_list_init_iter (pZones, &pZoneIter);
 
     // Iterate over preset zones
-    for (pZone = ipatch_item_first (&pZoneIter); pZone != NULL; pZone = ipatch_item_next (&pZoneIter))
+    for (pZone = ipatch_item_first (&pZoneIter); pZone != nullptr; pZone = ipatch_item_next (&pZoneIter))
     { 
       // Get linked instrument and preset zone note range set flag
       g_object_get (pZone,
                     "link-item", &inst,
                     "note-range-set", &pRangeSet,
-                    NULL);
+                    nullptr);
 
       // Get instrument name and global zone note range
       g_object_get (inst,
                     "name", &instName,
-                    NULL);
+                    nullptr);
 
       //fprintf(stderr, "\tinstName:%s\n", instName);
 
@@ -886,17 +886,17 @@ static void loadSf2NoteSampleNames(FluidSoundFont& font, IpatchSF2 *sf2)
 
       ipatch_list_init_iter (iZones, &iZoneIter);
 
-      for (iZone = ipatch_item_first (&iZoneIter); iZone != NULL; iZone = ipatch_item_next (&iZoneIter))
+      for (iZone = ipatch_item_first (&iZoneIter); iZone != nullptr; iZone = ipatch_item_next (&iZoneIter))
       { // Get sample and instrument zone note range set flag
         g_object_get (iZone,
                       "note-range-set", &iRangeSet,
                       "link-item", &samp,
-                      NULL);
+                      nullptr);
 
         // Get instrument name and global zone note range
         g_object_get (samp,
                       "name", &sampName,
-                      NULL);
+                      nullptr);
 
         if (pRangeSet)
           ipatch_sf2_gen_item_get_amount (IPATCH_SF2_GEN_ITEM (pZone), IPATCH_SF2_GEN_NOTE_RANGE, &pNoteRange);
@@ -942,7 +942,7 @@ static void loadNoteSampleNames(FluidSoundFont& font)
   IpatchSF2Reader* sf2_reader;
   IpatchFileHandle *fhandle;
   IpatchSF2File *sffile;
-  GError *err = NULL;
+  GError *err = nullptr;
   const QByteArray ba = font.file_name.toLatin1();
   const char* fname = ba.constData();
 
@@ -972,7 +972,7 @@ static void loadNoteSampleNames(FluidSoundFont& font)
     return;
   }
   
-  sf2 = ipatch_sf2_reader_load(sf2_reader, NULL);
+  sf2 = ipatch_sf2_reader_load(sf2_reader, nullptr);
   if(!sf2)
   {
     ipatch_file_close(fhandle);
@@ -1436,7 +1436,7 @@ bool FluidSynth::getNoteSampleName(bool drum, int channel, int patch, int note, 
         if(insnl == pnsnl.end())
         {
           // The soundfont has a note name list, but no name was found for that note.
-          *name = NULL;
+          *name = nullptr;
           return true;
         }
         else

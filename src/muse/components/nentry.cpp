@@ -28,9 +28,9 @@
 #include <QTimer>
 #include <QString>
 #include <QEvent>
-#include <QWheelEvent>
-#include <QKeyEvent>
-#include <QContextMenuEvent>
+//#include <QWheelEvent>
+//#include <QKeyEvent>
+//#include <QContextMenuEvent>
 #include <QWidget>
 
 #include "nentry.h"

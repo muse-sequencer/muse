@@ -20,8 +20,8 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
-#include "al/al.h"
-#include "awl.h"
+//#include "al/al.h"
+//#include "awl.h"
 #include "sigedit.h"
 #include "al/sig.h"
 //#include "sig.h"

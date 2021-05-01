@@ -29,7 +29,7 @@
 
 #ifdef ALSA_SUPPORT
 
-#include <climits>
+//#include <climits>
 #include <stdio.h>
 
 #include "globals.h"
@@ -42,11 +42,11 @@ namespace MusECore {
      {
      if(TIMER_DEBUG || ALSA_TIMER_DEBUG)
        fprintf(stderr,"AlsaTimer::AlsaTimer(this=%p) called\n",this);
-     handle = NULL;
-     id = NULL;
-     info = NULL;
-     params = NULL;
-     fds = NULL;
+     handle = nullptr;
+     id = nullptr;
+     info = nullptr;
+     params = nullptr;
+     fds = nullptr;
      }
      
   AlsaTimer::~AlsaTimer()
@@ -87,7 +87,7 @@ signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
   unsigned long best_freq = 0;
   int err;
 
-  snd_timer_query_t *timer_query = NULL;
+  snd_timer_query_t *timer_query = nullptr;
   if(snd_timer_query_open(&timer_query, "hw", 0) >= 0)
   {
     int device = SND_TIMER_GLOBAL_SYSTEM;
@@ -159,7 +159,7 @@ signed int AlsaTimer::initTimer(unsigned long desiredFrequency)
 
   count = snd_timer_poll_descriptors_count(handle);
   fds = (pollfd *)calloc(count, sizeof(pollfd));
-  if (fds == NULL) {
+  if (fds == nullptr) {
     fprintf(stderr, "AlsaTimer::initTimer(): malloc error\n");
     return -1;
     }

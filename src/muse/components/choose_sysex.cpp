@@ -40,7 +40,7 @@ ChooseSysexDialog::ChooseSysexDialog(QWidget* parent, MusECore::MidiInstrument* 
 {
   setupUi(this);
   sysexList->clear();
-  _sysex = NULL;
+  _sysex = nullptr;
   _instr = instr;
   if(_instr)
   {
@@ -93,7 +93,7 @@ void ChooseSysexDialog::sysexChanged(QListWidgetItem* sel, QListWidgetItem*)
 
 void ChooseSysexDialog::accept()
 {
-  _sysex = NULL;
+  _sysex = nullptr;
   QListWidgetItem* item = sysexList->currentItem();
   if(item)
     _sysex = (MusECore::SysEx*)item->data(Qt::UserRole).value<void*>();

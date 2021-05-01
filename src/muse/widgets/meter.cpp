@@ -594,20 +594,11 @@ void Meter::paintEvent(QPaintEvent* ev)
   const double transl_val = val - minScale;
   
   bool textDrawn = false;
-// Rects() is obsolete. Qt >= 5.8 use begin()/end().
-#if QT_VERSION >= 0x050800
   QRegion::const_iterator ireg_end = ev->region().cend();
   for(QRegion::const_iterator ireg = ev->region().cbegin(); ireg != ireg_end; ++ireg)
   {
     const QRect& rect = *ireg;
-#else
-  const int rectCount = ev->region().rectCount();
-  QVector<QRect> rects = ev->region().rects();
-  for(int ri = 0; ri < rectCount; ++ri)
-  {
-    const QRect& rect = rects.at(ri);
-#endif
-    
+
     // Tested OK! Small non-overlapping rectangles.
     //fprintf(stderr, "Meter::paintEvent rcount:%d ridx:%d rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", 
     //                rectCount, ri, rect.x(), rect.y(), rect.width(), rect.height(), w, h);

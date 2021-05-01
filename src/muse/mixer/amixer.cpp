@@ -23,10 +23,10 @@
 
 #include "muse_math.h"
 
-#include <QApplication>
+//#include <QApplication>
 #include <QMenuBar>
 #include <QPaintEvent>
-#include <QActionGroup>
+//#include <QActionGroup>
 #include <QSpacerItem>
 
 #include "amixer.h"
@@ -46,14 +46,14 @@
 #include <QMenu>
 #include <QAction>
 #include <QHBoxLayout>
-#include <QResizeEvent>
-#include <QMoveEvent>
-#include <QCloseEvent>
-#include <QKeyEvent>
+//#include <QResizeEvent>
+//#include <QMoveEvent>
+//#include <QCloseEvent>
+//#include <QKeyEvent>
 #include <QEvent>
-#include "xml.h"
+//#include "xml.h"
 #include "track.h"
-#include "meter.h"
+//#include "meter.h"
 #include "combobox.h"
 #include "doublelabel.h"
 #include "knob.h"
@@ -61,7 +61,7 @@
 #include "strip.h"
 #include "components/routedialog.h"
 
-#define __WIDTH_COMPENSATION 4
+//#define __WIDTH_COMPENSATION 4
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_MIXER(dev, format, args...)  // fprintf(dev, format, ##args);
@@ -716,8 +716,8 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     // Create a strip config now if no strip config exists yet for this strip (sc is default, with invalid sn).
     if(sc.isNull())
     {
-      const MusEGlobal::StripConfig sc(t->serial(), strip->getStripVisible(), strip->userWidth());
-      cfg->stripConfigList.append(sc);
+      const MusEGlobal::StripConfig scl(t->serial(), strip->getStripVisible(), strip->userWidth());
+      cfg->stripConfigList.append(scl);
     }
 }
 

@@ -20,29 +20,29 @@
 
 #include <QMessageBox>
 #include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <pthread.h>
-#include <sys/poll.h>
-#include <sys/time.h>
+//#include <stdlib.h>
+//#include <errno.h>
+//#include <stdarg.h>
+//#include <pthread.h>
+//#include <sys/poll.h>
+//#include <sys/time.h>
 #include <unistd.h>
 #include "muse_math.h"
 
-#include "config.h"
+//#include "config.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "globals.h"
 #include "song.h"
 // #include "driver/alsatimer.h"
-#include "pos.h"
+//#include "pos.h"
 #include "gconfig.h"
 //#include "utils.h"
 #include "al/al.h"
 #include "rtaudio.h"
 
-#define MASTER_LEFT (void*)1
-#define MASTER_RIGHT (void*)2
+//#define MASTER_LEFT (void*)1
+//#define MASTER_RIGHT (void*)2
 
 namespace MusECore {
 
@@ -97,7 +97,7 @@ RtAudioDevice::RtAudioDevice(bool forceDefault) : AudioDevice()
       if ( dac->getDeviceCount() < 1 ) {
 
         fprintf (stderr, "\nNo audio devices found!\n");
-        QMessageBox::warning(NULL,"No sound device.","RtAudio did not find any audio device - run muse in midi-only mode if there is audio capable device.", QMessageBox::Ok);
+        QMessageBox::warning(nullptr,"No sound device.","RtAudio did not find any audio device - run muse in midi-only mode if there is audio capable device.", QMessageBox::Ok);
       }
 }
 
@@ -110,8 +110,8 @@ void exitRtAudio()
 {
   if(rtAudioDevice)
     delete rtAudioDevice;
-  rtAudioDevice = NULL;
-  MusEGlobal::audioDevice = NULL;
+  rtAudioDevice = nullptr;
+  MusEGlobal::audioDevice = nullptr;
 }
 
 
@@ -163,7 +163,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
   if (rtAudioDevice->inputPortsList.size() >= 1) {
 
     MuseRtAudioPort *left = rtAudioDevice->inputPortsList.at(0);
-    MuseRtAudioPort *right = NULL;
+    MuseRtAudioPort *right = nullptr;
     if (rtAudioDevice->inputPortsList.size() >= 2) {
        right= rtAudioDevice->inputPortsList.at(1);
     }
@@ -177,7 +177,7 @@ int processAudio( void * outputBuffer, void *inputBuffer, unsigned int nBufferFr
 
       left->buffer[i] = floatInputBuffer[i*2];
 
-      if (right != NULL) {
+      if (right != nullptr) {
         right->buffer[i] = floatInputBuffer[i*2+1];
       }
     }

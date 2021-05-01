@@ -25,12 +25,12 @@
 
 #include "muse_math.h"
 
-#include <QtGlobal>
+//#include <QtGlobal>
 
 #include "mmath.h"
 #include "drange.h"
 #include "fastlog.h"
-#include "muse_math.h"
+//#include "muse_math.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_DRANGE(dev, format, args...) // fprintf(dev, format, ##args);

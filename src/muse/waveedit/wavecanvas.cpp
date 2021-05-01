@@ -188,7 +188,7 @@ void WaveCanvas::updateItems()
     storedEvent=curItem->event();
     partSn=curItem->part()->sn();
   }
-  curItem=NULL;
+  curItem=nullptr;
   
   items.clearDelete();
   startSample  = INT_MAX;
@@ -224,7 +224,7 @@ void WaveCanvas::updateItems()
                     
                     if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
                     {
-                        if (curItem!=NULL)
+                        if (curItem!=nullptr)
                           printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
                         
                         curItem=temp;

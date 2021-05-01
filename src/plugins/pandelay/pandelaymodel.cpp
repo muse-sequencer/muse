@@ -28,7 +28,7 @@
 //===========================================================================
 
 #include "pandelaymodel.h"
-#include <stdio.h>
+//#include <stdio.h>
 
 PanDelayModel::PanDelayModel(int samplerate) {
   for(int i = 0; i < MAXBUFFERLENGTH; i++) {

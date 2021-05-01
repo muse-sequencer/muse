@@ -934,7 +934,7 @@ int get_paste_len()
                         if (tag == "part")
                               {
                               Part* p = 0;
-                              p = Part::readFromXml(xml, NULL, false, false);
+                              p = Part::readFromXml(xml, nullptr, false, false);
 
                               if (p)
                                     {

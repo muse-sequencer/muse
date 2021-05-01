@@ -107,7 +107,7 @@ void WaveEventBase::assign(const EventBase& ev)
 bool WaveEventBase::isSimilarTo(const EventBase& other_) const
 {
 	const WaveEventBase* other = dynamic_cast<const WaveEventBase*>(&other_);
-	if (other==NULL) // dynamic cast hsa failed: "other_" is not of type WaveEventBase.
+	if (other==nullptr) // dynamic cast hsa failed: "other_" is not of type WaveEventBase.
 		return false;
 	
 	return f.dirPath()==other->f.dirPath() && _spos==other->_spos && this->PosLen::operator==(*other);

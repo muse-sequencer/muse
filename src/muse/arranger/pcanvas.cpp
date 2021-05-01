@@ -573,7 +573,7 @@ QPoint PartCanvas::raster(const QPoint& p) const
 
 void PartCanvas::songIsClearing()
 {
-  curItem=NULL;
+  curItem=nullptr;
   items.clearDelete();
 }
 
@@ -585,7 +585,7 @@ void PartCanvas::updateItems()
       {
       int sn = -1;
       if (curItem) sn=static_cast<NPart*>(curItem)->serial();
-      curItem=NULL;
+      curItem=nullptr;
 
       items.clearDelete();
       for (MusECore::ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
@@ -4575,10 +4575,10 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
   double closest_point_value = 0.0;
   //int closest_point_x = 0;
   //int closest_point_y = 0;
-  MusECore::CtrlList* closest_point_cl = NULL;
+  MusECore::CtrlList* closest_point_cl = nullptr;
 
   int closest_line_dist2 = PartCanvas::_automationPointDetectDist * PartCanvas::_automationPointDetectDist;
-  MusECore::CtrlList* closest_line_cl = NULL;
+  MusECore::CtrlList* closest_line_cl = nullptr;
 
   MusECore::CtrlListList* cll = ((MusECore::AudioTrack*) t)->controller();
   for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)

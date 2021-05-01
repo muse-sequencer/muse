@@ -29,7 +29,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#include <QActionGroup>
+//#include <QActionGroup>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QHeaderView>
@@ -64,12 +64,12 @@
 // Forwards from header:
 #include <QWidget>
 #include <QTreeWidget>
-#include <QTableWidget>
+//#include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QMenu>
 #include <QAction>
 #include "popupmenu.h"
-#include "xml.h"
+//#include "xml.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
@@ -196,7 +196,7 @@ void MPConfig::changeDefInputRoutes(QAction* act)
         
         if(!operations.empty())
         {
-          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //           MusEGlobal::song->update(SC_ROUTE);
         }
@@ -334,7 +334,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
         
         if(!operations.empty())
         {
-          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+          operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
           MusEGlobal::audio->msgExecutePendingOperations(operations, true);
 //           MusEGlobal::song->update(SC_ROUTE);
         }        
@@ -839,7 +839,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   }
                   
                   // Do these always, regardless of operations - the device has changed.
-                  operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+                  operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
                   //if(!operations.empty())
                     MusEGlobal::audio->msgExecutePendingOperations(operations, true, SC_EVERYTHING);
 //                   MusEGlobal::song->update();
@@ -1199,7 +1199,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
     
 #ifdef ALSA_SUPPORT
       addALSADevice->blockSignals(true);
-      addALSADevice->setChecked(MusEGlobal::midiSeq != NULL);
+      addALSADevice->setChecked(MusEGlobal::midiSeq != nullptr);
       addALSADevice->blockSignals(false);
 #endif
 

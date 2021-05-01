@@ -179,8 +179,8 @@ class PartCanvas : public Canvas {
       void paste(bool clone = false, paste_mode_t paste_mode = PASTEMODE_MIX,
                  bool to_single_track=false, int amount=1, int raster=1536);
       MusECore::Undo pasteAt(const QString&, MusECore::Track*, unsigned int, bool clone = false,
-                             bool toTrack = true, unsigned int* finalPosPtr = NULL,
-                             std::set<MusECore::Track*>* affected_tracks = NULL);
+                             bool toTrack = true, unsigned int* finalPosPtr = nullptr,
+                             std::set<MusECore::Track*>* affected_tracks = nullptr);
       void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame,
                            unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight, bool selected);
       void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&, bool selected);

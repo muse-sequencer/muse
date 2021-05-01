@@ -563,7 +563,7 @@ void RubberBandAudioConverterSettings::read(Xml& xml)
             case Xml::TagStart:
                   if(mode != -1)
                   {
-                    RubberBandAudioConverterOptions* opts = NULL;
+                    RubberBandAudioConverterOptions* opts = nullptr;
                     switch(mode)
                     {
                       case AudioConverterSettings::OfflineMode:
@@ -628,7 +628,7 @@ RubberbandSettingsDialog::RubberbandSettingsDialog(
   
   OKButton->setEnabled(false);
   
-  _options = NULL;
+  _options = nullptr;
   if(settings)
   {
     MusECore::RubberBandAudioConverterSettings* rb_settings = 

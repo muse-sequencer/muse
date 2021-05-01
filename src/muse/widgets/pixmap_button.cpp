@@ -24,8 +24,8 @@
 //#include <QPixmap>
 #include <QIcon>
 #include <QPaintEvent>
-#include <QMouseEvent>
-#include <QContextMenuEvent>
+//#include <QMouseEvent>
+//#include <QContextMenuEvent>
 
 #include "pixmap_button.h"
 

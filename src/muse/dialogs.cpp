@@ -43,18 +43,18 @@ using namespace std;
 
 namespace MusEGui {
 
-GateTime* gatetime_dialog=NULL;
-Velocity* velocity_dialog=NULL;
-Quantize* quantize_dialog=NULL;
-Remove* erase_dialog=NULL;
-DelOverlaps* del_overlaps_dialog=NULL;
-Setlen* set_notelen_dialog=NULL;
-Move* move_notes_dialog=NULL;
-Transpose* transpose_dialog=NULL;
-Crescendo* crescendo_dialog=NULL;
-Legato* legato_dialog=NULL;
-PasteDialog* paste_dialog=NULL;
-PasteEventsDialog* paste_events_dialog=NULL;
+GateTime* gatetime_dialog=nullptr;
+Velocity* velocity_dialog=nullptr;
+Quantize* quantize_dialog=nullptr;
+Remove* erase_dialog=nullptr;
+DelOverlaps* del_overlaps_dialog=nullptr;
+Setlen* set_notelen_dialog=nullptr;
+Move* move_notes_dialog=nullptr;
+Transpose* transpose_dialog=nullptr;
+Crescendo* crescendo_dialog=nullptr;
+Legato* legato_dialog=nullptr;
+PasteDialog* paste_dialog=nullptr;
+PasteEventsDialog* paste_events_dialog=nullptr;
 
 void init_function_dialogs()
 {

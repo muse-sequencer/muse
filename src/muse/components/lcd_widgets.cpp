@@ -23,16 +23,16 @@
 //=========================================================
 
 #include <QPainter>
-#include <QBrush>
+//#include <QBrush>
 #include <QColor>
 #include <QPalette>
 #include <QRect>
 #include <QString>
 
 #include <QMouseEvent>
-#include <QWheelEvent>
-#include <QPaintEvent>
-#include <QResizeEvent>
+//#include <QWheelEvent>
+//#include <QPaintEvent>
+//#include <QResizeEvent>
 #include <QFontMetrics>
 #include <QToolTip>
 

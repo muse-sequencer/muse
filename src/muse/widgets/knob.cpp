@@ -24,14 +24,14 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "knob.h"
 #include "muse_math.h"
 #include "mmath.h"
 
 #include <QPainter>
 #include <QPalette>
-#include <QPaintEvent>
+//#include <QPaintEvent>
 #include <QResizeEvent>
 
 // For debugging output: Uncomment the fprintf section.

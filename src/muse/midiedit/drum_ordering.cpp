@@ -112,7 +112,7 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xm
   using MusECore::ciTrack;
   
   entry_t entry;
-  entry.first=NULL;
+  entry.first=nullptr;
   entry.second=-1;
   
 	for (;;)
@@ -154,7 +154,7 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xm
 
   end_of_read_single:
   
-  if (entry.first == NULL)
+  if (entry.first == nullptr)
     fprintf(stderr, "ERROR: global_drum_ordering_t::read_single() couldn't find the specified track!\n");
   
   if (entry.second < 0 || entry.second > 127)
@@ -170,7 +170,7 @@ global_drum_ordering_t::entry_t global_drum_ordering_t::read_item(MusECore::Xml&
   using MusECore::ciTrack;
 
   entry_t entry;
-  entry.first=NULL;
+  entry.first=nullptr;
   entry.second=-1;
 
   int trk_idx = -1;

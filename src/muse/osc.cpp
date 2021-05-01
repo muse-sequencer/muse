@@ -36,7 +36,7 @@
 #include <errno.h>
 #include "muse_math.h"
 
-#include <QFileInfo>
+//#include <QFileInfo>
 #include <QString>
 #include <QStringList>
 
@@ -58,9 +58,9 @@
 #include "track.h"
 #include "song.h"
 #include "synth.h"
-#include "app.h"
+//#include "app.h"
 #include "globals.h"
-#include "globaldefs.h"
+//#include "globaldefs.h"
 
 #endif   // OSC_SUPPORT
 
@@ -173,7 +173,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
       
       QByteArray ba = synti->name().toLatin1();
       const char* sub = strstr(p, ba.constData());
-      if(sub == NULL) 
+      if(sub == nullptr)
         continue;
 
       if(!synti->sif() || !synti->synth() || synti->synth()->synthType() != MusECore::Synth::DSSI_SYNTH)
@@ -234,7 +234,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
         
         QByteArray ba = instance->label().toLatin1();
         const char* sub = strstr(p, ba.constData());
-        if(sub == NULL) 
+        if(sub == nullptr)
           continue;
           
         Plugin* plugin = instance->plugin();
@@ -396,8 +396,8 @@ OscIF::OscIF()
   _oscGuiVisible = false;
   
   old_prog=old_bank=0xDEADBEEF;
-  old_control=NULL;
-  control_port_mapper=NULL;
+  old_control=nullptr;
+  control_port_mapper=nullptr;
   maxDssiPort=0;
 }
 
@@ -787,7 +787,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                        const QString& label, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_)
 {
-      if (old_control==NULL)
+      if (old_control==nullptr)
       {
         control_port_mapper=control_port_mapper_;
         

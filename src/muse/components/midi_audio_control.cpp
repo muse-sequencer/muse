@@ -30,7 +30,7 @@
 #include "audio.h"
 #include "app.h"
 
-#include <QTimer>
+//#include <QTimer>
 
 namespace MusEGui {
 

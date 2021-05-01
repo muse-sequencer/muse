@@ -77,7 +77,7 @@ void MidiEventBase::assign(const EventBase& ev)
 bool MidiEventBase::isSimilarTo(const EventBase& other_) const
 {
 	const MidiEventBase* other = dynamic_cast<const MidiEventBase*>(&other_);
-	if (other==NULL) // dynamic cast hsa failed: "other_" is not of type MidiEventBase.
+	if (other==nullptr) // dynamic cast hsa failed: "other_" is not of type MidiEventBase.
 		return false;
 	
 	if ((a==other->a && b==other->b && c==other->c && edata.dataLen()==other->edata.dataLen() && this->PosLen::operator==(*other)) == false)

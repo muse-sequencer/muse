@@ -23,20 +23,20 @@
 
 #include <QMessageBox>
 
-#include "config.h"
+//#include "config.h"
 #ifndef _WIN32
-#include <sys/wait.h>
-#include <sys/mman.h>
+//#include <sys/wait.h>
+//#include <sys/mman.h>
 #endif
-#include <signal.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <errno.h>
+//#include <signal.h>
+//#include <pthread.h>
+//#include <unistd.h>
+//#include <errno.h>
 #include <vector>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <dlfcn.h>
 #include <stdio.h>
-#include <string>
+//#include <string>
 
 #include <QDir>
 #include <QString>
@@ -48,8 +48,8 @@
 #include "audio.h"
 #include "event.h"
 #include "mpevent.h"
-#include "audio.h"
-#include "midiseq.h"
+//#include "audio.h"
+//#include "midiseq.h"
 #include "midictrl.h"
 #include "midiitransform.h"
 #include "mitplugin.h"
@@ -152,8 +152,8 @@ inline unsigned long SynthIF::parametersOut() const             { return 0; }
 inline void SynthIF::setParam(unsigned long, double)       { }
 inline double SynthIF::param(unsigned long) const              { return 0.0; }
 inline double SynthIF::paramOut(unsigned long) const          { return 0.0; }
-inline const char* SynthIF::paramName(unsigned long)          { return NULL; }
-inline const char* SynthIF::paramOutName(unsigned long)       { return NULL; }
+inline const char* SynthIF::paramName(unsigned long)          { return nullptr; }
+inline const char* SynthIF::paramOutName(unsigned long)       { return nullptr; }
 LADSPA_PortRangeHint SynthIF::range(unsigned long)
 {
   LADSPA_PortRangeHint h;
@@ -3921,7 +3921,7 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
           {
             int hb;
             int lb;
-            synti->currentProg(chn, NULL, &lb, &hb);
+            synti->currentProg(chn, nullptr, &lb, &hb);
             synti->setCurrentProg(chn, a & 0xff, lb, hb);
             // Only if there's something to change...
             //if(hb < 128 || lb < 128 || a < 128)
@@ -3970,7 +3970,7 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
             {
               int lb;
               int pr;
-              synti->currentProg(chn, &pr, &lb, NULL);
+              synti->currentProg(chn, &pr, &lb, nullptr);
               synti->setCurrentProg(chn, pr, lb, b & 0xff);
               // Only if there's something to change...
               //if(b < 128 || lb < 128 || pr < 128)
@@ -3991,7 +3991,7 @@ bool MessSynthIF::processEvent(const MidiPlayEvent& ev)
             {
               int hb;
               int pr;
-              synti->currentProg(chn, &pr, NULL, &hb);
+              synti->currentProg(chn, &pr, nullptr, &hb);
               synti->setCurrentProg(chn, pr, b & 0xff, hb);
               // Only if there's something to change...
               //if(hb < 128 || b < 128 || pr < 128)

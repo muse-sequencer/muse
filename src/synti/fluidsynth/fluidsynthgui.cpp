@@ -498,7 +498,7 @@ void FluidSynthGui::dumpInfo()
 
 QString FluidSynthGui::getSoundFontName(int id)
       {
-      QString name = NULL;
+      QString name = nullptr;
       for (std::list<FluidGuiSoundFont>::iterator it = stack.begin(); it != stack.end(); it++) {
             if (id == it->id) {
                   name = it->name;

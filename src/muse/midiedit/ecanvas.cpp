@@ -22,19 +22,19 @@
 //=========================================================
 
 #include <stdio.h>
-#include <errno.h>
+//#include <errno.h>
 #include <limits.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
 #ifndef _WIN32
 #include <sys/mman.h>
 #endif
 
 #include <QByteArray>
-#include <QSet>
+//#include <QSet>
 #include <QMimeData>
 
-#include "xml.h"
+//#include "xml.h"
 #include "ecanvas.h"
 #include "song.h"
 #include "shortcuts.h"
@@ -47,7 +47,7 @@
 #include "config.h"
 
 // Forwards from header:
-#include <QDropEvent>
+//#include <QDropEvent>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QToolTip>
@@ -178,7 +178,7 @@ void EventCanvas::updateItems()
     storedEvent=curItem->event();
     partSn=curItem->part()->sn();
   }
-  curItem=NULL;
+  curItem=nullptr;
   
   items.clearDelete();
   start_tick  = INT_MAX;
@@ -217,7 +217,7 @@ void EventCanvas::updateItems()
                     
                     if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
                     {
-                        if (curItem!=NULL)
+                        if (curItem!=nullptr)
                           fprintf(stderr, "THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
                         
                         curItem=temp;

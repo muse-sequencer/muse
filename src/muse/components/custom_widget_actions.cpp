@@ -26,18 +26,17 @@
 #include <QPainterPath>
 #include <QPaintEvent>
 #include <QString>
-#include <QList>
+//#include <QList>
 #include <QApplication>
 #include <QStyleOptionButton>
 #include <QStyle>
 #include <QMenu>
 #include <QGraphicsWidget>
-#include <QMouseEvent>
+//#include <QMouseEvent>
 #include <QCheckBox>
 
 #include "menutitlewidgets.h"
-#include "icons.h"
-#include "pixmap_button.h"
+//#include "icons.h"
 #include "custom_widget_actions.h"
 
 // For debugging output: Uncomment the fprintf section.

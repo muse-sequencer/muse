@@ -56,7 +56,7 @@ bool sndFileCheckCopyOnWrite(const SndFileR sndFile)
   // Not much choice but to search all active wave events - the sndfile ref count is not the solution for this...
   int use_count = 0;
   EventID_t id = MUSE_INVALID_EVENT_ID;
-  Part* part = NULL;
+  Part* part = nullptr;
   WaveTrackList* wtl = MusEGlobal::song->waves();
   for(ciTrack it = wtl->begin(); it != wtl->end(); ++it)
   {

@@ -44,7 +44,7 @@
 #include "wave.h"
 
 
-#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
+//#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
 #include "time_stretch.h"
 #include "audio_convert/audio_converter_settings_group.h"
@@ -217,7 +217,7 @@ class Song : public QObject {
        *  this is a special case of the general function, which only replaces one part
        *  by up to nine different.
        */
-      void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=NULL, const Part* p3=NULL, const Part* p4=NULL, const Part* p5=NULL, const Part* p6=NULL, const Part* p7=NULL, const Part* p8=NULL, const Part* p9=NULL);
+      void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=nullptr, const Part* p3=nullptr, const Part* p4=nullptr, const Part* p5=nullptr, const Part* p6=nullptr, const Part* p7=nullptr, const Part* p8=nullptr, const Part* p9=nullptr);
 
       void putEvent(int pv);
       void putEventCC(char cc);
@@ -279,7 +279,7 @@ class Song : public QObject {
       iMarker getMarkerAt(unsigned t);
       void removeMarker(const Marker&);
       void setMarkerName(const Marker&, const QString&);
-      void setMarkerPos(const Marker&, const Pos& pos);
+      void setMarkerPos(const Marker&, const Pos& position);
       void setMarkerLock(const Marker&, bool);
 
       //-----------------------------------------
@@ -405,7 +405,7 @@ class Song : public QObject {
       void removePart(Part* part);
       void changePart(Part*, Part*);
 
-      void normalizeWaveParts(Part *partCursor = NULL);
+      void normalizeWaveParts(Part *partCursor = nullptr);
 
       //-----------------------------------------
       //   track manipulations

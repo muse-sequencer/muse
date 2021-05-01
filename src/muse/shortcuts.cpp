@@ -33,7 +33,7 @@
 //
 
 #include "shortcuts.h"
-#include <QTranslator>
+//#include <QTranslator>
 #include <QKeySequence>
 
 namespace MusEGui {

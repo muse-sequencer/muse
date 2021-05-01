@@ -21,8 +21,8 @@
 //
 //=========================================================
 
-#include <unistd.h>
-#include <stdlib.h>
+//#include <unistd.h>
+//#include <stdlib.h>
 #include <stdio.h>
 
 #include <QDesktopServices>
@@ -32,8 +32,8 @@
 
 #include "app.h"
 #include "globals.h"
-#include "gconfig.h"
-#include "icons.h"
+//#include "gconfig.h"
+//#include "icons.h"
 #include "aboutbox_impl.h"
 
 // Whether to open the pdf or the html

@@ -22,7 +22,7 @@
 //=========================================================
 
 #include "midifilterimpl.h"
-#include "ctrlcombo.h"
+//#include "ctrlcombo.h"
 
 #include <QDialog>
 #include <QCloseEvent>

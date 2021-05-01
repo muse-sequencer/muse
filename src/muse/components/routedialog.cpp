@@ -848,7 +848,7 @@ bool RouteTreeWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &o
                     opt.state |= QStyle::State_On;
                 break;
               }
-              st->drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &opt, painter);
+              st->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &opt, painter);
             }
             
             // Draw the icon.
@@ -1464,7 +1464,7 @@ RouteTreeWidgetItem* RouteTreeWidget::findItem(const MusECore::Route& r, int typ
     }
     ++ii;
   }
-  return NULL;
+  return nullptr;
 }
 
 RouteTreeWidgetItem* RouteTreeWidget::findCategoryItem(const QString& name)
@@ -1897,8 +1897,8 @@ RouteDialog::RouteDialog(QWidget* parent)
   
   //newSrcList->viewport()->setLayoutDirection(Qt::LeftToRight);
   
-  //_srcFilterItem = NULL;
-  //_dstFilterItem = NULL;
+  //_srcFilterItem = nullptr;
+  //_dstFilterItem = nullptr;
 
   srcItemDelegate = new RoutingItemDelegate(true, newSrcList, this);
   dstItemDelegate = new RoutingItemDelegate(false, newDstList, this);
@@ -2752,7 +2752,7 @@ void RouteDialog::connectClicked()
 
   if(!operations.empty())
   {
-    operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)NULL, MusECore::PendingOperationItem::UpdateSoloStates));
+    operations.add(MusECore::PendingOperationItem((MusECore::TrackList*)nullptr, MusECore::PendingOperationItem::UpdateSoloStates));
     MusEGlobal::audio->msgExecutePendingOperations(operations, true,
       upd_trk_props ? (SC_ROUTE | ((changed & MusECore::MidiTrack::DrumMapChanged) ? SC_DRUMMAP : 0)) : 0);
 //     MusEGlobal::song->update(SC_ROUTE | (upd_trk_props ? SC_MIDI_TRACK_PROP : 0));
@@ -3428,7 +3428,7 @@ void RouteDialog::addItems()
       if(port != i)
         continue;
       non_route_found = true;
-      const MusECore::Route src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, mt, chan, -1, -1, NULL);
+      const MusECore::Route src = MusECore::Route(MusECore::Route::TRACK_ROUTE, -1, mt, chan, -1, -1, nullptr);
       const MusECore::Route dst(i, chan);
       const QString srcName = mt->displayName() + QString(" [") + QString::number(chan) + QString("]");
       const QString dstName = mdname;

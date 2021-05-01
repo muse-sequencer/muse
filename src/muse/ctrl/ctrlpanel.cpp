@@ -21,14 +21,14 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <list>
 
 #include "ctrlpanel.h"
 #include "ctrlcanvas.h"
 
 #include <QSizePolicy>
-#include <QTimer>
+//#include <QTimer>
 #include <QColor>
 #include <QStyle>
 
@@ -41,7 +41,7 @@
 #include "instruments/minstrument.h"
 #include "mididev.h"
 #include "icons.h"
-#include "event.h"
+//#include "event.h"
 #include "part.h"
 #include "midiedit/drummap.h"
 #include "gconfig.h"
@@ -50,12 +50,12 @@
 
 #include "audio.h"
 #include "midi_consts.h"
-#include "menutitleitem.h"
+//#include "menutitleitem.h"
 #include "popupmenu.h"
 #include "helper.h"
 
 // Forwards from header:
-#include <QHBoxLayout>
+//#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QSpacerItem>
 #include <QAction>
@@ -63,7 +63,7 @@
 #include "midi_controller.h"
 #include "midiport.h"
 #include "track.h"
-#include "ctrlcanvas.h"
+//#include "ctrlcanvas.h"
 #include "compact_knob.h"
 #include "compact_slider.h"
 #include "lcd_widgets.h"

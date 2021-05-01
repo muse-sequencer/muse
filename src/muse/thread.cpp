@@ -32,7 +32,7 @@
 #include <sys/mman.h>
 #include <sys/poll.h>
 #endif
-#include <fcntl.h>
+//#include <fcntl.h>
 
 #include "globals.h"
 #include "errno.h"
@@ -130,7 +130,7 @@ void Thread::start(int prio, void* ptr)
         // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
         // So we'll just have to try again without attributes.
         if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
-          rv = pthread_create(&thread, NULL, MusECore::loop, this); 
+          rv = pthread_create(&thread, nullptr, MusECore::loop, this); 
       }
 
       if(rv)

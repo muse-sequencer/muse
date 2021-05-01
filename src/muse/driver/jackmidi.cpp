@@ -68,8 +68,8 @@ namespace MusECore {
 MidiJackDevice::MidiJackDevice(const QString& n)
    : MidiDevice(n)
 {
-  _in_client_jackport  = NULL;
-  _out_client_jackport = NULL;
+  _in_client_jackport  = nullptr;
+  _out_client_jackport = nullptr;
 }
 
 MidiJackDevice::~MidiJackDevice()
@@ -237,7 +237,7 @@ QString MidiJackDevice::open()
       }  
       
       MusEGlobal::audioDevice->unregisterPort(_out_client_jackport);
-      _out_client_jackport = NULL;  
+      _out_client_jackport = nullptr;  
     }  
   }
   
@@ -300,7 +300,7 @@ QString MidiJackDevice::open()
       }  
       
       MusEGlobal::audioDevice->unregisterPort(_in_client_jackport);
-      _in_client_jackport = NULL;  
+      _in_client_jackport = nullptr;  
     }  
   }
     

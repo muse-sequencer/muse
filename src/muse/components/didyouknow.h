@@ -46,7 +46,7 @@ class DidYouKnowWidget : public QDialog, public Ui::DidYouKnow
       {
           setupUi(this);
           tipText->setBackgroundRole(QPalette::Text);
-          tipText->setForegroundRole(QPalette::Foreground);
+          tipText->setForegroundRole(QPalette::WindowText);
           tipText->setOpenExternalLinks(true);
           currTip=0;
           showTeaser=false;

@@ -281,7 +281,7 @@ class SndFileR {
       SndFile* operator*() { return sf; }
       const SndFile* operator*() const { return sf; }
 
-      operator bool() { return sf!=NULL; }
+      operator bool() { return sf!=nullptr; }
       ~SndFileR();
       int getRefCount() const { return sf ? sf->getRefCount() : 0; }
       bool isNull() const     { return sf == 0; }

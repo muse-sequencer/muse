@@ -20,6 +20,7 @@
 #  Free Software Foundation, Inc.,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
+
 project(muse)
 
 include(FindPkgConfig)
@@ -30,11 +31,15 @@ include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5.1)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy (SET CMP0007 NEW)
 endif(COMMAND cmake_policy)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (NOT DEFINED LIB_SUFFIX)
         SET(LIB_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
@@ -241,7 +246,7 @@ find_package(Threads REQUIRED)
 ##
 
 
-set(QT_MIN_VERSION "5.7.0")
+set(QT_MIN_VERSION "5.9.5")
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTDESIGNER TRUE)
 set(QT_USE_QTSVG TRUE)
@@ -249,7 +254,7 @@ set(QT_USE_QTSVG TRUE)
 find_package(Qt5Widgets)
 
 if (NOT Qt5Widgets_FOUND)
-      message(FATAL_ERROR "Fatal error: QT (version >= 5.7.0) required.\n"
+      message(FATAL_ERROR "Fatal error: QT (version >= 5.9.5) required.\n"
       "Cmake tries to detect QT5 by searching for 'Qt5Widgets' package\n"
       "If you have QT5 installed, make sure 'Qt5Widgets' package is in PKG_CONFIG_PATH."
       )
@@ -307,24 +312,24 @@ endif(NOT HAVE_LADSPA_H)
 # endif (APPLE)
 
 ##
-## find sndfile >= 1.0.0
+## find sndfile 
 ##
 
-PKG_CHECK_MODULES(SNDFILE REQUIRED sndfile>=1.0.0)
+PKG_CHECK_MODULES(SNDFILE REQUIRED sndfile>=1.0.28)
 include_directories(${SNDFILE_INCLUDE_DIRS})
 
 ##
-## find libsamplerate >= 0.1.0
+## find libsamplerate
 ##
 
-PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.0)
+PKG_CHECK_MODULES(SAMPLERATE REQUIRED samplerate>=0.1.9)
 include_directories(${SAMPLERATE_INCLUDE_DIRS})
 
 ##
-## find jack >= 0.103.0
+## find jack
 ##
 
-PKG_CHECK_MODULES(JACK REQUIRED jack>=0.103)
+PKG_CHECK_MODULES(JACK REQUIRED jack>=0.125.0)
 include_directories(${JACK_INCLUDE_DIRS})
 
 ##
@@ -351,12 +356,12 @@ check_cxx_symbol_exists(exp10l cmath HAVE_EXP10L)
 
 
 ##
-## alsa >= 0.9.0
+## find alsa
 ##
 
 ## If requesting DSSI as well, try to grab ALSA too.
 if (ENABLE_DSSI OR ENABLE_ALSA)
-      PKG_CHECK_MODULES(ALSA alsa>=0.9.0)
+      PKG_CHECK_MODULES(ALSA alsa>=1.1.3)
       if (ALSA_FOUND)
             include_directories(${ALSA_INCLUDE_DIRS})
             set(ALSA_SUPPORT ON)
@@ -391,8 +396,9 @@ else (ENABLE_LASH)
       message("LASH disabled")
 endif (ENABLE_LASH)
 
+# liblrdf0 in Ubuntu 18.04 is version 0.6.1, but cmake finds it as 0.5.0
 if (ENABLE_LRDF)
-      PKG_CHECK_MODULES(LRDF lrdf>=0.5)
+      PKG_CHECK_MODULES(LRDF lrdf>=0.5.0)
       if (LRDF_FOUND)
             include_directories(${LRDF_INCLUDE_DIRS})
             set(HAVE_LRDF ON)
@@ -402,7 +408,7 @@ else (ENABLE_LRDF)
 endif (ENABLE_LRDF)
 
 if (ENABLE_RTAUDIO)
-      PKG_CHECK_MODULES(RTAUDIO rtaudio>=4.0)
+      PKG_CHECK_MODULES(RTAUDIO rtaudio>=5.0)
       if (RTAUDIO_FOUND)
             include_directories(${RTAUDIO_INCLUDE_DIRS})
             set(HAVE_RTAUDIO ON)
@@ -412,7 +418,7 @@ else (ENABLE_RTAUDIO)
 endif (ENABLE_RTAUDIO)
 
 ##
-## check for python >= 3.5
+## check for python
 ##
 
 if (ENABLE_PYTHON)
@@ -426,12 +432,12 @@ if (ENABLE_PYTHON)
 endif (ENABLE_PYTHON)
 
 ##
-## check for dssi >= 0.9.0 and liblo >= 0.23
+## check for dssi and liblo
 ##
 
 ## If requesting DSSI as well, try to grab OSC too.
 if (ENABLE_DSSI OR ENABLE_OSC)
-    PKG_CHECK_MODULES(LIBLO liblo>=0.23)
+    PKG_CHECK_MODULES(LIBLO liblo>=0.29)
     if (LIBLO_FOUND)
           include_directories(${LIBLO_INCLUDE_DIRS})
           set(OSC_SUPPORT ON)
@@ -441,7 +447,7 @@ else (ENABLE_DSSI OR ENABLE_OSC)
 endif (ENABLE_DSSI OR ENABLE_OSC)
 
 if (ENABLE_DSSI AND (ALSA_FOUND OR DSSI_ALSA_COMPAT_FOUND))
-      PKG_CHECK_MODULES(DSSI dssi>=0.9.0)
+      PKG_CHECK_MODULES(DSSI dssi>=1.1.1)
       if (DSSI_FOUND)
           include_directories(${DSSI_INCLUDE_DIRS})
           set(DSSI_SUPPORT ON)
@@ -497,9 +503,9 @@ endif (ENABLE_VST_VESTIGE)
 ##
 
 if (ENABLE_LV2)
-    set (muse_lilv_ver "0.22.0" )
-    set (muse_lv2_ver "1.14.0")
-    set (muse_sord_ver "0.14.0")
+set (muse_sord_ver "0.16.0")
+set (muse_lv2_ver "1.14.0")
+set (muse_lilv_ver "0.24.0" )
 
     PKG_CHECK_MODULES(LILV lilv-0>=${muse_lilv_ver})
     PKG_CHECK_MODULES(SORD sord-0>=${muse_sord_ver})
@@ -555,7 +561,7 @@ SET (USE_SSE false)
 if ( ENABLE_FLUID )
       # Be careful with variable name here since we have a shared
       #  synth library named 'fluid_synth' to be built later.
-      PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=1.1.6)
+      PKG_CHECK_MODULES(FLUIDSYN fluidsynth>=1.1.9)
       if (FLUIDSYN_FOUND)
             set(HAVE_FLUIDSYNTH ON)
       endif (FLUIDSYN_FOUND)
@@ -702,10 +708,14 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-std=c++11 -O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS "-Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC" CACHE STRING "Default CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS "-Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release w/deb info CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC" CACHE STRING "Debug CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale

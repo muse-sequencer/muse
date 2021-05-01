@@ -124,7 +124,7 @@ class ZitaResamplerAudioConverterSettings : public AudioConverterSettings
     ZitaResamplerAudioConverterOptions* realtimeOptions() { return &_realtimeOptions; }
     ZitaResamplerAudioConverterOptions* guiOptions() { return &_guiOptions; }
     
-    int executeUI(ModeType mode, QWidget* parent = NULL, bool isLocal = false);
+    int executeUI(ModeType mode, QWidget* parent = nullptr, bool isLocal = false);
     void read(Xml&);
     void write(int, Xml&) const;
     // Returns whether to use these settings or defer to default settings.
@@ -204,8 +204,8 @@ class ZitaResamplerSettingsDialog : public QDialog, public Ui::ZitaResamplerSett
    public:
       enum buttonId { DefaultsButtonId, ConverterButtonId, OkButtonId, CancelButtonId };
       ZitaResamplerSettingsDialog(MusECore::AudioConverterSettings::ModeType mode, 
-                                  QWidget* parent = NULL, 
-                                  MusECore::AudioConverterSettings* settings = NULL, 
+                                  QWidget* parent = nullptr, 
+                                  MusECore::AudioConverterSettings* settings = nullptr, 
                                   bool isLocal = false);
       };
 

@@ -9,7 +9,7 @@
 namespace MusEGui
 {
   
-Gtk::Main *gtkmm2Main = NULL;
+Gtk::Main *gtkmm2Main = nullptr;
 
 typedef void(*sz_cb_fn)(int, int, void *);
 
@@ -36,9 +36,9 @@ plug_on_size_allocate(GtkWidget* widget, GdkRectangle* allocation, gpointer user
 
 bool lv2Gtk2Helper_init()
 {
-   gtk_init(NULL, NULL);
+   gtk_init(nullptr, nullptr);
    //create gtkmm2 main class // Not required?
-   gtkmm2Main = new Gtk::Main(NULL, NULL);
+   gtkmm2Main = new Gtk::Main(nullptr, nullptr);
    return true;
 }
 
@@ -104,10 +104,10 @@ unsigned long lv2Gtk2Helper_gtk_window_get_xid(void *window)
 
 void lv2Gtk2Helper_deinit()
 {
-   if(gtkmm2Main != NULL)
+   if(gtkmm2Main != nullptr)
    {
       delete gtkmm2Main;
-      gtkmm2Main = NULL;
+      gtkmm2Main = nullptr;
    }
 }
 

@@ -20,15 +20,15 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "knob_and_meter.h"
 #include "muse_math.h"
-#include "mmath.h"
+//#include "mmath.h"
 
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
-#include <QPaintEvent>
+//#include <QPaintEvent>
 #include <QResizeEvent>
 
 namespace MusEGui {

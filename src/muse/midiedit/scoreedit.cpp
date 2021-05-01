@@ -1011,7 +1011,7 @@ MusECore::Part* read_part(MusECore::Xml& xml, QString tag_name="part")
                 {
                     int trackIdx, partIdx;
                     if (tag=="none")
-                        part=NULL;
+                        part=nullptr;
                     else
                     {
                         sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
@@ -1152,7 +1152,7 @@ void ScoreEdit::writeStatus(int level, MusECore::Xml& xml) const
     xml.intTag(level, "preambleContainsTimesig", preamble_timesig_action->isChecked());
 
     const MusECore::Part* selected_part=score_canvas->get_selected_part();
-    if (selected_part==NULL)
+    if (selected_part==nullptr)
     {
         xml.put(level, "<selectedPart>none</selectedPart>");
     }
@@ -3874,7 +3874,7 @@ list<int> calc_accidentials(MusECore::key_enum key, clef_t clef, MusECore::key_e
     int bass_sharp_pos[]={8,5,9,6,3,7,4};
     int bass_b_pos[]={4,7,3,6,2,5,1};
 
- int* accidential_pos = NULL;
+ int* accidential_pos = nullptr;
 
     switch (clef)
     {
@@ -4105,7 +4105,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                              << "x-drag-operation will be "<<mouse_x_drag_operation<<endl
                              << "pointer to part is "<<set_it->source_part << endl;
 
-                if (set_it->source_part == NULL) cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_it->source_part is NULL!" << endl;
+                if (set_it->source_part == nullptr) cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_it->source_part is NULL!" << endl;
 
 
 
@@ -4130,7 +4130,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                 {
                     if (mouse_inserts_notes)
                     {
-                        const MusECore::Part* curr_part = NULL;
+                        const MusECore::Part* curr_part = nullptr;
                         set<const MusECore::Part*> possible_dests=staff_it->parts_at_tick(tick);
 
                         if (!possible_dests.empty())
@@ -4148,7 +4148,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                         else
                             QMessageBox::information(this, tr("No part"), tr("There are no parts you could add the note to."));
 
-                        if (curr_part!=NULL)
+                        if (curr_part!=nullptr)
                         {
                             signed int relative_tick=(signed) tick - curr_part->tick();
                             if (relative_tick<0)
@@ -4953,10 +4953,10 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 
 void ScoreCanvas::update_parts()
 {
-    if (selected_part!=NULL) //if it's null, let it be null
+    if (selected_part!=nullptr) //if it's null, let it be null
         selected_part=MusECore::partFromSerialNumber(selected_part_index);
 
-    if (dragged_event_part!=NULL) //same thing here
+    if (dragged_event_part!=nullptr) //same thing here
         dragged_event_part=MusECore::partFromSerialNumber(dragged_event_part_index);
 
     for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)

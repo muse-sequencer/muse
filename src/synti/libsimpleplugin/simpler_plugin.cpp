@@ -29,7 +29,7 @@
 #include <QtWidgets>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <dlfcn.h>
 #include <string>
 
@@ -208,7 +208,7 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
       {
       SP_TRACE_IN
       
-      _plugin = NULL;
+      _plugin = nullptr;
       
       _label = QString(d->Label);
       _name = QString(d->Name);
@@ -319,7 +319,7 @@ int LadspaPlugin::incReferences(int val)
     }
 
     _libHandle = 0;
-    _plugin = NULL;
+    _plugin = nullptr;
     _pIdx.clear();
     _poIdx.clear();
     _iIdx.clear();
@@ -347,7 +347,7 @@ int LadspaPlugin::incReferences(int val)
       for(unsigned long i = 0;; ++i)
       {
         descr = ladspadf(i);
-        if(descr == NULL)
+        if(descr == nullptr)
           break;
 
         QString desc_label(descr->Label);
@@ -359,7 +359,7 @@ int LadspaPlugin::incReferences(int val)
       }
     }
 
-    if(_plugin != NULL)
+    if(_plugin != nullptr)
     {
       _uniqueID = _plugin->UniqueID;
 
@@ -410,7 +410,7 @@ int LadspaPlugin::incReferences(int val)
     }
   }
 
-  if(_plugin == NULL)
+  if(_plugin == nullptr)
   {
     dlclose(_libHandle);
     _libHandle = 0;
@@ -434,10 +434,10 @@ int LadspaPlugin::incReferences(int val)
 void* LadspaPlugin::instantiate(float sampleRate, void*)
 {
   if(!_plugin)
-    return NULL;
+    return nullptr;
   bool success = false;
   LADSPA_Handle h = _plugin->instantiate(_plugin, sampleRate);
-  success = (h != NULL);
+  success = (h != nullptr);
   if(success)
   {
     SP_DBG_LADSPA2("LadspaPlugin instantiated", label().toLatin1().constData());
@@ -1031,7 +1031,7 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
 
   _handle = new LADSPA_Handle[_instances];
   for(int i = 0; i < _instances; ++i)
-    _handle[i]=NULL;
+    _handle[i]=nullptr;
 
   for(int i = 0; i < _instances; ++i)
   {
@@ -1039,8 +1039,8 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
     fprintf(stderr, "LadspaPluginI::initPluginInstance instance:%d\n", i);
     #endif
 
-    _handle[i] = _plugin->instantiate(_sampleRate, NULL);
-    if(_handle[i] == NULL)
+    _handle[i] = _plugin->instantiate(_sampleRate, nullptr);
+    if(_handle[i] == nullptr)
       return true;
   }
 
@@ -1124,7 +1124,7 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
 
 #ifdef _WIN32
   _audioInSilenceBuf = (float *) _aligned_malloc(16, sizeof(float) * _segmentSize);
-  if(_audioInSilenceBuf == NULL)
+  if(_audioInSilenceBuf == nullptr)
   {
       fprintf(stderr, 
         "ERROR: LadspaPluginI::initPluginInstance: _audioInSilenceBuf _aligned_malloc returned error: NULL. Aborting!\n");
@@ -1154,7 +1154,7 @@ bool LadspaPluginI::initPluginInstance(Plugin* plug, int chans,
 
 #ifdef _WIN32
   _audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float) * _segmentSize);
-  if(_audioOutDummyBuf == NULL)
+  if(_audioOutDummyBuf == nullptr)
   {
       fprintf(stderr, 
         "ERROR: LadspaPluginI::initPluginInstance: _audioInSilenceBuf _aligned_malloc returned error: NULL. Aborting!\n");
@@ -1225,15 +1225,15 @@ void LadspaPluginI::setChannels(int chans)
           {
             // Create a new plugin instance with handle.
             // Use the plugin's current sample rate.
-            handles[i] = _plugin->instantiate(_sampleRate, NULL);
-            if(handles[i] == NULL)
+            handles[i] = _plugin->instantiate(_sampleRate, nullptr);
+            if(handles[i] == nullptr)
             {
               fprintf(stderr, "LadspaPluginI::setChannels: cannot instantiate instance %d\n", i);
 
               // Although this is a messed up state not easy to get out of (final # of channels?), try not to assert().
               // Whoever uses these will have to check instance count or null handle, and try to gracefully fix it and allow a song save.
               for(int k = i; k < ni; ++k)
-                handles[i] = NULL;
+                handles[i] = nullptr;
               ni = i + 1;
               //channel = ?;
               break;

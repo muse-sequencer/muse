@@ -35,11 +35,11 @@
 #include "minstrument.h"
 #include "mididev.h"
 #include "midiport.h"
-#include "audio.h"
+//#include "audio.h"
 #include "midi_consts.h"
 #include "globals.h"
 #include "midictrl.h"
-#include "gconfig.h"
+//#include "gconfig.h"
 #include "helper.h"
 #include "menutitleitem.h"
 #include "synth.h"
@@ -1744,7 +1744,7 @@ patch_drummap_mapping_t::patch_drummap_mapping_t()
 
 patch_drummap_mapping_t::patch_drummap_mapping_t(const patch_drummap_mapping_t& that)
 {
-  drummap=NULL;
+  drummap=nullptr;
   if(that.drummap)
   {
     drummap=new DrumMap[128];
@@ -1760,7 +1760,7 @@ patch_drummap_mapping_t& patch_drummap_mapping_t::operator=(const patch_drummap_
 {
   if (drummap)
     delete [] drummap;
-  drummap=NULL;
+  drummap=nullptr;
 
   if(that.drummap)
   {
@@ -1777,7 +1777,7 @@ patch_drummap_mapping_t& patch_drummap_mapping_t::operator=(const patch_drummap_
 
 bool patch_drummap_mapping_t::isValid() const
 {
-  return _patch != CTRL_VAL_UNKNOWN && drummap != NULL;
+  return _patch != CTRL_VAL_UNKNOWN && drummap != nullptr;
 }
 
 patch_drummap_mapping_t::~patch_drummap_mapping_t()
@@ -2468,10 +2468,10 @@ WorkingDrumMapList* WorkingDrumMapPatchList::find(int patch, bool includeDefault
   if(iwdmpl == end())
   {
     if(!includeDefault)
-      return NULL;
+      return nullptr;
     iwdmpl = WorkingDrumMapPatchList_t::find(CTRL_PROGRAM_VAL_DONT_CARE);
     if(iwdmpl == end())
-      return NULL;
+      return nullptr;
   }
   return &iwdmpl->second;
 }
@@ -2484,10 +2484,10 @@ const WorkingDrumMapList* WorkingDrumMapPatchList::find(int patch, bool includeD
   if(iwdmpl == end())
   {
     if(!includeDefault)
-      return NULL;
+      return nullptr;
     iwdmpl = WorkingDrumMapPatchList_t::find(CTRL_PROGRAM_VAL_DONT_CARE);
     if(iwdmpl == end())
-      return NULL;
+      return nullptr;
   }
   return &iwdmpl->second;
 }
@@ -2496,10 +2496,10 @@ WorkingDrumMapEntry* WorkingDrumMapPatchList::find(int patch, int index, bool in
 {
   WorkingDrumMapList* wdmpl = find(patch, includeDefault);
   if(!wdmpl)
-    return NULL;
+    return nullptr;
   iWorkingDrumMapPatch_t iwdmp = wdmpl->find(index);
   if(iwdmp == wdmpl->end())
-    return NULL;
+    return nullptr;
   return &iwdmp->second;
 }
 
@@ -2507,10 +2507,10 @@ const WorkingDrumMapEntry* WorkingDrumMapPatchList::find(int patch, int index, b
 {
   const WorkingDrumMapList* wdmpl = find(patch, includeDefault);
   if(!wdmpl)
-    return NULL;
+    return nullptr;
   ciWorkingDrumMapPatch_t iwdmp = wdmpl->find(index);
   if(iwdmp == wdmpl->end())
-    return NULL;
+    return nullptr;
   return &iwdmp->second;
 }
 
@@ -2710,10 +2710,10 @@ patch_drummap_mapping_list_t* ChannelDrumMappingList::find(int channel, bool inc
   if(icdml == end())
   {
     if(!includeDefault)
-      return NULL;
+      return nullptr;
     icdml = ChannelDrumMappingList_t::find(-1);
     if(icdml == end())
-      return NULL;
+      return nullptr;
   }
   return &icdml->second;
 }
@@ -2726,10 +2726,10 @@ const patch_drummap_mapping_list_t* ChannelDrumMappingList::find(int channel, bo
   if(icdml == end())
   {
     if(!includeDefault)
-      return NULL;
+      return nullptr;
     icdml = ChannelDrumMappingList_t::find(-1);
     if(icdml == end())
-      return NULL;
+      return nullptr;
   }
   return &icdml->second;
 }

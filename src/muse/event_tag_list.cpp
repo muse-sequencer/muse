@@ -183,7 +183,7 @@ bool TagEventList::add(const Part* part, const Event& event)
   //  we'll check the event lists so we don't miss anything ...
   if(!event.empty())
   {
-    TagEventListStruct* found_part_el = NULL;
+    TagEventListStruct* found_part_el = nullptr;
     iTagEventList itl = begin();
     for( ; itl != end(); ++itl)
     {

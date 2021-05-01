@@ -101,7 +101,7 @@ static void loadPluginLib(QFileInfo* fi)
       const LADSPA_Descriptor* descr;
       for (int i = 0;; ++i) {
             descr = ladspa(i);
-            if (descr == NULL)
+            if (descr == nullptr)
                   break;
             plugins.push_back(new LadspaPlugin(fi, ladspa, descr));
             }
@@ -249,7 +249,7 @@ bool LadspaPlugin::instantiate()
       {
       bool success = false;
       handle = plugin->instantiate(plugin, SS_samplerate);
-      success = (handle != NULL);
+      success = (handle != nullptr);
       if (success)
             SS_DBG_LADSPA2("Plugin instantiated", label().toLatin1().constData());
       return success;

@@ -56,9 +56,9 @@ class AudioConverterSettingsDialog : public QDialog, public Ui::AudioConverterSe
       void guiSettingsClicked();
       
    public:
-      AudioConverterSettingsDialog(QWidget* parent = NULL,
-                                   MusECore::AudioConverterPluginList* pluginList = NULL,
-                                   MusECore::AudioConverterSettingsGroup* settings = NULL, 
+      AudioConverterSettingsDialog(QWidget* parent = nullptr,
+                                   MusECore::AudioConverterPluginList* pluginList = nullptr,
+                                   MusECore::AudioConverterSettingsGroup* settings = nullptr, 
                                    bool isLocal = false);
       
       };

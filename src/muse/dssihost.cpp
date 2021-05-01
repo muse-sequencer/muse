@@ -675,7 +675,7 @@ DssiSynthIF::DssiSynthIF(SynthI* s)
       printf("DssiSynthIF::DssiSynthIF\n");
       #endif
       _synth = 0;
-      _handle = NULL;
+      _handle = nullptr;
       _controls = 0;
       _controlsOut = 0;
       _hasLatencyOutPort = false;
@@ -1089,7 +1089,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       #endif
 
       int hb, lb;
-      synti->currentProg(chn, NULL, &lb, &hb);
+      synti->currentProg(chn, nullptr, &lb, &hb);
       synti->setCurrentProg(chn, a & 0xff, lb, hb);
       doSelectProgram(_handle, hb, lb, a);
       // Event pointer not filled. Return false.
@@ -1125,7 +1125,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       if(a == CTRL_HBANK)
       {
         int lb, pr;
-        synti->currentProg(chn, &pr, &lb, NULL);
+        synti->currentProg(chn, &pr, &lb, nullptr);
         synti->setCurrentProg(chn, pr, lb, b & 0xff);
         doSelectProgram(_handle, b, lb, pr);
         // Event pointer not filled. Return false.
@@ -1135,7 +1135,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       if(a == CTRL_LBANK)
       {
         int hb, pr;
-        synti->currentProg(chn, &pr, NULL, &hb);
+        synti->currentProg(chn, &pr, nullptr, &hb);
         synti->setCurrentProg(chn, pr, b & 0xff, hb);
         doSelectProgram(_handle, hb, b, pr);
         // Event pointer not filled. Return false.
@@ -1547,7 +1547,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
       ciCtrlList icl = icl_first;
       for(unsigned long k = 0; k < in_ctrls; ++k)
       {
-        CtrlList* cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : NULL;
+        CtrlList* cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
         CtrlInterpolate& ci = _controls[k].interp;
         // Always refresh the interpolate struct at first, since things may have changed.
         // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
@@ -1877,8 +1877,8 @@ void DssiSynth::incInstances(int val)
               dlclose(handle);
             }
             handle = 0;
-            dssi = NULL;
-            df   = NULL;
+            dssi = nullptr;
+            df   = nullptr;
             iIdx.clear(); 
             oIdx.clear(); 
             rpIdx.clear();

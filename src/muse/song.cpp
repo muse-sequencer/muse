@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
-#include <iostream>
+//#include <iostream>
 
 #include <QDir>
 #include <QMessageBox>
@@ -34,13 +34,13 @@
 #include <QProcess>
 #include <QByteArray>
 #include <QProgressDialog>
-#include <QList>
+//#include <QList>
 
 #include "app.h"
 #include "driver/jackmidi.h"
 #include "driver/alsamidi.h"
 #include "song.h"
-#include "key.h"
+//#include "key.h"
 #include "globals.h"
 #include "drummap.h"
 #include "amixer.h"
@@ -51,12 +51,12 @@
 #include "menutitleitem.h"
 #include "midi_audio_control.h"
 #include "tracks_duplicate.h"
-#include "midi_consts.h"
+//#include "midi_consts.h"
 #include "keyevent.h"
 #ifndef _WIN32
-#include <sys/wait.h>
+//#include <sys/wait.h>
 #endif
-#include "strntcpy.h"
+//#include "strntcpy.h"
 #include "name_factory.h"
 #include "synthdialog.h"
 
@@ -66,8 +66,8 @@
 #include "undo.h"
 #include "track.h"
 #include "event.h"
-#include "xml.h"
-#include "track.h"
+//#include "xml.h"
+//#include "track.h"
 #include "part.h"
 #include "marker/marker.h"
 #include "route.h"
@@ -115,8 +115,8 @@ Song::Song(const char* name)
       redoList     = new UndoList(false); // "false" means "redoList"
       _markerList  = new MarkerList;
       _globalPitchShift = 0;
-      bounceTrack = NULL;
-      bounceOutput = NULL;
+      bounceTrack = nullptr;
+      bounceOutput = nullptr;
       showSongInfo=true;
       clearDrumMap(); // One-time only early init
       clear(false);
@@ -437,7 +437,7 @@ Track* Song::createTrack(Track::TrackType type, bool setDefaults)
 
               MidiPort* mp = &MusEGlobal::midiPorts[i];
 
-              if (mp->device() != NULL) {
+              if (mp->device() != nullptr) {
 
                 mt->setOutPort(i);
                 break;
@@ -2066,10 +2066,10 @@ void Song::setMarkerName(const Marker& marker, const QString& s)
       MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ModifyMarker, marker, m));
       }
 
-void Song::setMarkerPos(const Marker& marker, const Pos& pos)
+void Song::setMarkerPos(const Marker& marker, const Pos& position)
       {
       // Here we use the separate SetMarkerPos operation, which is 'combo-breaker' aware, to optimize repeated adjustments.
-      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, pos.posValue(), pos.type()));
+      MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetMarkerPos, marker, position.posValue(), position.type()));
       }
 
 void Song::setMarkerLock(const Marker& marker, bool f)
@@ -2093,13 +2093,13 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
   }
   else
   {
-    // The pending operations system does not call setRecordFlag1 for us. Call it now.
+    // The pending oplist system does not call setRecordFlag1 for us. Call it now.
     if(!track->setRecordFlag1(val))
       return;
     // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
-    MusECore::PendingOperationList operations;
-    operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackRecord));
-    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+    MusECore::PendingOperationList oplist;
+    oplist.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackRecord));
+    MusEGlobal::audio->msgExecutePendingOperations(oplist, true);
   }
 }
 
@@ -2667,7 +2667,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 
       unsigned tick  = event.tick();
       PartList* pl   = mt->parts();
-      const MidiPart* part = 0;
+      const MidiPart* part = nullptr;
       iPart ip;
       for (ip = pl->begin(); ip != pl->end(); ++ip) {
             part = (MidiPart*)(ip->second);
@@ -2678,16 +2678,16 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
             }
       updateFlags |= SC_EVENT_INSERTED;
       if (ip == pl->end()) {
-            // create new part
-            MidiPart* part = new MidiPart(mt);
+            // create new p
+            MidiPart* p = new MidiPart(mt);
             int startTick = roundDownBar(tick);
             int endTick   = roundUpBar(tick + 1);
-            part->setTick(startTick);
-            part->setLenTick(endTick - startTick);
-            part->setName(mt->name());
+            p->setTick(startTick);
+            p->setLenTick(endTick - startTick);
+            p->setName(mt->name());
             event.move(-startTick);
-            part->addEvent(event);
-            MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, part));
+            p->addEvent(event);
+            MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddPart, p));
             return;
             }
       part = (MidiPart*)(ip->second);
@@ -3747,10 +3747,10 @@ void Song::insertTrack0(Track* track, int idx)
       _tracks.insert(i, track);
       
       n = _auxs.size();
-      for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
-            if ((*i)->isMidiTrack())
+      for (const auto &it : _tracks) {
+            if (it->isMidiTrack())
                   continue;
-            MusECore::AudioTrack* wt = (MusECore::AudioTrack*)*i;
+            MusECore::AudioTrack* wt = (MusECore::AudioTrack*)it;
             if (wt->hasAuxSend()) {
                   wt->addAuxSend(n);
                   }
@@ -3805,9 +3805,9 @@ void Song::insertTrack0(Track* track, int idx)
                       // Is the source an Aux Track or else does it have Aux Tracks routed to it?
                       // Update this track's aux ref count.     p4.0.37
                       if(r->track->auxRefCount())
-                        track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                        track->updateAuxRoute( r->track->auxRefCount(), nullptr );
                       else if(r->track->type() == Track::AUDIO_AUX)
-                        track->updateAuxRoute( 1, NULL );
+                        track->updateAuxRoute( 1, nullptr );
                     }
                     break;
                     case Route::MIDI_PORT_ROUTE:
@@ -3828,9 +3828,9 @@ void Song::insertTrack0(Track* track, int idx)
                       // Is this track an Aux Track or else does it have Aux Tracks routed to it?
                       // Update the other track's aux ref count and all tracks it is connected to.
                       if(track->auxRefCount())
-                        r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                        r->track->updateAuxRoute( track->auxRefCount(), nullptr );
                       else if(track->type() == Track::AUDIO_AUX)
-                        r->track->updateAuxRoute( 1, NULL );
+                        r->track->updateAuxRoute( 1, nullptr );
                     }
                     break;
                     case Route::MIDI_PORT_ROUTE:
@@ -3994,7 +3994,7 @@ void Song::restartRecording(bool discard)
       Track *cTrk = _tracks[i];
       if(!cTrk->recordFlag())
         continue;
-      Track *nTrk = NULL;
+      Track *nTrk = nullptr;
       if(!discard)
       {
         if(!new_track_names.genUniqueNames(cTrk->type(), cTrk->name(), 1))

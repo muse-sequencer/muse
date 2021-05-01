@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 
-#include "muse_math.h"
+//#include "muse_math.h"
 #include "time_stretch.h"
 #include "zita_resampler_converter.h"
 
@@ -428,7 +428,7 @@ void ZitaResamplerAudioConverterSettings::read(Xml& xml)
                   case Xml::TagStart:
                         if(mode != -1)
                         {
-                          ZitaResamplerAudioConverterOptions* opts = NULL;
+                          ZitaResamplerAudioConverterOptions* opts = nullptr;
                           switch(mode)
                           {
                             case AudioConverterSettings::OfflineMode:
@@ -492,7 +492,7 @@ ZitaResamplerSettingsDialog::ZitaResamplerSettingsDialog(
   
   OKButton->setEnabled(false);
   
-  _options = NULL;
+  _options = nullptr;
   if(settings)
   {
     MusECore::ZitaResamplerAudioConverterSettings* zita_settings = 

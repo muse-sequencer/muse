@@ -41,7 +41,7 @@
 #include "xpm/pianoNew.xpm"
 #include "xpm/presetsNew.xpm"
 
-#include "icons.h"
+//#include "icons.h"
 
 
 namespace MusEGui {

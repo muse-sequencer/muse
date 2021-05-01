@@ -20,7 +20,7 @@
 //
 //=========================================================
 
-#include <stdio.h>
+//#include <stdio.h>
 #include "tscale.h"
 #include "globals.h"
 #include "gconfig.h"

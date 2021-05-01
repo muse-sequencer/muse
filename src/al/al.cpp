@@ -20,7 +20,7 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
-#include "al.h"
+//#include "al.h"
 
 namespace AL {
       int sampleRate = 44100;

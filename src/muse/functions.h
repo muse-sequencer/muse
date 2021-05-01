@@ -315,12 +315,12 @@ void copy_items(TagEventList* tag_list);
 bool cut_items(TagEventList* tag_list);
 QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mode = false);
 
-bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=NULL); // shows a dialog
+bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part=nullptr); // shows a dialog
 void paste_items(const std::set<const Part*>& parts, int max_distance=3072,
                  // Options. Default is erase target existing controllers first + erase wysiwyg.
                  const FunctionOptionsStruct& options = FunctionOptionsStruct(),
                  // Paste into this part instead of the original part(s).
-                 const Part* paste_into_part=NULL,
+                 const Part* paste_into_part=nullptr,
                  // Number of copies to paste.
                  int amount=1,
                  // Separation between copies.
@@ -345,7 +345,7 @@ void paste_items_at(
   // Erase target existing controllers first + erase wysiwyg.
   const FunctionOptionsStruct& options = FunctionOptionsStruct(),
   // Paste into this part instead of the original part(s).
-  const Part* paste_into_part=NULL,
+  const Part* paste_into_part=nullptr,
   // Number of copies to paste.
   int amount=1,
   // Separation between copies.
@@ -370,7 +370,7 @@ void paste_items_at(
   // Erase target existing controllers first + erase wysiwyg.
   const FunctionOptionsStruct& options = FunctionOptionsStruct(),
   // Paste into this part instead of the original part(s).
-  const Part* paste_into_part=NULL,
+  const Part* paste_into_part=nullptr,
   // Number of copies to paste.
   int amount=1,
   // Separation between copies.
@@ -384,15 +384,15 @@ void paste_items_at(
 
 //functions for copy'n'paste
 void copy_notes(const std::set<const Part*>& parts, int range);
-bool paste_notes(const Part* paste_into_part=NULL); // shows a dialog
+bool paste_notes(const Part* paste_into_part=nullptr); // shows a dialog
 void paste_notes(int max_distance=3072,
                  bool always_new_part=false, bool never_new_part=false,
-                 const Part* paste_into_part=NULL, int amount=1, int raster=3072);
+                 const Part* paste_into_part=nullptr, int amount=1, int raster=3072);
 QMimeData* selected_events_to_mime(const std::set<const Part*>& parts, int range);
 QMimeData* parts_to_mime(const std::set<const Part*>& parts);
 void paste_at(const QString& pt, int pos, int max_distance=3072,
               bool always_new_part=false, bool never_new_part=false,
-              const Part* paste_into_part=NULL, int amount=1, int raster=3072);
+              const Part* paste_into_part=nullptr, int amount=1, int raster=3072);
 
 //functions for selections
 void select_all(const std::set<const Part*>& parts);

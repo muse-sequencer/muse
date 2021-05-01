@@ -25,11 +25,11 @@
 //
 //=========================================================
 
-#include <cstring>
-#include <stdio.h>
+//#include <cstring>
+//#include <stdio.h>
 
 #include "audioconvert.h"
-#include "muse_math.h"
+//#include "muse_math.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_AUDIOCONVERT(dev, format, args...) fprintf(dev, format, ##args)
