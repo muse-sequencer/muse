@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
- <path d="m61.473 2h-59.239l0.2043 50.457 9.2365 9.4136 50.097 0.11041z" fill="none" stroke="#99b6ff" stroke-linejoin="round" stroke-width="3"/>
- <path d="m11.334 3.1316v26.777l3.9712 4.0165h33.093l3.9712-4.0165v-26.777" fill="none"/>
- <path d="m60.37 31.989v28.887h-11.589v-16.743l-2.9614-2.9923h-24.011l-2.958 2.9957v16.74h-1.4468l-5.1985-0.084337-4.5421-4.7895-4.292-4.0304 0.11118-17.321c0.047456-7.393-0.055562-17.515-0.055562-22.495v-9.0525h7.6702v25.851l4.2949 4.3423h33.016l4.2924-4.3448v-25.849h7.6702v28.887z" fill="#1546c1" stroke="#373748" stroke-width=".12856"/>
- <g display="none" fill="none" stroke="#9b7e00" stroke-width="3">
-  <path d="m19 25h27.236"/>
-  <path d="m19 17h27.236"/>
-  <path d="m19 9h27.236"/>
+<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="linearGradient849" x1="53.7" x2="53.605" y1="2.2846" y2="61.753" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#1fbbff" offset="0"/>
+   <stop stop-color="#006fa5" offset="1"/>
+  </linearGradient>
+ </defs>
+ <path d="m2.475 2.136s0.055783 32.718-0.058538 50.506l4.4368 4.1643 4.6931 4.9515 5.3734 0.08679h1.4957v-17.301l3.0561-3.0964h24.816l3.0601 3.0924v17.305h11.976v-29.856l0.0021 0.0021v-29.854z" fill="url(#linearGradient849)" stroke-width="0"/>
+ <g stroke="#000">
+  <path d="m18.252 62.23v-18.398l2.8862-2.8305h25.976l2.8862 2.8305v18.398" fill="#b3b3b3"/>
+  <path d="m61.473 2h-59.239l0.2043 50.457 9.2365 9.4136 50.097 0.11041z" fill="none" stroke-linejoin="round" stroke-width="1.2"/>
+  <path d="m26.016 57.664v-12.364h6.984v12.364z" fill="#008acb" fill-rule="evenodd"/>
+  <path d="m14.134 30.589-2.0169-1.9682v-19.847h40.154v19.853l-4.1251 3.9545-31.995-0.02458z" fill="#d5e5ff" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
  </g>
- <path d="m60.742 2.743h-57.773l0.19924 49.208 9.0079 9.1806 48.604 0.07368z" fill="none" stroke="#1546c1" stroke-linejoin="round" stroke-width="2"/>
- <path d="m18.252 62v-18.2l2.8862-2.8h25.976l2.8862 2.8v18.2" fill="#b3b3b3"/>
- <path d="m26.016 57.664v-12.364h6.984v12.364z" fill="#1546c1" fill-rule="evenodd"/>
- <path d="m13.863 30.372-2.0169-2.339v-23.586h40.154v23.593l-4.1251 4.6996-31.995-0.02921z" fill="#d5e5ff" fill-rule="evenodd" stroke="#1546c1" stroke-linecap="square" stroke-width="4"/>
 </svg>

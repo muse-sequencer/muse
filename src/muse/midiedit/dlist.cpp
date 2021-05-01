@@ -630,10 +630,10 @@ void DList::draw(QPainter& p, const QRect& mr, const QRegion&)
       if (drag == DRAG) {
             int y  = (startY/TH) * TH;
             int dy = startY - y;
-            int yy = curY - dy;
+            int y2 = curY - dy;
             p.setPen(Qt::green);
-            p.drawLine(ux, yy, ux + uw, yy);
-            p.drawLine(ux, yy+TH, ux + uw, yy+TH);
+            p.drawLine(ux, y2, ux + uw, y2);
+            p.drawLine(ux, y2 + TH, ux + uw, y2 + TH);
             p.setPen(Qt::gray);
             }
 

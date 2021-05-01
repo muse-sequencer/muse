@@ -61,8 +61,8 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       {
       _pl = pl;
       if (_pl)
-            for (MusECore::iPart i = _pl->begin(); i != _pl->end(); ++i)
-                  _parts.insert(i->second->sn());
+            for (const auto& i : *_pl)
+                  _parts.insert(i.second->sn());
 
       QList<Rasterizer::Column> rast_cols;
       rast_cols << 

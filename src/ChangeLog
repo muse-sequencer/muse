@@ -1,3 +1,18 @@
+30.04.2021
+    - Fix #986: Crash in lv2 plugins when removed while native GUI is open. (kybos)
+29.04.2021
+    - Fix: Track list: "Move single armed track with selection" function trying to arm 
+        invalid tracks. (kybos)
+    - Fix: Deactivate recording button when last armed track is deleted. (kybos)
+28.04.2021
+    - Fix: Number of bars not updating when midi resolution is changed. (kybos)
+27.04.2021
+    - Fix some memory leaks found by Valgrind. (kybos)
+26.04.2021
+    - Added shortcut for RewindOnStop to menu item (rj)
+24.04.2021
+    *** MusE 4.0 ***     
+    - Fix: Drum list: Disable grouping options when no different tracks are involved. (kybos) 
 23.04.2021
     - Part colours: Fixed 'live' recording virtual part overlay, and eventual created part. (Tim)
       Both now obey the chosen current part colour on the Arranger toolbar.

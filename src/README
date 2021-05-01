@@ -183,6 +183,7 @@ details.
          libinstpatch-dev\
          liblilv-dev\
          liblrdf0-dev\
+	 libsratom-dev\ 
          librubberband-dev\
          python3-dev\
          python3-pyqt5

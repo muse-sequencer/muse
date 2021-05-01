@@ -83,7 +83,7 @@ Header::Header(QWidget* parent, const char* name)
   : QHeaderView(Qt::Horizontal, parent) 
       {
       setObjectName(name);
-      itemModel = new QStandardItemModel;
+      itemModel = new QStandardItemModel(this);
       setModel(itemModel);
       setDefaultSectionSize(30);
       setMinimumSectionSize(22);

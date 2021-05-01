@@ -236,23 +236,32 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       _viewState = MusECore::MidiPartViewState (0, 0, DefXScale, qBound(MinYScale, DefYScale, MaxYScale));
       // Include a velocity controller in the default initial view state.
       _viewState.addController(MusECore::MidiCtrlViewState(MusECore::CTRL_VELOCITY));
+
+      // grouping actions are only relevant when there are parts from different tracks
+      bool multiTrack = false;
       if(part_list && !part_list->empty())
       {
-        // If the parts' view states have never been initialized before,
-        //  do it now with the desired initial state.
-        for(const auto& it : *part_list)
-        {
-          if(!it.second->viewState().isValid()) {
-            it.second->setViewState(_viewState);
-          } else if (it.second->viewState().yscale() < MinYScale || it.second->viewState().yscale() > MaxYScale) {
-              it.second->viewState().setYScale(DefYScale);
+          MusECore::Track* trackSaved = nullptr;
+          // If the parts' view states have never been initialized before,
+          //  do it now with the desired initial state.
+          for(const auto& it : *part_list)
+          {
+              if(!it.second->viewState().isValid()) {
+                  it.second->setViewState(_viewState);
+              } else if (it.second->viewState().yscale() < MinYScale || it.second->viewState().yscale() > MaxYScale) {
+                  it.second->viewState().setYScale(DefYScale);
+              }
+
+              if (!trackSaved)
+                  trackSaved = it.second->track();
+              if (!multiTrack && it.second->track() != trackSaved)
+                  multiTrack = true;
           }
-        }
-        // Now take our initial view state from the first part found in the list.
-        // Don't bother if not showing default controls, since something else
-        //  will likely take care of it, like the song file loading routines.
-        if(showDefaultControls)
-          _viewState = part_list->begin()->second->viewState();
+          // Now take our initial view state from the first part found in the list.
+          // Don't bother if not showing default controls, since something else
+          //  will likely take care of it, like the song file loading routines.
+          if(showDefaultControls)
+              _viewState = part_list->begin()->second->viewState();
       }
 
       //---------Pulldown Menu----------------------------
@@ -361,15 +370,18 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
       QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
       menuGrouping->setObjectName("CheckmarkOnly");
-      QActionGroup *groupAG = new QActionGroup(this);
+      auto groupAG = new QActionGroup(this);
       groupAG->setExclusive(true);
       groupNoneAction = groupAG->addAction(tr("Don't Group"));
       groupChanAction = groupAG->addAction(tr("Group by Channel"));
       groupMaxAction  = groupAG->addAction(tr("Group Maximally"));
+      if (!multiTrack) {
+          groupNoneAction->setEnabled(false);
+          groupChanAction->setEnabled(false);
+          groupMaxAction->setEnabled(false);
+      }
       menuGrouping->addActions(groupAG->actions());
-//      groupNoneAction = menuGrouping->addAction(tr("Don't Group"));
-//      groupChanAction = menuGrouping->addAction(tr("Group by Channel"));
-//      groupMaxAction  = menuGrouping->addAction(tr("Group Maximally"));
+
       QMenu* menuShowHide=settingsMenu->addMenu(tr("Show/Hide"));
       QAction* ignoreHideAction = menuShowHide->addAction(tr("Also Show Hidden Instruments"));
       menuShowHide->addSeparator();

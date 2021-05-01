@@ -192,7 +192,7 @@ class WaveCanvas : public EventCanvas {
       virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true);
       virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*, bool noSnap, bool);
+      virtual void resizeItem(CItem*, bool noSnap, bool ctrl);
       virtual void newItem(CItem*, bool noSnap);
       virtual bool deleteItem(CItem*);
       virtual void startDrag(CItem* item, DragType);

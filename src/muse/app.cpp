@@ -700,6 +700,7 @@ MusE::MusE() : QMainWindow()
       followPageAction->setChecked(true);
 
       rewindOnStopAction=new QAction(tr("Rewind on Stop"), this);
+      rewindOnStopAction->setShortcut(shortcuts[SHRT_TOGGLE_REWINDONSTOP].key);
       rewindOnStopAction->setCheckable(true);
       rewindOnStopAction->setChecked(MusEGlobal::config.useRewindOnStop);
 
@@ -931,7 +932,6 @@ MusE::MusE() : QMainWindow()
       menu_file->addAction(fileImportMidiAction);
       menu_file->addAction(fileExportMidiAction);
       menu_file->addAction(fileImportPartAction);
-      menu_file->addSeparator();
       menu_file->addAction(fileImportWaveAction);
       menu_file->addSeparator();
       menu_file->addAction(fileMoveWaveFiles);

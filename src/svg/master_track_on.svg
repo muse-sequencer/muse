@@ -1,206 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.2" width="16mm" height="16mm" viewBox="0 0 1600 1600" preserveAspectRatio="xMidYMid" fill-rule="evenodd" stroke-width="28.222" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" xmlns:ooo="http://xml.openoffice.org/svg/export" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:presentation="http://sun.com/xmlns/staroffice/presentation" xmlns:smil="http://www.w3.org/2001/SMIL20/" xmlns:anim="urn:oasis:names:tc:opendocument:xmlns:animation:1.0" xml:space="preserve">
+<svg width="16mm" height="16mm" fill-rule="evenodd" stroke-linejoin="round" stroke-width="28.222" preserveAspectRatio="xMidYMid" version="1.2" viewBox="0 0 1600 1600" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:ooo="http://xml.openoffice.org/svg/export">
  <defs class="ClipPathGroup">
-  <clipPath id="presentation_clip_path" clipPathUnits="userSpaceOnUse">
-   <rect x="0" y="0" width="1600" height="1600"/>
-  </clipPath>
-  <clipPath id="presentation_clip_path_shrink" clipPathUnits="userSpaceOnUse">
-   <rect x="1" y="1" width="1597" height="1597"/>
+  <clipPath id="presentation_clip_path">
+   <rect width="1600" height="1600"/>
   </clipPath>
  </defs>
  <defs class="TextShapeIndex">
-  <g ooo:slide="id1" ooo:id-list="id3 id4"/>
  </defs>
  <defs class="EmbeddedBulletChars">
-  <g id="bullet-char-template-57356" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 580,1141 L 1163,571 580,0 -4,571 580,1141 Z"/>
-  </g>
-  <g id="bullet-char-template-57354" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 8,1128 L 1137,1128 1137,0 8,0 8,1128 Z"/>
-  </g>
-  <g id="bullet-char-template-10146" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 174,0 L 602,739 174,1481 1456,739 174,0 Z M 1358,739 L 309,1346 659,739 1358,739 Z"/>
-  </g>
-  <g id="bullet-char-template-10132" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 2015,739 L 1276,0 717,0 1260,543 174,543 174,936 1260,936 717,1481 1274,1481 2015,739 Z"/>
-  </g>
-  <g id="bullet-char-template-10007" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 0,-2 C -7,14 -16,27 -25,37 L 356,567 C 262,823 215,952 215,954 215,979 228,992 255,992 264,992 276,990 289,987 310,991 331,999 354,1012 L 381,999 492,748 772,1049 836,1024 860,1049 C 881,1039 901,1025 922,1006 886,937 835,863 770,784 769,783 710,716 594,584 L 774,223 C 774,196 753,168 711,139 L 727,119 C 717,90 699,76 672,76 641,76 570,178 457,381 L 164,-76 C 142,-110 111,-127 72,-127 30,-127 9,-110 8,-76 1,-67 -2,-52 -2,-32 -2,-23 -1,-13 0,-2 Z"/>
-  </g>
-  <g id="bullet-char-template-10004" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 285,-33 C 182,-33 111,30 74,156 52,228 41,333 41,471 41,549 55,616 82,672 116,743 169,778 240,778 293,778 328,747 346,684 L 369,508 C 377,444 397,411 428,410 L 1163,1116 C 1174,1127 1196,1133 1229,1133 1271,1133 1292,1118 1292,1087 L 1292,965 C 1292,929 1282,901 1262,881 L 442,47 C 390,-6 338,-33 285,-33 Z"/>
-  </g>
-  <g id="bullet-char-template-9679" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 813,0 C 632,0 489,54 383,161 276,268 223,411 223,592 223,773 276,916 383,1023 489,1130 632,1184 813,1184 992,1184 1136,1130 1245,1023 1353,916 1407,772 1407,592 1407,412 1353,268 1245,161 1136,54 992,0 813,0 Z"/>
-  </g>
-  <g id="bullet-char-template-8226" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 346,457 C 273,457 209,483 155,535 101,586 74,649 74,723 74,796 101,859 155,911 209,963 273,989 346,989 419,989 480,963 531,910 582,859 608,796 608,723 608,648 583,586 532,535 482,483 420,457 346,457 Z"/>
-  </g>
-  <g id="bullet-char-template-8211" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M -4,459 L 1135,459 1135,606 -4,606 -4,459 Z"/>
-  </g>
-  <g id="bullet-char-template-61548" transform="scale(0.00048828125,-0.00048828125)">
-   <path d="M 173,740 C 173,903 231,1043 346,1159 462,1274 601,1332 765,1332 928,1332 1067,1274 1183,1159 1299,1043 1357,903 1357,740 1357,577 1299,437 1183,322 1067,206 928,148 765,148 601,148 462,206 346,322 231,437 173,577 173,740 Z"/>
-  </g>
  </defs>
- <defs class="TextEmbeddedBitmaps"/>
- <g>
-  <g id="id2" class="Master_Slide">
-   <g id="bg-id2" class="Background"/>
-   <g id="bo-id2" class="BackgroundObjects"/>
+ <g transform="matrix(1.3137 0 0 1.3137 -251.14 -251.14)" stroke-width="21.482">
+  <g class="Master_Slide" stroke-width="21.482">
   </g>
  </g>
- <g class="SlideGroup">
-  <g>
-   <g id="container-id1">
-    <g id="id1" class="Slide" clip-path="url(#presentation_clip_path)">
-     <g class="Page">
+ <g class="SlideGroup" transform="matrix(1.3137 0 0 1.3137 -251.14 -251.14)" stroke-width="21.482">
+  <g stroke-width="21.482">
+   <g stroke-width="21.482">
+    <g class="Slide" clip-path="url(#presentation_clip_path)" stroke-width="21.482">
+     <g class="Page" stroke-width="21.482">
       <g class="com.sun.star.drawing.CustomShape">
-       <g id="id3">
-        <rect class="BoundingBox" stroke="none" fill="none" x="282" y="282" width="1037" height="1037"/>
-        <g>
+        <rect class="BoundingBox" x="282" y="282" width="1037" height="1037" fill="none" stroke-width="15.446"/>
+        <g stroke-width="21.482">
          <defs>
-          <linearGradient id="gradient1" x1="458" y1="209" x2="1142" y2="1391" gradientUnits="userSpaceOnUse">
-           <stop offset="0.015625" style="stop-color:rgb(0,255,0)"/>
-           <stop offset="0.015625" style="stop-color:rgb(0,254,0)"/>
-           <stop offset="0.03125" style="stop-color:rgb(0,254,0)"/>
-           <stop offset="0.03125" style="stop-color:rgb(0,253,0)"/>
-           <stop offset="0.046875" style="stop-color:rgb(0,253,0)"/>
-           <stop offset="0.046875" style="stop-color:rgb(0,252,0)"/>
-           <stop offset="0.0625" style="stop-color:rgb(0,252,0)"/>
-           <stop offset="0.0625" style="stop-color:rgb(0,251,0)"/>
-           <stop offset="0.078125" style="stop-color:rgb(0,251,0)"/>
-           <stop offset="0.078125" style="stop-color:rgb(0,250,0)"/>
-           <stop offset="0.09375" style="stop-color:rgb(0,250,0)"/>
-           <stop offset="0.09375" style="stop-color:rgb(0,248,0)"/>
-           <stop offset="0.109375" style="stop-color:rgb(0,248,0)"/>
-           <stop offset="0.109375" style="stop-color:rgb(0,247,0)"/>
-           <stop offset="0.125" style="stop-color:rgb(0,247,0)"/>
-           <stop offset="0.125" style="stop-color:rgb(0,246,0)"/>
-           <stop offset="0.140625" style="stop-color:rgb(0,246,0)"/>
-           <stop offset="0.140625" style="stop-color:rgb(0,245,0)"/>
-           <stop offset="0.15625" style="stop-color:rgb(0,245,0)"/>
-           <stop offset="0.15625" style="stop-color:rgb(0,244,0)"/>
-           <stop offset="0.171875" style="stop-color:rgb(0,244,0)"/>
-           <stop offset="0.171875" style="stop-color:rgb(0,242,0)"/>
-           <stop offset="0.1875" style="stop-color:rgb(0,242,0)"/>
-           <stop offset="0.1875" style="stop-color:rgb(0,241,0)"/>
-           <stop offset="0.203125" style="stop-color:rgb(0,241,0)"/>
-           <stop offset="0.203125" style="stop-color:rgb(0,240,0)"/>
-           <stop offset="0.21875" style="stop-color:rgb(0,240,0)"/>
-           <stop offset="0.21875" style="stop-color:rgb(0,239,0)"/>
-           <stop offset="0.234375" style="stop-color:rgb(0,239,0)"/>
-           <stop offset="0.234375" style="stop-color:rgb(0,238,0)"/>
-           <stop offset="0.25" style="stop-color:rgb(0,238,0)"/>
-           <stop offset="0.25" style="stop-color:rgb(0,236,0)"/>
-           <stop offset="0.265625" style="stop-color:rgb(0,236,0)"/>
-           <stop offset="0.265625" style="stop-color:rgb(0,235,0)"/>
-           <stop offset="0.28125" style="stop-color:rgb(0,235,0)"/>
-           <stop offset="0.28125" style="stop-color:rgb(0,234,0)"/>
-           <stop offset="0.296875" style="stop-color:rgb(0,234,0)"/>
-           <stop offset="0.296875" style="stop-color:rgb(0,233,0)"/>
-           <stop offset="0.3125" style="stop-color:rgb(0,233,0)"/>
-           <stop offset="0.3125" style="stop-color:rgb(0,232,0)"/>
-           <stop offset="0.328125" style="stop-color:rgb(0,232,0)"/>
-           <stop offset="0.328125" style="stop-color:rgb(0,231,0)"/>
-           <stop offset="0.34375" style="stop-color:rgb(0,231,0)"/>
-           <stop offset="0.34375" style="stop-color:rgb(0,229,0)"/>
-           <stop offset="0.359375" style="stop-color:rgb(0,229,0)"/>
-           <stop offset="0.359375" style="stop-color:rgb(0,228,0)"/>
-           <stop offset="0.375" style="stop-color:rgb(0,228,0)"/>
-           <stop offset="0.375" style="stop-color:rgb(0,227,0)"/>
-           <stop offset="0.390625" style="stop-color:rgb(0,227,0)"/>
-           <stop offset="0.390625" style="stop-color:rgb(0,226,0)"/>
-           <stop offset="0.40625" style="stop-color:rgb(0,226,0)"/>
-           <stop offset="0.40625" style="stop-color:rgb(0,225,0)"/>
-           <stop offset="0.421875" style="stop-color:rgb(0,225,0)"/>
-           <stop offset="0.421875" style="stop-color:rgb(0,223,0)"/>
-           <stop offset="0.4375" style="stop-color:rgb(0,223,0)"/>
-           <stop offset="0.4375" style="stop-color:rgb(0,222,0)"/>
-           <stop offset="0.453125" style="stop-color:rgb(0,222,0)"/>
-           <stop offset="0.453125" style="stop-color:rgb(0,221,0)"/>
-           <stop offset="0.46875" style="stop-color:rgb(0,221,0)"/>
-           <stop offset="0.46875" style="stop-color:rgb(0,220,0)"/>
-           <stop offset="0.484375" style="stop-color:rgb(0,220,0)"/>
-           <stop offset="0.484375" style="stop-color:rgb(0,219,0)"/>
-           <stop offset="0.5" style="stop-color:rgb(0,219,0)"/>
-           <stop offset="0.5" style="stop-color:rgb(0,217,0)"/>
-           <stop offset="0.515625" style="stop-color:rgb(0,217,0)"/>
-           <stop offset="0.515625" style="stop-color:rgb(0,216,0)"/>
-           <stop offset="0.53125" style="stop-color:rgb(0,216,0)"/>
-           <stop offset="0.53125" style="stop-color:rgb(0,215,0)"/>
-           <stop offset="0.546875" style="stop-color:rgb(0,215,0)"/>
-           <stop offset="0.546875" style="stop-color:rgb(0,214,0)"/>
-           <stop offset="0.5625" style="stop-color:rgb(0,214,0)"/>
-           <stop offset="0.5625" style="stop-color:rgb(0,213,0)"/>
-           <stop offset="0.578125" style="stop-color:rgb(0,213,0)"/>
-           <stop offset="0.578125" style="stop-color:rgb(0,212,0)"/>
-           <stop offset="0.59375" style="stop-color:rgb(0,212,0)"/>
-           <stop offset="0.59375" style="stop-color:rgb(0,210,0)"/>
-           <stop offset="0.609375" style="stop-color:rgb(0,210,0)"/>
-           <stop offset="0.609375" style="stop-color:rgb(0,209,0)"/>
-           <stop offset="0.625" style="stop-color:rgb(0,209,0)"/>
-           <stop offset="0.625" style="stop-color:rgb(0,208,0)"/>
-           <stop offset="0.640625" style="stop-color:rgb(0,208,0)"/>
-           <stop offset="0.640625" style="stop-color:rgb(0,207,0)"/>
-           <stop offset="0.65625" style="stop-color:rgb(0,207,0)"/>
-           <stop offset="0.65625" style="stop-color:rgb(0,206,0)"/>
-           <stop offset="0.671875" style="stop-color:rgb(0,206,0)"/>
-           <stop offset="0.671875" style="stop-color:rgb(0,204,0)"/>
-           <stop offset="0.6875" style="stop-color:rgb(0,204,0)"/>
-           <stop offset="0.6875" style="stop-color:rgb(0,203,0)"/>
-           <stop offset="0.703125" style="stop-color:rgb(0,203,0)"/>
-           <stop offset="0.703125" style="stop-color:rgb(0,202,0)"/>
-           <stop offset="0.71875" style="stop-color:rgb(0,202,0)"/>
-           <stop offset="0.71875" style="stop-color:rgb(0,201,0)"/>
-           <stop offset="0.734375" style="stop-color:rgb(0,201,0)"/>
-           <stop offset="0.734375" style="stop-color:rgb(0,200,0)"/>
-           <stop offset="0.75" style="stop-color:rgb(0,200,0)"/>
-           <stop offset="0.75" style="stop-color:rgb(0,198,0)"/>
-           <stop offset="0.765625" style="stop-color:rgb(0,198,0)"/>
-           <stop offset="0.765625" style="stop-color:rgb(0,197,0)"/>
-           <stop offset="0.78125" style="stop-color:rgb(0,197,0)"/>
-           <stop offset="0.78125" style="stop-color:rgb(0,196,0)"/>
-           <stop offset="0.796875" style="stop-color:rgb(0,196,0)"/>
-           <stop offset="0.796875" style="stop-color:rgb(0,195,0)"/>
-           <stop offset="0.8125" style="stop-color:rgb(0,195,0)"/>
-           <stop offset="0.8125" style="stop-color:rgb(0,194,0)"/>
-           <stop offset="0.828125" style="stop-color:rgb(0,194,0)"/>
-           <stop offset="0.828125" style="stop-color:rgb(0,193,0)"/>
-           <stop offset="0.84375" style="stop-color:rgb(0,193,0)"/>
-           <stop offset="0.84375" style="stop-color:rgb(0,191,0)"/>
-           <stop offset="0.859375" style="stop-color:rgb(0,191,0)"/>
-           <stop offset="0.859375" style="stop-color:rgb(0,190,0)"/>
-           <stop offset="0.875" style="stop-color:rgb(0,190,0)"/>
-           <stop offset="0.875" style="stop-color:rgb(0,189,0)"/>
-           <stop offset="0.890625" style="stop-color:rgb(0,189,0)"/>
-           <stop offset="0.890625" style="stop-color:rgb(0,188,0)"/>
-           <stop offset="0.90625" style="stop-color:rgb(0,188,0)"/>
-           <stop offset="0.90625" style="stop-color:rgb(0,187,0)"/>
-           <stop offset="0.921875" style="stop-color:rgb(0,187,0)"/>
-           <stop offset="0.921875" style="stop-color:rgb(0,185,0)"/>
-           <stop offset="0.9375" style="stop-color:rgb(0,185,0)"/>
-           <stop offset="0.9375" style="stop-color:rgb(0,184,0)"/>
-           <stop offset="0.953125" style="stop-color:rgb(0,184,0)"/>
-           <stop offset="0.953125" style="stop-color:rgb(0,183,0)"/>
-           <stop offset="0.96875" style="stop-color:rgb(0,183,0)"/>
-           <stop offset="0.96875" style="stop-color:rgb(0,182,0)"/>
-           <stop offset="0.984375" style="stop-color:rgb(0,182,0)"/>
-           <stop offset="0.984375" style="stop-color:rgb(0,181,0)"/>
-           <stop offset="1" style="stop-color:rgb(0,181,0)"/>
-           <stop offset="1" style="stop-color:rgb(0,179,0)"/>
+          <linearGradient id="gradient1" x1="458" x2="1142" y1="209" y2="1391" gradientUnits="userSpaceOnUse">
+           <stop stop-color="#0f0" offset=".015625"/>
+           <stop stop-color="#00fe00" offset=".015625"/>
+           <stop stop-color="#00fe00" offset=".03125"/>
+           <stop stop-color="#00fd00" offset=".03125"/>
+           <stop stop-color="#00fd00" offset=".046875"/>
+           <stop stop-color="#00fc00" offset=".046875"/>
+           <stop stop-color="#00fc00" offset=".0625"/>
+           <stop stop-color="#00fb00" offset=".0625"/>
+           <stop stop-color="#00fb00" offset=".078125"/>
+           <stop stop-color="#00fa00" offset=".078125"/>
+           <stop stop-color="#00fa00" offset=".09375"/>
+           <stop stop-color="#00f800" offset=".09375"/>
+           <stop stop-color="#00f800" offset=".10938"/>
+           <stop stop-color="#00f700" offset=".10938"/>
+           <stop stop-color="#00f700" offset=".125"/>
+           <stop stop-color="#00f600" offset=".125"/>
+           <stop stop-color="#00f600" offset=".14062"/>
+           <stop stop-color="#00f500" offset=".14062"/>
+           <stop stop-color="#00f500" offset=".15625"/>
+           <stop stop-color="#00f400" offset=".15625"/>
+           <stop stop-color="#00f400" offset=".17188"/>
+           <stop stop-color="#00f200" offset=".17188"/>
+           <stop stop-color="#00f200" offset=".1875"/>
+           <stop stop-color="#00f100" offset=".1875"/>
+           <stop stop-color="#00f100" offset=".20312"/>
+           <stop stop-color="#00f000" offset=".20312"/>
+           <stop stop-color="#00f000" offset=".21875"/>
+           <stop stop-color="#00ef00" offset=".21875"/>
+           <stop stop-color="#00ef00" offset=".23438"/>
+           <stop stop-color="#0e0" offset=".23438"/>
+           <stop stop-color="#0e0" offset=".25"/>
+           <stop stop-color="#00ec00" offset=".25"/>
+           <stop stop-color="#00ec00" offset=".26562"/>
+           <stop stop-color="#00eb00" offset=".26562"/>
+           <stop stop-color="#00eb00" offset=".28125"/>
+           <stop stop-color="#00ea00" offset=".28125"/>
+           <stop stop-color="#00ea00" offset=".29688"/>
+           <stop stop-color="#00e900" offset=".29688"/>
+           <stop stop-color="#00e900" offset=".3125"/>
+           <stop stop-color="#00e800" offset=".3125"/>
+           <stop stop-color="#00e800" offset=".32812"/>
+           <stop stop-color="#00e700" offset=".32812"/>
+           <stop stop-color="#00e700" offset=".34375"/>
+           <stop stop-color="#00e500" offset=".34375"/>
+           <stop stop-color="#00e500" offset=".35938"/>
+           <stop stop-color="#00e400" offset=".35938"/>
+           <stop stop-color="#00e400" offset=".375"/>
+           <stop stop-color="#00e300" offset=".375"/>
+           <stop stop-color="#00e300" offset=".39062"/>
+           <stop stop-color="#00e200" offset=".39062"/>
+           <stop stop-color="#00e200" offset=".40625"/>
+           <stop stop-color="#00e100" offset=".40625"/>
+           <stop stop-color="#00e100" offset=".42188"/>
+           <stop stop-color="#00df00" offset=".42188"/>
+           <stop stop-color="#00df00" offset=".4375"/>
+           <stop stop-color="#00de00" offset=".4375"/>
+           <stop stop-color="#00de00" offset=".45312"/>
+           <stop stop-color="#0d0" offset=".45312"/>
+           <stop stop-color="#0d0" offset=".46875"/>
+           <stop stop-color="#00dc00" offset=".46875"/>
+           <stop stop-color="#00dc00" offset=".48438"/>
+           <stop stop-color="#00db00" offset=".48438"/>
+           <stop stop-color="#00db00" offset=".5"/>
+           <stop stop-color="#00d900" offset=".5"/>
+           <stop stop-color="#00d900" offset=".51562"/>
+           <stop stop-color="#00d800" offset=".51562"/>
+           <stop stop-color="#00d800" offset=".53125"/>
+           <stop stop-color="#00d700" offset=".53125"/>
+           <stop stop-color="#00d700" offset=".54688"/>
+           <stop stop-color="#00d600" offset=".54688"/>
+           <stop stop-color="#00d600" offset=".5625"/>
+           <stop stop-color="#00d500" offset=".5625"/>
+           <stop stop-color="#00d500" offset=".57812"/>
+           <stop stop-color="#00d400" offset=".57812"/>
+           <stop stop-color="#00d400" offset=".59375"/>
+           <stop stop-color="#00d200" offset=".59375"/>
+           <stop stop-color="#00d200" offset=".60938"/>
+           <stop stop-color="#00d100" offset=".60938"/>
+           <stop stop-color="#00d100" offset=".625"/>
+           <stop stop-color="#00d000" offset=".625"/>
+           <stop stop-color="#00d000" offset=".64062"/>
+           <stop stop-color="#00cf00" offset=".64062"/>
+           <stop stop-color="#00cf00" offset=".65625"/>
+           <stop stop-color="#00ce00" offset=".65625"/>
+           <stop stop-color="#00ce00" offset=".67188"/>
+           <stop stop-color="#0c0" offset=".67188"/>
+           <stop stop-color="#0c0" offset=".6875"/>
+           <stop stop-color="#00cb00" offset=".6875"/>
+           <stop stop-color="#00cb00" offset=".70312"/>
+           <stop stop-color="#00ca00" offset=".70312"/>
+           <stop stop-color="#00ca00" offset=".71875"/>
+           <stop stop-color="#00c900" offset=".71875"/>
+           <stop stop-color="#00c900" offset=".73438"/>
+           <stop stop-color="#00c800" offset=".73438"/>
+           <stop stop-color="#00c800" offset=".75"/>
+           <stop stop-color="#00c600" offset=".75"/>
+           <stop stop-color="#00c600" offset=".76562"/>
+           <stop stop-color="#00c500" offset=".76562"/>
+           <stop stop-color="#00c500" offset=".78125"/>
+           <stop stop-color="#00c400" offset=".78125"/>
+           <stop stop-color="#00c400" offset=".79688"/>
+           <stop stop-color="#00c300" offset=".79688"/>
+           <stop stop-color="#00c300" offset=".8125"/>
+           <stop stop-color="#00c200" offset=".8125"/>
+           <stop stop-color="#00c200" offset=".82812"/>
+           <stop stop-color="#00c100" offset=".82812"/>
+           <stop stop-color="#00c100" offset=".84375"/>
+           <stop stop-color="#00bf00" offset=".84375"/>
+           <stop stop-color="#00bf00" offset=".85938"/>
+           <stop stop-color="#00be00" offset=".85938"/>
+           <stop stop-color="#00be00" offset=".875"/>
+           <stop stop-color="#00bd00" offset=".875"/>
+           <stop stop-color="#00bd00" offset=".89062"/>
+           <stop stop-color="#00bc00" offset=".89062"/>
+           <stop stop-color="#00bc00" offset=".90625"/>
+           <stop stop-color="#0b0" offset=".90625"/>
+           <stop stop-color="#0b0" offset=".92188"/>
+           <stop stop-color="#00b900" offset=".92188"/>
+           <stop stop-color="#00b900" offset=".9375"/>
+           <stop stop-color="#00b800" offset=".9375"/>
+           <stop stop-color="#00b800" offset=".95312"/>
+           <stop stop-color="#00b700" offset=".95312"/>
+           <stop stop-color="#00b700" offset=".96875"/>
+           <stop stop-color="#00b600" offset=".96875"/>
+           <stop stop-color="#00b600" offset=".98438"/>
+           <stop stop-color="#00b500" offset=".98438"/>
+           <stop stop-color="#00b500" offset="1"/>
+           <stop stop-color="#00b300" offset="1"/>
           </linearGradient>
          </defs>
-         <path style="fill:url(#gradient1)" d="M 800,1300 L 300,1300 300,300 1300,300 1300,1300 800,1300 Z"/>
+         <path d="m800 1300h-500v-1e3h1e3v1e3z" fill="url(#gradient1)" stroke-width="21.482"/>
         </g>
-        <path fill="none" stroke="rgb(0,0,0)" stroke-width="35" stroke-linejoin="round" d="M 800,1300 L 300,1300 300,300 1300,300 1300,1300 800,1300 Z"/>
-       </g>
+        <path d="m800 1300h-500v-1e3h1e3v1e3z" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="26.642"/>
       </g>
       <g class="com.sun.star.drawing.PolyLineShape">
-       <g id="id4">
-        <rect class="BoundingBox" stroke="none" fill="none" x="347" y="446" width="907" height="708"/>
-        <path fill="none" stroke="rgb(0,0,0)" stroke-width="106" stroke-linejoin="round" d="M 400,800 L 600,800 700,500 900,500 1000,1100 1200,1100"/>
+       <g fill="none">
+        <rect class="BoundingBox" x="347" y="446" width="907" height="708" stroke-width="15.446"/>
+        <path d="m400 800h200l100-300h200l100 600h200" stroke="#000" stroke-linejoin="round" stroke-width="80.686"/>
        </g>
       </g>
      </g>

@@ -1566,7 +1566,9 @@ void TList::moveSelection(int n)
 
                 if (!MusEGlobal::audio->isRecording() &&
                         recd.size() == 1 &&
-                        MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                        MusEGlobal::config.moveArmedCheckBox &&
+                        selTrack->canRecord() &&
+                        selTrack->type() != MusECore::Track::AUDIO_OUTPUT ) { // one rec enabled track, move rec enabled with selection
                     MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
                     MusEGlobal::song->setRecordFlag((selTrack),true);
                 }
@@ -1974,7 +1976,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
             MusECore::TrackList recd = getRecEnabledTracks();
             if (!MusEGlobal::audio->isRecording() &&
                     recd.size() == 1 &&
-                    MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                    MusEGlobal::config.moveArmedCheckBox &&
+                    t->canRecord() &&
+                    t->type() != MusECore::Track::AUDIO_OUTPUT
+                    ) { // one rec enabled track, move rec enabled with selection
                 MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
                 MusEGlobal::song->setRecordFlag(t,true);
             }
@@ -2897,7 +2902,9 @@ void TList::selectTrack(MusECore::Track* tr, bool /*deselect*/)
         MusECore::TrackList recd = getRecEnabledTracks();
         if (!MusEGlobal::audio->isRecording() &&
                 recd.size() == 1 &&
-                MusEGlobal::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                MusEGlobal::config.moveArmedCheckBox &&
+                tr->canRecord() &&
+                tr->type() != MusECore::Track::AUDIO_OUTPUT) { // one rec enabled track, move rec enabled with selection
             MusEGlobal::song->setRecordFlag((MusECore::Track*)recd.front(),false);
             MusEGlobal::song->setRecordFlag(tr,true);
         }

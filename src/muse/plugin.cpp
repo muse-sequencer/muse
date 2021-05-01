@@ -1074,7 +1074,7 @@ CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
       return ladspaCtrlMode(plugin, i);
       }
 
-CtrlEnumValues* Plugin::ctrlEnumValues ( unsigned long ) const
+const CtrlEnumValues* Plugin::ctrlEnumValues ( unsigned long ) const
 {
     return nullptr;
 }
@@ -2039,7 +2039,7 @@ bool PluginIBase::addScheduledControlEvent(unsigned long i, double val, unsigned
   return false;
 }
 
-CtrlEnumValues* PluginIBase::ctrlEnumValues(unsigned long i) const {
+const CtrlEnumValues* PluginIBase::ctrlEnumValues(unsigned long i) const {
     Q_UNUSED(i)
     return nullptr;
 }

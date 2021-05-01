@@ -208,7 +208,7 @@ QIcon* pencilMoveVertIconSVG;
 QIcon* audioStretchIconSVG;
 QIcon* audioResampleIconSVG;
 
-QIcon* noscaleSVGIcon[3];
+QIcon* synthGuiSVGIcon;
 QIcon* ankerSVGIcon;
 QIcon* settingsSVGIcon;
 QIcon* transportSVGIcon;
@@ -562,6 +562,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     trackAuxSVGIcon    = icons.getSVG("track_aux.svg");
     trackGroupVGIcon   = icons.getSVG("track_group.svg");
 
+    synthGuiSVGIcon    = icons.getSVG("synth_gui.svg");
     ankerSVGIcon       = icons.getSVG("anker.svg");
     settingsSVGIcon    = icons.getSVG("settings.svg");
     transportSVGIcon   = icons.getSVG("transport.svg");
@@ -594,10 +595,6 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     pencilMoveVertIconSVG = icons.getSVG("pencil_move_vert.svg");
     audioStretchIconSVG = icons.getSVG("audio_stretch.svg");
     audioResampleIconSVG = icons.getSVG("audio_resample.svg");
-
-    noscaleSVGIcon[0] = icons.getSVG("noscale1.svg");
-    noscaleSVGIcon[1] = icons.getSVG("noscale2.svg");
-    noscaleSVGIcon[2] = icons.getSVG("noscale3.svg");
 
     routeAutoAdjustSVGIcon = icons.getSVG("route_auto_adjust.svg");
     routeSelSourceSVGIcon = icons.getSVG("route_sel_source.svg");
@@ -858,6 +855,8 @@ void deleteIcons()
     delete pencilMoveVertIconSVG;
     delete audioStretchIconSVG;
     delete audioResampleIconSVG;
+
+    delete synthGuiSVGIcon;
     delete ankerSVGIcon;
     delete settingsSVGIcon;
     delete transportSVGIcon;
@@ -869,10 +868,6 @@ void deleteIcons()
     delete delSelTracksSVGIcon;
     delete duplSelTrackSVGIcon;
     delete duplSelTracksSVGIcon;
-
-    delete noscaleSVGIcon[0];
-    delete noscaleSVGIcon[1];
-    delete noscaleSVGIcon[2];
 
     delete pianorollSVGIcon;
     delete arrangerSVGIcon;

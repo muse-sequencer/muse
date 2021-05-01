@@ -761,7 +761,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
               }   
             } 
           }
-          
+
           {
             MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(2));
             if(w)
@@ -779,12 +779,22 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
               }   
             } 
           }
+
+            bool trackArmed = false;
+            for (const auto& it : *MusEGlobal::song->tracks()) {
+                if (it->canRecord() && it->recordFlag()) {
+                    trackArmed = true;
+                    break;
+                }
+            }
+            if (!trackArmed)
+                MusEGlobal::song->setRecord(false);
         }
         
         // Try these, may need more/less. 
         if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | SC_TRACK_MOVED |
            SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
-           SC_SIG))
+           SC_SIG | SC_DIVISION_CHANGED))
         {
           unsigned endTick = MusEGlobal::song->len();
           int offset  = MusEGlobal::sigmap.ticksMeasure(endTick);
