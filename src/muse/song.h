@@ -217,7 +217,7 @@ class Song : public QObject {
        *  this is a special case of the general function, which only replaces one part
        *  by up to nine different.
        */
-      void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=nullptr, const Part* p3=nullptr, const Part* p4=nullptr, const Part* p5=nullptr, const Part* p6=nullptr, const Part* p7=nullptr, const Part* p8=nullptr, const Part* p9=NULL);
+      void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=nullptr, const Part* p3=nullptr, const Part* p4=nullptr, const Part* p5=nullptr, const Part* p6=nullptr, const Part* p7=nullptr, const Part* p8=nullptr, const Part* p9=nullptr);
 
       void putEvent(int pv);
       void putEventCC(char cc);

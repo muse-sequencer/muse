@@ -51,27 +51,27 @@ details.
       Requirements:
   =============================
       
-      - CMake >= 2.4 
+      - CMake >= 3.10.2 
           http:/www.cmake.org/HTML/Download.html
 
-      - Qt: Qt >= 5.7.0 (development files)
+      - Qt: Qt >= 5.9.5 (development files)
           http://qt-project.org/
           MusE does _not_ compile with older versions
           For ubuntu packages can be installed via:
           sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools
 
-      - gcc >= 4.x.x or clang >= 2.9
+      - gcc >= 7.3.0 or clang >= 6.0
           http://gcc.gnu.org/
           http://clang.llvm.org/
 
-      - libsndfile >= 1.0.1 (development files)
+      - libsndfile >= 1.0.28 (development files)
           http://www.mega-nerd.com/libsndfile/
 
-      - libsamplerate >= 0.1.0 (development files)
+      - libsamplerate >= 0.1.9 (development files)
           http://www.mega-nerd.com/SRC/
 
-      - JACK version 1 >= 0.103 (development files) or
-        JACK version 2 >= 1.9.9.5 (development files)
+      - JACK version 1 >= 0.125.0 (development files) or
+        JACK version 2 >= 1.9.12 (development files)
           http://jackaudio.org/
 
       - LADSPA (development file ladspa.h)
@@ -82,10 +82,10 @@ details.
       Optional:
   =============================
   
-      - ALSA >= 0.9.0  Advanced Linux Sound Architecture (development files) 
+      - ALSA >= 1.1.3  Advanced Linux Sound Architecture (development files) 
           http://www.alsa-project.org/
 
-      - fluidsynth >= 1.0.3 (formerly known as iiwusynth) (development files) 
+      - fluidsynth >= 1.1.9 (formerly known as iiwusynth) (development files) 
           http://sourceforge.net/apps/trac/fluidsynth/
 
       - libinstpatch >= 1.0    Instrument Patch Library (development files)
@@ -94,13 +94,16 @@ details.
       - RtAudio >=5.0 audio input/output support.
           https://www.music.mcgill.ca/~gary/rtaudio/
         
+      - liblrdf >= 0.5.0   Library to manipulate RDF files describing LADSPA plugins
+          https://librdf.org/
+          
       - LV2 (LADSPA Version 2) plugin support:
 
-        lilv >= 0.22.0 (development files)
-        sord >= 0.14.0 (development files)
+        lilv >= 0.24.0 (development files)
+        sord >= 0.16.0 (development files)
           http://drobilla.net/software
 
-        lv2 >= 1.12.0 (development files)
+        lv2 >= 1.14.0 (development files)
           http://lv2plug.in
         
       - LV2 Gtk2 User Interface support:
@@ -140,6 +143,7 @@ details.
           See https://github.com/muse-sequencer/muse/wiki/python-remote-control.
 
       - PyQt5 is used by some of the bundled midi scripts ('Scripts', or 'Plugins' in earlier versions).
+
 
 
   Quick instructions for Ubuntu and similar distributions:
@@ -212,7 +216,7 @@ details.
       Generic building MusE:
   =============================
   
-      - Download source from http://muse-sequencer.org/
+      - Download source from https://github.com/muse-sequencer/muse.git
 
       - Unpack the source somewhere.  
 
@@ -415,7 +419,7 @@ details.
       Known bugs:
   =============================
 
-      The odd wierdness happens and some things may not be completely implemeneted
+      The odd weirdness happens and some things may not be completely implemeneted
       though we hope it is as stable for you as it is for us!
 
       If you differ in this opinion we are grateful for all reported issues.

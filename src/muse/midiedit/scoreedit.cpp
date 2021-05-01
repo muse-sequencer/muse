@@ -1152,7 +1152,7 @@ void ScoreEdit::writeStatus(int level, MusECore::Xml& xml) const
     xml.intTag(level, "preambleContainsTimesig", preamble_timesig_action->isChecked());
 
     const MusECore::Part* selected_part=score_canvas->get_selected_part();
-    if (selected_part==NULL)
+    if (selected_part==nullptr)
     {
         xml.put(level, "<selectedPart>none</selectedPart>");
     }
@@ -4148,7 +4148,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                         else
                             QMessageBox::information(this, tr("No part"), tr("There are no parts you could add the note to."));
 
-                        if (curr_part!=NULL)
+                        if (curr_part!=nullptr)
                         {
                             signed int relative_tick=(signed) tick - curr_part->tick();
                             if (relative_tick<0)
@@ -4953,10 +4953,10 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 
 void ScoreCanvas::update_parts()
 {
-    if (selected_part!=NULL) //if it's null, let it be null
+    if (selected_part!=nullptr) //if it's null, let it be null
         selected_part=MusECore::partFromSerialNumber(selected_part_index);
 
-    if (dragged_event_part!=NULL) //same thing here
+    if (dragged_event_part!=nullptr) //same thing here
         dragged_event_part=MusECore::partFromSerialNumber(dragged_event_part_index);
 
     for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)

@@ -352,7 +352,7 @@ class FloItem
 		
 
 		
-		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, const MusECore::Part* part=nullptr, const MusECore::Event* event=NULL)
+		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, const MusECore::Part* part=nullptr, const MusECore::Event* event=nullptr)
 		{
 			pos=p;
 			dots=d;

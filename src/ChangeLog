@@ -1,3 +1,9 @@
+01.05.2021
+    - Update tool/lib versions to Ubuntu 18.04 LTS level. (kybos)
+    - Update c++ version to c++17. (kybos)
+    - Fix: Many clang errors/warnings. (kybos)
+    - Remove obsolete Qt switches, remove unused includes. (kybos)
+    - Update github actions to Ubuntu 18.04. (kybos)
 30.04.2021
     - Fix #986: Crash in lv2 plugins when removed while native GUI is open. (kybos)
 29.04.2021

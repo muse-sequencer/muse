@@ -217,7 +217,7 @@ void EventCanvas::updateItems()
                     
                     if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
                     {
-                        if (curItem!=NULL)
+                        if (curItem!=nullptr)
                           fprintf(stderr, "THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
                         
                         curItem=temp;

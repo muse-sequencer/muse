@@ -42,11 +42,11 @@
 //#include <cstdint>
 #include "muse_math.h"
 
-//#include "plugin_rdf.h"
 #include "plugin_cache_writer.h"
 #include "plugin_cache_reader.h"
 
 #ifdef HAVE_LRDF
+  #include "plugin_rdf.h"
   #include <lrdf.h>
 #endif // HAVE_LRDF
 

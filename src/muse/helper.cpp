@@ -717,16 +717,16 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
           DrumMap temporaryMap;
           for (;;) // nested loop
           {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token)
+            Xml::Token tokeni = xml.parse();
+            const QString& tagi = xml.s1();
+            switch (tokeni)
             {
               case Xml::Error:
               case Xml::End:
                 goto end_of_nested_for;
 
               case Xml::Attribut:
-                if (tag == "pitch")
+                if (tagi == "pitch")
                 {
                   int pitch = xml.s2().toInt() & 0x7f;
                   if (pitch < 0 || pitch > 127)
@@ -739,33 +739,33 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                 break;
 
               case Xml::TagStart:
-                if (dm==NULL && compatibility == false)
-                  printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tag, but sub-tags follow in read_new_style_drummap()!\n");
-                else if (dm ==NULL && compatibility == true)
+                if (dm==nullptr && compatibility == false)
+                  printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tagi, but sub-tags follow in read_new_style_drummap()!\n");
+                else if (dm ==nullptr && compatibility == true)
                 {
                    dm = &temporaryMap;
                 }
-                if (tag == "name")
+                if (tagi == "name")
                   dm->name = xml.parse(QString("name"));
-                else if (tag == "vol")
+                else if (tagi == "vol")
                   dm->vol = (unsigned char)xml.parseInt();
-                else if (tag == "quant")
+                else if (tagi == "quant")
                   dm->quant = xml.parseInt();
-                else if (tag == "len")
+                else if (tagi == "len")
                   dm->len = xml.parseInt();
-                else if (tag == "channel")
+                else if (tagi == "channel")
                   dm->channel = xml.parseInt();
-                else if (tag == "port")
+                else if (tagi == "port")
                   dm->port = xml.parseInt();
-                else if (tag == "lv1")
+                else if (tagi == "lv1")
                   dm->lv1 = xml.parseInt();
-                else if (tag == "lv2")
+                else if (tagi == "lv2")
                   dm->lv2 = xml.parseInt();
-                else if (tag == "lv3")
+                else if (tagi == "lv3")
                   dm->lv3 = xml.parseInt();
-                else if (tag == "lv4")
+                else if (tagi == "lv4")
                   dm->lv4 = xml.parseInt();
-                else if (tag == "enote") {
+                else if (tagi == "enote") {
                   dm->enote = xml.parseInt();
                   if (compatibility) {
                       int pitch = temporaryMap.enote;
@@ -774,18 +774,18 @@ void read_new_style_drummap(Xml& xml, const char* tagname,
                       dm->anote = pitch;
                   }
                 }
-                else if (tag == "anote")
+                else if (tagi == "anote")
                   dm->anote = xml.parseInt();
-                else if (tag == "mute")
+                else if (tagi == "mute")
                   dm->mute = xml.parseInt();
-                else if (tag == "hide")
+                else if (tagi == "hide")
                   dm->hide = xml.parseInt();
                 else
                   xml.unknown("read_new_style_drummap");
                 break;
 
               case Xml::TagEnd:
-                if (tag == "entry")
+                if (tagi == "entry")
                   goto end_of_nested_for;
 
               default:
@@ -1579,9 +1579,9 @@ QString getUniqueUntitledName()
       nfb = fbase;
       if(MusEGlobal::config.projectStoreInFolder) 
         nfb += "/" + nfn;
-      QFileInfo fi(nfb + "/" + nfn + ".med");
-      if(!fi.exists())
-        return fi.filePath();
+      QFileInfo fii(nfb + "/" + nfn + ".med");
+      if(!fii.exists())
+        return fii.filePath();
   }    
 
   printf("MusE error: Could not make untitled project name (10000 or more untitled projects in project dir - clean up!\n");

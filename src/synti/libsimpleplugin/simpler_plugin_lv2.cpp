@@ -6547,7 +6547,7 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
 
   _handle = new LADSPA_Handle[_instances];
   for(int i = 0; i < _instances; ++i)
-    _handle[i]=NULL;
+    _handle[i]=nullptr;
 
   for(int i = 0; i < _instances; ++i)
   {

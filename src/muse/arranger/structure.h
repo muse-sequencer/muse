@@ -33,7 +33,7 @@ enum OperationType
   insertOperation,
 };
 
-Undo movePartsTotheRight(unsigned int startTick, unsigned int moveTick, bool only_selected=false, std::set<Track*>* tracklist=NULL);
+Undo movePartsTotheRight(unsigned int startTick, unsigned int moveTick, bool only_selected=false, std::set<Track*>* tracklist=nullptr);
 Undo partSplitter(unsigned int tick, bool onlySelectedTracks=false);
 void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigned int rpos, OperationType type);
 void adjustGlobalLists(Undo& operations, unsigned int startPos, int diff);

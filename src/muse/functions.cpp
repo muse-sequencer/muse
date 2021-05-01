@@ -911,7 +911,7 @@ bool paste_notes(const Part* paste_into_part)
 	unsigned temp_begin = MusEGlobal::sigmap.raster1(MusEGlobal::song->cpos(),0);
 	unsigned temp_end = MusEGlobal::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
 	MusEGui::paste_events_dialog->raster = temp_end - temp_begin;
-	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
+	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=nullptr);
 	
 	if (!MusEGui::paste_events_dialog->exec())
 		return false;
@@ -1519,7 +1519,7 @@ void clean_parts()
 						
 					already_processed.insert(part_it);
 					part_it=part_it->nextClone();
-				} while ((part_it!=part->second) && (part_it!=NULL));
+				} while ((part_it!=part->second) && (part_it!=nullptr));
 
 				
 				// erase all events exceeding the longest clone of this part
@@ -2418,7 +2418,7 @@ bool paste_items(const std::set<const Part*>& parts, const Part* paste_into_part
 	unsigned temp_begin = MusEGlobal::sigmap.raster1(MusEGlobal::song->cpos(),0);
 	unsigned temp_end = MusEGlobal::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
 	MusEGui::paste_events_dialog->raster = temp_end - temp_begin;
-	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
+	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=nullptr);
 	
 	if (!MusEGui::paste_events_dialog->exec())
 		return false;

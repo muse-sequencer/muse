@@ -787,7 +787,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                        const QString& label, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_)
 {
-      if (old_control==NULL)
+      if (old_control==nullptr)
       {
         control_port_mapper=control_port_mapper_;
         

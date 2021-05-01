@@ -524,7 +524,7 @@ bool Track::isCircularRoute(Track* dst)
   if(dst)
   {  
     _nodeTraversed = true;
-    rv = dst->isCircularRoute(NULL);
+    rv = dst->isCircularRoute(nullptr);
     _nodeTraversed = false;
     return rv;
   }
@@ -539,7 +539,7 @@ bool Track::isCircularRoute(Track* dst)
     if( !(*i).isValid() || (*i).type != Route::TRACK_ROUTE )
       continue;
     Track* t = (*i).track;
-    rv = t->isCircularRoute(NULL);
+    rv = t->isCircularRoute(nullptr);
     if(rv)
       break; 
   }
