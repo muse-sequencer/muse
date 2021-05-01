@@ -23,8 +23,9 @@ jobs:
       run: |
         sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-bionic
         sudo apt-get update
-        sudo apt-get install libsndfile1-dev libsamplerate0-dev libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
-          libsamplerate0-dev libsndfile1-dev libfluidsynth-dev libgtkmm-2.4-dev \
+        sudo apt-get install libsndfile1-dev libsamplerate0-dev \
+          libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
+          libsamplerate0-dev libfluidsynth-dev libgtkmm-2.4-dev \
           libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev librtaudio-dev
         # liblilv-dev lv2-dev liblrdf0-dev
         # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
