@@ -24,7 +24,8 @@ jobs:
           libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev \
           liblilv-dev lv2-dev liblrdf0-dev librtaudio-dev
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
-        sudo apt-get install qt57base qt57tools qt57svg
+        sudo apt-get install qt5-default
+        # sudo apt-get install qt57base qt57tools qt57svg
                
         # wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio6_5.0.0~ds-2_amd64.deb
         # wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio-dev_5.0.0~ds-2_amd64.deb 
