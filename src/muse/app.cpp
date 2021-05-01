@@ -46,7 +46,7 @@
 #include <samplerate.h>
 
 #include <errno.h>
-//#include <iostream>
+#include <iostream>
 #include <algorithm>
 //#include <typeinfo>
 
