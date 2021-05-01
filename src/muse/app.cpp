@@ -46,6 +46,7 @@
 #include <samplerate.h>
 
 #include <errno.h>
+#include <iostream>
 #include <algorithm>
 //#include <typeinfo>
 
@@ -171,7 +172,6 @@ static pthread_t watchdogThread;
 QStringList projectRecentList;
 
 #ifdef HAVE_LASH
-#include <iostream>
 #include <lash/lash.h>
 lash_client_t * lash_client = 0;
 #endif /* HAVE_LASH */
