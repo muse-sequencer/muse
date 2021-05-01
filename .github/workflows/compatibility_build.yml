@@ -24,7 +24,7 @@ jobs:
           libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev \
           liblilv-dev lv2-dev liblrdf0-dev librtaudio-dev
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
-        sudo apt-get install qt5-default qtbase5-dev qtdeclarative5-dev
+        sudo apt-get install qt5-default qtbase5-dev-tools
         # sudo apt-get install qt57base qt57tools qt57svg
                
         # wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio6_5.0.0~ds-2_amd64.deb
@@ -56,7 +56,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         REPO_PATH=$GITHUB_WORKSPACE/src  
-        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
+        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
         
     - name: Build
       working-directory: ${{runner.workspace}}/build
