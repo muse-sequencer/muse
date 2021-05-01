@@ -56,7 +56,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         REPO_PATH=$GITHUB_WORKSPACE/src  
-        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=/usr -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
+        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
         
     - name: Build
       working-directory: ${{runner.workspace}}/build
