@@ -24,30 +24,30 @@ jobs:
           libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev \
           liblilv-dev lv2-dev liblrdf0-dev librtaudio-dev
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
-        sudo apt-get install qt5-default
+        sudo apt-get install qt5-default qtbase5-dev qtdeclarative5-dev
         # sudo apt-get install qt57base qt57tools qt57svg
                
         # wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio6_5.0.0~ds-2_amd64.deb
         # wget http://mirrors.kernel.org/ubuntu/pool/universe/r/rtaudio/librtaudio-dev_5.0.0~ds-2_amd64.deb 
         # sudo apt-get install ./librtaudio6_5.0.0~ds-2_amd64.deb ./librtaudio-dev_5.0.0~ds-2_amd64.deb 
         
-    - name: Check Qt Installation
-      run: |
-        QT_BASE_DIR=/usr
-        export QTDIR=$QT_BASE_DIR
-        export PATH=$QT_BASE_DIR/bin:$PATH
-        export LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
-        export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
+    # - name: Check Qt Installation
+    #   run: |
+    #     QT_BASE_DIR=/usr
+    #     export QTDIR=$QT_BASE_DIR
+    #     export PATH=$QT_BASE_DIR/bin:$PATH
+    #     export LD_LIBRARY_PATH=$QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
+    #     export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
         
-        echo "$PATH" >> $GITHUB_PATH
-        echo "QT_BASE_DIR=$QT_BASE_DIR" >> $GITHUB_ENV
-        echo "QTDIR=$QT_BASE_DIR" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
-        echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
+    #     echo "$PATH" >> $GITHUB_PATH
+    #     echo "QT_BASE_DIR=$QT_BASE_DIR" >> $GITHUB_ENV
+    #     echo "QTDIR=$QT_BASE_DIR" >> $GITHUB_ENV
+    #     echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+    #     echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
         
-        echo $PKG_CONFIG_PATH
-        pkg-config --variable pc_path pkg-config
-        ls /usr/lib/x86_64-linux-gnu/pkgconfig
+    #     echo $PKG_CONFIG_PATH
+    #     pkg-config --variable pc_path pkg-config
+    #     ls /usr/lib/x86_64-linux-gnu/pkgconfig
         
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
