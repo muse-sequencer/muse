@@ -99,8 +99,6 @@ struct UndoOp {
                   unsigned new_partlen_or_pos;
                   unsigned old_partlen;
                   unsigned new_partlen;
-                  int64_t events_offset;
-                  Pos::TType events_offset_time_type;
                   };
             struct {
                   int channel;
@@ -141,17 +139,27 @@ struct UndoOp {
                 };
             };
 
-      QString* _oldName;
-      QString* _newName;
+    union {
+            // These are common among more than one operation, but remember to not use the members below.
+            struct {
+                  QString* _oldName;
+                  QString* _newName;
+                  const Track* track;
+                  const Track* oldTrack;
+                  int trackno;
+            };
+            // These are for some operations that do not use the common members above. (Saves some space.)
+            struct {
+                  int64_t events_offset;
+                  Pos::TType events_offset_time_type;
+            };
+      };
       Event oEvent;
       Event nEvent;
       bool selected;
       bool selected_old;
       bool doCtrls;
       bool doClones;
-      const Track* track;
-      const Track* oldTrack;
-      int trackno;
       Route routeFrom;
       Route routeTo;
       

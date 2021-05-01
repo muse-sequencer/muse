@@ -441,7 +441,7 @@ class FloItem
 };
 struct floComp
 {
-	bool operator() (const pair<unsigned, FloEvent>& a, const pair<unsigned, FloEvent>& b )
+	bool operator() (const pair<unsigned, FloEvent>& a, const pair<unsigned, FloEvent>& b ) const
 	{
 		if (a.first < b.first) return true;
 		if (a.first > b.first) return false;
@@ -451,7 +451,7 @@ struct floComp
 				
 		return (a.second.pitch<b.second.pitch);
 	}
-	bool operator() (const FloItem& a, const FloItem& b )
+	bool operator() (const FloItem& a, const FloItem& b ) const
 	{
 		if (a.type < b.type) return true;
 		if (a.type > b.type) return false;
