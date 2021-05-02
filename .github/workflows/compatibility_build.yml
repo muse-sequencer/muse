@@ -17,16 +17,11 @@ jobs:
                  
     - name: Install Deps
       run: |
-        # sudo add-apt-repository ppa:beineri/opt-qt571-xenial
-        # sudo apt-get update
-        sudo apt-get install libsndfile1-dev libsamplerate0-dev \ 
+        sudo apt-get install libsndfile1-dev libsamplerate0-dev \
           libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
           libsamplerate0-dev libfluidsynth-dev libgtkmm-2.4-dev \
-          libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev \
-          liblilv-dev lv2-dev liblrdf0-dev librtaudio-dev
-        sudo apt-get install mesa-common-dev libglu1-mesa-dev
-        # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
-        # sudo apt-get install qt57base qt57tools qt57svg
+          libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev librtaudio-dev \
+          liblilv-dev lv2-dev liblrdf0-dev
                
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
