@@ -25,9 +25,14 @@ jobs:
           libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev \
           liblilv-dev lv2-dev liblrdf0-dev librtaudio-dev
         sudo apt-get install mesa-common-dev libglu1-mesa-dev
-        sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
+        # sudo apt-get install qt5-default qttools5-dev qttools5-dev-tools libqt5svg5-dev
         # sudo apt-get install qt57base qt57tools qt57svg
                
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.9.5'
+        
     # - name: Check Qt Installation
     #   run: |
     #     QT_BASE_DIR=/usr
@@ -53,7 +58,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         REPO_PATH=$GITHUB_WORKSPACE/src  
-        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5 -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
+        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
         
     - name: Build
       working-directory: ${{runner.workspace}}/build
