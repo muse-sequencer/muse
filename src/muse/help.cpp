@@ -79,7 +79,7 @@ void MusE::startHelpBrowser()
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#audio-automation");
 
     else if (w && tb && tb->defaultAction()->objectName() == "PanicButton")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#panic-local-off-reset-instrument-and-init-instrument");
+        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#the-panic-toolbar");
     else if (w && tb && tb->defaultAction()->objectName() == "MetronomeButton")
         museManual = QString("https://github.com/muse-sequencer/muse/wiki/metronome");
 
