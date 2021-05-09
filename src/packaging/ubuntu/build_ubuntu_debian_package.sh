@@ -28,8 +28,8 @@ mkdir -p $PACKAGE_NAME/opt/muse-sequencer.github.io
 
 cp -r /opt/muse-sequencer.github.io $PACKAGE_NAME/opt
 
-cp packaging/org.musesequencer.Muse3.desktop $PACKAGE_NAME/usr/applications/
-cp ../packaging/org.musesequencer.Muse3.png $PACKAGE_NAME/usr/icons/
+cp packaging/io.github.muse_sequencer.Muse.desktop $PACKAGE_NAME/usr/applications/
+cp ../packaging/io.github.muse_sequencer.Muse.png $PACKAGE_NAME/usr/icons/
 
 
 

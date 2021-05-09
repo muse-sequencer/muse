@@ -2,7 +2,7 @@
 <!-- Copyright (C) 1999-2020 MusE development team -->
 
 <component type="desktop">
-  <id>org.musesequencer.Muse4</id>
+  <id>io.github.muse_sequencer.Muse</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0+</project_license>
   <name>MusE</name>
@@ -22,7 +22,7 @@
     </p>
   </description>
   
-  <launchable type="desktop-id">org.musesequencer.Muse4.desktop</launchable>
+  <launchable type="desktop-id">io.github.muse_sequencer.Muse.desktop</launchable>
   
   <screenshots>
     <screenshot type="default">
