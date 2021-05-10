@@ -773,15 +773,15 @@ message("\n")
 ## =============
 
 if (NOT SNDFILE_FOUND)
-      message("** ERROR: sndfile >= 1.0.0 is required, but development files were not found.")
+      message("** ERROR: sndfile >= 1.0.28 is required, but development files were not found.")
 endif (NOT SNDFILE_FOUND)
 
 if (NOT SAMPLERATE_FOUND)
-      message("** ERROR: samplerate >= 0.1.0 is required, but development files were not found.")
+      message("** ERROR: samplerate >= 0.1.9 is required, but development files were not found.")
 endif (NOT SAMPLERATE_FOUND)
 
 if (NOT JACK_FOUND)
-      message("** ERROR: jack >= 0.103 is required, but development files were not found.")
+      message("** ERROR: jack >= 0.125 is required, but development files were not found.")
 endif (NOT JACK_FOUND)
 
 
@@ -789,7 +789,7 @@ endif (NOT JACK_FOUND)
 ## =============
 
 if (ENABLE_RTAUDIO AND (NOT RTAUDIO_FOUND))
-        message("** WARNING: rtaudio (>= 4.0) was enabled, but development files were not found. ")
+        message("** WARNING: rtaudio (>= 5.0) was enabled, but development files were not found. ")
 endif (ENABLE_RTAUDIO AND (NOT RTAUDIO_FOUND))
 
 if (ENABLE_LASH AND (NOT LASH_FOUND))
@@ -806,7 +806,7 @@ if (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
 endif (ENABLE_PYTHON AND (NOT PYTHON_SUPPORT))
 
 if (ENABLE_ALSA AND (NOT ALSA_FOUND))
-      message("** WARNING: ALSA >= 0.9.0 was enabled, but development files were not found.")
+      message("** WARNING: ALSA >= 1.1.3 was enabled, but development files were not found.")
 endif (ENABLE_ALSA AND (NOT ALSA_FOUND))
 
 if (DSSI_ALSA_COMPAT_FOUND)
@@ -816,7 +816,7 @@ endif (DSSI_ALSA_COMPAT_FOUND)
 
 if (ENABLE_DSSI)
     if( (NOT DSSI_FOUND))
-        message("** WARNING: DSSI (>= 0.9.0) was enabled, but development files were not found.")
+        message("** WARNING: DSSI (>= 1.1.1) was enabled, but development files were not found.")
     else( (NOT DSSI_FOUND))
     
         if (ENABLE_ALSA)
@@ -845,7 +845,7 @@ endif (ENABLE_DSSI)
 
 if (ENABLE_OSC)
     if (NOT LIBLO_FOUND)
-        message("** WARNING: liblo (>= 0.23) (Lightweight Open Sound Control) was enabled, but development files were not found.")
+        message("** WARNING: liblo (>= 0.29) (Lightweight Open Sound Control) was enabled, but development files were not found.")
     else (NOT LIBLO_FOUND)
 
         if (ENABLE_DSSI)
@@ -867,7 +867,7 @@ if (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
 endif (ENABLE_VST_NATIVE AND (NOT AEFFECT_H_FOUND))
 
 if (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
-        message("** WARNING: fluidsynth (>= 0.9.0) was enabled, but development files were not found.")
+        message("** WARNING: fluidsynth (>= 1.1.9) was enabled, but development files were not found.")
 endif (ENABLE_FLUID AND (NOT FLUIDSYN_FOUND))
 
 if (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
