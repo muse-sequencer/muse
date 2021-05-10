@@ -25,8 +25,8 @@
 # produce the .desktop file
 #
 configure_file (
-      org.musesequencer.Muse4.desktop.in
-      ${PROJECT_BINARY_DIR}/packaging/org.musesequencer.Muse4.desktop
+      io.github.muse_sequencer.Muse.desktop.in
+      ${PROJECT_BINARY_DIR}/packaging/io.github.muse_sequencer.Muse.desktop
       )
 
 #
@@ -38,13 +38,13 @@ install( FILES muse64x64.png
 install( FILES muse128x128.png
       DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/128x128/apps/ RENAME muse.png
       )
-install( FILES ${PROJECT_BINARY_DIR}/packaging/org.musesequencer.Muse4.desktop
+install( FILES ${PROJECT_BINARY_DIR}/packaging/io.github.muse_sequencer.Muse.desktop
       DESTINATION ${SHARE_INSTALL_PREFIX}/applications/
       )
 install( FILES muse.xml
       DESTINATION ${SHARE_INSTALL_PREFIX}/mime/packages/
       )
-install( FILES org.musesequencer.Muse4.appdata.xml
+install( FILES io.github.muse_sequencer.Muse.appdata.xml
       DESTINATION ${SHARE_INSTALL_PREFIX}/metainfo/
       )
 
