@@ -2555,7 +2555,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
         case COL_OCHANNEL:
         {
             int delta = 0;
-            if (button == Qt::MidButton || (button == Qt::RightButton && shift))
+            if (button == Qt::MiddleButton || (button == Qt::RightButton && shift))
                 delta = -1;
             else if (button == Qt::RightButton)
                 delta = 1;
@@ -2579,7 +2579,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 int delta = 0;
                 if (button == Qt::RightButton)
                     delta = 1;
-                else if (button == Qt::MidButton)
+                else if (button == Qt::MiddleButton)
                     delta = -1;
 
                 if (delta!=0)

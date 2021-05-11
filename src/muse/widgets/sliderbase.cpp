@@ -304,7 +304,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
       //const bool ctrl = e->modifiers() & Qt::ControlModifier;
       const bool meta = e->modifiers() & Qt::MetaModifier;
       
-      const bool clicked = (button == Qt::LeftButton || button == Qt::MidButton);
+      const bool clicked = (button == Qt::LeftButton || button == Qt::MiddleButton);
       
       d_timerTick = 0;
       _pressed = true;
@@ -483,7 +483,7 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
   int ms = 0;
   _ignoreMouseMove = false;
   const Qt::MouseButton button = e->button();
-  const bool clicked = (button == Qt::LeftButton || button == Qt::MidButton);
+  const bool clicked = (button == Qt::LeftButton || button == Qt::MiddleButton);
   const bool shift = e->modifiers() & Qt::ShiftModifier;
   
   _pressed = e->buttons() != Qt::NoButton;

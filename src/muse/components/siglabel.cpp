@@ -74,7 +74,7 @@ void SigLabel::mousePressEvent(QMouseEvent* event)
                   if (!MusEGlobal::config.leftMouseButtonCanDecrease)
                     return;
                   // else fall through
-            case Qt::MidButton:
+            case Qt::MiddleButton:
                   incValue(zaehler, false, zz, nn);
                   break;
             case Qt::RightButton:

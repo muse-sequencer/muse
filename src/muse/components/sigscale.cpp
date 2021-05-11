@@ -110,7 +110,7 @@ void SigScale::viewMouseMoveEvent(QMouseEvent* event)
           else
               posType = MusECore::Song::CPOS;
           break;
-      case Qt::MidButton:
+      case Qt::MiddleButton:
           posType = MusECore::Song::LPOS;
           break;
       case Qt::RightButton:

@@ -832,7 +832,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                               }
                               break;
 
-                        case Qt::MidButton:
+                        case Qt::MiddleButton:
                         case Qt::RightButton:
                         default:
                               break;
@@ -1330,7 +1330,7 @@ void WaveCanvas::mouseMove(QMouseEvent* event)
                             update(r);
                       }
                       break;
-                case Qt::MidButton:
+                case Qt::MiddleButton:
                       break;
                 case Qt::RightButton:
                       break;

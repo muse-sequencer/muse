@@ -4029,7 +4029,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                 current_staff=staff_it;
                 staff_menu->popup(event->globalPos());
             }
-            else if (event->button() == Qt::MidButton) //middle click?
+            else if (event->button() == Qt::MiddleButton) //middle click?
             {
                 remove_staff(staff_it);
             }
@@ -4114,7 +4114,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
                 original_dragged_event=dragged_event.clone();
                 set_dragged_event_part(set_it->source_part);
 
-                if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
+                if ((mouse_erases_notes) || (event->button()==Qt::MiddleButton)) //erase?
                 {
                     MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,dragged_event, dragged_event_part,  false, false));
                 }
