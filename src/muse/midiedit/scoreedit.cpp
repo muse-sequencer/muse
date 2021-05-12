@@ -22,7 +22,7 @@
 
 
 #include <QLayout>
-#include <QSizeGrip>
+//#include <QSizeGrip>
 #include <QLabel>
 #include <QPushButton>
 #include <QToolTip>
@@ -53,29 +53,29 @@ using namespace std;
 #include "sig.h"
 #include "scoreedit.h"
 #include "ttoolbar.h"
-#include "tb1.h"
+//#include "tb1.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
 #include "functions.h"
 #include "helper.h"
-#include "cmd.h"
+//#include "cmd.h"
 #include "song.h"
 #include "shortcuts.h"
 #include "menutitleitem.h"
 
 // Forwards from header:
-#include <QCloseEvent>
-#include <QResizeEvent>
+//#include <QCloseEvent>
+//#include <QResizeEvent>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPixmap>
 #include <QScrollBar>
 #include <QComboBox>
-#include <QAction>
+//#include <QAction>
 #include <QActionGroup>
-#include <QGridLayout>
+//#include <QGridLayout>
 #include <QToolButton>
 #include "part.h"
 #include "mtscale_flo.h"
@@ -994,7 +994,7 @@ void ScoreEdit::selection_changed()
 //"none" is supported and tag_name is settable
 MusECore::Part* read_part(MusECore::Xml& xml, QString tag_name="part")
 {
-    MusECore::Part* part = 0;
+    MusECore::Part* part = nullptr;
 
     for (;;)
     {
@@ -2448,7 +2448,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 #define DOT_XBEGIN 10
 #define DOT_XBEGIN_REST 10
 
-#define NUMBER_HEIGHT (pix_num[0].height())
+//#define NUMBER_HEIGHT (pix_num[0].height())
 
 // kann 0 oder 1 sein:
 // bei notenkollisionen mit ungerader anzahl von kollidierenden
@@ -2563,12 +2563,12 @@ void staff_t::create_itemlist()
     for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end(); it++)
     {
         int t, pitch, len, velo, actual_tick;
-        FloEvent::typeEnum type;
+        FloEvent::typeEnum typ;
         t=it->first;
         pitch=it->second.pitch;
         velo=it->second.vel;
         len=it->second.len;
-        type=it->second.type;
+        typ=it->second.type;
         actual_tick=it->second.tick;
         if (actual_tick==-1) actual_tick=t;
 
@@ -2576,11 +2576,11 @@ void staff_t::create_itemlist()
 
         if (heavyDebugMsg)
         {
-            printf("FLO: t=%i\ttype=%i\tpitch=%i\tvel=%i\tlen=%i\n",it->first, it->second.type, it->second.pitch, it->second.vel, it->second.len);
+            printf("FLO: t=%i\ttyp=%i\tpitch=%i\tvel=%i\tlen=%i\n",it->first, it->second.type, it->second.pitch, it->second.vel, it->second.len);
             cout << "\tline="<<notepos.height<<"\tvorzeichen="<<notepos.vorzeichen << endl;
         }
 
-        if (type==FloEvent::BAR)
+        if (typ == FloEvent::BAR)
         {
             if (last_measure!=-1) //i.e.: "this is NOT the first bar"
             {
@@ -2618,7 +2618,7 @@ void staff_t::create_itemlist()
 
             itemlist[t].insert( FloItem(FloItem::BAR,no_notepos,0,0) );
         }
-        else if (type==FloEvent::NOTE_ON)
+        else if (typ == FloEvent::NOTE_ON)
         {
             int rest=t-lastevent;
             if (rest)
@@ -2689,18 +2689,18 @@ void staff_t::create_itemlist()
                 itemlist[tmppos].insert( FloItem(FloItem::NOTE_END,notepos,0,0) );
             }
         }
-        else if (type==FloEvent::NOTE_OFF)
+        else if (typ == FloEvent::NOTE_OFF)
         {
             lastevent=t;
         }
-        else if (type==FloEvent::TIME_SIG)
+        else if (typ == FloEvent::TIME_SIG)
         {
             if (heavyDebugMsg) cout << "inserting TIME SIGNATURE "<<it->second.num<<"/"<<it->second.denom<<" at "<<t<<endl;
             itemlist[t].insert( FloItem(FloItem::TIME_SIG, it->second.num, it->second.denom) );
 
             emphasize_list=create_emphasize_list(it->second.num, it->second.denom);
         }
-        else if (type==FloEvent::KEY_CHANGE)
+        else if (typ == FloEvent::KEY_CHANGE)
         {
             if (heavyDebugMsg) cout << "inserting KEY CHANGE ("<<it->second.key<<") at "<<t<<endl;
             itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.key, it->second.minor) );
@@ -3003,19 +3003,19 @@ group_them_again:
             }
 
             // for each note in group1
-            for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
-                if ( (it->type==FloItem::NOTE) && (it->len==group1.first) )
+            for (set<FloItem, floComp>::iterator itt=curr_items.begin(); itt != curr_items.end(); itt++)
+                if ((itt->type == FloItem::NOTE) && (itt->len == group1.first) )
                 {
-                    it->stem=stem1;
-                    it->shift=shift1;
+                    itt->stem=stem1;
+                    itt->shift=shift1;
                 }
 
             // for each note in group2
-            for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
-                if ( (it->type==FloItem::NOTE) && (it->len==group2.first) )
+            for (set<FloItem, floComp>::iterator itt=curr_items.begin(); itt != curr_items.end(); itt++)
+                if ((itt->type == FloItem::NOTE) && (itt->len == group2.first) )
                 {
-                    it->stem=stem2;
-                    it->shift=shift2;
+                    itt->stem=stem2;
+                    itt->shift=shift2;
                 }
         }
         else //more than 2 groups
@@ -3073,15 +3073,15 @@ group_them_again:
                         list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
                         unsigned tmppos=t;
                         int n_lens=lens.size();
-                        int count=0;
+                        int cnt=0;
                         for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
                         {
                             if (heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
-                            count++;
+                            cnt++;
 
                             bool tie;
 
-                            if (count<n_lens)
+                            if (cnt < n_lens)
                                 tie=true;      // all notes except the last are always tied
                             else
                                 tie=tied_note; // only the last respects tied_note
@@ -3118,15 +3118,15 @@ group_them_again:
                         list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
                         unsigned tmppos=t;
                         int n_lens=lens.size();
-                        int count=0;
+                        int cnt=0;
                         for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
                         {
                             if (heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
-                            count++;
+                            cnt++;
 
                             bool tie;
 
-                            if (count<n_lens)
+                            if (cnt < n_lens)
                                 tie=true;      // all notes except the last are always tied
                             else
                                 tie=tied_note; // only the last respects tied_note
@@ -3597,22 +3597,22 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
                   p.drawText(kstrx, y_offset + str_y_coord, kstr);
 
                 list<int> aufloes_list=calc_accidentials(curr_key, staff.clef, new_key);
-                list<int> new_acc_list=calc_accidentials(new_key, staff.clef);
+                list<int> new_acci_list=calc_accidentials(new_key, staff.clef);
 
                 // cancel accidentials from curr_key
                 draw_accidentials(p, it->x + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, aufloes_list, pix_noacc[DEFAULT]);
 
                 // draw all accidentials from new_key
                 QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp[DEFAULT] : &pix_b[DEFAULT];
-                vorzeichen_t new_accidential = is_sharp_key(new_key) ? SHARP : B;
+                vorzeichen_t new_accident = is_sharp_key(new_key) ? SHARP : B;
 
-                draw_accidentials(p, it->x + aufloes_list.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, new_acc_list, *pix);
+                draw_accidentials(p, it->x + aufloes_list.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, new_acci_list, *pix);
 
                 for (int i=0;i<7;i++)
                     curr_accidential[i]=default_accidential[i]=NONE;
 
-                for (list<int>::iterator acc_it=new_acc_list.begin(); acc_it!=new_acc_list.end(); acc_it++)
-                    default_accidential[*acc_it % 7]=curr_accidential[*acc_it % 7]=new_accidential;
+                for (list<int>::iterator acc_it=new_acci_list.begin(); acc_it != new_acci_list.end(); acc_it++)
+                    default_accidential[*acc_it % 7]=curr_accidential[*acc_it % 7]=new_accident;
 
                 curr_key=new_key;
             }
@@ -4411,10 +4411,10 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
                 {
                     MusECore::Event tmp=dragged_event.clone();
                     signed relative_tick=tick-signed(dragged_event_part->tick());
-                    signed new_len=relative_tick-dragged_event.tick();
+                    signed newLen= relative_tick - dragged_event.tick();
 
-                    if (new_len>=0)
-                        tmp.setLenTick(new_len);
+                    if (newLen >= 0)
+                        tmp.setLenTick(newLen);
                     else
                     {
                         tmp.setLenTick(0);
@@ -4443,7 +4443,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
                         schedule_resize_all_same_len_clone_parts(dragged_event_part, newpartlen, operations);
                     undo_started=MusEGlobal::song->applyOperationGroup(operations);
 
-                    old_len=new_len;
+                    old_len=newLen;
                 }
 
                 break;
@@ -4756,12 +4756,12 @@ void ScoreCanvas::set_quant(int val)
 {
     if ((val>=0) && (val<5))
     {
-        int old_len=quant_len();
+        int oldLen=quant_len();
 
         _quant_power2=val+1;
         _quant_power2_init=_quant_power2;
 
-        set_pixels_per_whole(pixels_per_whole() * quant_len() / old_len );
+        set_pixels_per_whole(pixels_per_whole() * quant_len() / oldLen );
 
         fully_recalculate();
     }

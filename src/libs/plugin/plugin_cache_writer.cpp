@@ -2402,7 +2402,7 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   // REMOVE Tim. lv2. Added.
   //feats[feat] = nullptr;
 
-  LilvWorld *lilvWorld = 0;
+  LilvWorld *lilvWorld = nullptr;
   lilvWorld = lilv_world_new();
   if(!lilvWorld)
     return;
