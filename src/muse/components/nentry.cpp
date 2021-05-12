@@ -274,7 +274,7 @@ void Nentry::repeat()
                   if (!MusEGlobal::config.leftMouseButtonCanDecrease)
                     return;
                   // else fall through
-            case Qt::MidButton:
+            case Qt::MiddleButton:
                   decValue(evx);
                   break;
             case Qt::RightButton:
@@ -312,7 +312,7 @@ void Nentry::mouseMove(QMouseEvent*)
       switch (button) {
             case Qt::LeftButton:
                   break;
-            case Qt::MidButton:
+            case Qt::MiddleButton:
                   break;
             case Qt::RightButton:
                   break;

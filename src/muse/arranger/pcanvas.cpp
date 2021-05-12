@@ -1244,11 +1244,11 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                   break;
             case AutomationTool:
                   if (button == Qt::RightButton  ||
-                      button == Qt::MidButton) {
+                      button == Qt::MiddleButton) {
 
                       bool do_delete = false;
 
-                      if (button == Qt::MidButton) // mid-click
+                      if (button == Qt::MiddleButton) // mid-click
                         do_delete=true;
                       else // right-click
                       {

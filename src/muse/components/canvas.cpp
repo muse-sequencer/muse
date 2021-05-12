@@ -888,7 +888,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       
       curItem = findCurrentItem(start);
 
-      if (curItem && (button == Qt::MidButton)) {
+      if (curItem && (button == Qt::MiddleButton)) {
           if (_tool == PointerTool || _tool == PencilTool || _tool == RubberTool) {
             deleteItem(start); // changed from "start drag" to "delete" by flo93
             drag = DRAG_DELETE;

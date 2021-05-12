@@ -178,7 +178,7 @@ void Dentry::repeat()
                   if (!MusEGlobal::config.leftMouseButtonCanDecrease)
                     return;
                   // else fall through
-            case Qt::MidButton:
+            case Qt::MiddleButton:
                   if(_slider)
                     _slider->stepPages(-1);
                   else  

@@ -282,7 +282,7 @@ void FloatEntry::repeat()
                   if (!_leftMouseButtonCanDecrease)
                     return;
                   // else fall through
-            case Qt::MidButton:
+            case Qt::MiddleButton:
                   decValue(evx);
                   break;
             case Qt::RightButton:
@@ -312,7 +312,7 @@ void FloatEntry::mouseMoveEvent(QMouseEvent*)
       switch (button) {
             case Qt::LeftButton:
                   break;
-            case Qt::MidButton:
+            case Qt::MiddleButton:
                   break;
             case Qt::RightButton:
                   break;

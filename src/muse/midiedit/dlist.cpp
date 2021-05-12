@@ -1039,7 +1039,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       else if (velo > 127 ) velo = 127;
                       emit keyPressed(instrument, velo); //Mapping done on other side, send index
                   }
-                  else if (button == Qt::MidButton && dcanvas) // hide that instrument
+                  else if (button == Qt::MiddleButton && dcanvas) // hide that instrument
                   {
                     dm->hide = true;
                   }
@@ -1930,7 +1930,7 @@ void DList::wheelEvent(QWheelEvent* ev)
 //   int incVal = 0;
 //   if (button == Qt::RightButton)
 //         incVal = 1;
-//   else if (button == Qt::MidButton)
+//   else if (button == Qt::MiddleButton)
 //         incVal = -1;
 
 

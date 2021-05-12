@@ -624,7 +624,7 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
 {
   // If modifier or button is held, jump directly to the position at first.
   // After handling it, the caller can change to SrcMouse scroll mode.
-  if(modifiers & Qt::ControlModifier || button == Qt::MidButton)
+  if(modifiers & Qt::ControlModifier || button == Qt::MiddleButton)
   {
     scrollMode = ScrDirect;
     direction = 0;

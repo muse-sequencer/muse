@@ -96,7 +96,7 @@ extern bool initRtAudio(bool forceDefault = false);
 extern bool initJackAudio();
 extern void initMidiController();
 extern void initMetronome();
-//extern void initOSC();
+extern void initOSC();
 extern void initVST();
 extern void initVST_Native();
 //extern void initPlugins();

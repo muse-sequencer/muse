@@ -70,6 +70,7 @@ set_target_properties( driver
 ##
 target_link_libraries ( driver
       ${ALSA_LIBRARIES}
+      ${JACK_LDFLAGS}
       ${JACK_LIBRARIES}
       ${QT_LIBRARIES}
       ${RTAUDIO_LIBRARIES}
