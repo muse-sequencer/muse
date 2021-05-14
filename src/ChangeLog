@@ -1,3 +1,6 @@
+14.05.2021
+    - Added support for more MMC commands, including REC, Rewind, Forward (rj)
+    - Improved support for midi remote control, can now toggle REC enable for instance. (rj)
 01.05.2021
     - Update tool/lib versions to Ubuntu 18.04 LTS level. (kybos)
     - Update c++ version to c++17. (kybos)

@@ -582,7 +582,7 @@ int JackAudioDevice::realtimePriority() const
 
 //---------------------------------------------------------
 //   initJackAudio
-//    return true if JACK not found
+//    return false if JACK not found
 //---------------------------------------------------------
 
 bool initJackAudio()
@@ -648,9 +648,9 @@ bool initJackAudio()
             if (status & JackVersionError)
                   fprintf(stderr, "jack server has wrong version\n");
             fprintf(stderr, "cannot create jack client\n");
-	    MusEGlobal::undoSetuid();   
-            return true;
-            }
+            MusEGlobal::undoSetuid();
+            return false;
+      }
 
       if (MusEGlobal::debugMsg)
             fprintf(stderr, "initJackAudio(): client %s opened.\n", jack_get_client_name(client));
@@ -708,7 +708,7 @@ bool initJackAudio()
       AL::sampleRate = MusEGlobal::sampleRate;
       MusEGlobal::segmentSize = jack_get_buffer_size(client);
       
-      return false;
+      return true;
       }
 
 static int bufsize_callback(jack_nframes_t n, void*)

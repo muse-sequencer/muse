@@ -235,10 +235,8 @@ bool Audio::start()
       state = STOP;
       _loopCount = 0;
       
-      //MusEGlobal::muse->setHeartBeat();  // Moved below
-      
       if (!MusEGlobal::audioDevice) {
-          if(initJackAudio() == false) {
+          if(initJackAudio() == true) {
                 InputList* itl = MusEGlobal::song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
                       if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting input %s\n", (*i)->name().toLatin1().data());

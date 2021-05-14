@@ -34,6 +34,25 @@ namespace MusECore {
 
 class Xml;
 
+enum MMC_Commands {
+  MMC_Stop          = 1,
+  MMC_Play          = 2,
+  MMC_DeferredPlay  = 3,
+  MMC_FastForward   = 4,
+  MMC_Rewind        = 5,
+  MMC_RecordStrobe  = 6,
+  MMC_RecordExit    = 7,
+  MMC_RecordPause   = 8,
+  MMC_Pause         = 9,
+  MMC_Eject         = 0x0A,
+  MMC_Chase         = 0x0B,
+  MMC_Reset         = 0x0D,
+  MMC_ArmTracks     = 0x40,
+  MMC_Goto          = 0x44,
+  MMC_Shuttle       = 0x47,
+};
+
+
 class MidiSyncInfo
 {
   public:

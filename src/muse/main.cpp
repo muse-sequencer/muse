@@ -1311,8 +1311,10 @@ int main(int argc, char* argv[])
         }
 #endif
         else if (audioType == JackAudioOverride) {
-          if(MusECore::initJackAudio()) 
+          if(MusECore::initJackAudio() == false)
+          {
             fallbackDummy();
+          }
           else
           {
 #ifdef HAVE_LASH
@@ -1360,7 +1362,7 @@ int main(int argc, char* argv[])
             case MusEGlobal::JackAudio:
               {
                 fprintf(stderr, "User JackAudio backend - backend selected through configuration\n");
-                if (MusECore::initJackAudio()) 
+                if (MusECore::initJackAudio() == false)
                 {
                   MusEGlobal::realTimeScheduling = true;
                   // Force default Pulse.
@@ -1414,20 +1416,10 @@ int main(int argc, char* argv[])
         qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
                  << "Init MIDI...";
 
-// REMOVE Tim. startup. Removed 2019/02/21. It's been six years since 1.9.9.5 release.
-//        Remove this waiting part at some point if we're all good...
-//
-//         // WARNING Must do it this way. Call registerClient long AFTER Jack client
-//         //  is created and MusE ALSA client is created (in initMidiDevices),
-//         //  otherwise random crashes can occur within Jack <= 1.9.8.
-//         // Fixed in Jack 1.9.9.  Tim.
         // This initMidiDevices will automatically initialize the midiSeq sequencer thread,
         //  but not start it - that's a bit later on.
         MusECore::initMidiDevices();
-//         // Wait until things have settled. One second seems OK so far.
-//         for(int t = 0; t < 100; ++t)
-//           usleep(10000);
-        // Now it is safe to call registerClient.
+
         MusEGlobal::audioDevice->registerClient();
 
         MusECore::initMidiController();
@@ -1526,7 +1518,6 @@ int main(int argc, char* argv[])
             if(MusECore::alsaSeq)
               lash_alsa_client_id (MusEGui::lash_client, snd_seq_client_id (MusECore::alsaSeq));
   #endif
-            //if (audioType != DummyAudio) {
             if (using_jack) {
                   const char *jack_name = MusEGlobal::audioDevice->clientName();
                   lash_jack_client_name (MusEGui::lash_client, jack_name);

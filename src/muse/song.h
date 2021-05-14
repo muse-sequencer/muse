@@ -71,7 +71,7 @@ class Undo;
 struct UndoOp;
 class UndoList;
 
-#define REC_NOTE_FIFO_SIZE    16
+#define TRANSFER_FIFO_SIZE    16
 
 //---------------------------------------------------------
 //    Song
@@ -107,12 +107,19 @@ class Song : public QObject {
       //    - this events are read by the heart beat interrupt
       //    - used for single step recording in midi editors
 
-      int recNoteFifo[REC_NOTE_FIFO_SIZE];
-      volatile int noteFifoSize;
-      int noteFifoWindex;
-      int noteFifoRindex;
+      int recNoteFifo[TRANSFER_FIFO_SIZE];
+      volatile int noteFifoSize = 0;
+      int noteFifoWindex = 0;
+      int noteFifoRindex = 0;
 
       volatile char rcCC = -1; // CC remote control
+      volatile char rcValue = -1; // CC remote control value
+
+      MMC_Commands syncRemoteFifo[TRANSFER_FIFO_SIZE];
+      volatile int syncRemoteFifoSize = 0;
+      int syncRemoteFifoWindex = 0;
+      int syncRemoteFifoRindex = 0;
+
 
       TempoFifo _tempoFifo; // External tempo changes, processed in heartbeat.
       
@@ -220,7 +227,9 @@ class Song : public QObject {
       void informAboutNewParts(const Part* orig, const Part* p1, const Part* p2=nullptr, const Part* p3=nullptr, const Part* p4=nullptr, const Part* p5=nullptr, const Part* p6=nullptr, const Part* p7=nullptr, const Part* p8=nullptr, const Part* p9=nullptr);
 
       void putEvent(int pv);
-      void putEventCC(char cc);
+      void putEventCC(char cc, int value);
+      void putSyncRemoteCommand(MMC_Commands cmd);
+
       void endMsgCmd();
       void processMsg(AudioMsg* msg);
 

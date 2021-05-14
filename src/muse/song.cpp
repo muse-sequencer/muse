@@ -142,18 +142,40 @@ Song::~Song()
 //---------------------------------------------------------
 
 void Song::putEvent(int pv)
-      {
-      if (noteFifoSize < REC_NOTE_FIFO_SIZE) {
-            recNoteFifo[noteFifoWindex] = pv;
-            noteFifoWindex = (noteFifoWindex + 1) % REC_NOTE_FIFO_SIZE;
-            ++noteFifoSize;
-            }
-      }
+{
+    if (noteFifoSize < TRANSFER_FIFO_SIZE)
+    {
+        recNoteFifo[noteFifoWindex] = pv;
+        noteFifoWindex = (noteFifoWindex + 1) % TRANSFER_FIFO_SIZE;
+        ++noteFifoSize;
+    }
+    else
+    {
+      fprintf(stderr, "Song::putEvent - Dropping note events sent to GUI!\n");
+    }
+}
 
-void Song::putEventCC(char cc)
+void Song::putEventCC(char cc, int value)
 {
     if (MusEGlobal::rcEnableCC)
+    {
         rcCC = cc;
+        rcValue = value;
+    }
+}
+
+void Song::putSyncRemoteCommand(MMC_Commands cmd)
+{
+  if (syncRemoteFifoSize < TRANSFER_FIFO_SIZE)
+  {
+      syncRemoteFifo[syncRemoteFifoWindex] = cmd;
+      syncRemoteFifoWindex = (syncRemoteFifoWindex + 1) % TRANSFER_FIFO_SIZE;
+      ++syncRemoteFifoSize;
+  }
+  else
+  {
+    fprintf(stderr, "Song::putSyncRemoteCommand - Dropping sync commands sent to GUI!\n");
+  }
 }
 
 // REMOVE Tim. samplerate. Added. TODO
@@ -1952,7 +1974,7 @@ void Song::beat()
       
       while (noteFifoSize) {
           int pv = recNoteFifo[noteFifoRindex];
-          noteFifoRindex = (noteFifoRindex + 1) % REC_NOTE_FIFO_SIZE;
+          noteFifoRindex = (noteFifoRindex + 1) % TRANSFER_FIFO_SIZE;
           int pitch = (pv >> 8) & 0xff;
           int velo = pv & 0xff;
 
@@ -1961,12 +1983,15 @@ void Song::beat()
           //---------------------------------------------------
 
           bool consumed = false;
-          if (MusEGlobal::rcEnable && velo != 0) {
+          if (MusEGlobal::rcEnable) {
               if (pitch == MusEGlobal::rcStopNote) {
                   setStop(true);
                   consumed = true;
               } else if (pitch == MusEGlobal::rcRecordNote) {
-                  setRecord(true);
+                  if (velo == 0)
+                    setRecord(false);
+                  else
+                    setRecord(true);
                   consumed = true;
               } else if (pitch == MusEGlobal::rcGotoLeftMarkNote) {
                   setPos(CPOS, pos[LPOS].tick(), true, true, true);
@@ -1992,11 +2017,17 @@ void Song::beat()
       if (MusEGlobal::rcEnableCC && rcCC > -1) {
 
           int cc = rcCC & 0xff;
-          printf("*** CC in: %d\n", cc);
+          int value = rcValue;
+          printf("*** CC in: %d/%d\n", cc,value);
           if (cc == MusEGlobal::rcStopCC)
               setStop(true);
           else if (cc == MusEGlobal::rcPlayCC)
+          {
+            if (value == 0)
+              setPlay(false);
+            else
               setPlay(true);
+          }
           else if (cc == MusEGlobal::rcRecordCC)
               setRecord(true);
           else if (cc == MusEGlobal::rcGotoLeftMarkCC)
@@ -2007,6 +2038,39 @@ void Song::beat()
               rewind();
 
           rcCC = -1;
+      }
+
+      while (syncRemoteFifoSize > 0)
+      {
+        MMC_Commands command = syncRemoteFifo[syncRemoteFifoRindex];
+        syncRemoteFifoRindex = (syncRemoteFifoRindex + 1) % TRANSFER_FIFO_SIZE;
+
+        // Some syncronization commands have the complete implementation in sync.cc
+        // some have the executive part here in the song class to be executed in the song thread.
+        switch (command)
+        {
+          case MMC_FastForward:
+            this->forward();
+            break;
+          case MMC_Rewind:
+            this->rewind();
+            break;
+          case MMC_RecordStrobe:
+            this->setRecord(true);
+            break;
+          case MMC_RecordExit:
+            this->setRecord(false);
+            break;
+          case MMC_Reset:
+            this->setRecord(false);
+            this->rewind();
+            break;
+          default:
+            fprintf(stderr, "Song::beat - This sync command not implemented here!\n");
+            break;
+        }
+
+        syncRemoteFifoSize--;
       }
 }
 

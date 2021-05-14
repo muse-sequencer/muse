@@ -538,8 +538,9 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
             }
       else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER) {
           char cc = static_cast<char>(event.dataA() & 0xff);
-          printf("*** Input CC: %d\n", cc);
-          MusEGlobal::song->putEventCC(cc);
+          int value = static_cast<char>(event.dataB());
+          printf("*** Input CC: %d Value: %d\n", cc, value);
+          MusEGlobal::song->putEventCC(cc, value);
       }
       
       //if(_recordFifo.put(MidiPlayEvent(event)))

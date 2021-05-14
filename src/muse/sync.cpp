@@ -529,12 +529,16 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
       if(p[3] == 0x44 && p[4] == 6 && p[5] == 1)
         msync.setRecMTCtype((p[6] >> 5) & 3);
 
-      // MMC in not turned on? Forget it.
+      // MMC is not turned on? Forget it.
       if(!msync.MMCIn())
         return;
 
       switch(p[3]) {
-            case 1:
+            case MMC_Pause:
+                  if (MusEGlobal::debugSync)
+                        fprintf(stderr, "  MMC: PAUSE\n");
+                  [[fallthrough]]; // not quite correct but lacking a better option, lets handle it like Stop
+            case MMC_Stop:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: STOP\n");
 
@@ -543,16 +547,13 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                   if (MusEGlobal::audio->isPlaying()) {
                         MusEGlobal::audio->msgPlay(false);
                   }
-                  
                   alignAllTicks();
-                        
                   break;
-            case 2:
+            case MMC_Play:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: PLAY\n");
-            // NOTE: Error suppressor for new gcc 7 'fallthrough' level 3 and 4:
-            // FALLTHROUGH
-            case 3:
+                  [[fallthrough]];
+            case MMC_DeferredPlay:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: DEFERRED PLAY\n");
                   MusEGlobal::mtcState = 0;
@@ -563,25 +564,34 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                   playStateExt = ExtMidiClock::ExternStarting;
                   if(MusEGlobal::audio->isRunning() && !MusEGlobal::audio->isPlaying() && MusEGlobal::checkAudioDevice()) 
                     MusEGlobal::audioDevice->startTransport();
-                    
                   break;
 
-            case 4:
-                  fprintf(stderr, "MMC: FF not implemented\n");
+            case MMC_FastForward:
+                  if (MusEGlobal::debugSync)
+                        fprintf(stderr, "  MMC: FastForward\n");
+                  MusEGlobal::song->putSyncRemoteCommand(MMC_FastForward);
                   break;
-            case 5:
-                  fprintf(stderr, "MMC: REWIND not implemented\n");
+            case MMC_Rewind:
+                  if (MusEGlobal::debugSync)
+                        fprintf(stderr, "  MMC: REWIND\n");
+                  MusEGlobal::song->putSyncRemoteCommand(MMC_Rewind);
                   break;
-            case 6:
-                  fprintf(stderr, "MMC: REC STROBE not implemented\n");
+            case MMC_RecordStrobe:
+                  if (MusEGlobal::debugSync)
+                        fprintf(stderr, "  MMC: REC STROBE\n");
+                  MusEGlobal::song->putSyncRemoteCommand(MMC_RecordStrobe);
                   break;
-            case 7:
-                  fprintf(stderr, "MMC: REC EXIT not implemented\n");
+            case MMC_RecordExit:
+                  if (MusEGlobal::debugSync)
+                        fprintf(stderr, "  MMC: REC EXIT\n");
+                  MusEGlobal::song->putSyncRemoteCommand(MMC_RecordExit);
                   break;
-            case 0xd:
-                  fprintf(stderr, "MMC: RESET not implemented\n");
+            case MMC_Reset:
+                  if (MusEGlobal::debugSync)
+                        fprintf(stderr, "  MMC: Reset\n");
+                  MusEGlobal::song->putSyncRemoteCommand(MMC_Reset);
                   break;
-            case 0x44:
+            case MMC_Goto:
                   if (p[5] == 0) {
                         fprintf(stderr, "MMC: LOCATE IF not implemented\n");
                         break;
@@ -604,7 +614,7 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                               }
                         break;
                         }
-                  // fall through
+                  [[fallthrough]];
             default:
                   fprintf(stderr, "MMC %x %x, unknown\n", p[3], p[4]); break;
             }
