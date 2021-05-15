@@ -87,7 +87,7 @@ QMenu* midiPortsPopup(QWidget* parent = nullptr, int checkPort = -1, bool includ
 // Includes all listed in midiPortsPopup, plus unused devices.
 void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts, 
                         const QWidget* widget = nullptr, bool includeDefaultEntry = false);
-QMenu* populateAddSynth(QWidget* parent);
+//QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false, bool insert=false, bool addHeader=false);
 void openSynthGui(MusECore::Track* t);
 QStringList localizedStringListFromCharArray(const char** array, const char* context);

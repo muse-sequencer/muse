@@ -155,6 +155,12 @@
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_2">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>24</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>
@@ -176,6 +182,12 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>24</height>
+             </size>
             </property>
             <property name="maximumSize">
              <size>
@@ -279,8 +291,12 @@
         </item>
         <item>
          <widget class="QRadioButton" name="rbEffects">
+          <property name="toolTip">
+           <string>Multi-channel effects can be included as pseudo-synth tracks if more than 2 channels are needed
+(in all other cases the effect rack should be used ).</string>
+          </property>
           <property name="text">
-           <string>Effects</string>
+           <string>Effects (MCh)</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">catButtonGroup</string>

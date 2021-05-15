@@ -33,7 +33,12 @@ public:
 
     static void writeFavConfiguration(int level, MusECore::Xml& xml);
     static void readFavConfiguration(MusECore::Xml& xml);
+    static void writeRecentsConfiguration(int level, MusECore::Xml& xml);
+    static void readRecentsConfiguration(MusECore::Xml& xml);
     static bool isFav(MusECore::Synth *synth);
+    static QVector<int> getFavsIdx();
+    static QVector<int> getRecentsIdx();
+    static void addRecent(MusECore::Synth *synth);
 
 public slots:
     void accept();
@@ -56,8 +61,9 @@ private:
     void saveSettings();
     void addToFavorites(QTreeWidgetItem *item);
     void removeFavorite(QTreeWidgetItem *item);
-//    QByteArray getHash(MusECore::Synth *synth);
     bool isFavItem(QTreeWidgetItem *item);
+
+    static QByteArray getHash(MusECore::Synth *synth);
 
     static int selCategory;
     static int selType;
@@ -66,6 +72,9 @@ private:
     static QRect geometrySave;
     static QByteArray listSave;
     static QSet<QByteArray> favs;
+    static QList<QByteArray> recents;
+
+    static const int RECENTS_SIZE = 10;
 
     Ui::SynthDialogBase ui;
 };

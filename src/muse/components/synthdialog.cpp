@@ -10,12 +10,13 @@
 namespace MusEGui {
 
 int SynthDialog::selType = SEL_TYPE_ALL;
-int SynthDialog::selCategory = SEL_CAT_ALL;
+int SynthDialog::selCategory = SEL_CAT_SYNTH;
 int SynthDialog::curTab = TAB_ALL;
 QStringList SynthDialog::filterSavedItems = QStringList();
 QRect SynthDialog::geometrySave = QRect();
 QByteArray SynthDialog::listSave = QByteArray();
 QSet<QByteArray> SynthDialog::favs = QSet<QByteArray>();
+QList<QByteArray> SynthDialog::recents = QList<QByteArray>();
 
 
 //---------------------------------------------------------
@@ -27,7 +28,6 @@ SynthDialog::SynthDialog(QWidget* parent)
     : QDialog(parent)
 {
     ui.setupUi(this);
-    //    setStyleSheet("* {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
 
     setWindowTitle(tr("Select Software Synthesizer"));
 
@@ -145,6 +145,9 @@ void SynthDialog::addToFavorites(QTreeWidgetItem *item) {
                                                QCryptographicHash::Md5);
     favs.insert(hash);
     item->setForeground(COL_NAME, Qt::red);
+    QFont fb(font());
+    fb.setItalic(true);
+    item->setFont(COL_NAME, fb);
 
     favChanged = true;
 }
@@ -156,9 +159,10 @@ void SynthDialog::removeFavorite(QTreeWidgetItem *item) {
                                                QCryptographicHash::Md5);
     favs.remove(hash);
 
-    if (curTab == TAB_ALL)
+    if (curTab == TAB_ALL) {
         item->setForeground(COL_NAME, palette().text().color());
-    else {
+        item->setFont(COL_NAME, font());
+    } else {
         ui.pList->takeTopLevelItem(ui.pList->indexOfTopLevelItem(item));
         if (!ui.pList->currentItem())
             ui.okB->setEnabled(false);
@@ -166,6 +170,14 @@ void SynthDialog::removeFavorite(QTreeWidgetItem *item) {
 
     favChanged = true;
 }
+
+QByteArray SynthDialog::getHash(MusECore::Synth *synth)
+{
+    QString urifile = synth->uri().isEmpty() ? synth->completeBaseName() : synth->uri();
+    return QCryptographicHash::hash(synth->name().toUtf8() + urifile.toUtf8(),
+                                               QCryptographicHash::Md5);
+}
+
 
 bool SynthDialog::isFavItem(QTreeWidgetItem *item)
 {
@@ -180,11 +192,56 @@ bool SynthDialog::isFavItem(QTreeWidgetItem *item)
 
 bool SynthDialog::isFav(MusECore::Synth *synth)
 {
-    QString urifile = synth->uri().isEmpty() ? synth->completeBaseName() : synth->uri();
-    QByteArray hash = QCryptographicHash::hash(synth->name().toUtf8() + urifile.toUtf8(),
-                                               QCryptographicHash::Md5);
+    return favs.contains(getHash(synth));
+}
 
-    return favs.contains(hash);
+QVector<int> SynthDialog::getFavsIdx()
+{
+    QVector<int> si;
+    int i = 0;
+    for (const auto& it : MusEGlobal::synthis) {
+        if (isFav(it))
+            si.push_back(i);
+        ++i;
+    }
+    return si;
+}
+
+QVector<int> SynthDialog::getRecentsIdx()
+{
+    QVector<int> si;
+    for (const auto& it : qAsConst(recents)) {
+        int i = 0;
+        bool found = false;
+        for (const auto& its : MusEGlobal::synthis) {
+            if (it == getHash(its)) {
+                found = true;
+                break;
+            } else {
+                ++i;
+            }
+        }
+        if (found)
+            si.push_back(i);
+    }
+    return si;
+}
+
+void SynthDialog::addRecent(MusECore::Synth *synth)
+{
+    QByteArray hash = getHash(synth);
+
+    if (recents.contains(hash)) {
+        if (recents.indexOf(hash) == 0)
+            return;
+        else
+            recents.removeOne(hash);
+    }
+
+    recents.prepend(hash);
+
+    while (recents.size() > RECENTS_SIZE)
+        recents.removeLast();
 }
 
 //---------------------------------------------------------
@@ -282,6 +339,8 @@ void SynthDialog::fillSynths()
         return;
 
     int index = -1;
+    QFont fb(font());
+    fb.setItalic(true);
     for (const auto& it : MusEGlobal::synthis)
     {
         index++;
@@ -356,6 +415,7 @@ void SynthDialog::fillSynths()
 
         if (curTab == TAB_ALL && isFav(it)) {
             item->setForeground(COL_NAME, Qt::red);
+            item->setFont(COL_NAME, fb);
         }
     }
 }
@@ -398,7 +458,7 @@ void SynthDialog::writeFavConfiguration(int level, MusECore::Xml& xml)
 {
     xml.tag(level++, "synthDialogFavorites");
 
-    for (const auto& it : favs)
+    for (const auto& it : qAsConst(favs))
         xml.strTag(level, "hash", QLatin1String(it.toHex()));
 
     xml.etag(--level, "synthDialogFavorites");
@@ -424,6 +484,45 @@ void SynthDialog::readFavConfiguration(MusECore::Xml& xml)
 
         case MusECore::Xml::TagEnd:
             if (tag == "synthDialogFavorites")
+                return;
+            break;
+
+        default:
+            break;
+        }
+    }
+}
+
+void SynthDialog::writeRecentsConfiguration(int level, MusECore::Xml& xml)
+{
+    xml.tag(level++, "synthDialogRecents");
+
+    for (const auto& it : qAsConst(recents))
+        xml.strTag(level, "hash", QLatin1String(it.toHex()));
+
+    xml.etag(--level, "synthDialogRecents");
+}
+
+void SynthDialog::readRecentsConfiguration(MusECore::Xml& xml)
+{
+    for (;;)
+    {
+        MusECore::Xml::Token token = xml.parse();
+        if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
+            break;
+
+        const QString& tag = xml.s1();
+        switch (token)
+        {
+        case MusECore::Xml::TagStart:
+            if (tag=="hash")
+                recents.append(QByteArray::fromHex(xml.parse1().toLatin1()));
+            else
+                xml.unknown("readSynthRecentsConfiguration");
+            break;
+
+        case MusECore::Xml::TagEnd:
+            if (tag == "synthDialogRecents")
                 return;
             break;
 
