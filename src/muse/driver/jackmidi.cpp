@@ -483,21 +483,17 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
               int n = event.len();
               if (n >= 4) {
                     if ((p[0] == 0x7f)
-                      //&& ((p[1] == 0x7f) || (p[1] == rxDeviceId))) {
                       && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
                           if (p[2] == 0x06) {
-                                //mmcInput(p, n);
                                 MusEGlobal::midiSyncContainer.mmcInput(_port, p, n);
                                 return;
                                 }
                           if (p[2] == 0x01) {
-                                //mtcInputFull(p, n);
                                 MusEGlobal::midiSyncContainer.mtcInputFull(_port, p, n);
                                 return;
                                 }
                           }
                     else if (p[0] == 0x7e) {
-                          //nonRealtimeSystemSysex(p, n);
                           MusEGlobal::midiSyncContainer.nonRealtimeSystemSysex(_port, p, n);
                           return;
                           }
@@ -524,27 +520,15 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
             return;
             }
 
-      //
-      // transfer noteOn and Off events to gui for step recording and keyboard
-      // remote control (changed by flo93: added noteOff-events)
-      //
-      if (typ == ME_NOTEON) {
-            int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
-            MusEGlobal::song->putEvent(pv);
-            }
-      else if (typ == ME_NOTEOFF) {
-            int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
-            MusEGlobal::song->putEvent(pv);
-            }
-      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER) {
-          char cc = static_cast<char>(event.dataA() & 0xff);
-          int value = static_cast<char>(event.dataB());
-          printf("*** Input CC: %d Value: %d\n", cc, value);
-          MusEGlobal::song->putEventCC(cc, value);
+      // transfer also to gui for realtime playback and remote controll
+      if (typ == ME_NOTEON || typ == ME_NOTEOFF)
+      {
+          MusEGlobal::song->putEvent(event);
       }
-      
-      //if(_recordFifo.put(MidiPlayEvent(event)))
-      //  printf("MidiJackDevice::recordEvent: fifo overflow\n");
+      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER)
+      {
+          MusEGlobal::song->putEvent(event);
+      }
       
       // Do not bother recording if it is NOT actually being used by a port.
       // Because from this point on, process handles things, by selected port.    p3.3.38

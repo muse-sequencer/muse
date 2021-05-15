@@ -354,23 +354,14 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             return;
             }
 
-      //
-      // transfer noteOn and Off events to gui for step recording and keyboard
-      // remote control (changed by flo93: added noteOff-events)
-      //
-      if (typ == ME_NOTEON) {
-            int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
-            MusEGlobal::song->putEvent(pv);
-            }
-      else if (typ == ME_NOTEOFF) {
-            int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
-            MusEGlobal::song->putEvent(pv);
-            }
-      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER) {
-          char cc = static_cast<char>(event.dataA() & 0xff);
-          int value = static_cast<char>(event.dataB());
-          printf("*** Input CC: %d Value: %d\n", cc, value);
-          MusEGlobal::song->putEventCC(cc, value);
+      // transfer also to gui for realtime playback and remote control
+      if (typ == ME_NOTEON || typ == ME_NOTEOFF)
+      {
+          MusEGlobal::song->putEvent(event);
+      }
+      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER)
+      {
+          MusEGlobal::song->putEvent(event);
       }
 
       // Do not bother recording if it is NOT actually being used by a port.

@@ -47,6 +47,7 @@
 #include "midiseq.h"
 #include "gconfig.h"
 #include "sync.h"
+#include "midi_consts.h"
 #include "midictrl.h"
 #include "menutitleitem.h"
 #include "midi_audio_control.h"
@@ -107,10 +108,10 @@ Song::Song(const char* name)
       _fCpuLoad = 0.0;
       _fDspLoad = 0.0;
       _xRunsCount = 0;
-      
-      noteFifoSize   = 0;
-      noteFifoWindex = 0;
-      noteFifoRindex = 0;
+
+      realtimeMidiEvents = new LockFreeMPSCRingBuffer<MidiRecordEvent>(256);
+      mmcEvents = new LockFreeMPSCRingBuffer<MMC_Commands>(256);
+
       undoList     = new UndoList(true);  // "true" means "this is an undoList",
       redoList     = new UndoList(false); // "false" means "redoList"
       _markerList  = new MarkerList;
@@ -127,56 +128,39 @@ Song::Song(const char* name)
 //---------------------------------------------------------
 
 Song::~Song()
-      {
-      delete undoList;
-      delete redoList;
-      delete _markerList;
-      if(_ipcOutEventBuffers)
+{
+    delete undoList;
+    delete redoList;
+    delete _markerList;
+    if(_ipcOutEventBuffers)
         delete _ipcOutEventBuffers;
-      if(_ipcInEventBuffers)
+    if(_ipcInEventBuffers)
         delete _ipcInEventBuffers;
-      }
+
+    delete realtimeMidiEvents;
+    delete mmcEvents;
+}
 
 //---------------------------------------------------------
 //   putEvent
 //---------------------------------------------------------
 
-void Song::putEvent(int pv)
+void Song::putEvent(MidiRecordEvent &inputMidiEvent)
 {
-    if (noteFifoSize < TRANSFER_FIFO_SIZE)
+    if(!realtimeMidiEvents->put(inputMidiEvent))
     {
-        recNoteFifo[noteFifoWindex] = pv;
-        noteFifoWindex = (noteFifoWindex + 1) % TRANSFER_FIFO_SIZE;
-        ++noteFifoSize;
-    }
-    else
-    {
-      fprintf(stderr, "Song::putEvent - Dropping note events sent to GUI!\n");
+      fprintf(stderr, "Song::putEvent - OVERFLOW - Dropping input midi events sent to GUI!\n");
     }
 }
 
-void Song::putEventCC(char cc, int value)
+void Song::putMMC_Command(MMC_Commands command)
 {
-    if (MusEGlobal::rcEnableCC)
+    if(!mmcEvents->put(command))
     {
-        rcCC = cc;
-        rcValue = value;
+      fprintf(stderr, "Song::putMMC_Command - OVERFLOW - Dropping input MMC commands sent to GUI!\n");
     }
 }
 
-void Song::putSyncRemoteCommand(MMC_Commands cmd)
-{
-  if (syncRemoteFifoSize < TRANSFER_FIFO_SIZE)
-  {
-      syncRemoteFifo[syncRemoteFifoWindex] = cmd;
-      syncRemoteFifoWindex = (syncRemoteFifoWindex + 1) % TRANSFER_FIFO_SIZE;
-      ++syncRemoteFifoSize;
-  }
-  else
-  {
-    fprintf(stderr, "Song::putSyncRemoteCommand - Dropping sync commands sent to GUI!\n");
-  }
-}
 
 // REMOVE Tim. samplerate. Added. TODO
 #if 0
@@ -1914,13 +1898,13 @@ void Song::normalizeWaveParts(Part *partCursor)
 //---------------------------------------------------------
 
 void Song::beat()
-      {
+{
       // Watchdog for checking and setting timebase master state.
       static int _timebaseMasterCounter = 0;
       if(MusEGlobal::audioDevice &&
         MusEGlobal::audioDevice->hasOwnTransport() &&
-        MusEGlobal::audioDevice->hasTimebaseMaster() && 
-        MusEGlobal::config.useJackTransport && 
+        MusEGlobal::audioDevice->hasTimebaseMaster() &&
+        MusEGlobal::config.useJackTransport &&
         (--_timebaseMasterCounter <= 0))
       {
         if(MusEGlobal::config.timebaseMaster)
@@ -1940,110 +1924,117 @@ void Song::beat()
         _fDspLoad = MusEGlobal::audioDevice->getDSP_Load();
       _xRunsCount = MusEGlobal::audio->getXruns();
 
-      // Keep the sync detectors running... 
+      // Keep the sync detectors running...
       for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
           MusEGlobal::midiPorts[port].syncInfo().setTime();
-      
-      
+
+
       if (MusEGlobal::audio->isPlaying())
         setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
 
       // Process external tempo changes:
       while(!_tempoFifo.isEmpty())
-        MusEGlobal::tempo_rec_list.addTempo(_tempoFifo.get()); 
-      
+        MusEGlobal::tempo_rec_list.addTempo(_tempoFifo.get());
+
       // Update anything related to audio controller graphs etc.
       for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++ it)
       {
         if((*it)->isMidiTrack())
           continue;
-        AudioTrack* at = static_cast<AudioTrack*>(*it); 
+        AudioTrack* at = static_cast<AudioTrack*>(*it);
         CtrlListList* cll = at->controller();
         for(ciCtrlList icl = cll->begin(); icl != cll->end(); ++icl)
         {
           CtrlList* cl = icl->second;
-          if(cl->isVisible() && !cl->dontShow() && cl->guiUpdatePending())  
+          if(cl->isVisible() && !cl->dontShow() && cl->guiUpdatePending())
             emit controllerChanged(at, cl->id());
           cl->setGuiUpdatePending(false);
         }
       }
-      
+
       // Update synth native guis at the heartbeat rate.
       for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
         (*is)->guiHeartBeat();
-      
-      while (noteFifoSize) {
-          int pv = recNoteFifo[noteFifoRindex];
-          noteFifoRindex = (noteFifoRindex + 1) % TRANSFER_FIFO_SIZE;
-          int pitch = (pv >> 8) & 0xff;
-          int velo = pv & 0xff;
 
-          //---------------------------------------------------
-          // filter midi remote control events
-          //---------------------------------------------------
-
-          bool consumed = false;
-          if (MusEGlobal::rcEnable) {
-              if (pitch == MusEGlobal::rcStopNote) {
-                  setStop(true);
-                  consumed = true;
-              } else if (pitch == MusEGlobal::rcRecordNote) {
-                  if (velo == 0)
-                    setRecord(false);
-                  else
-                    setRecord(true);
-                  consumed = true;
-              } else if (pitch == MusEGlobal::rcGotoLeftMarkNote) {
-                  setPos(CPOS, pos[LPOS].tick(), true, true, true);
-                  consumed = true;
-              } else if (pitch == MusEGlobal::rcPlayNote) {
-                  setPlay(true);
-                  consumed = true;
-              } else if (pitch == MusEGlobal::rcForwardNote) {
-                  forward();
-                  consumed = true;
-              } else if (pitch == MusEGlobal::rcBackwardNote) {
-                  rewind();
-                  consumed = true;
-              }
-          }
-
-          if (!consumed)
-              emit MusEGlobal::song->midiNote(pitch, velo);
-
-          --noteFifoSize;
-      }
-
-      if (MusEGlobal::rcEnableCC && rcCC > -1) {
-
-          int cc = rcCC & 0xff;
-          int value = rcValue;
-          printf("*** CC in: %d/%d\n", cc,value);
-          if (cc == MusEGlobal::rcStopCC)
-              setStop(true);
-          else if (cc == MusEGlobal::rcPlayCC)
-          {
-            if (value == 0)
-              setPlay(false);
-            else
-              setPlay(true);
-          }
-          else if (cc == MusEGlobal::rcRecordCC)
-              setRecord(true);
-          else if (cc == MusEGlobal::rcGotoLeftMarkCC)
-              setPos(CPOS, pos[LPOS].tick(), true, true, true);
-          else if (cc == MusEGlobal::rcForwardCC)
-              forward();
-          else if (cc == MusEGlobal::rcBackwardCC)
-              rewind();
-
-          rcCC = -1;
-      }
-
-      while (syncRemoteFifoSize > 0)
+      int eventsToProcess = realtimeMidiEvents->getSize(false);
+      while (eventsToProcess--)
       {
-        MMC_Commands command = syncRemoteFifo[syncRemoteFifoRindex];
-        syncRemoteFifoRindex = (syncRemoteFifoRindex + 1) % TRANSFER_FIFO_SIZE;
+          MidiRecordEvent currentEvent;
+          if (!realtimeMidiEvents->get(currentEvent))
+          {
+              fprintf(stderr, "Song::beat - Missing realtimeMidiEvent!\n");
+              continue;
+          }
+
+          int dataA = currentEvent.dataA();
+          int dataB = currentEvent.dataB();
+
+          if (currentEvent.type() == ME_NOTEON || currentEvent.type() == ME_NOTEOFF)
+          {
+              //---------------------------------------------------
+              // filter midi remote control events
+              //---------------------------------------------------
+              bool consumed = false;
+              if (MusEGlobal::rcEnable) {
+                  if (dataA == MusEGlobal::rcStopNote) {
+                      setStop(true);
+                      consumed = true;
+                  } else if (dataA == MusEGlobal::rcRecordNote) {
+                      if (currentEvent.type() == ME_NOTEOFF)
+                        setRecord(false);
+                      else
+                        setRecord(true);
+                      consumed = true;
+                  } else if (dataA == MusEGlobal::rcGotoLeftMarkNote) {
+                      setPos(CPOS, pos[LPOS].tick(), true, true, true);
+                      consumed = true;
+                  } else if (dataA == MusEGlobal::rcPlayNote) {
+                      setPlay(true);
+                      consumed = true;
+                  } else if (dataA == MusEGlobal::rcForwardNote) {
+                      forward();
+                      consumed = true;
+                  } else if (dataA == MusEGlobal::rcBackwardNote) {
+                      rewind();
+                      consumed = true;
+                  }
+              }
+
+              if (!consumed)
+                  emit MusEGlobal::song->midiNote(dataA, dataB);
+          } // NOTES
+
+          if (MusEGlobal::rcEnableCC && currentEvent.type() == ME_CONTROLLER)
+          {
+              if (dataA == MusEGlobal::rcStopCC)
+                  setStop(true);
+              else if (dataA == MusEGlobal::rcPlayCC)
+                  setPlay(true);
+              else if (dataA == MusEGlobal::rcRecordCC)
+              {
+                if (dataB == 0)
+                  setRecord(false);
+                else
+                  setRecord(true);
+              }
+              else if (dataA == MusEGlobal::rcGotoLeftMarkCC)
+                  setPos(CPOS, pos[LPOS].tick(), true, true, true);
+              else if (dataA == MusEGlobal::rcForwardCC)
+                  forward();
+              else if (dataA == MusEGlobal::rcBackwardCC)
+                  rewind();
+          } // CC
+      }
+
+    int mmcToProcess = mmcEvents->getSize(false);
+    while (mmcToProcess--)
+    {
+        MMC_Commands command;
+        if (!mmcEvents->get(command))
+        {
+            fprintf(stderr, "Song::beat - Missing mmc command!\n");
+            continue;
+        }
 
         // Some syncronization commands have the complete implementation in sync.cc
         // some have the executive part here in the song class to be executed in the song thread.
@@ -2063,15 +2054,13 @@ void Song::beat()
             break;
           case MMC_Reset:
             this->setRecord(false);
-            this->rewind();
+            this->rewindStart();
             break;
           default:
             fprintf(stderr, "Song::beat - This sync command not implemented here!\n");
             break;
         }
-
-        syncRemoteFifoSize--;
-      }
+    }
 }
 
 //---------------------------------------------------------

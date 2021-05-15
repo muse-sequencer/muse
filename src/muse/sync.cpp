@@ -565,31 +565,30 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                   if(MusEGlobal::audio->isRunning() && !MusEGlobal::audio->isPlaying() && MusEGlobal::checkAudioDevice()) 
                     MusEGlobal::audioDevice->startTransport();
                   break;
-
             case MMC_FastForward:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: FastForward\n");
-                  MusEGlobal::song->putSyncRemoteCommand(MMC_FastForward);
+                  MusEGlobal::song->putMMC_Command(MMC_FastForward);
                   break;
             case MMC_Rewind:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: REWIND\n");
-                  MusEGlobal::song->putSyncRemoteCommand(MMC_Rewind);
+                  MusEGlobal::song->putMMC_Command(MMC_Rewind);
                   break;
             case MMC_RecordStrobe:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: REC STROBE\n");
-                  MusEGlobal::song->putSyncRemoteCommand(MMC_RecordStrobe);
+                  MusEGlobal::song->putMMC_Command(MMC_RecordStrobe);
                   break;
             case MMC_RecordExit:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: REC EXIT\n");
-                  MusEGlobal::song->putSyncRemoteCommand(MMC_RecordExit);
+                  MusEGlobal::song->putMMC_Command(MMC_RecordExit);
                   break;
             case MMC_Reset:
                   if (MusEGlobal::debugSync)
                         fprintf(stderr, "  MMC: Reset\n");
-                  MusEGlobal::song->putSyncRemoteCommand(MMC_Reset);
+                  MusEGlobal::song->putMMC_Command(MMC_Reset);
                   break;
             case MMC_Goto:
                   if (p[5] == 0) {
