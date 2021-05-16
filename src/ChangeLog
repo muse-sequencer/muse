@@ -1,3 +1,5 @@
+16.05.2021
+    - Fix issue 779: Missing notes if too close together. Broken 29.06.2019. (Tim)
 14.05.2021
     - Added support for more MMC commands, including REC, Rewind, Forward (rj)
     - Improved support for midi remote control, can now toggle REC enable for instance. (rj)
