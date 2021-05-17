@@ -309,7 +309,6 @@ EditInstrument::EditInstrument(QWidget* parent, Qt::WindowFlags fl)
       connect(initDeleteButton, SIGNAL(clicked(bool)), SLOT(initListDeleteClicked()));
 
       ctrlValidLabel->setPixmap(ledGreenSVGIcon->pixmap(ledSize));
-//      ctrlValidLabel->setPixmap(*greendotIcon);
 
       connect(patchFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));
       connect(lbankFromBox, SIGNAL(valueChanged(int)), this, SLOT(patchCollectionSpinboxChanged(int)));

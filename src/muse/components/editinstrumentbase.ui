@@ -913,6 +913,12 @@ Refer to the instrument manufacturer's
            <property name="frameShadow">
             <enum>QFrame::Sunken</enum>
            </property>
+           <property name="indentation">
+            <number>0</number>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>false</bool>
+           </property>
            <property name="allColumnsShowFocus">
             <bool>true</bool>
            </property>
@@ -946,7 +952,7 @@ Refer to the instrument manufacturer's
              <string>H-Ctrl</string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -954,7 +960,7 @@ Refer to the instrument manufacturer's
              <string>L-Ctrl</string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -962,7 +968,7 @@ Refer to the instrument manufacturer's
              <string>Min  </string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -970,7 +976,7 @@ Refer to the instrument manufacturer's
              <string>Max  </string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -978,7 +984,7 @@ Refer to the instrument manufacturer's
              <string>Def  </string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -986,7 +992,7 @@ Refer to the instrument manufacturer's
              <string>Dr def</string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -994,7 +1000,7 @@ Refer to the instrument manufacturer's
              <string>Midi</string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
            <column>
@@ -1002,7 +1008,7 @@ Refer to the instrument manufacturer's
              <string>Drum</string>
             </property>
             <property name="textAlignment">
-             <set>AlignTrailing|AlignVCenter</set>
+             <set>AlignLeading|AlignVCenter</set>
             </property>
            </column>
           </widget>

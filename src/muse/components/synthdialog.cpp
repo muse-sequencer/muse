@@ -1,5 +1,7 @@
 #include <QMenu>
 #include <QCryptographicHash>
+#include <QLineEdit>
+#include <QMessageBox>
 
 #include "synthdialog.h"
 #include "gconfig.h"
@@ -95,13 +97,15 @@ SynthDialog::SynthDialog(QWidget* parent)
         ui.pList->header()->restoreState(listSave);
 
     connect(ui.pList,   SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(accept()));
-    connect(ui.pList,   &QTreeWidget::itemClicked, [this](){ ui.okB->setEnabled(true); } );
+    connect(ui.pList,   &QTreeWidget::currentItemChanged, this, &SynthDialog::onCurrentItemChanged );
     connect(ui.pList,   SIGNAL(customContextMenuRequested(const QPoint&)), SLOT(listContextMenu(const QPoint&)));
     connect(ui.cancelB, SIGNAL(clicked()), SLOT(reject()));
     connect(ui.okB,     SIGNAL(clicked()), SLOT(accept()));
     connect(ui.tabBar,  SIGNAL(currentChanged(int)), SLOT(tabChanged(int)));
     connect(ui.filterBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillSynths()));
     connect(ui.catButtonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked), this, &SynthDialog::categoryChanged);
+
+    ui.pList->setCurrentItem(ui.pList->topLevelItem(0));
 }
 
 void SynthDialog::filterType(int i)
@@ -150,6 +154,8 @@ void SynthDialog::addToFavorites(QTreeWidgetItem *item) {
     item->setFont(COL_NAME, fb);
 
     favChanged = true;
+    ui.pbRemoveFav->setEnabled(true);
+    ui.pbAddFav->setEnabled(false);
 }
 
 void SynthDialog::removeFavorite(QTreeWidgetItem *item) {
@@ -162,10 +168,17 @@ void SynthDialog::removeFavorite(QTreeWidgetItem *item) {
     if (curTab == TAB_ALL) {
         item->setForeground(COL_NAME, palette().text().color());
         item->setFont(COL_NAME, font());
+        ui.pbRemoveFav->setEnabled(false);
+        ui.pbAddFav->setEnabled(true);
     } else {
+        auto selItem = ui.pList->itemBelow(ui.pList->currentItem());
+        if (!selItem)
+            selItem = ui.pList->itemAbove(ui.pList->currentItem());
         ui.pList->takeTopLevelItem(ui.pList->indexOfTopLevelItem(item));
-        if (!ui.pList->currentItem())
-            ui.okB->setEnabled(false);
+        if (selItem)
+            ui.pList->setCurrentItem(selItem);
+        else
+            ui.pList->setCurrentItem(ui.pList->topLevelItem(0));
     }
 
     favChanged = true;
@@ -272,16 +285,16 @@ MusECore::Synth* SynthDialog::value()
 
 void SynthDialog::saveSettings()
 {
-    if (!ui.filterBox->currentText().isEmpty()) {
+//    if (!ui.filterBox->currentText().isEmpty()) {
         bool found = false;
-        foreach (QString item, filterSavedItems)
-            if(item == ui.filterBox->currentText()) {
+        for (const auto& it : qAsConst(filterSavedItems))
+            if(it == ui.filterBox->currentText()) {
                 found = true;
                 break;
             }
         if(!found)
             filterSavedItems.push_front(ui.filterBox->currentText());
-    }
+//    }
 
     QHeaderView* hdr = ui.pList->header();
     if(hdr)
@@ -323,15 +336,40 @@ void SynthDialog::tabChanged(int index)
 {
     curTab = index;
     fillSynths();
+}
 
-    ui.pbAddFav->setEnabled(curTab == TAB_ALL);
+void SynthDialog::onCurrentItemChanged()
+{
+    QTreeWidgetItem* item = ui.pList->currentItem();
+    if (!item) {
+        ui.okB->setEnabled(false);
+        ui.pbRemoveFav->setEnabled(false);
+        ui.pbAddFav->setEnabled(false);
+        return;
+    }
+
+    ui.okB->setEnabled(true);
+
+    if (curTab == TAB_ALL) {
+        if (isFavItem(item)) {
+            ui.pbRemoveFav->setEnabled(true);
+            ui.pbAddFav->setEnabled(false);
+        } else {
+            ui.pbRemoveFav->setEnabled(false);
+            ui.pbAddFav->setEnabled(true);
+        }
+    } else {
+        ui.pbRemoveFav->setEnabled(true);
+        ui.pbAddFav->setEnabled(false);
+    }
 }
 
 void SynthDialog::fillSynths()
 {
-
     ui.pList->clear();
     ui.okB->setEnabled(false);
+    ui.pbAddFav->setEnabled(false);
+    ui.pbRemoveFav->setEnabled(false);
 
     QString type_name, cat_name;
 
@@ -418,6 +456,8 @@ void SynthDialog::fillSynths()
             item->setFont(COL_NAME, fb);
         }
     }
+
+    ui.pList->setCurrentItem(ui.pList->topLevelItem(0));
 }
 
 //---------------------------------------------------------
@@ -548,6 +588,15 @@ void SynthDialog::on_pbRemoveFav_clicked()
     if (item)
         removeFavorite(item);
 }
+
+void SynthDialog::on_pbInfo_clicked()
+{
+    QMessageBox::information(this, "Info",
+        "Multi-channel effects can be inserted as pseudo-synth tracks "
+        "if more than 2 channels and/or MIDI are needed."
+        "\nIn all other cases the Effect rack in the mixer strip should be used.");
+}
+
 
 
 } // namespace GUI

@@ -51,10 +51,11 @@ private slots:
 
     void listContextMenu(const QPoint&);
     void categoryChanged(QAbstractButton *button);
-
+    void onCurrentItemChanged();
     void on_pbAddFav_clicked();
-
     void on_pbRemoveFav_clicked();
+
+    void on_pbInfo_clicked();
 
 private:
     bool favChanged;
