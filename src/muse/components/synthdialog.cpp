@@ -591,7 +591,7 @@ void SynthDialog::on_pbRemoveFav_clicked()
 
 void SynthDialog::on_pbInfo_clicked()
 {
-    QMessageBox::information(this, "Info",
+    QMessageBox::information(this, "Effects as synth tracks",
         "Multi-channel effects can be inserted as pseudo-synth tracks "
         "if more than 2 channels and/or MIDI are needed."
         "\nIn all other cases the Effect rack in the mixer strip should be used.");
