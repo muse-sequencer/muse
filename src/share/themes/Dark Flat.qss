@@ -222,11 +222,11 @@ QToolBar QLabel#PaddedValueLabel {
     height: 20px;
 }
 
-QCheckBox::indicator {
+QCheckBox::indicator,  QAbstractItemView::indicator {
     border: 2px solid rgb(110, 110, 110);
 }
 
-QCheckBox::indicator:checked {
+QCheckBox::indicator:checked, QAbstractItemView::indicator:checked {
     background: rgb(0, 204, 255);
 }
 

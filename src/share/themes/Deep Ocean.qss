@@ -227,11 +227,11 @@ QWidget#ListEdit QTreeView {
 }
 */
 
-QCheckBox::indicator {
+QCheckBox::indicator, QAbstractItemView::indicator {
     border: 2px solid rgb(90, 90, 90);
 }
 
-QCheckBox::indicator:checked {
+QCheckBox::indicator:checked, QAbstractItemView::indicator:checked {
     background: aqua;
 }
 

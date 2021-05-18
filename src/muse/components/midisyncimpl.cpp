@@ -208,24 +208,24 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       QStringList columnnames;
       columnnames << tr("Port")
 		  << tr("Device Name")
-          << "s"
-          << "c"
-          << "k"
-          << "r"
-          << "m"
-          << "t"
+          << "Sync-to"
+          << "Clock"
+          << "Tick"
+          << "RT"
+          << "MMC"
+          << "MTC"
           << tr("Type")
-          << "rid" // Receive
-          << "rc" // Receive
-          << "rr" // Receive
-          << "rm" // Receive
-          << "rt" // Receive
-          << "rw" // Receive
-          << "tid" // Transmit
-          << "tc" // Transmit
-          << "tr" // Transmit
-          << "tm" // Transmit
-          << "tt"; // Transmit
+          << "RID" // Receive
+          << "Clock in" // Receive
+          << "RT in" // Receive
+          << "MMC in" // Receive
+          << "MTC in" // Receive
+          << "Rewind" // Receive
+          << "TID" // Transmit
+          << "Clock out" // Transmit
+          << "RT out" // Transmit
+          << "MMC out" // Transmit
+          << "MTC out"; // Transmit
 	
       devicesListView->setColumnCount(columnnames.size());
       devicesListView->setHeaderLabels(columnnames);
@@ -369,9 +369,11 @@ void MidiSyncConfig::heartBeat()
           }
           
           if(port == MusEGlobal::config.curMidiSyncInPort)
-            lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Checked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
           else
-            lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Unchecked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
           
           sdet = MusEGlobal::midiPorts[port].syncInfo().tickDetect();
           if(sdet)
@@ -699,6 +701,9 @@ void MidiSyncConfig::updateSyncInfoLV()
             //  those ports at several other places in the code.
             //if(dev && dev->isSynti())
             //  continue;
+
+//            if (!dev)
+//                continue;
               
             QString s;
             s.setNum(i+1);
@@ -729,9 +734,11 @@ void MidiSyncConfig::updateSyncInfoLV()
             }
             
             if(i == MusEGlobal::config.curMidiSyncInPort)
-              lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Checked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
             else
-              lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Unchecked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
             
             if(portsi.tickDetect())
             {
@@ -915,11 +922,13 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                     MidiSyncLViewItem* prev_lvi = 
                       (MidiSyncLViewItem*)devicesListView->topLevelItem(MusEGlobal::config.curMidiSyncInPort);
                     if(prev_lvi)
-                      prev_lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
+                      prev_lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Unchecked);
+//                    prev_lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
                     
                     // Set the current sync port and turn on the port's light.
                     MusEGlobal::config.curMidiSyncInPort = no;
-                    lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
+                    lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Checked);
+//                    lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
                     setDirty();
                   }  
                   break;
