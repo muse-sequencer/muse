@@ -1,3 +1,8 @@
+18.05.2021
+    - Synth selection dialog improvements: Current item is always preselected;
+        Info about multi-channel effects added; Better handling of Favorites (kybos)
+    - New submenus for Favorites and Recently used synths (kybos)
+    - Removed nested synth submenus (kybos)
 16.05.2021
     - Fix issue 779: Missing notes if too close together. Broken 29.06.2019. (Tim)
 14.05.2021

@@ -75,6 +75,7 @@
 #include "audio.h"
 #include "midiport.h"
 #include "audiodev.h"
+#include "synthdialog.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
@@ -252,22 +253,24 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         else
         {
             n -= MENU_ADD_SYNTH_ID_BASE;
-            int ntype = n / MENU_ADD_SYNTH_ID_BASE;
-            if(ntype >= Synth::SYNTH_TYPE_END)
-                return nullptr;
+// not necessary - the old synth menus have been removed (kybos)
+//            int ntype = n / MENU_ADD_SYNTH_ID_BASE;
+//            if(ntype >= Synth::SYNTH_TYPE_END)
+//                return nullptr;
 
-            // if we ever support Wine VSTs through some other means than through dssi-vst this must be adapted
-            if (ntype == MusECore::Synth::VST_SYNTH)
-                ntype=MusECore::Synth::DSSI_SYNTH;
-            if (ntype == MusECore::Synth::LV2_EFFECT)
-                ntype=MusECore::Synth::LV2_SYNTH; // the LV2_EFFECT is a specialization used in the menu only, we reassign it to regular LV2_SYNTH
+//            // if we ever support Wine VSTs through some other means than through dssi-vst this must be adapted
+//            if (ntype == MusECore::Synth::VST_SYNTH)
+//                ntype=MusECore::Synth::DSSI_SYNTH;
+//            if (ntype == MusECore::Synth::LV2_EFFECT)
+//                ntype=MusECore::Synth::LV2_SYNTH; // the LV2_EFFECT is a specialization used in the menu only, we reassign it to regular LV2_SYNTH
 
-            n %= MENU_ADD_SYNTH_ID_BASE;
+//            n %= MENU_ADD_SYNTH_ID_BASE;
             if(n >= (int)MusEGlobal::synthis.size())
                 return nullptr;
 
             if (MusEGlobal::debugMsg)
-                fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());
+                fprintf(stderr, "Song::addNewTrack synth: idx:%d class:%s label:%s\n", n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());
+//            fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());
         }
 
         SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
@@ -278,6 +281,8 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
             return nullptr;
 
         if (MusEGlobal::config.unhideTracks) SynthI::setVisible(true);
+
+        MusEGui::SynthDialog::addRecent(MusEGlobal::synthis[n]);
 
         // Add instance last in midi device list.
         for (int i = 0; i < MusECore::MIDI_PORTS; ++i)

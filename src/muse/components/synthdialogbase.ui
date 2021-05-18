@@ -124,12 +124,18 @@
           <property name="text">
            <string>&amp;Add</string>
           </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pbRemoveFav">
           <property name="text">
            <string>&amp;Remove</string>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -148,13 +154,19 @@
            <number>10</number>
           </property>
           <property name="verticalSpacing">
-           <number>20</number>
+           <number>16</number>
           </property>
           <property name="topMargin">
            <number>0</number>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_2">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>24</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>
@@ -162,7 +174,7 @@
              </size>
             </property>
             <property name="text">
-             <string>API type</string>
+             <string>Type</string>
             </property>
            </widget>
           </item>
@@ -176,6 +188,12 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>24</height>
+             </size>
             </property>
             <property name="maximumSize">
              <size>
@@ -192,6 +210,9 @@
            <widget class="QComboBox" name="filterBox">
             <property name="enabled">
              <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Press TAB/SHIFT+TAB to move focus to the list and back</string>
             </property>
             <property name="editable">
              <bool>true</bool>
@@ -222,6 +243,9 @@
          <property name="text">
           <string>&amp;Select</string>
          </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
          <property name="default">
           <bool>true</bool>
          </property>
@@ -237,6 +261,19 @@
          </property>
          <property name="text">
           <string>&amp;Cancel</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbInfo">
+         <property name="text">
+          <string>&amp;Info</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -255,9 +292,9 @@
          <number>9</number>
         </property>
         <item>
-         <widget class="QRadioButton" name="rbAll">
+         <widget class="QRadioButton" name="rbSynths">
           <property name="text">
-           <string>All</string>
+           <string>Synths</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -268,9 +305,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="rbSynths">
+         <widget class="QRadioButton" name="rbEffects">
+          <property name="toolTip">
+           <string/>
+          </property>
           <property name="text">
-           <string>Synths</string>
+           <string>Effects (see Info)</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">catButtonGroup</string>
@@ -278,9 +318,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="rbEffects">
+         <widget class="QRadioButton" name="rbAll">
           <property name="text">
-           <string>Effects</string>
+           <string>All</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">catButtonGroup</string>
@@ -304,15 +347,16 @@
  </customwidgets>
  <tabstops>
   <tabstop>filterBox</tabstop>
-  <tabstop>rbAll</tabstop>
+  <tabstop>pList</tabstop>
   <tabstop>rbSynths</tabstop>
   <tabstop>rbEffects</tabstop>
+  <tabstop>rbAll</tabstop>
   <tabstop>pluginType</tabstop>
   <tabstop>pbAddFav</tabstop>
   <tabstop>pbRemoveFav</tabstop>
   <tabstop>okB</tabstop>
   <tabstop>cancelB</tabstop>
-  <tabstop>pList</tabstop>
+  <tabstop>pbInfo</tabstop>
  </tabstops>
  <resources/>
  <connections/>

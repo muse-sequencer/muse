@@ -1369,6 +1369,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::readPluginGroupConfiguration(xml);
                         else if (tag == "synthDialogFavorites")
                             MusEGui::SynthDialog::readFavConfiguration(xml);
+                        else if (tag == "synthDialogRecents")
+                            MusEGui::SynthDialog::readRecentsConfiguration(xml);
                         else if (tag == "mixdownPath")
                               MusEGlobal::config.mixdownPath = xml.parse1();
                         else if (tag == "showNoteNamesInPianoRoll")
@@ -2147,6 +2149,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       MusEGlobal::writePluginGroupConfiguration(level, xml);
       MusEGui::SynthDialog::writeFavConfiguration(level, xml);
+      MusEGui::SynthDialog::writeRecentsConfiguration(level, xml);
 
       writeSeqConfiguration(level, xml, false);
 

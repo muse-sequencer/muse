@@ -1300,87 +1300,85 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 //   populateAddSynth
 //---------------------------------------------------------
 
-QMenu* populateAddSynth(QWidget* parent)
-{
-  QMenu* synp = new PopupMenu(parent);
+//QMenu* populateAddSynth(QWidget* parent)
+//{
+//  QMenu* synp = new PopupMenu(parent);
   
-  typedef std::multimap<std::string, int > asmap;
-  typedef std::multimap<std::string, int >::iterator imap;
+//  typedef std::multimap<std::string, int > asmap;
+//  typedef std::multimap<std::string, int >::iterator imap;
   
-  const int ntypes = MusECore::Synth::SYNTH_TYPE_END;
-  asmap smaps[ntypes];
-  PopupMenu* mmaps[ntypes];
-  for(int itype = 0; itype < ntypes; ++itype)
-    mmaps[itype] = nullptr;
+//  const int ntypes = MusECore::Synth::SYNTH_TYPE_END;
+//  asmap smaps[ntypes];
+//  PopupMenu* mmaps[ntypes];
+//  for(int itype = 0; itype < ntypes; ++itype)
+//    mmaps[itype] = nullptr;
   
-  MusECore::Synth* synth;
-  MusECore::Synth::Type type;
+//  MusECore::Synth* synth;
+//  MusECore::Synth::Type type;
 
-//  QVector<QAction*> favActions;
-  QMap<QString, QAction*> favActions;
+//  QMap<QString, QAction*> favActions;
   
-  int ii = 0;
-  for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i)
-  {
-    synth = *i;
-    type = synth->synthType();
+//  int ii = 0;
+//  for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i)
+//  {
+//    synth = *i;
+//    type = synth->synthType();
 
-// dssi-vst is dead, really no point in keeping this case around
-//#ifdef DSSI_SUPPORT
-//    if (type == MusECore::Synth::DSSI_SYNTH && ((MusECore::DssiSynth*)synth)->isDssiVst() ) // Place Wine VSTs in a separate sub menu
-//      type = MusECore::Synth::VST_SYNTH;
-//#endif
+//// dssi-vst is dead, really no point in keeping this case around
+////#ifdef DSSI_SUPPORT
+////    if (type == MusECore::Synth::DSSI_SYNTH && ((MusECore::DssiSynth*)synth)->isDssiVst() ) // Place Wine VSTs in a separate sub menu
+////      type = MusECore::Synth::VST_SYNTH;
+////#endif
 
-    if(type >= ntypes)
-      continue; 
-    smaps[type].insert( std::pair<std::string, int> (synth->description().toLower().toStdString(), ii) );
+//    if(type >= ntypes)
+//      continue;
+//    smaps[type].insert( std::pair<std::string, int> (synth->description().toLower().toStdString(), ii) );
   
-    ++ii;
-  }
+//    ++ii;
+//  }
   
-  int sz = MusEGlobal::synthis.size();
-  for(int itype = 0; itype < ntypes; ++itype)
-  {  
-    for(imap i = smaps[itype].begin(); i != smaps[itype].end(); ++i) 
-    {
-      int idx = i->second;
-      if(idx > sz)           // Sanity check
-        continue;
-      synth = MusEGlobal::synthis[idx];
-      if(synth)
-      {
-        // No sub-menu yet? Create it now.
-        if(!mmaps[itype])
-        {  
-          mmaps[itype] = new PopupMenu(parent);
-          mmaps[itype]->setToolTipsVisible(true);
-          mmaps[itype]->setIcon(*synthSVGIcon);
-          mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
-          synp->addMenu(mmaps[itype]);
-        }  
-        //QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
-        QAction* act = mmaps[itype]->addAction(synth->description());
-        act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );
-        if(!synth->uri().isEmpty())
-          act->setToolTip(synth->uri());
+//  int sz = MusEGlobal::synthis.size();
+//  for(int itype = 0; itype < ntypes; ++itype)
+//  {
+//    for(imap i = smaps[itype].begin(); i != smaps[itype].end(); ++i)
+//    {
+//      int idx = i->second;
+//      if(idx > sz)           // Sanity check
+//        continue;
+//      synth = MusEGlobal::synthis[idx];
+//      if(synth)
+//      {
+//        // No sub-menu yet? Create it now.
+//        if(!mmaps[itype])
+//        {
+//          mmaps[itype] = new PopupMenu(parent);
+//          mmaps[itype]->setToolTipsVisible(true);
+//          mmaps[itype]->setIcon(*synthSVGIcon);
+//          mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
+//          synp->addMenu(mmaps[itype]);
+//        }
+//        QAction* act = mmaps[itype]->addAction(synth->description());
+//        act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );
+//        if(!synth->uri().isEmpty())
+//          act->setToolTip(synth->uri());
 
-        if (SynthDialog::isFav(synth))
-            favActions.insert(synth->description().toLower(), act);
-      }  
-    }
-  }
+//        if (SynthDialog::isFav(synth))
+//            favActions.insert(synth->description().toLower(), act);
+//      }
+//    }
+//  }
 
-  if (!favActions.isEmpty()) {
-      QAction *fa = synp->actions().at(0);
-      synp->insertAction(fa, new MusEGui::MenuTitleItem("Favorites", synp));
-      for (const auto& it : favActions)
-          synp->insertAction(fa, it);
+//  if (!favActions.isEmpty()) {
+//      QAction *fa = synp->actions().at(0);
+//      synp->insertAction(fa, new MusEGui::MenuTitleItem("Favorites", synp));
+//      for (const auto& it : favActions)
+//          synp->insertAction(fa, it);
 
-      synp->insertAction(fa, new MusEGui::MenuTitleItem("All", synp));
-  }
+//      synp->insertAction(fa, new MusEGui::MenuTitleItem("All", synp));
+//  }
 
-  return synp;
-}
+//  return synp;
+//}
 
 //---------------------------------------------------------
 //   populateAddTrack
@@ -1453,17 +1451,39 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
       if (populateAll || MusECore::SynthI::visible()) {
           addTrack->addSeparator();
           QAction *asynthd = addTrack->addAction(*synthSVGIcon,
-                                                   qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth (Show Dialog)...")));
+                                                   qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synths...")));
           asynthd->setData(MusECore::Track::AUDIO_SOFTSYNTH);
           asynthd->setShortcut(shortcuts[insert ? SHRT_INSERT_SYNTH_TRACK : SHRT_ADD_SYNTH_TRACK].key);
           grp->addAction(asynthd);
 
-          // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-          QMenu* synp = populateAddSynth(addTrack);
-          synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth")));
+          auto favsIdx = SynthDialog::getFavsIdx();
+          if (!favsIdx.empty()) {
+              QMenu* synfav = new QMenu(addTrack);
+              synfav->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Favorites")));
 
-          // Add the sub-menu to the given menu.
-          addTrack->addMenu(synp);
+              for (const auto it : favsIdx) {
+                  synfav->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
+              }
+              addTrack->addMenu(synfav);
+          }
+
+          auto recentsIdx = SynthDialog::getRecentsIdx();
+          if (!recentsIdx.empty()) {
+              QMenu* synrec = new QMenu(addTrack);
+              synrec->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Recently Used")));
+
+              for (const auto it : recentsIdx) {
+                  synrec->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
+              }
+              addTrack->addMenu(synrec);
+          }
+
+//          // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
+//          QMenu* synp = populateAddSynth(addTrack);
+//          synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synth")));
+
+//          // Add the sub-menu to the given menu.
+//          addTrack->addMenu(synp);
       }
 
       return grp;
