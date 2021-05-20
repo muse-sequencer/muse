@@ -65,6 +65,7 @@
 #include "shortcuts.h"
 #include "drumedit.h"
 #include "utils.h"
+#include "functions.h"
 
 
 #ifdef DSSI_SUPPORT
@@ -159,6 +160,9 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
         update();
     if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
         adjustScrollbar();
+    if (flags & SC_TRACK_REMOVED && !MusEGlobal::song->tracks()->empty() && !MusECore::tracks_are_selected())
+        MusEGlobal::song->tracks()->at(0)->setSelected(true);
+
 }
 
 //---------------------------------------------------------
@@ -2352,16 +2356,15 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 a = p->addAction(*minusSVGIcon, tr("Delete Track"));
                 a->setData(1001);
 
-                if (selCnt > 1){
+                if (selCnt > 0){
                     p->addSeparator();
                     a = p->addAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"));
                     a->setData(1004);
                     a->setShortcut(shortcuts[SHRT_DUPLICATE_TRACK].key);
                     a = p->addAction(*delSelTracksSVGIcon, tr("Delete Selected"));
                     a->setData(1003);
-                }
+                    a->setShortcut(shortcuts[SHRT_DELETE_TRACK].key);
 
-                if (selCnt > 0) {
                     p->addSeparator();
                     a = p->addAction(tr("Move Selected Up"));
                     a->setData(1006);
