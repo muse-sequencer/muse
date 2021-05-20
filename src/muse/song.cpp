@@ -1713,7 +1713,7 @@ void Song::updatePos()
 
 void Song::initLen()
       {
-      _len = MusEGlobal::sigmap.bar2tick(40, 0, 0);    // default song len
+      _songLenTicks = MusEGlobal::sigmap.bar2tick(40, 0, 0);    // default song len
       for (iTrack t = _tracks.begin(); t != _tracks.end(); ++t) {
             Track* track = dynamic_cast<Track*>(*t);
             if (track == 0)
@@ -1721,11 +1721,11 @@ void Song::initLen()
             PartList* parts = track->parts();
             for (iPart p = parts->begin(); p != parts->end(); ++p) {
                   unsigned last = p->second->tick() + p->second->lenTick();
-                  if (last > _len)
-                        _len = last;
+                  if (last > _songLenTicks)
+                        _songLenTicks = last;
                   }
             }
-      _len = roundUpBar(_len);
+      _songLenTicks = roundUpBar(_songLenTicks);
       }
 
 //---------------------------------------------------------
@@ -2087,7 +2087,7 @@ void Song::beat()
 
 void Song::setLen(unsigned l, bool do_update)
       {
-      _len = l;
+      _songLenTicks = l;
       if(do_update)
         update();
       }
@@ -2420,7 +2420,7 @@ void Song::clear(bool signal, bool clear_all)
       _cycleMode     = CYCLE_NORMAL;
       _click         = false;
       _quantize      = false;
-      _len           = MusEGlobal::sigmap.bar2tick(150, 0, 0);  // default song len in ticks set for 150 bars
+      _songLenTicks  = MusEGlobal::sigmap.bar2tick(150, 0, 0);  // default song len in ticks set for 150 bars
       _follow        = JUMP;
       dirty          = false;
       initDrumMap();
@@ -2589,6 +2589,12 @@ void Song::seqSignal(int fd)
                         clearRecAutomation(true);
                         setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
                         _startPlayPosition = MusEGlobal::audio->pos(); // update start position
+
+                        if (_startPlayPosition.tick() == 0 || _startPlayPosition.tick() >= _songLenTicks )
+                        {
+                            // if we are moving out of bounds lets clear _fastMove
+                            _fastMove = NORMAL_MOVEMENT;
+                        }
                         break;
                   case 'S':   // shutdown audio
                         MusEGlobal::muse->seqStop();

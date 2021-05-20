@@ -610,7 +610,7 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                         else if (tag == "quantize")
                               _quantize  = xml.parseInt();
                         else if (tag == "len")
-                              _len  = xml.parseInt();
+                              _songLenTicks  = xml.parseInt();
                         else if (tag == "follow")
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "midiDivision") {
@@ -769,7 +769,7 @@ void Song::write(int level, Xml& xml) const
       xml.intTag(level, "cycle", _cycleMode);
       xml.intTag(level, "click", _click);
       xml.intTag(level, "quantize", _quantize);
-      xml.intTag(level, "len", _len);
+      xml.intTag(level, "len", _songLenTicks);
       xml.intTag(level, "follow", _follow);
       // Save the current global midi division as well as current sample rate
       //  so the song can be scaled properly if the values differ on reload.

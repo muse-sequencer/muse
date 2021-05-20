@@ -592,7 +592,7 @@ void Song::addPart(Part* part)
 #else
       if (epos > len())
 #endif
-        _len = epos;
+        _songLenTicks = epos;
 
       part->track()->addPart(part);
       
@@ -715,7 +715,7 @@ void Song::changePart(Part* oPart, Part* nPart)
       // adjust song len:
       unsigned int epos = nPart->tick() + nPart->lenTick();
       if (epos > len())
-            _len = epos;
+            _songLenTicks = epos;
       }
 
 //---------------------------------------------------------

@@ -153,7 +153,7 @@ class Song : public QObject {
       Pos _startPlayPosition;
       bool _click;
       bool _quantize;
-      unsigned _len;         // song len in ticks
+      unsigned _songLenTicks;         // song len in ticks
       FollowMode _follow;
       int _globalPitchShift;
       void readMarker(Xml&);
@@ -319,7 +319,7 @@ class Song : public QObject {
       //    access tempomap/MusEGlobal::sigmap  (Mastertrack)
       //-----------------------------------------
 
-      unsigned len() const { return _len; }
+      unsigned len() const { return _songLenTicks; }
       void setLen(unsigned l, bool do_update = true);     // set songlen in ticks
       int roundUpBar(int tick) const;
       int roundUpBeat(int tick) const;
