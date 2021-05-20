@@ -9,8 +9,8 @@ configuration dialog</comment>
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
-    <height>534</height>
+    <width>927</width>
+    <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -271,14 +271,7 @@ configuration dialog</comment>
       <string>Sync receiving and sending</string>
      </property>
      <layout class="QGridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>This button and other transport related buttons are found in the toolbar or on the Transport Panel.</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
+      <item row="3" column="0">
        <layout class="QHBoxLayout">
         <item>
          <widget class="QSpinBox" name="syncDelaySpinBox">
@@ -323,16 +316,7 @@ configuration dialog</comment>
         </item>
        </layout>
       </item>
-      <item row="5" column="0">
-       <widget class="QTreeWidget" name="devicesListView">
-        <column>
-         <property name="text">
-          <string notr="true">1</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
+      <item row="0" column="0" colspan="2">
        <widget class="QCheckBox" name="extSyncCheckbox">
         <property name="enabled">
          <bool>true</bool>
@@ -355,7 +339,20 @@ Enabled inputs in the list will
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="5" column="0">
+       <widget class="QLabel" name="toBeDoneLabel">
+        <property name="text">
+         <string>Note: Sync delay and MTC sync currently not fully implemented</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <layout class="QHBoxLayout">
         <item>
          <widget class="QDoubleSpinBox" name="syncRecTempoValQuant">
@@ -397,7 +394,16 @@ Enabled inputs in the list will
         </item>
        </layout>
       </item>
-      <item row="2" column="0">
+      <item row="4" column="0">
+       <widget class="QTreeWidget" name="devicesListView">
+        <column>
+         <property name="text">
+          <string notr="true">1</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item row="1" column="0">
        <layout class="QHBoxLayout">
         <item>
          <widget class="QComboBox" name="syncRecFilterPreset">
@@ -448,19 +454,6 @@ None: Use only if high accuracy is needed for
          </widget>
         </item>
        </layout>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="toBeDoneLabel">
-        <property name="text">
-         <string>Note: Sync delay and MTC sync currently not fully implemented</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <property name="wordWrap">
-         <bool>false</bool>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>

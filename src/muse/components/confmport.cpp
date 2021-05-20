@@ -1058,11 +1058,11 @@ MPConfig::MPConfig(QWidget* parent)
       columnnames.clear();
       columnnames << tr("Device Name")
                   << tr("Type")
-                  << tr("I")
-                  << tr("O")
+                  << tr("Input")
+                  << tr("Output")
                   << tr("GUI")
-                  << tr("In")
-                  << tr("Out")
+                  << tr("Jack In")
+                  << tr("Jack Out")
                   << tr("State");
 
 #ifdef ALSA_SUPPORT
@@ -1081,9 +1081,6 @@ MPConfig::MPConfig(QWidget* parent)
       guiTimer = new QTimer(this);
       connect(guiTimer, &QTimer::timeout, this, &MPConfig::checkGUIState);
       guiTimer->start(500);
-
-      ledOn = *ledGreenSVGIcon;
-      ledOff = *ledOffSVGIcon;
 
       connect(instanceList, SIGNAL(itemPressed(QTableWidgetItem*)), SLOT(deviceItemClicked(QTableWidgetItem*)));
       connect(instanceList, SIGNAL(itemSelectionChanged()),         SLOT(deviceSelectionChanged()));
@@ -1122,7 +1119,7 @@ void MPConfig::checkGUIState()
             synth = static_cast<MusECore::SynthI*>(md);
 
         if (synth && synth->hasNativeGui())
-            item->setIcon(synth->nativeGuiVisible() ? ledOn : ledOff);
+            item->setCheckState(synth->nativeGuiVisible() ? Qt::Checked : Qt::Unchecked);
     }
 }
 
@@ -1354,7 +1351,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             iitem->setTextAlignment(Qt::AlignCenter);
             addInstItem(row_cnt, INSTCOL_REC, iitem, instanceList);
             if(md->rwFlags() & 0x2)
-              iitem->setIcon(md->openFlags() & 2 ? ledOn : ledOff);
+              iitem->setCheckState(md->openFlags() & 2 ? Qt::Checked : Qt::Unchecked);
             else
               iitem->setIcon(QIcon(QPixmap()));
             
@@ -1364,7 +1361,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             iitem->setTextAlignment(Qt::AlignCenter);
             addInstItem(row_cnt, INSTCOL_PLAY, iitem, instanceList);
             if(md->rwFlags() & 0x1)
-              iitem->setIcon(md->openFlags() & 1 ? ledOn : ledOff);
+              iitem->setCheckState(md->openFlags() & 1 ? Qt::Checked : Qt::Unchecked);
             else
               iitem->setIcon(QIcon(QPixmap()));
             
@@ -1374,7 +1371,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
             iitem->setTextAlignment(Qt::AlignCenter);
             addInstItem(row_cnt, INSTCOL_GUI, iitem, instanceList);
             if(synth && synth->hasNativeGui())
-              iitem->setIcon(synth->nativeGuiVisible() ? ledOn : ledOff);
+              iitem->setCheckState(synth->nativeGuiVisible() ? Qt::Checked : Qt::Unchecked);
             else
               iitem->setIcon(QIcon(QPixmap()));
 
@@ -1612,7 +1609,7 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   if(md->midiPort() != -1)
                     MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device // FIXME: This causes jack crash with R+W Jack midi device
                   MusEGlobal::audio->msgIdle(false);
-                  item->setIcon(openFlags & 2 ? ledOn : ledOff);
+                  item->setCheckState(openFlags & 2 ? Qt::Checked : Qt::Unchecked);
                   return;
         case INSTCOL_PLAY:
                   if(!(rwFlags & 1))
@@ -1623,13 +1620,13 @@ void MPConfig::deviceItemClicked(QTableWidgetItem* item)
                   if(md->midiPort() != -1)
                     MusEGlobal::midiPorts[md->midiPort()].setMidiDevice(md); // reopen device FIXME: This causes jack crash with R+W Jack midi device
                   MusEGlobal::audio->msgIdle(false);
-                  item->setIcon(openFlags & 1 ? ledOn : ledOff);
+                  item->setCheckState(openFlags & 1 ? Qt::Checked : Qt::Unchecked);
                   return;
         case INSTCOL_GUI:
                   if(synth && synth->hasNativeGui())
                   {
                     synth->showNativeGui(!synth->nativeGuiVisible());
-                    item->setIcon(synth->nativeGuiVisible() ? ledOn : ledOff);
+                    item->setCheckState(synth->nativeGuiVisible() ? Qt::Checked : Qt::Unchecked);
                   }
                   return;
                   
