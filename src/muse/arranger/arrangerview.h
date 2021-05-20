@@ -93,7 +93,7 @@ private:
 
     QAction *editDeleteAction,*editCutAction, *editCopyAction, *editCopyRangeAction;
     QAction *editPasteAction, *editPasteCloneAction, *editPasteToTrackAction, *editPasteCloneToTrackAction, *editPasteDialogAction;
-    QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
+    QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedTrackAction, *editSelectAllAction, *editDeselectAllAction;
     QAction *editDuplicateSelTrackAction;
     QAction *editMoveUpSelTrackAction, *editMoveDownSelTrackAction, *editMoveTopSelTrackAction, *editMoveBottomSelTrackAction;
     QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;

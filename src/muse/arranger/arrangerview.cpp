@@ -145,7 +145,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   editPasteDialogAction = new QAction(*pasteDialogSVGIcon, tr("Paste (With Dialo&g)..."), this);
   editInsertEMAction = new QAction(*emptyBarSVGIcon, tr("&Insert Empty Bar"), this);
 
-  editDeleteSelectedAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);
+  editDeleteSelectedTrackAction = new QAction(*delSelTracksSVGIcon, tr("Delete Selected"), this);
   editDuplicateSelTrackAction = new QAction(*duplSelTracksSVGIcon, tr("Duplicate Selected"), this);
   editMoveUpSelTrackAction = new QAction(tr("Move Selected Up"), this);
   editMoveDownSelTrackAction = new QAction(tr("Move Selected Down"), this);
@@ -248,7 +248,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuTracks->addMenu(insertTrack);
   menuTracks->addSeparator();
   menuTracks->addAction(editDuplicateSelTrackAction);
-  menuTracks->addAction(editDeleteSelectedAction);
+  menuTracks->addAction(editDeleteSelectedTrackAction);
   menuTracks->addSeparator();
   menuTracks->addAction(editMoveUpSelTrackAction);
   menuTracks->addAction(editMoveDownSelTrackAction);
@@ -352,7 +352,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(editPasteDialogAction,       &QAction::triggered, [this]() { cmd(CMD_PASTE_DIALOG); } );
   connect(editInsertEMAction,          &QAction::triggered, [this]() { cmd(CMD_INSERTMEAS); } );
 
-  connect(editDeleteSelectedAction,    &QAction::triggered, [this]() { cmd(CMD_DELETE_TRACK); } );
+  connect(editDeleteSelectedTrackAction,    &QAction::triggered, [this]() { cmd(CMD_DELETE_TRACK); } );
   connect(editDuplicateSelTrackAction, &QAction::triggered, [this]() { cmd(CMD_DUPLICATE_TRACK); } );
   connect(editMoveUpSelTrackAction,    &QAction::triggered, [this]() { cmd(CMD_MOVEUP_TRACK); } );
   connect(editMoveDownSelTrackAction,  &QAction::triggered, [this]() { cmd(CMD_MOVEDOWN_TRACK); } );
@@ -637,22 +637,10 @@ void ArrangerView::cmd(int cmd)
         arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
         break;
     case CMD_DELETE:
-        if (!MusECore::delete_selected_parts())
-        {
-            QMessageBox::StandardButton btn = QMessageBox::warning(
-                        this,tr("Remove track(s)"),tr("Are you sure you want to remove this track(s)?"),
-                        QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Ok);
-
-            if (btn == QMessageBox::Cancel)
-                break;
-            MusEGlobal::audio->msgRemoveTracks();
-        }
-
+        MusECore::delete_selected_parts();
         break;
-    case CMD_DELETE_TRACK: // from menu
-    {
+    case CMD_DELETE_TRACK:
         MusEGlobal::audio->msgRemoveTracks();
-    }
         break;
 
     case CMD_DUPLICATE_TRACK:
@@ -964,6 +952,7 @@ void ArrangerView::updateShortcuts()
       editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
       editDuplicateSelTrackAction->setShortcut(shortcuts[SHRT_DUPLICATE_TRACK].key);
+      editDeleteSelectedTrackAction->setShortcut(shortcuts[SHRT_DELETE_TRACK].key);
       editMoveUpSelTrackAction->setShortcut(shortcuts[SHRT_MOVEUP_TRACK].key);
       editMoveDownSelTrackAction->setShortcut(shortcuts[SHRT_MOVEDOWN_TRACK].key);
       editMoveTopSelTrackAction->setShortcut(shortcuts[SHRT_MOVETOP_TRACK].key);
@@ -1044,15 +1033,14 @@ void ArrangerView::selectionChanged()
       bool pflag = arranger->itemsAreSelected();
       bool tflag = MusECore::tracks_are_selected();
 
-      editDeleteAction->setEnabled(tflag || pflag);
-
-      editDeleteSelectedAction->setEnabled(tflag);
+      editDeleteSelectedTrackAction->setEnabled(tflag);
       editDuplicateSelTrackAction->setEnabled(tflag);
       editMoveUpSelTrackAction->setEnabled(tflag);
       editMoveDownSelTrackAction->setEnabled(tflag);
       editMoveTopSelTrackAction->setEnabled(tflag);
       editMoveBottomSelTrackAction->setEnabled(tflag);
    
+      editDeleteAction->setEnabled(pflag);
       editCutAction->setEnabled(pflag);
       editCopyAction->setEnabled(pflag);
       editShrinkPartsAction->setEnabled(pflag);

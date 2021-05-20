@@ -1,3 +1,5 @@
+20.05.2021
+    - Fix #998: Add dedicated keyboard shortcut for deleting tracks in Arranger. (kybos)
 18.05.2021
     - Synth selection dialog improvements: Current item is always preselected;
         Info about multi-channel effects added; Better handling of Favorites (kybos)
