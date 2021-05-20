@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
  <g transform="matrix(1 0 0 .9 0 .3)" stroke-width="1.0541">
   <path transform="translate(-3,-6)" d="m6 9h49v50h-49z" fill="#2affd5" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.0541"/>
   <path d="m3.0192 8.007v-4.5754h48.955v9.1508h-48.955z" style="paint-order:stroke fill markers"/>
@@ -10,7 +19,7 @@
   </g>
  </g>
  <g transform="matrix(.61224 0 0 .55102 28.151 30.588)" stroke-width="1.7217">
-  <path transform="translate(-3,-6)" d="m6 9h49v50h-49z" fill="#ff2a2a" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7217"/>
+  <path transform="translate(-3,-6)" d="m6 9h49v50h-49z" fill="#2aacff" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7217"/>
   <path d="m3.0192 8.007v-4.5754h48.955v9.1508h-48.955z" style="paint-order:stroke fill markers"/>
   <g fill="#fff">
    <circle cx="8.1161" cy="7.4255" r="2" style="paint-order:stroke fill markers"/>
