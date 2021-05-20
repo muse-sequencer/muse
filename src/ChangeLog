@@ -1,6 +1,8 @@
 20.05.2021
     - Fix #998: Add dedicated keyboard shortcut for deleting tracks in Arranger. (kybos)
-    - Fixed MMC fastforward/rewind functionality (issue #652) (rj)
+    - Fix: Use proper widgets in midi sync and midi config dialogs. (kybos)
+    - Fix: Don't show (and loop over) up to 200 unused ports in midi sync dialog. (kybos)
+    - Fix: MMC fastforward/rewind functionality (issue #652) (rj)
 18.05.2021
     - Synth selection dialog improvements: Current item is always preselected;
         Info about multi-channel effects added; Better handling of Favorites (kybos)

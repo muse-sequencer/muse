@@ -208,24 +208,24 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       QStringList columnnames;
       columnnames << tr("Port")
 		  << tr("Device Name")
-          << "s"
-          << "c"
-          << "k"
-          << "r"
-          << "m"
-          << "t"
+          << "Sync-to"
+          << "Clock"
+          << "Tick"
+          << "RT"
+          << "MMC"
+          << "MTC"
           << tr("Type")
-          << "rid" // Receive
-          << "rc" // Receive
-          << "rr" // Receive
-          << "rm" // Receive
-          << "rt" // Receive
-          << "rw" // Receive
-          << "tid" // Transmit
-          << "tc" // Transmit
-          << "tr" // Transmit
-          << "tm" // Transmit
-          << "tt"; // Transmit
+          << "RID" // Receive
+          << "Clock in" // Receive
+          << "RT in" // Receive
+          << "MMC in" // Receive
+          << "MTC in" // Receive
+          << "Rewind" // Receive
+          << "TID" // Transmit
+          << "Clock out" // Transmit
+          << "RT out" // Transmit
+          << "MMC out" // Transmit
+          << "MTC out"; // Transmit
 	
       devicesListView->setColumnCount(columnnames.size());
       devicesListView->setHeaderLabels(columnnames);
@@ -342,7 +342,8 @@ void MidiSyncConfig::songChanged(MusECore::SongChangedStruct_t flags)
 void MidiSyncConfig::heartBeat()
 {
       //inHeartBeat = true;
-  for (int i = MusECore::MIDI_PORTS-1; i >= 0; --i)
+//  for (int i = MusECore::MIDI_PORTS-1; i >= 0; --i)
+  for (int i = 0; i < devicesListView->topLevelItemCount(); ++i)
     {
       MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
       int port = lvi->port();
@@ -369,9 +370,11 @@ void MidiSyncConfig::heartBeat()
           }
           
           if(port == MusEGlobal::config.curMidiSyncInPort)
-            lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Checked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
           else
-            lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Unchecked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
           
           sdet = MusEGlobal::midiPorts[port].syncInfo().tickDetect();
           if(sdet)
@@ -650,15 +653,15 @@ void MidiSyncConfig::apply()
       MusEGlobal::mtcOffset.setF(mtcOffF->value());
       MusEGlobal::mtcOffset.setSf(mtcOffSf->value());
 
-      for (int i = MusECore::MIDI_PORTS-1; i >= 0; --i)	    
+//      for (int i = MusECore::MIDI_PORTS-1; i >= 0; --i)
+      for (int i = 0; i < devicesListView->topLevelItemCount(); ++i)
       {
-	MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
-        int port = lvi->port();
-        if(port >= 0 && port < MusECore::MIDI_PORTS)
-          lvi->copyToSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
-        
+          MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
+          int port = lvi->port();
+          if(port >= 0 && port < MusECore::MIDI_PORTS)
+              lvi->copyToSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
       }
-  
+
   // Update the current value.
   _curMidiSyncInPort = MusEGlobal::config.curMidiSyncInPort;
       
@@ -699,6 +702,9 @@ void MidiSyncConfig::updateSyncInfoLV()
             //  those ports at several other places in the code.
             //if(dev && dev->isSynti())
             //  continue;
+
+            if (!dev)
+                continue;
               
             QString s;
             s.setNum(i+1);
@@ -729,9 +735,11 @@ void MidiSyncConfig::updateSyncInfoLV()
             }
             
             if(i == MusEGlobal::config.curMidiSyncInPort)
-              lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Checked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
             else
-              lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
+              lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Unchecked);
+//            lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
             
             if(portsi.tickDetect())
             {
@@ -827,17 +835,26 @@ void MidiSyncConfig::updateSyncInfoLV()
             }
 
             lvi->setText(DEVCOL_RID,    QString().setNum(lvi->_idIn) );
-            lvi->setIcon(DEVCOL_RCLK, lvi->_recMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
-            lvi->setIcon(DEVCOL_RMRT, lvi->_recMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
-            lvi->setIcon(DEVCOL_RMMC, lvi->_recMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
-            lvi->setIcon(DEVCOL_RMTC, lvi->_recMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
-            lvi->setIcon(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setCheckState(DEVCOL_RCLK, lvi->_recMC ? Qt::Checked : Qt::Unchecked);
+            lvi->setCheckState(DEVCOL_RMRT, lvi->_recMRT ? Qt::Checked : Qt::Unchecked);
+            lvi->setCheckState(DEVCOL_RMMC, lvi->_recMMC ? Qt::Checked : Qt::Unchecked);
+            lvi->setCheckState(DEVCOL_RMTC, lvi->_recMTC ? Qt::Checked : Qt::Unchecked);
+            lvi->setCheckState(DEVCOL_RREWSTART, lvi->_recRewOnStart ? Qt::Checked : Qt::Unchecked);
+//            lvi->setIcon(DEVCOL_RCLK, lvi->_recMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+//            lvi->setIcon(DEVCOL_RMRT, lvi->_recMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
+//            lvi->setIcon(DEVCOL_RMMC, lvi->_recMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+//            lvi->setIcon(DEVCOL_RMTC, lvi->_recMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+//            lvi->setIcon(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
             
             lvi->setText(DEVCOL_TID,          QString().setNum(lvi->_idOut) );
-            lvi->setIcon(DEVCOL_TCLK, lvi->_sendMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
-            lvi->setIcon(DEVCOL_TMRT, lvi->_sendMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
-            lvi->setIcon(DEVCOL_TMMC, lvi->_sendMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
-            lvi->setIcon(DEVCOL_TMTC, lvi->_sendMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+            lvi->setCheckState(DEVCOL_TCLK, lvi->_sendMC ? Qt::Checked : Qt::Unchecked);
+            lvi->setCheckState(DEVCOL_TMRT, lvi->_sendMRT ? Qt::Checked : Qt::Unchecked);
+            lvi->setCheckState(DEVCOL_TMMC, lvi->_sendMMC ? Qt::Checked : Qt::Unchecked);
+            lvi->setCheckState(DEVCOL_TMTC, lvi->_sendMTC ? Qt::Checked : Qt::Unchecked);
+//            lvi->setIcon(DEVCOL_TCLK, lvi->_sendMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+//            lvi->setIcon(DEVCOL_TMRT, lvi->_sendMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
+//            lvi->setIcon(DEVCOL_TMMC, lvi->_sendMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+//            lvi->setIcon(DEVCOL_TMTC, lvi->_sendMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
             //lvi->setIcon(DEVCOL_TREWSTART, QIcon(  lvi->_sendContNotStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
             
             addDevice(lvi, devicesListView);
@@ -890,7 +907,7 @@ void MidiSyncConfig::updateSyncInfoLV()
 
 void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
 {
-      if (item == 0)
+      if (item == nullptr)
             return;
       
       MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)item;
@@ -915,11 +932,13 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                     MidiSyncLViewItem* prev_lvi = 
                       (MidiSyncLViewItem*)devicesListView->topLevelItem(MusEGlobal::config.curMidiSyncInPort);
                     if(prev_lvi)
-                      prev_lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
+                      prev_lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Unchecked);
+//                    prev_lvi->setIcon(DEVCOL_SYNC_TO, *ledOffSVGIcon);
                     
                     // Set the current sync port and turn on the port's light.
                     MusEGlobal::config.curMidiSyncInPort = no;
-                    lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
+                    lvi->setCheckState(DEVCOL_SYNC_TO, Qt::Checked);
+//                    lvi->setIcon(DEVCOL_SYNC_TO, *ledRedSVGIcon);
                     setDirty();
                   }  
                   break;
@@ -937,49 +956,49 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   break;
             case DEVCOL_RCLK:
                   lvi->_recMC = (lvi->_recMC ? false : true);
-                  lvi->setIcon(DEVCOL_RCLK, lvi->_recMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_RCLK, lvi->_recMC ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_RMRT:
                   lvi->_recMRT = (lvi->_recMRT ? false : true);
-                  lvi->setIcon(DEVCOL_RMRT, lvi->_recMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_RMRT, lvi->_recMRT ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_RMMC:
                   lvi->_recMMC = (lvi->_recMMC ? false : true);
-                  lvi->setIcon(DEVCOL_RMMC, lvi->_recMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_RMMC, lvi->_recMMC ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_RMTC:
                   lvi->_recMTC = (lvi->_recMTC ? false : true);
-                  lvi->setIcon(DEVCOL_RMTC, lvi->_recMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_RMTC, lvi->_recMTC ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_RREWSTART:
                   lvi->_recRewOnStart = (lvi->_recRewOnStart ? false : true);
-                  lvi->setIcon(DEVCOL_RREWSTART, lvi->_recRewOnStart ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_RREWSTART, lvi->_recRewOnStart ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_TID:
                   break;
             case DEVCOL_TCLK:
                   lvi->_sendMC = (lvi->_sendMC ? false : true);
-                  lvi->setIcon(DEVCOL_TCLK, lvi->_sendMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_TCLK, lvi->_sendMC ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_TMRT:
                   lvi->_sendMRT = (lvi->_sendMRT ? false : true);
-                  lvi->setIcon(DEVCOL_TMRT, lvi->_sendMRT ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_TMRT, lvi->_sendMRT ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_TMMC:
                   lvi->_sendMMC = (lvi->_sendMMC ? false : true);
-                  lvi->setIcon(DEVCOL_TMMC, lvi->_sendMMC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_TMMC, lvi->_sendMMC ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             case DEVCOL_TMTC:
                   lvi->_sendMTC = (lvi->_sendMTC ? false : true);
-                  lvi->setIcon(DEVCOL_TMTC, lvi->_sendMTC ? *ledGreenSVGIcon : *ledOffSVGIcon);
+                  lvi->setCheckState(DEVCOL_TMTC, lvi->_sendMTC ? Qt::Checked : Qt::Unchecked);
                   setDirty();
                   break;
             //case DEVCOL_TREWSTART:

@@ -78,7 +78,6 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       QTimer *guiTimer;
-      QIcon ledOn, ledOff;
       void setWhatsThis(QTableWidgetItem *item, int col);
       void setToolTip(QTableWidgetItem *item, int col);
       void setInstWhatsThis(QTableWidgetItem *item, int col);
