@@ -99,10 +99,14 @@ class Song : public QObject {
         //  and 'start' and 'end' the undo mode. Song is updated.
         OperationUndoMode
       };
+      enum FastMove { //
+          NORMAL_MOVEMENT,
+          FAST_FORWARD,
+          FAST_REWIND,
+      };
 
    private:
       // fifos for feeding info events into the GUI
-
       LockFreeMPSCRingBuffer<MidiRecordEvent> *realtimeMidiEvents;
       LockFreeMPSCRingBuffer<MMC_Commands> *mmcEvents;
 
@@ -137,6 +141,8 @@ class Song : public QObject {
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcOutEventBuffers;
       
+      // Used for fastforward and fastrewind states (currently only through MIDI remote control)
+      FastMove _fastMove = NORMAL_MOVEMENT;
       bool loopFlag;
       bool punchinFlag;
       bool punchoutFlag;
@@ -527,15 +533,18 @@ class Song : public QObject {
       void clearTrackRec();
       void setPlay(bool f);
       void setStop(bool);
-      void forward();
+      void forwardStep();
       void rewindStart();
-      void rewind();
+      void rewindStep();
       void setPunchin(bool f);
       void setPunchout(bool f);
       void setClick(bool val);
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
+
+      void resetFastMove() { _fastMove = NORMAL_MOVEMENT; }
+
       // Creates a track but does not add it to the track list, the caller must do that.
       // The track name is not set and must be set by the caller.
       // If setDefaults is true, adds default in/out routes/channels to the track.

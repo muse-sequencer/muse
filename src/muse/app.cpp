@@ -530,13 +530,13 @@ MusE::MusE() : QMainWindow()
                                               MusEGlobal::transportAction);
 
       MusEGlobal::rewindAction->setWhatsThis(tr("Rewind current position"));
-      connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewind()));
+      connect(MusEGlobal::rewindAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(rewindStep()));
 
       MusEGlobal::forwardAction = new QAction(*MusEGui::fastForwardSVGIcon, tr("Forward"), 
                                                MusEGlobal::transportAction);
 
       MusEGlobal::forwardAction->setWhatsThis(tr("Move current position"));
-      connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forward()));
+      connect(MusEGlobal::forwardAction, SIGNAL(triggered()), MusEGlobal::song, SLOT(forwardStep()));
 
       MusEGlobal::stopAction = new QAction(*MusEGui::stopSVGIcon, tr("Stop"), 
                                             MusEGlobal::transportAction);

@@ -1496,6 +1496,8 @@ void Song::setPlay(bool f)
 
 void Song::setStop(bool f)
 {
+      _fastMove = NORMAL_MOVEMENT; // reset fast move in stop cases
+
       if (MusEGlobal::extSyncFlag) {
           if (MusEGlobal::debugMsg)
             fprintf(stderr, "not allowed while using external sync");
@@ -1647,7 +1649,7 @@ void Song::setPos(POSTYPE posType, const Pos& val, bool sig,
 //   forward
 //---------------------------------------------------------
 
-void Song::forward()
+void Song::forwardStep()
       {
       unsigned newPos = pos[0].tick() + MusEGlobal::config.division;
       MusEGlobal::audio->msgSeek(Pos(newPos, true));
@@ -1657,7 +1659,7 @@ void Song::forward()
 //   rewind
 //---------------------------------------------------------
 
-void Song::rewind()
+void Song::rewindStep()
       {
       unsigned newPos;
       if (unsigned(MusEGlobal::config.division) > pos[0].tick())
@@ -1922,7 +1924,6 @@ void Song::beat()
       }
 
       //First: update cpu load toolbar
-
       _fCpuLoad = MusEGlobal::muse->getCPULoad();
       _fDspLoad = 0.0f;
       if (MusEGlobal::audioDevice)
@@ -1932,7 +1933,6 @@ void Song::beat()
       // Keep the sync detectors running...
       for(int port = 0; port < MusECore::MIDI_PORTS; ++port)
           MusEGlobal::midiPorts[port].syncInfo().setTime();
-
 
       if (MusEGlobal::audio->isPlaying())
         setPos(CPOS, MusEGlobal::audio->tickPos(), true, false, true);
@@ -1997,10 +1997,10 @@ void Song::beat()
                       setPlay(true);
                       consumed = true;
                   } else if (dataA == MusEGlobal::rcForwardNote) {
-                      forward();
+                      _fastMove = FAST_FORWARD;
                       consumed = true;
                   } else if (dataA == MusEGlobal::rcBackwardNote) {
-                      rewind();
+                      _fastMove = FAST_REWIND;
                       consumed = true;
                   }
               }
@@ -2025,9 +2025,9 @@ void Song::beat()
               else if (dataA == MusEGlobal::rcGotoLeftMarkCC)
                   setPos(CPOS, pos[LPOS].tick(), true, true, true);
               else if (dataA == MusEGlobal::rcForwardCC)
-                  forward();
+                  _fastMove = FAST_FORWARD;
               else if (dataA == MusEGlobal::rcBackwardCC)
-                  rewind();
+                  _fastMove = FAST_REWIND;
           } // CC
       }
 
@@ -2046,10 +2046,10 @@ void Song::beat()
         switch (command)
         {
           case MMC_FastForward:
-            this->forward();
+            _fastMove = FAST_FORWARD;
             break;
           case MMC_Rewind:
-            this->rewind();
+            _fastMove = FAST_REWIND;
             break;
           case MMC_RecordStrobe:
             this->setRecord(true);
@@ -2060,11 +2060,24 @@ void Song::beat()
           case MMC_Reset:
             this->setRecord(false);
             this->rewindStart();
+            _fastMove = NORMAL_MOVEMENT;
             break;
           default:
             fprintf(stderr, "Song::beat - This sync command not implemented here!\n");
             break;
         }
+    }
+
+    switch (_fastMove)
+    {
+        case FAST_FORWARD:
+            this->forwardStep();
+            break;
+        case FAST_REWIND:
+            this->rewindStep();
+            break;
+        default:
+            break;
     }
 }
 
@@ -3507,7 +3520,9 @@ void Song::abortRolling()
 //---------------------------------------------------------
 
 void Song::stopRolling(Undo* operations)
-      {
+{
+      _fastMove = NORMAL_MOVEMENT; // reset fast move in stop cases
+
       if(MusEGlobal::audio->freewheel())
         MusEGlobal::audioDevice->setFreewheel(false);
 
@@ -3526,7 +3541,7 @@ void Song::stopRolling(Undo* operations)
 
       if(!operations)
         MusEGlobal::song->applyOperationGroup(ops);
-      }
+}
 
 //---------------------------------------------------------
 //   connectJackRoutes

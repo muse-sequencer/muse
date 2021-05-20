@@ -547,6 +547,9 @@ void MidiSyncContainer::mmcInput(int port, const unsigned char* p, int n)
                   if (MusEGlobal::audio->isPlaying()) {
                         MusEGlobal::audio->msgPlay(false);
                   }
+
+                  MusEGlobal::song->resetFastMove(); // reset FF RWD
+
                   alignAllTicks();
                   break;
             case MMC_Play:
