@@ -32,6 +32,9 @@
          <property name="toolTip">
           <string>List of available software synthesizers</string>
          </property>
+         <property name="indentation">
+          <number>0</number>
+         </property>
          <property name="allColumnsShowFocus">
           <bool>true</bool>
          </property>
