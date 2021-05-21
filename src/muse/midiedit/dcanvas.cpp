@@ -298,18 +298,18 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
 			if (idl == doneList.end())
 			{
 				if (moveItem(operations, ci, newpos, dtype, rasterize) == false) //error?
-        {
-          QMessageBox::warning(this, tr("Moving items failed"), tr("The selection couldn't be moved, because at least one note would be moved into a track which is different from both the original track and the current part's track.\nChanging the current part with ALT+LEFT/RIGHT may help."));
-          return MusECore::Undo(); //return empty list
-        }
-				doneList.push_back(ci);
+                {
+                    QMessageBox::warning(this, tr("Moving items failed"), tr("The selection couldn't be moved, because at least one note would be moved into a track which is different from both the original track and the current part's track.\nChanging the current part with ALT+LEFT/RIGHT may help."));
+                    return MusECore::Undo(); //return empty list
+                }
+                doneList.push_back(ci);
 			}
 			ci->move(newpos);
       
 			itemReleased(ci, oldpos);
 
 			if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
-						selectItem(ci, false);
+                selectItem(ci, false);
 		}  
 
 		itemsReleased();
@@ -367,7 +367,7 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             ntick = 0;
 
       event.setSelected(false);
-      MusECore::Event newEvent   = event.clone();
+      MusECore::Event newEvent = (dtype == MOVE_COPY || dtype == MOVE_CLONE) ? event.duplicate() : event.clone();
       newEvent.setSelected(true);
 
       int ev_pitch = instrument_map[instrument].pitch;

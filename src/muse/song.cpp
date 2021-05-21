@@ -664,7 +664,7 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
 //   Event ev(event);
   bool added = false;
   Part* p = part;
-  while(1)
+  while(true)
   {
     // This will find the event even if it has been modified. As long as the IDs AND the position are the same, it's a match.
     // NOTE: Multiple events with the same event base pointer or the same id number, in one event list, are FORBIDDEN.

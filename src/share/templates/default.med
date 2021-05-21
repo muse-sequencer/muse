@@ -67,12 +67,5 @@
       <val>1</val>
       </key>
     </keylist>
-    <drummap>
-      </drummap>
     </song>
-    <toplevels>
-      <arrangerview>
-        <tool>2</tool>
-      </arrangerview>
-    </toplevels>
   </muse>
