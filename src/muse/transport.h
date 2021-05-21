@@ -47,7 +47,6 @@ struct TimeSignature;
 
 namespace MusEGui {
 class PosEdit;
-class DoubleLabel;
 class SigLabel;
 class IconButton;
 class TempoEdit;

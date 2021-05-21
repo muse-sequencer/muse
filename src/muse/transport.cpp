@@ -41,17 +41,12 @@
 
 // Forwards from header:
 #include <QComboBox>
-//#include <QHBoxLayout>
 #include <QLabel>
 #include <QSlider>
-//#include <QMouseEvent>
 #include <QToolButton>
-//#include <QKeyEvent>
 #include "sig.h"
 #include "pos.h"
 #include "posedit.h"
-#include "doublelabel.h"
-//#include "siglabel.h"
 #include "pixmap_button.h"
 #include "tempolabel.h"
 #include "sigedit.h"

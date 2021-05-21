@@ -23,7 +23,6 @@
 #include "masteredit.h"
 #include "utils.h"
 #include "lcombo.h"
-#include "doublelabel.h"
 #include "globals.h"
 #include "app.h"
 #include "gconfig.h"

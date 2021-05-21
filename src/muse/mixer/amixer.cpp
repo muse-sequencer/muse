@@ -55,7 +55,6 @@
 #include "track.h"
 //#include "meter.h"
 #include "combobox.h"
-#include "doublelabel.h"
 #include "knob.h"
 #include "slider.h"
 #include "strip.h"

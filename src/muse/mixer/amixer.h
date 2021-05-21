@@ -53,7 +53,6 @@ class Track;
 
 namespace MusEGui {
 class ComboBox;
-class DoubleLabel;
 class Knob;
 class Slider;
 class Strip;
