@@ -1,3 +1,5 @@
+21.05.2021
+    - Fix #1002 space stops working when opening mixer (rj)
 20.05.2021
     - Fix #998: Add dedicated keyboard shortcut for deleting tracks in Arranger. (kybos)
     - Fix: Use proper widgets in midi sync and midi config dialogs. (kybos)
