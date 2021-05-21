@@ -916,6 +916,8 @@ void Audio::seekMidi()
       {
         MidiPort* mp = &MusEGlobal::midiPorts[ev_port];
         ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+        // Be sure to clear any latency value as well.
+        ev.setLatency(0);
         if(mp->device())
           mp->device()->putEvent(ev, MidiDevice::NotLate);
       }
@@ -1490,8 +1492,12 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                                 fin_md->putEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo), 
                                   MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
                               // The stuck notes handling code deals with conversion to frames and latency offset etc.
-                              track->addStuckNote(MusECore::MidiPlayEvent(tick + len, port, channel,
-                                MusECore::ME_NOTEOFF, pitch, veloOff));
+                              MusECore::MidiPlayEvent fin_ev(tick + len, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff);
+                              // Pass the latency value to the driver so that it can include the value when converting
+                              //  the tick time into frames given the tempo AT THAT MOMENT.
+                              // In this scheme the latency value should always be positive, representing only a correction offset.
+                              fin_ev.setLatency(latency_offset);
+                              track->addStuckNote(fin_ev);
 
                               if(velo > track->activity())
                                 track->setActivity(velo);
@@ -1761,34 +1767,6 @@ void Audio::processMidi(unsigned int frames)
             if(mp)
               md = mp->device();
 
-            //--------------------------------------------------------------------
-            // Account for the midi track's latency correction and/or compensation.
-            //--------------------------------------------------------------------
-            unsigned int latency_offset = 0;
-            unsigned int lat_corr_cur_tick = curTickPos;
-            unsigned int lat_corr_next_tick = nextTickPos;
-            // TODO How to handle when external sync is on. For now, don't try to correct.
-            if(MusEGlobal::config.enableLatencyCorrection && !extsync)
-            {
-                const TrackLatencyInfo& li = track->getLatencyInfo(false);
-                // This value is negative for correction.
-                const float mlat = li._sourceCorrectionValue;
-                if((int)mlat < 0)
-                {
-                    // Convert to a positive offset.
-                    const unsigned int l = (unsigned int)(-mlat);
-                    if(l > latency_offset)
-                        latency_offset = l;
-                }
-                if(latency_offset != 0)
-                {
-                    Pos ppp(_pos.frame() + latency_offset, false);
-                    lat_corr_cur_tick = ppp.tick();
-                    ppp += frames;
-                    lat_corr_next_tick = ppp.tick();
-                }
-            }
-
             // only add track events if the track is unmuted and turned on
             if(!track->isMute() && !track->off())
             {
@@ -1797,7 +1775,34 @@ void Audio::processMidi(unsigned int frames)
                       && !MusEGlobal::song->punchin() && !MusEGlobal::song->punchout()))
                 {
                     if(playing)
+                    {
+                      //--------------------------------------------------------------------
+                      // Account for the midi track's latency correction and/or compensation.
+                      //--------------------------------------------------------------------
+                      unsigned int latency_offset = 0;
+                      unsigned int lat_corr_cur_tick = curTickPos;
+                      unsigned int lat_corr_next_tick = nextTickPos;
+                      // TODO How to handle when external sync is on. For now, don't try to correct.
+                      if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+                      {
+                          const TrackLatencyInfo& li = track->getLatencyInfo(false);
+                          // This value is negative for correction.
+                          const float mlat = li._sourceCorrectionValue;
+                          if((int)mlat < 0)
+                          {
+                              // Convert to a positive offset.
+                              const unsigned int l = (unsigned int)(-mlat);
+                              if(l > latency_offset)
+                                  latency_offset = l;
+                          }
+                          if(latency_offset != 0)
+                          {
+                              lat_corr_cur_tick = Pos::convert(_pos.frame() + latency_offset, Pos::FRAMES, Pos::TICKS);
+                              lat_corr_next_tick = Pos::convert(_pos.frame() + frames + latency_offset, Pos::FRAMES, Pos::TICKS);
+                          }
+                      }
                       collectEvents(track, lat_corr_cur_tick, lat_corr_next_tick, frames, latency_offset);
+                    }
                 }
             }
 
@@ -2300,10 +2305,6 @@ void Audio::processMidi(unsigned int frames)
           ciMPEvent k;
           MidiDevice* mdev;
           int mport;
-          // What is the current transport frame?
-          const unsigned int pos_fr = _pos.frame() + latency_offset;
-          // What is the (theoretical) next transport frame?
-          const unsigned int next_pos_fr = pos_fr + frames;
 
           // If muted or off we want to send all playback note-offs immediately.
           if(track->isMute() || track->off())
@@ -2325,6 +2326,8 @@ void Audio::processMidi(unsigned int frames)
                 if(!mdev)
                   continue;
                 ev.setTime(0);   // Mark for immediate delivery.
+                // Be sure to clear any latency value as well.
+                ev.setLatency(0);
                 //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
                 mdev->putEvent(ev, MidiDevice::NotLate);
               }
@@ -2346,6 +2349,32 @@ void Audio::processMidi(unsigned int frames)
               {
                 MidiPlayEvent ev(*k);
                 unsigned int off_tick = ev.time();
+
+                //------------------------------------------------------------------------------------------
+                // Account for the note-off event's original note-on latency correction and/or compensation.
+                // We want the original note-on latency information - NOT this track's latency information.
+                //------------------------------------------------------------------------------------------
+
+                int lat_offset_midi = 0;
+                unsigned int lat_corr_cur_tick = curTickPos;
+                unsigned int lat_corr_next_tick = nextTickPos;
+                // TODO How to handle when external sync is on. For now, don't try to correct.
+                if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+                {
+                  // In this scheme the latency value should always be positive.
+                  lat_offset_midi = ev.latency();
+                  if(lat_offset_midi != 0)
+                  {
+                    lat_corr_cur_tick = Pos::convert(_pos.frame() + lat_offset_midi, Pos::FRAMES, Pos::TICKS);
+                    lat_corr_next_tick = Pos::convert(_pos.frame() + frames + lat_offset_midi, Pos::FRAMES, Pos::TICKS);
+                  }
+                }
+
+                // What is the current transport frame, adjusted?
+                const unsigned int pos_fr = _pos.frame() + lat_offset_midi;
+                // What is the (theoretical) next transport frame?
+                const unsigned int next_pos_fr = pos_fr + frames;
+
                 // If external sync is not on, we can take advantage of frame accuracy but
                 //  first we must allow the next tick position to be included in the search
                 //  even if it is equal to the current tick position.
@@ -2407,6 +2436,8 @@ void Audio::processMidi(unsigned int frames)
                 if(!mdev)
                   continue;
                 ev.setTime(0);   // Mark for immediate delivery.
+                // Be sure to clear any latency value as well.
+                ev.setLatency(0);
                 //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(k->time()));
                 mdev->putEvent(ev, MidiDevice::NotLate);
               }
@@ -2549,7 +2580,7 @@ void Audio::processMidi(unsigned int frames)
         // We are done with the 'frozen' recording fifos, remove the events.
         pl_md->afterProcess();
 
-        pl_md->processStuckNotes();
+        pl_md->processStuckNotes(curTickPos, nextTickPos, _pos.frame(), frames, syncFrame, extsync);
         
         // REMOVE Tim. clock. Added.
         // While we are at it, to avoid the overhead of yet another device loop,
@@ -2738,8 +2769,9 @@ void Audio::processMidiMetronome(unsigned int frames)
             //--------------------------------------------------------------------
             // Account for the metronome's latency correction and/or compensation.
             //--------------------------------------------------------------------
+
             // TODO How to handle when external sync is on. For now, don't try to correct.
-            if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+            if(md && MusEGlobal::config.enableLatencyCorrection && !extsync)
             {
               if(metro_settings->midiClickFlag)
               {
@@ -2755,10 +2787,8 @@ void Audio::processMidiMetronome(unsigned int frames)
                 }
                 if(lat_offset_midi != 0)
                 {
-                  Pos ppp(_pos.frame() + lat_offset_midi, false);
-                  cur_tick_midi = ppp.tick();
-                  ppp += frames;
-                  next_tick_midi = ppp.tick();
+                  cur_tick_midi = Pos::convert(_pos.frame() + lat_offset_midi, Pos::FRAMES, Pos::TICKS);
+                  next_tick_midi = Pos::convert(_pos.frame() + frames + lat_offset_midi, Pos::FRAMES, Pos::TICKS);
                 }
               }
             }
@@ -2867,6 +2897,10 @@ void Audio::processMidiMetronome(unsigned int frames)
                       evmidi.setType(MusECore::ME_NOTEOFF);
                       evmidi.setB(0);
                       evmidi.setTime(midiClick+10);
+                      // Pass the latency value to the driver so that it can include the value when converting
+                      //  the tick time into frames given the tempo AT THAT MOMENT.
+                      // In this scheme the latency value should always be positive, representing only a correction offset.
+                      evmidi.setLatency(lat_offset_midi);
                       md->addStuckNote(evmidi);
                     }
                   }
@@ -2980,10 +3014,8 @@ void Audio::processAudioMetronome(unsigned int frames)
                 }
                 if(lat_offset != 0)
                 {
-                  Pos ppp(_pos.frame() + lat_offset, false);
-                  cur_tick = ppp.tick();
-                  ppp += frames;
-                  next_tick = ppp.tick();
+                  cur_tick = Pos::convert(_pos.frame() + lat_offset, Pos::FRAMES, Pos::TICKS);
+                  next_tick = Pos::convert(_pos.frame() + frames + lat_offset, Pos::FRAMES, Pos::TICKS);
                 }
               }
             }

@@ -129,15 +129,15 @@ class MidiRecordEvent : public MEvent {
    private:
       unsigned int _tick; // To store tick when external sync is on, required besides frame.
    public:
-      MidiRecordEvent() : MEvent() {}
+      MidiRecordEvent() : MEvent(), _tick(0) {}
       MidiRecordEvent(const MidiRecordEvent& e) : MEvent(e), _tick(e._tick) {}
       MidiRecordEvent(const MEvent& e) : MEvent(e), _tick(0) {}
       MidiRecordEvent(unsigned tm, int p, int c, int t, int a, int b)
-        : MEvent(tm, p, c, t, a, b) {}
+        : MEvent(tm, p, c, t, a, b), _tick(0) {}
       MidiRecordEvent(unsigned t, int p, int tpe, const unsigned char* data, int len)
-        : MEvent(t, p, tpe, data, len) {}
+        : MEvent(t, p, tpe, data, len), _tick(0) {}
       MidiRecordEvent(unsigned t, int p, int type, EvData data)
-        : MEvent(t, p, type, data) {}
+        : MEvent(t, p, type, data), _tick(0) {}
       virtual ~MidiRecordEvent() {}
 
       MidiRecordEvent& operator=(const MidiRecordEvent& e) { MEvent::operator=(e); _tick = e._tick; return *this; }
@@ -152,19 +152,28 @@ class MidiRecordEvent : public MEvent {
 //---------------------------------------------------------
 
 class MidiPlayEvent : public MEvent {
+   private:
+      // This latency value can be used by the 'stuck notes' mechanism,
+      //  where time is in ticks and the events are note-offs to be played later and
+      //  the driver computes the frame later given the tempo AT THAT MOMENT but also
+      //  needs to know what the the original note-on latency was when it was scheduled.
+      int _latency;
    public:
-      MidiPlayEvent() : MEvent() {}
-      MidiPlayEvent(const MidiPlayEvent& e) : MEvent(e) {}
-      MidiPlayEvent(const MEvent& e) : MEvent(e) {}
+      MidiPlayEvent() : MEvent(), _latency(0) {}
+      MidiPlayEvent(const MidiPlayEvent& e) : MEvent(e), _latency(e._latency) {}
+      MidiPlayEvent(const MEvent& e) : MEvent(e), _latency(0) {}
       MidiPlayEvent(unsigned tm, int p, int c, int t, int a, int b)
-        : MEvent(tm, p, c, t, a, b) {}
+        : MEvent(tm, p, c, t, a, b), _latency(0) {}
       MidiPlayEvent(unsigned t, int p, int type, const unsigned char* data, int len)
-        : MEvent(t, p, type, data, len) {}
+        : MEvent(t, p, type, data, len), _latency(0) {}
       MidiPlayEvent(unsigned t, int p, int type, EvData data)
-        : MEvent(t, p, type, data) {}
+        : MEvent(t, p, type, data), _latency(0) {}
       virtual ~MidiPlayEvent() {}
 
-      MidiPlayEvent& operator=(const MidiPlayEvent& e) { MEvent::operator=(e); return *this; }
+      MidiPlayEvent& operator=(const MidiPlayEvent& e) { MEvent::operator=(e); _latency = e._latency; return *this; }
+
+      int latency() {return _latency;}
+      void setLatency(int latency) {_latency = latency;}
       };
 
 //---------------------------------------------------------

@@ -500,20 +500,15 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev, LatencyType latencyType, Even
 //   To be called by audio thread only.
 //---------------------------------------------------------
 
-void MidiDevice::processStuckNotes() 
+void MidiDevice::processStuckNotes(unsigned curTick, unsigned nextTick, unsigned frame, unsigned frames, unsigned syncFrame, bool extsync)
 {
   // Must be playing for valid nextTickPos, right? But wasn't checked in Audio::processMidi().
   // MusEGlobal::audio->isPlaying() might not be true during seek right now.
   //if(MusEGlobal::audio->isPlaying())  
   {
-    const bool extsync = MusEGlobal::extSyncFlag;
-    const unsigned syncFrame = MusEGlobal::audio->curSyncFrame();
-    const unsigned curTickPos = MusEGlobal::audio->tickPos();
-    const unsigned nextTick = MusEGlobal::audio->nextTick();
-    // What is the current transport frame?
-    const unsigned int pos_fr = MusEGlobal::audio->pos().frame();
-    // What is the (theoretical) next transport frame?
-    const unsigned int next_pos_fr = pos_fr + MusEGlobal::audio->curCycleFrames();
+    if(_stuckNotes.empty())
+      return;
+
     ciMPEvent k;
 
     //---------------------------------------------------
@@ -523,17 +518,43 @@ void MidiDevice::processStuckNotes()
     for (k = _stuckNotes.begin(); k != _stuckNotes.end(); ++k) {
           MidiPlayEvent ev(*k);
           unsigned int off_tick = ev.time();
+
+          //------------------------------------------------------------------------------------------
+          // Account for the note-off event's original note-on latency correction and/or compensation.
+          // We want the original note-on latency information - NOT this device's latency information.
+          //------------------------------------------------------------------------------------------
+
+          int lat_offset_midi = 0;
+          unsigned int lat_corr_cur_tick = curTick;
+          unsigned int lat_corr_next_tick = nextTick;
+          // TODO How to handle when external sync is on. For now, don't try to correct.
+          if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+          {
+            // In this scheme the latency value should always be positive.
+            lat_offset_midi = ev.latency();
+            if(lat_offset_midi != 0)
+            {
+              lat_corr_cur_tick = Pos::convert(frame + lat_offset_midi, Pos::FRAMES, Pos::TICKS);
+              lat_corr_next_tick = Pos::convert(frame + frames + lat_offset_midi, Pos::FRAMES, Pos::TICKS);
+            }
+          }
+
+          // What is the current transport frame, adjusted?
+          const unsigned int pos_fr = frame + lat_offset_midi;
+          // What is the (theoretical) next transport frame?
+          const unsigned int next_pos_fr = pos_fr + frames;
+
           // If external sync is not on, we can take advantage of frame accuracy but
           //  first we must allow the next tick position to be included in the search
           //  even if it is equal to the current tick position.
-          if (extsync ? (off_tick >= nextTick) : (off_tick > nextTick))  
+          if (extsync ? (off_tick >= lat_corr_next_tick) : (off_tick > lat_corr_next_tick))  
                 break;
           unsigned int off_frame = 0;
           if(extsync)
           {
-            if(off_tick < curTickPos)
-              off_tick = curTickPos;
-            off_frame = MusEGlobal::audio->extClockHistoryTick2Frame(off_tick - curTickPos) + MusEGlobal::segmentSize;
+            if(off_tick < lat_corr_cur_tick)
+              off_tick = lat_corr_cur_tick;
+            off_frame = MusEGlobal::audio->extClockHistoryTick2Frame(off_tick - lat_corr_cur_tick) + MusEGlobal::segmentSize;
           }
           else
           {
@@ -608,8 +629,10 @@ void MidiDevice::handleStop()
   {
     MidiPlayEvent ev(*i);
     ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+    // Be sure to clear any latency value as well.
+    ev.setLatency(0);
     //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
-        putEvent(ev, MidiDevice::NotLate);
+    putEvent(ev, MidiDevice::NotLate);
   }
   _stuckNotes.clear();
   
@@ -629,6 +652,8 @@ void MidiDevice::handleStop()
         continue;
       MidiPlayEvent ev(*i);
       ev.setTime(0);  // Immediate processing. TODO Use curFrame?
+      // Be sure to clear any latency value as well.
+      ev.setLatency(0);
       //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
       putEvent(ev, MidiDevice::NotLate);
             
@@ -671,6 +696,8 @@ void MidiDevice::handleSeek()
     {
       MidiPlayEvent ev(*i);
       ev.setTime(0); // Immediate processing. TODO Use curFrame?
+      // Be sure to clear any latency value as well.
+      ev.setLatency(0);
       //ev.setTime(MusEGlobal::audio->midiQueueTimeStamp(ev.time()));
       putEvent(ev, MidiDevice::NotLate);
     }

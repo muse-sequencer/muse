@@ -278,8 +278,8 @@ class MidiDevice {
       
       virtual void handleStop();  
       virtual void handleSeek();
-      
-      virtual void processStuckNotes();
+
+      virtual void processStuckNotes(unsigned curTick, unsigned nextTick, unsigned frame, unsigned frames, unsigned syncFrame, bool extsync);
       
       virtual void collectMidiEvents() {}   
       // Process midi events. The frame is used by devices such as ALSA 

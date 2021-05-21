@@ -3,6 +3,9 @@
     - Fix: Use proper widgets in midi sync and midi config dialogs. (kybos)
     - Fix: Don't show (and loop over) up to 200 unused ports in midi sync dialog. (kybos)
     - Fix: MMC fastforward/rewind functionality (issue #652) (rj)
+    - More to 16.05: Fix midi metronome w/ latency correction. And rewrite 'stuck notes' code. (Tim)
+      Class MidiPlayEvent now has a latency member. The 'stuck notes' code uses it for inclusion
+       when converting from stuck-note-off ticks to frames. Midi metronome timing was incorrect.
 18.05.2021
     - Synth selection dialog improvements: Current item is always preselected;
         Info about multi-channel effects added; Better handling of Favorites (kybos)
