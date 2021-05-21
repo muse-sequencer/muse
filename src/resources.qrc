@@ -214,5 +214,6 @@
         <file>svg/appearance.svg</file>
         <file>svg/delta.svg</file>
         <file>svg/synth_gui.svg</file>
+        <file>svg/downmix_file.svg</file>
     </qresource>
 </RCC>

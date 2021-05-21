@@ -555,9 +555,12 @@ void SynthDialog::readRecentsConfiguration(MusECore::Xml& xml)
         switch (token)
         {
         case MusECore::Xml::TagStart:
-            if (tag=="hash")
-                recents.append(QByteArray::fromHex(xml.parse1().toLatin1()));
-            else
+            if (tag=="hash") {
+                // parallel MusE instances can create duplicates in .cfg, so better check
+                auto hash = QByteArray::fromHex(xml.parse1().toLatin1());
+                if (!recents.contains(hash))
+                    recents.append(hash);
+            } else
                 xml.unknown("readSynthRecentsConfiguration");
             break;
 

@@ -671,7 +671,7 @@ MusE::MusE() : QMainWindow()
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(*MusEGui::downmixTrackSVGIcon, tr("Render Downmix to Selected Wave Track"), this);
-      audioBounce2FileAction = new QAction(*MusEGui::downmixOnSVGIcon, tr("Render Downmix to a File..."), this);
+      audioBounce2FileAction = new QAction(*MusEGui::downmixFileSVGIcon, tr("Render Downmix to a File..."), this);
       audioRestartAction = new QAction(*MusEGui::restartSVGIcon, tr("Restart Audio"), this);
 
       //-------- Automation Actions

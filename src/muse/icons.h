@@ -225,6 +225,7 @@ extern QIcon* clearSVGIcon;
 extern QIcon* downmixOffSVGIcon;
 extern QIcon* downmixOnSVGIcon;
 extern QIcon* downmixTrackSVGIcon;
+extern QIcon* downmixFileSVGIcon;
 extern QIcon* downmixStateSVGIcon;
 extern QIcon* restartSVGIcon;
 extern QIcon* snapshotSVGIcon;

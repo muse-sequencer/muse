@@ -5,7 +5,7 @@
     <showinfo>1</showinfo>
     <automation>1</automation>
     <cpos>0</cpos>
-    <rpos>0</rpos>
+    <rpos>12288</rpos>
     <lpos>0</lpos>
     <master>1</master>
     <loop>0</loop>
@@ -70,6 +70,9 @@
     <drummap>
       </drummap>
     </song>
-  <no_toplevels>
-  </no_toplevels>
+    <toplevels>
+      <arrangerview>
+        <tool>2</tool>
+      </arrangerview>
+    </toplevels>
   </muse>

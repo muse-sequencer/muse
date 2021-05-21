@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
- <metadata>
-  <rdf:RDF>
-   <cc:Work rdf:about="">
-    <dc:format>image/svg+xml</dc:format>
-    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:title/>
-   </cc:Work>
-  </rdf:RDF>
- </metadata>
- <path d="m58.509 5h-53.307l-9.268e-4 45.404 8.4964 8.4709 44.805 0.0068z" fill="none" stroke="#1aff75" stroke-linejoin="round" stroke-width="2.6994"/>
+<svg width="64" height="64" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+ <path d="m58.509 5h-53.307l-9.268e-4 45.404 8.4964 8.4709 44.805 0.0068z" fill="none" stroke="#000" stroke-linejoin="round" stroke-width="2.6994"/>
  <path d="m15.631 30.562-1.6411-1.6615v-22.85h35.683v22.932l-3.2057 3.2401h-29.195zm28.503-5.1017v-0.60029h-24.606v1.2006h24.606zm0-4.7223v-0.60028h-24.606v1.2006h24.606zm0-4.7223v-0.60028h-24.606v1.2006h24.606zm0-4.7223v-0.60028h-24.606v1.2006h24.606z" fill="#fff" stroke="#fff" stroke-linejoin="round" stroke-width="1.7996" style="paint-order:stroke fill markers"/>
  <path d="m13.39 6.0182v24.094l3.5733 3.6141h29.777l3.5733-3.6141v-24.094" fill="none" stroke-width=".8998"/>
  <path d="m57.513 31.984v25.993h-10.428v-15.065l-2.6647-2.6925h-21.605l-2.6616 2.6955v15.063h-1.3018l-4.6776-0.07589-4.087-4.3096-3.862-3.6266 0.10004-15.585c0.042701-6.6522-0.049995-15.76-0.049995-20.241v-8.1455h6.9017v23.261l3.8646 3.9072h29.708l3.8623-3.9095v-23.259h6.9017v25.993z" fill="#008033" stroke="#373748" stroke-width=".11568"/>

@@ -869,7 +869,10 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 	}
 }
 
+
 } // namespace MusECore
+
+
 
 namespace MusEGui {
 
@@ -2143,6 +2146,19 @@ void loadThemeColors(const QString& theme)
     }
 
     MusECore::readConfiguration(qPrintable(configColorPath));
+}
+
+int countSelectedParts()
+{
+    int cnt = 0;
+
+    for(const auto& it : qAsConst(*MusEGlobal::song->tracks())) {
+        for(const auto& ip : *it->cparts())
+            if(ip.second->selected())
+                cnt++;
+    }
+
+    return cnt;
 }
 
 

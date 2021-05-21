@@ -108,6 +108,7 @@ void loadTheme(const QString&);
 void loadThemeColors(const QString&);
 // Call when the theme or stylesheet part of the configuration has changed, to actually switch them.
 //void updateThemeAndStyle();
+int countSelectedParts();
 } 
 
 #endif

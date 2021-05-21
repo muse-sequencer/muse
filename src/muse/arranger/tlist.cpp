@@ -1420,7 +1420,7 @@ void TList::showAudioOutPopupMenu(MusECore::Track* t, int x, int y)
 
     QAction* actTrack = p->addAction(*MusEGui::downmixTrackSVGIcon, tr("Render Downmix to Selected Wave Track"));
     actTrack->setEnabled(!MusEGlobal::audio->bounce());
-    QAction* actFile = p->addAction(*MusEGui::downmixOnSVGIcon, tr("Render Downmix to a File..."));
+    QAction* actFile = p->addAction(*MusEGui::downmixFileSVGIcon, tr("Render Downmix to a File..."));
     actFile->setEnabled(!MusEGlobal::audio->bounce());
 
     QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), nullptr);

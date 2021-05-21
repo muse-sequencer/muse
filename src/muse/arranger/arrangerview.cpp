@@ -233,16 +233,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuEdit->addActions(MusEGlobal::undoRedo->actions());
   menuEdit->addSeparator();
 
-  QMenu* menuStructure = menuEdit->addMenu(tr("&Global"));
-  menuStructure->addAction(strGlobalCutAction);
-  menuStructure->addAction(strGlobalInsertAction);
-  menuStructure->addAction(strGlobalSplitAction);
-  menuStructure->addSeparator();
-  menuStructure->addAction(strGlobalCutSelAction);
-  menuStructure->addAction(strGlobalInsertSelAction);
-  menuStructure->addAction(strGlobalSplitSelAction);
-//  menuEdit->addSeparator();
-
   QMenu* menuTracks = menuEdit->addMenu(tr("&Tracks"));
   menuTracks->addMenu(addTrack);
   menuTracks->addMenu(insertTrack);
@@ -254,10 +244,23 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuTracks->addAction(editMoveDownSelTrackAction);
   menuTracks->addAction(editMoveTopSelTrackAction);
   menuTracks->addAction(editMoveBottomSelTrackAction);
+
+  menuEdit->addSeparator();
+
+  QMenu* menuStructure = menuEdit->addMenu(tr("&Global"));
+  menuStructure->addAction(strGlobalCutAction);
+  menuStructure->addAction(strGlobalInsertAction);
+  menuStructure->addAction(strGlobalSplitAction);
+  menuStructure->addSeparator();
+  menuStructure->addAction(strGlobalCutSelAction);
+  menuStructure->addAction(strGlobalInsertSelAction);
+  menuStructure->addAction(strGlobalSplitSelAction);
+
+  menuEdit->addAction(editInsertEMAction);
+
   menuEdit->addSeparator();
 
   menuEdit->addMenu(select);
-  menuEdit->addSeparator();
 
   menuEdit->addAction(editDeleteAction);
   menuEdit->addAction(editCutAction);
@@ -271,7 +274,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuPaste->addAction(editPasteCloneToTrackAction);
   menuPaste->addAction(editPasteDialogAction);
 
-  menuEdit->addAction(editInsertEMAction);
   menuEdit->addSeparator();
   
   menuEdit->addAction(startPianoEditAction);

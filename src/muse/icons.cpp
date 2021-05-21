@@ -234,6 +234,7 @@ QIcon* clearSVGIcon;
 QIcon* downmixOffSVGIcon;
 QIcon* downmixOnSVGIcon;
 QIcon* downmixTrackSVGIcon;
+QIcon* downmixFileSVGIcon;
 QIcon* downmixStateSVGIcon;
 QIcon* restartSVGIcon;
 QIcon* snapshotSVGIcon;
@@ -609,6 +610,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     downmixOffSVGIcon = icons.getSVG("downmix_off.svg");
     downmixOnSVGIcon = icons.getSVG("downmix_on.svg");
     downmixTrackSVGIcon = icons.getSVG("downmix_track.svg");
+    downmixFileSVGIcon = icons.getSVG("downmix_file.svg");
     downmixStateSVGIcon = icons.getSVG("downmix_off.svg");
     icons.addSVG(downmixStateSVGIcon, "downmix_on.svg");
     restartSVGIcon = icons.getSVG("restart.svg");
@@ -896,6 +898,7 @@ void deleteIcons()
     delete downmixOffSVGIcon;
     delete downmixOnSVGIcon;
     delete downmixTrackSVGIcon;
+    delete downmixFileSVGIcon;
     delete downmixStateSVGIcon;
     delete restartSVGIcon;
     delete snapshotSVGIcon;

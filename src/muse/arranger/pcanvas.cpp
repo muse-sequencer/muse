@@ -74,6 +74,7 @@
 #include "tracks_duplicate.h"
 #include "name_factory.h"
 #include "song.h"
+#include "helper.h"
 
 // Forwards from header:
 #include <QDropEvent>
@@ -923,11 +924,16 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       QAction *act_select = partPopup->addAction(st);
       act_select->setData(OP_SELECT_CLONES);
 
+      QAction *act_declone = partPopup->addAction(tr("De-clone"));
+      act_declone->setData(OP_DECLONE);
+
       partPopup->addSeparator();
-      QAction *act_rename = partPopup->addAction(tr("Rename"));
+
+      bool multi = npart->isSelected() && countSelectedParts() > 1;
+      QAction *act_rename = partPopup->addAction(multi ? tr("Rename selected") : tr("Rename"));
       act_rename->setData(OP_RENAME);
 
-      QMenu* colorPopup = partPopup->addMenu(tr("Color"));
+      QMenu* colorPopup = partPopup->addMenu(multi ? tr("Color selected") : tr("Color"));
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
@@ -942,16 +948,15 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
               colorPopup->addSeparator();
       }
 
+      partPopup->addSeparator();
       QAction *act_delete = partPopup->addAction(*deleteIconSVG, tr("Delete"));
       act_delete->setData(OP_DELETE);
       QAction *act_split = partPopup->addAction(*cutterIconSVG, tr("Split"));
       act_split->setData(OP_SPLIT);
       QAction *act_glue = partPopup->addAction(*glueIconSVG, tr("Glue"));
       act_glue->setData(OP_GLUE);
-      QAction *act_superglue = partPopup->addAction(*glueIconSVG, tr("Super Glue (Merge Selection)"));
+      QAction *act_superglue = partPopup->addAction(tr("Super Glue (Merge Selection)"));
       act_superglue->setData(OP_GLUESELECTION);
-      QAction *act_declone = partPopup->addAction(tr("De-clone"));
-      act_declone->setData(OP_DECLONE);
 
       partPopup->addSeparator();
       switch(trackType) {
