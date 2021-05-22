@@ -1875,14 +1875,6 @@ void Strip::keyPressEvent(QKeyEvent* ev)
     {
       // Yield the focus to the given widget.
       _focusYieldWidget->setFocus();
-
-      // Activate the window.
-      if(!_focusYieldWidget->isActiveWindow())
-      {
-        _focusYieldWidget->activateWindow();
-      }
-      // Yield the focus to the given widget.
-      _focusYieldWidget->setFocus();
       // Activate the window.
       if(!_focusYieldWidget->isActiveWindow())
         _focusYieldWidget->activateWindow();
