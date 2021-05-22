@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
- <defs>
-  <linearGradient id="linearGradient2997" x1=".2" x2="63.8" y1="32" y2="32" gradientUnits="userSpaceOnUse">
-   <stop stop-color="#ddebec" offset="0"/>
-   <stop stop-color="#7cb2b6" offset=".079193"/>
-   <stop stop-color="#7aafb3" offset=".92598"/>
-   <stop stop-color="#ddebec" offset="1"/>
-  </linearGradient>
- </defs>
- <rect x="1" y="1" width="62" height="62" fill="url(#linearGradient2997)" stop-color="#000000" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" style="paint-order:stroke fill markers"/>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <rect x="1" y="1" width="62" height="62" fill="#f5f5a3" stop-color="#000000" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" style="paint-order:stroke fill markers"/>
  <g stroke="#000">
   <g fill="none" stroke-width="3">
    <path d="m15 7v50"/>

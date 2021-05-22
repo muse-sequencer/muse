@@ -182,7 +182,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
           selectNextPartAction = nullptr;
       }
 
-      menuFunctions = menuBar()->addMenu(tr("Func&tions"));
+      menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
       menuGain = menuFunctions->addMenu(tr("&Gain"));
       

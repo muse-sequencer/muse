@@ -290,19 +290,19 @@ ArrangerView::ArrangerView(QWidget* parent)
   functions_menu->addAction(midiTransformerAction);
   functions_menu->addSeparator();
 
-  QAction* func_quantize_action =     functions_menu->addAction(*quantizeSVGIcon, tr("&Quantize Events"));
-  QAction* func_velocity_action =     functions_menu->addAction(tr("Change Event &Velocity"));
-  QAction* func_cresc_action =        functions_menu->addAction(tr("Crescendo/Decrescendo"));
-  QAction* func_move_action =         functions_menu->addAction(tr("Move Events in Parts"));
-  QAction* func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlapping Events"));
-  QAction* func_erase_action =        functions_menu->addAction(tr("Erase Events from Parts"));
+  QAction* func_quantize_action =     functions_menu->addAction(*quantizeSVGIcon, tr("&Quantize Events..."));
+  QAction* func_velocity_action =     functions_menu->addAction(tr("Change Event &Velocity..."));
+  QAction* func_cresc_action =        functions_menu->addAction(tr("Crescendo/Decrescendo..."));
+  QAction* func_move_action =         functions_menu->addAction(tr("Move Events in Parts..."));
+  QAction* func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlapping Events..."));
+  QAction* func_erase_action =        functions_menu->addAction(tr("Erase Events from Parts..."));
 
   functions_menu->addSeparator();
 
-  QAction* func_notelen_action =      functions_menu->addAction(tr("Change Event &Length"));
-  QAction* func_fixed_len_action =    functions_menu->addAction(tr("Set Fixed Event Length"));
-  QAction* func_transpose_action =    functions_menu->addAction(tr("Transpose"));
-  QAction* func_legato_action =       functions_menu->addAction(tr("Legato"));
+  QAction* func_notelen_action =      functions_menu->addAction(tr("Change Event &Length..."));
+  QAction* func_fixed_len_action =    functions_menu->addAction(tr("Set Fixed Event Length..."));
+  QAction* func_transpose_action =    functions_menu->addAction(tr("Transpose..."));
+  QAction* func_legato_action =       functions_menu->addAction(tr("Legato..."));
 
   connect(func_quantize_action,     &QAction::triggered, [this]() { cmd(CMD_QUANTIZE); } );
   connect(func_notelen_action,      &QAction::triggered, [this]() { cmd(CMD_NOTELEN); } );

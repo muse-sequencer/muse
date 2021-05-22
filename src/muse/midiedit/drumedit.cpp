@@ -326,12 +326,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 //      menuFunctions->setTearOffEnabled(true);
 
-      quantizeAction = menuFunctions->addAction(*quantizeSVGIcon, tr("Quantize"));
-      veloAction = menuFunctions->addAction(tr("Modify Velocity"));
-      crescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
-      QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes"));
-      QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
-      QAction* eraseEventAction = menuFunctions->addAction(tr("Erase Events"));
+      quantizeAction = menuFunctions->addAction(*quantizeSVGIcon, tr("Quantize..."));
+      veloAction = menuFunctions->addAction(tr("Modify Velocity..."));
+      crescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo..."));
+      QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes..."));
+      QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps..."));
+      QAction* eraseEventAction = menuFunctions->addAction(tr("Erase Events..."));
 
       menuFunctions->addSeparator();
 

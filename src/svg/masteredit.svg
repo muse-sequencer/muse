@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
- <rect x="4" y="4" width="56" height="56" fill="#fffaeb" stroke="#00002b" stroke-linecap="round" stroke-width="2" style="paint-order:stroke fill markers"/>
- <g stroke="#000" stroke-linecap="round">
-  <path d="m1.5804 16v45.5h60.839v-40.316h-15.211v10.943h-15.209v-8.0633h-15.209v-8.0633z" fill="#0055d4" stroke-width="2.3038" style="paint-order:stroke fill markers"/>
-  <path d="m61.951 2.0416 0.04894 59.958-60.098 0.41542 0.088813-60.326z" fill="none" stroke-width="3.1432"/>
- </g>
+<svg id="SVGRoot" width="64px" height="64px" version="1.1" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
  <g>
-  <path d="m60.633 3.3255 0.04671 57.227-57.36 0.39649 0.084767-57.577z" display="none" fill="none" stroke="#2ca05a" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+  <path d="m1.5804 11.873v45.5h60.839v-40.316h-15.211v10.943h-15.209v-8.0633h-15.209v-8.0633h-15.211z" fill="#00dfbf" stroke="#000" stroke-linecap="round" stroke-width="2.3038" style="paint-order:stroke fill markers"/>
  </g>
 </svg>
