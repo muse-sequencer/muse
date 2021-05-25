@@ -183,7 +183,7 @@ void EventCanvas::updateItems()
   items.clearDelete();
   start_tick  = INT_MAX;
   end_tick    = 0;
-  curPart = 0;
+  curPart = nullptr;
   for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
         MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
         if (part->sn() == curPartId)
@@ -508,16 +508,24 @@ void EventCanvas::keyPress(QKeyEvent* event)
               }
             }
       else if (key == shortcuts[SHRT_INC_PITCH].key) {
+          if(_playEvents)
+              stopPlayEvents();
             modifySelected(NoteInfo::VAL_PITCH, 1);
             }
       else if (key == shortcuts[SHRT_DEC_PITCH].key) {
+          if(_playEvents)
+              stopPlayEvents();
             modifySelected(NoteInfo::VAL_PITCH, -1);
             }
       else if (key == shortcuts[SHRT_INC_POS].key) {
+          if(_playEvents)
+              stopPlayEvents();
             // TODO: Check boundaries
             modifySelected(NoteInfo::VAL_TIME, editor->raster());
             }
       else if (key == shortcuts[SHRT_DEC_POS].key) {
+          if(_playEvents)
+              stopPlayEvents();
             // TODO: Check boundaries
             modifySelected(NoteInfo::VAL_TIME, 0 - editor->raster());
             }
@@ -543,6 +551,9 @@ void EventCanvas::keyPress(QKeyEvent* event)
 void EventCanvas::keyRelease(QKeyEvent* event)
 {
       const int key = event->key();
+
+      if(_playEvents && key == Qt::Key_Control)
+          stopPlayEvents();
       
       // We do not want auto-repeat events.
       // It does press and release repeatedly. Wait till the last release comes.

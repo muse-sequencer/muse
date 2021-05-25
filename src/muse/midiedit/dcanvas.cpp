@@ -1264,6 +1264,9 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                         if (newTime < 0)
                            newTime = 0;
                         newEvent.setTick(newTime);
+
+                        if (_playEvents && _stuckNotes.empty())
+                            startPlayEvent(newEvent.pitch(), newEvent.velo());
                         }
                         break;
                   case NoteInfo::VAL_LEN:
@@ -1308,11 +1311,13 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
                           for (int i = 0; i < instrument_map.size(); ++i) {
                               if (instrument_map.at(i).pitch == event.pitch()) {
                                   int nextPos = i + direction;
-                                  if (nextPos> -1 && nextPos < instrument_map.size())
+                                  if (nextPos > -1 && nextPos < instrument_map.size())
                                     newEvent.setPitch(instrument_map.at(nextPos).pitch);
                                   break;
                               }
                           }
+                          if (_playEvents && _stuckNotes.empty())
+                              startPlayEvent(newEvent.pitch(), newEvent.velo());
                         }
                         break;
                   }
