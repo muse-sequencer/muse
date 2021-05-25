@@ -62,15 +62,16 @@ class Piano : public View
       
       int y2pitch(int) const;
       int pitch2y(int) const;
-      void viewMouseMoveEvent(QMouseEvent* event);
-      virtual void leaveEvent(QEvent*e);
+      void viewMouseMoveEvent(QMouseEvent* event) override;
+      void leaveEvent(QEvent*e) override;
+      void keyReleaseEvent(QKeyEvent *event) override;
 
-      virtual void viewMousePressEvent(QMouseEvent* event);
-      virtual void viewMouseReleaseEvent(QMouseEvent*);
-      virtual void wheelEvent(QWheelEvent* e);
+      void viewMousePressEvent(QMouseEvent* event) override;
+      void viewMouseReleaseEvent(QMouseEvent*) override;
+      void wheelEvent(QWheelEvent* e) override;
 
    protected:
-      virtual void draw(QPainter&, const QRect&, const QRegion& = QRegion());
+      void draw(QPainter&, const QRect&, const QRegion& = QRegion()) override;
 
    signals:
       void pitchChanged(int);
