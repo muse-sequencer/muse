@@ -1,5 +1,8 @@
+25.05.2021
+    - New #999: Midi editors: Play events when dragged with keyboard. (kybos)
 21.05.2021
     - Fix #1002 space stops working when opening mixer (rj)
+    - Fix #1003: Drum editor: Mouse drag event copy not working. (kybos)
 20.05.2021
     - Fix #998: Add dedicated keyboard shortcut for deleting tracks in Arranger. (kybos)
     - Fix: Use proper widgets in midi sync and midi config dialogs. (kybos)

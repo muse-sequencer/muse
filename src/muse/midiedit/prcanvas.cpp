@@ -27,6 +27,8 @@
 #include <QPair>
 #include <QToolTip>
 
+//#include <QDebug>
+
 //#include <limits.h>
 #include <stdio.h>
 #include "muse_math.h"
@@ -84,7 +86,7 @@ NEvent::NEvent(const MusECore::Event& e, MusECore::Part* p, int y) : EItem(e, p)
 
 void PianoCanvas::setLastEdited(MusECore::Event& e)
 {
-    if (lastEditedEvent==0)
+    if (lastEditedEvent==nullptr)
         lastEditedEvent = new MusECore::Event();
     *lastEditedEvent = e.clone();
 }
@@ -984,7 +986,7 @@ CItem* PianoCanvas::newItem(const QPoint& p, int state)
       int eventVelocity = curVelo;
 
       // if option is enabled and there was a prior event we clone velocity and length from that event
-      if (MusEGlobal::config.useLastEditedEvent && lastEditedEvent != 0)
+      if (MusEGlobal::config.useLastEditedEvent && lastEditedEvent != nullptr)
       {
           // curVelo = lastEditedEvent->velo(); currently not used, last changed velocity overrides it, haven't quite figured out how.
           len = lastEditedEvent->lenTick();
@@ -992,7 +994,7 @@ CItem* PianoCanvas::newItem(const QPoint& p, int state)
 
       tick     -= curPart->tick();
       if (tick < 0)
-            return 0;
+            return nullptr;
       MusECore::Event e =  MusECore::Event(MusECore::Note);
       e.setTick(tick);
       e.setPitch(pitch);
@@ -1752,95 +1754,116 @@ void PianoCanvas::curPartChanged()
 //---------------------------------------------------------
 
 void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
-      {
-      QList< QPair<int,MusECore::Event> > already_done;
-      MusECore::Undo operations;
+{
+    QList< QPair<int,MusECore::Event> > already_done;
+    MusECore::Undo operations;
+    unsigned int playedEventTick = UINT_MAX;
 
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
-            if (!(i->second->isSelected()))
-                  continue;
-            NEvent* e   = (NEvent*)(i->second);
-            MusECore::Event event = e->event();
-            if (event.type() != MusECore::Note)
-                  continue;
+    for (const auto& i : qAsConst(items)) {
+        if (!(i.second->isSelected()))
+            continue;
+        NEvent* e   = (NEvent*)(i.second);
+        MusECore::Event event = e->event();
+        if (event.type() != MusECore::Note)
+            continue;
 
-            MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
+        MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
 
-            if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
-              continue;
+        if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
+            continue;
 
-            MusECore::Event newEvent = event.clone();
+        MusECore::Event newEvent = event.clone();
 
-            switch (type) {
-                  case MusEGui::NoteInfo::VAL_TIME:
-                        {
-                        int newTime = val;
-                        if(delta_mode)
-                          newTime += event.tick();
-                        else
-                          newTime -= part->tick();
-                        if (newTime < 0)
-                           newTime = 0;
-                        newEvent.setTick(newTime);
+        switch (type) {
+            case MusEGui::NoteInfo::VAL_TIME:
+                {
+                    int newTime = val;
+                    if(delta_mode)
+                        newTime += event.tick();
+                    else
+                        newTime -= part->tick();
+                    if (newTime < 0)
+                        newTime = 0;
+                    newEvent.setTick(newTime);
+
+                    if (_playEvents) {
+                        if (playedEventTick == UINT_MAX) {
+                            playedEventTick = newEvent.tick();
+                            startPlayEvent(newEvent.pitch(), newEvent.velo());
+                        } else if (_playEventsMode == PlayEventsChords) {
+                            if (playedEventTick == newEvent.tick())
+                                startPlayEvent(newEvent.pitch(), newEvent.velo());
                         }
-                        break;
-                  case MusEGui::NoteInfo::VAL_LEN:
-                        {
-                        int len = val;
-                        if(delta_mode)
-                          len += event.lenTick();
-                        if (len < 1)
-                              len = 1;
-                        newEvent.setLenTick(len);
-                        }
-                        break;
-                  case MusEGui::NoteInfo::VAL_VELON:
-                        {
-                        int velo = val;
-                        if(delta_mode)
-                          velo += event.velo();
-                        if (velo > 127)
-                              velo = 127;
-                        else if (velo < 0)
-                              // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
-//                               velo = 0;
-                              velo = 1;
-                        newEvent.setVelo(velo);
-                        }
-                        break;
-                  case MusEGui::NoteInfo::VAL_VELOFF:
-                        {
-                        int velo = val;
-                        if(delta_mode)
-                          velo += event.veloOff();
-                        if (velo > 127)
-                              velo = 127;
-                        else if (velo < 0)
-                              velo = 0;
-                        newEvent.setVeloOff(velo);
-                        }
-                        break;
-                  case MusEGui::NoteInfo::VAL_PITCH:
-                        {
-                        int pitch = val;
-                        if(delta_mode)
-                          pitch += event.pitch();
-                        if (pitch > 127)
-                              pitch = 127;
-                        else if (pitch < 0)
-                              pitch = 0;
-                        newEvent.setPitch(pitch);
-                        }
-                        break;
-                  }
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
-            already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
+                    }
+                }
+                break;
+            case MusEGui::NoteInfo::VAL_LEN:
+                {
+                    int len = val;
+                    if(delta_mode)
+                        len += event.lenTick();
+                    if (len < 1)
+                        len = 1;
+                    newEvent.setLenTick(len);
+                }
+                break;
+            case MusEGui::NoteInfo::VAL_VELON:
+                {
+                    int velo = val;
+                    if(delta_mode)
+                        velo += event.velo();
+                    if (velo > 127)
+                        velo = 127;
+                    else if (velo < 0)
+                        // REMOVE Tim. Noteoff. Changed. Zero note on vel is not allowed now.
+                        //                               velo = 0;
+                        velo = 1;
+                    newEvent.setVelo(velo);
+                }
+                break;
+            case MusEGui::NoteInfo::VAL_VELOFF:
+                {
+                    int velo = val;
+                    if(delta_mode)
+                        velo += event.veloOff();
+                    if (velo > 127)
+                        velo = 127;
+                    else if (velo < 0)
+                        velo = 0;
+                    newEvent.setVeloOff(velo);
+                }
+                break;
+            case MusEGui::NoteInfo::VAL_PITCH:
+                {
+                    int pitch = val;
+                    if(delta_mode)
+                        pitch += event.pitch();
+                    if (pitch > 127)
+                        pitch = 127;
+                    else if (pitch < 0)
+                        pitch = 0;
+                    newEvent.setPitch(pitch);
 
-            //setLastEdited(newEvent);
-            }
-      MusEGlobal::song->applyOperationGroup(operations);
+                    if (_playEvents) {
+                        if (playedEventTick == UINT_MAX) {
+                            playedEventTick = newEvent.tick();
+                            startPlayEvent(pitch, newEvent.velo());
+                        } else if (_playEventsMode == PlayEventsChords) {
+                            if (playedEventTick == newEvent.tick())
+                                startPlayEvent(pitch, newEvent.velo());
+                        }
+                    }
+                }
+                break;
+        }
 
-      }
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
+        already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
+
+        //setLastEdited(newEvent);
+    }
+    MusEGlobal::song->applyOperationGroup(operations);
+}
 
 //---------------------------------------------------------
 //   resizeEvent
