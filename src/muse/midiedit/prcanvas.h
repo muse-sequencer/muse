@@ -123,6 +123,7 @@ class PianoCanvas : public EventCanvas {
       void pianoCmd(int);
       void pianoPressed(int pitch, int velocity, bool shift);
       void pianoReleased(int pitch, bool);
+      void pianoShiftReleased();
 
    public:
       enum {

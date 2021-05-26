@@ -1264,11 +1264,22 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
 //---------------------------------------------------------
 
 void PianoCanvas::pianoReleased(int /*pitch*/, bool)
-      {
-      // release key:
-      if(_playEvents)
+{
+    // release key:
+    if(_playEvents)
         stopPlayEvents();
-      }
+}
+
+void PianoCanvas::pianoShiftReleased()
+{
+    if (_playEvents)
+        stopPlayEvents();
+
+    if (_steprec && curPart) {
+        steprec->moveon(editor->raster());
+    }
+}
+
 
 // NOTE Keep this for now in case we can get it to work...
 #if 0

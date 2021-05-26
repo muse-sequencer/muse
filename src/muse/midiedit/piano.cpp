@@ -546,6 +546,7 @@ void Piano::viewMousePressEvent(QMouseEvent* event)
     }
 
     if (button == Qt::RightButton) {
+        // avoid stuck notes when LMB is pressed too
         if (keyDown != -1 && !shift) {
             emit keyReleased(keyDown, shift);
             keyDown = -1;
@@ -578,8 +579,11 @@ void Piano::viewMouseReleaseEvent(QMouseEvent* event)
 }
 
 void Piano::keyReleaseEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Shift)
-        emit keyReleased(keyDown, true);
+    if (keyDown != -1 && event->key() == Qt::Key_Shift) {
+        emit shiftReleased();
+        keyDown = -1;
+    }
+//    emit keyReleased(keyDown, true);
     else
         View::keyReleaseEvent(event);
 }
