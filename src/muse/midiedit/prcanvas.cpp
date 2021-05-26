@@ -1246,7 +1246,8 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
         velocity = 1;
       
       // Stop all notes.
-      stopPlayEvents();
+      if (!shift)
+          stopPlayEvents();
 
       // play note:
       if(_playEvents)
@@ -1255,7 +1256,7 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       }
       
       if (_steprec && curPart) // && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record]
-                 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
+          steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
       }
 
 //---------------------------------------------------------
@@ -1263,11 +1264,22 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
 //---------------------------------------------------------
 
 void PianoCanvas::pianoReleased(int /*pitch*/, bool)
-      {
-      // release key:
-      if(_playEvents)
+{
+    // release key:
+    if(_playEvents)
         stopPlayEvents();
-      }
+}
+
+void PianoCanvas::pianoShiftReleased()
+{
+    if (_playEvents)
+        stopPlayEvents();
+
+    if (_steprec && curPart) {
+        steprec->moveon(editor->raster());
+    }
+}
+
 
 // NOTE Keep this for now in case we can get it to work...
 #if 0

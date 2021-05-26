@@ -1,6 +1,8 @@
 26.05.2021
     - Add track menu: Move "Recently Used" to root + add key mnemonics
         + trigger also by left mouse button (track list) for faster access. (kybos)
+    - Enable polyphony for piano in pianoroll. (kybos)
+    - Fix: Step recording: Cursor not forwarded after chords. (kybos)
 25.05.2021
     - New #999: Midi editors: Play events when dragged with keyboard. (kybos)
 21.05.2021

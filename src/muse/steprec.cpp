@@ -55,6 +55,15 @@ void StepRec::timeout()
 	}
 }
 
+void StepRec::moveon(int step)
+{
+    unsigned tick = MusEGlobal::song->cpos();
+
+    chord_timer->stop();
+    chord_timer_set_to_tick = tick + step;
+    chord_timer->start();
+}
+
 void StepRec::record(const Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift, int incoming_pitch)
 {
 	unsigned tick = MusEGlobal::song->cpos();

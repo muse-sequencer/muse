@@ -22,6 +22,7 @@
 //=========================================================
 
 #include <QToolTip>
+//#include <QDebug>
 
 //#include <stdio.h>
 
@@ -192,6 +193,7 @@ Piano::Piano(QWidget* parent, int ymag, int width, MidiEditor* editor)
       pianoWidth(width)
 {
     setMouseTracking(true);
+    setFocusPolicy(Qt::ClickFocus);
     _midiEditor = editor;
     curPitch = -1;
     selectedPitch = 60;  // Start with 'C3"
@@ -491,7 +493,7 @@ void Piano::viewMouseMoveEvent(QMouseEvent* event)
         if (nk < 0 || nk > 127)
             nk = -1;
         if (nk != keyDown) {
-            if (keyDown != -1) {
+            if (keyDown != -1 && !shift) {
                 emit keyReleased(keyDown, shift);
             }
             keyDown = nk;
@@ -512,8 +514,6 @@ void Piano::viewMouseMoveEvent(QMouseEvent* event)
 
     int v = qMax(1, qMin(127, (event->x() + 1) * 127 / pianoWidth));
     QString str = tr("Velocity: ") + QString::number(v);
-//    QString str = tr("Left click: Play") + " (Vel: " + QString::number(v) + ")\n"
-//            + tr("Right click: Select key");
     QToolTip::showText(event->globalPos(), str);
 }
 
@@ -527,7 +527,7 @@ void Piano::viewMousePressEvent(QMouseEvent* event)
     shift  = event->modifiers() & Qt::ShiftModifier;
 
     if (button == Qt::LeftButton) {
-        if (keyDown != -1) {
+        if (keyDown != -1 && !shift) {
             emit keyReleased(keyDown, shift);
             keyDown = -1;
         }
@@ -546,6 +546,11 @@ void Piano::viewMousePressEvent(QMouseEvent* event)
     }
 
     if (button == Qt::RightButton) {
+        // avoid stuck notes when LMB is pressed too
+        if (keyDown != -1 && !shift) {
+            emit keyReleased(keyDown, shift);
+            keyDown = -1;
+        }
         selectedPitch = y2pitch(event->y());
         emit curSelectedPitchChanged(selectedPitch);
         redraw();
@@ -563,7 +568,7 @@ void Piano::viewMouseReleaseEvent(QMouseEvent* event)
 {
     if (button == Qt::LeftButton) {
         shift = event->modifiers() & Qt::ShiftModifier;
-        if (keyDown != -1) {
+        if (keyDown != -1 && !shift) {
             emit keyReleased(keyDown, shift);
             keyDown = -1;
         }
@@ -571,6 +576,15 @@ void Piano::viewMouseReleaseEvent(QMouseEvent* event)
     }
 
     button = Qt::NoButton;
+}
+
+void Piano::keyReleaseEvent(QKeyEvent *event) {
+    if (keyDown != -1 && event->key() == Qt::Key_Shift) {
+        emit shiftReleased();
+        keyDown = -1;
+    }
+    else
+        View::keyReleaseEvent(event);
 }
 
 //---------------------------------------------------------
