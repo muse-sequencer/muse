@@ -395,7 +395,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(strGlobalInsertSelAction, SIGNAL(triggered()), SLOT(globalInsertSel()));
   connect(strGlobalSplitSelAction, SIGNAL(triggered()), SLOT(globalSplitSel()));
 
-
+  connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
+  connect(insertTrack, SIGNAL(triggered(QAction *)), SLOT(insertNewTrack(QAction *)));
 
   connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
 
@@ -898,36 +899,36 @@ void ArrangerView::updateScoreMenus()
 // populate both add and insert menus with track types
 void ArrangerView::populateAddTrack()
 {
-      // populate add track menu
-      QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true);
-      connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
+    // populate add track menu
+    addTrack->clear();
+    QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true);
 
-      int idx = 0;
-      trackAMidiAction = addGroup->actions().at(idx++);
-      trackADrumAction = addGroup->actions().at(idx++);
-      trackAWaveAction = addGroup->actions().at(idx++);
-      trackAOutputAction = addGroup->actions().at(idx++);
-      trackAGroupAction = addGroup->actions().at(idx++);
-      trackAInputAction = addGroup->actions().at(idx++);
-      trackAAuxAction = addGroup->actions().at(idx++);
-      trackASynthAction = addGroup->actions().at(idx++);
+    int idx = 0;
+    trackAMidiAction = addGroup->actions().at(idx++);
+    trackADrumAction = addGroup->actions().at(idx++);
+    trackAWaveAction = addGroup->actions().at(idx++);
+    trackAOutputAction = addGroup->actions().at(idx++);
+    trackAGroupAction = addGroup->actions().at(idx++);
+    trackAInputAction = addGroup->actions().at(idx++);
+    trackAAuxAction = addGroup->actions().at(idx++);
+    trackASynthAction = addGroup->actions().at(idx++);
 
-      // populate insert track menu
-      QActionGroup *insertGroup = MusEGui::populateAddTrack(insertTrack, true, true);
-      connect(insertTrack, SIGNAL(triggered(QAction *)), SLOT(insertNewTrack(QAction *)));
+    // populate insert track menu
+    insertTrack->clear();
+    QActionGroup *insertGroup = MusEGui::populateAddTrack(insertTrack, true, true);
 
-      idx = 0;
-      trackIMidiAction = insertGroup->actions().at(idx++);
-      trackIDrumAction = insertGroup->actions().at(idx++);
-      trackIWaveAction = insertGroup->actions().at(idx++);
-      trackIOutputAction = insertGroup->actions().at(idx++);
-      trackIGroupAction = insertGroup->actions().at(idx++);
-      trackIInputAction = insertGroup->actions().at(idx++);
-      trackIAuxAction = insertGroup->actions().at(idx++);
-      trackISynthAction = insertGroup->actions().at(idx++);
+    idx = 0;
+    trackIMidiAction = insertGroup->actions().at(idx++);
+    trackIDrumAction = insertGroup->actions().at(idx++);
+    trackIWaveAction = insertGroup->actions().at(idx++);
+    trackIOutputAction = insertGroup->actions().at(idx++);
+    trackIGroupAction = insertGroup->actions().at(idx++);
+    trackIInputAction = insertGroup->actions().at(idx++);
+    trackIAuxAction = insertGroup->actions().at(idx++);
+    trackISynthAction = insertGroup->actions().at(idx++);
 
-      // populate right click menu on trackList
-      arranger->getTrackList()->populateAddTrack();
+    // populate right click menu on trackList
+    arranger->getTrackList()->populateAddTrack();
 }
 
 void ArrangerView::addNewTrack(QAction* action)
@@ -961,6 +962,9 @@ void ArrangerView::updateShortcuts()
       editMoveBottomSelTrackAction->setShortcut(shortcuts[SHRT_MOVEBOTTOM_TRACK].key);
 
       //editDeleteSelectedAction has no acceleration
+
+      populateAddTrack();
+//      arranger->getTrackList()->populateAddTrack();
       
       trackAMidiAction->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key);
       trackADrumAction->setShortcut(shortcuts[SHRT_ADD_DRUM_TRACK].key);
@@ -980,7 +984,6 @@ void ArrangerView::updateShortcuts()
       trackIAuxAction->setShortcut(shortcuts[SHRT_INSERT_AUDIO_AUX].key);
       trackISynthAction->setShortcut(shortcuts[SHRT_INSERT_SYNTH_TRACK].key);
 
-      arranger->getTrackList()->populateAddTrack();
 
       editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       editDeselectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);

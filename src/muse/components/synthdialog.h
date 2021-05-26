@@ -40,6 +40,8 @@ public:
     static QVector<int> getRecentsIdx();
     static void addRecent(MusECore::Synth *synth);
 
+    static const int RECENTS_SIZE = 9;
+
 public slots:
     void accept();
     void reject();
@@ -74,8 +76,6 @@ private:
     static QByteArray listSave;
     static QSet<QByteArray> favs;
     static QList<QByteArray> recents;
-
-    static const int RECENTS_SIZE = 10;
 
     Ui::SynthDialogBase ui;
 };
