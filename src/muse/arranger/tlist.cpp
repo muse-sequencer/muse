@@ -132,6 +132,9 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
     ctrl_edit = nullptr;
     mode      = NORMAL;
 
+    addTrackMenu = nullptr;
+    insertTrackMenu = nullptr;
+
     _sel3d = true;
     _curSelBorder = false;
     _curSelBorderColor = Qt::red;
@@ -1867,27 +1870,26 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
     MusECore::Track* t    = y2Track(y + ypos);
 
-    TrackColumn col = TrackColumn(header->logicalIndexAt(x));
     if (t == nullptr) {
-        if (button == Qt::RightButton) {
+        //        if (button == Qt::RightButton) {
 
-            // Show the menu
-            QAction* act = addTrackMenu->exec(ev->globalPos(), nullptr);
+        // Show the menu
+        QAction* act = addTrackMenu->exec(ev->globalPos(), nullptr);
 
-            // Valid click?
-            if(act)
+        // Valid click?
+        if(act)
+        {
+            t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
+            if(t && t->isVisible())
             {
-                t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
-                if(t && t->isVisible())
-                {
-                    MusEGlobal::song->selectAllTracks(false);
-                    t->setSelected(true);
-                    MusEGlobal::song->update(SC_TRACK_SELECTION);
-                    adjustScrollbar();
-                }
+                MusEGlobal::song->selectAllTracks(false);
+                t->setSelected(true);
+                MusEGlobal::song->update(SC_TRACK_SELECTION);
+                adjustScrollbar();
             }
-
         }
+
+        //        }
         return;
     }
 
@@ -1925,6 +1927,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
     }
 
     mode = NORMAL;
+    TrackColumn col = TrackColumn(header->logicalIndexAt(x));
 
     if (button == Qt::LeftButton && col != COL_INPUT_MONITOR && col != COL_RECORD && col != COL_MUTE && col != COL_SOLO)
     {
@@ -3243,10 +3246,18 @@ void TList::setHeader(Header* h)
 
 void TList::populateAddTrack()
 {
-    addTrackMenu = new QMenu;
+    if (!addTrackMenu)
+        addTrackMenu = new QMenu(this);
+    else
+        addTrackMenu->clear();
+
     MusEGui::populateAddTrack(addTrackMenu, false, false, true);
 
-    insertTrackMenu = new QMenu;
+    if (!insertTrackMenu)
+        insertTrackMenu = new QMenu(this);
+    else
+        insertTrackMenu->clear();
+
     MusEGui::populateAddTrack(insertTrackMenu, false, true);
 }
 
