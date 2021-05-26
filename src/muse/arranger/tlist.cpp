@@ -1871,25 +1871,25 @@ void TList::mousePressEvent(QMouseEvent* ev)
     MusECore::Track* t    = y2Track(y + ypos);
 
     if (t == nullptr) {
-        //        if (button == Qt::RightButton) {
+        if (button == Qt::RightButton) {
 
-        // Show the menu
-        QAction* act = addTrackMenu->exec(ev->globalPos(), nullptr);
+            // Show the menu
+            QAction* act = addTrackMenu->exec(ev->globalPos(), nullptr);
 
-        // Valid click?
-        if(act)
-        {
-            t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
-            if(t && t->isVisible())
+            // Valid click?
+            if(act)
             {
-                MusEGlobal::song->selectAllTracks(false);
-                t->setSelected(true);
-                MusEGlobal::song->update(SC_TRACK_SELECTION);
-                adjustScrollbar();
+                t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
+                if(t && t->isVisible())
+                {
+                    MusEGlobal::song->selectAllTracks(false);
+                    t->setSelected(true);
+                    MusEGlobal::song->update(SC_TRACK_SELECTION);
+                    adjustScrollbar();
+                }
             }
-        }
 
-        //        }
+        }
         return;
     }
 

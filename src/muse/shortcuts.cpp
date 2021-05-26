@@ -52,14 +52,15 @@ void initShortCuts()
       //Global:
       defShrt(SHRT_PLAY_SONG,     Qt::Key_Enter, QT_TRANSLATE_NOOP("shortcuts", "Transport: Start playback from current location"), GLOBAL_SHRT, "play");
       defShrt(SHRT_TOGGLE_METRO,  Qt::Key_C,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle metronome"), GLOBAL_SHRT,"toggle_metro");
-      defShrt(SHRT_STOP,          Qt::Key_Insert,QT_TRANSLATE_NOOP("shortcuts", "Transport: Stop Playback"), GLOBAL_SHRT, "stop");
-      defShrt(SHRT_GOTO_START,    Qt::Key_W,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto Start"), GLOBAL_SHRT, "goto_start");
-      defShrt(SHRT_GOTO_END,      Qt::SHIFT + Qt::Key_E,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto End"), GLOBAL_SHRT, "goto_end");
+      defShrt(SHRT_STOP,          0 ,QT_TRANSLATE_NOOP("shortcuts", "Transport: Stop Playback"), GLOBAL_SHRT, "stop");
+//      defShrt(SHRT_STOP,          Qt::Key_Insert,QT_TRANSLATE_NOOP("shortcuts", "Transport: Stop Playback"), GLOBAL_SHRT, "stop");
+      defShrt(SHRT_GOTO_START,    Qt::Key_Home,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto Start"), GLOBAL_SHRT, "goto_start");
+      defShrt(SHRT_GOTO_END,      Qt::Key_End,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto End"), GLOBAL_SHRT, "goto_end");
 
       defShrt(SHRT_PLAY_TOGGLE,   Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Play, Stop, Rewind"), GLOBAL_SHRT, "play_toggle");
       defShrt(SHRT_REC_RESTART,   Qt::CTRL + Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording"), GLOBAL_SHRT, "rec_restart");
       defShrt(SHRT_REC_RESTART_MULTI,   Qt::SHIFT + Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording (multi take)"), GLOBAL_SHRT, "rec_restart_multi");
-      defShrt(SHRT_GOTO_LEFT,     Qt::Key_End,   QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto left marker")  , GLOBAL_SHRT, "goto_left");
+      defShrt(SHRT_GOTO_LEFT,     Qt::Key_PageUp,   QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto left marker")  , GLOBAL_SHRT, "goto_left");
       defShrt(SHRT_GOTO_RIGHT,    Qt::Key_PageDown,  QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto right marker") , GLOBAL_SHRT, "goto_right");
       defShrt(SHRT_TOGGLE_LOOP,   Qt::Key_Slash, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Loop section"), GLOBAL_SHRT, "toggle_loop");
       defShrt(SHRT_START_REC,     Qt::Key_Asterisk, QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle Record"),    GLOBAL_SHRT, "toggle_rec");
@@ -148,7 +149,6 @@ void initShortCuts()
       defShrt(SHRT_GLOBAL_INSERT,         0, QT_TRANSLATE_NOOP("shortcuts", "Structure: Global insert"), ARRANG_SHRT, "global_insert");
       defShrt(SHRT_GLOBAL_SPLIT,          0, QT_TRANSLATE_NOOP("shortcuts", "Structure: Global split"), ARRANG_SHRT,  "global_split");
       defShrt(SHRT_CUT_EVENTS,            0, QT_TRANSLATE_NOOP("shortcuts", "Structure: Cut events"), ARRANG_SHRT,    "cut_events");
-      //defShrt(SHRT_OPEN_MIXER,            Qt::Key_F10, QT_TRANSLATE_NOOP("shortcuts", "View: Open mixer window"), ARRANG_SHRT, "toggle_mixer");
       defShrt(SHRT_OPEN_MIXER,            Qt::Key_F10, QT_TRANSLATE_NOOP("shortcuts", "View: Open mixer #1 window"), ARRANG_SHRT, "toggle_mixer");
       defShrt(SHRT_OPEN_MIXER2,           Qt::CTRL + Qt::Key_F10, QT_TRANSLATE_NOOP("shortcuts", "View: Open mixer #2 window"), ARRANG_SHRT, "toggle_mixer2");
       defShrt(SHRT_OPEN_TRANSPORT,        Qt::Key_F11, QT_TRANSLATE_NOOP("shortcuts", "View: Toggle transport window"), ARRANG_SHRT, "toggle_transport");
@@ -161,7 +161,6 @@ void initShortCuts()
       defShrt(SHRT_FOLLOW_CONTINUOUS,     0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Follow song continuous"), ARRANG_SHRT, "follow_continuous");
 
       defShrt(SHRT_GLOBAL_CONFIG,         0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Global configuration"), ARRANG_SHRT, "configure_global");
-      //defShrt(SHRT_CONFIG_SHORTCUTS,      Qt::CTRL + Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure shortcuts"), ARRANG_SHRT, "configure_key_shortcuts");
       defShrt(SHRT_CONFIG_METRONOME,      0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Configure metronome"), ARRANG_SHRT, "configure_metronome");
       defShrt(SHRT_CONFIG_MIDISYNC,       0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi sync configuration"), ARRANG_SHRT, "configure_midi_sync");
       defShrt(SHRT_MIDI_FILE_CONFIG,      0, QT_TRANSLATE_NOOP("shortcuts", "Settings: Midi file import/export configuration"), ARRANG_SHRT, "configure_midi_file");
@@ -197,7 +196,7 @@ void initShortCuts()
       defShrt(SHRT_OPEN_HELP,             Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Help: Open Manual"), ARRANG_SHRT,        "open_help");
       defShrt(SHRT_START_WHATSTHIS,       Qt::SHIFT + Qt::Key_F1, QT_TRANSLATE_NOOP("shortcuts", "Help: Toggle whatsthis mode"), ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "toggle_whatsthis");
 
-      defShrt(SHRT_EDIT_PART,             Qt::Key_Return, QT_TRANSLATE_NOOP("shortcuts", "Edit: Edit selected part"), ARRANG_SHRT, "edit_selected_part");
+      defShrt(SHRT_EDIT_PART,             Qt::Key_E, QT_TRANSLATE_NOOP("shortcuts", "Edit: Edit selected part"), ARRANG_SHRT, "edit_selected_part");
       defShrt(SHRT_SEL_ABOVE,             Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part on track above"), ARRANG_SHRT, "sel_part_above");
       defShrt(SHRT_SEL_ABOVE_ADD,         Qt::SHIFT + Qt::Key_Up, QT_TRANSLATE_NOOP("shortcuts", "Edit: Add nearest part on track above"), ARRANG_SHRT, "sel_part_above_add");
       defShrt(SHRT_SEL_BELOW,             Qt::Key_Down, QT_TRANSLATE_NOOP("shortcuts", "Edit: Select nearest part on track below"), ARRANG_SHRT, "sel_part_below");
