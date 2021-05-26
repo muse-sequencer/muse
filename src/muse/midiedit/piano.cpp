@@ -583,7 +583,6 @@ void Piano::keyReleaseEvent(QKeyEvent *event) {
         emit shiftReleased();
         keyDown = -1;
     }
-//    emit keyReleased(keyDown, true);
     else
         View::keyReleaseEvent(event);
 }
