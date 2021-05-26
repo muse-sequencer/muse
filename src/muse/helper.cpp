@@ -1472,13 +1472,19 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
 
           auto recentsIdx = SynthDialog::getRecentsIdx();
           if (!recentsIdx.empty()) {
-              QMenu* synrec = new QMenu(addTrack);
-              synrec->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Recently Used")));
+              addTrack->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Recently Used")), addTrack));
+//              QMenu* synrec = new QMenu(addTrack);
+//              synrec->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Recently Used")));
 
+              int ik = 0;
               for (const auto it : recentsIdx) {
-                  synrec->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
+                  QAction *a = new QAction("&" + QString::number(++ik) + " " + MusEGlobal::synthis[it]->description(), addTrack);
+                  a->setData(MENU_ADD_SYNTH_ID_BASE + it);
+                  addTrack->addAction(a);
+//                  addTrack->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
+                  if (ik >= SynthDialog::RECENTS_SIZE)
+                      break;
               }
-              addTrack->addMenu(synrec);
           }
 
 //          // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
