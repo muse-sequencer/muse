@@ -34,6 +34,7 @@
 #include <QPixmap>
 #include <QHeaderView>
 #include <QSettings>
+#include <QStyledItemDelegate>
 
 #include "config.h"
 #include "confmport.h"
@@ -82,6 +83,18 @@ extern MusECore::SynthList synthis;
 }
 
 namespace MusEGui {
+
+
+class RightIconDelegate: public QStyledItemDelegate{
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+protected:
+    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override
+    {
+        QStyledItemDelegate::initStyleOption(option, index);
+        option->decorationPosition = QStyleOptionViewItem::Right;
+    }
+};
 
 //---------------------------------------------------------
 //   SynthItem
@@ -1031,6 +1044,9 @@ MPConfig::MPConfig(QWidget* parent)
       QSettings settings;
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 
+      RightIconDelegate *delegate = new RightIconDelegate(mdevView);
+      mdevView->setItemDelegate(delegate);
+
       mdevView->setRowCount(MusECore::MIDI_PORTS);
       mdevView->verticalHeader()->hide();
       mdevView->setShowGrid(false);
@@ -1051,6 +1067,10 @@ MPConfig::MPConfig(QWidget* parent)
             setToolTip(mdevView->horizontalHeaderItem(i), i);
             }
       mdevView->setFocusPolicy(Qt::NoFocus);
+      mdevView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
+      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NAME ,QHeaderView::Stretch);
+
 
       
       instanceList->verticalHeader()->hide();
@@ -1428,9 +1448,9 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       
       synthList->resizeColumnToContents(1);
       mdevView->resizeColumnsToContents();
-      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
+//      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
             
-      mdevView->horizontalHeader()->setStretchLastSection( true );
+//      mdevView->horizontalHeader()->setStretchLastSection( true );
       selectionChanged();
       }
 
