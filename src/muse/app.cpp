@@ -2837,17 +2837,10 @@ void MusE::kbAccel(int key)
          MusEGlobal::song->restartRecording(false);
       }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_PLAY_TOGGLE].key) {
-
             if (MusEGlobal::audio->isPlaying())
                   MusEGlobal::song->setStop(true);
-            else if (!MusEGlobal::config.useOldStyleStopShortCut)
+            else
                   MusEGlobal::song->setPlay(true);
-            else if (MusEGlobal::song->cpos() != MusEGlobal::song->lpos())
-                  MusEGlobal::song->setPos(MusECore::Song::CPOS, MusEGlobal::song->lPos());
-            else {
-                  MusECore::Pos p(0, true);
-                  MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
-                  }
             }
       else if (key == MusEGui::shortcuts[MusEGui::SHRT_STOP].key) {
             MusEGlobal::song->setStop(true);

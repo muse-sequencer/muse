@@ -362,7 +362,6 @@ struct GlobalConfigValues {
       QString theme;
 
       QString externalWavEditor;
-      bool useOldStyleStopShortCut;
       bool useRewindOnStop;
       bool moveArmedCheckBox;
       bool useDenormalBias;

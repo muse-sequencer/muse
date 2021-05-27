@@ -799,8 +799,6 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.midiCtrlGraphMergeEraseWysiwyg = xml.parseInt();
                         else if (tag == "museTheme")
                               MusEGlobal::config.theme = xml.parse1();
-                        else if (tag == "useOldStyleStopShortCut")
-                              MusEGlobal::config.useOldStyleStopShortCut = xml.parseInt();
                         else if (tag == "useRewindOnStop")
                               MusEGlobal::config.useRewindOnStop = xml.parseInt();
                         else if (tag == "moveArmedCheckBox")
@@ -2047,7 +2045,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "autoSave", MusEGlobal::config.autoSave);
       xml.strTag(level, "museTheme", MusEGlobal::config.theme);
       xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
-      xml.intTag(level, "useOldStyleStopShortCut", MusEGlobal::config.useOldStyleStopShortCut);
       xml.intTag(level, "useRewindOnStop", MusEGlobal::config.useRewindOnStop);
       xml.intTag(level, "moveArmedCheckBox", MusEGlobal::config.moveArmedCheckBox);
       xml.intTag(level, "popupsDefaultStayOpen", MusEGlobal::config.popupsDefaultStayOpen);

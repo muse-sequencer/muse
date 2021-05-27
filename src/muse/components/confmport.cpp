@@ -134,7 +134,7 @@ void MPConfig::okClicked()
 void MPConfig::changeDefInputRoutes(QAction* act)
 {
   QTableWidgetItem* item = mdevView->currentItem();
-  if(item == 0)
+  if(item == nullptr)
     return;
   QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
   int no = atoi(id.toLatin1().constData()) - 1;

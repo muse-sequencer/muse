@@ -228,7 +228,6 @@ void GlobalSettingsConfig::updateSettings()
       showSplash->setChecked(MusEGlobal::config.showSplashScreen);
       showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
       externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
-      oldStyleStopCheckBox->setChecked(MusEGlobal::config.useOldStyleStopShortCut);
       moveArmedCheckBox->setChecked(MusEGlobal::config.moveArmedCheckBox);
       projectSaveCheckBox->setChecked(MusEGlobal::config.useProjectSaveDialog);
       popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
@@ -343,7 +342,6 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
       MusEGlobal::config.externalWavEditor = externalWavEditorSelect->text();
-      MusEGlobal::config.useOldStyleStopShortCut = oldStyleStopCheckBox->isChecked();
       MusEGlobal::config.moveArmedCheckBox = moveArmedCheckBox->isChecked();
       MusEGlobal::config.useProjectSaveDialog = projectSaveCheckBox->isChecked();
       MusEGlobal::config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();

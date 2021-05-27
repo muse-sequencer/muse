@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>773</width>
-    <height>448</height>
+    <width>827</width>
+    <height>550</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -128,13 +128,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="addSynthDevice">
-            <property name="text">
-             <string>Synth</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QToolButton" name="addALSADevice">
             <property name="enabled">
              <bool>true</bool>
@@ -154,6 +147,13 @@
            <widget class="QToolButton" name="addJACKDevice">
             <property name="text">
              <string>JACK</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="addSynthDevice">
+            <property name="text">
+             <string>Synth track</string>
             </property>
            </widget>
           </item>

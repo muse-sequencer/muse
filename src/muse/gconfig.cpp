@@ -337,7 +337,6 @@ GlobalConfigValues config = {
 //      QString("Fusion"),            // style
       QString("Dark Flat"),         // theme
       QString("sweep"),             // externalWavEditor
-      false,                        // useOldStyleStopShortCut
       true,                         // useRewindOnStop
       false,                        // moveArmedCheckBox
       true,                         // useDenormalBias
