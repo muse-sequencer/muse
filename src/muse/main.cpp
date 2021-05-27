@@ -1474,7 +1474,9 @@ int main(int argc, char* argv[])
         qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
                  << "Init OSC / metronome...";
 
+  #ifdef OSC_SUPPORT
         MusECore::initOSC();
+  #endif
 
         MusECore::initMetronome();
 
