@@ -152,6 +152,7 @@ public:
     QMenu* editorNewSubmenu;
     QAction *startPianoEditNewAction, *startDrumEditNewAction, *startListEditNewAction, *startWaveEditNewAction;
     QAction *openCurrentTrackSynthGuiAction;
+    QAction *openAddTrackMenuAction;
     QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
 
     void populateAddTrack();

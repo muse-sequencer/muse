@@ -184,6 +184,7 @@ class TList : public QWidget {
       void setScroll(QScrollBar* s) { _scroll = s; }
       MusECore::Track* track() const { return editTrack; }
       void populateAddTrack();
+      void openAddTrackMenu();
       bool sel3d() const { return _sel3d; }
       void setSel3d(bool sel3d) { _sel3d = sel3d; }
       bool curSelBorder() const { return _curSelBorder; }

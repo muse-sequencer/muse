@@ -2397,7 +2397,7 @@ void WaveCanvas::waveCmd(int cmd)
                   MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, true, true); //CDW
                   }
                   break;
-            case CMD_INSERT:
+            case CMD_PUSH:
                   {
                   if (pos[0] < start() || pos[0] >= end())
                         break;
@@ -2425,7 +2425,7 @@ void WaveCanvas::waveCmd(int cmd)
                   MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
                   }
                   return;
-            case CMD_BACKSPACE:
+            case CMD_PULL:
                   if (pos[0] < start() || pos[0] >= end())
                         break;
                   {

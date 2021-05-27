@@ -341,6 +341,9 @@ ArrangerView::ArrangerView(QWidget* parent)
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
 
+  openAddTrackMenuAction = new QAction(this);
+  addAction(openAddTrackMenuAction);
+  connect(openAddTrackMenuAction, &QAction::triggered, [=](){ arranger->getTrackList()->openAddTrackMenu(); });
 
   //-------- Edit connections
   connect(editDeleteAction,            &QAction::triggered, [this]() { cmd(CMD_DELETE); } );
@@ -1007,6 +1010,8 @@ void ArrangerView::updateShortcuts()
       strGlobalCutAction->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
       strGlobalInsertAction->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);
       strGlobalSplitAction->setShortcut(shortcuts[SHRT_GLOBAL_SPLIT].key);
+
+      openAddTrackMenuAction->setShortcut(shortcuts[SHRT_ADD_TRACK_MENU].key);
 }
 
 //---------------------------------------------------------

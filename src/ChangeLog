@@ -1,3 +1,9 @@
+27.05.2021
+    - Fix: Dysfunctional duplicate shortcut for Push events. (kybos)
+    - Fix: Create customizable shortcut for Pull events. (kybos)
+    - Fix: Standardize shortcuts for Goto start/end, range start/end. (kybos)
+    - Add: Shortcut for Add track menu (default Insert). (kybos)
+    - Fix: Disallow Return and Escape as customizable keys to avoid conflicts. (kybos) 
 26.05.2021
     - Add track menu: Move "Recently Used" to root + add key mnemonics
         + trigger also by left mouse button (track list) for faster access. (kybos)

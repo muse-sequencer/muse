@@ -115,7 +115,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
     //  full rect paint events even on small scrolls! See help on QPainter::scroll().
     setAttribute(Qt::WA_OpaquePaintEvent);
 
-    setStatusTip(tr("Track list: LMB to select track, CTRL+LMB to add to selection, SHIFT+LMB for range select. RMB in empty area to create tracks. Press F1 for help."));
+    setStatusTip(tr("Track list: LMB to select track, CTRL+LMB to add to selection, SHIFT+LMB for range select. Insert or RMB to create tracks. Press F1 for help."));
 
     setObjectName(name);
     ypos = 0;
@@ -3260,6 +3260,21 @@ void TList::populateAddTrack()
 
     MusEGui::populateAddTrack(insertTrackMenu, false, true);
 }
+
+void TList::openAddTrackMenu()
+{
+    QAction* act = addTrackMenu->exec(mapToGlobal(pos() + QPoint(5,0)), nullptr);
+    if (act) {
+        auto t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
+        if (t && t->isVisible()) {
+            MusEGlobal::song->selectAllTracks(false);
+            t->setSelected(true);
+            MusEGlobal::song->update(SC_TRACK_SELECTION);
+            adjustScrollbar();
+        }
+    }
+}
+
 
 } // namespace MusEGui
 

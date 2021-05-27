@@ -1640,12 +1640,12 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             pc->pianoCmd(CMD_LEFT_NOSNAP);
             return;
             }
-      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
-            pc->pianoCmd(CMD_INSERT);
+      else if (key == shortcuts[SHRT_LOC_PUSH_EVENTS].key) {
+            pc->pianoCmd(CMD_PUSH);
             return;
             }
-      else if (key == Qt::Key_Backspace) {
-            pc->pianoCmd(CMD_BACKSPACE);
+      else if (key == shortcuts[SHRT_LOC_PULL_EVENTS].key) {
+            pc->pianoCmd(CMD_PULL);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {

@@ -49,13 +49,16 @@ void defShrt(int shrt, int key, const char* descr, int type, const char* xml)
 
 void initShortCuts()
       {
-      //Global:
-      defShrt(SHRT_PLAY_SONG,     Qt::Key_Enter, QT_TRANSLATE_NOOP("shortcuts", "Transport: Start playback from current location"), GLOBAL_SHRT, "play");
-      defShrt(SHRT_TOGGLE_METRO,  Qt::Key_C,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle metronome"), GLOBAL_SHRT,"toggle_metro");
-      defShrt(SHRT_STOP,          0 ,QT_TRANSLATE_NOOP("shortcuts", "Transport: Stop Playback"), GLOBAL_SHRT, "stop");
-//      defShrt(SHRT_STOP,          Qt::Key_Insert,QT_TRANSLATE_NOOP("shortcuts", "Transport: Stop Playback"), GLOBAL_SHRT, "stop");
-      defShrt(SHRT_GOTO_START,    Qt::Key_Home,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto Start"), GLOBAL_SHRT, "goto_start");
-      defShrt(SHRT_GOTO_END,      Qt::Key_End,     QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto End"), GLOBAL_SHRT, "goto_end");
+      // Reserved: To avoid unwanted side-effects (inline editing etc.)
+      defShrt(SHRT_RETURN,        Qt::Key_Return, QT_TRANSLATE_NOOP("shortcuts", "Return"), INVIS_SHRT, "return");
+      defShrt(SHRT_ESCAPE,        Qt::Key_Escape, QT_TRANSLATE_NOOP("shortcuts", "Escape"), INVIS_SHRT, "escape");
+
+    //Global:
+      defShrt(SHRT_PLAY_SONG,     Qt::Key_Enter,  QT_TRANSLATE_NOOP("shortcuts", "Transport: Start playback from current location"), GLOBAL_SHRT, "play");
+      defShrt(SHRT_TOGGLE_METRO,  Qt::Key_C,      QT_TRANSLATE_NOOP("shortcuts", "Transport: Toggle metronome"), GLOBAL_SHRT,"toggle_metro");
+      defShrt(SHRT_STOP,          Qt::Key_0,      QT_TRANSLATE_NOOP("shortcuts", "Transport: Stop Playback"), GLOBAL_SHRT, "stop");
+      defShrt(SHRT_GOTO_START,    Qt::Key_Home,   QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto Start"), GLOBAL_SHRT, "goto_start");
+      defShrt(SHRT_GOTO_END,      Qt::Key_End,    QT_TRANSLATE_NOOP("shortcuts", "Transport: Goto End"), GLOBAL_SHRT, "goto_end");
 
       defShrt(SHRT_PLAY_TOGGLE,   Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Play, Stop, Rewind"), GLOBAL_SHRT, "play_toggle");
       defShrt(SHRT_REC_RESTART,   Qt::CTRL + Qt::Key_Space, QT_TRANSLATE_NOOP("shortcuts", "Transport: Restart recording"), GLOBAL_SHRT, "rec_restart");
@@ -126,6 +129,7 @@ void initShortCuts()
       defShrt(SHRT_OPEN_LIST_NEW,         Qt::CTRL + Qt::SHIFT + Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "Open listeditor in new window"), ARRANG_SHRT, "open_listedit_new");
       defShrt(SHRT_OPEN_WAVE_NEW,         Qt::CTRL + Qt::SHIFT + Qt::Key_Y, QT_TRANSLATE_NOOP("shortcuts", "Open waveeditor in new window"), ARRANG_SHRT, "open_waveeditor_new");
 
+      defShrt(SHRT_ADD_TRACK_MENU,        Qt::Key_Insert, QT_TRANSLATE_NOOP("shortcuts", "Open add track menu"), ARRANG_SHRT, "add_track_menu");
 
       defShrt(SHRT_ADD_MIDI_TRACK,        Qt::SHIFT + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Add midi track"), ARRANG_SHRT, "add_midi_track");
       defShrt(SHRT_ADD_DRUM_TRACK,        Qt::SHIFT + Qt::Key_D, QT_TRANSLATE_NOOP("shortcuts", "Add drum track"), ARRANG_SHRT, "add_drum_track");
@@ -375,7 +379,9 @@ void initShortCuts()
               PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "midi_quant_punct");
       defShrt(SHRT_TOGGLE_PUNCT2,      Qt::Key_Comma, QT_TRANSLATE_NOOP("shortcuts", "Quantize: Toggle punctuation quantization (2)"),
               PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "midi_quant_punct2");
-      defShrt(SHRT_INSERT_AT_LOCATION, Qt::SHIFT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Insert at location"), PROLL_SHRT, "midi_insert_at_loc");
+
+      defShrt(SHRT_LOC_PUSH_EVENTS, Qt::Key_Insert, QT_TRANSLATE_NOOP("shortcuts", "Edit: Push events from locator"), PROLL_SHRT + WAVE_SHRT, "loc_push_events");
+      defShrt(SHRT_LOC_PULL_EVENTS, Qt::Key_Backspace, QT_TRANSLATE_NOOP("shortcuts", "Edit: Pull events from locator"), PROLL_SHRT + WAVE_SHRT, "loc_pull_events");
 
       defShrt(SHRT_INCREASE_LEN, Qt::CTRL + Qt::SHIFT + Qt::Key_Right, QT_TRANSLATE_NOOP("shortcuts", "Edit: Increase length"), PROLL_SHRT, "increase_len");
       defShrt(SHRT_DECREASE_LEN, Qt::CTRL + Qt::SHIFT + Qt::Key_Left, QT_TRANSLATE_NOOP("shortcuts", "Edit: Decrease length"), PROLL_SHRT, "decrease_len");

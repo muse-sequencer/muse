@@ -25,9 +25,9 @@
 
 #define CMD_LEFT   0
 #define CMD_RIGHT  1
-#define CMD_INSERT 2
+#define CMD_PUSH 2
 #define CMD_DELETE 3
-#define CMD_BACKSPACE 4
+#define CMD_PULL 4
 #define CMD_1      5
 #define CMD_2      6
 #define CMD_3      7
