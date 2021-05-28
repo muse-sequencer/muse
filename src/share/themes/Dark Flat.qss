@@ -294,6 +294,10 @@ QTreeView, QListView {
     background: rgb(40,40,40);
  }
 
+QTableWidget#mdevView {
+    gridline-color: rgb(70, 70, 70);
+}
+
 QMdiArea > QTabBar::tab:hover {
     color: yellow;
 }

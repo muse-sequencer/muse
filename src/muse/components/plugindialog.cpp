@@ -72,14 +72,14 @@ PluginDialog::PluginDialog(QWidget* parent)
       headerLabels << tr("Lib");
       headerLabels << tr("Label");
       headerLabels << tr("Name");
-      headerLabels << tr("AI");
-      headerLabels << tr("AO");
-      headerLabels << tr("CI");
-      headerLabels << tr("CO");
-      headerLabels << tr("IP");
-      headerLabels << tr("FB");
-      headerLabels << tr("2B");
-      headerLabels << tr("id");
+      headerLabels << tr("AudIn");
+      headerLabels << tr("AudOut");
+      headerLabels << tr("CtlIn");
+      headerLabels << tr("CtlOut");
+      headerLabels << tr("InPlace");
+      headerLabels << tr("FixBlk");
+      headerLabels << tr("X2");
+      headerLabels << tr("ID");
       headerLabels << tr("Maker");
       headerLabels << tr("Copyright");
 
@@ -204,7 +204,7 @@ void PluginDialog::plistContextMenu(const QPoint& point)
 
     if (ui.tabBar->count()==1)
     {
-      QAction* tmp=menu->addAction(tr("You need to define some categories first."));
+      QAction* tmp=menu->addAction(tr("[You need to define some categories first]"));
       tmp->setEnabled(false);
     }
     else

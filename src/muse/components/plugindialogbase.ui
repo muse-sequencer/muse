@@ -71,16 +71,16 @@
          <number>0</number>
         </property>
         <property name="leftMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="topMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="bottomMargin">
-         <number>0</number>
+         <number>2</number>
         </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -90,15 +90,22 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <property name="spacing">
-             <number>0</number>
+             <number>2</number>
+            </property>
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="rightMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
             </property>
             <item>
              <widget class="QRadioButton" name="onlyM">
-              <property name="font">
-               <font>
-                <pointsize>8</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Mono</string>
               </property>
@@ -109,11 +116,6 @@
             </item>
             <item>
              <widget class="QRadioButton" name="onlySM">
-              <property name="font">
-               <font>
-                <pointsize>8</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Mono + Stereo</string>
               </property>
@@ -127,15 +129,22 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout">
             <property name="spacing">
-             <number>1</number>
+             <number>2</number>
+            </property>
+            <property name="leftMargin">
+             <number>2</number>
+            </property>
+            <property name="topMargin">
+             <number>2</number>
+            </property>
+            <property name="rightMargin">
+             <number>2</number>
+            </property>
+            <property name="bottomMargin">
+             <number>2</number>
             </property>
             <item>
              <widget class="QRadioButton" name="onlyS">
-              <property name="font">
-               <font>
-                <pointsize>8</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Stereo</string>
               </property>
@@ -146,11 +155,6 @@
             </item>
             <item>
              <widget class="QRadioButton" name="allPlug">
-              <property name="font">
-               <font>
-                <pointsize>8</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>All</string>
               </property>
@@ -247,6 +251,18 @@
      </item>
      <item row="2" column="3">
       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>2</number>
+       </property>
+       <property name="rightMargin">
+        <number>2</number>
+       </property>
+       <property name="bottomMargin">
+        <number>2</number>
+       </property>
        <item>
         <widget class="QPushButton" name="okB">
          <property name="text">

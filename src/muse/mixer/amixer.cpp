@@ -124,8 +124,9 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       menuStrips = menuView->addMenu(tr("Strips"));
       connect(menuStrips, &QMenu::aboutToShow, [this]() { stripsMenu(); } );
 
-      routingId = menuView->addAction(tr("Routing"));
+      routingId = menuView->addAction(tr("Advanced Router..."));
       routingId->setCheckable(true);
+      routingId->setIcon(*routerSVGIcon);
       connect(routingId, &QAction::triggered, [this]() { toggleRouteDialog(); } );
 
       menuView->addSeparator();
@@ -220,28 +221,33 @@ void AudioMixerApp::stripsMenu()
 {
   menuStrips->clear();
   connect(menuStrips, &QMenu::triggered, [this](QAction* a) { handleMenu(a); } );
-  QAction *act;
 
-  act = menuStrips->addAction(tr("Traditional order"));
+  QAction *act;
+  QActionGroup *ag = new QActionGroup(this);
+  ag->setExclusive(true);
+
+  act = ag->addAction(tr("Traditional Order"));
   act->setData(MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW);
   act->setCheckable(true);
   if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW)
     act->setChecked(true);
 
-  act = menuStrips->addAction(tr("Arranger order"));
+  act = ag->addAction(tr("Arranger Order"));
   act->setData(MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW);
   act->setCheckable(true);
   if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW)
     act->setChecked(true);
 
-  act = menuStrips->addAction(tr("User order"));
+  act = ag->addAction(tr("User Order"));
   act->setData(MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW);
   act->setCheckable(true);
   if (cfg->displayOrder == MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW)
     act->setChecked(true);
 
+  menuStrips->addActions(ag->actions());
+
   menuStrips->addSeparator();
-  act = menuStrips->addAction(tr("Show all hidden strips"));
+  act = menuStrips->addAction(tr("Show All Hidden Strips"));
   act->setData(UNHIDE_STRIPS);
   menuStrips->addSeparator();
 
@@ -249,7 +255,7 @@ void AudioMixerApp::stripsMenu()
   int i=0,h=0;
   foreach (Strip *s, stripList) {
     if (!s->getStripVisible()){
-      act = menuStrips->addAction(tr("Unhide strip: ") + s->getTrack()->name());
+      act = menuStrips->addAction(tr("Unhide Strip: ") + s->getTrack()->name());
       act->setData(i);
       h++;
     }

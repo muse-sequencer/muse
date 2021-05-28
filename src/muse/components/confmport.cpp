@@ -96,6 +96,17 @@ protected:
     }
 };
 
+class RightAlignDelegate: public QStyledItemDelegate{
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+protected:
+    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override
+    {
+        QStyledItemDelegate::initStyleOption(option, index);
+        option->displayAlignment = Qt::AlignRight;
+    }
+};
+
 //---------------------------------------------------------
 //   SynthItem
 //---------------------------------------------------------
@@ -952,9 +963,9 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
             case DEVCOL_DEF_OUT_CHANS:
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
                   item->setWhatsThis(tr("Connect new midi tracks to this channel, on this port.")); break;
-#else                      
+#else
                   item->setWhatsThis(tr("Connect new midi tracks to these channels, on this port.")); break;
-#endif                      
+#endif
             default:
                   break;
             }
@@ -1044,12 +1055,16 @@ MPConfig::MPConfig(QWidget* parent)
       QSettings settings;
       restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
 
-      RightIconDelegate *delegate = new RightIconDelegate(mdevView);
-      mdevView->setItemDelegate(delegate);
+      // number of instances should be right-aligned
+      RightAlignDelegate *alignDelegate = new RightAlignDelegate(synthList);
+      synthList->setItemDelegateForColumn(2, alignDelegate);
+
+      RightIconDelegate *iconDelegate = new RightIconDelegate(mdevView);
+      mdevView->setItemDelegate(iconDelegate);
 
       mdevView->setRowCount(MusECore::MIDI_PORTS);
       mdevView->verticalHeader()->hide();
-      mdevView->setShowGrid(false);
+//      mdevView->setShowGrid(false);
 
       _showAliases = 1; // 0: Show second aliases, if available. 
       
@@ -1057,8 +1072,8 @@ MPConfig::MPConfig(QWidget* parent)
       columnnames << tr("Port")             
                   << tr("Device Name")
                   << tr("Instrument")
-                  << tr("Def in ch")
-                  << tr("Def out ch");
+                  << tr("Def In Ch")
+                  << tr("Def Out Ch");
       
       mdevView->setColumnCount(columnnames.size());
       mdevView->setHorizontalHeaderLabels(columnnames);
@@ -1069,9 +1084,11 @@ MPConfig::MPConfig(QWidget* parent)
       mdevView->setFocusPolicy(Qt::NoFocus);
       mdevView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
       mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
-      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NAME ,QHeaderView::Stretch);
+//      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NAME ,QHeaderView::Stretch);
 
-
+      //instanceList->horizontalHeader()->setStretchLastSection( false );
+//      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_STATE, QHeaderView::Stretch);
+      instanceList->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
       
       instanceList->verticalHeader()->hide();
       instanceList->setShowGrid(false);
@@ -1441,16 +1458,14 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_OUTROUTES, QHeaderView::Fixed);
       instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_INROUTES, QHeaderView::Fixed);
       
-      //instanceList->horizontalHeader()->setStretchLastSection( false );
-      instanceList->horizontalHeader()->setSectionResizeMode(INSTCOL_STATE, QHeaderView::Stretch);
-      instanceList->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
       deviceSelectionChanged();
       
       synthList->resizeColumnToContents(1);
+      synthList->resizeColumnToContents(2);
+      synthList->resizeColumnToContents(3);
+      synthList->resizeColumnToContents(4);
       mdevView->resizeColumnsToContents();
-//      mdevView->horizontalHeader()->setSectionResizeMode(DEVCOL_NO ,QHeaderView::Fixed);
-            
-//      mdevView->horizontalHeader()->setStretchLastSection( true );
+
       selectionChanged();
       }
 

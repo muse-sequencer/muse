@@ -110,14 +110,20 @@
         <string>Favorites</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_6">
+        <property name="spacing">
+         <number>2</number>
+        </property>
         <property name="leftMargin">
          <number>12</number>
         </property>
         <property name="topMargin">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="rightMargin">
          <number>12</number>
+        </property>
+        <property name="bottomMargin">
+         <number>2</number>
         </property>
         <item>
          <widget class="QPushButton" name="pbAddFav">
@@ -149,7 +155,13 @@
        </property>
        <layout class="QFormLayout" name="formLayout">
         <property name="verticalSpacing">
-         <number>9</number>
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>4</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
         </property>
         <item row="0" column="0">
          <widget class="QLabel" name="label_2">
@@ -228,6 +240,9 @@
      </item>
      <item row="2" column="3">
       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <property name="leftMargin">
         <number>12</number>
        </property>
@@ -290,8 +305,17 @@
         <string>Category</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <property name="leftMargin">
          <number>9</number>
+        </property>
+        <property name="topMargin">
+         <number>2</number>
+        </property>
+        <property name="bottomMargin">
+         <number>2</number>
         </property>
         <item>
          <widget class="QRadioButton" name="rbSynths">
