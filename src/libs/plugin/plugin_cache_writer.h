@@ -45,9 +45,9 @@
 
 
 #ifdef VST_NATIVE_SUPPORT
-#ifdef VST_SDK_QUIRK
+#ifdef VST_SDK_QUIRK_DEF
 #define __cdecl
-#endif // VST_SDK_QUIRK
+#endif // VST_SDK_QUIRK_DEF
 
 #include "aeffectx.h"
 
@@ -72,11 +72,11 @@ enum VstStringLengths
 namespace MusEPlugin {
 enum VstStringLengths
 {
-  MaxVstNameLen       = 64,
-  MaxVstLabelLen      = 64,
-  MaxVstShortLabelLen = 8,
-  MaxVstCategLabelLen = 24,
-  MaxVstFileNameLen   = 100
+  VstNameLen          = 64,
+  VstLabelLen         = 64,
+  VstShortLabelLen    = 8,
+  VstCategoryLabelLen = 24,
+  VstFileNameLen      = 100
 };
 } // namespace MusEPlugin
 #endif // VST_VESTIGE_SUPPORT

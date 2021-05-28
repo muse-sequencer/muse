@@ -43,7 +43,7 @@
 
 #ifdef VST_NATIVE_SUPPORT
 
-#ifdef VST_SDK_QUIRK
+#ifdef VST_SDK_QUIRK_DEF
 #define __cdecl
 #endif
 

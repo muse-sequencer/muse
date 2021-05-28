@@ -46,7 +46,7 @@ class VstNativeSynthIF;
 
 typedef class VstNativeSynthIF VSTPlugin;
 
-#ifdef VST_SDK_QUIRK
+#ifdef VST_SDK_QUIRK_DEF
 #define __cdecl
 #endif
 

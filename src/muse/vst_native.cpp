@@ -3408,10 +3408,6 @@ void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float 
    {
      state->plugin->processReplacing(state->plugin, &state->inPorts [0], &state->outPorts [0], n);
    }
-   else if(state->plugin->process)
-   {
-      state->plugin->process(state->plugin, &state->inPorts [0], &state->outPorts [0], n);
-   }
    state->inProcess = false;
 
 }

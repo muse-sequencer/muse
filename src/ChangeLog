@@ -5,6 +5,7 @@
     - Add: Shortcut for Add track menu (default Insert). (kybos)
     - Fix: Disallow Return and Escape as customizable keys to avoid conflicts. (kybos) 
     - Fix: Non-standard dropdowns in Midi config dialog. (kybos)
+    - Possible fix 1013 + fix related errors in config.h.in + headers ex. plugin_cache_writer.h etc. (Tim)
 26.05.2021
     - Add track menu: Move "Recently Used" to root + add key mnemonics
         + trigger also by left mouse button (track list) for faster access. (kybos)
