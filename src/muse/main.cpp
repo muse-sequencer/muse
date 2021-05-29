@@ -1502,12 +1502,13 @@ int main(int argc, char* argv[])
         if (MusEGlobal::useLASH) // if false, then it was disabled by command line switch
             MusEGlobal::useLASH = MusEGlobal::config.enableLash;
 
-        qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
-                 << "Init LASH...";
         {
           MusEGui::lash_client = 0;
           if(MusEGlobal::useLASH)
           {
+              qDebug() << "->" << qPrintable(QTime::currentTime().toString("hh:mm:ss.zzz"))
+                       << "Init LASH...";
+
             if(muse_splash)
             {
               muse_splash->showMessage(splash_prefix + QString(" Initializing LASH support..."),

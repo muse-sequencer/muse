@@ -2602,23 +2602,23 @@ void Song::seqSignal(int fd)
                         {
                         // give the user a sensible explanation
                         int btn = QMessageBox::critical( MusEGlobal::muse, tr("Jack shutdown!"),
-                            tr("Jack has detected a performance problem which has lead to\n"
+                            tr("Jack has detected a performance problem which has led to\n"
                             "MusE being disconnected.\n"
                             "This could happen due to a number of reasons:\n"
-                            "- a performance issue with your particular setup.\n"
-                            "- a bug in MusE (or possibly in another connected software).\n"
-                            "- a random hiccup which might never occur again.\n"
-                            "- jack was voluntary stopped by you or someone else\n"
-                            "- jack crashed\n"
+                            "- a performance issue with your particular setup\n"
+                            "- a bug in MusE (or possibly in another connected software)\n"
+                            "- a random hiccup which might never occur again\n"
+                            "- Jack was voluntarily stopped by you or someone else\n"
+                            "- Jack crashed\n"
                             "If there is a persisting problem you are much welcome to discuss it\n"
-                            "on the MusE mailinglist.\n"
-                            "(there is information about joining the mailinglist on the MusE\n"
-                            " homepage which is available through the help menu)\n"
+                            "on the MusE forum\n"
+                            "(there is information about the forum on the MusE\n"
+                            " homepage which is available through the help menu).\n"
                             "\n"
-                            "To proceed check the status of Jack and try to restart it and then .\n"
-                            "click on the Restart button."), "restart", "cancel");
+                            "To proceed check the status of Jack and try to restart it and then\n"
+                            "click on the Restart button."), "Restart", "Cancel");
                         if (btn == 0) {
-                              fprintf(stderr, "restarting!\n");
+                              fprintf(stderr, "Restarting!\n");
                               MusEGlobal::muse->seqRestart();
                               }
                         }
