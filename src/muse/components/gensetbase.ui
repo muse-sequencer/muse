@@ -80,32 +80,11 @@
        <string>Application</string>
       </attribute>
       <layout class="QGridLayout">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="projDirGroupBox">
-         <property name="title">
-          <string>Global project folder</string>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="autoSaveCheckBox">
+         <property name="text">
+          <string>Auto save (every 5 minutes if not playing/recording)</string>
          </property>
-         <layout class="QHBoxLayout" name="qhboxProjDir">
-          <property name="spacing">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>2</number>
-          </property>
-          <property name="bottomMargin">
-           <number>2</number>
-          </property>
-          <item>
-           <widget class="QLineEdit" name="projDirEntry"/>
-          </item>
-          <item>
-           <widget class="QToolButton" name="projDirOpenToolButton">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </widget>
        </item>
        <item row="4" column="0">
@@ -256,6 +235,34 @@
          </layout>
         </widget>
        </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="projDirGroupBox">
+         <property name="title">
+          <string>Global project folder</string>
+         </property>
+         <layout class="QHBoxLayout" name="qhboxProjDir">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="QLineEdit" name="projDirEntry"/>
+          </item>
+          <item>
+           <widget class="QToolButton" name="projDirOpenToolButton">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="1" column="0">
         <spacer name="verticalSpacer_8">
          <property name="orientation">
@@ -268,26 +275,6 @@
           <size>
            <width>20</width>
            <height>10</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="autoSaveCheckBox">
-         <property name="text">
-          <string>Auto save (every 5 minutes if not playing/recording)</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <spacer name="verticalSpacer_7">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
           </size>
          </property>
         </spacer>
@@ -307,6 +294,35 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="6" column="0">
+        <spacer name="verticalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="5" column="0">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Session management</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <widget class="QCheckBox" name="cbEnableLash">
+            <property name="text">
+             <string>Enable LASH</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>

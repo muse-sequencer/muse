@@ -164,7 +164,7 @@ const char* midi_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Midi (*.mid *.MID *.mid.gz *.mid.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "Karaoke (*.kar *.KAR *.kar.gz *.kar.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+      nullptr
       };
 
 //FIXME: By T356 01/19/2010

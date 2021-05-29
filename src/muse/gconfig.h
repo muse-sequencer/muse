@@ -349,6 +349,7 @@ struct GlobalConfigValues {
 //      bool arrangerVisible;
 
       bool showSplashScreen;
+      bool enableLash;
       int canvasShowPartType;       // 1 - names, 2 events
       int canvasShowPartEvent;      //
       bool canvasShowGrid;

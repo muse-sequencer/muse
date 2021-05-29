@@ -225,6 +225,11 @@ void GlobalSettingsConfig::updateSettings()
       
       recDrumGroup->button(MusEGlobal::config.newDrumRecordCondition)->setChecked(true);
 
+      cbEnableLash->setChecked(MusEGlobal::config.enableLash);
+#ifndef HAVE_LASH
+      cbEnableLash->setEnabled(false);
+#endif
+
       showSplash->setChecked(MusEGlobal::config.showSplashScreen);
       showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
       externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
@@ -339,7 +344,9 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.showNoteTooltips = showNoteTooltipsCheckBox->isChecked();
       MusEGlobal::config.showTimeScaleBeatNumbers = showTimeScaleBeatNumbersCheckBox->isChecked();
       MusEGlobal::config.preferMidiVolumeDb = preferMidiVolumeDbCheckBox->isChecked();
+
       MusEGlobal::config.showSplashScreen = showSplash->isChecked();
+      MusEGlobal::config.enableLash = cbEnableLash->isChecked();
       MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
       MusEGlobal::config.externalWavEditor = externalWavEditorSelect->text();
       MusEGlobal::config.moveArmedCheckBox = moveArmedCheckBox->isChecked();

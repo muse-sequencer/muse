@@ -1,3 +1,5 @@
+29.05.2021
+    - Add: Global setting to enable LASH. Disabled by default. (kybos)
 28.05.2021
     - Change default to sliders instead of knobs in mixer etc. (kybos)
 27.05.2021
@@ -9,8 +11,8 @@
     - Fix: Non-standard dropdowns in Midi config dialog. (kybos)
     - Possible fix 1013 + fix related errors in config.h.in + headers ex. plugin_cache_writer.h etc. (Tim)
 26.05.2021
-    - Add track menu: Move "Recently Used" to root + add key mnemonics
-        + trigger also by left mouse button (track list) for faster access. (kybos)
+    - Add track menu: Move "Recently Used" to menu root.
+        Add key mnemonics for still faster access. (kybos)
     - Enable polyphony for piano in pianoroll. (kybos)
     - Fix: Step recording: Cursor not forwarded after chords. (kybos)
 25.05.2021

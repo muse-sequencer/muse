@@ -1094,6 +1094,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         
                         else if (tag == "showSplashScreen")
                               MusEGlobal::config.showSplashScreen = xml.parseInt();
+                        else if (tag == "enableLash")
+                            MusEGlobal::config.enableLash = xml.parseInt();
                         else if (tag == "canvasShowPartType")
                               MusEGlobal::config.canvasShowPartType = xml.parseInt();
                         else if (tag == "canvasShowPartEvent")
@@ -2125,6 +2127,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       MusEGlobal::config.mixer2.write(level, xml, true);
 
       xml.intTag(level, "showSplashScreen", MusEGlobal::config.showSplashScreen);
+      xml.intTag(level, "enableLash", MusEGlobal::config.enableLash);
       xml.intTag(level, "canvasShowPartType", MusEGlobal::config.canvasShowPartType);
       xml.intTag(level, "canvasShowPartEvent", MusEGlobal::config.canvasShowPartEvent);
       xml.intTag(level, "canvasShowGrid", MusEGlobal::config.canvasShowGrid);

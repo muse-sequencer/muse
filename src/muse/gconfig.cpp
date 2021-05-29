@@ -325,6 +325,7 @@ GlobalConfigValues config = {
       false,                        // markerVisible;
 //      true,                         // arrangerVisible;
       true,                         // showSplashScreen
+      false,                        // enableLash
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
       true,                         // canvasShowGrid;
