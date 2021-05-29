@@ -99,7 +99,7 @@
        </column>
        <column>
         <property name="text">
-         <string>URI / File</string>
+         <string>URI/Library</string>
         </property>
        </column>
       </widget>

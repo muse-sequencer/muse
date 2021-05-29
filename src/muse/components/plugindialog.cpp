@@ -1,5 +1,6 @@
 #include <QMenu>
 #include <QInputDialog>
+#include <QStyledItemDelegate>
 
 #include "globaldefs.h"
 #include "popupmenu.h"
@@ -34,6 +35,19 @@ PluginItem::PluginItem(
   
 }
 
+
+class RightAlignDelegate: public QStyledItemDelegate{
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+protected:
+    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override
+    {
+        QStyledItemDelegate::initStyleOption(option, index);
+        option->displayAlignment = Qt::AlignRight;
+    }
+};
+
+
 //---------------------------------------------------------
 //   PluginDialog
 //    select Plugin dialog
@@ -43,8 +57,9 @@ PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
 {
     ui.setupUi(this);
-    // this dlg is called from the mixer strip so it would inherit the small font size
+    // this dlg is called from the mixer strip so it inherits the small font size
     setStyleSheet("* {font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt}");
+    ui.sortBox->setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
 
       group_info=nullptr;
       setWindowTitle(tr("MusE: Select Plugin"));
@@ -61,38 +76,38 @@ PluginDialog::PluginDialog(QWidget* parent)
         ui.tabBar->addTab(*it);
 
 
-      //pList  = new QTreeWidget(this);
+      ui.pList->setColumnCount(COL_COUNT);
 
-      ui.pList->setColumnCount(12);
       // "Note: In order to avoid performance issues, it is recommended that sorting
       //   is enabled after inserting the items into the tree. Alternatively, you could
       //   also insert the items into a list before inserting the items into the tree. "
+
       QStringList headerLabels;
-      headerLabels << tr("Type");
-      headerLabels << tr("Lib");
-      headerLabels << tr("Label");
       headerLabels << tr("Name");
-      headerLabels << tr("AudIn");
-      headerLabels << tr("AudOut");
-      headerLabels << tr("CtlIn");
-      headerLabels << tr("CtlOut");
+      headerLabels << tr("Type");
+      headerLabels << tr("Aud In");
+      headerLabels << tr("Aud Out");
+      headerLabels << tr("Ctrl In");
+      headerLabels << tr("Ctrl Out");
       headerLabels << tr("InPlace");
       headerLabels << tr("FixBlk");
-      headerLabels << tr("X2");
+      headerLabels << tr("BlkX2");
       headerLabels << tr("ID");
       headerLabels << tr("Maker");
+      headerLabels << tr("Label");
+      headerLabels << tr("URI/Library");
       headerLabels << tr("Copyright");
 
       ui.pList->setHeaderLabels(headerLabels);
 
-      ui.pList->headerItem()->setToolTip(4,  tr("Audio inputs"));
-      ui.pList->headerItem()->setToolTip(5,  tr("Audio outputs"));
-      ui.pList->headerItem()->setToolTip(6,  tr("Control inputs"));
-      ui.pList->headerItem()->setToolTip(7,  tr("Control outputs"));
-      ui.pList->headerItem()->setToolTip(8,  tr("In-place capable"));
-      ui.pList->headerItem()->setToolTip(9,  tr("Requires fixed block size"));
-      ui.pList->headerItem()->setToolTip(10, tr("Requires power-of-2 block size"));
-      ui.pList->headerItem()->setToolTip(11, tr("ID number"));
+      ui.pList->headerItem()->setToolTip(COL_AUDIO_IN,  tr("Audio inputs"));
+      ui.pList->headerItem()->setToolTip(COL_AUDIO_OUT,  tr("Audio outputs"));
+      ui.pList->headerItem()->setToolTip(COL_CTRL_IN,  tr("Control inputs"));
+      ui.pList->headerItem()->setToolTip(COL_CTRL_OUT,  tr("Control outputs"));
+      ui.pList->headerItem()->setToolTip(COL_INPLACE,  tr("In-place capable"));
+      ui.pList->headerItem()->setToolTip(COL_FIXED_BLOCK,  tr("Requires fixed block size"));
+      ui.pList->headerItem()->setToolTip(COL_POWER_2, tr("Requires power-of-2 block size"));
+      ui.pList->headerItem()->setToolTip(COL_ID, tr("ID number"));
 
       ui.pList->setRootIsDecorated(false);
       ui.pList->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -100,6 +115,13 @@ PluginDialog::PluginDialog(QWidget* parent)
       ui.pList->setAlternatingRowColors(true);
       ui.pList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
       ui.pList->setContextMenuPolicy(Qt::CustomContextMenu);
+
+      RightAlignDelegate *alignDelegate = new RightAlignDelegate(ui.pList);
+      ui.pList->setItemDelegateForColumn(COL_AUDIO_IN, alignDelegate);
+      ui.pList->setItemDelegateForColumn(COL_AUDIO_OUT, alignDelegate);
+      ui.pList->setItemDelegateForColumn(COL_CTRL_IN, alignDelegate);
+      ui.pList->setItemDelegateForColumn(COL_CTRL_OUT, alignDelegate);
+      ui.pList->setItemDelegateForColumn(COL_ID, alignDelegate);
 
 
       ui.okB->setDefault(true);
@@ -155,20 +177,24 @@ PluginDialog::PluginDialog(QWidget* parent)
 
       fillPlugs();
 
+      ui.pList->header()->setCascadingSectionResizes(true);
       ui.pList->setSortingEnabled(true);
+      ui.pList->sortByColumn(COL_NAME, Qt::AscendingOrder);
 
-      if(listSave.isEmpty())
-      {
-        int sizes[] = { 80, 110, 110, 110, 30, 30, 30, 30, 30, 30, 30, 50, 110, 110 };
-        for (int i = 0; i < 12; ++i) {
-              if (sizes[i] <= 50)     // hack alert!
-                    ui.pList->header()->setSectionResizeMode(i, QHeaderView::Fixed);
-              ui.pList->header()->resizeSection(i, sizes[i]);
-        }
-        ui.pList->sortByColumn(3, Qt::AscendingOrder);
-      }
-      else
-        ui.pList->header()->restoreState(listSave);
+      ui.pList->resizeColumnToContents(COL_NAME);
+      ui.pList->resizeColumnToContents(COL_TYPE);
+      ui.pList->setColumnWidth(COL_AUDIO_IN, 50);
+      ui.pList->setColumnWidth(COL_AUDIO_OUT, 60);
+      ui.pList->setColumnWidth(COL_CTRL_IN, 50);
+      ui.pList->setColumnWidth(COL_CTRL_OUT, 60);
+      ui.pList->setColumnWidth(COL_INPLACE, 50);
+      ui.pList->setColumnWidth(COL_FIXED_BLOCK, 50);
+      ui.pList->setColumnWidth(COL_POWER_2, 50);
+      ui.pList->setColumnWidth(COL_ID, 40);
+      ui.pList->setColumnWidth(COL_MAKER, 120);
+
+      if (!listSave.isEmpty())
+          ui.pList->header()->restoreState(listSave);
 
       connect(ui.pList,   SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(accept()));
       connect(ui.pList,   SIGNAL(itemClicked(QTreeWidgetItem*,int)), SLOT(enableOkB()));
@@ -300,9 +326,9 @@ MusECore::Plugin* PluginDialog::value()
       if (item)
       {
         return MusEGlobal::plugins.find(
-          !item->hasUri() ? item->text(1) : QString(),
-          item->hasUri()  ? item->text(1) : QString(),
-          item->text(2));
+          !item->hasUri() ? item->text(COL_URI) : QString(),
+          item->hasUri()  ? item->text(COL_URI) : QString(),
+          item->text(COL_LABEL));
       }
       printf("plugin not found\n");
       return nullptr;
@@ -476,27 +502,27 @@ void PluginDialog::fillPlugs()
             }
 
             PluginItem* item = new PluginItem(!(*i)->uri().isEmpty());
-            item->setText(0,  type_name);
+            item->setText(COL_TYPE,  type_name);
             if(!(*i)->uri().isEmpty())
-              item->setText(1,  (*i)->uri());
+              item->setText(COL_URI,  (*i)->uri());
             else
-              item->setText(1,  (*i)->lib());
+              item->setText(COL_URI,  (*i)->lib());
 
-            item->setText(2,  (*i)->label());
-            item->setText(3,  (*i)->name());
-            item->setText(4,  QString().setNum(ai));
-            item->setText(5,  QString().setNum(ao));
-            item->setText(6,  QString().setNum(ci));
-            item->setText(7,  QString().setNum(co));
-            if( !((*i)->requiredFeatures() & MusECore::PluginNoInPlaceProcessing) )
-              item->setText(8,  "*");
-            if( (*i)->requiredFeatures() & MusECore::PluginFixedBlockSize )
-              item->setText(9,  "*");
-            if( (*i)->requiredFeatures() & MusECore::PluginPowerOf2BlockSize )
-              item->setText(10,  "*");
-            item->setText(11,  QString().setNum((*i)->id()));
-            item->setText(12,  (*i)->maker());
-            item->setText(13,  (*i)->copyright());
+            item->setText(COL_LABEL,  (*i)->label());
+            item->setText(COL_NAME,  (*i)->name());
+            item->setText(COL_AUDIO_IN,  QString().setNum(ai));
+            item->setText(COL_AUDIO_OUT,  QString().setNum(ao));
+            item->setText(COL_CTRL_IN,  QString().setNum(ci));
+            item->setText(COL_CTRL_OUT,  QString().setNum(co));
+            bool flag = !((*i)->requiredFeatures() & MusECore::PluginNoInPlaceProcessing);
+            item->setText(COL_INPLACE,  flag ? tr("Yes") : tr("No"));
+            flag =(*i)->requiredFeatures() & MusECore::PluginFixedBlockSize;
+            item->setText(COL_FIXED_BLOCK,  flag ? tr("Yes") : tr("No"));
+            flag = (*i)->requiredFeatures() & MusECore::PluginPowerOf2BlockSize;
+            item->setText(COL_POWER_2,  flag ? tr("Yes") : tr("No"));
+            item->setText(COL_ID,  QString().setNum((*i)->id()));
+            item->setText(COL_MAKER,  (*i)->maker());
+            item->setText(COL_COPYRIGHT,  (*i)->copyright());
             ui.pList->addTopLevelItem(item);
          }
       }
