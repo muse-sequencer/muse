@@ -116,7 +116,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
 
       //cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW;
 
-      QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
+      menuConfig = menuBar()->addMenu(tr("&Create"));
       MusEGui::populateAddTrack(menuConfig,true);
       connect(menuConfig, &QMenu::triggered, [](QAction* a) { MusEGlobal::song->addNewTrack(a); } );
       
@@ -1009,6 +1009,11 @@ QWidget* AudioMixerApp::setupComponentTabbing(QWidget* previousWidget)
 void AudioMixerApp::songChanged(MusECore::SongChangedStruct_t flags)
 {
   bool changed = false;
+
+  if (flags & SC_TRACK_INSERTED) {
+      menuConfig->clear();
+      MusEGui::populateAddTrack(menuConfig,true);
+  }
 
   if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED))
   {
