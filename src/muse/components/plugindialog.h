@@ -32,6 +32,12 @@ class PluginDialog : public QDialog {
       Q_OBJECT
       enum SelectedPluginPortTypes { SEL_PORT_SM, SEL_PORT_S, SEL_PORT_M, SEL_PORT_ALL };
       enum SelectedPluginTypes { SEL_TYPE_DSSI, SEL_TYPE_LADSPA, SEL_TYPE_LV2, SEL_TYPE_VST, SEL_TYPE_WINE_VST, SEL_TYPE_ALL};
+      enum { COL_NAME, COL_TYPE,
+             COL_AUDIO_IN, COL_AUDIO_OUT, COL_CTRL_IN, COL_CTRL_OUT,
+             COL_INPLACE, COL_FIXED_BLOCK, COL_POWER_2,
+             COL_ID, COL_MAKER, COL_LABEL, COL_URI, COL_COPYRIGHT,
+             COL_COUNT
+           };
 
    public:
       explicit PluginDialog(QWidget* parent=0);

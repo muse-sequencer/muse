@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>636</width>
-    <height>411</height>
+    <width>711</width>
+    <height>471</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,6 +48,18 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="indentation">
+        <number>0</number>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <attribute name="headerMinimumSectionSize">
+        <number>40</number>
+       </attribute>
+       <attribute name="headerDefaultSectionSize">
+        <number>100</number>
+       </attribute>
        <column>
         <property name="text">
          <string notr="true">1</string>
