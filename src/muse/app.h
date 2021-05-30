@@ -221,6 +221,8 @@ class MusE : public QMainWindow
     SnooperDialog* _snooperDialog;
     AudioMixerApp* mixer1;
     AudioMixerApp* mixer2;
+    QDockWidget* mixer1Dock;
+    QDockWidget* mixer2Dock;
     RouteDialog* routeDialog;
     // NOTE: For deleting parentless dialogs and widgets, please add them to deleteParentlessDialogs().
     void deleteParentlessDialogs();

@@ -467,6 +467,17 @@ MusE::MusE() : QMainWindow()
       addDockWidget(Qt::RightDockWidgetArea, clipListDock);
       clipListDock->hide();
 
+      mixer1Dock = new QDockWidget("Mixer A", this);
+      mixer1Dock->setObjectName("mixer1Dock");
+      mixer1Dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+      mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
+      mixer1Dock->setWidget(mixer1);
+      addDockWidget(Qt::BottomDockWidgetArea, mixer1Dock);
+      mixer1Dock->hide();
+
+      mixer1->setMinimumHeight(400);
+
+
       //---------------------------------------------------
       //    undo/redo
       //---------------------------------------------------
@@ -3810,16 +3821,17 @@ void MusE::bigtimeClosed()
 //---------------------------------------------------------
 
 void MusE::showMixer1(bool on)
-      {
-      if (on && mixer1 == nullptr) {
-            mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
-            connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
-            mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
-      }
-      if (mixer1)
-            mixer1->setVisible(on);
-      viewMixerAAction->setChecked(on);
-      }
+{
+    //      if (on && mixer1 == nullptr) {
+    //            mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
+    //            connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
+    //            mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
+    //      }
+    //      if (mixer1)
+    //            mixer1->setVisible(on);
+    mixer1Dock->setVisible(on);
+    viewMixerAAction->setChecked(on);
+}
 
 
 //---------------------------------------------------------
@@ -3844,7 +3856,8 @@ void MusE::showMixer2(bool on)
 
 void MusE::toggleMixer1(bool checked)
       {
-      showMixer1(checked);
+      mixer1Dock->setVisible(checked);
+//      showMixer1(checked);
       }
 
 //---------------------------------------------------------
