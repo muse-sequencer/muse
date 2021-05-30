@@ -117,7 +117,6 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       //cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW;
 
       menuConfig = menuBar()->addMenu(tr("&Create"));
-//      MusEGui::populateAddTrack(menuConfig,true);
       connect(menuConfig, &QMenu::aboutToShow, [=]() { MusEGui::populateAddTrack(menuConfig, true); } );
       connect(menuConfig, &QMenu::aboutToHide, [=]() { menuConfig->clear(); } );
       connect(menuConfig, &QMenu::triggered, [](QAction* a) { MusEGlobal::song->addNewTrack(a); } );
