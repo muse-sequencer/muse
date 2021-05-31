@@ -1388,34 +1388,39 @@ void midiPortsPopupMenu(MusECore::Track* t, int x, int y, bool allClassPorts,
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, bool addHeader)
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, bool addkey)
       {
       QActionGroup* grp = new QActionGroup(addTrack);
 
       if (MusEGlobal::config.addHiddenTracks)
-        populateAll=true;
+          populateAll=true;
 
-      if (addHeader)
-          addTrack->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Track")), addTrack));
+      addTrack->addAction(new MusEGui::MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", insert ? "Insert Track" : "Add Track")), addTrack));
 
       if (populateAll || MusECore::MidiTrack::visible()) {
         QAction* midi = addTrack->addAction(*pianorollSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Midi Track")));
         midi->setData(MusECore::Track::MIDI);
-        midi->setShortcut(shortcuts[insert ? SHRT_INSERT_MIDI_TRACK : SHRT_ADD_MIDI_TRACK].key);
+//        midi->setShortcut(shortcuts[insert ? SHRT_INSERT_MIDI_TRACK : SHRT_ADD_MIDI_TRACK].key);
+        if (addkey)
+            midi->setText(midi->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_MIDI_TRACK : SHRT_ADD_MIDI_TRACK].key).toString());
         grp->addAction(midi);
 
         QAction* drum = addTrack->addAction(*drumeditSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Drum Track")));
         drum->setData(MusECore::Track::DRUM);
-        drum->setShortcut(shortcuts[insert ? SHRT_INSERT_DRUM_TRACK : SHRT_ADD_DRUM_TRACK].key);
+//        drum->setShortcut(shortcuts[insert ? SHRT_INSERT_DRUM_TRACK : SHRT_ADD_DRUM_TRACK].key);
+        if (addkey)
+            drum->setText(drum->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_DRUM_TRACK : SHRT_ADD_DRUM_TRACK].key).toString());
         grp->addAction(drum);
       }
       if (populateAll || MusECore::WaveTrack::visible()) {
         QAction* wave = addTrack->addAction(*waveeditorSVGIcon,
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Wave Track")));
        wave->setData(MusECore::Track::WAVE);
-       wave->setShortcut(shortcuts[insert ? SHRT_INSERT_WAVE_TRACK : SHRT_ADD_WAVE_TRACK].key);
+//       wave->setShortcut(shortcuts[insert ? SHRT_INSERT_WAVE_TRACK : SHRT_ADD_WAVE_TRACK].key);
+       if (addkey)
+           wave->setText(wave->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_WAVE_TRACK : SHRT_ADD_WAVE_TRACK].key).toString());
        grp->addAction(wave);
       }
 
@@ -1423,7 +1428,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* aoutput = addTrack->addAction(*trackOutputSVGIcon,
                                                qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Output")));
         aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
-        aoutput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_OUTPUT : SHRT_ADD_AUDIO_OUTPUT].key);
+//        aoutput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_OUTPUT : SHRT_ADD_AUDIO_OUTPUT].key);
+        if (addkey)
+            aoutput->setText(aoutput->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_OUTPUT : SHRT_ADD_AUDIO_OUTPUT].key).toString());
         grp->addAction(aoutput);
       }
 
@@ -1431,7 +1438,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* agroup = addTrack->addAction(*trackGroupVGIcon,
                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Group")));
         agroup->setData(MusECore::Track::AUDIO_GROUP);
-        agroup->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_GROUP : SHRT_ADD_AUDIO_GROUP].key);
+//        agroup->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_GROUP : SHRT_ADD_AUDIO_GROUP].key);
+        if (addkey)
+            agroup->setText(agroup->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_GROUP : SHRT_ADD_AUDIO_GROUP].key).toString());
         grp->addAction(agroup);
       }
 
@@ -1439,7 +1448,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* ainput = addTrack->addAction(*trackInputSVGIcon,
                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Audio Input")));
         ainput->setData(MusECore::Track::AUDIO_INPUT);
-        ainput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_INPUT : SHRT_ADD_AUDIO_INPUT].key);
+//        ainput->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_INPUT : SHRT_ADD_AUDIO_INPUT].key);
+        if (addkey)
+            ainput->setText(ainput->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_INPUT : SHRT_ADD_AUDIO_INPUT].key).toString());
         grp->addAction(ainput);
       }
 
@@ -1447,7 +1458,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
         QAction* aaux = addTrack->addAction(*trackAuxSVGIcon,
                                             qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Aux Send")));
         aaux->setData(MusECore::Track::AUDIO_AUX);
-        aaux->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_AUX : SHRT_ADD_AUDIO_AUX].key);
+//        aaux->setShortcut(shortcuts[insert ? SHRT_INSERT_AUDIO_AUX : SHRT_ADD_AUDIO_AUX].key);
+        if (addkey)
+            aaux->setText(aaux->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_AUDIO_AUX : SHRT_ADD_AUDIO_AUX].key).toString());
         grp->addAction(aaux);
       }
 
@@ -1456,7 +1469,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
           QAction *asynthd = addTrack->addAction(*synthSVGIcon,
                                                    qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Synths...")));
           asynthd->setData(MusECore::Track::AUDIO_SOFTSYNTH);
-          asynthd->setShortcut(shortcuts[insert ? SHRT_INSERT_SYNTH_TRACK : SHRT_ADD_SYNTH_TRACK].key);
+//          asynthd->setShortcut(shortcuts[insert ? SHRT_INSERT_SYNTH_TRACK : SHRT_ADD_SYNTH_TRACK].key);
+          if (addkey)
+              asynthd->setText(asynthd->text() + "\t" + QKeySequence(shortcuts[insert ? SHRT_INSERT_SYNTH_TRACK : SHRT_ADD_SYNTH_TRACK].key).toString());
           grp->addAction(asynthd);
 
           auto favsIdx = SynthDialog::getFavsIdx();
