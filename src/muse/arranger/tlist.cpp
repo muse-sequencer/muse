@@ -132,9 +132,6 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
     ctrl_edit = nullptr;
     mode      = NORMAL;
 
-    addTrackMenu = nullptr;
-    insertTrackMenu = nullptr;
-
     _sel3d = true;
     _curSelBorder = false;
     _curSelBorderColor = Qt::red;
@@ -1874,7 +1871,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
         if (button == Qt::RightButton) {
 
             // Show the menu
-            QAction* act = addTrackMenu->exec(ev->globalPos(), nullptr);
+            QMenu m(this);
+            MusEGui::populateAddTrack(&m, false, false);
+            QAction* act = m.exec(ev->globalPos(), nullptr);
 
             // Valid click?
             if(act)
@@ -2413,8 +2412,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     // 1016 is occupied.
                     p->addSeparator();
                 }
-                insertTrackMenu->setTitle(tr("Insert Track"));
-                p->addMenu(insertTrackMenu);
+                QMenu m(this);
+                m.setTitle(tr("Insert Track"));
+                MusEGui::populateAddTrack(&m, false, true);
+                p->addMenu(&m);
 
                 QAction* act = p->exec(ev->globalPos(), nullptr);
                 if (act) {
@@ -3244,26 +3245,16 @@ void TList::setHeader(Header* h)
     redraw();
 }
 
-void TList::populateAddTrack()
-{
-    if (!addTrackMenu)
-        addTrackMenu = new QMenu(this);
-    else
-        addTrackMenu->clear();
-
-    MusEGui::populateAddTrack(addTrackMenu, false, false);
-
-    if (!insertTrackMenu)
-        insertTrackMenu = new QMenu(this);
-    else
-        insertTrackMenu->clear();
-
-    MusEGui::populateAddTrack(insertTrackMenu, false, true);
-}
-
 void TList::openAddTrackMenu()
 {
-    QAction* act = addTrackMenu->exec(mapToGlobal(pos() + QPoint(5,0)), nullptr);
+    if (addTrackOpened)
+        return;
+
+    addTrackOpened = true;
+
+    QMenu m(this);
+    MusEGui::populateAddTrack(&m, false, false);
+    QAction* act = m.exec(mapToGlobal(pos() + QPoint(5,0)), nullptr);
     if (act) {
         auto t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
         if (t && t->isVisible()) {
@@ -3273,6 +3264,7 @@ void TList::openAddTrackMenu()
             adjustScrollbar();
         }
     }
+    addTrackOpened = false;
 }
 
 
