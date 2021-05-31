@@ -342,6 +342,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
 
   openAddTrackMenuAction = new QAction(this);
+  openAddTrackMenuAction->setShortcutContext(Qt::ApplicationShortcut);
   addAction(openAddTrackMenuAction);
   connect(openAddTrackMenuAction, &QAction::triggered, [=](){ arranger->getTrackList()->openAddTrackMenu(); });
 
@@ -947,9 +948,6 @@ void ArrangerView::populateAddTrack()
     trackIInputAction->setShortcutContext(Qt::ApplicationShortcut);
     trackIAuxAction->setShortcutContext(Qt::ApplicationShortcut);
     trackISynthAction->setShortcutContext(Qt::ApplicationShortcut);
-
-    // populate right click menu on trackList
-    arranger->getTrackList()->populateAddTrack();
 }
 
 void ArrangerView::addNewTrack(QAction* action)
@@ -985,7 +983,6 @@ void ArrangerView::updateShortcuts()
       //editDeleteSelectedAction has no acceleration
 
       populateAddTrack();
-//      arranger->getTrackList()->populateAddTrack();
       
       trackAMidiAction->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key);
       trackADrumAction->setShortcut(shortcuts[SHRT_ADD_DRUM_TRACK].key);

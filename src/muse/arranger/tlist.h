@@ -92,8 +92,8 @@ class TList : public QWidget {
 
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
+      bool addTrackOpened = false;
 
-      QMenu *addTrackMenu, *insertTrackMenu;
       Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
@@ -183,7 +183,6 @@ class TList : public QWidget {
       TList(Header*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { _scroll = s; }
       MusECore::Track* track() const { return editTrack; }
-      void populateAddTrack();
       void openAddTrackMenu();
       bool sel3d() const { return _sel3d; }
       void setSel3d(bool sel3d) { _sel3d = sel3d; }
