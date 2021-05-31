@@ -904,31 +904,49 @@ void ArrangerView::populateAddTrack()
 {
     // populate add track menu
     addTrack->clear();
-    QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true);
+    QActionGroup *addGroup = MusEGui::populateAddTrack(addTrack, true, false, false);
 
     int idx = 0;
-    trackAMidiAction = addGroup->actions().at(idx++);
-    trackADrumAction = addGroup->actions().at(idx++);
-    trackAWaveAction = addGroup->actions().at(idx++);
+    trackAMidiAction   = addGroup->actions().at(idx++);
+    trackADrumAction   = addGroup->actions().at(idx++);
+    trackAWaveAction   = addGroup->actions().at(idx++);
     trackAOutputAction = addGroup->actions().at(idx++);
-    trackAGroupAction = addGroup->actions().at(idx++);
-    trackAInputAction = addGroup->actions().at(idx++);
-    trackAAuxAction = addGroup->actions().at(idx++);
-    trackASynthAction = addGroup->actions().at(idx++);
+    trackAGroupAction  = addGroup->actions().at(idx++);
+    trackAInputAction  = addGroup->actions().at(idx++);
+    trackAAuxAction    = addGroup->actions().at(idx++);
+    trackASynthAction  = addGroup->actions().at(idx++);
+
+    trackAMidiAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackADrumAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackAWaveAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackAOutputAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackAGroupAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackAInputAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackAAuxAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackASynthAction->setShortcutContext(Qt::ApplicationShortcut);
 
     // populate insert track menu
     insertTrack->clear();
-    QActionGroup *insertGroup = MusEGui::populateAddTrack(insertTrack, true, true);
+    QActionGroup *insertGroup = MusEGui::populateAddTrack(insertTrack, true, true, false);
 
     idx = 0;
-    trackIMidiAction = insertGroup->actions().at(idx++);
-    trackIDrumAction = insertGroup->actions().at(idx++);
-    trackIWaveAction = insertGroup->actions().at(idx++);
+    trackIMidiAction   = insertGroup->actions().at(idx++);
+    trackIDrumAction   = insertGroup->actions().at(idx++);
+    trackIWaveAction   = insertGroup->actions().at(idx++);
     trackIOutputAction = insertGroup->actions().at(idx++);
-    trackIGroupAction = insertGroup->actions().at(idx++);
-    trackIInputAction = insertGroup->actions().at(idx++);
-    trackIAuxAction = insertGroup->actions().at(idx++);
-    trackISynthAction = insertGroup->actions().at(idx++);
+    trackIGroupAction  = insertGroup->actions().at(idx++);
+    trackIInputAction  = insertGroup->actions().at(idx++);
+    trackIAuxAction    = insertGroup->actions().at(idx++);
+    trackISynthAction  = insertGroup->actions().at(idx++);
+
+    trackIMidiAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackIDrumAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackIWaveAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackIOutputAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackIGroupAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackIInputAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackIAuxAction->setShortcutContext(Qt::ApplicationShortcut);
+    trackISynthAction->setShortcutContext(Qt::ApplicationShortcut);
 
     // populate right click menu on trackList
     arranger->getTrackList()->populateAddTrack();

@@ -3251,7 +3251,7 @@ void TList::populateAddTrack()
     else
         addTrackMenu->clear();
 
-    MusEGui::populateAddTrack(addTrackMenu, false, false, true);
+    MusEGui::populateAddTrack(addTrackMenu, false, false);
 
     if (!insertTrackMenu)
         insertTrackMenu = new QMenu(this);
