@@ -93,7 +93,7 @@ bool ScrollArea::viewportEvent(QEvent* event)
 //    inputs | synthis | tracks | groups | master
 //---------------------------------------------------------
 
-AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
+AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool docked)
    : QMainWindow(parent)
 {
       _resizeFlag = false;
@@ -196,12 +196,14 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       // Although this does not have any effect because we disabled the maximize button, just in case
       //  the maximize button is ever re-added and/or the maximum width imposed on the mixer window
       //  is ever removed, keep this - it will be required. No harm so far in leaving it in.
-//      QSpacerItem* right_spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
-//      mixerLayout->addSpacerItem(right_spacer);
-      mixerLayout->addStretch(1);
+      //      QSpacerItem* right_spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+      //      mixerLayout->addSpacerItem(right_spacer);
 
+      if (docked)
+          mixerLayout->addStretch(1);
+      else
+          connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));
       // FIXME: Neither of these two replacement functor version work. What's wrong here?
-//      connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));
       //connect(view, &ScrollArea::layoutRequest, [this]() { setSizing(); } );
       //connect(view, QOverload<>::of(&ScrollArea::layoutRequest), [=]() { setSizing(); } );
       

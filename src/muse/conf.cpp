@@ -1092,8 +1092,13 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                         else if (tag == "importMidiDefaultInstr")
                               MusEGlobal::config.importMidiDefaultInstr = xml.parse1();
                         
+                        else if (tag == "mixerDockedA")
+                              MusEGlobal::config.mixerDockedA = xml.parseInt();
+                        else if (tag == "mixerDockedB")
+                            MusEGlobal::config.mixerDockedB = xml.parseInt();
+
                         else if (tag == "showSplashScreen")
-                              MusEGlobal::config.showSplashScreen = xml.parseInt();
+                            MusEGlobal::config.showSplashScreen = xml.parseInt();
                         else if (tag == "enableLash")
                             MusEGlobal::config.enableLash = xml.parseInt();
                         else if (tag == "canvasShowPartType")
@@ -2125,6 +2130,9 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       // True = Write global config.
       MusEGlobal::config.mixer1.write(level, xml, true);
       MusEGlobal::config.mixer2.write(level, xml, true);
+
+      xml.intTag(level, "mixerDockedA", MusEGlobal::config.mixerDockedA);
+      xml.intTag(level, "mixerDockedB", MusEGlobal::config.mixerDockedB);
 
       xml.intTag(level, "showSplashScreen", MusEGlobal::config.showSplashScreen);
       xml.intTag(level, "enableLash", MusEGlobal::config.enableLash);

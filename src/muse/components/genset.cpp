@@ -271,6 +271,9 @@ void GlobalSettingsConfig::updateSettings()
       cbTabWave->setChecked(TopWin::_openTabbed[TopWin::WAVE]);
       cbTabScore->setChecked(TopWin::_openTabbed[TopWin::SCORE]);
       cbTabMaster->setChecked(TopWin::_openTabbed[TopWin::MASTER]);
+
+      cbAMixerDocked->setChecked(MusEGlobal::config.mixerDockedA);
+      cbBMixerDocked->setChecked(MusEGlobal::config.mixerDockedB);
 }
 
 //---------------------------------------------------------
@@ -401,6 +404,9 @@ void GlobalSettingsConfig::apply()
       TopWin::_openTabbed[TopWin::WAVE] = cbTabWave->isChecked();
       TopWin::_openTabbed[TopWin::SCORE] = cbTabScore->isChecked();
       TopWin::_openTabbed[TopWin::MASTER] = cbTabMaster->isChecked();
+
+      MusEGlobal::config.mixerDockedA = cbAMixerDocked->isChecked();
+      MusEGlobal::config.mixerDockedB = cbBMixerDocked->isChecked();
 
       // If the division is to be changed, this will RE-NORMALIZE things like the tempo and signature lists,
       //  and RE-FILL the various editor rasterization (snap) table values.

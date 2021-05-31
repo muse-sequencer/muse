@@ -342,7 +342,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
 
   openAddTrackMenuAction = new QAction(this);
-  openAddTrackMenuAction->setShortcutContext(Qt::ApplicationShortcut);
   addAction(openAddTrackMenuAction);
   connect(openAddTrackMenuAction, &QAction::triggered, [=](){ arranger->getTrackList()->openAddTrackMenu(); });
 

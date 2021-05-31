@@ -241,6 +241,9 @@ class MusE : public QMainWindow
     QPointer<MasterEdit> masterEditor;
 
     bool writeTopwinState;
+    bool dockMixerA;
+    bool dockMixerB;
+
     // Set to restart MusE (almost) from scratch before calling close().
     bool _isRestartingApp;
 
