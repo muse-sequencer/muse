@@ -293,7 +293,7 @@ class AudioStrip : public Strip {
       void incPan(int v);
 
    public:
-      AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false, bool isEmbedded = true);
+      AudioStrip(QWidget* parent, MusECore::AudioTrack*, bool hasHandle = false, bool isEmbedded = true, bool isDocked = false);
       virtual ~AudioStrip();
 
       static const double volSliderStep;

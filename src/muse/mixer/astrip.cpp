@@ -1391,8 +1391,8 @@ AudioStrip::~AudioStrip()
 //    create mixer strip
 //---------------------------------------------------------
 
-AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle, bool isEmbedded)
-   : Strip(parent, at, hasHandle, isEmbedded)
+AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle, bool isEmbedded, bool isDocked)
+   : Strip(parent, at, hasHandle, isEmbedded, isDocked)
       {
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
 

@@ -479,6 +479,9 @@ MusE::MusE() : QMainWindow()
           addDockWidget(Qt::BottomDockWidgetArea, mixer1Dock);
           mixer1Dock->hide();
           mixer1->setMinimumHeight(400);
+
+          connect(mixer1Dock, &QDockWidget::visibilityChanged, [this](bool b){ if(!b) mixer1Closed(); });
+          connect(mixer1Dock, &QDockWidget::topLevelChanged, [this](bool b){ mixer1DockTopLevelChanged(b); });
       }
 
       if (dockMixerB) {
@@ -490,6 +493,10 @@ MusE::MusE() : QMainWindow()
           addDockWidget(Qt::BottomDockWidgetArea, mixer2Dock);
           mixer2Dock->hide();
           mixer2->setMinimumHeight(400);
+
+          connect(mixer2Dock, &QDockWidget::visibilityChanged, [this](bool b){ if(!b) mixer2Closed(); });
+          connect(mixer2Dock, &QDockWidget::topLevelChanged, [this](bool b){ mixer2DockTopLevelChanged(b); });
+
       }
 
 
@@ -3837,9 +3844,9 @@ void MusE::bigtimeClosed()
 
 void MusE::showMixer1(bool on)
 {
-    if (dockMixerA)
+    if (dockMixerA) {
         mixer1Dock->setVisible(on);
-    else {
+    } else {
         if (on && mixer1 == nullptr) {
             mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1), false);
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
@@ -3859,9 +3866,9 @@ void MusE::showMixer1(bool on)
 
 void MusE::showMixer2(bool on)
 {
-    if (dockMixerB)
+    if (dockMixerB) {
         mixer1Dock->setVisible(on);
-    else {
+    } else {
         if (on && mixer2 == nullptr) {
             mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2), false);
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
@@ -3915,6 +3922,37 @@ void MusE::mixer2Closed()
       {
       viewMixerBAction->setChecked(false);
       }
+
+void MusE::mixer1DockTopLevelChanged(bool)
+{
+    if (mixer1Dock->isFloating())
+    {
+        mixer1Dock->setWindowFlags(Qt::CustomizeWindowHint |
+            Qt::Window | Qt::WindowMinimizeButtonHint |
+            Qt::WindowMaximizeButtonHint |
+            Qt::WindowCloseButtonHint);
+        mixer1Dock->show();
+    }
+//    else
+//    {
+//        mixer1Dock->setWindowFlags(Qt::Tool|Qt::X11BypassWindowManagerHint|
+//                           Qt::WindowTitleHint|Qt::WindowSystemMenuHint|
+//                           Qt::CustomizeWindowHint|Qt::WindowCloseButtonHint);
+//        mixer1Dock->show();
+//    }
+}
+
+void MusE::mixer2DockTopLevelChanged(bool)
+{
+    if (mixer2Dock->isFloating())
+    {
+        mixer2Dock->setWindowFlags(Qt::CustomizeWindowHint |
+                                   Qt::Window | Qt::WindowMinimizeButtonHint |
+                                   Qt::WindowMaximizeButtonHint |
+                                   Qt::WindowCloseButtonHint);
+        mixer2Dock->show();
+    }
+}
 
 
 //QWidget* MusE::mixer1Window()     { return mixer1; }

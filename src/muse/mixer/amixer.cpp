@@ -98,6 +98,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
 {
       _resizeFlag = false;
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
+      _docked = docked;
       cfg = c;
       oldAuxsSize = 0;
       routingDialog = nullptr;
@@ -199,7 +200,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       //      QSpacerItem* right_spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
       //      mixerLayout->addSpacerItem(right_spacer);
 
-      if (docked)
+      if (_docked)
           mixerLayout->addStretch(1);
       else
           connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));
@@ -686,9 +687,9 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
 
     // Make them non-embedded: Moveable, hideable, and with an expander handle.
     if (t->isMidiTrack())
-          strip = new MidiStrip(central, (MusECore::MidiTrack*)t, true, false);
+          strip = new MidiStrip(central, (MusECore::MidiTrack*)t, true, false, _docked);
     else
-          strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true, false);
+          strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true, false, _docked);
 
     // Broadcast changes to other selected tracks.
     strip->setBroadcastChanges(true);

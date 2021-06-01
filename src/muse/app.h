@@ -356,6 +356,8 @@ private slots:
     void bigtimeClosed();
     void mixer1Closed();
     void mixer2Closed();
+    void mixer1DockTopLevelChanged(bool);
+    void mixer2DockTopLevelChanged(bool);
 
     void activeTopWinChangedSlot(MusEGui::TopWin*);
     void setCurrentMenuSharingTopwin(MusEGui::TopWin*);
