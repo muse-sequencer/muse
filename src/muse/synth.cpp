@@ -388,8 +388,6 @@ SynthI::SynthI()
 
       _readEnable = false;
       _writeEnable = false;
-      setVolume(1.0);
-      setPan(0.0);
       }
 
 SynthI::SynthI(const SynthI& si, int flags)
@@ -404,8 +402,6 @@ SynthI::SynthI(const SynthI& si, int flags)
 
       _readEnable = false;
       _writeEnable = false;
-      setVolume(1.0);
-      setPan(0.0);
 
       Synth* s = si.synth();
       if (s) {

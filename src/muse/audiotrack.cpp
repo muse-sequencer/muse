@@ -327,6 +327,7 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       initBuffers();
 
       setVolume(1.0);
+      setPan(0.0);
       _gain = 1.0;
       }
 

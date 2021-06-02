@@ -1,3 +1,5 @@
+02.06.2021
+    - Fix issue 1021: Copying synth track does not copy volume, pan. (Tim)
 31.05.2021
     - Fix conflicting shortcuts in Add track menu. (kybos)
 29.05.2021
