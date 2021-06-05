@@ -708,6 +708,7 @@ class AudioTrack : public Track {
       void setRecFile(SndFileR sf)       { _recFile = sf; }
 
       CtrlListList* controller()         { return &_controller; }
+      const CtrlListList* controller() const { return &_controller; }
       // For setting/getting the _controls 'port' values.
       unsigned long parameters() const { return _controlPorts; }
       

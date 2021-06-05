@@ -58,8 +58,9 @@ class DoubleLabel : public Dentry {
       virtual void incValue(int steps = 1);
       virtual void decValue(int steps = 1);
 
-   protected:
-      virtual void keyPressEvent(QKeyEvent*);
+// REMOVE Tim. focus. Removed.
+//    protected:
+//       virtual void keyPressEvent(QKeyEvent*);
 
    public:
       DoubleLabel(QWidget* parent = 0, const char* name = 0);
