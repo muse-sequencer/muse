@@ -691,10 +691,7 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     strip->setBroadcastChanges(true);
 
     // Set focus yielding to the mixer window.
-    if(MusEGlobal::config.smartFocus)
-    {
-      strip->setFocusYieldWidget(this);
-    }
+    strip->setFocusYieldWidget(this);
 
     connect(strip, &Strip::clearStripSelection, [this]() { clearStripSelection(); } );
     connect(strip, &Strip::moveStrip, [this](Strip* s) { moveStrip(s); } );

@@ -313,6 +313,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       // by overflows in tick computations
       lenEntry = new SpinBox(1, 10000, 1);
       lenEntry->setFocusPolicy(Qt::StrongFocus);
+      lenEntry->setKeyboardTracking(false);
       lenEntry->setValue(MusEGlobal::song->len());
       lenEntry->setToolTip(tr("Song length - bars"));
       lenEntry->setWhatsThis(tr("Song length - bars"));
@@ -325,6 +326,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       globalPitchSpinBox = new SpinBox(-127, 127, 1);
       globalPitchSpinBox->setFocusPolicy(Qt::StrongFocus);
+      globalPitchSpinBox->setKeyboardTracking(false);
       globalPitchSpinBox->setValue(MusEGlobal::song->globalPitchShift());
       globalPitchSpinBox->setToolTip(tr("Midi pitch"));
       globalPitchSpinBox->setWhatsThis(tr("Global midi pitch shift"));
@@ -337,6 +339,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       
       globalTempoSpinBox = new SpinBox(50, 200, 1, toolbar);
       globalTempoSpinBox->setFocusPolicy(Qt::StrongFocus);
+      globalTempoSpinBox->setKeyboardTracking(false);
       globalTempoSpinBox->setSuffix(QString("%"));
       globalTempoSpinBox->setValue(MusEGlobal::tempomap.globalTempo());
       globalTempoSpinBox->setToolTip(tr("Midi tempo"));
@@ -1294,11 +1297,8 @@ void Arranger::switchInfo(int n)
                     w->setBroadcastChanges(true);
 
                     // Set focus yielding to the canvas.
-                    if(MusEGlobal::config.smartFocus)
-                    {
-                      w->setFocusYieldWidget(canvas);
-                      //w->setFocusPolicy(Qt::WheelFocus);
-                    }
+                    w->setFocusYieldWidget(canvas);
+                    //w->setFocusPolicy(Qt::WheelFocus);
 
                     // We must marshall song changed instead of connecting to the strip's song changed
                     //  otherwise it crashes when loading another song because track is no longer valid
@@ -1339,11 +1339,8 @@ void Arranger::switchInfo(int n)
                   // Broadcast changes to other selected tracks.
                   w->setBroadcastChanges(true);
                   // Set focus yielding to the arranger canvas.
-                  if(MusEGlobal::config.smartFocus)
-                  {
-                    w->setFocusYieldWidget(canvas);
-                    //w->setFocusPolicy(Qt::WheelFocus);
-                  }
+                  w->setFocusYieldWidget(canvas);
+                  //w->setFocusPolicy(Qt::WheelFocus);
 
                   // No. See above.
                   //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));

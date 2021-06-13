@@ -23,8 +23,6 @@
 #include "muse_math.h"
 
 #include <QWidget>
-// REMOVE Tim. focus. Removed.
-// #include <QKeyEvent>
 
 #include "doublelabel.h"
 
@@ -226,28 +224,5 @@ QSize DoubleLabel::minimumSizeHint() const
 {
   return sizeHint();
 }
-
-// REMOVE Tim. focus. Removed.
-// void DoubleLabel::keyPressEvent(QKeyEvent* e)
-// {
-//   switch (e->key())
-//   {
-//     case Qt::Key_Space:
-//       {
-//       // This is mostly a work around to allow SPACE to be forwarded to parents, allowing
-//       // the start/stop shortcut to work even when this widget has focus.
-//       // Also, truthfylly, the input to this widget should only allow numbers
-//       e->ignore();
-//       return;
-//       }
-//     default:
-//       // Let ancestor handle it.
-//       e->ignore();
-//       Dentry::keyPressEvent(e);
-//       return;
-//     break;
-//   }
-// }
-
 
 } // namespace MusEGui

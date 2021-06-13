@@ -24,6 +24,7 @@
 #include <QEvent>
 #include <QLineEdit>
 //#include <QMouseEvent>
+#include <QFocusEvent>
 #include "spinbox.h"
 
 namespace MusEGui {
@@ -81,15 +82,28 @@ void SpinBox::keyPressEvent(QKeyEvent* ev)
     switch (ev->key()) {
       case Qt::Key_Return:
         {
-          bool mod =  lineEdit()->isModified();
+          ev->accept();
+          bool mod = lineEdit() && lineEdit()->isModified();
           QSpinBox::keyPressEvent(ev);
-          if(_returnMode && !mod)        // Force valueChanged if return mode set, even if not modified.
+          if(lineEdit() && _returnMode && !mod)        // Force valueChanged if return mode set, even if not modified.
             emit valueChanged(value());
           emit returnPressed();
         }  
         return;
       break;
       case Qt::Key_Escape:
+        ev->accept();
+        // Be sure to go all the way back to the last saved value.
+        // TESTED: Works but unfortunately undo is NOT cleared when focus is lost even though editing is finished! Qt BUG ?
+        //while(lineEdit()->isUndoAvailable())
+        //  lineEdit()->undo();
+        blockSignals(true);
+        // "Setting this property clears the selection, clears the undo/redo history,
+        //   moves the cursor to the end of the line and resets the modified property to false.
+        //  The text is not validated when inserted with setText()."
+        // TESTED OK.
+        setValue(value());
+        blockSignals(false);
         emit escapePressed();
         return;
       break;
@@ -105,6 +119,21 @@ void SpinBox::wheelEvent(QWheelEvent* e)
   // Need this because Qt doesn't deselect the text if not focused.
   if(!hasFocus() && lineEdit())
     lineEdit()->deselect();
+}
+
+void SpinBox::focusOutEvent(QFocusEvent* e)
+{
+  e->ignore();
+  QSpinBox::focusOutEvent(e);
+
+  // Clear the undo history.
+  blockSignals(true);
+  // "Setting this property clears the selection, clears the undo/redo history,
+  //   moves the cursor to the end of the line and resets the modified property to false.
+  //  The text is not validated when inserted with setText()."
+  // TESTED OK.
+  setValue(value());
+  blockSignals(false);
 }
 
 } // namespace MusEGui

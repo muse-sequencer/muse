@@ -1668,7 +1668,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       // If smart focus is on redirect strip focus to slider label.
       //if(MusEGlobal::config.smartFocus)
-// REMOVE Tim. focus. Removed.
 //         setFocusProxy(sl);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));

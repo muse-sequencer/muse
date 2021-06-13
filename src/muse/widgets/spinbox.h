@@ -42,7 +42,9 @@
 #include <QSpinBox>
 #include <QLineEdit>
 
-namespace MusEGui { 
+class QFocusEvent;
+
+namespace MusEGui {
 
 class SpinBoxLineEdit : public QLineEdit
 {
@@ -73,6 +75,8 @@ class SpinBox : public QSpinBox {
    protected:
       virtual void keyPressEvent(QKeyEvent*);
       virtual void wheelEvent(QWheelEvent*);
+      // Required because undo is NOT cleared when focus is lost even though editing is finished.
+      virtual void focusOutEvent(QFocusEvent*);
 
    signals:
       void doubleClicked();

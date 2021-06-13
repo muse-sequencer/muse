@@ -18,6 +18,10 @@ class PosToolbar : public QToolBar
 public:
     PosToolbar(const QString& title, QWidget* parent = nullptr);
 
+signals:
+   void returnPressed();
+   void escapePressed();
+
 public slots:
    void setPos(int, unsigned, bool);
    void songChanged(MusECore::SongChangedStruct_t);

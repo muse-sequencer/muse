@@ -1,3 +1,5 @@
+13.06.2021
+    - Fix 1002: Remove initial focus from mixer volume boxes. Fix related Smart Focus problems. (Tim)
 05.06.2021
     - Fix more issue 1021: Copying synth track does not copy synth controllers. (Tim)
 02.06.2021
