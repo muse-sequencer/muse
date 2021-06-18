@@ -29,6 +29,7 @@
 #include <QKeyEvent>
 #include <QString>
 #include <QTimer>
+#include <QFocusEvent>
 
 #include "sliderbase.h"
 #include "dentry.h"
@@ -56,9 +57,9 @@ Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
       _id = -1;
       //setAutoFillBackground(true);
       timer = new QTimer(this);
-      connect(timer, SIGNAL(timeout()), SLOT(repeat()));
+      connect(timer, &QTimer::timeout, [this]() { repeat(); } );
       val = 0.01;
-      connect(this, SIGNAL(returnPressed()), SLOT(endEdit()));
+      connect(this, &QLineEdit::editingFinished, [this]() { endEdit(); } );
       setCursor(QCursor(Qt::ArrowCursor));
       evx = 1;
       }
@@ -70,6 +71,17 @@ Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
 void Dentry::contextMenuEvent(QContextMenuEvent * e)
 {
   e->accept();
+}
+
+void Dentry::focusOutEvent(QFocusEvent* e)
+{
+  e->ignore();
+  QLineEdit::focusOutEvent(e);
+
+  // Clear the undo history.
+  blockSignals(true);
+  setString(val);
+  blockSignals(false);
 }
 
 //---------------------------------------------------------
@@ -247,7 +259,15 @@ void Dentry::keyPressEvent(QKeyEvent* e)
         setString(val);
         blockSignals(false);
       }
-      // Let ancestor have it, such as for yielding focus.
+      // Let the app or some higher-up use it, such as for yielding focus.
+      e->ignore();
+      return;
+    break;
+
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+      // Forward it, and let ancestor have it, such as for yielding focus.
+      QLineEdit::keyPressEvent(e);
       e->ignore();
       return;
     break;
@@ -260,17 +280,55 @@ void Dentry::keyPressEvent(QKeyEvent* e)
       inc = false;
     break;
 
-    default:
-      // Let ancestor handle it.
-      e->ignore();
+    case Qt::Key_0:
+    case Qt::Key_1:
+    case Qt::Key_2:
+    case Qt::Key_3:
+    case Qt::Key_4:
+    case Qt::Key_5:
+    case Qt::Key_6:
+    case Qt::Key_7:
+    case Qt::Key_8:
+    case Qt::Key_9:
+    case Qt::Key_Period:
+    case Qt::Key_Plus:
+    case Qt::Key_Minus:
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+    case Qt::Key_Insert:
+    case Qt::Key_Delete:
+    case Qt::Key_Home:
+    case Qt::Key_End:
+    case Qt::Key_PageUp:
+    case Qt::Key_PageDown:
+    case Qt::Key_Backspace:
+      // Eat up the key, but let ancestor use it.
+      e->accept();
       QLineEdit::keyPressEvent(e);
+      return;
+    break;
+    
+    case Qt::Key_Space:
+    case Qt::Key_Comma:
+      // Eat up the key.
+      // This is what Qt spin boxes do. They eat space but pass others like function keys.
+      e->accept();
+      return;
+    break;
+
+    default:
+      // Let the app or some higher-up use it.
+      e->ignore();
+      if(e->modifiers() & (Qt::AltModifier | Qt::MetaModifier | Qt::ControlModifier))
+        // Let ancestor use it.
+        QLineEdit::keyPressEvent(e);
       return;
     break;
   }
 
   if(e->modifiers() & (Qt::AltModifier | Qt::MetaModifier | Qt::ControlModifier))
   {
-    // Let ancestor handle it.
+    // Let ancestor or some higher-up handle it.
     e->ignore();
     QLineEdit::keyPressEvent(e);
     return;

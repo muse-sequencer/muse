@@ -30,7 +30,7 @@
 #include <QWheelEvent>
 //#include <QMouseEvent>
 #include <QTimerEvent>
-//#include <QFocusEvent>
+#include <QFocusEvent>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QCursor>

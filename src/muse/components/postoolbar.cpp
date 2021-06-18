@@ -154,7 +154,14 @@ PosToolbar::PosToolbar(const QString &title, QWidget *parent)
     connect(timeSmpte, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos&)));
     connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
     connect(toggleTickFrame, SIGNAL(toggled(bool)), SLOT(showTickFrameToggled(bool)));
-
+    connect(markerLeft, &PosEdit::returnPressed, [this]() { emit returnPressed(); } );
+    connect(markerLeft, &PosEdit::escapePressed, [this]() { emit escapePressed(); } );
+    connect(markerRight, &PosEdit::returnPressed, [this]() { emit returnPressed(); } );
+    connect(markerRight, &PosEdit::escapePressed, [this]() { emit escapePressed(); } );
+    connect(time, &PosEdit::returnPressed, [this]() { emit returnPressed(); } );
+    connect(time, &PosEdit::escapePressed, [this]() { emit escapePressed(); } );
+    connect(timeSmpte, &PosEdit::returnPressed, [this]() { emit returnPressed(); } );
+    connect(timeSmpte, &PosEdit::escapePressed, [this]() { emit escapePressed(); } );
 
     connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
     connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), this, SLOT(songChanged(MusECore::SongChangedStruct_t)));

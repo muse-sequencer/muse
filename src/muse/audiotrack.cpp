@@ -327,6 +327,7 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       initBuffers();
 
       setVolume(1.0);
+      setPan(0.0);
       _gain = 1.0;
       }
 
@@ -411,32 +412,6 @@ void AudioTrack::internal_assign(const Track& t, int flags)
               ++icl_this;
             }
           }
-
-          // Copy the special synth controller block...
-          const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
-          const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
-          icl           = at._controller.lower_bound(synth_id);
-          icl_this      = _controller.lower_bound(synth_id);
-          icl_end       = at._controller.lower_bound(synth_id_end);
-          icl_this_end  = _controller.lower_bound(synth_id_end);
-          while(icl != icl_end && icl_this != icl_this_end)
-          {
-            cl      = icl->second;
-            cl_this = icl_this->second;
-            id      = cl->id();
-            id_this = cl_this->id();
-            if(id < id_this)
-              ++icl;      // Let id catch up to this id.
-            else if(id > id_this)
-              ++icl_this; // Let this id catch up to id.
-            else
-            {
-              // Match found. Copy properties but not values.
-              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES);
-              ++icl;
-              ++icl_this;
-            }
-          }
         }
 
         // This will set up or reallocate the outBuffers. _controlPorts must be valid by now.
@@ -463,8 +438,8 @@ void AudioTrack::internal_assign(const Track& t, int flags)
 
       if(flags & (ASSIGN_STD_CTRLS | ASSIGN_PLUGIN_CTRLS))
       {
-        const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
-        const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
+        // The beginning of the special synth controller block.
+        const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);
         ciCtrlList icl, icl_end, icl_this, icl_this_end;
         int id, id_this;
         CtrlList* cl, *cl_this;
@@ -476,30 +451,6 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           icl_this     = _controller.begin();
           icl_end      = at._controller.lower_bound(AC_PLUGIN_CTL_BASE);
           icl_this_end = _controller.lower_bound(AC_PLUGIN_CTL_BASE);
-          while(icl != icl_end && icl_this != icl_this_end)
-          {
-            cl      = icl->second;
-            cl_this = icl_this->second;
-            id      = cl->id();
-            id_this = cl_this->id();
-            if(id < id_this)
-              ++icl;      // Let id catch up to this id.
-            else if(id > id_this)
-              ++icl_this; // Let this id catch up to id.
-            else
-            {
-              // Match found. Copy properties and values.
-              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
-              ++icl;
-              ++icl_this;
-            }
-          }
-
-          // Copy the special synth controller block...
-          icl           = at._controller.lower_bound(synth_id);
-          icl_this      = _controller.lower_bound(synth_id);
-          icl_end       = at._controller.lower_bound(synth_id_end);
-          icl_this_end  = _controller.lower_bound(synth_id_end);
           while(icl != icl_end && icl_this != icl_this_end)
           {
             cl      = icl->second;
