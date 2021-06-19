@@ -122,9 +122,15 @@ FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoade
       {
       gui = nullptr;
       setSampleRate(sr);
-      fluid_settings_t* s = new_fluid_settings();
-      fluid_settings_setnum(s, (char*) "synth.sample-rate", float(sampleRate()));
-      fluidsynth = new_fluid_synth(s);
+      _settings = new_fluid_settings();
+      if (!_settings) {
+            printf("Error while creating fluidsynth settings!\n");
+            return;
+            }
+      if(fluid_settings_setnum(_settings, (char*) "synth.sample-rate", float(sampleRate())) != FLUID_OK)
+            printf("Warning: Error setting fluidsynth synth.sample-rate!\n");
+
+      fluidsynth = new_fluid_synth(_settings);
       if (!fluidsynth) {
             printf("Error while creating fluidsynth!\n");
             return;
@@ -184,6 +190,10 @@ FluidSynth::~FluidSynth()
 
       if (initBuffer)
             delete [] initBuffer;
+
+      if(_settings)
+        delete_fluid_settings(_settings);
+
 #if FLUIDSYNTH_VERSION_MAJOR < 2
       if (err == -1) {
             std::cerr << DEBUG_ARGS << "error while destroying synth: " << fluid_synth_error(fluidsynth) << std::endl;
