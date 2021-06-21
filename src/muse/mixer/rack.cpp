@@ -339,11 +339,18 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             //mute  = pipe->isOn(idx);
             }
 
-      //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
       enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QMenu* menu = new QMenu;
-      QAction* newAction = menu->addAction(*dummySVGIcon, tr("New"));
-      QAction* changeAction = menu->addAction(tr("Change"));
+
+      if (pipe->empty(idx)) {
+        QAction* newAction = menu->addAction(*dummySVGIcon, tr("New"));
+        newAction->setData(NEW);
+      }
+      else {
+        QAction* changeAction = menu->addAction(tr("Change"));
+        changeAction->setData(CHANGE);
+      }
+
       QAction* upAction = menu->addAction(tr("Move Up"));//,   UP, UP);
       QAction* downAction = menu->addAction(tr("Move Down"));//, DOWN, DOWN);
       QAction* removeAction = menu->addAction(tr("Remove"));//,    REMOVE, REMOVE);
@@ -352,17 +359,18 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       menu->addSeparator();
       QAction* showGuiAction = menu->addAction(tr("Show Generic GUI"));//,  SHOW, SHOW);
       QAction* showNativeGuiAction = menu->addAction(tr("Show Native GUI"));//,  SHOW_NATIVE, SHOW_NATIVE);
-      QAction* saveAction = menu->addAction(tr("Save Preset"));
 
-      newAction->setData(NEW);
-      changeAction->setData(CHANGE);
+      if (!pipe->empty(idx)) {
+        QAction* saveAction = menu->addAction(tr("Save Preset"));
+        saveAction->setData(SAVE);
+      }
+
       upAction->setData(UP);
       downAction->setData(DOWN);
       removeAction->setData(REMOVE);
       bypassAction->setData(BYPASS);
       showGuiAction->setData(SHOW);
       showNativeGuiAction->setData(SHOW_NATIVE);
-      saveAction->setData(SAVE);
 
       bypassAction->setCheckable(true);
       showGuiAction->setCheckable(true);
@@ -377,8 +385,6 @@ void EffectRack::menuRequested(QListWidgetItem* it)
 #endif
 
       if (pipe->empty(idx)) {
-            menu->removeAction(changeAction);
-            menu->removeAction(saveAction);
             upAction->setEnabled(false);
             downAction->setEnabled(false);
             removeAction->setEnabled(false);
@@ -387,27 +393,20 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             showNativeGuiAction->setEnabled(false);
             }
       else {
-            menu->removeAction(newAction);
             if (idx == 0)
-                  upAction->setEnabled(true);
+                  upAction->setEnabled(false);
             if (idx == (MusECore::PipelineDepth-1))
                   downAction->setEnabled(false);
-            //if(!pipe->isDssiPlugin(idx))
-            if(!pipe->has_dssi_ui(idx))     // p4.0.19 Tim.
+            if(!pipe->hasNativeGui(idx))
                   showNativeGuiAction->setEnabled(false);
 #ifdef LV2_SUPPORT
-            //show presets submenu for lv2 plugins
-            mSubPresets = new PopupMenu(tr("Presets"));
             if(pipe->isLV2Plugin(idx))
             {
+               //show presets submenu for lv2 plugins
+               mSubPresets = new PopupMenu(tr("Presets"));
                menu->addMenu(mSubPresets);
                MusECore::PluginI *plugI = pipe->at(idx);
                static_cast<MusECore::LV2PluginWrapper *>(plugI->plugin())->populatePresetsMenu(plugI, mSubPresets);
-            }
-            else
-            {
-               delete mSubPresets;
-               mSubPresets = nullptr;
             }
 #endif
             }
@@ -478,13 +477,13 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             case UP:
                   if (idx > 0) {
                         setCurrentItem(item(idx-1));
-                        pipe->move(idx, true);
+                        MusEGlobal::audio->msgSwapPlugins(track, idx, idx-1);
                         }
                   break;
             case DOWN:
                   if (idx < (MusECore::PipelineDepth-1)) {
                         setCurrentItem(item(idx+1));
-                        pipe->move(idx, false);
+                        MusEGlobal::audio->msgSwapPlugins(track, idx, idx+1);
                         }
                   break;
             case SAVE:
@@ -519,7 +518,7 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       }
 
       bool flag;
-      if (pipe->has_dssi_ui(idx))
+      if (pipe->hasNativeGui(idx))
       {
         flag = !pipe->nativeGuiVisible(idx);
         pipe->showNativeGui(idx, flag);

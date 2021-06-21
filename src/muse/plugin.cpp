@@ -1533,43 +1533,18 @@ bool Pipeline::empty(int idx) const
 //   move
 //---------------------------------------------------------
 
-void Pipeline::move(int idx, bool up)
+void Pipeline::move(int idx1, int idx2)
 {
-      PluginI* p1 = (*this)[idx];
-      if (up)
-      {
-            (*this)[idx]   = (*this)[idx-1];
+  PluginI* p1 = (*this)[idx1];
+  (*this)[idx1] = (*this)[idx2];
 
-          if((*this)[idx]) {
-            (*this)[idx]->setID(idx);
-          }
+  if((*this)[idx1])
+    (*this)[idx1]->setID(idx1);
 
-            (*this)[idx-1] = p1;
+  (*this)[idx2] = p1;
 
-          if(p1)
-          {
-            p1->setID(idx - 1);
-            if(p1->track())
-              MusEGlobal::audio->msgSwapControllerIDX(p1->track(), idx, idx - 1);
-            }
-      }
-      else
-      {
-            (*this)[idx]   = (*this)[idx+1];
-
-          if((*this)[idx]) {
-            (*this)[idx]->setID(idx);
-          }
-
-            (*this)[idx+1] = p1;
-
-          if(p1)
-          {
-            p1->setID(idx + 1);
-            if(p1->track())
-              MusEGlobal::audio->msgSwapControllerIDX(p1->track(), idx, idx + 1);
-            }
-      }
+  if(p1)
+    p1->setID(idx2);
 }
 
 //---------------------------------------------------------
@@ -1605,10 +1580,10 @@ bool Pipeline::isVstNativePlugin(int idx) const
 }
 
 //---------------------------------------------------------
-//   has_dssi_ui
+//   hasNativeGui
 //---------------------------------------------------------
 
-bool Pipeline::has_dssi_ui(int idx) const
+bool Pipeline::hasNativeGui(int idx) const
 {
   PluginI* p = (*this)[idx];
   if(p)

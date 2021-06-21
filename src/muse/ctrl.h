@@ -220,6 +220,7 @@ class CtrlList : public CtrlList_t {
       void updateCurValue(unsigned int frame);
       void setCurVal(double val);
       int id() const             { return _id; }
+      void setId(int v)          { _id = v; }
       QString name() const       { return _name; }
       void setName(const QString& s) { _name = s; }
       double minVal() const { return _min; }

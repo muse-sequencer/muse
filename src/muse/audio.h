@@ -71,7 +71,7 @@ enum {
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       AUDIO_ADDPLUGIN,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
-      AUDIO_SWAP_CONTROLLER_IDX,
+      AUDIO_SWAP_PLUGINS,
       AUDIO_CLEAR_CONTROLLER_EVENTS,
       AUDIO_SEEK_PREV_AC_EVENT,
       AUDIO_SEEK_NEXT_AC_EVENT,
@@ -301,7 +301,7 @@ class Audio {
       void msgIdle(bool);
       void msgAudioWait();
       void msgBounce();
-      void msgSwapControllerIDX(AudioTrack*, int, int);
+      void msgSwapPlugins(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);
       void msgSeekNextACEvent(AudioTrack*, int);
