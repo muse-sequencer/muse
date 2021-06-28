@@ -480,7 +480,6 @@ MusE::MusE() : QMainWindow()
           mixer1Dock->hide();
           mixer1->setMinimumHeight(400);
 
-//          connect(mixer1Dock, &QDockWidget::visibilityChanged, [this](bool b){ if(!b) mixer1Closed(); });
           connect(mixer1Dock, &QDockWidget::topLevelChanged, [this](bool b){ mixer1DockTopLevelChanged(b); });
       }
 
@@ -494,7 +493,6 @@ MusE::MusE() : QMainWindow()
           mixer2Dock->hide();
           mixer2->setMinimumHeight(400);
 
-//          connect(mixer2Dock, &QDockWidget::visibilityChanged, [this](bool b){ if(!b) mixer2Closed(); });
           connect(mixer2Dock, &QDockWidget::topLevelChanged, [this](bool b){ mixer2DockTopLevelChanged(b); });
 
       }
