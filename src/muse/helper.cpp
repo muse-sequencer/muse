@@ -2109,13 +2109,16 @@ void loadTheme(const QString& theme)
     QString stylePathUser = MusEGlobal::configPath + "/themes/" + theme + ".qss";
     QString stylePathDef = MusEGlobal::museGlobalShare + "/themes/" + theme + ".qss";
 
-    QFile fdef(stylePathDef);
-    if (!fdef.open(QIODevice::ReadOnly)) {
-        printf("loading style sheet <%s> failed\n", qPrintable(theme));
-        return;
+    QByteArray sdef;
+    if (QFile::exists(stylePathDef)) {
+        QFile fdef(stylePathDef);
+        if (fdef.open(QIODevice::ReadOnly)) {
+            sdef = fdef.readAll();
+        } else {
+            printf("loading style sheet <%s> failed\n", qPrintable(theme));
+        }
+        fdef.close();
     }
-    QByteArray sdef = fdef.readAll();
-    fdef.close();
 
     QByteArray suser;
     if (QFile::exists(stylePathUser)) {
@@ -2128,9 +2131,17 @@ void loadTheme(const QString& theme)
         fuser.close();
     }
 
+    if (sdef.isEmpty() && suser.isEmpty()) {
+        printf("loading style sheet <%s> failed\n", qPrintable(theme));
+        return;
+    }
+
+
     QString sheet;
     if (suser.isEmpty()) {
         sheet = QString::fromUtf8(sdef.data());
+    } else if (sdef.isEmpty()) {
+        sheet = QString::fromUtf8(suser.data());
     } else {
         if (MusEGlobal::config.cascadeStylesheets)
             sheet = QString::fromUtf8(sdef.data()) + '\n' + QString::fromUtf8(suser.data());
