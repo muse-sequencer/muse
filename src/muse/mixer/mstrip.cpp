@@ -1426,8 +1426,8 @@ MidiStripProperties::MidiStripProperties()
 //   MidiStrip
 //---------------------------------------------------------
 
-MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bool isEmbedded)
-   : Strip(parent, t, hasHandle, isEmbedded)
+MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bool isEmbedded, bool isDocked)
+   : Strip(parent, t, hasHandle, isEmbedded, isDocked)
       {
       inHeartBeat = true;
       _heartBeatCounter = 0;
@@ -2841,8 +2841,8 @@ void MidiStrip::incPan(int v)
 
   const int id = MusECore::CTRL_PANPOT;
 
-  ComponentRack* rack = 0;
-  ComponentWidget* cw = 0;
+  ComponentRack* rack = nullptr;
+  ComponentWidget* cw = nullptr;
   // Be sure to search all racks. Even if pan is in multiple racks, only one hit is
   //  needed since after the value is set, the other pan controls will be updated too.
   if((cw = _upperRack->findComponent(ComponentRack::controllerComponent, -1, id)))

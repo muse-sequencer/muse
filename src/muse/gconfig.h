@@ -431,6 +431,9 @@ struct GlobalConfigValues {
       bool keepTransportWindowOnTop;
       bool showStatusBar;
       int recentListLength;
+
+      bool mixerDockedA;
+      bool mixerDockedB;
       };
 
 

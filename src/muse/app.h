@@ -221,6 +221,8 @@ class MusE : public QMainWindow
     SnooperDialog* _snooperDialog;
     AudioMixerApp* mixer1;
     AudioMixerApp* mixer2;
+    QDockWidget* mixer1Dock;
+    QDockWidget* mixer2Dock;
     RouteDialog* routeDialog;
     // NOTE: For deleting parentless dialogs and widgets, please add them to deleteParentlessDialogs().
     void deleteParentlessDialogs();
@@ -239,6 +241,9 @@ class MusE : public QMainWindow
     QPointer<MasterEdit> masterEditor;
 
     bool writeTopwinState;
+    bool dockMixerA;
+    bool dockMixerB;
+
     // Set to restart MusE (almost) from scratch before calling close().
     bool _isRestartingApp;
 
@@ -351,6 +356,8 @@ private slots:
     void bigtimeClosed();
     void mixer1Closed();
     void mixer2Closed();
+    void mixer1DockTopLevelChanged(bool);
+    void mixer2DockTopLevelChanged(bool);
 
     void activeTopWinChangedSlot(MusEGui::TopWin*);
     void setCurrentMenuSharingTopwin(MusEGui::TopWin*);

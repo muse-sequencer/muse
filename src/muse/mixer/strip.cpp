@@ -1201,7 +1201,7 @@ void Strip::soloToggled(bool val)
 //    create mixer strip
 //---------------------------------------------------------
 
-Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedded)
+Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedded, bool isDocked)
    : QFrame(parent)
       {
       setObjectName("Strip");
@@ -1221,6 +1221,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       _broadcastChanges = false;
       _selected = false;
       _highlight = false;
+      _isDocked = isDocked;
 
       _curGridRow = 0;
       _userWidth = 0;
@@ -1906,7 +1907,8 @@ void Strip::setSelected(bool v)
             label->setFrameStyle(Raised | StyledPanel);
         setHighLight(true);
         // First time selected? Set the focus.
-        setFocus();
+        if (!_isDocked)
+            setFocus();
     }
     else {
         if (label->style3d())

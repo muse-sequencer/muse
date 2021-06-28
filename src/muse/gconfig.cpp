@@ -394,7 +394,9 @@ GlobalConfigValues config = {
       true,                         // noPluginScaling
       true,                         // keepTransportWindowOnTop
       true,                         // showStatusBar
-      6                             // recentListLength - number of files in recent menu
-    };
+      6,                             // recentListLength - number of files in recent menu
+      false,
+      false
+};
 
 } // namespace MusEGlobal

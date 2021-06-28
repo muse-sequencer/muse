@@ -177,7 +177,7 @@ const char* midi_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Midi (*.mid)"),
       QT_TRANSLATE_NOOP("file_patterns", "Karaoke (*.kar)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+    nullptr
       };
 
 const char* med_file_pattern[] = {
@@ -188,20 +188,20 @@ const char* med_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "bzip2 compressed med Files (*.med.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "mid Files (*.mid *.midi *.kar *.MID *.MIDI *.KAR)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+    nullptr
       };
 const char* med_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Uncompressed med Files (*.med)"),
       QT_TRANSLATE_NOOP("file_patterns", "gzip compressed med Files (*.med.gz)"),
       QT_TRANSLATE_NOOP("file_patterns", "bzip2 compressed med Files (*.med.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+    nullptr
       };
 const char* project_create_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Uncompressed med Files (*.med)"),
       QT_TRANSLATE_NOOP("file_patterns", "gzip compressed med Files (*.med.gz)"),
       QT_TRANSLATE_NOOP("file_patterns", "bzip2 compressed med Files (*.med.bz2)"),
-      0
+    nullptr
       };
 
 const char* image_file_pattern[] = {
@@ -210,26 +210,26 @@ const char* image_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "(*.gif)"),
       QT_TRANSLATE_NOOP("file_patterns", "(*.png)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+    nullptr
       };
 
 const char* part_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "part Files (*.mpt *.mpt.gz *.mpt.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+    nullptr
       };
 const char* part_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "part Files (*.mpt)"),
       QT_TRANSLATE_NOOP("file_patterns", "gzip compressed part Files (*.mpt.gz)"),
       QT_TRANSLATE_NOOP("file_patterns", "bzip2 compressed part Files (*.mpt.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+    nullptr
       };
 
 const char* preset_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Presets (*.pre *.pre.gz *.pre.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+      nullptr
       };
 
 const char* preset_file_save_pattern[] = {
@@ -237,13 +237,13 @@ const char* preset_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "gzip compressed presets (*.pre.gz)"),
       QT_TRANSLATE_NOOP("file_patterns", "bzip2 compressed presets (*.pre.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+      nullptr
       };
 
 const char* drum_map_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Presets (*.map *.map.gz *.map.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+      nullptr
 };
 
 const char* drum_map_file_save_pattern[] = {
@@ -251,7 +251,7 @@ const char* drum_map_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "gzip compressed presets (*.map.gz)"),
       QT_TRANSLATE_NOOP("file_patterns", "bzip2 compressed presets (*.map.bz2)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+      nullptr
 };
 
 const char* audio_file_pattern[] = {
@@ -259,19 +259,19 @@ const char* audio_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Wave (*.wav *.ogg *.flac)"),
       QT_TRANSLATE_NOOP("file_patterns", "Binary (*.bin)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+      nullptr
 };
 
 const char* colors_config_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "Color configuration files (*.cfc)"),
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-      0
+      nullptr
 };
 
 const char* stylesheet_file_pattern[] = {
     QT_TRANSLATE_NOOP("file_patterns", "Qt style sheets (*.qss)"),
     QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
-    0
+    nullptr
 };
 
 Qt::KeyboardModifiers globalKeyState;

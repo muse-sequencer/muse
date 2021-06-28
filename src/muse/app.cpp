@@ -467,6 +467,37 @@ MusE::MusE() : QMainWindow()
       addDockWidget(Qt::RightDockWidgetArea, clipListDock);
       clipListDock->hide();
 
+      dockMixerA = MusEGlobal::config.mixerDockedA;
+      dockMixerB = MusEGlobal::config.mixerDockedB;
+
+      if (dockMixerA) {
+          mixer1Dock = new QDockWidget("Mixer A", this);
+          mixer1Dock->setObjectName("mixer1Dock");
+          mixer1Dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+          mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1), true);
+          mixer1Dock->setWidget(mixer1);
+          addDockWidget(Qt::BottomDockWidgetArea, mixer1Dock);
+          mixer1Dock->hide();
+          mixer1->setMinimumHeight(400);
+
+          connect(mixer1Dock, &QDockWidget::topLevelChanged, [this](bool b){ mixer1DockTopLevelChanged(b); });
+      }
+
+      if (dockMixerB) {
+          mixer2Dock = new QDockWidget("Mixer B", this);
+          mixer2Dock->setObjectName("mixer2Dock");
+          mixer2Dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+          mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2), true);
+          mixer2Dock->setWidget(mixer2);
+          addDockWidget(Qt::BottomDockWidgetArea, mixer2Dock);
+          mixer2Dock->hide();
+          mixer2->setMinimumHeight(400);
+
+          connect(mixer2Dock, &QDockWidget::topLevelChanged, [this](bool b){ mixer2DockTopLevelChanged(b); });
+
+      }
+
+
       //---------------------------------------------------
       //    undo/redo
       //---------------------------------------------------
@@ -3810,16 +3841,21 @@ void MusE::bigtimeClosed()
 //---------------------------------------------------------
 
 void MusE::showMixer1(bool on)
-      {
-      if (on && mixer1 == nullptr) {
-            mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1));
+{
+    if (dockMixerA) {
+        mixer1Dock->setVisible(on);
+    } else {
+        if (on && mixer1 == nullptr) {
+            mixer1 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer1), false);
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
             mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
-      }
-      if (mixer1)
+        }
+        if (mixer1)
             mixer1->setVisible(on);
-      viewMixerAAction->setChecked(on);
-      }
+    }
+
+    viewMixerAAction->setChecked(on);
+}
 
 
 //---------------------------------------------------------
@@ -3827,34 +3863,45 @@ void MusE::showMixer1(bool on)
 //---------------------------------------------------------
 
 void MusE::showMixer2(bool on)
-      {
-      if (on && mixer2 == nullptr) {
-            mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2));
+{
+    if (dockMixerB) {
+        mixer1Dock->setVisible(on);
+    } else {
+        if (on && mixer2 == nullptr) {
+            mixer2 = new MusEGui::AudioMixerApp(this, &(MusEGlobal::config.mixer2), false);
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
             mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
-      }
-      if (mixer2)
+        }
+        if (mixer2)
             mixer2->setVisible(on);
-      viewMixerBAction->setChecked(on);
-      }
+    }
+
+    viewMixerBAction->setChecked(on);
+}
 
 //---------------------------------------------------------
 //   toggleMixer1
 //---------------------------------------------------------
 
 void MusE::toggleMixer1(bool checked)
-      {
-      showMixer1(checked);
-      }
+{
+    if (dockMixerA)
+        mixer1Dock->setVisible(checked);
+    else
+        showMixer1(checked);
+}
 
 //---------------------------------------------------------
 //   toggleMixer2
 //---------------------------------------------------------
 
 void MusE::toggleMixer2(bool checked)
-      {
-      showMixer2(checked);
-      }
+{
+    if (dockMixerB)
+        mixer2Dock->setVisible(checked);
+    else
+        showMixer2(checked);
+}
 
 //---------------------------------------------------------
 //   mixer1Closed
@@ -3873,6 +3920,37 @@ void MusE::mixer2Closed()
       {
       viewMixerBAction->setChecked(false);
       }
+
+void MusE::mixer1DockTopLevelChanged(bool)
+{
+    if (mixer1Dock->isFloating())
+    {
+        mixer1Dock->setWindowFlags(Qt::CustomizeWindowHint |
+            Qt::Window | Qt::WindowMinimizeButtonHint |
+            Qt::WindowMaximizeButtonHint |
+            Qt::WindowCloseButtonHint);
+        mixer1Dock->show();
+    }
+//    else
+//    {
+//        mixer1Dock->setWindowFlags(Qt::Tool|Qt::X11BypassWindowManagerHint|
+//                           Qt::WindowTitleHint|Qt::WindowSystemMenuHint|
+//                           Qt::CustomizeWindowHint|Qt::WindowCloseButtonHint);
+//        mixer1Dock->show();
+//    }
+}
+
+void MusE::mixer2DockTopLevelChanged(bool)
+{
+    if (mixer2Dock->isFloating())
+    {
+        mixer2Dock->setWindowFlags(Qt::CustomizeWindowHint |
+                                   Qt::Window | Qt::WindowMinimizeButtonHint |
+                                   Qt::WindowMaximizeButtonHint |
+                                   Qt::WindowCloseButtonHint);
+        mixer2Dock->show();
+    }
+}
 
 
 //QWidget* MusE::mixer1Window()     { return mixer1; }

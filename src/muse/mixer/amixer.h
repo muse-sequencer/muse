@@ -115,6 +115,7 @@ class AudioMixerApp : public QMainWindow {
       bool _preferKnobs;
       // Hack flag to prevent overwriting the config geometry when resizing.
       bool _resizeFlag;
+      bool _docked;
 
       bool stripIsVisible(Strip* s);
       void redrawMixer();
@@ -171,7 +172,7 @@ class AudioMixerApp : public QMainWindow {
       virtual void moveEvent(QMoveEvent*);
 
    public:
-      AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c);
+      AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool docked);
       void clearAndDelete();
       
       // Sets up tabbing for the entire mixer. Strip by strip.

@@ -710,6 +710,7 @@ class Strip : public QFrame {
       bool _visible;
       bool _selected;
       bool _highlight;
+      bool _isDocked;
 
    protected:
       static constexpr int cMinStripWidth = 52;
@@ -785,7 +786,7 @@ class Strip : public QFrame {
       void userWidthChanged(Strip *s, int w);
       
    public:
-      Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false, bool isEmbedded = true);
+      Strip(QWidget* parent, MusECore::Track* t, bool hasHandle = false, bool isEmbedded = true, bool isDocked = false);
       virtual ~Strip();
 
       // Destroy and rebuild strip components.
