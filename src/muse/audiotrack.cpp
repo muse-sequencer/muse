@@ -327,6 +327,7 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       initBuffers();
 
       setVolume(1.0);
+      setPan(0.0);
       _gain = 1.0;
       }
 
@@ -411,32 +412,6 @@ void AudioTrack::internal_assign(const Track& t, int flags)
               ++icl_this;
             }
           }
-
-          // Copy the special synth controller block...
-          const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
-          const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
-          icl           = at._controller.lower_bound(synth_id);
-          icl_this      = _controller.lower_bound(synth_id);
-          icl_end       = at._controller.lower_bound(synth_id_end);
-          icl_this_end  = _controller.lower_bound(synth_id_end);
-          while(icl != icl_end && icl_this != icl_this_end)
-          {
-            cl      = icl->second;
-            cl_this = icl_this->second;
-            id      = cl->id();
-            id_this = cl_this->id();
-            if(id < id_this)
-              ++icl;      // Let id catch up to this id.
-            else if(id > id_this)
-              ++icl_this; // Let this id catch up to id.
-            else
-            {
-              // Match found. Copy properties but not values.
-              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES);
-              ++icl;
-              ++icl_this;
-            }
-          }
         }
 
         // This will set up or reallocate the outBuffers. _controlPorts must be valid by now.
@@ -463,8 +438,8 @@ void AudioTrack::internal_assign(const Track& t, int flags)
 
       if(flags & (ASSIGN_STD_CTRLS | ASSIGN_PLUGIN_CTRLS))
       {
-        const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);     // The beginning of the special synth controller block.
-        const int synth_id_end = synth_id + AC_PLUGIN_CTL_BASE; // The end of the special block.
+        // The beginning of the special synth controller block.
+        const int synth_id = (int)genACnum(MusECore::MAX_PLUGINS, 0);
         ciCtrlList icl, icl_end, icl_this, icl_this_end;
         int id, id_this;
         CtrlList* cl, *cl_this;
@@ -476,30 +451,6 @@ void AudioTrack::internal_assign(const Track& t, int flags)
           icl_this     = _controller.begin();
           icl_end      = at._controller.lower_bound(AC_PLUGIN_CTL_BASE);
           icl_this_end = _controller.lower_bound(AC_PLUGIN_CTL_BASE);
-          while(icl != icl_end && icl_this != icl_this_end)
-          {
-            cl      = icl->second;
-            cl_this = icl_this->second;
-            id      = cl->id();
-            id_this = cl_this->id();
-            if(id < id_this)
-              ++icl;      // Let id catch up to this id.
-            else if(id > id_this)
-              ++icl_this; // Let this id catch up to id.
-            else
-            {
-              // Match found. Copy properties and values.
-              cl_this->assign(*cl, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
-              ++icl;
-              ++icl_this;
-            }
-          }
-
-          // Copy the special synth controller block...
-          icl           = at._controller.lower_bound(synth_id);
-          icl_this      = _controller.lower_bound(synth_id);
-          icl_end       = at._controller.lower_bound(synth_id_end);
-          icl_this_end  = _controller.lower_bound(synth_id_end);
           while(icl != icl_end && icl_this != icl_this_end)
           {
             cl      = icl->second;
@@ -780,66 +731,95 @@ void AudioTrack::removeController(int id)
       }
 
 //---------------------------------------------------------
-//   swapControllerIDX
+//   swapPlugins
 //---------------------------------------------------------
 
-void AudioTrack::swapControllerIDX(int idx1, int idx2)
+void AudioTrack::swapPlugins(int idx1, int idx2)
 {
   if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= MusECore::PipelineDepth || idx2 >= MusECore::PipelineDepth)
     return;
 
+  // Move the effects in the rack.
+  if(_efxPipe)
+    _efxPipe->move(idx1, idx2);
+
+  // Swap the indexes if required, to get lowest idx1 to highest idx2.
+  if(idx1 > idx2) {
+    const int i = idx1;
+    idx1 = idx2;
+    idx2 = i;
+  }
+
+  //--------------------------------------------------------------------------------------
+  // Swap the controller list control numbers. Using (should be) rt-safe C++17 features...
+  // Not as easy as it sounds. If a pair of swappable items are found they must both be
+  //  extracted / modified / re-inserted at the same time to avoid index collisions with
+  //  existing items - especially with map. We'll use arrays to make things easier, their
+  //  maximum required size is AC_PLUGIN_CTL_BASE (4096).
+  //--------------------------------------------------------------------------------------
   CtrlList *cl;
-  CtrlList *newcl;
   int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
   int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
   int id_mask = ~((int)AC_PLUGIN_CTL_ID_MASK);
   int i, j;
-
-  CtrlListList tmpcll;
-  CtrlVal cv(0, 0.0);
-
-  for(ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl)
+  // Count the number of required array elements,
+  //  and find the first instances of each controller.
+  int count1 = 0, count2 = 0;
+  ciCtrlList icl1 = _controller.cend();
+  ciCtrlList icl2 = _controller.cend();
+  for(ciCtrlList icl = _controller.cbegin(); icl != _controller.cend(); ++icl)
   {
     cl = icl->second;
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
     j = cl->id() & id_mask;
-    if(j == id1 || j == id2)
-    {
-      newcl = new CtrlList(i | (j == id1 ? id2 : id1), cl->dontShow());
-      newcl->setMode(cl->mode());
-      newcl->setValueType(cl->valueType());
-      newcl->setName(cl->name());
-      double min, max;
-      cl->range(&min, &max);
-      newcl->setRange(min, max);
-      newcl->setCurVal(cl->curVal());
-      newcl->setDefault(cl->getDefault());
-      newcl->setColor(cl->color());
-      newcl->setVisible(cl->isVisible());
-      for(iCtrl ic = cl->begin(); ic != cl->end(); ++ic)
-      {
-        cv = ic->second;
-        newcl->insert(CtrlListInsertPair_t(cv.frame, cv));
+    if(j > id2)
+      break;
+    if(j == id1) {
+      count1++;
+      if(icl1 == _controller.cend())
+        icl1 = icl;
       }
-      tmpcll.insert(std::pair<const int, CtrlList*>(newcl->id(), newcl));
-    }
-    else
-    {
-      newcl = new CtrlList();
-      *newcl = *cl;
-      tmpcll.insert(std::pair<const int, CtrlList*>(newcl->id(), newcl));
-    }
+    else if(j == id2) {
+      count2++;
+      if(icl2 == _controller.cend())
+        icl2 = icl;
+      }
   }
-
-  for(iCtrlList ci = _controller.begin(); ci != _controller.end(); ++ci)
-    delete (*ci).second;
-
-  _controller.clear();
-
-  for(ciCtrlList icl = tmpcll.begin(); icl != tmpcll.end(); ++icl)
+  // Extract the node handles to the arrays...
+  ciCtrlList icl_tmp;
+  CtrlListList::node_type array1[count1];
+  CtrlListList::node_type array2[count2];
+  for(int k = 0; k < count1; ++k)
   {
-    newcl = icl->second;
-    _controller.insert(std::pair<const int, CtrlList*>(newcl->id(), newcl));
+    // Iterator is invalidated after extraction. Save it.
+    icl_tmp = icl1;
+    ++icl_tmp;
+    array1[k] = _controller.extract(icl1);
+    icl1 = icl_tmp;
+  }
+  for(int k = 0; k < count2; ++k)
+  {
+    // Iterator is invalidated after extraction. Save it.
+    icl_tmp = icl2;
+    ++icl_tmp;
+    array2[k] = _controller.extract(icl2);
+    icl2 = icl_tmp;
+  }
+  // Modify and re-insert the elements...
+  for(int k = 0; k < count1; ++k)
+  {
+    cl = array1[k].mapped();
+    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
+    cl->setId(i | id2);
+    array1[k].key() = i | id2;
+    _controller.insert(move(array1[k]));
+  }
+  for(int k = 0; k < count2; ++k)
+  {
+    cl = array2[k].mapped();
+    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
+    cl->setId(i | id1);
+    array2[k].key() = i | id1;
+    _controller.insert(move(array2[k]));
   }
 
   // Remap midi to audio controls...

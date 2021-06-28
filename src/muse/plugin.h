@@ -602,14 +602,14 @@ class Pipeline : public std::vector<PluginI*> {
       bool isDssiPlugin(int) const;
       bool isLV2Plugin(int idx) const;
       bool isVstNativePlugin(int idx) const;
-      bool has_dssi_ui(int idx) const;
+      bool hasNativeGui(int idx) const;
       void showNativeGui(int, bool);
       void deleteGui(int idx);
       void deleteAllGuis();
       bool guiVisible(int);
       bool nativeGuiVisible(int);
       void apply(unsigned pos, unsigned long ports, unsigned long nframes, float** buffer);
-      void move(int idx, bool up);
+      void move(int idx1, int idx2);
       bool empty(int idx) const;
       void setChannels(int);
       bool addScheduledControlEvent(int track_ctrl_id, double val, unsigned frame); // returns true if event cannot be delivered

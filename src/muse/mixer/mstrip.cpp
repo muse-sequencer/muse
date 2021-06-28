@@ -1590,7 +1590,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       // If smart focus is on redirect strip focus to slider label.
       //if(MusEGlobal::config.smartFocus)
-        setFocusProxy(sl);
+//         setFocusProxy(sl);
 
       if(mc)
       {

@@ -35,7 +35,11 @@ QStatusBar {
     color: rgb(30,30,30);
     font-size: 10pt;
 }
-   
+
+QAbstractSpinBox:focus {
+    border: 1px solid rgb(0,90,160);
+}
+
 QMenu {
     border: 1px solid rgb(0,90,160);
     /* menu-scrollable: true; */

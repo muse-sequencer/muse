@@ -113,7 +113,7 @@ const char* seqMsgList[] = {
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
-      "AUDIO_SWAP_CONTROLLER_IDX",
+      "AUDIO_SWAP_PLUGINS",
       "AUDIO_CLEAR_CONTROLLER_EVENTS",
       "AUDIO_SEEK_PREV_AC_EVENT",
       "AUDIO_SEEK_NEXT_AC_EVENT",
@@ -1453,8 +1453,8 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_ADDPLUGIN:
                   msg->snode->addPlugin(msg->plugin, msg->ival);
                   break;
-            case AUDIO_SWAP_CONTROLLER_IDX:
-                  msg->snode->swapControllerIDX(msg->a, msg->b);
+            case AUDIO_SWAP_PLUGINS:
+                  msg->snode->swapPlugins(msg->a, msg->b);
                   break;
             case AUDIO_CLEAR_CONTROLLER_EVENTS:
                   msg->snode->clearControllerEvents(msg->ival);

@@ -1870,7 +1870,7 @@ void Strip::keyPressEvent(QKeyEvent* ev)
   // Set to accept by default.
   ev->accept();
 
-  if (ev->key() == Qt::Key_Escape)
+  if (MusEGlobal::config.smartFocus && (ev->key() == Qt::Key_Escape || ev->key() == Qt::Key_Return || ev->key() == Qt::Key_Enter))
   {
     if(_focusYieldWidget)
     {

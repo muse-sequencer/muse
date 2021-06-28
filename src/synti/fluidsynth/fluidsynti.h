@@ -124,6 +124,7 @@ class FluidSynth : public Mess {
       void sfChannelChange(unsigned char font_id, unsigned char channel);
       void parseInitData(int n, const byte* d);
 
+      fluid_settings_t* _settings;
       byte* initBuffer;
       int initLen;
 

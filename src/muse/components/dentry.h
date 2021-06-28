@@ -33,6 +33,7 @@ class QContextMenuEvent;
 class QKeyEvent;
 class QString;
 class QTimer;
+class QFocusEvent;
 
 namespace MusEGui {
 class SliderBase;
@@ -63,6 +64,8 @@ class Dentry : public QLineEdit {
       virtual void mouseDoubleClickEvent(QMouseEvent*);
       virtual void mouseReleaseEvent(QMouseEvent*);
       virtual void contextMenuEvent(QContextMenuEvent*);
+      // Required because undo is NOT cleared when focus is lost even though editing is finished.
+      virtual void focusOutEvent(QFocusEvent*);
 
       virtual void keyPressEvent(QKeyEvent*);
 

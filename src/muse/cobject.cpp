@@ -87,7 +87,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     subwinAction->setCheckable(true);
     subwinAction->setStatusTip(tr("Display editor in a tab or in a separate window (preset in Global Settings->Editors)."));
     subwinAction->setShortcut(shortcuts[SHRT_TABBED_WIN].key);
-    connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
+    connect(subwinAction, &QAction::toggled, [this](bool v) { setIsMdiWin(v); } );
 
 //    shareAction=new QAction(tr("Shares Tools and Menu"), this);
 //    shareAction->setCheckable(true);
@@ -97,7 +97,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     fullscreenAction->setCheckable(true);
     fullscreenAction->setChecked(false);
     fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
-    connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
+    connect(fullscreenAction, &QAction::toggled, [this](bool v) { setFullscreen(v); } );
 
 
     mdisubwin = nullptr;
@@ -186,12 +186,15 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
     PosToolbar *posToolbar = new PosToolbar(tr("Position"), this);
     addToolBar(posToolbar);
 
-    connect(tempo_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-    connect(tempo_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
-    connect(tempo_tb, SIGNAL(masterTrackChanged(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
+    connect(tempo_tb, &TempoToolbar::returnPressed, [this]() { focusCanvas(); } );
+    connect(tempo_tb, &TempoToolbar::escapePressed, [this]() { focusCanvas(); } );
+    connect(tempo_tb, &TempoToolbar::masterTrackChanged, [](bool v) { MusEGlobal::song->setMasterFlag(v); } );
 
-    connect(sig_tb, SIGNAL(returnPressed()), SLOT(focusCanvas()));
-    connect(sig_tb, SIGNAL(escapePressed()), SLOT(focusCanvas()));
+    connect(sig_tb, &SigToolbar::returnPressed, [this]() { focusCanvas(); } );
+    connect(sig_tb, &SigToolbar::escapePressed, [this]() { focusCanvas(); } );
+
+    connect(posToolbar, &PosToolbar::returnPressed, [this]() { focusCanvas(); } );
+    connect(posToolbar, &PosToolbar::escapePressed, [this]() { focusCanvas(); } );
 
 // this is not (longer?) the case, to be tested on KDE (kybos)
 // what about changing from MDI to top window later? then the parent remains anyway... (kybos)
