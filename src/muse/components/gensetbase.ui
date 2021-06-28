@@ -437,7 +437,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
-          <string>Open mixers in docks (else in separate window)</string>
+          <string>Open mixers in docks (else in separate windows)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_25">
           <property name="spacing">
@@ -462,20 +462,13 @@
        </item>
        <item>
         <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Mixer settings will take effect after the next restart.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_2">
          <property name="font">
           <font>
            <italic>true</italic>
           </font>
          </property>
          <property name="text">
-          <string>This is an experminental function, please report bugs to the issue tracker (see Help menu).</string>
+          <string>Mixer settings will take effect after the next restart.</string>
          </property>
         </widget>
        </item>
