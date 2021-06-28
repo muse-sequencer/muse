@@ -2,6 +2,8 @@
     - New: Mixers can now be opened in a docked window (optionally). 
         When the mixer dock is floating, a top window title bar is added
         so it's possible to minimize/maximize the window. (kybos)
+    - New: Custom themes (*.qss files) can be added to the HOME themes directory,
+        they will be displayed in the Appearance dialog theme selection. (kybos)
 20.06.2021
     - Fix crash 1028: Make effects rack 'move up/down' synchronized and real-time friendly. (Tim)
     - Also fixed a few problems with effects rack context menu.
