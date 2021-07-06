@@ -134,14 +134,27 @@ void MusE::aboutQt()
 //---------------------------------------------------------
 
 void MusE::launchBrowser(QString &whereTo)
-      {
-      if (! QDesktopServices::openUrl(QUrl(whereTo)))
-            {
-            QMessageBox::information(this, tr("Unable to launch browser"),
-                                     tr("Error launching default browser"),
-                                     QMessageBox::Ok);
-            printf("Unable to launch browser\n");
-            }
-      }
+{
+    // lib path must be cleared temporarily as some browsers try
+    //   to access potentially incompatible libs from the appimage
+    QByteArray ldLibPath;
+    const QByteArray appDir = qgetenv("APPDIR"); // running in AppImage
+    if (!appDir.isEmpty()) {
+        ldLibPath = qgetenv("LD_LIBRARY_PATH");
+        qputenv("LD_LIBRARY_PATH", "");
+    }
+
+    if (! QDesktopServices::openUrl(QUrl(whereTo)))
+    {
+        QMessageBox::information(this, tr("Unable to launch browser"),
+                                 tr("Error launching default browser"),
+                                 QMessageBox::Ok);
+        printf("Unable to launch browser\n");
+    }
+
+    if (!appDir.isEmpty()) {
+        qputenv("LD_LIBRARY_PATH", ldLibPath);
+    }
+}
 
 } // namespace MusEGui
