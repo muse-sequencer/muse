@@ -2347,13 +2347,13 @@ void Song::clear(bool signal, bool clear_all)
           {
             if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
             {
-              // Remove the device from the list.
-              MusEGlobal::midiDevices.erase(imd);
               // Since Jack midi devices are created dynamically, we must delete them.
               // The destructor unregisters the device from Jack, which also disconnects all device-to-jack routes.
               // This will also delete all midi-track-to-device routes, they point to non-existant midi tracks 
               //  which were all deleted above
               delete (*imd);
+              // Remove the device from the list.
+              MusEGlobal::midiDevices.erase(imd);
               loop = true;
               break;
             }  
