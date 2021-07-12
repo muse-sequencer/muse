@@ -412,15 +412,18 @@ void Piano::draw(QPainter& p, const QRect&, const QRegion&)
 //---------------------------------------------------------
 
 int Piano::pitch2y(int pitch) const
-      {
-      int tt[] = {
-            12, 19, 25, 32, 38, 51, 58, 64, 71, 77, 84, 90
-            };
-      int y = (75 * KH) - (tt[pitch%12] + (7 * KH) * (pitch/12));
-      if (y < 0)
-            y = 0;
-      return y;
-      }
+{
+	if (pitch<0)
+		return 0;
+
+	int tt[] = {
+		12, 19, 25, 32, 38, 51, 58, 64, 71, 77, 84, 90
+	};
+	int y = (75 * KH) - (tt[pitch%12] + (7 * KH) * (pitch/12));
+	if (y < 0)
+		y = 0;
+	return y;
+}
 
 //---------------------------------------------------------
 //   y2pitch
