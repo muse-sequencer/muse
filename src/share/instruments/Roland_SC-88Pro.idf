@@ -1,0 +1,2111 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Roland SC-88Pro">
+    <PatchGroup name="Piano">
+      <Patch name="(55)Piano 1" hbank="0" lbank="1" prog="0" />
+			<Patch name="(88)Piano 1" hbank="0" lbank="2" prog="0" />
+			<Patch name="(Pro)Piano 1" hbank="0" lbank="3" prog="0" />
+			<Patch name="(55)Piano 1w" hbank="8" lbank="1" prog="0" />
+			<Patch name="(88)Piano 1w" hbank="8" lbank="2" prog="0" />
+			<Patch name="(Pro)Piano 1w" hbank="8" lbank="3" prog="0" />
+			<Patch name="(55)Piano 1d" hbank="16" lbank="1" prog="0" />
+			<Patch name="(88)Piano 1d" hbank="16" lbank="2" prog="0" />
+			<Patch name="(Pro)European Pf" hbank="16" lbank="3" prog="0" />
+			<Patch name="(Pro)Piano + Str." hbank="24" lbank="3" prog="0" />
+			<Patch name="(55)Piano 2" hbank="126" lbank="1" prog="0" />
+			<Patch name="(88)Piano 2" hbank="126" lbank="2" prog="0" />
+			<Patch name="(Pro)Piano 2" hbank="126" lbank="3" prog="0" />
+			<Patch name="(55)Acou Piano1" hbank="127" lbank="1" prog="0" />
+			<Patch name="(88)Acou Piano1" hbank="127" lbank="2" prog="0" />
+			<Patch name="(Pro)Acou Piano1" hbank="127" lbank="3" prog="0" />
+			<Patch name="(55)Piano 2" hbank="0" lbank="1" prog="1" />
+			<Patch name="(88)Piano 2" hbank="0" lbank="2" prog="1" />
+			<Patch name="(Pro)Piano 2" hbank="0" lbank="3" prog="1" />
+			<Patch name="(55)Piano 2w" hbank="8" lbank="1" prog="1" />
+			<Patch name="(88)Piano 2w" hbank="8" lbank="2" prog="1" />
+			<Patch name="(Pro)Piano 2w" hbank="8" lbank="3" prog="1" />
+			<Patch name="(Pro)Dance Piano" hbank="16" lbank="3" prog="1" />
+			<Patch name="(55)Piano 2" hbank="126" lbank="1" prog="1" />
+			<Patch name="(88)Piano 2" hbank="126" lbank="2" prog="1" />
+			<Patch name="(Pro)Piano 2" hbank="126" lbank="3" prog="1" />
+			<Patch name="(55)Acou Piano2" hbank="127" lbank="1" prog="1" />
+			<Patch name="(88)Acou Piano2" hbank="127" lbank="2" prog="1" />
+			<Patch name="(Pro)Acou Piano2" hbank="127" lbank="3" prog="1" />
+			<Patch name="(55)Piano 3" hbank="0" lbank="1" prog="2" />
+			<Patch name="(88)Piano 3" hbank="0" lbank="2" prog="2" />
+			<Patch name="(Pro)Piano 3" hbank="0" lbank="3" prog="2" />
+			<Patch name="(88)EG+Rhodes 1" hbank="1" lbank="2" prog="2" />
+			<Patch name="(Pro)EG+Rhodes 1" hbank="1" lbank="3" prog="2" />
+			<Patch name="(88)EG+Rhodes 2" hbank="2" lbank="2" prog="2" />
+			<Patch name="(Pro)EG+Rhodes 2" hbank="2" lbank="3" prog="2" />
+			<Patch name="(55)Piano 3w" hbank="8" lbank="1" prog="2" />
+			<Patch name="(88)Piano 3w" hbank="8" lbank="2" prog="2" />
+			<Patch name="(Pro)Piano 3w" hbank="8" lbank="3" prog="2" />
+			<Patch name="(55)Piano 2" hbank="126" lbank="1" prog="2" />
+			<Patch name="(88)Piano 2" hbank="126" lbank="2" prog="2" />
+			<Patch name="(Pro)Piano 2" hbank="126" lbank="3" prog="2" />
+			<Patch name="(55)Acou Piano3" hbank="127" lbank="1" prog="2" />
+			<Patch name="(88)Acou Piano3" hbank="127" lbank="2" prog="2" />
+			<Patch name="(Pro)Acou Piano3" hbank="127" lbank="3" prog="2" />
+			<Patch name="(55)Honky-tonk" hbank="0" lbank="1" prog="3" />
+			<Patch name="(88)Honky-tonk" hbank="0" lbank="2" prog="3" />
+			<Patch name="(Pro)Honky-tonk" hbank="0" lbank="3" prog="3" />
+			<Patch name="(55)HonkyTonk w" hbank="8" lbank="1" prog="3" />
+			<Patch name="(88)Old Upright" hbank="8" lbank="2" prog="3" />
+			<Patch name="(Pro)Honky-tonk 2" hbank="8" lbank="3" prog="3" />
+			<Patch name="(55)Honky-tonk" hbank="126" lbank="1" prog="3" />
+			<Patch name="(88)Honky-tonk" hbank="126" lbank="2" prog="3" />
+			<Patch name="(Pro)Honky-tonk" hbank="126" lbank="3" prog="3" />
+			<Patch name="(55)Elec Piano1" hbank="127" lbank="1" prog="3" />
+			<Patch name="(88)Elec Piano1" hbank="127" lbank="2" prog="3" />
+			<Patch name="(Pro)Elec Piano1" hbank="127" lbank="3" prog="3" />
+			<Patch name="(55)E.Piano 1" hbank="0" lbank="1" prog="4" />
+			<Patch name="(88)E.Piano 1" hbank="0" lbank="2" prog="4" />
+			<Patch name="(Pro)E.Piano 1" hbank="0" lbank="3" prog="4" />
+			<Patch name="(55)Detuned EP1" hbank="8" lbank="1" prog="4" />
+			<Patch name="(88)St.Soft EP" hbank="8" lbank="2" prog="4" />
+			<Patch name="(Pro)St.Soft EP" hbank="8" lbank="3" prog="4" />
+			<Patch name="(Pro)Cho. E.Piano" hbank="9" lbank="3" prog="4" />
+			<Patch name="(Pro)SilentRhodes" hbank="10" lbank="3" prog="4" />
+			<Patch name="(55)E.Piano 1v" hbank="16" lbank="1" prog="4" />
+			<Patch name="(88)FM+SA EP" hbank="16" lbank="2" prog="4" />
+			<Patch name="(Pro)FM+SA EP" hbank="16" lbank="3" prog="4" />
+			<Patch name="(Pro)Dist E.Piano" hbank="17" lbank="3" prog="4" />
+			<Patch name="(55)60s E.Piano" hbank="24" lbank="1" prog="4" />
+			<Patch name="(88)60'sE.Piano" hbank="24" lbank="2" prog="4" />
+			<Patch name="(Pro)Wurly" hbank="24" lbank="3" prog="4" />
+			<Patch name="(88)Hard Rhodes" hbank="25" lbank="2" prog="4" />
+			<Patch name="(Pro)Hard Rhodes" hbank="25" lbank="3" prog="4" />
+			<Patch name="(88)MellwRhodes" hbank="26" lbank="2" prog="4" />
+			<Patch name="(Pro)MellowRhodes" hbank="26" lbank="3" prog="4" />
+			<Patch name="(55)Piano 1" hbank="126" lbank="1" prog="4" />
+			<Patch name="(88)Piano 1" hbank="126" lbank="2" prog="4" />
+			<Patch name="(Pro)Piano 1" hbank="126" lbank="3" prog="4" />
+			<Patch name="(55)Elec Piano2" hbank="127" lbank="1" prog="4" />
+			<Patch name="(88)Elec Piano2" hbank="127" lbank="2" prog="4" />
+			<Patch name="(Pro)Elec Piano2" hbank="127" lbank="3" prog="4" />
+			<Patch name="(55)E.Piano 2" hbank="0" lbank="1" prog="5" />
+			<Patch name="(88)E.Piano 2" hbank="0" lbank="2" prog="5" />
+			<Patch name="(Pro)E.Piano 2" hbank="0" lbank="3" prog="5" />
+			<Patch name="(55)Detuned EP2" hbank="8" lbank="1" prog="5" />
+			<Patch name="(88)Detuned EP2" hbank="8" lbank="2" prog="5" />
+			<Patch name="(Pro)Detuned EP 2" hbank="8" lbank="3" prog="5" />
+			<Patch name="(55)E.Piano 2v" hbank="16" lbank="1" prog="5" />
+			<Patch name="(88)St.FM EP" hbank="16" lbank="2" prog="5" />
+			<Patch name="(Pro)St.FM EP" hbank="16" lbank="3" prog="5" />
+			<Patch name="(88)Hard FM EP" hbank="24" lbank="2" prog="5" />
+			<Patch name="(Pro)Hard FM EP" hbank="24" lbank="3" prog="5" />
+			<Patch name="(55)Piano 2" hbank="126" lbank="1" prog="5" />
+			<Patch name="(88)Piano 2" hbank="126" lbank="2" prog="5" />
+			<Patch name="(Pro)Piano 2" hbank="126" lbank="3" prog="5" />
+			<Patch name="(55)Elec Piano3" hbank="127" lbank="1" prog="5" />
+			<Patch name="(88)Elec Piano3" hbank="127" lbank="2" prog="5" />
+			<Patch name="(Pro)Elec Piano3" hbank="127" lbank="3" prog="5" />
+			<Patch name="(55)Harpsichord" hbank="0" lbank="1" prog="6" />
+			<Patch name="(88)Harpsichord" hbank="0" lbank="2" prog="6" />
+			<Patch name="(Pro)Harpsichord" hbank="0" lbank="3" prog="6" />
+			<Patch name="(Pro)Harpsichord2" hbank="1" lbank="3" prog="6" />
+			<Patch name="(55)Coupled Hps" hbank="8" lbank="1" prog="6" />
+			<Patch name="(88)Coupled Hps" hbank="8" lbank="2" prog="6" />
+			<Patch name="(Pro)Coupled Hps." hbank="8" lbank="3" prog="6" />
+			<Patch name="(55)Harpsi.w" hbank="16" lbank="1" prog="6" />
+			<Patch name="(88)Harpsi.w" hbank="16" lbank="2" prog="6" />
+			<Patch name="(Pro)Harpsi.w" hbank="16" lbank="3" prog="6" />
+			<Patch name="(55)Harpsi.o" hbank="24" lbank="1" prog="6" />
+			<Patch name="(88)Harpsi.o" hbank="24" lbank="2" prog="6" />
+			<Patch name="(Pro)Harpsi.o" hbank="24" lbank="3" prog="6" />
+			<Patch name="(Pro)Synth Harpsi" hbank="32" lbank="3" prog="6" />
+			<Patch name="(55)Piano 2" hbank="126" lbank="1" prog="6" />
+			<Patch name="(88)Piano 2" hbank="126" lbank="2" prog="6" />
+			<Patch name="(Pro)Piano 2" hbank="126" lbank="3" prog="6" />
+			<Patch name="(55)Elec Piano4" hbank="127" lbank="1" prog="6" />
+			<Patch name="(88)Elec Piano4" hbank="127" lbank="2" prog="6" />
+			<Patch name="(Pro)Elec Piano4" hbank="127" lbank="3" prog="6" />
+			<Patch name="(55)Clav." hbank="0" lbank="1" prog="7" />
+			<Patch name="(88)Clav." hbank="0" lbank="2" prog="7" />
+			<Patch name="(Pro)Clav." hbank="0" lbank="3" prog="7" />
+			<Patch name="(Pro)Comp Clav." hbank="8" lbank="3" prog="7" />
+			<Patch name="(Pro)Reso Clav." hbank="16" lbank="3" prog="7" />
+			<Patch name="(Pro)Clav.o" hbank="24" lbank="3" prog="7" />
+			<Patch name="(Pro)Analog Clav." hbank="32" lbank="3" prog="7" />
+			<Patch name="(Pro)JP8 Clav. 1" hbank="33" lbank="3" prog="7" />
+			<Patch name="(Pro)JP8 Clav. 2" hbank="35" lbank="3" prog="7" />
+			<Patch name="(55)E.Piano 1" hbank="126" lbank="1" prog="7" />
+			<Patch name="(88)E.Piano 1" hbank="126" lbank="2" prog="7" />
+			<Patch name="(Pro)E.Piano 1" hbank="126" lbank="3" prog="7" />
+			<Patch name="(55)Honkytonk" hbank="127" lbank="1" prog="7" />
+			<Patch name="(88)Honkytonk" hbank="127" lbank="2" prog="7" />
+			<Patch name="(Pro)Honkytonk" hbank="127" lbank="3" prog="7" />
+    </PatchGroup>
+    <PatchGroup name="Chromatic Perc">
+      <Patch name="(55)Celesta" hbank="0" lbank="1" prog="8" />
+			<Patch name="(88)Celesta" hbank="0" lbank="2" prog="8" />
+			<Patch name="(Pro)Celesta" hbank="0" lbank="3" prog="8" />
+			<Patch name="(Pro)Pop Celesta" hbank="1" lbank="3" prog="8" />
+			<Patch name="(55)Detuned EP1" hbank="126" lbank="1" prog="8" />
+			<Patch name="(88)Detuned EP1" hbank="126" lbank="2" prog="8" />
+			<Patch name="(Pro)Detuned EP1" hbank="126" lbank="3" prog="8" />
+			<Patch name="(55)Elec Org 1" hbank="127" lbank="1" prog="8" />
+			<Patch name="(88)Elec Org 1" hbank="127" lbank="2" prog="8" />
+			<Patch name="(Pro)Elec Org 1" hbank="127" lbank="3" prog="8" />
+			<Patch name="(55)Glockenspl" hbank="0" lbank="1" prog="9" />
+			<Patch name="(88)Glocknspiel" hbank="0" lbank="2" prog="9" />
+			<Patch name="(Pro)Glockenspiel" hbank="0" lbank="3" prog="9" />
+			<Patch name="(55)E.Piano 2" hbank="126" lbank="1" prog="9" />
+			<Patch name="(88)E.Piano 2" hbank="126" lbank="2" prog="9" />
+			<Patch name="(Pro)E.Piano 2" hbank="126" lbank="3" prog="9" />
+			<Patch name="(55)Elec Org 2" hbank="127" lbank="1" prog="9" />
+			<Patch name="(88)Elec Org 2" hbank="127" lbank="2" prog="9" />
+			<Patch name="(Pro)Elec Org 2" hbank="127" lbank="3" prog="9" />
+			<Patch name="(55)Music Box" hbank="0" lbank="1" prog="10" />
+			<Patch name="(88)Music Box" hbank="0" lbank="2" prog="10" />
+			<Patch name="(Pro)Music Box" hbank="0" lbank="3" prog="10" />
+			<Patch name="(55)Steel Gt." hbank="126" lbank="1" prog="10" />
+			<Patch name="(88)Steel Gt." hbank="126" lbank="2" prog="10" />
+			<Patch name="(Pro)Steel Gt." hbank="126" lbank="3" prog="10" />
+			<Patch name="(55)Elec Org 3" hbank="127" lbank="1" prog="10" />
+			<Patch name="(88)Elec Org 3" hbank="127" lbank="2" prog="10" />
+			<Patch name="(Pro)Elec Org 3" hbank="127" lbank="3" prog="10" />
+			<Patch name="(55)Vibraphone" hbank="0" lbank="1" prog="11" />
+			<Patch name="(88)Vibraphone" hbank="0" lbank="2" prog="11" />
+			<Patch name="(Pro)Vibraphone" hbank="0" lbank="3" prog="11" />
+			<Patch name="(88)Hard Vibe" hbank="1" lbank="2" prog="11" />
+			<Patch name="(Pro)Pop Vibe." hbank="1" lbank="3" prog="11" />
+			<Patch name="(55)Vib.w" hbank="8" lbank="1" prog="11" />
+			<Patch name="(88)Vib.w" hbank="8" lbank="2" prog="11" />
+			<Patch name="(Pro)Vibraphone w" hbank="8" lbank="3" prog="11" />
+			<Patch name="(Pro)Vibraphones" hbank="9" lbank="3" prog="11" />
+			<Patch name="(55)Steel Gt." hbank="126" lbank="1" prog="11" />
+			<Patch name="(88)Steel Gt." hbank="126" lbank="2" prog="11" />
+			<Patch name="(Pro)Steel Gt." hbank="126" lbank="3" prog="11" />
+			<Patch name="(55)Elec Org 4" hbank="127" lbank="1" prog="11" />
+			<Patch name="(88)Elec Org 4" hbank="127" lbank="2" prog="11" />
+			<Patch name="(Pro)Elec Org 4" hbank="127" lbank="3" prog="11" />
+			<Patch name="(55)Marimba" hbank="0" lbank="1" prog="12" />
+			<Patch name="(88)Marimba" hbank="0" lbank="2" prog="12" />
+			<Patch name="(Pro)Marimba" hbank="0" lbank="3" prog="12" />
+			<Patch name="(55)Marimba w" hbank="8" lbank="1" prog="12" />
+			<Patch name="(88)Marimba w" hbank="8" lbank="2" prog="12" />
+			<Patch name="(Pro)Marimba w" hbank="8" lbank="3" prog="12" />
+			<Patch name="(88)Barafon" hbank="16" lbank="2" prog="12" />
+			<Patch name="(Pro)Barafon" hbank="16" lbank="3" prog="12" />
+			<Patch name="(88)Barafon 2" hbank="17" lbank="2" prog="12" />
+			<Patch name="(Pro)Barafon 2" hbank="17" lbank="3" prog="12" />
+			<Patch name="(88)Log drum" hbank="24" lbank="2" prog="12" />
+			<Patch name="(Pro)Log drum" hbank="24" lbank="3" prog="12" />
+			<Patch name="(55)12-str.Gt" hbank="126" lbank="1" prog="12" />
+			<Patch name="(88)12-str.Gt" hbank="126" lbank="2" prog="12" />
+			<Patch name="(Pro)12-str.Gt" hbank="126" lbank="3" prog="12" />
+			<Patch name="(55)Pipe Org 1" hbank="127" lbank="1" prog="12" />
+			<Patch name="(88)Pipe Org 1" hbank="127" lbank="2" prog="12" />
+			<Patch name="(Pro)Pipe Org 1" hbank="127" lbank="3" prog="12" />
+			<Patch name="(55)Xylophone" hbank="0" lbank="1" prog="13" />
+			<Patch name="(88)Xylophone" hbank="0" lbank="2" prog="13" />
+			<Patch name="(Pro)Xylophone" hbank="0" lbank="3" prog="13" />
+			<Patch name="(55)Funk Gt." hbank="126" lbank="1" prog="13" />
+			<Patch name="(88)Funk Gt." hbank="126" lbank="2" prog="13" />
+			<Patch name="(Pro)Funk Gt." hbank="126" lbank="3" prog="13" />
+			<Patch name="(55)Pipe Org 2" hbank="127" lbank="1" prog="13" />
+			<Patch name="(88)Pipe Org 2" hbank="127" lbank="2" prog="13" />
+			<Patch name="(Pro)Pipe Org 2" hbank="127" lbank="3" prog="13" />
+			<Patch name="(55)Tubularbell" hbank="0" lbank="1" prog="14" />
+			<Patch name="(88)Tubularbell" hbank="0" lbank="2" prog="14" />
+			<Patch name="(Pro)Tubular-bell" hbank="0" lbank="3" prog="14" />
+			<Patch name="(55)Church Bell" hbank="8" lbank="1" prog="14" />
+			<Patch name="(88)Church Bell" hbank="8" lbank="2" prog="14" />
+			<Patch name="(Pro)Church Bell" hbank="8" lbank="3" prog="14" />
+			<Patch name="(55)Carillon" hbank="9" lbank="1" prog="14" />
+			<Patch name="(88)Carillon" hbank="9" lbank="2" prog="14" />
+			<Patch name="(Pro)Carillon" hbank="9" lbank="3" prog="14" />
+			<Patch name="(55)Muted Gt." hbank="126" lbank="1" prog="14" />
+			<Patch name="(88)Muted Gt." hbank="126" lbank="2" prog="14" />
+			<Patch name="(Pro)Muted Gt." hbank="126" lbank="3" prog="14" />
+			<Patch name="(55)Pipe Org 3" hbank="127" lbank="1" prog="14" />
+			<Patch name="(88)Pipe Org 3" hbank="127" lbank="2" prog="14" />
+			<Patch name="(Pro)Pipe Org 3" hbank="127" lbank="3" prog="14" />
+			<Patch name="(55)Santur" hbank="0" lbank="1" prog="15" />
+			<Patch name="(88)Santur" hbank="0" lbank="2" prog="15" />
+			<Patch name="(Pro)Santur" hbank="0" lbank="3" prog="15" />
+			<Patch name="(88)Santur 2" hbank="1" lbank="2" prog="15" />
+			<Patch name="(Pro)Santur 2" hbank="1" lbank="3" prog="15" />
+			<Patch name="(88)Cimbalom" hbank="8" lbank="2" prog="15" />
+			<Patch name="(Pro)Cimbalom" hbank="8" lbank="3" prog="15" />
+			<Patch name="(Pro)Zither 1" hbank="16" lbank="3" prog="15" />
+			<Patch name="(Pro)Zither 2" hbank="17" lbank="3" prog="15" />
+			<Patch name="(Pro)Dulcimer" hbank="24" lbank="3" prog="15" />
+			<Patch name="(55)Slap Bass 1" hbank="126" lbank="1" prog="15" />
+			<Patch name="(88)Slap Bass 1" hbank="126" lbank="2" prog="15" />
+			<Patch name="(Pro)Slap Bass 1" hbank="126" lbank="3" prog="15" />
+			<Patch name="(55)Accordion" hbank="127" lbank="1" prog="15" />
+			<Patch name="(88)Accordion" hbank="127" lbank="2" prog="15" />
+			<Patch name="(Pro)Accordion" hbank="127" lbank="3" prog="15" />
+    </PatchGroup>
+    <PatchGroup name="Organ">
+      <Patch name="(55)Organ 1" hbank="0" lbank="1" prog="16" />
+			<Patch name="(88)Organ 1" hbank="0" lbank="2" prog="16" />
+			<Patch name="(Pro)Organ 1" hbank="0" lbank="3" prog="16" />
+			<Patch name="(88)Organ 101" hbank="1" lbank="2" prog="16" />
+			<Patch name="(Pro)Organ 101" hbank="1" lbank="3" prog="16" />
+			<Patch name="(55)Detuned Or1" hbank="8" lbank="1" prog="16" />
+			<Patch name="(88)DetunedOr.1" hbank="8" lbank="2" prog="16" />
+			<Patch name="(Pro)Trem. Organ" hbank="8" lbank="3" prog="16" />
+			<Patch name="(88)Organ 109" hbank="9" lbank="2" prog="16" />
+			<Patch name="(Pro)Organ o" hbank="9" lbank="3" prog="16" />
+			<Patch name="(55)60's Organ1" hbank="16" lbank="1" prog="16" />
+			<Patch name="(88)60'sOrgan 1" hbank="16" lbank="2" prog="16" />
+			<Patch name="(Pro)60's Organ 1" hbank="16" lbank="3" prog="16" />
+			<Patch name="(88)60'sOrgan 2" hbank="17" lbank="2" prog="16" />
+			<Patch name="(Pro)60's Organ 2" hbank="17" lbank="3" prog="16" />
+			<Patch name="(88)60'sOrgan 3" hbank="18" lbank="2" prog="16" />
+			<Patch name="(Pro)60's Organ 3" hbank="18" lbank="3" prog="16" />
+			<Patch name="(Pro)Farf Organ" hbank="19" lbank="3" prog="16" />
+			<Patch name="(88)CheeseOrgan" hbank="24" lbank="2" prog="16" />
+			<Patch name="(Pro)Cheese Organ" hbank="24" lbank="3" prog="16" />
+			<Patch name="(Pro)D-50 Organ" hbank="25" lbank="3" prog="16" />
+			<Patch name="(Pro)JUNO Organ" hbank="26" lbank="3" prog="16" />
+			<Patch name="(Pro)Hybrid Organ" hbank="27" lbank="3" prog="16" />
+			<Patch name="(Pro)VS Organ" hbank="28" lbank="3" prog="16" />
+			<Patch name="(Pro)Digi Church" hbank="29" lbank="3" prog="16" />
+			<Patch name="(55)Organ 4" hbank="32" lbank="1" prog="16" />
+			<Patch name="(88)Organ 4" hbank="32" lbank="2" prog="16" />
+			<Patch name="(Pro)70's E.Organ" hbank="32" lbank="3" prog="16" />
+			<Patch name="(88)Even Bar" hbank="33" lbank="2" prog="16" />
+			<Patch name="(Pro)Even Bar" hbank="33" lbank="3" prog="16" />
+			<Patch name="(88)Organ Bass" hbank="40" lbank="2" prog="16" />
+			<Patch name="(Pro)Organ Bass" hbank="40" lbank="3" prog="16" />
+			<Patch name="(Pro)5th Organ" hbank="48" lbank="3" prog="16" />
+			<Patch name="(55)Slap Bass 1" hbank="126" lbank="1" prog="16" />
+			<Patch name="(88)Slap Bass 1" hbank="126" lbank="2" prog="16" />
+			<Patch name="(Pro)Slap Bass 1" hbank="126" lbank="3" prog="16" />
+			<Patch name="(55)Harpsi 1" hbank="127" lbank="1" prog="16" />
+			<Patch name="(88)Harpsi 1" hbank="127" lbank="2" prog="16" />
+			<Patch name="(Pro)Harpsi 1" hbank="127" lbank="3" prog="16" />
+			<Patch name="(55)Organ 2" hbank="0" lbank="1" prog="17" />
+			<Patch name="(88)Organ 2" hbank="0" lbank="2" prog="17" />
+			<Patch name="(Pro)Organ 2" hbank="0" lbank="3" prog="17" />
+			<Patch name="(88)Organ 201" hbank="1" lbank="2" prog="17" />
+			<Patch name="(Pro)Jazz Organ" hbank="1" lbank="3" prog="17" />
+			<Patch name="(Pro)E.Organ 16+2" hbank="2" lbank="3" prog="17" />
+			<Patch name="(55)Detuned Or2" hbank="8" lbank="1" prog="17" />
+			<Patch name="(88)DetunedOr.2" hbank="8" lbank="2" prog="17" />
+			<Patch name="(Pro)Chorus Or.2" hbank="8" lbank="3" prog="17" />
+			<Patch name="(Pro)Octave Organ" hbank="9" lbank="3" prog="17" />
+			<Patch name="(55)Organ 5" hbank="32" lbank="1" prog="17" />
+			<Patch name="(88)Organ 5" hbank="32" lbank="2" prog="17" />
+			<Patch name="(Pro)Perc. Organ" hbank="32" lbank="3" prog="17" />
+			<Patch name="(55)Slap Bass 1" hbank="126" lbank="1" prog="17" />
+			<Patch name="(88)Slap Bass 1" hbank="126" lbank="2" prog="17" />
+			<Patch name="(Pro)Slap Bass 1" hbank="126" lbank="3" prog="17" />
+			<Patch name="(55)Harpsi 2" hbank="127" lbank="1" prog="17" />
+			<Patch name="(88)Harpsi 2" hbank="127" lbank="2" prog="17" />
+			<Patch name="(Pro)Harpsi 2" hbank="127" lbank="3" prog="17" />
+			<Patch name="(55)Organ 3" hbank="0" lbank="1" prog="18" />
+			<Patch name="(88)Organ 3" hbank="0" lbank="2" prog="18" />
+			<Patch name="(Pro)Organ 3" hbank="0" lbank="3" prog="18" />
+			<Patch name="(88)Rotary Org." hbank="8" lbank="2" prog="18" />
+			<Patch name="(Pro)Rotary Org." hbank="8" lbank="3" prog="18" />
+			<Patch name="(88)RotaryOrg.S" hbank="16" lbank="2" prog="18" />
+			<Patch name="(Pro)Rotary Org.S" hbank="16" lbank="3" prog="18" />
+			<Patch name="(Pro)Rock Organ 1" hbank="17" lbank="3" prog="18" />
+			<Patch name="(Pro)Rock Organ 2" hbank="18" lbank="3" prog="18" />
+			<Patch name="(88)RotaryOrg.F" hbank="24" lbank="2" prog="18" />
+			<Patch name="(Pro)Rotary Org.F" hbank="24" lbank="3" prog="18" />
+			<Patch name="(55)Slap Bass 1" hbank="126" lbank="1" prog="18" />
+			<Patch name="(88)Slap Bass 1" hbank="126" lbank="2" prog="18" />
+			<Patch name="(Pro)Slap Bass 1" hbank="126" lbank="3" prog="18" />
+			<Patch name="(55)Harpsi 3" hbank="127" lbank="1" prog="18" />
+			<Patch name="(88)Harpsi 3" hbank="127" lbank="2" prog="18" />
+			<Patch name="(Pro)Harpsi 3" hbank="127" lbank="3" prog="18" />
+			<Patch name="(55)Church Org1" hbank="0" lbank="1" prog="19" />
+			<Patch name="(88)ChurchOrg.1" hbank="0" lbank="2" prog="19" />
+			<Patch name="(Pro)Church Org.1" hbank="0" lbank="3" prog="19" />
+			<Patch name="(55)Church Org2" hbank="8" lbank="1" prog="19" />
+			<Patch name="(88)ChurchOrg.2" hbank="8" lbank="2" prog="19" />
+			<Patch name="(Pro)Church Org.2" hbank="8" lbank="3" prog="19" />
+			<Patch name="(55)Church Org3" hbank="16" lbank="1" prog="19" />
+			<Patch name="(88)ChurchOrg.3" hbank="16" lbank="2" prog="19" />
+			<Patch name="(Pro)Church Org.3" hbank="16" lbank="3" prog="19" />
+			<Patch name="(88)Organ Flute" hbank="24" lbank="2" prog="19" />
+			<Patch name="(Pro)Organ Flute" hbank="24" lbank="3" prog="19" />
+			<Patch name="(88)Trem.Flute" hbank="32" lbank="2" prog="19" />
+			<Patch name="(Pro)Trem.Flute" hbank="32" lbank="3" prog="19" />
+			<Patch name="(Pro)Theater Org." hbank="33" lbank="3" prog="19" />
+			<Patch name="(55)Slap Bass 2" hbank="126" lbank="1" prog="19" />
+			<Patch name="(88)Slap Bass 2" hbank="126" lbank="2" prog="19" />
+			<Patch name="(Pro)Slap Bass 2" hbank="126" lbank="3" prog="19" />
+			<Patch name="(55)Clavi 1" hbank="127" lbank="1" prog="19" />
+			<Patch name="(88)Clavi 1" hbank="127" lbank="2" prog="19" />
+			<Patch name="(Pro)Clavi 1" hbank="127" lbank="3" prog="19" />
+			<Patch name="(55)Reed Organ" hbank="0" lbank="1" prog="20" />
+			<Patch name="(88)Reed Organ" hbank="0" lbank="2" prog="20" />
+			<Patch name="(Pro)Reed Organ" hbank="0" lbank="3" prog="20" />
+			<Patch name="(Pro)Wind Organ" hbank="8" lbank="3" prog="20" />
+			<Patch name="(55)Slap Bass 2" hbank="126" lbank="1" prog="20" />
+			<Patch name="(88)Slap Bass 2" hbank="126" lbank="2" prog="20" />
+			<Patch name="(Pro)Slap Bass 2" hbank="126" lbank="3" prog="20" />
+			<Patch name="(55)Clavi 2" hbank="127" lbank="1" prog="20" />
+			<Patch name="(88)Clavi 2" hbank="127" lbank="2" prog="20" />
+			<Patch name="(Pro)Clavi 2" hbank="127" lbank="3" prog="20" />
+			<Patch name="(55)Accordion F" hbank="0" lbank="1" prog="21" />
+			<Patch name="(88)AccordionFr" hbank="0" lbank="2" prog="21" />
+			<Patch name="(Pro)Accordion Fr" hbank="0" lbank="3" prog="21" />
+			<Patch name="(55)Accordion I" hbank="8" lbank="1" prog="21" />
+			<Patch name="(88)AccordionIt" hbank="8" lbank="2" prog="21" />
+			<Patch name="(Pro)Accordion It" hbank="8" lbank="3" prog="21" />
+			<Patch name="(Pro)Dist. Accord" hbank="9" lbank="3" prog="21" />
+			<Patch name="(Pro)Cho. Accord" hbank="16" lbank="3" prog="21" />
+			<Patch name="(Pro)Hard Accord" hbank="24" lbank="3" prog="21" />
+			<Patch name="(Pro)Soft Accord" hbank="25" lbank="3" prog="21" />
+			<Patch name="(55)Slap Bass 2" hbank="126" lbank="1" prog="21" />
+			<Patch name="(88)Slap Bass 2" hbank="126" lbank="2" prog="21" />
+			<Patch name="(Pro)Slap Bass 2" hbank="126" lbank="3" prog="21" />
+			<Patch name="(55)Clavi 3" hbank="127" lbank="1" prog="21" />
+			<Patch name="(88)Clavi 3" hbank="127" lbank="2" prog="21" />
+			<Patch name="(Pro)Clavi 3" hbank="127" lbank="3" prog="21" />
+			<Patch name="(55)Harmonica" hbank="0" lbank="1" prog="22" />
+			<Patch name="(88)Harmonica" hbank="0" lbank="2" prog="22" />
+			<Patch name="(Pro)Harmonica" hbank="0" lbank="3" prog="22" />
+			<Patch name="(88)Harmonica 2" hbank="1" lbank="2" prog="22" />
+			<Patch name="(Pro)Harmonica 2" hbank="1" lbank="3" prog="22" />
+			<Patch name="(55)Slap Bass 2" hbank="126" lbank="1" prog="22" />
+			<Patch name="(88)Slap Bass 2" hbank="126" lbank="2" prog="22" />
+			<Patch name="(Pro)Slap Bass 2" hbank="126" lbank="3" prog="22" />
+			<Patch name="(55)Celesta 1" hbank="127" lbank="1" prog="22" />
+			<Patch name="(88)Celesta 1" hbank="127" lbank="2" prog="22" />
+			<Patch name="(Pro)Celesta 1" hbank="127" lbank="3" prog="22" />
+			<Patch name="(55)Bandoneon" hbank="0" lbank="1" prog="23" />
+			<Patch name="(88)Bandoneon" hbank="0" lbank="2" prog="23" />
+			<Patch name="(Pro)Bandoneon" hbank="0" lbank="3" prog="23" />
+			<Patch name="(Pro)Bandoneon 2" hbank="8" lbank="3" prog="23" />
+			<Patch name="(Pro)Bandoneon 3" hbank="16" lbank="3" prog="23" />
+			<Patch name="(55)Fingered Bs" hbank="126" lbank="1" prog="23" />
+			<Patch name="(88)Fingered Bs" hbank="126" lbank="2" prog="23" />
+			<Patch name="(Pro)Fingered Bs" hbank="126" lbank="3" prog="23" />
+			<Patch name="(55)Celesta 2" hbank="127" lbank="1" prog="23" />
+			<Patch name="(88)Celesta 2" hbank="127" lbank="2" prog="23" />
+			<Patch name="(Pro)Celesta 2" hbank="127" lbank="3" prog="23" />
+    </PatchGroup>
+    <PatchGroup name="Guitar">
+      <Patch name="(55)Nylon Gt." hbank="0" lbank="1" prog="24" />
+			<Patch name="(88)Nylonstr.Gt" hbank="0" lbank="2" prog="24" />
+			<Patch name="(Pro)Nylon-str.Gt" hbank="0" lbank="3" prog="24" />
+			<Patch name="(55)Ukulele" hbank="8" lbank="1" prog="24" />
+			<Patch name="(88)Ukulele" hbank="8" lbank="2" prog="24" />
+			<Patch name="(Pro)Ukulele" hbank="8" lbank="3" prog="24" />
+			<Patch name="(55)Nylon Gt.o" hbank="16" lbank="1" prog="24" />
+			<Patch name="(88)Nylon Gt.o" hbank="16" lbank="2" prog="24" />
+			<Patch name="(Pro)Nylon Gt.o" hbank="16" lbank="3" prog="24" />
+			<Patch name="(88)VeloHarmnix" hbank="24" lbank="2" prog="24" />
+			<Patch name="(Pro)Velo Harmnix" hbank="24" lbank="3" prog="24" />
+			<Patch name="(55)Nylon Gt.2" hbank="32" lbank="1" prog="24" />
+			<Patch name="(88)Nylon Gt.2" hbank="32" lbank="2" prog="24" />
+			<Patch name="(Pro)Nylon Gt.2" hbank="32" lbank="3" prog="24" />
+			<Patch name="(88)Lequint Gt." hbank="40" lbank="2" prog="24" />
+			<Patch name="(Pro)Lequint Gt." hbank="40" lbank="3" prog="24" />
+			<Patch name="(55)Fingered Bs" hbank="126" lbank="1" prog="24" />
+			<Patch name="(88)Fingered Bs" hbank="126" lbank="2" prog="24" />
+			<Patch name="(Pro)Fingered Bs" hbank="126" lbank="3" prog="24" />
+			<Patch name="(55)Syn Brass 1" hbank="127" lbank="1" prog="24" />
+			<Patch name="(88)Syn Brass 1" hbank="127" lbank="2" prog="24" />
+			<Patch name="(Pro)Syn Brass 1" hbank="127" lbank="3" prog="24" />
+			<Patch name="(55)Steel Gt." hbank="0" lbank="1" prog="25" />
+			<Patch name="(88)Steelstr.Gt" hbank="0" lbank="2" prog="25" />
+			<Patch name="(Pro)Steel-str.Gt" hbank="0" lbank="3" prog="25" />
+			<Patch name="(55)12-str.Gt" hbank="8" lbank="1" prog="25" />
+			<Patch name="(88)12-str.Gt" hbank="8" lbank="2" prog="25" />
+			<Patch name="(Pro)12-str.Gt" hbank="8" lbank="3" prog="25" />
+			<Patch name="(88)Nylon+Steel" hbank="9" lbank="2" prog="25" />
+			<Patch name="(Pro)Nylon+Steel" hbank="9" lbank="3" prog="25" />
+			<Patch name="(55)Mandolin" hbank="16" lbank="1" prog="25" />
+			<Patch name="(88)Mandolin" hbank="16" lbank="2" prog="25" />
+			<Patch name="(Pro)Mandolin" hbank="16" lbank="3" prog="25" />
+			<Patch name="(Pro)Mandolin 2" hbank="17" lbank="3" prog="25" />
+			<Patch name="(Pro)MandolinTrem" hbank="18" lbank="3" prog="25" />
+			<Patch name="(88)Steel Gt.2" hbank="32" lbank="2" prog="25" />
+			<Patch name="(Pro)Steel Gt.2" hbank="32" lbank="3" prog="25" />
+			<Patch name="(55)Picked Bass" hbank="126" lbank="1" prog="25" />
+			<Patch name="(88)Picked Bass" hbank="126" lbank="2" prog="25" />
+			<Patch name="(Pro)Picked Bass" hbank="126" lbank="3" prog="25" />
+			<Patch name="(55)Syn Brass 2" hbank="127" lbank="1" prog="25" />
+			<Patch name="(88)Syn Brass 2" hbank="127" lbank="2" prog="25" />
+			<Patch name="(Pro)Syn Brass 2" hbank="127" lbank="3" prog="25" />
+			<Patch name="(55)Jazz Gt." hbank="0" lbank="1" prog="26" />
+			<Patch name="(88)Jazz Gt." hbank="0" lbank="2" prog="26" />
+			<Patch name="(Pro)Jazz Gt." hbank="0" lbank="3" prog="26" />
+			<Patch name="(88)Mellow Gt." hbank="1" lbank="2" prog="26" />
+			<Patch name="(Pro)Mellow Gt." hbank="1" lbank="3" prog="26" />
+			<Patch name="(55)Hawaiian Gt" hbank="8" lbank="1" prog="26" />
+			<Patch name="(88)Pedal Steel" hbank="8" lbank="2" prog="26" />
+			<Patch name="(Pro)Pedal Steel" hbank="8" lbank="3" prog="26" />
+			<Patch name="(55)Picked Bass" hbank="126" lbank="1" prog="26" />
+			<Patch name="(88)Picked Bass" hbank="126" lbank="2" prog="26" />
+			<Patch name="(Pro)Picked Bass" hbank="126" lbank="3" prog="26" />
+			<Patch name="(55)Syn Brass 3" hbank="127" lbank="1" prog="26" />
+			<Patch name="(88)Syn Brass 3" hbank="127" lbank="2" prog="26" />
+			<Patch name="(Pro)Syn Brass 3" hbank="127" lbank="3" prog="26" />
+			<Patch name="(55)Clean Gt." hbank="0" lbank="1" prog="27" />
+			<Patch name="(88)Clean Gt." hbank="0" lbank="2" prog="27" />
+			<Patch name="(Pro)Clean Gt." hbank="0" lbank="3" prog="27" />
+			<Patch name="(Pro)Clean Half" hbank="1" lbank="3" prog="27" />
+			<Patch name="(Pro)Open Hard 1" hbank="2" lbank="3" prog="27" />
+			<Patch name="(Pro)Open Hard 2" hbank="3" lbank="3" prog="27" />
+			<Patch name="(Pro)JC Clean Gt." hbank="4" lbank="3" prog="27" />
+			<Patch name="(55)Chorus Gt." hbank="8" lbank="1" prog="27" />
+			<Patch name="(88)Chorus Gt." hbank="8" lbank="2" prog="27" />
+			<Patch name="(Pro)Chorus Gt." hbank="8" lbank="3" prog="27" />
+			<Patch name="(Pro)JC Chorus Gt" hbank="9" lbank="3" prog="27" />
+			<Patch name="(Pro)TC FrontPick" hbank="16" lbank="3" prog="27" />
+			<Patch name="(Pro)TC Rear Pick" hbank="17" lbank="3" prog="27" />
+			<Patch name="(Pro)TC Clean ff" hbank="18" lbank="3" prog="27" />
+			<Patch name="(Pro)TC Clean 2:" hbank="19" lbank="3" prog="27" />
+			<Patch name="(55)Fretless Bs" hbank="126" lbank="1" prog="27" />
+			<Patch name="(88)Fretless Bs" hbank="126" lbank="2" prog="27" />
+			<Patch name="(Pro)Fretless Bs" hbank="126" lbank="3" prog="27" />
+			<Patch name="(55)Syn Brass 4" hbank="127" lbank="1" prog="27" />
+			<Patch name="(88)Syn Brass 4" hbank="127" lbank="2" prog="27" />
+			<Patch name="(Pro)Syn Brass 4" hbank="127" lbank="3" prog="27" />
+			<Patch name="(55)Muted Gt." hbank="0" lbank="1" prog="28" />
+			<Patch name="(88)Muted Gt." hbank="0" lbank="2" prog="28" />
+			<Patch name="(Pro)Muted Gt." hbank="0" lbank="3" prog="28" />
+			<Patch name="(88)MutedDis.Gt" hbank="1" lbank="2" prog="28" />
+			<Patch name="(Pro)Muted Dis.Gt" hbank="1" lbank="3" prog="28" />
+			<Patch name="(Pro)TC Muted Gt." hbank="2" lbank="3" prog="28" />
+			<Patch name="(55)Funk Gt." hbank="8" lbank="1" prog="28" />
+			<Patch name="(88)Funk Pop" hbank="8" lbank="2" prog="28" />
+			<Patch name="(Pro)Funk Pop" hbank="8" lbank="3" prog="28" />
+			<Patch name="(55)Funk Gt.2" hbank="16" lbank="1" prog="28" />
+			<Patch name="(88)Funk Gt.2" hbank="16" lbank="2" prog="28" />
+			<Patch name="(Pro)Funk Gt.2" hbank="16" lbank="3" prog="28" />
+			<Patch name="(55)Acoustic Bs" hbank="126" lbank="1" prog="28" />
+			<Patch name="(88)Acoustic Bs" hbank="126" lbank="2" prog="28" />
+			<Patch name="(Pro)Acoustic Bs" hbank="126" lbank="3" prog="28" />
+			<Patch name="(55)Syn Bass 1" hbank="127" lbank="1" prog="28" />
+			<Patch name="(88)Syn Bass 1" hbank="127" lbank="2" prog="28" />
+			<Patch name="(Pro)Syn Bass 1" hbank="127" lbank="3" prog="28" />
+			<Patch name="(55)OverdriveGt" hbank="0" lbank="1" prog="29" />
+			<Patch name="(88)OverdriveGt" hbank="0" lbank="2" prog="29" />
+			<Patch name="(Pro)Overdrive Gt" hbank="0" lbank="3" prog="29" />
+			<Patch name="(Pro)Overdrive 2" hbank="1" lbank="3" prog="29" />
+			<Patch name="(Pro)Overdrive 3" hbank="2" lbank="3" prog="29" />
+			<Patch name="(Pro)More Drive" hbank="3" lbank="3" prog="29" />
+			<Patch name="(Pro)LP OverDrvGt" hbank="8" lbank="3" prog="29" />
+			<Patch name="(Pro)LP OverDrv:" hbank="9" lbank="3" prog="29" />
+			<Patch name="(55)Choir Aahs" hbank="126" lbank="1" prog="29" />
+			<Patch name="(88)Choir Aahs" hbank="126" lbank="2" prog="29" />
+			<Patch name="(Pro)Choir Aahs" hbank="126" lbank="3" prog="29" />
+			<Patch name="(55)Syn Bass 2" hbank="127" lbank="1" prog="29" />
+			<Patch name="(88)Syn Bass 2" hbank="127" lbank="2" prog="29" />
+			<Patch name="(Pro)Syn Bass 2" hbank="127" lbank="3" prog="29" />
+			<Patch name="(55)Dist.Gt." hbank="0" lbank="1" prog="30" />
+			<Patch name="(88)DistortionGt" hbank="0" lbank="2" prog="30" />
+			<Patch name="(Pro)DistortionGt" hbank="0" lbank="3" prog="30" />
+			<Patch name="(88)Dist. Gt2" hbank="1" lbank="2" prog="30" />
+			<Patch name="(Pro)Dist. Gt2 :" hbank="1" lbank="3" prog="30" />
+			<Patch name="(88)DazedGuitar" hbank="2" lbank="2" prog="30" />
+			<Patch name="(Pro)Dazed Guitar" hbank="2" lbank="3" prog="30" />
+			<Patch name="(Pro)Distortion:" hbank="3" lbank="3" prog="30" />
+			<Patch name="(Pro)Dist.Fast :" hbank="4" lbank="3" prog="30" />
+			<Patch name="(55)Feedback Gt" hbank="8" lbank="1" prog="30" />
+			<Patch name="(88)FeedbackGt." hbank="8" lbank="2" prog="30" />
+			<Patch name="(Pro)Feedback Gt." hbank="8" lbank="3" prog="30" />
+			<Patch name="(88)FeedbackGt2" hbank="9" lbank="2" prog="30" />
+			<Patch name="(Pro)Feedback Gt2" hbank="9" lbank="3" prog="30" />
+			<Patch name="(88)PowerGuitar" hbank="16" lbank="2" prog="30" />
+			<Patch name="(Pro)Power Guitar" hbank="16" lbank="3" prog="30" />
+			<Patch name="(88)Power Gt.2" hbank="17" lbank="2" prog="30" />
+			<Patch name="(Pro)Power Gt.2" hbank="17" lbank="3" prog="30" />
+			<Patch name="(88)5th Dist." hbank="18" lbank="2" prog="30" />
+			<Patch name="(Pro)5th Dist." hbank="18" lbank="3" prog="30" />
+			<Patch name="(88)Rock Rhythm" hbank="24" lbank="2" prog="30" />
+			<Patch name="(Pro)Rock Rhythm" hbank="24" lbank="3" prog="30" />
+			<Patch name="(88)RockRhythm2" hbank="25" lbank="2" prog="30" />
+			<Patch name="(Pro)Rock Rhythm2" hbank="25" lbank="3" prog="30" />
+			<Patch name="(55)Choir Aahs" hbank="126" lbank="1" prog="30" />
+			<Patch name="(88)Choir Aahs" hbank="126" lbank="2" prog="30" />
+			<Patch name="(Pro)Choir Aahs" hbank="126" lbank="3" prog="30" />
+			<Patch name="(55)Syn Bass 3" hbank="127" lbank="1" prog="30" />
+			<Patch name="(88)Syn Bass 3" hbank="127" lbank="2" prog="30" />
+			<Patch name="(Pro)Syn Bass 3" hbank="127" lbank="3" prog="30" />
+			<Patch name="(55)Gt.Harmonix" hbank="0" lbank="1" prog="31" />
+			<Patch name="(88)Gt.Harmonix" hbank="0" lbank="2" prog="31" />
+			<Patch name="(Pro)Gt.Harmonics" hbank="0" lbank="3" prog="31" />
+			<Patch name="(55)Gt.Feedback" hbank="8" lbank="1" prog="31" />
+			<Patch name="(88)Gt.Feedback" hbank="8" lbank="2" prog="31" />
+			<Patch name="(Pro)Gt. Feedback" hbank="8" lbank="3" prog="31" />
+			<Patch name="(Pro)Gt.Feedback2" hbank="9" lbank="3" prog="31" />
+			<Patch name="(88)Ac.Gt.Harm." hbank="16" lbank="2" prog="31" />
+			<Patch name="(Pro)Ac.Gt.Harmnx" hbank="16" lbank="3" prog="31" />
+			<Patch name="(Pro)E.Bass Harm." hbank="24" lbank="3" prog="31" />
+			<Patch name="(55)Choir Aahs" hbank="126" lbank="1" prog="31" />
+			<Patch name="(88)Choir Aahs" hbank="126" lbank="2" prog="31" />
+			<Patch name="(Pro)Choir Aahs" hbank="126" lbank="3" prog="31" />
+			<Patch name="(55)Syn Bass 4" hbank="127" lbank="1" prog="31" />
+			<Patch name="(88)Syn Bass 4" hbank="127" lbank="2" prog="31" />
+			<Patch name="(Pro)Syn Bass 4" hbank="127" lbank="3" prog="31" />
+    </PatchGroup>
+    <PatchGroup name="Bass">
+      <Patch name="(55)Acoustic Bs" hbank="0" lbank="1" prog="32" />
+			<Patch name="(88)AcousticBs." hbank="0" lbank="2" prog="32" />
+			<Patch name="(Pro)Acoustic Bs." hbank="0" lbank="3" prog="32" />
+			<Patch name="(Pro)Rockabilly" hbank="1" lbank="3" prog="32" />
+			<Patch name="(Pro)Wild A.Bass" hbank="8" lbank="3" prog="32" />
+			<Patch name="(Pro)Bass + OHH" hbank="16" lbank="3" prog="32" />
+			<Patch name="(55)Choir Aahs" hbank="126" lbank="1" prog="32" />
+			<Patch name="(88)Choir Aahs" hbank="126" lbank="2" prog="32" />
+			<Patch name="(Pro)Choir Aahs" hbank="126" lbank="3" prog="32" />
+			<Patch name="(55)Fantasy" hbank="127" lbank="1" prog="32" />
+			<Patch name="(88)Fantasy" hbank="127" lbank="2" prog="32" />
+			<Patch name="(Pro)Fantasy" hbank="127" lbank="3" prog="32" />
+			<Patch name="(55)Fingered Bs" hbank="0" lbank="1" prog="33" />
+			<Patch name="(88)FingeredBs." hbank="0" lbank="2" prog="33" />
+			<Patch name="(Pro)Fingered Bs." hbank="0" lbank="3" prog="33" />
+			<Patch name="(88)FingeredBs2" hbank="1" lbank="2" prog="33" />
+			<Patch name="(Pro)Fingered Bs2" hbank="1" lbank="3" prog="33" />
+			<Patch name="(88)Jazz Bass" hbank="2" lbank="2" prog="33" />
+			<Patch name="(Pro)Jazz Bass" hbank="2" lbank="3" prog="33" />
+			<Patch name="(Pro)Jazz Bass 2" hbank="3" lbank="3" prog="33" />
+			<Patch name="(Pro)Rock Bass" hbank="4" lbank="3" prog="33" />
+			<Patch name="(Pro)ChorusJazzBs" hbank="8" lbank="3" prog="33" />
+			<Patch name="(Pro)F.Bass/Harm." hbank="16" lbank="3" prog="33" />
+			<Patch name="(55)SlowStrings" hbank="126" lbank="1" prog="33" />
+			<Patch name="(88)SlowStrings" hbank="126" lbank="2" prog="33" />
+			<Patch name="(Pro)SlowStrings" hbank="126" lbank="3" prog="33" />
+			<Patch name="(55)Harmo Pan" hbank="127" lbank="1" prog="33" />
+			<Patch name="(88)Harmo Pan" hbank="127" lbank="2" prog="33" />
+			<Patch name="(Pro)Harmo Pan" hbank="127" lbank="3" prog="33" />
+			<Patch name="(55)Picked Bass" hbank="0" lbank="1" prog="34" />
+			<Patch name="(88)Picked Bass" hbank="0" lbank="2" prog="34" />
+			<Patch name="(Pro)Picked Bass" hbank="0" lbank="3" prog="34" />
+			<Patch name="(Pro)Picked Bass2" hbank="1" lbank="3" prog="34" />
+			<Patch name="(Pro)Picked Bass3" hbank="2" lbank="3" prog="34" />
+			<Patch name="(Pro)Picked Bass4" hbank="3" lbank="3" prog="34" />
+			<Patch name="(88)MutePickBs." hbank="8" lbank="2" prog="34" />
+			<Patch name="(Pro)Muted PickBs" hbank="8" lbank="3" prog="34" />
+			<Patch name="(Pro)P.Bass/Harm." hbank="16" lbank="3" prog="34" />
+			<Patch name="(55)Strings" hbank="126" lbank="1" prog="34" />
+			<Patch name="(88)Strings" hbank="126" lbank="2" prog="34" />
+			<Patch name="(Pro)Strings" hbank="126" lbank="3" prog="34" />
+			<Patch name="(55)Chorale" hbank="127" lbank="1" prog="34" />
+			<Patch name="(88)Chorale" hbank="127" lbank="2" prog="34" />
+			<Patch name="(Pro)Chorale" hbank="127" lbank="3" prog="34" />
+			<Patch name="(55)Fretless Bs" hbank="0" lbank="1" prog="35" />
+			<Patch name="(88)FretlessBs." hbank="0" lbank="2" prog="35" />
+			<Patch name="(Pro)Fretless Bs." hbank="0" lbank="3" prog="35" />
+			<Patch name="(88)FretlessBs2" hbank="1" lbank="2" prog="35" />
+			<Patch name="(Pro)Fretless Bs2" hbank="1" lbank="3" prog="35" />
+			<Patch name="(88)FretlessBs3" hbank="2" lbank="2" prog="35" />
+			<Patch name="(Pro)Fretless Bs3" hbank="2" lbank="3" prog="35" />
+			<Patch name="(88)FretlessBs4" hbank="3" lbank="2" prog="35" />
+			<Patch name="(Pro)Fretless Bs4" hbank="3" lbank="3" prog="35" />
+			<Patch name="(88)SynFretless" hbank="4" lbank="2" prog="35" />
+			<Patch name="(Pro)Syn Fretless" hbank="4" lbank="3" prog="35" />
+			<Patch name="(88)Mr.Smooth" hbank="5" lbank="2" prog="35" />
+			<Patch name="(Pro)Mr.Smooth" hbank="5" lbank="3" prog="35" />
+			<Patch name="(Pro)Wood+FlessBs" hbank="8" lbank="3" prog="35" />
+			<Patch name="(55)SynStrings3" hbank="126" lbank="1" prog="35" />
+			<Patch name="(88)SynStrings3" hbank="126" lbank="2" prog="35" />
+			<Patch name="(Pro)SynStrings3" hbank="126" lbank="3" prog="35" />
+			<Patch name="(55)Glasses" hbank="127" lbank="1" prog="35" />
+			<Patch name="(88)Glasses" hbank="127" lbank="2" prog="35" />
+			<Patch name="(Pro)Glasses" hbank="127" lbank="3" prog="35" />
+			<Patch name="(55)Slap Bass 1" hbank="0" lbank="1" prog="36" />
+			<Patch name="(88)Slap Bass 1" hbank="0" lbank="2" prog="36" />
+			<Patch name="(Pro)Slap Bass 1" hbank="0" lbank="3" prog="36" />
+			<Patch name="(Pro)Slap Pop" hbank="1" lbank="3" prog="36" />
+			<Patch name="(88)Reso Slap" hbank="8" lbank="2" prog="36" />
+			<Patch name="(Pro)Reso Slap" hbank="8" lbank="3" prog="36" />
+			<Patch name="(Pro)Unison Slap" hbank="9" lbank="3" prog="36" />
+			<Patch name="(55)SynStrings3" hbank="126" lbank="1" prog="36" />
+			<Patch name="(88)SynStrings3" hbank="126" lbank="2" prog="36" />
+			<Patch name="(Pro)SynStrings3" hbank="126" lbank="3" prog="36" />
+			<Patch name="(55)Soundtrack" hbank="127" lbank="1" prog="36" />
+			<Patch name="(88)Soundtrack" hbank="127" lbank="2" prog="36" />
+			<Patch name="(Pro)Soundtrack" hbank="127" lbank="3" prog="36" />
+			<Patch name="(55)Slap Bass 2" hbank="0" lbank="1" prog="37" />
+			<Patch name="(88)Slap Bass 2" hbank="0" lbank="2" prog="37" />
+			<Patch name="(Pro)Slap Bass 2" hbank="0" lbank="3" prog="37" />
+			<Patch name="(Pro)FM Slap" hbank="8" lbank="3" prog="37" />
+			<Patch name="(55)Organ 1" hbank="126" lbank="1" prog="37" />
+			<Patch name="(88)Organ 1" hbank="126" lbank="2" prog="37" />
+			<Patch name="(Pro)Organ 1" hbank="126" lbank="3" prog="37" />
+			<Patch name="(55)Atmosphere" hbank="127" lbank="1" prog="37" />
+			<Patch name="(88)Atmosphere" hbank="127" lbank="2" prog="37" />
+			<Patch name="(Pro)Atmosphere" hbank="127" lbank="3" prog="37" />
+			<Patch name="(55)Syn.Bass 1" hbank="0" lbank="1" prog="38" />
+			<Patch name="(88)SynthBass 1" hbank="0" lbank="2" prog="38" />
+			<Patch name="(Pro)Synth Bass 1" hbank="0" lbank="3" prog="38" />
+			<Patch name="(55)Syn.Bass101" hbank="1" lbank="1" prog="38" />
+			<Patch name="(88)Syn.Bass101" hbank="1" lbank="2" prog="38" />
+			<Patch name="(Pro)SynthBass101" hbank="1" lbank="3" prog="38" />
+			<Patch name="(Pro)CS Bass" hbank="2" lbank="3" prog="38" />
+			<Patch name="(Pro)JP-4 Bass" hbank="3" lbank="3" prog="38" />
+			<Patch name="(Pro)JP-8 Bass" hbank="4" lbank="3" prog="38" />
+			<Patch name="(Pro)P5 Bass" hbank="5" lbank="3" prog="38" />
+			<Patch name="(Pro)JPMG Bass" hbank="6" lbank="3" prog="38" />
+			<Patch name="(55)Syn.Bass 3" hbank="8" lbank="1" prog="38" />
+			<Patch name="(88)Acid Bass" hbank="8" lbank="2" prog="38" />
+			<Patch name="(Pro)Acid Bass" hbank="8" lbank="3" prog="38" />
+			<Patch name="(88)TB303 Bass" hbank="9" lbank="2" prog="38" />
+			<Patch name="(Pro)TB303 Bass" hbank="9" lbank="3" prog="38" />
+			<Patch name="(88)Tekno Bass" hbank="10" lbank="2" prog="38" />
+			<Patch name="(Pro)Tekno Bass" hbank="10" lbank="3" prog="38" />
+			<Patch name="(Pro)TB303 Bass 2" hbank="11" lbank="3" prog="38" />
+			<Patch name="(Pro)Kicked TB303" hbank="12" lbank="3" prog="38" />
+			<Patch name="(Pro)TB303 Saw Bs" hbank="13" lbank="3" prog="38" />
+			<Patch name="(Pro)Rubber303 Bs" hbank="14" lbank="3" prog="38" />
+			<Patch name="(Pro)Reso 303 Bs" hbank="15" lbank="3" prog="38" />
+			<Patch name="(88)Reso SHBass" hbank="16" lbank="2" prog="38" />
+			<Patch name="(Pro)Reso SH Bass" hbank="16" lbank="3" prog="38" />
+			<Patch name="(Pro)TB303 Sqr Bs" hbank="17" lbank="3" prog="38" />
+			<Patch name="(Pro)TB303 DistBs" hbank="18" lbank="3" prog="38" />
+			<Patch name="(Pro)Arpeggio Bs" hbank="24" lbank="3" prog="38" />
+			<Patch name="(55)Organ 1" hbank="126" lbank="1" prog="38" />
+			<Patch name="(88)Organ 1" hbank="126" lbank="2" prog="38" />
+			<Patch name="(Pro)Organ 1" hbank="126" lbank="3" prog="38" />
+			<Patch name="(55)Warm Bell" hbank="127" lbank="1" prog="38" />
+			<Patch name="(88)Warm Bell" hbank="127" lbank="2" prog="38" />
+			<Patch name="(Pro)Warm Bell" hbank="127" lbank="3" prog="38" />
+			<Patch name="(55)Syn.Bass 2" hbank="0" lbank="1" prog="39" />
+			<Patch name="(88)SynthBass 2" hbank="0" lbank="2" prog="39" />
+			<Patch name="(Pro)Synth Bass 2" hbank="0" lbank="3" prog="39" />
+			<Patch name="(88)Syn.Bass201" hbank="1" lbank="2" prog="39" />
+			<Patch name="(Pro)SynthBass201" hbank="1" lbank="3" prog="39" />
+			<Patch name="(88)ModularBass" hbank="2" lbank="2" prog="39" />
+			<Patch name="(Pro)Modular Bass" hbank="2" lbank="3" prog="39" />
+			<Patch name="(88)Seq Bass" hbank="3" lbank="2" prog="39" />
+			<Patch name="(Pro)Seq Bass" hbank="3" lbank="3" prog="39" />
+			<Patch name="(Pro)MG Bass" hbank="4" lbank="3" prog="39" />
+			<Patch name="(Pro)Mg Oct Bass1" hbank="5" lbank="3" prog="39" />
+			<Patch name="(Pro)MG Oct Bass2" hbank="6" lbank="3" prog="39" />
+			<Patch name="(Pro)MG Blip Bs:" hbank="7" lbank="3" prog="39" />
+			<Patch name="(55)Syn.Bass 4" hbank="8" lbank="1" prog="39" />
+			<Patch name="(88)Beef FMBass" hbank="8" lbank="2" prog="39" />
+			<Patch name="(Pro)Beef FM Bass" hbank="8" lbank="3" prog="39" />
+			<Patch name="(88)X Wire Bass" hbank="9" lbank="2" prog="39" />
+			<Patch name="(Pro)Dly Bass" hbank="9" lbank="3" prog="39" />
+			<Patch name="(Pro)X Wire Bass" hbank="10" lbank="3" prog="39" />
+			<Patch name="(Pro)WireStr Bass" hbank="11" lbank="3" prog="39" />
+			<Patch name="(Pro)Blip Bass :" hbank="12" lbank="3" prog="39" />
+			<Patch name="(Pro)RubberBass 1" hbank="13" lbank="3" prog="39" />
+			<Patch name="(55)Rubber Bass" hbank="16" lbank="1" prog="39" />
+			<Patch name="(88)Rubber Bass" hbank="16" lbank="2" prog="39" />
+			<Patch name="(Pro)RubberBass 2" hbank="16" lbank="3" prog="39" />
+			<Patch name="(88)SH101Bass 1" hbank="17" lbank="2" prog="39" />
+			<Patch name="(Pro)SH101 Bass 1" hbank="17" lbank="3" prog="39" />
+			<Patch name="(88)SH101Bass 2" hbank="18" lbank="2" prog="39" />
+			<Patch name="(Pro)SH101 Bass 2" hbank="18" lbank="3" prog="39" />
+			<Patch name="(88)Smooth Bass" hbank="19" lbank="2" prog="39" />
+			<Patch name="(Pro)Smooth Bass" hbank="19" lbank="3" prog="39" />
+			<Patch name="(Pro)SH101 Bass 3" hbank="20" lbank="3" prog="39" />
+			<Patch name="(Pro)Spike Bass" hbank="21" lbank="3" prog="39" />
+			<Patch name="(Pro)House Bass:" hbank="22" lbank="3" prog="39" />
+			<Patch name="(Pro)KG Bass" hbank="23" lbank="3" prog="39" />
+			<Patch name="(Pro)Sync Bass" hbank="24" lbank="3" prog="39" />
+			<Patch name="(Pro)MG 5th Bass" hbank="25" lbank="3" prog="39" />
+			<Patch name="(Pro)RND Bass" hbank="26" lbank="3" prog="39" />
+			<Patch name="(Pro)WowMG Bass" hbank="27" lbank="3" prog="39" />
+			<Patch name="(Pro)Bubble Bass" hbank="28" lbank="3" prog="39" />
+			<Patch name="(55)Organ 1" hbank="126" lbank="1" prog="39" />
+			<Patch name="(88)Organ 1" hbank="126" lbank="2" prog="39" />
+			<Patch name="(Pro)Organ 1" hbank="126" lbank="3" prog="39" />
+			<Patch name="(55)Funny Vox" hbank="127" lbank="1" prog="39" />
+			<Patch name="(88)Funny Vox" hbank="127" lbank="2" prog="39" />
+			<Patch name="(Pro)Funny Vox" hbank="127" lbank="3" prog="39" />
+    </PatchGroup>
+    <PatchGroup name="Strings/Orchestra">
+      <Patch name="(55)Violin" hbank="0" lbank="1" prog="40" />
+			<Patch name="(88)Violin" hbank="0" lbank="2" prog="40" />
+			<Patch name="(Pro)Violin :" hbank="0" lbank="3" prog="40" />
+			<Patch name="(Pro)Violin Atk:" hbank="1" lbank="3" prog="40" />
+			<Patch name="(55)Slow Violin" hbank="8" lbank="1" prog="40" />
+			<Patch name="(88)Slow Violin" hbank="8" lbank="2" prog="40" />
+			<Patch name="(Pro)Slow Violin" hbank="8" lbank="3" prog="40" />
+			<Patch name="(55)Organ 2" hbank="126" lbank="1" prog="40" />
+			<Patch name="(88)Organ 2" hbank="126" lbank="2" prog="40" />
+			<Patch name="(Pro)Organ 2" hbank="126" lbank="3" prog="40" />
+			<Patch name="(55)Echo Bell" hbank="127" lbank="1" prog="40" />
+			<Patch name="(88)Echo Bell" hbank="127" lbank="2" prog="40" />
+			<Patch name="(Pro)Echo Bell" hbank="127" lbank="3" prog="40" />
+			<Patch name="(55)Viola" hbank="0" lbank="1" prog="41" />
+			<Patch name="(88)Viola" hbank="0" lbank="2" prog="41" />
+			<Patch name="(Pro)Viola :" hbank="0" lbank="3" prog="41" />
+			<Patch name="(Pro)Viola Atk.:" hbank="1" lbank="3" prog="41" />
+			<Patch name="(55)Organ 1" hbank="126" lbank="1" prog="41" />
+			<Patch name="(88)Organ 1" hbank="126" lbank="2" prog="41" />
+			<Patch name="(Pro)Organ 1" hbank="126" lbank="3" prog="41" />
+			<Patch name="(55)Ice Rain" hbank="127" lbank="1" prog="41" />
+			<Patch name="(88)Ice Rain" hbank="127" lbank="2" prog="41" />
+			<Patch name="(Pro)Ice Rain" hbank="127" lbank="3" prog="41" />
+			<Patch name="(55)Cello" hbank="0" lbank="1" prog="42" />
+			<Patch name="(88)Cello" hbank="0" lbank="2" prog="42" />
+			<Patch name="(Pro)Cello :" hbank="0" lbank="3" prog="42" />
+			<Patch name="(Pro)Cello Atk.:" hbank="1" lbank="3" prog="42" />
+			<Patch name="(55)Organ 1" hbank="126" lbank="1" prog="42" />
+			<Patch name="(88)Organ 1" hbank="126" lbank="2" prog="42" />
+			<Patch name="(Pro)Organ 1" hbank="126" lbank="3" prog="42" />
+			<Patch name="(55)Oboe 2001" hbank="127" lbank="1" prog="42" />
+			<Patch name="(88)Oboe 2001" hbank="127" lbank="2" prog="42" />
+			<Patch name="(Pro)Oboe 2001" hbank="127" lbank="3" prog="42" />
+			<Patch name="(55)Contrabass" hbank="0" lbank="1" prog="43" />
+			<Patch name="(88)Contrabass" hbank="0" lbank="2" prog="43" />
+			<Patch name="(Pro)Contrabass" hbank="0" lbank="3" prog="43" />
+			<Patch name="(55)Organ 2" hbank="126" lbank="1" prog="43" />
+			<Patch name="(88)Organ 2" hbank="126" lbank="2" prog="43" />
+			<Patch name="(Pro)Organ 2" hbank="126" lbank="3" prog="43" />
+			<Patch name="(55)Echo Pan" hbank="127" lbank="1" prog="43" />
+			<Patch name="(88)Echo Pan" hbank="127" lbank="2" prog="43" />
+			<Patch name="(Pro)Echo Pan" hbank="127" lbank="3" prog="43" />
+			<Patch name="(55)Tremolo Str" hbank="0" lbank="1" prog="44" />
+			<Patch name="(88)Tremolo Str" hbank="0" lbank="2" prog="44" />
+			<Patch name="(Pro)Tremolo Str" hbank="0" lbank="3" prog="44" />
+			<Patch name="(88)SlowTremolo" hbank="8" lbank="2" prog="44" />
+			<Patch name="(Pro)Slow Tremolo" hbank="8" lbank="3" prog="44" />
+			<Patch name="(88)SuspenseStr" hbank="9" lbank="2" prog="44" />
+			<Patch name="(Pro)Suspense Str" hbank="9" lbank="3" prog="44" />
+			<Patch name="(55)Organ 2" hbank="126" lbank="1" prog="44" />
+			<Patch name="(88)Organ 2" hbank="126" lbank="2" prog="44" />
+			<Patch name="(Pro)Organ 2" hbank="126" lbank="3" prog="44" />
+			<Patch name="(55)Doctor Solo" hbank="127" lbank="1" prog="44" />
+			<Patch name="(88)Doctor Solo" hbank="127" lbank="2" prog="44" />
+			<Patch name="(Pro)Doctor Solo" hbank="127" lbank="3" prog="44" />
+			<Patch name="(55)Pizzicato" hbank="0" lbank="1" prog="45" />
+			<Patch name="(88)Pizz. Str." hbank="0" lbank="2" prog="45" />
+			<Patch name="(Pro)PizzicatoStr" hbank="0" lbank="3" prog="45" />
+			<Patch name="(Pro)Vcs&amp;Cbs Pizz" hbank="1" lbank="3" prog="45" />
+			<Patch name="(Pro)Chamber Pizz" hbank="2" lbank="3" prog="45" />
+			<Patch name="(Pro)St.Pizzicato" hbank="3" lbank="3" prog="45" />
+			<Patch name="(Pro)Solo Pizz." hbank="8" lbank="3" prog="45" />
+			<Patch name="(Pro)Solo Spic." hbank="16" lbank="3" prog="45" />
+			<Patch name="(55)Organ 2" hbank="126" lbank="1" prog="45" />
+			<Patch name="(88)Organ 2" hbank="126" lbank="2" prog="45" />
+			<Patch name="(Pro)Organ 2" hbank="126" lbank="3" prog="45" />
+			<Patch name="(55)School Daze" hbank="127" lbank="1" prog="45" />
+			<Patch name="(88)School Daze" hbank="127" lbank="2" prog="45" />
+			<Patch name="(Pro)School Daze" hbank="127" lbank="3" prog="45" />
+			<Patch name="(55)Harp" hbank="0" lbank="1" prog="46" />
+			<Patch name="(88)Harp" hbank="0" lbank="2" prog="46" />
+			<Patch name="(Pro)Harp" hbank="0" lbank="3" prog="46" />
+			<Patch name="(Pro)Synth Harp" hbank="16" lbank="3" prog="46" />
+			<Patch name="(55)Trumpet" hbank="126" lbank="1" prog="46" />
+			<Patch name="(88)Trumpet" hbank="126" lbank="2" prog="46" />
+			<Patch name="(Pro)Trumpet" hbank="126" lbank="3" prog="46" />
+			<Patch name="(55)Bellsinger" hbank="127" lbank="1" prog="46" />
+			<Patch name="(88)Bellsinger" hbank="127" lbank="2" prog="46" />
+			<Patch name="(Pro)Bellsinger" hbank="127" lbank="3" prog="46" />
+			<Patch name="(55)Timpani" hbank="0" lbank="1" prog="47" />
+			<Patch name="(88)Timpani" hbank="0" lbank="2" prog="47" />
+			<Patch name="(Pro)Timpani" hbank="0" lbank="3" prog="47" />
+			<Patch name="(55)Trumpet" hbank="126" lbank="1" prog="47" />
+			<Patch name="(88)Trumpet" hbank="126" lbank="2" prog="47" />
+			<Patch name="(Pro)Trumpet" hbank="126" lbank="3" prog="47" />
+			<Patch name="(55)Square Wave" hbank="127" lbank="1" prog="47" />
+			<Patch name="(88)Square Wave" hbank="127" lbank="2" prog="47" />
+			<Patch name="(Pro)Square Wave" hbank="127" lbank="3" prog="47" />
+    </PatchGroup>
+    <PatchGroup name="Ensemble">
+      <Patch name="(55)Strings" hbank="0" lbank="1" prog="48" />
+			<Patch name="(88)Strings" hbank="0" lbank="2" prog="48" />
+			<Patch name="(Pro)Strings :" hbank="0" lbank="3" prog="48" />
+			<Patch name="(88)Strings 2" hbank="1" lbank="2" prog="48" />
+			<Patch name="(Pro)Bright Str:" hbank="1" lbank="3" prog="48" />
+			<Patch name="(Pro)ChamberStr:" hbank="2" lbank="3" prog="48" />
+			<Patch name="(Pro)Cello sect." hbank="3" lbank="3" prog="48" />
+			<Patch name="(55)Orchestra" hbank="8" lbank="1" prog="48" />
+			<Patch name="(88)Orchestra" hbank="8" lbank="2" prog="48" />
+			<Patch name="(Pro)Orchestra" hbank="8" lbank="3" prog="48" />
+			<Patch name="(88)Orchestra 2" hbank="9" lbank="2" prog="48" />
+			<Patch name="(Pro)Orchestra 2" hbank="9" lbank="3" prog="48" />
+			<Patch name="(88)TremoloOrch" hbank="10" lbank="2" prog="48" />
+			<Patch name="(Pro)Tremolo Orch" hbank="10" lbank="3" prog="48" />
+			<Patch name="(88)Choir Str." hbank="11" lbank="2" prog="48" />
+			<Patch name="(Pro)Choir Str." hbank="11" lbank="3" prog="48" />
+			<Patch name="(Pro)Strings+Horn" hbank="12" lbank="3" prog="48" />
+			<Patch name="(88)St.Strings" hbank="16" lbank="2" prog="48" />
+			<Patch name="(Pro)St. Strings" hbank="16" lbank="3" prog="48" />
+			<Patch name="(88)VeloStrings" hbank="24" lbank="2" prog="48" />
+			<Patch name="(Pro)Velo Strings" hbank="24" lbank="3" prog="48" />
+			<Patch name="(Pro)Oct Strings1" hbank="32" lbank="3" prog="48" />
+			<Patch name="(Pro)Oct Strings2" hbank="33" lbank="3" prog="48" />
+			<Patch name="(55)Trombone" hbank="126" lbank="1" prog="48" />
+			<Patch name="(88)Trombone" hbank="126" lbank="2" prog="48" />
+			<Patch name="(Pro)Trombone" hbank="126" lbank="3" prog="48" />
+			<Patch name="(55)Str Sect 1" hbank="127" lbank="1" prog="48" />
+			<Patch name="(88)Str Sect 1" hbank="127" lbank="2" prog="48" />
+			<Patch name="(Pro)Str Sect 1" hbank="127" lbank="3" prog="48" />
+			<Patch name="(55)SlowStrings" hbank="0" lbank="1" prog="49" />
+			<Patch name="(88)SlowStrings" hbank="0" lbank="2" prog="49" />
+			<Patch name="(Pro)Slow Strings" hbank="0" lbank="3" prog="49" />
+			<Patch name="(88)Slow Str. 2" hbank="1" lbank="2" prog="49" />
+			<Patch name="(Pro)SlowStrings2" hbank="1" lbank="3" prog="49" />
+			<Patch name="(88)Legato Str." hbank="8" lbank="2" prog="49" />
+			<Patch name="(Pro)Legato Str." hbank="8" lbank="3" prog="49" />
+			<Patch name="(88)WarmStrings" hbank="9" lbank="2" prog="49" />
+			<Patch name="(Pro)Warm Strings" hbank="9" lbank="3" prog="49" />
+			<Patch name="(88)St.SlowStr." hbank="10" lbank="2" prog="49" />
+			<Patch name="(Pro)St.Slow Str." hbank="10" lbank="3" prog="49" />
+			<Patch name="(55)Trombone" hbank="126" lbank="1" prog="49" />
+			<Patch name="(88)Trombone" hbank="126" lbank="2" prog="49" />
+			<Patch name="(Pro)Trombone" hbank="126" lbank="3" prog="49" />
+			<Patch name="(55)Str Sect 2" hbank="127" lbank="1" prog="49" />
+			<Patch name="(88)Str Sect 2" hbank="127" lbank="2" prog="49" />
+			<Patch name="(Pro)Str Sect 2" hbank="127" lbank="3" prog="49" />
+			<Patch name="(55)SynStrings1" hbank="0" lbank="1" prog="50" />
+			<Patch name="(88)SynStrings1" hbank="0" lbank="2" prog="50" />
+			<Patch name="(Pro)Syn.Strings1" hbank="0" lbank="3" prog="50" />
+			<Patch name="(88)OB Strings" hbank="1" lbank="2" prog="50" />
+			<Patch name="(Pro)OB Strings" hbank="1" lbank="3" prog="50" />
+			<Patch name="(Pro)StackStrings" hbank="2" lbank="3" prog="50" />
+			<Patch name="(Pro)JP Strings" hbank="3" lbank="3" prog="50" />
+			<Patch name="(55)SynStrings3" hbank="8" lbank="1" prog="50" />
+			<Patch name="(88)SynStrings3" hbank="8" lbank="2" prog="50" />
+			<Patch name="(Pro)Syn.Strings3" hbank="8" lbank="3" prog="50" />
+			<Patch name="(Pro)Syn.Strings4" hbank="9" lbank="3" prog="50" />
+			<Patch name="(Pro)High Strings" hbank="16" lbank="3" prog="50" />
+			<Patch name="(Pro)Hybrid Str." hbank="17" lbank="3" prog="50" />
+			<Patch name="(Pro)Tron Strings" hbank="24" lbank="3" prog="50" />
+			<Patch name="(Pro)Noiz Strings" hbank="25" lbank="3" prog="50" />
+			<Patch name="(55)Trombone" hbank="126" lbank="1" prog="50" />
+			<Patch name="(88)Trombone" hbank="126" lbank="2" prog="50" />
+			<Patch name="(Pro)Trombone" hbank="126" lbank="3" prog="50" />
+			<Patch name="(55)Str Sect 3" hbank="127" lbank="1" prog="50" />
+			<Patch name="(88)Str Sect 3" hbank="127" lbank="2" prog="50" />
+			<Patch name="(Pro)Str Sect 3" hbank="127" lbank="3" prog="50" />
+			<Patch name="(55)SynStrings2" hbank="0" lbank="1" prog="51" />
+			<Patch name="(88)SynStrings2" hbank="0" lbank="2" prog="51" />
+			<Patch name="(Pro)Syn.Strings2" hbank="0" lbank="3" prog="51" />
+			<Patch name="(Pro)Syn.Strings5" hbank="1" lbank="3" prog="51" />
+			<Patch name="(Pro)JUNO Strings" hbank="2" lbank="3" prog="51" />
+			<Patch name="(Pro)Air Strings" hbank="8" lbank="3" prog="51" />
+			<Patch name="(55)Trombone" hbank="126" lbank="1" prog="51" />
+			<Patch name="(88)Trombone" hbank="126" lbank="2" prog="51" />
+			<Patch name="(Pro)Trombone" hbank="126" lbank="3" prog="51" />
+			<Patch name="(55)Pizzicato" hbank="127" lbank="1" prog="51" />
+			<Patch name="(88)Pizzicato" hbank="127" lbank="2" prog="51" />
+			<Patch name="(Pro)Pizzicato" hbank="127" lbank="3" prog="51" />
+			<Patch name="(55)Choir Aahs" hbank="0" lbank="1" prog="52" />
+			<Patch name="(88)Choir Aahs" hbank="0" lbank="2" prog="52" />
+			<Patch name="(Pro)Choir Aahs" hbank="0" lbank="3" prog="52" />
+			<Patch name="(88)St.Choir" hbank="8" lbank="2" prog="52" />
+			<Patch name="(Pro)St.ChoirAahs" hbank="8" lbank="3" prog="52" />
+			<Patch name="(88)Mello Choir" hbank="9" lbank="2" prog="52" />
+			<Patch name="(Pro)Melted Choir" hbank="9" lbank="3" prog="52" />
+			<Patch name="(Pro)Church Choir" hbank="10" lbank="3" prog="52" />
+			<Patch name="(Pro)Choir Hahs" hbank="16" lbank="3" prog="52" />
+			<Patch name="(Pro)Chorus Lahs" hbank="24" lbank="3" prog="52" />
+			<Patch name="(55)Choir Aahs2" hbank="32" lbank="1" prog="52" />
+			<Patch name="(88)ChoirAahs 2" hbank="32" lbank="2" prog="52" />
+			<Patch name="(Pro)Chorus Aahs" hbank="32" lbank="3" prog="52" />
+			<Patch name="(Pro)Male Aah+Str" hbank="33" lbank="3" prog="52" />
+			<Patch name="(55)Trombone" hbank="126" lbank="1" prog="52" />
+			<Patch name="(88)Trombone" hbank="126" lbank="2" prog="52" />
+			<Patch name="(Pro)Trombone" hbank="126" lbank="3" prog="52" />
+			<Patch name="(55)Violin 1" hbank="127" lbank="1" prog="52" />
+			<Patch name="(88)Violin 1" hbank="127" lbank="2" prog="52" />
+			<Patch name="(Pro)Violin 1" hbank="127" lbank="3" prog="52" />
+			<Patch name="(55)Voice Oohs" hbank="0" lbank="1" prog="53" />
+			<Patch name="(88)Voice Oohs" hbank="0" lbank="2" prog="53" />
+			<Patch name="(Pro)Voice Oohs" hbank="0" lbank="3" prog="53" />
+			<Patch name="(Pro)Voice Dahs" hbank="8" lbank="3" prog="53" />
+			<Patch name="(55)Trombone" hbank="126" lbank="1" prog="53" />
+			<Patch name="(88)Trombone" hbank="126" lbank="2" prog="53" />
+			<Patch name="(Pro)Trombone" hbank="126" lbank="3" prog="53" />
+			<Patch name="(55)Violin 2" hbank="127" lbank="1" prog="53" />
+			<Patch name="(88)Violin 2" hbank="127" lbank="2" prog="53" />
+			<Patch name="(Pro)Violin 2" hbank="127" lbank="3" prog="53" />
+			<Patch name="(55)SynVox" hbank="0" lbank="1" prog="54" />
+			<Patch name="(88)SynVox" hbank="0" lbank="2" prog="54" />
+			<Patch name="(Pro)SynVox" hbank="0" lbank="3" prog="54" />
+			<Patch name="(88)Syn.Voice" hbank="8" lbank="2" prog="54" />
+			<Patch name="(Pro)Syn.Voice" hbank="8" lbank="3" prog="54" />
+			<Patch name="(Pro)Silent Night" hbank="9" lbank="3" prog="54" />
+			<Patch name="(Pro)VP330 Choir" hbank="16" lbank="3" prog="54" />
+			<Patch name="(Pro)Vinyl Choir" hbank="17" lbank="3" prog="54" />
+			<Patch name="(55)Alto Sax" hbank="126" lbank="1" prog="54" />
+			<Patch name="(88)Alto Sax" hbank="126" lbank="2" prog="54" />
+			<Patch name="(Pro)Alto Sax" hbank="126" lbank="3" prog="54" />
+			<Patch name="(55)Cello 1" hbank="127" lbank="1" prog="54" />
+			<Patch name="(88)Cello 1" hbank="127" lbank="2" prog="54" />
+			<Patch name="(Pro)Cello 1" hbank="127" lbank="3" prog="54" />
+			<Patch name="(55)Orchest.Hit" hbank="0" lbank="1" prog="55" />
+			<Patch name="(88)Orch. Hit" hbank="0" lbank="2" prog="55" />
+			<Patch name="(Pro)OrchestraHit" hbank="0" lbank="3" prog="55" />
+			<Patch name="(88)Impact Hit" hbank="8" lbank="2" prog="55" />
+			<Patch name="(Pro)Impact Hit" hbank="8" lbank="3" prog="55" />
+			<Patch name="(88)Philly Hit" hbank="9" lbank="2" prog="55" />
+			<Patch name="(Pro)Philly Hit" hbank="9" lbank="3" prog="55" />
+			<Patch name="(88)Double Hit" hbank="10" lbank="2" prog="55" />
+			<Patch name="(Pro)Double Hit" hbank="10" lbank="3" prog="55" />
+			<Patch name="(Pro)Perc. Hit" hbank="11" lbank="3" prog="55" />
+			<Patch name="(Pro)Shock Wave" hbank="12" lbank="3" prog="55" />
+			<Patch name="(88)Lo Fi Rave" hbank="16" lbank="2" prog="55" />
+			<Patch name="(Pro)Lo Fi Rave" hbank="16" lbank="3" prog="55" />
+			<Patch name="(Pro)Techno Hit" hbank="17" lbank="3" prog="55" />
+			<Patch name="(Pro)Dist. Hit" hbank="18" lbank="3" prog="55" />
+			<Patch name="(Pro)Bam Hit" hbank="19" lbank="3" prog="55" />
+			<Patch name="(Pro)Bit Hit" hbank="20" lbank="3" prog="55" />
+			<Patch name="(Pro)Bim Hit" hbank="21" lbank="3" prog="55" />
+			<Patch name="(Pro)Technorg Hit" hbank="22" lbank="3" prog="55" />
+			<Patch name="(Pro)Rave Hit" hbank="23" lbank="3" prog="55" />
+			<Patch name="(Pro)Strings Hit" hbank="24" lbank="3" prog="55" />
+			<Patch name="(Pro)Stack Hit" hbank="25" lbank="3" prog="55" />
+			<Patch name="(55)Tenor Sax" hbank="126" lbank="1" prog="55" />
+			<Patch name="(88)Tenor Sax" hbank="126" lbank="2" prog="55" />
+			<Patch name="(Pro)Tenor Sax" hbank="126" lbank="3" prog="55" />
+			<Patch name="(55)Cello 2" hbank="127" lbank="1" prog="55" />
+			<Patch name="(88)Cello 2" hbank="127" lbank="2" prog="55" />
+			<Patch name="(Pro)Cello 2" hbank="127" lbank="3" prog="55" />
+    </PatchGroup>
+    <PatchGroup name="Brass">
+      <Patch name="(55)Trumpet" hbank="0" lbank="1" prog="56" />
+			<Patch name="(88)Trumpet" hbank="0" lbank="2" prog="56" />
+			<Patch name="(Pro)Trumpet" hbank="0" lbank="3" prog="56" />
+			<Patch name="(88)Trumpet 2" hbank="1" lbank="2" prog="56" />
+			<Patch name="(Pro)Trumpet 2" hbank="1" lbank="3" prog="56" />
+			<Patch name="(Pro)Trumpet :" hbank="2" lbank="3" prog="56" />
+			<Patch name="(88)Flugel Horn" hbank="8" lbank="2" prog="56" />
+			<Patch name="(Pro)Flugel Horn" hbank="8" lbank="3" prog="56" />
+			<Patch name="(Pro)4th Trumpets" hbank="16" lbank="3" prog="56" />
+			<Patch name="(88)Bright Tp." hbank="24" lbank="2" prog="56" />
+			<Patch name="(Pro)Bright Tp." hbank="24" lbank="3" prog="56" />
+			<Patch name="(88)Warm Tp." hbank="25" lbank="2" prog="56" />
+			<Patch name="(Pro)Warm Tp." hbank="25" lbank="3" prog="56" />
+			<Patch name="(Pro)Syn. Trumpet" hbank="32" lbank="3" prog="56" />
+			<Patch name="(55)BaritoneSax" hbank="126" lbank="1" prog="56" />
+			<Patch name="(88)BaritoneSax" hbank="126" lbank="2" prog="56" />
+			<Patch name="(Pro)BaritoneSax" hbank="126" lbank="3" prog="56" />
+			<Patch name="(55)Contrabass" hbank="127" lbank="1" prog="56" />
+			<Patch name="(88)Contrabass" hbank="127" lbank="2" prog="56" />
+			<Patch name="(Pro)Contrabass" hbank="127" lbank="3" prog="56" />
+			<Patch name="(55)Trombone" hbank="0" lbank="1" prog="57" />
+			<Patch name="(88)Trombone" hbank="0" lbank="2" prog="57" />
+			<Patch name="(Pro)Trombone" hbank="0" lbank="3" prog="57" />
+			<Patch name="(55)Trombone 2" hbank="1" lbank="1" prog="57" />
+			<Patch name="(88)Trombone 2" hbank="1" lbank="2" prog="57" />
+			<Patch name="(Pro)Trombone 2" hbank="1" lbank="3" prog="57" />
+			<Patch name="(Pro)Twin bones" hbank="2" lbank="3" prog="57" />
+			<Patch name="(Pro)Bs. Trombone" hbank="8" lbank="3" prog="57" />
+			<Patch name="(55)Alto Sax" hbank="126" lbank="1" prog="57" />
+			<Patch name="(88)Alto Sax" hbank="126" lbank="2" prog="57" />
+			<Patch name="(Pro)Alto Sax" hbank="126" lbank="3" prog="57" />
+			<Patch name="(55)Harp 1" hbank="127" lbank="1" prog="57" />
+			<Patch name="(88)Harp 1" hbank="127" lbank="2" prog="57" />
+			<Patch name="(Pro)Harp 1" hbank="127" lbank="3" prog="57" />
+			<Patch name="(55)Tuba" hbank="0" lbank="1" prog="58" />
+			<Patch name="(88)Tuba" hbank="0" lbank="2" prog="58" />
+			<Patch name="(Pro)Tuba" hbank="0" lbank="3" prog="58" />
+			<Patch name="(88)Tuba 2" hbank="1" lbank="2" prog="58" />
+			<Patch name="(Pro)Tuba 2" hbank="1" lbank="3" prog="58" />
+			<Patch name="(55)Brass 1" hbank="126" lbank="1" prog="58" />
+			<Patch name="(88)Brass 1" hbank="126" lbank="2" prog="58" />
+			<Patch name="(Pro)Brass 1" hbank="126" lbank="3" prog="58" />
+			<Patch name="(55)Harp 2" hbank="127" lbank="1" prog="58" />
+			<Patch name="(88)Harp 2" hbank="127" lbank="2" prog="58" />
+			<Patch name="(Pro)Harp 2" hbank="127" lbank="3" prog="58" />
+			<Patch name="(55)MuteTrumpet" hbank="0" lbank="1" prog="59" />
+			<Patch name="(88)Muted Tp." hbank="0" lbank="2" prog="59" />
+			<Patch name="(Pro)MutedTrumpet" hbank="0" lbank="3" prog="59" />
+			<Patch name="(Pro)Muted Horns" hbank="8" lbank="3" prog="59" />
+			<Patch name="(55)Brass 1" hbank="126" lbank="1" prog="59" />
+			<Patch name="(88)Brass 1" hbank="126" lbank="2" prog="59" />
+			<Patch name="(Pro)Brass 1" hbank="126" lbank="3" prog="59" />
+			<Patch name="(55)Guitar 1" hbank="127" lbank="1" prog="59" />
+			<Patch name="(88)Guitar 1" hbank="127" lbank="2" prog="59" />
+			<Patch name="(Pro)Guitar 1" hbank="127" lbank="3" prog="59" />
+			<Patch name="(55)French Horn" hbank="0" lbank="1" prog="60" />
+			<Patch name="(88)FrenchHorns" hbank="0" lbank="2" prog="60" />
+			<Patch name="(Pro)French Horns" hbank="0" lbank="3" prog="60" />
+			<Patch name="(55)Fr.Horn 2" hbank="1" lbank="1" prog="60" />
+			<Patch name="(88)Fr.Horn 2" hbank="1" lbank="2" prog="60" />
+			<Patch name="(Pro)Fr.Horn 2" hbank="1" lbank="3" prog="60" />
+			<Patch name="(Pro)Horn + Orche" hbank="2" lbank="3" prog="60" />
+			<Patch name="(Pro)Wide FreHrns" hbank="3" lbank="3" prog="60" />
+			<Patch name="(88)Fr.HornSolo" hbank="8" lbank="2" prog="60" />
+			<Patch name="(Pro)F.Hrn Slow:" hbank="8" lbank="3" prog="60" />
+			<Patch name="(Pro)Dual Horns" hbank="9" lbank="3" prog="60" />
+			<Patch name="(88)Horn Orch" hbank="16" lbank="2" prog="60" />
+			<Patch name="(Pro)Synth Horn" hbank="16" lbank="3" prog="60" />
+			<Patch name="(Pro)F.Horn Rip" hbank="24" lbank="3" prog="60" />
+			<Patch name="(55)Brass 2" hbank="126" lbank="1" prog="60" />
+			<Patch name="(88)Brass 2" hbank="126" lbank="2" prog="60" />
+			<Patch name="(Pro)Brass 2" hbank="126" lbank="3" prog="60" />
+			<Patch name="(55)Guitar 2" hbank="127" lbank="1" prog="60" />
+			<Patch name="(88)Guitar 2" hbank="127" lbank="2" prog="60" />
+			<Patch name="(Pro)Guitar 2" hbank="127" lbank="3" prog="60" />
+			<Patch name="(55)Brass 1" hbank="0" lbank="1" prog="61" />
+			<Patch name="(88)Brass 1" hbank="0" lbank="2" prog="61" />
+			<Patch name="(Pro)Brass 1" hbank="0" lbank="3" prog="61" />
+			<Patch name="(Pro)Brass ff" hbank="1" lbank="3" prog="61" />
+			<Patch name="(Pro)Bones Sect." hbank="2" lbank="3" prog="61" />
+			<Patch name="(55)Brass 2" hbank="8" lbank="1" prog="61" />
+			<Patch name="(88)Brass 2" hbank="8" lbank="2" prog="61" />
+			<Patch name="(Pro)Brass 2" hbank="8" lbank="3" prog="61" />
+			<Patch name="(Pro)Brass 3" hbank="9" lbank="3" prog="61" />
+			<Patch name="(Pro)Brass sfz" hbank="10" lbank="3" prog="61" />
+			<Patch name="(88)Brass Fall" hbank="16" lbank="2" prog="61" />
+			<Patch name="(Pro)Brass Fall" hbank="16" lbank="3" prog="61" />
+			<Patch name="(Pro)Trumpet Fall" hbank="17" lbank="3" prog="61" />
+			<Patch name="(Pro)Octave Brass" hbank="24" lbank="3" prog="61" />
+			<Patch name="(Pro)Brass + Reed" hbank="25" lbank="3" prog="61" />
+			<Patch name="(55)Brass 2" hbank="126" lbank="1" prog="61" />
+			<Patch name="(88)Brass 2" hbank="126" lbank="2" prog="61" />
+			<Patch name="(Pro)Brass 2" hbank="126" lbank="3" prog="61" />
+			<Patch name="(55)Elec Gtr 1" hbank="127" lbank="1" prog="61" />
+			<Patch name="(88)Elec Gtr 1" hbank="127" lbank="2" prog="61" />
+			<Patch name="(Pro)Elec Gtr 1" hbank="127" lbank="3" prog="61" />
+			<Patch name="(55)Syn.Brass 1" hbank="0" lbank="1" prog="62" />
+			<Patch name="(88)SynthBrass1" hbank="0" lbank="2" prog="62" />
+			<Patch name="(Pro)Synth Brass1" hbank="0" lbank="3" prog="62" />
+			<Patch name="(88)Poly Brass" hbank="1" lbank="2" prog="62" />
+			<Patch name="(Pro)JUNO Brass" hbank="1" lbank="3" prog="62" />
+			<Patch name="(Pro)Stack Brass" hbank="2" lbank="3" prog="62" />
+			<Patch name="(Pro)SH-5 Brass" hbank="3" lbank="3" prog="62" />
+			<Patch name="(Pro)MKS Brass" hbank="4" lbank="3" prog="62" />
+			<Patch name="(55)Syn.Brass 3" hbank="8" lbank="1" prog="62" />
+			<Patch name="(88)Syn.Brass 3" hbank="8" lbank="2" prog="62" />
+			<Patch name="(Pro)Pro Brass" hbank="8" lbank="3" prog="62" />
+			<Patch name="(88)Quack Brass" hbank="9" lbank="2" prog="62" />
+			<Patch name="(Pro)P5 Brass" hbank="9" lbank="3" prog="62" />
+			<Patch name="(55)Analog Brs1" hbank="16" lbank="1" prog="62" />
+			<Patch name="(88)OctaveBrass" hbank="16" lbank="2" prog="62" />
+			<Patch name="(Pro)Oct SynBrass" hbank="16" lbank="3" prog="62" />
+			<Patch name="(Pro)Hybrid Brass" hbank="17" lbank="3" prog="62" />
+			<Patch name="(55)Brass 1" hbank="126" lbank="1" prog="62" />
+			<Patch name="(88)Brass 1" hbank="126" lbank="2" prog="62" />
+			<Patch name="(Pro)Brass 1" hbank="126" lbank="3" prog="62" />
+			<Patch name="(55)Elec Gtr 2" hbank="127" lbank="1" prog="62" />
+			<Patch name="(88)Elec Gtr 2" hbank="127" lbank="2" prog="62" />
+			<Patch name="(Pro)Elec Gtr 2" hbank="127" lbank="3" prog="62" />
+			<Patch name="(55)Syn.Brass 2" hbank="0" lbank="1" prog="63" />
+			<Patch name="(88)Syn.Brass 2" hbank="0" lbank="2" prog="63" />
+			<Patch name="(Pro)Synth Brass2" hbank="0" lbank="3" prog="63" />
+			<Patch name="(88)Soft Brass" hbank="1" lbank="2" prog="63" />
+			<Patch name="(Pro)Soft Brass" hbank="1" lbank="3" prog="63" />
+			<Patch name="(Pro)Warm Brass" hbank="2" lbank="3" prog="63" />
+			<Patch name="(55)Syn.Brass 4" hbank="8" lbank="1" prog="63" />
+			<Patch name="(88)Syn.Brass 4" hbank="8" lbank="2" prog="63" />
+			<Patch name="(Pro)SynBrass sfz" hbank="8" lbank="3" prog="63" />
+			<Patch name="(Pro)OB Brass" hbank="9" lbank="3" prog="63" />
+			<Patch name="(Pro)Reso Brass" hbank="10" lbank="3" prog="63" />
+			<Patch name="(55)Analog Brs2" hbank="16" lbank="1" prog="63" />
+			<Patch name="(88)VeloBrass 1" hbank="16" lbank="2" prog="63" />
+			<Patch name="(Pro)Velo Brass 1" hbank="16" lbank="3" prog="63" />
+			<Patch name="(88)VeloBrass 2" hbank="17" lbank="2" prog="63" />
+			<Patch name="(Pro)Transbrass" hbank="17" lbank="3" prog="63" />
+			<Patch name="(55)Orchest.Hit" hbank="126" lbank="1" prog="63" />
+			<Patch name="(88)Orchest.Hit" hbank="126" lbank="2" prog="63" />
+			<Patch name="(Pro)Orchest.Hit" hbank="126" lbank="3" prog="63" />
+			<Patch name="(55)Sitar" hbank="127" lbank="1" prog="63" />
+			<Patch name="(88)Sitar" hbank="127" lbank="2" prog="63" />
+			<Patch name="(Pro)Sitar" hbank="127" lbank="3" prog="63" />
+    </PatchGroup>
+    <PatchGroup name="Reed">
+      <Patch name="(55)Soprano Sax" hbank="0" lbank="1" prog="64" />
+			<Patch name="(88)Soprano Sax" hbank="0" lbank="2" prog="64" />
+			<Patch name="(Pro)Soprano Sax" hbank="0" lbank="3" prog="64" />
+			<Patch name="(Pro)Soprano Exp." hbank="8" lbank="3" prog="64" />
+			<Patch name="(55)Acou Bass 1" hbank="127" lbank="1" prog="64" />
+			<Patch name="(88)Acou Bass 1" hbank="127" lbank="2" prog="64" />
+			<Patch name="(Pro)Acou Bass 1" hbank="127" lbank="3" prog="64" />
+			<Patch name="(55)Alto Sax" hbank="0" lbank="1" prog="65" />
+			<Patch name="(88)Alto Sax" hbank="0" lbank="2" prog="65" />
+			<Patch name="(Pro)Alto Sax" hbank="0" lbank="3" prog="65" />
+			<Patch name="(88)Hyper Alto" hbank="8" lbank="2" prog="65" />
+			<Patch name="(Pro)AltoSax Exp." hbank="8" lbank="3" prog="65" />
+			<Patch name="(Pro)Grow Sax" hbank="9" lbank="3" prog="65" />
+			<Patch name="(Pro)AltoSax + Tp" hbank="16" lbank="3" prog="65" />
+			<Patch name="(55)Acou Bass 2" hbank="127" lbank="1" prog="65" />
+			<Patch name="(88)Acou Bass 2" hbank="127" lbank="2" prog="65" />
+			<Patch name="(Pro)Acou Bass 2" hbank="127" lbank="3" prog="65" />
+			<Patch name="(55)Tenor Sax" hbank="0" lbank="1" prog="66" />
+			<Patch name="(88)Tenor Sax" hbank="0" lbank="2" prog="66" />
+			<Patch name="(Pro)Tenor Sax" hbank="0" lbank="3" prog="66" />
+			<Patch name="(Pro)Tenor Sax :" hbank="1" lbank="3" prog="66" />
+			<Patch name="(88)BreathyTnr." hbank="8" lbank="2" prog="66" />
+			<Patch name="(Pro)BreathyTn.:" hbank="8" lbank="3" prog="66" />
+			<Patch name="(Pro)St.Tenor Sax" hbank="9" lbank="3" prog="66" />
+			<Patch name="(55)Elec Bass 1" hbank="127" lbank="1" prog="66" />
+			<Patch name="(88)Elec Bass 1" hbank="127" lbank="2" prog="66" />
+			<Patch name="(Pro)Elec Bass 1" hbank="127" lbank="3" prog="66" />
+			<Patch name="(55)BaritoneSax" hbank="0" lbank="1" prog="67" />
+			<Patch name="(88)BaritoneSax" hbank="0" lbank="2" prog="67" />
+			<Patch name="(Pro)Baritone Sax" hbank="0" lbank="3" prog="67" />
+			<Patch name="(Pro)Bari. Sax :" hbank="1" lbank="3" prog="67" />
+			<Patch name="(55)Elec Bass 2" hbank="127" lbank="1" prog="67" />
+			<Patch name="(88)Elec Bass 2" hbank="127" lbank="2" prog="67" />
+			<Patch name="(Pro)Elec Bass 2" hbank="127" lbank="3" prog="67" />
+			<Patch name="(55)Oboe" hbank="0" lbank="1" prog="68" />
+			<Patch name="(88)Oboe" hbank="0" lbank="2" prog="68" />
+			<Patch name="(Pro)Oboe" hbank="0" lbank="3" prog="68" />
+			<Patch name="(Pro)Oboe Exp." hbank="8" lbank="3" prog="68" />
+			<Patch name="(Pro)Multi Reed" hbank="16" lbank="3" prog="68" />
+			<Patch name="(55)Slap Bass 1" hbank="127" lbank="1" prog="68" />
+			<Patch name="(88)Slap Bass 1" hbank="127" lbank="2" prog="68" />
+			<Patch name="(Pro)Slap Bass 1" hbank="127" lbank="3" prog="68" />
+			<Patch name="(55)EnglishHorn" hbank="0" lbank="1" prog="69" />
+			<Patch name="(88)EnglishHorn" hbank="0" lbank="2" prog="69" />
+			<Patch name="(Pro)English Horn" hbank="0" lbank="3" prog="69" />
+			<Patch name="(55)Slap Bass 2" hbank="127" lbank="1" prog="69" />
+			<Patch name="(88)Slap Bass 2" hbank="127" lbank="2" prog="69" />
+			<Patch name="(Pro)Slap Bass 2" hbank="127" lbank="3" prog="69" />
+			<Patch name="(55)Bassoon" hbank="0" lbank="1" prog="70" />
+			<Patch name="(88)Bassoon" hbank="0" lbank="2" prog="70" />
+			<Patch name="(Pro)Bassoon" hbank="0" lbank="3" prog="70" />
+			<Patch name="(55)Fretless 1" hbank="127" lbank="1" prog="70" />
+			<Patch name="(88)Fretless 1" hbank="127" lbank="2" prog="70" />
+			<Patch name="(Pro)Fretless 1" hbank="127" lbank="3" prog="70" />
+			<Patch name="(55)Clarinet" hbank="0" lbank="1" prog="71" />
+			<Patch name="(88)Clarinet" hbank="0" lbank="2" prog="71" />
+			<Patch name="(Pro)Clarinet" hbank="0" lbank="3" prog="71" />
+			<Patch name="(88)Bs Clarinet" hbank="8" lbank="2" prog="71" />
+			<Patch name="(Pro)Bs Clarinet" hbank="8" lbank="3" prog="71" />
+			<Patch name="(Pro)Multi Wind" hbank="16" lbank="3" prog="71" />
+			<Patch name="(55)Fretless 2" hbank="127" lbank="1" prog="71" />
+			<Patch name="(88)Fretless 2" hbank="127" lbank="2" prog="71" />
+			<Patch name="(Pro)Fretless 2" hbank="127" lbank="3" prog="71" />
+    </PatchGroup>
+    <PatchGroup name="Pipe">
+      <Patch name="(55)Piccolo" hbank="0" lbank="1" prog="72" />
+			<Patch name="(88)Piccolo" hbank="0" lbank="2" prog="72" />
+			<Patch name="(Pro)Piccolo" hbank="0" lbank="3" prog="72" />
+			<Patch name="(Pro)Piccolo :" hbank="1" lbank="3" prog="72" />
+			<Patch name="(Pro)Nay" hbank="8" lbank="3" prog="72" />
+			<Patch name="(Pro)Nay Tremolo" hbank="9" lbank="3" prog="72" />
+			<Patch name="(Pro)Di" hbank="16" lbank="3" prog="72" />
+			<Patch name="(55)Flute 1" hbank="127" lbank="1" prog="72" />
+			<Patch name="(88)Flute 1" hbank="127" lbank="2" prog="72" />
+			<Patch name="(Pro)Flute 1" hbank="127" lbank="3" prog="72" />
+			<Patch name="(55)Flute" hbank="0" lbank="1" prog="73" />
+			<Patch name="(88)Flute" hbank="0" lbank="2" prog="73" />
+			<Patch name="(Pro)Flute" hbank="0" lbank="3" prog="73" />
+			<Patch name="(Pro)Flute 2 :" hbank="1" lbank="3" prog="73" />
+			<Patch name="(Pro)Flute Exp." hbank="2" lbank="3" prog="73" />
+			<Patch name="(Pro)Flt Travelso" hbank="3" lbank="3" prog="73" />
+			<Patch name="(Pro)Flute + Vln" hbank="8" lbank="3" prog="73" />
+			<Patch name="(Pro)Tron Flute" hbank="16" lbank="3" prog="73" />
+			<Patch name="(55)Flute 2" hbank="127" lbank="1" prog="73" />
+			<Patch name="(88)Flute 2" hbank="127" lbank="2" prog="73" />
+			<Patch name="(Pro)Flute 2" hbank="127" lbank="3" prog="73" />
+			<Patch name="(55)Recorder" hbank="0" lbank="1" prog="74" />
+			<Patch name="(88)Recorder" hbank="0" lbank="2" prog="74" />
+			<Patch name="(Pro)Recorder" hbank="0" lbank="3" prog="74" />
+			<Patch name="(55)Piccolo 1" hbank="127" lbank="1" prog="74" />
+			<Patch name="(88)Piccolo 1" hbank="127" lbank="2" prog="74" />
+			<Patch name="(Pro)Piccolo 1" hbank="127" lbank="3" prog="74" />
+			<Patch name="(55)Pan Flute" hbank="0" lbank="1" prog="75" />
+			<Patch name="(88)Pan Flute" hbank="0" lbank="2" prog="75" />
+			<Patch name="(Pro)Pan Flute" hbank="0" lbank="3" prog="75" />
+			<Patch name="(88)Kawala" hbank="8" lbank="2" prog="75" />
+			<Patch name="(Pro)Kawala" hbank="8" lbank="3" prog="75" />
+			<Patch name="(Pro)Zampona" hbank="16" lbank="3" prog="75" />
+			<Patch name="(Pro)Zampona Atk" hbank="17" lbank="3" prog="75" />
+			<Patch name="(55)Piccolo 2" hbank="127" lbank="1" prog="75" />
+			<Patch name="(88)Piccolo 2" hbank="127" lbank="2" prog="75" />
+			<Patch name="(Pro)Piccolo 2" hbank="127" lbank="3" prog="75" />
+			<Patch name="(55)Bottle Blow" hbank="0" lbank="1" prog="76" />
+			<Patch name="(88)Bottle Blow" hbank="0" lbank="2" prog="76" />
+			<Patch name="(Pro)Bottle Blow" hbank="0" lbank="3" prog="76" />
+			<Patch name="(55)Recorder" hbank="127" lbank="1" prog="76" />
+			<Patch name="(88)Recorder" hbank="127" lbank="2" prog="76" />
+			<Patch name="(Pro)Recorder" hbank="127" lbank="3" prog="76" />
+			<Patch name="(55)Shakuhachi" hbank="0" lbank="1" prog="77" />
+			<Patch name="(88)Shakuhachi" hbank="0" lbank="2" prog="77" />
+			<Patch name="(Pro)Shakuhachi" hbank="0" lbank="3" prog="77" />
+			<Patch name="(Pro)Shakuhachi:" hbank="1" lbank="3" prog="77" />
+			<Patch name="(55)Pan Pipes" hbank="127" lbank="1" prog="77" />
+			<Patch name="(88)Pan Pipes" hbank="127" lbank="2" prog="77" />
+			<Patch name="(Pro)Pan Pipes" hbank="127" lbank="3" prog="77" />
+			<Patch name="(55)Whistle" hbank="0" lbank="1" prog="78" />
+			<Patch name="(88)Whistle" hbank="0" lbank="2" prog="78" />
+			<Patch name="(Pro)Whistle" hbank="0" lbank="3" prog="78" />
+			<Patch name="(Pro)Whistle 2" hbank="1" lbank="3" prog="78" />
+			<Patch name="(55)Sax 1" hbank="127" lbank="1" prog="78" />
+			<Patch name="(88)Sax 1" hbank="127" lbank="2" prog="78" />
+			<Patch name="(Pro)Sax 1" hbank="127" lbank="3" prog="78" />
+			<Patch name="(55)Ocarina" hbank="0" lbank="1" prog="79" />
+			<Patch name="(88)Ocarina" hbank="0" lbank="2" prog="79" />
+			<Patch name="(Pro)Ocarina" hbank="0" lbank="3" prog="79" />
+			<Patch name="(55)Sax 2" hbank="127" lbank="1" prog="79" />
+			<Patch name="(88)Sax 2" hbank="127" lbank="2" prog="79" />
+			<Patch name="(Pro)Sax 2" hbank="127" lbank="3" prog="79" />
+    </PatchGroup>
+    <PatchGroup name="Synth Lead">
+      <Patch name="(55)Square Wave" hbank="0" lbank="1" prog="80" />
+			<Patch name="(88)Square Wave" hbank="0" lbank="2" prog="80" />
+			<Patch name="(Pro)Square Wave" hbank="0" lbank="3" prog="80" />
+			<Patch name="(55)Square" hbank="1" lbank="1" prog="80" />
+			<Patch name="(88)Square" hbank="1" lbank="2" prog="80" />
+			<Patch name="(Pro)MG Square" hbank="1" lbank="3" prog="80" />
+			<Patch name="(88)Hollow Mini" hbank="2" lbank="2" prog="80" />
+			<Patch name="(Pro)Hollow Mini" hbank="2" lbank="3" prog="80" />
+			<Patch name="(88)Mellow FM" hbank="3" lbank="2" prog="80" />
+			<Patch name="(Pro)Mellow FM" hbank="3" lbank="3" prog="80" />
+			<Patch name="(88)CC Solo" hbank="4" lbank="2" prog="80" />
+			<Patch name="(Pro)CC Solo" hbank="4" lbank="3" prog="80" />
+			<Patch name="(88)Shmoog" hbank="5" lbank="2" prog="80" />
+			<Patch name="(Pro)Shmoog" hbank="5" lbank="3" prog="80" />
+			<Patch name="(88)LM Square" hbank="6" lbank="2" prog="80" />
+			<Patch name="(Pro)LM Square" hbank="6" lbank="3" prog="80" />
+			<Patch name="(55)Sine Wave" hbank="8" lbank="1" prog="80" />
+			<Patch name="(88)Sine Wave" hbank="8" lbank="2" prog="80" />
+			<Patch name="(Pro)2600 Sine" hbank="8" lbank="3" prog="80" />
+			<Patch name="(Pro)Sine Lead" hbank="9" lbank="3" prog="80" />
+			<Patch name="(Pro)KG Lead" hbank="10" lbank="3" prog="80" />
+			<Patch name="(Pro)P5 Square" hbank="16" lbank="3" prog="80" />
+			<Patch name="(Pro)OB Square" hbank="17" lbank="3" prog="80" />
+			<Patch name="(Pro)JP-8 Square" hbank="18" lbank="3" prog="80" />
+			<Patch name="(Pro)Pulse Lead" hbank="24" lbank="3" prog="80" />
+			<Patch name="(Pro)JP8 PulseLd1" hbank="25" lbank="3" prog="80" />
+			<Patch name="(Pro)JP8 PulseLd2" hbank="26" lbank="3" prog="80" />
+			<Patch name="(Pro)MG Reso. Pls" hbank="27" lbank="3" prog="80" />
+			<Patch name="(55)Sax 3" hbank="127" lbank="1" prog="80" />
+			<Patch name="(88)Sax 3" hbank="127" lbank="2" prog="80" />
+			<Patch name="(Pro)Sax 3" hbank="127" lbank="3" prog="80" />
+			<Patch name="(55)Saw Wave" hbank="0" lbank="1" prog="81" />
+			<Patch name="(88)Saw Wave" hbank="0" lbank="2" prog="81" />
+			<Patch name="(Pro)Saw Wave" hbank="0" lbank="3" prog="81" />
+			<Patch name="(55)Saw" hbank="1" lbank="1" prog="81" />
+			<Patch name="(88)Saw" hbank="1" lbank="2" prog="81" />
+			<Patch name="(Pro)OB2 Saw" hbank="1" lbank="3" prog="81" />
+			<Patch name="(88)Pulse Saw" hbank="2" lbank="2" prog="81" />
+			<Patch name="(Pro)Pulse Saw" hbank="2" lbank="3" prog="81" />
+			<Patch name="(88)Feline GR" hbank="3" lbank="2" prog="81" />
+			<Patch name="(Pro)Feline GR" hbank="3" lbank="3" prog="81" />
+			<Patch name="(88)Big Lead" hbank="4" lbank="2" prog="81" />
+			<Patch name="(Pro)Big Lead" hbank="4" lbank="3" prog="81" />
+			<Patch name="(88)Velo Lead" hbank="5" lbank="2" prog="81" />
+			<Patch name="(Pro)Velo Lead" hbank="5" lbank="3" prog="81" />
+			<Patch name="(88)GR-300" hbank="6" lbank="2" prog="81" />
+			<Patch name="(Pro)GR-300" hbank="6" lbank="3" prog="81" />
+			<Patch name="(88)LA Saw" hbank="7" lbank="2" prog="81" />
+			<Patch name="(Pro)LA Saw" hbank="7" lbank="3" prog="81" />
+			<Patch name="(55)Doctor Solo" hbank="8" lbank="1" prog="81" />
+			<Patch name="(88)Doctor Solo" hbank="8" lbank="2" prog="81" />
+			<Patch name="(Pro)Doctor Solo" hbank="8" lbank="3" prog="81" />
+			<Patch name="(Pro)Fat Saw Lead" hbank="9" lbank="3" prog="81" />
+			<Patch name="(Pro)D-50 Fat Saw" hbank="11" lbank="3" prog="81" />
+			<Patch name="(88)Waspy Synth" hbank="16" lbank="2" prog="81" />
+			<Patch name="(Pro)Waspy Synth" hbank="16" lbank="3" prog="81" />
+			<Patch name="(Pro)PM Lead" hbank="17" lbank="3" prog="81" />
+			<Patch name="(Pro)CS Saw Lead" hbank="18" lbank="3" prog="81" />
+			<Patch name="(Pro)MG Saw 1" hbank="24" lbank="3" prog="81" />
+			<Patch name="(Pro)MG Saw 2" hbank="25" lbank="3" prog="81" />
+			<Patch name="(Pro)OB Saw 1" hbank="26" lbank="3" prog="81" />
+			<Patch name="(Pro)OB Saw 2" hbank="27" lbank="3" prog="81" />
+			<Patch name="(Pro)D-50 Saw" hbank="28" lbank="3" prog="81" />
+			<Patch name="(Pro)SH-101 Saw" hbank="29" lbank="3" prog="81" />
+			<Patch name="(Pro)CS Saw" hbank="30" lbank="3" prog="81" />
+			<Patch name="(Pro)MG Saw Lead" hbank="31" lbank="3" prog="81" />
+			<Patch name="(Pro)OB Saw Lead" hbank="32" lbank="3" prog="81" />
+			<Patch name="(Pro)P5 Saw Lead" hbank="33" lbank="3" prog="81" />
+			<Patch name="(Pro)MG unison" hbank="34" lbank="3" prog="81" />
+			<Patch name="(Pro)Oct Saw Lead" hbank="35" lbank="3" prog="81" />
+			<Patch name="(Pro)SequenceSaw1" hbank="40" lbank="3" prog="81" />
+			<Patch name="(Pro)SequenceSaw2" hbank="41" lbank="3" prog="81" />
+			<Patch name="(Pro)Reso Saw" hbank="42" lbank="3" prog="81" />
+			<Patch name="(Pro)Cheese Saw 1" hbank="43" lbank="3" prog="81" />
+			<Patch name="(Pro)Cheese Saw 2" hbank="44" lbank="3" prog="81" />
+			<Patch name="(Pro)Rhythmic Saw" hbank="45" lbank="3" prog="81" />
+			<Patch name="(55)Sax 4" hbank="127" lbank="1" prog="81" />
+			<Patch name="(88)Sax 4" hbank="127" lbank="2" prog="81" />
+			<Patch name="(Pro)Sax 4" hbank="127" lbank="3" prog="81" />
+			<Patch name="(55)SynCalliope" hbank="0" lbank="1" prog="82" />
+			<Patch name="(88)SynCalliope" hbank="0" lbank="2" prog="82" />
+			<Patch name="(Pro)Syn.Calliope" hbank="0" lbank="3" prog="82" />
+			<Patch name="(88)Vent Synth" hbank="1" lbank="2" prog="82" />
+			<Patch name="(Pro)Vent Synth" hbank="1" lbank="3" prog="82" />
+			<Patch name="(88)PurePanLead" hbank="2" lbank="2" prog="82" />
+			<Patch name="(Pro)Pure PanLead" hbank="2" lbank="3" prog="82" />
+			<Patch name="(55)Clarinet 1" hbank="127" lbank="1" prog="82" />
+			<Patch name="(88)Clarinet 1" hbank="127" lbank="2" prog="82" />
+			<Patch name="(Pro)Clarinet 1" hbank="127" lbank="3" prog="82" />
+			<Patch name="(55)ChifferLead" hbank="0" lbank="1" prog="83" />
+			<Patch name="(88)ChifferLead" hbank="0" lbank="2" prog="83" />
+			<Patch name="(Pro)Chiffer Lead" hbank="0" lbank="3" prog="83" />
+			<Patch name="(Pro)TB Lead" hbank="1" lbank="3" prog="83" />
+			<Patch name="(Pro)Mad Lead" hbank="8" lbank="3" prog="83" />
+			<Patch name="(55)Clarinet 2" hbank="127" lbank="1" prog="83" />
+			<Patch name="(88)Clarinet 2" hbank="127" lbank="2" prog="83" />
+			<Patch name="(Pro)Clarinet 2" hbank="127" lbank="3" prog="83" />
+			<Patch name="(55)Charang" hbank="0" lbank="1" prog="84" />
+			<Patch name="(88)Charang" hbank="0" lbank="2" prog="84" />
+			<Patch name="(Pro)Charang" hbank="0" lbank="3" prog="84" />
+			<Patch name="(88)Dist.Lead" hbank="8" lbank="2" prog="84" />
+			<Patch name="(Pro)Dist.Lead" hbank="8" lbank="3" prog="84" />
+			<Patch name="(Pro)Acid Guitar1" hbank="9" lbank="3" prog="84" />
+			<Patch name="(Pro)Acid Guitar2" hbank="10" lbank="3" prog="84" />
+			<Patch name="(Pro)P5 Sync Lead" hbank="16" lbank="3" prog="84" />
+			<Patch name="(Pro)Fat SyncLead" hbank="17" lbank="3" prog="84" />
+			<Patch name="(Pro)Rock Lead" hbank="18" lbank="3" prog="84" />
+			<Patch name="(Pro)5th DecaSync" hbank="19" lbank="3" prog="84" />
+			<Patch name="(Pro)Dirty Sync" hbank="20" lbank="3" prog="84" />
+			<Patch name="(Pro)JUNO Sub Osc" hbank="24" lbank="3" prog="84" />
+			<Patch name="(55)Oboe" hbank="127" lbank="1" prog="84" />
+			<Patch name="(88)Oboe" hbank="127" lbank="2" prog="84" />
+			<Patch name="(Pro)Oboe" hbank="127" lbank="3" prog="84" />
+			<Patch name="(55)Solo Vox" hbank="0" lbank="1" prog="85" />
+			<Patch name="(88)Solo Vox" hbank="0" lbank="2" prog="85" />
+			<Patch name="(Pro)Solo Vox" hbank="0" lbank="3" prog="85" />
+			<Patch name="(Pro)Vox Lead" hbank="8" lbank="3" prog="85" />
+			<Patch name="(Pro)LFO Vox" hbank="9" lbank="3" prog="85" />
+			<Patch name="(55)Engl Horn" hbank="127" lbank="1" prog="85" />
+			<Patch name="(88)Engl Horn" hbank="127" lbank="2" prog="85" />
+			<Patch name="(Pro)Engl Horn" hbank="127" lbank="3" prog="85" />
+			<Patch name="(55)5th Saw" hbank="0" lbank="1" prog="86" />
+			<Patch name="(88)5th Saw" hbank="0" lbank="2" prog="86" />
+			<Patch name="(Pro)5th Saw Wave" hbank="0" lbank="3" prog="86" />
+			<Patch name="(88)Big Fives" hbank="1" lbank="2" prog="86" />
+			<Patch name="(Pro)Big Fives" hbank="1" lbank="3" prog="86" />
+			<Patch name="(Pro)5th Lead" hbank="2" lbank="3" prog="86" />
+			<Patch name="(Pro)5th Ana.Clav" hbank="3" lbank="3" prog="86" />
+			<Patch name="(Pro)4th Lead" hbank="8" lbank="3" prog="86" />
+			<Patch name="(55)Bassoon" hbank="127" lbank="1" prog="86" />
+			<Patch name="(88)Bassoon" hbank="127" lbank="2" prog="86" />
+			<Patch name="(Pro)Bassoon" hbank="127" lbank="3" prog="86" />
+			<Patch name="(55)Bass &amp; Lead" hbank="0" lbank="1" prog="87" />
+			<Patch name="(88)Bass &amp; Lead" hbank="0" lbank="2" prog="87" />
+			<Patch name="(Pro)Bass &amp; Lead" hbank="0" lbank="3" prog="87" />
+			<Patch name="(88)Big &amp; Raw" hbank="1" lbank="2" prog="87" />
+			<Patch name="(Pro)Big &amp; Raw" hbank="1" lbank="3" prog="87" />
+			<Patch name="(88)Fat &amp; Perky" hbank="2" lbank="2" prog="87" />
+			<Patch name="(Pro)Fat &amp; Perky" hbank="2" lbank="3" prog="87" />
+			<Patch name="(Pro)JUNO Rave" hbank="3" lbank="3" prog="87" />
+			<Patch name="(Pro)JP8 BsLead 1" hbank="4" lbank="3" prog="87" />
+			<Patch name="(Pro)JP8 BsLead 2" hbank="5" lbank="3" prog="87" />
+			<Patch name="(Pro)SH-5 Bs.Lead" hbank="6" lbank="3" prog="87" />
+			<Patch name="(55)Harmonica" hbank="127" lbank="1" prog="87" />
+			<Patch name="(88)Harmonica" hbank="127" lbank="2" prog="87" />
+			<Patch name="(Pro)Harmonica" hbank="127" lbank="3" prog="87" />
+    </PatchGroup>
+    <PatchGroup name="Synth Pad">
+      <Patch name="(55)Fantasia" hbank="0" lbank="1" prog="88" />
+			<Patch name="(88)Fantasia" hbank="0" lbank="2" prog="88" />
+			<Patch name="(Pro)Fantasia" hbank="0" lbank="3" prog="88" />
+			<Patch name="(88)Fantasia 2" hbank="1" lbank="2" prog="88" />
+			<Patch name="(Pro)Fantasia 2" hbank="1" lbank="3" prog="88" />
+			<Patch name="(Pro)New Age Pad" hbank="2" lbank="3" prog="88" />
+			<Patch name="(Pro)Bell Heaven" hbank="3" lbank="3" prog="88" />
+			<Patch name="(55)Trumpet 1" hbank="127" lbank="1" prog="88" />
+			<Patch name="(88)Trumpet 1" hbank="127" lbank="2" prog="88" />
+			<Patch name="(Pro)Trumpet 1" hbank="127" lbank="3" prog="88" />
+			<Patch name="(55)Warm Pad" hbank="0" lbank="1" prog="89" />
+			<Patch name="(88)Warm Pad" hbank="0" lbank="2" prog="89" />
+			<Patch name="(Pro)Warm Pad" hbank="0" lbank="3" prog="89" />
+			<Patch name="(88)Thick Pad" hbank="1" lbank="2" prog="89" />
+			<Patch name="(Pro)Thick Matrix" hbank="1" lbank="3" prog="89" />
+			<Patch name="(88)Horn Pad" hbank="2" lbank="2" prog="89" />
+			<Patch name="(Pro)Horn Pad" hbank="2" lbank="3" prog="89" />
+			<Patch name="(88)RotaryStrng" hbank="3" lbank="2" prog="89" />
+			<Patch name="(Pro)Rotary Strng" hbank="3" lbank="3" prog="89" />
+			<Patch name="(88)Soft Pad" hbank="4" lbank="2" prog="89" />
+			<Patch name="(Pro)OB Soft Pad" hbank="4" lbank="3" prog="89" />
+			<Patch name="(Pro)Octave Pad" hbank="8" lbank="3" prog="89" />
+			<Patch name="(Pro)Stack Pad" hbank="9" lbank="3" prog="89" />
+			<Patch name="(55)Trumpet 2" hbank="127" lbank="1" prog="89" />
+			<Patch name="(88)Trumpet 2" hbank="127" lbank="2" prog="89" />
+			<Patch name="(Pro)Trumpet 2" hbank="127" lbank="3" prog="89" />
+			<Patch name="(55)Polysynth" hbank="0" lbank="1" prog="90" />
+			<Patch name="(88)Polysynth" hbank="0" lbank="2" prog="90" />
+			<Patch name="(Pro)Polysynth" hbank="0" lbank="3" prog="90" />
+			<Patch name="(88)80'sPolySyn" hbank="1" lbank="2" prog="90" />
+			<Patch name="(Pro)80's PolySyn" hbank="1" lbank="3" prog="90" />
+			<Patch name="(Pro)Polysynth 2" hbank="2" lbank="3" prog="90" />
+			<Patch name="(Pro)Poly King" hbank="3" lbank="3" prog="90" />
+			<Patch name="(Pro)Power Stack" hbank="8" lbank="3" prog="90" />
+			<Patch name="(Pro)Octave Stack" hbank="9" lbank="3" prog="90" />
+			<Patch name="(Pro)Reso Stack" hbank="10" lbank="3" prog="90" />
+			<Patch name="(Pro)Techno Stack" hbank="11" lbank="3" prog="90" />
+			<Patch name="(55)Trombone 1" hbank="127" lbank="1" prog="90" />
+			<Patch name="(88)Trombone 1" hbank="127" lbank="2" prog="90" />
+			<Patch name="(Pro)Trombone 1" hbank="127" lbank="3" prog="90" />
+			<Patch name="(55)Space Voice" hbank="0" lbank="1" prog="91" />
+			<Patch name="(88)Space Voice" hbank="0" lbank="2" prog="91" />
+			<Patch name="(Pro)Space Voice" hbank="0" lbank="3" prog="91" />
+			<Patch name="(88)Heaven II" hbank="1" lbank="2" prog="91" />
+			<Patch name="(Pro)Heaven II" hbank="1" lbank="3" prog="91" />
+			<Patch name="(Pro)SC Heaven" hbank="2" lbank="3" prog="91" />
+			<Patch name="(Pro)Cosmic Voice" hbank="8" lbank="3" prog="91" />
+			<Patch name="(Pro)Auh Vox" hbank="9" lbank="3" prog="91" />
+			<Patch name="(Pro)AuhAuh" hbank="10" lbank="3" prog="91" />
+			<Patch name="(Pro)Vocorderman" hbank="11" lbank="3" prog="91" />
+			<Patch name="(55)Trombone 2" hbank="127" lbank="1" prog="91" />
+			<Patch name="(88)Trombone 2" hbank="127" lbank="2" prog="91" />
+			<Patch name="(Pro)Trombone 2" hbank="127" lbank="3" prog="91" />
+			<Patch name="(55)Bowed Glass" hbank="0" lbank="1" prog="92" />
+			<Patch name="(88)Bowed Glass" hbank="0" lbank="2" prog="92" />
+			<Patch name="(Pro)Bowed Glass" hbank="0" lbank="3" prog="92" />
+			<Patch name="(Pro)SoftBellPad" hbank="1" lbank="3" prog="92" />
+			<Patch name="(Pro)JP8 Sqr Pad" hbank="2" lbank="3" prog="92" />
+			<Patch name="(Pro)7thBelPad" hbank="3" lbank="3" prog="92" />
+			<Patch name="(55)Fr Horn 1" hbank="127" lbank="1" prog="92" />
+			<Patch name="(88)Fr Horn 1" hbank="127" lbank="2" prog="92" />
+			<Patch name="(Pro)Fr Horn 1" hbank="127" lbank="3" prog="92" />
+			<Patch name="(55)Metal Pad" hbank="0" lbank="1" prog="93" />
+			<Patch name="(88)Metal Pad" hbank="0" lbank="2" prog="93" />
+			<Patch name="(Pro)Metal Pad" hbank="0" lbank="3" prog="93" />
+			<Patch name="(88)Tine Pad" hbank="1" lbank="2" prog="93" />
+			<Patch name="(Pro)Tine Pad" hbank="1" lbank="3" prog="93" />
+			<Patch name="(88)Panner Pad" hbank="2" lbank="2" prog="93" />
+			<Patch name="(Pro)Panner Pad" hbank="2" lbank="3" prog="93" />
+			<Patch name="(55)Fr Horn 2" hbank="127" lbank="1" prog="93" />
+			<Patch name="(88)Fr Horn 2" hbank="127" lbank="2" prog="93" />
+			<Patch name="(Pro)Fr Horn 2" hbank="127" lbank="3" prog="93" />
+			<Patch name="(55)Halo Pad" hbank="0" lbank="1" prog="94" />
+			<Patch name="(88)Halo Pad" hbank="0" lbank="2" prog="94" />
+			<Patch name="(Pro)Halo Pad" hbank="0" lbank="3" prog="94" />
+			<Patch name="(Pro)Vox Pad" hbank="1" lbank="3" prog="94" />
+			<Patch name="(Pro)Vox Sweep" hbank="2" lbank="3" prog="94" />
+			<Patch name="(Pro)Horror Pad" hbank="8" lbank="3" prog="94" />
+			<Patch name="(55)Tuba" hbank="127" lbank="1" prog="94" />
+			<Patch name="(88)Tuba" hbank="127" lbank="2" prog="94" />
+			<Patch name="(Pro)Tuba" hbank="127" lbank="3" prog="94" />
+      <Patch name="(55)Sweep Pad" hbank="0" lbank="1" prog="95" />
+			<Patch name="(88)Sweep Pad" hbank="0" lbank="2" prog="95" />
+			<Patch name="(Pro)Sweep Pad" hbank="0" lbank="3" prog="95" />
+			<Patch name="(88)Polar Pad" hbank="1" lbank="2" prog="95" />
+			<Patch name="(Pro)Polar Pad" hbank="1" lbank="3" prog="95" />
+			<Patch name="(88)Converge" hbank="8" lbank="2" prog="95" />
+			<Patch name="(Pro)Converge" hbank="8" lbank="3" prog="95" />
+			<Patch name="(88)Shwimmer" hbank="9" lbank="2" prog="95" />
+			<Patch name="(Pro)Shwimmer" hbank="9" lbank="3" prog="95" />
+			<Patch name="(88)CelestialPd" hbank="10" lbank="2" prog="95" />
+			<Patch name="(Pro)Celestial Pd" hbank="10" lbank="3" prog="95" />
+			<Patch name="(Pro)Bag Sweep" hbank="11" lbank="3" prog="95" />
+			<Patch name="(55)Brs Sect 1" hbank="127" lbank="1" prog="95" />
+			<Patch name="(88)Brs Sect 1" hbank="127" lbank="2" prog="95" />
+			<Patch name="(Pro)Brs Sect 1" hbank="127" lbank="3" prog="95" />
+    </PatchGroup>
+    <PatchGroup name="Synth SFX">
+      <Patch name="(55)Ice Rain" hbank="0" lbank="1" prog="96" />
+			<Patch name="(88)Ice Rain" hbank="0" lbank="2" prog="96" />
+			<Patch name="(Pro)Ice Rain" hbank="0" lbank="3" prog="96" />
+			<Patch name="(88)Harmo Rain" hbank="1" lbank="2" prog="96" />
+			<Patch name="(Pro)Harmo Rain" hbank="1" lbank="3" prog="96" />
+			<Patch name="(88)AfricanWood" hbank="2" lbank="2" prog="96" />
+			<Patch name="(Pro)African wood" hbank="2" lbank="3" prog="96" />
+			<Patch name="(Pro)Anklung Pad" hbank="3" lbank="3" prog="96" />
+			<Patch name="(Pro)Rattle Pad" hbank="4" lbank="3" prog="96" />
+			<Patch name="(88)Clavi Pad" hbank="8" lbank="2" prog="96" />
+			<Patch name="(Pro)Clavi Pad" hbank="8" lbank="3" prog="96" />
+			<Patch name="(55)Brs Sect 2" hbank="127" lbank="1" prog="96" />
+			<Patch name="(88)Brs Sect 2" hbank="127" lbank="2" prog="96" />
+			<Patch name="(Pro)Brs Sect 2" hbank="127" lbank="3" prog="96" />
+			<Patch name="(55)Soundtrack" hbank="0" lbank="1" prog="97" />
+			<Patch name="(88)Soundtrack" hbank="0" lbank="2" prog="97" />
+			<Patch name="(Pro)Soundtrack" hbank="0" lbank="3" prog="97" />
+			<Patch name="(88)Ancestral" hbank="1" lbank="2" prog="97" />
+			<Patch name="(Pro)Ancestral" hbank="1" lbank="3" prog="97" />
+			<Patch name="(88)Prologue" hbank="2" lbank="2" prog="97" />
+			<Patch name="(Pro)Prologue" hbank="2" lbank="3" prog="97" />
+			<Patch name="(Pro)Prologue 2" hbank="3" lbank="3" prog="97" />
+			<Patch name="(Pro)Hols Strings" hbank="4" lbank="3" prog="97" />
+			<Patch name="(88)Rave" hbank="8" lbank="2" prog="97" />
+			<Patch name="(Pro)Rave" hbank="8" lbank="3" prog="97" />
+			<Patch name="(55)Vibe 1" hbank="127" lbank="1" prog="97" />
+			<Patch name="(88)Vibe 1" hbank="127" lbank="2" prog="97" />
+			<Patch name="(Pro)Vibe 1" hbank="127" lbank="3" prog="97" />
+			<Patch name="(55)Crystal" hbank="0" lbank="1" prog="98" />
+			<Patch name="(88)Crystal" hbank="0" lbank="2" prog="98" />
+			<Patch name="(Pro)Crystal" hbank="0" lbank="3" prog="98" />
+			<Patch name="(55)Syn Mallet" hbank="1" lbank="1" prog="98" />
+			<Patch name="(88)Syn Mallet" hbank="1" lbank="2" prog="98" />
+			<Patch name="(Pro)Syn Mallet" hbank="1" lbank="3" prog="98" />
+			<Patch name="(88)SoftCrystal" hbank="2" lbank="2" prog="98" />
+			<Patch name="(Pro)Soft Crystal" hbank="2" lbank="3" prog="98" />
+			<Patch name="(88)Round Glock" hbank="3" lbank="2" prog="98" />
+			<Patch name="(Pro)Round Glock" hbank="3" lbank="3" prog="98" />
+			<Patch name="(88)Loud Glock" hbank="4" lbank="2" prog="98" />
+			<Patch name="(Pro)Loud Glock" hbank="4" lbank="3" prog="98" />
+			<Patch name="(88)GlocknChime" hbank="5" lbank="2" prog="98" />
+			<Patch name="(Pro)GlockenChime" hbank="5" lbank="3" prog="98" />
+			<Patch name="(88)Clear Bells" hbank="6" lbank="2" prog="98" />
+			<Patch name="(Pro)Clear Bells" hbank="6" lbank="3" prog="98" />
+			<Patch name="(88)X'mas Bell" hbank="7" lbank="2" prog="98" />
+			<Patch name="(Pro)ChristmasBel" hbank="7" lbank="3" prog="98" />
+			<Patch name="(88)Vibra Bells" hbank="8" lbank="2" prog="98" />
+			<Patch name="(Pro)Vibra Bells" hbank="8" lbank="3" prog="98" />
+			<Patch name="(88)Digi Bells" hbank="9" lbank="2" prog="98" />
+			<Patch name="(Pro)Digi Bells" hbank="9" lbank="3" prog="98" />
+			<Patch name="(Pro)Music Bell" hbank="10" lbank="3" prog="98" />
+			<Patch name="(Pro)Analog Bell" hbank="11" lbank="3" prog="98" />
+			<Patch name="(88)ChoralBells" hbank="16" lbank="2" prog="98" />
+			<Patch name="(Pro)Choral Bells" hbank="16" lbank="3" prog="98" />
+			<Patch name="(88)Air Bells" hbank="17" lbank="2" prog="98" />
+			<Patch name="(Pro)Air Bells" hbank="17" lbank="3" prog="98" />
+			<Patch name="(88)Bell Harp" hbank="18" lbank="2" prog="98" />
+			<Patch name="(Pro)Bell Harp" hbank="18" lbank="3" prog="98" />
+			<Patch name="(88)Gamelimba" hbank="19" lbank="2" prog="98" />
+			<Patch name="(Pro)Gamelimba" hbank="19" lbank="3" prog="98" />
+			<Patch name="(Pro)JUNO Bell" hbank="20" lbank="3" prog="98" />
+			<Patch name="(55)Vibe 2" hbank="127" lbank="1" prog="98" />
+			<Patch name="(88)Vibe 2" hbank="127" lbank="2" prog="98" />
+			<Patch name="(Pro)Vibe 2" hbank="127" lbank="3" prog="98" />
+			<Patch name="(55)Atmosphere" hbank="0" lbank="1" prog="99" />
+			<Patch name="(88)Atmosphere" hbank="0" lbank="2" prog="99" />
+			<Patch name="(Pro)Atmosphere" hbank="0" lbank="3" prog="99" />
+			<Patch name="(88)Warm Atmos" hbank="1" lbank="2" prog="99" />
+			<Patch name="(Pro)Warm Atmos" hbank="1" lbank="3" prog="99" />
+			<Patch name="(88)Nylon Harp" hbank="2" lbank="2" prog="99" />
+			<Patch name="(Pro)Nylon Harp" hbank="2" lbank="3" prog="99" />
+			<Patch name="(88)Harpvox" hbank="3" lbank="2" prog="99" />
+			<Patch name="(Pro)Harpvox" hbank="3" lbank="3" prog="99" />
+			<Patch name="(88)HollowRels." hbank="4" lbank="2" prog="99" />
+			<Patch name="(Pro)HollowReleas" hbank="4" lbank="3" prog="99" />
+			<Patch name="(88)NylonRhodes" hbank="5" lbank="2" prog="99" />
+			<Patch name="(Pro)Nylon+Rhodes" hbank="5" lbank="3" prog="99" />
+			<Patch name="(88)Ambient Pad" hbank="6" lbank="2" prog="99" />
+			<Patch name="(Pro)Ambient Pad" hbank="6" lbank="3" prog="99" />
+			<Patch name="(Pro)Invisible" hbank="7" lbank="3" prog="99" />
+			<Patch name="(Pro)Pulsey Key" hbank="8" lbank="3" prog="99" />
+			<Patch name="(Pro)Noise Piano" hbank="9" lbank="3" prog="99" />
+			<Patch name="(55)Syn Mallet" hbank="127" lbank="1" prog="99" />
+			<Patch name="(88)Syn Mallet" hbank="127" lbank="2" prog="99" />
+			<Patch name="(Pro)Syn Mallet" hbank="127" lbank="3" prog="99" />
+			<Patch name="(55)Brightness" hbank="0" lbank="1" prog="100" />
+			<Patch name="(88)Brightness" hbank="0" lbank="2" prog="100" />
+			<Patch name="(Pro)Brightness" hbank="0" lbank="3" prog="100" />
+			<Patch name="(Pro)Shining Star" hbank="1" lbank="3" prog="100" />
+			<Patch name="(Pro)OB Stab" hbank="2" lbank="3" prog="100" />
+			<Patch name="(Pro)Org Bell" hbank="8" lbank="3" prog="100" />
+			<Patch name="(55)Windbell" hbank="127" lbank="1" prog="100" />
+			<Patch name="(88)Windbell" hbank="127" lbank="2" prog="100" />
+			<Patch name="(Pro)Windbell" hbank="127" lbank="3" prog="100" />
+			<Patch name="(55)Goblin" hbank="0" lbank="1" prog="101" />
+			<Patch name="(88)Goblin" hbank="0" lbank="2" prog="101" />
+			<Patch name="(Pro)Goblin" hbank="0" lbank="3" prog="101" />
+			<Patch name="(88)Goblinson" hbank="1" lbank="2" prog="101" />
+			<Patch name="(Pro)Goblinson" hbank="1" lbank="3" prog="101" />
+			<Patch name="(88)50's Sci-Fi" hbank="2" lbank="2" prog="101" />
+			<Patch name="(Pro)50's Sci-Fi" hbank="2" lbank="3" prog="101" />
+			<Patch name="(Pro)Abduction" hbank="3" lbank="3" prog="101" />
+			<Patch name="(Pro)Auhbient" hbank="4" lbank="3" prog="101" />
+			<Patch name="(Pro)LFO Pad" hbank="5" lbank="3" prog="101" />
+			<Patch name="(Pro)Random Str" hbank="6" lbank="3" prog="101" />
+			<Patch name="(Pro)Random Pad" hbank="7" lbank="3" prog="101" />
+			<Patch name="(Pro)LowBirds Pad" hbank="8" lbank="3" prog="101" />
+			<Patch name="(Pro)Falling Down" hbank="9" lbank="3" prog="101" />
+			<Patch name="(Pro)LFO RAVE" hbank="10" lbank="3" prog="101" />
+			<Patch name="(Pro)LFO Horror" hbank="11" lbank="3" prog="101" />
+			<Patch name="(Pro)LFO Techno" hbank="12" lbank="3" prog="101" />
+			<Patch name="(Pro)Alternative" hbank="13" lbank="3" prog="101" />
+			<Patch name="(Pro)UFO FX" hbank="14" lbank="3" prog="101" />
+			<Patch name="(Pro)Gargle Man" hbank="15" lbank="3" prog="101" />
+			<Patch name="(Pro)Sweep FX" hbank="16" lbank="3" prog="101" />
+			<Patch name="(55)Glock" hbank="127" lbank="1" prog="101" />
+			<Patch name="(88)Glock" hbank="127" lbank="2" prog="101" />
+			<Patch name="(Pro)Glock" hbank="127" lbank="3" prog="101" />
+			<Patch name="(55)Echo Drops" hbank="0" lbank="1" prog="102" />
+			<Patch name="(88)Echo Drops" hbank="0" lbank="2" prog="102" />
+			<Patch name="(Pro)Echo Drops" hbank="0" lbank="3" prog="102" />
+			<Patch name="(55)Echo Bell" hbank="1" lbank="1" prog="102" />
+			<Patch name="(88)Echo Bell" hbank="1" lbank="2" prog="102" />
+			<Patch name="(Pro)Echo Bell" hbank="1" lbank="3" prog="102" />
+			<Patch name="(55)Echo Pan" hbank="2" lbank="1" prog="102" />
+			<Patch name="(88)Echo Pan" hbank="2" lbank="2" prog="102" />
+			<Patch name="(Pro)Echo Pan" hbank="2" lbank="3" prog="102" />
+			<Patch name="(88)Echo Pan 2" hbank="3" lbank="2" prog="102" />
+			<Patch name="(Pro)Echo Pan 2" hbank="3" lbank="3" prog="102" />
+			<Patch name="(88)Big Panner" hbank="4" lbank="2" prog="102" />
+			<Patch name="(Pro)Big Panner" hbank="4" lbank="3" prog="102" />
+			<Patch name="(88)Reso Panner" hbank="5" lbank="2" prog="102" />
+			<Patch name="(Pro)Reso Panner" hbank="5" lbank="3" prog="102" />
+			<Patch name="(88)Water Piano" hbank="6" lbank="2" prog="102" />
+			<Patch name="(Pro)Water Piano" hbank="6" lbank="3" prog="102" />
+			<Patch name="(Pro)Pan Sequence" hbank="8" lbank="3" prog="102" />
+			<Patch name="(Pro)Aqua" hbank="9" lbank="3" prog="102" />
+			<Patch name="(55)Tube Bell" hbank="127" lbank="1" prog="102" />
+			<Patch name="(88)Tube Bell" hbank="127" lbank="2" prog="102" />
+			<Patch name="(Pro)Tube Bell" hbank="127" lbank="3" prog="102" />
+			<Patch name="(55)Star Theme" hbank="0" lbank="1" prog="103" />
+			<Patch name="(88)Star Theme" hbank="0" lbank="2" prog="103" />
+			<Patch name="(Pro)Star Theme" hbank="0" lbank="3" prog="103" />
+			<Patch name="(88)StarTheme 2" hbank="1" lbank="2" prog="103" />
+			<Patch name="(Pro)Star Theme 2" hbank="1" lbank="3" prog="103" />
+			<Patch name="(Pro)Dream Pad" hbank="8" lbank="3" prog="103" />
+			<Patch name="(Pro)Silky Pad" hbank="9" lbank="3" prog="103" />
+			<Patch name="(Pro)New Century" hbank="16" lbank="3" prog="103" />
+			<Patch name="(Pro)7th Atmos." hbank="17" lbank="3" prog="103" />
+			<Patch name="(Pro)Galaxy Way" hbank="18" lbank="3" prog="103" />
+			<Patch name="(55)Xylophone" hbank="127" lbank="1" prog="103" />
+			<Patch name="(88)Xylophone" hbank="127" lbank="2" prog="103" />
+			<Patch name="(Pro)Xylophone" hbank="127" lbank="3" prog="103" />
+    </PatchGroup>
+    <PatchGroup name="Ethnic">
+      <Patch name="(55)Sitar" hbank="0" lbank="1" prog="104" />
+			<Patch name="(88)Sitar" hbank="0" lbank="2" prog="104" />
+			<Patch name="(Pro)Sitar" hbank="0" lbank="3" prog="104" />
+			<Patch name="(55)Sitar 2" hbank="1" lbank="1" prog="104" />
+			<Patch name="(88)Sitar 2" hbank="1" lbank="2" prog="104" />
+			<Patch name="(Pro)Sitar 2" hbank="1" lbank="3" prog="104" />
+			<Patch name="(88)DetuneSitar" hbank="2" lbank="2" prog="104" />
+			<Patch name="(Pro)Detune Sitar" hbank="2" lbank="3" prog="104" />
+			<Patch name="(Pro)Sitar 3" hbank="3" lbank="3" prog="104" />
+			<Patch name="(88)Tambra" hbank="8" lbank="2" prog="104" />
+			<Patch name="(Pro)Tambra" hbank="8" lbank="3" prog="104" />
+			<Patch name="(88)Tamboura" hbank="16" lbank="2" prog="104" />
+			<Patch name="(Pro)Tamboura" hbank="16" lbank="3" prog="104" />
+			<Patch name="(55)Marimba" hbank="127" lbank="1" prog="104" />
+			<Patch name="(88)Marimba" hbank="127" lbank="2" prog="104" />
+			<Patch name="(Pro)Marimba" hbank="127" lbank="3" prog="104" />
+			<Patch name="(55)Banjo" hbank="0" lbank="1" prog="105" />
+			<Patch name="(88)Banjo" hbank="0" lbank="2" prog="105" />
+			<Patch name="(Pro)Banjo" hbank="0" lbank="3" prog="105" />
+			<Patch name="(88)Muted Banjo" hbank="1" lbank="2" prog="105" />
+			<Patch name="(Pro)Muted Banjo" hbank="1" lbank="3" prog="105" />
+			<Patch name="(88)Rabab" hbank="8" lbank="2" prog="105" />
+			<Patch name="(Pro)Rabab" hbank="8" lbank="3" prog="105" />
+			<Patch name="(Pro)San Xian" hbank="9" lbank="3" prog="105" />
+			<Patch name="(88)Gopichant" hbank="16" lbank="2" prog="105" />
+			<Patch name="(Pro)Gopichant" hbank="16" lbank="3" prog="105" />
+			<Patch name="(88)Oud" hbank="24" lbank="2" prog="105" />
+			<Patch name="(Pro)Oud" hbank="24" lbank="3" prog="105" />
+			<Patch name="(Pro)Oud+Strings" hbank="28" lbank="3" prog="105" />
+			<Patch name="(Pro)Pi Pa" hbank="32" lbank="3" prog="105" />
+			<Patch name="(55)Koto" hbank="127" lbank="1" prog="105" />
+			<Patch name="(88)Koto" hbank="127" lbank="2" prog="105" />
+			<Patch name="(Pro)Koto" hbank="127" lbank="3" prog="105" />
+			<Patch name="(55)Shamisen" hbank="0" lbank="1" prog="106" />
+			<Patch name="(88)Shamisen" hbank="0" lbank="2" prog="106" />
+			<Patch name="(Pro)Shamisen" hbank="0" lbank="3" prog="106" />
+			<Patch name="(88)Tsugaru" hbank="1" lbank="2" prog="106" />
+			<Patch name="(Pro)Tsugaru" hbank="1" lbank="3" prog="106" />
+			<Patch name="(Pro)Syn Shamisen" hbank="8" lbank="3" prog="106" />
+			<Patch name="(55)Sho" hbank="127" lbank="1" prog="106" />
+			<Patch name="(88)Sho" hbank="127" lbank="2" prog="106" />
+			<Patch name="(Pro)Sho" hbank="127" lbank="3" prog="106" />
+			<Patch name="(55)Koto" hbank="0" lbank="1" prog="107" />
+			<Patch name="(88)Koto" hbank="0" lbank="2" prog="107" />
+			<Patch name="(Pro)Koto" hbank="0" lbank="3" prog="107" />
+			<Patch name="(Pro)Gu Zheng" hbank="1" lbank="3" prog="107" />
+			<Patch name="(55)Taisho Koto" hbank="8" lbank="1" prog="107" />
+			<Patch name="(88)Taisho Koto" hbank="8" lbank="2" prog="107" />
+			<Patch name="(Pro)Taisho Koto" hbank="8" lbank="3" prog="107" />
+			<Patch name="(88)Kanoon" hbank="16" lbank="2" prog="107" />
+			<Patch name="(Pro)Kanoon" hbank="16" lbank="3" prog="107" />
+			<Patch name="(Pro)Kanoon+Choir" hbank="19" lbank="3" prog="107" />
+			<Patch name="(Pro)Oct Harp" hbank="24" lbank="3" prog="107" />
+			<Patch name="(55)Shakuhachi" hbank="127" lbank="1" prog="107" />
+			<Patch name="(88)Shakuhachi" hbank="127" lbank="2" prog="107" />
+			<Patch name="(Pro)Shakuhachi" hbank="127" lbank="3" prog="107" />
+			<Patch name="(55)Kalimba" hbank="0" lbank="1" prog="108" />
+			<Patch name="(88)Kalimba" hbank="0" lbank="2" prog="108" />
+			<Patch name="(Pro)Kalimba" hbank="0" lbank="3" prog="108" />
+			<Patch name="(Pro)Sanza" hbank="8" lbank="3" prog="108" />
+			<Patch name="(55)Whistle 1" hbank="127" lbank="1" prog="108" />
+			<Patch name="(88)Whistle 1" hbank="127" lbank="2" prog="108" />
+			<Patch name="(Pro)Whistle 1" hbank="127" lbank="3" prog="108" />
+			<Patch name="(55)Bagpipe" hbank="0" lbank="1" prog="109" />
+			<Patch name="(88)Bagpipe" hbank="0" lbank="2" prog="109" />
+			<Patch name="(Pro)Bagpipe" hbank="0" lbank="3" prog="109" />
+			<Patch name="(Pro)Didgeridoo" hbank="8" lbank="3" prog="109" />
+			<Patch name="(55)Whistle 2" hbank="127" lbank="1" prog="109" />
+			<Patch name="(88)Whistle 2" hbank="127" lbank="2" prog="109" />
+			<Patch name="(Pro)Whistle 2" hbank="127" lbank="3" prog="109" />
+			<Patch name="(55)Fiddle" hbank="0" lbank="1" prog="110" />
+			<Patch name="(88)Fiddle" hbank="0" lbank="2" prog="110" />
+			<Patch name="(Pro)Fiddle" hbank="0" lbank="3" prog="110" />
+			<Patch name="(Pro)Er Hu" hbank="8" lbank="3" prog="110" />
+			<Patch name="(Pro)Gao Hu" hbank="9" lbank="3" prog="110" />
+			<Patch name="(55)Bottleblow" hbank="127" lbank="1" prog="110" />
+			<Patch name="(88)Bottleblow" hbank="127" lbank="2" prog="110" />
+			<Patch name="(Pro)Bottleblow" hbank="127" lbank="3" prog="110" />
+			<Patch name="(55)Shanai" hbank="0" lbank="1" prog="111" />
+			<Patch name="(88)Shanai" hbank="0" lbank="2" prog="111" />
+			<Patch name="(Pro)Shanai" hbank="0" lbank="3" prog="111" />
+			<Patch name="(88)Shanai 2" hbank="1" lbank="2" prog="111" />
+			<Patch name="(Pro)Shanai 2" hbank="1" lbank="3" prog="111" />
+			<Patch name="(88)Pungi" hbank="8" lbank="2" prog="111" />
+			<Patch name="(Pro)Pungi" hbank="8" lbank="3" prog="111" />
+			<Patch name="(88)Hichiriki" hbank="16" lbank="2" prog="111" />
+			<Patch name="(Pro)Hichiriki" hbank="16" lbank="3" prog="111" />
+			<Patch name="(Pro)Mizmar" hbank="24" lbank="3" prog="111" />
+			<Patch name="(Pro)Suona 1" hbank="32" lbank="3" prog="111" />
+			<Patch name="(Pro)Suona 2" hbank="33" lbank="3" prog="111" />
+			<Patch name="(55)Breathpipe" hbank="127" lbank="1" prog="111" />
+			<Patch name="(88)Breathpipe" hbank="127" lbank="2" prog="111" />
+			<Patch name="(Pro)Breathpipe" hbank="127" lbank="3" prog="111" />
+    </PatchGroup>
+    <PatchGroup name="Percussive">
+      <Patch name="(55)Tinkle Bell" hbank="0" lbank="1" prog="112" />
+			<Patch name="(88)Tinkle Bell" hbank="0" lbank="2" prog="112" />
+			<Patch name="(Pro)Tinkle Bell" hbank="0" lbank="3" prog="112" />
+			<Patch name="(88)Bonang" hbank="8" lbank="2" prog="112" />
+			<Patch name="(Pro)Bonang" hbank="8" lbank="3" prog="112" />
+			<Patch name="(88)Gender" hbank="9" lbank="2" prog="112" />
+			<Patch name="(Pro)Gender" hbank="9" lbank="3" prog="112" />
+			<Patch name="(88)GamelanGong" hbank="10" lbank="2" prog="112" />
+			<Patch name="(Pro)Gamelan Gong" hbank="10" lbank="3" prog="112" />
+			<Patch name="(88)St.Gamelan" hbank="11" lbank="2" prog="112" />
+			<Patch name="(Pro)St.Gamelan" hbank="11" lbank="3" prog="112" />
+			<Patch name="(Pro)Jang Gu" hbank="12" lbank="3" prog="112" />
+			<Patch name="(88)RAMA Cymbal" hbank="16" lbank="2" prog="112" />
+			<Patch name="(Pro)RAMA Cymbal" hbank="16" lbank="3" prog="112" />
+			<Patch name="(55)Timpani" hbank="127" lbank="1" prog="112" />
+			<Patch name="(88)Timpani" hbank="127" lbank="2" prog="112" />
+			<Patch name="(Pro)Timpani" hbank="127" lbank="3" prog="112" />
+			<Patch name="(55)Agogo" hbank="0" lbank="1" prog="113" />
+			<Patch name="(88)Agogo" hbank="0" lbank="2" prog="113" />
+			<Patch name="(Pro)Agogo" hbank="0" lbank="3" prog="113" />
+			<Patch name="(88)Atarigane" hbank="8" lbank="2" prog="113" />
+			<Patch name="(Pro)Atarigane" hbank="8" lbank="3" prog="113" />
+			<Patch name="(Pro)Tambourine" hbank="16" lbank="3" prog="113" />
+			<Patch name="(55)Melodic Tom" hbank="127" lbank="1" prog="113" />
+			<Patch name="(88)Melodic Tom" hbank="127" lbank="2" prog="113" />
+			<Patch name="(Pro)Melodic Tom" hbank="127" lbank="3" prog="113" />
+			<Patch name="(55)Steel Drums" hbank="0" lbank="1" prog="114" />
+			<Patch name="(88)Steel Drums" hbank="0" lbank="2" prog="114" />
+			<Patch name="(Pro)Steel Drums" hbank="0" lbank="3" prog="114" />
+			<Patch name="(Pro)Island Mlt" hbank="1" lbank="3" prog="114" />
+			<Patch name="(55)Deep Snare" hbank="127" lbank="1" prog="114" />
+			<Patch name="(88)Deep Snare" hbank="127" lbank="2" prog="114" />
+			<Patch name="(Pro)Deep Snare" hbank="127" lbank="3" prog="114" />
+			<Patch name="(55)Woodblock" hbank="0" lbank="1" prog="115" />
+			<Patch name="(88)Woodblock" hbank="0" lbank="2" prog="115" />
+			<Patch name="(Pro)Woodblock" hbank="0" lbank="3" prog="115" />
+			<Patch name="(55)Castanets" hbank="8" lbank="1" prog="115" />
+			<Patch name="(88)Castanets" hbank="8" lbank="2" prog="115" />
+			<Patch name="(Pro)Castanets" hbank="8" lbank="3" prog="115" />
+			<Patch name="(Pro)Angklung" hbank="16" lbank="3" prog="115" />
+			<Patch name="(Pro)Angkl Rhythm" hbank="17" lbank="3" prog="115" />
+			<Patch name="(Pro)Finger Snaps" hbank="24" lbank="3" prog="115" />
+			<Patch name="(Pro)909 HandClap" hbank="32" lbank="3" prog="115" />
+			<Patch name="(55)Elec Perc 1" hbank="127" lbank="1" prog="115" />
+			<Patch name="(88)Elec Perc 1" hbank="127" lbank="2" prog="115" />
+			<Patch name="(Pro)Elec Perc 1" hbank="127" lbank="3" prog="115" />
+			<Patch name="(55)Taiko" hbank="0" lbank="1" prog="116" />
+			<Patch name="(88)Taiko" hbank="0" lbank="2" prog="116" />
+			<Patch name="(Pro)Taiko" hbank="0" lbank="3" prog="116" />
+			<Patch name="(Pro)Small Taiko" hbank="1" lbank="3" prog="116" />
+			<Patch name="(55)Concert BD" hbank="8" lbank="1" prog="116" />
+			<Patch name="(88)Concert BD" hbank="8" lbank="2" prog="116" />
+			<Patch name="(Pro)Concert BD" hbank="8" lbank="3" prog="116" />
+			<Patch name="(Pro)Jungle BD" hbank="16" lbank="3" prog="116" />
+			<Patch name="(Pro)Techno BD" hbank="17" lbank="3" prog="116" />
+			<Patch name="(Pro)Bounce" hbank="18" lbank="3" prog="116" />
+			<Patch name="(55)Elec Perc 2" hbank="127" lbank="1" prog="116" />
+			<Patch name="(88)Elec Perc 2" hbank="127" lbank="2" prog="116" />
+			<Patch name="(Pro)Elec Perc 2" hbank="127" lbank="3" prog="116" />
+			<Patch name="(55)Melo. Tom 1" hbank="0" lbank="1" prog="117" />
+			<Patch name="(88)Melo. Tom 1" hbank="0" lbank="2" prog="117" />
+			<Patch name="(Pro)Melo. Tom 1" hbank="0" lbank="3" prog="117" />
+			<Patch name="(88)Real Tom" hbank="1" lbank="2" prog="117" />
+			<Patch name="(Pro)Real Tom" hbank="1" lbank="3" prog="117" />
+			<Patch name="(55)Melo. Tom 2" hbank="8" lbank="1" prog="117" />
+			<Patch name="(88)Melo. Tom 2" hbank="8" lbank="2" prog="117" />
+			<Patch name="(Pro)Melo. Tom 2" hbank="8" lbank="3" prog="117" />
+			<Patch name="(88)Rock Tom" hbank="9" lbank="2" prog="117" />
+			<Patch name="(Pro)Rock Tom" hbank="9" lbank="3" prog="117" />
+			<Patch name="(Pro)Rash SD" hbank="16" lbank="3" prog="117" />
+			<Patch name="(Pro)House SD" hbank="17" lbank="3" prog="117" />
+			<Patch name="(Pro)Jungle SD" hbank="18" lbank="3" prog="117" />
+			<Patch name="(Pro)909 SD" hbank="19" lbank="3" prog="117" />
+			<Patch name="(55)Taiko" hbank="127" lbank="1" prog="117" />
+			<Patch name="(88)Taiko" hbank="127" lbank="2" prog="117" />
+			<Patch name="(Pro)Taiko" hbank="127" lbank="3" prog="117" />
+			<Patch name="(55)Synth Drum" hbank="0" lbank="1" prog="118" />
+			<Patch name="(88)Synth Drum" hbank="0" lbank="2" prog="118" />
+			<Patch name="(Pro)Synth Drum" hbank="0" lbank="3" prog="118" />
+			<Patch name="(55)808 Tom" hbank="8" lbank="1" prog="118" />
+			<Patch name="(88)808 Tom" hbank="8" lbank="2" prog="118" />
+			<Patch name="(Pro)808 Tom" hbank="8" lbank="3" prog="118" />
+			<Patch name="(55)Elec Perc" hbank="9" lbank="1" prog="118" />
+			<Patch name="(88)Elec Perc" hbank="9" lbank="2" prog="118" />
+			<Patch name="(Pro)Elec Perc" hbank="9" lbank="3" prog="118" />
+			<Patch name="(Pro)Sine Perc." hbank="10" lbank="3" prog="118" />
+			<Patch name="(Pro)606 Tom" hbank="11" lbank="3" prog="118" />
+			<Patch name="(Pro)909 Tom" hbank="12" lbank="3" prog="118" />
+			<Patch name="(55)Taiko Rim" hbank="127" lbank="1" prog="118" />
+			<Patch name="(88)Taiko Rim" hbank="127" lbank="2" prog="118" />
+			<Patch name="(Pro)Taiko Rim" hbank="127" lbank="3" prog="118" />
+			<Patch name="(55)Reverse Cym" hbank="0" lbank="1" prog="119" />
+			<Patch name="(88)Reverse Cym" hbank="0" lbank="2" prog="119" />
+			<Patch name="(Pro)Reverse Cym." hbank="0" lbank="3" prog="119" />
+			<Patch name="(88)ReverseCym2" hbank="1" lbank="2" prog="119" />
+			<Patch name="(Pro)Reverse Cym2" hbank="1" lbank="3" prog="119" />
+			<Patch name="(Pro)Reverse Cym3" hbank="2" lbank="3" prog="119" />
+			<Patch name="(88)Rev.Snare 1" hbank="8" lbank="2" prog="119" />
+			<Patch name="(Pro)Rev.Snare 1" hbank="8" lbank="3" prog="119" />
+			<Patch name="(88)Rev.Snare 2" hbank="9" lbank="2" prog="119" />
+			<Patch name="(Pro)Rev.Snare 2" hbank="9" lbank="3" prog="119" />
+			<Patch name="(88)Rev.Kick 1" hbank="16" lbank="2" prog="119" />
+			<Patch name="(Pro)Rev.Kick 1" hbank="16" lbank="3" prog="119" />
+			<Patch name="(88)Rev.ConBD" hbank="17" lbank="2" prog="119" />
+			<Patch name="(Pro)Rev.ConBD" hbank="17" lbank="3" prog="119" />
+			<Patch name="(88)Rev.Tom 1" hbank="24" lbank="2" prog="119" />
+			<Patch name="(Pro)Rev.Tom 1" hbank="24" lbank="3" prog="119" />
+			<Patch name="(88)Rev.Tom 2" hbank="25" lbank="2" prog="119" />
+			<Patch name="(Pro)Rev.Tom 2" hbank="25" lbank="3" prog="119" />
+			<Patch name="(55)Cymbal" hbank="127" lbank="1" prog="119" />
+			<Patch name="(88)Cymbal" hbank="127" lbank="2" prog="119" />
+			<Patch name="(Pro)Cymbal" hbank="127" lbank="3" prog="119" />
+    </PatchGroup>
+    <PatchGroup name="SFX">
+      <Patch name="(55)Gt.FretNoiz" hbank="0" lbank="1" prog="120" />
+			<Patch name="(88)Gt.FretNoiz" hbank="0" lbank="2" prog="120" />
+			<Patch name="(Pro)Gt.FretNoise" hbank="0" lbank="3" prog="120" />
+			<Patch name="(55)Gt.CutNoise" hbank="1" lbank="1" prog="120" />
+			<Patch name="(88)Gt.CutNoise" hbank="1" lbank="2" prog="120" />
+			<Patch name="(Pro)Gt.Cut Noise" hbank="1" lbank="3" prog="120" />
+			<Patch name="(55)String Slap" hbank="2" lbank="1" prog="120" />
+			<Patch name="(88)String Slap" hbank="2" lbank="2" prog="120" />
+			<Patch name="(Pro)String Slap" hbank="2" lbank="3" prog="120" />
+			<Patch name="(88)Gt.CutNz. 2" hbank="3" lbank="2" prog="120" />
+			<Patch name="(Pro)Gt.CutNoise2" hbank="3" lbank="3" prog="120" />
+			<Patch name="(88)Dist.CutNz." hbank="4" lbank="2" prog="120" />
+			<Patch name="(Pro)Dist.CutNoiz" hbank="4" lbank="3" prog="120" />
+			<Patch name="(88)Bass Slide" hbank="5" lbank="2" prog="120" />
+			<Patch name="(Pro)Bass Slide" hbank="5" lbank="3" prog="120" />
+			<Patch name="(88)Pick Scrape" hbank="6" lbank="2" prog="120" />
+			<Patch name="(Pro)Pick Scrape" hbank="6" lbank="3" prog="120" />
+			<Patch name="(Pro)Gt. FX Menu" hbank="8" lbank="3" prog="120" />
+			<Patch name="(Pro)Bartok Pizz." hbank="9" lbank="3" prog="120" />
+			<Patch name="(Pro)Guitar Slap" hbank="10" lbank="3" prog="120" />
+			<Patch name="(Pro)Chord Stroke" hbank="11" lbank="3" prog="120" />
+			<Patch name="(Pro)Biwa Stroke" hbank="12" lbank="3" prog="120" />
+			<Patch name="(Pro)Biwa Tremolo" hbank="13" lbank="3" prog="120" />
+			<Patch name="(55)Castanets" hbank="127" lbank="1" prog="120" />
+			<Patch name="(88)Castanets" hbank="127" lbank="2" prog="120" />
+			<Patch name="(Pro)Castanets" hbank="127" lbank="3" prog="120" />
+			<Patch name="(55)BreathNoise" hbank="0" lbank="1" prog="121" />
+			<Patch name="(88)BreathNoise" hbank="0" lbank="2" prog="121" />
+			<Patch name="(Pro)Breath Noise" hbank="0" lbank="3" prog="121" />
+			<Patch name="(55)Fl.KeyClick" hbank="1" lbank="1" prog="121" />
+			<Patch name="(88)Fl.KeyClick" hbank="1" lbank="2" prog="121" />
+			<Patch name="(Pro)Fl.Key Click" hbank="1" lbank="3" prog="121" />
+			<Patch name="(55)Triangle" hbank="127" lbank="1" prog="121" />
+			<Patch name="(88)Triangle" hbank="127" lbank="2" prog="121" />
+			<Patch name="(Pro)Triangle" hbank="127" lbank="3" prog="121" />
+			<Patch name="(55)Seashore" hbank="0" lbank="1" prog="122" />
+			<Patch name="(88)Seashore" hbank="0" lbank="2" prog="122" />
+			<Patch name="(Pro)Seashore" hbank="0" lbank="3" prog="122" />
+			<Patch name="(55)Rain" hbank="1" lbank="1" prog="122" />
+			<Patch name="(88)Rain" hbank="1" lbank="2" prog="122" />
+			<Patch name="(Pro)Rain" hbank="1" lbank="3" prog="122" />
+			<Patch name="(55)Thunder" hbank="2" lbank="1" prog="122" />
+			<Patch name="(88)Thunder" hbank="2" lbank="2" prog="122" />
+			<Patch name="(Pro)Thunder" hbank="2" lbank="3" prog="122" />
+			<Patch name="(55)Wind" hbank="3" lbank="1" prog="122" />
+			<Patch name="(88)Wind" hbank="3" lbank="2" prog="122" />
+			<Patch name="(Pro)Wind" hbank="3" lbank="3" prog="122" />
+			<Patch name="(55)Stream" hbank="4" lbank="1" prog="122" />
+			<Patch name="(88)Stream" hbank="4" lbank="2" prog="122" />
+			<Patch name="(Pro)Stream" hbank="4" lbank="3" prog="122" />
+			<Patch name="(55)Bubble" hbank="5" lbank="1" prog="122" />
+			<Patch name="(88)Bubble" hbank="5" lbank="2" prog="122" />
+			<Patch name="(Pro)Bubble" hbank="5" lbank="3" prog="122" />
+			<Patch name="(Pro)Wind 2" hbank="6" lbank="3" prog="122" />
+			<Patch name="(Pro)Pink Noise" hbank="16" lbank="3" prog="122" />
+			<Patch name="(Pro)White Noise" hbank="17" lbank="3" prog="122" />
+			<Patch name="(55)Orche Hit" hbank="127" lbank="1" prog="122" />
+			<Patch name="(88)Orche Hit" hbank="127" lbank="2" prog="122" />
+			<Patch name="(Pro)Orche Hit" hbank="127" lbank="3" prog="122" />
+			<Patch name="(55)Bird" hbank="0" lbank="1" prog="123" />
+			<Patch name="(88)Bird" hbank="0" lbank="2" prog="123" />
+			<Patch name="(Pro)Bird" hbank="0" lbank="3" prog="123" />
+			<Patch name="(55)Dog" hbank="1" lbank="1" prog="123" />
+			<Patch name="(88)Dog" hbank="1" lbank="2" prog="123" />
+			<Patch name="(Pro)Dog" hbank="1" lbank="3" prog="123" />
+			<Patch name="(55)HorseGallop" hbank="2" lbank="1" prog="123" />
+			<Patch name="(88)HorseGallop" hbank="2" lbank="2" prog="123" />
+			<Patch name="(Pro)Horse-Gallop" hbank="2" lbank="3" prog="123" />
+			<Patch name="(55)Bird 2" hbank="3" lbank="1" prog="123" />
+			<Patch name="(88)Bird 2" hbank="3" lbank="2" prog="123" />
+			<Patch name="(Pro)Bird 2" hbank="3" lbank="3" prog="123" />
+			<Patch name="(88)Kitty" hbank="4" lbank="2" prog="123" />
+			<Patch name="(Pro)Kitty" hbank="4" lbank="3" prog="123" />
+			<Patch name="(88)Growl" hbank="5" lbank="2" prog="123" />
+			<Patch name="(Pro)Growl" hbank="5" lbank="3" prog="123" />
+			<Patch name="(55)Telephone" hbank="127" lbank="1" prog="123" />
+			<Patch name="(88)Telephone" hbank="127" lbank="2" prog="123" />
+			<Patch name="(Pro)Telephone" hbank="127" lbank="3" prog="123" />
+			<Patch name="(55)Telephone 1" hbank="0" lbank="1" prog="124" />
+			<Patch name="(88)Telephone 1" hbank="0" lbank="2" prog="124" />
+			<Patch name="(Pro)Telephone 1" hbank="0" lbank="3" prog="124" />
+			<Patch name="(55)Telephone 2" hbank="1" lbank="1" prog="124" />
+			<Patch name="(88)Telephone 2" hbank="1" lbank="2" prog="124" />
+			<Patch name="(Pro)Telephone 2" hbank="1" lbank="3" prog="124" />
+			<Patch name="(55)Creaking" hbank="2" lbank="1" prog="124" />
+			<Patch name="(88)Creaking" hbank="2" lbank="2" prog="124" />
+			<Patch name="(Pro)DoorCreaking" hbank="2" lbank="3" prog="124" />
+			<Patch name="(55)Door" hbank="3" lbank="1" prog="124" />
+			<Patch name="(88)Door" hbank="3" lbank="2" prog="124" />
+			<Patch name="(Pro)Door" hbank="3" lbank="3" prog="124" />
+			<Patch name="(55)Scratch" hbank="4" lbank="1" prog="124" />
+			<Patch name="(88)Scratch" hbank="4" lbank="2" prog="124" />
+			<Patch name="(Pro)Scratch" hbank="4" lbank="3" prog="124" />
+			<Patch name="(55)Wind Chimes" hbank="5" lbank="1" prog="124" />
+			<Patch name="(88)Wind Chimes" hbank="5" lbank="2" prog="124" />
+			<Patch name="(Pro)Wind Chimes" hbank="5" lbank="3" prog="124" />
+			<Patch name="(88)Scratch 2" hbank="7" lbank="2" prog="124" />
+			<Patch name="(Pro)Scratch 2" hbank="7" lbank="3" prog="124" />
+			<Patch name="(Pro)ScratchKey" hbank="8" lbank="3" prog="124" />
+			<Patch name="(Pro)TapeRewind" hbank="9" lbank="3" prog="124" />
+			<Patch name="(Pro)Phono Noise" hbank="10" lbank="3" prog="124" />
+			<Patch name="(Pro)MC-500 Beep" hbank="11" lbank="3" prog="124" />
+			<Patch name="(55)Bird Tweet" hbank="127" lbank="1" prog="124" />
+			<Patch name="(88)Bird Tweet" hbank="127" lbank="2" prog="124" />
+			<Patch name="(Pro)Bird Tweet" hbank="127" lbank="3" prog="124" />
+			<Patch name="(55)Helicopter" hbank="0" lbank="1" prog="125" />
+			<Patch name="(88)Helicopter" hbank="0" lbank="2" prog="125" />
+			<Patch name="(Pro)Helicopter" hbank="0" lbank="3" prog="125" />
+			<Patch name="(55)Car-Engine" hbank="1" lbank="1" prog="125" />
+			<Patch name="(88)Car-Engine" hbank="1" lbank="2" prog="125" />
+			<Patch name="(Pro)Car-Engine" hbank="1" lbank="3" prog="125" />
+			<Patch name="(55)Car-Stop" hbank="2" lbank="1" prog="125" />
+			<Patch name="(88)Car-Stop" hbank="2" lbank="2" prog="125" />
+			<Patch name="(Pro)Car-Stop" hbank="2" lbank="3" prog="125" />
+			<Patch name="(55)Car-Pass" hbank="3" lbank="1" prog="125" />
+			<Patch name="(88)Car-Pass" hbank="3" lbank="2" prog="125" />
+			<Patch name="(Pro)Car-Pass" hbank="3" lbank="3" prog="125" />
+			<Patch name="(55)Car-Crash" hbank="4" lbank="1" prog="125" />
+			<Patch name="(88)Car-Crash" hbank="4" lbank="2" prog="125" />
+			<Patch name="(Pro)Car-Crash" hbank="4" lbank="3" prog="125" />
+			<Patch name="(55)Siren" hbank="5" lbank="1" prog="125" />
+			<Patch name="(88)Siren" hbank="5" lbank="2" prog="125" />
+			<Patch name="(Pro)Siren" hbank="5" lbank="3" prog="125" />
+			<Patch name="(55)Train" hbank="6" lbank="1" prog="125" />
+			<Patch name="(88)Train" hbank="6" lbank="2" prog="125" />
+			<Patch name="(Pro)Train" hbank="6" lbank="3" prog="125" />
+			<Patch name="(55)Jetplane" hbank="7" lbank="1" prog="125" />
+			<Patch name="(88)Jetplane" hbank="7" lbank="2" prog="125" />
+			<Patch name="(Pro)Jetplane" hbank="7" lbank="3" prog="125" />
+			<Patch name="(55)Starship" hbank="8" lbank="1" prog="125" />
+			<Patch name="(88)Starship" hbank="8" lbank="2" prog="125" />
+			<Patch name="(Pro)Starship" hbank="8" lbank="3" prog="125" />
+			<Patch name="(55)Burst Noise" hbank="9" lbank="1" prog="125" />
+			<Patch name="(88)Burst Noise" hbank="9" lbank="2" prog="125" />
+			<Patch name="(Pro)Burst Noise" hbank="9" lbank="3" prog="125" />
+			<Patch name="(Pro)Calculating" hbank="10" lbank="3" prog="125" />
+			<Patch name="(Pro)Perc. Bang" hbank="11" lbank="3" prog="125" />
+			<Patch name="(55)OneNote Jam" hbank="127" lbank="1" prog="125" />
+			<Patch name="(88)OneNote Jam" hbank="127" lbank="2" prog="125" />
+			<Patch name="(Pro)OneNote Jam" hbank="127" lbank="3" prog="125" />
+			<Patch name="(55)Applause" hbank="0" lbank="1" prog="126" />
+			<Patch name="(88)Applause" hbank="0" lbank="2" prog="126" />
+			<Patch name="(Pro)Applause" hbank="0" lbank="3" prog="126" />
+			<Patch name="(55)Laughing" hbank="1" lbank="1" prog="126" />
+			<Patch name="(88)Laughing" hbank="1" lbank="2" prog="126" />
+			<Patch name="(Pro)Laughing" hbank="1" lbank="3" prog="126" />
+			<Patch name="(55)Screaming" hbank="2" lbank="1" prog="126" />
+			<Patch name="(88)Screaming" hbank="2" lbank="2" prog="126" />
+			<Patch name="(Pro)Screaming" hbank="2" lbank="3" prog="126" />
+			<Patch name="(55)Punch" hbank="3" lbank="1" prog="126" />
+			<Patch name="(88)Punch" hbank="3" lbank="2" prog="126" />
+			<Patch name="(Pro)Punch" hbank="3" lbank="3" prog="126" />
+			<Patch name="(55)Heart Beat" hbank="4" lbank="1" prog="126" />
+			<Patch name="(88)Heart Beat" hbank="4" lbank="2" prog="126" />
+			<Patch name="(Pro)Heart Beat" hbank="4" lbank="3" prog="126" />
+			<Patch name="(55)Footsteps" hbank="5" lbank="1" prog="126" />
+			<Patch name="(88)Footsteps" hbank="5" lbank="2" prog="126" />
+			<Patch name="(Pro)Footsteps" hbank="5" lbank="3" prog="126" />
+			<Patch name="(88)Applause 2" hbank="6" lbank="2" prog="126" />
+			<Patch name="(Pro)Applause 2" hbank="6" lbank="3" prog="126" />
+			<Patch name="(Pro)Small Club" hbank="7" lbank="3" prog="126" />
+			<Patch name="(Pro)ApplauseWave" hbank="8" lbank="3" prog="126" />
+			<Patch name="(Pro)Voice One" hbank="16" lbank="3" prog="126" />
+			<Patch name="(Pro)Voice Two" hbank="17" lbank="3" prog="126" />
+			<Patch name="(Pro)Voice Three" hbank="18" lbank="3" prog="126" />
+			<Patch name="(Pro)Voice Tah" hbank="19" lbank="3" prog="126" />
+			<Patch name="(Pro)Voice Whey" hbank="20" lbank="3" prog="126" />
+			<Patch name="(55)Water Bell" hbank="127" lbank="1" prog="126" />
+			<Patch name="(88)Water Bell" hbank="127" lbank="2" prog="126" />
+			<Patch name="(Pro)Water Bell" hbank="127" lbank="3" prog="126" />
+			<Patch name="(55)Gun Shot" hbank="0" lbank="1" prog="127" />
+			<Patch name="(88)Gun Shot" hbank="0" lbank="2" prog="127" />
+			<Patch name="(Pro)Gun Shot" hbank="0" lbank="3" prog="127" />
+			<Patch name="(55)Machine Gun" hbank="1" lbank="1" prog="127" />
+			<Patch name="(88)Machine Gun" hbank="1" lbank="2" prog="127" />
+			<Patch name="(Pro)Machine Gun" hbank="1" lbank="3" prog="127" />
+			<Patch name="(55)Lasergun" hbank="2" lbank="1" prog="127" />
+			<Patch name="(88)Lasergun" hbank="2" lbank="2" prog="127" />
+			<Patch name="(Pro)Lasergun" hbank="2" lbank="3" prog="127" />
+			<Patch name="(55)Explosion" hbank="3" lbank="1" prog="127" />
+			<Patch name="(88)Explosion" hbank="3" lbank="2" prog="127" />
+			<Patch name="(Pro)Explosion" hbank="3" lbank="3" prog="127" />
+			<Patch name="(Pro)Eruption" hbank="4" lbank="3" prog="127" />
+			<Patch name="(Pro)Big Shot" hbank="5" lbank="3" prog="127" />
+			<Patch name="(55)Jungle Tune" hbank="127" lbank="1" prog="127" />
+			<Patch name="(88)Jungle Tune" hbank="127" lbank="2" prog="127" />
+			<Patch name="(Pro)Jungle Tune" hbank="127" lbank="3" prog="127" />
+    </PatchGroup>
+    <PatchGroup name="Drums">
+      <Patch name="Standard 1" hbank="0" lbank="3" prog="0" drum="1" />
+      <Patch name="Standard 2" hbank="0" lbank="3" prog="1" drum="1" />
+      <Patch name="Standard 3" hbank="0" lbank="3" prog="2" drum="1" />
+      <Patch name="Room" hbank="0" lbank="3" prog="8" drum="1" />
+      <Patch name="HipHop" hbank="0" lbank="3" prog="9" drum="1" />
+      <Patch name="Jungle" hbank="0" lbank="3" prog="10" drum="1" />
+      <Patch name="Techno" hbank="0" lbank="3" prog="11" drum="1" />
+      <Patch name="Power" hbank="0" lbank="3" prog="16" drum="1" />
+      <Patch name="Electronic" hbank="0" lbank="3" prog="24" drum="1" />
+      <Patch name="TR-808/909" hbank="0" lbank="3" prog="25" drum="1" />
+      <Patch name="Dance" hbank="0" lbank="3" prog="26" drum="1" />
+      <Patch name="CR-78" hbank="0" lbank="3" prog="27" drum="1" />
+      <Patch name="TR-606" hbank="0" lbank="3" prog="28" drum="1" />
+      <Patch name="TR-707" hbank="0" lbank="3" prog="29" drum="1" />
+      <Patch name="TR-909" hbank="0" lbank="3" prog="30" drum="1" />
+      <Patch name="Jazz" hbank="0" lbank="3" prog="32" drum="1" />
+      <Patch name="Brush" hbank="0" lbank="3" prog="40" drum="1" />
+      <Patch name="Orchestra" hbank="0" lbank="3" prog="48" drum="1" />
+      <Patch name="Ethnic" hbank="0" lbank="3" prog="49" drum="1" />
+      <Patch name="Kick &amp; Snare" hbank="0" lbank="3" prog="50" drum="1" />
+      <Patch name="ASIA" hbank="0" lbank="3" prog="52" drum="1" />
+      <Patch name="Cymbal &amp; Claps" hbank="0" lbank="3" prog="53" drum="1" />
+      <Patch name="SFX" hbank="0" lbank="3" prog="56" drum="1" />
+      <Patch name="Rhythm FX" hbank="0" lbank="3" prog="57" drum="1" />
+      <Patch name="Rhythm FX 2" hbank="0" lbank="3" prog="58" drum="1" />
+    </PatchGroup>
+    <Controller name="Modulation" l="1" />
+    <Controller name="Portamento Time" l="5" />
+    <Controller name="Main Volume" l="7" init="100" drumInit="100" />
+    <Controller name="Pan" l="10" min="-64" max="63" init="0" drumInit="0" />
+    <Controller name="Expression" l="11" />
+    <Controller name="Sustain" l="64" />
+    <Controller name="Portamento" l="65" />
+    <Controller name="Sostenuto" l="66" />
+    <Controller name="Soft" l="67" />
+    <Controller name="Portamento Control" l="84" />
+    <Controller name="Effect 1 (Reverb)" l="91" />
+    <Controller name="Effect 3 (Chorus)" l="93" />
+    <Controller name="Effect 4 (Delay)" l="94" />
+    <Controller name="All Sounds Off" l="120" max="0" />
+    <Controller name="Reset All Controller" l="121" max="0" />
+    <Controller name="All Notes Off" l="123" max="0" />
+    <Controller name="OMNI Off" l="124" max="0" />
+    <Controller name="OMNI On" l="125" max="0" />
+    <Controller name="MONO" l="126" max="0" />
+    <Controller name="POLY" l="127" max="0" />
+    <Controller name="Pitch Bend Sensitivity" type="RPN" h="0" l="0" max="24" init="2" drumInit="2" />
+    <Controller name="Master Fine Tuning" type="RPN" h="0" l="1" min="-64" max="64" init="0" drumInit="0" />
+    <Controller name="Master Coarse Tuning" type="RPN" h="0" l="2" min="-24" max="23" />
+    <Controller name="RPN null" type="RPN" h="127" l="127" max="0" />
+    <Controller name="Vibrato Rate" type="NRPN" h="1" l="8" />
+    <Controller name="Vibrato Depth" type="NRPN" h="1" l="9" />
+    <Controller name="Vibrato Delay" type="NRPN" h="1" l="10" />
+    <Controller name="TVF Cutoff Frequency" type="NRPN" h="1" l="32" />
+    <Controller name="TVF Resonance" type="NRPN" h="1" l="33" />
+    <Controller name="TVF&amp;TVA Envelope Attack Time" type="NRPN" h="1" l="99" />
+    <Controller name="TVF&amp;TVA Envelope Decay Time" type="NRPN" h="1" l="100" />
+    <Controller name="TVF&amp;TVA Envelope Release Time" type="NRPN" h="1" l="102" />
+    <Controller name="Drum Instrument Pitch Coarse" type="NRPN" h="24" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="Drum Instrument TVA Level" type="NRPN" h="26" l="pitch" showType="1" />
+    <Controller name="Drum Instrument Panpot" type="NRPN" h="28" l="pitch" min="-64" max="63" showType="1" />
+    <Controller name="Drum Instrument Reverb Send Level" type="NRPN" h="29" l="pitch" showType="1" />
+    <Controller name="Drum Instrument Chorus Send Level" type="NRPN" h="30" l="pitch" showType="1" />
+    <Controller name="Drum Instrument Delay Send Level" type="NRPN" h="31" l="pitch" showType="1" />
+    <Controller name="Pitch" type="Pitch" />
+    <Controller name="Program" type="Program" />
+    <Controller name="Aftertouch" type="Aftertouch" />
+    <Controller name="PolyAftertouch" type="PolyAftertouch" />
+    <SysEx name="Send GS Reset">
+      <data>41 10 42 12 40 00 7f 00
+41</data>
+      </SysEx>
+    <Init>
+      <event tick="250" type="2" datalen="9">
+        41 10 42 12 40 00 7f 00 41 
+        </event>
+    </Init>
+    <Drummaps>
+    </Drummaps>
+  </MidiInstrument>
+</muse>
