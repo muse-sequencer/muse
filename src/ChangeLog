@@ -1,3 +1,5 @@
+03.10.2021
+    - Added instrument definition file for Roland SC55mkII created by FalCT60 (rj)
 28.06.2021
     - New: Mixers can now be opened in a docked window (optionally). 
         When the mixer dock is floating, a top window title bar is added
