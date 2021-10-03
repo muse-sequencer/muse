@@ -319,6 +319,7 @@ void FluidSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
                               Gain->blockSignals(true);
                               // Update Gain-slider without causing it to respond to it's own signal (and send another msg to the synth)
                               Gain->setValue(val);
+                              labelGainValue->setNum(val);
                               Gain->blockSignals(sb);
                               break;
                               }

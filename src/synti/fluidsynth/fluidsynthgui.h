@@ -60,7 +60,7 @@ struct FluidChannel;
 #define FS_INIT_CHANNEL_SECTION       255
 
 // Predefined init-values for fluidsynth
-#define FS_PREDEF_VOLUME               0.063
+#define FS_PREDEF_VOLUME               0.5
 #define FS_PREDEF_REVERB_LEVEL         0.125
 #define FS_PREDEF_REVERB_ROOMSIZE      0.125
 #define FS_PREDEF_REVERB_DAMPING       0.3
