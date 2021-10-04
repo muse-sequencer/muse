@@ -49,7 +49,7 @@ class OscIF
    protected:
       pid_t _guiPid;
       QProcess* _oscGuiQProc;
-      void* _uiOscTarget;
+      lo_address _uiOscTarget;
       char* _uiOscPath;
       char* _uiOscSampleRatePath;
       char* _uiOscConfigurePath;
