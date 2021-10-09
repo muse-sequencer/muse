@@ -177,7 +177,7 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
                     int c = sl[4].toInt();
                     e.setA(a);
                     e.setB(b);
-                    e.setB(c);
+                    e.setC(c);
                     // Operation is undoable but do not start/end undo.
                     // Indicate do not do port controller values and clone parts.
                     MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent,

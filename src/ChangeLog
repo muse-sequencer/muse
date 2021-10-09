@@ -1,3 +1,6 @@
+09.10.2021
+    - Fixed bug in script execution causing controllers to be reset, fixes bug
+    #1050 (rj)
 03.10.2021
     - Added instrument definition file for Roland SC55mkII created by FalCT60 (rj)
     - Increased default volume in FluidSynth and added a label showing the
