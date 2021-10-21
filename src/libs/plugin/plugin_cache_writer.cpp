@@ -106,6 +106,7 @@
 
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_PLUGIN_SCAN(dev, format, args...)  // std::fprintf(dev, format, ##args);
+#define DEBUG_PLUGIN_SCAN_ERROR(dev, format, args...) std::fprintf(dev, format, ##args);
 
 //#define PORTS_ARE_SINGLE_LINE_TAGS 1
 
@@ -929,7 +930,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
                   break;
             }
 
-        DEBUG_PLUGIN_SCAN(stderr, "  unknown opcode\n");
+        DEBUG_PLUGIN_SCAN(stderr, "  unknown vst opcode: %d\n", opcode);
 
       return 0;
       }
@@ -1964,7 +1965,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
     }
     else
     {
-      DEBUG_PLUGIN_SCAN(stderr, "plugin has port with unknown direction - ignoring\n");
+      DEBUG_PLUGIN_SCAN_ERROR(stderr, "plugin has port: %s with unknown direction - ignoring\n", _portName);
       if(nPname)
         lilv_node_free(nPname);
       continue;
@@ -2105,8 +2106,8 @@ void scanLv2Ports(const LilvPlugin *plugin,
     }
     else if(!optional)
     {
-      DEBUG_PLUGIN_SCAN(stderr, "plugin has port with unknown type - ignoring plugin:%s\n",
-                        name.toLatin1().constData());
+      DEBUG_PLUGIN_SCAN_ERROR(stderr, "Ignoring plugin with unknown port type: %s\n",
+                        _portName);
       if(nPname != 0)
         lilv_node_free(nPname);
       return;
@@ -2212,6 +2213,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
     else
     {
       shouldLoad = false;
+      DEBUG_PLUGIN_SCAN_ERROR(stderr, "Ignoring plugin: %s: requires unsupported feature: %s\n",
+                        pluginName, uri);
     }
 
     nit = lilv_nodes_next(fts, nit);
@@ -2299,7 +2302,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       }
       else if(!lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_InputPort))
       {
-        DEBUG_PLUGIN_SCAN(stderr, "plugin has port with unknown direction - ignoring\n");
+        DEBUG_PLUGIN_SCAN_ERROR(stderr, "Ignoring plugin: %s: port: %ld with unknown direction\n",
+                          name.toLatin1().constData(), k);
         continue;
       }
 
@@ -2339,8 +2343,10 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       }
       else if(!optional)
       {
-        DEBUG_PLUGIN_SCAN(stderr, "plugin has port with unknown type - ignoring plugin:%s\n",
-                          name.toLatin1().constData());
+        DEBUG_PLUGIN_SCAN_ERROR(stderr, "Ignoring plugin: %s port: %ld with unknown type\n",
+                          name.toLatin1().constData(), k);
+        lilv_free((void*)lfp); // Must free.
+        lilv_node_free(nameNode);
         return;
       }
     }
