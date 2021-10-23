@@ -1,3 +1,7 @@
+23.10.2021
+    - LV2: Support loadDefaultState feature. Tested OK with Exampler plugin for example. (Tim)
+    - LV2: Add initial support for requestValue feature. Unfinished - handled but ignored.
+           (Stops crash with Exampler plugin 'request' button.)
 09.10.2021
     - Fixed bug in script execution causing controllers to be reset, fixes bug
     #1050 (rj)

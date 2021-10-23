@@ -153,7 +153,7 @@ namespace MusECore
 #define LV2_UI_HOST_URI LV2_F_UI_Qt5_UI
 #define LV2_UI_EXTERNAL LV2_EXTERNAL_UI__Widget
 #define LV2_UI_EXTERNAL_DEPRECATED LV2_EXTERNAL_UI_DEPRECATED_URI
-#define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
+//#define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 #define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 #define LV2_UI_SCALE_FACTOR LV2_UI_PREFIX "scaleFactor"
 
@@ -250,6 +250,7 @@ LV2_URID Synth_Uri_Map(LV2_URI_Map_Callback_Data _host_data, const char *, const
 
 static CacheNodes lv2CacheNodes;
 
+// NOTE: Please ensure that what is here matches what is in plugin_cache_writer.cpp
 LV2_Feature lv2Features [] =
 {
     {LV2_F_URID_MAP, nullptr},
@@ -269,6 +270,7 @@ LV2_Feature lv2Features [] =
     {LV2_F_UI_IDLE, nullptr},
     {LV2_F_OPTIONS, nullptr},
     {LV2_UI__resize, nullptr},
+    {LV2_UI__requestValue, nullptr},
     {LV2_PROGRAMS__Host, nullptr},
 #ifdef MIDNAM_SUPPORT
     {LV2_MIDNAM__update, nullptr},
@@ -279,6 +281,7 @@ LV2_Feature lv2Features [] =
 #endif
     {LV2_STATE__mapPath, nullptr},
     {LV2_F_STATE_CHANGED, nullptr},
+    {LV2_STATE__loadDefaultState, nullptr},
     {LV2_F_DATA_ACCESS, nullptr} //must be the last always!
 };
 
@@ -708,6 +711,10 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
         {
             _ifeatures [i].data = &state->uiResize;
         }
+        else if(i == synth->_fUiRequestValue)
+        {
+            _ifeatures [i].data = &state->uiRequestValue;
+        }
         else if(i == synth->_fPrgHost)
         {
             _ifeatures [i].data = &state->prgHost;
@@ -727,6 +734,10 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
         else if(i == synth->_fMapPath)
         {
             _ifeatures [i].data = &state->mapPath;
+        }
+        else if(i == synth->_fLoadDefaultState)
+        {
+            _ifeatures [i].data = nullptr;
         }
 
         _ppifeatures [i] = &_ifeatures [i];
@@ -906,6 +917,18 @@ void LV2Synth::lv2state_PostInstantiate(LV2PluginWrapper_State *state)
     LV2Synth::lv2midnam_updateMidnam(state);
 #endif
     LV2Synth::lv2prg_updatePrograms(state);
+
+    // Restore default state.
+    if(state->iState)
+    {
+      LilvState* lilvState = lilv_state_new_from_world(
+        lilvWorld, &state->synth->_lv2_urid_map, lilv_plugin_get_uri(synth->_handle));
+      if(lilvState)
+      {
+        lilv_state_restore(lilvState, state->handle, nullptr, nullptr, 0, nullptr);
+        lilv_state_free(lilvState);
+      }
+    }
 
     state->wrkThread->start(QThread::LowPriority);
 
@@ -1397,6 +1420,28 @@ int LV2Synth::lv2ui_Resize(LV2UI_Feature_Handle handle, int width, int height)
     }
 
     return 1;
+}
+
+// Static.
+LV2UI_Request_Value_Status  LV2Synth::lv2ui_Request_Value (
+  LV2UI_Feature_Handle /*handle*/, LV2_URID /*key*/, LV2_URID /*type*/, const LV2_Feature *const */*features*/ )
+{
+// TODO FIXME Finish this...
+//     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+//     LV2Synth *synth = state->synth;
+//     const char *uriKey = synth->unmapUrid(key);
+//     const char *uriType = synth->unmapUrid(type);
+//
+//     //fprintf(stderr, "uriKey:%s uriType:%s\n", uriKey, uriType);
+//
+//     LilvNode* keyNode = lilv_new_uri(lilvWorld, uriKey);
+//     if(keyNode)
+//     {
+//
+//       lilv_free(keyNode);
+//     }
+
+    return LV2UI_REQUEST_VALUE_ERR_UNKNOWN;
 }
 
 void LV2Synth::lv2ui_Gtk2AllocateCb(int width, int height, void *arg)
@@ -2839,6 +2884,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
         {
             _fUiResize = i;
         }
+        else if((std::string(LV2_UI__requestValue) == _features [i].URI))
+        {
+            _fUiRequestValue = i;
+        }
         else if((std::string(LV2_PROGRAMS__Host) == _features [i].URI))
         {
             _fPrgHost = i;
@@ -2862,6 +2911,10 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
         else if((std::string(LV2_STATE__mapPath) == _features [i].URI))
         {
             _fMapPath = i;
+        }
+        else if((std::string(LV2_STATE__loadDefaultState) == _features [i].URI))
+        {
+            _fLoadDefaultState = i;
         }
         else if(std::string(LV2_F_DATA_ACCESS) == _features [i].URI)
         {

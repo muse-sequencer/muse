@@ -61,7 +61,6 @@
 #include "lv2/lv2plug.in/ns/ext/patch/patch.h"
 #include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-#include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/time/time.h"
 #ifdef LV2_URI_MAP_SUPPORT
 #include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
@@ -419,6 +418,7 @@ private:
     uint32_t _fDataAccess;
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
+    uint32_t _fUiRequestValue;
     uint32_t _fPrgHost;
 #ifdef MIDNAM_SUPPORT
     uint32_t _fMidNamUpdate;
@@ -427,6 +427,8 @@ private:
     uint32_t _fMakePath;
 #endif
     uint32_t _fMapPath;
+    uint32_t _fLoadDefaultState;
+
     //const LilvNode *_pluginUIType = nullptr;
 
     LV2_URID _uTime_Position;
@@ -481,6 +483,8 @@ public:
     bool usesTimePosition() const { return _usesTimePosition; }
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
+    static LV2UI_Request_Value_Status lv2ui_Request_Value (
+      LV2UI_Feature_Handle handle, LV2_URID key, LV2_URID type, const LV2_Feature *const *features );
     static void lv2ui_Gtk2AllocateCb(int width, int height, void *arg);
     static void lv2ui_Gtk2ResizeCb(int width, int height, void *arg);
     static void lv2ui_ShowNativeGui (LV2PluginWrapper_State *state, bool bShow , bool fixScaling);
@@ -727,6 +731,9 @@ struct LV2PluginWrapper_State {
       extHost.ui_closed = nullptr;
       uiResize.handle = (LV2UI_Feature_Handle)this;
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
+      uiRequestValue.handle = (LV2UI_Feature_Handle)this;
+      uiRequestValue.request = LV2Synth::lv2ui_Request_Value;
+
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
 #ifdef MIDNAM_SUPPORT
@@ -797,6 +804,7 @@ struct LV2PluginWrapper_State {
     LV2UI_Idle_Interface *uiIdleIface;
     const LilvUI *uiCurrent;    
     LV2UI_Resize uiResize;
+    LV2UI_Request_Value uiRequestValue;
     QSize uiX11Size;
     LV2PluginWrapper_Window *pluginWindow;
     QWindow *pluginQWindow;

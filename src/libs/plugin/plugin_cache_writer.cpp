@@ -78,15 +78,18 @@
 //#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 //#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
 #include "lv2/lv2plug.in/ns/ext/buf-size/buf-size.h"
+#ifdef LV2_EVENT_BUFFER_SUPPORT
 #include "lv2/lv2plug.in/ns/ext/event/event.h"
+#endif
 #include "lv2/lv2plug.in/ns/ext/options/options.h"
 #include "lv2/lv2plug.in/ns/ext/parameters/parameters.h"
 //#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
 //#include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-//#include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/time/time.h"
+#ifdef LV2_URI_MAP_SUPPORT
 #include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
+#endif
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 #include "lv2/lv2plug.in/ns/ext/port-props/port-props.h"
@@ -96,6 +99,10 @@
 //#include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
+
+#ifdef MIDNAM_SUPPORT
+#include "midnam_lv2.h"
+#endif
 
 //#include <sord/sord.h>
 
@@ -1813,7 +1820,9 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 #define LV2_F_OPTIONS LV2_OPTIONS__options
 #define LV2_F_URID_MAP LV2_URID__map
 #define LV2_F_URID_UNMAP LV2_URID__unmap
+#ifdef LV2_URI_MAP_SUPPORT
 #define LV2_F_URI_MAP LV2_URI_MAP_URI
+#endif
 #define LV2_F_UI_PARENT LV2_UI__parent
 #define LV2_F_INSTANCE_ACCESS NS_EXT "instance-access"
 #define LV2_F_DATA_ACCESS LV2_DATA_ACCESS_URI
@@ -1828,11 +1837,18 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 //#define LV2_F_DEFAULT_STATE LV2_STATE_PREFIX "loadDefaultState"
 #define LV2_F_STATE_CHANGED LV2_STATE_PREFIX "StateChanged"
 
+#ifdef MIDNAM_SUPPORT
+#define LV2_F_MIDNAM_INTERFACE LV2_MIDNAM__interface
+#define LV2_F_MIDNAM_UPDATE LV2_MIDNAM__update
+#endif
+
 //uri cache structure.
 typedef struct
 {
    LilvNode *atom_AtomPort;
+#ifdef LV2_EVENT_BUFFER_SUPPORT
    LilvNode *ev_EventPort;
+#endif
    LilvNode *lv2_AudioPort;
    LilvNode *lv2_ControlPort;
    LilvNode *lv2_InputPort;
@@ -1864,11 +1880,14 @@ typedef struct
 
 static CacheNodes lv2CacheNodes;
 
+// NOTE: Please ensure that what is here matches what is in plugin_cache_writer.cpp
 LV2_Feature lv2Features [] =
 {
    {LV2_F_URID_MAP, nullptr},
    {LV2_F_URID_UNMAP, nullptr},
+#ifdef LV2_URI_MAP_SUPPORT
    {LV2_F_URI_MAP, nullptr},
+#endif
    {LV2_F_BOUNDED_BLOCK_LENGTH, nullptr},
    {LV2_F_FIXED_BLOCK_LENGTH, nullptr},
    {LV2_F_POWER_OF_2_BLOCK_LENGTH, nullptr},
@@ -1881,13 +1900,18 @@ LV2_Feature lv2Features [] =
    {LV2_F_UI_IDLE, nullptr},
    {LV2_F_OPTIONS, nullptr},
    {LV2_UI__resize, nullptr},
+   {LV2_UI__requestValue, nullptr},
    {LV2_PROGRAMS__Host, nullptr},
+#ifdef MIDNAM_SUPPORT
+   {LV2_MIDNAM__update, nullptr},
+#endif
    {LV2_LOG__log, nullptr},
 #ifdef LV2_MAKE_PATH_SUPPORT
    {LV2_STATE__makePath, nullptr},
 #endif
    {LV2_STATE__mapPath, nullptr},
    {LV2_F_STATE_CHANGED, nullptr},
+   {LV2_STATE__loadDefaultState, nullptr},
    {LV2_F_DATA_ACCESS, nullptr} //must be the last always!
 };
 
@@ -2086,6 +2110,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
     {
       port_info._type |= PluginPortInfo::AudioPort;
     }
+#ifdef LV2_EVENT_BUFFER_SUPPORT
     else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.ev_EventPort))
     {
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
@@ -2095,6 +2120,7 @@ void scanLv2Ports(const LilvPlugin *plugin,
       }
       port_info._type |= PluginPortInfo::MidiPort;
     }
+#endif
     else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
     {
       if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
@@ -2323,6 +2349,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
         else
           ++aip;
       }
+#ifdef LV2_EVENT_BUFFER_SUPPORT
       else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.ev_EventPort))
       {
         if(is_output)
@@ -2332,6 +2359,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
         if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
           info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
       }
+#endif
       else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
       {
         if(is_output)
@@ -2414,7 +2442,9 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
     return;
 
   lv2CacheNodes.atom_AtomPort          = lilv_new_uri(lilvWorld, LV2_ATOM__AtomPort);
+#ifdef LV2_EVENT_BUFFER_SUPPORT
   lv2CacheNodes.ev_EventPort           = lilv_new_uri(lilvWorld, LV2_EVENT__EventPort);
+#endif
   lv2CacheNodes.lv2_AudioPort          = lilv_new_uri(lilvWorld, LV2_CORE__AudioPort);
   lv2CacheNodes.lv2_ControlPort        = lilv_new_uri(lilvWorld, LV2_CORE__ControlPort);
   lv2CacheNodes.lv2_InputPort          = lilv_new_uri(lilvWorld, LV2_CORE__InputPort);
