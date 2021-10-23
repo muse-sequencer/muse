@@ -504,7 +504,7 @@ endif (ENABLE_VST_VESTIGE)
 
 if (ENABLE_LV2)
 set (muse_sord_ver "0.16.0")
-set (muse_lv2_ver "1.14.0")
+set (muse_lv2_ver "1.18.0")
 set (muse_lilv_ver "0.24.0" )
 
     PKG_CHECK_MODULES(LILV lilv-0>=${muse_lilv_ver})
