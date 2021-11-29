@@ -135,7 +135,8 @@ jobs:
         LIB_CONV=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/converters
         export LD_LIBRARY_PATH=$LIB_MODULES:$LIB_PLUGINS:$LIB_SYNTHI:$LIB_CONV:$LD_LIBRARY_PATH
         
-        ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt,gtk
+        ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin=gtk
+        ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin=qt
         
         echo '#! /usr/bin/env bash' > appdir/AppRun
         echo 'set -e' >> appdir/AppRun
