@@ -124,8 +124,9 @@ jobs:
         find appdir \( -name "moc_*" -or -name "*.o" -or -name "qrc_*" -or -name "Makefile*" -or -name "*.a" \) -exec rm {} \;
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+        wget -c "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
         wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage
-        chmod +x linuxdeploy*.AppImage
+        chmod +x linuxdeploy*.AppImage linuxdeploy-plugin-gtk.sh
         
         export MUSEDIR=$(basename -a ${{runner.workspace}}/build/appdir/usr/lib/muse-*)      
         LIB_MODULES=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/modules
@@ -134,7 +135,7 @@ jobs:
         LIB_CONV=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/converters
         export LD_LIBRARY_PATH=$LIB_MODULES:$LIB_PLUGINS:$LIB_SYNTHI:$LIB_CONV:$LD_LIBRARY_PATH
         
-        ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt
+        ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt,gtk
         
         echo '#! /usr/bin/env bash' > appdir/AppRun
         echo 'set -e' >> appdir/AppRun
