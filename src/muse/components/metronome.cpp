@@ -338,7 +338,6 @@ void MetronomeConfig::fillSoundFiles()
     QStringList klickfiles2 = localMetroPath.entryList(filters);
 
     for (auto filestr: klickfiles2) {
-        printf("klickfiles2: %s\n\r", filestr.toLatin1().data());
         klickfiles.append(filestr + METRO_USER_STR);
     }
     measSampleCombo->clear();
@@ -350,8 +349,6 @@ void MetronomeConfig::fillSoundFiles()
     beatSampleCombo->addItems(klickfiles);
     accent1SampleCombo->addItems(klickfiles);
     accent2SampleCombo->addItems(klickfiles);
-
-    printf("fillSoundfiles measSample %s\n", metro_settings->measSample.toLatin1().data());
 
     measSampleCombo->setCurrentIndex(klickfiles.indexOf(metro_settings->measSample));
     beatSampleCombo->setCurrentIndex(klickfiles.indexOf(metro_settings->beatSample));

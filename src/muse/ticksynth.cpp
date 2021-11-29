@@ -317,24 +317,28 @@ void MetronomeSynthIF::initSamples()
     MusECore::MetronomeSettings* metro_settings =
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-    QString measStr, beatStr, accent1Str,accent2Str;
+    QString measStr = metro_settings->measSample;
+    QString beatStr = metro_settings->beatSample;
+    QString accent1Str = metro_settings->accent1Sample;
+    QString accent2Str = metro_settings->accent2Sample;
+
     if (metro_settings->beatSample.indexOf(METRO_USER_STR) > 0)
-        beatStr = MusEGlobal::configPath + "/metronome/" + metro_settings->beatSample.chopped(strlen(METRO_USER_STR));
+        beatStr = MusEGlobal::configPath + "/metronome/" + beatStr.remove(METRO_USER_STR);
     else
         beatStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample;
 
     if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
-        measStr = MusEGlobal::configPath + "/metronome/" + metro_settings->measSample.chopped(strlen(METRO_USER_STR));
+        measStr = MusEGlobal::configPath + "/metronome/" + measStr.remove(METRO_USER_STR);
     else
         measStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->measSample;
 
     if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
-        accent1Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent1Sample.chopped(strlen(METRO_USER_STR));
+        accent1Str = MusEGlobal::configPath + "/metronome/" + accent1Str.remove(METRO_USER_STR);
     else
         accent1Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent1Sample;
 
     if (metro_settings->accent2Sample.indexOf(METRO_USER_STR) > 0)
-        accent2Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent2Sample.chopped(strlen(METRO_USER_STR));
+        accent2Str = MusEGlobal::configPath + "/metronome/" + accent2Str.remove(METRO_USER_STR);
     else
         accent2Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent2Sample;
 
@@ -396,24 +400,28 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
   MusECore::MetronomeSettings* metro_settings =
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-  QString measStr, beatStr, accent1Str,accent2Str;
+  QString measStr = metro_settings->measSample;
+  QString beatStr = metro_settings->beatSample;
+  QString accent1Str = metro_settings->accent1Sample;
+  QString accent2Str = metro_settings->accent2Sample;
+
   if (metro_settings->beatSample.indexOf(METRO_USER_STR) > 0)
-      beatStr = MusEGlobal::configPath + "/metronome/" + metro_settings->beatSample.chopped(strlen(METRO_USER_STR));
+      beatStr = MusEGlobal::configPath + "/metronome/" + beatStr.remove(METRO_USER_STR);
   else
       beatStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample;
 
   if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
-      measStr = MusEGlobal::configPath + "/metronome/" + metro_settings->measSample.chopped(strlen(METRO_USER_STR));
+      measStr = MusEGlobal::configPath + "/metronome/" + measStr.remove(METRO_USER_STR);
   else
       measStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->measSample;
 
   if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
-      accent1Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent1Sample.chopped(strlen(METRO_USER_STR));
+      accent1Str = MusEGlobal::configPath + "/metronome/" + accent1Str.remove(METRO_USER_STR);
   else
       accent1Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent1Sample;
 
   if (metro_settings->accent2Sample.indexOf(METRO_USER_STR) > 0)
-      accent2Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent2Sample.chopped(strlen(METRO_USER_STR));
+      accent2Str = MusEGlobal::configPath + "/metronome/" + accent2Str.remove(METRO_USER_STR);
   else
       accent2Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent2Sample;
 
