@@ -31,6 +31,8 @@
 
 #include "xml.h"
 
+#define METRO_USER_STR " (user)"
+
 namespace MusECore {
 
 struct MetroAccent

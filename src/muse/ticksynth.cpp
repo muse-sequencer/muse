@@ -62,13 +62,13 @@ static MetronomeSynth* metronomeSynth = 0;
 
 class MetronomeSynth : public Synth {
    public:
-      MetronomeSynth(const QFileInfo& fi, const QString& uri) : 
+      MetronomeSynth(const QFileInfo& fi, const QString& uri) :
         Synth(fi, uri, QString("Metronome"), QString("Metronome"), QString(), QString()) {}
       virtual ~MetronomeSynth() {}
       inline virtual Type synthType() const { return METRO_SYNTH; }
       inline virtual void incInstances(int) {}
       virtual void* instantiate();
-      
+
       virtual SynthIF* createSIF(SynthI*);
       };
 
@@ -109,7 +109,7 @@ class MetronomeSynthIF : public SynthIF
       int    defaultClickLengthConverted;
 
       bool processEvent(const MidiPlayEvent& ev);
-      
+
    public:
       MetronomeSynthIF(SynthI* s) : SynthIF(s) {
             data = 0;
@@ -135,13 +135,13 @@ class MetronomeSynthIF : public SynthIF
       inline virtual bool nativeGuiVisible() const { return false; }
       inline virtual void showNativeGui(bool) { }
       inline virtual bool hasNativeGui() const { return false; }
-      
+
       inline virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       inline virtual void setNativeGeometry(int, int, int, int) {}
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       virtual MidiPlayEvent receiveEvent() { return MidiPlayEvent(); }
       virtual int eventsPending() const { return 0; }
-      
+
       inline virtual int channels() const { return 1; }
       inline virtual int totalOutChannels() const { return 1; }
       inline virtual int totalInChannels() const { return 0; }
@@ -154,7 +154,7 @@ class MetronomeSynthIF : public SynthIF
       inline virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
 
       void initSamplesOperation(MusECore::PendingOperationList&);
-       
+
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
@@ -197,7 +197,7 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
       const bool do_stop = synti->stopFlag();
 
       MidiPlayEvent buf_ev;
-      
+
       // Transfer the user lock-free buffer events to the user sorted multi-set.
       // False = don't use the size snapshot, but update it.
       const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
@@ -206,7 +206,7 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
         if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
           synti->_outUserEvents.insert(buf_ev);
       }
-      
+
       // Transfer the playback lock-free buffer events to the playback sorted multi-set.
       const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
       for(unsigned int i = 0; i < pb_buf_sz; ++i)
@@ -218,7 +218,7 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
         else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
           synti->_outPlaybackEvents.insert(buf_ev);
       }
-  
+
       // Are we stopping?
       if(do_stop)
       {
@@ -227,13 +227,13 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
         // Reset the flag.
         synti->setStopFlag(false);
       }
-        
+
       iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
       iMPEvent impe_us = synti->_outUserEvents.begin();
       bool using_pb;
-  
+
       while(1)
-      {  
+      {
         if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
           using_pb = *impe_pb < *impe_us;
         else if(impe_pb != synti->_outPlaybackEvents.end())
@@ -241,13 +241,13 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
         else if(impe_us != synti->_outUserEvents.end())
           using_pb = false;
         else break;
-        
+
         const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
-        
+
         const unsigned int evTime = ev.time();
         if(evTime < syncFrame)
         {
-          fprintf(stderr, "MetronomeSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
+          fprintf(stderr, "MetronomeSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n",
                   evTime, syncFrame, curPos);
           frame = 0;
         }
@@ -255,9 +255,9 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
           frame = evTime - syncFrame;
 
         // Event is for future?
-        if(frame >= n) 
+        if(frame >= n)
         {
-          DEBUG_TICKSYNTH(stderr, "MetronomeSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n", 
+          DEBUG_TICKSYNTH(stderr, "MetronomeSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n",
                   frame, n, evTime, syncFrame, curPos);
           //continue;
           break;
@@ -268,14 +268,14 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
           process(buffer, curPos, frame - curPos);
           curPos = frame;
         }
-        
+
         // If putEvent fails, although we would like to not miss events by keeping them
         //  until next cycle and trying again, that can lead to a large backup of events
         //  over a long time. So we'll just... miss them.
         //putEvent(ev);
         //synti->putEvent(ev);
         processEvent(ev);
-        
+
         // Done with ring buffer event. Remove it from FIFO.
         // C++11.
         if(using_pb)
@@ -286,10 +286,10 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
 
       if(curPos < n)
         process(buffer, curPos, n - curPos);
-      
+
       return true;
       }
-      
+
 //---------------------------------------------------------
 //   initSamples
 //---------------------------------------------------------
@@ -313,46 +313,59 @@ void MetronomeSynthIF::initSamples()
     accent1Samples = nullptr;
     accent2Samples = nullptr;
 
+    // Try loading all samples, absolute path samples has precedense over global path.
     MusECore::MetronomeSettings* metro_settings =
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-    {
-      SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample, true, true);
-      if (!beat.openRead(false)) {
+    QString measStr, beatStr, accent1Str,accent2Str;
+    if (metro_settings->beatSample.indexOf(METRO_USER_STR) > 0)
+        beatStr = MusEGlobal::configPath + "/metronome/" + metro_settings->beatSample.chopped(strlen(METRO_USER_STR));
+    else
+        beatStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample;
+
+    if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
+        measStr = MusEGlobal::configPath + "/metronome/" + metro_settings->measSample.chopped(strlen(METRO_USER_STR));
+    else
+        measStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->measSample;
+
+    if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
+        accent1Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent1Sample.chopped(strlen(METRO_USER_STR));
+    else
+        accent1Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent1Sample;
+
+    if (metro_settings->accent2Sample.indexOf(METRO_USER_STR) > 0)
+        accent2Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent2Sample.chopped(strlen(METRO_USER_STR));
+    else
+        accent2Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent2Sample;
+
+    SndFile beat(beatStr, true, true);
+    if (!beat.openRead(false)) {
         beatLen = beat.samplesConverted();
         beatSamples = new float[beatLen];
         beat.readConverted(0 /* pos */, 1 /* channels */, &beatSamples, beatLen);
-      }
     }
 
-    {
-      SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + metro_settings->measSample, true, true);
-      if (!meas.openRead(false)) {
-        measLen = meas.samplesConverted();
-        measSamples = new float[measLen];
-        meas.readConverted(0, 1, &measSamples, measLen);
-      }
+    SndFile meas(measStr, true, true);
+    if (!meas.openRead(false)) {
+      measLen = meas.samplesConverted();
+      measSamples = new float[measLen];
+      meas.readConverted(0, 1, &measSamples, measLen);
     }
 
-    {
-      SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent1Sample, true, true);
-      if (!accent1.openRead(false)) {
+    SndFile accent1(accent1Str, true, true);
+    if (!accent1.openRead(false)) {
         accent1Len = accent1.samplesConverted();
         accent1Samples = new float[accent1Len];
         accent1.readConverted(0, 1, &accent1Samples, accent1Len);
-      }
     }
 
-    {
-      SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent2Sample, true, true);
-      if (!accent2.openRead(false)) {
-        accent2Len = accent2.samplesConverted();
-        accent2Samples = new float[accent2Len];
-        accent2.readConverted(0, 1, &accent2Samples, accent2Len);
-      }
+    SndFile accent2(accent2Str, true, true);
+    if (!accent2.openRead(false)) {
+      accent2Len = accent2.samplesConverted();
+      accent2Samples = new float[accent2Len];
+      accent2.readConverted(0, 1, &accent2Samples, accent2Len);
     }
 
-    
     {
       SndFile defClickEmphasis((void*)defaultClickEmphasis, sizeof(defaultClickEmphasis), true, true);
       defClickEmphasis.setFormat(SF_FORMAT_RAW | SF_FORMAT_FLOAT, 1, 44100, defaultClickEmphasisLength);
@@ -383,54 +396,76 @@ void MetronomeSynthIF::initSamplesOperation(MusECore::PendingOperationList& oper
   MusECore::MetronomeSettings* metro_settings =
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
-  SndFile beat(MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample, true, true);
+  QString measStr, beatStr, accent1Str,accent2Str;
+  if (metro_settings->beatSample.indexOf(METRO_USER_STR) > 0)
+      beatStr = MusEGlobal::configPath + "/metronome/" + metro_settings->beatSample.chopped(strlen(METRO_USER_STR));
+  else
+      beatStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->beatSample;
+
+  if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
+      measStr = MusEGlobal::configPath + "/metronome/" + metro_settings->measSample.chopped(strlen(METRO_USER_STR));
+  else
+      measStr = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->measSample;
+
+  if (metro_settings->measSample.indexOf(METRO_USER_STR) > 0)
+      accent1Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent1Sample.chopped(strlen(METRO_USER_STR));
+  else
+      accent1Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent1Sample;
+
+  if (metro_settings->accent2Sample.indexOf(METRO_USER_STR) > 0)
+      accent2Str = MusEGlobal::configPath + "/metronome/" + metro_settings->accent2Sample.chopped(strlen(METRO_USER_STR));
+  else
+      accent2Str = MusEGlobal::museGlobalShare + "/metronome/" + metro_settings->accent2Sample;
+
+
+  SndFile beat(beatStr, true, true);
   if (!beat.openRead(false)) {
     const sf_count_t newBeatLen = beat.samplesConverted();
     if(newBeatLen != 0)
     {
       float* newBeatSamples = new float[newBeatLen];
       beat.readConverted(0, 1, &newBeatSamples, newBeatLen);
-      operations.add(PendingOperationItem(&beatSamples, newBeatSamples, 
-                                          &beatLen, newBeatLen, 
+      operations.add(PendingOperationItem(&beatSamples, newBeatSamples,
+                                          &beatLen, newBeatLen,
                                           PendingOperationItem::ModifyAudioSamples));
     }
   }
-  
-  SndFile meas(MusEGlobal::museGlobalShare  + "/metronome/" + metro_settings->measSample, true, true);
+
+  SndFile meas(measStr, true, true);
   if (!meas.openRead(false)) {
     const sf_count_t newMeasLen = meas.samplesConverted();
     if(newMeasLen != 0)
     {
       float* newMeasSamples = new float[newMeasLen];
       meas.readConverted(0, 1, &newMeasSamples, newMeasLen);
-      operations.add(PendingOperationItem(&measSamples, newMeasSamples, 
-                                          &measLen, newMeasLen, 
+      operations.add(PendingOperationItem(&measSamples, newMeasSamples,
+                                          &measLen, newMeasLen,
                                           PendingOperationItem::ModifyAudioSamples));
     }
   }
 
-  SndFile accent1(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent1Sample, true, true);
+  SndFile accent1(accent1Str, true, true);
   if (!accent1.openRead(false)) {
     const sf_count_t newAccent1Len = accent1.samplesConverted();
     if(newAccent1Len != 0)
     {
       float* newAccent1Samples = new float[newAccent1Len];
       accent1.readConverted(0, 1, &newAccent1Samples, newAccent1Len);
-      operations.add(PendingOperationItem(&accent1Samples, newAccent1Samples, 
-                                          &accent1Len, newAccent1Len, 
+      operations.add(PendingOperationItem(&accent1Samples, newAccent1Samples,
+                                          &accent1Len, newAccent1Len,
                                           PendingOperationItem::ModifyAudioSamples));
     }
   }
 
-  SndFile accent2(MusEGlobal::museGlobalShare +  "/metronome/" + metro_settings->accent2Sample, true, true);
+  SndFile accent2(accent2Str, true, true);
   if (!accent2.openRead(false)) {
     const sf_count_t newAccent2Len = accent2.samplesConverted();
     if(newAccent2Len != 0)
     {
       float* newAccent2Samples = new float[newAccent2Len];
       accent2.readConverted(0, 1, &newAccent2Samples, newAccent2Len);
-      operations.add(PendingOperationItem(&accent2Samples, newAccent2Samples, 
-                                          &accent2Len, newAccent2Len, 
+      operations.add(PendingOperationItem(&accent2Samples, newAccent2Samples,
+                                          &accent2Len, newAccent2Len,
                                           PendingOperationItem::ModifyAudioSamples));
     }
   }
@@ -445,7 +480,7 @@ bool MetronomeSynthIF::processEvent(const MidiPlayEvent& ev)
     if(ev.type() != MusECore::ME_NOTEON)
       return false;
 
-    MusECore::MetronomeSettings* metro_settings = 
+    MusECore::MetronomeSettings* metro_settings =
       MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
     if (ev.dataA() == MusECore::measureSound) {
@@ -514,7 +549,7 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
       if (data == 0)
         return;
 
-      MusECore::MetronomeSettings* metro_settings = 
+      MusECore::MetronomeSettings* metro_settings =
         MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
       const float* s = data + pos;
@@ -534,11 +569,11 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
 //---------------------------------------------------------
 
 void MetronomeSynthI::initSamplesOperation(PendingOperationList& operations)
-{ 
-  if(sif()) 
+{
+  if(sif())
     dynamic_cast<MetronomeSynthIF*>(sif())->initSamplesOperation(operations);
 }
-   
+
 //================================================
 // BEGIN Latency correction/compensation routines.
 //================================================
@@ -561,8 +596,8 @@ bool MetronomeSynthI::isLatencyInputTerminal()
     _latencyInfo._isLatencyInputTerminalProcessed = true;
     return true;
   }
-  
-  MusECore::MetronomeSettings* metro_settings = 
+
+  MusECore::MetronomeSettings* metro_settings =
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
   if(metro_settings->audioClickFlag)
@@ -580,7 +615,7 @@ bool MetronomeSynthI::isLatencyInputTerminal()
         return false;
       }
     }
-  }    
+  }
 
   if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
@@ -616,7 +651,7 @@ bool MetronomeSynthI::isLatencyOutputTerminal()
   if(_latencyInfo._isLatencyOutputTerminalProcessed)
     return _latencyInfo._isLatencyOutputTerminal;
 
-  MusECore::MetronomeSettings* metro_settings = 
+  MusECore::MetronomeSettings* metro_settings =
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
   if(metro_settings->audioClickFlag)
@@ -634,7 +669,7 @@ bool MetronomeSynthI::isLatencyOutputTerminal()
         return false;
       }
     }
-  }    
+  }
 
   if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
@@ -653,7 +688,7 @@ bool MetronomeSynthI::isLatencyOutputTerminal()
         }
       }
   }
-    
+
   _latencyInfo._isLatencyOutputTerminal = true;
   _latencyInfo._isLatencyOutputTerminalProcessed = true;
   return true;
@@ -675,8 +710,8 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
     tli->_isLatencyInputTerminalProcessed = true;
     return true;
   }
-  
-  MusECore::MetronomeSettings* metro_settings = 
+
+  MusECore::MetronomeSettings* metro_settings =
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
   if(metro_settings->audioClickFlag)
@@ -694,7 +729,7 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
         return false;
       }
     }
-  }    
+  }
 
   if(capture/*Tim*/ && metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
@@ -728,7 +763,7 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
   if(tli->_isLatencyOutputTerminalProcessed)
     return tli->_isLatencyOutputTerminal;
 
-  MusECore::MetronomeSettings* metro_settings = 
+  MusECore::MetronomeSettings* metro_settings =
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
   if(metro_settings->audioClickFlag)
@@ -746,7 +781,7 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
         return false;
       }
     }
-  }    
+  }
 
   if(capture/*Tim*/ && metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
@@ -785,7 +820,7 @@ void initMetronome()
       QFileInfo fi;
       metronomeSynth = new MetronomeSynth(fi, QString());
       metronome = new MetronomeSynthI();
-      
+
       QString name("metronome");
       metronome->initInstance(metronomeSynth, name);
       }
@@ -798,8 +833,8 @@ void exitMetronome()
 {
       if(metronome)
         delete metronome;
-      metronome = 0;  
-      
+      metronome = 0;
+
       if(metronomeSynth)
         delete metronomeSynth;
       metronomeSynth = 0;

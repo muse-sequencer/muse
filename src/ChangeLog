@@ -1,3 +1,7 @@
+29.11.2021
+    - Metronome: Added possibilty to load metronome samples from local path
+      .config/MusE/MusE/metronome, this allows for changing metronome sounds while using 
+      the AppImage (rj)
 23.10.2021
     - LV2: Support loadDefaultState feature. Tested OK with Exampler plugin for example. (Tim)
     - LV2: Add initial support for requestValue feature. Unfinished - handled but ignored.
