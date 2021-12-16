@@ -135,7 +135,16 @@ jobs:
         LIB_CONV=${{runner.workspace}}/build/appdir/usr/lib/$MUSEDIR/converters
         export LD_LIBRARY_PATH=$LIB_MODULES:$LIB_PLUGINS:$LIB_SYNTHI:$LIB_CONV:$LD_LIBRARY_PATH
         
+        # install GTK library dependencies for LV2 uis
+        sudo apt install patchelf
+        sudo apt install libgtk2.0-dev
+        sudo apt install libglib2.0-dev
+        sudo apt install librsvg2-dev 
+
+        export DEPLOY_GTK_VERSION=2
         ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin=gtk
+        
+        # install QT library dependencies for MusE
         ./linuxdeploy-x86_64.AppImage --appdir appdir --plugin=qt
         
         echo '#! /usr/bin/env bash' > appdir/AppRun
