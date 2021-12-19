@@ -4627,13 +4627,18 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
         //rename it if there is a duplicate,
         //resample to project's rate
 
+        QFileInfo fi(f.name());
+
+        //remove old peak-file to cut down on clutter. It will be recreated at the new wave location
+        QString cacheName = fi.absolutePath() + QString("/") + fi.completeBaseName() + QString(".wca");
+        remove(cacheName.toLocal8Bit().constData());
+
         if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
         {
           if(!MusEGlobal::muse->saveAs())
               return true;
         }
 
-        QFileInfo fi(f.name());
         QString projectPath = MusEGlobal::museProject + QDir::separator();
         QString fExt = "wav";
         QString fBaseName = fi.baseName();

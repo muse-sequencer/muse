@@ -1,5 +1,6 @@
 19.12.2021
     - Fixed build issue on Ubuntu 21.10 (g++ 11.2) in vamgui.cpp (rj)
+    - Fix issue 1060: remove unused peak file from file system when resampling (rj)
 29.11.2021
     - Metronome: Added possibilty to load metronome samples from local path
       .config/MusE/MusE/metronome, this allows for changing metronome sounds while using 
