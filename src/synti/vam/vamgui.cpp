@@ -599,8 +599,7 @@ void VAMGui::loadPresetsPressed()
 
 	if (fn.isEmpty())
 		return;
-	bool popenFlag=false;
-	FILE* f = fopen(fn.toLatin1().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
+    FILE* f = fopen(fn.toLatin1().constData(),"r");
 	if (f == 0)
 		return;
 	presets.clear();
@@ -646,10 +645,7 @@ void VAMGui::loadPresetsPressed()
 		}
 	}
 ende:
-	if (popenFlag)
-		pclose(f);
-	else
-		fclose(f);
+    fclose(f);
 
 	QString dots ("...");
 	fileName->setText(fn.right(32).insert(0, dots));
@@ -668,13 +664,12 @@ void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 {
     //_showWarning=_showWarning; // prevent of unsused variable warning
 #if 1
-	bool popenFlag=false;
   if (fn=="") {
     printf("empty name\n");
     return;
     } 
   printf("fn=%s\n",fn.toLatin1().constData());
-  FILE* f = fopen(fn.toLatin1().constData(),"w");//fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, showWarning);
+  FILE* f = fopen(fn.toLatin1().constData(),"w");
 	if (f == 0)
 		return;
 	MusECore::Xml xml(f);
@@ -687,10 +682,7 @@ void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 
 	xml.tag(1, "/muse");
 
-	if (popenFlag)
-		pclose(f);
-	else
-		fclose(f);
+    fclose(f);
 #endif
 }
 
