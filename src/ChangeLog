@@ -1,3 +1,5 @@
+22.01.2022
+    - Instrument definition file Edirol-SD90.idf submitted by Stéphane Gagnon (rj)
 19.12.2021
     - Fixed build issue on Ubuntu 21.10 (g++ 11.2) in vamgui.cpp (rj)
     - Fix issue 1060: remove unused peak file from file system when resampling (rj)
