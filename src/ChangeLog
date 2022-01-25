@@ -1,3 +1,10 @@
+25.01.2022
+    - Fix issue 1063: Wrong midiport.h file searched. (Tim)
+      Jack's midiport.h was being searched instead of our own.
+      Poster's jack.pc file was different than most, putting the full path to jack.
+      In our top cmake file, moved the include_directories statement that includes
+       our own directories, closer to the top of the cmake file, to take priority.
+      Poster reports this worked.
 22.01.2022
     - Instrument definition file Edirol-SD90.idf submitted by Stéphane Gagnon (rj)
 19.12.2021

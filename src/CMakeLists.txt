@@ -45,6 +45,35 @@ if (NOT DEFINED LIB_SUFFIX)
         SET(LIB_SUFFIX "" CACHE STRING "Suffix for installed library path. Ex. 64 for lib64")
 endif (NOT DEFINED LIB_SUFFIX)
 
+include_directories(
+   .
+   ${PROJECT_SOURCE_DIR}
+   ${PROJECT_SOURCE_DIR}/libs/evdata
+   ${PROJECT_SOURCE_DIR}/libs/memory
+   ${PROJECT_SOURCE_DIR}/libs/midi_controller
+   ${PROJECT_SOURCE_DIR}/libs/midnam
+   ${PROJECT_SOURCE_DIR}/libs/mpevent
+   ${PROJECT_SOURCE_DIR}/libs/plugin
+   ${PROJECT_SOURCE_DIR}/libs/string
+   ${PROJECT_SOURCE_DIR}/libs/sysex_helper
+   ${PROJECT_SOURCE_DIR}/libs/time_stretch
+   ${PROJECT_SOURCE_DIR}/libs/wave
+   ${PROJECT_SOURCE_DIR}/libs/xml
+   ${PROJECT_SOURCE_DIR}/muse
+   ${PROJECT_SOURCE_DIR}/muse/function_dialogs
+   ${PROJECT_SOURCE_DIR}/muse/widgets
+   ${PROJECT_SOURCE_DIR}/muse/components
+   ${PROJECT_SOURCE_DIR}/muse/instruments
+
+   ${PROJECT_BINARY_DIR}
+   ${PROJECT_BINARY_DIR}/muse
+   ${PROJECT_BINARY_DIR}/muse/function_dialogs
+   ${PROJECT_BINARY_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}/muse/components
+   ${PROJECT_BINARY_DIR}/muse/instruments
+   ${PROJECT_BINARY_DIR}/muse/ctrl
+   )
+
 SET(VST_SDK_QUIRK "")
 if (NOT DEFINED VST_HEADER_PATH)
         SET(VST_HEADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vestige" CACHE PATH "Path to vst header files (aeffectx.h). Default is ./vestige. See ENABLE_VST_VESTIGE.")
@@ -647,35 +676,6 @@ configure_file (
       ${PROJECT_SOURCE_DIR}/config.h.in
       ${PROJECT_BINARY_DIR}/config.h
       )
-
-include_directories(
-   .
-   ${PROJECT_SOURCE_DIR}
-   ${PROJECT_SOURCE_DIR}/libs/evdata
-   ${PROJECT_SOURCE_DIR}/libs/memory
-   ${PROJECT_SOURCE_DIR}/libs/midi_controller
-   ${PROJECT_SOURCE_DIR}/libs/midnam
-   ${PROJECT_SOURCE_DIR}/libs/mpevent
-   ${PROJECT_SOURCE_DIR}/libs/plugin
-   ${PROJECT_SOURCE_DIR}/libs/string
-   ${PROJECT_SOURCE_DIR}/libs/sysex_helper
-   ${PROJECT_SOURCE_DIR}/libs/time_stretch
-   ${PROJECT_SOURCE_DIR}/libs/wave
-   ${PROJECT_SOURCE_DIR}/libs/xml
-   ${PROJECT_SOURCE_DIR}/muse
-   ${PROJECT_SOURCE_DIR}/muse/function_dialogs
-   ${PROJECT_SOURCE_DIR}/muse/widgets
-   ${PROJECT_SOURCE_DIR}/muse/components
-   ${PROJECT_SOURCE_DIR}/muse/instruments
-
-   ${PROJECT_BINARY_DIR}
-   ${PROJECT_BINARY_DIR}/muse
-   ${PROJECT_BINARY_DIR}/muse/function_dialogs
-   ${PROJECT_BINARY_DIR}/muse/widgets
-   ${PROJECT_BINARY_DIR}/muse/components
-   ${PROJECT_BINARY_DIR}/muse/instruments
-   ${PROJECT_BINARY_DIR}/muse/ctrl
-   )
 
 #
 # If the cmake version includes cpack, use it
