@@ -166,13 +166,14 @@ details.
            git clone https://github.com/muse-sequencer/muse.git
 
     3. Install libraries:
-
+       Note! When building under Debian 11 (and distros based upon Debian 11)
+       remove qt5-default from the list.
+       
        sudo apt-get install\
          libsndfile1-dev\
          libsamplerate0-dev\
          libjack-jackd2-dev\
          ladspa-sdk\
-         qt5-default\
          qttools5-dev\
          qttools5-dev-tools\
          liblo-dev\
@@ -190,7 +191,8 @@ details.
 	 libsratom-dev\ 
          librubberband-dev\
          python3-dev\
-         python3-pyqt5
+         python3-pyqt5\
+         qt5-default
 
     4. Change directory:
 
