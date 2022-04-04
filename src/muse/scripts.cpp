@@ -172,9 +172,11 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
                     QStringList sl = line.split(" ");
 
                     Event e(Controller);
+                    int tick = sl[1].toInt();
                     int a = sl[2].toInt();
                     int b = sl[3].toInt();
                     int c = sl[4].toInt();
+                    e.setTick(tick);
                     e.setA(a);
                     e.setB(b);
                     e.setC(c);
