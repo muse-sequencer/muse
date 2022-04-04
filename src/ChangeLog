@@ -1,3 +1,6 @@
+04.04.2022
+    - Fix issue 1037: Time stretching/shrinking for midi/drum parts. (Staffan)
+      Solved by writing a Python MIDI script, SpeedChange. Fixed small bug i scripts.cpp.
 25.01.2022
     - Fix issue 1063: Wrong midiport.h file searched. (Tim)
       Jack's midiport.h was being searched instead of our own.
