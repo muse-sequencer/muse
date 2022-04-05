@@ -121,7 +121,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       _playEventsMode = EventCanvas::PlayEventsSingleNote;
       colorMode      = colorModeInit;
       _canvasXOrigin = DefaultCanvasXOrigin;
-      _minXMag = -25;
+      _minXMag = -200; // previously -25 (StaffanMelin)
       _maxXMag = 2;
       
       // Request to set the raster, but be sure to use the one it chooses,
