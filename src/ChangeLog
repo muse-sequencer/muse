@@ -1,3 +1,5 @@
+08.04.2022
+    *** MusE 4.1 ***
 04.04.2022
     - Fix issue 1037: Time stretching/shrinking for midi/drum parts. (Staffan)
       Solved by writing a Python MIDI script, SpeedChange. Fixed small bug i scripts.cpp.
