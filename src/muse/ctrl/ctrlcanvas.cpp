@@ -1003,7 +1003,8 @@ bool CtrlCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselect
       //  and don't bother individually deselecting objects, below.
       if(deselectAll)
       {
-        opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
+        // This is a one-time operation (it has no 'undo' section).
+        opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0, true));
         changed = true;
       }
       

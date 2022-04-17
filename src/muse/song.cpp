@@ -103,6 +103,8 @@ Song::Song(const char* name)
       {
       setObjectName(name);
 
+      _audioCtrlMoveModeBegun = false;
+
       _ipcInEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
       _ipcOutEventBuffers = new LockFreeMPSCRingBuffer<MidiPlayEvent>(16384);
   
@@ -2826,7 +2828,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
         iCtrl s = cl->lower_bound(frame);
         iCtrl e = cl->upper_bound(frame);
 
-        isEvent = (s != cl->end() && s->second.frame == frame);
+        isEvent = (s != cl->end() && s->first == frame);
 
         canSeekPrev = s != cl->begin();
         canSeekNext = e != cl->end();
@@ -2834,7 +2836,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
         s = cl->lower_bound(pos[1].frame());
 
         canEraseRange = s != cl->end()
-                        && pos[2].frame() > s->second.frame;
+                        && pos[2].frame() > s->first;
       }
     }
   }
@@ -3442,8 +3444,8 @@ void Song::processAutomationEvents(Undo* operations)
 
   // Clear all pressed and touched flags.
   // This is a non-undoable 'one-time' operation, removed after execution.
-  opsp->push_back(UndoOp(UndoOp::EnableAllAudioControllers));
-  
+  opsp->push_back(UndoOp(UndoOp::EnableAllAudioControllers, true));
+
   for(iTrack i = _tracks.begin(); i != _tracks.end(); ++i)
   {
     if(!(*i)->isMidiTrack())
@@ -3453,6 +3455,248 @@ void Song::processAutomationEvents(Undo* operations)
 
   if(!operations)
     MusEGlobal::song->applyOperationGroup(ops);
+}
+
+//---------------------------------------------------------
+//   collectAudioCtrlPasteModeOps
+//---------------------------------------------------------
+
+bool Song::collectAudioCtrlPasteModeOps(
+  AudioAutomationItemTrackMap& trackMap, MusECore::Undo& operations,
+  const MusECore::CtrlList::PasteEraseOptions& eraseOpts, bool recoverErasedItems, bool isCopy)
+{
+  bool ret = false;
+  int num_non_copyable = 0;
+
+  for(MusECore::iAudioAutomationItemTrackMap iatm = trackMap.begin();
+      iatm != trackMap.end(); ++iatm)
+  {
+    MusECore::Track* t = iatm->first;
+    if(t->isMidiTrack())
+      continue;
+    MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
+    MusECore::AudioAutomationItemMap& atm = iatm->second;
+    for(MusECore::iAudioAutomationItemMap iaim = atm.begin(); iaim != atm.end(); ++iaim)
+    {
+      MusECore::CtrlList* cl = iaim->first;
+      const int ctrlId = cl->id();
+
+      MusECore::CtrlList* trackErasedList = nullptr;
+      {
+        ciCtrlList icTrackErased = at->erasedController()->find(ctrlId);
+        if(icTrackErased != at->erasedController()->cend())
+          trackErasedList = icTrackErased->second;
+      }
+      MusECore::CtrlList* trackNoEraseList = nullptr;
+      {
+        ciCtrlList icTrackNoErase = at->noEraseController()->find(ctrlId);
+        if(icTrackNoErase != at->noEraseController()->cend())
+          trackNoEraseList = icTrackNoErase->second;
+      }
+
+      MusECore::CtrlList* addCtrlList = new MusECore::CtrlList(ctrlId, false);
+      MusECore::CtrlList* eraseCtrlList = new MusECore::CtrlList(ctrlId, false);
+      MusECore::CtrlList* recoverableEraseCtrlList = new MusECore::CtrlList(ctrlId, false);
+      MusECore::CtrlList* recoverableAddCtrlList = new MusECore::CtrlList(ctrlId, false);
+      MusECore::CtrlList* noEraseCtrlList = new MusECore::CtrlList(ctrlId, false);
+
+      unsigned int groupStartFrame, groupEndFrame;
+      unsigned int prevGroupEndFrame = 0;
+      bool isFirstItem = true;
+      bool isGroupStart = true;
+      bool isGroupEnd = false;
+      bool isLastItem = false;
+
+      MusECore::AudioAutomationItemMapStruct& ais = iaim->second;
+      MusECore::AudioAutomationItemList& ail = ais._selectedList;
+      for(MusECore::iAudioAutomationItemList iail = ail.begin(); iail != ail.end(); ++iail)
+      {
+        // Check if this is the last item.
+        MusECore::ciAudioAutomationItemList iail_next = iail;
+        ++iail_next;
+        if(iail_next == ail.cend())
+          isLastItem = true;
+
+        const unsigned int oldCtrlFrame = iail->first;
+        MusECore::AudioAutomationItem& aai = iail->second;
+        const unsigned int newCtrlFrame = aai._wrkFrame;
+
+        MusECore::iCtrl ic_existing_old = cl->find(oldCtrlFrame);
+
+        // Even in PasteNoErase mode, we must still erase any existing
+        //  items at the locations that we wish to paste to.
+        if(eraseOpts == MusECore::CtrlList::PasteNoErase)
+          isGroupEnd = true;
+        // In PasteErase mode, check for group end.
+        else if(eraseOpts == MusECore::CtrlList::PasteErase)
+          isGroupEnd = aai._groupEnd;
+
+        // Check for missing group end and force it if necessary.
+        // Also, in PasteEraseRange mode this will catch the last
+        //  item and force it to be group end.
+        if(isLastItem)
+          isGroupEnd = true;
+
+        if(isGroupStart)
+        {
+          groupStartFrame = newCtrlFrame;
+          isGroupStart = false;
+        }
+
+        // If nothing changed, don't bother with this point, just move on to the recoverable stuff below.
+        if(oldCtrlFrame != newCtrlFrame || aai._wrkVal != aai._value)
+        {
+          // Was the current point found?
+          if(ic_existing_old != cl->end())
+          {
+            // Is this a copy?
+            if(isCopy)
+            {
+              // We cannot copy automation points to time positions where points already exist.
+              // Only one point per time position is allowed.
+              if(oldCtrlFrame == newCtrlFrame)
+              {
+                // Reset the working value to the original value to keep the graphics drawing happy.
+                aai._wrkVal = aai._value;
+                // Increment the number of non-copyable points.
+                ++num_non_copyable;
+                continue;
+              }
+
+              // Remember the original points so that we can avoid erasing them later.
+              // They are the points being copied. We do not want to erase them at all,
+              //  we want to keep them alive no matter what gets dropped on top of them.
+              // Also, we must unselect these original points. We don't want them included in any movement at all.
+              // The ModifyAudioCtrlValList operation below AUTOMATICALLY unselects these points for us
+              //  and reselects them on undo. There is no need to manually unselect them here.
+              noEraseCtrlList->insert(CtrlListInsertPair_t(oldCtrlFrame, ic_existing_old->second));
+            }
+            else
+            {
+              // It's a move not a copy. So we want to erase this original point.
+              eraseCtrlList->insert(CtrlListInsertPair_t(oldCtrlFrame, ic_existing_old->second));
+            }
+          }
+
+          addCtrlList->insert(CtrlListInsertPair_t(newCtrlFrame, CtrlVal(aai._wrkVal, true, aai._groupEnd)));
+        }
+
+        if(isGroupEnd)
+        {
+          groupEndFrame = newCtrlFrame;
+
+          //-----------------------------------------------------
+          // Find items to erase in the target controller list.
+          //-----------------------------------------------------
+          {
+            MusECore::ciCtrl icEraseStart = cl->lower_bound(groupStartFrame);
+            MusECore::ciCtrl icEraseEnd = cl->upper_bound(groupEndFrame);
+            //eraseRecoveryList->insert(icEraseStart, icEraseEnd);
+            for(MusECore::ciCtrl ice = icEraseStart; ice != icEraseEnd; ++ice)
+            {
+              // We do not want the current points to be recoverable,
+              //  so do not erase them here, they are erased above.
+              // Check if the point is selected.
+              if(ail.find(ice->first) != ail.end())
+                continue;
+
+
+              // If this is a copy, we do NOT want to erase the original items being copied.
+              if(!isCopy || (noEraseCtrlList->find(ice->first) == noEraseCtrlList->cend() &&
+                 (!trackNoEraseList || (trackNoEraseList->find(ice->first) == trackNoEraseList->cend()))))
+              {
+                // Add the item to the list of recoverable items to be erased.
+                recoverableEraseCtrlList->insert(CtrlListInsertPair_t(ice->first, ice->second));
+              }
+            }
+          }
+
+          //-----------------------------------------------------
+          // Find items to recover in the list of erased items.
+          // Only items OUTSIDE the range of ALL groups' groupStartFrame to groupEndFrame.
+          // In other words here in each iteration we recover from prevGroupEndFrame +1 to groupStartFrame -1.
+          //-----------------------------------------------------
+          if(recoverErasedItems && trackErasedList)
+          {
+            for(MusECore::iCtrl erase_ic = trackErasedList->begin(); erase_ic != trackErasedList->end(); ++erase_ic)
+            {
+              const unsigned int erase_frame = erase_ic->first;
+              const MusECore::CtrlVal& erase_cv = erase_ic->second;
+              // Is the item outside of the group range?
+              // Restore it.
+              if((((isFirstItem || erase_frame > prevGroupEndFrame) && erase_frame < groupStartFrame) ||
+                   (isLastItem && erase_frame > groupEndFrame)))
+              {
+                // The item is to be recovered. Do not select it.
+                recoverableAddCtrlList->insert(
+                  CtrlListInsertPair_t(erase_frame, CtrlVal(erase_cv.value(), /*erase_cv.selected()*/ false)));
+              }
+            }
+          }
+
+          // Reset these for next iteration.
+          isFirstItem = false;
+          prevGroupEndFrame = groupEndFrame;
+          isGroupStart = true;
+          isGroupEnd = false;
+        }
+      }
+
+      // If nothing was changed, delete and ignore.
+      if(eraseCtrlList->empty())
+      {
+        delete eraseCtrlList;
+        eraseCtrlList = nullptr;
+      }
+      if(addCtrlList->empty())
+      {
+        delete addCtrlList;
+        addCtrlList = nullptr;
+      }
+      if(recoverableEraseCtrlList->empty())
+      {
+        delete recoverableEraseCtrlList;
+        recoverableEraseCtrlList = nullptr;
+      }
+      if(recoverableAddCtrlList->empty())
+      {
+        delete recoverableAddCtrlList;
+        recoverableAddCtrlList = nullptr;
+      }
+      if(noEraseCtrlList->empty())
+      {
+        delete noEraseCtrlList;
+        noEraseCtrlList = nullptr;
+      }
+      if(eraseCtrlList || addCtrlList || recoverableEraseCtrlList || recoverableAddCtrlList || noEraseCtrlList)
+      {
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyAudioCtrlValList,
+          // Track.
+          t,
+          // List of items to erase.
+          eraseCtrlList,
+          // List of items to add.
+          addCtrlList,
+          // List of recoverable items to erase.
+          recoverableEraseCtrlList,
+          recoverableAddCtrlList,
+          noEraseCtrlList,
+          // DO NOT automatically end audio controller move mode if it is active.
+          true
+        ));
+
+        ret = true;
+      }
+    }
+  }
+
+  if(num_non_copyable > 0)
+  {
+    QMessageBox::critical(MusEGlobal::muse, QString("MusE"),
+      tr("Copies of some automation points could not be made because points already exist at those time positions"));
+  }
+
+  return ret;
 }
 
 //---------------------------------------------------------
@@ -4759,7 +5003,7 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
                   iCtrl icl_prev = cl->lower_bound(icr->frame);
                   if(icl_prev != cl->begin())
                     --icl_prev;
-                  if(icl_prev->second.val == icr->val)
+                  if(icl_prev->second.value() == icr->val)
                     continue;
                 }
                 // Now add the value.
@@ -4773,7 +5017,7 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
       delete added_list_items;
     }
     else
-      opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, cll, erased_list_items, added_list_items));
+      opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, atrack, erased_list_items, added_list_items));
   }
 
   // Done with the recorded automation event list. Clear it.

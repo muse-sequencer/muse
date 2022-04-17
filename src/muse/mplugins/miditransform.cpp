@@ -26,6 +26,7 @@
 
 #include <QDialog>
 #include <QListWidgetItem>
+#include <QUuid>
 
 #include "helper.h"
 #include "spinboxFP.h"
@@ -927,8 +928,8 @@ void MidiTransformerDialog::apply()
       bool copyExtract = (data->cmt->funcOp == MusECore::Copy)
                          || (data->cmt->funcOp == MusECore::Extract);
 
-      QSet< int > doneList;
-      typedef std::set< int >::iterator iDoneList;
+      QSet< QUuid > doneList;
+      typedef std::set< QUuid >::iterator iDoneList;
       iDoneList idl;
       
       MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
@@ -944,9 +945,9 @@ void MidiTransformerDialog::apply()
                         MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
                         const MusECore::EventList& el = part->events();
                         // Check if the event list has already been done. Skip repeated clones.
-                        if (doneList.contains(part->clonemaster_sn()))
+                        if (doneList.contains(part->clonemaster_uuid()))
                              continue;
-                        doneList.insert(part->clonemaster_sn());
+                        doneList.insert(part->clonemaster_uuid());
                         
                         for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {
                               const MusECore::Event& event = i->second;
@@ -969,10 +970,10 @@ void MidiTransformerDialog::apply()
                   MusECore::MidiPart* newPart = 0;
                   const MusECore::EventList& el = part->events();
                   // Check if the event list has already been done. Skip repeated clones.
-                  if (doneList.contains(part->clonemaster_sn()))
+                  if (doneList.contains(part->clonemaster_uuid()))
                       continue;
-                  doneList.insert(part->clonemaster_sn());
-                  
+                  doneList.insert(part->clonemaster_uuid());
+
                   if (copyExtract) {
                         // check whether we must generate a new part
                         for (MusECore::ciEvent i = el.begin(); i != el.end(); ++i) {

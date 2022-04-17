@@ -1,3 +1,25 @@
+17.04.2022
+    * NEW Complete audio automation graphs redesign: (Tim)
+    - Multiple graph points can now be selected. Lasso works.
+    - Standard keys behaviour, same as found in parts, notes etc.
+    - Copy/cut/paste/del supported.
+    - Audio automation graphs can now be copied to other controller graphs.
+      See 'Paste' each controller's color popup menu.
+    - Points can be dragged past other points now.
+    - Three paste/drop existing points erase modes (see right-click menu):
+      Erase none, Erase (groups), Erase complete range.
+    - After dropping moved points, a 'move mode' coloured block is active until
+       blank space is clicked, which allows the points to be moved further,
+       exposing existing points that were erased when dropped upon.
+    - More colors and custom colors for audio automation graphs.
+    - Controller names have been removed from the controller graphs and
+      placed into the Track List 'Automation' column (expand to see more!).
+    - All plugin controllers now have different colors instead of all green.
+      Old green color scheme in old songs is detected by checking if two or more
+      plugin controllers are green and changing them.
+    * Other:
+    - Eliminated OLD UGLY HACK: The global cloneList in songfile.cpp.
+      Replaced with an informational structure passed among the functions.
 08.04.2022
     *** MusE 4.1 ***
 04.04.2022

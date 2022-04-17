@@ -36,6 +36,7 @@
 #include "audioprefetch.h"
 //#include "latency_compensator.h"
 #include "config.h"
+#include "xml_statistics.h"
 
 // Turn on some cool terminal 'peak' meters for debugging
 //  presence of actual audio at various places
@@ -252,13 +253,17 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
 //   write
 //---------------------------------------------------------
 
-void WaveTrack::write(int level, Xml& xml) const
+void WaveTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
       {
+      XmlWriteStatistics locStats;
+      if(!stats)
+        stats = &locStats;
+
       xml.tag(level++, "wavetrack");
       AudioTrack::writeProperties(level, xml);
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
-            p->second->write(level, xml);
+            p->second->write(level, xml, false, false, stats);
       xml.etag(level, "wavetrack");
       }
 
@@ -266,8 +271,12 @@ void WaveTrack::write(int level, Xml& xml) const
 //   read
 //---------------------------------------------------------
 
-void WaveTrack::read(Xml& xml)
+void WaveTrack::read(Xml& xml, XmlReadStatistics* stats)
       {
+      XmlReadStatistics locStats;
+      if(!stats)
+        stats = &locStats;
+
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -278,7 +287,7 @@ void WaveTrack::read(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "part") {
                               Part* p = 0;
-                              p = Part::readFromXml(xml, this);
+                              p = Part::readFromXml(xml, this, &locStats, false, true);
                               if(p)
                                 parts()->add(p);
                               }
@@ -289,6 +298,7 @@ void WaveTrack::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "wavetrack") {
+                              fixOldColorScheme();
                               mapRackPluginsToControllers();
                               goto out_of_WaveTrackRead_forloop;
                               }

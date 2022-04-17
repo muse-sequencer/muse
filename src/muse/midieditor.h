@@ -29,6 +29,7 @@
 #include "event_tag_list.h"
 
 #include <set>
+#include <QUuid>
 
 class QGridLayout;
 class QWidget;
@@ -57,7 +58,7 @@ class MidiEditor : public TopWin  {
       Q_OBJECT
 
       MusECore::PartList* _pl;
-      std::set<int> _parts;
+      std::set<QUuid> _parts;
       int _curDrumInstrument;  // currently selected instrument if drum
                                // editor
 

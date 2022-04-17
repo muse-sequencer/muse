@@ -35,6 +35,7 @@
 #include <QList>
 #include <QPair>
 #include <QToolTip>
+#include <QUuid>
 
 #include <stdio.h>
 #include <limits.h>
@@ -1236,7 +1237,7 @@ void DrumCanvas::resizeEvent(QResizeEvent* ev)
 
 void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode)
       {
-      QList< QPair<int,MusECore::Event> > already_done;
+      QList< QPair<QUuid,MusECore::Event> > already_done;
       MusECore::Undo operations;
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
@@ -1248,7 +1249,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
 
             MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
 
-            if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
+            if (already_done.contains(QPair<QUuid,MusECore::Event>(part->clonemaster_uuid(), event)))
               continue;
             
             MusECore::Event newEvent = event.clone();
@@ -1324,7 +1325,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
 
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
 
-            already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
+            already_done.append(QPair<QUuid,MusECore::Event>(part->clonemaster_uuid(), event));
             }
       MusEGlobal::song->applyOperationGroup(operations);
       }

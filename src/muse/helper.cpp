@@ -539,19 +539,19 @@ void populateMidiPorts()
   }
 }
 
-Part* partFromSerialNumber(int serial)
+Part* partFromSerialNumber(const QUuid& serial)
 {
-        TrackList* tl = MusEGlobal::song->tracks();
+  TrackList* tl = MusEGlobal::song->tracks();
 	for (iTrack it = tl->begin(); it != tl->end(); ++it)
 	{
 		PartList* pl = (*it)->parts();
 		iPart ip;
 		for (ip = pl->begin(); ip != pl->end(); ++ip)
-			if (ip->second->sn() == serial)
+			if (ip->second->uuid() == serial)
 				return ip->second;
 	}
-	
-	printf("ERROR: partFromSerialNumber(%i) wasn't able to find an appropriate part!\n",serial);
+
+	printf("ERROR: partFromSerialNumber(%s) wasn't able to find an appropriate part!\n",serial.toString().toLatin1().constData());
 	return nullptr;
 }
 

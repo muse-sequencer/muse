@@ -95,7 +95,6 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       pos[1]  = MusEGlobal::song->lpos();
       pos[2]  = MusEGlobal::song->rpos();
       curPart = nullptr;
-      curPartId = -1;
       curItem = nullptr;
       newCItem = nullptr;
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
@@ -675,7 +674,7 @@ void Canvas::redirectedWheelEvent(QWheelEvent* ev)
 //   deselectAll
 //---------------------------------------------------------
 
-void Canvas::deselectAll()
+void Canvas::deselectAll(MusECore::Undo*)
       {
       for (iCItem i = items.begin(); i != items.end(); ++i)
             i->second->setSelected(false);
@@ -833,11 +832,6 @@ void Canvas::viewKeyReleaseEvent(QKeyEvent* event)
 
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
-      if (!mousePress(event))
-      {
-          cancelMouseOps();
-          return;
-      }
       keyState = event->modifiers();
       button = event->button();
       //printf("viewMousePressEvent buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
@@ -851,14 +845,14 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                 drag = DRAG_OFF;
                 setCursor();
                 setMouseGrab(false);
-          
                 redraw();
                 return;
               case DRAG_MOVE:
+              case DRAGX_MOVE:
+              case DRAGY_MOVE:
                 drag = DRAG_OFF;
                 setCursor();
                 setMouseGrab(false);
-                
                 endMoveItems (start, MOVE_MOVE, 0);
                 return;
               default:
@@ -887,6 +881,13 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       ev_global_pos   = global_start;
       
       curItem = findCurrentItem(start);
+
+      // Give a chance for the individual canvas types to process the event.
+      if (!mousePress(event))
+      {
+          //cancelMouseOps();
+          return;
+      }
 
       if (curItem && (button == Qt::MiddleButton)) {
           if (_tool == PointerTool || _tool == PencilTool || _tool == RubberTool) {
@@ -1232,7 +1233,8 @@ void Canvas::scrollTimerDone()
           return;
         }  
         QPoint dist = ev_pos - start;
-        switch(drag) 
+
+        switch(drag)
         {
           case DRAG_MOVE:
           case DRAG_COPY:
@@ -1290,7 +1292,7 @@ void Canvas::scrollTimerDone()
                   redraw();
                 }
                 break;
-                
+
           case DRAG_RESIZE:
                 if (curItem && doHMove) {
                     if (supportsMultipleResize) {
@@ -1307,9 +1309,10 @@ void Canvas::scrollTimerDone()
                     redraw();
                 }
                 break;
-          default:  
+          default:
                 break;
         }
+
         //printf("Canvas::scrollTimerDone starting scrollTimer: Currently active?%d\n", scrollTimer->isActive());
         
         // Make sure to yield to other events, otherwise other events take a long time to reach us,
@@ -1452,13 +1455,13 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   {
                   // Update the old lasso region.
                   redraw(lassoRegion);
-                  
+
                   // Set the new lasso rectangle and compute the new lasso region.
                   setLasso(QRect(start.x(), start.y(), dist.x(), dist.y()));
-                  
+
                   // printf("xorg=%d xmag=%d event->x=%d, mapx(xorg)=%d rmapx0=%d xOffset=%d rmapx(xOffset()=%d\n",
                   //         xorg, xmag, event->x(),mapx(xorg), rmapx(0), xOffset(),rmapx(xOffset()));
-                  
+
                   // Update the new lasso region.
                   redraw(lassoRegion);
                   }
@@ -1470,52 +1473,55 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             {
                   if (!isMoving)
                         break;
-                  int dir = 0;
-                  if (keyState & Qt::ShiftModifier) {
-                        if (ax > ay) {
-                              if (drag == DRAG_MOVE_START)
-                                    drag = DRAGX_MOVE;
-                              else if (drag == DRAG_COPY_START)
-                                    drag = DRAGX_COPY;
-                              else
-                                    drag = DRAGX_CLONE;
-                              dir = 1;
-                              }
-                        else {
-                              if (drag == DRAG_MOVE_START)
-                                    drag = DRAGY_MOVE;
-                              else if (drag == DRAG_COPY_START)
-                                    drag = DRAGY_COPY;
-                              else
-                                    drag = DRAGY_CLONE;
-                              dir = 2;
-                              }
-                        }
-                  else {
-                        if (drag == DRAG_MOVE_START)
-                              drag = DRAG_MOVE;
-                        else if (drag == DRAG_COPY_START)
-                              drag = DRAG_COPY;
-                        else
-                              drag = DRAG_CLONE;
-                        }
-                  setCursor();
-                  if (curItem && !curItem->isSelected()) {
-                        if (drag == DRAG_MOVE)
-                              deselectAll();
-                        selectItem(curItem, true);
-                        itemSelectionsChanged(nullptr, drag == DRAG_MOVE);
-                        redraw();
-                        }
-                  DragType dt;
-                  if (drag == DRAG_MOVE)
-                        dt = MOVE_MOVE;
-                  else if (drag == DRAG_COPY)
-                        dt = MOVE_COPY;
-                  else
-                        dt = MOVE_CLONE;
-                  
-                  startMoving(ev_pos, dir, dt, !(keyState & Qt::ShiftModifier));
+                  if (_tool != AutomationTool)
+                  {
+                    int dir = 0;
+                    if (keyState & Qt::ShiftModifier) {
+                          if (ax > ay) {
+                                if (drag == DRAG_MOVE_START)
+                                      drag = DRAGX_MOVE;
+                                else if (drag == DRAG_COPY_START)
+                                      drag = DRAGX_COPY;
+                                else
+                                      drag = DRAGX_CLONE;
+                                dir = 1;
+                                }
+                          else {
+                                if (drag == DRAG_MOVE_START)
+                                      drag = DRAGY_MOVE;
+                                else if (drag == DRAG_COPY_START)
+                                      drag = DRAGY_COPY;
+                                else
+                                      drag = DRAGY_CLONE;
+                                dir = 2;
+                                }
+                          }
+                    else {
+                          if (drag == DRAG_MOVE_START)
+                                drag = DRAG_MOVE;
+                          else if (drag == DRAG_COPY_START)
+                                drag = DRAG_COPY;
+                          else
+                                drag = DRAG_CLONE;
+                          }
+                    setCursor();
+                    if (curItem && !curItem->isSelected()) {
+                          if (drag == DRAG_MOVE)
+                                deselectAll();
+                          selectItem(curItem, true);
+                          itemSelectionsChanged(nullptr, drag == DRAG_MOVE);
+                          redraw();
+                          }
+                    DragType dt;
+                    if (drag == DRAG_MOVE)
+                          dt = MOVE_MOVE;
+                    else if (drag == DRAG_COPY)
+                          dt = MOVE_COPY;
+                    else
+                          dt = MOVE_CLONE;
+
+                    startMoving(ev_pos, dir, dt, !(keyState & Qt::ShiftModifier));
+                  }
                   break;
             }
 
@@ -1603,7 +1609,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                       redraw();
                   }
                   break;
-                  
+
             case DRAG_DELETE:
                   deleteItem(ev_pos);
                   break;
@@ -1629,9 +1635,9 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                     }
                   }
                   break;
-                  
+
             case DRAG_ZOOM:
-                  if(glob_zoom_dist.x() != 0)   
+                  if(glob_zoom_dist.x() != 0)
                       emit horizontalZoom(glob_zoom_dist.x(), global_start);
                   //if(glob_zoom_dist.y() != 0)
                   //    emit verticalZoom(glob_zoom_dist.y(), global_start);  // TODO
@@ -1642,13 +1648,13 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                     //ignore_mouse_move = false;
                   }
                   break;
-                  
+
             case DRAG_OFF:
                   if(_tool == PencilTool){
-                     if(findCurrentItem(ev_pos)){
+                    if(findCurrentItem(ev_pos)){
                         setMouseOverItemCursor();
                         break;
-                     }
+                    }
                   }
                   else if(_tool == AutomationTool || _tool == StretchTool || _tool == SamplerateTool){
                     // The PartCanvas and WaveCanvas mouseMove will take care of its own cursor.
@@ -1658,6 +1664,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   setCursor();
                   break;
             }
+
 
       ev_global_pos = event->globalPos();
 
@@ -1671,11 +1678,6 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
 void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 {
-      doScroll = false;
-      canScrollLeft = true;
-      canScrollRight = true;
-      canScrollUp = true;
-      canScrollDown = true;
       // We want only the left mouse release events. Ignore anything else.
       // Do nothing, even if the mouse is grabbed or we have a moving list.
       if(event->button() != Qt::LeftButton) 
@@ -1695,149 +1697,153 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       bool alt = event->modifiers() & Qt::AltModifier;
       bool redrawFlag = false;
 
-      switch (drag) {
-            case DRAG_MOVE_START:
-            case DRAG_COPY_START:
-            case DRAG_CLONE_START:
-                  if (curItem && curItem->part() != curPart) {
-                        curPart = curItem->part();
-                        curPartId = curPart->sn();
-                        curPartChanged();
-                        }
-                  if (alt || !ctrl)
-                        deselectAll();
-                  if(curItem)
-                  {
-                    if (!shift) { //Select or deselect only the clicked item
-                        selectItem(curItem, !(ctrl && curItem->isSelected()));
-                        }
-                    else { //Select or deselect all on the same pitch (e.g. same y-value)
-                        bool selectionFlag = !(ctrl && curItem->isSelected());
-                        for (iCItem i = items.begin(); i != items.end(); ++i)
-                              if (i->second->y() == curItem->y() )
-                                    selectItem(i->second, selectionFlag);
-                        }
-                  }
+      MusECore::Undo undo;
 
-                  itemSelectionsChanged(nullptr, !ctrl);
-                  redrawFlag = true;
-                  if(curItem)
-                    itemReleased(curItem, curItem->pos());
-                  itemsReleased();
-                  break;
-            case DRAG_COPY:
-                  endMoveItems(pos, MOVE_COPY, 0, !shift);
-                  break;
-            case DRAGX_COPY:
-                  endMoveItems(pos, MOVE_COPY, 1, !shift);
-                  break;
-            case DRAGY_COPY:
-                  endMoveItems(pos, MOVE_COPY, 2, !shift);
-                  break;
-            case DRAG_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 0, !shift);
-                  break;
-            case DRAGX_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 1, !shift);
-                  break;
-            case DRAGY_MOVE:
-                  endMoveItems(pos, MOVE_MOVE, 2, !shift);
-                  break;
-            case DRAG_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 0, !shift);
-                  break;
-            case DRAGX_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 1, !shift);
-                  break;
-            case DRAGY_CLONE:
-                  endMoveItems(pos, MOVE_CLONE, 2, !shift);
-                  break;
-            case DRAG_OFF:
-                  break;
-            case DRAG_RESIZE:
-                  if (curItem) {
-                      if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
-                          if (!supportsMultipleResize) {
-                              QPoint rpos = QPoint(!shift ? raster(pos).x() : pos.x(), curItem->y());
-                              resizeToTheLeft(rpos);
-                          }
+          switch (drag) {
+                case DRAG_MOVE_START:
+                case DRAG_COPY_START:
+                case DRAG_CLONE_START:
+                      if(_tool != AutomationTool)
+                      {
+                        if (curItem && curItem->part() != curPart) {
+                              curPart = curItem->part();
+                              curPartId = curPart->uuid();
+                              curPartChanged();
+                              }
+                        if (alt || !ctrl)
+                              deselectAll();
+                        if(curItem)
+                        {
+                          if (!shift) { //Select or deselect only the clicked item
+                              selectItem(curItem, !(ctrl && curItem->isSelected()));
+                              }
+                          else { //Select or deselect all on the same pitch (e.g. same y-value)
+                              bool selectionFlag = !(ctrl && curItem->isSelected());
+                              for (iCItem i = items.begin(); i != items.end(); ++i)
+                                    if (i->second->y() == curItem->y() )
+                                          selectItem(i->second, selectionFlag);
+                              }
+                        }
+
+                        itemSelectionsChanged(nullptr, !ctrl);
+                        redrawFlag = true;
+                        if(curItem)
+                          itemReleased(curItem, curItem->pos());
+                        itemsReleased();
                       }
-                      resizeItem(curItem, shift, ctrl);
-                      itemSelectionsChanged();
-                      redraw();
-                      resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
-                  }
-                  break;
-            case DRAG_NEW:
-                  if(newCItem)
-                  {
-                    items.add(newCItem);
-                    curItem = newCItem;
-                    newCItem = nullptr;
-                    itemReleased(curItem, curItem->pos());
-                    itemsReleased();
-                    newItem(curItem, shift);
-                    redrawFlag = true;
-                  }
-                  break;
-            case DRAG_LASSO_START:
-                  // Set the new lasso rectangle and compute the new lasso region.
-                  setLasso(QRect(start.x(), start.y(), rmapxDev(1), rmapyDev(1)));
-                  //fallthrough
-            case DRAG_LASSO:
-                  if (!ctrl)
-                        deselectAll();
-                  // Set the new lasso rectangle and compute the new lasso region.
-                  selectLasso(ctrl);
-                  itemSelectionsChanged(nullptr, !ctrl);
-                  redrawFlag = true;
-                  break;
+                      break;
+                case DRAG_COPY:
+                      endMoveItems(pos, MOVE_COPY, 0, !shift);
+                      break;
+                case DRAGX_COPY:
+                      endMoveItems(pos, MOVE_COPY, 1, !shift);
+                      break;
+                case DRAGY_COPY:
+                      endMoveItems(pos, MOVE_COPY, 2, !shift);
+                      break;
+                case DRAG_MOVE:
+                      endMoveItems(pos, MOVE_MOVE, 0, !shift);
+                      break;
+                case DRAGX_MOVE:
+                      endMoveItems(pos, MOVE_MOVE, 1, !shift);
+                      break;
+                case DRAGY_MOVE:
+                      endMoveItems(pos, MOVE_MOVE, 2, !shift);
+                      break;
+                case DRAG_CLONE:
+                      endMoveItems(pos, MOVE_CLONE, 0, !shift);
+                      break;
+                case DRAGX_CLONE:
+                      endMoveItems(pos, MOVE_CLONE, 1, !shift);
+                      break;
+                case DRAGY_CLONE:
+                      endMoveItems(pos, MOVE_CLONE, 2, !shift);
+                      break;
+                case DRAG_OFF:
+                      break;
+                case DRAG_RESIZE:
+                      if (curItem) {
+                          if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+                              if (!supportsMultipleResize) {
+                                  QPoint rpos = QPoint(!shift ? raster(pos).x() : pos.x(), curItem->y());
+                                  resizeToTheLeft(rpos);
+                              }
+                          }
+                          resizeItem(curItem, shift, ctrl);
+                          itemSelectionsChanged();
+                          redraw();
+                          resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
+                      }
+                      break;
+                case DRAG_NEW:
+                      if(newCItem)
+                      {
+                        items.add(newCItem);
+                        curItem = newCItem;
+                        newCItem = nullptr;
+                        itemReleased(curItem, curItem->pos());
+                        itemsReleased();
+                        newItem(curItem, shift);
+                        redrawFlag = true;
+                      }
+                      break;
+                case DRAG_LASSO_START:
+                      // Set the new lasso rectangle and compute the new lasso region.
+                      setLasso(QRect(start.x(), start.y(), rmapxDev(1), rmapyDev(1)));
+                      //fallthrough
+                case DRAG_LASSO:
+                      if (!ctrl)
+                            deselectAll(&undo);
+                      // Set the new lasso rectangle and compute the new lasso region.
+                      selectLasso(ctrl, &undo);
+                      itemSelectionsChanged(&undo, !ctrl);
+                      redrawFlag = true;
+                      break;
 
-            case DRAG_DELETE:
-                  break;
-                  
-            case DRAG_PAN:
-                  if(MusEGlobal::config.borderlessMouse)
-                  {
-                    pos = global_start;
-                    ignore_mouse_move = true;      // Avoid recursion.
-                    QCursor::setPos(global_start);
-                    //ignore_mouse_move = false;
-                  } else
-                      QWidget::setCursor(*handCursor);
-                  break;
-                  
-            case DRAG_ZOOM:
-                  if(MusEGlobal::config.borderlessMouse)
-                  {
-                    pos = global_start;
-                    ignore_mouse_move = true;      // Avoid recursion.
-                    QCursor::setPos(global_start);
-                    //ignore_mouse_move = false;
-                  }
-                  break;
-            }
-      //printf("Canvas::viewMouseReleaseEvent setting drag to DRAG_OFF\n");
+                case DRAG_DELETE:
+                      break;
 
-      // Just in case it was somehow forgotten:
-      if(newCItem)
-      {
-        if(newCItem->event().empty() && newCItem->part()) // Was it a new part, with no event?
-          delete newCItem->part();
-        delete newCItem;
-        newCItem = nullptr;
-      }
-      
-      if(drag == DRAG_ZOOM) // Update the small zoom drawing area
-      {
-        drag = DRAG_OFF;
-        QPoint pt = mapFromGlobal(global_start);
-        QSize cursize = zoomIconSVG->actualSize(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize));
-        update(pt.x(), pt.y(), cursize.width(), cursize.height());
-      }
-      
-      // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
-      cancelMouseOps();
+                case DRAG_PAN:
+                      if(MusEGlobal::config.borderlessMouse)
+                      {
+                        pos = global_start;
+                        ignore_mouse_move = true;      // Avoid recursion.
+                        QCursor::setPos(global_start);
+                        //ignore_mouse_move = false;
+                      } else
+                          QWidget::setCursor(*handCursor);
+                      break;
+
+                case DRAG_ZOOM:
+                      if(MusEGlobal::config.borderlessMouse)
+                      {
+                        pos = global_start;
+                        ignore_mouse_move = true;      // Avoid recursion.
+                        QCursor::setPos(global_start);
+                        //ignore_mouse_move = false;
+                      }
+                      break;
+                }
+          //printf("Canvas::viewMouseReleaseEvent setting drag to DRAG_OFF\n");
+
+          MusEGlobal::song->applyOperationGroup(undo);
+
+          // Just in case it was somehow forgotten:
+          if(newCItem)
+          {
+            if(newCItem->event().empty() && newCItem->part()) // Was it a new part, with no event?
+              delete newCItem->part();
+            delete newCItem;
+            newCItem = nullptr;
+          }
+
+          if(drag == DRAG_ZOOM) // Update the small zoom drawing area
+          {
+            drag = DRAG_OFF;
+            QPoint pt = mapFromGlobal(global_start);
+            QSize cursize = zoomIconSVG->actualSize(QSize(MusEGlobal::config.cursorSize, MusEGlobal::config.cursorSize));
+            update(pt.x(), pt.y(), cursize.width(), cursize.height());
+          }
 
       // Be sure to reset the cursor.
       setCursor();
@@ -1850,14 +1856,15 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
          event->globalPos(), event->button(), event->buttons(), event->modifiers());
       mouseRelease(&e);
       
-      //mouseRelease(pos);
+      // Cancel all previous mouse ops. Right now there should be no moving list and drag should be off etc.
+      cancelMouseOps();
 }
 
 //---------------------------------------------------------
 //   selectLasso
 //---------------------------------------------------------
 
-bool Canvas::selectLasso(bool toggle)
+bool Canvas::selectLasso(bool toggle, MusECore::Undo*)
       {
       int n = 0;
       if (virt()) {
@@ -2296,7 +2303,7 @@ void Canvas::setCurrentPart(MusECore::Part* part)
   curItem = nullptr;
   deselectAll();
   curPart = part;
-  curPartId = curPart->sn();
+  curPartId = curPart->uuid();
   curPartChanged();
 }
 

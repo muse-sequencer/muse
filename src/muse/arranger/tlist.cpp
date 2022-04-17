@@ -96,10 +96,14 @@ using MusECore::UndoOp;
 namespace MusEGui {
 
 static const int MIN_TRACKHEIGHT = 20;
-//static const int WHEEL_DELTA = 120;
 QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::green };
 QString colnames[] = { "Red", "Yellow", "Blue", "Black", "White", "Green"};
-enum { AUTO_INVALID = -1, AUTO_SHOW_ALL = 251, AUTO_HIDE_ALL = 252, AUTO_CLEAR_AUTO = 253, AUTO_CLEAR_MIDI = 254, AUTO_MIDI_ASSIGN = 255 };
+
+// NOTE: AUTO_BEGIN is there to help identify the beginning of the colour popup menu commands.
+// If any new enumerations are added here, simply redirect AUTO_BEGIN to them.
+enum { AUTO_INVALID = -1, AUTO_PASTE_FIT = 247, AUTO_BEGIN = AUTO_PASTE_FIT,
+  AUTO_RESET_ALL_COLORS = 248, AUTO_RESET_COLOR = 249, AUTO_CHOOSE_COLOR = 250,
+  AUTO_SHOW_ALL = 251, AUTO_HIDE_ALL = 252, AUTO_CLEAR_AUTO = 253, AUTO_CLEAR_MIDI = 254, AUTO_MIDI_ASSIGN = 255 };
 
 //---------------------------------------------------------
 //   TList
@@ -494,26 +498,59 @@ void TList::paint(const QRect& r)
                 case COL_AUTOMATION:
                 {
                     QString s;
-
                     if (!track->isMidiTrack()) {
-                        MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)track)->controller();
+                        const MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)track)->controller();
                         int countAll=0, countVisible=0;
-                        for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
-                            MusECore::CtrlList *cl = icll->second;
+                        const int colSqSz = 12;
+                        const int penSz = 1;
+                        const QPen origPen = p.pen();
+                        const QBrush origBrush = p.brush();
+                        QPen pen(Qt::black);
+                        pen.setCosmetic(true);
+                        pen.setWidth(penSz);
+                        const int txth = p.fontMetrics().height();
+                        const int xpad = 4;
+                        const int ypad = (txth - colSqSz) / 2;
+                        const int txtx = (xpad + penSz) * 2 + colSqSz;
+                        int y;
+                        for(MusECore::CtrlListList::const_iterator icll =cll->cbegin();icll!=cll->cend();++icll) {
+                            const MusECore::CtrlList *cl = icll->second;
                             if (!cl->dontShow())
                                 countAll++;
                             if (cl->isVisible())
+                            {
                                 countVisible++;
+                                // countVisible starts with 1. Leave space for the top line.
+                                y = countVisible * txth;
+                                if(y < r.height())
+                                {
+                                  p.save();
+                                  p.setBrush(cl->color());
+                                  p.setPen(pen);
+                                  p.setClipRect(r);
+                                  p.drawRect(r.x() + xpad, r.y() + y + ypad, colSqSz, colSqSz);
+                                  p.setBrush(origBrush);
+                                  p.setPen(origPen);
+                                  s = QString("%1").arg(cl->name());
+                                  p.drawText(r.x() + txtx, r.y() + y, r.width() - txtx, txth, Qt::AlignVCenter|Qt::AlignLeft, s);
+                                  p.restore();
+                                }
+                            }
                         }
+
                         s = QString(" %1(%2) %3").arg(countVisible).arg(countAll).arg(tr("visible"));
+                        p.drawText(r, Qt::AlignTop|Qt::AlignLeft, s);
+
                     } else {
                         p.setFont(fit);
                         s = "n/a";
+                        p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                        if (p.font().italic())
+                            p.setFont(font());
                     }
 
-                    p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
-                    if (p.font().italic())
-                        p.setFont(font());
+
+
                 }
                     break;
 
@@ -1631,11 +1668,21 @@ void TList::changeAutomation(QAction* act)
                 cl->setVisible(false);
         }
     }
+    else if(act->data().toInt() == AUTO_RESET_ALL_COLORS) {
+        if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
+                                 tr("Reset all controller colors to defaults?"), tr("&Ok"), tr("&Cancel"),
+                                 QString(), 0, 1 ) == 0)
+        {
+          MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
+          cll->initColors();
+        }
+    }
+
     else {
         int colindex = act->data().toInt() & 0xff;
         int id = (act->data().toInt() & 0x00ffffff) >> 8;
-        // Is it the midi control action or clear action item?
-        if (colindex == AUTO_CLEAR_MIDI || colindex == AUTO_MIDI_ASSIGN)
+        // Is it some other command action item?
+        if(colindex >= AUTO_BEGIN)
             return;
 
         if (colindex < 100)
@@ -1643,12 +1690,11 @@ void TList::changeAutomation(QAction* act)
         // one of these days I'll rewrite this so it's understandable
         // this is just to get it up and running...
 
-        MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
-        for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
-            MusECore::CtrlList *cl = icll->second;
-            if (id == cl->id())  // got it, change state
-                cl->setVisible(act->isChecked());
-        }
+        const MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
+        MusECore::ciCtrlList icl = cll->find(id);
+        if(icl != cll->cend())
+          icl->second->setVisible(act->isChecked());
+
         setRead = true;
     }
 
@@ -1760,19 +1806,57 @@ void TList::changeAutomationColor(QAction* act)
         return;
     }
 
+    // Is it the choose custom color action item?
+    if (colindex == AUTO_CHOOSE_COLOR)
+    {
+      const QColor col = QColorDialog::getColor(Qt::white, MusEGlobal::muse);
+      if(col.isValid())
+      {
+        const MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
+        MusECore::ciCtrlList icl = cll->find(id);
+        if(icl != cll->cend())
+        {
+          icl->second->setColor(col);
+          icl->second->setVisible(true);
+          MusEGlobal::song->update(SC_TRACK_MODIFIED);
+        }
+      }
+    }
+
+    // Is it the reset color action item?
+    if (colindex == AUTO_RESET_COLOR)
+    {
+      const MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
+      MusECore::ciCtrlList icl = cll->find(id);
+      if(icl != cll->cend())
+      {
+        icl->second->initColor(id);
+        MusEGlobal::song->update(SC_TRACK_MODIFIED);
+      }
+    }
+
+    // Is it the paste to fit action item?
+    if (colindex == AUTO_PASTE_FIT)
+      MusECore::pasteAudioAutomation(static_cast<MusECore::AudioTrack*>(editAutomation), id);
+
+//     // Is it the paste verbose action item?
+//     if (colindex == AUTO_PASTE_VERBOSE)
+//       // TODO: Verbose / fit argument.
+//       MusECore::pasteAudioAutomation(static_cast<MusECore::AudioTrack*>(editAutomation), id, false);
+
     if (colindex > 100)
         return; // this was meant for changeAutomation
     // one of these days I'll rewrite this so it's understandable
     // this is just to get it up and running...
 
     MusECore::CtrlListList* cll = ((MusECore::AudioTrack*)editAutomation)->controller();
-    for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
-        MusECore::CtrlList *cl = icll->second;
-        if (cl->id() == id) { // got it, change color and enable
-            cl->setColor(collist[colindex]);
-            cl->setVisible(true);
-        }
+    MusECore::ciCtrlList icl = cll->find(id);
+    if(icl != cll->cend())
+    {
+      icl->second->setColor(collist[colindex]);
+      icl->second->setVisible(true);
     }
+
     MusEGlobal::song->update(SC_TRACK_MODIFIED);
 }
 
@@ -1786,6 +1870,7 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
     QActionGroup* col_actgrp = new QActionGroup(m);
     m->addAction(new MusEGui::MenuTitleItem(tr("Change color"), m));
     col_actgrp->setExclusive(true);
+    bool colorFound = false;
     for (int i = 0; i< 6; i++) {
         QPixmap pix(10,10);
         QPainter p(&pix);
@@ -1794,12 +1879,32 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
         QAction *act = col_actgrp->addAction(icon,colnames[i]);
         act->setCheckable(true);
         if (c == collist[i])
+        {
             act->setChecked(true);
+            colorFound = true;
+        }
         act->setData((id<<8) + i); // Shift 8 bits. Color in the bottom 8 bits.
     }
     m->addActions(col_actgrp->actions());
 
-    //m->addSeparator();
+    {
+      QPixmap pix(10,10);
+      QPainter p(&pix);
+      p.fillRect(0,0,10,10,c);
+      QIcon icon(pix);
+      QAction *act = m->addAction(icon, tr("Custom color"));
+      act->setCheckable(true);
+      act->setChecked(!colorFound);
+      act->setData((id<<8) + AUTO_CHOOSE_COLOR);
+    }
+
+    {
+      m->addSeparator();
+      QAction *act = m->addAction(tr("Reset color to default"));
+      act->setCheckable(false);
+      act->setData((id<<8) + AUTO_RESET_COLOR);
+    }
+
     m->addAction(new MenuTitleItem(tr("Midi control"), m));
 
     if(editAutomation && !editAutomation->isMidiTrack())
@@ -1836,10 +1941,26 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
             m->addActions(midi_actgrp->actions());
         }
     }
+
     m->addAction(new MenuTitleItem(tr("Other"), m));
-    QAction *act = m->addAction(tr("Clear automation"));
-    act->setCheckable(false);
-    act->setData((id<<8) + AUTO_CLEAR_AUTO); // Shift 8 bits. Make clear menu item 253
+
+    {
+      QAction *act = m->addAction(tr("Paste"));
+      act->setCheckable(false);
+      act->setData((id<<8) + AUTO_PASTE_FIT);
+    }
+
+//     {
+//       QAction *act = m->addAction(tr("Paste verbose"));
+//       act->setCheckable(false);
+//       act->setData((id<<8) + AUTO_PASTE_VERBOSE);
+//     }
+
+    {
+      QAction *act = m->addAction(tr("Clear automation"));
+      act->setCheckable(false);
+      act->setData((id<<8) + AUTO_CLEAR_AUTO); // Shift 8 bits. Make clear menu item 253
+    }
 
     connect(m, SIGNAL(triggered(QAction*)), SLOT(changeAutomationColor(QAction*)));
     return m;
@@ -2050,6 +2171,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 act->setData(AUTO_SHOW_ALL);
                 act = p->addAction(tr("Hide All"));
                 act->setData(AUTO_HIDE_ALL);
+                act = p->addAction(tr("Reset All Colors to Defaults"));
+                act->setData(AUTO_RESET_ALL_COLORS);
 
                 QList<const MusECore::CtrlList*> tmpList;
 
@@ -2704,9 +2827,9 @@ void TList::addAutoMenuAction(PopupMenu* p, const MusECore::CtrlList *cl) {
     qp.fillRect(0,0,10,10, cl->color());
     if (cl->size() > 0) {
         if (cl->color() == Qt::black)
-            qp.fillRect(2, 2, 6, 6, Qt::gray);
+            qp.fillRect(3, 3, 4, 4, Qt::gray);
         else
-            qp.fillRect(2, 2, 6, 6, Qt::black);
+            qp.fillRect(3, 3, 4, 4, Qt::black);
     }
     QIcon icon(pix);
     act->setIcon(icon);

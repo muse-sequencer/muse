@@ -49,6 +49,7 @@
 #include "audio.h"
 #include "gconfig.h"
 #include "undo.h"
+#include "xml_statistics.h"
 
 using std::set;
 using std::pair;
@@ -618,19 +619,7 @@ void MusE::importPart()
             bool loadAll;
             QString filename = MusEGui::getOpenFileName(QString(""), MusEGlobal::part_file_pattern, this, tr("MusE: load part"), &loadAll);
             if (!filename.isEmpty()){
-                  // Make a backup of the current clone list, to retain any 'copy' items,
-                  //  so that pasting works properly after.
-                  MusECore::CloneList copyCloneList = MusEGlobal::cloneList;
-                  // Clear the clone list to prevent any dangerous associations with
-                  //  current non-original parts.
-                  MusEGlobal::cloneList.clear();
-            
                   importPartToTrack(filename, curPos, track);
-                  
-                  // Restore backup of the clone list, to retain any 'copy' items,
-                  //  so that pasting works properly after.
-                  MusEGlobal::cloneList.clear();
-                  MusEGlobal::cloneList = copyCloneList;
                }   
             }
       else {
@@ -653,7 +642,8 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
         int posOffset = 0;
         int  notDone = 0;
         int  done = 0;
-        
+        MusECore::XmlReadStatistics stats;
+
         bool end = false;
         MusEGlobal::song->startUndo();
         for (;;) 
@@ -670,7 +660,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                   if (tag == "part") {
                         // Read the part.
                         MusECore::Part* p = 0;
-                        p = MusECore::Part::readFromXml(xml, track);
+                        p = MusECore::Part::readFromXml(xml, track, &stats);
                         // If it could not be created...
                         if(!p)
                         {
@@ -691,6 +681,9 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                         // Operation is undoable but do not start/end undo.
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, p),
                                                          MusECore::Song::OperationUndoable);
+                        }
+                  else if (tag == "audioTrackAutomation") {
+
                         }
                   else
                         xml.unknown("MusE::importPartToTrack");

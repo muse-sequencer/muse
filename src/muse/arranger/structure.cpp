@@ -287,22 +287,22 @@ void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigne
         // iterate through all events and see if any appear after lpos
         if (controller.first > lFrame)
         {
-          removedEvents->add(controller.second.frame, controller.second.val);
+          removedEvents->add(controller.first, controller.second.value());
 
           if (type == cutOperation)
           {
             if (controller.first > rFrame)
             {
               auto diff = rFrame - lFrame;
-              auto newFramePos = controller.second.frame - diff;
-              readdedEvents->add(newFramePos, controller.second.val);
+              auto newFramePos = controller.first - diff;
+              readdedEvents->add(newFramePos, controller.second.value());
             }
           }
           else if (type == insertOperation)
           {
             auto diff = rFrame - lFrame;
-            auto newFramePos = controller.second.frame + diff;
-            readdedEvents->add(newFramePos, controller.second.val);
+            auto newFramePos = controller.first + diff;
+            readdedEvents->add(newFramePos, controller.second.value());
           }
         }
       }
@@ -314,7 +314,7 @@ void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigne
       }
       else
       {
-        auto undoOp = UndoOp( UndoOp::ModifyAudioCtrlValList, controllerListList, removedEvents, readdedEvents);
+        auto undoOp = UndoOp( UndoOp::ModifyAudioCtrlValList, audioTrack, removedEvents, readdedEvents);
         operations.push_back(undoOp);
       }
     }

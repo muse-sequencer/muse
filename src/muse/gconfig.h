@@ -33,6 +33,9 @@
 #include <QString>
 #include <QList>
 #include <QStringList>
+#include <QUuid>
+
+#include "ctrl.h"
 
 namespace MusECore {
 class Xml;
@@ -78,8 +81,8 @@ enum RouteNameAliasPreference { RoutePreferCanonicalName = 0, RoutePreferFirstAl
 enum WaveDrawing { WaveRmsPeak=1, WaveOutLine=2 };
 
 struct StripConfig {
-  // The corresponding track's serial number. Can be -1.
-  int _serial;
+  // The corresponding track's uuid. Can be null.
+  QUuid _uuid;
   // The corresponding track's index in the song file. Can be -1.
   // Temporary during loading to avoid using globally or locally
   //  'unique' identifiers in the song file, such as the serial,
@@ -91,7 +94,7 @@ struct StripConfig {
   bool _deleted;
 
   StripConfig();
-  StripConfig(int trackSerial, bool visible, int width);
+  StripConfig(const QUuid& trackUuid, bool visible, int width);
 
   bool isNull() const;
 
@@ -405,6 +408,7 @@ struct GlobalConfigValues {
       bool midiCtrlGraphMergeErase; // Whether to erase underlying erase target items when dragging/dropping source items.
       bool midiCtrlGraphMergeEraseInclusive; // Whether to erase target items in-between source item groups.
       bool midiCtrlGraphMergeEraseWysiwyg; // Whether to erase past the last item in a group to include its original source width.
+      MusECore::CtrlList::PasteEraseOptions audioCtrlGraphPasteEraseOptions;
       RouteNameAliasPreference preferredRouteNameOrAlias;
       bool routerExpandVertically; // Whether to expand the router items vertically. (Good use of space but slow!)
       // How to group the router channels together for easier multi-channel manipulation.

@@ -28,6 +28,8 @@
 #include "noteinfo.h"
 #include "cobject.h"
 
+#include <QUuid>
+
 class QAction;
 class QActionGroup;
 class QCloseEvent;
@@ -57,17 +59,15 @@ class ListEdit : public QWidget {
       MusECore::MidiTrack* curTrack;
       MusECore::MidiPart* curPart;
       int selectedTick;
-      int curPartId;
+      QUuid curPartId;
       bool _isDeleting;
-      std::set<int> _pidSet;
+      std::set<QUuid> _pidSet;
       MusECore::PartList* _pl;
 
       enum { CMD_DELETE, CMD_INC, CMD_DEC };
 
       
       void closeEvent(QCloseEvent*) override;
-//      virtual void keyPressEvent(QKeyEvent*);
-//      virtual QSize sizeHint() const override;
       QSize minimumSizeHint() const override;
       bool eventFilter(QObject *, QEvent *event) override;
 

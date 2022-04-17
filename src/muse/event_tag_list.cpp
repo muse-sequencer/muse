@@ -23,17 +23,37 @@
 
 #include "event_tag_list.h"
 
+// Forwards from header:
+#include "part.h"
+
 namespace MusECore {
 
 //----------------------------------
 //  TagEventStatsStruct
 //----------------------------------
 
+TagEventStatsStruct::TagEventStatsStruct() : _notes(0), _midiCtrls(0), _sysexes(0), _metas(0), _waves(0),
+      _waveRange(false /* use Pos::FRAMES */), _audioCtrlRange(false /* use Pos::FRAMES */) {}
+
+unsigned int TagEventStatsStruct::notes() const { return _notes; }
+unsigned int TagEventStatsStruct::mctrls() const { return _midiCtrls; }
+unsigned int TagEventStatsStruct::sysexes() const { return _sysexes; }
+unsigned int TagEventStatsStruct::metas() const { return _metas; }
+unsigned int TagEventStatsStruct::waves() const { return _waves; }
+unsigned int TagEventStatsStruct::actrls() const { return _audioCtrls; }
+
+PosLen TagEventStatsStruct::noteRange() const { return  _noteRange; }
+PosLen TagEventStatsStruct::midiCtrlRange() const { return _midiCtrlRange; }
+PosLen TagEventStatsStruct::sysexRange() const { return _sysexRange; }
+PosLen TagEventStatsStruct::metaRange() const { return  _metaRange; }
+PosLen TagEventStatsStruct::waveRange() const { return  _waveRange; }
+PosLen TagEventStatsStruct::audioCtrlRange() const { return _audioCtrlRange; }
+
 void TagEventStatsStruct::add(const Event& e)
 {
   //if(e.empty())
   //  return;
-  
+
   switch(e.type())
   {
     case Note:
@@ -85,12 +105,23 @@ void TagEventStatsStruct::add(const Event& e)
     break;
   }
 }
-  
+
+void TagEventStatsStruct::add(unsigned int frame)
+{
+  if(_audioCtrls == 0 || (frame < _audioCtrlRange.frame()))
+    _audioCtrlRange.setFrame(frame);
+  // For these events, minimum 1 unit time, to qualify as a valid 'range'.
+  if(_audioCtrls == 0 || (frame + 1 > _audioCtrlRange.endValue()))
+    _audioCtrlRange.setEndValue(frame + 1);
+
+  ++_audioCtrls;
+}
+
 PosLen TagEventStatsStruct::evrange(const RelevantSelectedEvents_t& types) const
 {
   // If wave events are included the result is in FRAMES.
   // Otherwise the result is in TICKS.
-  PosLen pl(_waves == 0 || !(types & WaveRelevant));
+  PosLen pl((_waves == 0 && _audioCtrls == 0) || !(types & (WaveRelevant | AudioControllersRelevant)));
   bool first = true;
   if(types & NotesRelevant)
   {
@@ -147,31 +178,60 @@ PosLen TagEventStatsStruct::evrange(const RelevantSelectedEvents_t& types) const
       first = false;
     }
   }
-  return pl;
-}  
+  if(types & AudioControllersRelevant)
+  {
+    if(_audioCtrls > 0)
+    {
+      if(first || pl > _audioCtrlRange)
+        pl.setPos(_audioCtrlRange);
+      if(first || pl.end() < _audioCtrlRange.end())
+        pl.setEnd(_audioCtrlRange.end());
+      first = false;
+    }
+  }
 
+  return pl;
+}
 
 //----------------------------------
 //  TagEventListStruct
 //----------------------------------
 
+TagEventListStruct::TagEventListStruct()  {}
+TagEventListStruct::TagEventListStruct(const Part* part)  { _part = part; }
+const Part* TagEventListStruct::part() const { return _part; }
+void TagEventListStruct::setPart(const Part* part) { _part = part; }
+
+EventList& TagEventListStruct::evlist() { return _evlist; }
+const EventList& TagEventListStruct::evlist() const { return _evlist; }
+AudioAutomationItemTrackMap& TagEventListStruct::aaitm() {  return _aaitm; }
+const AudioAutomationItemTrackMap& TagEventListStruct::aaitm() const { return _aaitm; }
+
 bool TagEventListStruct::add(const Event& e)
 {
   //if(e.empty())
   //  return _evlist.end();
-// REMOVE Tim. Ctrl. Changed.
-//   _stats.add(e);
-//   return _evlist.add(e) != _evlist.end();
   const bool res = _evlist.add(e) != _evlist.end();
   if(res)
     _stats.add(e);
   return res;
 }
 
+bool TagEventListStruct::add(Track* track, CtrlList* ctrlList, unsigned int frame, double value)
+{
+  const bool res = _aaitm.addSelected(track, ctrlList, frame, AudioAutomationItem(frame, value));
+  if(res)
+    _stats.add(frame);
+  return res;
+}
+
+const TagEventStatsStruct& TagEventListStruct::stats() const { return _stats; }
 
 //----------------------------------
 //  TagEventList
 //----------------------------------
+
+TagEventList::TagEventList() { }
 
 bool TagEventList::add(const Part* part, const Event& event)
 {
@@ -181,52 +241,94 @@ bool TagEventList::add(const Part* part, const Event& event)
   // But normally we should ignore simply if any clone part is found,
   //  because they're all supposed to be IDENTICAL, but just to be safe
   //  we'll check the event lists so we don't miss anything ...
-  if(!event.empty())
+  TagEventListStruct* found_part_el = nullptr;
+  iTagEventList itl = begin();
+  for( ; itl != end(); ++itl)
   {
-    TagEventListStruct* found_part_el = nullptr;
-    iTagEventList itl = begin();
-    for( ; itl != end(); ++itl)
+    const Part* p = itl->part();
+    // Is the event or a clone of the event already listed in this part?
+    if(!event.empty())
     {
-      const Part* p = itl->first;
-      // Is the event or a clone of the event already listed in this part?
-      const EventList& el = itl->second.evlist();
+      const EventList& el = itl->evlist();
       ciEvent ie = el.findWithId(event);
       if(ie != el.cend())
         return false;
-
-      if(p == part)
-        found_part_el = &itl->second;
     }
 
-    if(!found_part_el)
-    {
-            TagEventListInsertResultPair_t ires = insert(TagEventListPair_t(part, TagEventListStruct()));
-      if(!ires.second)
-        return false;
-      found_part_el = &ires.first->second;
-    }
+    if(p == part)
+      found_part_el = &(*itl);
+  }
 
+  if(found_part_el && event.empty())
+    return false;
+
+  if(!found_part_el)
+  {
+    iTagEventList itel = insert(end(), TagEventListStruct(part));
+    found_part_el = &(*itel);
+  }
+
+  if(!event.empty())
+  {
     if(!found_part_el->add(event))
       return false;
     _globalStats.add(event);
+  }
+
+  return true;
+}
+
+bool TagEventList::add(Track* track, CtrlList* ctrlList, unsigned int frame, double value)
+{
+  // One single tag structure (the first one found) is sufficient to hold all
+  //  required values on all audio controllers on all tracks.
+  if(empty())
+  {
+    TagEventListStruct tels;
+    tels.add(track, ctrlList, frame, value);
+    insert(end(), tels);
     return true;
   }
   else
   {
-    TagEventListInsertResultPair_t ires = insert(TagEventListPair_t(part, TagEventListStruct()));
-    return ires.second;
+    iTagEventList itl = begin();
+    AudioAutomationItemTrackMap& aaitm = itl->aaitm();
+    return aaitm.addSelected(track, ctrlList, frame, AudioAutomationItem(frame, value));
   }
-
-  return false;
 }
-  
+
+const TagEventStatsStruct& TagEventList::globalStats() const { return _globalStats; }
+
 void TagEventList::globalCtlStats(FindMidiCtlsList_t* tclist, int findCtl) const
 {
   for(ciTagEventList itl = cbegin(); itl != cend(); ++itl)
   {
-    const TagEventListStruct& tel = itl->second;
+    const TagEventListStruct& tel = *itl;
     tel.evlist().findControllers(false, tclist, findCtl);
   }
 }
 
+EventTagOptionsStruct::EventTagOptionsStruct() :
+    _flags(TagDefaults) { }
+
+EventTagOptionsStruct::EventTagOptionsStruct(const EventTagOptions_t& flags, Pos p0, Pos p1) :
+    _flags(flags), _p0(p0), _p1(p1) { }
+
+// static
+EventTagOptionsStruct EventTagOptionsStruct::fromOptions(bool tagAllItems, bool tagAllParts, bool tagRange, Pos p0, Pos p1,
+                      bool tagSelected, bool tagMoving)
+{
+  return EventTagOptionsStruct(
+    (tagAllItems ? TagAllItems : TagNoOptions) |
+    (tagAllParts ? TagAllParts : TagNoOptions) |
+    (tagRange    ? TagRange    : TagNoOptions) |
+    (tagSelected ? TagSelected : TagNoOptions) |
+    (tagMoving   ? TagMoving   : TagNoOptions),
+    p0, p1);
+}
+void EventTagOptionsStruct::clear() { _flags = TagNoOptions; _p0 = Pos(); _p1 = Pos(); }
+void EventTagOptionsStruct::appendFlags(const EventTagOptions_t& flags) { _flags |= flags; }
+void EventTagOptionsStruct::removeFlags(const EventTagOptions_t& flags) { _flags &= ~flags; }
+
 } // namespace MusECore
+

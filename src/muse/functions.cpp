@@ -23,6 +23,8 @@
 #include "functions.h"
 #include "song.h"
 #include "helper.h"
+#include "xml_statistics.h"
+#include "utils.h"
 
 #include "event.h"
 #include "audio.h"
@@ -61,11 +63,13 @@
 #include <QMessageBox>
 #include <QClipboard>
 #include <QSet>
+#include <QUuid>
 
 // Forwards from header:
 #include <QMimeData>
 #include "track.h"
 #include "part.h"
+#include "ctrl.h"
 
 using namespace std;
 
@@ -231,7 +235,7 @@ namespace MusECore {
 
 // unit private functions:
 
-bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id);
+bool read_eventlist_and_part(Xml& xml, EventList* el, QUuid* part_id);
 
 // -----------------------
 
@@ -837,7 +841,7 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
 
     for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
     {
-        xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
+        xml.tag(level++, "eventlist part_id=\"%s\"", (*part)->uuid().toString().toLatin1().constData());
         for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
             if (is_relevant(ev->second, *part, range, AllEventsRelevant))
                 ev->second.write(level, xml, -start_tick);
@@ -877,7 +881,7 @@ unsigned get_groupedevents_len(const QString& pt)
 				if (tag == "eventlist")
 				{
 					EventList el;
-					int part_id;
+					QUuid part_id;
 					if (read_eventlist_and_part(xml, &el, &part_id))
 					{
 						unsigned len = el.rbegin()->first;
@@ -933,36 +937,27 @@ void paste_notes(int max_distance, bool always_new_part, bool never_new_part, co
 // if nothing is selected/relevant, this function returns NULL
 QMimeData* parts_to_mime(const set<const Part*>& parts)
 {
-	
+
 	//---------------------------------------------------
 	//    write events as XML into tmp file
 	//---------------------------------------------------
 
 	FILE* tmp = tmpfile();
-	if (tmp == 0) 
+	if (tmp == 0)
 	{
 		fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
 		return 0;
 	}
-	
+
+	XmlWriteStatistics stats;
 	Xml xml(tmp);
 	int level = 0;
-	
-    bool midi=false;
-    bool wave=false;
+
 	for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 	{
-        if ((*part)->track()->type() == MusECore::Track::MIDI)
-            midi=true;
-        else
-            wave=true;
-        (*part)->write(level, xml, true, true);
+        (*part)->write(level, xml, true, true, &stats);
     }
     QString mimeString = "text/x-muse-mixedpartlist";
-    if (!midi)
-        mimeString = "text/x-muse-wavepartlist";
-    else if (!wave)
-        mimeString = "text/x-muse-midipartlist";
     QMimeData *mimeData =  file_to_mimedata(tmp, mimeString );
     fclose(tmp);
     return mimeData;
@@ -998,10 +993,10 @@ QMimeData* file_to_mimedata(FILE *datafile, QString mimeType)
 	return md;
 }
 
-bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on success, false on failure
+bool read_eventlist_and_part(Xml& xml, EventList* el, QUuid* part_id) // true on success, false on failure
 {
-	*part_id = -1;
-	
+	*part_id = QUuid();
+
 	for (;;)
 	{
 		Xml::Token token = xml.parse();
@@ -1011,14 +1006,14 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on s
 			case Xml::Error:
 			case Xml::End:
 				return false;
-				
+
 			case Xml::Attribut:
 				if (tag == "part_id")
-					*part_id = xml.s2().toInt();
+					*part_id = QUuid(xml.s2());
 				else
 					printf("unknown attribute '%s' in read_eventlist_and_part(), ignoring it...\n", tag.toLatin1().data());
 				break;
-				
+
 			case Xml::TagStart:
 				if (tag == "event")
 				{
@@ -1029,11 +1024,11 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on s
 				else
 					xml.unknown("read_eventlist_and_part");
 				break;
-				
+
 			case Xml::TagEnd:
 				if (tag == "eventlist")
 					return true;
-				
+
 			default:
 				break;
 		}
@@ -1062,8 +1057,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 				if (tag == "eventlist")
 				{
 					EventList el;
-					int part_id;
-		
+					QUuid part_id;
+
 					if (read_eventlist_and_part(xml, &el, &part_id))
 					{
 						const Part* dest_part;
@@ -1665,15 +1660,14 @@ bool split_part(const Part* part, int tick)
 	return MusEGlobal::song->applyOperationGroup(operations);
 }
 
-bool delete_selected_parts()
+bool delete_selected_parts(Undo& operations)
 {
-	Undo operations;
 	bool partSelected = false;
-
 	TrackList* tl = MusEGlobal::song->tracks();
-
 	for (iTrack it = tl->begin(); it != tl->end(); ++it)
 	{
+		//if(!(*it)->isVisible())
+			//continue;
 		PartList* pl = (*it)->parts();
 		for (iPart ip = pl->begin(); ip != pl->end(); ++ip)
 		{
@@ -1684,12 +1678,57 @@ bool delete_selected_parts()
 					}
 				}
 		}
-	
-	MusEGlobal::song->applyOperationGroup(operations);
-	
 	return partSelected;
 }
 
+bool delete_selected_parts()
+{
+	Undo operations;
+  const bool partSelected = delete_selected_parts(operations);
+	MusEGlobal::song->applyOperationGroup(operations);
+	return partSelected;
+}
+
+bool delete_selected_audio_automation(Undo& operations)
+{
+  bool changed = false;
+  TrackList* tl = MusEGlobal::song->tracks();
+  for (iTrack it = tl->begin(); it != tl->end(); ++it)
+  {
+    if((*it)->isMidiTrack() /*|| !(*it)->isVisible()*/)
+      continue;
+    AudioTrack* at = static_cast<AudioTrack*>(*it);
+    for(iCtrlList icl = at->controller()->begin(); icl != at->controller()->end(); ++icl)
+    {
+      if(!icl->second->isVisible() || icl->second->dontShow())
+        continue;
+      for(iCtrl ic = icl->second->begin(); ic != icl->second->end(); ++ic)
+      {
+        if(!ic->second.selected())
+          continue;
+        operations.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, at, icl->second->id(), ic->first));
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
+bool delete_selected_audio_automation()
+{
+  Undo operations;
+  const bool changed = delete_selected_audio_automation(operations);
+  MusEGlobal::song->applyOperationGroup(operations);
+  return changed;
+}
+
+bool delete_selected_parts_and_audio_automation()
+{
+  Undo operations;
+  bool changed = delete_selected_parts(operations) || delete_selected_audio_automation(operations);
+  MusEGlobal::song->applyOperationGroup(operations);
+  return changed;
+}
 
 //=============================================================================
 // BEGIN item-based functions
@@ -1841,8 +1880,8 @@ bool erase_items(TagEventList* tag_list, int velo_threshold, bool velo_thres_use
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       // This operation can apply to any event.
@@ -1876,8 +1915,8 @@ bool crescendo_items(TagEventList* tag_list, int start_val, int end_val, bool ab
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -1919,8 +1958,8 @@ bool delete_overlaps_items(TagEventList* tag_list)
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -1991,8 +2030,8 @@ bool modify_notelen_items(TagEventList* tag_list, int rate, int offset)
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2040,8 +2079,8 @@ bool legato_items(TagEventList* tag_list, int min_len, bool dont_shorten)
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2097,8 +2136,8 @@ bool move_items(TagEventList* tag_list, signed int ticks)
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2161,8 +2200,8 @@ bool quantize_items(TagEventList* tag_list, int raster_idx, bool quant_len, int 
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2220,8 +2259,8 @@ bool transpose_items(TagEventList* tag_list, signed int halftonesteps)
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2254,8 +2293,8 @@ bool modify_velocity_items(TagEventList* tag_list, int rate, int offset)
     
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2298,8 +2337,8 @@ bool modify_off_velocity_items(TagEventList* tag_list, int rate, int offset)
 
   for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
   {
-    part = itl->first;
-    const EventList& el = itl->second.evlist();
+    part = itl->part();
+    const EventList& el = itl->evlist();
     for(ciEvent ie = el.begin(); ie != el.end(); ie++)
     {
       const Event& e = ie->second;
@@ -2328,6 +2367,566 @@ bool modify_off_velocity_items(TagEventList* tag_list, int rate, int offset)
   }
   
   return MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool readAudioAutomation(MusECore::Xml& xml, MusECore::PasteCtrlTrackMap* pctm)
+{
+  QUuid trackUuid;
+  MusECore::PasteCtrlListList pcll;
+  MusECore::PasteCtrlListStruct pcls;
+
+  for (;;) {
+        MusECore::Xml::Token token = xml.parse();
+        const QString& tag = xml.s1();
+        switch (token) {
+              case MusECore::Xml::Error:
+              case MusECore::Xml::End:
+                    return false;
+              case MusECore::Xml::TagStart:
+                    if (tag == "controller")
+                    {
+                      if(!pcls._ctrlList.read(xml) || pcls._ctrlList.id() < 0)
+                        return false;
+                      if(!pcls._ctrlList.empty())
+                        pcls._minFrame = pcls._ctrlList.cbegin()->first;
+                      pcll.add(pcls._ctrlList.id(), pcls);
+                    }
+                    else
+                      xml.unknown("readAudioAutomation");
+                    break;
+              case MusECore::Xml::Attribut:
+                    if (tag == "trackUuid")
+                      trackUuid = QUuid(xml.s2());
+                    else
+                      fprintf(stderr, "readAudioAutomation unknown tag %s\n", tag.toLatin1().constData());
+                    break;
+              case MusECore::Xml::TagEnd:
+                    if (tag == "audioTrackAutomation")
+                    {
+                      if(!trackUuid.isNull())
+                        pctm->add(trackUuid, pcll);
+                      return true;
+                    }
+              default:
+                    break;
+              }
+        }
+  return false;
+}
+
+void parseArrangerPasteXml(
+  const QString& pt, MusECore::Track* track,
+  bool clone, bool /*toTrack*/, set<MusECore::Track*>* affected_tracks,
+  std::set<MusECore::Part*>* partList,
+  MusECore::XmlReadStatistics* stats,
+  MusECore::PasteCtrlTrackMap* pctm,
+  unsigned int* minPos, bool* minPosValid)
+{
+      QByteArray ba = pt.toLatin1();
+      const char* ptxt = ba.constData();
+      MusECore::Xml xml(ptxt);
+      unsigned int  minPartPos=0;
+      unsigned int  minCtrlPos=0;
+      bool minPartPosValid = false;
+      bool minCtrlPosValid = false;
+      int  notDone = 0;
+      int  done = 0;
+      bool end = false;
+      if(minPos)
+        *minPos = 0;
+      if(minPosValid)
+        *minPosValid = false;
+
+      // NOTE: Here the xml just holds a collection of copied objects.
+      // There is no top-level tag containing the objects thus no TagEnd, only End.
+      for (;;) {
+            MusECore::Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case MusECore::Xml::Error:
+                        end = true;
+                        break;
+                  case MusECore::Xml::End:
+                        {
+                          if(minPos && (minPartPosValid || minCtrlPosValid))
+                          {
+                            if(pctm && minCtrlPosValid)
+                            {
+                              *minPos = MusECore::Pos::convert(minCtrlPos, MusECore::Pos::FRAMES, MusECore::Pos::TICKS);
+                              if(minPosValid)
+                                *minPosValid = true;
+                            }
+                            if(partList && minPartPosValid && minPartPos < *minPos)
+                            {
+                              *minPos = minPartPos;
+                              if(minPosValid)
+                                *minPosValid = true;
+                            }
+                          }
+                        }
+                        end = true;
+                        break;
+                  case MusECore::Xml::TagStart:
+                        if (tag == "part") {
+                              if(!partList)
+                                xml.skip(tag);
+                              else
+                              {
+                                // Read the part.
+                                MusECore::Part* p = 0;
+                                p = MusECore::Part::readFromXml(xml, track, stats, clone, false);
+
+                                // If it could not be created...
+                                if(!p)
+                                {
+                                  // Increment the number of parts not done and break.
+                                  ++notDone;
+                                  break;
+                                }
+
+                                // Increment the number of parts done.
+                                ++done;
+
+                                p->setSelected(true);
+                                partList->insert(p);
+
+                                if (!minPartPosValid || p->tick() < minPartPos)
+                                {
+                                  minPartPos = p->tick();
+                                  minPartPosValid = true;
+                                }
+
+                                if (affected_tracks)
+                                  affected_tracks->insert(p->track());
+
+                              }
+                            }
+                        else if(tag == "audioTrackAutomation")
+                        {
+                              if(!pctm)
+                                xml.skip(tag);
+                              else
+                              {
+                                if(readAudioAutomation(xml, pctm))
+                                {
+                                  if(!pctm->empty() && (!minCtrlPosValid || pctm->_minFrame < minCtrlPos))
+                                  {
+                                    minCtrlPos = pctm->_minFrame;
+                                    minCtrlPosValid = true;
+                                  }
+                                }
+                              }
+                        }
+                        else
+                              xml.unknown("parseArrangerPasteXml");
+                        break;
+                  case MusECore::Xml::TagEnd:
+                        break;
+                  default:
+                              end = true;
+                        break;
+                }
+                if(end)
+                  break;
+            }
+
+
+      if(notDone)
+      {
+        int tot = notDone + done;
+        QMessageBox::critical(nullptr, QString("MusE"),
+           (tot > 1  ?  QObject::tr("%n part(s) out of %1 could not be pasted.\nLikely the selected track is the wrong type.","",notDone).arg(tot)
+                     :  QObject::tr("%n part(s) could not be pasted.\nLikely the selected track is the wrong type.","",notDone)));
+      }
+}
+
+void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToRange,*/ int amount, int raster)
+{
+  QClipboard* cb  = QApplication::clipboard();
+  const QMimeData* md = cb->mimeData(QClipboard::Clipboard);
+
+  const QString pfx("text/");
+  QString mxpl("x-muse-mixedpartlist");
+
+  if(!md->hasFormat(pfx + mxpl))
+  {
+    QMessageBox::critical(nullptr, QString("MusE"),
+      QObject::tr("Cannot paste: wrong data type"));
+    return;
+  }
+
+  const QString txt = cb->text(mxpl, QClipboard::Clipboard);
+  if (txt.isEmpty())
+    return;
+
+  MusECore::XmlReadStatistics stats;
+  MusECore::PasteCtrlTrackMap pctm;
+
+  unsigned int minPos = 0;
+  bool minPosValid = false;
+  parseArrangerPasteXml(txt, track, false, false, nullptr, nullptr, &stats, &pctm, &minPos, &minPosValid);
+  if(!minPosValid)
+    return;
+
+  const bool multipleCtrls = pctm.size() > 1 || pctm.cbegin()->second.size() > 1;
+
+  if(multipleCtrls)
+  {
+    QMessageBox::critical(nullptr, QString("MusE"),
+      QObject::tr("Cannot paste automation: Clipboard has multiple controllers.\nOnly one is allowed."));
+    return;
+
+// TODO: Dialog to choose which controller to paste !
+//           const MusECore::TrackList* tl = MusEGlobal::song->tracks();
+//           int ctrlId;
+//           unsigned int ctrlFrame;
+//           for(MusECore::iPasteCtrlTrackMap ipctm = pctm.begin(); ipctm != pctm.end(); ++ipctm)
+//           {
+//             const QUuid& trackUuid = ipctm->first;
+//             // We can only work with controller data that has a track here.
+//             if(trackUuid.isNull())
+//               continue;
+//             const MusECore::Track* t = tl->findUuid(trackUuid);
+//             if(!t || t->isMidiTrack())
+//               continue;
+//             const MusECore::AudioTrack* at = static_cast<const MusECore::AudioTrack*>(t);
+//             const MusECore::CtrlListList* track_cll = at->controller();
+//
+//             MusECore::PasteCtrlListList& pcll = ipctm->second;
+//             for(MusECore::ciPasteCtrlListList ipcll = pcll.cbegin(); ipcll != pcll.cend(); ++ipcll)
+//             {
+//               const MusECore::PasteCtrlListStruct& pcls = ipcll->second;
+//               const MusECore::CtrlList& cl = pcls._ctrlList;
+//               if(cl.empty())
+//                 continue;
+//
+//             }
+//           }
+  }
+
+
+  const MusECore::CtrlList::PasteEraseOptions eraseOpts = MusEGlobal::config.audioCtrlGraphPasteEraseOptions;
+  unsigned int ctrlFrame;
+  MusECore::iPasteCtrlTrackMap ipctm = pctm.begin();
+
+  MusECore::PasteCtrlListList& pcll = ipctm->second;
+  MusECore::ciPasteCtrlListList ipcll = pcll.cbegin();
+  const MusECore::PasteCtrlListStruct& pcls = ipcll->second;
+  const MusECore::CtrlList& cl = pcls._ctrlList;
+  if(cl.empty())
+    return;
+
+  const MusECore::CtrlListList* track_cll = track->controller();
+  // Find the controller we are trying to paste to.
+  MusECore::ciCtrlList track_icl = track_cll->find(ctrlId);
+  // We can only work with existing controllers here.
+  if(track_icl == track_cll->end())
+    return;
+  const MusECore::CtrlList* track_cl = track_icl->second;
+
+  double min, max, trackMin, trackMax;
+  cl.range(&min, &max);
+  track_cl->range(&trackMin, &trackMax);
+
+  MusECore::Undo operations;
+  unsigned int startPos=MusEGlobal::song->vcpos();
+  set<MusECore::Track*> affected_tracks;
+
+  // TODO TODO:
+  //deselectAll(&operations);
+
+  MusECore::CtrlList* addCtrlList = new MusECore::CtrlList(ctrlId, false);
+  MusECore::CtrlList* eraseCtrlList = new MusECore::CtrlList(ctrlId, false);
+
+  for (int i = 0; i < amount; ++i)
+  {
+    unsigned int groupStartFrame, groupEndFrame;
+    MusECore::MuseCount_t ctrlTick;
+    double newValue;
+    bool isGroupStart = true;
+    bool isGroupEnd = false;
+    for(MusECore::ciCtrl ic = cl.cbegin(); ic != cl.cend(); ++ic)
+    {
+      ctrlFrame = ic->first;
+      const MusECore::CtrlVal& cv = ic->second;
+
+      newValue = cv.value();
+
+      if (cl.valueType() == MusECore::VAL_LOG ) {
+        newValue = logToVal(newValue, min, max); // represent volume between 0 and 1
+        if(newValue < 0) newValue = 0.0;
+      }
+      else
+        newValue = (newValue-min)/(max-min);  // we need to set curVal between 0 and 1
+
+      //if(fitToRange)
+      {
+        if (track_cl->valueType() == MusECore::VAL_LOG ) {
+          newValue = valToLog(newValue, trackMin, trackMax);
+          if (newValue< trackMin) newValue=trackMin;
+          if (newValue>trackMax) newValue=trackMax;
+        }
+        else
+          newValue = newValue * (trackMax-trackMin) + trackMin;
+      }
+//         else
+//         {
+//           if (track_cl->valueType() == MusECore::VAL_LOG )
+//             newValue = valToLog(newValue, min, max);
+//           else
+//             newValue = newValue * (max-min) + min;
+//           if (newValue<trackMin) newValue=trackMin;
+//           if (newValue>trackMax) newValue=trackMax;
+//         }
+
+      // Even in PasteNoErase mode, we must still erase any existing
+      //  items at the locations that we wish to paste to.
+      if(eraseOpts == MusECore::CtrlList::PasteNoErase)
+        isGroupEnd = true;
+      // In PasteErase mode, check for group end.
+      else if(eraseOpts == MusECore::CtrlList::PasteErase && cv.groupEnd())
+        isGroupEnd = true;
+
+      // Check for missing group end and force it if necessary.
+      // Also, in PasteEraseRange mode this will catch the last
+      //  item and force it to be group end.
+      MusECore::ciCtrl ic_next = ic;
+      ++ic_next;
+      if(ic_next == cl.cend())
+        isGroupEnd = true;
+
+      // Convert the position.
+      ctrlTick = MusECore::Pos::convert(ctrlFrame, MusECore::Pos::FRAMES, MusECore::Pos::TICKS);
+      // Subtract the minimum position and add the paste position, and limit to zero just in case.
+      ctrlTick -= (MusECore::MuseCount_t)minPos;
+      ctrlTick += (MusECore::MuseCount_t)startPos + i * raster;
+      if(ctrlTick < 0)
+        ctrlTick = 0;
+      // Convert the position back again.
+      ctrlFrame = MusECore::Pos::convert(ctrlTick, MusECore::Pos::TICKS, MusECore::Pos::FRAMES);
+
+      if(isGroupStart)
+      {
+        groupStartFrame = ctrlFrame;
+        isGroupStart = false;
+      }
+      // This is ignored in PasteNoErase mode since isGroupEnd will not be set.
+      // In that case erasing items is already done, above.
+      if(isGroupEnd)
+      {
+        groupEndFrame = ctrlFrame;
+
+        MusECore::ciCtrl icEraseStart = track_cl->lower_bound(groupStartFrame);
+        MusECore::ciCtrl icEraseEnd = track_cl->upper_bound(groupEndFrame);
+        //eraseCtrlList->insert(icEraseStart, icEraseEnd);
+        for(MusECore::ciCtrl ice = icEraseStart; ice != icEraseEnd; ++ice)
+        {
+          // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
+          if(ice->first != ctrlFrame || ice->second.value() != newValue)
+            eraseCtrlList->add(ice->first, ice->second.value(), ice->second.selected());
+        }
+
+        // Reset for next iteration.
+        isGroupStart = true;
+        isGroupEnd = false;
+      }
+
+      MusECore::ciCtrl ic_existing = track_cl->find(ctrlFrame);
+      // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
+      if(ic_existing == track_cl->cend() || ic_existing->second.value() != newValue)
+        addCtrlList->add(ctrlFrame, newValue, /*cv._selected*/ true, cv.groupEnd());
+    }
+  }
+  // If nothing was changed, delete and ignore.
+  if(eraseCtrlList->empty())
+  {
+    delete eraseCtrlList;
+    eraseCtrlList = nullptr;
+  }
+  if(addCtrlList->empty())
+  {
+    delete addCtrlList;
+    addCtrlList = nullptr;
+  }
+  if(eraseCtrlList || addCtrlList)
+  {
+    //MusEGlobal::song->endAudioCtrlMoveMode(operations);
+    operations.push_back(MusECore::UndoOp(
+      MusECore::UndoOp::ModifyAudioCtrlValList, track, eraseCtrlList, addCtrlList));
+  }
+
+  //MusECore::Pos p(endPos, true);
+  //MusEGlobal::song->setPos(MusECore::Song::CPOS, p);
+
+  MusEGlobal::song->applyOperationGroup(operations);
+}
+
+void processArrangerPasteObjects(
+  MusECore::Undo& operations,
+  unsigned int pos,
+  unsigned int* finalPosPtr,
+  std::set<MusECore::Part*>* partList,
+  MusECore::PasteCtrlTrackMap* pctm,
+  unsigned int minPos)
+{
+      unsigned int  finalPos = pos;
+      const MusECore::CtrlList::PasteEraseOptions eraseOpts = MusEGlobal::config.audioCtrlGraphPasteEraseOptions;
+
+      //--------------------
+      //  Process parts
+      //--------------------
+      if(partList)
+      {
+        MusECore::Part* pt;
+        MusECore::MuseCount_t newPos;
+        for(std::set<MusECore::Part*>::const_iterator ip = partList->cbegin(); ip != partList->cend(); )
+        {
+          pt = *ip;
+          // We can only work with parts that have a track here.
+          if(!pt->track())
+          {
+            delete pt;
+            ip = partList->erase(ip);
+            continue;
+          }
+          // Subtract the minimum position and add the paste position, and limit to zero just in case.
+          newPos =
+            (MusECore::MuseCount_t)pt->tick() -
+            (MusECore::MuseCount_t)minPos +
+            (MusECore::MuseCount_t)pos;
+          if(newPos < 0)
+            newPos = 0;
+          pt->setTick(newPos);
+          if(newPos + pt->lenTick() > finalPos)
+            finalPos = newPos + pt->lenTick();
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart, pt));
+          ++ip;
+        }
+      }
+
+      //---------------------------
+      //  Process audio automation
+      //---------------------------
+      if(pctm)
+      {
+        const MusECore::TrackList* tl = MusEGlobal::song->tracks();
+        int ctrlId;
+        unsigned int ctrlFrame;
+        for(MusECore::iPasteCtrlTrackMap ipctm = pctm->begin(); ipctm != pctm->end(); ++ipctm)
+        {
+          const QUuid& trackUuid = ipctm->first;
+          // We can only work with controller data that has a track here.
+          if(trackUuid.isNull())
+            continue;
+          const MusECore::Track* t = tl->findUuid(trackUuid);
+          if(!t || t->isMidiTrack())
+            continue;
+          const MusECore::AudioTrack* at = static_cast<const MusECore::AudioTrack*>(t);
+          const MusECore::CtrlListList* track_cll = at->controller();
+
+          MusECore::PasteCtrlListList& pcll = ipctm->second;
+          for(MusECore::ciPasteCtrlListList ipcll = pcll.cbegin(); ipcll != pcll.cend(); ++ipcll)
+          {
+            const MusECore::PasteCtrlListStruct& pcls = ipcll->second;
+            const MusECore::CtrlList& cl = pcls._ctrlList;
+            if(cl.empty())
+              continue;
+
+            ctrlId = ipcll->first;
+            MusECore::ciCtrlList track_icl = track_cll->find(ctrlId);
+            // We can only work with existing controllers here.
+            if(track_icl == track_cll->end())
+              continue;
+            const MusECore::CtrlList* track_cl = track_icl->second;
+
+            MusECore::CtrlList* addCtrlList = new MusECore::CtrlList(ctrlId, false);
+            MusECore::CtrlList* eraseCtrlList = new MusECore::CtrlList(ctrlId, false);
+
+            unsigned int groupStartFrame, groupEndFrame;
+            MusECore::MuseCount_t ctrlTick;
+            bool isGroupStart = true;
+            bool isGroupEnd = false;
+            for(MusECore::ciCtrl ic = cl.cbegin(); ic != cl.cend(); ++ic)
+            {
+              ctrlFrame = ic->first;
+              const MusECore::CtrlVal& cv = ic->second;
+              // Even in PasteNoErase mode, we must still erase any existing
+              //  items at the locations that we wish to paste to.
+              if(eraseOpts == MusECore::CtrlList::PasteNoErase)
+                isGroupEnd = true;
+              // In PasteErase mode, check for group end.
+              else if(eraseOpts == MusECore::CtrlList::PasteErase && cv.groupEnd())
+                isGroupEnd = true;
+
+              // Check for missing group end and force it if necessary.
+              // Also, in PasteEraseRange mode this will catch the last
+              //  item and force it to be group end.
+              MusECore::ciCtrl ic_next = ic;
+              ++ic_next;
+              if(ic_next == cl.cend())
+                isGroupEnd = true;
+
+              // Convert the position.
+              ctrlTick = MusECore::Pos::convert(ctrlFrame, MusECore::Pos::FRAMES, MusECore::Pos::TICKS);
+              // Subtract the minimum position and add the paste position, and limit to zero just in case.
+              ctrlTick -= (MusECore::MuseCount_t)minPos;
+              ctrlTick += (MusECore::MuseCount_t)pos;
+              if(ctrlTick < 0)
+                ctrlTick = 0;
+              // Convert the position back again.
+              ctrlFrame = MusECore::Pos::convert(ctrlTick, MusECore::Pos::TICKS, MusECore::Pos::FRAMES);
+
+              if(isGroupStart)
+              {
+                groupStartFrame = ctrlFrame;
+                isGroupStart = false;
+              }
+              // This is ignored in PasteNoErase mode since isGroupEnd will not be set.
+              // In that case erasing items is already done, above.
+              if(isGroupEnd)
+              {
+                groupEndFrame = ctrlFrame;
+
+                MusECore::ciCtrl icEraseStart = track_cl->lower_bound(groupStartFrame);
+                MusECore::ciCtrl icEraseEnd = track_cl->upper_bound(groupEndFrame);
+                for(MusECore::ciCtrl ice = icEraseStart; ice != icEraseEnd; ++ice)
+                {
+                  // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
+                  if(ice->first != ctrlFrame || ice->second.value() != cv.value())
+                    eraseCtrlList->add(ice->first, ice->second.value(), ice->second.selected());
+                }
+
+                // Reset for next iteration.
+                isGroupStart = true;
+                isGroupEnd = false;
+              }
+
+              MusECore::ciCtrl ic_existing = track_cl->find(ctrlFrame);
+              // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
+              if(ic_existing == track_cl->cend() || ic_existing->second.value() != cv.value())
+                addCtrlList->add(ctrlFrame, cv.value(), /*cv._selected*/ true, cv.groupEnd());
+            }
+            // If nothing was changed, delete and ignore.
+            if(eraseCtrlList->empty())
+            {
+              delete eraseCtrlList;
+              eraseCtrlList = nullptr;
+            }
+            if(addCtrlList->empty())
+            {
+              delete addCtrlList;
+              addCtrlList = nullptr;
+            }
+            if(eraseCtrlList || addCtrlList)
+            {
+              operations.push_back(MusECore::UndoOp(
+                MusECore::UndoOp::ModifyAudioCtrlValList, at, eraseCtrlList, addCtrlList));
+            }
+          }
+        }
+      }
+
+      if (finalPosPtr) *finalPosPtr=finalPos;
 }
 
 void copy_items(TagEventList* tag_list)
@@ -2380,12 +2979,12 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mod
 
     for(ciTagEventList itl = tag_list->begin(); itl != tag_list->end(); ++itl)
     {
-      part = itl->first;
-      const EventList& el = itl->second.evlist();
+      part = itl->part();
+      const EventList& el = itl->evlist();
       if(el.empty())
         continue;
       
-      xml.tag(level++, "eventlist part_id=\"%d\"", part->sn());
+      xml.tag(level++, "eventlist part_id=\"%s\"", part->uuid().toString().toLatin1().constData());
       for(ciEvent ie = el.begin(); ie != el.end(); ie++)
       {
         const Event& e = ie->second;
@@ -2908,8 +3507,8 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
         if (tag == "eventlist")
         {
           EventList el;
-          int part_id;
-    
+          QUuid part_id;
+
           if (!read_eventlist_and_part(xml, &el, &part_id))
           {
             printf("ERROR: reading eventlist from clipboard failed. ignoring this one...\n");
@@ -3031,8 +3630,8 @@ void paste_items_at(
     for(ciTagEventList itl = tag_list->cbegin(); itl != tag_list->cend(); ++itl)
     {
       const Part* dest_part = nullptr;
-      const Part* src_part = itl->first;
-      
+      const Part* src_part = itl->part();
+
       if (paste_into_part == nullptr)
         // Paste to original source part.
         dest_part = src_part;
@@ -3053,7 +3652,7 @@ void paste_items_at(
         continue;
         
       // Grab the event list and find the number of relevant events.
-      const EventList& el = itl->second.evlist();
+      const EventList& el = itl->evlist();
 
       pasteEventList(
         el, pos, ((Part*)dest_part), operations, add_operations,
@@ -3402,6 +4001,5 @@ void resize_part(
                   break;
             }
       }
-
 
 } // namespace MusECore

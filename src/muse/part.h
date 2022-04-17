@@ -43,6 +43,8 @@ class Track;
 class MidiTrack;
 class WaveTrack;
 class Xml;
+struct XmlReadStatistics;
+struct XmlWriteStatistics;
 
 //---------------------------------------------------------
 //   MidiCtrlViewState
@@ -124,12 +126,11 @@ class Part : public PosLen {
       enum HiddenEventsType { NoEventsHidden = 0x00, LeftEventsHidden = 0x01, RightEventsHidden = 0x02};
       enum PartType { MidiPartType = 0x01, WavePartType = 0x02 };
       
-      static Part* readFromXml(Xml&, Track*, bool doClone = false, bool toTrack = true);
-   
+      static Part* readFromXml(Xml&, Track*, XmlReadStatistics* stats = nullptr, bool doClone = false, bool trackIsParent = false);
+
    private:
-      static int snGen;
-      int _sn;
-      int _clonemaster_sn; // the serial number of some clone in the chain. every member of the chain has the same value here.
+      QUuid _uuid;
+      QUuid _clonemaster_uuid;
 
       QString _name;
       bool _selected;
@@ -156,10 +157,11 @@ class Part : public PosLen {
       virtual Part* createNewClone() const; // this does NOT chain clones yet. Chain is updated only when the part is really added!
       virtual void splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const;
       
-      void setSn(int n)                { _sn = n; }
-      int clonemaster_sn() const       { return _clonemaster_sn; }
-      int sn() const                   { return _sn; }
-      int newSn()                      { return snGen++; }
+      QUuid uuid() const;
+      void setUuid(const QUuid&);
+      QUuid newUuid() const;
+      QUuid clonemaster_uuid() const;
+      void setClonemasterUuid(const QUuid&);
 
       const QString& name() const      { return _name; }
       void setName(const QString& s)   { _name = s; }
@@ -198,8 +200,8 @@ class Part : public PosLen {
       // Returns true if any event was closed. Does not operate on the part's clones, if any.
       virtual bool closeAllEvents() { return false; };
 
-      virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false) const;
-      
+      virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false, XmlWriteStatistics* stats = nullptr) const;
+
       virtual void dump(int n = 0) const;
 
       const MidiPartViewState& viewState() const { return _viewState; }
@@ -288,6 +290,7 @@ class PartList : public PartList_t {
       void remove(Part* part);
       int index(const Part*) const;
       Part* find(int idx);
+      Part* findCloneMaster(const QUuid&) const;
       void clearDelete() {
             for (iterator i = begin(); i != end(); ++i)
                   delete i->second;
@@ -306,10 +309,6 @@ extern void addPortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, bool doClones);
 
 } // namespace MusECore
-
-namespace MusEGlobal {
-extern MusECore::CloneList cloneList;
-}
 
 #endif
 

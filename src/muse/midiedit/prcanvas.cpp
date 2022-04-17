@@ -26,17 +26,12 @@
 #include <QList>
 #include <QPair>
 #include <QToolTip>
+#include <QUuid>
 
-//#include <QDebug>
-
-//#include <limits.h>
 #include <stdio.h>
 #include "muse_math.h"
-//#include <errno.h>
 
 #include "prcanvas.h"
-//#include "view.h"
-//#include "mpevent.h"
 #include "globals.h"
 #include "cmd.h"
 #include "song.h"
@@ -48,17 +43,11 @@
 #include "type_defs.h"
 
 // Forwards from header:
-//#include <QDragEnterEvent>
-//#include <QDropEvent>
-//#include <QMouseEvent>
 #include <QDragMoveEvent>
-//#include <QDragLeaveEvent>
-//#include <QResizeEvent>
 #include <QPainter>
 #include <QWidget>
 #include "part.h"
 #include "event.h"
-//#include "pianoroll.h"
 #include "midieditor.h"
 #include "citem.h"
 #include "scrollscale.h"
@@ -1767,7 +1756,7 @@ void PianoCanvas::curPartChanged()
 
 void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool delta_mode)
 {
-    QList< QPair<int,MusECore::Event> > already_done;
+    QList< QPair<QUuid,MusECore::Event> > already_done;
     MusECore::Undo operations;
     unsigned int playedEventTick = UINT_MAX;
 
@@ -1781,7 +1770,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
 
         MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
 
-        if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
+        if (already_done.contains(QPair<QUuid,MusECore::Event>(part->clonemaster_uuid(), event)))
             continue;
 
         MusECore::Event newEvent = event.clone();
@@ -1870,9 +1859,7 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int val, bool 
         }
 
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
-        already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
-
-        //setLastEdited(newEvent);
+        already_done.append(QPair<QUuid,MusECore::Event>(part->clonemaster_uuid(), event));
     }
     MusEGlobal::song->applyOperationGroup(operations);
 }

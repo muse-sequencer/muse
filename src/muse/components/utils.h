@@ -86,6 +86,11 @@ extern QString font2StyleSheetFull(const QFont& fnt);
 extern void drawSegmentedHLine(QPainter* p, int x1, int x2, int y, int segLength, int offset = 0);
 extern void drawSegmentedVLine(QPainter* p, int x, int y1, int y2, int segLength, int offset = 0);
 
+// Instead of fast_log10() etc., these use the system versions log10() etc., for more accuracy.
+extern double logToVal(double inLog, double min, double max);
+extern double valToLog(double inV, double min, double max);
+extern double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max);
+
 } // namespace MusECore
 
 #endif

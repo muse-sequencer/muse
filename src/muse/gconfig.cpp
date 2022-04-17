@@ -53,10 +53,10 @@ namespace MusEGlobal {
  */
 
 StripConfig::StripConfig()
-  { _serial = -1; _tmpFileIdx = -1; _visible = true; _width = -1; _deleted = false; }
-StripConfig::StripConfig(int trackSerial, bool visible, int width)
-  { _serial = trackSerial; _tmpFileIdx = -1; _visible = visible; _width = width; _deleted = false; }
-bool StripConfig::isNull() const { return _serial < 0; }
+  { _tmpFileIdx = -1; _visible = true; _width = -1; _deleted = false; }
+StripConfig::StripConfig(const QUuid& trackUuid, bool visible, int width)
+  { _uuid = trackUuid; _tmpFileIdx = -1; _visible = visible; _width = width; _deleted = false; }
+bool StripConfig::isNull() const { return _uuid.isNull(); }
 
 GlobalConfigValues config = {
       QStringList(),              // pluginLadspaPathList
@@ -378,6 +378,7 @@ GlobalConfigValues config = {
       true,                         // midiCtrlGraphMergeErase Whether to erase underlying erase target items when dragging/dropping source items.
       false,                        // midiCtrlGraphMergeEraseInclusive Whether to erase target items in-between source item groups.
       true,                         // midiCtrlGraphMergeEraseWysiwyg Whether to erase past the last item in a group to include its original source width.
+      MusECore::CtrlList::PasteErase, // audioCtrlGraphPasteEraseOptions;
       MusEGlobal::RoutePreferSecondAlias,  // preferredRouteNameOrAlias
       true,                         // routerExpandVertically
       2,                            // routerGroupingChannels

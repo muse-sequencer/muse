@@ -825,8 +825,15 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
                    SC_TRACK_MOVED | SC_TRACK_RESIZED |
                    SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
                    SC_SIG | SC_TEMPO | SC_MASTER)) 
+        {
           canvas->updateItems();
-        
+          canvas->updateAudioAutomation();
+        }
+        else if(type & (SC_AUDIO_CONTROLLER | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER_SELECTION))
+        {
+          canvas->updateAudioAutomation();
+        }
+
         if(type & (SC_PART_SELECTION))
         {
           // Prevent race condition: Ignore if the change was ultimately sent by the canvas itself.
@@ -860,7 +867,8 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         // Try these:
         if(type & (SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
-                   SC_CLIP_MODIFIED | SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED))
+                   SC_CLIP_MODIFIED | SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED |
+                   SC_AUDIO_CTRL_MOVE_MODE))
         canvas->redraw();
         
         // We must marshall song changed instead of connecting to the strip's song changed
@@ -877,7 +885,8 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         //  selectionChanged(), itemsAreSelected() has the latest citems' selected flags.
         if(type & (SC_TRACK_SELECTION | SC_PART_SELECTION | 
                   SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
-                  SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))
+                  SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED |
+                  SC_AUDIO_CONTROLLER | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER_SELECTION))
           _parentWin->selectionChanged();
     }
 
@@ -1096,6 +1105,9 @@ void Arranger::cmd(int cmd)
                   break;
             case CMD_INSERT_EMPTYMEAS:
                   ncmd = PartCanvas::CMD_INSERT_EMPTYMEAS;
+                  break;
+            case CMD_DELETE:
+                  ncmd = PartCanvas::CMD_DELETE;
                   break;
             default:
                   return;
@@ -1509,6 +1521,10 @@ bool Arranger::isSingleSelection() const { return canvas->isSingleSelection(); }
 int Arranger::selectionSize() const { return canvas->selectionSize(); }
 bool Arranger::itemsAreSelected() const { return canvas->itemsAreSelected(); }
 void Arranger::songIsClearing() const { canvas->songIsClearing(); }
+
+bool Arranger::isSingleAudioAutomationSelection() const { return canvas->isSingleAudioAutomationSelection(); }
+int Arranger::audioAutomationSelectionSize() const  { return canvas->audioAutomationSelectionSize(); }
+bool Arranger::audioAutomationItemsAreSelected() const  { return canvas->audioAutomationItemsAreSelected(); }
 
 //---------------------------------------------------------
 //   setupHZoomRange

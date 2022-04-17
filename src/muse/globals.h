@@ -232,14 +232,12 @@ extern const QString noOutputRoutingToolTipWarn;
 #define JACK_MIDI_OUT_PORT_SUFFIX "_out"
 #define JACK_MIDI_IN_PORT_SUFFIX  "_in"
 
-// REMOVE Tim. setuid. Removed.
-// extern uid_t euid, ruid;
 extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();
 extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename);
 
-extern unsigned convertFrame4ProjectSampleRate(unsigned frame);
+extern unsigned convertFrame4ProjectSampleRate(unsigned frame, unsigned frame_sample_rate);
 
 extern QString defaultStyle;
 } // namespace MusEGlobal

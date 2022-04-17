@@ -23,11 +23,10 @@
 
 #include "muse_math.h"
 
-//#include <QApplication>
 #include <QMenuBar>
 #include <QPaintEvent>
-//#include <QActionGroup>
 #include <QSpacerItem>
+#include <QUuid>
 
 #include "amixer.h"
 #include "app.h"
@@ -46,14 +45,8 @@
 #include <QMenu>
 #include <QAction>
 #include <QHBoxLayout>
-//#include <QResizeEvent>
-//#include <QMoveEvent>
-//#include <QCloseEvent>
-//#include <QKeyEvent>
 #include <QEvent>
-//#include "xml.h"
 #include "track.h"
-//#include "meter.h"
 #include "combobox.h"
 #include "knob.h"
 #include "slider.h"
@@ -608,37 +601,37 @@ void AudioMixerApp::addStripsTraditionalLayout()
 void AudioMixerApp::stripVisibleChanged(Strip* s, bool v)
 {
   const MusECore::Track* t = s->getTrack();
-  const int sn = t->serial();
+  const QUuid uuid = t->uuid();
   if (!cfg->stripConfigList.empty()) {
     const int sz = cfg->stripConfigList.size();
     for (int i=0; i < sz; i++) {
       MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-      DEBUG_MIXER(stderr, "stripVisibleChanged() processing strip [%d][%d]\n", sc._serial, sc._visible);
-      if(!sc.isNull() && sc._serial == sn) {
+      DEBUG_MIXER(stderr, "stripVisibleChanged() processing strip [%s][%d]\n", sc._uuid.toString().toLatin1().constData(), sc._visible);
+      if(!sc.isNull() && sc._uuid == uuid) {
           sc._visible = v;
           return;
         }
       }
     }
-  fprintf(stderr, "stripVisibleChanged() StripConfig not found [%d]\n", sn);
+  fprintf(stderr, "stripVisibleChanged() StripConfig not found [%s]\n", uuid.toString().toLatin1().constData());
 }
 
 void AudioMixerApp::stripUserWidthChanged(Strip* s, int w)
 {
   const MusECore::Track* t = s->getTrack();
-  const int sn = t->serial();
+  const QUuid uuid = t->uuid();
   if (!cfg->stripConfigList.empty()) {
     const int sz = cfg->stripConfigList.size();
     for (int i=0; i < sz; i++) {
       MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-      DEBUG_MIXER(stderr, "stripUserWidthChanged() processing strip [%d][%d]\n", sc._serial, sc._width);
-      if(!sc.isNull() && sc._serial == sn) {
+      DEBUG_MIXER(stderr, "stripUserWidthChanged() processing strip [%s][%d]\n", sc._uuid.toString().toLatin1().constData(), sc._width);
+      if(!sc.isNull() && sc._uuid == uuid) {
           sc._width = w;
           return;
         }
       }
     }
-  fprintf(stderr, "stripUserWidthChanged() StripConfig not found [%d]\n", sn);
+  fprintf(stderr, "stripUserWidthChanged() StripConfig not found [%s]\n", uuid.toString().toLatin1().constData());
 }
 
 void AudioMixerApp::setSizing()
@@ -722,7 +715,7 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
     // Create a strip config now if no strip config exists yet for this strip (sc is default, with invalid sn).
     if(sc.isNull())
     {
-      const MusEGlobal::StripConfig scl(t->serial(), strip->getStripVisible(), strip->userWidth());
+      const MusEGlobal::StripConfig scl(t->uuid(), strip->getStripVisible(), strip->userWidth());
       cfg->stripConfigList.append(scl);
     }
 }
@@ -795,9 +788,9 @@ void AudioMixerApp::initMixer()
       const int sz = cfg->stripConfigList.size();
       for (int i=0; i < sz; i++) {
           const MusEGlobal::StripConfig& sc = cfg->stripConfigList.at(i);
-          DEBUG_MIXER(stderr, "processing strip #:%d [%d][%d]\n", i, sc._serial, sc._visible);
+          DEBUG_MIXER(stderr, "processing strip #:%d [%s][%d]\n", i, sc._uuid.toString().toLatin1().constData(), sc._visible);
           if(!sc._deleted && !sc.isNull()) {
-              const MusECore::Track* t = tl->findSerial(sc._serial);
+              const MusECore::Track* t = tl->findUuid(sc._uuid);
               if (t)
                   addStrip(t, sc);
           }
@@ -870,14 +863,14 @@ bool AudioMixerApp::updateStripList()
   for (int i = 0; i < config_sz; ++i )
   {
     MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-    if(!sc._deleted && tl->indexOfSerial(sc._serial) < 0)
+    if(!sc._deleted && tl->indexOfUuid(sc._uuid) < 0)
       sc._deleted = true;
   }
 
   // check for new tracks
   for (MusECore::ciTrack tli = tl->cbegin(); tli != tl->end();++tli) {
     const MusECore::Track* track = *tli;
-    const int sn = track->serial();
+    const QUuid uuid = track->uuid();
     StripList::const_iterator si = stripList.cbegin();
     for (; si != stripList.cend(); ++si) {
       if ((*si)->getTrack() == track) {
@@ -892,7 +885,7 @@ bool AudioMixerApp::updateStripList()
       for(; i < config_sz; ++i)
       {
         MusEGlobal::StripConfig& sc = cfg->stripConfigList[i];
-        if(!sc.isNull() && sc._serial == sn)
+        if(!sc.isNull() && sc._uuid == uuid)
         {
           // Be sure to mark the strip config as undeleted (in use).
           sc._deleted = false;
@@ -934,7 +927,7 @@ void AudioMixerApp::moveConfig(const Strip* s, int new_pos)
   const MusECore::Track* track = s->getTrack();
   if(!track)
     return;
-  const int sn = track->serial();
+  const QUuid uuid = track->uuid();
 
   // The config list may also contain configs marked as 'deleted'.
   // Get the 'real' new_pos index, skipping over them.
@@ -953,7 +946,7 @@ void AudioMixerApp::moveConfig(const Strip* s, int new_pos)
       ++j;
     }
     // While we're at it, remember the index of the given strip.
-    if(s_idx == -1 && sc._serial == sn)
+    if(s_idx == -1 && sc._uuid == uuid)
       s_idx = i;
     // If we have both pieces of information we're done.
     if(new_pos_idx != -1 && s_idx != -1)

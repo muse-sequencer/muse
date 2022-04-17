@@ -114,13 +114,8 @@ const char* seqMsgList[] = {
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
       "AUDIO_SWAP_PLUGINS",
-      "AUDIO_CLEAR_CONTROLLER_EVENTS",
       "AUDIO_SEEK_PREV_AC_EVENT",
       "AUDIO_SEEK_NEXT_AC_EVENT",
-      "AUDIO_ERASE_AC_EVENT",
-      "AUDIO_ERASE_RANGE_AC_EVENTS",
-      "AUDIO_ADD_AC_EVENT",
-      "AUDIO_CHANGE_AC_EVENT",
       "AUDIO_SET_SEND_METRONOME", 
       "AUDIO_START_MIDI_LEARN",
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
@@ -1456,26 +1451,11 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_SWAP_PLUGINS:
                   msg->snode->swapPlugins(msg->a, msg->b);
                   break;
-            case AUDIO_CLEAR_CONTROLLER_EVENTS:
-                  msg->snode->clearControllerEvents(msg->ival);
-                  break;
             case AUDIO_SEEK_PREV_AC_EVENT:
                   msg->snode->seekPrevACEvent(msg->ival);
                   break;
             case AUDIO_SEEK_NEXT_AC_EVENT:
                   msg->snode->seekNextACEvent(msg->ival);
-                  break;
-            case AUDIO_ERASE_AC_EVENT:
-                  msg->snode->eraseACEvent(msg->ival, msg->a);
-                  break;
-            case AUDIO_ERASE_RANGE_AC_EVENTS:
-                  msg->snode->eraseRangeACEvents(msg->ival, msg->a, msg->b);
-                  break;
-            case AUDIO_ADD_AC_EVENT:
-                  msg->snode->addACEvent(msg->ival, msg->a, msg->dval);
-                  break;
-            case AUDIO_CHANGE_AC_EVENT:
-                  msg->snode->changeACEvent(msg->ival, msg->a, msg->b, msg->dval);
                   break;
 
             case AUDIO_SET_SEND_METRONOME:

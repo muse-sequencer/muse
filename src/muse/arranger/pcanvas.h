@@ -24,15 +24,21 @@
 #ifndef __PCANVAS_H__
 #define __PCANVAS_H__
 
-#include <QVector>
 #include <set>
+#include <list>
+#include <map>
 #include <QElapsedTimer>
 #include <QList>
+#include <QMap>
+#include <QUuid>
 
 #include "type_defs.h"
 #include "canvas.h"
 #include "undo.h"
 #include "track.h"
+#include "ctrl.h"
+#include "citem.h"
+#include "pos.h"
 
 
 // Forward declarations:
@@ -54,7 +60,6 @@ class Part;
 class WavePart;
 class MidiPart;
 class PartList;
-class CItem;
 }
 
 namespace MusEGui {
@@ -68,7 +73,7 @@ namespace MusEGui {
 
 class NPart : public PItem {
    protected:
-      int _serial;
+      QUuid _serial;
    
    public:
       NPart(MusECore::Part*);
@@ -76,27 +81,31 @@ class NPart : public PItem {
       const QString name() const     { return part()->name(); }
       void setName(const QString& s) { part()->setName(s); }
       MusECore::Track* track() const           { return part()->track(); }
-      int serial() { return _serial; }
+      QUuid serial() { return _serial; }
       
       bool leftBorderTouches;  // Whether the borders touch other part borders. 
       bool rightBorderTouches;
       };
 
-enum ControllerVals { doNothing, movingController, addNewController };
+enum ControllerVals { doNothing, addNewController };
+
 struct AutomationObject {
-  QPoint startMovePoint;
-  QList<int> currentCtrlFrameList;
+  // List of controller items that are SELECTED only.
+  MusECore::AudioAutomationItemTrackMap currentCtrlFrameList;
+  unsigned int currentFrame;
+  double currentVal;
+  // Whether the currentFrame and currentVal are valid.
   bool currentCtrlValid;
+  // Current controller list. May be null.
   MusECore::CtrlList *currentCtrlList;
+  // Current track. May be null.
   MusECore::Track *currentTrack;
-  bool moveController;
   ControllerVals controllerState;
   QString currentText;
   bool breakUndoCombo;
-  //QRect currentTextRect;
-  //QRect currentVertexRect;
-  //int currentTick;
-  //int currentYNorm;
+
+  AutomationObject();
+  void clear();
 };
 
 //---------------------------------------------------------
@@ -121,6 +130,17 @@ enum PartOperations {
   OP_PARTCOLORBASE = 20,
 };
 
+enum AudioAutomationOperations {
+  // Canvas::TOOLS_ID_BASE is 10000 (but it's private), so start this at 20000.
+  AUTO_OP_BASE_ENUM = 20000,
+  AUTO_OP_REMOVE = AUTO_OP_BASE_ENUM,
+  AUTO_OP_NO_ERASE_MODE = AUTO_OP_BASE_ENUM + 1,
+  AUTO_OP_ERASE_MODE = AUTO_OP_BASE_ENUM + 2,
+  AUTO_OP_ERASE_RANGE_MODE = AUTO_OP_BASE_ENUM + 3,
+  AUTO_OP_END_MOVE_MODE = AUTO_OP_BASE_ENUM + 4,
+  AUTO_OP_END_ENUM = AUTO_OP_END_MOVE_MODE
+};
+
 class PartCanvas : public Canvas {
       Q_OBJECT
       int* _raster;
@@ -131,6 +151,8 @@ class PartCanvas : public Canvas {
       int curColorIndex;
       bool editMode;
       
+      static const int _automationTopMargin;
+      static const int _automationBottomMargin;
       static const int _automationPointDetectDist;
       static const int _automationPointWidthUnsel;
       static const int _automationPointWidthSel;
@@ -155,13 +177,12 @@ class PartCanvas : public Canvas {
       virtual int pitch2y(int p) const;
       virtual int y2height(int) const; 
       virtual inline int yItemOffset() const { return 0; }
-      
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*,bool, bool ctrl);
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
       virtual void renameItem(CItem*);
-      virtual void moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true);
+      virtual void moveCanvasItems(CItemMap&, int, int, DragType, MusECore::Undo&, bool rasterize = true);
 
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
@@ -170,15 +191,32 @@ class PartCanvas : public Canvas {
       virtual QMenu* genItemPopup(CItem*);
       virtual void itemPopup(CItem*, int, const QPoint&);
 
+      virtual QMenu* genAutomationPopup(QMenu* menu = nullptr);
+      virtual void automationPopup(int);
+
       void glueItem(CItem* item);
       void splitItem(CItem* item, const QPoint&);
 
       void copy(MusECore::PartList*);
       void copy_in_range(MusECore::PartList*);
+      // Copies audio automation controller graphs to the given xml object at the given level.
+      // If useRange is false, uses only selected items from all tracks.
+      // If useRange is true, all items from position p0 to p1 are used regardless of selection state,
+      //  and if useAllTracks is true, uses all tracks, otherwise if specificTrack is valid, uses only
+      //  that track, otherwise uses only selected tracks.
+      // Returns true if anything was written to the xml.
+      bool copyAudioAutomation(
+        int level, MusECore::Xml& xml,
+        bool useAllTracks,
+        bool useRange,
+        const MusECore::Track* specificTrack = nullptr,
+        const MusECore::Pos& p0 = MusECore::Pos(), const MusECore::Pos& p1 = MusECore::Pos());
+
       enum paste_mode_t { PASTEMODE_MIX, PASTEMODE_MOVEALL, PASTEMODE_MOVESOME };
+
       void paste(bool clone = false, paste_mode_t paste_mode = PASTEMODE_MIX,
                  bool to_single_track=false, int amount=1, int raster=1536);
-      MusECore::Undo pasteAt(const QString&, MusECore::Track*, unsigned int, bool clone = false,
+      void pasteAt(MusECore::Undo& operations, const QString&, MusECore::Track*, unsigned int, bool clone = false,
                              bool toTrack = true, unsigned int* finalPosPtr = nullptr,
                              std::set<MusECore::Track*>* affected_tracks = nullptr);
       void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame,
@@ -191,22 +229,62 @@ class PartCanvas : public Canvas {
                         const QRect& r, int from, int to, bool selected);
       MusECore::Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& vrg, const ViewRect& vbbox, MusECore::AudioTrack* track);
+      void drawAutomationFills(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawAutomationPoints(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
+      // Returns false if the point is beyond rr.right(), true otherwise.
+      // currentFrame and newFrame can be different in the case of moving points. Otherwise they are the same.
+      bool drawAutomationPoint(
+        QPainter& p, const QRect& rr, const QPen& currentPen, const QPen& nonCurrentPen, int pointWidth,
+        const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame, double value);
+      // Returns false if the point is beyond rr.right(), true otherwise.
+      // currentFrame and newFrame can be different in the case of moving points. Otherwise they are the same.
+      bool fillAutomationPoint(
+        QPainter& p, const QRect& rr, const QColor& currentColor, const QColor& nonCurrentColor, int pointWidth,
+        const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame, double value);
       void drawAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 
-      void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
-      void processAutomationMovements(QPoint pos, bool slowMotion);
+      void checkAutomation(const QPoint& pointer);
+      //    dir = 0     move in all directions
+      //          1     move only horizontal
+      //          2     move only vertical
+      void processAutomationMovements(QPoint pos, int dir, bool rasterize);
+      // Uses fast_log10() instead of log10().
       double logToVal(double inLog, double min, double max);
+      // Uses fast_log10() instead of log10().
       double valToLog(double inV, double min, double max);
-      void newAutomationVertex(QPoint inPos);
+      // Uses log10() instead of fast_log10().
+      double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max);
+      // Given a frame, finds the corresponding item and returns its value, and returns
+      //  the minimum and maximum frame that the given frame can be moved to.
+      // Returns true on success, false if no item was found for the given frame.
+      bool getMovementRange(
+        const MusECore::CtrlList*, unsigned int frame, double* value, unsigned int* minPrevFrame,
+        unsigned int* maxNextFrame, bool* maxNextFrameValid);
+      void unselectAllAutomation(MusECore::Undo& undo);
+      void deleteSelectedAutomation(MusECore::Undo& undo);
+      // Returns true if successful.
+      bool newAutomationVertex(QPoint inPos, MusECore::Undo& undo, bool snap = false);
+      // The isCopy argument means whether to copy the items or just move them.
+      // Returns true is anything was added to undo. False if not or error.
+      bool commitAutomationChanges(MusECore::Undo& undo, bool isCopy);
       void showStatusTip(QMouseEvent *event);
 
 
    protected:
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
+
+      void startMoving(const QPoint&, int dir, DragType, bool rasterize = true);
+      //    dir = 0     move in all directions
+      //          1     move only horizontal
+      //          2     move only vertical
+      void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
+      // Returns true if anything was selected.
+      bool selectLasso(bool toggle, MusECore::Undo* undo = nullptr);
+      void deselectAll(MusECore::Undo* undo = nullptr);
+      void setCursor();
 
    signals:
       void timeChanged(unsigned);
@@ -231,20 +309,29 @@ class PartCanvas : public Canvas {
       void returnPressed();
 
    public:
-      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
+      enum { CMD_DELETE,
+             CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
              CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK, CMD_PASTE_DIALOG, CMD_INSERT_EMPTYMEAS };
 
       PartCanvas(int* raster, QWidget* parent, int, int);
       virtual ~PartCanvas();
       void updateItems();
+      void updateAudioAutomation();
       void cmd(int);
       void songIsClearing();
       void setRangeToSelection();
       int currentPartColorIndex() const;
-      
+      bool isSingleAudioAutomationSelection() const;
+      int audioAutomationSelectionSize() const;
+      bool audioAutomationItemsAreSelected() const;
+      // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
+      // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
+      void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
+
    public slots:
       void redirKeypress(QKeyEvent* e) { keyPress(e); }
-      void controllerChanged(MusECore::Track *t, int CtrlId);
+      // Redraws the track. CtrlId (unused so far) would be ignored if -1.
+      void controllerChanged(const MusECore::Track *t, int CtrlId = -1);
       void setPartColor(int idx);
       void setCurrentColorIndex(int idx);
 };

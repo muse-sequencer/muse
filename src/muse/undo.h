@@ -28,6 +28,7 @@
 
 #include <QString>
 
+#include "ctrl.h"
 #include "event.h"
 #include "route.h"
 #include "sig.h"
@@ -42,9 +43,6 @@ class MidiPort;
 class MidiInstrument;
 class Track;
 class Part;
-class CtrlListList;
-class CtrlList;
-struct CtrlVal;
 
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown
 //---------------------------------------------------------
@@ -58,6 +56,7 @@ struct UndoOp {
             AddPart,  DeletePart,  MovePart, ModifyPartStart, ModifyPartLength, ModifyPartName, SelectPart,
             AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
             AddAudioCtrlVal, DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+            SelectAudioCtrlVal, SetAudioCtrlPasteEraseMode, BeginAudioCtrlMoveMode, EndAudioCtrlMoveMode,
             // Add, delete and modify operate directly on the list.
             // setTempo does only if master is set, otherwise it operates on the static tempo value.
             AddTempo, DeleteTempo, ModifyTempo, SetTempo, SetStaticTempo, SetGlobalTempo, EnableMasterTrack,
@@ -77,10 +76,10 @@ struct UndoOp {
             DoNothing,
             ModifyMidiDivision,
 
-            // These operations cannot be undone. They are 'one time' operations, removed after execution.
+            // These 'one time' operations cannot be undone (they have no 'undo' section).
+            // They are meant to be called with the _noUndo argument true so that they are removed after execution.
             EnableAllAudioControllers,
-            GlobalSelectAllEvents,
-            NormalizeMidiDivision
+            GlobalSelectAllEvents
             };
       UndoType type;
 
@@ -94,7 +93,7 @@ struct UndoOp {
                   int e;
                   };
             struct {
-                  const Part* part;
+                  const Track* oldTrack;
                   unsigned old_partlen_or_pos; // FIXME FINDMICHJETZT XTicks!!
                   unsigned new_partlen_or_pos;
                   unsigned old_partlen;
@@ -116,14 +115,22 @@ struct UndoOp {
                   Marker* newMarker;
                 };
             struct {
-                  const Track* _propertyTrack;
                   int _oldPropValue;
                   int _newPropValue;
                 };
             struct {
-                  CtrlListList* _ctrlListList;
                   CtrlList* _eraseCtrlList;
                   CtrlList* _addCtrlList;
+                  // Optional separate list to hold items to be erased, exactly like _eraseCtrlList.
+                  // Useful when dragging and dropping points, this separate list can aid in storing items
+                  //  that can be recovered. That could not be done if all the points were in one list.
+                  CtrlList* _recoverableEraseCtrlList;
+                  // Optional separate list to hold items to be added, exactly like _addCtrlList,
+                  //  that were recovered from _recoverableEraseCtrlList.
+                  CtrlList* _recoverableAddCtrlList;
+                  // Optional list to hold items which should not be erased when dragging and dropping
+                  //  while in copy mode since they are the items that are actually being copied.
+                  CtrlList* _doNotEraseCtrlList;
                 };
             struct {
                   int _audioCtrlID;
@@ -137,21 +144,38 @@ struct UndoOp {
                   MidiInstrument* _oldMidiInstrument;
                   MidiInstrument* _newMidiInstrument;
                 };
-            };
-
-    union {
-            // These are common among more than one operation, but remember to not use the members below.
+            struct {
+                  CtrlList* _audioCtrlListSelect;
+                  unsigned int _audioCtrlSelectFrame;
+                };
+            struct {
+                  bool _oldAudCtrlMoveMode;
+                  bool _newAudCtrlMoveMode;
+                  };
+            struct {
+                  CtrlList::PasteEraseOptions _audioCtrlOldPasteEraseOpts;
+                  CtrlList::PasteEraseOptions _audioCtrlNewPasteEraseOpts;
+                };
+            struct {
+                  Route* routeFrom;
+                  Route* routeTo;
+                };
             struct {
                   QString* _oldName;
                   QString* _newName;
-                  const Track* track;
-                  const Track* oldTrack;
+                };
+            struct {
                   int trackno;
+                };
             };
+
+
+    union {
             // These are for some operations that do not use the common members above. (Saves some space.)
             struct {
                   int64_t events_offset;
                   Pos::TType events_offset_time_type;
+                  bool _noEndAudioCtrlMoveMode;
             };
       };
       Event oEvent;
@@ -160,9 +184,9 @@ struct UndoOp {
       bool selected_old;
       bool doCtrls;
       bool doClones;
-      Route routeFrom;
-      Route routeTo;
-      
+      const Track* track;
+      const Part* part;
+
       // If _noUndo is set, the operation cannot be undone. It is a 'one time' operation, removed after execution.
       // It allows mixed undoable and non-undoable operations in one list, all executed in one RT cycle.
       bool _noUndo;
@@ -196,15 +220,19 @@ struct UndoOp {
 
       UndoOp(UndoType type, const Track* track, const QString& old_name, const QString& new_name, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, int old_chan, int new_chan, bool noUndo = false);
-      //UndoOp(UndoType type, const Track* track, int ctrlID, int frame, bool noUndo = false); // Same as above.
       UndoOp(UndoType type, const Track* track, int ctrlID, int oldFrame, int newFrame, double oldValue, double newValue, bool noUndo = false);
-      UndoOp(UndoType type, const Track* track, int ctrlID, int frame, double value, bool noUndo = false);
+      UndoOp(UndoType type, const Track* track, int ctrlID, int frame, double value, bool selected = false, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, bool value, bool noUndo = false);
-      UndoOp(UndoType type, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo = false);
+      UndoOp(UndoType type, const Track* track, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
+             CtrlList* recoverableEraseCtrlList = nullptr, CtrlList* recoverableAddCtrlList = nullptr,
+             CtrlList* doNotEraseCtrlList = nullptr, bool noEndAudioCtrlMoveMode = false, bool noUndo = false);
+      UndoOp(UndoType type, CtrlList* ctrlList, unsigned int frame, bool oldSelected, bool newSelected, bool noUndo = false);
+      UndoOp(UndoType type, CtrlList::PasteEraseOptions newOpts, bool noUndo = false);
+
       UndoOp(UndoType type, int tick, const MusECore::TimeSignature old_sig, const MusECore::TimeSignature new_sig, bool noUndo = false);
       UndoOp(UndoType type, const Route& route_from, const Route& route_to, bool noUndo = false);
       UndoOp(UndoType type, MidiPort* mp, MidiInstrument* instr, bool noUndo = false);
-      UndoOp(UndoType type);
+      UndoOp(UndoType type, bool noUndo = false);
 };
 
 class Undo : public std::list<UndoOp> {
@@ -249,6 +277,8 @@ class UndoList : public std::list<Undo> {
 
 typedef UndoList::iterator iUndo;
 typedef UndoList::reverse_iterator riUndo;
+typedef UndoList::const_iterator ciUndo;
+typedef UndoList::const_reverse_iterator criUndo;
 
 } // namespace MusECore
 

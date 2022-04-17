@@ -934,7 +934,7 @@ int get_paste_len()
                         if (tag == "part")
                               {
                               Part* p = 0;
-                              p = Part::readFromXml(xml, nullptr, false, false);
+                              p = Part::readFromXml(xml, nullptr, nullptr, false, false);
 
                               if (p)
                                     {
@@ -1084,6 +1084,66 @@ void drawSegmentedVLine(QPainter* p, int x, int y1, int y2, int segLength, int /
     seg_y += segLength;
   }
   p->drawLine(x, seg_y, x, seg_y + fin_seg);
+}
+
+//---------------------------------------------------------
+//
+//  logToVal
+//   - represent logarithmic value on linear scale from 0 to 1
+//
+//---------------------------------------------------------
+double logToVal(double inLog, double min, double max)
+{
+    if (inLog < min) inLog = min;
+    if (inLog > max) inLog = max;
+    double linMin = 20.0*log10(min);
+    double linMax = 20.0*log10(max);
+    double linVal = 20.0*log10(inLog);
+
+    double outVal = (linVal-linMin) / (linMax - linMin);
+
+    return outVal;
+}
+
+//---------------------------------------------------------
+//
+//  valToLog
+//   - represent value from 0 to 1 as logarithmic value between min and max
+//
+//---------------------------------------------------------
+double valToLog(double inV, double min, double max)
+{
+    double linMin = 20.0*log10(min);
+    double linMax = 20.0*log10(max);
+
+    double linVal = (inV * (linMax - linMin)) + linMin;
+    double outVal = exp10((linVal)/20.0);
+
+    if (outVal > max) outVal = max;
+    if (outVal < min) outVal = min;
+    return outVal;
+}
+
+//---------------------------------------------------------
+//
+//  deltaValToLog
+//
+//---------------------------------------------------------
+double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max)
+{
+    if (inLog < min) inLog = min;
+    if (inLog > max) inLog = max;
+    const double linMin = 20.0*log10(min);
+    const double linMax = 20.0*log10(max);
+    const double linVal = 20.0*log10(inLog);
+    const double linDeltaVal = (inLinDeltaNormalized * (linMax - linMin)) /*+ linMin*/;
+
+    double outVal = ((linVal /*- linMin*/) /*/ (linMax - linMin)*/) + linDeltaVal;
+    outVal = exp10((outVal)/20.0);
+    if (outVal > max) outVal = max;
+    if (outVal < min) outVal = min;
+
+    return outVal;
 }
 
 } // namespace MusECore

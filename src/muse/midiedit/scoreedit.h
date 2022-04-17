@@ -39,6 +39,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <QUuid>
 
 using std::set;
 using std::pair;
@@ -557,7 +558,7 @@ enum staff_mode_t
 struct staff_t
 {
 	set<const MusECore::Part*> parts;
-	set<int> part_indices;
+	set<QUuid> part_indices;
 	ScoreEventList eventlist;
 	ScoreItemList itemlist;
 	
@@ -732,8 +733,8 @@ class ScoreCanvas : public MusEGui::View
 		float y_scroll_pos;
 
 		const MusECore::Part* selected_part;
-		int selected_part_index;
-		
+		QUuid selected_part_index;
+
 		int last_len;
 		int new_len; //when zero or negative, last_len is used
 
@@ -756,7 +757,7 @@ class ScoreCanvas : public MusEGui::View
 		bool dragging;
 		bool drag_cursor_changed;
   const MusECore::Part* dragged_event_part;
-		int dragged_event_part_index;
+		QUuid dragged_event_part_index;
 		MusECore::Event dragged_event;
 		MusECore::Event original_dragged_event;
 		const MusECore::Event* clicked_event_ptr;
@@ -871,10 +872,10 @@ class ScoreCanvas : public MusEGui::View
 		void set_last_len(int l) {last_len=l;}
 		
 		const MusECore::Part* get_selected_part() const {return selected_part;}
-		void set_selected_part(const MusECore::Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
+		void set_selected_part(const MusECore::Part* p);
 		const MusECore::Part* get_dragged_event_part() const {return dragged_event_part;}
-  void set_dragged_event_part(const MusECore::Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
-		
+  void set_dragged_event_part(const MusECore::Part* p);
+
 		set<const MusECore::Part*> get_all_parts();
 		
 		void write_staves(int level, MusECore::Xml& xml) const;

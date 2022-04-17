@@ -648,7 +648,7 @@ void Pos::read(Xml& xml, const char* name)
                         else if (tag == "frame" || tag == "sample") {
                               // For now, the conversion only has a TEMPORARY effect during song loading.
                               // See comments in Song::read at the "samplerate" tag.
-                              _frame = MusEGlobal::convertFrame4ProjectSampleRate(xml.s2().toInt());
+                              _frame = MusEGlobal::convertFrame4ProjectSampleRate(xml.s2().toInt(), MusEGlobal::sampleRate);
                               _type = FRAMES;
                               }
                         else
@@ -777,7 +777,7 @@ void PosLen::read(Xml& xml, const char* name)
                               setType(FRAMES);
                               // For now, the conversion only has a TEMPORARY effect during song loading.
                               // See comments in Song::read at the "samplerate" tag.
-                              setFrame(MusEGlobal::convertFrame4ProjectSampleRate(xml.s2().toInt()));
+                              setFrame(MusEGlobal::convertFrame4ProjectSampleRate(xml.s2().toInt(), MusEGlobal::sampleRate));
                               }
                         else if (tag == "len") {
                               int n = xml.s2().toInt();
@@ -788,7 +788,7 @@ void PosLen::read(Xml& xml, const char* name)
                                     case FRAMES:
                                           // For now, the conversion only has a TEMPORARY effect during song loading.
                                           // See comments in Song::read at the "samplerate" tag.
-                                          setLenFrame(MusEGlobal::convertFrame4ProjectSampleRate(n));
+                                          setLenFrame(MusEGlobal::convertFrame4ProjectSampleRate(n, MusEGlobal::sampleRate));
                                           break;
                                     }
                               }

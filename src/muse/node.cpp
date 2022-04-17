@@ -2243,6 +2243,11 @@ void AudioOutput::setName(const QString& s)
             }
       }
 
+CtrlListList* AudioTrack::erasedController()              { return &_erasedController; }
+const CtrlListList* AudioTrack::erasedController() const  { return &_erasedController; }
+CtrlListList* AudioTrack::noEraseController()             { return &_noEraseController; }
+const CtrlListList* AudioTrack::noEraseController() const { return &_noEraseController; }
+
 //---------------------------------------------------------
 //   setParam
 //---------------------------------------------------------

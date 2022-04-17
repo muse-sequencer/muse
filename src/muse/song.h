@@ -42,6 +42,7 @@
 #include "lock_free_buffer.h"
 #include "mpevent.h"
 #include "wave.h"
+#include "ctrl.h"
 
 
 //#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
@@ -141,6 +142,10 @@ class Song : public QObject {
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcOutEventBuffers;
       
+      // Whether an opening BeginAudioCtrlMoveMode command has been run.
+      // A corresponding closing EndAudioCtrlMoveMode should always follow at some point.
+      bool _audioCtrlMoveModeBegun;
+
       // Used for fastforward and fastrewind states (currently only through MIDI remote control)
       FastMove _fastMove = NORMAL_MOVEMENT;
       bool loopFlag;
@@ -186,6 +191,17 @@ class Song : public QObject {
 
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
+
+   protected:
+      // Internal routine for preparing the operation that ends audio controller movement mode.
+      // Called from the Undo system's stage 1 only.
+      bool audioCtrlMoveEnd(PendingOperationList& operations);
+      // Internal routine for preparing to undo the operation that ends audio controller movement mode.
+      // Called from the Undo system's stage 1 only.
+      bool undoAudioCtrlMoveEnd(PendingOperationList& operations);
+//       // If we are in move mode, adds an EndAudioCtrlMoveMode operation to the given operations,
+//       //  just BEFORE the given iterator. Returns true if anything changed.
+//       bool checkAndEndAudioCtrlMoveMode(iUndoOp i, Undo& undo);
 
    public:
       Song(const char* name = 0);
@@ -469,6 +485,20 @@ class Song : public QObject {
       // Called by audio thread only. Returns true on success.
       bool processIpcOutEventBuffers();
 
+      // Returns false if nothing was added to operations, or error.
+      bool collectAudioCtrlPasteModeOps(
+        // Map of selected items.
+        AudioAutomationItemTrackMap& trackMap,
+        // List that operations will be added to.
+        MusECore::Undo& operations,
+        // Erase options.
+        const MusECore::CtrlList::PasteEraseOptions& eraseOpts,
+        // Whether to recover items erased from previous moves.
+        bool recoverErasedItems = false,
+        // Whether the paste is a move or a copy.
+        bool isCopy = false
+        );
+
       //-----------------------------------------
       //   undo, redo, operation groups
       //-----------------------------------------
@@ -488,6 +518,16 @@ class Song : public QObject {
 
       void addUndo(UndoOp i);
       void setUndoRedoText();
+
+      // Returns true if audio controller move mode has begun (a BeginAudioCtrlMoveMode command was run).
+      bool audioCtrlMoveModeBegun() const;
+      // Convenience method for pushing SetAudioCtrlMoveMode (true) and BeginAudioCtrlMoveMode commands onto the undo list.
+      // Called from graphics thread only, in response to a condition such as dragging then dropping graph points.
+      void beginAudioCtrlMoveMode(Undo&) const;
+      // Common convenience method for pushing SetAudioCtrlMoveMode (false) and EndAudioCtrlMoveMode commands onto the undo list.
+      // Called from graphics thread only, in response to various conditions such as clicking on empty background
+      //  or manually ending the mode by popup menu.
+      void endAudioCtrlMoveMode(Undo&) const;
 
       //-----------------------------------------
       //   Configuration
