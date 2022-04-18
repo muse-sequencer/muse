@@ -38,14 +38,11 @@
 #include "gconfig.h"
 #include "al/al.h"
 
-//#include <string.h>
-//#include <QAction>
 #include <set>
 
 // Forwards from header:
 #include "track.h"
 #include "part.h"
-#include "ctrl.h"
 
 // Enable for debugging:
 //#define _UNDO_DEBUG_
@@ -57,6 +54,274 @@ namespace MusECore {
 static bool undoMode = false;  // for debugging
 
 std::list<QString> temporaryWavFiles;
+
+
+struct UndoAudioCtrlTrackMapItem
+{
+  CtrlListList _erased;
+  CtrlListList _doNotErase;
+};
+
+class UndoAudioCtrlTrackMap : public std::map<Track*, UndoAudioCtrlTrackMapItem, std::less<Track* >>
+{
+  public:
+    // Returns true if insertion took place.
+    bool add(Track* track, const UndoAudioCtrlTrackMapItem& item);
+};
+typedef UndoAudioCtrlTrackMap::iterator iUndoAudioCtrlTrackMap;
+typedef UndoAudioCtrlTrackMap::const_iterator ciUndoAudioCtrlTrackMap;
+typedef std::pair<Track*, UndoAudioCtrlTrackMapItem> UndoAudioCtrlTrackMapInsertPair;
+typedef std::pair<iUndoAudioCtrlTrackMap, bool> UndoAudioCtrlTrackMapInsertResult;
+
+bool UndoAudioCtrlTrackMap::add(Track* track, const UndoAudioCtrlTrackMapItem& item)
+{
+  return insert(UndoAudioCtrlTrackMapInsertPair(track, item)).second;
+}
+
+bool Song::audioCtrlMoveModeBegun() const { return _audioCtrlMoveModeBegun; }
+
+void Song::beginAudioCtrlMoveMode(Undo& operations) const
+{
+  if(_audioCtrlMoveModeBegun == false)
+    operations.push_back(UndoOp(UndoOp::BeginAudioCtrlMoveMode));
+}
+
+void Song::endAudioCtrlMoveMode(Undo& operations) const
+{
+  if(_audioCtrlMoveModeBegun == true)
+    operations.push_back(UndoOp(UndoOp::EndAudioCtrlMoveMode));
+}
+
+bool Song::audioCtrlMoveEnd(PendingOperationList& operations)
+{
+  bool ret = false;
+  for(ciTrack it = tracks()->cbegin(); it != tracks()->cend(); ++it)
+  {
+    if((*it)->isMidiTrack())
+      continue;
+    AudioTrack* at = static_cast<AudioTrack*>(*it);
+    CtrlListList* ecll = at->erasedController();
+    CtrlListList* ncll = at->noEraseController();
+    if(!ecll->empty())
+    {
+      // Swapping with a blank container is faster than clearing it.
+      CtrlListList* new_cll = new CtrlListList();
+      operations.add(PendingOperationItem(
+        ecll, new_cll, PendingOperationItem::ModifyAudioCtrlValListList));
+      ret = true;
+    }
+    if(!ncll->empty())
+    {
+      // Swapping with a blank container is faster than clearing it.
+      CtrlListList* new_cll = new CtrlListList();
+      operations.add(PendingOperationItem(
+        ncll, new_cll, PendingOperationItem::ModifyAudioCtrlValListList));
+      ret = true;
+    }
+  }
+  return ret;
+}
+
+bool Song::undoAudioCtrlMoveEnd(PendingOperationList& operations)
+{
+  // NOTE: Both the erased and do not erase lists should be cleared by now if all went well.
+  //       Caller should be examining an EndAudioCtrlMoveMode command in the undo list
+  //        and since that clears the lists, they should be clear right now.
+
+  UndoAudioCtrlTrackMap tm;
+  bool ret = false;
+
+  //--------------------------------------------------------------------
+  // Look backwards through the undo list for a BeginAudioCtrlMoveMode,
+  //  starting with the latest entry.
+  //--------------------------------------------------------------------
+
+  for(MusECore::criUndo iub = undoList->crbegin(); iub != undoList->crend(); ++iub)
+  {
+    const MusECore::Undo& undo = *iub;
+    for(MusECore::criUndoOp iuoB = undo.crbegin(); iuoB != undo.crend(); ++iuoB)
+    {
+      const MusECore::UndoOp& undoOpB = *iuoB;
+
+      // Looking for this previous specific command - before the one that the caller is currently examining.
+      // If nothing is eventually found, one possibility is just take the very first item, but instead we
+      //  should give up and just return an error rather than risk accumulating unwanted changes.
+      if(undoOpB.type != MusECore::UndoOp::BeginAudioCtrlMoveMode)
+        continue;
+
+
+      //---------------------------------------------------------------
+      // Found a BeginAudioCtrlMoveMode. Now go forward from there and
+      //  reconstruct the various tracks' erased and no-erase ctrl lists.
+      //---------------------------------------------------------------
+
+      const MusECore::Undo* undoF;
+      MusECore::ciUndo iuF;
+      MusECore::ciUndoOp iuoF;
+      bool is_first = true;
+      while(is_first || iuF != undoList->cend())
+      {
+        if(is_first)
+        {
+          undoF = &undo;
+          // Using base() returns a forward iterator AFTER the reverse iterator, which is exactly what we want.
+          iuoF = iuoB.base();
+        }
+        else
+        {
+          undoF = &(*iuF);
+          iuoF = undoF->cbegin();
+        }
+
+        for( ; iuoF != undoF->cend(); ++iuoF)
+        {
+          const MusECore::UndoOp& undoOpF = *iuoF;
+
+          // Looking for this specific operation.
+          if(undoOpF.type != MusECore::UndoOp::ModifyAudioCtrlValList)
+            continue;
+
+          // Only if one of these lists has something.
+          if((!undoOpF._recoverableEraseCtrlList || undoOpF._recoverableEraseCtrlList->empty()) &&
+            (!undoOpF._recoverableAddCtrlList || undoOpF._recoverableAddCtrlList->empty()) &&
+            (!undoOpF._doNotEraseCtrlList || undoOpF._doNotEraseCtrlList->empty()))
+            continue;
+
+          Track* tr = const_cast<Track*>(undoOpF.track);
+          if(tr->isMidiTrack())
+            continue;
+
+          UndoAudioCtrlTrackMapInsertResult tm_ires = tm.insert(UndoAudioCtrlTrackMapInsertPair(tr, UndoAudioCtrlTrackMapItem()));
+          CtrlListList* erasedll = &tm_ires.first->second._erased;
+          CtrlListList* doNotErasell = &tm_ires.first->second._doNotErase;
+
+          CtrlList* rel = undoOpF._recoverableEraseCtrlList;
+          if(rel && !rel->empty())
+          {
+            CtrlList* cl;
+            iCtrlList icl = erasedll->find(rel->id());
+            if(icl == erasedll->end())
+            {
+              cl = new CtrlList(rel->id());
+              erasedll->add(cl);
+            }
+            else
+            {
+              cl = icl->second;
+            }
+            // Add any items in the recoverable erase list.
+            for(ciCtrl ic = rel->cbegin(); ic != rel->cend(); ++ic)
+              cl->insert(CtrlListInsertPair_t(ic->first, ic->second));
+          }
+
+          CtrlList* ral = undoOpF._recoverableAddCtrlList;
+          if(ral && !ral->empty())
+          {
+            iCtrlList icl = erasedll->find(ral->id());
+            if(icl != erasedll->end())
+            {
+              CtrlList* cl = icl->second;
+              // Erase any items in the new list found at the frames given by the recoverable add list.
+              for(ciCtrl ic = ral->cbegin(); ic != ral->cend(); ++ic)
+                cl->erase(ic->first);
+              // Nothing left? Delete and erase the list.
+              if(cl->empty())
+              {
+                delete cl;
+                erasedll->erase(icl);
+              }
+            }
+          }
+
+          CtrlList* nel = undoOpF._doNotEraseCtrlList;
+          if(nel && !nel->empty())
+          {
+            CtrlList* cl;
+            iCtrlList icl = doNotErasell->find(nel->id());
+            if(icl == doNotErasell->end())
+            {
+              cl = new CtrlList(nel->id());
+              doNotErasell->add(cl);
+            }
+            else
+            {
+              cl = icl->second;
+            }
+            // Add any items in the do not erase list.
+            for(ciCtrl ic = nel->cbegin(); ic != nel->cend(); ++ic)
+              cl->insert(CtrlListInsertPair_t(ic->first, ic->second));
+          }
+        }
+
+        if(is_first)
+        {
+          is_first = false;
+          // Using base() returns a forward iterator AFTER the reverse iterator.
+          iuF = iub.base();
+        }
+        else
+        {
+          ++iuF;
+        }
+      }
+
+      //---------------------------------------------------
+      // Now that we have a list of things to reconstruct,
+      //  compose the operation commands to do it.
+      //---------------------------------------------------
+
+      for(ciUndoAudioCtrlTrackMap itm = tm.cbegin(); itm != tm.cend(); ++itm)
+      {
+        if(itm->first->isMidiTrack())
+          continue;
+        AudioTrack* atrack = static_cast<AudioTrack*>(itm->first);
+        const UndoAudioCtrlTrackMapItem& tmi = itm->second;
+        {
+          CtrlListList* track_erasedll = atrack->erasedController();
+          const CtrlListList& map_erasedll = tmi._erased;
+          for(ciCtrlList icl = map_erasedll.cbegin(); icl != map_erasedll.cend(); ++icl)
+          {
+            CtrlList* cl = icl->second;
+            const int id = cl->id();
+            const iCtrlList track_icl = track_erasedll->find(id);
+            if(track_icl == track_erasedll->cend())
+              operations.add(PendingOperationItem(
+                track_erasedll, cl, PendingOperationItem::AddAudioCtrlValList));
+            else
+              operations.add(PendingOperationItem(
+                track_icl, cl, PendingOperationItem::ModifyAudioCtrlValList));
+            ret = true;
+          }
+        }
+
+        {
+          CtrlListList* track_noerasell = atrack->noEraseController();
+          const CtrlListList& map_noerasell = tmi._doNotErase;
+          for(ciCtrlList icl = map_noerasell.cbegin(); icl != map_noerasell.cend(); ++icl)
+          {
+            CtrlList* cl = icl->second;
+            const int id = cl->id();
+            const iCtrlList track_icl = track_noerasell->find(id);
+            if(track_icl == track_noerasell->cend())
+              operations.add(PendingOperationItem(
+                track_noerasell, cl, PendingOperationItem::AddAudioCtrlValList));
+            else
+              operations.add(PendingOperationItem(
+                track_icl, cl, PendingOperationItem::ModifyAudioCtrlValList));
+            ret = true;
+          }
+        }
+      }
+
+      // And we're outta here.
+      return ret;
+    }
+  }
+
+  // Nothing was found. This is actually an error, if the caller did things correctly.
+  fprintf(stderr, "Error: Song::undoAudioCtrlMoveEnd: BeginAudioCtrlMoveMode not found\n");
+  return false;
+}
 
 //---------------------------------------------------------
 //   typeName
@@ -70,6 +335,7 @@ const char* UndoOp::typeName()
             "AddPart",  "DeletePart", "MovePart", "ModifyPartStart", "ModifyPartLength", "ModifyPartName", "SelectPart",
             "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
             "AddAudioCtrlVal", "DeleteAudioCtrlVal", "ModifyAudioCtrlVal", "ModifyAudioCtrlValList",
+            "SelectAudioCtrlVal", "SetAudioCtrlPasteEraseMode", "BeginAudioCtrlMoveMode", "EndAudioCtrlMoveMode", /*"SetAudioCtrlMoveMode",*/
             "AddTempo", "DeleteTempo", "ModifyTempo", "SetTempo", "SetStaticTempo", "SetGlobalTempo", "EnableMasterTrack",
             "AddSig",   "DeleteSig",   "ModifySig",
             "AddKey",   "DeleteKey",   "ModifyKey",
@@ -80,8 +346,7 @@ const char* UndoOp::typeName()
             "ModifySongLen", "SetInstrument", "DoNothing",
             "ModifyMidiDivision",
             "EnableAllAudioControllers",
-            "GlobalSelectAllEvents",
-            "NormalizeMidiDivision"
+            "GlobalSelectAllEvents"
             };
       return name[type];
       }
@@ -109,6 +374,9 @@ void UndoOp::dump()
                         part->dump(5);
                   break;
             case ModifyTrackName:
+                  printf("<%s>-<%s>\n", _oldName->toLocal8Bit().data(), _newName->toLocal8Bit().data());
+                  break;
+            case ModifyPartName:
                   printf("<%s>-<%s>\n", _oldName->toLocal8Bit().data(), _newName->toLocal8Bit().data());
                   break;
             case ModifyTrackChannel:
@@ -177,14 +445,28 @@ void UndoList::clearDelete()
                   if (i->_newName)
                     delete i->_newName;
                   break;
-            
+
             case UndoOp::ModifyAudioCtrlValList:
                   if (i->_eraseCtrlList)
                     delete i->_eraseCtrlList;
                   if (i->_addCtrlList)
                     delete i->_addCtrlList;
+                  if(i->_recoverableEraseCtrlList)
+                    delete i->_recoverableEraseCtrlList;
+                  if(i->_recoverableAddCtrlList)
+                    delete i->_recoverableAddCtrlList;
+                  if (i->_doNotEraseCtrlList)
+                    delete i->_doNotEraseCtrlList;
                   break;
                   
+            case UndoOp::AddRoute:
+            case UndoOp::DeleteRoute:
+                  if (i->routeFrom)
+                    delete i->routeFrom;
+                  if (i->routeTo)
+                    delete i->routeTo;
+                  break;
+
             default:
                   break;
           }
@@ -226,14 +508,29 @@ void UndoList::clearDelete()
                   if (i->_newName)
                     delete i->_newName;
                   break;
-            
+
+
             case UndoOp::ModifyAudioCtrlValList:
                   if (i->_eraseCtrlList)
                     delete i->_eraseCtrlList;
                   if (i->_addCtrlList)
                     delete i->_addCtrlList;
+                  if(i->_recoverableEraseCtrlList)
+                    delete i->_recoverableEraseCtrlList;
+                  if(i->_recoverableAddCtrlList)
+                    delete i->_recoverableAddCtrlList;
+                  if (i->_doNotEraseCtrlList)
+                    delete i->_doNotEraseCtrlList;
                   break;
                   
+            case UndoOp::AddRoute:
+            case UndoOp::DeleteRoute:
+                  if (i->routeFrom)
+                    delete i->routeFrom;
+                  if (i->routeTo)
+                    delete i->routeTo;
+                  break;
+
             default:
                   break;
           }
@@ -453,7 +750,10 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     case UndoOp::ModifyAudioCtrlValList:
       fprintf(stderr, "Undo::insert: ModifyAudioCtrlValList\n");
     break;
-    
+    case UndoOp::SelectAudioCtrlVal:
+      fprintf(stderr, "Undo::insert: SelectAudioCtrlVal\n");
+    break;
+
     
     case UndoOp::AddTempo:
       fprintf(stderr, "Undo::insert: AddTempo tempo:%d tick:%d\n", n_op.b, n_op.a);
@@ -547,10 +847,6 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
       fprintf(stderr, "Undo::insert: GlobalSelectAllEvents\n");
     break;
     
-    case UndoOp::NormalizeMidiDivision:
-      fprintf(stderr, "Undo::insert: NormalizeMidiDivision\n");
-    break;
-    
     default:
     break;
   }
@@ -570,28 +866,44 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
       switch(n_op.type)
       {
         case UndoOp::AddRoute:
-          if(uo.type == UndoOp::AddRoute && uo.routeFrom == n_op.routeFrom && uo.routeTo == n_op.routeTo)
+          if(uo.type == UndoOp::AddRoute && *uo.routeFrom == *n_op.routeFrom && *uo.routeTo == *n_op.routeTo)
           {
             fprintf(stderr, "MusE error: Undo::insert(): Double AddRoute. Ignoring.\n");
+            // Done with these routes. Be sure to delete them.
+            delete n_op.routeFrom;
+            delete n_op.routeTo;
             return;
           }
-          else if(uo.type == UndoOp::DeleteRoute && uo.routeFrom == n_op.routeFrom && uo.routeTo == n_op.routeTo)
+          else if(uo.type == UndoOp::DeleteRoute && *uo.routeFrom == *n_op.routeFrom && *uo.routeTo == *n_op.routeTo)
           {
             // Delete followed by add is useless. Cancel out the delete + add by erasing the delete command.
+            // Done with these routes. Be sure to delete them.
+            delete n_op.routeFrom;
+            delete n_op.routeTo;
+            delete uo.routeFrom;
+            delete uo.routeTo;
             erase(iuo);
             return;  
           }
         break;
         
         case UndoOp::DeleteRoute:
-          if(uo.type == UndoOp::DeleteRoute && uo.routeFrom == n_op.routeFrom && uo.routeTo == n_op.routeTo)  
+          if(uo.type == UndoOp::DeleteRoute && *uo.routeFrom == *n_op.routeFrom && *uo.routeTo == *n_op.routeTo)
           {
             fprintf(stderr, "MusE error: Undo::insert(): Double DeleteRoute. Ignoring.\n");
-            return;  
+            // Done with these routes. Be sure to delete them.
+            delete n_op.routeFrom;
+            delete n_op.routeTo;
+            return;
           }
-          else if(uo.type == UndoOp::AddRoute && uo.routeFrom == n_op.routeFrom && uo.routeTo == n_op.routeTo)  
+          else if(uo.type == UndoOp::AddRoute && *uo.routeFrom == *n_op.routeFrom && *uo.routeTo == *n_op.routeTo)
           {
             // Add followed by delete is useless. Cancel out the add + delete by erasing the add command.
+            // Done with these routes. Be sure to delete them.
+            delete n_op.routeFrom;
+            delete n_op.routeTo;
+            delete uo.routeFrom;
+            delete uo.routeTo;
             erase(iuo);
             return;  
           }
@@ -601,8 +913,12 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
         case UndoOp::ModifyTrackName:
           if(uo.type == UndoOp::ModifyTrackName && uo.track == n_op.track)  
           {
-            fprintf(stderr, "MusE error: Undo::insert(): Double ModifyTrackName. Ignoring.\n");
-            return;  
+            // Done with these objects. Be sure to delete them.
+            delete n_op._oldName;
+            delete uo._newName;
+            // Simply replace the existing new name with the newer name.
+            uo._newName = n_op._newName;
+            return;
           }
         break;
         
@@ -703,8 +1019,12 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
         case UndoOp::ModifyPartName:
           if(uo.type == UndoOp::ModifyPartName && uo.part == n_op.part)  
           {
-            fprintf(stderr, "MusE error: Undo::insert(): Double ModifyPartName. Ignoring.\n");
-            return;  
+            // Done with these objects. Be sure to delete them.
+            delete n_op._oldName;
+            delete uo._newName;
+            // Simply replace the existing new name with the newer name.
+            uo._newName = n_op._newName;
+            return;
           }
         break;
 
@@ -983,7 +1303,8 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           {
             // Simply replace the original value and frame.
             uo._audioCtrlVal = n_op._audioCtrlVal;
-            return;  
+            uo.selected = n_op.selected;
+            return;
           }
 // TODO If possible.
 //           else if(uo.type == UndoOp::DeleteAudioCtrlVal && uo.track == n_op.track &&
@@ -1024,13 +1345,27 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             // Simply replace the original new value and new frame.
             uo._audioNewCtrlVal = n_op._audioNewCtrlVal;
             uo._audioNewCtrlFrame = n_op._audioNewCtrlFrame;
-            return;  
+            uo.selected = n_op.selected;
+            return;
           }
         break;
 
         case UndoOp::ModifyAudioCtrlValList:
           // Check the sanity of the requested op.
-          if(n_op._eraseCtrlList == n_op._addCtrlList)
+          if((n_op._eraseCtrlList &&
+             (n_op._eraseCtrlList == n_op._addCtrlList)) ||
+             (n_op._recoverableEraseCtrlList &&
+               (n_op._recoverableEraseCtrlList == n_op._eraseCtrlList ||
+                n_op._recoverableEraseCtrlList == n_op._addCtrlList ||
+                n_op._recoverableEraseCtrlList == n_op._recoverableAddCtrlList ||
+                n_op._recoverableEraseCtrlList == n_op._doNotEraseCtrlList)) ||
+              (n_op._recoverableAddCtrlList &&
+                (n_op._recoverableAddCtrlList == n_op._eraseCtrlList ||
+                 n_op._recoverableAddCtrlList == n_op._addCtrlList ||
+                 n_op._recoverableAddCtrlList == n_op._doNotEraseCtrlList)) ||
+              (n_op._doNotEraseCtrlList &&
+                (n_op._doNotEraseCtrlList == n_op._eraseCtrlList ||
+                 n_op._doNotEraseCtrlList == n_op._addCtrlList)))
           {
             fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlValList: Erase and add lists are the same. Ignoring.\n");
             return;
@@ -1038,8 +1373,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           
           if(uo.type == UndoOp::ModifyAudioCtrlValList)
           {
-            if(uo._ctrlListList == n_op._ctrlListList)
+            if(uo.track == n_op.track)
             {
+              // TODO: Handle _recoverableEraseCtrlList et al.
               if(uo._addCtrlList == n_op._addCtrlList && uo._eraseCtrlList == n_op._eraseCtrlList)
               {
                 fprintf(stderr, "MusE error: Undo::insert(): Double ModifyAudioCtrlValList. Ignoring.\n");
@@ -1058,12 +1394,12 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             // Seems possible... remove? But maybe dangerous to have two undo ops pointing to the same lists - they will be self-deleted.
             else
             {
-              if(uo._addCtrlList == n_op._addCtrlList)
+              if(uo._addCtrlList && uo._addCtrlList == n_op._addCtrlList)
               {
                 fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlValList: Attempting to add same list to different containers. Ignoring.\n");
                 return;
               }
-              else if(uo._eraseCtrlList == n_op._eraseCtrlList)
+              else if(uo._eraseCtrlList && uo._eraseCtrlList == n_op._eraseCtrlList)
               {
                 fprintf(stderr, "MusE error: Undo::insert(): ModifyAudioCtrlValList: Attempting to erase same list from different containers. Ignoring.\n");
                 return;
@@ -1072,7 +1408,44 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
 
-        
+        case UndoOp::SelectAudioCtrlVal:
+          if(uo.type == UndoOp::SelectAudioCtrlVal &&
+             uo._audioCtrlListSelect == n_op._audioCtrlListSelect &&
+             uo._audioCtrlSelectFrame == n_op._audioCtrlSelectFrame)
+          {
+            // Simply replace the original value.
+            uo.selected = n_op.selected;
+            return;
+          }
+        break;
+
+        case UndoOp::SetAudioCtrlPasteEraseMode:
+          if(uo.type == UndoOp::SetAudioCtrlPasteEraseMode)
+          {
+            // Simply replace the original new value.
+            uo._audioCtrlNewPasteEraseOpts = n_op._audioCtrlNewPasteEraseOpts;
+            return;
+          }
+        break;
+
+        case UndoOp::BeginAudioCtrlMoveMode:
+          if(uo.type == UndoOp::BeginAudioCtrlMoveMode)
+          {
+            fprintf(stderr, "MusE error: Undo::insert(): Double BeginAudioCtrlMoveMode. Ignoring.\n");
+            return;
+          }
+        break;
+        case UndoOp::EndAudioCtrlMoveMode:
+          if(uo.type == UndoOp::EndAudioCtrlMoveMode)
+          {
+            // This condition is expected sometimes, not really an error. Just silently ignore it.
+#ifdef _UNDO_DEBUG_
+            fprintf(stderr, "MusE warning: Undo::insert(): Double EndAudioCtrlMoveMode. Ignoring.\n");
+#endif
+            return;
+          }
+        break;
+
         case UndoOp::SetInstrument:
           // Check the sanity of the requested op.
           if(n_op._oldMidiInstrument == n_op._newMidiInstrument)
@@ -1093,7 +1466,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
               else if(uo._newMidiInstrument == n_op._oldMidiInstrument)
               {
                 // Replace the existing SetInstrument command's _newMidiInstrument
-                //  with the requested ModifyAudioCtrlValList command's _newMidiInstrument.
+                //  with the requested SetInstrument command's _newMidiInstrument.
                 uo._newMidiInstrument = n_op._newMidiInstrument;
                 return;
               }
@@ -1456,14 +1829,6 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           if(uo.type == UndoOp::EnableAllAudioControllers)
           {
             fprintf(stderr, "MusE error: Undo::insert(): Double EnableAllAudioControllers. Ignoring.\n");
-            return;  
-          }
-        break;
-        
-        case UndoOp::NormalizeMidiDivision:
-          if(uo.type == UndoOp::NormalizeMidiDivision)
-          {
-            fprintf(stderr, "MusE error: Undo::insert(): Double NormalizeMidiDivision. Ignoring.\n");
             return;  
           }
         break;
@@ -2146,24 +2511,12 @@ UndoOp::UndoOp(UndoType type_, const Marker& marker_, unsigned int new_pos, Pos:
       _noUndo = noUndo;
       }
 
-// UndoOp::UndoOp(UndoType type_, MarkerList** oldMarkerList_, MarkerList* newMarkerList_, bool noUndo)
-//       {
-//       assert(type_==ModifyMarkerList);
-//       assert(oldMarkerList);
-//       assert(newMarkerList);
-//       type    = type_;
-//       oldMarkerList = oldMarkerList_;
-//       newMarkerList = newMarkerList_;
-//       _noUndo = noUndo;
-//       }
-      
 UndoOp::UndoOp(UndoType type_, const Event& changedEvent, const QString& changeData, int startframe_, int endframe_, bool noUndo)
       {
       assert(type_==ModifyClip);
       
       type = type_;
       _noUndo = noUndo;
-      //filename   = new QString(changedFile);
       nEvent = changedEvent;
       tmpwavfile = new QString(changeData);
       startframe = startframe_;
@@ -2204,7 +2557,6 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int oldChanOrCtrlID,
   
   if(type_ == ModifyTrackChannel)
   {
-    _propertyTrack = track_;
     _oldPropValue = oldChanOrCtrlID;
     _newPropValue = newChanOrCtrlFrame;
   }
@@ -2216,7 +2568,7 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int oldChanOrCtrlID,
   _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int frame, double value, bool noUndo)
+UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int frame, double value, bool selected_, bool noUndo)
 {
   assert(type_== AddAudioCtrlVal);
   assert(track_);
@@ -2227,6 +2579,7 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int frame, doubl
   _audioCtrlFrame = frame;
   _audioCtrlVal = value;
   _noUndo = noUndo;
+  selected = selected_;
 }
 
 UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int oldFrame, int newFrame, double oldValue, double newValue, bool noUndo)
@@ -2244,19 +2597,43 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, int ctrlID, int oldFrame, in
   _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, CtrlListList* ctrl_ll, CtrlList* eraseCtrlList, CtrlList* addCtrlList, bool noUndo)
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
+               CtrlList* recoverableEraseCtrlList, CtrlList* recoverableAddCtrlList, CtrlList* doNotEraseCtrlList,
+               bool noEndAudioCtrlMoveMode, bool noUndo)
 {
   assert(type_== ModifyAudioCtrlValList);
-  assert(ctrl_ll);
-  //assert(eraseCtrlList);
-  //assert(addCtrlList);
-  assert(eraseCtrlList || addCtrlList);
+  assert(track_);
+  assert(eraseCtrlList || addCtrlList || recoverableEraseCtrlList || recoverableAddCtrlList || doNotEraseCtrlList);
   
   type = type_;
-  _ctrlListList = ctrl_ll;
+  track = track_;
   _eraseCtrlList = eraseCtrlList;
   _addCtrlList = addCtrlList;
+  _doNotEraseCtrlList = doNotEraseCtrlList;
+  _recoverableEraseCtrlList = recoverableEraseCtrlList;
+  _recoverableAddCtrlList = recoverableAddCtrlList;
+  _noEndAudioCtrlMoveMode = noEndAudioCtrlMoveMode;
   _noUndo = noUndo;
+}
+
+UndoOp::UndoOp(UndoType type_, CtrlList* ctrlList_, unsigned int frame_, bool oldSelected_, bool newSelected_, bool noUndo_)
+{
+  assert(type_== SelectAudioCtrlVal);
+  type = type_;
+  _noUndo = noUndo_;
+  _audioCtrlListSelect = ctrlList_;
+  _audioCtrlSelectFrame = frame_;
+  selected_old = oldSelected_;
+  selected = newSelected_;
+}
+
+UndoOp::UndoOp(UndoType type_, CtrlList::PasteEraseOptions newOpts_, bool noUndo_)
+{
+  assert(type_== SetAudioCtrlPasteEraseMode);
+  type = type_;
+  _noUndo = noUndo_;
+  _audioCtrlOldPasteEraseOpts = MusEGlobal::config.audioCtrlGraphPasteEraseOptions;
+  _audioCtrlNewPasteEraseOpts = newOpts_;
 }
 
 UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
@@ -2271,23 +2648,21 @@ UndoOp::UndoOp(UndoType type_, MidiPort* mp, MidiInstrument* instr, bool noUndo)
   _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_)
+UndoOp::UndoOp(UndoOp::UndoType type_, bool noUndo)
 {
-  assert(type_== EnableAllAudioControllers || type_ == NormalizeMidiDivision);
-  
+  assert(type_== EnableAllAudioControllers || type_ == BeginAudioCtrlMoveMode || type_ == EndAudioCtrlMoveMode);
   type = type_;
-  // Cannot be undone. 'One-time' operation only, removed after execution.
-  _noUndo = true;
+  _noUndo = noUndo;
 }
-      
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 UndoOp::UndoOp(UndoOp::UndoType type_, const Route& route_from_, const Route& route_to_, bool noUndo)
       {
       assert(type_ == AddRoute || type_ == DeleteRoute);
       _noUndo = noUndo;
-      routeFrom = route_from_;
-      routeTo = route_to_;
+      routeFrom = new Route(route_from_);
+      routeTo = new Route(route_to_);
       }
 #pragma GCC diagnostic pop
 
@@ -2320,7 +2695,6 @@ void Song::revertOperationGroup1(Undo& operations)
       
       for (riUndoOp i = operations.rbegin(); i != operations.rend(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
-            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
             Part* editable_part = const_cast<Part*>(i->part);
             switch(i->type) {
                   case UndoOp::SelectPart:
@@ -2481,10 +2855,10 @@ void Song::revertOperationGroup1(Undo& operations)
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:
-                        if (editable_property_track->isMidiTrack()) 
+                        if (editable_track->isMidiTrack())
                         {
-                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
-                          if (i->_oldPropValue != mt->outChannel()) 
+                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_track);
+                          if (i->_oldPropValue != mt->outChannel())
                           {
                                 MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
                                 MusEGlobal::audio->msgIdle(true);
@@ -2496,9 +2870,9 @@ void Song::revertOperationGroup1(Undo& operations)
                         }
                         else
                         {
-                            if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            if(editable_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_property_track);
+                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_track);
                               if (i->_oldPropValue != at->channels()) {
                                     MusEGlobal::audio->msgSetChannels(at, i->_oldPropValue);
                                     updateFlags |= SC_CHANNELS;
@@ -2541,7 +2915,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:AddRoute\n");
 #endif                        
-                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::DeleteRoute)); 
+                        pendingOperations.add(PendingOperationItem(*i->routeFrom, *i->routeTo, PendingOperationItem::DeleteRoute));
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -2549,7 +2923,7 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteRoute\n");
 #endif                        
-                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::AddRoute)); 
+                        pendingOperations.add(PendingOperationItem(*i->routeFrom, *i->routeTo, PendingOperationItem::AddRoute));
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -2713,7 +3087,8 @@ void Song::revertOperationGroup1(Undo& operations)
                           //  pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
                           //else
                             // Restore the old value.
-                            pendingOperations.add(PendingOperationItem(icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::AddAudioCtrlVal));
+                            pendingOperations.add(PendingOperationItem(
+                              icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, i->selected, PendingOperationItem::AddAudioCtrlVal));
                           updateFlags |= SC_AUDIO_CONTROLLER;
                         }
                   }
@@ -2745,47 +3120,281 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::revertOperationGroup1:ModifyAudioCtrlValList\n");
 #endif                        
-                        // Take either id. At least one list must be valid.
-                        const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() : i->_addCtrlList->id();
-                        iCtrlList icl = i->_ctrlListList->find(id);
-                        if(icl != i->_ctrlListList->end())
+                        if(!i->track->isMidiTrack())
                         {
-                          // Make a complete copy of the controller list. The list will be quickly switched in the realtime stage.
-                          // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
-                          CtrlList* new_list = new CtrlList(*icl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
-                          
-                          // Erase any items in the add list that were added...
-                          //if(i->_addCtrlList)
-                          if(i->_addCtrlList && !i->_addCtrlList->empty())
+                          AudioTrack* at = static_cast<AudioTrack*>(const_cast<Track*>(i->track));
+                          // Take any id. At least one must be valid and they all should be the same.
+                          // TODO: Kind of awkward. Maybe store the id separately.
+                          const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() :
+                            (i->_recoverableEraseCtrlList ? i->_recoverableEraseCtrlList->id() :
+                            (i->_recoverableAddCtrlList ? i->_recoverableAddCtrlList->id() : i->_addCtrlList->id()));
+                          iCtrlList icl = at->controller()->find(id);
+                          if(icl != at->controller()->end())
                           {
-                            //const std::size_t sz = i->_addCtrlList->size();
-                            //if(sz != 0)
-                            //{
-                              //const CtrlList& cl_r = *i->_addCtrlList;
-                              // Both of these should be valid.
-                              //ciCtrl n_s = new_list->find(cl_r[0].frame);      // The first item to be erased.
-                              //ciCtrl n_e = new_list->find(cl_r[sz - 1].frame); // The last item to be erased.
-                              iCtrl n_s = new_list->find(i->_addCtrlList->begin()->second.frame); // The first item to be erased.
-                              ciCtrl e_e = i->_addCtrlList->end();
-                              --e_e;
-                              //ciCtrl n_e = new_list->find((--i->_eraseCtrlList->end())->second.frame); // The last item to be erased.
-                              iCtrl n_e = new_list->find(e_e->second.frame); // The last item to be erased.
-                              if(n_s != new_list->end() && n_e != new_list->end())
+                            // Make a complete copy of the controller list. The list will be quickly switched in the realtime stage.
+                            // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                            CtrlList* new_list = new CtrlList(*icl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                            bool new_list_changed = false;
+
+                            // Erase any items in the add list that were added...
+                            if(i->_addCtrlList)
+                            {
+                              // Erase any items in the new list found at the frames given by the add list.
+                              for(ciCtrl ic = i->_addCtrlList->cbegin(); ic != i->_addCtrlList->cend(); ++ic)
                               {
-                                // Since std range does NOT include the last iterator, increment n_e so erase will get all items.
-                                ++n_e;
-                                new_list->erase(n_s, n_e);
+                                if(new_list->erase(ic->first) != 0)
+                                  new_list_changed = true;
                               }
-                            //}
+                            }
+
+                            if(i->_recoverableAddCtrlList)
+                            {
+                              // Erase any items in the new list found at the frames given by the recoverable add list.
+                              for(ciCtrl ic = i->_recoverableAddCtrlList->cbegin(); ic != i->_recoverableAddCtrlList->cend(); ++ic)
+                              {
+                                if(new_list->erase(ic->first) != 0)
+                                  new_list_changed = true;
+                              }
+                            }
+                            // Re-add any items in the recoverable erase list that were erased.
+                            if(i->_recoverableEraseCtrlList)
+                            {
+                              for(ciCtrl ic = i->_recoverableEraseCtrlList->cbegin(); ic != i->_recoverableEraseCtrlList->cend(); ++ic)
+                              {
+                                if(new_list->insert(CtrlListInsertPair_t(ic->first, ic->second)).second)
+                                  new_list_changed = true;
+                              }
+                            }
+                            if(i->_eraseCtrlList)
+                            {
+                              // Re-add any items in the erase list that were erased...
+                              for(ciCtrl ic = i->_eraseCtrlList->cbegin(); ic != i->_eraseCtrlList->cend(); ++ic)
+                              {
+                                if(new_list->insert(CtrlListInsertPair_t(ic->first, ic->second)).second)
+                                  new_list_changed = true;
+                              }
+                            }
+
+                            const bool do_rel = i->_recoverableEraseCtrlList && !i->_recoverableEraseCtrlList->empty();
+                            const bool do_ral = i->_recoverableAddCtrlList && !i->_recoverableAddCtrlList->empty();
+                            if(do_rel || do_ral)
+                            {
+                              CtrlList* new_elist;
+                              bool new_elist_changed = false;
+
+                              iCtrlList iecl = at->erasedController()->find(id);
+                              if(iecl == at->erasedController()->end())
+                              {
+                                if(do_rel)
+                                {
+                                  // Existing list not found. Make a complete copy of the desired erased controller list, to start with.
+                                  // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                                  new_elist = new CtrlList(
+                                    *i->_recoverableEraseCtrlList, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                                  if(do_ral)
+                                  {
+                                    // Erase any items in new erased list found at the frames given by the the recoverable add list.
+                                    for(ciCtrl ic = i->_recoverableAddCtrlList->cbegin(); ic != i->_recoverableAddCtrlList->cend(); ++ic)
+                                      new_elist->erase(ic->first);
+                                  }
+                                  if(new_elist->empty())
+                                  {
+                                    // Nothing left. Delete the list.
+                                    delete new_elist;
+                                  }
+                                  else
+                                  {
+                                    pendingOperations.add(PendingOperationItem(
+                                      at->erasedController(), new_elist, PendingOperationItem::AddAudioCtrlValList));
+                                    updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                                  }
+                                }
+                              }
+                              else
+                              {
+                                // Existing list found. Make a complete working copy of the existing erased controller list.
+                                // The list will be quickly switched in the realtime stage.
+                                // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                                new_elist = new CtrlList(*iecl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                                if(do_rel)
+                                {
+                                  // Erase any items in new erased list found at the frames given by the the recoverable erase list.
+                                  for(ciCtrl ic = i->_recoverableEraseCtrlList->cbegin(); ic != i->_recoverableEraseCtrlList->cend(); ++ic)
+                                  {
+                                    if(new_elist->erase(ic->first) != 0)
+                                      new_elist_changed = true;
+                                  }
+                                }
+                                if(do_ral)
+                                {
+                                  // Re-add any items in the recoverable add list.
+                                  for(ciCtrl ic = i->_recoverableAddCtrlList->cbegin(); ic != i->_recoverableAddCtrlList->cend(); ++ic)
+                                  {
+                                    if(new_elist->insert(CtrlListInsertPair_t(ic->first, ic->second)).second)
+                                      new_elist_changed = true;
+                                  }
+                                }
+                                if(new_elist_changed)
+                                {
+                                  pendingOperations.add(PendingOperationItem(iecl, new_elist, PendingOperationItem::ModifyAudioCtrlValList));
+                                  updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                                }
+                                else
+                                {
+                                  delete new_elist;
+                                }
+                              }
+                            }
+                            if(i->_doNotEraseCtrlList && !i->_doNotEraseCtrlList->empty())
+                            {
+                              // Make a complete copy of the controller list. The list will be quickly switched in the realtime stage.
+                              // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                              iCtrlList iecl = at->noEraseController()->find(id);
+                              if(iecl != at->noEraseController()->end())
+                              {
+                                CtrlList* new_nelist = new CtrlList(*iecl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                                bool new_nelist_changed = false;
+                                // Erase any items in the new list found at the frames given by the do not erase list.
+                                for(ciCtrl ic = i->_doNotEraseCtrlList->cbegin(); ic != i->_doNotEraseCtrlList->cend(); ++ic)
+                                {
+                                  if(new_nelist->erase(ic->first) != 0)
+                                  {
+                                    new_nelist_changed = true;
+
+                                    // Since we know that all these points were originally selected then unselected,
+                                    //  re-select them again now, within the new main list.
+                                    iCtrl ic_e = new_list->find(ic->first);
+                                    if(ic_e != new_list->end() && !ic_e->second.selected())
+                                    {
+                                      ic_e->second.setSelected(true);
+                                      new_list_changed = true;
+                                      updateFlags |= SC_AUDIO_CONTROLLER_SELECTION;
+                                    }
+                                  }
+                                }
+                                if(new_nelist_changed)
+                                {
+                                  pendingOperations.add(PendingOperationItem(iecl, new_nelist, PendingOperationItem::ModifyAudioCtrlValList));
+                                  updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                                }
+                                else
+                                {
+                                  delete new_nelist;
+                                }
+                              }
+                            }
+
+                            if(new_list_changed)
+                            {
+                              // The operation will quickly switch the list in the RT stage then the delete the old list in the non-RT stage.
+                              pendingOperations.add(PendingOperationItem(icl, new_list, PendingOperationItem::ModifyAudioCtrlValList));
+                              updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                            }
+                            else
+                            {
+                              delete new_list;
+                            }
                           }
-                          
-                          // Re-add any items in the erase list that were erased...
-                          if(i->_eraseCtrlList && !i->_eraseCtrlList->empty())
-                            new_list->insert(i->_eraseCtrlList->begin(), i->_eraseCtrlList->end());
-                          
-                          // The operation will quickly switch the list in the RT stage then the delete the old list in the non-RT stage.
-                          pendingOperations.add(PendingOperationItem(icl, new_list, PendingOperationItem::ModifyAudioCtrlValList));
-                          updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                        }
+                  }
+                  break;
+
+                  case UndoOp::SelectAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:SelectAudioCtrlVal\n");
+#endif
+                        if(i->_audioCtrlListSelect)
+                        {
+                          iCtrl ic = i->_audioCtrlListSelect->find(i->_audioCtrlSelectFrame);
+                          if(ic != i->_audioCtrlListSelect->end())
+                          {
+                            // Restore the old value.
+                            pendingOperations.add(PendingOperationItem(
+                              &ic->second, i->selected_old, PendingOperationItem::SelectAudioCtrlVal));
+                          }
+                        }
+                        // Update always, just in case something was not found, a refresh might help.
+                        updateFlags |= SC_AUDIO_CONTROLLER_SELECTION;
+                  }
+                  break;
+
+                  case UndoOp::SetAudioCtrlPasteEraseMode:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:SetAudioCtrlPasteEraseMode\n");
+#endif
+                        // Restore the old value.
+                        pendingOperations.add(PendingOperationItem(
+                          i->_audioCtrlOldPasteEraseOpts, PendingOperationItem::SetAudioCtrlPasteEraseMode));
+                        updateFlags |= SC_AUDIO_CTRL_PASTE_ERASE_MODE;
+                  }
+                  break;
+
+                  case UndoOp::BeginAudioCtrlMoveMode:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:BeginAudioCtrlMoveMode\n");
+#endif
+                        // If already set, reset the flag to indicate outside of Begin/EndAudioCtrlMoveMode area.
+                        if(_audioCtrlMoveModeBegun)
+                        {
+                          // Reset the flag.
+                          _audioCtrlMoveModeBegun = false;
+                          updateFlags |= SC_AUDIO_CTRL_MOVE_MODE;
+                        }
+                  }
+                  break;
+                  case UndoOp::EndAudioCtrlMoveMode:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:EndAudioCtrlMoveMode\n");
+#endif
+                        // We are crossing a boundary from move mode off to on.
+                        // If selections are NOT undoable, we must manually unselect all points before entering this mode.
+                        // This is to prevent points that were selected AFTER the move mode from becoming part of the move.
+                        // The original move-mode selection state is needed and we can't know it because it isn't undoable.
+                        if(!MusEGlobal::config.selectionsUndoable)
+                        {
+                          // TODO: Make this a single Pending Operations command to avoid clogging up
+                          //        the Pending Operations list with potentially thousands of selections.
+                          //       There might even be a slight increase in speed since the Pending Operations
+                          //        would unselect thousands of points in ONE loop instead of thousands of items
+                          //        in an operations list.
+                          for (MusECore::ciTrack it = tracks()->cbegin(); it != tracks()->cend(); ++it) {
+                            if((*it)->isMidiTrack())
+                              continue;
+                            // Include all tracks.
+                            MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*it);
+                            const MusECore::CtrlListList* cll = track->controller();
+                            for(MusECore::ciCtrlList icll = cll->cbegin(); icll != cll->cend(); ++icll)
+                            {
+                              // Include all controllers.
+                              MusECore::CtrlList* cl = icll->second;
+                              for(MusECore::iCtrl ic = cl->begin(); ic != cl->end(); ++ ic)
+                              {
+                                MusECore::CtrlVal& cv = ic->second;
+                                // Include only already selected controller values.
+                                if(!cv.selected())
+                                  continue;
+
+                                pendingOperations.add(PendingOperationItem(
+                                  &ic->second, false, PendingOperationItem::SelectAudioCtrlVal));
+                                updateFlags |= SC_AUDIO_CONTROLLER_SELECTION;
+                              }
+                            }
+                          }
+                        }
+
+                        // If not already set, set the flag to indicate re-entering Begin/EndAudioCtrlMoveMode area.
+                        if(!_audioCtrlMoveModeBegun)
+                        {
+                          // Set the flag.
+                          _audioCtrlMoveModeBegun = true;
+                          updateFlags |= SC_AUDIO_CTRL_MOVE_MODE;
+                          // Rebuild the containers.
+                          if(undoAudioCtrlMoveEnd(pendingOperations))
+                            updateFlags |= SC_AUDIO_CONTROLLER_LIST;
                         }
                   }
                   break;
@@ -3205,8 +3814,48 @@ void Song::executeOperationGroup1(Undo& operations)
         
       for (iUndoOp i = operations.begin(); i != operations.end(); ++i) {
             Track* editable_track = const_cast<Track*>(i->track);
-            Track* editable_property_track = const_cast<Track*>(i->_propertyTrack);
             Part* editable_part = const_cast<Part*>(i->part);
+
+            // Special: Check if audio controller move mode needs to be ended.
+            switch(i->type) {
+                  // Ignore BeginAudioCtrlMoveMode. Don't let it end the mode.
+                  case UndoOp::BeginAudioCtrlMoveMode:
+                  // Ignore EndAudioCtrlMoveMode. Let the switch below handle it.
+                  case UndoOp::EndAudioCtrlMoveMode:
+                  // Ignore ModifyAudioCtrlValList. Let the switch below handle it,
+                  //  since for it ending the move mode is optional.
+                  case UndoOp::ModifyAudioCtrlValList:
+                  // Ignore SetAudioCtrlPasteEraseMode. Don't let it end the mode.
+                  case UndoOp::SetAudioCtrlPasteEraseMode:
+                  // Ignore EnableAllAudioControllers. No need to let it end the mode.
+                  case UndoOp::EnableAllAudioControllers:
+                  // Ignore MovePart. Don't let it end the mode. Moving a part is
+                  //  allowed together with moving audio automation points.
+                  case UndoOp::MovePart:
+                  // Ignore DoNothing. No need to let it end the mode.
+                  case UndoOp::DoNothing:
+                        break;
+
+                  // FOR ALL OTHERS: If we are in audio controller move mode, end the move mode !
+                  default:
+                        //checkAndEndAudioCtrlMoveMode(i, operations);
+                        if(_audioCtrlMoveModeBegun)
+                        {
+                          // Insert an EndAudioCtrlMoveMode operation BEFORE the given iterator. If insert finds an existing EndAudioCtrlMoveMode,
+                          //  possibly long before this one, it IGNORES this one.
+                          operations.insert(i, UndoOp(UndoOp::EndAudioCtrlMoveMode));
+                          // Since the EndAudioCtrlMoveMode above will not be iterated now, act like the operation had just been iterated.
+                          // The same IGNORE rules apply here.
+                          // Reset the flag to indicate an EndAudioCtrlMoveMode was encountered.
+                          _audioCtrlMoveModeBegun = false;
+                          updateFlags |= SC_AUDIO_CTRL_MOVE_MODE;
+                          // End the move mode.
+                          if(audioCtrlMoveEnd(pendingOperations))
+                            updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                        }
+                        break;
+            }
+
             switch(i->type) {
                   case UndoOp::SelectPart:
                         pendingOperations.add(PendingOperationItem(editable_part, i->selected, PendingOperationItem::SelectPart));
@@ -3367,10 +4016,10 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_CLIP_MODIFIED;
                         break;
                   case UndoOp::ModifyTrackChannel:
-                        if (editable_property_track->isMidiTrack()) 
+                     if (editable_track->isMidiTrack())
                         {
-                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_property_track);
-                          if (i->_newPropValue != mt->outChannel()) 
+                          MusECore::MidiTrack* mt = static_cast<MusECore::MidiTrack*>(editable_track);
+                          if (i->_newPropValue != mt->outChannel())
                           {
                                 MusECore::MidiTrack::ChangedType_t changed = MusECore::MidiTrack::NothingChanged;
                                 MusEGlobal::audio->msgIdle(true);
@@ -3382,9 +4031,9 @@ void Song::executeOperationGroup1(Undo& operations)
                         }
                         else
                         {
-                            if(editable_property_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
+                            if(editable_track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
                             {
-                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_property_track);
+                              MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(editable_track);
                               if (i->_newPropValue != at->channels()) {
                                     MusEGlobal::audio->msgSetChannels(at, i->_newPropValue);
                                     updateFlags |= SC_CHANNELS;
@@ -3427,7 +4076,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:AddRoute\n");
 #endif                        
-                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::AddRoute)); 
+                        pendingOperations.add(PendingOperationItem(*i->routeFrom, *i->routeTo, PendingOperationItem::AddRoute));
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -3435,7 +4084,7 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:DeleteRoute\n");
 #endif                        
-                        pendingOperations.add(PendingOperationItem(i->routeFrom, i->routeTo, PendingOperationItem::DeleteRoute)); 
+                        pendingOperations.add(PendingOperationItem(*i->routeFrom, *i->routeTo, PendingOperationItem::DeleteRoute));
                         updateFlags |= SC_ROUTE;
                         break;
                         
@@ -3632,7 +4281,8 @@ void Song::executeOperationGroup1(Undo& operations)
                           //  pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
                           //else
                             // Add the new value.
-                            pendingOperations.add(PendingOperationItem(icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, PendingOperationItem::AddAudioCtrlVal));
+                            pendingOperations.add(PendingOperationItem(
+                              icl->second, i->_audioCtrlFrame, i->_audioCtrlVal, i->selected, PendingOperationItem::AddAudioCtrlVal));
                           updateFlags |= SC_AUDIO_CONTROLLER;
                         }
                   }
@@ -3651,7 +4301,8 @@ void Song::executeOperationGroup1(Undo& operations)
                           iCtrl ic = cl->find(i->_audioCtrlFrame);
                           if(ic != cl->end())
                           {
-                            i->_audioCtrlVal = ic->second.val; // Store the existing value so it can be restored.
+                            i->_audioCtrlVal = ic->second.value(); // Store the existing value so it can be restored.
+                            i->selected = ic->second.selected(); // Store the existing value so it can be restored.
                             pendingOperations.add(PendingOperationItem(cl, ic, PendingOperationItem::DeleteAudioCtrlVal));
                             updateFlags |= SC_AUDIO_CONTROLLER;
                           }
@@ -3672,7 +4323,7 @@ void Song::executeOperationGroup1(Undo& operations)
                           iCtrl ic = cl->find(i->_audioCtrlFrame);
                           if(ic != cl->end())
                           {
-                            i->_audioCtrlVal = ic->second.val; // Store the existing value so it can be restored.
+                            i->_audioCtrlVal = ic->second.value(); // Store the existing value so it can be restored.
                             pendingOperations.add(PendingOperationItem(icl->second, ic, i->_audioNewCtrlFrame, i->_audioNewCtrlVal, PendingOperationItem::ModifyAudioCtrlVal));
                             updateFlags |= SC_AUDIO_CONTROLLER;
                           }
@@ -3685,41 +4336,318 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                         fprintf(stderr, "Song::executeOperationGroup1:ModifyAudioCtrlValList\n");
 #endif                        
-                        // Take either id. At least one list must be valid.
-                        const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() : i->_addCtrlList->id();
-                        iCtrlList icl = i->_ctrlListList->find(id);
-                        if(icl != i->_ctrlListList->end())
+                        // If we are in audio controller move mode, end the move mode unless specifically asking not to.
+                        bool moveModeEnding = false;
+                        if(!i->_noEndAudioCtrlMoveMode && _audioCtrlMoveModeBegun)
                         {
-                          // Make a complete copy of the controller list. The list will be quickly switched in the realtime stage.
-                          // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
-                          CtrlList* new_list = new CtrlList(*icl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
-                          
-                          if(i->_eraseCtrlList && !i->_eraseCtrlList->empty())
+                          moveModeEnding = true;
+                          // Insert an EndAudioCtrlMoveMode operation BEFORE the given iterator. If insert finds an existing EndAudioCtrlMoveMode,
+                          //  possibly long before this one, it IGNORES this one.
+                          operations.insert(i, UndoOp(UndoOp::EndAudioCtrlMoveMode));
+                          // Since the EndAudioCtrlMoveMode above will not be iterated now, act like the operation had just been iterated.
+                          // Clearing the track's erasedController and noEraseController is done below, by composing completely new lists.
+                          // Reset the flag to indicate an EndAudioCtrlMoveMode was encountered.
+                          _audioCtrlMoveModeBegun = false;
+                          updateFlags |= SC_AUDIO_CTRL_MOVE_MODE;
+                        }
+
+                        if(!i->track->isMidiTrack())
+                        {
+//                           AudioTrack* at = static_cast<AudioTrack*>(i->_ctrlListTrack);
+                          AudioTrack* at = static_cast<AudioTrack*>(const_cast<Track*>(i->track));
+                          // Take any id. At least one must be valid and they all should be the same.
+                          const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() :
+                            (i->_recoverableEraseCtrlList ? i->_recoverableEraseCtrlList->id() :
+                            (i->_recoverableAddCtrlList ? i->_recoverableAddCtrlList->id() : i->_addCtrlList->id()));
+                          iCtrlList icl = at->controller()->find(id);
+                          if(icl != at->controller()->end())
                           {
-                              iCtrl n_s = new_list->find(i->_eraseCtrlList->begin()->second.frame); // The first item to be erased.
-                              ciCtrl e_e = i->_eraseCtrlList->end();
-                              --e_e;
-                              iCtrl n_e = new_list->find(e_e->second.frame); // The last item to be erased.
-                              if(n_s != new_list->end() && n_e != new_list->end())
+                            // Make a complete copy of the controller list. The list will be quickly switched in the realtime stage.
+                            // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                            CtrlList* new_list = new CtrlList(*icl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                            bool new_list_changed = false;
+
+                            if(i->_eraseCtrlList)
+                            {
+                              // Erase any items in the new list found at the frames given by the erase list.
+                              for(ciCtrl ic = i->_eraseCtrlList->cbegin(); ic != i->_eraseCtrlList->cend(); ++ic)
                               {
-                                // Since std range does NOT include the last iterator, increment n_e so erase will get all items.
-                                ++n_e;
-                                new_list->erase(n_s, n_e);
+                                // TODO: It would be faster if we used 'group end' markers, either as an auxilliary
+                                //        list or embedded in each controller list item. That way we could use
+                                //        the erase(start, end) to quickly erase whole sections - or the entire range.
+                                if(new_list->erase(ic->first) != 0)
+                                  new_list_changed = true;
                               }
+                            }
+
+                            if(i->_recoverableEraseCtrlList)
+                            {
+                              // Erase any items in the new list found at the frames given by the recoverable erase list.
+                              for(ciCtrl ic = i->_recoverableEraseCtrlList->cbegin(); ic != i->_recoverableEraseCtrlList->cend(); ++ic)
+                              {
+                                if(new_list->erase(ic->first) != 0)
+                                  new_list_changed = true;
+                              }
+                            }
+                            // Add any items in the add list.
+                            if(i->_addCtrlList)
+                            {
+                              for(ciCtrl ic = i->_addCtrlList->cbegin(); ic != i->_addCtrlList->cend(); ++ic)
+                              {
+                                if(new_list->insert(CtrlListInsertPair_t(ic->first, ic->second)).second)
+                                  new_list_changed = true;
+                              }
+                            }
+                            if(i->_recoverableAddCtrlList)
+                            {
+                              // Add any items in the recoverable add list.
+                              for(ciCtrl ic = i->_recoverableAddCtrlList->cbegin(); ic != i->_recoverableAddCtrlList->cend(); ++ic)
+                              {
+                                if(new_list->insert(CtrlListInsertPair_t(ic->first, ic->second)).second)
+                                  new_list_changed = true;
+                              }
+                            }
+
+                            const bool do_rel = i->_recoverableEraseCtrlList && !i->_recoverableEraseCtrlList->empty();
+                            const bool do_ral = i->_recoverableAddCtrlList && !i->_recoverableAddCtrlList->empty();
+                            if(do_rel || do_ral)
+                            {
+                              CtrlList* new_elist;
+                              bool new_elist_changed = false;
+
+                              iCtrlList iecl = at->erasedController()->end();
+                              // If the controller is not found, compose a new one.
+                              // Or, if an end move mode WILL BE done, the track's erasedController and noEraseController
+                              //  will be completely blank, so compose new lists.
+                              if(!moveModeEnding)
+                                iecl = at->erasedController()->find(id);
+                              if(iecl == at->erasedController()->end())
+                              {
+                                if(do_rel)
+                                {
+                                  // Existing list not found. Make a complete copy of the desired erased controller list, to start with.
+                                  // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                                  new_elist = new CtrlList(
+                                    *i->_recoverableEraseCtrlList, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                                  if(do_ral)
+                                  {
+                                    // Erase any items in new erased list found at the frames given by the the recoverable add list.
+                                    for(ciCtrl ic = i->_recoverableAddCtrlList->cbegin(); ic != i->_recoverableAddCtrlList->cend(); ++ic)
+                                      new_elist->erase(ic->first);
+                                  }
+                                  if(new_elist->empty())
+                                  {
+                                    // Nothing left. Delete the list.
+                                    delete new_elist;
+                                  }
+                                  else
+                                  {
+                                    pendingOperations.add(PendingOperationItem(
+                                      at->erasedController(), new_elist, PendingOperationItem::AddAudioCtrlValList));
+                                    updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                                  }
+                                }
+                              }
+                              else
+                              {
+                                // Existing list found. Make a complete working copy of the existing erased controller list.
+                                // The list will be quickly switched in the realtime stage.
+                                // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                                new_elist = new CtrlList(*iecl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                                if(do_ral)
+                                {
+                                  // Erase any items in new erased list found at the frames given by the the recoverable add list.
+                                  for(ciCtrl ic = i->_recoverableAddCtrlList->cbegin(); ic != i->_recoverableAddCtrlList->cend(); ++ic)
+                                  {
+                                    if(new_elist->erase(ic->first) != 0)
+                                      new_elist_changed = true;
+                                  }
+                                }
+                                if(do_rel)
+                                {
+                                  // Add any items in the recoverable erase list.
+                                  for(ciCtrl ic = i->_recoverableEraseCtrlList->cbegin(); ic != i->_recoverableEraseCtrlList->cend(); ++ic)
+                                  {
+                                    if(new_elist->insert(CtrlListInsertPair_t(ic->first, ic->second)).second)
+                                      new_elist_changed = true;
+                                  }
+                                }
+                                if(new_elist_changed)
+                                {
+                                  pendingOperations.add(PendingOperationItem(iecl, new_elist, PendingOperationItem::ModifyAudioCtrlValList));
+                                  updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                                }
+                                else
+                                {
+                                  delete new_elist;
+                                }
+                              }
+                            }
+                            if(i->_doNotEraseCtrlList && !i->_doNotEraseCtrlList->empty())
+                            {
+                              iCtrlList iecl = at->noEraseController()->end();
+                              // If the controller is not found, compose a new one.
+                              // Or, if an end move mode WILL BE done, the track's erasedController and noEraseController
+                              //  will be completely blank, so compose new lists.
+                              if(!moveModeEnding)
+                                iecl = at->noEraseController()->find(id);
+                              if(iecl == at->noEraseController()->end())
+                              {
+                                // Existing list not found. Make a complete copy of the desired no-erase controller list, to start with.
+                                // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                                CtrlList* new_nelist = new CtrlList(
+                                  *i->_doNotEraseCtrlList, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                                pendingOperations.add(PendingOperationItem(
+                                  at->noEraseController(), new_nelist, PendingOperationItem::AddAudioCtrlValList));
+                                updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+
+                                // We must unselect these original points. We don't want them included in any movement at all.
+                                for(iCtrl ic = i->_doNotEraseCtrlList->begin(); ic != i->_doNotEraseCtrlList->end(); ++ic)
+                                {
+                                  iCtrl ic_e = new_list->find(ic->first);
+                                  if(ic_e != new_list->end() && ic_e->second.selected())
+                                  {
+                                    ic_e->second.setSelected(false);
+                                    new_list_changed = true;
+                                    updateFlags |= SC_AUDIO_CONTROLLER_SELECTION;
+                                  }
+                                }
+                              }
+                              else
+                              {
+                                // Existing list found. Make a complete working copy of the existing no-erase controller list.
+                                // The list will be quickly switched in the realtime stage.
+                                // The Pending Operations system will take 'ownership' of this and delete it at the appropriate time.
+                                CtrlList* new_nelist = new CtrlList(*iecl->second, CtrlList::ASSIGN_PROPERTIES | CtrlList::ASSIGN_VALUES);
+                                bool new_nelist_changed = false;
+                                for(ciCtrl ic = i->_doNotEraseCtrlList->cbegin(); ic != i->_doNotEraseCtrlList->cend(); ++ic)
+                                {
+                                  if(new_nelist->insert(CtrlListInsertPair_t(ic->first, ic->second)).second)
+                                  {
+                                    new_nelist_changed = true;
+
+                                    // We must unselect these original points. We don't want them included in any movement at all.
+                                    iCtrl ic_e = new_list->find(ic->first);
+                                    if(ic_e != new_list->end() && ic_e->second.selected())
+                                    {
+                                      ic_e->second.setSelected(false);
+                                      new_list_changed = true;
+                                      updateFlags |= SC_AUDIO_CONTROLLER_SELECTION;
+                                    }
+                                  }
+                                }
+                                if(new_nelist_changed)
+                                {
+                                  pendingOperations.add(PendingOperationItem(iecl, new_nelist, PendingOperationItem::ModifyAudioCtrlValList));
+                                  updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                                }
+                                else
+                                {
+                                  delete new_nelist;
+                                }
+                              }
+                            }
+
+                            if(new_list_changed)
+                            {
+                              // The operation will quickly switch the list in the RT stage then the delete the old list in the non-RT stage.
+                              pendingOperations.add(PendingOperationItem(icl, new_list, PendingOperationItem::ModifyAudioCtrlValList));
+                              updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                            }
+                            else
+                            {
+                              delete new_list;
+                            }
                           }
-                          
-                          // Add any items in the add list...
-                          if(i->_addCtrlList && !i->_addCtrlList->empty())
-                            new_list->insert(i->_addCtrlList->begin(), i->_addCtrlList->end());
-                          
-                          // The operation will quickly switch the list in the RT stage then the delete the old list in the non-RT stage.
-                          pendingOperations.add(PendingOperationItem(icl, new_list, PendingOperationItem::ModifyAudioCtrlValList));
-                          updateFlags |= SC_AUDIO_CONTROLLER_LIST;
                         }
                   }
                   break;
                         
-                        
+                  case UndoOp::SelectAudioCtrlVal:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:SelectAudioCtrlVal\n");
+#endif
+                        if(i->_audioCtrlListSelect)
+                        {
+                          iCtrl ic = i->_audioCtrlListSelect->find(i->_audioCtrlSelectFrame);
+                          if(ic != i->_audioCtrlListSelect->end())
+                          {
+                            // Set the new value.
+                            pendingOperations.add(PendingOperationItem(
+                              &ic->second, i->selected, PendingOperationItem::SelectAudioCtrlVal));
+                          }
+                        }
+                        // Update always, just in case something was not found, a refresh might help.
+                        updateFlags |= SC_AUDIO_CONTROLLER_SELECTION;
+                  }
+                  break;
+
+                  case UndoOp::SetAudioCtrlPasteEraseMode:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:SetAudioCtrlPasteEraseMode\n");
+#endif
+                        // Set the new value.
+                        pendingOperations.add(PendingOperationItem(
+                          i->_audioCtrlNewPasteEraseOpts, PendingOperationItem::SetAudioCtrlPasteEraseMode));
+                        updateFlags |= SC_AUDIO_CTRL_PASTE_ERASE_MODE;
+                  }
+                  break;
+
+                  case UndoOp::BeginAudioCtrlMoveMode:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:BeginAudioCtrlMoveMode\n");
+#endif
+                        // TODO ?
+                        // We are crossing a boundary from move mode off to on.
+                        // If selections are NOT undoable, we must manually unselect all points before entering this mode.
+                        // This is to prevent points that were selected BEFORE the move mode from becoming part of the move.
+                        // The original move-mode selection state is needed and we can't know it because it isn't undoable.
+                        //
+                        // But... we need to know whether this is the FIRST time this begin command is running, or whether
+                        //  it is a REDO of the command, because we must NOT clear selections the FIRST time.
+                        //
+                        // But... selecting something - even if selections are non-undoable - counts as an undo command which
+                        //  clears the REDO list, so we should not even be able to re-enter the mode from there.
+                        // But we even execute certain Pending Operations commands directly from the code which BYPASSES
+                        //  clearing of the REDO list.
+                        // TODO? Take a closer look at whether to clear the REDO list in non-undoable cases.
+                        //       The problem is, technically the one-time command changed something, so the continuity of
+                        //        the UNDO/REDO becomes broken, therefore REDO MUST be cleared. But the user sees no
+                        //        command in the UNDO list that cleared the REDO list, leading to confusion "what did
+                        //        I just do to clear my REDO list?".
+                        // If someday we decide NOT to clear the REDO list when a one-time command such as selection is run,
+                        //  this logic will need rethinking...
+
+                        // If not already set, set the flag to indicate a BeginAudioCtrlMoveMode was encountered.
+                        if(!_audioCtrlMoveModeBegun)
+                        {
+                          _audioCtrlMoveModeBegun = true;
+                          updateFlags |= SC_AUDIO_CTRL_MOVE_MODE;
+                        }
+                  }
+                  break;
+                  case UndoOp::EndAudioCtrlMoveMode:
+                  {
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:EndAudioCtrlMoveMode\n");
+#endif
+                        // If already set, reset the flag to indicate an EndAudioCtrlMoveMode was encountered.
+                        if(_audioCtrlMoveModeBegun)
+                        {
+                          // Reset the flag.
+                          _audioCtrlMoveModeBegun = false;
+                          updateFlags |= SC_AUDIO_CTRL_MOVE_MODE;
+                          // End the move mode.
+                          if(audioCtrlMoveEnd(pendingOperations))
+                            updateFlags |= SC_AUDIO_CONTROLLER_LIST;
+                        }
+                  }
+                  break;
+
+
                   case UndoOp::SetInstrument:
                   {
 #ifdef _UNDO_DEBUG_
@@ -3949,15 +4877,6 @@ void Song::executeOperationGroup1(Undo& operations)
 #endif                        
                         pendingOperations.add(PendingOperationItem(PendingOperationItem::EnableAllAudioControllers));
                         updateFlags |= SC_AUDIO_CONTROLLER;
-                        break;
-                        
-                  case UndoOp::NormalizeMidiDivision:
-#ifdef _UNDO_DEBUG_
-                        fprintf(stderr, "Song::executeOperationGroup1:NormalizeMidiDivision\n");
-#endif                  
-                        // Nothing to do here.
-                        // Defer normalize until end of stage 2.
-                        updateFlags |= SC_DIVISION_CHANGED;
                         break;
                         
                   case UndoOp::GlobalSelectAllEvents:

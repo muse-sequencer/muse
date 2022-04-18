@@ -312,8 +312,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       inline virtual float selfLatencyAudio(int channel) const
         { return (_sif ? _sif->latency() : 0) + AudioTrack::selfLatencyAudio(channel); }
 
-      void read(Xml&);
-      virtual void write(int, Xml&) const;
+      void read(Xml&, XmlReadStatistics* stats = nullptr);
+      virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
 
       void setName(const QString& s);
       inline QString name() const          { return AudioTrack::name(); }

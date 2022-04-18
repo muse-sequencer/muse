@@ -43,8 +43,6 @@
 
 namespace MusECore {
 
-int Part::snGen=0;
-
 //---------------------------------------------------------
 //   MidiCtrlViewState::write
 //---------------------------------------------------------
@@ -171,7 +169,7 @@ void Part::unchainClone()
   _prevClone = this;
   _nextClone = this;
   
-  _clonemaster_sn = this->_sn;
+  _clonemaster_uuid = this->_uuid;
 }
 
 void Part::chainClone(Part* p)
@@ -195,7 +193,7 @@ void Part::chainClone(Part* p)
   
   // we only chain clones. we must trust in the GUI thread that the eventlist is consistent.
   
-  this->_clonemaster_sn = p->_sn;
+  this->_clonemaster_uuid = p->_uuid;
 }
 
 void Part::rechainClone()
@@ -209,7 +207,7 @@ void Part::rechainClone()
 
 bool Part::isCloneOf(const Part* other) const
 {
-	return this->_clonemaster_sn == other->_clonemaster_sn;
+	return this->_clonemaster_uuid == other->_clonemaster_uuid;
 }
 
 int Part::nClones() const
@@ -400,6 +398,16 @@ Part* PartList::find(int idx)
       return nullptr;
       }
 
+Part* PartList::findCloneMaster(const QUuid& cloneUuid) const
+{
+  for(const_iterator ip = cbegin(); ip != cend(); ++ip)
+  {
+    if(ip->second->clonemaster_uuid() == cloneUuid)
+      return ip->second;
+  }
+  return nullptr;
+}
+
 //---------------------------------------------------------
 //   Part
 //---------------------------------------------------------
@@ -410,12 +418,12 @@ Part::Part(Track* t)
       _prevClone = this;
       _nextClone = this;
       _backupClone = nullptr;
-      _sn = newSn();
-      _clonemaster_sn = _sn;
       _track      = t;
       _selected   = false;
       _mute       = false;
       _colorIndex = 0;
+      _uuid = newUuid();
+      _clonemaster_uuid = _uuid;
       }
 
 Part::~Part()
@@ -428,6 +436,13 @@ Part::~Part()
         unchainClone();
       }  
 }
+
+QUuid Part::uuid() const { return _uuid; }
+void Part::setUuid(const QUuid& uuid) { _uuid = uuid; }
+QUuid Part::newUuid() const { return QUuid::createUuid(); }
+QUuid Part::clonemaster_uuid() const { return _clonemaster_uuid; }
+void Part::setClonemasterUuid(const QUuid& uuid) { _clonemaster_uuid = uuid; }
+
 
 WavePart* WavePart::duplicateEmpty() const
 {
@@ -703,7 +718,7 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
 
 void Song::changePart(Part* oPart, Part* nPart)
       {
-      nPart->setSn(oPart->sn());
+      nPart->setUuid(oPart->uuid());
 
       Track* oTrack = oPart->track();
       Track* nTrack = nPart->track();

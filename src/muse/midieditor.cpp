@@ -62,7 +62,7 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       _pl = pl;
       if (_pl)
             for (const auto& i : *_pl)
-                  _parts.insert(i.second->sn());
+                  _parts.insert(i.second->uuid());
 
       QList<Rasterizer::Column> rast_cols;
       rast_cols << 
@@ -112,13 +112,13 @@ void MidiEditor::genPartlist()
         return;
 
       _pl->clear();
-      for (std::set<int>::iterator i = _parts.begin(); i != _parts.end(); ++i) {
+      for (std::set<QUuid>::iterator i = _parts.begin(); i != _parts.end(); ++i) {
             MusECore::TrackList* tl = MusEGlobal::song->tracks();
             for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it) {
                   MusECore::PartList* pl = (*it)->parts();
                   MusECore::iPart ip;
                   for (ip = pl->begin(); ip != pl->end(); ++ip) {
-                        if (ip->second->sn() == *i) {
+                        if (ip->second->uuid() == *i) {
                               _pl->add(ip->second);
                               break;
                               }
@@ -276,7 +276,7 @@ void MidiEditor::addPart(MusECore::Part* p)
   if(!_pl || !p)
     return;
   _pl->add(p);
-  _parts.insert(p->sn());
+  _parts.insert(p->uuid());
 }
 
 //---------------------------------------------------------

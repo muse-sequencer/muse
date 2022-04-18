@@ -1805,6 +1805,11 @@ void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::
     move_staff_above(dest, src);
 }
 
+void ScoreCanvas::set_selected_part(const MusECore::Part* p)
+  {selected_part=p; if (selected_part) selected_part_index=selected_part->uuid();}
+void ScoreCanvas::set_dragged_event_part(const MusECore::Part* p)
+  {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->uuid();}
+
 set<const MusECore::Part*> ScoreCanvas::get_all_parts()
 {
     set<const MusECore::Part*> result;
@@ -4967,7 +4972,7 @@ void staff_t::update_parts()
 {
     parts.clear();
 
-    for (set<int>::iterator it=part_indices.begin(); it!=part_indices.end(); it++)
+    for (set<QUuid>::iterator it=part_indices.begin(); it!=part_indices.end(); it++)
         parts.insert(MusECore::partFromSerialNumber(*it));
 }
 
@@ -4976,7 +4981,7 @@ void staff_t::update_part_indices()
     part_indices.clear();
 
     for (set<const MusECore::Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
-        part_indices.insert((*it)->sn());
+        part_indices.insert((*it)->uuid());
 }
 
 

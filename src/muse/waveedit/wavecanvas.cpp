@@ -43,6 +43,7 @@
 #include <QProcess>
 #include <QColor>
 #include <QPen>
+#include <QUuid>
 
 #include <set>
 
@@ -181,22 +182,22 @@ void WaveCanvas::updateItems()
 {
   bool curItemNeedsRestore=false;
   MusECore::Event storedEvent;
-  int partSn = 0;
+  QUuid partSn;
   if (curItem)
   {
     curItemNeedsRestore=true;
     storedEvent=curItem->event();
-    partSn=curItem->part()->sn();
+    partSn=curItem->part()->uuid();
   }
   curItem=nullptr;
-  
+
   items.clearDelete();
   startSample  = INT_MAX;
   endSample    = 0;
   curPart = 0;
   for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
         MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
-        if (part->sn() == curPartId)
+        if (part->uuid() == curPartId)
               curPart = part;
         unsigned ssample = part->frame();
         unsigned len = part->lenFrame();
@@ -215,18 +216,18 @@ void WaveCanvas::updateItems()
               if((int)e.frame() >= (int)len)
                 break;
 #else
-              if(e.frame() > len)   
+              if(e.frame() > len)
                 break;
 #endif
-              
+
               if (e.type() == MusECore::Wave) {
                     CItem* temp = addItem(part, e);
-                    
-                    if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+
+                    if (temp && curItemNeedsRestore && e==storedEvent && part->uuid()==partSn)
                     {
                         if (curItem!=nullptr)
                           printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
-                        
+
                         curItem=temp;
                         }
                     }
@@ -311,7 +312,7 @@ void WaveCanvas::songChanged(MusECore::SongChangedStruct_t flags)
             part  = (MusECore::WavePart*)nevent->part();
             if (_setCurPartIfOnlyOneEventIsSelected && n == 1 && curPart != part) {
                   curPart = part;
-                  curPartId = curPart->sn();
+                  curPartId = curPart->uuid();
                   curPartChanged();
                   }
       }
@@ -828,6 +829,7 @@ bool WaveCanvas::mousePress(QMouseEvent* event)
                                     selectionStart = selectionStop = x;
                                     drag = DRAG_LASSO_START;
                                     Canvas::start = pt;
+                                    cancelMouseOps();
                                     return false;
                               }
                               break;
@@ -3433,7 +3435,7 @@ void WaveCanvas::curPartChanged()
 void WaveCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode)
       {
       // TODO: New WaveCanvas: Convert this routine to frames and remove unneeded operations. 
-      QList< QPair<int,MusECore::Event> > already_done;
+      QList< QPair<QUuid,MusECore::Event> > already_done;
       MusECore::Undo operations;
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
@@ -3445,7 +3447,7 @@ void WaveCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
 
             MusECore::WavePart* part = (MusECore::WavePart*)(e->part());
             
-            if (already_done.contains(QPair<int,MusECore::Event>(part->clonemaster_sn(), event)))
+            if (already_done.contains(QPair<QUuid,MusECore::Event>(part->clonemaster_uuid(), event)))
               continue;
             
             MusECore::Event newEvent = event.clone();
@@ -3515,7 +3517,7 @@ void WaveCanvas::modifySelected(NoteInfo::ValType type, int val, bool delta_mode
             
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
 
-            already_done.append(QPair<int,MusECore::Event>(part->clonemaster_sn(), event));
+            already_done.append(QPair<QUuid,MusECore::Event>(part->clonemaster_uuid(), event));
             }
       MusEGlobal::song->applyOperationGroup(operations);
       }

@@ -2503,7 +2503,7 @@ bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* p
         bool found = false;
         for (const auto& it_pl : *pl) {
             for (const auto& it_pl_tmp : *pl_tmp) {
-                if (it_pl.second->sn() == it_pl_tmp.second->sn()) {
+                if (it_pl.second->uuid() == it_pl_tmp.second->uuid()) {
                     found = true;
                     break;
                 }
@@ -2584,7 +2584,7 @@ bool MusE::findOpenListEditor(MusECore::PartList* pl) {
 
         const MusECore::PartList* pl_tmp = static_cast<MusEGui::ListEdit*>(d->widget())->parts();
 
-        if (pl->begin()->second->sn() != pl_tmp->begin()->second->sn())
+        if (pl->begin()->second->uuid() != pl_tmp->begin()->second->uuid())
             continue;
 
         if (!d->isVisible())

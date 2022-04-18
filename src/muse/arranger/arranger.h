@@ -166,7 +166,8 @@ class Arranger : public QWidget {
       void focusCanvas();
 
    public:
-      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
+      enum { CMD_DELETE,
+             CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
              CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK, CMD_PASTE_DIALOG, CMD_INSERT_EMPTYMEAS };
       
       const int arrangerTools = PointerTool | PencilTool | RubberTool | CutTool | GlueTool | MuteTool |
@@ -207,6 +208,9 @@ class Arranger : public QWidget {
       bool isSingleSelection() const;
       int selectionSize() const;
       bool itemsAreSelected() const;
+      bool isSingleAudioAutomationSelection() const;
+      int audioAutomationSelectionSize() const;
+      bool audioAutomationItemsAreSelected() const;
       void setGlobalTempo(int);
       void clear();
       void songIsClearing() const;

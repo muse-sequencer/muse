@@ -66,6 +66,7 @@
 #include "synti/libsynti/mess.h"
 #include "popupmenu.h"
 #include "xml.h"
+#include "xml_statistics.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -1016,7 +1017,7 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& uri,
 //   write
 //---------------------------------------------------------
 
-void SynthI::write(int level, Xml& xml) const
+void SynthI::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "SynthI");
       AudioTrack::writeProperties(level, xml);
@@ -1162,7 +1163,7 @@ void MessSynthIF::write(int level, Xml& xml) const
 //   SynthI::read
 //---------------------------------------------------------
 
-void SynthI::read(Xml& xml)
+void SynthI::read(Xml& xml, XmlReadStatistics*)
       {
       int port = -1;
       int oflags = 1;
@@ -1219,6 +1220,7 @@ void SynthI::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "SynthI") {
+                              fixOldColorScheme();
 
                               // NOTICE: This is a hack to quietly change songs to use the new 'fluid_synth' name instead of 'fluidsynth'.
                               //         Recent linker changes required the name change in fluidsynth's cmakelists. Nov 8, 2011 By Tim.

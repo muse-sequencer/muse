@@ -32,6 +32,7 @@
 #include "pos.h"
 #include "function_dialog_consts.h"
 #include "undo.h"
+#include "xml.h"
 
 #include <QString>
 
@@ -47,6 +48,9 @@ namespace MusECore {
 class Track;
 class Part;
 class PartList;
+class PasteCtrlTrackMap;
+class AudioTrack;
+class XmlReadStatistics;
 }
 
 namespace MusEGui {
@@ -412,7 +416,11 @@ bool merge_with_next_part(const Part* part);
 bool merge_selected_parts();
 bool merge_parts(const std::set<const Part*>& parts);
 bool split_part(const Part* part, int tick);
+bool delete_selected_parts(Undo& operations);
 bool delete_selected_parts();
+bool delete_selected_audio_automation(Undo& operations);
+bool delete_selected_audio_automation();
+bool delete_selected_parts_and_audio_automation();
 
 PartList* getSelectedMidiParts();
 PartList* getSelectedWaveParts();
@@ -421,6 +429,22 @@ PartList* getSelectedParts();
 // called from GUI thread, calls applyOperationGroup.
 void resize_part(Track* t, Part* p, unsigned int newTickPosOrLen, MusECore::ResizeDirection resizeDirection,
                    bool doClones = false, bool dragEvents = false);
+
+//functions for controllers/parts
+bool readAudioAutomation(Xml& xml, PasteCtrlTrackMap* pctm);
+void parseArrangerPasteXml(const QString&, Track*, bool clone = false,
+                        bool toTrack = true,
+                        std::set<Track*>* affected_tracks = nullptr,
+                        std::set<Part*>* partList = nullptr,
+                        XmlReadStatistics* stats = nullptr,
+                        PasteCtrlTrackMap* pctm = nullptr,
+                        unsigned int* minPos = nullptr, bool* minPosValid = nullptr);
+void processArrangerPasteObjects(Undo& operations, unsigned int pos,
+                        unsigned int* finalPosPtr = nullptr,
+                        std::set<Part*>* partList = nullptr,
+                        PasteCtrlTrackMap* pctm = nullptr,
+                        unsigned int minPos = 0);
+void pasteAudioAutomation(AudioTrack* track, int ctrlId, /*bool fitToRange = true,*/ int amount=1, int raster=1536);
 
 // internal
 QMimeData* file_to_mimedata(FILE *datafile, QString mimeType);

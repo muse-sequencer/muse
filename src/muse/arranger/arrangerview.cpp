@@ -62,6 +62,7 @@
 #include "tlist.h"
 #include "synth.h"
 #include "pcanvas.h"
+#include "part.h"
 
 // Forwards from header:
 #include <QCloseEvent>
@@ -643,7 +644,7 @@ void ArrangerView::cmd(int cmd)
         arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
         break;
     case CMD_DELETE:
-        MusECore::delete_selected_parts();
+        arranger->cmd(Arranger::CMD_DELETE);
         break;
     case CMD_DELETE_TRACK:
         MusEGlobal::audio->msgRemoveTracks();
@@ -1049,12 +1050,14 @@ void ArrangerView::clipboardChanged()
 
 //---------------------------------------------------------
 //   selectionChanged
-//   NOTE: This is received upon EITHER a part or track selection change from the Arranger.
+//   NOTE: This is received upon a part or track or
+//          audio controller selection change from the Arranger.
 //---------------------------------------------------------
 
 void ArrangerView::selectionChanged()
       {
       bool pflag = arranger->itemsAreSelected();
+      bool acflag = arranger->audioAutomationItemsAreSelected();
       bool tflag = MusECore::tracks_are_selected();
 
       editDeleteSelectedTrackAction->setEnabled(tflag);
@@ -1063,15 +1066,14 @@ void ArrangerView::selectionChanged()
       editMoveDownSelTrackAction->setEnabled(tflag);
       editMoveTopSelTrackAction->setEnabled(tflag);
       editMoveBottomSelTrackAction->setEnabled(tflag);
-   
-      editDeleteAction->setEnabled(pflag);
-      editCutAction->setEnabled(pflag);
-      editCopyAction->setEnabled(pflag);
+
+      editDeleteAction->setEnabled(pflag || acflag);
+      editCutAction->setEnabled(pflag || acflag);
+      editCopyAction->setEnabled(pflag || acflag);
       editShrinkPartsAction->setEnabled(pflag);
       editExpandPartsAction->setEnabled(pflag);
       editCleanPartsAction->setEnabled(pflag);
       }
-
 
 void ArrangerView::updateVisibleTracksButtons()
 {

@@ -2419,11 +2419,11 @@ namespace MusEGlobal {
 
 void StripConfig::write(int level, MusECore::Xml& xml) const
       {
-      if(_serial < 0)
+      if(_uuid.isNull())
         return;
       // Do NOT save if there is no corresponding track.
       const MusECore::TrackList* tl = song->tracks();
-      const int idx = tl->indexOfSerial(_serial);
+      const int idx = tl->indexOfUuid(_uuid);
       if(idx < 0)
         return;
       xml.nput(level, "<StripConfig trackIdx=\"%d\"", idx);

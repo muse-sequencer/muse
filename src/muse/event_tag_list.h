@@ -24,15 +24,18 @@
 #ifndef __EVENT_TAG_LIST_H__
 #define __EVENT_TAG_LIST_H__
 
-#include <map>
-#include <set>
+#include <list>
 
-#include "part.h"
 #include "event.h"
+#include "ctrl.h"
 #include "pos.h"
 #include "type_defs.h"
 
 namespace MusECore {
+
+// Forward declarations:
+class Part;
+class Track;
 
 class TagEventStatsStruct
 {
@@ -43,37 +46,42 @@ class TagEventStatsStruct
     unsigned int _sysexes;
     unsigned int _metas;
     unsigned int _waves;
+    unsigned int _audioCtrls;
 
     PosLen _noteRange;
     PosLen _midiCtrlRange;
     PosLen _sysexRange;
     PosLen _metaRange;
     PosLen _waveRange;
+    PosLen _audioCtrlRange;
 
   public:
 
-    TagEventStatsStruct() : _notes(0), _midiCtrls(0), _sysexes(0), _metas(0), _waves(0),
-      _waveRange(false /* use Pos::FRAMES */) {}
-    
+    TagEventStatsStruct();
     // Be sure to use this instead of EventList::add(), to use the statistics feature.
+    // For part midi events.
     void add(const Event& e);
-    
+    // For track audio controller events.
+    void add(unsigned int frame);
+
     //--------------
     // Statistics:
     //--------------
     
-    unsigned int notes() const { return _notes; }
-    unsigned int mctrls() const { return _midiCtrls; }
-    unsigned int sysexes() const { return _sysexes; }
-    unsigned int metas() const { return _metas; }
-    unsigned int waves() const { return _waves; }
+    unsigned int notes() const;
+    unsigned int mctrls() const;
+    unsigned int sysexes() const;
+    unsigned int metas() const;
+    unsigned int waves() const;
+    unsigned int actrls() const;
 
-    PosLen noteRange() const { return  _noteRange; }
-    PosLen midiCtrlRange() const { return _midiCtrlRange; }
-    PosLen sysexRange() const { return _sysexRange; }
-    PosLen metaRange() const { return  _metaRange; }
-    PosLen waveRange() const { return  _waveRange; }
-    
+    PosLen noteRange() const;
+    PosLen midiCtrlRange() const;
+    PosLen sysexRange() const;
+    PosLen metaRange() const;
+    PosLen waveRange() const;
+    PosLen audioCtrlRange() const;
+
     PosLen evrange(const RelevantSelectedEvents_t& types = AllEventsRelevant) const;
 };
 
@@ -87,27 +95,41 @@ class TagEventStatsStruct
 class TagEventListStruct
 {
   private:
+    const Part* _part;
+    AudioAutomationItemTrackMap _aaitm;
+
     EventList _evlist;
     TagEventStatsStruct _stats;
 
   public:
 
-    TagEventListStruct()  {}
-    
-    EventList& evlist() { return _evlist; }
-    const EventList& evlist() const { return _evlist; }
+    TagEventListStruct();
+    TagEventListStruct(const Part* part);
+
+    const Part* part() const;
+    void setPart(const Part* part);
+    const Track* track() const;
+    void setTrack(const Track* track);
+
+    EventList& evlist();
+    const EventList& evlist() const;
+    AudioAutomationItemTrackMap& aaitm();
+    const AudioAutomationItemTrackMap& aaitm() const;
+
     // Be sure to use this instead of EventList::add(), to use the statistics feature.
     // Returns true if successfully added.
+    // For part midi events.
     bool add(const Event& e);
-    
+    // For track audio controller events.
+    bool add(Track* track, CtrlList* ctrlList, unsigned int frame, double value);
+
     //--------------
     // Statistics:
     //--------------
-    const TagEventStatsStruct& stats() const { return _stats; }
+    const TagEventStatsStruct& stats() const;
 };
 
-typedef std::pair<const Part*, TagEventListStruct> TagEventListPair_t;
-typedef std::map<const Part*, TagEventListStruct, std::less<const Part*> > TagEventList_t;
+typedef std::list<TagEventListStruct> TagEventList_t;
 
 class TagEventList : public TagEventList_t
 {
@@ -117,16 +139,19 @@ class TagEventList : public TagEventList_t
     
   public:
     
-    TagEventList() { }
+    TagEventList();
     
     // Adds a part and optionally an event.
     // Returns true if successfully added.
+    // For part midi events.
     bool add(const Part*, const Event& = Event());
-    
+    // For track audio controller events.
+    bool add(Track* track, CtrlList* ctrlList, unsigned int frame, double value);
+
     //--------------
     // Statistics:
     //--------------
-    const TagEventStatsStruct& globalStats() const { return _globalStats; }
+    const TagEventStatsStruct& globalStats() const;
     // Fills tclist with info about found controllers.
     // If findCtl is given it finds that specific controller.
     // Otherwise if findCtl -1 it finds all controllers.
@@ -135,7 +160,6 @@ class TagEventList : public TagEventList_t
 
 typedef TagEventList::const_iterator ciTagEventList;
 typedef TagEventList::iterator iTagEventList;
-typedef std::pair<iTagEventList, bool> TagEventListInsertResultPair_t;
 
 
 //--------------------------------------------------------------
@@ -167,26 +191,14 @@ struct EventTagOptionsStruct
   Pos _p0;
   Pos _p1;
 
-  EventTagOptionsStruct() :
-    _flags(TagDefaults) { }
-    
-  EventTagOptionsStruct(const EventTagOptions_t& flags, Pos p0 = Pos(), Pos p1 = Pos()) :
-    _flags(flags), _p0(p0), _p1(p1) { }
+  EventTagOptionsStruct();
+  EventTagOptionsStruct(const EventTagOptions_t& flags, Pos p0 = Pos(), Pos p1 = Pos());
 
   static EventTagOptionsStruct fromOptions(bool tagAllItems, bool tagAllParts, bool tagRange, Pos p0 = Pos(), Pos p1 = Pos(),
-                        bool tagSelected = true, bool tagMoving = false)
-  {
-    return EventTagOptionsStruct(
-      (tagAllItems ? TagAllItems : TagNoOptions) |
-      (tagAllParts ? TagAllParts : TagNoOptions) |
-      (tagRange    ? TagRange    : TagNoOptions) |
-      (tagSelected ? TagSelected : TagNoOptions) |
-      (tagMoving   ? TagMoving   : TagNoOptions),
-      p0, p1);
-  }
-  void clear() { _flags = TagNoOptions; _p0 = Pos(); _p1 = Pos(); }
-  void appendFlags(const EventTagOptions_t& flags) { _flags |= flags; }
-  void removeFlags(const EventTagOptions_t& flags) { _flags &= ~flags; }
+                        bool tagSelected = true, bool tagMoving = false);
+  void clear();
+  void appendFlags(const EventTagOptions_t& flags);
+  void removeFlags(const EventTagOptions_t& flags);
 };
 
 } // namespace MusECore

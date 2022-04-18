@@ -599,7 +599,8 @@ void VAMGui::loadPresetsPressed()
 
 	if (fn.isEmpty())
 		return;
-    FILE* f = fopen(fn.toLatin1().constData(),"r");
+// 	bool popenFlag=false;
+	FILE* f = fopen(fn.toLatin1().constData(),"r");//fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
 	if (f == 0)
 		return;
 	presets.clear();
@@ -645,7 +646,12 @@ void VAMGui::loadPresetsPressed()
 		}
 	}
 ende:
-    fclose(f);
+// Keep this commented out as per above. It used to do fileOpen long ago.
+// Something in my compiler chain must have changed because now it is complaining about this.
+// 	if (popenFlag)
+// 		pclose(f);
+// 	else
+		fclose(f);
 
 	QString dots ("...");
 	fileName->setText(fn.right(32).insert(0, dots));
@@ -664,6 +670,7 @@ void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 {
     //_showWarning=_showWarning; // prevent of unsused variable warning
 #if 1
+// 	bool popenFlag=false;
   if (fn=="") {
     printf("empty name\n");
     return;
@@ -682,7 +689,12 @@ void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 
 	xml.tag(1, "/muse");
 
-    fclose(f);
+// Keep this commented out as per above. It used to do fileOpen long ago.
+// Something in my compiler chain must have changed because now it is complaining about this.
+// 	if (popenFlag)
+// 		pclose(f);
+// 	else
+		fclose(f);
 #endif
 }
 

@@ -34,6 +34,7 @@
 #include <QPoint>
 #include <QRegion>
 #include <QRect>
+#include <QUuid>
 
 
 // Forward declarations:
@@ -56,20 +57,9 @@ namespace MusEGui {
 
 class Canvas : public View {
       Q_OBJECT
-      QTimer *scrollTimer;
-      
+
       bool doScroll;
       int scrollSpeed;
-      
-      QPoint ev_pos;
-      QPoint ev_global_pos;
-      bool ignore_mouse_move;
-      bool canScrollLeft;
-      bool canScrollRight;
-      bool canScrollUp;
-      bool canScrollDown;
-
-//      CItem *findCurrentItem(const QPoint &cStart);
       
       // Whether we have grabbed the mouse.
       bool _mouseGrabbed;
@@ -107,12 +97,21 @@ class Canvas : public View {
             TOOLS_ID_BASE=10000
             };
 
+      QTimer *scrollTimer;
+      QPoint ev_pos;
+      QPoint ev_global_pos;
+      bool ignore_mouse_move;
+      bool canScrollLeft;
+      bool canScrollRight;
+      bool canScrollUp;
+      bool canScrollDown;
+
       CItemMap items;
       CItemMap moving;
       CItem* newCItem;
       CItem* curItem;
       MusECore::Part* curPart;
-      int curPartId;      
+      QUuid curPartId;
 
       int canvasTools;
       DragMode drag;
@@ -152,7 +151,6 @@ class Canvas : public View {
       virtual void keyRelease(QKeyEvent*);
       virtual bool mousePress(QMouseEvent*) { return true; }
       virtual void mouseMove(QMouseEvent* event) = 0;
-//       virtual void mouseRelease(const QPoint&) {}
       virtual void mouseRelease(QMouseEvent*) {}
       // Resets all mouse operations if detecting missed mouseRelease event (which DOES happen).
       // Returns true if reset was actually done.
@@ -206,18 +204,18 @@ class Canvas : public View {
       virtual void startDrag(CItem*, DragType) = 0;// {}
 
       // selection
-      virtual void deselectAll();
+      virtual void deselectAll(MusECore::Undo* undo = nullptr);
       virtual void selectItem(CItem* e, bool);
 
       virtual void deleteItem(const QPoint&);
 
       // moving
-      void startMoving(const QPoint&, int dir, DragType, bool rasterize = true);
-      void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
+      virtual void startMoving(const QPoint&, int dir, DragType, bool rasterize = true);
+      virtual void moveItems(const QPoint&, int dir = 0, bool rasterize = true);
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true) = 0;
 
       // Returns true if anything was selected.
-      virtual bool selectLasso(bool toggle);
+      virtual bool selectLasso(bool toggle, MusECore::Undo* undo = nullptr);
 
       virtual void itemPressed(const CItem*) {}
       virtual void itemReleased(const CItem*, const QPoint&) {}

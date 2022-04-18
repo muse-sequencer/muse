@@ -72,13 +72,8 @@ enum {
       AUDIO_ADDPLUGIN,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
       AUDIO_SWAP_PLUGINS,
-      AUDIO_CLEAR_CONTROLLER_EVENTS,
       AUDIO_SEEK_PREV_AC_EVENT,
       AUDIO_SEEK_NEXT_AC_EVENT,
-      AUDIO_ERASE_AC_EVENT,
-      AUDIO_ERASE_RANGE_AC_EVENTS,
-      AUDIO_ADD_AC_EVENT,
-      AUDIO_CHANGE_AC_EVENT,
       AUDIO_SET_SEND_METRONOME,
       AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
@@ -306,7 +301,6 @@ class Audio {
       void msgSeekPrevACEvent(AudioTrack*, int);
       void msgSeekNextACEvent(AudioTrack*, int);
       void msgEraseRangeACEvents(AudioTrack* node, int acid, unsigned int frame1, unsigned int frame2);
-      void msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val);
       void msgSetHwCtrlState(MidiPort*, int, int, int);
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
       void msgSetTrackAutomationType(Track*, int);

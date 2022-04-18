@@ -28,6 +28,7 @@
 #include <QString>
 #include <QPixmap>
 #include <QColor>
+#include <QUuid>
 
 #include <vector>
 #include <algorithm>
@@ -58,6 +59,8 @@ struct DrumMap;
 class WorkingDrumMapList;
 class WorkingDrumMapPatchList;
 class LatencyCompensator;
+struct XmlReadStatistics;
+struct XmlWriteStatistics;
 
 typedef std::vector<double> AuxSendValueList;
 typedef std::vector<double>::iterator iAuxSendValue;
@@ -85,8 +88,6 @@ class Track {
          
    private:
       TrackType _type;
-      // Serial number generator.
-      static int _snGen;
       QString _comment;
       PartList _parts;
       QColor m_color;
@@ -110,8 +111,8 @@ class Track {
       bool _nodeTraversed;   // Internal anti circular route traversal flag.
       int _auxRouteCount;    // Number of aux paths feeding this track.
 
-      // Serial number.
-      int _sn;
+      // Track unique identifier.
+      QUuid _uuid;
       QString _name;
       bool _recordFlag;
       bool _recMonitor;       // For midi and audio. Whether to pass the input through to output.
@@ -143,8 +144,6 @@ class Track {
       // Tracks or plugins that request/receive transport info use this.
       TransportSource _transportSource;
 
-      int newSn() { return _snGen++; }
-      
       bool readProperties(Xml& xml, const QString& tag);
       void writeProperties(int level, Xml& xml) const;
 
@@ -167,7 +166,7 @@ class Track {
       virtual ~Track();
       virtual void assign(const Track&, int flags);
 
-      inline int serial() const { return _sn; }
+      inline QUuid uuid() const { return _uuid; }
 
       static const char* _cname[];
       static QIcon *trackTypeIcon(TrackType);
@@ -240,7 +239,7 @@ class Track {
       // Returns true if anything changed.
       bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
       
-      virtual void write(int, Xml&) const = 0;
+      virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const = 0;
 
       virtual Track* clone(int flags) const    = 0;
       // Returns true if any event in any part was opened. Does not operate on the part's clones, if any.
@@ -389,7 +388,6 @@ class Track {
       double peak(int ch) const   { return _peak[ch]; }
       void resetMeter();
 
-      bool readProperty(Xml& xml, const QString& tag);
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
       bool isMidiTrack() const       { return type() == MIDI || type() == DRUM; }
@@ -400,7 +398,7 @@ class Track {
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
-      bool isVisible();
+      bool isVisible() const;
       inline bool isClipped(int ch) const { if(ch >= MusECore::MAX_CHANNELS) return false; return _isClipped[ch]; }
       void resetClipper() { for(int ch = 0; ch < MusECore::MAX_CHANNELS; ++ch) _isClipped[ch] = false; }
       };
@@ -468,8 +466,8 @@ class MidiTrack : public Track {
       // Returns whether the monitor was changed.
       virtual bool setRecordFlag2AndCheckMonitor(bool);
 
-      virtual void read(Xml&);
-      virtual void write(int, Xml&) const;
+      virtual void read(Xml&, XmlReadStatistics* stats = nullptr);
+      virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
 
       virtual int height() const;
       
@@ -614,6 +612,10 @@ class AudioTrack : public Track {
       CtrlListList _controller;   // Holds all controllers including internal, plugin and synth.
       ControlFifo _controlFifo;   // For internal controllers like volume and pan. Plugins/synths have their own.
       CtrlRecList _recEvents;     // recorded automation events
+      // Holds erased controller values, for recoverable dragging and dropping.
+      CtrlListList _erasedController;
+      // Holds controller values not to be erased while being copied, for dragging and dropping in copy mode.
+      CtrlListList _noEraseController;
 
       unsigned long _controlPorts;
       Port* _controls;             // For internal controllers like volume and pan. Plugins/synths have their own.
@@ -669,6 +671,10 @@ class AudioTrack : public Track {
       Fifo fifo;                    // fifo -> _recFile
       bool _processed;
       
+      // Checks for old all green plugin controller colors and changes them
+      //  to the new random color scheme.
+      void fixOldColorScheme();
+
    public:
       AudioTrack(TrackType t, int channels = 2);
       
@@ -710,7 +716,11 @@ class AudioTrack : public Track {
       const CtrlListList* controller() const { return &_controller; }
       // For setting/getting the _controls 'port' values.
       unsigned long parameters() const { return _controlPorts; }
-      
+      CtrlListList* erasedController();
+      const CtrlListList* erasedController() const;
+      CtrlListList* noEraseController();
+      const CtrlListList* noEraseController() const;
+
       void setParam(unsigned long i, double val); 
       double param(unsigned long i) const;
 
@@ -872,8 +882,8 @@ class AudioInput : public AudioTrack {
       //       For input/output tracks we need to disconnect the routes from Jack.
       void assign(const Track&, int flags);
       AudioInput* clone(int flags) const { return new AudioInput(*this, flags); }
-      void read(Xml&);
-      void write(int, Xml&) const;
+      void read(Xml&, XmlReadStatistics* stats = nullptr);
+      void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
       // Register one or all input ports. If idx = -1 it registers all ports.
       // Returns true if ANY of the port(s) were successfully registered.
       bool registerPorts(int idx = -1);
@@ -925,8 +935,8 @@ class AudioOutput : public AudioTrack {
       //       For input/output tracks we need to disconnect the routes from Jack.
       void assign(const Track&, int flags);
       AudioOutput* clone(int flags) const { return new AudioOutput(*this, flags); }
-      void read(Xml&);
-      void write(int, Xml&) const;
+      void read(Xml&, XmlReadStatistics* stats = nullptr);
+      void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
       // Register one or all output ports. If idx = -1 it registers all ports.
       // Returns true if ANY of the port(s) were successfully registered.
       bool registerPorts(int idx = -1);
@@ -957,8 +967,8 @@ class AudioGroup : public AudioTrack {
       AudioGroup(const AudioGroup& t, int flags) : AudioTrack(t, flags) { }
       
       AudioGroup* clone(int flags) const { return new AudioGroup(*this, flags); }
-      virtual void read(Xml&);
-      virtual void write(int, Xml&) const;
+      virtual void read(Xml&, XmlReadStatistics* stats = nullptr);
+      virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
       virtual bool hasAuxSend() const { return true; }
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
@@ -979,8 +989,8 @@ class AudioAux : public AudioTrack {
       
       AudioAux* clone(int flags) const { return new AudioAux(*this, flags); }
       ~AudioAux();
-      virtual void read(Xml&);
-      virtual void write(int, Xml&) const;
+      virtual void read(Xml&, XmlReadStatistics* stats = nullptr);
+      virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
       virtual bool getData(unsigned, int, unsigned, float**);
       virtual void setChannels(int n);
       // Number of routable inputs/outputs for each Route::RouteType.
@@ -1036,8 +1046,8 @@ class WaveTrack : public AudioTrack {
       // Returns true if any event in any part was closed. Does not operate on the part's clones, if any.
       bool closeAllParts();
 
-      virtual void read(Xml&);
-      virtual void write(int, Xml&) const;
+      virtual void read(Xml&, XmlReadStatistics* stats = nullptr);
+      virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
 
       // Called from prefetch thread:
       // If overwrite is true, copies the data. If false, adds the data.
@@ -1151,22 +1161,22 @@ template<class T> class tracklist : public std::vector<Track*> {
                   return nullptr;
             return (*this)[k];
             }
-      T findSerial(int sn) const {
-            if (sn < 0)
+      T findUuid(const QUuid& uuid) const {
+            if (uuid.isNull())
                   return nullptr;
             for (vlist::const_iterator i = cbegin(); i != cend(); ++i) {
-                  if ((*i)->serial() == sn) {
+                  if ((*i)->uuid() == uuid) {
                         return *i;
                         }
                   }
             return nullptr;
             }
-      int indexOfSerial(int sn) const {
-            if (sn < 0)
+      int indexOfUuid(const QUuid& uuid) const {
+            if (uuid.isNull())
                   return -1;
             int n = 0;
             for (vlist::const_iterator i = cbegin(); i != cend(); ++i, ++n) {
-                  if ((*i)->serial() == sn) {
+                  if ((*i)->uuid() == uuid) {
                         return n;
                         }
                   }

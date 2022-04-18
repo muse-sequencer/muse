@@ -49,13 +49,12 @@
 #include "midiedit/drummap.h"
 #include "minstrument.h"
 //#include "latency_compensator.h"
+#include "xml_statistics.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
 namespace MusECore {
-
-int Track::_snGen=0;
 
 unsigned int Track::_soloRefCnt  = 0;
 Track* Track::_tmpSoloChainTrack = 0;
@@ -162,7 +161,7 @@ void removePortCtrlEvents(MidiTrack* t, bool drum_ctls, bool non_drum_ctls)
 //---------------------------------------------------------
 //   isVisible
 //---------------------------------------------------------
-bool Track::isVisible()
+bool Track::isVisible() const
 {
   switch (type())
   {
@@ -239,7 +238,7 @@ void Track::init(int channels)
 Track::Track(Track::TrackType t, int channels)
 {
       _type = t;
-      _sn = newSn();
+      _uuid = QUuid::createUuid();
       init(channels);
 }
 
@@ -248,8 +247,8 @@ Track::Track(const Track& t, int flags)
   _type         = t.type();
 
   // This should be reset for a copy of a track.
-  _sn = newSn();
-  
+  _uuid = QUuid::createUuid();
+
   init(t._channels);
 
   // moved setting the unique name to Song::duplicateTracks()
@@ -1901,8 +1900,12 @@ void MidiTrack::setAutomationType(AutomationType t)
 //   MidiTrack::write
 //---------------------------------------------------------
 
-void MidiTrack::write(int level, Xml& xml) const
+void MidiTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
       {
+      XmlWriteStatistics locStats;
+      if(!stats)
+        stats = &locStats;
+
       const char* tag;
 
       if (type() == MIDI)
@@ -1931,8 +1934,8 @@ void MidiTrack::write(int level, Xml& xml) const
 
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
-            p->second->write(level, xml);
-      
+            p->second->write(level, xml, false, false, stats);
+
       writeOurDrumSettings(level, xml);
       
       xml.etag(level, tag);
@@ -2002,13 +2005,16 @@ void MidiTrack::dumpMap()
 //   MidiTrack::read
 //---------------------------------------------------------
 
-void MidiTrack::read(Xml& xml)
+void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
       {
       unsigned int portmask = 0;
       int chanmask = 0;
       bool portmask_found = false;
       bool chanmask_found = false;
-      
+      XmlReadStatistics locStats;
+      if(!stats)
+        stats = &locStats;
+
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -2028,7 +2034,7 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "compression")
                               compression = xml.parseInt();
                         else if (tag == "part") {
-                              Part* p = Part::readFromXml(xml, this);
+                              Part* p = Part::readFromXml(xml, this, &locStats, false, true);
                               if(p)
                                 parts()->add(p);
                               }

@@ -83,7 +83,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       setMouseTracking(true);
 
       curPart   = (MusECore::MidiPart*)(editor->parts()->begin()->second);
-      curPartId = curPart->sn();
+      curPartId = curPart->uuid();
       }
 
 EventCanvas::~EventCanvas()
@@ -171,22 +171,22 @@ void EventCanvas::updateItems()
 {
   bool curItemNeedsRestore=false;
   MusECore::Event storedEvent;
-  int partSn = 0xDEADBEEF; // to prevent compiler warning; partSn is unused anyway if curItemNeedsRestore==false.
+  QUuid partSn;
   if (curItem)
   {
     curItemNeedsRestore=true;
     storedEvent=curItem->event();
-    partSn=curItem->part()->sn();
+    partSn=curItem->part()->uuid();
   }
   curItem=nullptr;
-  
+
   items.clearDelete();
   start_tick  = INT_MAX;
   end_tick    = 0;
   curPart = nullptr;
   for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
         MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
-        if (part->sn() == curPartId)
+        if (part->uuid() == curPartId)
               curPart = part;
         unsigned stick = part->tick();
         unsigned len = part->lenTick();
@@ -205,21 +205,21 @@ void EventCanvas::updateItems()
               if((int)e.tick() >= (int)len)
                 break;
 #else
-              if(e.tick() > len)   
+              if(e.tick() > len)
                 break;
 #endif
-              
+
               if (e.isNote()) {
                     CItem* temp = addItem(part, e);
-                    
+
                     if(temp)
                       temp->setSelected(e.selected());
-                    
-                    if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+
+                    if (temp && curItemNeedsRestore && e==storedEvent && part->uuid()==partSn)
                     {
                         if (curItem!=nullptr)
                           fprintf(stderr, "THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
-                        
+
                         curItem=temp;
                         }
                     }
@@ -244,7 +244,8 @@ bool EventCanvas::itemSelectionsChanged(MusECore::Undo* operations, bool deselec
       //  and don't bother individually deselecting objects, below.
       if(deselectAll)
       {
-        opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0));
+        // This is a one-time operation (it has no 'undo' section).
+        opsp->push_back(MusECore::UndoOp(MusECore::UndoOp::GlobalSelectAllEvents, false, 0, 0, true));
         changed = true;
       }
       
@@ -368,7 +369,7 @@ void EventCanvas::songChanged(MusECore::SongChangedStruct_t flags)
             part  = (MusECore::MidiPart*)nevent->part();
             if (_setCurPartIfOnlyOneEventIsSelected && n == 1 && curPart != part) {
                   curPart = part;
-                  curPartId = curPart->sn();
+                  curPartId = curPart->uuid();
                   curPartChanged();
                   }
       }

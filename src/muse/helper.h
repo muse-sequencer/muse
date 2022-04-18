@@ -30,6 +30,7 @@
 #include <QRect>
 #include <QLine>
 #include <QValidator>
+#include <QUuid>
 
 #include "type_defs.h"
 
@@ -57,7 +58,7 @@ QString pitch2string(int v);
 int string2pitch(const QString &s);
 QValidator::State validatePitch(const QString &s);
 void dumpMPEvent(const MEvent* ev);
-Part* partFromSerialNumber(int serial);
+Part* partFromSerialNumber(const QUuid& serial);
 bool any_event_selected(const std::set<const Part*>&, bool in_range=false,
                         RelevantSelectedEvents_t relevant = NotesRelevant);
 

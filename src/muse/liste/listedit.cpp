@@ -248,7 +248,7 @@ void ListEdit::songChanged(MusECore::SongChangedStruct_t type)
             liste->clear();
             for (MusECore::iPart p = _pl->begin(); p != _pl->end(); ++p) {
                 MusECore::MidiPart* part = (MusECore::MidiPart*) (p->second);
-                if (part->sn() == curPartId)
+                if (part->uuid() == curPartId)
                     curPart  = part;
 
                 for (MusECore::ciEvent i = part->events().begin(); i != part->events().end(); ++i) {
@@ -291,7 +291,7 @@ void ListEdit::genPartlist()
             MusECore::PartList* pl = it->parts();
             MusECore::iPart ip;
             for (ip = pl->begin(); ip != pl->end(); ++ip) {
-                if (ip->second->sn() == i) {
+                if (ip->second->uuid() == i) {
                     _pl->add(ip->second);
                     break;
                 }
@@ -494,7 +494,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
 
     _pl = pl;
     for (const auto& i : *_pl)
-        _pidSet.insert(i.second->sn());
+        _pidSet.insert(i.second->uuid());
 
     selectedTick=0;
 
@@ -644,17 +644,17 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
     if(pl->empty())
     {
         curPart = nullptr;
-        curPartId = -1;
+        curPartId = QUuid();
     }
     else
     {
         curPart   = (MusECore::MidiPart*)pl->begin()->second;
         if(curPart)
-            curPartId = curPart->sn();
+            curPartId = curPart->uuid();
         else
         {
             curPart = nullptr;
-            curPartId = -1;
+            curPartId = QUuid();
         }
     }
 

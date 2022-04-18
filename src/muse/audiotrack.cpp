@@ -49,6 +49,7 @@
 #include "gconfig.h"
 #include "latency_compensator.h"
 #include "ticksynth.h"
+#include "xml_statistics.h"
 
 namespace MusECore {
 
@@ -603,6 +604,39 @@ AudioTrack::~AudioTrack()
         delete[] _controls;
 
       _controller.clearDelete();
+      _erasedController.clearDelete();
+      _noEraseController.clearDelete();
+}
+
+void AudioTrack::fixOldColorScheme()
+{
+  int numgreenctrls = 0;
+  for(ciCtrlList icl = _controller.cbegin(); icl != _controller.cend(); ++icl)
+  {
+    const CtrlList* cl = icl->second;
+    const int id = cl->id();
+    if(id < AC_PLUGIN_CTL_BASE)
+      continue;
+    const QColor c = cl->color();
+    if(c.red() == 0 && c.green() == 255 && c.blue() == 0)
+      ++numgreenctrls;
+    if(numgreenctrls >= 2)
+      break;
+  }
+
+  if(numgreenctrls >= 2)
+  {
+    for(iCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl)
+    {
+      CtrlList* cl = icl->second;
+      const int id = cl->id();
+      if(id < AC_PLUGIN_CTL_BASE)
+        continue;
+      const QColor c = cl->color();
+      if(c.red() == 0 && c.green() == 255 && c.blue() == 0)
+        cl->initColor(id);
+    }
+  }
 }
 
 //---------------------------------------------------------
@@ -899,7 +933,7 @@ void AudioTrack::seekPrevACEvent(int id)
     if(s != cl->begin())
       --s;
 
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->first, false), false, true, false);
     return;
 }
 
@@ -925,7 +959,7 @@ void AudioTrack::seekNextACEvent(int id)
       --s;
     }
 
-    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->first, false), false, true, false);
     return;
 }
 
@@ -1003,7 +1037,7 @@ void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
   iCtrl ic = cl->find(frame);
   if(ic != cl->end())
     cl->erase(ic);
-  cl->insert(CtrlListInsertPair_t(newframe, CtrlVal(newframe, newval)));
+  cl->insert(CtrlListInsertPair_t(newframe, CtrlVal(newval)));
 }
 
 //---------------------------------------------------------
@@ -2004,57 +2038,63 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             setAutomationType(AutomationType(xml.parseInt()));
       else if (tag == "controller") {
             CtrlList* l = new CtrlList();
-            l->read(xml);
-
-            // Since (until now) muse wrote a 'zero' for plugin controller current value
-            //  in the XML file, we can't use that value, now that plugin automation is added.
-            // We must take the value from the plugin control value.
-            // Otherwise we break all existing .med files with plugins, because the gui
-            //  controls would all be set to zero.
-            // But we will allow for the (unintended, useless) possibility of a controller
-            //  with no matching plugin control.
-            const PluginIBase* p = 0;
-            bool ctlfound = false;
-            unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;
-            int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
-            if(n >= 0 && n < MusECore::PipelineDepth)
-              p = (*_efxPipe)[n];
-            // Support a special block for synth controllers.
-            else if(n == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
+            if(l->read(xml) && l->id() >= 0)
             {
-              const SynthI* synti = static_cast < SynthI* > (this);
-              const SynthIF* sif = synti->sif();
-              if(sif)
-                p = static_cast < const PluginIBase* > (sif);
-            }
+              // Since (until now) muse wrote a 'zero' for plugin controller current value
+              //  in the XML file, we can't use that value, now that plugin automation is added.
+              // We must take the value from the plugin control value.
+              // Otherwise we break all existing .med files with plugins, because the gui
+              //  controls would all be set to zero.
+              // But we will allow for the (unintended, useless) possibility of a controller
+              //  with no matching plugin control.
+              const PluginIBase* p = 0;
+              bool ctlfound = false;
+              unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;
+              int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
+              if(n >= 0 && n < MusECore::PipelineDepth)
+                p = (*_efxPipe)[n];
+              // Support a special block for synth controllers.
+              else if(n == MusECore::MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)
+              {
+                const SynthI* synti = static_cast < SynthI* > (this);
+                const SynthIF* sif = synti->sif();
+                if(sif)
+                  p = static_cast < const PluginIBase* > (sif);
+              }
 
-            if(p && m < p->parameters())
-              ctlfound = true;
+              if(p && m < p->parameters())
+                ctlfound = true;
 
-            iCtrlList icl = _controller.find(l->id());
-            if (icl == _controller.end())
-                  _controller.add(l);
-            else {
-                  CtrlList* d = icl->second;
-                  for (iCtrl i = l->begin(); i != l->end(); ++i)
-                        d->insert(CtrlListInsertPair_t(i->first, i->second));
+              iCtrlList icl = _controller.find(l->id());
+              if (icl == _controller.end())
+                    _controller.add(l);
+              else {
+                    CtrlList* d = icl->second;
+                    for (iCtrl i = l->begin(); i != l->end(); ++i)
+                          d->insert(CtrlListInsertPair_t(i->first, i->second));
 
-                  if(!ctlfound)
-                        d->setCurVal(l->curVal());
-                  d->setColor(l->color());
-                  d->setVisible(l->isVisible());
-                  d->setDefault(l->getDefault());
-                  delete l;
-                  l = d;
+                    if(!ctlfound)
+                          d->setCurVal(l->curVal());
+                    d->setColor(l->color());
+                    d->setVisible(l->isVisible());
+                    d->setDefault(l->getDefault());
+                    delete l;
+                    l = d;
+                    }
+
+                if(ctlfound)
+                  {
+                    l->setCurVal(p->param(m));
+                    l->setValueType(p->ctrlValueType(m));
+                    l->setMode(p->ctrlMode(m));
                   }
-
-              if(ctlfound)
-                {
-                  l->setCurVal(p->param(m));
-                  l->setValueType(p->ctrlValueType(m));
-                  l->setMode(p->ctrlMode(m));
-                }
             }
+            else
+            {
+              delete l;
+            }
+
+          }
       else if (tag == "midiMapper")
             _controller.midiControls()->read(xml);
       else
@@ -2345,7 +2385,7 @@ bool AudioInput::canDominateOutputLatency() const
 //   write
 //---------------------------------------------------------
 
-void AudioInput::write(int level, Xml& xml) const
+void AudioInput::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioInput");
       AudioTrack::writeProperties(level, xml);
@@ -2356,7 +2396,7 @@ void AudioInput::write(int level, Xml& xml) const
 //   read
 //---------------------------------------------------------
 
-void AudioInput::read(Xml& xml)
+void AudioInput::read(Xml& xml, XmlReadStatistics*)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -2373,6 +2413,7 @@ void AudioInput::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "AudioInput") {
+                              fixOldColorScheme();
                               registerPorts();  // allocate jack ports
                               mapRackPluginsToControllers();
                               return;
@@ -2608,7 +2649,7 @@ void AudioOutput::applyOutputLatencyComp(unsigned nframes)
 //   write
 //---------------------------------------------------------
 
-void AudioOutput::write(int level, Xml& xml) const
+void AudioOutput::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioOutput");
       AudioTrack::writeProperties(level, xml);
@@ -2619,7 +2660,7 @@ void AudioOutput::write(int level, Xml& xml) const
 //   read
 //---------------------------------------------------------
 
-void AudioOutput::read(Xml& xml)
+void AudioOutput::read(Xml& xml, XmlReadStatistics*)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -2636,6 +2677,7 @@ void AudioOutput::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "AudioOutput") {
+                              fixOldColorScheme();
                               registerPorts();  // allocate jack ports
                               mapRackPluginsToControllers();
                               return;
@@ -2663,7 +2705,7 @@ RouteCapabilitiesStruct AudioOutput::routeCapabilities() const
 //   write
 //---------------------------------------------------------
 
-void AudioGroup::write(int level, Xml& xml) const
+void AudioGroup::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioGroup");
       AudioTrack::writeProperties(level, xml);
@@ -2674,7 +2716,7 @@ void AudioGroup::write(int level, Xml& xml) const
 //   read
 //---------------------------------------------------------
 
-void AudioGroup::read(Xml& xml)
+void AudioGroup::read(Xml& xml, XmlReadStatistics*)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -2692,6 +2734,7 @@ void AudioGroup::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "AudioGroup")
                         {
+                              fixOldColorScheme();
                               mapRackPluginsToControllers();
                               return;
                         }
@@ -2705,7 +2748,7 @@ void AudioGroup::read(Xml& xml)
 //   write
 //---------------------------------------------------------
 
-void AudioAux::write(int level, Xml& xml) const
+void AudioAux::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioAux");
       AudioTrack::writeProperties(level, xml);
@@ -2825,7 +2868,7 @@ AudioAux::~AudioAux()
 //   read
 //---------------------------------------------------------
 
-void AudioAux::read(Xml& xml)
+void AudioAux::read(Xml& xml, XmlReadStatistics*)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -2845,6 +2888,7 @@ void AudioAux::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "AudioAux")
                         {
+                              fixOldColorScheme();
                               mapRackPluginsToControllers();
                               return;
                         }

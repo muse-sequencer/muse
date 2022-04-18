@@ -168,7 +168,11 @@ struct PendingOperationItem
 
     RemapDrumControllers,
     AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
-    ModifyTempoList,   SetStaticTempo,        SetGlobalTempo, 
+    AddAudioCtrlValList, DeleteAudioCtrlValList, ModifyAudioCtrlValListList,
+    SelectAudioCtrlVal, SetAudioCtrlPasteEraseMode,
+    UpdateAllAudioCtrlGroups, UpdateAudioCtrlListGroups, UpdateAudioCtrlGroups, UpdateAudioCtrlPosGroups,
+
+    ModifyTempoList,   SetStaticTempo,        SetGlobalTempo,
     ModifySigList,
     ModifyKeyList,
 
@@ -196,6 +200,7 @@ struct PendingOperationItem
     MidiPort* _midi_port;
     void* _void_track_list;
     int* _audioSamplesLen;
+    CtrlListList* _src_aud_ctrl_list_list;
   };
   
   union {
@@ -225,6 +230,7 @@ struct PendingOperationItem
     Track* _track;
     MidiCtrlValList* _mcvl;
     CtrlList* _aud_ctrl_list;
+    CtrlVal* _audCtrlValStruct;
     MarkerList* _marker_list;
     TempoList* _tempo_list;  
     MusECore::SigList* _sig_list; 
@@ -271,6 +277,7 @@ struct PendingOperationItem
     MidiCtrlValRemapOperation* _midi_ctrl_val_remap_operation;
     MuseFrame_t _museFrame;
     AudioConverterPluginI* _audio_converter;
+    CtrlList::PasteEraseOptions _audio_ctrl_paste_erase_opts;
   };
   
   union {
@@ -278,6 +285,7 @@ struct PendingOperationItem
     unsigned int _uintB;
     unsigned int _lenVal;
     unsigned int _marker_tick;
+    bool _selected;
     int _to_idx;
     int _address_port;
     int _open_flags;
@@ -460,7 +468,9 @@ struct PendingOperationItem
     
   PendingOperationItem(const iCtrlList& ictl_l, CtrlList* ctrl_l, PendingOperationType type = ModifyAudioCtrlValList)
     { _type = type; _iCtrlList = ictl_l; _aud_ctrl_list = ctrl_l; }
-    
+  PendingOperationItem(CtrlListList* dst, CtrlListList* src, PendingOperationType type = ModifyAudioCtrlValListList)
+    { _type = type; _aud_ctrl_list_list = dst; _src_aud_ctrl_list_list = src; }
+
   PendingOperationItem(MidiCtrlValList* mcvl, Part* part, unsigned int tick, int val, PendingOperationType type = AddMidiCtrlVal)
     { _type = type; _mcvl = mcvl; _part = part; 
         _posLenVal = tick; _intB = val; }
@@ -475,18 +485,36 @@ struct PendingOperationItem
     
   PendingOperationItem(MidiCtrlValList* orig_mcvl, MidiCtrlValList* mcvl, PendingOperationType type = ModifyMidiCtrlValList)
     { _type = type; _orig_mcvl = orig_mcvl; _mcvl = mcvl; }
+
+
+  PendingOperationItem(CtrlListList* cll, CtrlList* cl, PendingOperationType type = AddAudioCtrlValList)
+    { _type = type; _aud_ctrl_list_list = cll; _aud_ctrl_list = cl; }
+  PendingOperationItem(CtrlListList* cll, const iCtrlList& icll, PendingOperationType type = DeleteAudioCtrlValList)
+    { _type = type; _aud_ctrl_list_list = cll; _iCtrlList = icll; }
+
+  PendingOperationItem(CtrlList* ctrl_l, unsigned int frame, double ctrl_val, bool selected /*= false*/, PendingOperationType type = AddAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _posLenVal = frame; _ctl_dbl_val = ctrl_val; _selected = selected; }
     
-  PendingOperationItem(CtrlList* ctrl_l, unsigned int frame, double ctrl_val, PendingOperationType type = AddAudioCtrlVal)
-    { _type = type; _aud_ctrl_list = ctrl_l; _posLenVal = frame; _ctl_dbl_val = ctrl_val; }
-    
-  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, PendingOperationType type = DeleteAudioCtrlVal)
+  // Type is DeleteAudioCtrlVal or UpdateAudioCtrlPosGroups.
+  PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, PendingOperationType type)
     { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; }
     
   // NOTE: ctrl_l is supplied in case the operation needs to be merged, or transformed into an AddAudioCtrlVal.
   PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, unsigned int new_frame,
                        double new_ctrl_val, PendingOperationType type = ModifyAudioCtrlVal)
     { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; _posLenVal = new_frame; _ctl_dbl_val = new_ctrl_val; }
-    
+  PendingOperationItem(CtrlVal* ctrl_v, bool selected /*= false*/, PendingOperationType type = SelectAudioCtrlVal)
+    { _type = type; _audCtrlValStruct = ctrl_v; _selected = selected; }
+  PendingOperationItem(CtrlList::PasteEraseOptions opts, PendingOperationType type = SetAudioCtrlPasteEraseMode)
+    { _type = type; _audio_ctrl_paste_erase_opts = opts; }
+  PendingOperationItem(CtrlListList* cll, PendingOperationType type = UpdateAudioCtrlListGroups)
+    { _type = type; _aud_ctrl_list_list = cll; }
+  PendingOperationItem(CtrlList* cl, PendingOperationType type = UpdateAudioCtrlGroups)
+    { _type = type; _aud_ctrl_list = cl; }
+  // Type is SetAudioCtrlMoveMode (or other future simple boolean operations).
+  PendingOperationItem(int valA, int valB, int valC, PendingOperationType type)
+    { _type = type; _intA = valA; _intB = valB; _intC = valC;}
+
   
   // Takes ownership of the original list so it can be deleted in the non-RT stage.
   PendingOperationItem(TempoList* orig_tempo_l, TempoList* new_tempo_l, PendingOperationType type = ModifyTempoList)
@@ -535,7 +563,7 @@ struct PendingOperationItem
   PendingOperationItem(bool* bool_pointer, bool v, PendingOperationType type)
     { _type = type; _bool_pointer = bool_pointer; _boolA = v; }
 
-  PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers.
+  PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers, UpdateAllAudioCtrlGroups.
     { _type = type; }
 
   // Takes ownership of the original list so it can be deleted in the non-RT stage.

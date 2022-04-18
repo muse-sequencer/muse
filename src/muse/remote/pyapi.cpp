@@ -27,6 +27,7 @@
 
 #include <QApplication>
 #include <QEvent>
+#include <QUuid>
 
 #include "pyapi.h"
 #include "globaldefs.h"
@@ -172,7 +173,7 @@ PyObject* getTrackNames(PyObject*, PyObject*)
 //------------------------------------------------------------
 // Find part by serial nr
 //------------------------------------------------------------
-Part* findPartBySerial(int sn)
+Part* findPartBySerial(const QUuid& uuid)
 {
       TrackList* tracks = MusEGlobal::song->tracks();
       for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
@@ -180,7 +181,7 @@ Part* findPartBySerial(int sn)
             PartList* parts = track->parts();
             for (ciPart p = parts->begin(); p != parts->end(); p++) {
                   Part* part = p->second;
-                  if (part->sn() == sn)
+                  if (part->uuid() == uuid)
                         return part;
                   }
             }
@@ -212,11 +213,12 @@ PyObject* getParts(PyObject*, PyObject* args)
                   PyObject* pypart = PyDict_New();
                   int tick = mpart->tick();
                   int lentick = mpart->lenTick();
-                  int serialnr = mpart->sn();
+                  const QUuid serialnr = mpart->uuid();
                   PyObject* pstrtick = Py_BuildValue("s","tick");
                   PyObject* pitick = Py_BuildValue("i", tick);
                   PyObject* pstrid = Py_BuildValue("s","id");
-                  PyObject* pstrserial = Py_BuildValue("i", serialnr);
+//                   PyObject* pstrserial = Py_BuildValue("s", serialnr.toByteArray().constData());
+                  PyObject* pstrserial = Py_BuildValue("s", serialnr.toString().toLatin1().constData());
                   PyObject* pstrlen = Py_BuildValue("s","len");
                   PyObject* pstrtick2 = Py_BuildValue("i", lentick);
 
@@ -301,11 +303,17 @@ PyObject* getParts(PyObject*, PyObject* args)
 // parsePythonPart
 //  get part id/serialno from python part structure
 //------------------------------------------------------------
-int getPythonPartId(PyObject* part)
+QUuid getPythonPartId(PyObject* part)
 {
       PyObject* pyid = PyDict_GetItemString(part, "id");
-      int id = PyLong_AsLong(pyid);
-      return id;
+// For Python 3.3 and above:
+#if (PY_MAJOR_VERSION >= 4) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 3)
+            const char* bytes = PyUnicode_AsUTF8(pyid);
+#else
+            PyObject* p_bytes = PyUnicode_AsUTF8String(pyid);
+            const char* bytes = PyBytes_AsString(p_bytes);
+#endif
+      return QUuid(bytes);
 }
 
 //------------------------------------------------------------
@@ -427,7 +435,7 @@ PyObject* createPart(PyObject*, PyObject* args)
 //------------------------------------------------------------
 PyObject* modifyPart(PyObject*, PyObject* part)
 {
-      int id = getPythonPartId(part);
+      const QUuid id = getPythonPartId(part);
 
       Part* opart = nullptr;
       // Verify a part with that id actually exists, then get it
@@ -435,7 +443,7 @@ PyObject* modifyPart(PyObject*, PyObject* part)
       for (ciTrack t = tracks->begin(); t != tracks->end(); ++t) {
             Track* track = *t;
             for (ciPart p = track->parts()->begin(); p != track->parts()->end(); p++) {
-                  if (p->second->sn() == id) {
+                  if (p->second->uuid() == id) {
                         opart = p->second;
                         break;
                         }
@@ -452,11 +460,11 @@ PyObject* modifyPart(PyObject*, PyObject* part)
       MidiPart* npart = new MidiPart((MidiTrack*)opart->track());
       npart->setTick(opart->tick());
       npart->setLenTick(opart->lenTick());
-      npart->setSn(opart->sn());
-       
+      npart->setUuid(opart->uuid());
+
       for (ciEvent e = opart->events().begin(); e != opart->events().end(); e++) {
             Event& event = (Event &)(e->second);
-            if (event.type() == Note || event.type() == Controller) 
+            if (event.type() == Note || event.type() == Controller)
                   continue;
 
             npart->addEvent(event);
@@ -480,11 +488,12 @@ PyObject* modifyPart(PyObject*, PyObject* part)
 //------------------------------------------------------------
 PyObject* deletePart(PyObject*, PyObject* args)
 {
-      int id;
-      if (!PyArg_ParseTuple(args, "i", &id)) {
+      const char* bytes;
+      if (!PyArg_ParseTuple(args, "s", &bytes)) {
             Py_RETURN_NONE;
             }
 
+      const QUuid id(bytes);
       Part* part = findPartBySerial(id);
       if (part == nullptr) {
             Py_RETURN_NONE;

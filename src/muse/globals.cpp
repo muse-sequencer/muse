@@ -357,9 +357,9 @@ QString defaultStyle = "Fusion";
 //   convertFrame4ProjectSampleRate
 //---------------------------------------------------------
 
-unsigned convertFrame4ProjectSampleRate(unsigned frame)
+unsigned convertFrame4ProjectSampleRate(unsigned frame, unsigned frame_sample_rate)
 {
-  return double(frame) * double(MusEGlobal::sampleRate) / double(MusEGlobal::projectSampleRate);
+  return double(frame) * double(frame_sample_rate) / double(MusEGlobal::projectSampleRate);
 }
 
 //---------------------------------------------------------
