@@ -1,5 +1,6 @@
 18.04.2022
     - Fix issue 1022: Allow even more zoom out in piano roll. (StaffanMelin)
+    - Further to 17.04.2022: Added audio automation horizontal snap-to-grid. (Tim)
 17.04.2022
     * NEW Complete audio automation graphs redesign: (Tim)
     - Multiple graph points can now be selected. Lasso works.

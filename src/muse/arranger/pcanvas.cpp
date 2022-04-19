@@ -143,6 +143,7 @@ void AutomationObject::clear()
   currentTrack = nullptr;
   breakUndoCombo = false;
   currentFrame = 0;
+  currentWorkingFrame = 0;
   currentVal = 0;
   controllerState = doNothing;
 }
@@ -690,7 +691,7 @@ void PartCanvas::updateAudioAutomation()
 
         // If we were moving, check that the track, cl, and frame are still found.
         if(!itemFound && isdrag && automation.currentCtrlValid &&
-           track == automation.currentTrack && cl == automation.currentCtrlList && ic->first == automation.currentFrame)
+           track == automation.currentTrack && cl == automation.currentCtrlList && ic->first == automation.currentWorkingFrame)
           itemFound = true;
 
         automation.currentCtrlFrameList.addSelected(
@@ -709,6 +710,7 @@ void PartCanvas::updateAudioAutomation()
     automation.currentTrack = nullptr;
     automation.currentCtrlList = nullptr;
     automation.currentFrame = 0;
+    automation.currentWorkingFrame = 0;
     automation.currentVal = 0;
     // Only do this in Automation tool mode, since the Canvas might legitimately
     //  be in an appropriate drag or cursor mode.
@@ -1518,7 +1520,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                         if(automation.currentCtrlList && automation.currentCtrlValid)
                         {
                           // We need to find the controller item.
-                          MusECore::iCtrl ic = automation.currentCtrlList->find(automation.currentFrame);
+                          MusECore::iCtrl ic = automation.currentCtrlList->find(automation.currentWorkingFrame);
                           if(ic != automation.currentCtrlList->end())
                           {
                             // Alt alone is usually reserved for moving a window in X11. Ignore shift + alt.
@@ -1589,7 +1591,7 @@ void PartCanvas::mouseRelease(QMouseEvent* event)
                 if(automation.currentCtrlList && automation.currentCtrlValid)
                 {
                   // We need to find the controller item.
-                  MusECore::iCtrl ic = automation.currentCtrlList->find(automation.currentFrame);
+                  MusECore::iCtrl ic = automation.currentCtrlList->find(automation.currentWorkingFrame);
                   if(ic != automation.currentCtrlList->end())
                   {
                     const bool selected = ic->second.selected();
@@ -1597,7 +1599,7 @@ void PartCanvas::mouseRelease(QMouseEvent* event)
                     {
                       // Select or deselect only the clicked item.
                       operations.push_back(UndoOp(UndoOp::SelectAudioCtrlVal,
-                        automation.currentCtrlList, automation.currentFrame,
+                        automation.currentCtrlList, automation.currentWorkingFrame,
                         selected, !(ctrlkey && selected), !MusEGlobal::config.selectionsUndoable));
                     }
                   }
@@ -1680,7 +1682,7 @@ void PartCanvas::mouseMove(QMouseEvent* event)
                         if(automation.currentCtrlList && automation.currentCtrlValid)
                         {
                           // We need to find the controller item.
-                          MusECore::iCtrl ic = automation.currentCtrlList->find(automation.currentFrame);
+                          MusECore::iCtrl ic = automation.currentCtrlList->find(automation.currentWorkingFrame);
                           if(ic != automation.currentCtrlList->end())
                           {
                             const bool selected = ic->second.selected();
@@ -1689,7 +1691,7 @@ void PartCanvas::mouseMove(QMouseEvent* event)
                               if (drag == DRAG_MOVE)
                                 unselectAllAutomation(operations);
                               operations.push_back(UndoOp(UndoOp::SelectAudioCtrlVal,
-                                automation.currentCtrlList, automation.currentFrame,
+                                automation.currentCtrlList, automation.currentWorkingFrame,
                                 selected, true, !MusEGlobal::config.selectionsUndoable));
                             }
                           }
@@ -5640,7 +5642,7 @@ bool PartCanvas::drawAutomationPoint(
     automation.currentTrack == t &&
     automation.currentCtrlValid &&
     automation.currentCtrlList == cl &&
-    automation.currentFrame == currentFrame;
+    automation.currentWorkingFrame == currentFrame;
 
   // Note that QRect::bottom() is y() + height() - 1.
   const int bottom = rr.bottom() - _automationBottomMargin;
@@ -5684,7 +5686,7 @@ bool PartCanvas::fillAutomationPoint(
     automation.currentTrack == t &&
     automation.currentCtrlValid &&
     automation.currentCtrlList == cl &&
-    automation.currentFrame == currentFrame;
+    automation.currentWorkingFrame == currentFrame;
 
   // Note that QRect::bottom() is y() + height() - 1.
   const int bottom = rr.bottom() - _automationBottomMargin;
@@ -5760,7 +5762,7 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
           y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
 
         ypixel = bottom - rmapy_f(y) * height;
-        xpixel = mapx(MusEGlobal::tempomap.frame2tick(automation.currentFrame));
+        xpixel = mapx(MusEGlobal::tempomap.frame2tick(automation.currentWorkingFrame));
 
         if(xpixel + 20 <= rr.right() && ypixel <= bottom)
         {
@@ -5970,7 +5972,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         automation.controllerState = doNothing;
         automation.currentCtrlList = closest_point_cl;
         automation.currentTrack = t;
-        automation.currentFrame = closest_point_frame;
+        automation.currentFrame = automation.currentWorkingFrame = closest_point_frame;
         // Store the value.
         automation.currentVal = closest_point_value;
         // Store the text.
@@ -6035,6 +6037,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         automation.currentCtrlList = closest_line_cl;
         automation.currentTrack = t;
         automation.currentFrame = 0;
+        automation.currentWorkingFrame = 0;
         automation.currentVal = 0;
         setCursor();
 
@@ -6064,6 +6067,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
   automation.currentCtrlList = nullptr;
   automation.currentTrack = nullptr;
   automation.currentFrame = 0;
+  automation.currentWorkingFrame = 0;
   automation.currentVal = 0;
 #if 0
   // Be sure to erase (refill) the old rectangles.
@@ -6269,7 +6273,7 @@ bool PartCanvas::newAutomationVertex(QPoint pos, MusECore::Undo& undo, bool snap
   automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(displayCvVal, 0, 'g', 3);
 
   // Now that we have a track, cl, and frame for a new vertex, set the automation object mode to moving.
-  automation.currentFrame = frame;
+  automation.currentFrame = automation.currentWorkingFrame = frame;
   automation.currentVal = cvval;
   automation.currentCtrlValid = true;
   automation.breakUndoCombo = true;
@@ -6390,6 +6394,22 @@ void PartCanvas::moveItems(const QPoint& inPos, int dir, bool rasterize)
   if(dir == 0 || dir == 2)
     deltaY = inPos.y() - start.y();
 
+  // If we want to rasterize and we're in automation tool mode and there's a current
+  //  point being dragged, use it as the reference by which to snap to the grid.
+  // Otherwise the only other thing left to do is use the first item
+  //  as the reference, done below.
+  if(rasterize && _tool == AutomationTool && automation.currentCtrlValid)
+  {
+    const unsigned int tck = MusEGlobal::tempomap.frame2tick(automation.currentFrame);
+    unsigned int newTck = (deltaX < 0 && (unsigned int)-deltaX > tck) ? 0 : tck + deltaX;
+    const unsigned int newTckSnap = MusEGlobal::sigmap.raster(newTck, *_raster);
+    if(newTckSnap != newTck)
+    {
+      const int snapDiff = newTckSnap - newTck;
+      deltaX += snapDiff;
+    }
+  }
+
   // If we are NOT in AutomationTool mode, limit the movement of audio
   //  automation vertices that are also moving, to the horizontal direction.
   const double curTrackDeltaYNormalized =
@@ -6409,7 +6429,7 @@ void PartCanvas::moveItems(const QPoint& inPos, int dir, bool rasterize)
       {
         MusECore::AudioAutomationItem& aai = iail->second;
         const unsigned int oldFrame = iail->first;
-        const int oldTick = MusEGlobal::tempomap.frame2tick(oldFrame);
+        const unsigned int oldTick = MusEGlobal::tempomap.frame2tick(oldFrame);
 
         // At the first item, check if the movement is out of bounds
         //  and adjust the deltaX accordingly this once so that all the next
@@ -6419,20 +6439,33 @@ void PartCanvas::moveItems(const QPoint& inPos, int dir, bool rasterize)
         //  cause an item's working frame to be BEFORE a later item's working frame
         //  which causes malaise because the drawing tries to draw backwards and
         //  the end movement routines can freeze etc.
-        if(-adjDeltaX > oldTick && iail == ail.begin())
+        if(iail == ail.begin() && adjDeltaX < 0 && (unsigned int)-adjDeltaX > oldTick)
           adjDeltaX += -adjDeltaX - oldTick;
 
-        const int newTick = oldTick + adjDeltaX;
+        unsigned int newTick = oldTick + adjDeltaX;
+        // If we want to rasterize, and we're in automation tool mode but there is no current point being
+        //  dragged OR we're not in automation tool mode, not much choice but to just use the first item
+        //  as the reference by which to snap to the grid.
+        if(rasterize && (_tool != AutomationTool || !automation.currentCtrlValid) && iail == ail.begin())
+        {
+          const unsigned int newTickSnap = MusEGlobal::sigmap.raster(newTick, *_raster);
+          if(newTickSnap != newTick)
+          {
+            const int snapDiff = newTickSnap - newTick;
+            adjDeltaX += snapDiff;
+            newTick = newTickSnap;
+          }
+        }
+
         const int deltaFrame = MusEGlobal::tempomap.deltaTick2frame(oldTick, newTick);
-        unsigned int newFrame = oldFrame + deltaFrame;
-        if((int)newFrame < 0)
-          newFrame = 0;
+        const unsigned int newFrame =
+          (deltaFrame < 0 && ((unsigned int)-deltaFrame) > oldFrame) ? 0 : oldFrame + deltaFrame;
 
         const bool isCurrent =
           automation.currentCtrlValid &&
           automation.currentTrack == track &&
           automation.currentCtrlList == cl &&
-          automation.currentFrame == aai._wrkFrame;
+          automation.currentWorkingFrame == aai._wrkFrame;
 
         {
           if(deltaY != 0)
@@ -6477,7 +6510,7 @@ void PartCanvas::moveItems(const QPoint& inPos, int dir, bool rasterize)
             changed = true;
             aai._wrkFrame = newFrame;
             if(isCurrent)
-              automation.currentFrame = aai._wrkFrame;
+              automation.currentWorkingFrame = aai._wrkFrame;
           }
         }
       }

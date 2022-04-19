@@ -92,9 +92,12 @@ enum ControllerVals { doNothing, addNewController };
 struct AutomationObject {
   // List of controller items that are SELECTED only.
   MusECore::AudioAutomationItemTrackMap currentCtrlFrameList;
+  // The original frame of the current point.
   unsigned int currentFrame;
+  // The working frame of the current point, which changes during moving.
+  unsigned int currentWorkingFrame;
   double currentVal;
-  // Whether the currentFrame and currentVal are valid.
+  // Whether the currentFrame, currentWorkingFrame and currentVal are valid.
   bool currentCtrlValid;
   // Current controller list. May be null.
   MusECore::CtrlList *currentCtrlList;
