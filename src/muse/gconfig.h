@@ -392,6 +392,7 @@ struct GlobalConfigValues {
 //       drumTrackPreference_t drumTrackPreference;
       bool smartFocus;
       int trackHeight;
+      int trackHeightAlternate;
       bool borderlessMouse;
       bool autoSave;
       bool scrollableSubMenus;

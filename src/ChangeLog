@@ -1,3 +1,8 @@
+26.04.2022
+    - Added shortcut (meta+h) for toggling track height. If any track is larger 
+      than minimum, the first press will minimize all tracks, second press will
+      expand all tracks to the alternate size, which is now settable in the 
+      configuration (rj)
 18.04.2022
     - Fix issue 1022: Allow even more zoom out in piano roll. (StaffanMelin)
     - Further to 17.04.2022: Added audio automation horizontal snap-to-grid. (Tim)

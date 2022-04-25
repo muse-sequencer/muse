@@ -1245,8 +1245,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>565</width>
-            <height>553</height>
+            <width>571</width>
+            <height>548</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1743,10 +1743,10 @@ Certain operations will also force them to be resent,
       <attribute name="title">
        <string>GUI</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_21">
-       <item>
-        <layout class="QGridLayout" name="gridLayout5">
-         <item row="0" column="0">
+      <layout class="QGridLayout" name="gridLayout5">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
           <widget class="QLabel" name="TextLabel1">
            <property name="text">
             <string>GUI refresh rate</string>
@@ -1756,7 +1756,7 @@ Certain operations will also force them to be resent,
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item>
           <widget class="QSpinBox" name="guiRefreshSelect">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -1778,14 +1778,18 @@ Certain operations will also force them to be resent,
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
           <widget class="QLabel" name="label_7">
            <property name="text">
             <string>Track height</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item>
           <widget class="QSpinBox" name="trackHeight">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -1807,179 +1811,204 @@ Certain operations will also force them to be resent,
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_11">
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_8">
            <property name="text">
-            <string>LV2 UI open behavior</string>
+            <string>Alternate Track height</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="lv2UiBehaviorComboBox">
+         <item>
+          <widget class="QSpinBox" name="trackHeightAlternate">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <item>
-            <property name="text">
-             <string>Use first available</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Ask once</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Ask always</string>
-            </property>
-           </item>
+           <property name="suffix">
+            <string> px</string>
+           </property>
+           <property name="minimum">
+            <number>20</number>
+           </property>
+           <property name="maximum">
+            <number>2000</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
           </widget>
          </item>
         </layout>
        </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Maximum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>17</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxOptions">
-         <property name="title">
-          <string>Options</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_23">
-          <property name="spacing">
-           <number>9</number>
-          </property>
-          <item>
-           <widget class="QCheckBox" name="showStatusBarCheckBox">
-            <property name="text">
-             <string>Show status bar</string>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_21">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>LV2 UI open behavior</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="lv2UiBehaviorComboBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <item>
+              <property name="text">
+               <string>Use first available</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ask once</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ask always</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBoxOptions">
+           <property name="title">
+            <string>Options</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_23">
+            <property name="spacing">
+             <number>9</number>
             </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="projectSaveCheckBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Use project save dialog</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="moveArmedCheckBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Move single armed track with selection</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="monitorOnRecordCheckBox">
-            <property name="toolTip">
-             <string>Whether record-arming a track 
+            <item>
+             <widget class="QCheckBox" name="showStatusBarCheckBox">
+              <property name="text">
+               <string>Show status bar</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="projectSaveCheckBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Use project save dialog</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="moveArmedCheckBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Move single armed track with selection</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="monitorOnRecordCheckBox">
+              <property name="toolTip">
+               <string>Whether record-arming a track 
  automatically activates monitoring.</string>
-            </property>
-            <property name="text">
-             <string>Monitor on record-arm automatically</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="preferKnobsVsSlidersCheckBox">
-            <property name="toolTip">
-             <string>Whether to show knobs or sliders in certain places, for example mixer strips</string>
-            </property>
-            <property name="text">
-             <string>Prefer knobs instead of sliders</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="showControlValuesCheckBox">
-            <property name="toolTip">
-             <string>Whether to show knob and slider values in certain places, for example mixer strips.
+              </property>
+              <property name="text">
+               <string>Monitor on record-arm automatically</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="preferKnobsVsSlidersCheckBox">
+              <property name="toolTip">
+               <string>Whether to show knobs or sliders in certain places, for example mixer strips</string>
+              </property>
+              <property name="text">
+               <string>Prefer knobs instead of sliders</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="showControlValuesCheckBox">
+              <property name="toolTip">
+               <string>Whether to show knob and slider values in certain places, for example mixer strips.
 Turn off to reduce clutter.</string>
-            </property>
-            <property name="text">
-             <string>Show knob and slider values</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="preferMidiVolumeDbCheckBox">
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="text">
-             <string>Prefer midi volume as decibels instead of 0-127</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="showNoteNamesCheckBox">
-            <property name="text">
-             <string>Show note names on notes in pianoroll</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="showNoteTooltipsCheckBox">
-            <property name="text">
-             <string>Show note and control value tooltips in midi editors</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="showTimeScaleBeatNumbersCheckBox">
-            <property name="text">
-             <string>Show beat numbers in time scale</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
+              </property>
+              <property name="text">
+               <string>Show knob and slider values</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="preferMidiVolumeDbCheckBox">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="text">
+               <string>Prefer midi volume as decibels instead of 0-127</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="showNoteNamesCheckBox">
+              <property name="text">
+               <string>Show note names on notes in pianoroll</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="showNoteTooltipsCheckBox">
+              <property name="text">
+               <string>Show note and control value tooltips in midi editors</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="showTimeScaleBeatNumbersCheckBox">
+              <property name="text">
+               <string>Show beat numbers in time scale</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

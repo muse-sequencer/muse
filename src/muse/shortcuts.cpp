@@ -220,7 +220,7 @@ void initShortCuts()
 
       defShrt(SHRT_MUTE_CURRENT_TRACKS,   Qt::META + Qt::Key_M, QT_TRANSLATE_NOOP("shortcuts", "Mute all currently selected tracks"), ARRANG_SHRT, "mute_curren_tracks");
       defShrt(SHRT_SOLO_CURRENT_TRACKS,   Qt::META + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Solo all currently selected tracks"), ARRANG_SHRT, "solo_curren_tracks");
-
+      defShrt(SHRT_TOGGLE_TRACK_HEIGHTS,   Qt::META + Qt::Key_H, QT_TRANSLATE_NOOP("shortcuts", "Toggle track height in arranger"), ARRANG_SHRT, "toggle_track_height");
       //-----------------------------------------------------------
 
       defShrt(SHRT_TRANSPOSE,       0, QT_TRANSLATE_NOOP("shortcuts", "Midi: Transpose"), ARRANG_SHRT + PROLL_SHRT + SCORE_SHRT, "midi_transpose");

@@ -246,6 +246,7 @@ void GlobalSettingsConfig::updateSettings()
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
 
       trackHeight->setValue(MusEGlobal::config.trackHeight);
+      trackHeightAlternate->setValue(MusEGlobal::config.trackHeightAlternate);
 
       lv2UiBehaviorComboBox->setCurrentIndex(static_cast<int>(MusEGlobal::config.lv2UiBehavior));
 
@@ -372,6 +373,7 @@ void GlobalSettingsConfig::apply()
         MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
       
       MusEGlobal::config.trackHeight = trackHeight->value();
+      MusEGlobal::config.trackHeightAlternate = trackHeightAlternate->value();
 
       MusEGlobal::config.lv2UiBehavior = static_cast<MusEGlobal::CONF_LV2_UI_BEHAVIOR>(lv2UiBehaviorComboBox->currentIndex());
 

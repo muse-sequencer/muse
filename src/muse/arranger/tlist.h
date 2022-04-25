@@ -126,7 +126,6 @@ class TList : public QWidget {
       void showMidiClassPopupMenu(MusECore::Track*, int x, int y);
       void showAudioOutPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
-      void adjustScrollbar();
       void paint(const QRect& r);
       void redraw(const QRect& r);
       MusECore::Track* y2Track(int) const;
@@ -162,7 +161,7 @@ class TList : public QWidget {
    signals:
       void keyPressExt(QKeyEvent*);
       void redirectWheelEvent(QWheelEvent*);
-      void verticalScrollSetYpos(int ypos);
+      void verticalScrollSetYpos(unsigned ypos);
 
    public slots:
       void tracklistChanged();
@@ -191,6 +190,9 @@ class TList : public QWidget {
       QColor curSelBorderColor() const { return _curSelBorderColor; }
       void setCurSelBorderColor(const QColor c) { _curSelBorderColor = c; }
       void moveSelectedTracks(bool up, bool full);
+      void scrollToTrack(MusECore::Track* track);
+      void adjustScrollbar();
+
       };
 
 } // namespace MusEGui

@@ -534,7 +534,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
       connect(time,    SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
-      connect(list, SIGNAL(verticalScrollSetYpos(int)), vscroll, SLOT(setValue(int)));
+      connect(list, SIGNAL(verticalScrollSetYpos(unsigned)), this, SLOT(verticalScrollSetYpos(unsigned)));
 
       connect(canvas, SIGNAL(tracklistChanged()), list, SLOT(tracklistChanged()));
       connect(canvas, SIGNAL(dclickPart(MusECore::Track*)), SIGNAL(editPart(MusECore::Track*)));
@@ -1404,6 +1404,8 @@ void Arranger::keyPressEvent(QKeyEvent* event)
         key += Qt::ALT;
   if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
         key+= Qt::CTRL;
+  if (((QInputEvent*)event)->modifiers() & Qt::MetaModifier)
+        key+= Qt::META;
 
   RasterizerModel::RasterPick rast_pick = RasterizerModel::NoPick;
   const int cur_rast = rasterVal();
@@ -1411,13 +1413,17 @@ void Arranger::keyPressEvent(QKeyEvent* event)
   if (key == shortcuts[SHRT_ZOOM_IN].key) {
         horizontalZoom(true, QCursor::pos());
         return;
-        }
+  }
   else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
         horizontalZoom(false, QCursor::pos());
         return;
-        }
+  }
   else if (key == shortcuts[SHRT_HIDE_MIXER_STRIP].key) {
       showTrackInfo(!showTrackinfoFlag);
+      return;
+  }
+  else if (key == shortcuts[SHRT_TOGGLE_TRACK_HEIGHTS].key) {
+      toggleTrackHeights();
       return;
   }
   // QUANTIZE shortcuts from midi editors is reused for SNAP in Arranger
@@ -1535,5 +1541,69 @@ void Arranger::setupHZoomRange()
   const int min = (_minXMag * MusEGlobal::config.division) / 384;
   hscroll->setScaleRange(min, _maxXMag);
 }
+
+void Arranger::toggleTrackHeights()
+{
+    const int defaultTrackHeight = MusEGlobal::config.trackHeight;
+    const int alternateTrackHeight = MusEGlobal::config.trackHeightAlternate;
+
+    // check if tracks have different height
+    int height = MusEGlobal::song->tracks()->front()->height();
+    bool differentHeight = false;
+    MusECore::Track* selTrack = nullptr;
+    for (auto track : *MusEGlobal::song->tracks())
+    {
+        if (height != track->height())
+        {
+            differentHeight = true;
+        }
+
+        if (track->selected())
+        {
+            selTrack = track; // if multiple tracks are selected we simply keep the last one
+        }
+    }
+    if (differentHeight)
+    {
+        for (auto track : *MusEGlobal::song->tracks())
+        {
+            track->setHeight(defaultTrackHeight);
+        }
+    }
+    else
+    {
+        if (height == defaultTrackHeight)
+        {
+            for (auto track : *MusEGlobal::song->tracks())
+            {
+                track->setHeight(alternateTrackHeight);
+            }
+        }
+        else
+        {
+            for (auto track : *MusEGlobal::song->tracks())
+            {
+                track->setHeight(defaultTrackHeight);
+            }
+        }
+    }
+
+    list->adjustScrollbar();
+    updateTracklist();
+    list->update();
+    MusEGlobal::song->update(SC_TRACK_RESIZED);
+
+    if(selTrack)
+    {
+        // force update Ypos before scrolling
+        int newYpos = selTrack->y() - list->height() - 21;
+        if (newYpos < 0)
+            newYpos = 0;
+        list->setYPos(newYpos);
+        list->scrollToTrack(selTrack);
+    }
+
+}
+
 
 } // namespace MusEGui

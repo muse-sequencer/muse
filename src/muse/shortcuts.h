@@ -258,6 +258,8 @@ enum {
     SHRT_MUTE_CURRENT_TRACKS,
     SHRT_SOLO_CURRENT_TRACKS,
 
+    SHRT_TOGGLE_TRACK_HEIGHTS,
+
     //To be in arranger, pianoroll & drumeditor. p4.0.10 now globally handled, too.
     SHRT_SELECT_ALL, //Ctrl+A
     SHRT_SELECT_NONE, //Ctrl+Shift+A

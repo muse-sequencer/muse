@@ -1587,20 +1587,13 @@ void TList::moveSelection(int n)
                     break;
                 }
             }
+
             if(selTrack)
             {
                 (*s)->setSelected(false);
                 selTrack->setSelected(true);
 
-                // if selected track is outside of view, enforce scrolling
-                if (selTrack->y() > this->height()+ypos-20)
-                {
-                    emit verticalScrollSetYpos(ypos+selTrack->height());
-                }
-                else if (selTrack->y() < ypos)
-                {
-                    emit verticalScrollSetYpos(selTrack->y());
-                }
+                scrollToTrack(selTrack);
 
                 // rec enable track if expected
                 MusECore::TrackList recd = getRecEnabledTracks();
@@ -3390,6 +3383,23 @@ void TList::openAddTrackMenu()
     addTrackOpened = false;
 }
 
+void TList::scrollToTrack(MusECore::Track* track)
+{
+    // if selected track is outside of view, enforce scrolling
+    if (track->y() > this->height() + ypos - 20)
+    {
+        emit verticalScrollSetYpos(ypos + track->height());
+    }
+    else if (track->y() < ypos)
+    {
+        emit verticalScrollSetYpos(track->y());
+    }
+    else
+    {
+        // no change
+    }
+
+}
 
 } // namespace MusEGui
 
