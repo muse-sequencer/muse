@@ -127,8 +127,6 @@ class Arranger : public QWidget {
       // Also sets the canvas and time scale offsets accordingly.
       void setupHZoomRange();
 
-      void toggleTrackHeights();
-
    private slots:
       void rasterChanged(int raster);
       void songlenChanged(int);
@@ -166,6 +164,8 @@ class Arranger : public QWidget {
       void controllerChanged(MusECore::Track *t, int ctrlId);
       void focusCanvas();
       void verticalScrollSetYpos(unsigned);
+      void toggleTrackHeights();
+
 
    public:
       enum { CMD_DELETE,

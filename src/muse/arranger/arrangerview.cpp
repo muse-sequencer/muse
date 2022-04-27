@@ -342,6 +342,12 @@ ArrangerView::ArrangerView(QWidget* parent)
                           MusEGui::shortcuts[MusEGui::SHRT_HIDE_MIXER_STRIP].key);
   menuSettings->addAction(tr("Configure &Custom Columns..."), this, SLOT(configCustomColumns()));
 
+  QAction *trackHeightAction = new QAction(tr("&Toggle Track Heights"), this);
+  trackHeightAction->setShortcut(shortcuts[SHRT_TOGGLE_TRACK_HEIGHTS].key);
+  connect(trackHeightAction, SIGNAL(triggered()), arranger, SLOT(toggleTrackHeights()));
+
+  menuSettings->addAction(trackHeightAction);
+
   openAddTrackMenuAction = new QAction(this);
   addAction(openAddTrackMenuAction);
   connect(openAddTrackMenuAction, &QAction::triggered, [=](){ arranger->getTrackList()->openAddTrackMenu(); });

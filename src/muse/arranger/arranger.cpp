@@ -1422,10 +1422,7 @@ void Arranger::keyPressEvent(QKeyEvent* event)
       showTrackInfo(!showTrackinfoFlag);
       return;
   }
-  else if (key == shortcuts[SHRT_TOGGLE_TRACK_HEIGHTS].key) {
-      toggleTrackHeights();
-      return;
-  }
+
   // QUANTIZE shortcuts from midi editors is reused for SNAP in Arranger
   //    `does not work exactly the same but close enough I think.
   else if (key == shortcuts[SHRT_SET_QUANT_BAR].key) {
