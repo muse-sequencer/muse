@@ -1,3 +1,5 @@
+03.05.2022
+    - Reuploaded script (Fix issue 1037: Time stretching/shrinking for midi/drum parts.) (Staffan)
 26.04.2022
     - Added shortcut (meta+h) for toggling track height. If any track is larger 
       than minimum, the first press will minimize all tracks, second press will
