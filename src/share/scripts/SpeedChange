@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Staffan Melin
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+import sys,time
+from PyQt5.QtWidgets import QApplication, QWidget, QLineEdit, QPushButton, QCheckBox, QGridLayout, QLabel
+
+
+class SpeedChange(QWidget):
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+
+		self.setWindowTitle('Change speed of MIDI notes (timestretch)')
+
+		self.changeFactorEdit = QLineEdit()
+		self.changeFactorEdit.setText('1.5')
+
+		self.changeLengthBox = QCheckBox()
+		self.changeLengthBox.setCheckState(True)
+		
+		button = QPushButton("Execute")
+		button.clicked.connect(self.execute)
+
+		grid = QGridLayout()
+		grid.setSpacing(3)
+
+		grid.addWidget(QLabel('Factor'), 2, 0)
+		grid.addWidget(self.changeFactorEdit, 2, 1)
+		grid.addWidget(QLabel('Change notelength'), 3, 0)
+		grid.addWidget(self.changeLengthBox, 3, 1)
+		grid.addWidget(button, 6, 1)
+
+		self.setLayout(grid)
+		self.resize(300, 150)
+		button.setFocus()
+
+	def execute(self):
+
+		testFile = open(sys.argv[1],"r")
+		inputEvents = testFile.readlines()
+		testFile.close()
+
+		changeFactor = float(self.changeFactorEdit.text())
+		changeLength = self.changeLengthBox.isChecked()
+		
+		outputEvents=[]
+		# loop through events
+		for line in inputEvents:
+			if line.startswith('NOTE'):
+				tag,tick,pitch,length,velocity = line.split(' ')
+				newTick = int(int(tick) * changeFactor)
+				if changeLength:
+					newLength = int(int(length) * changeFactor)
+				else:
+					newLength = int(length) * changeFactor
+				newline = tag + " " + str(newTick) + " " + pitch + " " + str(newLength) + " " + velocity
+				outputEvents.append(newline)
+			elif line.startswith('CONTROLLER'):
+				tag,tick,a,b,c = line.split(' ')
+				newTick = int(int(tick) * changeFactor)
+				newline = tag + " " + str(newTick) + " " + a + " " + b + " " + c
+				outputEvents.append(newline)
+			#else:
+				#outputEvents.append(line)
+
+		testFile = open(sys.argv[1],"w")
+		testFile.writelines(outputEvents)
+		testFile.close()
+
+		quit()
+
+app = QApplication(sys.argv)
+qb = SpeedChange()
+qb.show()
+sys.exit(app.exec_())
+
+
