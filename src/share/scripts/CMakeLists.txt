@@ -31,8 +31,10 @@ file(GLOB script_files
       RandomQuantize1
       RandomPosition1
       RemoveAftertouch
-      RemoveShortEvents 
+      RemoveShortEvents
+      Reverse
       Rhythm1
+      SpeedChange
       SpeedHalf
       SpeedDouble
       SwingQuantize1
