@@ -1,4 +1,4 @@
-MusE midi event scripting format 0.6
+MusE midi event scripting format 0.7
 ====================================
 
 = INTRODUCTION
@@ -21,13 +21,14 @@ to the same file.
 
 The tags that may occur in the file sent to the script are:
 TIMESIG <n> <z>
-PARTLEN <len in ticks of the current Part>
+PART <start tick> <len in ticks>
 BEATLEN <len in ticks of a beat>
 QUANTLEN <len in ticks of the current quantization>
+TYPE <track type of part, can be MIDI or DRUM>
 NOTE <tick> <pitch> <len in ticks> <velocity>
 CONTROLLER <tick> <a> <b> <c>
 
-TIMESIG, PARTLEN, BEATLEN and QUANTLEN are there for informational purposes, to 
+TIMESIG, PART, BEATLEN, QUANTLEN and TYPE are there for informational purposes, to 
 make some transformations possible. e.g. quantization, beat delay.
 
 NOTE and CONTROLLER are the ones that are read back into MusE when the filter
@@ -59,7 +60,7 @@ templates for creating more advanced scripts.
 
 - DoNothing, just reads the input file, loops through the lines and outputs
   them again.
-- DoubleSpeed, reads all notes and outputs them with all ticks divided
+- SpeedDouble, reads all notes and outputs them with all ticks divided
   in half.
 - RemoveShortEvents, a script with a GUI in PyQt which removes events 
   shorter then the set note length
