@@ -9,5 +9,5 @@ Type=Application
 Exec=${MusE_EXEC_NAME}
 Terminal=false
 Categories=Sequencer;Midi;X-Jack;X-Sequencers;X-MIDI;Audio;AudioVideo;
-Keywords=audio;sound;jackd,DAW,multitrack,ladspa,lv2,midi
+Keywords=audio;sound;jackd,DAW;multitrack;ladspa;lv2;midi;vst;
 MimeType=audio/midi;application/x-muse;application/xml;
