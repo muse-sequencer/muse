@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "scripts.h"
+#include "track.h"
 #include "part.h"
 #include "song.h"
 #include "debug.h"
@@ -80,6 +81,14 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
         sprintf(tempStr, "BEATLEN %d\n", MusEGlobal::sigmap.ticksBeat(part->tick()));
         writeStringToFile(fp,tempStr);
         sprintf(tempStr, "QUANTLEN %d\n", quant);
+        writeStringToFile(fp,tempStr);
+        MidiTrack *track = part->track();
+        if (track->type() == Track::MIDI)
+        {
+	        sprintf(tempStr, "TYPE MIDI\n");
+        } else if (track->type() == Track::DRUM) {
+	        sprintf(tempStr, "TYPE DRUM\n");
+        }
         writeStringToFile(fp,tempStr);
 
         if (MusEGlobal::debugMsg)

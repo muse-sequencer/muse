@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Staffan Melin
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+import sys,time
+testFile = open(sys.argv[1],"r")
+inputEvents = testFile.readlines()
+testFile.close()
+
+for line in inputEvents:
+    if line.startswith('PART'):
+        tag, startticks, partticks = line.split(' ')
+    if line.startswith('TYPE'):
+        tag, tracktype = line.split(' ')
+        if tracktype[-1] == '\n':
+            tracktype = tracktype[:-1]
+
+outputEvents=[]
+#loop through events
+for line in inputEvents:
+    if line.startswith('NOTE'):
+        tag, tick, pitch, length, velocity = line.split(' ')
+        if tracktype == 'MIDI':
+            newtick = int(partticks) - int(tick) - int(length)
+        else:
+            newtick = int(partticks) - int(tick)
+        newline = tag + " " + str(newtick) + " " + pitch + " " + length + " " + velocity
+        outputEvents.append(newline)
+    elif line.startswith('CONTROLLER'):
+        tag, tick, a, b, c = line.split(' ')
+        newtick = int(partticks) - int(tick)
+        newline = tag + " " + str(newtick) + " " + a + " " + b + " " + c
+        outputEvents.append(newline)
+
+
+testFile = open(sys.argv[1],"w")
+testFile.writelines(outputEvents)
+testFile.close()
+
