@@ -287,7 +287,7 @@ void WaveTrack::read(Xml& xml, XmlReadStatistics* stats)
                   case Xml::TagStart:
                         if (tag == "part") {
                               Part* p = 0;
-                              p = Part::readFromXml(xml, this, &locStats, false, true);
+                              p = Part::readFromXml(xml, this, stats, false, true);
                               if(p)
                                 parts()->add(p);
                               }

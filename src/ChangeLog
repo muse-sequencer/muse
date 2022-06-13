@@ -1,3 +1,5 @@
+12.06.2022
+    - Fix clone parts not loading correctly. Oops, was a typo at 17.04.2022 (Tim)
 04.05.2022
     - Reverse script that reverses MIDI and DRUM parts incl controllers. (Staffan)
 03.05.2022

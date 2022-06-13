@@ -2034,7 +2034,7 @@ void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
                         else if (tag == "compression")
                               compression = xml.parseInt();
                         else if (tag == "part") {
-                              Part* p = Part::readFromXml(xml, this, &locStats, false, true);
+                              Part* p = Part::readFromXml(xml, this, stats, false, true);
                               if(p)
                                 parts()->add(p);
                               }
