@@ -547,7 +547,7 @@ double Slider::getValue( const QPoint &p)
 //------------------------------------------------------------
 double Slider::moveValue(const QPoint &deltaP, bool fineMode)
 {
-  double rv;
+  double rv = d_valAccum;
   const QRect r = d_sliderRect;
 
   const double val = value(ConvertNone);
@@ -576,14 +576,20 @@ double Slider::moveValue(const QPoint &deltaP, bool fineMode)
       rv = 0.5 * (min + max);
     else
     {
-      const double dpos = double(deltaP.x());
-      const double dwidth = double(r.width() - d_thumbLength);
-      const double dval_diff = (drange * dpos) / dwidth;
-      d_valAccum += dval_diff;
-      rv = rint(d_valAccum / step()) * step();
+      // Only if there is a change! Otherwise it adjusts the value on mouse release simply from
+      //  touching the control, we don't want that.
+      if(deltaP.x() != 0)
+      {
+        const double dpos = double(deltaP.x());
+        const double dwidth = double(r.width() - d_thumbLength);
+        const double dval_diff = (drange * dpos) / dwidth;
+        d_valAccum += dval_diff;
+        rv = rint(d_valAccum / step()) * step();
 
-      DEBUG_SLIDER(stderr, "Slider::moveValue Horizontal value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
-                       val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
+        DEBUG_SLIDER(stderr, "Slider::moveValue Horizontal value:%.20f p dx:%d dy:%d drange:%.20f"
+          " step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
+          val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
+      }
     }
   }
   else
@@ -592,14 +598,20 @@ double Slider::moveValue(const QPoint &deltaP, bool fineMode)
       rv = 0.5 * (min + max);
     else
     {
-      const double dpos = double(-deltaP.y());
-      const double dheight = double(r.height() - d_thumbLength);
-      const double dval_diff = (drange * dpos) / dheight;
-      d_valAccum += dval_diff;
-      rv = rint(d_valAccum / step()) * step();
+      // Only if there is a change! Otherwise it adjusts the value on mouse release simply from
+      //  touching the control, we don't want that.
+      if(deltaP.y() != 0)
+      {
+        const double dpos = double(-deltaP.y());
+        const double dheight = double(r.height() - d_thumbLength);
+        const double dval_diff = (drange * dpos) / dheight;
+        d_valAccum += dval_diff;
+        rv = rint(d_valAccum / step()) * step();
 
-      DEBUG_SLIDER(stderr, "Slider::moveValue Vertical value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
-                       val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
+        DEBUG_SLIDER(stderr, "Slider::moveValue Vertical value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f"
+          " dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
+          val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
+      }
     }
   }
   return(rv);

@@ -49,6 +49,7 @@ QT5_WRAP_CPP (widget_mocs
 #       aboutbox_impl.h 
 #       arrangercolumns.h 
 #       action.h
+      automation_mode_toolbar.h
 #       bigtime.h
 #       canvas.h  
       checkbox.h
@@ -128,6 +129,8 @@ QT5_WRAP_CPP (widget_mocs
       spinboxFP.h  
 #       splitter.h  
       swidget.h  
+      switch.h
+      switch_style.h
 #       tb1.h  
       tempolabel.h
       text_edit.h
@@ -193,6 +196,7 @@ QT5_WRAP_CPP (widget_mocs
 file (GLOB widgets_source_files
 #       aboutbox_impl.cpp 
 #       arrangercolumns.cpp 
+      automation_mode_toolbar.cpp
 #       background_painter.cpp
 #       bigtime.cpp 
 #       canvas.cpp 
@@ -278,6 +282,7 @@ file (GLOB widgets_source_files
       spinboxFP.cpp 
 #       splitter.cpp  
       swidget.cpp 
+      switch.cpp
 #       tb1.cpp   
       tempolabel.cpp 
       text_edit.cpp

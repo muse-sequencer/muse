@@ -209,9 +209,10 @@ extern MidiController::ControllerType ctrlType2Int(const QString& s);
 extern QString midiCtrlName(int ctrl, bool fullyQualified = false);
 extern QString midiCtrlNumString(int ctrl, bool fullyQualified = false);
 
-typedef std::map<int, int, std::less<int> > MidiCtl2LadspaPortMap;
+typedef std::map<unsigned long int, unsigned long int, std::less<unsigned long int> > MidiCtl2LadspaPortMap;
 typedef MidiCtl2LadspaPortMap::iterator iMidiCtl2LadspaPort;
 typedef MidiCtl2LadspaPortMap::const_iterator ciMidiCtl2LadspaPort;
+typedef std::pair<unsigned long int, unsigned long int> MidiCtl2LadspaPortInsertPair;
 
 
 // // REMOVE Tim. midnam. Added.

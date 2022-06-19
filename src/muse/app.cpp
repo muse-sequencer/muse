@@ -3684,27 +3684,33 @@ void MusE::takeAutomationSnapshot()
       if(b != QMessageBox::Ok)
         return;
 
-      // Could be intensive, try idling instead of a single message.
-      MusEGlobal::audio->msgIdle(true);
+      MusECore::Undo undo;
 
-      int frame = MusEGlobal::audio->curFramePos();
+      const int frame = MusEGlobal::audio->curFramePos();
       MusECore::TrackList* tracks = MusEGlobal::song->tracks();
       for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
             if ((*i)->isMidiTrack())
                   continue;
-     MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
+            MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
             MusECore::CtrlListList* cll = track->controller();
             // Need to update current 'manual' values from the automation values at this time.
             if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
               cll->updateCurValues(frame);
 
-            for (MusECore::iCtrlList icl = cll->begin(); icl != cll->end(); ++icl) {
-                  double val = icl->second->curVal();
-                  icl->second->add(frame, val);
+            for (MusECore::ciCtrlList icl = cll->cbegin(); icl != cll->cend(); ++icl) {
+                  const double val = icl->second->curVal();
+                  // Add will replace if found.
+                  // Here is a tough decision regarding choice of discrete vs. interpolated:
+                  // Do we obey the discrete/interpolated toolbar button?
+                  // Given the (now) reduced role of interpolated graphs, maybe best to force these points to discrete. (Tim)
+                  undo.push_back(MusECore::UndoOp(MusECore::UndoOp::AddAudioCtrlVal,
+                    track, icl->second->id(), frame, val, MusECore::CtrlVal::VAL_SELECTED));
+                    // The undo system automatically sets the VAL_DISCRETE flag if the controller mode is DISCRETE.
+                    // | (MusEGlobal::config.audioAutomationDrawDiscrete ? MusECore::CtrlVal::VAL_DISCRETE : MusECore::CtrlVal::VAL_NOFLAGS)));
                   }
             }
 
-      MusEGlobal::audio->msgIdle(false);
+      MusEGlobal::song->applyOperationGroup(undo);
       }
 
 //---------------------------------------------------------

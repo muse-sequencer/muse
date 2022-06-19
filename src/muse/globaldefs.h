@@ -35,7 +35,8 @@ namespace MusECore {
 enum MType { MT_UNKNOWN=0, MT_GM, MT_GS, MT_XG, MT_GM2 };
 
 enum AutomationType {
-      AUTO_OFF, AUTO_READ, AUTO_TOUCH, AUTO_WRITE
+      AUTO_OFF, AUTO_READ, AUTO_TOUCH, AUTO_WRITE,
+      AUTO_LATCH
       };
 
 // Can be Or'd together.

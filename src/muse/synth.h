@@ -34,6 +34,7 @@
 #include "track.h"
 #include "stringparam.h"
 #include "plugin.h"
+#include "midi_controller.h"
 
 #include <QFileInfo>
 
@@ -75,6 +76,9 @@ class Synth {
       QString _version;
       PluginFeatures_t _requiredFeatures;
 
+      MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to audio port numbers.
+      MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps audio port numbers to midi controller numbers.
+
    public:
       enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, VST_NATIVE_EFFECT, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
 
@@ -99,6 +103,15 @@ class Synth {
       inline QString description() const                      { return _description; }
       inline QString version() const                          { return _version; }
       inline QString maker() const                            { return _maker; }
+
+      // Returns true if the midi controller number is mapped to an audio controller,
+      //  and returns the audio controller number in audioCtrl (if valid). Returns false if not mapped.
+      bool midiToAudioCtrlMapped(unsigned long int midiCtrl, unsigned long int* audioCtrl) const;
+      // Returns true if the audio controller number is mapped to a midi controller,
+      //  and returns the midi controller number in midiCtrl (if valid). Returns false if not mapped.
+      bool audioToMidiCtrlMapped(unsigned long int audioCtrl, unsigned long int* midiCtrl) const;
+      // Returns true if there are any mapped midi to audio controllers.
+      bool hasMappedMidiToAudioCtrls() const;
 
       virtual SynthIF* createSIF(SynthI*) = 0;
       };
@@ -352,6 +365,15 @@ class SynthI : public AudioTrack, public MidiDevice,
            {  _curOutParamNums[chan].currentProg(prog, bankL, bankH);  }
       void setCurrentProg(int chan, int prog, int bankL, int bankH)
            {  _curOutParamNums[chan].setCurrentProg(prog, bankL, bankH);  }
+
+      // Returns true if the midi controller number is mapped to an audio controller,
+      //  and returns the audio controller number in audioCtrl (if valid). Returns false if not mapped.
+      bool midiToAudioCtrlMapped(unsigned long int midiCtrl, unsigned long int* audioCtrl) const;
+      // Returns true if the audio controller number is mapped to a midi controller,
+      //  and returns the midi controller number in midiCtrl (if valid). Returns false if not mapped.
+      bool audioToMidiCtrlMapped(unsigned long int audioCtrl, unsigned long int* midiCtrl) const;
+      // Returns true if there are any mapped midi to audio controllers.
+      bool hasMappedMidiToAudioCtrls() const;
 
       void guiHeartBeat()     { if(!_sif) return; else _sif->guiHeartBeat(); }
       bool guiVisible() const { if(!_sif) return false; else return _sif->guiVisible(); }

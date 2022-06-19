@@ -2571,9 +2571,7 @@ Lv2Plugin::Lv2Plugin(const QFileInfo *fi, QString label, QString name, QString a
       if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_ControlPort) || isCVPort)
       {
          LV2ControlPortType _cType = LV2_PORT_CONTINUOUS;
-         if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portDiscrete))
-            _cType = LV2_PORT_DISCRETE;
-         else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portInteger))
+         if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portInteger))
             _cType = LV2_PORT_INTEGER;
          else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portTrigger)
                  || lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))

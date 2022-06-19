@@ -48,6 +48,7 @@ class VisibleTracks;
 class PartColorToolbar;
 class Arranger;
 class Xml;
+class AutomationModeToolBar;
 
 class ArrangerView : public TopWin
 {
@@ -75,6 +76,7 @@ private:
     EditToolBar* editTools;
     VisibleTracks* visTracks;
     PartColorToolbar *partColorToolBar;
+    AutomationModeToolBar* automationModeToolBar;
 
     Arranger* arranger;
 
@@ -130,6 +132,9 @@ private slots:
     void toggleMixerStrip();
     void execDeliveredScript(int);
     void execUserScript(int);
+    void automationInterpolateModeChanged(int);
+    void automationBoxModeChanged(int);
+    void automationOptimizeChanged(bool);
 
 signals:
     void isDeleting(MusEGui::TopWin*);

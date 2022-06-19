@@ -1706,7 +1706,7 @@ bool delete_selected_audio_automation(Undo& operations)
       {
         if(!ic->second.selected())
           continue;
-        operations.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, at, icl->second->id(), ic->first));
+        operations.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, at, icl->second->id(), ic->first, 0, 0, 0));
         changed = true;
       }
     }
@@ -2635,8 +2635,8 @@ void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToR
   // TODO TODO:
   //deselectAll(&operations);
 
-  MusECore::CtrlList* addCtrlList = new MusECore::CtrlList(ctrlId, false);
-  MusECore::CtrlList* eraseCtrlList = new MusECore::CtrlList(ctrlId, false);
+  CtrlList* addCtrlList = new CtrlList(*track_cl, CtrlList::ASSIGN_PROPERTIES);
+  CtrlList* eraseCtrlList = new CtrlList(*track_cl, CtrlList::ASSIGN_PROPERTIES);
 
   for (int i = 0; i < amount; ++i)
   {
@@ -2723,7 +2723,7 @@ void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToR
         {
           // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
           if(ice->first != ctrlFrame || ice->second.value() != newValue)
-            eraseCtrlList->add(ice->first, ice->second.value(), ice->second.selected());
+            eraseCtrlList->add(ice->first, ice->second);
         }
 
         // Reset for next iteration.
@@ -2734,7 +2734,9 @@ void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToR
       MusECore::ciCtrl ic_existing = track_cl->find(ctrlFrame);
       // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
       if(ic_existing == track_cl->cend() || ic_existing->second.value() != newValue)
-        addCtrlList->add(ctrlFrame, newValue, /*cv._selected*/ true, cv.groupEnd());
+        addCtrlList->add(ctrlFrame, newValue, /*cv._selected*/ true,
+                         // Force a discrete point if the destination cl is discrete or the given value is discrete.
+                         track_cl->mode() == CtrlList::DISCRETE || cv.discrete(), cv.groupEnd());
     }
   }
   // If nothing was changed, delete and ignore.
@@ -2839,8 +2841,8 @@ void processArrangerPasteObjects(
               continue;
             const MusECore::CtrlList* track_cl = track_icl->second;
 
-            MusECore::CtrlList* addCtrlList = new MusECore::CtrlList(ctrlId, false);
-            MusECore::CtrlList* eraseCtrlList = new MusECore::CtrlList(ctrlId, false);
+            CtrlList* addCtrlList = new CtrlList(*track_cl, CtrlList::ASSIGN_PROPERTIES);
+            CtrlList* eraseCtrlList = new CtrlList(*track_cl, CtrlList::ASSIGN_PROPERTIES);
 
             unsigned int groupStartFrame, groupEndFrame;
             MusECore::MuseCount_t ctrlTick;
@@ -2893,7 +2895,7 @@ void processArrangerPasteObjects(
                 {
                   // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
                   if(ice->first != ctrlFrame || ice->second.value() != cv.value())
-                    eraseCtrlList->add(ice->first, ice->second.value(), ice->second.selected());
+                    eraseCtrlList->add(ice->first, ice->second);
                 }
 
                 // Reset for next iteration.
@@ -2904,7 +2906,9 @@ void processArrangerPasteObjects(
               MusECore::ciCtrl ic_existing = track_cl->find(ctrlFrame);
               // Only if the existing value and desired 'add' value are not precisely equal. Otherwise ignore.
               if(ic_existing == track_cl->cend() || ic_existing->second.value() != cv.value())
-                addCtrlList->add(ctrlFrame, cv.value(), /*cv._selected*/ true, cv.groupEnd());
+                addCtrlList->add(ctrlFrame, cv.value(), /*cv._selected*/ true,
+                                 // Force a discrete point if the destination cl is discrete or the given value is discrete.
+                                 track_cl->mode() == CtrlList::DISCRETE || cv.discrete(), cv.groupEnd());
             }
             // If nothing was changed, delete and ignore.
             if(eraseCtrlList->empty())

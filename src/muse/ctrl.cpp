@@ -59,33 +59,65 @@ CtrlInterpolate::CtrlInterpolate(
 CtrlVal::CtrlVal()
 {
   val   = 0;
-  _flags = VAL_GROUP_END;
+  _flags = VAL_NOFLAGS;
 }
 
-CtrlVal::CtrlVal(double v, bool selected, bool groupEnd)
+CtrlVal::CtrlVal(double v, bool selected, bool discrete, bool groupEnd)
 {
-  val   = v;
+  val = v;
   _flags = VAL_NOFLAGS;
   if(selected)
     _flags |= VAL_SELECTED;
-  if(groupEnd)
-    _flags |= VAL_GROUP_END;
+  if(!groupEnd)
+    _flags |= VAL_NON_GROUP_END;
+  if(discrete)
+    _flags |= VAL_DISCRETE;
 }
 
-CtrlValueFlags CtrlVal::flags() const { return _flags; }
-void CtrlVal::setFlags(CtrlValueFlags f) { _flags = f; }
+CtrlVal::CtrlVal(double v, CtrlValueFlags f)
+{
+  val = v;
+  _flags = f;
+}
+
+CtrlVal::CtrlValueFlags CtrlVal::flags() const { return _flags; }
+void CtrlVal::setFlags(CtrlVal::CtrlValueFlags f) { _flags = f; }
 bool CtrlVal::selected() const { return _flags & VAL_SELECTED; }
 void CtrlVal::setSelected(bool v) { if(v) _flags |= VAL_SELECTED; else _flags &= ~VAL_SELECTED; }
-bool CtrlVal::groupEnd() const { return _flags & VAL_GROUP_END; }
-void CtrlVal::setGroupEnd(bool v) { if(v) _flags |= VAL_GROUP_END; else _flags &= ~VAL_GROUP_END;}
+bool CtrlVal::groupEnd() const { return !(_flags & VAL_NON_GROUP_END); }
+void CtrlVal::setGroupEnd(bool v) { if(!v) _flags |= VAL_NON_GROUP_END; else _flags &= ~VAL_NON_GROUP_END;}
 double CtrlVal::value() const { return val; }
 void CtrlVal::setValue(double v) { val = v; }
+bool CtrlVal::discrete() const { return _flags & VAL_DISCRETE; }
+void CtrlVal::setDiscrete(bool v) { if(v) _flags |= VAL_DISCRETE; else _flags &= ~VAL_DISCRETE; }
 
 CtrlRecVal::CtrlRecVal(unsigned int f, int n, double v)
-  : frame(f), val(v), id(n), type(ARVT_VAL) {}
-CtrlRecVal::CtrlRecVal(unsigned int f, int n, double v, CtrlRecValueType t)
-  : frame(f), val(v), id(n), type(t) {}
+  : frame(f), val(v), id(n), _flags(ARVT_NOFLAGS) {}
+CtrlRecVal::CtrlRecVal(unsigned int f, int n, double v, CtrlRecValueFlags flags)
+  : frame(f), val(v), id(n), _flags(flags) {}
 
+bool CtrlRecList::addInitial(const CtrlRecVal& val)
+{
+  for(iCtrlRec ic = begin(); ic != end(); ++ic)
+  {
+    CtrlRecVal& rv = *ic;
+    // When adding initial values to the list, all existing items' frames should be the same.
+    if(rv.frame != val.frame)
+    {
+      fprintf(stderr, " Error: CtrlRecList::addInitial: Frames are not the same: %d -> %d\n", val.frame, rv.frame);
+      return false;
+    }
+    // We found an item at the given frame. Does it not have the given id?
+    if(rv.id != val.id)
+      continue;
+    // An existing item was found at the given frame with the given id. Replace the item.
+    rv = val;
+    return true;
+  }
+  // No existing item was found at the given frame with the given id. Add a new item.
+  push_back(val);
+  return true;
+}
 
 int MidiAudioCtrlStruct::audioCtrlId() const        { return _audio_ctrl_id; }
 void MidiAudioCtrlStruct::setAudioCtrlId(int actrl) { _audio_ctrl_id = actrl; }
@@ -384,10 +416,8 @@ CtrlList::CtrlList(bool dontShow)
       _min     = 0;
       _max     = 0;
       _valueType = VAL_LINEAR;
-
       _dontShow = dontShow;
       _visible = false;
-      _guiUpdatePending = false;
       initColor(0);
       }
 
@@ -403,7 +433,6 @@ CtrlList::CtrlList(int id, bool dontShow)
 
       _dontShow = dontShow;
       _visible = false;
-      _guiUpdatePending = false;
       initColor(id);
       }
 
@@ -419,7 +448,6 @@ CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v
       _valueType = v;
       _dontShow = dontShow;
       _visible = false;
-      _guiUpdatePending = false;
       initColor(id);
 }
 
@@ -445,7 +473,6 @@ CtrlList::CtrlList(const CtrlList& cl)
   _dontShow      = cl._dontShow;
   _displayColor  = cl._displayColor;
   _visible       = cl._visible;
-  _guiUpdatePending = true;
 }
 
 //---------------------------------------------------------
@@ -468,10 +495,7 @@ void CtrlList::assign(const CtrlList& l, int flags)
   }
   
   if(flags & ASSIGN_VALUES)
-  {
     CtrlList_t::operator=(l); // Let map copy the items.
-    _guiUpdatePending = true;
-  }
 }
 
 //---------------------------------------------------------
@@ -481,7 +505,7 @@ void CtrlList::assign(const CtrlList& l, int flags)
 //   CtrlInterpolate member eFrameValid can be false meaning no next value (wide-open, endless).
 //---------------------------------------------------------
 
-void CtrlList::getInterpolation(unsigned int frame, bool cur_val_only, CtrlInterpolate* interp)
+void CtrlList::getInterpolation(unsigned int frame, bool cur_val_only, CtrlInterpolate* interp) const
 {
   interp->eStop = false; // During processing, control FIFO ring buffers will set this true.
 
@@ -497,59 +521,40 @@ void CtrlList::getInterpolation(unsigned int frame, bool cur_val_only, CtrlInter
   }
   ciCtrl i = upper_bound(frame); // get the index after current frame
   if (i == end())   // if we are past all items just return the last value
-  { 
-        --i;
-        interp->sFrame = i->first;
-        interp->eFrame = 0;
-        interp->eFrameValid = false;
-        interp->sVal = i->second.value();
-        interp->eVal = i->second.value();
-        interp->doInterp = false;
-        return;
-  }
-  else if(_mode == DISCRETE)
   {
-    if(i == begin())
-    {
-      interp->sFrame = 0;
-      interp->eFrame = i->first;
-      interp->eFrameValid = true;
-      interp->sVal = i->second.value();
-      interp->eVal = i->second.value();
-      interp->doInterp = false;
-    }
-    else
-    {
-      interp->eFrame = i->first;
-      interp->eFrameValid = true;
-      interp->eVal = i->second.value();
-      --i;
-      interp->sFrame = i->first;
-      interp->sVal = i->second.value();
-      interp->doInterp = false;
-    }
+    --i;
+    interp->sFrame = i->first;
+    interp->eFrame = 0;
+    interp->eFrameValid = false;
+    interp->sVal = i->second.value();
+    interp->eVal = i->second.value();
+    interp->doInterp = false;
   }
-  else   // INTERPOLATE
-  {                  
-    if(i == begin())
-    {
-      interp->sFrame = 0;
-      interp->eFrame = i->first;
-      interp->eFrameValid = true;
-      interp->sVal = i->second.value();
-      interp->eVal = i->second.value();
+  else if(i == begin())
+  {
+    interp->sFrame = 0;
+    interp->eFrame = i->first;
+    interp->eFrameValid = true;
+    interp->sVal = i->second.value();
+    interp->eVal = i->second.value();
+    interp->doInterp = false;
+  }
+  else
+  {
+    interp->eFrame = i->first;
+    interp->eFrameValid = true;
+    interp->eVal = i->second.value();
+    --i;
+    interp->sFrame = i->first;
+    interp->sVal = i->second.value();
+    const bool cvDiscrete = i->second.discrete();
+
+    // For now we do not allow interpolation of integer or enum controllers.
+    // TODO: It would require custom line drawing and corresponding hit detection.
+    if(_mode == DISCRETE || cvDiscrete)
       interp->doInterp = false;
-    }
     else
-    {
-      interp->eFrame = i->first;
-      interp->eFrameValid = true;
-      interp->eVal = i->second.value();
-      --i;
-      interp->sFrame = i->first;
-      interp->sVal = i->second.value();
       interp->doInterp = (interp->eVal != interp->sVal && interp->eFrame > interp->sFrame);
-    }
   }
 }
 
@@ -560,7 +565,7 @@ void CtrlList::getInterpolation(unsigned int frame, bool cur_val_only, CtrlInter
 //   Those are to be taken care of before calling this routine. See getInterpolation().
 //---------------------------------------------------------
 
-double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp)
+double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp) const
 {
   const unsigned int frame1 = interp.sFrame;
   const unsigned int frame2 = interp.eFrame;
@@ -587,20 +592,55 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp)
     return val1;
   }
 
-  if(_valueType == VAL_LOG)
+  double rv;
+  switch(_valueType)
   {
-    val1 = 20.0*fast_log10(val1);
-    if (val1 < MusEGlobal::config.minSlider)
-      val1=MusEGlobal::config.minSlider;
-    val2 = 20.0*fast_log10(val2);
-    if (val2 < MusEGlobal::config.minSlider)
-      val2=MusEGlobal::config.minSlider;
+    case VAL_LOG:
+      val1 = 20.0*fast_log10(val1);
+      if (val1 < MusEGlobal::config.minSlider)
+        val1=MusEGlobal::config.minSlider;
+      val2 = 20.0*fast_log10(val2);
+      if (val2 < MusEGlobal::config.minSlider)
+        val2=MusEGlobal::config.minSlider;
+
+      val2 -= val1;
+      val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
+      val1 = exp10(val1/20.0);
+      rv = val1;
+    break;
+
+    case VAL_LINEAR:
+      val2 -= val1;
+      val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
+      rv = val1;
+    break;
+
+    case VAL_INT:
+    {
+      val2 -= val1;
+      val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
+      // Here we want to round halfway cases rather than floor or ceil
+      //  so that the result is split evenly on the graph.
+      val1 = round(val1);
+      // Now we must make sure the result isn't out of bounds.
+      // If the min or max happen to be in between values, we need to truncate them.
+      const double mint = trunc(_min);
+      const double maxt = trunc(_max);
+      if(val1 < mint)
+        val1 = mint;
+      if(val1 > maxt)
+        val1 = maxt;
+      rv = val1;
+    }
+    break;
+
+    case VAL_BOOL:
+    case VAL_ENUM:
+      rv = val1;
+    break;
   }
-  val2 -= val1;
-  val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
-  if (_valueType == VAL_LOG)
-    val1 = exp10(val1/20.0);
-  return val1;
+
+  return rv;
 }
 
 //---------------------------------------------------------
@@ -613,85 +653,112 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp)
 
 double CtrlList::value(unsigned int frame, bool cur_val_only, unsigned int* nextFrame, bool* nextFrameValid) const
 {
-      if(cur_val_only || empty()) 
-      {
-        if(nextFrameValid)
-          *nextFrameValid = false;
-        if(nextFrame)
-          *nextFrame = 0;
-        return _curVal;
-      }
+  if(cur_val_only || empty())
+  {
+    if(nextFrameValid)
+      *nextFrameValid = false;
+    if(nextFrame)
+      *nextFrame = 0;
+    return _curVal;
+  }
 
-      double rv;
-      unsigned int nframe;
+  double rv;
+  unsigned int nframe;
 
-      ciCtrl i = upper_bound(frame); // get the index after current frame
-      if (i == end()) { // if we are past all items just return the last value
-            --i;
-            if(nextFrameValid)
-              *nextFrameValid = false;
-            if(nextFrame)
-              *nextFrame = 0;
-            return i->second.value();
-            }
-      else if(_mode == DISCRETE)
+  ciCtrl i = upper_bound(frame); // get the index after current frame
+  // if we are past all items just return the last value
+  if (i == end())
+  {
+    --i;
+    if(nextFrameValid)
+      *nextFrameValid = false;
+    if(nextFrame)
+      *nextFrame = 0;
+    return i->second.value();
+  }
+  else if(i == begin())
+  {
+    nframe = i->first;
+    rv = i->second.value();
+  }
+  else
+  {
+    const unsigned int frame2 = i->first;
+    double val2 = i->second.value();
+    --i;
+    const unsigned int frame1 = i->first;
+    double val1   = i->second.value();
+    const bool cvDiscrete = i->second.discrete();
+
+    // For now we do not allow interpolation of integer or enum controllers.
+    // TODO: It would require custom line drawing and corresponding hit detection.
+    if(_mode == DISCRETE || cvDiscrete)
+    {
+      nframe = frame2;
+      rv = val1;
+    }
+    else
+    {
+      if(val2 != val1)
+        nframe = 0; // Zero signifies the next frame should be determined by caller.
+      else
+        nframe = frame2;
+
+      switch(_valueType)
       {
-        if(i == begin())
+        case VAL_LOG:
+          val1 = 20.0*fast_log10(val1);
+          if (val1 < MusEGlobal::config.minSlider)
+            val1=MusEGlobal::config.minSlider;
+          val2 = 20.0*fast_log10(val2);
+          if (val2 < MusEGlobal::config.minSlider)
+            val2=MusEGlobal::config.minSlider;
+          val2  -= val1;
+          val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
+          val1 = exp10(val1/20.0);
+          rv = val1;
+        break;
+
+        case VAL_LINEAR:
+          val2  -= val1;
+          val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
+          rv = val1;
+        break;
+
+        case VAL_INT:
         {
-            nframe = i->first;
-            rv = i->second.value();
-        }  
-        else
-        {  
-          nframe = i->first;
-          --i;
-          rv = i->second.value();
-        }  
-      }
-      else {                  // INTERPOLATE
-        if (i == begin()) {
-            nframe = i->first;
-            rv = i->second.value();
+          val2  -= val1;
+          val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
+          // Here we want to round halfway cases rather than floor or ceil
+          //  so that the result is split evenly on the graph.
+          val1 = round(val1);
+          // Now we must make sure the result isn't out of bounds.
+          // If the min or max happen to be in between values, we need to truncate them.
+          const double mint = trunc(_min);
+          const double maxt = trunc(_max);
+          if(val1 < mint)
+            val1 = mint;
+          if(val1 > maxt)
+            val1 = maxt;
+          rv = val1;
         }
-        else {
-            const unsigned int frame2 = i->first;
-            double val2 = i->second.value();
-            --i;
-            const unsigned int frame1 = i->first;
-            double val1   = i->second.value();
+        break;
 
-            
-            if(val2 != val1)
-              nframe = 0; // Zero signifies the next frame should be determined by caller.
-            else
-              nframe = frame2;
-            
-            if (_valueType == VAL_LOG) {
-              val1 = 20.0*fast_log10(val1);
-              if (val1 < MusEGlobal::config.minSlider)
-                val1=MusEGlobal::config.minSlider;
-              val2 = 20.0*fast_log10(val2);
-              if (val2 < MusEGlobal::config.minSlider)
-                val2=MusEGlobal::config.minSlider;
-            }
-
-            val2  -= val1;
-            val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
-    
-            if (_valueType == VAL_LOG) {
-              val1 = exp10(val1/20.0);
-            }
-
-            rv = val1;
-          }
+        case VAL_BOOL:
+        case VAL_ENUM:
+          nframe = frame2;
+          rv = val1;
+        break;
       }
+    }
+  }
 
-      if(nextFrame)
-          *nextFrame = nframe;
-      if(nextFrameValid)
-          *nextFrameValid = true;
-      
-      return rv;
+  if(nextFrame)
+      *nextFrame = nframe;
+  if(nextFrameValid)
+      *nextFrameValid = true;
+
+  return rv;
 }
 
 CtrlList::Mode CtrlList::mode() const          { return _mode; }
@@ -719,8 +786,6 @@ QColor CtrlList::color() const { return _displayColor; }
 void CtrlList::setVisible(bool v) { _visible = v; }
 bool CtrlList::isVisible() const { return _visible; }
 bool CtrlList::dontShow() const { return _dontShow; }
-bool CtrlList::guiUpdatePending() const { return _guiUpdatePending; }
-void CtrlList::setGuiUpdatePending(bool v) { _guiUpdatePending = v; }
 
 //---------------------------------------------------------
 //   curVal
@@ -741,13 +806,14 @@ void CtrlList::setCurVal(double val)
   printf("CtrlList::setCurVal val:%f\n", val);  
 #endif
   
-  bool upd = (val != _curVal);
   _curVal = val;
-  // If empty, any controller graphs etc. will be displaying this value.
-  // Otherwise they'll be displaying the list, so update is not required.
-  if(empty() && upd)     
-    _guiUpdatePending = true;
 }
+
+//------------------------------------------
+// The following methods are for debugging
+//------------------------------------------
+
+#ifdef _CTRLLIST_DEBUG_METHODS_
 
 //---------------------------------------------------------
 //
@@ -774,7 +840,6 @@ CtrlList& CtrlList::operator=(const CtrlList& cl)
   
   // Let map copy the items.
   CtrlList_t::operator=(cl);
-  _guiUpdatePending = true;
   return *this;
 }
 
@@ -784,8 +849,6 @@ void CtrlList::swap(CtrlList& cl) noexcept
   printf("CtrlList::swap id:%d\n", cl.id());  
 #endif
   CtrlList_t::swap(cl);
-  cl.setGuiUpdatePending(true);
-  _guiUpdatePending = true;
 }
 
 std::pair<iCtrl, bool> CtrlList::insert(const CtrlListInsertPair_t& p)
@@ -794,7 +857,6 @@ std::pair<iCtrl, bool> CtrlList::insert(const CtrlListInsertPair_t& p)
   printf("CtrlList::insert1 frame:%u val:%f\n", p.first, p.second.val);
 #endif
   std::pair<iCtrl, bool> res = CtrlList_t::insert(p);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -804,7 +866,6 @@ template< class P > std::pair<iCtrl, bool> CtrlList::insert(P&& value)
   printf("CtrlList::insert2 frame:%u val:%f\n", value.first, value.second.val);
 #endif
   std::pair<iCtrl, bool> res = CtrlList_t::insert(value);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -814,7 +875,6 @@ std::pair<iCtrl, bool> CtrlList::insert(CtrlListInsertPair_t&& p)
   printf("CtrlList::insert3 frame:%u val:%f\n", p.first, p.second.val);
 #endif
   std::pair<iCtrl, bool> res = CtrlList_t::insert(p);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -824,7 +884,6 @@ iCtrl CtrlList::insert(ciCtrl ic, const CtrlListInsertPair_t& p)
   printf("CtrlList::insert4 frame:%u val:%f\n", p.first, p.second.val);
 #endif
   iCtrl res = CtrlList_t::insert(ic, p);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -834,7 +893,6 @@ template< class P > iCtrl CtrlList::insert(ciCtrl ic, P&& value)
   printf("CtrlList::insert5 frame:%u val:%f\n", value.first, value.second.val);
 #endif
   iCtrl res = CtrlList_t::insert(ic, value);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -844,7 +902,6 @@ iCtrl CtrlList::insert(ciCtrl ic, CtrlListInsertPair_t&& value)
   printf("CtrlList::insert6 frame:%u val:%f\n", value.first, value.second.val);
 #endif
   iCtrl res = CtrlList_t::insert(ic, value);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -854,7 +911,6 @@ void CtrlList::insert(iCtrl first, iCtrl last)
   printf("CtrlList::insert7 first frame:%u last frame:%d\n", first->first, last->first);
 #endif
   CtrlList_t::insert(first, last);
-  _guiUpdatePending = true;
 }
 
 // void CtrlList::insert(std::initializer_list<CtrlListInsertPair_t> ilist)
@@ -864,7 +920,6 @@ void CtrlList::insert(iCtrl first, iCtrl last)
 // #endif
 //   // TODO: Hm, error, no matching member function.
 //   CtrlList_t::insert(ilist);
-//   _guiUpdatePending = true;
 // }
 
 // CtrlList::insert_return_type CtrlList::insert(CtrlList::node_type&& nh)
@@ -874,7 +929,6 @@ void CtrlList::insert(iCtrl first, iCtrl last)
 // #endif
 //   // TODO: Hm, error, no matching member function.
 //   CtrlList::insert_return_type ret = CtrlList_t::insert(nh);
-//   _guiUpdatePending = true;
 //   return ret;
 // }
 
@@ -885,7 +939,6 @@ void CtrlList::insert(iCtrl first, iCtrl last)
 // #endif
 //   // TODO: Hm, error, no matching member function.
 //   iCtrl ret = CtrlList_t::insert(ic, nh);
-//   _guiUpdatePending = true;
 //   return ret;
 // }
 
@@ -895,7 +948,6 @@ template <class M> std::pair<iCtrl, bool> CtrlList::insert_or_assign(const unsig
   printf("CtrlList::insert_or_assign1 frame:%u\n", k);
 #endif
   std::pair<iCtrl, bool> res = CtrlList_t::insert_or_assign(k, obj);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -905,7 +957,6 @@ template <class M> std::pair<iCtrl, bool> CtrlList::insert_or_assign(unsigned in
   printf("CtrlList::insert_or_assign2 frame:%u\n", k);
 #endif
   std::pair<iCtrl, bool> res = CtrlList_t::insert_or_assign(k, obj);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -915,7 +966,6 @@ template <class M> iCtrl CtrlList::insert_or_assign(ciCtrl hint, const unsigned 
   printf("CtrlList::insert_or_assign3 frame:%u\n", k);
 #endif
   iCtrl res = CtrlList_t::insert_or_assign(hint, k, obj);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -925,7 +975,6 @@ template <class M> iCtrl CtrlList::insert_or_assign(ciCtrl hint, unsigned int&& 
   printf("CtrlList::insert_or_assign4 frame:%u\n", k);
 #endif
   iCtrl res = CtrlList_t::insert_or_assign(hint, k, obj);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -935,7 +984,6 @@ iCtrl CtrlList::erase(iCtrl ictl)
   printf("CtrlList::erase1A iCtrl frame:%u val:%f\n", ictl->first, ictl->second.val);
 #endif
   iCtrl res = CtrlList_t::erase(ictl);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -945,7 +993,6 @@ iCtrl CtrlList::erase(ciCtrl ictl)
   printf("CtrlList::erase1B iCtrl frame:%u val:%f\n", ictl->first, ictl->second.val);
 #endif
   iCtrl res = CtrlList_t::erase(ictl);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -957,7 +1004,6 @@ CtrlList::iterator CtrlList::erase(ciCtrl first, ciCtrl last)
          last->first, last->second.val);
 #endif
   iCtrl res = CtrlList_t::erase(first, last);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -967,7 +1013,6 @@ CtrlList_t::size_type CtrlList::erase(unsigned int frame)
   printf("CtrlList::erase3 frame:%u\n", frame);
 #endif
   size_type res = CtrlList_t::erase(frame);
-  _guiUpdatePending = true;
   return res;
 }
 
@@ -977,18 +1022,58 @@ void CtrlList::clear() noexcept
   printf("CtrlList::clear\n");  
 #endif
   CtrlList_t::clear();
-  _guiUpdatePending = true;
 }
+
+#endif // _CTRLLIST_DEBUG_METHODS_
+
 
 //---------------------------------------------------------
 //   add
 //   Add, or replace, an event at time frame having value val. 
 //---------------------------------------------------------
 
-std::pair<CtrlList::iterator, bool> CtrlList::add(unsigned int frame, double value, bool selected, bool groupEnd)
+std::pair<CtrlList::iterator, bool> CtrlList::add(unsigned int frame, double value, bool selected, bool discrete, bool groupEnd)
       {
-      return insert_or_assign(frame, CtrlVal(value, selected, groupEnd));
+      return insert_or_assign(frame, CtrlVal(value, selected, discrete, groupEnd));
       }
+
+std::pair<CtrlList::iterator, bool> CtrlList::add(unsigned int frame, const CtrlVal& cv)
+      {
+      return insert_or_assign(frame, cv);
+      }
+
+std::pair<CtrlList::iterator, bool> CtrlList::add(unsigned int frame, double value, CtrlVal::CtrlValueFlags flags)
+      {
+      return insert_or_assign(frame, CtrlVal(value, flags));
+      }
+
+//---------------------------------------------------------
+//   modify
+//---------------------------------------------------------
+
+std::pair<CtrlList::iterator, bool> CtrlList::modify(unsigned int frame, double value, CtrlVal::CtrlValueFlags flags,
+  CtrlVal::CtrlModifyValueFlags validModifyFlags, CtrlVal::CtrlModifyValueFlags validAddFlags)
+{
+  iterator ic = find(frame);
+  if(ic == end())
+  {
+    const CtrlVal::CtrlModifyValueFlags f = validAddFlags & CtrlVal::VAL_MODIFY_SAME_AS ? validModifyFlags : validAddFlags;
+    return insert(CtrlListInsertPair_t(frame, CtrlVal(f & CtrlVal::VAL_MODIFY_VALUE ? value : 0.0, (flags & f) & CtrlVal::VAL_FLAGS_MASK)));
+  }
+  else
+  {
+    const CtrlVal::CtrlModifyValueFlags f = validModifyFlags & CtrlVal::VAL_MODIFY_SAME_AS ? validAddFlags : validModifyFlags;
+    modify(ic, value, flags, f);
+  }
+  return std::pair<iterator, bool>(ic, false);
+}
+
+void CtrlList::modify(iterator ic, double value, CtrlVal::CtrlValueFlags flags, CtrlVal::CtrlModifyValueFlags validModifyFlags)
+{
+  if(validModifyFlags & CtrlVal::VAL_MODIFY_VALUE)
+    ic->second.setValue(value);
+  ic->second.setFlags(((ic->second.flags() & ~validModifyFlags) | (flags & validModifyFlags)) & CtrlVal::VAL_FLAGS_MASK);
+}
 
 //---------------------------------------------------------
 //   del
@@ -1087,12 +1172,7 @@ bool CtrlList::updateGroups(unsigned int frame)
 void CtrlList::updateCurValue(unsigned int frame)
 {
   double v = value(frame);
-  bool upd = (v != _curVal);
   _curVal = v;
-  // If empty, any controller graphs etc. will be displaying this value.
-  // Otherwise they'll be displaying the list, so update is not required.
-  if(empty() && upd)     
-    _guiUpdatePending = true;
 }
       
 //---------------------------------------------------------
@@ -1108,6 +1188,7 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
   double val;
   bool sel = false;
   bool groupEnd = false;
+  CtrlVal::CtrlValueFlags flags = CtrlVal::VAL_NOFLAGS;
 
   int i = 0;
   for(;;)
@@ -1156,6 +1237,8 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
     sel = false;
     groupEnd = false;
     bool optErr = false;
+    flags = CtrlVal::VAL_NOFLAGS;
+    QString flagsStr;
     while(i < len && tag[i] != ',')
     {
       while(i < len && (tag[i] == ' ' || tag[i] == '\n'))
@@ -1166,24 +1249,29 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
         break;
       }
 
-      QString vs;
+      QString os;
       while(i < len && tag[i] != ' ' && tag[i] != ',')
       {
-        vs.append(tag[i]);
+        os.append(tag[i]);
+        flagsStr.append(tag[i]);
         ++i;
       }
 
-      // The 'selected' optional character.
-      if(vs == QString('s'))
+      // The 'selected' optional character. Obsolete.
+      if(os == QString('s'))
         sel = true;
-      // The 'group end' optional character.
-      else if(vs == QString('g'))
+      // The 'group end' optional character. Obsolete.
+      else if(os == QString('g'))
         groupEnd = true;
       else
       {
-        fprintf(stderr, "CtrlList::readValues failed: unrecognized optional item string: %s\n", vs.toLatin1().constData());
-        optErr = true;
-        break;
+        flags = CtrlVal::CtrlValueFlags(os.toInt(&ok));
+        if(!ok)
+        {
+          fprintf(stderr, "CtrlList::readValues failed: unrecognized optional item string: %s\n", os.toLatin1().constData());
+          optErr = true;
+          break;
+        }
       }
     }
     if(optErr)
@@ -1193,7 +1281,14 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
     // See comments in Song::read at the "samplerate" tag.
     frame = MusEGlobal::convertFrame4ProjectSampleRate(frame, samplerate);
 
-    add(frame, val, sel, groupEnd);
+    // If these obsolete items are found, force the newer corresponding flags
+    if(sel)
+      flags |= CtrlVal::VAL_SELECTED;
+    // Note the inverted logic.
+    if(!groupEnd)
+      flags |= CtrlVal::VAL_NON_GROUP_END;
+    // Add will replace if found.
+    add(frame, val, flags);
 
     if(i == len)
       break;
@@ -1317,8 +1412,18 @@ void CtrlList::write(int level, Xml& xml, bool /*isCopy*/) const
         xml.tag(level++, s.toLatin1().constData());
         int i = 0;
         for (ciCtrl ic = cbegin(); ic != cend(); ++ic) {
-              QString s(ic->second.selected() ? "%1 %2 s, " : "%1 %2, ");
-              xml.nput(level, s.arg(ic->first).arg(ic->second.value()).toLatin1().constData());
+              // Write the item's frame and value.
+              QString s = QString("%1 %2").arg(ic->first).arg(ic->second.value());
+
+              CtrlVal::CtrlValueFlags flags = ic->second.flags();
+              // This write() is for the song files. Strip out some flags to avoid clutter since
+              //  they do not need to be stored or restored.
+              flags &= ~CtrlVal::VAL_NON_GROUP_END;
+              if(flags != CtrlVal::VAL_NOFLAGS)
+                s += QString(" %1").arg(flags);
+              s += ", ";
+              xml.nput(level, s.toLatin1().constData());
+
               ++i;
               if (i >= 4) {
                     xml.put(level, "");
@@ -1466,29 +1571,40 @@ AudioAutomationItem::AudioAutomationItem()
   _wrkFrame = 0;
   _wrkVal = 0;
   _groupEnd = false;
+  _discrete = true;
 }
 
-AudioAutomationItem::AudioAutomationItem(unsigned int frame, double value, bool groupEnd)
+AudioAutomationItem::AudioAutomationItem(unsigned int frame, double value, bool groupEnd, /*bool defaultInterpolate,*/ bool discrete)
 {
   _value = value;
   _wrkFrame = frame;
   _wrkVal = _value;
   _groupEnd = groupEnd;
+  _discrete = discrete;
+}
+
+AudioAutomationItem::AudioAutomationItem(unsigned int frame, const CtrlVal& cv)
+{
+  _value = cv.value();
+  _wrkFrame = frame;
+  _wrkVal = _value;
+  _groupEnd = cv.groupEnd();
+  _discrete = cv.discrete();
 }
 
 bool AudioAutomationItemMap::addSelected(
-  CtrlList* ctrlList, unsigned int frame, const AudioAutomationItem& item)
+  int id, unsigned int frame, const AudioAutomationItem& item)
 {
   AudioAutomationItemMapInsertResult res =
-    insert(AudioAutomationItemMapInsertPair(ctrlList, AudioAutomationItemMapStruct()));
+    insert(AudioAutomationItemMapInsertPair(id, AudioAutomationItemMapStruct()));
   AudioAutomationItemMapStruct& aal = res.first->second;
   AudioAutomationItemListInsertResult res2 = aal._selectedList.insert_or_assign(frame, item);
   return res2.second;
 }
 
-bool AudioAutomationItemMap::delSelected(CtrlList* ctrlList, unsigned int frame)
+bool AudioAutomationItemMap::delSelected(int id, unsigned int frame)
 {
-  iAudioAutomationItemMap iaam = find(ctrlList);
+  iAudioAutomationItemMap iaam = find(id);
   if(iaam == end())
     return false;
   if(iaam->second._selectedList.erase(frame) > 0)
@@ -1511,9 +1627,9 @@ bool AudioAutomationItemMap::clearSelected()
   return ret;
 }
 
-bool AudioAutomationItemMap::clearSelected(CtrlList* ctrlList)
+bool AudioAutomationItemMap::clearSelected(int id)
 {
-  iAudioAutomationItemMap iaam = find(ctrlList);
+  iAudioAutomationItemMap iaam = find(id);
   if(iaam == end())
     return false;
   iaam->second._selectedList.clear();
@@ -1530,29 +1646,29 @@ bool AudioAutomationItemMap::itemsAreSelected() const
   return false;
 }
 
-bool AudioAutomationItemMap::itemsAreSelected(CtrlList* ctrlList) const
+bool AudioAutomationItemMap::itemsAreSelected(int id) const
 {
-  ciAudioAutomationItemMap iaam = find(ctrlList);
+  ciAudioAutomationItemMap iaam = find(id);
   if(iaam == cend())
     return false;
   return !iaam->second._selectedList.empty();
 }
 
 bool AudioAutomationItemTrackMap::addSelected(
-  Track* track, CtrlList* ctrlList, unsigned int frame, const AudioAutomationItem& item)
+  const Track* track, int id, unsigned int frame, const AudioAutomationItem& item)
 {
   AudioAutomationItemTrackMapInsertResult res =
     insert(AudioAutomationItemTrackMapInsertPair(track, AudioAutomationItemMap()));
   AudioAutomationItemMap& aam = res.first->second;
-  return aam.addSelected(ctrlList, frame, item);
+  return aam.addSelected(id, frame, item);
 }
 
-bool AudioAutomationItemTrackMap::delSelected(Track* track, CtrlList* ctrlList, unsigned int frame)
+bool AudioAutomationItemTrackMap::delSelected(const Track* track, int id, unsigned int frame)
 {
   iAudioAutomationItemTrackMap iaatm = find(track);
   if(iaatm == end())
     return false;
-  if(!iaatm->second.delSelected(ctrlList, frame))
+  if(!iaatm->second.delSelected(id, frame))
     return false;
   if(iaatm->second.empty())
     erase(iaatm);
@@ -1576,7 +1692,7 @@ bool AudioAutomationItemTrackMap::clearSelected()
   return ret;
 }
 
-bool AudioAutomationItemTrackMap::clearSelected(Track* track)
+bool AudioAutomationItemTrackMap::clearSelected(const Track* track)
 {
   iAudioAutomationItemTrackMap iaatm = find(track);
   if(iaatm == end())
@@ -1588,12 +1704,12 @@ bool AudioAutomationItemTrackMap::clearSelected(Track* track)
   return true;
 }
 
-bool AudioAutomationItemTrackMap::clearSelected(Track* track, CtrlList* ctrlList)
+bool AudioAutomationItemTrackMap::clearSelected(const Track* track, int id)
 {
   iAudioAutomationItemTrackMap iaatm = find(track);
   if(iaatm == end())
     return false;
-  if(!iaatm->second.clearSelected(ctrlList))
+  if(!iaatm->second.clearSelected(id))
     return false;
   if(iaatm->second.empty())
     erase(iaatm);
@@ -1610,7 +1726,7 @@ bool AudioAutomationItemTrackMap::itemsAreSelected() const
   return false;
 }
 
-bool AudioAutomationItemTrackMap::itemsAreSelected(Track* track) const
+bool AudioAutomationItemTrackMap::itemsAreSelected(const Track* track) const
 {
   ciAudioAutomationItemTrackMap iaatm = find(track);
   if(iaatm == cend())
@@ -1618,12 +1734,12 @@ bool AudioAutomationItemTrackMap::itemsAreSelected(Track* track) const
   return iaatm->second.itemsAreSelected();
 }
 
-bool AudioAutomationItemTrackMap::itemsAreSelected(Track* track, CtrlList* ctrlList) const
+bool AudioAutomationItemTrackMap::itemsAreSelected(const Track* track, int id) const
 {
   ciAudioAutomationItemTrackMap iaatm = find(track);
   if(iaatm == cend())
     return false;
-  return iaatm->second.itemsAreSelected(ctrlList);
+  return iaatm->second.itemsAreSelected(id);
 }
 
 PasteCtrlListStruct::PasteCtrlListStruct()
@@ -1660,6 +1776,16 @@ bool PasteCtrlTrackMap::add(const QUuid& trackUuid, const PasteCtrlListList& pcl
   if(!pcll.empty() && (isFirst || pcll._minFrame < _minFrame))
     _minFrame = pcll._minFrame;
   return true;
+}
+
+CtrlGUIMessage::CtrlGUIMessage()
+  : _type(PAINT_UPDATE), _id(-1), _frame(0), _value(0.0)
+{
+}
+
+CtrlGUIMessage::CtrlGUIMessage(const Track* track, int id, unsigned int frame, double value, Type type)
+  : _type(type), _track(track), _id(id), _frame(frame), _value(value)
+{
 }
 
 } // namespace MusECore

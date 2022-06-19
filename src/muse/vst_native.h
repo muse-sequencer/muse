@@ -130,8 +130,6 @@ class VstNativeSynth : public Synth {
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
-      MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to vst port numbers.
-      MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps vst port numbers to midi controller numbers.
       bool _hasGui;
       bool _hasChunks;
 

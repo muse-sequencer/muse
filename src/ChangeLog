@@ -1,3 +1,42 @@
+19.06.2022
+    * MORE Complete audio automation graphs redesign (Part 2): (Tim)
+    * New: Audio automation graphs: Choice of DISCRETE or INTERPOLATED points.
+      Buttons on toolbar select which mode to draw new points. Works per-point!
+      A context menu item allows to change mode of all selected points.
+      Role of 'interpolated' has been greatly reduced to that of just drawing,
+       and all control recording, including external midi, is DISCRETE now.
+      DISCRETE points are drawn as squares. INTERPOLATED points are drawn as circles.
+      Note, INTERPOLATED mode only works for controllers that support it, such as
+       non-integer or logarithmic. TODO: Make an integer interpolator so that
+      INTERPOLATED works even on DISCRETE graphs!
+    * New: LATCH automation mode, in addition to OFF, READ, TOUCH, WRITE modes.
+    * New: Audio automation graphs: "Align all selected to point" context menu item.
+      Vertically aligns selected points to the clicked point.
+    * New: Adjustable graph point size. In Global Settings > GUI tab.
+    * New: Buttons on toolbar turn the graph points on and off !
+      Allows to see the graphs more clearly.
+    * New: Toolbar button avoids redundant recorded straight line automation points.
+    - Reworked graph point hit detection and drawing. Precisely accurate now.
+    - Midi controller graphs: Controllers popup menu: Midi controllers that are
+       mapped to (synthesizer) audio control ports have their own heading now,
+       to make it much clearer that they exist and what they do.
+    - Fixed old bug in Audio::processMidi(): When a midi controller
+       was assigned to an audio controller, operating the midi control would
+       suddenly leave the audio controls inoperative. Likely happened years
+       ago when time-stamp mechanism changed, this area was neglected.
+    - Fixed Midi-to-Audio controller assignment not recording properly.
+      Recorded frames were way off. Likely same reason as above.
+    - Fixed audio automation 'WRITE' mode not storing initial value and not
+       disabling the controller streams, when going from stop to play.
+      Seems to have been broken for many years (since first github checkin?)
+    - Eliminated old ugly HACK in class CtrlList: Removed _guiUpdatePending and support.
+      Replaced (integrated) with an IPC mechanism.
+    - Switched all code from muse_val2dbr (rounded) to new muse_val2db (unrounded).
+    - Fixed some memory leaks in class UndoList when clearing the list. Allocated items
+       were not being deleted.
+    - As requested: Uncluttered the Arranger popup context menu by moving audio
+       automation items into a sub-menu.
+    - Bumped up songfile version number to ensure toolbars are updated correctly.
 12.06.2022
     - Fix clone parts not loading correctly. Oops, was a typo at 17.04.2022 (Tim)
 04.05.2022

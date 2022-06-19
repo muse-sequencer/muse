@@ -439,6 +439,11 @@ struct GlobalConfigValues {
 
       bool mixerDockedA;
       bool mixerDockedB;
+
+      bool audioAutomationDrawDiscrete;
+      bool audioAutomationShowBoxes;
+      bool audioAutomationOptimize;
+      int audioAutomationPointRadius;
       };
 
 

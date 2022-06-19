@@ -1577,6 +1577,7 @@ void Audio::processMidi(unsigned int frames)
       {
       const bool extsync = MusEGlobal::extSyncFlag;
       const bool playing = isPlaying();
+      const unsigned int segSize = MusEGlobal::segmentSize;
 
       for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id)
       {
@@ -1705,47 +1706,54 @@ void Audio::processMidi(unsigned int frames)
 
                   // Time here needs to be frames always.
                   unsigned int ev_t = event.time();
-                  unsigned int t = ev_t;
 
-                  unsigned int pframe = _pos.frame();
-                  if(pframe > t)  // Technically that's an error, shouldn't happen
-                    t = 0;
-                  else
-                    // Subtract the current audio position frame
-                    t -= pframe;
-
-                  // Add the current running sync frame to make the control processing happy
-                  t += syncFrame;
-                  track->addScheduledControlEvent(actrl, dval, t);
+                  track->addScheduledControlEvent(actrl, dval, ev_t);
 
                   // Rec automation...
 
-                  // For the record time, if stopped we don't want the circular running position,
-                  //  just the static one.
-                  unsigned int rec_t = playing ? ev_t : pframe;
-
                   if(!MusEGlobal::automation)
                     continue;
+
+                  // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
+                  // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
+                  // For the record time, if stopped we don't want the circular running position,
+                  //  just the static one.
+                  unsigned int rec_t = _pos.frame();
+                  if(playing)
+                    rec_t += (syncFrame > ev_t + segSize) ? 0 : ev_t - syncFrame + segSize;
+
                   AutomationType at = track->automationType();
                   // Unlike our built-in gui controls, there is not much choice here but to
                   //  just do this:
                   if ( (at == AUTO_WRITE) ||
                        (at == AUTO_READ && !playing) ||
-                       (at == AUTO_TOUCH) )
+                       (at == AUTO_TOUCH) ||
+                       (at == AUTO_LATCH) )
                     track->enableController(actrl, false);
                   if(playing)
                   {
-                    if(at == AUTO_WRITE || at == AUTO_TOUCH)
+                    if(at == AUTO_WRITE || at == AUTO_TOUCH || at == AUTO_LATCH)
                       track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));
                   }
                   else
                   {
-                    if(at == AUTO_WRITE)
-                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));
-                    else if(at == AUTO_TOUCH)
+                    if(at == AUTO_TOUCH || at == AUTO_LATCH || at == AUTO_WRITE)
+                    {
+                      track->recEvents()->addInitial(CtrlRecVal(rec_t, actrl, dval, CtrlRecVal::ARVT_IGNORE));
+
                       // In touch mode and not playing. Send directly to controller list.
-                      // Add will replace if found.
-                      cl->add(rec_t, dval);
+                      // Modify will add if not found.
+                      // Use modify instead of add so that if there is an existing interpolated point,
+                      //  users can modify it using a controller without disturbing the mode.
+                      cl->modify(rec_t, dval,
+                        CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE,
+                        CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED /*| CtrlVal::VAL_DISCRETE*/,
+                        CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE);
+                      // Notify the GUI to update any local structures etc.
+                      if(MusEGlobal::song)
+                        MusEGlobal::song->putIpcCtrlGUIMessage(
+                          CtrlGUIMessage(track, actrl, rec_t, dval, CtrlGUIMessage::ADDED));
+                    }
                   }
                 }
               }

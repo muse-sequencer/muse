@@ -1616,7 +1616,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
             dlv = sl->minValue() - 0.5 * (sl->minValue() - sl->off());
           else
           {
-            dlv = _preferMidiVolumeDb ? (muse_val2dbr(v / double(mc->maxVal())) * 2.0) : v;
+            dlv = _preferMidiVolumeDb ? (muse_val2db(v / double(mc->maxVal())) * 2.0) : v;
             if(dlv > sl->maxValue())
               dlv = sl->maxValue();
           }
@@ -1632,7 +1632,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
             slv = 0.0;
         }
         else
-          slv = _preferMidiVolumeDb ? (muse_val2dbr(v / double(mc->maxVal())) * 2.0) : v;
+          slv = _preferMidiVolumeDb ? (muse_val2db(v / double(mc->maxVal())) * 2.0) : v;
 
         slider->setValue(slv);
         sl->setValue(dlv);
@@ -1791,6 +1791,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       //autoType->addAction(tr("Off"), AUTO_OFF);
       //autoType->addAction(tr("Read"), AUTO_READ);
       //autoType->addAction(tr("Touch"), AUTO_TOUCH);
+      //autoType->addAction(tr("Touch"), AUTO_LATCH);
       //autoType->addAction(tr("Write"), AUTO_WRITE);
       //autoType->setCurrentItem(t->automationType());
       //autoType->setToolTip(tr("automation type"));      
@@ -2122,7 +2123,7 @@ void MidiStrip::setupMidiVolume()
           else
           {
             if(show_db)
-              slider_v = muse_val2dbr(slider_v / double(mx)) * 2.0;
+              slider_v = muse_val2db(slider_v / double(mx)) * 2.0;
             else
               slider_v = double(mx) * muse_db2val(slider_v / 2.0);
           }
@@ -2607,7 +2608,7 @@ void MidiStrip::updateControls()
         {
           if(_preferMidiVolumeDb)
           {
-            slider_v = muse_val2dbr(d_hwVal / double(max)) * 2.0;
+            slider_v = muse_val2db(d_hwVal / double(max)) * 2.0;
             if(slider_v < MusEGlobal::config.minSlider)
               slider_v = MusEGlobal::config.minSlider;
           }
@@ -2641,7 +2642,7 @@ void MidiStrip::updateControls()
         {
           if(_preferMidiVolumeDb)
           {
-            slider_v = muse_val2dbr(d_hwVal / double(max)) * 2.0;
+            slider_v = muse_val2db(d_hwVal / double(max)) * 2.0;
             if(slider_v < MusEGlobal::config.minSlider)
               slider_v = MusEGlobal::config.minSlider;
           }
@@ -2660,7 +2661,7 @@ void MidiStrip::updateControls()
           sl->setValue(sl->minValue() - 0.5 * (sl->minValue() - sl->off()));
         else
         {
-          double sl_v = _preferMidiVolumeDb ? (muse_val2dbr(d_vol / double(max)) * 2.0) : d_vol;
+          double sl_v = _preferMidiVolumeDb ? (muse_val2db(d_vol / double(max)) * 2.0) : d_vol;
 
           if(sl_v > sl->maxValue())
             sl->setValue(sl->maxValue());

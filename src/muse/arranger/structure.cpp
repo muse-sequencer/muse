@@ -287,7 +287,7 @@ void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigne
         // iterate through all events and see if any appear after lpos
         if (controller.first > lFrame)
         {
-          removedEvents->add(controller.first, controller.second.value());
+          removedEvents->add(controller.first, controller.second);
 
           if (type == cutOperation)
           {
@@ -295,14 +295,14 @@ void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigne
             {
               auto diff = rFrame - lFrame;
               auto newFramePos = controller.first - diff;
-              readdedEvents->add(newFramePos, controller.second.value());
+              readdedEvents->add(newFramePos, controller.second);
             }
           }
           else if (type == insertOperation)
           {
             auto diff = rFrame - lFrame;
             auto newFramePos = controller.first + diff;
-            readdedEvents->add(newFramePos, controller.second.value());
+            readdedEvents->add(newFramePos, controller.second);
           }
         }
       }

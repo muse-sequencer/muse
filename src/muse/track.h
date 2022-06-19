@@ -845,14 +845,8 @@ class AudioTrack : public Track {
       void recordAutomation(int n, double v);
       void startAutoRecord(int, double);
       void stopAutoRecord(int, double);
-      void setControllerMode(int, CtrlList::Mode m); 
-      void clearControllerEvents(int);
       void seekPrevACEvent(int);
       void seekNextACEvent(int);
-      void eraseACEvent(int, int);
-      void eraseRangeACEvents(int, int, int);
-      void addACEvent(int, int, double);
-      void changeACEvent(int id, int frame, int newframe, double newval);
       AuxSendValueList *getAuxSendValueList() { return &_auxSend; }
       };
 

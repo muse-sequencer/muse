@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<muse version="3.3">
+<muse version="3.4">
   <configuration>
     <palette0 r="255" g="255" b="255"></palette0>
     <palette1 r="255" g="255" b="255"></palette1>

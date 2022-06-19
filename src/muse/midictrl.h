@@ -97,11 +97,6 @@ class MidiCtrlValList : public MidiCtrlValList_t {
       int visibleValue(unsigned int tick, Part* part, bool inclMutedParts, bool inclMutedTracks, bool inclOffTracks) const;
       // Adds the new value. Accepts duplicate controller items at the same position, to accurately reflect
       //  what is really in the event lists.
-// REMOVE Tim. Ctrl. Changed comment.
-//       // Mostly for the purpose of dragging and dropping controller events and allowing them to be
-//       //  on top of each other TEMPORARILY.
-//       // But ultimately once dropping is finished there must be only ONE value per controller
-//       //  per position per part.
       // NOTE: It is FORBIDDEN to have multiple controller events at the same time with the same controller number.
       // To preserve speed, we RELY on catching that at higher levels like the add event dialog or during song loading.
       // See detailed comments in EventList::add().

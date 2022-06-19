@@ -206,7 +206,7 @@ class Plugin {
       virtual void range(unsigned long i, float*, float*) const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
-      virtual const CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
+      virtual const CtrlVal::CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
 
       virtual const char* portName(unsigned long i) {
             return plugin ? plugin->PortNames[i] : 0;
@@ -404,7 +404,7 @@ class PluginIBase
       virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */}
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
-      virtual const CtrlEnumValues *ctrlEnumValues(unsigned long i) const;
+      virtual const CtrlVal::CtrlEnumValues *ctrlEnumValues(unsigned long i) const;
       virtual QString portGroup(long unsigned int i) const;
       virtual bool ctrlIsTrigger(long unsigned int i) const;
       virtual bool ctrlNotOnGui(long unsigned int i) const;
@@ -572,7 +572,7 @@ class PluginI : public PluginIBase {
       unsigned long latencyOutPortIndex() const { return _latencyOutPort; }
       float latency() const;
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
-      const CtrlEnumValues* ctrlEnumValues( unsigned long i) const { return _plugin->ctrlEnumValues(controls[i].idx); }
+      const CtrlVal::CtrlEnumValues* ctrlEnumValues( unsigned long i) const { return _plugin->ctrlEnumValues(controls[i].idx); }
       CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
       virtual void setCustomData(const std::vector<QString> &customParams);
       };
@@ -652,7 +652,7 @@ class PluginLoader : public QUiLoader
 
 struct GuiParam {
       enum {
-            GUI_SLIDER, GUI_SWITCH, GUI_METER, GUI_ENUM
+            GUI_SLIDER, GUI_CHECKBOX, GUI_SWITCH, GUI_METER, GUI_ENUM
             };
       int type;
       int hint;
@@ -668,7 +668,10 @@ struct GuiParam {
 
 struct GuiWidgets {
       enum {
-            SLIDER, DOUBLE_LABEL, QCHECKBOX, QCOMBOBOX
+            SLIDER, DOUBLE_LABEL,
+            CHECKBOX,
+            SWITCH,
+            QCOMBOBOX
             };
       QWidget* widget;
       int type;
@@ -721,6 +724,7 @@ class PluginGui : public QMainWindow {
 //      void overrideReportedLatencyToggled(bool);
 //      void latencyOverrideValueChanged(int);
       void sliderChanged(double value, int id, int scrollMode);
+      void switchChanged(bool value, int id);
       void labelChanged(double, int);
       void comboChanged(unsigned long);
       void guiParamChanged(unsigned long int);

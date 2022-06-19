@@ -219,7 +219,7 @@ bool TagEventListStruct::add(const Event& e)
 
 bool TagEventListStruct::add(Track* track, CtrlList* ctrlList, unsigned int frame, double value)
 {
-  const bool res = _aaitm.addSelected(track, ctrlList, frame, AudioAutomationItem(frame, value));
+  const bool res = _aaitm.addSelected(track, ctrlList->id(), frame, AudioAutomationItem(frame, value));
   if(res)
     _stats.add(frame);
   return res;
@@ -293,7 +293,7 @@ bool TagEventList::add(Track* track, CtrlList* ctrlList, unsigned int frame, dou
   {
     iTagEventList itl = begin();
     AudioAutomationItemTrackMap& aaitm = itl->aaitm();
-    return aaitm.addSelected(track, ctrlList, frame, AudioAutomationItem(frame, value));
+    return aaitm.addSelected(track, ctrlList->id(), frame, AudioAutomationItem(frame, value));
   }
 }
 

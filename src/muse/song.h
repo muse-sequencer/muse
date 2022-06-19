@@ -138,10 +138,16 @@ class Song : public QObject {
       long _xRunsCount;
 
       // Receives events from any threads. For now, specifically for creating new
-      //  controllers in the gui thread and adding them safely to the controller lists.
+      //  midi controllers in the gui thread and adding them safely to the controller lists.
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcInEventBuffers;
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_ipcOutEventBuffers;
       
+      // Receives messages about audio controller changes from any thread, such as assigning
+      //  midi messages to an audio controller from inside the audio thread.
+      // This supports more information than just a song changed signal, so that drawing updates
+      //  and item updates can be optimized to only that which is needed.
+      LockFreeMPSCRingBuffer<CtrlGUIMessage> *_ipcCtrlGUIMessages;
+
       // Whether an opening BeginAudioCtrlMoveMode command has been run.
       // A corresponding closing EndAudioCtrlMoveMode should always follow at some point.
       bool _audioCtrlMoveModeBegun;
@@ -199,9 +205,9 @@ class Song : public QObject {
       // Internal routine for preparing to undo the operation that ends audio controller movement mode.
       // Called from the Undo system's stage 1 only.
       bool undoAudioCtrlMoveEnd(PendingOperationList& operations);
-//       // If we are in move mode, adds an EndAudioCtrlMoveMode operation to the given operations,
-//       //  just BEFORE the given iterator. Returns true if anything changed.
-//       bool checkAndEndAudioCtrlMoveMode(iUndoOp i, Undo& undo);
+      // Process any special IPC audio thread - to - gui thread messages.
+      // Called by gui thread only. Returns true on success.
+      bool processIpcCtrlGUIMessages();
 
    public:
       Song(const char* name = 0);
@@ -437,7 +443,7 @@ class Song : public QObject {
       
       Track* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
-      bool trackExists(Track* t) const { return _tracks.find(t) != _tracks.cend(); }
+      bool trackExists(const Track* t) const { return _tracks.find(t) != _tracks.cend(); }
 
       void setRecordFlag(Track*, bool val, Undo* operations = 0);
       // This is a non- realtime safe operation mainly used when loading files, while the engine is paused or idle.
@@ -484,6 +490,9 @@ class Song : public QObject {
       // Process any special gui thread - to - IPC audio thread messages.
       // Called by audio thread only. Returns true on success.
       bool processIpcOutEventBuffers();
+
+      // Put a message into the IPC audio controller ring buffer for the gui thread to process.
+      bool putIpcCtrlGUIMessage(const CtrlGUIMessage& msg);
 
       // Returns false if nothing was added to operations, or error.
       bool collectAudioCtrlPasteModeOps(
@@ -615,7 +624,9 @@ class Song : public QObject {
       void quantizeChanged(bool);
       void markerChanged(int);
       void midiNote(int pitch, int velo);  
-      void controllerChanged(MusECore::Track*, int); 
+      void controllerChanged(
+        const MusECore::Track*, int clId, unsigned int frame = 0,
+        CtrlGUIMessage::Type type = CtrlGUIMessage::PAINT_UPDATE);
       void newPartsCreated(const std::map< const MusECore::Part*, std::set<const MusECore::Part*> >&);
       void sigDirty();
       void recModeChanged(int);

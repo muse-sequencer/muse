@@ -1545,10 +1545,12 @@ void Audio::seek(const Pos& p)
       // The transport (and user) must NOT be allowed to influence the position during bounce mode.
       if(!bounce())
       {
+        bool alreadyThere = false;
         // This is expected and required sometimes, for example to
         //  sync the prefetch system to a position we are ALREADY at.
         // But being fairly costly, not too frequently. So we warn just in case.
         if (_pos == p) {
+              alreadyThere = true;
               if(MusEGlobal::debugMsg)
                 fprintf(stderr, "Audio::seek already at frame:%u\n", p.frame());
               }
@@ -1593,6 +1595,12 @@ void Audio::seek(const Pos& p)
         }
               
         write(sigFd, "G", 1);   // signal seek to gui
+        // Signal enable all controllers and clear all track automation record lists to gui.
+        // NOT if we're already there.
+        // This is to preserve controller enabled states and any initial value stored while in
+        //  automation 'write' mode while transport stopped.
+        if(!alreadyThere)
+          write(sigFd, "N", 1);
       }
       }
 
@@ -1858,7 +1866,7 @@ void Audio::recordStop(bool restart, Undo* ops)
             if (track->recordFlag() || MusEGlobal::song->bounceTrack == track) {
                   MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, restart ? _pos : endRecordPos, operations);
                   if(!restart)
-                    operations.push_back(UndoOp(UndoOp::SetTrackRecord, track, false, true)); // True = non-undoable.
+                    operations.push_back(UndoOp(UndoOp::SetTrackRecord, track, false, 0, 0, 0, 0, true)); // True = non-undoable.
                   }
             }
       MidiTrackList* ml = MusEGlobal::song->midis();
@@ -1890,7 +1898,7 @@ void Audio::recordStop(bool restart, Undo* ops)
         {            
           MusEGlobal::song->bounceOutput = nullptr;
           ao->setRecFile(nullptr); // if necessary, this automatically deletes _recFile
-          operations.push_back(UndoOp(UndoOp::SetTrackRecord, ao, false, true));  // True = non-undoable.
+          operations.push_back(UndoOp(UndoOp::SetTrackRecord, ao, false, 0, 0, 0, 0, true));  // True = non-undoable.
         }
       }  
       MusEGlobal::song->bounceTrack = nullptr;

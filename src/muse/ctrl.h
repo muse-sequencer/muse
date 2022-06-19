@@ -42,6 +42,9 @@
 #define AC_PLUGIN_CTL_BASE_POW     12
 #define AC_PLUGIN_CTL_ID_MASK      0xFFF
 
+// Turn on debugging messages to catch some CtrlList methods.
+//#define _CTRLLIST_DEBUG_METHODS_
+
 namespace MusECore {
 
 
@@ -56,18 +59,6 @@ const int AC_MUTE   = 2;
 inline unsigned long genACnum(unsigned long plugin, unsigned long ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
 
 enum CtrlValueType { VAL_LOG, VAL_LINEAR, VAL_INT, VAL_BOOL, VAL_ENUM };
-enum CtrlRecValueType { ARVT_VAL, ARVT_START, ARVT_STOP };
-// Group end is valid only if selected is true.
-// It is useful for dragging and dropping or copying and pasting xml.
-// Group end is NOT managed automatically by the controller class. (Too complicated).
-// It is generally only valid and to be trusted while we are in controller move mode,
-//  ie. Song::_audioCtrlMoveModeBegun is true, since that is the only time we really need it.
-// It is valid and trusted as well during XML pasting.
-enum CtrlValueFlag { VAL_NOFLAGS = 0x00, VAL_SELECTED = 0x01, VAL_GROUP_END = 0x02 };
-// A combination of CtrlValueFlag values that can be OR'd together.
-typedef int CtrlValueFlags;
-
-typedef std::map<float, QString> CtrlEnumValues;
 
 //---------------------------------------------------------
 //   CtrlInterpolate
@@ -96,6 +87,35 @@ struct CtrlInterpolate {
 //---------------------------------------------------------
 
 class CtrlVal {
+  public:
+      // Group end is valid only if selected is true.
+      // It is useful for dragging and dropping or copying and pasting xml.
+      // Group end is NOT managed automatically by the controller class. (Too complicated).
+      // It is generally only valid and to be trusted while we are in controller move mode,
+      //  ie. Song::_audioCtrlMoveModeBegun is true, since that is the only time we really need it.
+      // It is valid and trusted as well during XML pasting.
+      // It is somewhat awkwardly named NON group end so that the default (false) means group end.
+      enum CtrlValueFlag { VAL_NOFLAGS = 0x00, VAL_SELECTED = 0x01, VAL_NON_GROUP_END = 0x02,
+        // Whether to NOT interpolate values between THIS value and the next value.
+        VAL_DISCRETE = 0x04, VAL_FLAGS_END = VAL_DISCRETE,
+        VAL_FLAGS_MASK = VAL_SELECTED | VAL_NON_GROUP_END | VAL_DISCRETE
+      };
+      // A combination of CtrlValueFlag values that can be OR'd together.
+      typedef int CtrlValueFlags;
+
+      // An extension of the CtrlValueFlag enum. Together with CtrlValueFlag, these indicate
+      //  the desired fields to be modified in a modify method or commmand.
+      // VAL_MODIFY_SAME_AS means when used as add or modify flags use the same flags as the other,
+      //  but don't use the flag for BOTH at the same time - one must be valid.
+      enum CtrlModifyValueFlag { VAL_MODIFY_NOFLAGS = 0x00, VAL_MODIFY_VALUE = VAL_FLAGS_END << 1,
+        VAL_MODIFY_SAME_AS = VAL_MODIFY_VALUE << 1, VAL_MODIFY_END = VAL_MODIFY_SAME_AS,
+        VAL_MODIFY_MASK = VAL_MODIFY_VALUE | VAL_MODIFY_SAME_AS
+      };
+      // A combination of CtrlModifyValueFlag and CtrlValueFlag values that can be OR'd together.
+      typedef int CtrlModifyValueFlags;
+
+      typedef std::map<float, QString> CtrlEnumValues;
+
   private:
       double val;
       CtrlValueFlags _flags;
@@ -104,7 +124,8 @@ class CtrlVal {
       CtrlVal();
 
       // Group end is valid only if selected is true.
-      CtrlVal(double v, bool selected = false, bool groupEnd = true);
+      CtrlVal(double v, bool selected = false, bool discrete = false, bool groupEnd = true);
+      CtrlVal(double v, CtrlValueFlags f);
       CtrlValueFlags flags() const;
       void setFlags(CtrlValueFlags);
       bool selected() const;
@@ -113,6 +134,8 @@ class CtrlVal {
       void setGroupEnd(bool);
       double value() const;
       void setValue(double);
+      bool discrete() const;
+      void setDiscrete(bool);
       };
 
 //---------------------------------------------------------
@@ -121,13 +144,17 @@ class CtrlVal {
 //---------------------------------------------------------
 
 struct CtrlRecVal {
+      enum CtrlRecValueType { ARVT_NOFLAGS = 0x0, ARVT_IGNORE = 0x1, ARVT_STOP = 0x2 };
+      // Combination of CtrlRecValueType values, can be OR'd together.
+      typedef int CtrlRecValueFlags;
+
       unsigned int frame;
       double val;
 
       int id;
-      CtrlRecValueType type;   // 0 - ctrlVal, 1 - start, 2 - end
+      CtrlRecValueFlags _flags;
       CtrlRecVal(unsigned int f, int n, double v);
-      CtrlRecVal(unsigned int f, int n, double v, CtrlRecValueType t);
+      CtrlRecVal(unsigned int f, int n, double v, CtrlRecValueFlags flags);
       };
 
 //---------------------------------------------------------
@@ -136,6 +163,10 @@ struct CtrlRecVal {
 
 class CtrlRecList : public std::list<CtrlRecVal> {
    public:
+     // Special for adding an initial value in stop mode.
+     // Looks only at the first items. Replaces if found.
+     // Returns true if added or replaced, false if error.
+     bool addInitial(const CtrlRecVal& val);
       };
 
 typedef CtrlRecList::iterator iCtrlRec;
@@ -202,6 +233,13 @@ class CtrlList : public CtrlList_t {
       // PasteEraseRange means erase target full range from first to last paste item.
       enum PasteEraseOptions { PasteNoErase=0, PasteErase, PasteEraseRange, PasteEraseOptionsEnd };
    private:
+      // This is the controller's underlying mode. It is typically set once at creation,
+      //  and never changed again and typically should not be.
+      // Its value is determined by the creator's suggested mode if it has one
+      //  (LV2 for example provides a discrete property), and the value type.
+      // For now we do not allow interpolation of integer or enum controllers.
+      // TODO: It would require custom line drawing and corresponding hit detection.
+      // So the mode is set to discrete for those value types, regardless of creator.
       Mode _mode;
       // The controller id. This can be -1 meaning no particular id, for copy/paste etc.
       // Be careful if it is -1. For example it can't be added to a CtrlListList.
@@ -214,7 +252,6 @@ class CtrlList : public CtrlList_t {
       QColor _displayColor;
       bool _visible;
       bool _dontShow; // when this is true the control exists but is not compatible with viewing in the arranger
-      volatile bool _guiUpdatePending; // Gui heartbeat routines read this. Checked and cleared in Song::beat().
 
    public:
       CtrlList(bool dontShow=false);
@@ -225,6 +262,7 @@ class CtrlList : public CtrlList_t {
 
       void assign(const CtrlList& l, int flags); 
 
+#ifdef _CTRLLIST_DEBUG_METHODS_
       //------------------------------------------------------------------------------
       // NOTICE: We override (hide) these intrinsic methods so that we may catch them.
       //         When newer C++ versions come out, additions and/or corrections
@@ -252,6 +290,7 @@ class CtrlList : public CtrlList_t {
       size_type erase(unsigned int frame);
       void clear() noexcept;
       CtrlList& operator=(const CtrlList&);
+#endif
 
       Mode mode() const;
       void setMode(Mode m);
@@ -270,12 +309,22 @@ class CtrlList : public CtrlList_t {
       void range(double* min, double* max) const;
       CtrlValueType valueType() const;
       void setValueType(CtrlValueType t);
-      void getInterpolation(unsigned int frame, bool cur_val_only, CtrlInterpolate* interp);
-      double interpolate(unsigned int frame, const CtrlInterpolate& interp);
-      
+      void getInterpolation(unsigned int frame, bool cur_val_only, CtrlInterpolate* interp) const;
+      double interpolate(unsigned int frame, const CtrlInterpolate& interp) const;
+
       double value(unsigned int frame, bool cur_val_only = false,
                    unsigned int* nextFrame = nullptr, bool* nextFrameValid = nullptr) const;
-      std::pair<iterator, bool> add(unsigned int frame, double value, bool selected = false, bool groupEnd = true);
+      // Add will replace if found. Using insert_or_assign.
+      std::pair<iterator, bool> add(unsigned int frame, double value, bool selected = false, bool discrete = false, bool groupEnd = true);
+      std::pair<iterator, bool> add(unsigned int frame, const CtrlVal&);
+      std::pair<iterator, bool> add(unsigned int frame, double value, CtrlVal::CtrlValueFlags flags);
+      // This modify will add if not found. Using insert. The return bool is true if added, false if modified.
+      // If it modifies, it uses validModifyFlags. If it adds, it uses validAddFlags.
+      std::pair<iterator, bool> modify(
+        unsigned int frame, double value, CtrlVal::CtrlValueFlags flags,
+        CtrlVal::CtrlModifyValueFlags validModifyFlags, CtrlVal::CtrlModifyValueFlags validAddFlags = CtrlVal::VAL_MODIFY_SAME_AS);
+      // This modify simply modifies an existing iterator.
+      void modify(iterator, double value, CtrlVal::CtrlValueFlags flags, CtrlVal::CtrlModifyValueFlags validModifyFlags);
       void del(unsigned int frame);
       // Updates the entire container's group end markers, according to the current selection states
       //  of all the items. Returns true if anything changed.
@@ -299,8 +348,6 @@ class CtrlList : public CtrlList_t {
       void setVisible(bool v);
       bool isVisible() const;
       bool dontShow() const;
-      bool guiUpdatePending() const;
-      void setGuiUpdatePending(bool v);
       };
 
 typedef CtrlList::iterator iCtrl;
@@ -367,9 +414,12 @@ struct AudioAutomationItem {
     double _wrkVal;
     // Whether this item is the end of a group ie. the next item is unselected.
     bool _groupEnd;
+    // Whether this item is discrete, ie. NOT interpolated.
+    bool _discrete;
 
     AudioAutomationItem();
-    AudioAutomationItem(unsigned int frame, double value, bool groupEnd = false);
+    AudioAutomationItem(unsigned int frame, double value, bool groupEnd = false, bool discrete = false);
+    AudioAutomationItem(unsigned int frame, const CtrlVal&);
 };
 
 typedef std::map<unsigned int /*frame*/, AudioAutomationItem> AudioAutomationItemList;
@@ -382,15 +432,15 @@ struct AudioAutomationItemMapStruct {
     AudioAutomationItemList _selectedList;
 };
 
-class AudioAutomationItemMap : public std::map<CtrlList*, AudioAutomationItemMapStruct, std::less<CtrlList* >>
+class AudioAutomationItemMap : public std::map<int /*ctrl id*/, AudioAutomationItemMapStruct, std::less<int >>
 {
   public:
     // Returns true if insertion took place.
     // Returns false if assignment took place, or on error.
-    bool addSelected(CtrlList*, unsigned int frame, const AudioAutomationItem&);
+    bool addSelected(int id, unsigned int frame, const AudioAutomationItem&);
     // Returns true if deletion took place.
     // Returns false if no deletion took place (not found), or on error.
-    bool delSelected(CtrlList*, unsigned int frame);
+    bool delSelected(int id, unsigned int frame);
     // Clears all selected items in all controllers.
     // Returns true if clearing took place.
     // Returns false if no clearing took place, or on error.
@@ -398,27 +448,27 @@ class AudioAutomationItemMap : public std::map<CtrlList*, AudioAutomationItemMap
     // Clears all selected items in a specific controller.
     // Returns true if clearing took place.
     // Returns false if no clearing took place (ctrl list not found), or on error.
-    bool clearSelected(CtrlList*);
+    bool clearSelected(int id);
     // Returns true if any items in any controllers are selected.
     bool itemsAreSelected() const;
     // Returns true if any items in a specific controller are selected.
     // Returns false if ctrl list not found, or on error.
-    bool itemsAreSelected(CtrlList*) const;
+    bool itemsAreSelected(int id) const;
 };
 typedef AudioAutomationItemMap::iterator iAudioAutomationItemMap;
 typedef AudioAutomationItemMap::const_iterator ciAudioAutomationItemMap;
-typedef std::pair<CtrlList*, AudioAutomationItemMapStruct> AudioAutomationItemMapInsertPair;
+typedef std::pair<int /*ctrl id*/, AudioAutomationItemMapStruct> AudioAutomationItemMapInsertPair;
 typedef std::pair<iAudioAutomationItemMap, bool> AudioAutomationItemMapInsertResult;
 
-class AudioAutomationItemTrackMap : public std::map<Track*, AudioAutomationItemMap, std::less<Track* >>
+class AudioAutomationItemTrackMap : public std::map<const Track*, AudioAutomationItemMap, std::less<const Track* >>
 {
   public:
     // Returns true if insertion took place.
     // Returns false if assignment took place, or on error.
-    bool addSelected(Track*, CtrlList*, unsigned int frame, const AudioAutomationItem&);
+    bool addSelected(const Track*, int id, unsigned int frame, const AudioAutomationItem&);
     // Returns true if deletion took place.
     // Returns false if no deletion took place (not found), or on error.
-    bool delSelected(Track*, CtrlList*, unsigned int frame);
+    bool delSelected(const Track*, int id, unsigned int frame);
     // Clears all selected items in all controllers on all tracks.
     // Returns true if clearing took place.
     // Returns false if no clearing took place (track or ctrl list not found), or on error.
@@ -426,23 +476,23 @@ class AudioAutomationItemTrackMap : public std::map<Track*, AudioAutomationItemM
     // Clears all selected items in all controllers on a specific track.
     // Returns true if clearing took place.
     // Returns false if no clearing took place (track or ctrl list not found), or on error.
-    bool clearSelected(Track*);
+    bool clearSelected(const Track*);
     // Clears all selected items in a specific controller on a specific track.
     // Returns true if clearing took place.
     // Returns false if no clearing took place (track or ctrl list not found), or on error.
-    bool clearSelected(Track*, CtrlList*);
+    bool clearSelected(const Track*, int id);
     // Returns true if any items in any controllers on any tracks are selected.
     bool itemsAreSelected() const;
     // Returns true if any items in any controllers on a specific track are selected.
     // Returns false if track not found, or on error.
-    bool itemsAreSelected(Track*) const;
+    bool itemsAreSelected(const Track*) const;
     // Returns true if any items in a specific controller on a specific track are selected.
     // Returns false if track or ctrl list not found, or on error.
-    bool itemsAreSelected(Track*, CtrlList*) const;
+    bool itemsAreSelected(const Track*, int id) const;
 };
 typedef AudioAutomationItemTrackMap::iterator iAudioAutomationItemTrackMap;
 typedef AudioAutomationItemTrackMap::const_iterator ciAudioAutomationItemTrackMap;
-typedef std::pair<Track*, AudioAutomationItemMap> AudioAutomationItemTrackMapInsertPair;
+typedef std::pair<const Track*, AudioAutomationItemMap> AudioAutomationItemTrackMapInsertPair;
 typedef std::pair<iAudioAutomationItemTrackMap, bool> AudioAutomationItemTrackMapInsertResult;
 
 struct PasteCtrlListStruct
@@ -489,6 +539,26 @@ typedef PasteCtrlTrackMap::const_iterator ciPasteCtrlTrackMap;
 typedef std::pair<const QUuid& /*track uuid*/, PasteCtrlListList> PasteCtrlTrackMapInsertPair;
 typedef std::pair<iPasteCtrlTrackMap, bool> PasteCtrlTrackMapInsertResult;
 
+
+//-----------------------------------------------------
+// The following are inter-process audio controller
+//  messaging classes informing of changes
+//-----------------------------------------------------
+
+struct CtrlGUIMessage
+{
+    enum Type { PAINT_UPDATE, ADDED, DELETED };
+
+    Type _type;
+    const Track* _track;
+    int _id;
+    unsigned int _frame;
+    double _value;
+
+    CtrlGUIMessage();
+    // Type UPDATE only requires the first two arguments whereas CHANGED can use all of them.
+    CtrlGUIMessage(const Track* track, int id, unsigned int frame = 0, double value = 0.0, Type type = PAINT_UPDATE);
+};
 
 extern double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlStruct* mapper, int midi_ctlnum, int midi_val);
 

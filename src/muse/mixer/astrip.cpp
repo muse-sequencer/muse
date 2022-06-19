@@ -127,7 +127,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
         val = MusEGlobal::config.minSlider;
       else
       {
-        val = muse_val2dbr(val);
+        val = muse_val2db(val);
         if(val < MusEGlobal::config.minSlider)
           val = MusEGlobal::config.minSlider;
       }
@@ -498,7 +498,7 @@ void AudioComponentRack::updateComponents()
           val = MusEGlobal::config.minSlider;
         else
         {
-          val = muse_val2dbr(val);
+          val = muse_val2db(val);
           if(val < MusEGlobal::config.minSlider)
             val = MusEGlobal::config.minSlider;
         }
@@ -1071,7 +1071,7 @@ void AudioStrip::updateVolume()
             val = MusEGlobal::config.minSlider;
           else
           {
-            val = muse_val2dbr(vol);
+            val = muse_val2db(vol);
             if(val < MusEGlobal::config.minSlider)
               val = MusEGlobal::config.minSlider;
           }
@@ -1612,7 +1612,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
         track_vol = MusEGlobal::config.minSlider;
       else
       {
-        track_vol = muse_val2dbr(track_vol);
+        track_vol = muse_val2db(track_vol);
         if(track_vol < MusEGlobal::config.minSlider)
           track_vol = MusEGlobal::config.minSlider;
       }
@@ -1825,6 +1825,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       autoType->addAction(tr("Auto off"), MusECore::AUTO_OFF);
       autoType->addAction(tr("Read"), MusECore::AUTO_READ);
       autoType->addAction(tr("Touch"), MusECore::AUTO_TOUCH);
+      autoType->addAction(tr("Latch"), MusECore::AUTO_LATCH);
       autoType->addAction(tr("Write"), MusECore::AUTO_WRITE);
       autoType->setCurrentItem(at->automationType());
 
@@ -1833,7 +1834,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       colorAutoType();
 
       autoType->setToolTip(tr("Automation type"));
-      autoType->setStatusTip(tr("Automation type: Off, Read, Touch or Write. Press F1 for help."));
+      autoType->setStatusTip(tr("Automation type: Off, Read, Touch, Latch or Write. Press F1 for help."));
       connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
       bottomLayout->addWidget(autoType, 2, 0, 1, 2);
 
@@ -1888,7 +1889,9 @@ void AudioStrip::setStripStyle() {
 
 void AudioStrip::colorAutoType() {
 
-      if (track->automationType() == MusECore::AUTO_TOUCH || track->automationType() == MusECore::AUTO_WRITE)
+      if (track->automationType() == MusECore::AUTO_TOUCH ||
+          track->automationType() == MusECore::AUTO_LATCH ||
+          track->automationType() == MusECore::AUTO_WRITE)
       {
           autoType->setStyleSheet("QToolButton { background: rgb(150, 0, 0); }");
       }

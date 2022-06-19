@@ -952,7 +952,7 @@ void TList::volumeSelectedTracksSlot(int incrementValue)
         {
             MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(t);
             float vol = at->volume();
-            float dbVol = muse_val2dbr(vol);
+            float dbVol = muse_val2db(vol);
             float newVolume = dbVol + float(incrementValue)/2;
             if (newVolume < MusEGlobal::config.minSlider)
                 newVolume = MusEGlobal::config.minSlider;
@@ -1042,7 +1042,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
             channel = qMax(channel, 0);
 
             if(channel != mt->outChannel())
-                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, mt, mt->outChannel(), channel));
+                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, mt, mt->outChannel(), channel, 0, 0, 0));
         }
         else
         {
@@ -1063,7 +1063,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
                 channel = qMax(channel, 0);
 
                 if(channel != t->outChannel() && (doAllTracks || t->selected()))
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->outChannel(), channel));
+                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->outChannel(), channel, 0, 0, 0));
             }
         }
 
@@ -1088,7 +1088,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
                 channel = qMax(channel, 1);
 
                 if(channel != track->channels())
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, track, track->channels(), channel));
+                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, track, track->channels(), channel, 0, 0, 0));
             }
             else
             {
@@ -1111,7 +1111,7 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
                     channel = qMax(channel, 1);
 
                     if(channel != t->channels() && (doAllTracks || t->selected()))
-                        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->channels(), channel));
+                        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->channels(), channel, 0, 0, 0));
                 }
             }
 
@@ -2244,7 +2244,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     for (const auto tit : *tl)
                     {
                         if (tit->selected() && tit->canRecordMonitor())
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, tit, val));
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, tit, val, 0, 0, 0, 0));
                     }
                     if (!operations.empty())
                         MusEGlobal::song->applyOperationGroup(operations);
@@ -2267,7 +2267,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                     if(other_t->type() != t->type())
                         continue;
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, other_t, val));
+                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, other_t, val, 0, 0, 0, 0));
                 }
                 if(!operations.empty())
                 {
@@ -2433,14 +2433,14 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                     for (const auto it : *tracks) {
                         if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state, 0, 0, 0, 0));
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
                     for (const auto it : *tracks) {
                         if (it->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state));
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state, 0, 0, 0, 0));
                     }
                 }
                 if(!operations.empty())
@@ -2849,14 +2849,14 @@ void TList::outputAutoMenuSorted(PopupMenu* p, QList<const MusECore::CtrlList*> 
     }
 }
 
-    void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
+void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
 {
     if (turnOff)
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, state));
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, state, 0, 0, 0, 0));
     else if (t->off())
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, false));
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, false, 0, 0, 0, 0));
     else
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, t, state));
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, t, state, 0, 0, 0, 0));
 }
 
 void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)

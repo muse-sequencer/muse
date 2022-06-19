@@ -1961,7 +1961,7 @@ void Canvas::setTool(int t)
 //   findCurrentItem
 //---------------------------------------------------------
 
-CItem *Canvas::findCurrentItem(const QPoint &cStart)
+CItem *Canvas::findCurrentItem(const QPoint &cStart) const
 {
    //---------------------------------------------------
    //    set curItem to item mouse is pointing

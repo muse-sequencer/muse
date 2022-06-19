@@ -398,7 +398,11 @@ GlobalConfigValues config = {
       true,                         // showStatusBar
       6,                             // recentListLength - number of files in recent menu
       false,
-      false
+      false,
+      true,                         // audioAutomationDrawDiscrete
+      true,                         // audioAutomationShowBoxes
+      true,                         // audioAutomationOptimize
+      2                             // audioAutomationPointRadius
 };
 
 } // namespace MusEGlobal

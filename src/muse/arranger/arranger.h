@@ -31,11 +31,9 @@
 #include "type_defs.h"
 #include "tools.h"
 
+#include "ctrl.h"
 
 // Forward declarations:
-//class QKeyEvent;
-//class QPoint;
-//class QComboBox;
 class QScrollBar;
 class QVBoxLayout;
 class QHBoxLayout;
@@ -161,7 +159,9 @@ class Arranger : public QWidget {
       void setTool(int);
       void updateTrackInfo(MusECore::SongChangedStruct_t flags);
       void configChanged();
-      void controllerChanged(MusECore::Track *t, int ctrlId);
+      void controllerChanged(
+        const MusECore::Track *t, int CtrlId,
+        unsigned int frame = 0, MusECore::CtrlGUIMessage::Type type = MusECore::CtrlGUIMessage::PAINT_UPDATE);
       void focusCanvas();
       void verticalScrollSetYpos(unsigned);
       void toggleTrackHeights();

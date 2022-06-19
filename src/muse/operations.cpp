@@ -253,6 +253,9 @@ unsigned int PendingOperationItem::getIndex() const
     case AddAudioCtrlVal:
       return _posLenVal;  // Frame
     
+    case AddAudioCtrlValStruct:
+      return _posLenVal;  // Frame
+
     case DeleteAudioCtrlVal:
       return _iCtrl->first;  // Frame
     
@@ -1325,10 +1328,17 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
     case AddAudioCtrlVal:
-      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f selected:%d\n",
-              _aud_ctrl_list, _posLenVal, _ctl_dbl_val, _selected);
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlVal: ctrl_l:%p frame:%u val:%f ctl_flags:%d\n",
+              _aud_ctrl_list, _posLenVal, _ctl_dbl_val, _ctl_flags);
       // Add will replace if found.
-      _aud_ctrl_list->add(_posLenVal, _ctl_dbl_val, _selected);
+      _aud_ctrl_list->add(_posLenVal, _ctl_dbl_val, _ctl_flags);
+      flags |= SC_AUDIO_CONTROLLER;
+    break;
+    case AddAudioCtrlValStruct:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage AddAudioCtrlValStruct: ctrl_l:%p frame:%u val:%f selected:%d\n",
+              _aud_ctrl_list, _posLenVal, _audCtrlValStruct->value(), _audCtrlValStruct->selected());
+      // Add will replace if found.
+      _aud_ctrl_list->add(_posLenVal, *_audCtrlValStruct);
       flags |= SC_AUDIO_CONTROLLER;
     break;
     case DeleteAudioCtrlVal:
@@ -1348,11 +1358,13 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       // Otherwise erase + add is required.
       else
       {
-        // Save the old selected state.
-        const bool sel = _iCtrl->second.selected();
-
+        // Get the old value.
+        CtrlVal new_cv(_iCtrl->second);
+        // Change only the value member.
+        new_cv.setValue(_ctl_dbl_val);
+        // Erase and re-insert. TODO TODO: Use C++17 nodes extract(). I think already done in my other branch.
         _aud_ctrl_list->erase(_iCtrl);
-        _aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, CtrlVal(_ctl_dbl_val, sel)));
+        _aud_ctrl_list->insert(CtrlListInsertPair_t(_posLenVal, new_cv));
       }
       flags |= SC_AUDIO_CONTROLLER;
     break;
@@ -2613,10 +2625,12 @@ bool PendingOperationList::add(PendingOperationItem op)
           {
             // Simply replace the value.
             poi._ctl_dbl_val = op._ctl_dbl_val;
-            poi._selected = op._selected;
+            poi._ctl_flags = op._ctl_flags;
             // An operation will still take place.
             return true;
           }
+#if 0
+// TODO? ModifyAudioCtrlVal command has no flags member.
           else if(poi._type == PendingOperationItem::DeleteAudioCtrlVal && poi._iCtrl->first == op._posLenVal)
           {
             // Transform existing delete command into a modify command.
@@ -2634,9 +2648,29 @@ bool PendingOperationList::add(PendingOperationItem op)
             // An operation will still take place.
             return true;
           }
+#endif
         }
       break;
       
+      case PendingOperationItem::AddAudioCtrlValStruct:
+        if(poi._aud_ctrl_list == op._aud_ctrl_list)
+        {
+          if(poi._type == PendingOperationItem::AddAudioCtrlValStruct && poi._posLenVal == op._posLenVal)
+          {
+            if(op._audCtrlValStruct)
+            {
+              // Done with the existing original replacement structure. If it exists, delete it.
+              if(poi._audCtrlValStruct)
+                delete poi._audCtrlValStruct;
+              // Replace the existing structure pointer with the given one.
+              poi._audCtrlValStruct = op._audCtrlValStruct;
+              // An operation will still take place.
+              return true;
+            }
+          }
+        }
+      break;
+
       case PendingOperationItem::DeleteAudioCtrlVal:
         if(poi._iCtrl == op._iCtrl)
         {
@@ -2697,6 +2731,8 @@ bool PendingOperationList::add(PendingOperationItem op)
             // An operation will still take place.
             return true;
           }
+#if 0
+// TODO? ModifyAudioCtrlVal command has no flags member.
           else if(poi._type == PendingOperationItem::AddAudioCtrlVal && poi._posLenVal == op._iCtrl->first &&
             // If the given ModifyAudioCtrlVal command's new frame is the same as the old.
             op._posLenVal == op._iCtrl->first)
@@ -2706,6 +2742,7 @@ bool PendingOperationList::add(PendingOperationItem op)
             // An operation will still take place.
             return true;
           }
+#endif
         }
       break;
       

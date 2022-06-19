@@ -75,6 +75,7 @@
 #include "xml.h"
 #include "tools.h"
 #include "partcolortoolbar.h"
+#include "automation_mode_toolbar.h"
 
 namespace MusEGui {
 
@@ -111,6 +112,12 @@ ArrangerView::ArrangerView(QWidget* parent)
   // Make sure name doesn't conflict with other TopWin edit toolbar object names.
   editTools->setObjectName("arrangerTools");
 
+  automationModeToolBar = new AutomationModeToolBar(this);
+  automationModeToolBar->setInterpolateMode(MusEGlobal::config.audioAutomationDrawDiscrete ? 0 : 1);
+  automationModeToolBar->setBoxMode(MusEGlobal::config.audioAutomationShowBoxes ? 0 : 1);
+  automationModeToolBar->setOptimize(MusEGlobal::config.audioAutomationOptimize);
+  addToolBar(automationModeToolBar);
+
   addToolBar(visTracks);
 
   partColorToolBar = new PartColorToolbar(this);
@@ -131,7 +138,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(MusEGlobal::muse, &MusE::configChanged, editTools, &EditToolBar::configChanged);
-
+  connect(automationModeToolBar, &AutomationModeToolBar::interpolateModeChanged, [this](int mode) { automationInterpolateModeChanged(mode); } );
+  connect(automationModeToolBar, &AutomationModeToolBar::boxModeChanged, [this](int mode) { automationBoxModeChanged(mode); } );
+  connect(automationModeToolBar, &AutomationModeToolBar::optimizeChanged, [this](bool v) { automationOptimizeChanged(v); } );
 
 
   //-------- Edit Actions
@@ -1152,5 +1161,37 @@ void ArrangerView::execUserScript(int id)
                                     MusECore::getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
 
+//---------------------------------------------------------
+//   automationInterpolateModeChanged
+//---------------------------------------------------------
+void ArrangerView::automationInterpolateModeChanged(int m)
+{
+  if(m == 0)
+    MusEGlobal::config.audioAutomationDrawDiscrete = true;
+  else if(m == 1)
+    MusEGlobal::config.audioAutomationDrawDiscrete = false;
+}
+
+//---------------------------------------------------------
+//   automationBoxModeChanged
+//---------------------------------------------------------
+void ArrangerView::automationBoxModeChanged(int m)
+{
+  if(m == 0)
+    MusEGlobal::config.audioAutomationShowBoxes = true;
+  else if(m == 1)
+    MusEGlobal::config.audioAutomationShowBoxes = false;
+  // Update to redraw any points.
+  if(getArranger() && getArranger()->getCanvas())
+    getArranger()->getCanvas()->update();
+}
+
+//---------------------------------------------------------
+//   automationOptimizeChanged
+//---------------------------------------------------------
+void ArrangerView::automationOptimizeChanged(bool v)
+{
+  MusEGlobal::config.audioAutomationOptimize = v;
+}
 
 } // namespace MusEGui

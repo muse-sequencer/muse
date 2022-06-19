@@ -50,6 +50,8 @@
 #define muse_log10r(x) (round(log10(x) * 1000000.0) * 0.000001)
 // Convert value to dB, rounding to nearest .000001 due to inaccuracy with log.
 #define muse_val2dbr(x) (round(log10(x) * 20000000.0) * 0.000001)
+// Convert value to dB.
+#define muse_val2db(x) (log10(x) * 20.0)
 // Convert dB to val.
 #define muse_db2val(x) pow(10, (x * 0.05))
 // Round to the nearest .000001

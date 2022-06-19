@@ -286,7 +286,7 @@ LV2_Feature lv2Features [] =
 };
 
 std::vector<LV2Synth *> synthsToFree;
-QVector<CtrlEnumValues *> enumsToFree;
+QVector<CtrlVal::CtrlEnumValues *> enumsToFree;
 
 #define SIZEOF_ARRAY(x) sizeof(x)/sizeof(x[0])
 
@@ -3006,12 +3006,12 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
 //                    printf("*** Groups: %s\n", qPrintable(groupString));
             }
 
-            CtrlEnumValues *enumValues = nullptr;
+            CtrlVal::CtrlEnumValues *enumValues = nullptr;
             LV2ControlPortType _cType = LV2_PORT_CONTINUOUS;
             if (lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portEnumeration)) {
                 LilvScalePoints* scalePoints = lilv_port_get_scale_points(_handle, _port);
                 if (scalePoints) {
-                    enumValues = new CtrlEnumValues;
+                    enumValues = new CtrlVal::CtrlEnumValues;
                     LILV_FOREACH(scale_points, it, scalePoints) {
                         const LilvScalePoint* sp = lilv_scale_points_get(scalePoints, it);
                         const LilvNode* lab = lilv_scale_point_get_label(sp);
@@ -3030,8 +3030,6 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             }
             else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
                 _cType = LV2_PORT_TOGGLE;
-            else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portDiscrete))
-                _cType = LV2_PORT_DISCRETE;
             else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portInteger))
                 _cType = LV2_PORT_INTEGER;
             else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portLogarithmic))
@@ -3045,8 +3043,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portTrigger))
                 isTrigger = true;
 
+            const bool discrete = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portDiscrete);
+
             cPorts->push_back(LV2ControlPort(_port, j, 0.0f, _portName, _portSym, _cType, isCVPort,
-                                             enumValues, groupString, isTrigger, notOnGui));
+                                             enumValues, groupString, isTrigger, notOnGui,
+                                             discrete));
 
             if(std::isnan(_pluginControlsDefault [j]))
                 _pluginControlsDefault [j] = 0;
@@ -3462,8 +3463,8 @@ bool LV2SynthIF::init(LV2Synth *s)
         int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
 
         // We have a controller number! Insert it and the lv2 port number into both maps.
-        _synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, i));
-        _synth->port2MidiCtlMap.insert(std::pair<int, int>(i, ctlnum));
+        _synth->midiCtl2PortMap.insert(MidiCtl2LadspaPortInsertPair(ctlnum, i));
+        _synth->port2MidiCtlMap.insert(MidiCtl2LadspaPortInsertPair(i, ctlnum));
 
         int id = genACnum(MusECore::MAX_PLUGINS, i);
         CtrlList *cl;
@@ -3493,7 +3494,6 @@ bool LV2SynthIF::init(LV2Synth *s)
         case LV2_PORT_CONTINUOUS:
             vt = VAL_LINEAR;
             break;
-        case LV2_PORT_DISCRETE:
         case LV2_PORT_INTEGER:
             vt = VAL_INT;
             break;
@@ -3508,8 +3508,11 @@ bool LV2SynthIF::init(LV2Synth *s)
         }
 
         cl->setValueType(vt);
-        cl->setMode(((_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
-                     ||(_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC))? CtrlList::INTERPOLATE : CtrlList::DISCRETE);
+        // For now we do not allow interpolation of integer or enum controllers.
+        // TODO: It would require custom line drawing and corresponding hit detection.
+        cl->setMode(!_controlInPorts [i].isDiscrete &&
+                    (_controlInPorts [i].cType == LV2_PORT_CONTINUOUS || _controlInPorts [i].cType == LV2_PORT_LOGARITHMIC) ?
+                      CtrlList::INTERPOLATE : CtrlList::DISCRETE);
 
         if(!_controlInPorts [i].isCVPort)
             lilv_instance_connect_port(_handle, idx, &_controls [i].val);
@@ -5378,7 +5381,7 @@ const char *LV2SynthIF::paramOutName(long unsigned int i)
     return _controlOutPorts [i].cName;
 }
 
-const CtrlEnumValues* LV2SynthIF::ctrlEnumValues(unsigned long i) const {
+const CtrlVal::CtrlEnumValues* LV2SynthIF::ctrlEnumValues(unsigned long i) const {
 
     if (i >= _inportsControl)
         return nullptr;
@@ -5421,7 +5424,6 @@ CtrlValueType LV2SynthIF::ctrlValueType(unsigned long i) const
     case LV2_PORT_CONTINUOUS:
         vt = VAL_LINEAR;
         break;
-    case LV2_PORT_DISCRETE:
     case LV2_PORT_INTEGER:
         vt = VAL_INT;
         break;
@@ -5446,7 +5448,7 @@ CtrlList::Mode LV2SynthIF::ctrlMode(unsigned long i) const
 {
     assert(i < _inportsControl);
 
-    return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
+    return !_synth->_controlInPorts [i].isDiscrete && ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
             ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
 
@@ -6122,7 +6124,7 @@ const char *LV2PluginWrapper::portName(unsigned long i)
     return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
 }
 
-const CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
+const CtrlVal::CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 {
     const auto& it = _synth->_idxToControlMap.find(i);
     assert(it != _synth->_idxToControlMap.end());
@@ -6145,7 +6147,6 @@ CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
     case LV2_PORT_CONTINUOUS:
         vt = VAL_LINEAR;
         break;
-    case LV2_PORT_DISCRETE:
     case LV2_PORT_INTEGER:
         vt = VAL_INT;
         break;
@@ -6171,7 +6172,7 @@ CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
     i = it->second;
     assert(i < _controlInPorts);
 
-    return ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
+    return !_synth->_controlInPorts [i].isDiscrete && ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
             ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
 bool LV2PluginWrapper::hasNativeGui() const

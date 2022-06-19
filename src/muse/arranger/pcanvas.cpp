@@ -108,12 +108,6 @@ using std::set;
 
 namespace MusEGui {
 
-const int PartCanvas::_automationPointDetectDist = 4;
-const int PartCanvas::_automationPointWidthUnsel = 4;
-const int PartCanvas::_automationPointWidthSel = 6;
-const int PartCanvas::_automationTopMargin = PartCanvas::_automationPointWidthSel / 2 + 1;
-const int PartCanvas::_automationBottomMargin = PartCanvas::_automationPointWidthSel / 2 + 1;
-
 //---------------------------------------------------------
 //   NPart
 //---------------------------------------------------------
@@ -171,6 +165,9 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       setMouseTracking(true);
       drag          = DRAG_OFF;
       curColorIndex = 0;
+
+      // Set some point variable defaults. They will change when config changes.
+      setAutomationPointRadius(2);
 
       updateItems();
       updateAudioAutomation();
@@ -657,14 +654,14 @@ void PartCanvas::updateAudioAutomation()
   for (MusECore::ciTrack it = tracks->cbegin(); it != tracks->cend(); ++it) {
     if((*it)->isMidiTrack())
       continue;
-    MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*it);
+    const MusECore::AudioTrack* track = static_cast<const MusECore::AudioTrack*>(*it);
       // Do not include hidden tracks.
     if (!track->isVisible())
       continue;
     const MusECore::CtrlListList* cll = track->controller();
     for(MusECore::ciCtrlList icll = cll->cbegin(); icll != cll->cend(); ++icll)
     {
-      MusECore::CtrlList* cl = icll->second;
+      const MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
       if(!cl->isVisible())
         continue;
@@ -692,10 +689,19 @@ void PartCanvas::updateAudioAutomation()
         // If we were moving, check that the track, cl, and frame are still found.
         if(!itemFound && isdrag && automation.currentCtrlValid &&
            track == automation.currentTrack && cl == automation.currentCtrlList && ic->first == automation.currentWorkingFrame)
+        {
           itemFound = true;
+          // Update the current frame now that it has changed, so that it can still be highlighted.
+          // This may be a moot 'point' (no pun intended), because as soon as the mouse is moved
+          //  after this, it may pick a different closer point to highlight.
+          // But at least this gives an opportunity to stay highlighted on this point for the moment,
+          //  even though there may be closer points to highlight.
+          automation.currentFrame = automation.currentWorkingFrame;
+        }
 
         automation.currentCtrlFrameList.addSelected(
-          track, cl, ic->first, MusECore::AudioAutomationItem(ic->first, cv.value(), isGroupEnd));
+          track, cl->id(), ic->first, MusECore::AudioAutomationItem(
+            ic->first, cv.value(), isGroupEnd, ic->second.discrete()));
       }
     }
   }
@@ -1152,18 +1158,41 @@ void PartCanvas::renameItem(CItem *item)
 
 QMenu* PartCanvas::genAutomationPopup(QMenu* menu)
       {
-      QMenu* automationMenu = menu;
-      if(!automationMenu)
-        automationMenu = new QMenu(this);
+      QMenu* automationTopMenu = menu;
+      if(!automationTopMenu)
+        automationTopMenu = new QMenu(this);
+
+      automationTopMenu->addAction(new MenuTitleItem(tr("Automation"), automationTopMenu));
+
+      QMenu* automationMenu = automationTopMenu->addMenu(tr("Graphs"));
 
       QAction* act;
 
-      automationMenu->addAction(new MenuTitleItem(tr("Automation"), automationMenu));
       act = automationMenu->addAction(tr("Remove selected"));
       act->setData(AUTO_OP_REMOVE);
       act->setEnabled(!automation.currentCtrlFrameList.empty());
 
-      automationMenu->addAction(new MenuTitleItem(tr("Automation paste/drop mode"), automationMenu));
+      act = automationMenu->addAction(tr("Align selected to point"));
+      act->setData(AUTO_OP_ALIGN_TO_SELECTED);
+      act->setCheckable(false);
+      act->setEnabled(automation.currentCtrlValid && !automation.currentCtrlFrameList.empty());
+
+      {
+        bool canDiscrete, canInterpolate;
+        haveSelectedAutomationMode(&canDiscrete, &canInterpolate);
+
+        act = automationMenu->addAction(tr("Set selected to discrete"));
+        act->setData(AUTO_OP_SET_DISCRETE);
+        act->setCheckable(false);
+        act->setEnabled(canDiscrete);
+
+        act = automationMenu->addAction(tr("Set selected to interpolated"));
+        act->setData(AUTO_OP_SET_INTERPOLATED);
+        act->setCheckable(false);
+        act->setEnabled(canInterpolate);
+      }
+
+      automationMenu->addAction(new MenuTitleItem(tr("Paste/drop mode"), automationMenu));
 
       QActionGroup* ag = new QActionGroup(automationMenu);
 
@@ -1193,7 +1222,7 @@ QMenu* PartCanvas::genAutomationPopup(QMenu* menu)
       act->setData(AUTO_OP_END_MOVE_MODE);
       act->setEnabled(MusEGlobal::song->audioCtrlMoveModeBegun() == true);
 
-      return automationMenu;
+      return automationTopMenu;
       }
 
 //---------------------------------------------------------
@@ -1210,10 +1239,14 @@ void PartCanvas::automationPopup(int n)
 
   Undo operations;
   if(n == AUTO_OP_REMOVE)
-  {
-    //MusEGlobal::song->endAudioCtrlMoveMode(operations);
     deleteSelectedAutomation(operations);
-  }
+  else if(n == AUTO_OP_ALIGN_TO_SELECTED)
+    alignSelectedAutomation(operations);
+  else if(n == AUTO_OP_SET_DISCRETE)
+    setSelectedAutomationMode(operations, MusECore::CtrlList::DISCRETE);
+  else if(n == AUTO_OP_SET_INTERPOLATED)
+    setSelectedAutomationMode(operations, MusECore::CtrlList::INTERPOLATE);
+
   else if(n >= AUTO_OP_NO_ERASE_MODE && n <= AUTO_OP_ERASE_RANGE_MODE)
   {
     MusECore::CtrlList::PasteEraseOptions opts = MusECore::CtrlList::PasteNoErase;
@@ -1259,7 +1292,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       return;
    }
 
-   if(n >= AUTO_OP_BASE_ENUM && n < AUTO_OP_END_ENUM)
+   if(n >= AUTO_OP_BASE_ENUM && n <= AUTO_OP_END_ENUM)
    {
       automationPopup(n);
       return;
@@ -1459,7 +1492,7 @@ bool PartCanvas::mousePress(QMouseEvent* event)
             itemPopup(curItem, n, ev_pos);
           else if(n >= TOOLS_ID_BASE && n < AUTO_OP_BASE_ENUM)
             canvasPopup(n);
-          else if(n >= AUTO_OP_BASE_ENUM && n < AUTO_OP_END_ENUM)
+          else if(n >= AUTO_OP_BASE_ENUM && n <= AUTO_OP_END_ENUM)
             automationPopup(n);
         }
         delete menu;
@@ -1860,7 +1893,7 @@ void PartCanvas::deselectAll(MusECore::Undo* undo)
   }
 }
 
-void PartCanvas::showStatusTip(QMouseEvent* event) {
+void PartCanvas::showStatusTip(QMouseEvent* event) const {
 
     static CItem* hoverItem = nullptr;
     static Tool localTool;
@@ -4131,21 +4164,23 @@ bool PartCanvas::copyAudioAutomation(
 
         // Write the item's frame and value.
         QString s = QString("%1 %2").arg(ic->first).arg(ic->second.value());
-        // Write whether the item is selected.
-        if(ic->second.selected())
-          s += QString(" s");
+        MusECore::CtrlVal::CtrlValueFlags flags = ic->second.flags();
+        // Strip out the group flag because we're determining it here.
+        flags &= ~MusECore::CtrlVal::VAL_NON_GROUP_END;
 
         // Get a look-ahead iterator to the next item.
         MusECore::ciCtrl icla = ic;
         ++icla;
 
-        // Look-ahead is at end? Force a group end with 'g'.
+        // Look-ahead is at end? Force a group end.
         // Else if the next item will NOT be used, ie. not selected or within positional range,
-        //  close out the group with a group end 'g'.
-        if(icla == cl->cend() ||
-           (useRange && (icla->first < p0.frame() || icla->first >= p1.frame())) ||
-           (!useRange && !icla->second.selected()))
-          s += QString(" g");
+        //  close out the group with a group end. Note the inverted logic (NON) of the actual flag.
+        if(icla != cl->cend() &&
+           (!useRange || (icla->first >= p0.frame() && icla->first < p1.frame())) &&
+           (useRange || icla->second.selected()))
+          flags |= MusECore::CtrlVal::VAL_NON_GROUP_END;
+        if(flags != MusECore::CtrlVal::VAL_NOFLAGS)
+          s += QString(" %1").arg(flags);
 
         s += QString(", ");
 
@@ -4942,7 +4977,7 @@ void PartCanvas::drawAutomationFills(QPainter& p, const QRect& rr, MusECore::Aud
     const MusECore::AudioAutomationItemList* aail = nullptr;
     if(isdrag && aaim)
     {
-      MusECore::ciAudioAutomationItemMap iaaim = aaim->find(cl);
+      MusECore::ciAudioAutomationItemMap iaaim = aaim->find(cl->id());
       if(iaaim != aaim->cend())
         aail = &iaaim->second._selectedList;
     }
@@ -5203,7 +5238,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
     const MusECore::AudioAutomationItemList* aail = nullptr;
     if(isdrag && aaim)
     {
-      MusECore::ciAudioAutomationItemMap iaaim = aaim->find(cl);
+      MusECore::ciAudioAutomationItemMap iaaim = aaim->find(cl->id());
       if(iaaim != aaim->cend())
         aail = &iaaim->second._selectedList;
     }
@@ -5229,6 +5264,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 
     bool isFirstPoint = true;
     bool in_group = false;
+    bool cvDiscrete = true;
 
     while(true)
     {
@@ -5241,6 +5277,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       unsigned int frame;
       double value;
       bool new_in_group = in_group;
+      bool newCvDiscrete = cvDiscrete;
 
       // Is the local structure frame equal to or lower than either
       //  the controller or erased controller frame?
@@ -5258,6 +5295,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 
         frame = iaail->second._wrkFrame;
         value = iaail->second._wrkVal;
+        newCvDiscrete = iaail->second._discrete;
 
         ++iaail;
 
@@ -5281,22 +5319,13 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
         // If in pasteErase or pasteEraseRange mode and we're in a group, skip this point.
         if(isdrag && !pasteNoErase && in_group)
         {
-//             // If there's also a controller value at this location, use it.
-//             if(!in_group && ic != cl->cend() && ic->first == ic_e->first)
-//             // If there's a controller value, use it.
-//             if(!in_group && ic != cl->cend() && ic->first != ic_e->first)
-//             {
-//               frame = ic->first;
-//               value = ic->second.value();
-//               ++ic;
-//             }
-
           ++ic_e;
           continue;
         }
 
         frame = ic_e->first;
         value = ic_e->second.value();
+        newCvDiscrete = ic_e->second.discrete();
         ++ic_e;
         // If there's also a controller value at this location, skip it.
         if(ic != cl->cend() && ic->first == ic_e->first)
@@ -5330,6 +5359,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 
         frame = ic->first;
         value = ic->second.value();
+        newCvDiscrete = ic->second.discrete();
 
         ++ic;
         // In paste erase range mode if this is the last point
@@ -5358,7 +5388,6 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       {
         isFirstPoint = false;
         oldY = newY;
-        //oldValue = value;
       }
 
       // Ideally we would like to cut the lines right at the rectangle boundaries.
@@ -5367,7 +5396,9 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       // A small acceptable speed hit relatively speaking - but far far better than drawing all.
       if(oldX <= rr.right() && newX >= rr.left() && oldY <= bottom && newY >= top)
       {
-        if(discrete)
+        // For now we do not allow interpolation of integer or enum controllers.
+        // TODO: It would require custom line drawing and corresponding hit detection.
+        if(discrete || cvDiscrete)
         {
           p.drawLine(oldX, oldY, newX, oldY);
           p.drawLine(newX, oldY, newX, newY);
@@ -5379,6 +5410,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       oldX = newX;
       oldY = newY;
       in_group = new_in_group;
+      cvDiscrete = newCvDiscrete;
 
       if (oldX > rr.right())
         break;
@@ -5413,6 +5445,8 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
     return;
   }
 
+  const MusECore::AudioTrack* ct = t;
+
   const bool pasteNoErase    = MusEGlobal::config.audioCtrlGraphPasteEraseOptions == MusECore::CtrlList::PasteNoErase;
   const bool pasteErase      = MusEGlobal::config.audioCtrlGraphPasteEraseOptions == MusECore::CtrlList::PasteErase;
   const bool pasteEraseRange = MusEGlobal::config.audioCtrlGraphPasteEraseOptions == MusECore::CtrlList::PasteEraseRange;
@@ -5420,15 +5454,18 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
   const bool isMoving = drag == DRAG_MOVE || drag == DRAGX_MOVE || drag == DRAGY_MOVE ||
     drag == DRAG_COPY || drag == DRAGX_COPY || drag == DRAGY_COPY;
 
-  const MusECore::CtrlListList* cll = t->controller();
-  const MusECore::CtrlListList* e_cll = t->erasedController();
+  const MusECore::CtrlListList* cll = ct->controller();
+  const MusECore::CtrlListList* e_cll = ct->erasedController();
+
+  const QColor hoverColor(Qt::yellow);
+  QPen hoverPen(hoverColor);
+  hoverPen.setCosmetic(true);
 
   const MusECore::AudioAutomationItemMap* aaim = nullptr;
-  if(isMoving)
   {
-    MusECore::ciAudioAutomationItemTrackMap iaitm = automation.currentCtrlFrameList.find(t);
-    if(iaitm != automation.currentCtrlFrameList.cend())
-      aaim = &iaitm->second;
+    const MusECore::ciAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.find(ct);
+    if(iatm != automation.currentCtrlFrameList.cend())
+      aaim = &iatm->second;
   }
 
   //-------------------------------------------------------------------
@@ -5445,17 +5482,14 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
     QColor vtx_col2(cl->color());
     vtx_col2.setAlpha(160);
     // If we happen to be using 1 pixel, use an inverted colour. Else use the line colour but slightly transparent.
-    const QColor& vtx_col = (_automationPointWidthUnsel == 1) ? vtx_col1 : vtx_col2;
+    const QColor& vtx_col = (_automationPointRadius == 0) ? vtx_col1 : vtx_col2;
     QPen pen(vtx_col);
     pen.setCosmetic(true);
-    const QColor hoverColor(Qt::yellow);
-    QPen hoverPen(hoverColor);
-    hoverPen.setCosmetic(true);
 
     const MusECore::AudioAutomationItemList* aail = nullptr;
     if(isMoving && aaim)
     {
-      MusECore::ciAudioAutomationItemMap iaaim = aaim->find(cl);
+      MusECore::ciAudioAutomationItemMap iaaim = aaim->find(cl->id());
       if(iaaim != aaim->cend())
         aail = &iaaim->second._selectedList;
     }
@@ -5486,6 +5520,7 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
       //-------------------------------------------------------------------
       //  Here we draw unselected vertices, but we ignore them if they are
       //   now being covered up by a moving group of vertices.
+      //  Exclude the currently highlighted point which is done below.
       //-------------------------------------------------------------------
       for( ; ic != cl->end(); ++ic)
       {
@@ -5509,12 +5544,19 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
             continue;
         }
 
-        if(!drawAutomationPoint(p, rr, hoverPen, pen, _automationPointWidthUnsel,
-          t, cl, ic->first, ic->first, ic->second.value()))
+        if(!automation.currentCtrlValid ||
+           automation.currentTrack != ct ||
+           automation.currentCtrlList != cl ||
+           automation.currentFrame != ic->first)
         {
-          // Force the iterator to the end.
-          ic = cl->end();
-          break;
+          if(!drawAutomationPoint(p, rr, hoverPen, pen, _automationPointRadius,
+            ct, cl, ic->first, ic->first, ic->second.value(), ic->second.discrete(),
+            MusEGlobal::config.audioAutomationShowBoxes))
+          {
+            // Force the iterator to the end.
+            ic = cl->end();
+            break;
+          }
         }
       }
 
@@ -5546,8 +5588,9 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
           // Just in case they happen to be selected.
           if(ic_e->second.selected())
           {
-            if(!fillAutomationPoint(p, rr, hoverColor, Qt::white, _automationPointWidthSel,
-              t, cl, ic_e->first, ic_e->first, ic_e->second.value()))     // Yes that's cl.
+            if(!fillAutomationPoint(p, rr, hoverColor, Qt::white, _automationPointRadius + _automationPointExtraRadius,
+              ct, cl, ic_e->first, ic_e->first, ic_e->second.value(), ic_e->second.discrete(),
+              MusEGlobal::config.audioAutomationShowBoxes))  // Yes that's cl.
             {
               // Force the iterator to the end.
               ic_e = e_cl->end();
@@ -5556,8 +5599,9 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
           }
           else
           {
-            if(!drawAutomationPoint(p, rr, hoverPen, pen, _automationPointWidthUnsel,
-              t, cl, ic_e->first, ic_e->first, ic_e->second.value()))     // Yes that's cl.
+            if(!drawAutomationPoint(p, rr, hoverPen, pen, _automationPointRadius,
+              ct, cl, ic_e->first, ic_e->first, ic_e->second.value(), ic_e->second.discrete(),
+              MusEGlobal::config.audioAutomationShowBoxes))     // Yes that's cl.
             {
               // Force the iterator to the end.
               ic_e = e_cl->end();
@@ -5591,15 +5635,16 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
   //-------------------------------------------------------------------
   // Now draw selected vertices, so that they always appear on top.
   //-------------------------------------------------------------------
-  MusECore::ciAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.find(t);
-  if(iatm != automation.currentCtrlFrameList.cend())
+
+  if(aaim)
   {
-    const MusECore::AudioAutomationItemMap& atm = iatm->second;
-    for(MusECore::ciAudioAutomationItemMap iaim = atm.cbegin(); iaim != atm.cend(); ++iaim)
+    for(MusECore::ciAudioAutomationItemMap iaim = aaim->cbegin(); iaim != aaim->cend(); ++iaim)
     {
-      const MusECore::CtrlList* cl = iaim->first;
-      // TODO: Pick a hover colour to contrast with line colour ?
-      const QColor hoverColor(Qt::yellow);
+      const int ctrlId = iaim->first;
+      MusECore::ciCtrlList icl = ct->controller()->find(ctrlId);
+      if(icl == ct->controller()->cend())
+        continue;
+      const MusECore::CtrlList* cl = icl->second;
       const MusECore::AudioAutomationItemList& ail = iaim->second._selectedList;
 
       //---------------------------------------------------
@@ -5610,47 +5655,104 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
         for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
         {
           if(!fillAutomationPoint(p, rr, Qt::lightGray, Qt::gray,
-             _automationPointWidthSel,
-             t, cl, iail->second._wrkFrame, iail->first, iail->second._value))
+             _automationPointRadius,
+             ct, cl, iail->second._wrkFrame, iail->first, iail->second._value, iail->second._discrete,
+             MusEGlobal::config.audioAutomationShowBoxes))
             break;
         }
       }
 
-      //---------------------------------------
-      // Draw all the working points.
-      //---------------------------------------
+      //---------------------------------------------------------------------------------------------
+      // Draw all the working points - excluding the currently highlighted point which is done below.
+      //---------------------------------------------------------------------------------------------
       for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
       {
-        if(!fillAutomationPoint(p, rr, hoverColor, Qt::white,
-          _automationPointWidthSel,
-          t, cl, iail->second._wrkFrame, iail->second._wrkFrame, iail->second._wrkVal))
-          break;
+        if(!automation.currentCtrlValid ||
+           automation.currentTrack != ct ||
+           automation.currentCtrlList != cl ||
+           automation.currentWorkingFrame != iail->second._wrkFrame)
+        {
+          if(!fillAutomationPoint(p, rr, hoverColor, Qt::white,
+            _automationPointRadius + _automationPointExtraRadius,
+            ct, cl, iail->second._wrkFrame, iail->second._wrkFrame, iail->second._wrkVal, iail->second._discrete,
+            MusEGlobal::config.audioAutomationShowBoxes))
+            break;
+        }
+      }
+    }
+  }
+
+  //------------------------------------------
+  // Now draw the currently highlighted point.
+  //------------------------------------------
+  if(automation.currentCtrlValid && automation.currentTrack == ct)
+  {
+    MusECore::ciCtrl ic_cur = automation.currentCtrlList->find(automation.currentFrame);
+    if(ic_cur != automation.currentCtrlList->cend())
+    {
+      if(ic_cur->second.selected())
+      {
+        if(aaim)
+        {
+          MusECore::ciAudioAutomationItemMap iaim_cur = aaim->find(automation.currentCtrlList->id());
+          if(iaim_cur != aaim->cend())
+          {
+            const MusECore::AudioAutomationItemList& ail_cur = iaim_cur->second._selectedList;
+            // We need more info than is available in the 'automation' object. Find the exact point.
+            // Here we look for the original frame (currentFrame), which is how the map is indexed.
+            MusECore::ciAudioAutomationItemList iail_cur = ail_cur.find(automation.currentFrame);
+            if(iail_cur != ail_cur.cend())
+            {
+              fillAutomationPoint(p, rr, hoverColor, Qt::white,
+                _automationPointRadius + _automationPointExtraRadius,
+                ct, automation.currentCtrlList, iail_cur->second._wrkFrame, iail_cur->second._wrkFrame,
+                iail_cur->second._wrkVal, iail_cur->second._discrete,
+                MusEGlobal::config.audioAutomationShowBoxes);
+            }
+          }
+        }
+      }
+      else
+      {
+        const QColor line_col(automation.currentCtrlList->color());
+        const QColor vtx_col1(line_col.red() ^ 255, line_col.green() ^ 255, line_col.blue() ^ 255);
+        QColor vtx_col2(automation.currentCtrlList->color());
+        vtx_col2.setAlpha(160);
+        // If we happen to be using 1 pixel, use an inverted colour. Else use the line colour but slightly transparent.
+        const QColor& vtx_col = (_automationPointRadius == 0) ? vtx_col1 : vtx_col2;
+        QPen pen(vtx_col);
+        pen.setCosmetic(true);
+
+        drawAutomationPoint(p, rr, hoverPen, pen, _automationPointRadius,
+          ct, automation.currentCtrlList, ic_cur->first, ic_cur->first, ic_cur->second.value(), ic_cur->second.discrete(),
+          MusEGlobal::config.audioAutomationShowBoxes);
       }
     }
   }
 }
 
 bool PartCanvas::drawAutomationPoint(
-  QPainter& p, const QRect& rr, const QPen& currentPen, const QPen& nonCurrentPen, int pointWidth,
-  const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame, double value)
+  QPainter& p, const QRect& rr, const QPen& currentPen, const QPen& nonCurrentPen, int pointRadius,
+  const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame,
+  double value, bool discrete, bool fullSize)
 {
+  const int pdia  = 2 * pointRadius /*+ 1*/;
   const int xpixel = mapx(MusEGlobal::tempomap.frame2tick(newFrame));
-  if(xpixel > rr.right())
+  if((fullSize && xpixel - pointRadius > rr.right()) || (!fullSize && xpixel > rr.right()))
     return false;
+
+  // Note that QRect::bottom() is y() + height() - 1.
+  const int bottom = rr.bottom() - _automationBottomMargin;
+  const int top = rr.top() + _automationTopMargin;
+  const int height = bottom - top;
+  double min, max;
+  cl->range(&min,&max);
 
   const bool isCurrent =
     automation.currentTrack == t &&
     automation.currentCtrlValid &&
     automation.currentCtrlList == cl &&
     automation.currentWorkingFrame == currentFrame;
-
-  // Note that QRect::bottom() is y() + height() - 1.
-  const int bottom = rr.bottom() - _automationBottomMargin;
-  const int top = rr.top() + _automationTopMargin;
-  const int height = bottom - top;
-  const int pw2  = pointWidth / 2;
-  double min, max;
-  cl->range(&min,&max);
 
   double y = value;
   if (cl->valueType() == MusECore::VAL_LOG ) {
@@ -5664,37 +5766,54 @@ bool PartCanvas::drawAutomationPoint(
     p.setPen(currentPen);
   else
     p.setPen(nonCurrentPen);
+  p.setBrush(QBrush());
 
   const int ypixel = bottom - rmapy_f(y) * height;
-  if(((xpixel + pw2 >= rr.left()) && (xpixel - pw2 <= rr.right())) &&
-    ((ypixel + pw2 >= top)  && (ypixel - pw2 <= bottom)))
-    // For some reason this is drawing one extra pixel width and height. ???
-    p.drawRect(xpixel - pw2, ypixel - pw2, pointWidth, pointWidth);
+  if(fullSize)
+  {
+    if(((xpixel + pointRadius >= rr.left()) && (xpixel - pointRadius <= rr.right())) &&
+      ((ypixel + pointRadius >= top)  && (ypixel - pointRadius <= bottom)))
+    {
+      if(discrete)
+        p.drawRect(xpixel - pointRadius, ypixel - pointRadius, pdia, pdia);
+      else
+        p.drawEllipse(xpixel - pointRadius, ypixel - pointRadius, pdia, pdia);
+    }
+  }
+  else
+  {
+    if(((xpixel >= rr.left()) && (xpixel <= rr.right())) &&
+      ((ypixel >= top)  && (ypixel <= bottom)))
+    {
+      p.drawPoint(xpixel, ypixel);
+    }
+  }
 
   return true;
 }
 
 bool PartCanvas::fillAutomationPoint(
-  QPainter& p, const QRect& rr, const QColor& currentColor, const QColor& nonCurrentColor, int pointWidth,
-  const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame, double value)
+  QPainter& p, const QRect& rr, const QColor& currentColor, const QColor& nonCurrentColor, int pointRadius,
+  const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame,
+  double value, bool discrete, bool fullSize)
 {
+  const int pdia  = 2 * pointRadius /*+ 1*/;
   const int xpixel = mapx(MusEGlobal::tempomap.frame2tick(newFrame));
-  if(xpixel > rr.right())
+  if((fullSize && xpixel - pointRadius > rr.right()) || (!fullSize && xpixel > rr.right()))
     return false;
+
+  // Note that QRect::bottom() is y() + height() - 1.
+  const int bottom = rr.bottom() - _automationBottomMargin;
+  const int top = rr.top() + _automationTopMargin;
+  const int height = bottom - top;
+  double min, max;
+  cl->range(&min,&max);
 
   const bool isCurrent =
     automation.currentTrack == t &&
     automation.currentCtrlValid &&
     automation.currentCtrlList == cl &&
     automation.currentWorkingFrame == currentFrame;
-
-  // Note that QRect::bottom() is y() + height() - 1.
-  const int bottom = rr.bottom() - _automationBottomMargin;
-  const int top = rr.top() + _automationTopMargin;
-  const int height = bottom - top;
-  const int pw2  = pointWidth / 2;
-  double min, max;
-  cl->range(&min,&max);
 
   double y = value;
   if (cl->valueType() == MusECore::VAL_LOG ) {
@@ -5705,9 +5824,37 @@ bool PartCanvas::fillAutomationPoint(
     y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
 
   const int ypixel = bottom - rmapy_f(y) * height;
-  if(((xpixel + pw2 >= rr.left()) && (xpixel - pw2 <= rr.right())) &&
-    ((ypixel + pw2 >= top)  && (ypixel - pw2 <= bottom)))
-    p.fillRect(xpixel - pw2, ypixel - pw2, _automationPointWidthSel, _automationPointWidthSel, isCurrent ? currentColor : nonCurrentColor);
+  if(fullSize)
+  {
+    if(((xpixel + pointRadius >= rr.left()) && (xpixel - pointRadius <= rr.right())) &&
+      ((ypixel + pointRadius >= top) && (ypixel - pointRadius <= bottom)))
+    {
+      if(discrete)
+      {
+        // Note the + 1 required here for fill width and height.
+        p.fillRect(xpixel - pointRadius, ypixel - pointRadius,
+          pdia + 1, pdia + 1, isCurrent ? currentColor : nonCurrentColor);
+      }
+      else
+      {
+        p.setPen(isCurrent ? currentColor : nonCurrentColor);
+        p.setBrush(isCurrent ? currentColor : nonCurrentColor);
+        p.drawEllipse(xpixel - pointRadius, ypixel - pointRadius, pdia, pdia);
+      }
+    }
+  }
+  else
+  {
+    if(((xpixel >= rr.left()) && (xpixel <= rr.right())) &&
+      ((ypixel >= top)  && (ypixel <= bottom)))
+    {
+      QColor c(isCurrent ? currentColor : nonCurrentColor);
+      // Force the point to be as bright and visible as possible.
+      c.setAlpha(255);
+      p.setPen(c);
+      p.drawPoint(xpixel, ypixel);
+    }
+  }
 
   return true;
 }
@@ -5874,12 +6021,22 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
       mouseY =  mapy(pointy);
       const int mouseX =  mapx(pointer.x());
 
-      std::int64_t closest_point_radius2 = PartCanvas::_automationPointDetectDist * PartCanvas::_automationPointDetectDist;
+      const std::int64_t detectRadius = _automationPointRadius;
+      const std::int64_t detectRadius2 = detectRadius * detectRadius;
+      const std::int64_t detectRadiusSel = _automationPointRadius + _automationPointExtraRadius;
+      const std::int64_t detectRadius2Sel = detectRadiusSel * detectRadiusSel;
+
+      std::int64_t closest_point_radius2 = 0;
       int closest_point_frame = 0;
       double closest_point_value = 0.0;
       MusECore::CtrlList* closest_point_cl = nullptr;
 
-      std::int64_t closest_line_dist2 = PartCanvas::_automationPointDetectDist * PartCanvas::_automationPointDetectDist;
+      std::int64_t closest_point_radius2_sel = 0;
+      int closest_point_frame_sel = 0;
+      double closest_point_value_sel = 0.0;
+      MusECore::CtrlList* closest_point_cl_sel = nullptr;
+
+      std::int64_t closest_line_dist2 = detectRadius2;
       MusECore::CtrlList* closest_line_cl = nullptr;
 
       MusECore::CtrlListList* cll = ((MusECore::AudioTrack*) t)->controller();
@@ -5894,6 +6051,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         int eventX = eventOldX;
         int eventOldY = -1;
         int eventY = eventOldY;
+        bool cvDiscrete = true;
         double min, max;
         cl->range(&min,&max);
         bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;
@@ -5931,17 +6089,43 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
             {
               const std::int64_t dx = mouseX - eventX;
               const std::int64_t dy = mouseY - eventY;
-              const std::int64_t r2 = dx * dx + dy * dy;
-              if(r2 < closest_point_radius2)
+              const std::int64_t dx2 = dx * dx;
+              const std::int64_t dy2 = dy * dy;
+              const std::int64_t r2 = dx2 + dy2;
+
+              const bool disc = ic->second.discrete();
+              if(ic->second.selected())
               {
-                closest_point_radius2 = r2;
-                closest_point_frame = ic->first;
-                closest_point_value = ic->second.value();
-                closest_point_cl = cl;
+                if(((disc && dx2 <= detectRadius2Sel && dy2 <= detectRadius2Sel) || (!disc && r2 <= detectRadius2Sel)) &&
+                  (!closest_point_cl_sel || r2 < closest_point_radius2_sel))
+                {
+                  closest_point_radius2_sel = r2;
+                  closest_point_frame_sel = ic->first;
+                  closest_point_value_sel = ic->second.value();
+                  closest_point_cl_sel = cl;
+                }
+              }
+              else
+              {
+                // Is the point close enough, and this is the first iteration or is the point
+                //  closer than any point so far?
+                // Unlike the selected points above, here we check which unselected point hit is the closest.
+                if(((disc && dx2 <= detectRadius2 && dy2 <= detectRadius2) || (!disc && r2 <= detectRadius2)) &&
+                  (!closest_point_cl || r2 < closest_point_radius2))
+                {
+                  closest_point_radius2 = r2;
+                  closest_point_frame = ic->first;
+                  closest_point_value = ic->second.value();
+                  closest_point_cl = cl;
+                }
               }
             }
 
-            const std::int64_t ldist2 = distanceSqToSegment(mouseX, mouseY, eventOldX, eventOldY, eventX, discrete ? eventOldY : eventY);
+            // For now we do not allow interpolation of integer or enum controllers.
+            // TODO: It would require custom line drawing and corresponding hit detection.
+            const bool isDiscrete = discrete || cvDiscrete;
+
+            const std::int64_t ldist2 = distanceSqToSegment(mouseX, mouseY, eventOldX, eventOldY, eventX, isDiscrete ? eventOldY : eventY);
             if(ldist2 < closest_line_dist2)
             {
               closest_line_dist2 = ldist2;
@@ -5950,6 +6134,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
 
             eventOldX = eventX;
             eventOldY = eventY;
+            cvDiscrete = ic->second.discrete();
           }
         }
 
@@ -5965,6 +6150,16 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         }
       }
 
+      // If there is a selected point anywhere nearby, it gets priority over unselected points,
+      //  no matter how close they may be.
+      if(closest_point_cl_sel)
+      {
+        // Re-use the non-selected variables, for ease below.
+        closest_point_frame = closest_point_frame_sel;
+        closest_point_value = closest_point_value_sel;
+        closest_point_cl = closest_point_cl_sel;
+      }
+
       // Is the mouse close to a vertex? Since we currently don't use the addNewCtrl accel key, vertices take priority over lines.
       if(closest_point_cl)
       {
@@ -5977,7 +6172,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         automation.currentVal = closest_point_value;
         // Store the text.
         if(closest_point_cl->valueType() == MusECore::VAL_LOG)
-          closest_point_value = muse_val2dbr(closest_point_value); // Here we can use the slower but accurate function.
+          closest_point_value = muse_val2db(closest_point_value); // Here we can use the slower but accurate function.
         automation.currentText = QString("Param:%1 Value:%2").arg(closest_point_cl->name()).arg(closest_point_value, 0, 'g', 3);
 
         setCursor();
@@ -5997,7 +6192,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         closest_point_cl->range(&min,&max);
         if(closest_point_cl->valueType() == MusECore::VAL_LOG)
           //closest_point_value = MusECore::fast_log10(closest_point_value) * 20.0;
-          value = muse_val2dbr(value); // Here we can use the slower but accurate function.
+          value = muse_val2db(value); // Here we can use the slower but accurate function.
         automation.currentText = QString("Param:%1 Frame:%2 Value:%3").arg(closest_point_cl->name()).arg(closest_point_frame).arg(value);
     //     automation.currentTextRect = fontMetrics().boundingRect(automation.currentText).adjusted(-4, -2, 4, 2);
         automation.currentTextRect = fontMetrics().boundingRect(automation.currentText).adjusted(0, 0, 4, 4);
@@ -6008,8 +6203,8 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
     //     double linMin = 20.0*MusECore::fast_log10(min);
     //     double linMax = 20.0*MusECore::fast_log10(max);
     //     double linVal = 20.0*MusECore::fast_log10(inLog);
-        const double linMin = muse_val2dbr(min);
-        const double linMax = muse_val2dbr(max);
+        const double linMin = muse_val2db(min);
+        const double linMax = muse_val2db(max);
         //const double n_value = (value - linMin) / (linMax - linMin); // Normalize
         automation.currentTick = MusEGlobal::tempomap.frame2tick(closest_point_frame);
         automation.currentYNorm = (value - linMin) / (linMax - linMin); // Normalize
@@ -6083,14 +6278,114 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
   setCursor();
 }
 
-void PartCanvas::controllerChanged(const MusECore::Track* t, int)
+void PartCanvas::controllerChanged(
+  const MusECore::Track* t, int ctrlId, unsigned int frame, MusECore::CtrlGUIMessage::Type type)
 {
-  redraw((QRect(0, mapy(t->y()), width(), rmapy(t->height()))));  // TODO Check this - correct?
+  //----------------------------------------------------------------------------
+  // We may be receiving this message from another thread, delayed by IPC timing.
+  // It is possible things may have changed by now. Be careful...
+  // Check if the track still exists.
+  //----------------------------------------------------------------------------
+  const bool trackExists = MusEGlobal::song->trackExists(t);
+
+  //--------------------------------------------------------------
+  // Check if the controller exists in the model and is visible.
+  //--------------------------------------------------------------
+  const MusECore::AudioTrack* at = nullptr;
+  const MusECore::CtrlList* track_cl = nullptr;
+  if(type == MusECore::CtrlGUIMessage::ADDED && trackExists && !t->isMidiTrack())
+  {
+    at = static_cast<const MusECore::AudioTrack*>(t);
+    MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
+    if(icl != at->controller()->cend())
+    {
+      if(icl->second->isVisible())
+        track_cl = icl->second;
+    }
+  }
+
+  //----------------------------------------------------
+  // Check if the point exists in the local structures.
+  //----------------------------------------------------
+
+  MusECore::iAudioAutomationItemTrackMap iaatm;
+  MusECore::iAudioAutomationItemMap iaim;
+  MusECore::iAudioAutomationItemList iail;
+  MusECore::AudioAutomationItemMap* aaim = nullptr;
+  bool iailFound = false;
+  if(type == MusECore::CtrlGUIMessage::ADDED || type == MusECore::CtrlGUIMessage::DELETED)
+  {
+    iaatm = automation.currentCtrlFrameList.find(t);
+    if(iaatm != automation.currentCtrlFrameList.end())
+    {
+      aaim = &iaatm->second;
+      iaim = aaim->find(ctrlId);
+      if(iaim != aaim->end())
+      {
+        iail = iaim->second._selectedList.find(frame);
+        if(iail != iaim->second._selectedList.end())
+          iailFound = true;
+      }
+    }
+  }
+
+  bool found = false;
+
+  //--------------------------------------------
+  // Check if the point exists in the model.
+  //--------------------------------------------
+  if(track_cl)
+  {
+    MusECore::ciCtrl ic = track_cl->find(frame);
+    if(ic != track_cl->cend() && (ic->second.flags() & MusECore::CtrlVal::VAL_SELECTED))
+    {
+      found = true;
+      const MusECore::CtrlVal& cv = ic->second;
+      //----------------------------------------------------------------------------------------------
+      // If a local item exists for the point, update its members from the model's item. //----------------------------------------------------------------------------------------------
+      if(iailFound)
+      {
+        // No choice but to update the working value as well.
+        iail->second._wrkVal = iail->second._value = cv.value();
+        iail->second._discrete = cv.discrete();
+      }
+      //---------------------------------------------------------------------
+      // Otherwise go ahead and add a new local item based on the model item.
+      //---------------------------------------------------------------------
+      else
+        automation.currentCtrlFrameList.addSelected(at, ctrlId, frame, MusECore::AudioAutomationItem(frame, cv));
+    }
+  }
+
+  //--------------------------------------------------------------------
+  // If adding and the point was not found in the model, or if deleting,
+  //  delete the point in the local structures.
+  //--------------------------------------------------------------------
+  if((type == MusECore::CtrlGUIMessage::ADDED && !found) || type == MusECore::CtrlGUIMessage::DELETED)
+  {
+    if(iailFound)
+    {
+      //automation.currentCtrlFrameList.delSelected(t, ctrlId, frame);
+      iaim->second._selectedList.erase(iail);
+      if(iaim->second._selectedList.empty())
+        aaim->erase(iaim);
+      if(aaim->empty())
+        automation.currentCtrlFrameList.erase(iaatm);
+    }
+  }
+
+  //--------------------------------------------------------------------
+  // Paint update.
+  //--------------------------------------------------------------------
+  if(trackExists &&
+     (type == MusECore::CtrlGUIMessage::PAINT_UPDATE ||
+      (track_cl && (type == MusECore::CtrlGUIMessage::ADDED || type == MusECore::CtrlGUIMessage::DELETED))))
+    redraw((QRect(0, mapy(t->y()), width(), rmapy(t->height()))));  // TODO Check this - correct?
 }
 
 bool PartCanvas::getMovementRange(
   const MusECore::CtrlList* cl, unsigned int frame, double* value, unsigned int* minPrevFrame,
-  unsigned int* maxNextFrame, bool* maxNextFrameValid)
+  unsigned int* maxNextFrame, bool* maxNextFrameValid) const
 {
   MusECore::ciCtrl iold = cl->find(frame);
   if(iold == cl->cend())
@@ -6149,7 +6444,7 @@ bool PartCanvas::getMovementRange(
   return true;
 }
 
-void PartCanvas::unselectAllAutomation(MusECore::Undo& undo)
+void PartCanvas::unselectAllAutomation(MusECore::Undo& undo) const
 {
   for (MusECore::ciTrack it = tracks->cbegin(); it != tracks->cend(); ++it) {
     if((*it)->isMidiTrack())
@@ -6173,7 +6468,7 @@ void PartCanvas::unselectAllAutomation(MusECore::Undo& undo)
   }
 }
 
-void PartCanvas::deleteSelectedAutomation(MusECore::Undo& undo)
+void PartCanvas::deleteSelectedAutomation(MusECore::Undo& undo) const
 {
   for(MusECore::ciAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.cbegin(); iatm != automation.currentCtrlFrameList.cend(); ++iatm)
   {
@@ -6181,12 +6476,183 @@ void PartCanvas::deleteSelectedAutomation(MusECore::Undo& undo)
     const MusECore::AudioAutomationItemMap& atm = iatm->second;
     for(MusECore::ciAudioAutomationItemMap iaim = atm.cbegin(); iaim != atm.cend(); ++iaim)
     {
-      const MusECore::CtrlList* cl = iaim->first;
+      const int ctrlId = iaim->first;
       const MusECore::AudioAutomationItemList& ail = iaim->second._selectedList;
       for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
       {
         const unsigned int frame = iail->first;
-        undo.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, track, cl->id(), frame, false));
+        undo.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, track, ctrlId, frame, 0, 0, 0));
+      }
+    }
+  }
+}
+
+void PartCanvas::alignSelectedAutomation(MusECore::Undo& undo) const
+{
+  if(!automation.currentCtrlValid)
+    return;
+
+  const MusECore::Track* curtrack = automation.currentTrack;
+  const int curid = automation.currentCtrlList->id();
+  const unsigned int curframe = automation.currentFrame;
+  const double curval = automation.currentVal;
+  double min, max, trackMin, trackMax;
+  automation.currentCtrlList->range(&min, &max);
+
+  for(MusECore::ciAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.cbegin();
+      iatm != automation.currentCtrlFrameList.cend(); ++iatm)
+  {
+    const MusECore::Track* track = iatm->first;
+    if(track->isMidiTrack())
+      continue;
+    const MusECore::AudioTrack* at = static_cast<const MusECore::AudioTrack*>(track);
+    const MusECore::AudioAutomationItemMap& atm = iatm->second;
+    for(MusECore::ciAudioAutomationItemMap iaim = atm.cbegin(); iaim != atm.cend(); ++iaim)
+    {
+      const int ctrlId = iaim->first;
+      MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
+      if(icl == at->controller()->cend())
+        continue;
+      const MusECore::CtrlList* track_cl = icl->second;
+      track_cl->range(&trackMin, &trackMax);
+
+      const MusECore::AudioAutomationItemList& ail = iaim->second._selectedList;
+      for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
+      {
+        const unsigned int frame = iail->first;
+        // Skip the given point.
+        if(track == curtrack && ctrlId == curid && frame == curframe)
+          continue;
+
+        double newValue = curval;
+
+        if(track_cl != automation.currentCtrlList)
+        {
+          if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG ) {
+            newValue = logToVal(newValue, min, max); // represent volume between 0 and 1
+            if(newValue < 0) newValue = 0.0;
+          }
+          else
+            newValue = (newValue-min)/(max-min);  // we need to set curVal between 0 and 1
+
+          if (track_cl->valueType() == MusECore::VAL_LOG ) {
+            newValue = valToLog(newValue, trackMin, trackMax);
+            if (newValue< trackMin) newValue=trackMin;
+            if (newValue>trackMax) newValue=trackMax;
+          }
+          else
+            newValue = newValue * (trackMax-trackMin) + trackMin;
+        }
+
+        undo.push_back(UndoOp(UndoOp::ModifyAudioCtrlVal, track, ctrlId, frame, frame, iail->second._value, newValue));
+      }
+    }
+  }
+}
+
+void PartCanvas::setSelectedAutomationMode(MusECore::Undo& undo, MusECore::CtrlList::Mode mode) const
+{
+  for(MusECore::ciAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.cbegin();
+      iatm != automation.currentCtrlFrameList.cend(); ++iatm)
+  {
+    const MusECore::Track* track = iatm->first;
+    if(track->isMidiTrack())
+      continue;
+    const MusECore::AudioTrack* at = static_cast<const MusECore::AudioTrack*>(track);
+    const MusECore::AudioAutomationItemMap& atm = iatm->second;
+    for(MusECore::ciAudioAutomationItemMap iaim = atm.cbegin(); iaim != atm.cend(); ++iaim)
+    {
+      const int ctrlId = iaim->first;
+      MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
+      if(icl == at->controller()->cend())
+        continue;
+      const MusECore::CtrlList* track_cl = icl->second;
+      const bool ctrlIsDiscrete = track_cl->mode() == MusECore::CtrlList::DISCRETE;
+
+      MusECore::CtrlList* addCtrlList = new MusECore::CtrlList(*track_cl, MusECore::CtrlList::ASSIGN_PROPERTIES);
+      MusECore::CtrlList* eraseCtrlList = new MusECore::CtrlList(*track_cl, MusECore::CtrlList::ASSIGN_PROPERTIES);
+
+      const MusECore::AudioAutomationItemList& ail = iaim->second._selectedList;
+      for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
+      {
+        const unsigned int frame = iail->first;
+        const MusECore::AudioAutomationItem& aai =  iail->second;
+
+        // Don't bother if the point is already in the given mode or the mode can't be changed.
+        // For now we do not allow interpolation of integer or enum controllers.
+        // TODO: It would require custom line drawing and corresponding hit detection.
+        if((mode == MusECore::CtrlList::DISCRETE && aai._discrete) ||
+           (mode == MusECore::CtrlList::INTERPOLATE && (!aai._discrete || ctrlIsDiscrete)))
+          continue;
+
+        eraseCtrlList->add(frame, MusECore::CtrlVal(aai._value, /*selected*/true,
+                           aai._discrete, aai._groupEnd));
+        addCtrlList->add(frame, MusECore::CtrlVal(aai._value, /*selected*/true,
+                           mode == MusECore::CtrlList::DISCRETE, aai._groupEnd));
+      }
+
+      // If nothing was changed, delete and ignore.
+      if(eraseCtrlList->empty())
+      {
+        delete eraseCtrlList;
+        eraseCtrlList = nullptr;
+      }
+      if(addCtrlList->empty())
+      {
+        delete addCtrlList;
+        addCtrlList = nullptr;
+      }
+      if(eraseCtrlList || addCtrlList)
+      {
+        undo.push_back(MusECore::UndoOp(
+          MusECore::UndoOp::ModifyAudioCtrlValList, track, eraseCtrlList, addCtrlList));
+      }
+    }
+  }
+}
+
+void PartCanvas::haveSelectedAutomationMode(bool* canDiscrete, bool* canInterpolate) const
+{
+  if(canDiscrete)
+    *canDiscrete = false;
+  if(canInterpolate)
+    *canInterpolate = false;
+  for(MusECore::ciAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.cbegin();
+      iatm != automation.currentCtrlFrameList.cend(); ++iatm)
+  {
+    const MusECore::Track* track = iatm->first;
+    if(track->isMidiTrack())
+      continue;
+    const MusECore::AudioTrack* at = static_cast<const MusECore::AudioTrack*>(track);
+    const MusECore::AudioAutomationItemMap& atm = iatm->second;
+    for(MusECore::ciAudioAutomationItemMap iaim = atm.cbegin(); iaim != atm.cend(); ++iaim)
+    {
+      const int ctrlId = iaim->first;
+      MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
+      if(icl == at->controller()->cend())
+        continue;
+      const MusECore::CtrlList* track_cl = icl->second;
+      const bool ctrlIsDiscrete = track_cl->mode() == MusECore::CtrlList::DISCRETE;
+
+      const MusECore::AudioAutomationItemList& ail = iaim->second._selectedList;
+      for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
+      {
+        const MusECore::AudioAutomationItem& aai =  iail->second;
+        if(aai._discrete)
+        {
+          // For now we do not allow interpolation of integer or enum controllers.
+          // TODO: It would require custom line drawing and corresponding hit detection.
+          if(canInterpolate && !ctrlIsDiscrete)
+            *canInterpolate = true;
+        }
+        else
+        {
+          if(canDiscrete)
+            *canDiscrete = true;
+        }
+        // If both have been found, we're done.
+        if((!canDiscrete || *canDiscrete) && (!canInterpolate || *canInterpolate))
+          return;
       }
     }
   }
@@ -6264,12 +6730,13 @@ bool PartCanvas::newAutomationVertex(QPoint pos, MusECore::Undo& undo, bool snap
   }
 
 
-  const double cvval = automation.currentCtrlList->interpolate(frame, ctrlInterpolate);
+  const double cvval =
+    ctrlInterpolate.doInterp ? automation.currentCtrlList->interpolate(frame, ctrlInterpolate) : ctrlInterpolate.sVal;
 
   // Keep a string for easy displaying of automation values
   double displayCvVal =  cvval;
   if(automation.currentCtrlList->valueType() == MusECore::VAL_LOG)
-    displayCvVal = muse_val2dbr(cvval);
+    displayCvVal = muse_val2db(cvval);
   automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(displayCvVal, 0, 'g', 3);
 
   // Now that we have a track, cl, and frame for a new vertex, set the automation object mode to moving.
@@ -6278,7 +6745,10 @@ bool PartCanvas::newAutomationVertex(QPoint pos, MusECore::Undo& undo, bool snap
   automation.currentCtrlValid = true;
   automation.breakUndoCombo = true;
 
-  undo.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame, cvval, true, false));
+  undo.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame,
+      cvval, MusECore::CtrlVal::VAL_SELECTED |
+        // The undo system automatically sets the VAL_DISCRETE flag if the controller mode is DISCRETE.
+        (MusEGlobal::config.audioAutomationDrawDiscrete ? MusECore::CtrlVal::VAL_DISCRETE : MusECore::CtrlVal::VAL_NOFLAGS)));
 
   return true;
 }
@@ -6289,7 +6759,7 @@ bool PartCanvas::newAutomationVertex(QPoint pos, MusECore::Undo& undo, bool snap
 //   - represent logarithmic value on linear scale from 0 to 1
 //
 //---------------------------------------------------------
-double PartCanvas::logToVal(double inLog, double min, double max)
+double PartCanvas::logToVal(double inLog, double min, double max) const
 {
     if (inLog < min) inLog = min;
     if (inLog > max) inLog = max;
@@ -6308,7 +6778,7 @@ double PartCanvas::logToVal(double inLog, double min, double max)
 //   - represent value from 0 to 1 as logarithmic value between min and max
 //
 //---------------------------------------------------------
-double PartCanvas::valToLog(double inV, double min, double max)
+double PartCanvas::valToLog(double inV, double min, double max) const
 {
     double linMin = 20.0*MusECore::fast_log10(min);
     double linMax = 20.0*MusECore::fast_log10(max);
@@ -6327,7 +6797,7 @@ double PartCanvas::valToLog(double inV, double min, double max)
 //  deltaValToLog
 //
 //---------------------------------------------------------
-double PartCanvas::deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max)
+double PartCanvas::deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max) const
 {
     if (inLog < min) inLog = min;
     if (inLog > max) inLog = max;
@@ -6418,10 +6888,18 @@ void PartCanvas::moveItems(const QPoint& inPos, int dir, bool rasterize)
   for(MusECore::iAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.begin(); iatm != automation.currentCtrlFrameList.end(); ++iatm)
   {
     const MusECore::Track* track = iatm->first;
+    if(track->isMidiTrack())
+      continue;
+    const MusECore::AudioTrack* at = static_cast<const MusECore::AudioTrack*>(track);
     MusECore::AudioAutomationItemMap& atm = iatm->second;
     for(MusECore::iAudioAutomationItemMap iaim = atm.begin(); iaim != atm.end(); ++iaim)
     {
-      const MusECore::CtrlList* cl = iaim->first;
+      const int ctrlId = iaim->first;
+      MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
+      if(icl == at->controller()->cend())
+        continue;
+      const MusECore::CtrlList* cl = icl->second;
+
       MusECore::AudioAutomationItemList& ail = iaim->second._selectedList;
       bool changed = false;
       int adjDeltaX = deltaX;
@@ -6491,7 +6969,7 @@ void PartCanvas::moveItems(const QPoint& inPos, int dir, bool rasterize)
               // Store the text.
               double displayCvVal =  cvval;
               if(cl->valueType() == MusECore::VAL_LOG)
-                displayCvVal = muse_val2dbr(cvval);
+                displayCvVal = muse_val2db(cvval);
               automation.currentText = QString("Param:%1 Value:%2").arg(cl->name()).arg(displayCvVal, 0, 'g', 3);
               automation.currentVal = cvval;
             }
@@ -6689,6 +7167,16 @@ void PartCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
     }
   }
 
+}
+
+int PartCanvas::automationPointRadius() const { return _automationPointRadius; }
+
+void PartCanvas::setAutomationPointRadius(int r)
+{
+  _automationPointRadius = r;
+  _automationPointExtraRadius = 1; // Fixed for now...
+  _automationTopMargin = _automationPointRadius + 1;
+  _automationBottomMargin = _automationPointRadius + 1;
 }
 
 } // namespace MusEGui

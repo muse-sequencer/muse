@@ -1392,6 +1392,14 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                             MusEGlobal::config.keepTransportWindowOnTop = xml.parseInt();
                         else if (tag == "showStatusBar")
                             MusEGlobal::config.showStatusBar = xml.parseInt();
+                        else if (tag == "audioAutomationDrawDiscrete")
+                            MusEGlobal::config.audioAutomationDrawDiscrete = xml.parseInt();
+                        else if (tag == "audioAutomationShowBoxes")
+                            MusEGlobal::config.audioAutomationShowBoxes = xml.parseInt();
+                        else if (tag == "audioAutomationOptimize")
+                            MusEGlobal::config.audioAutomationOptimize = xml.parseInt();
+                        else if (tag == "audioAutomationPointRadius")
+                            MusEGlobal::config.audioAutomationPointRadius = xml.parseInt();
 
 
                         // ---- the following only skips obsolete entries ----
@@ -2099,9 +2107,12 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 //      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
       xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
       xml.intTag(level, "showStatusBar", MusEGlobal::config.showStatusBar);
+      xml.intTag(level, "audioAutomationDrawDiscrete", MusEGlobal::config.audioAutomationDrawDiscrete);
+      xml.intTag(level, "audioAutomationShowBoxes", MusEGlobal::config.audioAutomationShowBoxes);
+      xml.intTag(level, "audioAutomationOptimize", MusEGlobal::config.audioAutomationOptimize);
+      xml.intTag(level, "audioAutomationPointRadius", MusEGlobal::config.audioAutomationPointRadius);
 
       for (int i = 1; i < NUM_FONTS; ++i) {
-//          for (int i = 0; i < NUM_FONTS; ++i) {
             xml.strTag(level, QString("font") + QString::number(i), MusEGlobal::config.fonts[i].toString());
             }
       xml.intTag(level, "autoAdjustFontSize", MusEGlobal::config.autoAdjustFontSize);

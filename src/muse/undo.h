@@ -55,7 +55,8 @@ struct UndoOp {
             AddTrack, DeleteTrack,
             AddPart,  DeletePart,  MovePart, ModifyPartStart, ModifyPartLength, ModifyPartName, SelectPart,
             AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
-            AddAudioCtrlVal, DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+            AddAudioCtrlVal, AddAudioCtrlValStruct,
+            DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
             SelectAudioCtrlVal, SetAudioCtrlPasteEraseMode, BeginAudioCtrlMoveMode, EndAudioCtrlMoveMode,
             // Add, delete and modify operate directly on the list.
             // setTempo does only if master is set, otherwise it operates on the static tempo value.
@@ -134,8 +135,8 @@ struct UndoOp {
                 };
             struct {
                   int _audioCtrlID;
-                  int _audioCtrlFrame;
-                  int _audioNewCtrlFrame;
+                  unsigned int _audioCtrlFrame;
+                  unsigned int _audioNewCtrlFrame;
                   double _audioCtrlVal;
                   double _audioNewCtrlVal;
                 };
@@ -147,6 +148,17 @@ struct UndoOp {
             struct {
                   CtrlList* _audioCtrlListSelect;
                   unsigned int _audioCtrlSelectFrame;
+                };
+            struct {
+                  int _audioCtrlIdStruct;
+                  unsigned int _audioCtrlFrameStruct;
+                  CtrlVal* _audioCtrlValStruct;
+                };
+            struct {
+                  int _audioCtrlIdAddDel;
+                  unsigned int _audioCtrlFrameAddDel;
+                  double _audioCtrlValAddDel;
+                  CtrlVal::CtrlValueFlags _audioCtrlValFlagsAddDel;
                 };
             struct {
                   bool _oldAudCtrlMoveMode;
@@ -219,13 +231,19 @@ struct UndoOp {
       //UndoOp(UndoType type, MarkerList** oldMarkerList, MarkerList* newMarkerList, bool noUndo = false);
 
       UndoOp(UndoType type, const Track* track, const QString& old_name, const QString& new_name, bool noUndo = false);
-      UndoOp(UndoType type, const Track* track, int old_chan, int new_chan, bool noUndo = false);
-      UndoOp(UndoType type, const Track* track, int ctrlID, int oldFrame, int newFrame, double oldValue, double newValue, bool noUndo = false);
-      UndoOp(UndoType type, const Track* track, int ctrlID, int frame, double value, bool selected = false, bool noUndo = false);
-      UndoOp(UndoType type, const Track* track, bool value, bool noUndo = false);
+      // Because of C++ ambiguity complaints, these arguments are in a funny order.
+      // It seems our CtrlVal(double) constructor can be interpreted as CtrlVal(unsigned int) !
+      UndoOp(UndoType type, int ctrlID, unsigned int frame, const CtrlVal& cv, const Track* track, bool noUndo = false);
       UndoOp(UndoType type, const Track* track, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
              CtrlList* recoverableEraseCtrlList = nullptr, CtrlList* recoverableAddCtrlList = nullptr,
              CtrlList* doNotEraseCtrlList = nullptr, bool noEndAudioCtrlMoveMode = false, bool noUndo = false);
+
+      // At least four of these arguments must be supplied even if less than four are used,
+      //  to avoid ambiguity with the route_from/route_to version because class Route has
+      //  a constructor that takes a track pointer and a constructor that takes an integer !!!
+      UndoOp(UndoType type, const Track* track, double a, double b, double c, double d = 0.0, double e = 0.0, bool noUndo = false);
+
+
       UndoOp(UndoType type, CtrlList* ctrlList, unsigned int frame, bool oldSelected, bool newSelected, bool noUndo = false);
       UndoOp(UndoType type, CtrlList::PasteEraseOptions newOpts, bool noUndo = false);
 
@@ -260,6 +278,7 @@ class Undo : public std::list<UndoOp> {
       void insert(iterator position, const_iterator first, const_iterator last);
       void insert(iterator position, const UndoOp& op);
       void insert (iterator position, size_type n, const UndoOp& op);
+      iterator deleteAndErase(iterator);
 };
 
 typedef Undo::iterator iUndoOp;

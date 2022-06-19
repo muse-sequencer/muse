@@ -239,7 +239,7 @@ class Canvas : public View {
       void showCursor(bool show = true);
       // Sets or resets the _mouseGrabbed flag and grabs or releases the mouse.
       void setMouseGrab(bool grabbed = false);
-      CItem *findCurrentItem(const QPoint &cStart);
+      CItem *findCurrentItem(const QPoint &cStart) const;
       
    public slots:
       void setTool(int t);

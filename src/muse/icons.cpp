@@ -296,6 +296,12 @@ QIcon* deltaSVGIcon;
 
 QIcon* dummySVGIcon;
 
+QIcon* audioAutomationDiscreteIconSVG;
+QIcon* audioAutomationInterpolateIconSVG;
+QIcon* audioAutomationBoxesIconSVG;
+QIcon* audioAutomationNoBoxesIconSVG;
+QIcon* audioAutomationOptimizeIconSVG;
+
 //----------------------------------
 // Cursors
 //----------------------------------
@@ -675,6 +681,12 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     px.fill(Qt::transparent);
     dummySVGIcon = new QIcon(px);
 
+    audioAutomationDiscreteIconSVG = icons.getSVG("audio_automation_discrete.svg");
+    audioAutomationInterpolateIconSVG = icons.getSVG("audio_automation_interpolate.svg");
+    audioAutomationBoxesIconSVG = icons.getSVG("audio_automation_boxes.svg");
+    audioAutomationNoBoxesIconSVG = icons.getSVG("audio_automation_no_boxes.svg");
+    audioAutomationOptimizeIconSVG = icons.getSVG("audio_automation_optimize.svg");
+
     //----------------------------------
     // Cursors
     //----------------------------------
@@ -960,6 +972,12 @@ void deleteIcons()
     delete deltaSVGIcon;
 
     delete dummySVGIcon;
+
+    delete audioAutomationDiscreteIconSVG;
+    delete audioAutomationInterpolateIconSVG;
+    delete audioAutomationBoxesIconSVG;
+    delete audioAutomationNoBoxesIconSVG;
+    delete audioAutomationOptimizeIconSVG;
 
     //----------------------------------
     // Cursors

@@ -270,18 +270,32 @@ void TopWin::readStatus(MusECore::Xml& xml)
             {
                 if (!sharesToolsAndMenu())
                 {
-                    if (!restoreState(QByteArray::fromHex(xml.parse1().toLatin1())))
+                    // We can only restore the state with version-compatible data.
+                    // If toolbars were altered, 'alien' loaded data will not fit!
+                    if(xml.isVersionEqualToLatest())
                     {
-                        fprintf(stderr,"ERROR: couldn't restore toolbars. trying default configuration...\n");
-                        if (!restoreState(_toolbarNonsharedInit[_type]))
-                            fprintf(stderr,"ERROR: couldn't restore default toolbars. this is not really a problem.\n");
+                      if (!restoreState(QByteArray::fromHex(xml.parse1().toLatin1())))
+                      {
+                          fprintf(stderr,"ERROR: couldn't restore toolbars. trying default configuration...\n");
+                          if (!restoreState(_toolbarNonsharedInit[_type]))
+                              fprintf(stderr,"ERROR: couldn't restore default toolbars. this is not really a problem.\n");
+                      }
                     }
+                    else
+                      xml.parse1();
                 }
                 else
                 {
-                    _savedToolbarState = QByteArray::fromHex(xml.parse1().toLatin1());
-                    if (_savedToolbarState.isEmpty())
-                        _savedToolbarState=_toolbarNonsharedInit[_type];
+                    // We can only restore the state with version-compatible data.
+                    // If toolbars were altered, 'alien' loaded data will not fit!
+                    if(xml.isVersionEqualToLatest())
+                    {
+                      _savedToolbarState = QByteArray::fromHex(xml.parse1().toLatin1());
+                      if (_savedToolbarState.isEmpty())
+                          _savedToolbarState=_toolbarNonsharedInit[_type];
+                    }
+                    else
+                      xml.parse1();
                 }
             }
 //            else if (tag == "shares_menu")
@@ -658,9 +672,25 @@ void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
             else if (tag == "height")
                 _heightInit[t] = xml.parseInt();
             else if (tag == "nonshared_toolbars")
-                _toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
+            {
+                // We can only restore the state with version-compatible data.
+                // If toolbars were altered, 'alien' loaded data will not fit!
+                if(xml.isVersionEqualToLatest())
+
+                  _toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
+                else
+                  xml.parse1();
+            }
             else if (tag == "shared_toolbars")
-                _toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
+            {
+                // We can only restore the state with version-compatible data.
+                // If toolbars were altered, 'alien' loaded data will not fit!
+                if(xml.isVersionEqualToLatest())
+                  _toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toLatin1());
+
+                else
+                  xml.parse1();
+            }
             else if (tag == "default_subwin")
                 _openTabbed[t] = xml.parseInt();
             else

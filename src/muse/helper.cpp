@@ -1670,6 +1670,15 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       const int velo = max + 0x101;
       int est_width = 0;  
       const int patch = port->hwCtrlState(channel, MusECore::CTRL_PROGRAM);
+
+      const QString mappedText(QWidget::tr("Mapped To Audio Controls"));
+      const MusECore::SynthI* synthI = nullptr;
+      if(instr->isSynti())
+      {
+        const MusECore::MidiDevice* md = port->device();
+        if(md && md->isSynti())
+          synthI = static_cast<const MusECore::SynthI*>(md);
+      }
       
       std::list<CI> sList;
       typedef std::list<CI>::iterator isList;
@@ -1773,7 +1782,7 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
 #endif
         if(fmw > est_width)
           est_width = fmw;
-        menu->addAction(*editInstrumentSVGIcon, QWidget::tr("Edit Instrument..."))->setData(edit_ins);
+        menu->addAction(*editInstrumentSVGIcon, stext)->setData(edit_ins);
         menu->addSeparator();
       }
       
@@ -1797,11 +1806,11 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
 
       for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
-          int show = ci->second->showInTracks();
+          const int show = ci->second->showInTracks();
           if((isNewDrum && !(show & MusECore::MidiController::ShowInDrum)) ||
              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
             continue;
-          int cnum = ci->second->num();
+          const int cnum = ci->second->num();
           int num = cnum;
           if(ci->second->isPerNoteController())
           {
@@ -1813,6 +1822,10 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
               continue;
           }
 
+          // Ignore if mapped, add it separately below.
+          if(synthI && synthI->midiToAudioCtrlMapped(num, nullptr))
+            continue;
+
           // If it's not already in the parent menu...
           if(cll->find(channel, num) == cll->end())
           {
@@ -1820,6 +1833,48 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
             already_added_nums.insert(num); //cnum);
           }
       }
+
+      // Place mapped controllers in their own heading.
+      if(synthI && synthI->hasMappedMidiToAudioCtrls())
+      {
+        bool isFirst = true;
+        for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+        {
+            const int cnum = ci->second->num();
+            int num = cnum;
+            if(ci->second->isPerNoteController())
+            {
+              if (isNewDrum && curDrumPitch >= 0)
+                num = (cnum & ~0xff) | track->drummap()[curDrumPitch].anote;
+              else if (isMidi && curDrumPitch >= 0)
+                num = (cnum & ~0xff) | curDrumPitch; //FINDMICH does this work?
+              else
+                continue;
+            }
+            // We're looking for mapped controllers...
+            if(!synthI->midiToAudioCtrlMapped(num, nullptr))
+              continue;
+
+            const int show = ci->second->showInTracks();
+            if((isNewDrum && !(show & MusECore::MidiController::ShowInDrum)) ||
+              (isMidi && !(show & MusECore::MidiController::ShowInMidi)))
+              continue;
+
+            // If it's not already in the parent menu...
+            if(cll->find(channel, num) == cll->end())
+            {
+              if(isFirst)
+              {
+                isFirst = false;
+                ctrlSubPop->addAction(new MenuTitleItem(mappedText, ctrlSubPop));
+              }
+
+              ctrlSubPop->addAction(MusECore::midiCtrlNumString(cnum, true) + ci->second->name())->setData(num);
+              already_added_nums.insert(num); //cnum);
+            }
+        }
+      }
+
       delete mcl;
 
       menu->addMenu(ctrlSubPop);
@@ -1830,6 +1885,9 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
       for (isList i = sList.begin(); i != sList.end(); ++i)
       {
         if(!i->instrument)
+          continue;
+        // Ignore if mapped, add it separately below.
+        if(synthI && synthI->midiToAudioCtrlMapped(i->num, nullptr))
           continue;
 
 // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
@@ -1849,6 +1907,54 @@ int populateMidiCtrlMenu(PopupMenu* menu, MusECore::PartList* part_list, MusECor
           menu->addAction(*ledBlueSVGIcon, i->s)->setData(i->num);
         else
           menu->addAction(i->s)->setData(i->num);
+      }
+
+      // Place mapped controllers in their own heading.
+      if(synthI && synthI->hasMappedMidiToAudioCtrls())
+      {
+        bool isFirst = true;
+        // Add instrument-defined controllers:
+        for (isList i = sList.begin(); i != sList.end(); ++i)
+        {
+          if(!i->instrument)
+            continue;
+
+          // We're looking for mapped controllers...
+          if(!synthI->midiToAudioCtrlMapped(i->num, nullptr))
+            continue;
+
+          if(isFirst)
+          {
+            isFirst = false;
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+            fmw = menu->fontMetrics().horizontalAdvance(mappedText);
+#else
+            fmw = menu->fontMetrics().width(mappedText);
+#endif
+            if(fmw > est_width)
+              est_width = fmw;
+            menu->addAction(new MenuTitleItem(mappedText, menu));
+          }
+
+  // Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+  #if QT_VERSION >= 0x050b00
+          fmw = menu->fontMetrics().horizontalAdvance(i->s);
+  #else
+          fmw = menu->fontMetrics().width(i->s);
+  #endif
+          if(fmw > est_width)
+            est_width = fmw;
+
+          if (i->used && !i->off)
+            menu->addAction(*ledYellowSVGIcon, i->s)->setData(i->num);
+          else if (i->used)
+            menu->addAction(*ledGreenSVGIcon, i->s)->setData(i->num);
+          else if(!i->off)
+            menu->addAction(*ledBlueSVGIcon, i->s)->setData(i->num);
+          else
+            menu->addAction(i->s)->setData(i->num);
+        }
       }
 
       stext = QWidget::tr("Others");

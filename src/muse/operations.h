@@ -167,7 +167,7 @@ struct PendingOperationItem
     ModifyMidiCtrlValList,
 
     RemapDrumControllers,
-    AddAudioCtrlVal,   DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
+    AddAudioCtrlVal,   AddAudioCtrlValStruct, DeleteAudioCtrlVal,    ModifyAudioCtrlVal, ModifyAudioCtrlValList,
     AddAudioCtrlValList, DeleteAudioCtrlValList, ModifyAudioCtrlValListList,
     SelectAudioCtrlVal, SetAudioCtrlPasteEraseMode,
     UpdateAllAudioCtrlGroups, UpdateAudioCtrlListGroups, UpdateAudioCtrlGroups, UpdateAudioCtrlPosGroups,
@@ -230,7 +230,6 @@ struct PendingOperationItem
     Track* _track;
     MidiCtrlValList* _mcvl;
     CtrlList* _aud_ctrl_list;
-    CtrlVal* _audCtrlValStruct;
     MarkerList* _marker_list;
     TempoList* _tempo_list;  
     MusECore::SigList* _sig_list; 
@@ -290,6 +289,7 @@ struct PendingOperationItem
     int _address_port;
     int _open_flags;
     int _ctl_num;
+    CtrlVal::CtrlValueFlags _ctl_flags;
     int _stretch_type;
     AudioConverterPluginI* _audio_converter_ui;
   };
@@ -301,7 +301,20 @@ struct PendingOperationItem
     double _ctl_dbl_val;
     double _audio_converter_value;
     bool _marker_lock;
+    CtrlVal* _audCtrlValStruct;
   };
+
+  //========================================================================
+  //  NOTICE: Where these constructors take pointers to allocated objects,
+  //           some of them we do NOT take ownership of, while some we do.
+  //          It mostly depends on whether the undo system (which is by far
+  //           top user of this operations sytem) needs to keep them around
+  //           or whther the objects are temporary once-only things.
+  //          For example strings created by the undo system are kept and
+  //           put onto the undo stack so we don't take ownership of them,
+  //           while swap-out lists created by the undo system are temporary
+  //           so for convenience we DO take ownership of them.
+  //========================================================================
 
   PendingOperationItem(AudioConverterSettingsGroup* new_settings,
                        PendingOperationType type = ModifyDefaultAudioConverterSettings)
@@ -453,7 +466,7 @@ struct PendingOperationItem
   PendingOperationItem(Part* part, const Event& ev, PendingOperationType type = AddEvent)
     { _type = type; _part = part; _ev = ev; }
     
-  // NOTE: To avoid possibly deleting the event in RT stage 2 when the event is erased from the list, 
+  // NOTE: To avoid possibly deleting the event in RT stage 2 when the event is erased from the list,
   //        _ev is used simply to hold a reference until non-RT stage 3 or after, when the list is cleared.
   PendingOperationItem(Part* part, const iEvent& iev, PendingOperationType type = DeleteEvent)
     { _type = type; _part = part; _iev = iev; _ev = iev->second; }
@@ -492,9 +505,12 @@ struct PendingOperationItem
   PendingOperationItem(CtrlListList* cll, const iCtrlList& icll, PendingOperationType type = DeleteAudioCtrlValList)
     { _type = type; _aud_ctrl_list_list = cll; _iCtrlList = icll; }
 
-  PendingOperationItem(CtrlList* ctrl_l, unsigned int frame, double ctrl_val, bool selected /*= false*/, PendingOperationType type = AddAudioCtrlVal)
-    { _type = type; _aud_ctrl_list = ctrl_l; _posLenVal = frame; _ctl_dbl_val = ctrl_val; _selected = selected; }
-    
+  PendingOperationItem(CtrlList* ctrl_l, unsigned int frame, double ctrl_val,
+                       CtrlVal::CtrlValueFlags flags, PendingOperationType type = AddAudioCtrlVal)
+    { _type = type; _aud_ctrl_list = ctrl_l; _posLenVal = frame; _ctl_dbl_val = ctrl_val; _ctl_flags = flags; }
+  PendingOperationItem(CtrlList* ctrl_l, unsigned int frame, CtrlVal* ctrl_v, PendingOperationType type = AddAudioCtrlValStruct)
+    { _type = type; _aud_ctrl_list = ctrl_l; _posLenVal = frame; _audCtrlValStruct = ctrl_v; }
+
   // Type is DeleteAudioCtrlVal or UpdateAudioCtrlPosGroups.
   PendingOperationItem(CtrlList* ctrl_l, const iCtrl& ictl, PendingOperationType type)
     { _type = type; _aud_ctrl_list = ctrl_l; _iCtrl = ictl; }

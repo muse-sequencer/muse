@@ -497,8 +497,8 @@ bool DssiSynthIF::init(DssiSynth* s)
       _synth->midiCtl2PortMap.clear();
       _synth->port2MidiCtlMap.clear();
                 
-      int cip = 0;
-      int cop = 0;
+      unsigned long int cip = 0;
+      unsigned long int cop = 0;
       for (unsigned long k = 0; k < _synth->_portCount; ++k)
       {
         LADSPA_PortDescriptor pd = ld->PortDescriptors[k];
@@ -574,9 +574,9 @@ bool DssiSynthIF::init(DssiSynth* s)
             #endif
             
             // We have a controller number! Insert it and the DSSI port number into both maps.
-            _synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, cip));
-            _synth->port2MidiCtlMap.insert(std::pair<int, int>(cip, ctlnum));
-            
+            _synth->midiCtl2PortMap.insert(MidiCtl2LadspaPortInsertPair(ctlnum, cip));
+            _synth->port2MidiCtlMap.insert(MidiCtl2LadspaPortInsertPair(cip, ctlnum));
+
             // Support a special block for dssi synth ladspa controllers. 
             // Put the ID at a special block after plugins (far after).
             int id = genACnum(MusECore::MAX_PLUGINS, cip);

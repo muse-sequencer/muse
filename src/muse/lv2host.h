@@ -249,8 +249,7 @@ struct LV2MidiPort
 
 enum LV2ControlPortType
 {
-    LV2_PORT_DISCRETE = 1,
-    LV2_PORT_INTEGER,
+    LV2_PORT_INTEGER = 1,
     LV2_PORT_CONTINUOUS,
     LV2_PORT_LOGARITHMIC,
     LV2_PORT_TOGGLE,
@@ -260,11 +259,12 @@ enum LV2ControlPortType
 struct LV2ControlPort
 {
    LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, const char *_s,
-                    LV2ControlPortType _ctype, bool _isCVPort = false, CtrlEnumValues* scalePoints = nullptr,
-                    QString group = QString(), bool isTrigger = false, bool notOnGui = false)
+                    LV2ControlPortType _ctype, bool _isCVPort = false, CtrlVal::CtrlEnumValues* scalePoints = nullptr,
+                    QString group = QString(), bool isTrigger = false, bool notOnGui = false,
+                    bool isDiscrete = false )
        : port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
          isCVPort(_isCVPort), scalePoints(scalePoints), group(group), isTrigger(isTrigger),
-         notOnGui(notOnGui)
+         notOnGui(notOnGui), isDiscrete(isDiscrete)
    {
       cName = strdup ( _n );
       cSym = strdup(_s);
@@ -273,7 +273,7 @@ struct LV2ControlPort
       port ( other.port ), index ( other.index ), defVal ( other.defVal ),
       minVal(other.minVal), maxVal(other.maxVal), cType(other.cType),
       isCVPort(other.isCVPort), scalePoints(other.scalePoints), group(other.group),
-      isTrigger(other.isTrigger), notOnGui(other.notOnGui)
+      isTrigger(other.isTrigger), notOnGui(other.notOnGui), isDiscrete(other.isDiscrete)
    {
       cName = strdup ( other.cName );
       cSym = strdup(other.cSym);
@@ -294,10 +294,11 @@ struct LV2ControlPort
    char *cSym; //cached port symbol
    LV2ControlPortType cType;
    bool isCVPort;
-   const CtrlEnumValues* scalePoints;
+   const CtrlVal::CtrlEnumValues* scalePoints;
    QString group;
    bool isTrigger;
    bool notOnGui;
+   bool isDiscrete;
 };
 
 struct LV2AudioPort
@@ -409,8 +410,6 @@ private:
     LV2_AUDIO_PORTS _audioInPorts;
     LV2_AUDIO_PORTS _audioOutPorts;
 
-    MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to LV2 port numbers.
-    MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps LV2 port numbers to midi controller numbers.
     uint32_t _fInstanceAccess;
     uint32_t _fUiParent;
     uint32_t _fExtUiHost;
@@ -624,7 +623,7 @@ public:
     const char *paramOutName ( unsigned long i );
     CtrlValueType ctrlValueType ( unsigned long ) const override;
     CtrlList::Mode ctrlMode ( unsigned long ) const override;
-    const CtrlEnumValues *ctrlEnumValues(unsigned long i) const override;
+    const CtrlVal::CtrlEnumValues *ctrlEnumValues(unsigned long i) const override;
     QString portGroup(long unsigned int i) const override;
     bool ctrlIsTrigger(long unsigned int i) const override;
     bool ctrlNotOnGui(long unsigned int i) const override;
@@ -924,7 +923,7 @@ public:
     virtual double defaultValue ( unsigned long port ) const;
     virtual const char *portName ( unsigned long i );
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
-    virtual const CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
+    virtual const CtrlVal::CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );

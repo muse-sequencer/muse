@@ -198,6 +198,7 @@ void GlobalSettingsConfig::updateSettings()
       sendNullParamsCB->setChecked(MusEGlobal::config.midiSendNullParameters);      
       optimizeControllersCB->setChecked(MusEGlobal::config.midiOptimizeControllers);      
       guiRefreshSelect->setValue(MusEGlobal::config.guiRefresh);
+      audioAutomationPointRadius->setValue(MusEGlobal::config.audioAutomationPointRadius);
       minSliderSelect->setValue(int(MusEGlobal::config.minSlider));
       minMeterSelect->setValue(MusEGlobal::config.minMeter);
       freewheelCheckBox->setChecked(MusEGlobal::config.freewheelMode);
@@ -295,6 +296,7 @@ void GlobalSettingsConfig::apply()
       {
       int rtcticks       = rtcResolutionSelect->currentIndex();
       MusEGlobal::config.guiRefresh  = guiRefreshSelect->value();
+      MusEGlobal::config.audioAutomationPointRadius  = audioAutomationPointRadius->value();
       MusEGlobal::config.minSlider   = minSliderSelect->value();
       MusEGlobal::config.minMeter    = minMeterSelect->value();
       MusEGlobal::config.freewheelMode = freewheelCheckBox->isChecked();

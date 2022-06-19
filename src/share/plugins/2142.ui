@@ -452,28 +452,28 @@
     </widget>
    </item>
    <item row="3" column="0" colspan="2">
-    <widget class="QCheckBox" name="P3checkbox">
+    <widget class="MusEGui::CheckBox" name="P3checkbox">
      <property name="text">
       <string>Comb Filters</string>
      </property>
     </widget>
    </item>
    <item row="4" column="0" colspan="2">
-    <widget class="QCheckBox" name="P4checkbox">
+    <widget class="MusEGui::CheckBox" name="P4checkbox">
      <property name="text">
       <string>Allpass Filters</string>
      </property>
     </widget>
    </item>
    <item row="5" column="0" colspan="2">
-    <widget class="QCheckBox" name="P5checkbox">
+    <widget class="MusEGui::CheckBox" name="P5checkbox">
      <property name="text">
       <string>Bandpass Filters</string>
      </property>
     </widget>
    </item>
    <item row="3" column="2" colspan="2">
-    <widget class="QCheckBox" name="P6checkBox">
+    <widget class="MusEGui::CheckBox" name="P6checkBox">
      <property name="text">
       <string>Enhanced Stereo</string>
      </property>
@@ -492,6 +492,16 @@
    <class>MusEGui::Slider</class>
    <extends>QWidget</extends>
    <header>slider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MusEGui::CheckBox</class>
+   <extends>QCheckBox</extends>
+   <header>checkbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MusEGui::Switch</class>
+   <extends>QAbstractButton</extends>
+   <header>switch.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

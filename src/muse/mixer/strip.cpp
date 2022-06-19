@@ -2041,7 +2041,7 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
         // It's a linear scale. We need to convert to Db and
         //  scale the linear value by 2 since the midi scale is
         //  twice the usual Db per step. Then convert back to linear.
-        m_val = muse_val2dbr(m_val / double(i_m_max)) * 2.0;
+        m_val = muse_val2db(m_val / double(i_m_max)) * 2.0;
         m_val *= 2.0;
         m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
       }
@@ -2336,7 +2336,7 @@ void Strip::componentPressed(int type, double val, int id)
         // It's a linear scale. We need to convert to Db and
         //  scale the linear value by 2 since the midi scale is
         //  twice the usual Db per step. Then convert back to linear.
-        m_val = muse_val2dbr(m_val / double(i_m_max)) * 2.0;
+        m_val = muse_val2db(m_val / double(i_m_max)) * 2.0;
         m_val *= 2.0;
         m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
       }
@@ -2526,7 +2526,7 @@ void Strip::componentReleased(int type, double val, int id)
         // It's a linear scale. We need to convert to Db and
         //  scale the linear value by 2 since the midi scale is
         //  twice the usual Db per step. Then convert back to linear.
-        m_val = muse_val2dbr(m_val / double(i_m_max)) * 2.0;
+        m_val = muse_val2db(m_val / double(i_m_max)) * 2.0;
         m_val *= 2.0;
         m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
       }
@@ -2741,11 +2741,11 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
         // It's a linear scale. We need to convert to Db and
         //  scale the linear value by 2 since the midi scale is
         //  twice the usual Db per step. Then convert back to linear.
-        ma_old_val = muse_val2dbr(ma_old_val / double(i_ma_max)) * 2.0;
+        ma_old_val = muse_val2db(ma_old_val / double(i_ma_max)) * 2.0;
         ma_old_val *= 2.0;
         ma_old_val = double(i_ma_max) * muse_db2val(ma_old_val / 2.0);
 
-        ma_new_val = muse_val2dbr(ma_new_val / double(i_ma_max)) * 2.0;
+        ma_new_val = muse_val2db(ma_new_val / double(i_ma_max)) * 2.0;
         ma_new_val *= 2.0;
         ma_new_val = double(i_ma_max) * muse_db2val(ma_new_val / 2.0);
       }
@@ -2846,7 +2846,7 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
             d_cur_val = d_cur_val - double(mctl->bias());
             if(id == MusECore::CTRL_VOLUME && MusEGlobal::config.preferMidiVolumeDb)
             {
-              d_fin_val = muse_val2dbr(d_cur_val / double(max)) * 2.0;
+              d_fin_val = muse_val2db(d_cur_val / double(max)) * 2.0;
               d_fin_val += d_comp_val_delta;
               d_fin_val = double(max) * muse_db2val(d_fin_val / 2.0);
             }
@@ -2894,7 +2894,7 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
           if(d_cur_val <= 0.0)
             d_cur_val = MusEGlobal::config.minSlider;
           else
-            d_cur_val = muse_val2dbr(d_cur_val);
+            d_cur_val = muse_val2db(d_cur_val);
 
           d_cur_val += d_comp_val_delta;
           if(d_cur_val < MusEGlobal::config.minSlider)
@@ -3035,7 +3035,7 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
             d_cur_val = d_cur_val - double(mctl->bias());
             if(m_ctlnum == MusECore::CTRL_VOLUME)
             {
-              d_fin_val = muse_val2dbr(d_cur_val / d_max) * 2.0;
+              d_fin_val = muse_val2db(d_cur_val / d_max) * 2.0;
               d_fin_val += d_comp_val_delta;
               d_fin_val = d_max * muse_db2val(d_fin_val / 2.0);
             }
@@ -3083,7 +3083,7 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
           if(d_cur_val <= 0.0)
             d_cur_val = MusEGlobal::config.minSlider;
           else
-            d_cur_val = muse_val2dbr(d_cur_val);
+            d_cur_val = muse_val2db(d_cur_val);
 
           d_cur_val += d_comp_val_delta;
           if(d_cur_val < MusEGlobal::config.minSlider)

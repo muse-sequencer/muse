@@ -137,11 +137,14 @@ enum AudioAutomationOperations {
   // Canvas::TOOLS_ID_BASE is 10000 (but it's private), so start this at 20000.
   AUTO_OP_BASE_ENUM = 20000,
   AUTO_OP_REMOVE = AUTO_OP_BASE_ENUM,
-  AUTO_OP_NO_ERASE_MODE = AUTO_OP_BASE_ENUM + 1,
-  AUTO_OP_ERASE_MODE = AUTO_OP_BASE_ENUM + 2,
-  AUTO_OP_ERASE_RANGE_MODE = AUTO_OP_BASE_ENUM + 3,
-  AUTO_OP_END_MOVE_MODE = AUTO_OP_BASE_ENUM + 4,
-  AUTO_OP_END_ENUM = AUTO_OP_END_MOVE_MODE
+  AUTO_OP_NO_ERASE_MODE,
+  AUTO_OP_ERASE_MODE,
+  AUTO_OP_ERASE_RANGE_MODE,
+  AUTO_OP_END_MOVE_MODE,
+  AUTO_OP_ALIGN_TO_SELECTED,
+  AUTO_OP_SET_DISCRETE,
+  AUTO_OP_SET_INTERPOLATED,
+  AUTO_OP_END_ENUM = AUTO_OP_SET_INTERPOLATED
 };
 
 class PartCanvas : public Canvas {
@@ -154,12 +157,11 @@ class PartCanvas : public Canvas {
       int curColorIndex;
       bool editMode;
       
-      static const int _automationTopMargin;
-      static const int _automationBottomMargin;
-      static const int _automationPointDetectDist;
-      static const int _automationPointWidthUnsel;
-      static const int _automationPointWidthSel;
-      
+      int _automationTopMargin;
+      int _automationBottomMargin;
+      int _automationPointRadius;
+      int _automationPointExtraRadius;
+
       QElapsedTimer editingFinishedTime;
 
       AutomationObject automation;
@@ -238,13 +240,15 @@ class PartCanvas : public Canvas {
       // Returns false if the point is beyond rr.right(), true otherwise.
       // currentFrame and newFrame can be different in the case of moving points. Otherwise they are the same.
       bool drawAutomationPoint(
-        QPainter& p, const QRect& rr, const QPen& currentPen, const QPen& nonCurrentPen, int pointWidth,
-        const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame, double value);
+        QPainter& p, const QRect& rr, const QPen& currentPen, const QPen& nonCurrentPen, int pointRadius,
+        const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame,
+        double value, bool discrete, bool fullSize);
       // Returns false if the point is beyond rr.right(), true otherwise.
       // currentFrame and newFrame can be different in the case of moving points. Otherwise they are the same.
       bool fillAutomationPoint(
-        QPainter& p, const QRect& rr, const QColor& currentColor, const QColor& nonCurrentColor, int pointWidth,
-        const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame, double value);
+        QPainter& p, const QRect& rr, const QColor& currentColor, const QColor& nonCurrentColor, int pointRadius,
+        const MusECore::AudioTrack* t, const MusECore::CtrlList* cl, unsigned int currentFrame, unsigned int newFrame,
+        double value, bool discrete, bool fullSize);
       void drawAutomationText(QPainter& p, const QRect& r, MusECore::AudioTrack* track);
       void drawTopItem(QPainter& p, const QRect& rect, const QRegion& = QRegion());
 
@@ -254,25 +258,28 @@ class PartCanvas : public Canvas {
       //          2     move only vertical
       void processAutomationMovements(QPoint pos, int dir, bool rasterize);
       // Uses fast_log10() instead of log10().
-      double logToVal(double inLog, double min, double max);
+      double logToVal(double inLog, double min, double max) const;
       // Uses fast_log10() instead of log10().
-      double valToLog(double inV, double min, double max);
+      double valToLog(double inV, double min, double max) const;
       // Uses log10() instead of fast_log10().
-      double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max);
+      double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max) const;
       // Given a frame, finds the corresponding item and returns its value, and returns
       //  the minimum and maximum frame that the given frame can be moved to.
       // Returns true on success, false if no item was found for the given frame.
       bool getMovementRange(
         const MusECore::CtrlList*, unsigned int frame, double* value, unsigned int* minPrevFrame,
-        unsigned int* maxNextFrame, bool* maxNextFrameValid);
-      void unselectAllAutomation(MusECore::Undo& undo);
-      void deleteSelectedAutomation(MusECore::Undo& undo);
+        unsigned int* maxNextFrame, bool* maxNextFrameValid) const;
+      void unselectAllAutomation(MusECore::Undo& undo) const;
+      void deleteSelectedAutomation(MusECore::Undo& undo) const;
+      void alignSelectedAutomation(MusECore::Undo& undo) const;
+      void setSelectedAutomationMode(MusECore::Undo& undo, MusECore::CtrlList::Mode) const;
+      void haveSelectedAutomationMode(bool* canDiscrete, bool* canInterpolate) const;
       // Returns true if successful.
       bool newAutomationVertex(QPoint inPos, MusECore::Undo& undo, bool snap = false);
       // The isCopy argument means whether to copy the items or just move them.
       // Returns true is anything was added to undo. False if not or error.
       bool commitAutomationChanges(MusECore::Undo& undo, bool isCopy);
-      void showStatusTip(QMouseEvent *event);
+      void showStatusTip(QMouseEvent *event) const;
 
 
    protected:
@@ -330,11 +337,15 @@ class PartCanvas : public Canvas {
       // Appends given tag list with item objects according to options. Avoids duplicate events or clone events.
       // Special: We 'abuse' a controller event's length, normally 0, to indicate visual item length.
       void tagItems(MusECore::TagEventList* tag_list, const MusECore::EventTagOptionsStruct& options) const;
+      int automationPointRadius() const;
+      void setAutomationPointRadius(int r);
 
    public slots:
       void redirKeypress(QKeyEvent* e) { keyPress(e); }
       // Redraws the track. CtrlId (unused so far) would be ignored if -1.
-      void controllerChanged(const MusECore::Track *t, int CtrlId = -1);
+      void controllerChanged(
+        const MusECore::Track *t, int ctrlId = -1,
+        unsigned int frame = 0, MusECore::CtrlGUIMessage::Type type = MusECore::CtrlGUIMessage::PAINT_UPDATE);
       void setPartColor(int idx);
       void setCurrentColorIndex(int idx);
 };

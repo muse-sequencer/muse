@@ -215,5 +215,10 @@
         <file>svg/delta.svg</file>
         <file>svg/synth_gui.svg</file>
         <file>svg/downmix_file.svg</file>
+        <file>svg/audio_automation_discrete.svg</file>
+        <file>svg/audio_automation_interpolate.svg</file>
+        <file>svg/audio_automation_boxes.svg</file>
+        <file>svg/audio_automation_no_boxes.svg</file>
+        <file>svg/audio_automation_optimize.svg</file>
     </qresource>
 </RCC>

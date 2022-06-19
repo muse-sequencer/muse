@@ -287,6 +287,12 @@ extern QIcon* deltaSVGIcon;
 
 extern QIcon* dummySVGIcon;
 
+extern QIcon* audioAutomationDiscreteIconSVG;
+extern QIcon* audioAutomationInterpolateIconSVG;
+extern QIcon* audioAutomationBoxesIconSVG;
+extern QIcon* audioAutomationNoBoxesIconSVG;
+extern QIcon* audioAutomationOptimizeIconSVG;
+
 //----------------------------------
 // Cursors
 //----------------------------------

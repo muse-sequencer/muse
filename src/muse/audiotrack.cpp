@@ -887,34 +887,6 @@ void AudioTrack::setAutomationType(AutomationType t)
 }
 
 //---------------------------------------------------------
-//   setControllerMode
-//---------------------------------------------------------
-
-void AudioTrack::setControllerMode(int ctlID, CtrlList::Mode m)
-      {
-      ciCtrlList cl = _controller.find(ctlID);
-      if(cl == _controller.end())
-        return;
-
-      cl->second->setMode(m);
-      }
-
-//---------------------------------------------------------
-//   clearControllerEvents
-//---------------------------------------------------------
-
-void AudioTrack::clearControllerEvents(int id)
-{
-  ciCtrlList icl = _controller.find(id);
-  if(icl == _controller.end())
-    return;
-
-  CtrlList* cl = icl->second;
-  cl->clear();
-  return;
-}
-
-//---------------------------------------------------------
 //   seekPrevACEvent
 //---------------------------------------------------------
 
@@ -961,83 +933,6 @@ void AudioTrack::seekNextACEvent(int id)
 
     MusEGlobal::song->setPos(Song::CPOS, Pos(s->first, false), false, true, false);
     return;
-}
-
-//---------------------------------------------------------
-//   eraseACEvent
-//---------------------------------------------------------
-
-void AudioTrack::eraseACEvent(int id, int frame)
-{
-  ciCtrlList icl = _controller.find(id);
-  if(icl == _controller.end()) {
-    return;
-  }
-
-
-    CtrlList* cl = icl->second;
-    if(cl->empty())
-      return;
-
-    iCtrl s = cl->find(frame);
-    if(s != cl->end())
-      cl->erase(s);
-    return;
-}
-
-//---------------------------------------------------------
-//   eraseRangeACEvents
-//---------------------------------------------------------
-
-void AudioTrack::eraseRangeACEvents(int id, int frame1, int frame2)
-{
-  ciCtrlList icl = _controller.find(id);
-  if(icl == _controller.end()) {
-    return;
-  }
-
-    CtrlList* cl = icl->second;
-    if(cl->empty())
-      return;
-
-    iCtrl s = cl->lower_bound(frame1);
-    iCtrl e = cl->lower_bound(frame2);
-    cl->erase(s, e);
-    return;
-}
-
-//---------------------------------------------------------
-//   addACEvent
-//---------------------------------------------------------
-
-void AudioTrack::addACEvent(int id, int frame, double val)
-{
-  ciCtrlList icl = _controller.find(id);
-  if(icl == _controller.end()) {
-    return;
-  }
-
-    CtrlList* cl = icl->second;
-
-    // Add will replace if found.
-    cl->add(frame, val);
-    return;
-}
-
-//---------------------------------------------------------
-//   changeACEvent
-//---------------------------------------------------------
-
-void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
-{
-  ciCtrlList icl = _controller.find(id);
-  if(icl == _controller.end())
-    return;
-  CtrlList* cl = icl->second;
-  iCtrl ic = cl->find(frame);
-  if(ic != cl->end())
-    cl->erase(ic);
-  cl->insert(CtrlListInsertPair_t(newframe, CtrlVal(newval)));
 }
 
 //---------------------------------------------------------
@@ -1629,6 +1524,11 @@ void AudioTrack::setVolume(double val)
             return;
             }
       cl->second->setCurVal(val);
+      // Notify the GUI to redraw the controller.
+      // Yes, we're already in the GUI thread. But take advantage of the
+      //  ring buffer's leisurely processing rate to avoid overloading the GUI.
+      if(MusEGlobal::song)
+        MusEGlobal::song->putIpcCtrlGUIMessage(CtrlGUIMessage(this, AC_VOLUME));
       }
 
 //---------------------------------------------------------
@@ -1653,6 +1553,11 @@ void AudioTrack::setPan(double val)
             return;
             }
       cl->second->setCurVal(val);
+      // Notify the GUI to redraw the controller.
+      // Yes, we're already in the GUI thread. But take advantage of the
+      //  ring buffer's leisurely processing rate to avoid overloading the GUI.
+      if(MusEGlobal::song)
+        MusEGlobal::song->putIpcCtrlGUIMessage(CtrlGUIMessage(this, AC_PAN));
       }
 
 //---------------------------------------------------------
@@ -1721,6 +1626,11 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
     return;
 
   cl->second->setCurVal(val);
+  // Notify the GUI to redraw the controller.
+  // Yes, we're already in the GUI thread. But take advantage of the
+  //  ring buffer's leisurely processing rate to avoid overloading the GUI.
+  if(MusEGlobal::song)
+    MusEGlobal::song->putIpcCtrlGUIMessage(CtrlGUIMessage(this, param));
 }
 
 //---------------------------------------------------------
@@ -1878,17 +1788,34 @@ void AudioTrack::recordAutomation(int n, double v)
           _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));
         else
         {
-          if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));
-          else
-          if(automationType() == AUTO_TOUCH)
+          if(automationType() == AUTO_WRITE || automationType() == AUTO_TOUCH || automationType() == AUTO_LATCH)
           // In touch mode and not playing. Send directly to controller list.
           {
+            const unsigned int frame = MusEGlobal::audio->curFramePos();
+            _recEvents.addInitial(CtrlRecVal(frame, n, v, CtrlRecVal::ARVT_IGNORE));
+
             iCtrlList cl = _controller.find(n);
             if (cl == _controller.end())
               return;
-            // Add will replace if found.
-            cl->second->add(MusEGlobal::audio->curFramePos(), v);
+            // Force a discrete value, to be faithful to the incoming stream because
+            //  if someone leaves a controller at a value for a while then moves
+            //  the controller, this point and the next would be a long interpolation.
+
+            // Modify will add if not found.
+            // Use modify instead of add so that if there is an existing interpolated point,
+            //  users can modify it using a controller without disturbing the mode.
+            cl->second->modify(frame, v,
+              CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE,
+              CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED /*| CtrlVal::VAL_DISCRETE*/,
+              CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE);
+
+            // Notify the GUI to update any local structures etc.
+            // Yes, we're already in the GUI thread. But take advantage of the
+            //  ring buffer's leisurely processing rate to avoid overloading the GUI.
+            // The item has already been added, so we just want a GUI update soon-ish...
+            if(MusEGlobal::song)
+              MusEGlobal::song->putIpcCtrlGUIMessage(
+                CtrlGUIMessage(this, cl->second->id(), frame, v, CtrlGUIMessage::ADDED));
           }
         }
       }
@@ -1899,27 +1826,41 @@ void AudioTrack::startAutoRecord(int n, double v)
           return;
         if(MusEGlobal::audio->isPlaying())
         {
-          if(automationType() == AUTO_TOUCH)
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_START));
-          else
-          if(automationType() == AUTO_WRITE)
+          if(automationType() == AUTO_WRITE || automationType() == AUTO_TOUCH || automationType() == AUTO_LATCH)
               _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));
         }
         else
         {
-          if(automationType() == AUTO_TOUCH)
+          if(automationType() == AUTO_WRITE || automationType() == AUTO_TOUCH || automationType() == AUTO_LATCH)
           // In touch mode and not playing. Send directly to controller list.
           {
+            const unsigned int frame = MusEGlobal::audio->curFramePos();
+            _recEvents.addInitial(CtrlRecVal(frame, n, v, CtrlRecVal::ARVT_IGNORE));
+
             // FIXME: Unsafe? Should sync by sending a message, but that'll really slow it down with large audio bufs.
             iCtrlList cl = _controller.find(n);
             if (cl == _controller.end())
               return;
-            // Add will replace if found.
-            cl->second->add(MusEGlobal::audio->curFramePos(), v);
+            // Force a discrete value, to be faithful to the incoming stream because
+            //  if someone leaves a controller at a value for a while then moves
+            //  the controller, this point and the next would be a long interpolation.
+
+            // Modify will add if not found.
+            // Use modify instead of add so that if there is an existing interpolated point,
+            //  users can modify it using a controller without disturbing the mode.
+            cl->second->modify(frame, v,
+              CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE,
+              CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED /*| CtrlVal::VAL_DISCRETE*/,
+              CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE);
+
+            // Notify the GUI to update any local structures etc.
+            // Yes, we're already in the GUI thread. But take advantage of the
+            //  ring buffer's leisurely processing rate to avoid overloading the GUI.
+            // The item has already been added, so we just want a GUI update soon-ish...
+            if(MusEGlobal::song)
+              MusEGlobal::song->putIpcCtrlGUIMessage(
+                CtrlGUIMessage(this, cl->second->id(), frame, v, CtrlGUIMessage::ADDED));
           }
-          else
-          if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v));
         }
       }
 
@@ -1930,11 +1871,12 @@ void AudioTrack::stopAutoRecord(int n, double v)
         if(MusEGlobal::audio->isPlaying())
         {
           if(automationType() == AUTO_TOUCH)
-          {
-              MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal,
-                             this, n, MusEGlobal::audio->curFramePos(), v));
-              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, ARVT_STOP));
-          }
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, CtrlRecVal::ARVT_STOP));
+        }
+        else
+        {
+          if(/*automationType() == AUTO_WRITE ||*/ automationType() == AUTO_TOUCH /*|| automationType() == AUTO_LATCH*/)
+              _recEvents.addInitial(CtrlRecVal(MusEGlobal::audio->curFramePos(), n, v, CtrlRecVal::ARVT_STOP | CtrlRecVal::ARVT_IGNORE));
         }
       }
 

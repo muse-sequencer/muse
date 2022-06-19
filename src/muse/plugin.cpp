@@ -57,6 +57,7 @@
 #include "pluglist.h"
 //#include "gui.h"
 #include "pluginsettings.h"
+#include "switch.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -447,6 +448,8 @@ CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port)
   LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
   LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
 
+  // For now we do not allow interpolation of integer or enum controllers.
+  // TODO: It would require custom line drawing and corresponding hit detection.
   if(desc & LADSPA_HINT_INTEGER)
     return CtrlList::DISCRETE;
   else if(desc & LADSPA_HINT_LOGARITHMIC)
@@ -1074,7 +1077,7 @@ CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
       return ladspaCtrlMode(plugin, i);
       }
 
-const CtrlEnumValues* Plugin::ctrlEnumValues ( unsigned long ) const
+const CtrlVal::CtrlEnumValues* Plugin::ctrlEnumValues ( unsigned long ) const
 {
     return nullptr;
 }
@@ -2014,7 +2017,7 @@ bool PluginIBase::addScheduledControlEvent(unsigned long i, double val, unsigned
   return false;
 }
 
-const CtrlEnumValues* PluginIBase::ctrlEnumValues(unsigned long i) const {
+const CtrlVal::CtrlEnumValues* PluginIBase::ctrlEnumValues(unsigned long i) const {
     Q_UNUSED(i)
     return nullptr;
 }
@@ -3694,7 +3697,8 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
     // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.
 
     DoubleLabel* dl_obj;
-    QCheckBox*   cb_obj;
+    CheckBox*    cb_obj;
+    Switch*      sw_obj;
     QComboBox*   combobox_obj;
     unsigned long int nn;
 
@@ -3757,7 +3761,7 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                   if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
                     ((DoubleLabel*)gw[i].widget)->setSlider(s);
                 }
-                connect(s, QOverload<double, int, int>::of(&Slider::valueChanged), [=]() { guiParamChanged(nn); } );
+                connect(s, QOverload<double, int, int>::of(&Slider::valueChanged), [=](double, int i, int) { guiParamChanged(i); } );
                 connect(s, &Slider::sliderPressed, [this](double v, int i) { guiSliderPressed(v, i); } );
                 connect(s, &Slider::sliderReleased, [this](double v, int i) { guiSliderReleased(v, i); } );
                 connect(s, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { guiSliderRightClicked(p, i); } );
@@ -3775,16 +3779,26 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                     break;
                   }
                 }
-                connect((DoubleLabel*)obj, &DoubleLabel::valueChanged, [this, nn]() { guiParamChanged(nn); } );
+                connect((DoubleLabel*)obj, &DoubleLabel::valueChanged, [this](double, int i) { guiParamChanged(i); } );
                 }
-          else if (strcmp(obj->metaObject()->className(), "QCheckBox") == 0) {
-                gw[nobj].type = GuiWidgets::QCHECKBOX;
+          else if (strcmp(obj->metaObject()->className(), "MusEGui::CheckBox") == 0) {
+                gw[nobj].type = GuiWidgets::CHECKBOX;
                 gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
-                cb_obj = static_cast<QCheckBox*>(obj);
-                connect(cb_obj, &QCheckBox::toggled, [this, nn]() { guiParamChanged(nn); } );
-                connect(cb_obj, &QCheckBox::pressed, [this, nn]() { guiParamPressed(nn); } );
-                connect(cb_obj, &QCheckBox::released, [this, nn]() { guiParamReleased(nn); } );
-                connect(cb_obj, &QCheckBox::customContextMenuRequested, [this, nn]() { guiContextMenuReq(nn); } );
+                cb_obj = static_cast<CheckBox*>(obj);
+                cb_obj->setId(nobj);
+                connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { guiParamPressed(i); } );
+                connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { guiParamReleased(i); } );
+                connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint& p, int i) { guiSliderRightClicked(p, i); } );
+                }
+          else if (strcmp(obj->metaObject()->className(), "MusEGui::Switch") == 0) {
+                gw[nobj].type = GuiWidgets::SWITCH;
+                gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
+                sw_obj = static_cast<Switch*>(obj);
+                sw_obj->setId(nobj);
+                connect(sw_obj, &Switch::toggleChanged, [this](bool, int i) { guiParamChanged(i); } );
+                connect(sw_obj, &Switch::switchPressed, [this](int i) { guiParamPressed(i); } );
+                connect(sw_obj, &Switch::switchReleased, [this](int i) { guiParamReleased(i); } );
+                connect(sw_obj, &Switch::switchRightClicked, [this](const QPoint& p, int i) { guiSliderRightClicked(p, i); } );
                 }
           else if (strcmp(obj->metaObject()->className(), "QComboBox") == 0) {
                 gw[nobj].type = GuiWidgets::QCOMBOBOX;
@@ -3829,7 +3843,6 @@ void PluginGui::constructGUIFromPluginMetadata() {
     int h           = fm.height() + 4;
 
     Slider* sl_obj;
-    CheckBox* cb_obj;
     ComboBoxPI* cmb_obj;
 
     QString lastGroup;
@@ -3872,7 +3885,9 @@ void PluginGui::constructGUIFromPluginMetadata() {
             //   but I can't find any plugin with trigger property (kybos)
             // if (plugin->ctrlIsTrigger(i))...
 
-            params[i].type = GuiParam::GUI_SWITCH;
+// Whether to use a checkbox or a switch...
+#if 1
+            params[i].type = GuiParam::GUI_CHECKBOX;
             label = new QLabel(QString(plugin->paramName(i)), nullptr);
             CheckBox* cb = new CheckBox(mw, i, "param");
             cb->setId(i);
@@ -3880,14 +3895,34 @@ void PluginGui::constructGUIFromPluginMetadata() {
             cb->setFixedHeight(h);
             params[i].actuator = cb;
 
+            params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
             grid->addWidget(label, i, 0);
             grid->addWidget(params[i].actuator, i, 1);
 
-            cb_obj = (CheckBox*)params[i].actuator;
+            CheckBox* cb_obj = (CheckBox*)params[i].actuator;
 
             connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
             connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
             connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
+#else
+            params[i].type = GuiParam::GUI_SWITCH;
+            label = new QLabel(QString(plugin->paramName(i)), nullptr);
+            Switch* sw = new Switch(i, mw, "param");
+            sw->setChecked(plugin->param(i) != 0.0);
+            sw->setFixedHeight(h);
+            params[i].actuator = sw;
+
+            params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            grid->addWidget(label, i, 0);
+            grid->addWidget(params[i].actuator, i, 1);
+
+            Switch* sw_obj = (Switch*)params[i].actuator;
+
+            connect(sw_obj, &Switch::toggleChanged, [this](bool v, int i) { switchChanged(v, i); } );
+            connect(sw_obj, &Switch::switchPressed, [this](int i) { switchPressed(i); } );
+            connect(sw_obj, &Switch::switchReleased, [this](int i) { switchReleased(i); } );
+            connect(sw_obj, &Switch::switchRightClicked, [this](const QPoint& p, int i) { ctrlRightClicked(p, i); } );
+#endif
         }
         else if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_ENUM
                  && plugin->ctrlEnumValues(i)) {
@@ -3970,6 +4005,7 @@ void PluginGui::constructGUIFromPluginMetadata() {
 
             label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
             params[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
             grid->addWidget(label, i, 0);
             grid->addWidget(params[i].label,    i, 1);
             grid->addWidget(params[i].actuator, i, 2);
@@ -3982,8 +4018,6 @@ void PluginGui::constructGUIFromPluginMetadata() {
             connect(sl_obj, &Slider::sliderReleased, [this](double v, int i) { sliderReleased(v, i); } );
             connect(sl_obj, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
         }
-
-        params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
 
         if (plugin->ctrlNotOnGui(i)) {
             params[i].actuator->setVisible(false);
@@ -4215,7 +4249,11 @@ void PluginGui::sliderPressed(double /*val*/, int param)
 
 void PluginGui::sliderReleased(double /*val*/, int param)
 {
+    MusECore::AutomationType at = MusECore::AUTO_OFF;
     MusECore::AudioTrack* track = plugin->track();
+    if(track)
+      at = track->automationType();
+
     int id = plugin->id();
     if(track && id != -1)
     {
@@ -4227,6 +4265,10 @@ void PluginGui::sliderReleased(double /*val*/, int param)
             val = rint(val);
         track->stopAutoRecord(id, val);
     }
+
+    if (at == MusECore::AUTO_OFF ||
+        at == MusECore::AUTO_TOUCH)
+      plugin->enableController(param, true);
 
     params[param].pressed = false;
 }
@@ -4254,7 +4296,16 @@ void PluginGui::switchPressed(int param)
     if (track && id != -1)
     {
         id = MusECore::genACnum(id, param);
-        float val = (float)((CheckBox*)params[param].actuator)->isChecked();
+        double val = 0.0;
+        switch(params[param].type)
+        {
+          case GuiParam::GUI_CHECKBOX:
+            val = (double)((CheckBox*)params[param].actuator)->isChecked();
+          break;
+          case GuiParam::GUI_SWITCH:
+            val = (double)((Switch*)params[param].actuator)->isChecked();
+          break;
+        }
         track->startAutoRecord(id, val);
         track->setPluginCtrlVal(id, val);
     }
@@ -4276,6 +4327,23 @@ void PluginGui::switchReleased(int param)
       if ((at == MusECore::AUTO_OFF) ||
           (at == MusECore::AUTO_TOUCH && !MusEGlobal::audio->isPlaying()) )
         plugin->enableController(param, true);
+
+      int id = plugin->id();
+      if(track && id != -1)
+      {
+        id = MusECore::genACnum(id, param);
+        double val = 0.0;
+        switch(params[param].type)
+        {
+          case GuiParam::GUI_CHECKBOX:
+            val = (double)((CheckBox*)params[param].actuator)->isChecked();
+          break;
+          case GuiParam::GUI_SWITCH:
+            val = (double)((Switch*)params[param].actuator)->isChecked();
+          break;
+        }
+        track->stopAutoRecord(id, val);
+      }
 
       params[param].pressed = false;
 }
@@ -4304,6 +4372,23 @@ void PluginGui::sliderChanged(double val, int param, int scrollMode)
         // ScrDirect mode is one-time only on press with modifier.
         if(scrollMode != SliderBase::ScrDirect)
           track->recordAutomation(id, val);
+      }
+      plugin->setParam(param, val);  // Schedules a timed control change.
+      plugin->enableController(param, false);
+}
+
+//---------------------------------------------------------
+//   switchChanged
+//---------------------------------------------------------
+
+void PluginGui::switchChanged(bool val, int param)
+{
+      MusECore::AudioTrack* track = plugin->track();
+      int id = plugin->id();
+      if(track && id != -1)
+      {
+        id = MusECore::genACnum(id, param);
+        track->recordAutomation(id, val);
       }
       plugin->setParam(param, val);  // Schedules a timed control change.
       plugin->enableController(param, false);
@@ -4505,9 +4590,14 @@ void PluginGui::updateValues()
                 gp->label->blockSignals(false);
                 gp->actuator->blockSignals(false);
             }
-            else if (gp->type == GuiParam::GUI_SWITCH) {
+            else if (gp->type == GuiParam::GUI_CHECKBOX) {
                 gp->actuator->blockSignals(true);
                 ((CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
+                gp->actuator->blockSignals(false);
+            }
+            else if (gp->type == GuiParam::GUI_SWITCH) {
+                gp->actuator->blockSignals(true);
+                ((Switch*)(gp->actuator))->setChecked(int(plugin->param(i)));
                 gp->actuator->blockSignals(false);
             }
             else if (gp->type == GuiParam::GUI_ENUM) {
@@ -4534,8 +4624,11 @@ void PluginGui::updateValues()
             case GuiWidgets::DOUBLE_LABEL:
                 ((DoubleLabel*)widget)->setValue(val);   // Note conversion to double
                 break;
-            case GuiWidgets::QCHECKBOX:
-                ((QCheckBox*)widget)->setChecked(int(val));
+            case GuiWidgets::CHECKBOX:
+                ((CheckBox*)widget)->setChecked(int(val));
+                break;
+            case GuiWidgets::SWITCH:
+                ((Switch*)widget)->setChecked(int(val));
                 break;
             case GuiWidgets::QCOMBOBOX:
                 ((QComboBox*)widget)->setCurrentIndex(int(val));
@@ -4610,13 +4703,24 @@ void PluginGui::updateControls()
                     }
                 }
             }
-            else if (gp->type == GuiParam::GUI_SWITCH) {
+            else if (gp->type == GuiParam::GUI_CHECKBOX) {
                 {
                     bool b = (int)v;
                     if(((CheckBox*)(gp->actuator))->isChecked() != b)
                     {
                         gp->actuator->blockSignals(true);
                         ((CheckBox*)(gp->actuator))->setChecked(b);
+                        gp->actuator->blockSignals(false);
+                    }
+                }
+            }
+            else if (gp->type == GuiParam::GUI_SWITCH) {
+                {
+                    bool b = (int)v;
+                    if(((Switch*)(gp->actuator))->isChecked() != b)
+                    {
+                        gp->actuator->blockSignals(true);
+                        ((Switch*)(gp->actuator))->setChecked(b);
                         gp->actuator->blockSignals(false);
                     }
                 }
@@ -4662,11 +4766,18 @@ void PluginGui::updateControls()
                     ((DoubleLabel*)widget)->setValue(v);
             }
                 break;
-            case GuiWidgets::QCHECKBOX:
+            case GuiWidgets::CHECKBOX:
             {
                 bool b = (bool)v;
-                if(((QCheckBox*)widget)->isChecked() != b)
-                    ((QCheckBox*)widget)->setChecked(b);
+                if(((CheckBox*)widget)->isChecked() != b)
+                    ((CheckBox*)widget)->setChecked(b);
+            }
+                break;
+            case GuiWidgets::SWITCH:
+            {
+                bool b = (bool)v;
+                if(((Switch*)widget)->isChecked() != b)
+                    ((Switch*)widget)->setChecked(b);
             }
                 break;
             case GuiWidgets::QCOMBOBOX:
@@ -4707,8 +4818,11 @@ void PluginGui::guiParamChanged(unsigned long int idx)
             case GuiWidgets::DOUBLE_LABEL:
                   val = ((DoubleLabel*)w)->value();
                   break;
-            case GuiWidgets::QCHECKBOX:
-                  val = double(((QCheckBox*)w)->isChecked());
+            case GuiWidgets::CHECKBOX:
+                  val = double(((CheckBox*)w)->isChecked());
+                  break;
+            case GuiWidgets::SWITCH:
+                  val = double(((Switch*)w)->isChecked());
                   break;
             case GuiWidgets::QCOMBOBOX:
                   val = double(((QComboBox*)w)->currentIndex());
@@ -4728,8 +4842,11 @@ void PluginGui::guiParamChanged(unsigned long int idx)
                   case GuiWidgets::DOUBLE_LABEL:
                         ((DoubleLabel*)widget)->setValue(val);
                         break;
-                  case GuiWidgets::QCHECKBOX:
-                        ((QCheckBox*)widget)->setChecked(int(val));
+                  case GuiWidgets::CHECKBOX:
+                        ((CheckBox*)widget)->setChecked(int(val));
+                        break;
+                  case GuiWidgets::SWITCH:
+                        ((Switch*)widget)->setChecked(int(val));
                         break;
                   case GuiWidgets::QCOMBOBOX:
                         ((QComboBox*)widget)->setCurrentIndex(int(val));
@@ -4745,7 +4862,8 @@ void PluginGui::guiParamChanged(unsigned long int idx)
           switch(type)
           {
              case GuiWidgets::DOUBLE_LABEL:
-             case GuiWidgets::QCHECKBOX:
+             case GuiWidgets::CHECKBOX:
+             case GuiWidgets::SWITCH:
                track->startAutoRecord(id, val);
              break;
              default:
@@ -4767,29 +4885,44 @@ void PluginGui::guiParamPressed(unsigned long int idx)
       {
       gw[idx].pressed = true;
       unsigned long param  = gw[idx].param;
-      plugin->enableController(param, false);
+      QWidget *w = gw[idx].widget;
+      int type   = gw[idx].type;
 
-      //MusECore::AudioTrack* track = plugin->track();
-      //int id = plugin->id();
-      //if(!track || id == -1)
-      //  return;
-      //id = MusECore::genACnum(id, param);
-      // NOTE: For this to be of any use, the freeverb gui 2142.ui
-      //  would have to be used, and changed to use CheckBox and ComboBox
-      //  instead of QCheckBox and QComboBox, since both of those would
-      //  need customization (Ex. QCheckBox doesn't check on click). RECHECK: Qt4 it does?
-      /*
-      switch(type) {
-            case GuiWidgets::QCHECKBOX:
-                    double val = (double)((CheckBox*)w)->isChecked();
-                    track->startAutoRecord(id, val);
-                  break;
-            case GuiWidgets::QCOMBOBOX:
-                    double val = (double)((ComboBox*)w)->currentIndex();
-                    track->startAutoRecord(id, val);
-                  break;
-            }
-      */
+      MusECore::AudioTrack* track = plugin->track();
+      int id = plugin->id();
+      if(track && id != -1)
+      {
+        id = MusECore::genACnum(id, param);
+        // NOTE: For this to be of any use, the freeverb gui 2142.ui
+        //  would have to be used, and changed to use CheckBox and ComboBox
+        //  instead of QCheckBox and QComboBox, since both of those would
+        //  need customization (Ex. QCheckBox doesn't check on click). RECHECK: Qt4 it does?
+        switch(type) {
+              case GuiWidgets::CHECKBOX:
+              {
+                      const double val = (double)((CheckBox*)w)->isChecked();
+                      track->startAutoRecord(id, val);
+                      track->setPluginCtrlVal(id, val);
+                    break;
+              }
+              case GuiWidgets::SWITCH:
+              {
+                      const double val = (double)((Switch*)w)->isChecked();
+                      track->startAutoRecord(id, val);
+                      track->setPluginCtrlVal(id, val);
+                    break;
+              }
+  //             case GuiWidgets::QCOMBOBOX:
+  //             {
+  //                     const double val = (double)((QComboBox*)w)->currentIndex();
+  //                     track->startAutoRecord(id, val);
+  //                     track->setPluginCtrlVal(id, val);
+  //                   break;
+  //             }
+              }
+
+        }
+        plugin->enableController(param, false);
       }
 
 //---------------------------------------------------------
@@ -4799,6 +4932,7 @@ void PluginGui::guiParamPressed(unsigned long int idx)
 void PluginGui::guiParamReleased(unsigned long int idx)
       {
       unsigned long param  = gw[idx].param;
+      QWidget *w = gw[idx].widget;
       int type   = gw[idx].type;
 
       MusECore::AutomationType at = MusECore::AUTO_OFF;
@@ -4808,30 +4942,40 @@ void PluginGui::guiParamReleased(unsigned long int idx)
 
       // Special for switch - don't enable controller until transport stopped.
       if ((at == MusECore::AUTO_OFF) ||
-          (at == MusECore::AUTO_TOUCH && (type != GuiWidgets::QCHECKBOX ||
+          (at == MusECore::AUTO_TOUCH && (type != GuiWidgets::CHECKBOX ||
                                 !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
 
-      //int id = plugin->id();
-      //if(!track || id == -1)
-      //  return;
-      //id = MusECore::genACnum(id, param);
-      // NOTE: For this to be of any use, the freeverb gui 2142.ui
-      //  would have to be used, and changed to use CheckBox and ComboBox
-      //  instead of QCheckBox and QComboBox, since both of those would
-      //  need customization (Ex. QCheckBox doesn't check on click).  // RECHECK Qt4 it does?
-      /*
-      switch(type) {
-            case GuiWidgets::QCHECKBOX:
-                    double val = (double)((CheckBox*)w)->isChecked();
-                    track->stopAutoRecord(id, param);
-                  break;
-            case GuiWidgets::QCOMBOBOX:
-                    double val = (double)((ComboBox*)w)->currentIndex();
-                    track->stopAutoRecord(id, param);
-                  break;
-            }
-      */
+      int id = plugin->id();
+      if(track && id != -1)
+      {
+        id = MusECore::genACnum(id, param);
+        // NOTE: For this to be of any use, the freeverb gui 2142.ui
+        //  would have to be used, and changed to use CheckBox and ComboBox
+        //  instead of QCheckBox and QComboBox, since both of those would
+        //  need customization (Ex. QCheckBox doesn't check on click).  // RECHECK Qt4 it does?
+
+        switch(type) {
+              case GuiWidgets::CHECKBOX:
+              {
+                    const double val = (double)((CheckBox*)w)->isChecked();
+                    track->stopAutoRecord(id, val);
+                    break;
+              }
+              case GuiWidgets::SWITCH:
+              {
+                    const double val = (double)((Switch*)w)->isChecked();
+                    track->stopAutoRecord(id, val);
+                    break;
+              }
+  //             case GuiWidgets::QCOMBOBOX:
+  //             {
+  //                   const double val = (double)((QComboBox*)w)->currentIndex();
+  //                   track->stopAutoRecord(id, val);
+  //                   break;
+  //             }
+              }
+      }
 
       gw[idx].pressed = false;
       }
@@ -4850,7 +4994,7 @@ void PluginGui::guiSliderPressed(double /*val*/, unsigned long int idx)
       if(track && id != -1)
       {
         id = MusECore::genACnum(id, param);
-        double val = ((Slider*)w)->value();
+        const double val = ((Slider*)w)->value();
         track->startAutoRecord(id, val);
         // Needed so that paging a slider updates a label or other buddy control.
         for (unsigned long i = 0; i < nobj; ++i) {
@@ -4866,8 +5010,11 @@ void PluginGui::guiSliderPressed(double /*val*/, unsigned long int idx)
                     case GuiWidgets::DOUBLE_LABEL:
                           ((DoubleLabel*)widget)->setValue(val);
                           break;
-                    case GuiWidgets::QCHECKBOX:
-                          ((QCheckBox*)widget)->setChecked(int(val));
+                    case GuiWidgets::CHECKBOX:
+                          ((CheckBox*)widget)->setChecked(int(val));
+                          break;
+                    case GuiWidgets::SWITCH:
+                          ((Switch*)widget)->setChecked(int(val));
                           break;
                     case GuiWidgets::QCOMBOBOX:
                           ((QComboBox*)widget)->setCurrentIndex(int(val));
@@ -4900,7 +5047,7 @@ void PluginGui::guiSliderReleased(double /*val*/, unsigned long int idx)
       {
         id = MusECore::genACnum(id, param);
 
-        double val = ((Slider*)w)->value();
+        const double val = ((Slider*)w)->value();
         track->stopAutoRecord(id, val);
       }
 
@@ -4941,6 +5088,10 @@ QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent,
     return new DoubleLabel(parent, name.toLatin1().constData());
   if(className == QString("MusEGui::Slider"))
     return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal, Slider::InsideHorizontal, 8, QColor(), ScaleDraw::TextHighlightSplitAndShadow);
+  if(className == QString("MusEGui::CheckBox"))
+    return new CheckBox(parent, -1, name.toLatin1().constData());
+  if(className == QString("MusEGui::Switch"))
+    return new Switch(-1, parent, name.toLatin1().constData());
 
   return QUiLoader::createWidget(className, parent, name);
 }

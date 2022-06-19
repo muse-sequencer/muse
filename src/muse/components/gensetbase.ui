@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>607</width>
-    <height>653</height>
+    <height>674</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -215,7 +215,7 @@
             <item row="2" column="1">
              <widget class="QCheckBox" name="readMidiConfigFromSongCheckBox">
               <property name="toolTip">
-               <string>Read MIDI Ports configuration from file, 
+               <string>Read MIDI Ports configuration from file,
  or else automatically configure</string>
               </property>
               <property name="text">
@@ -518,7 +518,7 @@
  change, for example by installing
  a new plugin. Click this button to
  force the cache to recreate upon
-  next restart. 
+  next restart.
 </string>
              </property>
              <property name="text">
@@ -1004,9 +1004,9 @@ This dramatically speeds bounce operations.</string>
              <string>Enable VST in-place processing (restart required)</string>
             </property>
             <property name="whatsThis">
-             <string>Enable VST in-place processing. Turn this off if 
- VST Ladspa effect rack plugins do not work or 
- feedback loudly, even if they are supposed to 
+             <string>Enable VST in-place processing. Turn this off if
+ VST Ladspa effect rack plugins do not work or
+ feedback loudly, even if they are supposed to
  be in-place capable. Setting requires a restart.</string>
             </property>
             <property name="text">
@@ -1029,9 +1029,9 @@ This dramatically speeds bounce operations.</string>
             </property>
             <property name="whatsThis">
              <string>Minimum audio controller process period (samples).
-Adjusts responsiveness of audio controls and 
- controller graphs. Set a low value for fast, smooth 
- control. If it causes performance problems, set a 
+Adjusts responsiveness of audio controls and
+ controller graphs. Set a low value for fast, smooth
+ control. If it causes performance problems, set a
  higher value. </string>
             </property>
             <property name="maxVisibleItems">
@@ -1245,8 +1245,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>571</width>
-            <height>548</height>
+            <width>514</width>
+            <height>515</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1498,15 +1498,15 @@ Adjusts responsiveness of audio controls and
                  <string>Send Null parameters after an (N)RPN value</string>
                 </property>
                 <property name="whatsThis">
-                 <string>If set, 'null' parameter numbers will be 
- sent after each RPN/NRPN event. 
+                 <string>If set, 'null' parameter numbers will be
+ sent after each RPN/NRPN event.
 (A 'null' parameter number is 127.)
-This prevents subsequent rogue or accidental 
- 'data' events (without parameters) from 
+This prevents subsequent rogue or accidental
+ 'data' events (without parameters) from
  corrupting the current RPN/NRPN controller.
-Normally it is OK to leave this unset, but use it 
+Normally it is OK to leave this unset, but use it
  if there is a possibility of such 'data' events.
-If this is set, the 'Optimize controllers' setting 
+If this is set, the 'Optimize controllers' setting
  does not affect these controllers' parameters,
  only the H/L values.</string>
                 </property>
@@ -1525,11 +1525,11 @@ If this is set, the 'Optimize controllers' setting
  are not sent. They are sent only if they changed.
 This can save midi interface bandwidth.
 But it is possible the receiving device might miss
- the previous changes (for example if the device 
+ the previous changes (for example if the device
  is turned on after they were sent).
 The 'Panic' button will force them to be resent.
 Certain operations will also force them to be resent,
- such as clicking a GUI midi control (but not while 
+ such as clicking a GUI midi control (but not while
  adjusting it).</string>
                 </property>
                 <property name="text">
@@ -1744,6 +1744,39 @@ Certain operations will also force them to be resent,
        <string>GUI</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout5">
+       <item row="2" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Alternate Track height</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="trackHeightAlternate">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="suffix">
+            <string> px</string>
+           </property>
+           <property name="minimum">
+            <number>20</number>
+           </property>
+           <property name="maximum">
+            <number>2000</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item row="0" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
@@ -1780,73 +1813,7 @@ Certain operations will also force them to be resent,
          </item>
         </layout>
        </item>
-       <item row="1" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Track height</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="trackHeight">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="suffix">
-            <string> px</string>
-           </property>
-           <property name="minimum">
-            <number>20</number>
-           </property>
-           <property name="maximum">
-            <number>2000</number>
-           </property>
-           <property name="value">
-            <number>20</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="2" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <item>
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>Alternate Track height</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="trackHeightAlternate">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="suffix">
-            <string> px</string>
-           </property>
-           <property name="minimum">
-            <number>20</number>
-           </property>
-           <property name="maximum">
-            <number>2000</number>
-           </property>
-           <property name="value">
-            <number>20</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_21">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -1932,7 +1899,7 @@ Certain operations will also force them to be resent,
             <item>
              <widget class="QCheckBox" name="monitorOnRecordCheckBox">
               <property name="toolTip">
-               <string>Whether record-arming a track 
+               <string>Whether record-arming a track
  automatically activates monitoring.</string>
               </property>
               <property name="text">
@@ -2007,6 +1974,72 @@ Turn off to reduce clutter.</string>
             </size>
            </property>
           </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Track height</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="trackHeight">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="suffix">
+            <string> px</string>
+           </property>
+           <property name="minimum">
+            <number>20</number>
+           </property>
+           <property name="maximum">
+            <number>2000</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Audio automation graph point radius</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="audioAutomationPointRadius">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="suffix">
+            <string> px</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>8</number>
+           </property>
+           <property name="value">
+            <number>2</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>

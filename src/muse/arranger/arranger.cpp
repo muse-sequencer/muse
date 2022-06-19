@@ -547,7 +547,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       connect(canvas, SIGNAL(dropMidiFile(const QString&)), SIGNAL(dropMidiFile(const QString&)));
 
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
-      connect(MusEGlobal::song,   SIGNAL(controllerChanged(MusECore::Track*, int)), SLOT(controllerChanged(MusECore::Track*, int)));
+      connect(MusEGlobal::song, &MusECore::Song::controllerChanged, this, &Arranger::controllerChanged);
 
       connect(_rasterCombo, &RasterLabelCombo::rasterChanged, [this](int raster) { rasterChanged(raster); } );
 
@@ -711,6 +711,8 @@ void Arranger::configChanged()
       gridOnButton->blockSignals(true);
       gridOnButton->setChecked(MusEGlobal::config.canvasShowGrid);
       gridOnButton->blockSignals(false);
+
+      canvas->setAutomationPointRadius(MusEGlobal::config.audioAutomationPointRadius);
 
       canvas->redraw();
       }
@@ -1221,9 +1223,10 @@ void Arranger::clear()
 //      emit redirectWheelEvent(ev);
 //      }
 
-void Arranger::controllerChanged(MusECore::Track *t, int ctrlId)
+void Arranger::controllerChanged(
+  const MusECore::Track *t, int ctrlId, unsigned int frame, MusECore::CtrlGUIMessage::Type type)
 {
-      canvas->controllerChanged(t, ctrlId);
+      canvas->controllerChanged(t, ctrlId, frame, type);
 }
 
 //---------------------------------------------------------

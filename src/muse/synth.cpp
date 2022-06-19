@@ -308,6 +308,35 @@ Synth::Synth(const QFileInfo& fi, const QString& uri, QString label, QString des
       _instances = 0;
       }
 
+bool Synth::midiToAudioCtrlMapped(unsigned long int midiCtrl, unsigned long int* audioCtrl) const
+{
+  ciMidiCtl2LadspaPort ic = midiCtl2PortMap.find(midiCtrl);
+  if(ic != midiCtl2PortMap.cend())
+  {
+    if(audioCtrl)
+      *audioCtrl = ic->second;
+    return true;
+  }
+  return false;
+}
+
+bool Synth::audioToMidiCtrlMapped(unsigned long int audioCtrl, unsigned long int* midiCtrl) const
+{
+  ciMidiCtl2LadspaPort ic = port2MidiCtlMap.find(audioCtrl);
+  if(ic != port2MidiCtlMap.cend())
+  {
+    if(midiCtrl)
+      *midiCtrl = ic->second;
+    return true;
+  }
+  return false;
+}
+
+bool Synth::hasMappedMidiToAudioCtrls() const
+{
+  return !midiCtl2PortMap.empty();
+}
+
 //---------------------------------------------------------
 //   instantiate
 //---------------------------------------------------------
@@ -660,6 +689,27 @@ void SynthI::getMapItem(int channel, int patch, int index, DrumMap& dest_map, in
   if(has_note_name_list)
     // It has a note name list. The note name can be blank meaning no note found.
     dest_map.name = note_name;
+}
+
+bool SynthI::midiToAudioCtrlMapped(unsigned long int midiCtrl, unsigned long int* audioCtrl) const
+{
+  if(synthesizer)
+    return synthesizer->midiToAudioCtrlMapped(midiCtrl, audioCtrl);
+  return false;
+}
+
+bool SynthI::audioToMidiCtrlMapped(unsigned long int audioCtrl, unsigned long int* midiCtrl) const
+{
+  if(synthesizer)
+    return synthesizer->audioToMidiCtrlMapped(audioCtrl, midiCtrl);
+  return false;
+}
+
+bool SynthI::hasMappedMidiToAudioCtrls() const
+{
+  if(synthesizer)
+    return synthesizer->hasMappedMidiToAudioCtrls();
+  return false;
 }
 
 //---------------------------------------------------------
