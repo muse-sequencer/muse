@@ -357,6 +357,10 @@ if(LV2_SUPPORT)
             OUTPUT_NAME muse_lv2host_module
             )
             
+      if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
+            target_link_libraries(lv2host_module atomic)
+      endif()
+
       target_link_libraries(lv2host_module ${LILV_LIBRARIES})
       target_link_libraries(lv2host_module ${SORD_LIBRARIES})
       target_link_libraries(lv2host_module ${LV2_LIBRARIES})
