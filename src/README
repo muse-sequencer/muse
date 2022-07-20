@@ -76,6 +76,9 @@ details.
 
       - LADSPA (development file ladspa.h)
          www.ladspa.org
+      
+      - extra-cmake-modules >= 5.94.0
+         http://invent.kde.org/frameworks/extra-cmake-modules
 
          
   =============================
