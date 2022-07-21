@@ -17,6 +17,8 @@ jobs:
                  
     - name: Install Deps
       run: |
+        # See PR 1077. Required to find libatomic for some archs.
+        sudo apt-get install extra-cmake-modules
         sudo apt-get install libsndfile1-dev libsamplerate0-dev \
           libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
           libsamplerate0-dev libfluidsynth-dev libgtkmm-2.4-dev \
