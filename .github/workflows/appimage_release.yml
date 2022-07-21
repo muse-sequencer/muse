@@ -28,6 +28,8 @@ jobs:
                  
     - name: Install Deps
       run: |
+        # See PR 1077. Required to find libatomic for some archs.
+        sudo apt-get install extra-cmake-modules
         sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-bionic
         sudo apt-get update
         sudo apt-get install libsndfile1-dev 
