@@ -533,7 +533,7 @@ endif (ENABLE_VST_VESTIGE)
 
 if (ENABLE_LV2)
 find_package(ECM REQUIRED NO_MODULE)
-set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
 include(CheckAtomic)
 
 set (muse_sord_ver "0.16.0")
