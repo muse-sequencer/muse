@@ -318,6 +318,10 @@ target_link_libraries(core
       dl
       )
 
+if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
+      target_link_libraries(core atomic)
+endif(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
+      
 if(HAVE_LASH)
       target_link_libraries(core ${LASH_LIBRARIES})
 endif(HAVE_LASH)
@@ -357,10 +361,6 @@ if(LV2_SUPPORT)
             OUTPUT_NAME muse_lv2host_module
             )
             
-      if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
-            target_link_libraries(lv2host_module atomic)
-      endif()
-
       target_link_libraries(lv2host_module ${LILV_LIBRARIES})
       target_link_libraries(lv2host_module ${SORD_LIBRARIES})
       target_link_libraries(lv2host_module ${LV2_LIBRARIES})
