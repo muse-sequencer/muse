@@ -32,14 +32,12 @@ include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
 
 find_package(ECM REQUIRED NO_MODULE)
-# set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
-set(CMAKE_MODULE_PATH ${ECM_MODULE_DIR} ${CMAKE_MODULE_PATH})
-message(" ECM_MODULE_PATH: " ${ECM_MODULE_PATH} )
-message(" ECM_MODULE_DIR: " ${ECM_MODULE_DIR} )
-message(" PACKAGE_PREFIX_DIR: " ${PACKAGE_PREFIX_DIR} )
-message(" CMAKE_MODULE_PATH: " ${CMAKE_MODULE_PATH} )
-# include(CheckAtomic)
-include("${ECM_MODULE_DIR}CheckAtomic.cmake")
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
+## FIXME FIXME: For the github automatic build actions:
+## This is not found !!! I tried everything, even manual path.
+## Apparently CheckAtomic does NOT EXIST in the ECM path of the distro we are using. ???
+## Are we missing a package ? It tested fine here.
+include(CheckAtomic)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
 if (COMMAND cmake_policy)
