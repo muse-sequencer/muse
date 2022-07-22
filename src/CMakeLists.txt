@@ -34,10 +34,14 @@ include(CheckCXXSymbolExists)
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
 ## FIXME FIXME: For the github automatic build actions:
-## This is not found !!! I tried everything, even manual path.
-## Apparently CheckAtomic does NOT EXIST in the ECM path of the distro we are using. ???
-## Are we missing a package ? It tested fine here.
-include(CheckAtomic)
+## This is not found in ECM in Ubuntu 18.04 or 20.04. Only 22.04 and later !!!
+## To avoid seriously major trouble upgrading to 22.04, use a local copy if not found. 
+# include(CheckAtomic)
+include(CheckAtomic OPTIONAL RESULT_VARIABLE CheckAtomic_Result)
+if (CheckAtomic_Result STREQUAL "NOTFOUND")
+  message("CheckAtomic module not found! Using local copy instead.")
+  include(cmake/CheckAtomic.cmake)
+endif (CheckAtomic_Result STREQUAL "NOTFOUND")
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
 if (COMMAND cmake_policy)
