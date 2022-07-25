@@ -80,6 +80,21 @@ details.
       - extra-cmake-modules >= 5.94.0
          http://invent.kde.org/frameworks/extra-cmake-modules
 
+  =============================
+      May be required:
+  =============================
+  
+      If building for certain architectures, such as RISCV, where
+       the compiler might not have built-in atomic operations, then
+       libatomic will be required. Our CMake configuration *should*
+       make that determination and automatically make libatomic 
+       a requirement and *should* fail if it is not found.
+      Install it, but only if it is required.
+       
+      libatomic should be part of your OS distribution, check your
+       package manager.
+	 
+      - https://gcc.gnu.org/
          
   =============================
       Optional:
