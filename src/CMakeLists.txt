@@ -721,14 +721,37 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
+
+#
+#  Set compiler flags for each build type
+#
+
+message("Existing CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message("Existing CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
+message("Existing CMAKE_CXX_FLAGS_RELWITHDEBINFO: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+message("Existing CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
+
 # set(CMAKE_CXX_FLAGS "-Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC" CACHE STRING "Default CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS "-Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS "-Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC ${CMAKE_CXX_FLAGS}" CACHE STRING "Default CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-security -Wextra -Winvalid-pch -fexceptions -Wall -fPIC")
+
 # set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
+
 # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release w/deb info CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
+
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC" CACHE STRING "Debug CXX flags" FORCE)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
+# set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DQT_DEBUG -Werror")
+
+message("Final CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message("Final CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
+message("Final CMAKE_CXX_FLAGS_RELWITHDEBINFO: ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+message("Final CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
+
 
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
