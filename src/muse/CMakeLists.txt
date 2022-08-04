@@ -318,10 +318,10 @@ target_link_libraries(core
       dl
       )
 
-if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
-      message("Warning: HAVE_CXX_ATOMICS_WITHOUT_LIB is false. Linking core with required libatomic.")
+if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB OR NOT HAVE_CXX_ATOMICS64_WITHOUT_LIB)
+      message("Warning: HAVE_CXX_ATOMICS_WITHOUT_LIB or HAVE_CXX_ATOMICS64_WITHOUT_LIB are false. Linking core with required libatomic.")
       target_link_libraries(core atomic)
-endif(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
+endif(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB OR NOT HAVE_CXX_ATOMICS64_WITHOUT_LIB)
       
 if(HAVE_LASH)
       target_link_libraries(core ${LASH_LIBRARIES})
