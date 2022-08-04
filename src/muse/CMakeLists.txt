@@ -319,6 +319,7 @@ target_link_libraries(core
       )
 
 if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
+      message("Warning: HAVE_CXX_ATOMICS_WITHOUT_LIB is false. Linking core with required libatomic.")
       target_link_libraries(core atomic)
 endif(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
       
