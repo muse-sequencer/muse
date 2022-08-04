@@ -737,18 +737,18 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-security -Wextra -Winvali
 
 # set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release CXX flags" FORCE)
 # set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Release CXX flags" FORCE)
-# Release is usually -O3. Previously we forced it to -O2. Let's leave it at -O3 and see what shakes out...
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
+# Release is usually -O3. Previously we forced it to -O2. Let's leave it at -O3, but default to -O2 and see what shakes out...
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG ${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
 
 # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC" CACHE STRING "Release w/deb info CXX flags" FORCE)
 # set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -fomit-frame-pointer -ffast-math -fno-finite-math-only -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "Release w/deb info CXX flags" FORCE)
-# Release with debug is usually -O2. We'll leave that alone.
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
+# Release with debug is usually -O2.
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -ffast-math -fno-finite-math-only")
 
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC" CACHE STRING "Debug CXX flags" FORCE)
 # set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DQT_DEBUG -Werror -Wall -Wextra -fPIC ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Debug CXX flags" FORCE)
-# Debug usually has no -O setting. Meh, let's force that one, eh!
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DQT_DEBUG -Werror")
+# Debug usually has no -O setting. Let's give it a default one.
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g ${CMAKE_CXX_FLAGS_DEBUG} -DQT_DEBUG -Werror")
 
 message("Final CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message("Final CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
