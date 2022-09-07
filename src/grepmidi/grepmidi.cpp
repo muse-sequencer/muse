@@ -211,7 +211,7 @@ int grepTrack(FILE* f, int trackno)
                                           }
                                     switch(mtype) {
                                           case 0x2f:
-                                                delete buffer;
+                                                delete[] buffer;
                                                 goto end;
                                           case 1:
                                           case 2:
@@ -235,7 +235,7 @@ int grepTrack(FILE* f, int trackno)
                                           default:
                                                 break;
                                           }
-                                    delete buffer;
+                                    delete[] buffer;
                                     break;
                               }
                         break;
