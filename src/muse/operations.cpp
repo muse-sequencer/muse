@@ -1279,7 +1279,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     case DeleteMidiCtrlVal:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage DeleteMidiCtrlVal: mcvl:%p tick:%u part:%p val:%d\n", 
                        _mcvl, _imcv->first, _imcv->second.part, _imcv->second.val);
-      _mcvl->erase(_imcv);
+      _mcvl->delMCtlVal(_imcv->first, _imcv->second.part, _imcv->second.val);
       // No song changed flags are required to be set here.
     break;
     case ModifyMidiCtrlVal:
