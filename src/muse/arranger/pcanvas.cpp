@@ -1014,11 +1014,11 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       QAction *act_cut = partPopup->addAction(*cutSVGIcon, tr("C&ut"));
       act_cut->setData(OP_CUT);
-      act_cut->setShortcut(Qt::CTRL+Qt::Key_X);
+      act_cut->setShortcut(shortcuts[SHRT_CUT].key);
 
       QAction *act_copy = partPopup->addAction(*copySVGIcon, tr("&Copy"));
       act_copy->setData(OP_COPY);
-      act_copy->setShortcut(Qt::CTRL+Qt::Key_C);
+	  act_copy->setShortcut(shortcuts[SHRT_COPY].key);
 
       partPopup->addSeparator();
       int rc = npart->part()->nClones();
@@ -1091,7 +1091,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_wfinfo->setData(OP_FILEINFO);
                   QAction *act_wfnorm = partPopup->addAction(tr("Normalize"));
                   act_wfnorm->setData(OP_NORMALIZE);
-                  act_wfnorm->setShortcut(Qt::CTRL+Qt::Key_N);
+                  act_wfnorm->setShortcut(shortcuts[SHRT_PART_NORMALIZE].key);
                   }
                   break;
             case MusECore::Track::AUDIO_OUTPUT:
