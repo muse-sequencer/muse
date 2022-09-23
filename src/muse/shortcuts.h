@@ -422,7 +422,7 @@ enum {
     SHRT_PREV_MARKER,
 
     // Arranger
-    SHRT_PART_NORMALIZE, // Alt+N
+    SHRT_PART_NORMALIZE, // Alt+Shift+N
 
     SHRT_TOOL_STRETCH,
     SHRT_TOOL_SAMPLERATE,

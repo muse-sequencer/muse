@@ -411,7 +411,7 @@ void initShortCuts()
       defShrt(SHRT_NEXT_MARKER, Qt::Key_F6, QT_TRANSLATE_NOOP("shortcuts", "Goto Next Marker"), GLOBAL_SHRT,  "me_sel_next");
       defShrt(SHRT_PREV_MARKER, Qt::Key_F5, QT_TRANSLATE_NOOP("shortcuts", "Goto Prev Marker"), GLOBAL_SHRT,  "me_sel_prev");
 
-      defShrt(SHRT_PART_NORMALIZE,  Qt::ALT + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Normalize"), ARRANG_SHRT, "wave_part_normalize");
+      defShrt(SHRT_PART_NORMALIZE, Qt::ALT + Qt::SHIFT + Qt::Key_N, QT_TRANSLATE_NOOP("shortcuts", "Normalize"), ARRANG_SHRT, "wave_part_normalize");
 
       //-----------------------------------------------------------
       // Mixer:
