@@ -2456,7 +2456,7 @@ void parseArrangerPasteXml(
                               if(minPosValid)
                                 *minPosValid = true;
                             }
-                            if(partList && minPartPosValid && minPartPos < *minPos)
+                            if(partList && minPartPosValid && minPartPos <= *minPos)
                             {
                               *minPos = minPartPos;
                               if(minPosValid)
