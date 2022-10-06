@@ -34,6 +34,22 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#ifndef M_PI_2
+#define M_PI_2 M_PI/2
+#endif
+
+#ifndef M_PI_4
+#define M_PI_4 M_PI/4
+#endif
+
+#ifndef M_1_PI
+#define M_1_PI 1/M_PI
+#endif
+
+#ifndef M_2_PI
+#define M_2_PI 2/M_PI
+#endif
+
 #ifndef HAVE_EXP10
 #define exp10(x) (pow(10.0, x))
 #endif
