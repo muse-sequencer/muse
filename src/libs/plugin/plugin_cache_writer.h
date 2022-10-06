@@ -46,7 +46,9 @@
 
 #ifdef VST_NATIVE_SUPPORT
 #ifdef VST_SDK_QUIRK_DEF
+#ifndef __cdecl
 #define __cdecl
+#endif
 #endif // VST_SDK_QUIRK_DEF
 
 #include "aeffectx.h"
