@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>607</width>
-    <height>674</height>
+    <height>734</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1245,8 +1245,8 @@ Adjusts responsiveness of audio controls and
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>514</width>
-            <height>515</height>
+            <width>571</width>
+            <height>669</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -1853,6 +1853,12 @@ Certain operations will also force them to be resent,
          </item>
          <item>
           <widget class="QGroupBox" name="groupBoxOptions">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="title">
             <string>Options</string>
            </property>
@@ -1861,119 +1867,163 @@ Certain operations will also force them to be resent,
              <number>9</number>
             </property>
             <item>
-             <widget class="QCheckBox" name="showStatusBarCheckBox">
-              <property name="text">
-               <string>Show status bar</string>
+             <widget class="QScrollArea" name="optionsScrollArea">
+              <property name="widgetResizable">
+               <bool>true</bool>
               </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="projectSaveCheckBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Use project save dialog</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="moveArmedCheckBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Move single armed track with selection</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="monitorOnRecordCheckBox">
-              <property name="toolTip">
-               <string>Whether record-arming a track
+              <widget class="QWidget" name="scrollAreaWidgetContents">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>553</width>
+                 <height>380</height>
+                </rect>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_26">
+                <item>
+                 <widget class="QCheckBox" name="showStatusBarCheckBox">
+                  <property name="text">
+                   <string>Show status bar</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="projectSaveCheckBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Use project save dialog</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="moveArmedCheckBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Move single armed track with selection</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="monitorOnRecordCheckBox">
+                  <property name="toolTip">
+                   <string>Whether record-arming a track
  automatically activates monitoring.</string>
-              </property>
-              <property name="text">
-               <string>Monitor on record-arm automatically</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="preferKnobsVsSlidersCheckBox">
-              <property name="toolTip">
-               <string>Whether to show knobs or sliders in certain places, for example mixer strips</string>
-              </property>
-              <property name="text">
-               <string>Prefer knobs instead of sliders</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="showControlValuesCheckBox">
-              <property name="toolTip">
-               <string>Whether to show knob and slider values in certain places, for example mixer strips.
+                  </property>
+                  <property name="text">
+                   <string>Monitor on record-arm automatically</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="momentaryMuteCheckBox">
+                  <property name="toolTip">
+                   <string>Whether record-arming a track
+ automatically activates monitoring.</string>
+                  </property>
+                  <property name="text">
+                   <string>Momentary track mute buttons</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="momentarySoloCheckBox">
+                  <property name="toolTip">
+                   <string>Whether record-arming a track
+ automatically activates monitoring.</string>
+                  </property>
+                  <property name="text">
+                   <string>Momentary track solo buttons</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="preferKnobsVsSlidersCheckBox">
+                  <property name="toolTip">
+                   <string>Whether to show knobs or sliders in certain places, for example mixer strips</string>
+                  </property>
+                  <property name="text">
+                   <string>Prefer knobs instead of sliders</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showControlValuesCheckBox">
+                  <property name="toolTip">
+                   <string>Whether to show knob and slider values in certain places, for example mixer strips.
 Turn off to reduce clutter.</string>
-              </property>
-              <property name="text">
-               <string>Show knob and slider values</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="preferMidiVolumeDbCheckBox">
-              <property name="toolTip">
-               <string/>
-              </property>
-              <property name="text">
-               <string>Prefer midi volume as decibels instead of 0-127</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="showNoteNamesCheckBox">
-              <property name="text">
-               <string>Show note names on notes in pianoroll</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="showNoteTooltipsCheckBox">
-              <property name="text">
-               <string>Show note and control value tooltips in midi editors</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="showTimeScaleBeatNumbersCheckBox">
-              <property name="text">
-               <string>Show beat numbers in time scale</string>
-              </property>
+                  </property>
+                  <property name="text">
+                   <string>Show knob and slider values</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="preferMidiVolumeDbCheckBox">
+                  <property name="toolTip">
+                   <string/>
+                  </property>
+                  <property name="text">
+                   <string>Prefer midi volume as decibels instead of 0-127</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showNoteNamesCheckBox">
+                  <property name="text">
+                   <string>Show note names on notes in pianoroll</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showNoteTooltipsCheckBox">
+                  <property name="text">
+                   <string>Show note and control value tooltips in midi editors</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="showTimeScaleBeatNumbersCheckBox">
+                  <property name="text">
+                   <string>Show beat numbers in time scale</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
           </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </item>
@@ -2297,14 +2347,6 @@ Some plugins ignore this settings.</string>
   <tabstop>guiRefreshSelect</tabstop>
   <tabstop>trackHeight</tabstop>
   <tabstop>lv2UiBehaviorComboBox</tabstop>
-  <tabstop>projectSaveCheckBox</tabstop>
-  <tabstop>moveArmedCheckBox</tabstop>
-  <tabstop>monitorOnRecordCheckBox</tabstop>
-  <tabstop>preferKnobsVsSlidersCheckBox</tabstop>
-  <tabstop>showControlValuesCheckBox</tabstop>
-  <tabstop>preferMidiVolumeDbCheckBox</tabstop>
-  <tabstop>showNoteNamesCheckBox</tabstop>
-  <tabstop>showNoteTooltipsCheckBox</tabstop>
  </tabstops>
  <resources/>
  <connections/>

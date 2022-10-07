@@ -1743,12 +1743,26 @@ void MusE::fileClose()
     // For now we just don't read the ports, leaving the last setup intact.
     const bool doReadMidiPorts = false;
 
-    //   if (mixer1)
-    //         mixer1->clearAndDelete();
-    //   if (mixer2)
-    //         mixer2->clearAndDelete();
-    //   _arranger->clear();      // clear track info
-    if(clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
+    bool restartSequencer = MusEGlobal::audio->isRunning();
+    if (restartSequencer) {
+          if (MusEGlobal::audio->isPlaying()) {
+                MusEGlobal::audio->msgPlay(false);
+                while (MusEGlobal::audio->isPlaying())
+                      qApp->processEvents();
+                }
+          seqStop();
+          }
+    microSleep(100000);
+    qApp->processEvents();
+
+    // Allow not touching things like midi ports.
+    const bool res = clearSong(doReadMidiPorts);
+
+    microSleep(100000);
+    qApp->processEvents();
+    if (restartSequencer)
+        seqStart();
+    if(res)
         return;
 
     MusEGlobal::recordAction->setChecked(false);

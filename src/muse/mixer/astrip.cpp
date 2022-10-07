@@ -591,7 +591,7 @@ void AudioComponentRack::controllerReleased(double v, int id)
 void AudioComponentRack::controllerRightClicked(QPoint p, int id)
 {
   DEBUG_AUDIO_STRIP(stderr, "AudioComponentRack::controllerRightClicked id:%d\n", id);
-  MusEGlobal::song->execAutomationCtlPopup(_track, p, id);
+  MusEGlobal::song->execAutomationCtlPopup(_track, p, MusECore::MidiAudioCtrlStruct::AudioControl, id);
 }
 
 
@@ -920,6 +920,21 @@ void AudioStrip::configChanged()
       setupComponentTabbing();
   }
 
+  if(mute)
+  {
+    // TODO If switching to momentary, un-mute any already muted tracks!
+    mute->blockSignals(true);
+    mute->setCheckable(!MusEGlobal::config.momentaryMute);
+    mute->blockSignals(false);
+  }
+  if(solo)
+  {
+    // TODO If switching to momentary, un-solo any already soloed tracks!
+    solo->blockSignals(true);
+    solo->setCheckable(!MusEGlobal::config.momentarySolo);
+    solo->blockSignals(false);
+  }
+
   // Set the whole strip's font, except for the label.
   if (font() != MusEGlobal::config.fonts[1])
   {
@@ -992,23 +1007,25 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
 
       if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
-            mute->setChecked(src->mute());
+            mute->setDown(src->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
             }
       if (solo && (val & (SC_SOLO | SC_ROUTE))) {
             solo->blockSignals(true);
-            solo->setChecked(track->solo());
+            solo->setDown(track->solo());
             solo->blockSignals(false);
-//            solo->setIconSetB(track->internalSolo());
             if (track->internalSolo()) {
-                if (solo->isChecked())
+                if (solo->isDown())
                     solo->setIcon(*soloAndProxyOnSVGIcon);
                 else
                     solo->setIcon(*soloProxyOnAloneSVGIcon);
             } else {
-                solo->setIcon(*soloStateSVGIcon);
+                if(solo->isDown())
+                  solo->setIcon(*soloOnSVGIcon);
+                else
+                  solo->setIcon(*soloOffSVGIcon);
             }
             updateMuteIcon();
       }
@@ -1282,7 +1299,8 @@ void AudioStrip::volumeReleased(double val, int id)
 //---------------------------------------------------------
 void AudioStrip::volumeRightClicked(QPoint p)
 {
-  MusEGlobal::song->execAutomationCtlPopup(static_cast<MusECore::AudioTrack*>(track), p, MusECore::AC_VOLUME);
+  MusEGlobal::song->execAutomationCtlPopup(static_cast<MusECore::AudioTrack*>(track), p,
+                                           MusECore::MidiAudioCtrlStruct::AudioControl, MusECore::AC_VOLUME);
 }
 
 //---------------------------------------------------------
@@ -1739,12 +1757,14 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           _recMonitor->setWhatsThis(tr("Pass input through to output"));
           _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
           _recMonitor->setChecked(at->recMonitor());
+          _recMonitor->setContextMenuPolicy(Qt::CustomContextMenu);
           connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
           bottomLayout->addWidget(_recMonitor, 0, 0, 1, 1);
       } else {
           QPushButton *recMonitorx = new QPushButton(this);
           recMonitorx->setIcon(*monitorOnSVGIcon);
           recMonitorx->setEnabled(false);
+          recMonitorx->setContextMenuPolicy(Qt::CustomContextMenu);
           bottomLayout->addWidget(recMonitorx, 0, 0, 1, 1);
       }
 
@@ -1762,6 +1782,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           else
               record->setToolTip(tr("Record arm"));
           record->setChecked(at->recordFlag());
+          record->setContextMenuPolicy(Qt::CustomContextMenu);
           connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
           bottomLayout->addWidget(record, 0, 1, 1, 1);
       } else {
@@ -1769,6 +1790,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           recordx->setIcon(*recArmOnSVGIcon);
           recordx->setFocusPolicy(Qt::NoFocus);
           recordx->setEnabled(false);
+          recordx->setContextMenuPolicy(Qt::CustomContextMenu);
           bottomLayout->addWidget(recordx, 0, 1, 1, 1);
       }
 
@@ -1776,12 +1798,16 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       mute  = new QPushButton(this);
       mute->setIcon(*muteStateSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
-      mute->setCheckable(true);
+      mute->setCheckable(!MusEGlobal::config.momentaryMute);
       mute->setToolTip(tr("Mute or proxy mute"));
       mute->setStatusTip(tr("Mute or proxy mute. Connected tracks are 'phantom' muted."));
-      mute->setChecked(at->mute());
+      mute->setDown(at->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
+      connect(mute, &QPushButton::pressed, [this]() { mutePressed(); } );
+      connect(mute, &QPushButton::released, [this]() { muteReleased(); } );
+      mute->setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(mute, &QPushButton::customContextMenuRequested, [this](const QPoint p) { muteContextMenuReq(p); } );
       bottomLayout->addWidget(mute, 1, 0, 1, 1);
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
@@ -1791,12 +1817,16 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       solo->setToolTip(tr("Solo or proxy solo"));
       solo->setStatusTip(tr("Solo or proxy solo. Connected tracks are 'phantom' soloed. Press F1 for help."));
       solo->setFocusPolicy(Qt::NoFocus);
-      solo->setCheckable(true);
+      solo->setCheckable(!MusEGlobal::config.momentarySolo);
       if (at->internalSolo())
         solo->setIcon(*soloAndProxyOnSVGIcon);
 //      solo->setIconSetB(at->internalSolo());
-      solo->setChecked(at->solo());
+      solo->setDown(at->solo());
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
+      connect(solo, &QPushButton::pressed, [this]() { soloPressed(); } );
+      connect(solo, &QPushButton::released, [this]() { soloReleased(); } );
+      solo->setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(solo, &QPushButton::customContextMenuRequested, [this](const QPoint p) { soloContextMenuReq(p); } );
       bottomLayout->addWidget(solo, 1, 1, 1, 1);
 
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, nullptr, nullptr, false, true);
@@ -1807,6 +1837,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       off->setCheckable(true);
       off->setToolTip(tr("Track off"));
       off->setChecked(at->off());
+      off->setContextMenuPolicy(Qt::CustomContextMenu);
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
       bottomLayout->addWidget(off, 3, 0, 1, 2);
 

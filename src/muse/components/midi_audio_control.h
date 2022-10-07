@@ -33,8 +33,10 @@ class MidiAudioControl : public QDialog, public Ui::MidiAudioControlBase
 
 private:
     int _port, _chan, _ctrl;
+    bool _enableAssignType;
+    bool _assignToSong;
     bool _is_learning;
-    void update();
+    void updateDialog();
     void resetLearn();
     void updateCtrlBoxes();
 
@@ -46,13 +48,17 @@ private slots:
     void ctrlTypeChanged(int);
     void ctrlHChanged();
     void ctrlLChanged();
+    void assignTrackTriggered();
+    void assignSongTriggered();
     void configChanged();
 
 public:
-    MidiAudioControl(int port = -1, int chan = 0, int ctrl = 0, QWidget* parent = 0);
-    int port() const { return _port; }
-    int chan() const { return _chan; }
-    int ctrl() const { return _ctrl; }
+    MidiAudioControl(bool enableAssignType = false, bool assignToSong = false, int port = -1, int chan = 0, int ctrl = 0, QWidget* parent = 0);
+    int port() const;
+    int chan() const;
+    int ctrl() const;
+    bool enableAssignType() const;
+    bool assignToSong() const;
 };
 
 }

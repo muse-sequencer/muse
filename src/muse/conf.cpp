@@ -787,6 +787,10 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.showControlValues = xml.parseInt();
                         else if (tag == "monitorOnRecord")
                               MusEGlobal::config.monitorOnRecord = xml.parseInt();
+                        else if (tag == "momentaryMute")
+                              MusEGlobal::config.momentaryMute = xml.parseInt();
+                        else if (tag == "momentarySolo")
+                              MusEGlobal::config.momentarySolo = xml.parseInt();
                         else if (tag == "lineEditStyleHack")
                               MusEGlobal::config.lineEditStyleHack = xml.parseInt();
                         else if (tag == "preferMidiVolumeDb")
@@ -2093,6 +2097,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "preferKnobsVsSliders", MusEGlobal::config.preferKnobsVsSliders);
       xml.intTag(level, "showControlValues", MusEGlobal::config.showControlValues);
       xml.intTag(level, "monitorOnRecord", MusEGlobal::config.monitorOnRecord);
+      xml.intTag(level, "momentaryMute", MusEGlobal::config.momentaryMute);
+      xml.intTag(level, "momentarySolo", MusEGlobal::config.momentarySolo);
       xml.intTag(level, "lineEditStyleHack", MusEGlobal::config.lineEditStyleHack);
       xml.intTag(level, "preferMidiVolumeDb", MusEGlobal::config.preferMidiVolumeDb);
       xml.intTag(level, "midiCtrlGraphMergeErase", MusEGlobal::config.midiCtrlGraphMergeErase);

@@ -1713,8 +1713,11 @@ void TList::changeAutomationColor(QAction* act)
         return;
     if(act->data().toInt() == AUTO_INVALID)
         return;
-    int colindex = act->data().toInt() & 0xff;
-    int id = (act->data().toInt() & 0x00ffffff) >> 8;
+    const int colindex = act->data().toInt() & 0xff;
+    const int id = (act->data().toInt() & 0x00ffffff) >> 8;
+    const MusECore::MidiAudioCtrlStruct::IdType idType = MusECore::MidiAudioCtrlStruct::AudioControl;
+    const bool isBuiltInAudioCtrl = idType == MusECore::MidiAudioCtrlStruct::AudioControl && id < AC_PLUGIN_CTL_BASE;
+    const bool canAssignToSong = idType == MusECore::MidiAudioCtrlStruct::NonAudioControl || isBuiltInAudioCtrl;
 
     // Is it the clear automation action item?
     // (As commented below, we should rewrite this to make it easier to understand..)
@@ -1734,16 +1737,17 @@ void TList::changeAutomationColor(QAction* act)
     // Is it the clear midi control action item?
     if(colindex == AUTO_CLEAR_MIDI)
     {
-        MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
-        MusECore::MidiAudioCtrlMap* macp = track->controller()->midiControls();
+        MusECore::MidiAudioCtrlMap* macp = MusEGlobal::song->midiAssignments();
         MusECore::AudioMidiCtrlStructMap amcs;
-        macp->find_audio_ctrl_structs(id, &amcs);
+        // Include NULL tracks in search.
+        macp->find_audio_ctrl_structs(idType, id, editAutomation, false, true, &amcs);
         if(!amcs.empty())
-            MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
-        for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+        {
+          MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+          for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
             macp->erase(*iamcs);
-        if(!amcs.empty())
-            MusEGlobal::audio->msgIdle(false);
+          MusEGlobal::audio->msgIdle(false);
+        }
 
         // Hm, need to remove the 'clear' item, and the status lines below it. Try this:
         QActionGroup* midi_actgrp = act->actionGroup();
@@ -1766,33 +1770,54 @@ void TList::changeAutomationColor(QAction* act)
     // Is it the midi control action item?
     if(colindex == AUTO_MIDI_ASSIGN)
     {
-        MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
-        MusECore::MidiAudioCtrlMap* macm = track->controller()->midiControls();
+        MusECore::MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
         MusECore::AudioMidiCtrlStructMap amcs;
-        macm->find_audio_ctrl_structs(id, &amcs);
+        // Include NULL tracks in search.
+        macm->find_audio_ctrl_structs(idType, id, editAutomation, false, true, &amcs);
 
         int port = -1, chan = 0, ctrl = 0;
+        bool isSongAssign = (editAutomation == nullptr);
         for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
         {
-            macm->hash_values((*iamcs)->first, &port, &chan, &ctrl);
+            MusECore::MidiAudioCtrlMap::hash_values((*iamcs)->first, &port, &chan, &ctrl);
+            isSongAssign = (*iamcs)->second.track() == nullptr;
             break; // Only a single item for now, thanks!
         }
 
-        MidiAudioControl* pup = new MidiAudioControl(port, chan, ctrl);
+        MidiAudioControl* pup = new MidiAudioControl(
+          // Enable the assignment type widget.
+          canAssignToSong,
+          // Preset the assignment type widget to Track or Song.
+          isSongAssign,
+          port,
+          chan,
+          ctrl);
 
         if(pup->exec() == QDialog::Accepted)
         {
-            MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
-            // Erase all for now.
-            for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
-                macm->erase(*iamcs);
+          port = pup->port(); chan = pup->chan(); ctrl = pup->ctrl();
+          // Song assign for audio controllers is only allowed for built-ins like volume and pan.
+          isSongAssign = pup->assignToSong() && canAssignToSong;
 
-            port = pup->port(); chan = pup->chan(); ctrl = pup->ctrl();
-            if(port >= 0 && chan >=0 && ctrl >= 0)
-                // Add will replace if found.
-                macm->add_ctrl_struct(port, chan, ctrl, MusECore::MidiAudioCtrlStruct(id));
+          if(port >= 0 && chan >=0 && ctrl >= 0)
+          {
+            MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+
+            // Erase existing assignments to this control.
+            // Include NULL tracks in search. If a song assignment has been requested,
+            //  include ALL assignments to this control for ANY track.
+            MusECore::AudioMidiCtrlStructMap amcs_full;
+            macm->find_audio_ctrl_structs(
+              MusECore::MidiAudioCtrlStruct::AudioControl, id, editAutomation, isSongAssign, true, &amcs_full);
+            for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs_full.begin(); iamcs != amcs_full.end(); ++iamcs)
+              macm->erase(*iamcs);
+
+                // Add will not replace if found.
+            macm->add_ctrl_struct(port, chan, ctrl,
+              MusECore::MidiAudioCtrlStruct(MusECore::MidiAudioCtrlStruct::AudioControl, id, editAutomation));
 
             MusEGlobal::audio->msgIdle(false);
+          }
         }
 
         delete pup;
@@ -1906,10 +1931,10 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
         act->setCheckable(false);
         act->setData((id<<8) + AUTO_MIDI_ASSIGN); // Shift 8 bits. Make midi menu the last item at 255.
 
-        MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(editAutomation);
-        MusECore::MidiAudioCtrlMap* macm = track->controller()->midiControls();
+        MusECore::MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
         MusECore::AudioMidiCtrlStructMap amcs;
-        macm->find_audio_ctrl_structs(id, &amcs);
+        // Include NULL tracks in search.
+        macm->find_audio_ctrl_structs(MusECore::MidiAudioCtrlStruct::AudioControl, id, editAutomation, false, true, &amcs);
 
         // Group only the clear and status items so they can both be easily removed when clear is clicked.
         if(!amcs.empty())
@@ -1920,9 +1945,9 @@ PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
             for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
             {
                 int port, chan, mctrl;
-                macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
-                //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
-                QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
+                MusECore::MidiAudioCtrlMap::hash_values((*iamcs)->first, &port, &chan, &mctrl);
+                QString s = QString("Type:%1 Port:%2 Chan:%3 Ctl:%4").arg((*iamcs)->second.track() ? tr("Track") : tr("Song"))
+                        .arg(port + 1)
                         .arg(chan + 1)
                         //.arg((mctrl >> 8) & 0xff)
                         //.arg(mctrl & 0xff);
@@ -2380,7 +2405,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
             bool turnOff = (button == Qt::RightButton) || shift;
             bool state = turnOff ? !t->off() : !t->mute();
 
-            if (((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
+
+            // Only if momentary mute is not on, because it would require handling in mouseReleaseEvent() which
+            //  requires knowing if ctrl was held when mouse was pressed.
+            if(!MusEGlobal::config.momentaryMute &&
+              ((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
             {
                 // These are major operations not easily manually undoable. Let's make them undoable.
                 MusECore::Undo operations;
@@ -2413,7 +2442,12 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 else if (t->off())
                     operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackOff));
                 else
+                {
+                  if(MusEGlobal::config.momentaryMute)
+                    operations.add(MusECore::PendingOperationItem(t, true, MusECore::PendingOperationItem::SetTrackMute));
+                  else
                     operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
+                }
 
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             }
@@ -2425,7 +2459,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
         {
             bool state = !t->solo();
 
-            if (((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
+            // Only if momentary solo is not on, because it would require handling in mouseReleaseEvent() which
+            //  requires knowing if ctrl was held when mouse was pressed.
+            if(!MusEGlobal::config.momentarySolo &&
+              ((t->selected() && tracks->countSelected() > 1) || ctrl) && t->type() != MusECore::Track::AUDIO_OUTPUT)
             {
                 // These are major operations not easily manually undoable. Let's make them undoable.
                 MusECore::Undo operations;
@@ -2454,7 +2491,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
             {
                 // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
                 MusECore::PendingOperationList operations;
-                operations.add(MusECore::PendingOperationItem(t, state, MusECore::PendingOperationItem::SetTrackSolo));
+                if(MusEGlobal::config.momentarySolo)
+                  operations.add(MusECore::PendingOperationItem(t, true, MusECore::PendingOperationItem::SetTrackSolo));
+                else
+                  operations.add(MusECore::PendingOperationItem(t, state, MusECore::PendingOperationItem::SetTrackSolo));
                 MusEGlobal::audio->msgExecutePendingOperations(operations, true);
             }
             break;
@@ -3244,8 +3284,10 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
         return;
     }
 
+    const int x = ev->x();
+    MusECore::Track* t = y2Track(ev->y() + ypos);
+
     if (mode == DRAG) {
-        MusECore::Track* t = y2Track(ev->y() + ypos);
         if (t) {
             int dTrack = MusEGlobal::song->tracks()->index(t);
             if (sTrack >= 0 && dTrack >= 0)   // sanity check
@@ -3296,6 +3338,42 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
 //            }
         }
     }
+    else
+    {
+      TrackColumn col = TrackColumn(header->logicalIndexAt(x));
+      switch (col)
+      {
+        case COL_MUTE:
+        {
+          // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+          // Only if momentary and the track is not off and is muted.
+          if(MusEGlobal::config.momentaryMute && !t->off() && t->mute())
+          {
+            MusECore::PendingOperationList operations;
+            operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
+            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+          }
+        }
+        break;
+
+        case COL_SOLO:
+        {
+          // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+          // Only if momentary and the track is soloed.
+          if(MusEGlobal::config.momentarySolo && t->solo())
+          {
+            MusECore::PendingOperationList operations;
+            operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackSolo));
+            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+          }
+        }
+        break;
+
+        default:
+        break;
+      }
+    }
+
     if (mode != NORMAL) {
         mode = NORMAL;
         setCursor(QCursor(Qt::ArrowCursor));

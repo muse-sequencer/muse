@@ -152,6 +152,12 @@ class Song : public QObject {
       // A corresponding closing EndAudioCtrlMoveMode should always follow at some point.
       bool _audioCtrlMoveModeBegun;
 
+      // A list of midi input assignments to the song.
+      // For midi control of various controllers and other items, not necessarily requiring
+      //  a specific track (for example it might affect only selected tracks).
+      // There is also a list in class Track for controllers and various things.
+      MidiAudioCtrlMap _midiAssignments;
+
       // Used for fastforward and fastrewind states (currently only through MIDI remote control)
       FastMove _fastMove = NORMAL_MOVEMENT;
       bool loopFlag;
@@ -273,6 +279,9 @@ class Song : public QObject {
       int globalPitchShift() const      { return _globalPitchShift; }
       void setGlobalPitchShift(int val) { _globalPitchShift = val; }
       
+      // Returns the list of midi input assignments to the song.
+      MidiAudioCtrlMap* midiAssignments();
+
       // REMOVE Tim. samplerate. Added. TODO
 #if 0
       // Set the project's sample rate. This can be different than the current actual sample rate.
@@ -469,7 +478,9 @@ class Song : public QObject {
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processAutomationEvents(Undo* operations = 0);
       void processMasterRec();
-      int execAutomationCtlPopup(AudioTrack*, const QPoint&, int);
+      // The track can be an audio or midi track and cannot be NULL.
+      // Returns -1 if aborted or error.
+      int execAutomationCtlPopup(Track*, const QPoint&, MidiAudioCtrlStruct::IdType idType, int id);
       int execMidiAutomationCtlPopup(MidiTrack*, MidiPart*, const QPoint&, int);
       bool connectJackRoutes(const MusECore::Route& src, const MusECore::Route& dst, bool disconnect = false);
       void connectAudioPorts();

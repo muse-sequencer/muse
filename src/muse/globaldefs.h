@@ -86,6 +86,18 @@ const int MUSE_MIDI_CHANNELS = 16;
 const double MIN_TEMPO_VAL = 20.0;
 const double MAX_TEMPO_VAL = 400.0;
 
+// Some non controller IDs to work with.
+enum NonControllerId {
+  NCTL_UNKNOWN_ID = -1,
+  NCTL_TRACK_MUTE = 0,
+  NCTL_TRACK_SOLO,
+  // Various track properties.
+  NCTL_TRACKPROP_TRANSPOSE,
+  NCTL_TRACKPROP_DELAY,
+  NCTL_TRACKPROP_LENGTH,
+  NCTL_TRACKPROP_VELOCITY,
+  NCTL_TRACKPROP_COMPRESS };
+
 } // namespace MusECore
 
 

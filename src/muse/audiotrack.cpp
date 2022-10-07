@@ -753,9 +753,10 @@ void AudioTrack::addController(CtrlList* list)
 void AudioTrack::removeController(int id)
       {
       AudioMidiCtrlStructMap amcs;
-      _controller.midiControls()->find_audio_ctrl_structs(id, &amcs);
+      // Include NULL tracks in search.
+      MusEGlobal::song->midiAssignments()->find_audio_ctrl_structs(MidiAudioCtrlStruct::AudioControl, id, this, false, true, &amcs);
       for(ciAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++ iamcs)
-        _controller.midiControls()->erase(*iamcs);
+        MusEGlobal::song->midiAssignments()->erase(*iamcs);
       iCtrlList i = _controller.find(id);
       if (i == _controller.end()) {
             printf("AudioTrack::removeController id %d not found\n", id);
@@ -857,10 +858,13 @@ void AudioTrack::swapPlugins(int idx1, int idx2)
   }
 
   // Remap midi to audio controls...
-  MidiAudioCtrlMap* macm = _controller.midiControls();
+  MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
   for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
   {
-    int actrl = imacm->second.audioCtrlId();
+    if(imacm->second.track() != this || imacm->second.idType() != MidiAudioCtrlStruct::AudioControl)
+      continue;
+
+    int actrl = imacm->second.id();
     int id = actrl & id_mask;
     actrl &= AC_PLUGIN_CTL_ID_MASK;
     if(id == id1)
@@ -869,7 +873,7 @@ void AudioTrack::swapPlugins(int idx1, int idx2)
       actrl |= id1;
     else
       continue;
-    imacm->second.setAudioCtrlId(actrl);
+    imacm->second.setId(actrl);
   }
 }
 
@@ -2037,8 +2041,10 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             }
 
           }
+      // Obsolete. Handled by class Track now. Keep for compatibility.
       else if (tag == "midiMapper")
-            _controller.midiControls()->read(xml);
+            // Any assignments read go to this track.
+            MusEGlobal::song->midiAssignments()->read(xml, this);
       else
             return Track::readProperties(xml, tag);
       return false;

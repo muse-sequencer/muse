@@ -2014,7 +2014,8 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
         QString param = customParams [i];
         param.remove('\n'); // remove all linebreaks that may have been added to prettyprint the songs file
         QByteArray paramIn;
-        paramIn.append(param);
+//         paramIn.append(param); // Deprecated
+        paramIn.append(param.toUtf8());
         // Try to uncompress the data.
         QByteArray dec64 = qUncompress(QByteArray::fromBase64(paramIn));
         // Failed? Try uncompressed.

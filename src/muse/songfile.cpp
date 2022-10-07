@@ -693,6 +693,9 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               readDrumMap(xml, false);
                         else if (tag == "drum_ordering")
                               MusEGlobal::global_drum_ordering.read(xml);
+                        else if (tag == "midiAssign")
+                              // Any assignments read here will have no track.
+                              _midiAssignments.read(xml, nullptr);
                         else
                               xml.unknown("Song");
                         break;
@@ -754,6 +757,9 @@ void Song::write(int level, Xml& xml) const
         for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i)
               (*i)->write(level, xml, &xmlStats);
       }
+
+      // Write only the assignments which have no track.
+      _midiAssignments.write(level, xml, nullptr);
 
       // write routing
       for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i)

@@ -1564,6 +1564,63 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
             }
       }
 
+// Static helper function for processMidi().
+bool processMidiToAudioControl(
+  Track* track, const int id, const MidiAudioCtrlStruct* macs,
+  const unsigned int ev_t, const unsigned int rec_t, const int ctl, const int val, const bool playing)
+{
+  MusECore::AudioTrack* atrack = static_cast<MusECore::AudioTrack*>(track);
+
+  iCtrlList icl = atrack->controller()->find(id);
+  if(icl != atrack->controller()->end())
+  {
+    CtrlList* cl = icl->second;
+    double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
+    atrack->addScheduledControlEvent(id, dval, ev_t);
+    //fintrack = macs_track;
+    //changed = true;
+
+    // Rec automation...
+
+    if(MusEGlobal::automation)
+    {
+      AutomationType at = atrack->automationType();
+      // Unlike our built-in gui controls, there is not much choice here but to
+      //  just do this:
+      if ( (at == AUTO_WRITE) ||
+          (at == AUTO_READ && !playing) ||
+          (at == AUTO_TOUCH) ||
+          (at == AUTO_LATCH) )
+        atrack->enableController(id, false);
+      if(playing)
+      {
+        if(at == AUTO_WRITE || at == AUTO_TOUCH || at == AUTO_LATCH)
+          atrack->recEvents()->push_back(CtrlRecVal(rec_t, id, dval));
+      }
+      else
+      {
+        if(at == AUTO_TOUCH || at == AUTO_LATCH || at == AUTO_WRITE)
+        {
+          atrack->recEvents()->addInitial(CtrlRecVal(rec_t, id, dval, CtrlRecVal::ARVT_IGNORE));
+
+          // In touch mode and not playing. Send directly to controller list.
+          // Modify will add if not found.
+          // Use modify instead of add so that if there is an existing interpolated point,
+          //  users can modify it using a controller without disturbing the mode.
+          cl->modify(rec_t, dval,
+            CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE,
+            CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED /*| CtrlVal::VAL_DISCRETE*/,
+            CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE);
+          // Notify the GUI to update any local structures etc.
+          MusEGlobal::song->putIpcCtrlGUIMessage(
+            CtrlGUIMessage(atrack, id, rec_t, dval, CtrlGUIMessage::ADDED));
+        }
+      }
+    }
+  }
+  return true;
+}
+
 //---------------------------------------------------------
 //   processMidi
 //    - collects midi events for current audio segment and
@@ -1684,75 +1741,284 @@ void Audio::processMidi(unsigned int frames)
               MusEGlobal::midiLearnChan = chan;
               MusEGlobal::midiLearnCtrl = ctl;
 
-              // Send to audio tracks...
-              for (MusECore::iTrack t = MusEGlobal::song->tracks()->begin(); t != MusEGlobal::song->tracks()->end(); ++t)
+              // Time here needs to be frames always.
+              const unsigned int ev_t = event.time();
+
+              // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
+              // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
+              // For the record time, if stopped we don't want the circular running position,
+              //  just the static one.
+              unsigned int rec_t = _pos.frame();
+              if(playing)
+                rec_t += (syncFrame > ev_t + segSize) ? 0 : ev_t - syncFrame + segSize;
+
+              TrackList* tl = MusEGlobal::song->tracks();
+              MidiTrackList* mtl = MusEGlobal::song->midis();
+
+              // Send to any midi assignments in song...
               {
-                if((*t)->isMidiTrack())
-                  continue;
-                MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*t);
-                MidiAudioCtrlMap* macm = track->controller()->midiControls();
+                MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
                 int h = macm->index_hash(port, chan, ctl);
                 std::pair<ciMidiAudioCtrlMap, ciMidiAudioCtrlMap> range = macm->equal_range(h);
                 for(ciMidiAudioCtrlMap imacm = range.first; imacm != range.second; ++imacm)
                 {
                   const MidiAudioCtrlStruct* macs = &imacm->second;
-                  int actrl = macs->audioCtrlId();
+                  const MidiAudioCtrlStruct::IdType macsType = macs->idType();
+                  const int id = macs->id();
+                  Track* macs_track = macs->track();
+                  MidiTrack* macs_mtrack = nullptr;
+                  if(macs_track && macs_track->isMidiTrack())
+                    macs_mtrack = static_cast<MidiTrack*>(macs_track);
 
-                  iCtrlList icl = track->controller()->find(actrl);
-                  if(icl == track->controller()->end())
-                    continue;
-                  CtrlList* cl = icl->second;
-                  double dval = midi2AudioCtrlValue(cl, macs, ctl, val);
+                  bool changed = false;
+                  const Track* fintrack = nullptr;
 
-                  // Time here needs to be frames always.
-                  unsigned int ev_t = event.time();
-
-                  track->addScheduledControlEvent(actrl, dval, ev_t);
-
-                  // Rec automation...
-
-                  if(!MusEGlobal::automation)
-                    continue;
-
-                  // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
-                  // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
-                  // For the record time, if stopped we don't want the circular running position,
-                  //  just the static one.
-                  unsigned int rec_t = _pos.frame();
-                  if(playing)
-                    rec_t += (syncFrame > ev_t + segSize) ? 0 : ev_t - syncFrame + segSize;
-
-                  AutomationType at = track->automationType();
-                  // Unlike our built-in gui controls, there is not much choice here but to
-                  //  just do this:
-                  if ( (at == AUTO_WRITE) ||
-                       (at == AUTO_READ && !playing) ||
-                       (at == AUTO_TOUCH) ||
-                       (at == AUTO_LATCH) )
-                    track->enableController(actrl, false);
-                  if(playing)
+                  switch(macsType)
                   {
-                    if(at == AUTO_WRITE || at == AUTO_TOUCH || at == AUTO_LATCH)
-                      track->recEvents()->push_back(CtrlRecVal(rec_t, actrl, dval));
-                  }
-                  else
-                  {
-                    if(at == AUTO_TOUCH || at == AUTO_LATCH || at == AUTO_WRITE)
+                    case MidiAudioCtrlStruct::AudioControl:
                     {
-                      track->recEvents()->addInitial(CtrlRecVal(rec_t, actrl, dval, CtrlRecVal::ARVT_IGNORE));
+                      if(macs_track && !macs_track->isMidiTrack())
+                      {
+                        // Call the helper function.
+                        processMidiToAudioControl(macs_track, id, macs, ev_t, rec_t, ctl, val, playing);
+                      }
+                      else
+                      {
+                        for(iTrack itl = tl->begin(); itl != tl->end(); ++itl)
+                        {
+                          Track* track = *itl;
+                          if(track && track->selected() && !track->isMidiTrack())
+                          {
+                            // Call the helper function.
+                            processMidiToAudioControl(track, id, macs, ev_t, rec_t, ctl, val, playing);
+                          }
+                        }
+                      }
+                    }
+                    break;
 
-                      // In touch mode and not playing. Send directly to controller list.
-                      // Modify will add if not found.
-                      // Use modify instead of add so that if there is an existing interpolated point,
-                      //  users can modify it using a controller without disturbing the mode.
-                      cl->modify(rec_t, dval,
-                        CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE,
-                        CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED /*| CtrlVal::VAL_DISCRETE*/,
-                        CtrlVal::VAL_MODIFY_VALUE | CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE);
-                      // Notify the GUI to update any local structures etc.
-                      if(MusEGlobal::song)
-                        MusEGlobal::song->putIpcCtrlGUIMessage(
-                          CtrlGUIMessage(track, actrl, rec_t, dval, CtrlGUIMessage::ADDED));
+                    case MidiAudioCtrlStruct::NonAudioControl:
+                    {
+                      int newVal;
+                      switch(id)
+                      {
+                        case NCTL_TRACK_MUTE:
+                        {
+                          const bool v = val >= 64;
+                          if(macs_track)
+                          {
+                            if(macs_track->mute() != v)
+                            {
+                              macs_track->setMute(v);
+                              fintrack = macs_track;
+                              changed = true;
+                            }
+                          }
+                          else
+                          {
+                            for(iTrack itl = tl->begin(); itl != tl->end(); ++itl)
+                            {
+                              Track* track = *itl;
+                              if(track->selected() && track->mute() != v)
+                              {
+                                track->setMute(v);
+                                changed = true;
+                              }
+                            }
+                          }
+                          if(changed)
+                          {
+                            // Notify the GUI to update any local structures etc.
+                            MusEGlobal::song->putIpcCtrlGUIMessage(
+                              CtrlGUIMessage(fintrack, id, rec_t, val, CtrlGUIMessage::NON_CTRL_CHANGED));
+                          }
+                        }
+                        break;
+
+                        case NCTL_TRACK_SOLO:
+                        {
+                          const bool v = val >= 64;
+                          if(macs_track)
+                          {
+                            if(macs_track->solo() != v)
+                            {
+                              macs_track->setSolo(v);
+                              fintrack = macs_track;
+                              changed = true;
+                            }
+                          }
+                          else
+                          {
+                            for(iTrack itl = tl->begin(); itl != tl->end(); ++itl)
+                            {
+                              Track* track = *itl;
+                              if(track->selected() && track->solo() != v)
+                              {
+                                track->setSolo(v);
+                                changed = true;
+                              }
+                            }
+                          }
+                          if(changed)
+                          {
+                            // Notify the GUI to update any local structures etc.
+                            MusEGlobal::song->putIpcCtrlGUIMessage(
+                              CtrlGUIMessage(fintrack, id, rec_t, val, CtrlGUIMessage::NON_CTRL_CHANGED));
+                          }
+                        }
+                        break;
+
+                        case NCTL_TRACKPROP_TRANSPOSE:
+                          newVal = MidiTrack::midi2PropertyValue(NonControllerId(id), macs, ctl, val);
+                          if(macs_mtrack)
+                          {
+                            if(macs_mtrack->transposition != newVal)
+                            {
+                              macs_mtrack->transposition = newVal;
+                              fintrack = macs_mtrack;
+                              changed = true;
+                            }
+                          }
+                          else
+                          {
+                            for(iMidiTrack imtl = mtl->begin(); imtl != mtl->end(); ++imtl)
+                            {
+                              MidiTrack* mtrack = *imtl;
+                              if(mtrack->selected() && mtrack->transposition != newVal)
+                              {
+                                mtrack->transposition = newVal;
+                                changed = true;
+                              }
+                            }
+                          }
+                          if(changed)
+                          {
+                            // Notify the GUI to update any local structures etc.
+                            MusEGlobal::song->putIpcCtrlGUIMessage(
+                              CtrlGUIMessage(fintrack, id, rec_t, val, CtrlGUIMessage::NON_CTRL_CHANGED));
+                          }
+                        break;
+                        case NCTL_TRACKPROP_DELAY:
+                          newVal = MidiTrack::midi2PropertyValue(NonControllerId(id), macs, ctl, val);
+                          if(macs_mtrack)
+                          {
+                            if(macs_mtrack->delay != newVal)
+                            {
+                              macs_mtrack->delay = newVal;
+                              fintrack = macs_mtrack;
+                              changed = true;
+                            }
+                          }
+                          else
+                          {
+                            for(iMidiTrack imtl = mtl->begin(); imtl != mtl->end(); ++imtl)
+                            {
+                              MidiTrack* mtrack = *imtl;
+                              if(mtrack->selected() && mtrack->delay != newVal)
+                              {
+                                mtrack->delay = newVal;
+                                changed = true;
+                              }
+                            }
+                          }
+                          if(changed)
+                          {
+                            // Notify the GUI to update any local structures etc.
+                            MusEGlobal::song->putIpcCtrlGUIMessage(
+                              CtrlGUIMessage(fintrack, id, rec_t, val, CtrlGUIMessage::NON_CTRL_CHANGED));
+                          }
+                        break;
+                        case NCTL_TRACKPROP_LENGTH:
+                          newVal = MidiTrack::midi2PropertyValue(NonControllerId(id), macs, ctl, val);
+                          if(macs_mtrack)
+                          {
+                            if(macs_mtrack->len != newVal)
+                            {
+                              macs_mtrack->len = newVal;
+                              fintrack = macs_mtrack;
+                              changed = true;
+                            }
+                          }
+                          else
+                          {
+                            for(iMidiTrack imtl = mtl->begin(); imtl != mtl->end(); ++imtl)
+                            {
+                              MidiTrack* mtrack = *imtl;
+                              if(mtrack->selected() && mtrack->len != newVal)
+                              {
+                                mtrack->len = newVal;
+                                changed = true;
+                              }
+                            }
+                          }
+                          if(changed)
+                          {
+                            // Notify the GUI to update any local structures etc.
+                            MusEGlobal::song->putIpcCtrlGUIMessage(
+                              CtrlGUIMessage(fintrack, id, rec_t, val, CtrlGUIMessage::NON_CTRL_CHANGED));
+                          }
+                        break;
+                        case NCTL_TRACKPROP_VELOCITY:
+                          newVal = MidiTrack::midi2PropertyValue(NonControllerId(id), macs, ctl, val);
+                          if(macs_mtrack)
+                          {
+                            if(macs_mtrack->velocity != newVal)
+                            {
+                              macs_mtrack->velocity = newVal;
+                              fintrack = macs_mtrack;
+                              changed = true;
+                            }
+                          }
+                          else
+                          {
+                            for(iMidiTrack imtl = mtl->begin(); imtl != mtl->end(); ++imtl)
+                            {
+                              MidiTrack* mtrack = *imtl;
+                              if(mtrack->selected() && mtrack->velocity != newVal)
+                              {
+                                mtrack->velocity = newVal;
+                                changed = true;
+                              }
+                            }
+                          }
+                          if(changed)
+                          {
+                            // Notify the GUI to update any local structures etc.
+                            MusEGlobal::song->putIpcCtrlGUIMessage(
+                              CtrlGUIMessage(fintrack, id, rec_t, val, CtrlGUIMessage::NON_CTRL_CHANGED));
+                          }
+                        break;
+                        case NCTL_TRACKPROP_COMPRESS:
+                          newVal = MidiTrack::midi2PropertyValue(NonControllerId(id), macs, ctl, val);
+                          if(macs_mtrack)
+                          {
+                            if(macs_mtrack->compression != newVal)
+                            {
+                              macs_mtrack->compression = newVal;
+                              fintrack = macs_mtrack;
+                              changed = true;
+                            }
+                          }
+                          else
+                          {
+                            for(iMidiTrack imtl = mtl->begin(); imtl != mtl->end(); ++imtl)
+                            {
+                              MidiTrack* mtrack = *imtl;
+                              if(mtrack->selected() && mtrack->compression != newVal)
+                              {
+                                mtrack->compression = newVal;
+                                changed = true;
+                              }
+                            }
+                          }
+                          if(changed)
+                          {
+                            // Notify the GUI to update any local structures etc.
+                            MusEGlobal::song->putIpcCtrlGUIMessage(
+                              CtrlGUIMessage(fintrack, id, rec_t, val, CtrlGUIMessage::NON_CTRL_CHANGED));
+                          }
+                        break;
+                      }
                     }
                   }
                 }

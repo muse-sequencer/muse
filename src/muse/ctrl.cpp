@@ -119,8 +119,13 @@ bool CtrlRecList::addInitial(const CtrlRecVal& val)
   return true;
 }
 
-int MidiAudioCtrlStruct::audioCtrlId() const        { return _audio_ctrl_id; }
-void MidiAudioCtrlStruct::setAudioCtrlId(int actrl) { _audio_ctrl_id = actrl; }
+int MidiAudioCtrlStruct::id() const        { return _id; }
+void MidiAudioCtrlStruct::setId(int id) {
+    _id = id; }
+MidiAudioCtrlStruct::IdType MidiAudioCtrlStruct::idType() const { return _idType; }
+void MidiAudioCtrlStruct::setIdType(MidiAudioCtrlStruct::IdType idType) { _idType = idType; }
+Track* MidiAudioCtrlStruct::track() const { return _track; }
+void MidiAudioCtrlStruct::setTrack(Track* track) { _track = track; }
 
 void CtrlList::initColor(int i)
 {
@@ -248,22 +253,26 @@ double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlS
 //---------------------------------------------------------
 
 MidiAudioCtrlStruct::MidiAudioCtrlStruct()  
-{ 
-  _audio_ctrl_id = 0;
-};
-
-MidiAudioCtrlStruct::MidiAudioCtrlStruct(int audio_ctrl_id) : _audio_ctrl_id(audio_ctrl_id) 
+ : _idType(AudioControl), _id (0), _track(nullptr)
 { 
 };
 
-MidiAudioCtrlMap_idx_t MidiAudioCtrlMap::index_hash(int midi_port, int midi_chan, int midi_ctrl_num) const
+MidiAudioCtrlStruct::MidiAudioCtrlStruct(
+  MidiAudioCtrlStruct::IdType idType, int id, Track* track)
+ : _idType(idType), _id(id), _track(track)
+{ 
+};
+
+// Static.
+MidiAudioCtrlMap_idx_t MidiAudioCtrlMap::index_hash(int midi_port, int midi_chan, int midi_ctrl_num)
 { 
   return ((MidiAudioCtrlMap_idx_t(midi_port) & 0xff) << 24) | 
           ((MidiAudioCtrlMap_idx_t(midi_chan) & 0xf) << 20) | 
           (MidiAudioCtrlMap_idx_t(midi_ctrl_num) & 0xfffff);  
 }
 
-void MidiAudioCtrlMap::hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num) const
+// Static.
+void MidiAudioCtrlMap::hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num)
 {
   if(midi_ctrl_num)
     *midi_ctrl_num = hash & 0xfffff;
@@ -279,48 +288,61 @@ iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(int midi_port, int midi_chan
   MidiAudioCtrlMap_idx_t h = index_hash(midi_port, midi_chan, midi_ctrl_num);
   std::pair<iMidiAudioCtrlMap, iMidiAudioCtrlMap> range = equal_range(h);
   for(iMidiAudioCtrlMap imacp = range.first; imacp != range.second; ++imacp)
-    if(imacp->second.audioCtrlId() == macs.audioCtrlId())
+    if(imacp->second.idType() == macs.idType() && imacp->second.id() == macs.id())
        return imacp;
   return insert(std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(h, macs));
 }
 
-void MidiAudioCtrlMap::erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id)
+void MidiAudioCtrlMap::erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, MidiAudioCtrlStruct::IdType type, int id)
 {
   MidiAudioCtrlMap_idx_t h = index_hash(midi_port, midi_chan, midi_ctrl_num);
   std::pair<iMidiAudioCtrlMap, iMidiAudioCtrlMap> range = equal_range(h);
   MidiAudioCtrlMap macm;
   macm.insert(range.first, range.second);
   for(iMidiAudioCtrlMap imacm = macm.begin(); imacm != macm.end(); ++imacm)
-    if(imacm->second.audioCtrlId() == audio_ctrl_id)
+    if(imacm->second.idType() == type && imacm->second.id() == id)
        erase(imacm);
 }
 
-void MidiAudioCtrlMap::find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs) //const
+void MidiAudioCtrlMap::find_audio_ctrl_structs(
+  MidiAudioCtrlStruct::IdType type, int id,
+  const Track* track, bool anyTracks, bool includeNullTracks, AudioMidiCtrlStructMap* amcs) //const
 {
   for(iMidiAudioCtrlMap imacm = begin(); imacm != end(); ++imacm)
-    if(imacm->second.audioCtrlId() == audio_ctrl_id)
+  {
+    const Track* t = imacm->second.track();
+    if(imacm->second.idType() == type && imacm->second.id() == id &&
+      (t == track ||
+      (t == nullptr && includeNullTracks) ||
+      (anyTracks && (t != nullptr || includeNullTracks)) ))
       amcs->push_back(imacm);
+  }
 }
 
-void MidiAudioCtrlMap::write(int level, Xml& xml) const
+void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track) const
 {
   for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
   {
+      // Write only the assignments for the given track pointer (which can be NULL).
+      if(imacm->second.track() != track)
+        continue;
       int port, chan, mctrl;
       hash_values(imacm->first, &port, &chan, &mctrl);
-      int actrl = imacm->second.audioCtrlId();
-      QString s= QString("midiMapper port=\"%1\" ch=\"%2\" mctrl=\"%3\" actrl=\"%4\"")
+      const int id = imacm->second.id();
+      const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
+      QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
                           .arg(port)
                           .arg(chan)
                           .arg(mctrl)
-                          .arg(actrl);
+                          .arg(type)
+                          .arg(id);
       xml.tag(level++, s.toLatin1().constData());
-      
+
       // TODO
       //const MidiAudioCtrlStruct& macs = imacs->second;
       //xml.intTag(level, "macs ???", macs.);
-      
-      xml.etag(level--, "midiMapper");
+
+      xml.etag(level--, "midiAssign");
   }
 }
 
@@ -328,11 +350,11 @@ void MidiAudioCtrlMap::write(int level, Xml& xml) const
 //   read
 //---------------------------------------------------------
 
-void MidiAudioCtrlMap::read(Xml& xml)
+void MidiAudioCtrlMap::read(Xml& xml, Track* track)
       {
       int port = -1, chan = -1, midi_ctrl = -1;
-      MidiAudioCtrlStruct macs(-1);
-      
+      MidiAudioCtrlStruct macs(MidiAudioCtrlStruct::AudioControl, -1, track);
+
       QLocale loc = QLocale::c();
       bool ok;
       int errcount = 0;
@@ -348,9 +370,9 @@ void MidiAudioCtrlMap::read(Xml& xml)
                         {
                               port = loc.toInt(xml.s2(), &ok);
                               if(!ok)
-                              { 
+                              {
                                 ++errcount;
-                                printf("MidiAudioCtrlPortMap::read failed reading port string: %s\n", xml.s2().toLatin1().constData());
+                                printf("MidiAudioCtrlMap::read failed reading port string: %s\n", xml.s2().toLatin1().constData());
                               }
                         }
                         else if (tag == "ch")
@@ -359,21 +381,33 @@ void MidiAudioCtrlMap::read(Xml& xml)
                               if(!ok)
                               {
                                 ++errcount;
-                                printf("MidiAudioCtrlPortMap::read failed reading ch string: %s\n", xml.s2().toLatin1().constData());
+                                printf("MidiAudioCtrlMap::read failed reading ch string: %s\n", xml.s2().toLatin1().constData());
                               }
-                        }        
+                        }
                         else if (tag == "mctrl")
                         {
                               midi_ctrl = loc.toInt(xml.s2(), &ok);
                               if(!ok)
                               {
                                 ++errcount;
-                                printf("MidiAudioCtrlPortMap::read failed reading mctrl string: %s\n", xml.s2().toLatin1().constData());
-                              } 
+                                printf("MidiAudioCtrlMap::read failed reading mctrl string: %s\n", xml.s2().toLatin1().constData());
+                              }
                         }
-                        else if (tag == "actrl")
+                        else if (tag == "type")
                         {
-                              macs.setAudioCtrlId(loc.toInt(xml.s2(), &ok));
+                              const int type = loc.toInt(xml.s2(), &ok);
+                              if(ok)
+                                macs.setIdType(MidiAudioCtrlStruct::IdType(type));
+                              else
+                              {
+                                ++errcount;
+                                printf("MidiAudioCtrlPortMap::read failed reading type string: %s\n", xml.s2().toLatin1().constData());
+                              }
+                        }
+                        // Tag actrl is obsolete, changed to id now.
+                        else if (tag == "actrl" || tag == "id")
+                        {
+                              macs.setId(loc.toInt(xml.s2(), &ok));
                               if(!ok)
                               {
                                 ++errcount;
@@ -385,15 +419,16 @@ void MidiAudioCtrlMap::read(Xml& xml)
                         break;
                   case Xml::TagStart:
                         // TODO
-                        //if (tag == "???") {  
+                        //if (tag == "???") {
                         //      }
                         //else
                               xml.unknown("midiMapper");
                         break;
                   case Xml::TagEnd:
-                        if (xml.s1() == "midiMapper")
+                        // Tag midiMapper is obsolete, changed to midiAssign now.
+                        if (xml.s1() == "midiMapper" || xml.s1() == "midiAssign")
                         {
-                              if(errcount == 0 && port != -1 && chan != -1 && midi_ctrl != -1 && macs.audioCtrlId() != -1)
+                              if(errcount == 0 && port != -1 && chan != -1 && midi_ctrl != -1 && macs.id() != -1)
                                   add_ctrl_struct(port, chan, midi_ctrl, macs);
                               return;
                         }
@@ -402,6 +437,7 @@ void MidiAudioCtrlMap::read(Xml& xml)
                   }
             }
       }
+
 //---------------------------------------------------------
 //   CtrlList
 //---------------------------------------------------------
@@ -1493,8 +1529,6 @@ ciCtrlList CtrlListList::find(int id) const {
       return std::map<int, CtrlList*, std::less<int> >::find(id);
       }
 
-MidiAudioCtrlMap* CtrlListList::midiControls() { return &_midi_controls; }
-
 void CtrlListList::clearAllAutomation() {
       for(iCtrlList i = begin(); i != end(); ++i)
         i->second->clear();
@@ -1551,8 +1585,6 @@ void CtrlListList::write(int level, Xml& xml) const
         const CtrlList* cl = icl->second;
         cl->write(level, xml);
         }
-  
-  _midi_controls.write(level, xml);
 }
 
 void CtrlListList::initColors()

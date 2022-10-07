@@ -27,6 +27,8 @@
 #include <QPaintEvent>
 #include <QSpacerItem>
 #include <QUuid>
+#include <QInputDialog>
+#include <QMessageBox>
 
 #include "amixer.h"
 #include "app.h"
@@ -39,11 +41,13 @@
 #include "shortcuts.h"
 #include "globals.h"
 #include "undo.h"
+#include "menutitleitem.h"
 
 // Forwards from header:
 #include <QWidget>
 #include <QMenu>
 #include <QAction>
+#include <QActionGroup>
 #include <QHBoxLayout>
 #include <QEvent>
 #include "track.h"
@@ -114,20 +118,24 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       connect(menuConfig, &QMenu::aboutToShow, [=]() { menuConfig->clear(); MusEGui::populateAddTrack(menuConfig, true); } );
       connect(menuConfig, &QMenu::triggered, [](QAction* a) { MusEGlobal::song->addNewTrack(a); } );
 
-      QMenu* menuView = menuBar()->addMenu(tr("&View"));
+      menuView = menuBar()->addMenu(tr("&View"));
       menuStrips = menuView->addMenu(tr("Strips"));
       connect(menuStrips, &QMenu::aboutToShow, [this]() { stripsMenu(); } );
+      connect(menuStrips, &QMenu::triggered, [this](QAction* a) { handleMenu(a); } );
 
-      routingId = menuView->addAction(tr("Advanced Router..."));
-      routingId->setCheckable(true);
-      routingId->setIcon(*routerSVGIcon);
-      connect(routingId, &QAction::triggered, [this]() { toggleRouteDialog(); } );
+      connect(menuView, &QMenu::aboutToShow, [=]() { menuViewAboutToShow(); } );
 
       menuView->addSeparator();
 
       QActionGroup* actionItems = new QActionGroup(this);
       actionItems->setExclusive(false);
-      
+      connect(actionItems, &QActionGroup::triggered, [this](QAction* a) { menuViewGroupTriggered(a); } );
+
+      routingId = new QAction(tr("Advanced Router..."), actionItems);
+      routingId->setData(ADVANCED_ROUTER);
+      routingId->setCheckable(true);
+      routingId->setIcon(*routerSVGIcon);
+
       showMidiTracksId = new QAction(tr("Show Midi Tracks"), actionItems);
 //      showDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
       showNewDrumTracksId = new QAction(tr("Show Drum Tracks"), actionItems);
@@ -155,18 +163,72 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       showAuxTracksId->setCheckable(true);
       showSyntiTracksId->setCheckable(true);
 
-      connect(showMidiTracksId,    &QAction::triggered, [this](bool v) { showMidiTracksChanged(v); } );
-//      connect(showDrumTracksId,    &QAction::triggered, [this](bool v) { showDrumTracksChanged(v); } );
-      connect(showNewDrumTracksId, &QAction::triggered, [this](bool v) { showNewDrumTracksChanged(v); } );
-      connect(showWaveTracksId,    &QAction::triggered, [this](bool v) { showWaveTracksChanged(v); } );
-      connect(showInputTracksId,   &QAction::triggered, [this](bool v) { showInputTracksChanged(v); } );
-      connect(showOutputTracksId,  &QAction::triggered, [this](bool v) { showOutputTracksChanged(v); } ); 
-      connect(showGroupTracksId,   &QAction::triggered, [this](bool v) { showGroupTracksChanged(v); } );
-      connect(showAuxTracksId,     &QAction::triggered, [this](bool v) { showAuxTracksChanged(v); } );
-      connect(showSyntiTracksId,   &QAction::triggered, [this](bool v) { showSyntiTracksChanged(v); } );
+      showMidiTracksId->setData(SHOW_MIDI_TRACKS);
+      showNewDrumTracksId->setData(SHOW_DRUM_TRACKS);
+      showWaveTracksId->setData(SHOW_WAVE_TRACKS);
+      showInputTracksId->setData(SHOW_INPUT_TRACKS);
+      showOutputTracksId->setData(SHOW_OUTPUT_TRACKS);
+      showGroupTracksId->setData(SHOW_GROUP_TRACKS);
+      showAuxTracksId->setData(SHOW_AUX_TRACKS);
+      showSyntiTracksId->setData(SHOW_SYNTH_TRACKS);
 
+      actionItems->addAction(new MenuTitleItem(tr("Configuration"), this));
+
+      knobsVsSlidersId = new QAction(tr("Prefer Knobs, Not Sliders"), actionItems);
+      knobsVsSlidersId->setData(KNOBS_VS_SLIDERS);
+      knobsVsSlidersId->setCheckable(true);
+
+      showValuesId = new QAction(tr("Show Values in Controls"), actionItems);
+      showValuesId->setData(SHOW_VALUES_IN_CONTROLS);
+      showValuesId->setCheckable(true);
+
+      showMidiDbsId = new QAction(tr("Prefer Midi Volume As Decibels"), actionItems);
+      showMidiDbsId->setData(SHOW_MIDI_DBS);
+      showMidiDbsId->setCheckable(true);
+
+      monOnRecArmId = new QAction(tr("Monitor on Record-arm Automatically"), actionItems);
+      monOnRecArmId->setData(MON_ON_REC_ARM);
+      monOnRecArmId->setCheckable(true);
+
+      momentaryMuteId = new QAction(tr("Momentary Mute"), actionItems);
+      momentaryMuteId->setData(MOMENTARY_MUTE);
+      momentaryMuteId->setCheckable(true);
+
+      momentarySoloId = new QAction(tr("Momentary Solo"), actionItems);
+      momentarySoloId->setData(MOMENTARY_SOLO);
+      momentarySoloId->setCheckable(true);
+
+      // Add the group actions so far.
       menuView->addActions(actionItems->actions());
-      
+
+      menuView->addSeparator();
+
+      // Add the number of visible effects menu.
+      menuAudEffRackVisibleItems = new QMenu(tr("Visible Audio Effects"));
+      audEffRackVisibleGroup = new QActionGroup(this);
+      audEffRackVisibleGroup->setExclusive(true);
+      for(int i = 0; i <= MusECore::PipelineDepth; ++i)
+      {
+        QAction* act = new QAction(QString::number(i), audEffRackVisibleGroup);
+        act->setData(int(AUD_EFF_RACK_VIS_ITEMS_BASE - i));
+        act->setCheckable(true);
+      }
+      menuAudEffRackVisibleItems->addActions(audEffRackVisibleGroup->actions());
+      connect(menuAudEffRackVisibleItems, &QMenu::aboutToShow, [=]() { menuAudEffRackVisItemsAboutToShow(); } );
+      connect(audEffRackVisibleGroup, &QActionGroup::triggered, [this](QAction* a) { audEffRackVisItemsTriggered(a); } );
+      menuView->addMenu(menuAudEffRackVisibleItems);
+
+      // Add the "Actions" title.
+      menuView->addAction(new MenuTitleItem(tr("Actions"), this));
+
+      // Add the change track name action to the action group.
+      changeTrackNameId = new QAction(tr("Change Track Name..."), actionItems);
+      changeTrackNameId->setData(CHANGE_TRACK_NAME);
+      changeTrackNameId->setCheckable(false);
+
+      // Add the change track name action to the menu.
+      menuView->addAction(changeTrackNameId);
+
       ///view = new QScrollArea();
       view = new ScrollArea();
       view->setFocusPolicy(Qt::NoFocus);
@@ -193,9 +255,9 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       //      QSpacerItem* right_spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
       //      mixerLayout->addSpacerItem(right_spacer);
 
-      if (_docked)
-          mixerLayout->addStretch(1);
-      else
+      mixerLayout->addStretch(1);
+      DEBUG_MIXER(stderr, "AudioMixerApp: mixerLayout count %d\n", mixerLayout->count());
+      if (!_docked)
           connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));
       // FIXME: Neither of these two replacement functor version work. What's wrong here?
       //connect(view, &ScrollArea::layoutRequest, [this]() { setSizing(); } );
@@ -217,7 +279,6 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
 void AudioMixerApp::stripsMenu()
 {
   menuStrips->clear();
-  connect(menuStrips, &QMenu::triggered, [this](QAction* a) { handleMenu(a); } );
 
   QAction *act;
   QActionGroup *ag = new QActionGroup(this);
@@ -244,6 +305,20 @@ void AudioMixerApp::stripsMenu()
   menuStrips->addActions(ag->actions());
 
   menuStrips->addSeparator();
+
+  hideStripId = menuStrips->addAction(tr("Hide Selected Strips"));
+  hideStripId->setData(HIDE_STRIPS);
+  hideStripId->setEnabled(false);
+  for(StripList::const_iterator isl = stripList.cbegin(); isl != stripList.cend(); ++isl)
+  {
+    const Strip* strip = *isl;
+    if(!strip->isEmbedded() && strip->isSelected())
+    {
+      hideStripId->setEnabled(true);
+      break;
+    }
+  }
+
   act = menuStrips->addAction(tr("Show All Hidden Strips"));
   act->setData(UNHIDE_STRIPS);
   menuStrips->addSeparator();
@@ -274,8 +349,19 @@ void AudioMixerApp::handleMenu(QAction *act)
     stripVisibleChanged(s, true);
   } else if (operation ==  UNHIDE_STRIPS) {
     foreach (Strip *s, stripList) {
-      s->setStripVisible(true);
-      stripVisibleChanged(s, true);
+      if(!s->isVisible())
+      {
+        s->setStripVisible(true);
+        stripVisibleChanged(s, true);
+      }
+    }
+  } else if (operation == HIDE_STRIPS) {
+    foreach (Strip *s, stripList) {
+      if(s->isSelected() && s->isVisible())
+      {
+        s->setStripVisible(false);
+        stripVisibleChanged(s, false);
+      }
     }
   } else if (operation == MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW) {
     cfg->displayOrder = MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW;
@@ -349,6 +435,7 @@ void AudioMixerApp::redrawMixer()
       mixerLayout->takeAt(i);
     }
   }
+  DEBUG_MIXER(stderr, "redrawMixer type %d, after emptying: mixerLayout count %d\n", cfg->displayOrder, mixerLayout->count());
 
   switch (cfg->displayOrder) {
     case MusEGlobal::MixerConfig::STRIPS_ARRANGER_VIEW:
@@ -365,6 +452,7 @@ void AudioMixerApp::redrawMixer()
             }
           }
         }
+        DEBUG_MIXER(stderr, "redrawMixer after draw with arranger view: mixerLayout count:%d\n", mixerLayout->count());
       }
       break;
     case MusEGlobal::MixerConfig::STRIPS_EDITED_VIEW:
@@ -376,13 +464,14 @@ void AudioMixerApp::redrawMixer()
             DEBUG_MIXER(stderr, "Adding strip %s\n", (*si)->getTrack()->name().toLatin1().data());
             addStripToLayoutIfVisible(*si);
         }
-        DEBUG_MIXER(stderr, "mixerLayout count is now %d\n", mixerLayout->count());
+        DEBUG_MIXER(stderr, "redrawMixer after draw with edited view: mixerLayout count:%d\n", mixerLayout->count());
       }
       break;
     case MusEGlobal::MixerConfig::STRIPS_TRADITIONAL_VIEW:
       {
         DEBUG_MIXER(stderr, "TRADITIONAL VIEW mixerLayout count is now %d\n", mixerLayout->count());
         addStripsTraditionalLayout();
+        DEBUG_MIXER(stderr, "redrawMixer after draw with traditional view: mixerLayout count:%d\n", mixerLayout->count());
       }
 
       break;
@@ -533,13 +622,18 @@ void AudioMixerApp::addStripToLayoutIfVisible(Strip *s)
     //  at that position, otherwise just append.
     const int lc = mixerLayout->count();
     if(lc == 0) {
+      DEBUG_MIXER(stderr, "addStripToLayoutIfVisible: before addWidget(): mixerLayout count:%d\n", mixerLayout->count());
       mixerLayout->addWidget(s/*, 0, Qt::AlignLeft*/);
+      DEBUG_MIXER(stderr, "addStripToLayoutIfVisible: after addWidget(): mixerLayout count:%d\n", mixerLayout->count());
     }
     else {
+      DEBUG_MIXER(stderr, "addStripToLayoutIfVisible: before insertWidget(): mixerLayout count:%d\n", mixerLayout->count());
       mixerLayout->insertWidget(lc - 1, s/*, 0, Qt::AlignLeft*/);
+      DEBUG_MIXER(stderr, "addStripToLayoutIfVisible: after insertWidget(): mixerLayout count:%d\n", mixerLayout->count());
     }
 
   } else {
+    DEBUG_MIXER(stderr, "addStripToLayoutIfVisible: strip is not visible: mixerLayout count:%d\n", mixerLayout->count());
     s->setVisible(false);
     stripVisibleChanged(s, false);
   }
@@ -634,6 +728,180 @@ void AudioMixerApp::stripUserWidthChanged(Strip* s, int w)
   fprintf(stderr, "stripUserWidthChanged() StripConfig not found [%s]\n", uuid.toString().toLatin1().constData());
 }
 
+void AudioMixerApp::menuViewAboutToShow()
+{
+//   for(StripList::iterator isl = stripList.begin(); isl != stripList.end(); ++isl)
+//   {
+//     Strip* strip = *isl;
+//     if(strip->isEmbedded())
+//       continue;
+//     if(strip->isSelected())
+//     {
+//       strip->setStripVisible(false);
+//       strip->setVisible(false);
+//       stripVisibleChanged(strip, false);
+//     }
+//   }
+
+  knobsVsSlidersId->setChecked(MusEGlobal::config.preferKnobsVsSliders);
+  showValuesId->setChecked(MusEGlobal::config.showControlValues);
+  showMidiDbsId->setChecked(MusEGlobal::config.preferMidiVolumeDb);
+  monOnRecArmId->setChecked(MusEGlobal::config.monitorOnRecord);
+  momentaryMuteId->setChecked(MusEGlobal::config.momentaryMute);
+  momentarySoloId->setChecked(MusEGlobal::config.momentarySolo);
+
+  // Check that there is only one strip selected.
+  int numsel = 0;
+  for(StripList::const_iterator isl = stripList.cbegin(); isl != stripList.cend(); ++isl)
+  {
+    const Strip* strip = *isl;
+    if(/*!strip->isEmbedded() &&*/ strip->isSelected())
+    {
+      ++numsel;
+      if(numsel > 1)
+        break;
+    }
+  }
+  changeTrackNameId->setEnabled(numsel == 1);
+}
+
+void AudioMixerApp::menuAudEffRackVisItemsAboutToShow()
+{
+  QList<QAction*> acts = audEffRackVisibleGroup->actions();
+  foreach (QAction *act, acts)
+  {
+    if(-(act->data().toInt() - AUD_EFF_RACK_VIS_ITEMS_BASE) == MusEGlobal::config.audioEffectsRackVisibleItems)
+    {
+      act->setChecked(true);
+      break;
+    }
+  }
+}
+
+void AudioMixerApp::menuViewGroupTriggered(QAction* act)
+{
+  if(!act)
+    return;
+  const int num = act->data().toInt();
+  const bool checked = act->isChecked();
+  switch(num)
+  {
+    case KNOBS_VS_SLIDERS:
+      if(MusEGlobal::config.preferKnobsVsSliders != checked)
+      {
+        MusEGlobal::config.preferKnobsVsSliders = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+    case SHOW_VALUES_IN_CONTROLS:
+      if(MusEGlobal::config.showControlValues != checked)
+      {
+        MusEGlobal::config.showControlValues = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+    case SHOW_MIDI_DBS:
+      if(MusEGlobal::config.preferMidiVolumeDb != checked)
+      {
+        MusEGlobal::config.preferMidiVolumeDb = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+    case MON_ON_REC_ARM:
+      if(MusEGlobal::config.monitorOnRecord != checked)
+      {
+        MusEGlobal::config.monitorOnRecord = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+    case MOMENTARY_MUTE:
+      if(MusEGlobal::config.momentaryMute != checked)
+      {
+        MusEGlobal::config.momentaryMute = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+    case MOMENTARY_SOLO:
+      if(MusEGlobal::config.momentarySolo != checked)
+      {
+        MusEGlobal::config.momentarySolo = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+    case CHANGE_TRACK_NAME:
+      changeTrackNameTriggered();
+    break;
+    case ADVANCED_ROUTER:
+      toggleRouteDialog();
+    break;
+
+
+    case SHOW_MIDI_TRACKS:
+      showMidiTracksChanged(checked);
+    break;
+
+    case SHOW_DRUM_TRACKS:
+      showNewDrumTracksChanged(checked);
+    break;
+
+    case SHOW_WAVE_TRACKS:
+      showWaveTracksChanged(checked);
+    break;
+
+    case SHOW_INPUT_TRACKS:
+      showInputTracksChanged(checked);
+    break;
+
+    case SHOW_OUTPUT_TRACKS:
+      showOutputTracksChanged(checked);
+    break;
+
+    case SHOW_GROUP_TRACKS:
+      showGroupTracksChanged(checked);
+    break;
+
+    case SHOW_AUX_TRACKS:
+      showAuxTracksChanged(checked);
+    break;
+
+    case SHOW_SYNTH_TRACKS:
+      showSyntiTracksChanged(checked);
+    break;
+  }
+}
+
+void AudioMixerApp::audEffRackVisItemsTriggered(QAction* act)
+{
+  if(!act)
+    return;
+  const int num = -(act->data().toInt() - AUD_EFF_RACK_VIS_ITEMS_BASE);
+  if(num >= 0 && num <= MusECore::PipelineDepth)
+  {
+    MusEGlobal::config.audioEffectsRackVisibleItems = num;
+    MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+  }
+}
+
+void AudioMixerApp::changeTrackNameTriggered()
+{
+  // Check that there is only one strip selected.
+  MusECore::Track* track = nullptr;
+  int numsel = 0;
+  for(StripList::const_iterator isl = stripList.cbegin(); isl != stripList.cend(); ++isl)
+  {
+    const Strip* strip = *isl;
+    if(/*!strip->isEmbedded() &&*/ strip->isSelected())
+    {
+      ++numsel;
+      if(numsel > 1)
+        break;
+      track = strip->getTrack();
+    }
+  }
+  if(numsel == 1 && track)
+    changeTrackName(track);
+}
+
 void AudioMixerApp::setSizing()
 {
   DEBUG_MIXER(stderr, "setSizing\n");
@@ -646,9 +914,17 @@ void AudioMixerApp::setSizing()
         st = st->proxy();
         w += 2 * st->pixelMetric(QStyle::PM_DefaultFrameWidth);
       }
-      
-      if(w < 40)
-        w = 40;
+
+      const QFontMetrics fm = fontMetrics();
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+      const int totalMenuW = fm.horizontalAdvance(menuConfig->title() + menuView->title()) +
+        fm.horizontalAdvance('0') * 4 + 6;
+#else
+      const int totalMenuW = fm.width(menuConfig->title() + menuView->title()) + fm.width('0') * 4 + 6;
+#endif
+      if(w < totalMenuW)
+        w = totalMenuW;
       view->setUpdatesEnabled(false);
       setUpdatesEnabled(false);
       if(stripList.size() <= 6)
@@ -730,12 +1006,14 @@ void AudioMixerApp::clearAndDelete()
   // Remove and delete only strip widgets from the layout, not spacers/stretchers etc.
 //  StripList::iterator si = stripList.begin();
 //  for (; si != stripList.end(); ++si)
+  DEBUG_MIXER(stderr, "AudioMixerApp::clearAndDelete(): Before: mixerLayout count %d\n", mixerLayout->count());
   for (auto& si : stripList)
   {
     mixerLayout->removeWidget(si);
     //(*si)->deleteLater();
     delete si;
   }
+  DEBUG_MIXER(stderr, "AudioMixerApp::clearAndDelete(): After: mixerLayout count %d\n", mixerLayout->count());
 
   cfg->stripConfigList.clear();
   stripList.clear();
@@ -833,9 +1111,8 @@ bool AudioMixerApp::updateStripList()
   DEBUG_MIXER(stderr, "updateStripList stripList %d tracks %zd\n", stripList.size(), MusEGlobal::song->tracks()->size());
   
   if (stripList.empty() &&
-      // Both obsolete. Support old files.
-      (!cfg->stripOrder.empty() ||
-      !cfg->stripConfigList.empty()))
+      // Obsolete. Support old files.
+      !cfg->stripOrder.empty())
       {
         initMixer();
         return true;
@@ -1232,30 +1509,64 @@ void AudioMixerApp::selectNextStrip(bool isRight)
 
 bool AudioMixerApp::eventFilter(QObject *obj, QEvent *event)
 {
-  DEBUG_MIXER(stderr, "eventFilter type %d\n", (int)event->type());
-    QKeyEvent *keyEvent = nullptr;//event data, if this is a keystroke event
-    bool result = false;//return true to consume the keystroke
-
+  //DEBUG_MIXER(stderr, "eventFilter type %d\n", (int)event->type());
     if (event->type() == QEvent::KeyPress)
     {
-         keyEvent = dynamic_cast<QKeyEvent*>(event);
-         this->keyPressEvent(keyEvent);
-         result = true;
+         this->keyPressEvent(static_cast<QKeyEvent*>(event));
+         return true;
     }//if type()
 
     else if (event->type() == QEvent::KeyRelease)
     {
-        keyEvent = dynamic_cast<QKeyEvent*>(event);
-        this->keyReleaseEvent(keyEvent);
-        result = true;
+        this->keyReleaseEvent(static_cast<QKeyEvent*>(event));
+        return  true;
     }//else if type()
 
     //### Standard event processing ###
     else
-        result = QObject::eventFilter(obj, event);
-
-    return result;
+        return QMainWindow::eventFilter(obj, event);
 }//eventFilter
 
+void AudioMixerApp::changeTrackName(MusECore::Track* track)
+{
+  if(!track)
+    return;
+
+  const QString oldname = track->name();
+
+  QInputDialog dlg(this);
+  dlg.setWindowTitle(tr("Track Name"));
+  dlg.setLabelText(tr("Enter track name:"));
+  dlg.setTextValue(oldname);
+  // set standard font size explicitly, otherwise the font is too small (inherited from mixer strip)
+  dlg.setStyleSheet("font-size:" + QString::number(MusEGlobal::config.fonts[0].pointSize()) + "pt");
+
+  const int res = dlg.exec();
+  if(res == QDialog::Rejected)
+    return;
+
+  const QString newname = dlg.textValue();
+
+  if(newname == oldname)
+    return;
+
+  MusECore::TrackList* tl = MusEGlobal::song->tracks();
+  for (MusECore::iTrack i = tl->begin(); i != tl->end(); ++i)
+  {
+    if ((*i)->name() == newname)
+    {
+      QMessageBox::critical(this,
+        tr("MusE: Bad Trackname"),
+        tr("Please choose a unique track name"),
+        QMessageBox::Ok,
+        Qt::NoButton,
+        Qt::NoButton);
+      return;
+    }
+  }
+
+  MusEGlobal::song->applyOperation(
+    MusECore::UndoOp(MusECore::UndoOp::ModifyTrackName, track, oldname, newname));
+}
 
 } // namespace MusEGui

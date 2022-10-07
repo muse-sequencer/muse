@@ -70,6 +70,111 @@ const char* Track::_cname[] = {
 
 bool MidiTrack::_isVisible=true;
 
+int MidiTrack::transpositionMin = -127;
+int MidiTrack::transpositionMax = 127;
+int MidiTrack::velocityMin = -127;
+int MidiTrack::velocityMax = 127;
+int MidiTrack::delayMin = -1000;
+int MidiTrack::delayMax = 1000;
+int MidiTrack::lenMin = 25;
+int MidiTrack::lenMax = 200;
+int MidiTrack::compressionMin = 25;
+int MidiTrack::compressionMax = 200;
+
+// Static.
+void MidiTrack::propertyRange(NonControllerId id, double* min, double* max)
+{
+  switch(id)
+  {
+    case NCTL_TRACKPROP_TRANSPOSE:
+      if(min)
+        *min = transpositionMin;
+      if(max)
+        *max = transpositionMax;
+    break;
+    case NCTL_TRACKPROP_DELAY:
+      if(min)
+        *min = delayMin;
+      if(max)
+        *max = delayMax;
+    break;
+    case NCTL_TRACKPROP_LENGTH:
+      if(min)
+        *min = lenMin;
+      if(max)
+        *max = lenMax;
+    break;
+    case NCTL_TRACKPROP_VELOCITY:
+      if(min)
+        *min = velocityMin;
+      if(max)
+        *max = velocityMax;
+    break;
+    case NCTL_TRACKPROP_COMPRESS:
+      if(min)
+        *min = compressionMin;
+      if(max)
+        *max = compressionMax;
+    break;
+    default:
+    break;
+  }
+}
+
+//---------------------------------------------------------
+//   midi2PropertyValue
+//   Apply mapper if it is non-null
+//---------------------------------------------------------
+
+// Static.
+double MidiTrack::midi2PropertyValue(NonControllerId id, const MidiAudioCtrlStruct* /*mapper*/, int midi_ctlnum, int midi_val)
+{
+  double fmin, fmax;
+  propertyRange(id, &fmin, &fmax);
+  double frng = fmax - fmin;             // The audio control range.
+
+  MidiController::ControllerType t = midiControllerType(midi_ctlnum);
+
+  int ctlmn = 0;
+  int ctlmx = 127;
+
+  int bval = midi_val;
+  switch(t)
+  {
+    case MidiController::RPN:
+    case MidiController::NRPN:
+    case MidiController::Controller7:
+      ctlmn = 0;
+      ctlmx = 127;
+    break;
+    case MidiController::Controller14:
+    case MidiController::RPN14:
+    case MidiController::NRPN14:
+      ctlmn = 0;
+      ctlmx = 16383;
+    break;
+    case MidiController::Program:
+      ctlmn = 0;
+      ctlmx = 0xffffff;
+    break;
+    case MidiController::Pitch:
+      ctlmn = -8192;
+      ctlmx = 8191;
+      bval += 8192;
+    break;
+    case MidiController::Velo:        // cannot happen
+    default:
+      break;
+  }
+
+  double fictlrng = double(ctlmx - ctlmn);   // Float version of the integer midi range.
+  double normval = double(bval) / fictlrng;  // Float version of the normalized midi value.
+
+  // ----------  TODO: Do stuff with the mapper, if supplied.
+
+  double ret = int(normval * frng + fmin);
+  return ret;
+}
 
 //---------------------------------------------------------
 //   addPortCtrlEvents
@@ -614,6 +719,7 @@ float Track::getWorstSelfLatencyAudio()
   _latencyInfo._worstSelfLatencyProcessed = true;
   return _latencyInfo._worstSelfLatency;
 }
+
 
 //---------------------------------------------------------
 //   MidiTrack
@@ -2236,6 +2342,9 @@ void Track::writeProperties(int level, Xml& xml) const
       }
       if (m_color.isValid())
           xml.strTag(level, "color", m_color.name());
+
+      // Write only the assignments for this track.
+      MusEGlobal::song->midiAssignments()->write(level, xml, this);
 }
 
 //---------------------------------------------------------
@@ -2280,6 +2389,9 @@ bool Track::readProperties(Xml& xml, const QString& tag)
           if (QColor::isValidColor(c))
               m_color.setNamedColor(c);
       }
+      else if (tag == "midiAssign")
+            // Any assignments read go to this track.
+            MusEGlobal::song->midiAssignments()->read(xml, this);
       else
             return true;
       return false;

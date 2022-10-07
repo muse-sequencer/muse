@@ -37,6 +37,7 @@
 class QWidget;
 class QMenu;
 class QAction;
+class QActionGroup;
 class QHBoxLayout;
 class QResizeEvent;
 class QMoveEvent;
@@ -85,9 +86,31 @@ class ScrollArea : public QScrollArea
 class AudioMixerApp : public QMainWindow {
       Q_OBJECT
     
+      enum ViewMenuOperations {
+        KNOBS_VS_SLIDERS = -2000,
+        SHOW_VALUES_IN_CONTROLS = 2001,
+        SHOW_MIDI_DBS = -2002,
+        MON_ON_REC_ARM = -2003,
+        MOMENTARY_MUTE = -2004,
+        MOMENTARY_SOLO = -2005,
+        CHANGE_TRACK_NAME = -2006,
+        ADVANCED_ROUTER = -2007,
+
+        SHOW_MIDI_TRACKS = -3000,
+        SHOW_DRUM_TRACKS = -3001,
+        SHOW_WAVE_TRACKS = -3002,
+        SHOW_INPUT_TRACKS = -3003,
+        SHOW_OUTPUT_TRACKS = -3004,
+        SHOW_GROUP_TRACKS = -3005,
+        SHOW_AUX_TRACKS = -3006,
+        SHOW_SYNTH_TRACKS = -3007,
+
+        AUD_EFF_RACK_VIS_ITEMS_BASE = -4000
+      };
       enum StripMenuOperations {
-        UNHIDE_STRIPS = -1000,
-        UNHANDLED_NUMBER = -1001
+        HIDE_STRIPS = -5000,
+        UNHIDE_STRIPS = -5001,
+        UNHANDLED_NUMBER = -5002
       };
       MusEGlobal::MixerConfig* cfg;
       StripList stripList;
@@ -101,6 +124,7 @@ class AudioMixerApp : public QMainWindow {
       int oldAuxsSize;
 
       QMenu* menuConfig;
+      QMenu* menuView;
       QAction* showMidiTracksId;
 //      QAction* showDrumTracksId;
       QAction* showNewDrumTracksId;
@@ -110,6 +134,16 @@ class AudioMixerApp : public QMainWindow {
       QAction* showGroupTracksId;
       QAction* showAuxTracksId;
       QAction* showSyntiTracksId;
+      QAction* knobsVsSlidersId;
+      QAction* showValuesId;
+      QAction* showMidiDbsId;
+      QAction* monOnRecArmId;
+      QAction* momentaryMuteId;
+      QAction* momentarySoloId;
+      QMenu* menuAudEffRackVisibleItems;
+      QActionGroup* audEffRackVisibleGroup;
+      QAction* changeTrackNameId;
+      QAction* hideStripId;
 
     // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
@@ -129,15 +163,14 @@ class AudioMixerApp : public QMainWindow {
       void updateSelectedStrips();
       void moveConfig(const Strip* s, int new_pos);
 
-//      enum UpdateAction {
-//            NO_UPDATE, UPDATE_ALL, UPDATE_MIDI, STRIP_INSERTED, STRIP_REMOVED
-//            };
       void initMixer();
       void addStripsTraditionalLayout();
       void addStripToLayoutIfVisible(Strip *s);
       void selectNextStrip(bool isRight);
 
       bool eventFilter(QObject *obj,QEvent *event);
+
+      void changeTrackName(MusECore::Track*);
 
    signals:
       void closed();
@@ -163,6 +196,11 @@ class AudioMixerApp : public QMainWindow {
       void moveStrip(Strip*);
       void stripVisibleChanged(Strip*, bool);
       void stripUserWidthChanged(Strip*, int);
+      void menuViewAboutToShow();
+      void menuViewGroupTriggered(QAction*);
+      void menuAudEffRackVisItemsAboutToShow();
+      void audEffRackVisItemsTriggered(QAction*);
+      void changeTrackNameTriggered();
 
    protected:
       //virtual bool event(QEvent* event);

@@ -895,6 +895,10 @@ void TrackNameLabel::paintEvent(QPaintEvent* ev)
 
 void TrackNameLabel::mousePressEvent(QMouseEvent* ev)
 {
+  // Only one button at a time.
+  if(ev->buttons() ^ ev->button())
+    return;
+
   if (hasExpandIcon() && _hovered && (ev->pos().x() < _expandIconWidth))
   {
     _expandIconPressed = true;
@@ -904,6 +908,7 @@ void TrackNameLabel::mousePressEvent(QMouseEvent* ev)
   else
   {
     ev->ignore();
+    emit labelPressed(ev);
     QLabel::mousePressEvent(ev);
   }
 }
@@ -918,6 +923,7 @@ void TrackNameLabel::mouseReleaseEvent(QMouseEvent* ev)
   else
   {
     ev->ignore();
+    emit labelReleased(ev);
     QLabel::mouseReleaseEvent(ev);
   }
 }
@@ -931,6 +937,7 @@ void TrackNameLabel::mouseMoveEvent(QMouseEvent* ev)
     else
     {
         ev->ignore();
+        emit labelMoved(ev);
         QLabel::mouseMoveEvent(ev);
     }
 }
@@ -1077,6 +1084,67 @@ void Strip::trackNameLabelExpandClicked()
   setExpanded(!isExpanded());
 }
 
+void Strip::trackNameLabelPressed(QMouseEvent* ev)
+{
+  ev->accept();
+
+  const QPoint mousePos = QCursor::pos();
+  mouseWidgetOffset = pos() - mousePos;
+
+  if (ev->button() == Qt::LeftButton)
+  {
+    if(!_isEmbedded)
+    {
+      if (ev->modifiers() & Qt::ControlModifier)
+      {
+        setSelected(!isSelected());
+        track->setSelected(isSelected());
+        MusEGlobal::song->update(SC_TRACK_SELECTION);
+      }
+      else
+      {
+        emit clearStripSelection();
+        MusEGlobal::song->selectAllTracks(false);
+        setSelected(true);
+        track->setSelected(true);
+        MusEGlobal::song->update(SC_TRACK_SELECTION);
+      }
+    }
+  }
+}
+
+void Strip::trackNameLabelMoved(QMouseEvent* ev)
+{
+  ev->accept();
+
+  if(ev->buttons() == Qt::LeftButton)
+  {
+    if(!_isEmbedded)
+    {
+      if(dragOn)
+      {
+        QPoint mousePos = QCursor::pos();
+        move(mousePos + mouseWidgetOffset);
+      }
+      else
+      {
+        raise();
+        dragOn = true;
+      }
+    }
+  }
+}
+
+void Strip::trackNameLabelReleased(QMouseEvent* ev)
+{
+  ev->accept();
+
+  if (!_isEmbedded && dragOn) {
+    emit moveStrip(this);
+  }
+  dragOn=false;
+}
+
 //---------------------------------------------------------
 //   heartBeat
 //---------------------------------------------------------
@@ -1162,6 +1230,10 @@ void Strip::setLabelText()
 
 void Strip::muteToggled(bool val)
       {
+      // We receive toggled only if the button was checkable.
+      // If it was not checkable, pressed() and released() will handle it.
+      if(!mute || !mute->isCheckable())
+        return;
       if(track)
       {
         // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
@@ -1178,13 +1250,20 @@ void Strip::muteToggled(bool val)
 
 void Strip::soloToggled(bool val)
 {
+    // We receive toggled only if the button was checkable.
+    // If it was not checkable, pressed() and released() will handle it.
+    if(!solo || !solo->isCheckable())
+      return;
     if (track && track->internalSolo()) {
         if (solo->isChecked())
             solo->setIcon(*soloAndProxyOnSVGIcon);
         else
             solo->setIcon(*soloProxyOnAloneSVGIcon);
     } else {
-        solo->setIcon(*soloStateSVGIcon);
+        if(solo->isDown())
+          solo->setIcon(*soloOnSVGIcon);
+        else
+          solo->setIcon(*soloOffSVGIcon);
     }
     //    solo->setIconSetB(track && track->internalSolo());
 
@@ -1194,6 +1273,251 @@ void Strip::soloToggled(bool val)
     MusECore::PendingOperationList operations;
     operations.add(MusECore::PendingOperationItem(track, val, MusECore::PendingOperationItem::SetTrackSolo));
     MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
+
+void Strip::mutePressed()
+{
+  // We receive toggled only if the button was checkable.
+  // If it was not checkable, pressed() and released() will handle it.
+  if(!mute || mute->isCheckable())
+    return;
+  if(track)
+  {
+    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+    MusECore::PendingOperationList operations;
+    operations.add(MusECore::PendingOperationItem(track, true, MusECore::PendingOperationItem::SetTrackMute));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+  }
+  updateMuteIcon();
+}
+
+void Strip::soloPressed()
+{
+  // We receive toggled only if the button was checkable.
+  // If it was not checkable, pressed() and released() will handle it.
+  if(!solo || solo->isCheckable())
+    return;
+  if (track && track->internalSolo()) {
+          solo->setIcon(*soloAndProxyOnSVGIcon);
+  } else {
+          solo->setIcon(*soloOnSVGIcon);
+  }
+
+  if (!track)
+      return;
+  // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(track, true, MusECore::PendingOperationItem::SetTrackSolo));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
+
+void Strip::muteReleased()
+{
+  // We receive toggled only if the button was checkable.
+  // If it was not checkable, pressed() and released() will handle it.
+  if(!mute || mute->isCheckable())
+    return;
+  if(track)
+  {
+    // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+    MusECore::PendingOperationList operations;
+    operations.add(MusECore::PendingOperationItem(track, false, MusECore::PendingOperationItem::SetTrackMute));
+    MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+  }
+}
+
+void Strip::soloReleased()
+{
+  // We receive toggled only if the button was checkable.
+  // If it was not checkable, pressed() and released() will handle it.
+  if(!solo || solo->isCheckable())
+    return;
+  if (track && track->internalSolo()) {
+          solo->setIcon(*soloProxyOnAloneSVGIcon);
+  } else {
+          solo->setIcon(*soloOffSVGIcon);
+  }
+
+  if (!track)
+      return;
+  // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+  MusECore::PendingOperationList operations;
+  operations.add(MusECore::PendingOperationItem(track, false, MusECore::PendingOperationItem::SetTrackSolo));
+  MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+}
+
+void Strip::soloContextMenuReq(const QPoint& /*p*/) const
+{
+  MusEGlobal::song->execAutomationCtlPopup(track, QCursor::pos(), MusECore::MidiAudioCtrlStruct::NonAudioControl, MusECore::NCTL_TRACK_SOLO);
+}
+
+void Strip::muteContextMenuReq(const QPoint& /*p*/) const
+{
+  MusEGlobal::song->execAutomationCtlPopup(track, QCursor::pos(), MusECore::MidiAudioCtrlStruct::NonAudioControl, MusECore::NCTL_TRACK_MUTE);
+}
+
+void Strip::labelContextMenuReq(const QPoint& /*p*/)
+{
+  QMenu* menu = new QMenu;
+  QAction* act = nullptr;
+
+  // Only show these items if the strip is embedded ouside the mixer,
+  //  since we now have mixer menu items for these.
+  if(isEmbedded())
+  {
+    menu->addAction(new MenuTitleItem(tr("Configuration"), menu));
+
+    act = menu->addAction(tr("Prefer Knobs, Not Sliders"));
+    act->setData(int(2));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.preferKnobsVsSliders);
+
+    act = menu->addAction(tr("Show Values in Controls"));
+    act->setData(int(3));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.showControlValues);
+
+    act = menu->addAction(tr("Prefer Midi Volume As Decibels"));
+    act->setData(int(4));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.preferMidiVolumeDb);
+
+    menu->addSeparator();
+
+    act = menu->addAction(tr("Monitor on Record-arm Automatically"));
+    act->setData(int(5));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.monitorOnRecord);
+
+    act = menu->addAction(tr("Momentary Mute"));
+    act->setData(int(6));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.momentaryMute);
+
+    act = menu->addAction(tr("Momentary Solo"));
+    act->setData(int(7));
+    act->setCheckable(true);
+    act->setChecked(MusEGlobal::config.momentarySolo);
+
+    QMenu* audioEffectsRackVisibleItemsMenu = new QMenu(tr("Visible Audio Effects"));
+    QActionGroup* agroup = new QActionGroup(this);
+    agroup->setExclusive(true);
+    for(int i = 0; i <= MusECore::PipelineDepth; ++i)
+    {
+      act = audioEffectsRackVisibleItemsMenu->addAction(QString::number(i));
+      act->setData(int(5000 + i));
+      act->setCheckable(true);
+      act->setActionGroup(agroup);
+      if(i == MusEGlobal::config.audioEffectsRackVisibleItems)
+  //       act->setChecked(MusEGlobal::config.monitorOnRecord);
+        act->setChecked(true);
+    }
+    menu->addMenu(audioEffectsRackVisibleItemsMenu);
+  }
+
+  menu->addAction(new MenuTitleItem(tr("Actions"), menu));
+
+  act = menu->addAction(tr("Change Track Name"));
+  act->setData(int(1001));
+
+  if(!_isEmbedded)
+  {
+
+//      act = menu->addAction(tr("Remove track"));
+//      act->setData(int(0));
+//      menu->addSeparator();
+    act = menu->addAction(tr("Hide Strip"));
+    act->setData(int(1));
+  }
+
+  QPoint pt = QCursor::pos();
+  act = menu->exec(pt, nullptr);
+  if (!act)
+  {
+    delete menu;
+    return;
+  }
+
+  DEBUG_STRIP("Menu finished, data returned %d\n", act->data().toInt());
+
+  const int sel = act->data().toInt();
+  const bool checked = act->isChecked();
+  delete menu;
+
+  switch(sel)
+  {
+    case 0:
+      //  DEBUG_STRIP(stderr, "Strip:: delete track\n");
+      //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
+    break;
+
+    case 1:
+      DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
+      setStripVisible(false);
+      setVisible(false);
+      emit visibleChanged(this, false);
+    break;
+
+    case 2:
+      if(MusEGlobal::config.preferKnobsVsSliders != checked)
+      {
+        MusEGlobal::config.preferKnobsVsSliders = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+
+    case 3:
+      if(MusEGlobal::config.showControlValues != checked)
+      {
+        MusEGlobal::config.showControlValues = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+
+    case 4:
+      if(MusEGlobal::config.preferMidiVolumeDb != checked)
+      {
+        MusEGlobal::config.preferMidiVolumeDb = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+
+    case 5:
+      if(MusEGlobal::config.monitorOnRecord != checked)
+      {
+        MusEGlobal::config.monitorOnRecord = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+
+    case 6:
+      if(MusEGlobal::config.momentaryMute != checked)
+      {
+        MusEGlobal::config.momentaryMute = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+
+    case 7:
+      if(MusEGlobal::config.momentarySolo != checked)
+      {
+        MusEGlobal::config.momentarySolo = checked;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+
+    case 1001:
+      changeTrackName();
+    break;
+
+    default:
+      if(sel >= 5000 && sel <= 5000 + MusECore::PipelineDepth)
+      {
+        MusEGlobal::config.audioEffectsRackVisibleItems = sel - 5000;
+        MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
+      }
+    break;
+  }
 }
 
 //---------------------------------------------------------
@@ -1274,6 +1598,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       label->setContentsMargins(0, 0, 0, 0);
       label->setAlignment(Qt::AlignCenter);
       label->setAutoFillBackground(true);
+      label->setContextMenuPolicy(Qt::CustomContextMenu);
       label->ensurePolished();
       if (label->style3d()) {
           label->setLineWidth(2);
@@ -1292,6 +1617,11 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
 
       connect(label, &TrackNameLabel::doubleClicked, [this]() { changeTrackName(); } );
       connect(label, &TrackNameLabel::expandClicked, [this]() { trackNameLabelExpandClicked(); } );
+
+      connect(label, &TrackNameLabel::labelPressed, [this](QMouseEvent* ev) { trackNameLabelPressed(ev); } );
+      connect(label, &TrackNameLabel::labelMoved, [this](QMouseEvent* ev) { trackNameLabelMoved(ev); } );
+      connect(label, &TrackNameLabel::labelReleased, [this](QMouseEvent* ev) { trackNameLabelReleased(ev); } );
+      connect(label, &TrackNameLabel::customContextMenuRequested, [this](const QPoint &p) { labelContextMenuReq(p); } );
       }
 
 //---------------------------------------------------------
@@ -1387,171 +1717,6 @@ void Strip::updateRouteButtons()
             oR->setIcon(*routingOutputSVGIcon);
         }
     }
-}
-
-void Strip::mousePressEvent(QMouseEvent* ev)
-{
-  ev->accept();
-
-  // Only one button at a time.
-  if(ev->buttons() ^ ev->button())
-    return;
-
-  QPoint mousePos = QCursor::pos();
-  mouseWidgetOffset = pos() - mousePos;
-
-  if (ev->button() == Qt::RightButton) {
-    QMenu* menu = new QMenu;
-
-    menu->addAction(new MenuTitleItem(tr("Configuration"), menu));
-
-    QAction* act = menu->addAction(tr("Prefer Knobs, Not Sliders"));
-    act->setData(int(2));
-    act->setCheckable(true);
-    act->setChecked(MusEGlobal::config.preferKnobsVsSliders);
-
-    act = menu->addAction(tr("Show Values in Controls"));
-    act->setData(int(3));
-    act->setCheckable(true);
-    act->setChecked(MusEGlobal::config.showControlValues);
-
-    act = menu->addAction(tr("Prefer Midi Volume As Decibels"));
-    act->setData(int(4));
-    act->setCheckable(true);
-    act->setChecked(MusEGlobal::config.preferMidiVolumeDb);
-
-    menu->addSeparator();
-
-    act = menu->addAction(tr("Monitor on Record-arm Automatically"));
-    act->setData(int(5));
-    act->setCheckable(true);
-    act->setChecked(MusEGlobal::config.monitorOnRecord);
-
-    QMenu* audioEffectsRackVisibleItemsMenu = new QMenu(tr("Visible Audio Effects"));
-    QActionGroup* agroup = new QActionGroup(this);
-    agroup->setExclusive(true);
-    for(int i = 0; i <= MusECore::PipelineDepth; ++i)
-    {
-      act = audioEffectsRackVisibleItemsMenu->addAction(QString::number(i));
-      act->setData(int(5000 + i));
-      act->setCheckable(true);
-      act->setActionGroup(agroup);
-      if(i == MusEGlobal::config.audioEffectsRackVisibleItems)
-        act->setChecked(MusEGlobal::config.monitorOnRecord);
-    }
-    menu->addMenu(audioEffectsRackVisibleItemsMenu);
-    
-    menu->addAction(new MenuTitleItem(tr("Actions"), menu));
-
-    act = menu->addAction(tr("Change Track Name"));
-    act->setData(int(1001));
-
-    if(!_isEmbedded)
-    {
-
-//      act = menu->addAction(tr("Remove track"));
-//      act->setData(int(0));
-//      menu->addSeparator();
-      act = menu->addAction(tr("Hide Strip"));
-      act->setData(int(1));
-    }
-
-    QPoint pt = QCursor::pos();
-    act = menu->exec(pt, nullptr);
-    if (!act)
-    {
-      delete menu;
-      return;
-    }
-
-    DEBUG_STRIP("Menu finished, data returned %d\n", act->data().toInt());
-
-    const int sel = act->data().toInt();
-    const bool checked = act->isChecked();
-    delete menu;
-
-    switch(sel)
-    {
-      case 0:
-        //  DEBUG_STRIP(stderr, "Strip:: delete track\n");
-        //  MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteTrack, MusEGlobal::song->tracks()->index(track), track));
-      break;
-
-      case 1:
-        DEBUG_STRIP(stderr, "Strip:: setStripVisible false \n");
-        setStripVisible(false);
-        setVisible(false);
-        emit visibleChanged(this, false);
-      break;
-
-      case 2:
-        if(MusEGlobal::config.preferKnobsVsSliders != checked)
-        {
-          MusEGlobal::config.preferKnobsVsSliders = checked;
-          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
-        }
-      break;
-
-      case 3:
-        if(MusEGlobal::config.showControlValues != checked)
-        {
-          MusEGlobal::config.showControlValues = checked;
-          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
-        }
-      break;
-
-      case 4:
-        if(MusEGlobal::config.preferMidiVolumeDb != checked)
-        {
-          MusEGlobal::config.preferMidiVolumeDb = checked;
-          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
-        }
-      break;
-
-      case 5:
-        if(MusEGlobal::config.monitorOnRecord != checked)
-        {
-          MusEGlobal::config.monitorOnRecord = checked;
-          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
-        }
-      break;
-
-      case 1001:
-        changeTrackName();
-      break;
-      
-      default:
-        if(sel >= 5000 && sel <= 5000 + MusECore::PipelineDepth)
-        {
-          MusEGlobal::config.audioEffectsRackVisibleItems = sel - 5000;
-          MusEGlobal::muse->changeConfig(true); // Save settings immediately, and use simple version.
-        }
-      break;
-    }
-
-    ev->accept();
-    return;
-  }
-  else if (ev->button() == Qt::LeftButton)
-  {
-    if(!_isEmbedded)
-    {
-      if (ev->modifiers() & Qt::ControlModifier)
-      {
-        setSelected(!isSelected());
-        track->setSelected(isSelected());
-        MusEGlobal::song->update(SC_TRACK_SELECTION);
-      }
-      else
-      {
-        emit clearStripSelection();
-        MusEGlobal::song->selectAllTracks(false);
-        setSelected(true);
-        track->setSelected(true);
-        MusEGlobal::song->update(SC_TRACK_SELECTION);
-      }
-    }
-  }
 }
  
 QSize Strip::sizeHint() const
@@ -1786,36 +1951,6 @@ QSize ExpanderHandle::sizeHint() const
   return sz;
 }
 
-
-void Strip::mouseReleaseEvent(QMouseEvent* ev)
-{
-  ev->accept();
-  if (!_isEmbedded && dragOn) {
-    emit moveStrip(this);
-  }
-  dragOn=false;
-}
-
-void Strip::mouseMoveEvent(QMouseEvent* e)
-{
-  e->accept();
-  if(e->buttons() == Qt::LeftButton)
-  {
-    if(!_isEmbedded)
-    {
-      if(dragOn)
-      {
-        QPoint mousePos = QCursor::pos();
-        move(mousePos + mouseWidgetOffset);
-      }
-      else
-      {
-        raise();
-        dragOn = true;
-      }
-    }
-  }
-}
 bool Strip::handleForwardedKeyPress(QKeyEvent* event)
 {  
   const int kb_code = event->key() | event->modifiers();
@@ -1854,12 +1989,18 @@ bool Strip::handleForwardedKeyPress(QKeyEvent* event)
   }
   else if (kb_code ==  MusEGui::shortcuts[MusEGui::SHRT_MUTE_CURRENT_TRACKS].key)
   {
-      mute->setChecked(!mute->isChecked());
+      // Only if not momentary.
+      if(mute->isCheckable())
+        // This will emit toggled, telling the mute to toggle.
+        mute->setChecked(!mute->isChecked());
       return true;
   }
   else if (kb_code == MusEGui::shortcuts[MusEGui::SHRT_SOLO_CURRENT_TRACKS].key)
   {
-      solo->setChecked(!solo->isChecked());
+      // Only if not momentary.
+      if(solo->isCheckable())
+        // This will emit toggled, telling the solo to toggle.
+        solo->setChecked(!solo->isChecked());
       return true;
   }
   return false;
@@ -1948,12 +2089,15 @@ void Strip::updateMuteIcon()
     }
     //  mute->setIconSetB(found && !track->internalSolo() && !track->solo());
     if (found && !track->internalSolo() && !track->solo()) {
-        if (mute->isChecked())
+        if (mute->isDown())
             mute->setIcon(*muteAndProxyOnSVGIcon);
         else
             mute->setIcon(*muteProxyOnSVGIcon);
     } else {
-        mute->setIcon(*muteStateSVGIcon);
+        if(mute->isDown())
+          mute->setIcon(*muteOnSVGIcon);
+        else
+          mute->setIcon(*muteOffSVGIcon);
     }
 }
 

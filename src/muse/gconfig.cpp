@@ -374,6 +374,8 @@ GlobalConfigValues config = {
       false,                        // preferKnobsVsSliders Whether to prefer the use of knobs over sliders, esp in mixer.
       true,                         // showControlValues Whether to show the value along with label in small controls, esp in mixer.
       true,                         // monitorOnRecord  Whether to automatically monitor on record arm.
+      false,                        // momentaryMute Whether the track mute buttons are momentary or toggle.
+      false,                        // momentarySolo Whether the track solo buttons are momentary or toggle.
       true,                         // lineEditStyleHack Force line edit widgets to draw a frame at small sizes. Some styles refuse to draw the frame.
       false,                        // preferMidiVolumeDb Prefer midi volume as decibels instead of 0-127.
       true,                         // midiCtrlGraphMergeErase Whether to erase underlying erase target items when dragging/dropping source items.

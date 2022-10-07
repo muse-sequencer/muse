@@ -4281,7 +4281,8 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 {
   int id = plugin->id();
   if(id != -1)
-    MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p, MusECore::genACnum(id, param));
+    MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p,
+                                             MusECore::MidiAudioCtrlStruct::AudioControl, MusECore::genACnum(id, param));
 }
 
 //---------------------------------------------------------
@@ -5067,7 +5068,8 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, unsigned long int idx)
   int param  = gw[idx].param;
   int id = plugin->id();
   if(id != -1)
-    MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p, MusECore::genACnum(id, param));
+    MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p,
+                                             MusECore::MidiAudioCtrlStruct::AudioControl, MusECore::genACnum(id, param));
 }
 
 //---------------------------------------------------------

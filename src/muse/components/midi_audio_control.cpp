@@ -40,7 +40,7 @@ namespace MusEGui {
 //    the first combo box item (the first readable port).
 // -----------------------------------
 
-MidiAudioControl::MidiAudioControl(int port, int chan, int ctrl, QWidget* parent)
+MidiAudioControl::MidiAudioControl(bool enableAssignType, bool assignToSong, int port, int chan, int ctrl, QWidget* parent)
   : QDialog(parent)
 {
   setupUi(this);
@@ -61,8 +61,21 @@ MidiAudioControl::MidiAudioControl(int port, int chan, int ctrl, QWidget* parent
   _chan = chan;
   _ctrl = ctrl;
   _is_learning = false;
+  _enableAssignType = enableAssignType;
+  _assignToSong = assignToSong;
   
-  update();
+  assignTypeGroupBox->setEnabled(_enableAssignType);
+  assignTypeGroupBox->setVisible(_enableAssignType);
+
+  if(_enableAssignType)
+  {
+    if(_assignToSong)
+      typeSongButton->setChecked(true);
+    else
+      typeTrackButton->setChecked(true);
+  }
+
+  updateDialog();
   
   connect(learnPushButton, SIGNAL(clicked(bool)), SLOT(learnChanged(bool)));
   connect(portComboBox, SIGNAL(currentIndexChanged(int)), SLOT(portChanged(int)));
@@ -72,6 +85,9 @@ MidiAudioControl::MidiAudioControl(int port, int chan, int ctrl, QWidget* parent
   connect(ctrlLoSpinBox, SIGNAL(valueChanged(int)), SLOT(ctrlLChanged()));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat()));
+
+  connect(typeTrackButton, &QRadioButton::clicked, [=]() { assignTrackTriggered(); } );
+  connect(typeSongButton, &QRadioButton::clicked, [=]() { assignSongTriggered(); } );
 }
 
 void MidiAudioControl::heartbeat()
@@ -171,6 +187,12 @@ void MidiAudioControl::heartbeat()
     }
   }
 }
+
+int MidiAudioControl::port() const { return _port; }
+int MidiAudioControl::chan() const { return _chan; }
+int MidiAudioControl::ctrl() const { return _ctrl; }
+bool MidiAudioControl::enableAssignType() const { return _enableAssignType; }
+bool MidiAudioControl::assignToSong() const { return _assignToSong; }
 
 void MidiAudioControl::learnChanged(bool v)
 {
@@ -281,12 +303,22 @@ void MidiAudioControl::ctrlLChanged()
   resetLearn();
 }
 
-void MidiAudioControl::configChanged()
+void MidiAudioControl::assignTrackTriggered()
 {
-  update();
+  _assignToSong = false;
 }
 
-void MidiAudioControl::update()
+void MidiAudioControl::assignSongTriggered()
+{
+  _assignToSong = true;
+}
+
+void MidiAudioControl::configChanged()
+{
+  updateDialog();
+}
+
+void MidiAudioControl::updateDialog()
 {
   portComboBox->blockSignals(true);
   portComboBox->clear();

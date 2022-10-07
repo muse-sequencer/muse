@@ -636,6 +636,9 @@ class TrackNameLabel : public QLabel
   signals:
     void doubleClicked();
     void expandClicked();
+    void labelPressed(QMouseEvent*);
+    void labelMoved(QMouseEvent*);
+    void labelReleased(QMouseEvent*);
 
   public:
     TrackNameLabel(QWidget* parent = nullptr);
@@ -744,9 +747,6 @@ class Strip : public QFrame {
       CompactComboBox* autoType;
       void setLabelText();
       virtual void resizeEvent(QResizeEvent*);
-      virtual void mousePressEvent(QMouseEvent *);
-      virtual void mouseReleaseEvent(QMouseEvent *);
-      virtual void mouseMoveEvent(QMouseEvent *);
       virtual void keyPressEvent(QKeyEvent *);
       virtual void paintEvent(QPaintEvent *);
 
@@ -763,12 +763,22 @@ class Strip : public QFrame {
       virtual void recordToggled(bool);
       void soloToggled(bool);
       void muteToggled(bool);
+      virtual void soloPressed();
+      virtual void mutePressed();
+      virtual void soloReleased();
+      virtual void muteReleased();
+      virtual void soloContextMenuReq(const QPoint&) const;
+      virtual void muteContextMenuReq(const QPoint&) const;
+      virtual void labelContextMenuReq(const QPoint&);
 
       virtual void focusYieldWidgetDestroyed(QObject*);
       virtual void heartBeat();
       void setAutomationType(int t);
       virtual void changeTrackName();
       virtual void trackNameLabelExpandClicked();
+      virtual void trackNameLabelPressed(QMouseEvent*);
+      virtual void trackNameLabelMoved(QMouseEvent*);
+      virtual void trackNameLabelReleased(QMouseEvent*);
 
    public slots:
       void resetPeaks();
@@ -829,7 +839,7 @@ class Strip : public QFrame {
       bool handleForwardedKeyPress(QKeyEvent* ev);
       
       virtual QSize sizeHint() const;
-      bool isSelected() { return _selected; }
+      bool isSelected() const { return _selected; }
       void setSelected(bool s);
 
       bool isEmbedded() const { return _isEmbedded; }

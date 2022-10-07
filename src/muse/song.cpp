@@ -2300,6 +2300,9 @@ void Song::clear(bool signal, bool clear_all)
         fprintf(stderr, "Song::clear\n");
       
       bounceTrack    = 0;
+
+      // Clear any midi control assignments.
+      _midiAssignments.clear();
       
       _tracks.clear();
       _midis.clearDelete();
@@ -2795,7 +2798,7 @@ void Song::recordEvent(MidiTrack* mt, Event& event)
 //   execAutomationCtlPopup
 //---------------------------------------------------------
 
-int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int acid)
+int Song::execAutomationCtlPopup(Track* track, const QPoint& menupos, MidiAudioCtrlStruct::IdType idType, int id)
 {
   enum { PREV_EVENT=0, NEXT_EVENT, ADD_EVENT, SET_EVENT, CLEAR_EVENT, CLEAR_RANGE, CLEAR_ALL_EVENTS, MIDI_ASSIGN, MIDI_CLEAR };
   QMenu* menu = new QMenu;
@@ -2806,16 +2809,22 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   bool canAdd = false;
   double ctlval = 0.0;
   unsigned int frame = 0;
-  if(track)
+
+  const bool isBuiltInAudioCtrl = idType == MusECore::MidiAudioCtrlStruct::AudioControl && id < AC_PLUGIN_CTL_BASE;
+  const bool canAssignToSong = idType == MusECore::MidiAudioCtrlStruct::NonAudioControl || isBuiltInAudioCtrl;
+
+  AudioTrack* atrack = nullptr;
+  if(track && !track->isMidiTrack() && idType == MidiAudioCtrlStruct::AudioControl)
   {
-    ciCtrlList icl = track->controller()->find(acid);
-    if(icl != track->controller()->end())
+    atrack = static_cast<AudioTrack*>(track);
+    ciCtrlList icl = atrack->controller()->find(id);
+    if(icl != atrack->controller()->end())
     {
       CtrlList *cl = icl->second;
       canAdd = true;
       frame = MusEGlobal::audio->pos().frame();       
-      bool en = track->controllerEnabled(acid);
-      AutomationType at = track->automationType();
+      bool en = atrack->controllerEnabled(id);
+      AutomationType at = atrack->automationType();
       if(!MusEGlobal::automation || at == AUTO_OFF || !en)
         ctlval = cl->curVal();  
       else  
@@ -2843,72 +2852,75 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
                         && pos[2].frame() > s->first;
       }
     }
+
+    menu->addAction(new MusEGui::MenuTitleItem(tr("Automation"), menu));
+
+    QAction* prevEvent = menu->addAction(tr("Previous event"));
+    prevEvent->setData(PREV_EVENT);
+    prevEvent->setEnabled(canSeekPrev);
+
+    QAction* nextEvent = menu->addAction(tr("Next event"));
+    nextEvent->setData(NEXT_EVENT);
+    nextEvent->setEnabled(canSeekNext);
+
+    menu->addSeparator();
+
+    QAction* addEvent = new QAction(menu);
+    menu->addAction(addEvent);
+    if(isEvent)
+    {
+      addEvent->setText(tr("Set event"));
+      addEvent->setData(SET_EVENT);
+    }
+    else
+    {
+      addEvent->setText(tr("Add event"));
+      addEvent->setData(ADD_EVENT);
+    }
+
+    addEvent->setEnabled(canAdd);
+
+    QAction* eraseEventAction = menu->addAction(tr("Erase event"));
+    eraseEventAction->setData(CLEAR_EVENT);
+    eraseEventAction->setEnabled(isEvent);
+
+    QAction* eraseRangeAction = menu->addAction(tr("Erase range"));
+    eraseRangeAction->setData(CLEAR_RANGE);
+    eraseRangeAction->setEnabled(canEraseRange);
+
+    QAction* clearAction = menu->addAction(tr("Clear automation"));
+    clearAction->setData(CLEAR_ALL_EVENTS);
+    clearAction->setEnabled(haveValues);
+
+    menu->addSeparator();
   }
 
-  menu->addAction(new MusEGui::MenuTitleItem(tr("Automation"), menu));
-  
-  QAction* prevEvent = menu->addAction(tr("Previous event"));
-  prevEvent->setData(PREV_EVENT);
-  prevEvent->setEnabled(canSeekPrev);
-
-  QAction* nextEvent = menu->addAction(tr("Next event"));
-  nextEvent->setData(NEXT_EVENT);
-  nextEvent->setEnabled(canSeekNext);
-
-  menu->addSeparator();
-
-  QAction* addEvent = new QAction(menu);
-  menu->addAction(addEvent);
-  if(isEvent)
-  {
-    addEvent->setText(tr("Set event"));
-    addEvent->setData(SET_EVENT);
-  }
-  else
-  {
-    addEvent->setText(tr("Add event"));
-    addEvent->setData(ADD_EVENT);
-  }
-
-  addEvent->setEnabled(canAdd);
-
-  QAction* eraseEventAction = menu->addAction(tr("Erase event"));
-  eraseEventAction->setData(CLEAR_EVENT);
-  eraseEventAction->setEnabled(isEvent);
-
-  QAction* eraseRangeAction = menu->addAction(tr("Erase range"));
-  eraseRangeAction->setData(CLEAR_RANGE);
-  eraseRangeAction->setEnabled(canEraseRange);
-
-  QAction* clearAction = menu->addAction(tr("Clear automation"));
-  clearAction->setData(CLEAR_ALL_EVENTS);
-  clearAction->setEnabled(haveValues);
-
-
-  menu->addSeparator();
   menu->addAction(new MusEGui::MenuTitleItem(tr("Midi control"), menu));
   
   QAction *assign_act = menu->addAction(tr("Assign"));
   assign_act->setCheckable(false);
   assign_act->setData(MIDI_ASSIGN); 
   
-  MidiAudioCtrlMap* macm = track->controller()->midiControls();
+  MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
   AudioMidiCtrlStructMap amcs;
-  macm->find_audio_ctrl_structs(acid, &amcs);
-  
+
+  // Include NULL tracks in search.
+  macm->find_audio_ctrl_structs(idType, id, track, false, true, &amcs);
+
   if(!amcs.empty())
   {
     QAction *cact = menu->addAction(tr("Clear"));
-    cact->setData(MIDI_CLEAR); 
+    cact->setData(MIDI_CLEAR);
     menu->addSeparator();
   }
-  
+
   for(iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
   {
+    const Track* t = (*iamcs)->second.track();
     int port, chan, mctrl;
-    macm->hash_values((*iamcs)->first, &port, &chan, &mctrl);
-    //QString s = QString("Port:%1 Chan:%2 Ctl:%3-%4").arg(port + 1)
-    QString s = QString("Port:%1 Chan:%2 Ctl:%3").arg(port + 1)
+    MidiAudioCtrlMap::hash_values((*iamcs)->first, &port, &chan, &mctrl);
+    QString s = QString("Type:%1 Port:%2 Chan:%3 Ctl:%4").arg(t ? tr("Track") : tr("Song"))
+                                                  .arg(port + 1)
                                                   .arg(chan + 1)
                                                   //.arg((mctrl >> 8) & 0xff)
                                                   //.arg(mctrl & 0xff);
@@ -2919,7 +2931,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   }
   
   QAction* act = menu->exec(menupos);
-  if (!act || !track)
+  if (!act)
   {
     delete menu;
     return -1;
@@ -2933,11 +2945,11 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   switch(sel)
   {
     case SET_EVENT:
-          MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlVal, track, acid, frame, frame, eventVal, ctlval));
+          MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlVal, track, id, frame, frame, eventVal, ctlval));
     break;
     case ADD_EVENT:
           MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal,
-            track, acid, frame,
+            track, id, frame,
             // The undo system automatically sets the VAL_DISCRETE flag if the controller mode is DISCRETE.
             // Here is a tough decision regarding choice of discrete vs. interpolated:
             // Do we obey the discrete/interpolated toolbar button?
@@ -2945,52 +2957,80 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
             ctlval, CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE));
     break;
     case CLEAR_EVENT:
-          MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, track, acid, frame, 0, 0, 0));
+          MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, track, id, frame, 0, 0, 0));
     break;
 
     case CLEAR_RANGE:
-          MusEGlobal::audio->msgEraseRangeACEvents(track, acid, pos[1].frame(), pos[2].frame());
+          if(atrack)
+            MusEGlobal::audio->msgEraseRangeACEvents(atrack, id, pos[1].frame(), pos[2].frame());
     break;
 
     case CLEAR_ALL_EVENTS:
-          if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
-              tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
-              QString(), 0, 1 ) == 0)
-            MusEGlobal::audio->msgClearControllerEvents(track, acid);
+          if(atrack)
+          {
+            if(QMessageBox::question(MusEGlobal::muse, QString("Muse"),
+                tr("Clear all controller events?"), tr("&Ok"), tr("&Cancel"),
+                QString(), 0, 1 ) == 0)
+              MusEGlobal::audio->msgClearControllerEvents(atrack, id);
+          }
     break;
 
     case PREV_EVENT:
-          MusEGlobal::audio->msgSeekPrevACEvent(track, acid);
+          if(atrack)
+            MusEGlobal::audio->msgSeekPrevACEvent(atrack, id);
     break;
 
     case NEXT_EVENT:
-          MusEGlobal::audio->msgSeekNextACEvent(track, acid);
+          if(atrack)
+            MusEGlobal::audio->msgSeekNextACEvent(atrack, id);
     break;
     
     case MIDI_ASSIGN:
           {
             int port = -1, chan = 0, ctrl = 0;
+            bool isSongAssign = (track == nullptr);
+
             for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
             {
-              macm->hash_values((*iamcs)->first, &port, &chan, &ctrl);
+              const Track* t = (*iamcs)->second.track();
+              MidiAudioCtrlMap::hash_values((*iamcs)->first, &port, &chan, &ctrl);
+              isSongAssign = t == nullptr;
               break; // Only a single item for now, thanks!
             }
             
-            MusEGui::MidiAudioControl* pup = new MusEGui::MidiAudioControl(port, chan, ctrl);
-            
+            MusEGui::MidiAudioControl* pup = new MusEGui::MidiAudioControl(
+              // Enable the assignment type widget.
+              canAssignToSong,
+              // Preset the assignment type widget to Track or Song.
+              isSongAssign,
+              port,
+              chan,
+              ctrl);
+
             if(pup->exec() == QDialog::Accepted)
             {
-              MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
-              // Erase all for now.
-              for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
-                macm->erase(*iamcs);
-              
               port = pup->port(); chan = pup->chan(); ctrl = pup->ctrl();
+              // Song assign for audio controllers is only allowed for built-ins like volume and pan.
+              isSongAssign = pup->assignToSong() && canAssignToSong;
+
               if(port >= 0 && chan >=0 && ctrl >= 0)
-                // Add will replace if found.
-                macm->add_ctrl_struct(port, chan, ctrl, MusECore::MidiAudioCtrlStruct(acid));
-              
-              MusEGlobal::audio->msgIdle(false);
+              {
+                MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+
+                // Erase existing assignments to this control.
+                // Include NULL tracks in search. If a song assignment has been requested,
+                //  include ALL assignments to this control for ANY track.
+                AudioMidiCtrlStructMap amcs_full;
+                macm->find_audio_ctrl_structs(idType, id, track, isSongAssign, true, &amcs_full);
+                for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs_full.begin(); iamcs != amcs_full.end(); ++iamcs)
+                  macm->erase(*iamcs);
+
+                // Add will not replace if found.
+                macm->add_ctrl_struct(port, chan, ctrl,
+                  MusECore::MidiAudioCtrlStruct(idType, id, isSongAssign ? nullptr : track));
+
+                MusEGlobal::audio->msgIdle(false);
+              }
             }
             
             delete pup;
@@ -2998,12 +3038,16 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
           break;
     
     case MIDI_CLEAR:
-          if(!amcs.empty())
-            MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
-          for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
-            macm->erase(*iamcs);
-          if(!amcs.empty())
-            MusEGlobal::audio->msgIdle(false);
+          {
+            if(!amcs.empty())
+            {
+              MusEGlobal::audio->msgIdle(true);  // Gain access to structures, and sync with audio
+              // Erase assignments to this control for the track or for NULL tracks.
+              for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++iamcs)
+                macm->erase(*iamcs);
+              MusEGlobal::audio->msgIdle(false);
+            }
+          }
     break;
     
     default:
@@ -3462,7 +3506,7 @@ struct CtrlGUIMessageTrackStruct
 {
   // This holds parameterless track messages such as PAINT_UPDATE.
   CtrlGUIMessageTypeMap _typeMap;
-  // This holds track messages hving parameters such as ADDED, DELETED.
+  // This holds track messages having parameters such as ADDED, DELETED.
   CtrlGUIMessageIdMap _idMap;
 };
 
@@ -3514,6 +3558,7 @@ bool CtrlGUIMessageTrackMap::add(
 
     case CtrlGUIMessage::ADDED:
     case CtrlGUIMessage::DELETED:
+    case CtrlGUIMessage::NON_CTRL_CHANGED:
       // Messages with parameters go here.
       return aam._idMap.add(id, frame, type, item);
     break;
@@ -3555,16 +3600,50 @@ bool Song::processIpcCtrlGUIMessages()
         {
           const CtrlGUIMessageItemTypeMap& tpm = imm->second;
           for(ciCtrlGUIMessageItemTypeMap itpm = tpm.cbegin(); itpm != tpm.cend(); ++itpm)
-            emit controllerChanged(itm->first, iim->first, imm->first, itpm->first);
+          {
+            switch(itpm->first)
+            {
+              case CtrlGUIMessage::PAINT_UPDATE:
+              break;
+
+              case CtrlGUIMessage::ADDED:
+              case CtrlGUIMessage::DELETED:
+                if(itm->first)
+                  emit controllerChanged(itm->first, iim->first, imm->first, itpm->first);
+              break;
+
+              case CtrlGUIMessage::NON_CTRL_CHANGED:
+                switch(iim->first)
+                {
+                  case NCTL_TRACK_MUTE:
+                    emit songChanged(SongChangedStruct_t(SC_MUTE));
+                  break;
+                  case NCTL_TRACK_SOLO:
+                    emit songChanged(SongChangedStruct_t(SC_SOLO));
+                  break;
+
+                  case NCTL_TRACKPROP_TRANSPOSE:
+                  case NCTL_TRACKPROP_DELAY:
+                  case NCTL_TRACKPROP_LENGTH:
+                  case NCTL_TRACKPROP_VELOCITY:
+                  case NCTL_TRACKPROP_COMPRESS:
+                  break;
+                }
+              break;
+            }
+          }
         }
       }
 
-      // Emit the messages which do not have parameters.
-      const CtrlGUIMessageTypeMap& tpm = ts._typeMap;
-      for(ciCtrlGUIMessageTypeMap itpm = tpm.cbegin(); itpm != tpm.cend(); ++itpm)
+      // Emit the messages which do not have parameters (such as paint update).
+      if(itm->first)
       {
-        const CtrlGUIMessage::Type& tp = *itpm;
-        emit controllerChanged(itm->first, 0, 0, tp);
+        const CtrlGUIMessageTypeMap& tpm = ts._typeMap;
+        for(ciCtrlGUIMessageTypeMap itpm = tpm.cbegin(); itpm != tpm.cend(); ++itpm)
+        {
+          const CtrlGUIMessage::Type& tp = *itpm;
+          emit controllerChanged(itm->first, 0, 0, tp);
+        }
       }
     }
   }
@@ -5336,5 +5415,7 @@ void Song::setCycleMode(int val) {
     _cycleMode = val;
     emit cycleModeChanged(val);
 }
+
+MidiAudioCtrlMap* Song::midiAssignments() { return &_midiAssignments; }
 
 } // namespace MusECore

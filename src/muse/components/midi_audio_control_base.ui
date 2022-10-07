@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>367</width>
-    <height>156</height>
+    <width>479</width>
+    <height>281</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -171,6 +171,36 @@
         </size>
        </property>
       </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QGroupBox" name="assignTypeGroupBox">
+       <property name="title">
+        <string>Assignment Type</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QRadioButton" name="typeTrackButton">
+          <property name="text">
+           <string>Track: Assign to this track only</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="typeSongButton">
+          <property name="text">
+           <string>Song: Assign to any tracks whenever they are selected</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>

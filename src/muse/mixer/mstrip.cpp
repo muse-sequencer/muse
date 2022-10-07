@@ -91,7 +91,33 @@ const int MidiStrip::rackFrameWidth = 1;
 //   MidiComponentRack
 //---------------------------------------------------------
 
-MidiComponentRack::MidiComponentRack(MusECore::MidiTrack* track, int id, QWidget* parent, Qt::WindowFlags f) 
+// Translate the component property id to a non controller id.
+MusECore::NonControllerId MidiComponentRack::property2NonControllerId(MidiComponentRack::MStripComponentProperties id)
+{
+  switch(id)
+  {
+    case mStripTranspProperty:
+      return MusECore::NCTL_TRACKPROP_TRANSPOSE;
+    break;
+    case mStripDelayProperty:
+      return MusECore::NCTL_TRACKPROP_DELAY;
+    break;
+    case mStripLenProperty:
+      return MusECore::NCTL_TRACKPROP_LENGTH;
+    break;
+    case mStripVeloProperty:
+      return MusECore::NCTL_TRACKPROP_VELOCITY;
+    break;
+    case mStripComprProperty:
+      return MusECore::NCTL_TRACKPROP_COMPRESS;
+    break;
+    default:
+    break;
+  }
+  return MusECore::NCTL_UNKNOWN_ID;
+}
+
+MidiComponentRack::MidiComponentRack(MusECore::MidiTrack* track, int id, QWidget* parent, Qt::WindowFlags f)
   : ComponentRack(id, parent, f), _track(track)
 { 
   
@@ -283,8 +309,8 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
         case mStripTranspProperty:
         {
           val = _track->transposition;
-          min = -127;
-          max = 127;
+          min = MusECore::MidiTrack::transpositionMin;
+          max = MusECore::MidiTrack::transpositionMax;
           if(desc->_label.isEmpty())
             desc->_label = tr("Transpose");
           if(desc->_toolTipText.isEmpty())
@@ -297,8 +323,8 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
         case mStripDelayProperty:
         {
           val = _track->delay;
-          min = -1000;
-          max = 1000;
+          min = MusECore::MidiTrack::delayMin;
+          max = MusECore::MidiTrack::delayMax;
           if(desc->_label.isEmpty())
             desc->_label = tr("Delay");
           if(desc->_toolTipText.isEmpty())
@@ -311,8 +337,8 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
         case mStripLenProperty:
         {
           val = _track->len;
-          min = 25;
-          max = 200;
+          min = MusECore::MidiTrack::lenMin;
+          max = MusECore::MidiTrack::lenMax;
           if(desc->_label.isEmpty())
             desc->_label = tr("Length");
           if(desc->_toolTipText.isEmpty())
@@ -325,8 +351,8 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
         case mStripVeloProperty:
         {
           val = _track->velocity;
-          min = -127;
-          max = 127;
+          min = MusECore::MidiTrack::velocityMin;
+          max = MusECore::MidiTrack::velocityMax;
           if(desc->_label.isEmpty())
             desc->_label = tr("Velocity");
           if(desc->_toolTipText.isEmpty())
@@ -343,8 +369,8 @@ void MidiComponentRack::newComponent( ComponentDescriptor* desc, const Component
         case mStripComprProperty:
         {
           val = _track->compression;
-          min = 25;
-          max = 200;
+          min = MusECore::MidiTrack::compressionMin;
+          max = MusECore::MidiTrack::compressionMax;
           if(desc->_label.isEmpty())
             desc->_label = tr("Compress");
           if(desc->_toolTipText.isEmpty())
@@ -1161,9 +1187,12 @@ void MidiComponentRack::propertyReleased(double val, int id)
   emit componentReleased(propertyComponent, val, id);
 }
 
-void MidiComponentRack::propertyRightClicked(QPoint, int)
+void MidiComponentRack::propertyRightClicked(QPoint p, int id)
 {
-  
+  // Translate the component property id to a midi assign id.
+  MusECore::NonControllerId ncid = property2NonControllerId(MStripComponentProperties(id));
+  if(ncid != MusECore::NCTL_UNKNOWN_ID)
+    MusEGlobal::song->execAutomationCtlPopup(_track, p, MusECore::MidiAudioCtrlStruct::NonAudioControl, ncid);
 }
 
 void MidiComponentRack::labelPropertyPressed(QPoint p, int id, Qt::MouseButtons /*buttons*/, Qt::KeyboardModifiers keys)
@@ -1717,12 +1746,14 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
           _recMonitor->setWhatsThis(tr("Pass input through to output"));
           _recMonitor->setStatusTip(tr("Input monitor: Pass input through to output."));
           _recMonitor->setChecked(t->recMonitor());
+          _recMonitor->setContextMenuPolicy(Qt::CustomContextMenu);
           connect(_recMonitor, SIGNAL(toggled(bool)), SLOT(recMonitorToggled(bool)));
           bottomLayout->addWidget(_recMonitor, 0, 0, 1, 1);
       } else {
           QPushButton *recMonitorx = new QPushButton(this);
           recMonitorx->setIcon(*monitorOnSVGIcon);
           recMonitorx->setEnabled(false);
+          recMonitorx->setContextMenuPolicy(Qt::CustomContextMenu);
           bottomLayout->addWidget(recMonitorx, 0, 0, 1, 1);
       }
 
@@ -1733,6 +1764,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       record->setCheckable(true);
       record->setToolTip(tr("Record arm"));
       record->setChecked(track->recordFlag());
+      record->setContextMenuPolicy(Qt::CustomContextMenu);
       connect(record, SIGNAL(toggled(bool)), SLOT(recordToggled(bool)));
       bottomLayout->addWidget(record, 0, 1, 1, 1);
 
@@ -1740,12 +1772,16 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       mute  = new QPushButton(this);
       mute->setIcon(*muteStateSVGIcon);
       mute->setFocusPolicy(Qt::NoFocus);
-      mute->setCheckable(true);
+      mute->setCheckable(!MusEGlobal::config.momentaryMute);
       mute->setToolTip(tr("Mute or proxy mute"));
       mute->setStatusTip(tr("Mute or proxy mute. Connected tracks are 'phantom' muted."));
-      mute->setChecked(track->mute());
+      mute->setDown(track->mute());
       updateMuteIcon();
       connect(mute, SIGNAL(toggled(bool)), SLOT(muteToggled(bool)));
+      connect(mute, &QPushButton::pressed, [this]() { mutePressed(); } );
+      connect(mute, &QPushButton::released, [this]() { muteReleased(); } );
+      mute->setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(mute, &QPushButton::customContextMenuRequested, [this](const QPoint p) { muteContextMenuReq(p); } );
       bottomLayout->addWidget(mute, 1, 0, 1, 1);
 
 //      solo  = new IconButton(soloOnSVGIcon, soloOffSVGIcon, soloAndProxyOnSVGIcon, soloProxyOnSVGIcon, false, true);
@@ -1755,12 +1791,16 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       solo->setToolTip(tr("Solo or proxy solo"));
       solo->setStatusTip(tr("Solo or proxy solo. Connected tracks are 'phantom' soloed. Press F1 for help."));
       solo->setFocusPolicy(Qt::NoFocus);
-      solo->setCheckable(true);
+      solo->setCheckable(!MusEGlobal::config.momentarySolo);
       if (track->internalSolo())
         solo->setIcon(*soloAndProxyOnSVGIcon);
       //      solo->setIconSetB(track->internalSolo());
-      solo->setChecked(track->solo());
+      solo->setDown(track->solo());
       connect(solo, SIGNAL(toggled(bool)), SLOT(soloToggled(bool)));
+      connect(solo, &QPushButton::pressed, [this]() { soloPressed(); } );
+      connect(solo, &QPushButton::released, [this]() { soloReleased(); } );
+      solo->setContextMenuPolicy(Qt::CustomContextMenu);
+      connect(solo, &QPushButton::customContextMenuRequested, [this](const QPoint p) { soloContextMenuReq(p); } );
       bottomLayout->addWidget(solo, 1, 1, 1, 1);
 
 //      off  = new IconButton(trackOffSVGIcon, trackOnSVGIcon, 0, 0, false, true);
@@ -1771,6 +1811,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       off->setCheckable(true);
       off->setToolTip(tr("Track off"));
       off->setChecked(track->off());
+      off->setContextMenuPolicy(Qt::CustomContextMenu);
       connect(off, SIGNAL(toggled(bool)), SLOT(offToggled(bool)));
       bottomLayout->addWidget(off, 3, 0, 1, 2);
 
@@ -1785,7 +1826,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       autoType->setFocusPolicy(Qt::NoFocus);
       autoType->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
       autoType->setEnabled(false);
-      
+
       // Removed by T356. 
       // Disabled for now. There is no midi automation mechanism yet...
       //autoType->addAction(tr("Off"), AUTO_OFF);
@@ -2252,6 +2293,21 @@ void MidiStrip::configChanged()
       setupComponentTabbing();
   }
 
+  if(mute)
+  {
+    // TODO If switching to momentary, un-mute any already muted tracks!
+    mute->blockSignals(true);
+    mute->setCheckable(!MusEGlobal::config.momentaryMute);
+    mute->blockSignals(false);
+  }
+  if(solo)
+  {
+    // TODO If switching to momentary, un-solo any already soloed tracks!
+    solo->blockSignals(true);
+    solo->setCheckable(!MusEGlobal::config.momentarySolo);
+    solo->blockSignals(false);
+  }
+
   // Set the whole strip's font, except for the label.
   if(font() != MusEGlobal::config.fonts[1])
   {
@@ -2317,7 +2373,7 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       {
       if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
-            mute->setChecked(track->mute());
+            mute->setDown(track->mute());
             mute->blockSignals(false);
             updateMuteIcon();
             updateOffState();
@@ -2325,16 +2381,19 @@ void MidiStrip::songChanged(MusECore::SongChangedStruct_t val)
       if (solo && (val & (SC_SOLO | SC_ROUTE))) 
       {
             solo->blockSignals(true);
-            solo->setChecked(track->solo());
+            solo->setDown(track->solo());
             solo->blockSignals(false);
 //            solo->setIconSetB(track->internalSolo());
             if (track->internalSolo()) {
-                if (solo->isChecked())
+                if (solo->isDown())
                     solo->setIcon(*soloAndProxyOnSVGIcon);
                 else
                     solo->setIcon(*soloProxyOnAloneSVGIcon);
             } else {
-                solo->setIcon(*soloStateSVGIcon);
+                if(solo->isDown())
+                  solo->setIcon(*soloOnSVGIcon);
+                else
+                  solo->setIcon(*soloOffSVGIcon);
             }
             updateMuteIcon();
       }

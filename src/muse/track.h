@@ -457,6 +457,20 @@ class MidiTrack : public Track {
       int len;
       int compression;
 
+      static int transpositionMin;
+      static int transpositionMax;
+      static int velocityMin;
+      static int velocityMax;
+      static int delayMin;
+      static int delayMax;
+      static int lenMin;
+      static int lenMax;
+      static int compressionMin;
+      static int compressionMax;
+      static void propertyRange(NonControllerId id, double* min, double* max);
+      static double midi2PropertyValue(NonControllerId id, const MidiAudioCtrlStruct* mapper, int midi_ctlnum, int midi_val);
+
+
       // Called from gui thread only.
       virtual bool setRecordFlag1(bool) { return canRecord(); }
       // Called from audio thread only.

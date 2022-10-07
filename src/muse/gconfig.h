@@ -403,6 +403,8 @@ struct GlobalConfigValues {
       bool preferKnobsVsSliders; // Whether to prefer the use of knobs over sliders, esp in mixer.
       bool showControlValues; // Whether to show the value along with label in small controls, esp in mixer.
       bool monitorOnRecord;  // Whether to automatically monitor on record arm.
+      bool momentaryMute; // Whether the track mute buttons toggle or are momentary or toggle.
+      bool momentarySolo; // Whether the track solo buttons toggle or are momentary or toggle.
       bool lineEditStyleHack; // Force line edit widgets to draw a frame at small sizes. Some styles refuse to draw the frame.
       bool preferMidiVolumeDb; // Prefer midi volume as decibels instead of 0-127.
       // NOTE: The following are similar to the paste dialog function options, stored separately.

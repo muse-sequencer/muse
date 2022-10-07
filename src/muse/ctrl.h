@@ -174,18 +174,33 @@ typedef CtrlRecList::const_iterator ciCtrlRec;
 
 //---------------------------------------------------------
 //   MidiAudioCtrlMap
-//    Describes midi control of audio controllers
+//    Describes midi control of audio controllers or other
+//     variables (such as track mute/solo and track properties
+//     such as transpose).
 //---------------------------------------------------------
 
 class MidiAudioCtrlStruct {
-        int _audio_ctrl_id;
+  public:
+        // Describes the meaning of the id member.
+        // It might be audio controller IDs, or non audio controller IDs
+        //  such as track mute, solo etc. (which are found in globaldefs.h)
+        enum IdType { AudioControl, NonAudioControl };
+  private:
+        IdType _idType;
+        int _id;
+        // Optional track used with AudioControl for example. Can be NULL.
+        Track* _track;
   public:
         MidiAudioCtrlStruct();
-        MidiAudioCtrlStruct(int audio_ctrl_id);
-        int audioCtrlId() const;
-        void setAudioCtrlId(int actrl);
+        MidiAudioCtrlStruct(IdType idType, int id, Track* track /*= nullptr*/);
+        int id() const;
+        void setId(int id);
+        IdType idType() const;
+        void setIdType(IdType idType);
+        Track* track() const;
+        void setTrack(Track* track);
       };
-      
+
 typedef uint32_t MidiAudioCtrlMap_idx_t;
 
 typedef std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> >::iterator iMidiAudioCtrlMap;
@@ -203,13 +218,17 @@ class AudioMidiCtrlStructMap : public std::vector<iMidiAudioCtrlMap> {
 // The index is a hash of port, chan, and midi control number.     
 class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct, std::less<MidiAudioCtrlMap_idx_t> > {
   public:
-      MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num) const; 
-      void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num) const; 
+      static MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num);
+      static void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num);
+      // Add will not replace if found. TODO Decide, do we want to?
       iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, const MidiAudioCtrlStruct& amcs); 
-      void find_audio_ctrl_structs(int audio_ctrl_id, AudioMidiCtrlStructMap* amcs); // const;
-      void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, int audio_ctrl_id);
-      void write(int level, Xml& xml) const;
-      void read(Xml& xml);
+      // Track can be NULL.
+      void find_audio_ctrl_structs(
+        MidiAudioCtrlStruct::IdType type, int id,
+        const Track* track, bool anyTracks, bool includeNullTracks, AudioMidiCtrlStructMap* amcs); // const;
+      void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, MidiAudioCtrlStruct::IdType type, int id);
+      void write(int level, Xml& xml, const Track* track /*= nullptr*/) const; // TODO Resinstate default after testing
+      void read(Xml& xml, Track* track /*= nullptr*/); // TODO Resinstate default after testing
       };
 
 
@@ -368,7 +387,6 @@ typedef std::pair<iCtrlList, bool> CtrlListListInsertResult_t;
 
 class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
    private:
-      MidiAudioCtrlMap _midi_controls;  // For midi control of audio controllers.
    public:
       // Returns true if successfully added. Returns false if list already exists, or error.
       bool add(CtrlList* vl);
@@ -383,8 +401,6 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
       iCtrlList find(int id);
       ciCtrlList find(int id) const;
             
-      MidiAudioCtrlMap* midiControls();
-      
       double value(int ctrlId, unsigned int frame, bool cur_val_only = false,
                    unsigned int* nextFrame = nullptr, bool* nextFrameValid = nullptr) const;
       void updateCurValues(unsigned int frame);
@@ -547,7 +563,16 @@ typedef std::pair<iPasteCtrlTrackMap, bool> PasteCtrlTrackMapInsertResult;
 
 struct CtrlGUIMessage
 {
-    enum Type { PAINT_UPDATE, ADDED, DELETED };
+    enum Type {
+      // Requesting to repaint a track.
+      PAINT_UPDATE,
+      // A controller point was added.
+      ADDED,
+      // A controller point was deleted.
+      DELETED,
+      // A non controller (such as track mute/solo or track properties) was changed.
+      NON_CTRL_CHANGED
+    };
 
     Type _type;
     const Track* _track;
@@ -556,7 +581,7 @@ struct CtrlGUIMessage
     double _value;
 
     CtrlGUIMessage();
-    // Type UPDATE only requires the first two arguments whereas CHANGED can use all of them.
+    // Type PAINT_UPDATE only requires the first two arguments whereas the others can use all of them.
     CtrlGUIMessage(const Track* track, int id, unsigned int frame = 0, double value = 0.0, Type type = PAINT_UPDATE);
 };
 

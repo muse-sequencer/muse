@@ -185,6 +185,8 @@ void GlobalSettingsConfig::updateSettings()
       preferKnobsVsSlidersCheckBox->setChecked(MusEGlobal::config.preferKnobsVsSliders);
       showControlValuesCheckBox->setChecked(MusEGlobal::config.showControlValues);
       monitorOnRecordCheckBox->setChecked(MusEGlobal::config.monitorOnRecord);
+      momentaryMuteCheckBox->setChecked(MusEGlobal::config.momentaryMute);
+      momentarySoloCheckBox->setChecked(MusEGlobal::config.momentarySolo);
       lineEditStyleHackCheckBox->setChecked(MusEGlobal::config.lineEditStyleHack);
       showNoteNamesCheckBox->setChecked(MusEGlobal::config.showNoteNamesInPianoRoll);
       showNoteTooltipsCheckBox->setChecked(MusEGlobal::config.showNoteTooltips);
@@ -345,6 +347,8 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.preferKnobsVsSliders = preferKnobsVsSlidersCheckBox->isChecked();
       MusEGlobal::config.showControlValues = showControlValuesCheckBox->isChecked();
       MusEGlobal::config.monitorOnRecord = monitorOnRecordCheckBox->isChecked();
+      MusEGlobal::config.momentaryMute = momentaryMuteCheckBox->isChecked();
+      MusEGlobal::config.momentarySolo = momentarySoloCheckBox->isChecked();
       MusEGlobal::config.lineEditStyleHack = lineEditStyleHackCheckBox->isChecked();
       MusEGlobal::config.showNoteNamesInPianoRoll = showNoteNamesCheckBox->isChecked();
       MusEGlobal::config.showNoteTooltips = showNoteTooltipsCheckBox->isChecked();

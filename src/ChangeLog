@@ -1,3 +1,23 @@
+10.07.2022
+    * Midi assign and mixer overhaul, fixes: (Tim)
+    * New: Midi control assignment: Mute and Solo buttons can now be assigned to.
+      Note this does NOT mean that Mute and Solo have actual controller graphs,
+       it was decided against that. (A request from forums.)
+    * New: Midi control assignment: Two assignment types now available in the
+      Midi Control dialog: Track, which dedicates assignments to a single track,
+       and Song which assigns to ANY tracks when they are selected.
+      Availability of this new option varies with selected target control,
+       for example only Volume and Pan audio controllers can be set to Song
+       assignment type because they are the only ones common to ALL audio tracks,
+       and other controllers mean different things to different tracks.
+    * New: Momentary Mute and Solo buttons! Enable them in Global Settings or via
+       the mixer or strip menus.
+      Mixer: Fixed bug: When empty would not add any new tracks.
+      Mixer: Ensure mixer is always large enough to show 'Create' and 'View' menus.
+      Mixer strips: Code cleanup: Replaced Strip::mousePress/Release/MoveEvent
+       with track name label handling and context event hadling because all the Qt
+       standard controls on the strip were passing events to the strip. Rewrote
+       strip popup menus, most stuff moved into the mixer View menu.
 19.06.2022
     * MORE Complete audio automation graphs redesign (Part 2): (Tim)
     * New: Audio automation graphs: Choice of DISCRETE or INTERPOLATED points.

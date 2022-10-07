@@ -77,6 +77,9 @@ class MidiComponentRack : public ComponentRack
         mStripComprProperty
       };
       
+      // Translate the component property id to a non controller id.
+      static MusECore::NonControllerId property2NonControllerId(MStripComponentProperties id);
+
   protected:
     MusECore::MidiTrack* _track;
     
