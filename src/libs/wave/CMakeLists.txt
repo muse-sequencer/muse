@@ -32,7 +32,8 @@ file (GLOB wave_source_files
 ## Define target
 ##
 # add_library(muse_time_stretch_module ${MODULES_BUILD}
-add_library(wave_module SHARED
+#add_library(wave_module SHARED
+add_library(wave_module ${MODULES_BUILD}
       ${wave_source_files}
       )
 
