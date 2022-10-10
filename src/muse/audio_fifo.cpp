@@ -224,14 +224,21 @@ bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_
               free(b->buffer);
               b->buffer = 0;
             }
-
+#ifdef _WIN32
+            b->buffer = (float *) _aligned_malloc(16, sizeof(float *) * n);
+            if(b->buffer == nullptr)
+            {
+               fprintf(stderr, "Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+               return true;
+            }
+#else
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
               fprintf(stderr, "Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
               return true;
             }
-
+#endif
             b->maxSize = n;
             }
       if(!b->buffer)
