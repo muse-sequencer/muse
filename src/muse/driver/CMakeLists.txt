@@ -41,7 +41,12 @@ if (HAVE_RTAUDIO)
      )
 endif (HAVE_RTAUDIO)
 
-
+if (WIN32)
+       file (GLOB driver_source_files
+       ${driver_source_files}
+       qttimer.cpp
+     )
+endif (WIN32)
 ##
 ## Define target
 ##
