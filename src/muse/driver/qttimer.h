@@ -38,7 +38,9 @@ namespace MusECore {
 //---------------------------------------------------------
 
 class InnerTimer : public QObject {
+  #ifdef __linux__
   Q_OBJECT
+  #endif
   int writePipe;
   long int tickCount;
   QBasicTimer timer;
