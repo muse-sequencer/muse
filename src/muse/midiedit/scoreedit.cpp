@@ -46,7 +46,7 @@
 
 #include <iostream>
 #include <sstream>
-using namespace std;
+using std::cout, std::endl, std::cerr, std::ostringstream;
 
 #include "app.h"
 #include "xml.h"
