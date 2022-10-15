@@ -96,9 +96,9 @@ file (GLOB awl_source_files
 ## Define target
 ##
 
-# Always build this shared now. It is no longer linked into the main app.
-# add_library ( awl ${MODULES_BUILD}
-add_library ( awl SHARED
+# Not always dynamic linking is good eg. Windows
+# add_library ( awl SHARED
+add_library ( awl ${MODULES_BUILD}
       ${awl_source_files}
       ${awl_mocs}
       )

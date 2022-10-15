@@ -32,7 +32,8 @@ file (GLOB time_stretch_source_files
 ## Define target
 ##
 # add_library(muse_time_stretch_module ${MODULES_BUILD}
-add_library(time_stretch_module SHARED
+#add_library(time_stretch_module SHARED
+add_library(time_stretch_module ${MODULES_BUILD}
       ${time_stretch_source_files}
       )
 
