@@ -1,3 +1,5 @@
+23.10.2022
+    * Changed project create default to make a sub directory (rj)
 10.07.2022
     * Midi assign and mixer overhaul, fixes: (Tim)
     * New: Midi control assignment: Mute and Solo buttons can now be assigned to.

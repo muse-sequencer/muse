@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>564</width>
-    <height>407</height>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -155,6 +155,9 @@
        </property>
        <property name="text">
         <string>&amp;Create project subfolder</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
