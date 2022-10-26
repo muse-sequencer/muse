@@ -2362,7 +2362,7 @@ void MusE::startEditor(MusECore::PartList* pl, int type)
       {
       switch (type) {
             case 0: startPianoroll(pl, true); break;
-            case 1: startListEditor(pl); break;
+            case 1: startListEditor(pl, true); break;
             case 3: startDrumEditor(pl, true); break;
             case 4: startWaveEditor(pl); break;
             }
@@ -2562,10 +2562,11 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
     if (!newwin && findOpenListEditor(pl))
         return;
 
-    QDockWidget* dock = new QDockWidget("List Editor", this);
+    //QDockWidget* dock = new QDockWidget("List Editor", this);
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
-    dock->setWidget(listEditor);
+    listEditor->show();
+    //dock->setWidget(listEditor);
 
     {
         int bar1, bar2, xx;
@@ -2574,15 +2575,15 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
         MusEGlobal::sigmap.tickValues(p->tick(), &bar1, &xx, &x);
         MusEGlobal::sigmap.tickValues(p->tick() + p->lenTick(), &bar2, &xx, &x);
 
-        dock->setWindowTitle("Event List <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
+        //dock->setWindowTitle("Event List <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
     }
 
-    dock->setObjectName(dock->windowTitle());
+    //dock->setObjectName(dock->windowTitle());
 
-    addDockWidget(Qt::BottomDockWidgetArea, dock);
+    //addDockWidget(Qt::BottomDockWidgetArea, dock);
 //    addTabbedDock(Qt::BottomDockWidgetArea, dock);
 
-    dock->setAttribute(Qt::WA_DeleteOnClose);
+    //dock->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
 }
@@ -3574,7 +3575,7 @@ again:
             break;
         case MusEGui::TopWin::PIANO_ROLL:
         case MusEGui::TopWin::SCORE:
-            //                  case MusEGui::TopWin::LISTE:
+        case MusEGui::TopWin::LISTE:
         case MusEGui::TopWin::DRUM:
         case MusEGui::TopWin::MASTER:
         case MusEGui::TopWin::WAVE:
