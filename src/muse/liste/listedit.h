@@ -52,7 +52,7 @@ namespace MusEGui {
 //   ListEdit
 //---------------------------------------------------------
 
-class ListEdit : public QWidget {
+class ListEdit : public MidiEditor {
       Q_OBJECT
     
       QTreeWidget* liste;
@@ -93,7 +93,7 @@ class ListEdit : public QWidget {
       void focusCanvas();
 
    public:
-      ListEdit(MusECore::PartList*, QWidget* parent = 0);
+      ListEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
       ~ListEdit();
       MusECore::PartList* parts()            { return _pl;  }
       const MusECore::PartList* parts() const { return _pl;  }

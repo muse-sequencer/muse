@@ -486,8 +486,8 @@ QString EventListItem::text(int col) const
 //   ListEdit
 //---------------------------------------------------------
 
-ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
-    : QWidget(parent)
+ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
+    : MidiEditor(TopWin::LISTE, 0, pl, parent, name)
 {
     setObjectName("ListEdit");
     _isDeleting = false;
@@ -634,7 +634,7 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
     //    Rest
     //---------------------------------------------------
 
-    QGridLayout* mainGrid = new QGridLayout(this);
+    //QGridLayout* mainGrid = new QGridLayout(this);
     mainGrid->setRowStretch(1, 100);
     mainGrid->setColumnStretch(0, 100);
     mainGrid->addWidget(tb, 0, 0);
