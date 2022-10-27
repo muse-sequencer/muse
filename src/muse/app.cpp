@@ -2471,6 +2471,7 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool ne
 
     MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(pianoroll);
+    pianoroll->setOpenInNewWin(newwin);
     pianoroll->show();
     connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
@@ -2565,6 +2566,7 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
     //QDockWidget* dock = new QDockWidget("List Editor", this);
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
+    listEditor->setOpenInNewWin(newwin);
     listEditor->show();
     //dock->setWidget(listEditor);
 
@@ -2668,6 +2670,7 @@ void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls, bool n
 
     MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(drumEditor);
+    drumEditor->setOpenInNewWin(newwin);
     drumEditor->show();
     connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
@@ -2696,6 +2699,7 @@ void MusE::startWaveEditor(MusECore::PartList* pl, bool newwin)
     MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
     toplevels.push_back(waveEditor);
     waveEditor->show();
+    waveEditor->setOpenInNewWin(newwin);
     connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
     connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     updateWindowMenu();
