@@ -95,6 +95,8 @@ class TopWin : public QMainWindow
       virtual void addToolBar(Qt::ToolBarArea, QToolBar*);
       
       void resize(int w, int h);
+      
+      void setOpenInNewWin(bool newwin);
 //      void resize(const QSize&);
  
 //      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
