@@ -1,3 +1,6 @@
+10.11.2022
+    - Fix issue 1088: Cannot copy/paste parts. Fix previous 9/24/22 fix. (Tim)
+      Was slight problem in parseArrangerPasteXml().
 23.10.2022
     * Changed project create default to make a sub directory (rj)
 10.07.2022

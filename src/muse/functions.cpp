@@ -2450,13 +2450,15 @@ void parseArrangerPasteXml(
                         {
                           if(minPos && (minPartPosValid || minCtrlPosValid))
                           {
+                            bool haveMinCtrlPos = false;
                             if(pctm && minCtrlPosValid)
                             {
                               *minPos = MusECore::Pos::convert(minCtrlPos, MusECore::Pos::FRAMES, MusECore::Pos::TICKS);
+                              haveMinCtrlPos = true;
                               if(minPosValid)
                                 *minPosValid = true;
                             }
-                            if(partList && minPartPosValid && minPartPos <= *minPos)
+                            if(partList && minPartPosValid && (!haveMinCtrlPos || minPartPos < *minPos))
                             {
                               *minPos = minPartPos;
                               if(minPosValid)
