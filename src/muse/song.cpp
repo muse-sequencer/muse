@@ -3942,6 +3942,7 @@ bool Song::collectAudioCtrlPasteModeOps(
           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyAudioCtrlValList,
             // Track.
             t,
+            ctrlId,
             // List of items to erase.
             eraseCtrlList,
             // List of items to add.
@@ -5396,7 +5397,7 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
       erased_list_items = nullptr;
     }
     if(added_list_items || erased_list_items)
-      opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, atrack, erased_list_items, added_list_items));
+      opsr.push_back(UndoOp(UndoOp::ModifyAudioCtrlValList, atrack, id, erased_list_items, added_list_items));
   }
 
   // Done with the recorded automation event list. Clear it.

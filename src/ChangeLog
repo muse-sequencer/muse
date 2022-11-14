@@ -1,3 +1,6 @@
+14.11.2022
+    - Automation READ mode: Play: Re-enable graph streams when controls released. (Tim)
+      Also re-enabe the streams if the graph is edited.
 10.11.2022
     - Fix issue 1088: Cannot copy/paste parts. Fix previous 9/24/22 fix. (Tim)
       Was slight problem in parseArrangerPasteXml().

@@ -6605,7 +6605,7 @@ void PartCanvas::setSelectedAutomationMode(MusECore::Undo& undo, MusECore::CtrlL
       if(eraseCtrlList || addCtrlList)
       {
         undo.push_back(MusECore::UndoOp(
-          MusECore::UndoOp::ModifyAudioCtrlValList, track, eraseCtrlList, addCtrlList));
+          MusECore::UndoOp::ModifyAudioCtrlValList, track, ctrlId, eraseCtrlList, addCtrlList));
       }
     }
   }

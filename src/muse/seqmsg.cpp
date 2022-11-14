@@ -344,7 +344,7 @@ void Audio::msgClearControllerEvents(AudioTrack* node, int acid)
     return;
   }
 
-  MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlValList, node, erased_list_items, nullptr));
+  MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlValList, node, acid, erased_list_items, nullptr));
 }
 
 //---------------------------------------------------------
@@ -415,7 +415,7 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, unsigned int frame
     return;
   }
 
-  MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlValList, node, erased_list_items, nullptr));
+  MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlValList, node, acid, erased_list_items, nullptr));
 }
 
 //---------------------------------------------------------

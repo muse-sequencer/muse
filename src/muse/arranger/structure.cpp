@@ -314,7 +314,7 @@ void adjustAutomation(Undo &operations, Track *track, unsigned int lpos, unsigne
       }
       else
       {
-        auto undoOp = UndoOp( UndoOp::ModifyAudioCtrlValList, audioTrack, removedEvents, readdedEvents);
+        auto undoOp = UndoOp( UndoOp::ModifyAudioCtrlValList, audioTrack, controllerList.second->id(), removedEvents, readdedEvents);
         operations.push_back(undoOp);
       }
     }

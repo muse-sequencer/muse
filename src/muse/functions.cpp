@@ -2756,7 +2756,7 @@ void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToR
   {
     //MusEGlobal::song->endAudioCtrlMoveMode(operations);
     operations.push_back(MusECore::UndoOp(
-      MusECore::UndoOp::ModifyAudioCtrlValList, track, eraseCtrlList, addCtrlList));
+      MusECore::UndoOp::ModifyAudioCtrlValList, track, ctrlId, eraseCtrlList, addCtrlList));
   }
 
   //MusECore::Pos p(endPos, true);
@@ -2926,7 +2926,7 @@ void processArrangerPasteObjects(
             if(eraseCtrlList || addCtrlList)
             {
               operations.push_back(MusECore::UndoOp(
-                MusECore::UndoOp::ModifyAudioCtrlValList, at, eraseCtrlList, addCtrlList));
+                MusECore::UndoOp::ModifyAudioCtrlValList, at, ctrlId, eraseCtrlList, addCtrlList));
             }
           }
         }

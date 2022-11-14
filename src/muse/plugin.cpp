@@ -4266,7 +4266,7 @@ void PluginGui::sliderReleased(double /*val*/, int param)
         track->stopAutoRecord(id, val);
     }
 
-    if (at == MusECore::AUTO_OFF ||
+    if (at == MusECore::AUTO_OFF || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
         at == MusECore::AUTO_TOUCH)
       plugin->enableController(param, true);
 
@@ -4325,7 +4325,7 @@ void PluginGui::switchReleased(int param)
         at = track->automationType();
 
       // don't enable controller until transport stopped.
-      if ((at == MusECore::AUTO_OFF) ||
+      if ((at == MusECore::AUTO_OFF) || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
           (at == MusECore::AUTO_TOUCH && !MusEGlobal::audio->isPlaying()) )
         plugin->enableController(param, true);
 
@@ -4942,7 +4942,7 @@ void PluginGui::guiParamReleased(unsigned long int idx)
         at = track->automationType();
 
       // Special for switch - don't enable controller until transport stopped.
-      if ((at == MusECore::AUTO_OFF) ||
+      if ((at == MusECore::AUTO_OFF) || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
           (at == MusECore::AUTO_TOUCH && (type != GuiWidgets::CHECKBOX ||
                                 !MusEGlobal::audio->isPlaying()) ) )
         plugin->enableController(param, true);
@@ -5052,7 +5052,7 @@ void PluginGui::guiSliderReleased(double /*val*/, unsigned long int idx)
         track->stopAutoRecord(id, val);
       }
 
-      if (at == MusECore::AUTO_OFF ||
+      if (at == MusECore::AUTO_OFF || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
           at == MusECore::AUTO_TOUCH)
         plugin->enableController(param, true);
 
