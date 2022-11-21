@@ -579,7 +579,8 @@ void AudioComponentRack::controllerReleased(double v, int id)
     cw._pressed = false;
   }
   _track->stopAutoRecord(id, val);
-  if(at == MusECore::AUTO_OFF || at == MusECore::AUTO_TOUCH)
+
+  if(at == MusECore::AUTO_OFF || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) || at == MusECore::AUTO_TOUCH)
   {
     DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
     _track->enableController(id, true);
@@ -1284,7 +1285,8 @@ void AudioStrip::volumeReleased(double val, int id)
       MusECore::AutomationType atype = at->automationType();
       DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", volume);
       at->stopAutoRecord(id, volume);
-      if(atype == MusECore::AUTO_OFF || atype == MusECore::AUTO_TOUCH)
+
+      if(atype == MusECore::AUTO_OFF || (atype == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) || atype == MusECore::AUTO_TOUCH)
       {
         DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
         at->enableController(id, true);

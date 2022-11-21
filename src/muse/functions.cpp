@@ -2450,13 +2450,15 @@ void parseArrangerPasteXml(
                         {
                           if(minPos && (minPartPosValid || minCtrlPosValid))
                           {
+                            bool haveMinCtrlPos = false;
                             if(pctm && minCtrlPosValid)
                             {
                               *minPos = MusECore::Pos::convert(minCtrlPos, MusECore::Pos::FRAMES, MusECore::Pos::TICKS);
+                              haveMinCtrlPos = true;
                               if(minPosValid)
                                 *minPosValid = true;
                             }
-                            if(partList && minPartPosValid && minPartPos <= *minPos)
+                            if(partList && minPartPosValid && (!haveMinCtrlPos || minPartPos < *minPos))
                             {
                               *minPos = minPartPos;
                               if(minPosValid)
@@ -2754,7 +2756,7 @@ void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToR
   {
     //MusEGlobal::song->endAudioCtrlMoveMode(operations);
     operations.push_back(MusECore::UndoOp(
-      MusECore::UndoOp::ModifyAudioCtrlValList, track, eraseCtrlList, addCtrlList));
+      MusECore::UndoOp::ModifyAudioCtrlValList, track, ctrlId, eraseCtrlList, addCtrlList));
   }
 
   //MusECore::Pos p(endPos, true);
@@ -2924,7 +2926,7 @@ void processArrangerPasteObjects(
             if(eraseCtrlList || addCtrlList)
             {
               operations.push_back(MusECore::UndoOp(
-                MusECore::UndoOp::ModifyAudioCtrlValList, at, eraseCtrlList, addCtrlList));
+                MusECore::UndoOp::ModifyAudioCtrlValList, at, ctrlId, eraseCtrlList, addCtrlList));
             }
           }
         }

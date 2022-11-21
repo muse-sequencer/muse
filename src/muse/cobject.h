@@ -54,7 +54,7 @@ class TopWin : public QMainWindow
       Q_OBJECT
 
    public:
-      enum ToplevelType { PIANO_ROLL=0, DRUM, MASTER, WAVE, SCORE, ARRANGER, // no gaps in the enum!
+      enum ToplevelType { PIANO_ROLL=0, DRUM, LISTE, MASTER, WAVE, SCORE, ARRANGER, // no gaps in the enum!
 #ifdef PATCHBAY
          M_PATCHBAY,
 #endif /* PATCHBAY */
@@ -95,6 +95,8 @@ class TopWin : public QMainWindow
       virtual void addToolBar(Qt::ToolBarArea, QToolBar*);
       
       void resize(int w, int h);
+      
+      void setOpenInNewWin(bool newwin);
 //      void resize(const QSize&);
  
 //      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];

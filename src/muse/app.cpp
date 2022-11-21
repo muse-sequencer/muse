@@ -2372,7 +2372,7 @@ void MusE::startEditor(MusECore::PartList* pl, int type)
       {
       switch (type) {
             case 0: startPianoroll(pl, true); break;
-            case 1: startListEditor(pl); break;
+            case 1: startListEditor(pl, true); break;
             case 3: startDrumEditor(pl, true); break;
             case 4: startWaveEditor(pl); break;
             }
@@ -2481,6 +2481,7 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool ne
 
     MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(pianoroll);
+    pianoroll->setOpenInNewWin(newwin);
     pianoroll->show();
     connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
@@ -2572,10 +2573,12 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
     if (!newwin && findOpenListEditor(pl))
         return;
 
-    QDockWidget* dock = new QDockWidget("List Editor", this);
+    //QDockWidget* dock = new QDockWidget("List Editor", this);
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
-    dock->setWidget(listEditor);
+    listEditor->setOpenInNewWin(newwin);
+    listEditor->show();
+    //dock->setWidget(listEditor);
 
     {
         int bar1, bar2, xx;
@@ -2584,15 +2587,15 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
         MusEGlobal::sigmap.tickValues(p->tick(), &bar1, &xx, &x);
         MusEGlobal::sigmap.tickValues(p->tick() + p->lenTick(), &bar2, &xx, &x);
 
-        dock->setWindowTitle("Event List <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
+        //dock->setWindowTitle("Event List <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
     }
 
-    dock->setObjectName(dock->windowTitle());
+    //dock->setObjectName(dock->windowTitle());
 
-    addDockWidget(Qt::BottomDockWidgetArea, dock);
+    //addDockWidget(Qt::BottomDockWidgetArea, dock);
 //    addTabbedDock(Qt::BottomDockWidgetArea, dock);
 
-    dock->setAttribute(Qt::WA_DeleteOnClose);
+    //dock->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
 }
@@ -2677,6 +2680,7 @@ void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls, bool n
 
     MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(drumEditor);
+    drumEditor->setOpenInNewWin(newwin);
     drumEditor->show();
     connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
@@ -2705,6 +2709,7 @@ void MusE::startWaveEditor(MusECore::PartList* pl, bool newwin)
     MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
     toplevels.push_back(waveEditor);
     waveEditor->show();
+    waveEditor->setOpenInNewWin(newwin);
     connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
     connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     updateWindowMenu();
@@ -3583,7 +3588,7 @@ again:
             break;
         case MusEGui::TopWin::PIANO_ROLL:
         case MusEGui::TopWin::SCORE:
-            //                  case MusEGui::TopWin::LISTE:
+        case MusEGui::TopWin::LISTE:
         case MusEGui::TopWin::DRUM:
         case MusEGui::TopWin::MASTER:
         case MusEGui::TopWin::WAVE:

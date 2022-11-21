@@ -2734,7 +2734,7 @@ void Strip::componentReleased(int type, double val, int id)
 
         MusECore::AutomationType atype = at->automationType();
         at->stopAutoRecord(a_ctlnum, a_val);
-        if(atype == MusECore::AUTO_OFF || atype == MusECore::AUTO_TOUCH)
+        if(atype == MusECore::AUTO_OFF || (atype == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||atype == MusECore::AUTO_TOUCH)
           at->enableController(a_ctlnum, true);
       }
     }

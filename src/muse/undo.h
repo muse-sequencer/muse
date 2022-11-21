@@ -120,6 +120,7 @@ struct UndoOp {
                   int _newPropValue;
                 };
             struct {
+                  int _audioCtrlIdModify;
                   CtrlList* _eraseCtrlList;
                   CtrlList* _addCtrlList;
                   // Optional separate list to hold items to be erased, exactly like _eraseCtrlList.
@@ -234,7 +235,7 @@ struct UndoOp {
       // Because of C++ ambiguity complaints, these arguments are in a funny order.
       // It seems our CtrlVal(double) constructor can be interpreted as CtrlVal(unsigned int) !
       UndoOp(UndoType type, int ctrlID, unsigned int frame, const CtrlVal& cv, const Track* track, bool noUndo = false);
-      UndoOp(UndoType type, const Track* track, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
+      UndoOp(UndoType type, const Track* track, int ctrlID, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
              CtrlList* recoverableEraseCtrlList = nullptr, CtrlList* recoverableAddCtrlList = nullptr,
              CtrlList* doNotEraseCtrlList = nullptr, bool noEndAudioCtrlMoveMode = false, bool noUndo = false);
 

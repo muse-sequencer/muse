@@ -2,6 +2,15 @@
     * Reworded quit and load new dialogs to make it clearer that
       data will be discarded (rj)
     * Dirty flag was not kept when cancelling the load New operation (rj)
+14.11.2022
+    - Automation READ mode: Play: Re-enable graph streams when controls released. (Tim)
+      Also re-enabe the streams if the graph is edited.
+10.11.2022
+    - Fix issue 1088: Cannot copy/paste parts. Fix previous 9/24/22 fix. (Tim)
+      Was slight problem in parseArrangerPasteXml().
+27.10.2022
+    * Fix open editor in tab or new window behavior
+    * Move List Editor from dock to window  
 23.10.2022
     * Changed project create default to make a sub directory (rj)
 10.07.2022

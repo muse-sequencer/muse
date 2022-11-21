@@ -2575,7 +2575,7 @@ UndoOp::UndoOp(UndoType type_, int ctrlID, unsigned int frame, const CtrlVal& cv
   _noUndo = noUndo;
 }
 
-UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
+UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, int ctrlID_, CtrlList* eraseCtrlList, CtrlList* addCtrlList,
                CtrlList* recoverableEraseCtrlList, CtrlList* recoverableAddCtrlList, CtrlList* doNotEraseCtrlList,
                bool noEndAudioCtrlMoveMode, bool noUndo)
 {
@@ -2585,6 +2585,7 @@ UndoOp::UndoOp(UndoOp::UndoType type_, const Track* track_, CtrlList* eraseCtrlL
   
   type = type_;
   track = track_;
+  _audioCtrlIdModify = ctrlID_;
   _eraseCtrlList = eraseCtrlList;
   _addCtrlList = addCtrlList;
   _doNotEraseCtrlList = doNotEraseCtrlList;
@@ -3160,11 +3161,7 @@ void Song::revertOperationGroup1(Undo& operations)
                         if(!i->track->isMidiTrack())
                         {
                           AudioTrack* at = static_cast<AudioTrack*>(const_cast<Track*>(i->track));
-                          // Take any id. At least one must be valid and they all should be the same.
-                          // TODO: Kind of awkward. Maybe store the id separately.
-                          const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() :
-                            (i->_recoverableEraseCtrlList ? i->_recoverableEraseCtrlList->id() :
-                            (i->_recoverableAddCtrlList ? i->_recoverableAddCtrlList->id() : i->_addCtrlList->id()));
+                          const int id = i->_audioCtrlIdModify;
                           iCtrlList icl = at->controller()->find(id);
                           if(icl != at->controller()->end())
                           {
@@ -3826,6 +3823,51 @@ void Song::revertOperationGroup3(Undo& operations)
                         // This also tells all connected models to begin/end reset.
                         MusEGlobal::globalRasterizer->setDivision(i->b);
                         break;
+
+                  // Re-enable any controllers so that the results can be seen.
+                  // TODO: This really should be done in the realtime operations stage.
+                  //       But we don't pass the track to that stage. It would need the track.
+                  //       Or make a separate EnableAudioController operations command,
+                  //        but that's one extra command clogging up the commands list for
+                  //        each one of these...
+                  case UndoOp::AddAudioCtrlVal:
+                  case UndoOp::DeleteAudioCtrlVal:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlIdAddDel, true);
+                    }
+                  break;
+                  case UndoOp::AddAudioCtrlValStruct:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlIdStruct, true);
+                    }
+                  break;
+                  case UndoOp::ModifyAudioCtrlVal:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlID, true);
+                    }
+                  break;
+                  case UndoOp::ModifyAudioCtrlValList:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlIdModify, true);
+                    }
+                  break;
+
                   default:
                         break;
                   }
@@ -4422,10 +4464,7 @@ void Song::executeOperationGroup1(Undo& operations)
                         if(!i->track->isMidiTrack())
                         {
                           AudioTrack* at = static_cast<AudioTrack*>(const_cast<Track*>(i->track));
-                          // Take any id. At least one must be valid and they all should be the same.
-                          const int id = i->_eraseCtrlList ? i->_eraseCtrlList->id() :
-                            (i->_recoverableEraseCtrlList ? i->_recoverableEraseCtrlList->id() :
-                            (i->_recoverableAddCtrlList ? i->_recoverableAddCtrlList->id() : i->_addCtrlList->id()));
+                          const int id = i->_audioCtrlIdModify;
                           iCtrlList icl = at->controller()->find(id);
                           if(icl != at->controller()->end())
                           {
@@ -5119,6 +5158,52 @@ void Song::executeOperationGroup3(Undo& operations)
                         // This also tells all connected models to begin/end reset.
                         MusEGlobal::globalRasterizer->setDivision(i->a);
                         break;
+
+                  // Re-enable any controllers so that the results can be seen.
+                  // Exclude write/latch mode because controls need to remain disabled if pressed before play.
+                  // TODO: This really should be done in the realtime operations stage.
+                  //       But we don't pass the track to that stage. It would need the track.
+                  //       Or make a separate EnableAudioController operations command,
+                  //        but that's one extra command clogging up the commands list for
+                  //        each one of these...
+                  case UndoOp::AddAudioCtrlVal:
+                  case UndoOp::DeleteAudioCtrlVal:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlIdAddDel, true);
+                    }
+                  break;
+                  case UndoOp::AddAudioCtrlValStruct:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlIdStruct, true);
+                    }
+                  break;
+                  case UndoOp::ModifyAudioCtrlVal:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlID, true);
+                    }
+                  break;
+                  case UndoOp::ModifyAudioCtrlValList:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* audio_track = static_cast<AudioTrack*>(editable_track);
+                      const AutomationType automation_type = audio_track->automationType();
+                      if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
+                        audio_track->enableController(i->_audioCtrlIdModify, true);
+                    }
+                  break;
+
                    default:
                         break;
                   }
