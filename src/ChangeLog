@@ -1,3 +1,7 @@
+21.11.2022
+    * Reworded quit and load new dialogs to make it clearer that
+      data will be discarded (rj)
+    * Dirty flag was not kept when cancelling the load New operation (rj)
 23.10.2022
     * Changed project create default to make a sub directory (rj)
 10.07.2022

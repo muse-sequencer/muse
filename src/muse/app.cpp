@@ -1401,7 +1401,7 @@ void MusE::loadProjectFile(const QString& name)
       loadProjectFile(name, false, false);
       }
 
-void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMidiPorts)
+bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
@@ -1434,7 +1434,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       microSleep(100000);
       progress->setValue(10);
       qApp->processEvents();
-      loadProjectFile1(name, songTemplate, doReadMidiPorts);
+      bool loadOk = loadProjectFile1(name, songTemplate, doReadMidiPorts);
       microSleep(100000);
       progress->setValue(90);
       qApp->processEvents();
@@ -1458,6 +1458,8 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       if (MusEGlobal::song->getSongInfo().length()>0 && MusEGlobal::song->showSongInfoOnStartup()) {
           startSongInfo(false);
         }
+
+      return loadOk;
       }
 
 //---------------------------------------------------------
@@ -1467,17 +1469,20 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 //    template - if true, load file but do not change
 //                project name
 //    doReadMidiPorts  - also read midi port configuration
+//
+//    returns false if aborted
 //---------------------------------------------------------
 
-void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
+bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
+      if (!clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
+            return false;
+
       if (mixer1)
             mixer1->clearAndDelete();
       if (mixer2)
             mixer2->clearAndDelete();
       _arranger->clear();      // clear track info
-      if (clearSong(doReadMidiPorts))  // Allow not touching things like midi ports.
-            return;
 
       MusEGlobal::recordAction->setChecked(false);
 
@@ -1491,7 +1496,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                 QMessageBox::critical(this, QString("MusE"),
                     tr("Cannot read template"));
                 QApplication::restoreOverrideCursor();
-                return;
+                return false;
                 }
             project.setFile(MusEGui::getUniqueUntitledName());
             MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
@@ -1732,6 +1737,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       // Moved here from above due to crash with a song loaded and then File->New.
       // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
       showMarker(MusEGlobal::config.markerVisible);
+
+      return true;
       }
 
 //---------------------------------------------------------
@@ -1756,13 +1763,13 @@ void MusE::fileClose()
     qApp->processEvents();
 
     // Allow not touching things like midi ports.
-    const bool res = clearSong(doReadMidiPorts);
+    const bool clearOk = clearSong(doReadMidiPorts);
 
     microSleep(100000);
     qApp->processEvents();
     if (restartSequencer)
         seqStart();
-    if(res)
+    if(!clearOk)
         return;
 
     MusEGlobal::recordAction->setChecked(false);
@@ -1853,8 +1860,11 @@ void MusE::loadTemplate()
 
 void MusE::loadDefaultTemplate()
 {
-        loadProjectFile(MusEGlobal::museGlobalShare + QString("/templates/default.med"), true, false);
-        setUntitledProject();
+
+    bool isOk = loadProjectFile(MusEGlobal::museGlobalShare + QString("/templates/default.med"), true, false);
+
+    if (isOk)
+      setUntitledProject();
 }
 
 //---------------------------------------------------------
@@ -1942,7 +1952,7 @@ void MusE::closeEvent(QCloseEvent* event)
         n = QMessageBox::warning(this, appName,
                                  tr("The current project contains unsaved data.\n"
                                     "Save current project?"),
-                                 tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
+                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
         if (n == 0) {
             if (!save())      // don't quit if save failed
             {
@@ -3532,7 +3542,7 @@ MusE::lash_idle_cb ()
 
 //---------------------------------------------------------
 //   clearSong
-//    return true if operation aborted
+//    return false if operation aborted
 //    called with sequencer stopped
 //    If clear_all is false, it will not touch things like midi ports.
 //---------------------------------------------------------
@@ -3543,18 +3553,17 @@ bool MusE::clearSong(bool clear_all)
         int n = 0;
         n = QMessageBox::warning(this, appName,
                                  tr("The current project contains unsaved data.\n"
-                                    "Load overwrites current project.\n"
-                                    "Save current project?"),
-                                 tr("&Save"), tr("S&kip"), tr("&Abort"), 0, 2);
+                                    "Save current project before continuing?"),
+                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
         switch (n) {
         case 0:
             if (!save())      // abort if save failed
-                return true;
+                return false;
             break;
         case 1:
             break;
         case 2:
-            return true;
+            return false;
         default:
             fprintf(stderr, "InternalError: gibt %d\n", n);
         }
@@ -3597,7 +3606,7 @@ again:
     _arranger->songIsClearing();
     MusEGlobal::song->clear(true, clear_all);
     microSleep(100000);
-    return false;
+    return true;
 }
 
 //---------------------------------------------------------

@@ -263,7 +263,7 @@ class MusE : public QMainWindow
     MusECore::PartList* getMidiPartsToEdit();
     MusECore::Part* readPart(MusECore::Xml& xml);
     bool checkRegionNotNull();
-    void loadProjectFile1(const QString&, bool songTemplate, bool doReadMidiPorts);
+    bool loadProjectFile1(const QString&, bool songTemplate, bool doReadMidiPorts);
     // Write global configuration.
     void writeGlobalConfiguration(int level, MusECore::Xml&) const;
     // Write song specific configuration.
@@ -377,7 +377,7 @@ public slots:
     void bounceToTrack(MusECore::AudioOutput* ao = nullptr);
     void closeEvent(QCloseEvent*event) override;
     void loadProjectFile(const QString&);
-    void loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
+    bool loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
     void fileClose();
     void toplevelDeleting(MusEGui::TopWin* tl);
     bool seqRestart();
