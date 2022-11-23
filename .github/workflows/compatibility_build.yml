@@ -9,20 +9,21 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
-    runs-on: ubuntu-18.04
+  compat:
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
                  
     - name: Install Deps
       run: |
+        sudo apt-get update
+
         # See PR 1077. Required to find libatomic for some archs.
-        sudo apt-get install extra-cmake-modules
-        sudo apt-get install libsndfile1-dev libsamplerate0-dev \
+        sudo apt-get install -y libsndfile1-dev libsamplerate0-dev \
           libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
           libsamplerate0-dev libfluidsynth-dev libgtkmm-2.4-dev \
-          libinstpatch-dev liblash-compat-dev librubberband-dev python3-dev librtaudio-dev \
+          libinstpatch-dev librubberband-dev python3-dev librtaudio-dev \
           liblilv-dev lv2-dev liblrdf0-dev
                
     - name: Install Qt
@@ -49,14 +50,19 @@ jobs:
     #     ls /usr/lib/x86_64-linux-gnu/pkgconfig
         
     - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run:
+        sudo apt-get install -y cmake extra-cmake-modules
+ 
+        cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
       run: |
         REPO_PATH=$GITHUB_WORKSPACE/src  
-        cmake $REPO_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
+        export CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/undefined/Qt/5.9.5/gcc_64/lib/cmake/
+        cmake $REPO_PATH  -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--no-undefined -DMODULES_BUILD_STATIC=ON
         
     - name: Build
       working-directory: ${{runner.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE -j3
+      run: 
+        cmake --build . --config $BUILD_TYPE -j3
