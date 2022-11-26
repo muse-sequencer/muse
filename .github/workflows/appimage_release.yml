@@ -19,7 +19,7 @@ env:
 
 jobs:
   release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
         sudo apt-get install -y libsndfile1-dev libsamplerate0-dev \
           libjack-jackd2-dev ladspa-sdk liblo-dev dssi-dev \
           libsamplerate0-dev libfluidsynth-dev libgtkmm-2.4-dev \
-          libinstpatch-dev librubberband-dev python3-dev librtaudio-dev
+          libinstpatch-dev librubberband-dev python3-dev librtaudio-dev liblrdf0-dev
         # liblash-compat-dev 
         # liblilv-dev lv2-dev liblrdf0-dev
         sudo apt-get install -y qttools5-dev qttools5-dev-tools libqt5svg5-dev
