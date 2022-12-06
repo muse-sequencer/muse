@@ -2269,7 +2269,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     for (const auto tit : *tl)
                     {
                         if (tit->selected() && tit->canRecordMonitor())
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, tit, val, 0, 0, 0, 0));
+                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, tit, val, float(0), float(0), float(0), float(0)));
                     }
                     if (!operations.empty())
                         MusEGlobal::song->applyOperationGroup(operations);

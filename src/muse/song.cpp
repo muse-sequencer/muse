@@ -2152,7 +2152,7 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
   if(operations)
   {
     // The undo system calls setRecordFlag1 for us.
-    operations->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, 0, 0, 0, 0));
+    operations->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, float(0), float(0), float(0), float(0)));
   }
   else
   {

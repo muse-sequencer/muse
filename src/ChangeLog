@@ -1,3 +1,6 @@
+06.12.2022
+    * Fixed issue with wrong constructor being instantiated when clicking
+      rec-arm and input monitor when having multiple tracks selected (rj)
 21.11.2022
     * Reworded quit and load new dialogs to make it clearer that
       data will be discarded (rj)
