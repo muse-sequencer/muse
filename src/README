@@ -121,7 +121,7 @@ details.
         sord >= 0.16.0 (development files)
           http://drobilla.net/software
 
-        lv2 >= 1.14.0 (development files)
+        lv2 >= 1.18.0 (development files)
           http://lv2plug.in
         
       - LV2 Gtk2 User Interface support:
