@@ -270,7 +270,7 @@ bool cmp_str::operator() ( char const *a, char const *b ) const
     return std::strcmp ( a, b ) < 0;
 }
 
-inline size_t LV2SimpleRTFifo::getItemSize(){return itemSize; }
+/*inline*/ size_t LV2SimpleRTFifo::getItemSize(){return itemSize; }
 
 bool _lv2ExtProgram::operator<(const _lv2ExtProgram& other) const
 {
@@ -5964,7 +5964,7 @@ void LV2SynthIF::rangeOut(unsigned long i, float* min, float* max) const
     //}
 }
 
-inline bool LV2SynthIF::usesTransportSource() const
+/*inline*/ bool LV2SynthIF::usesTransportSource() const
 {
     return _synth->usesTimePosition();
 }

@@ -117,45 +117,45 @@ SynthIF::SynthIF(SynthI* s) : PluginIBase()
 // Methods for PluginIBase:
 //--------------------------------
 
-inline PluginFeatures_t SynthIF::requiredFeatures() const       { return PluginNoFeatures; }
-inline bool SynthIF::hasActiveButton() const { return false; }
+/*inline*/ PluginFeatures_t SynthIF::requiredFeatures() const       { return PluginNoFeatures; }
+/*inline*/ bool SynthIF::hasActiveButton() const { return false; }
 // Here we defer to the track's 'off' state.
-inline bool SynthIF::active() const { return !synti->off(); }
+/*inline*/ bool SynthIF::active() const { return !synti->off(); }
 // Here we defer to setting the track's 'off' state.
-inline void SynthIF::setActive(bool val) { synti->setOff(!val); }
+/*inline*/ void SynthIF::setActive(bool val) { synti->setOff(!val); }
 // Synth is not part of a rack plugin chain. It has no on/off (bypass) feature.
-inline bool SynthIF::hasBypass() const                          { return false; }
+/*inline*/ bool SynthIF::hasBypass() const                          { return false; }
 // Synth is not part of a rack plugin chain. Always on.
-inline bool SynthIF::on() const                                 { return true; }
-inline void SynthIF::setOn(bool /*val*/)                        { }
-inline unsigned long SynthIF::pluginID() const                  { return 0; }
-inline int SynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
-inline QString SynthIF::pluginLabel() const                     { return QString(); }
-inline QString SynthIF::name() const                            { return synti->name(); }
-inline QString SynthIF::lib() const                             { return QString(); }
-inline QString SynthIF::uri() const                             { return synti->uri(); }
-inline QString SynthIF::dirPath() const                         { return QString(); }
-inline QString SynthIF::fileName() const                        { return QString(); }
-inline QString SynthIF::titlePrefix() const                     { return QString(); }
-inline MusECore::AudioTrack* SynthIF::track() const             { return static_cast < MusECore::AudioTrack* > (synti); }
-inline void SynthIF::enableController(unsigned long, bool)  { }
-inline bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
-inline void SynthIF::enableAllControllers(bool)               { }
-inline void SynthIF::updateControllers()                        { }
-inline void SynthIF::activate()
+/*inline*/ bool SynthIF::on() const                                 { return true; }
+/*inline*/ void SynthIF::setOn(bool /*val*/)                        { }
+/*inline*/ unsigned long SynthIF::pluginID() const                  { return 0; }
+/*inline*/ int SynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
+/*inline*/ QString SynthIF::pluginLabel() const                     { return QString(); }
+/*inline*/ QString SynthIF::name() const                            { return synti->name(); }
+/*inline*/ QString SynthIF::lib() const                             { return QString(); }
+/*inline*/ QString SynthIF::uri() const                             { return synti->uri(); }
+/*inline*/ QString SynthIF::dirPath() const                         { return QString(); }
+/*inline*/ QString SynthIF::fileName() const                        { return QString(); }
+/*inline*/ QString SynthIF::titlePrefix() const                     { return QString(); }
+/*inline*/ MusECore::AudioTrack* SynthIF::track() const             { return static_cast < MusECore::AudioTrack* > (synti); }
+/*inline*/ void SynthIF::enableController(unsigned long, bool)  { }
+/*inline*/ bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
+/*inline*/ void SynthIF::enableAllControllers(bool)               { }
+/*inline*/ void SynthIF::updateControllers()                        { }
+/*inline*/ void SynthIF::activate()
 {
     _curActiveState = true;
 }
-inline void SynthIF::deactivate() { _curActiveState = false; }
-inline void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
-inline bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
-inline unsigned long SynthIF::parameters() const                { return 0; }
-inline unsigned long SynthIF::parametersOut() const             { return 0; }
-inline void SynthIF::setParam(unsigned long, double)       { }
-inline double SynthIF::param(unsigned long) const              { return 0.0; }
-inline double SynthIF::paramOut(unsigned long) const          { return 0.0; }
-inline const char* SynthIF::paramName(unsigned long) const    { return nullptr; }
-inline const char* SynthIF::paramOutName(unsigned long) const { return nullptr; }
+/*inline*/ void SynthIF::deactivate() { _curActiveState = false; }
+/*inline*/ void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
+/*inline*/ bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
+/*inline*/ unsigned long SynthIF::parameters() const                { return 0; }
+/*inline*/ unsigned long SynthIF::parametersOut() const             { return 0; }
+/*inline*/ void SynthIF::setParam(unsigned long, double)       { }
+/*inline*/ double SynthIF::param(unsigned long) const              { return 0.0; }
+/*inline*/ double SynthIF::paramOut(unsigned long) const          { return 0.0; }
+/*inline*/ const char* SynthIF::paramName(unsigned long) const    { return nullptr; }
+/*inline*/ const char* SynthIF::paramOutName(unsigned long) const { return nullptr; }
 LADSPA_PortRangeHint SynthIF::range(unsigned long) const
 {
   LADSPA_PortRangeHint h;
@@ -182,26 +182,26 @@ void SynthIF::rangeOut(unsigned long /*i*/, float* min, float* max) const
   *min = 0.0;
   *max = 1.0;
 }
-inline unsigned long SynthIF::latencyOutPortIndex() const { return synti->latencyOutPortIndex(); }
-inline unsigned long SynthIF::freewheelPortIndex() const { return synti->freewheelPortIndex(); }
-inline unsigned long SynthIF::enableOrBypassPortIndex() const
+/*inline*/ unsigned long SynthIF::latencyOutPortIndex() const { return synti->latencyOutPortIndex(); }
+/*inline*/ unsigned long SynthIF::freewheelPortIndex() const { return synti->freewheelPortIndex(); }
+/*inline*/ unsigned long SynthIF::enableOrBypassPortIndex() const
 { return synti->enableOrBypassPortIndex(); }
 
-inline PluginLatencyReportingType SynthIF::pluginLatencyReportingType() const
+/*inline*/ PluginLatencyReportingType SynthIF::pluginLatencyReportingType() const
 { return synti->pluginLatencyReportingType(); }
 
-inline PluginBypassType SynthIF::pluginBypassType() const
+/*inline*/ PluginBypassType SynthIF::pluginBypassType() const
 { return synti->pluginBypassType(); }
 
-inline PluginFreewheelType SynthIF::pluginFreewheelType() const
+/*inline*/ PluginFreewheelType SynthIF::pluginFreewheelType() const
 { return synti->pluginFreewheelType(); }
 
-inline CtrlValueType SynthIF::ctrlValueType(unsigned long) const { return VAL_LINEAR; }
-inline CtrlList::Mode SynthIF::ctrlMode(unsigned long) const     { return CtrlList::INTERPOLATE; }
-inline CtrlValueType SynthIF::ctrlOutValueType(unsigned long) const { return VAL_LINEAR; }
-inline CtrlList::Mode SynthIF::ctrlOutMode(unsigned long) const     { return CtrlList::INTERPOLATE; }
+/*inline*/ CtrlValueType SynthIF::ctrlValueType(unsigned long) const { return VAL_LINEAR; }
+/*inline*/ CtrlList::Mode SynthIF::ctrlMode(unsigned long) const     { return CtrlList::INTERPOLATE; }
+/*inline*/ CtrlValueType SynthIF::ctrlOutValueType(unsigned long) const { return VAL_LINEAR; }
+/*inline*/ CtrlList::Mode SynthIF::ctrlOutMode(unsigned long) const     { return CtrlList::INTERPOLATE; }
 
-inline bool SynthIF::usesTransportSource() const { return false; }
+/*inline*/ bool SynthIF::usesTransportSource() const { return false; }
 
 float SynthIF::latency() const
 {
@@ -424,13 +424,13 @@ bool Synth::hasMappedMidiToAudioCtrls() const
   return !midiCtl2PortMap.empty();
 }
 
-inline unsigned long Synth::freewheelPortIndex() const { return _freewheelPortIndex; }
-inline unsigned long Synth::latencyPortIndex() const   { return _latencyPortIndex; }
-inline unsigned long Synth::enableOrBypassPortIndex() const    { return _enableOrBypassPortIndex; }
-inline PluginLatencyReportingType Synth::pluginLatencyReportingType() const { return _pluginLatencyReportingType; }
-inline PluginBypassType Synth::pluginBypassType() const { return _pluginBypassType; }
-inline PluginFreewheelType Synth::pluginFreewheelType() const { return _pluginFreewheelType; }
-inline float Synth::getPluginLatency(void* /*handle*/) { return 0.0; }
+/*inline*/ unsigned long Synth::freewheelPortIndex() const { return _freewheelPortIndex; }
+/*inline*/ unsigned long Synth::latencyPortIndex() const   { return _latencyPortIndex; }
+/*inline*/ unsigned long Synth::enableOrBypassPortIndex() const    { return _enableOrBypassPortIndex; }
+/*inline*/ PluginLatencyReportingType Synth::pluginLatencyReportingType() const { return _pluginLatencyReportingType; }
+/*inline*/ PluginBypassType Synth::pluginBypassType() const { return _pluginBypassType; }
+/*inline*/ PluginFreewheelType Synth::pluginFreewheelType() const { return _pluginFreewheelType; }
+/*inline*/ float Synth::getPluginLatency(void* /*handle*/) { return 0.0; }
 
 //---------------------------------------------------------
 //   instantiate
@@ -824,14 +824,14 @@ void SynthI::guiHeartBeat()
     _sif->guiHeartBeat();
 }
 
-inline unsigned long SynthI::latencyOutPortIndex() const { return synthesizer ? synthesizer->latencyPortIndex() : 0; }
-inline unsigned long SynthI::freewheelPortIndex() const { return synthesizer ? synthesizer->freewheelPortIndex() : 0; }
-inline unsigned long SynthI::enableOrBypassPortIndex() const { return synthesizer ? synthesizer->enableOrBypassPortIndex() : 0; }
-inline PluginLatencyReportingType SynthI::pluginLatencyReportingType() const
+/*inline*/ unsigned long SynthI::latencyOutPortIndex() const { return synthesizer ? synthesizer->latencyPortIndex() : 0; }
+/*inline*/ unsigned long SynthI::freewheelPortIndex() const { return synthesizer ? synthesizer->freewheelPortIndex() : 0; }
+/*inline*/ unsigned long SynthI::enableOrBypassPortIndex() const { return synthesizer ? synthesizer->enableOrBypassPortIndex() : 0; }
+/*inline*/ PluginLatencyReportingType SynthI::pluginLatencyReportingType() const
 { return synthesizer ? synthesizer->pluginLatencyReportingType() : PluginLatencyTypeNone; }
-inline PluginBypassType SynthI::pluginBypassType() const
+/*inline*/ PluginBypassType SynthI::pluginBypassType() const
 { return synthesizer ? synthesizer->pluginBypassType() : PluginBypassTypeEmulatedEnableFunction; }
-inline PluginFreewheelType SynthI::pluginFreewheelType() const
+/*inline*/ PluginFreewheelType SynthI::pluginFreewheelType() const
 { return synthesizer ? synthesizer->pluginFreewheelType() : PluginFreewheelTypeNone; }
 // Returns the plugin latency, if it has such as function.
 // NOTE: If the plugin has a latency controller out, use that instead.
@@ -3913,7 +3913,7 @@ TrackLatencyInfo& SynthI::getLatencyInfoMidi(bool capture, bool input)
   return *tli;
 }
 
-inline unsigned long SynthI::latencyCompWriteOffsetMidi(bool capture) const
+/*inline*/ unsigned long SynthI::latencyCompWriteOffsetMidi(bool capture) const
 {
   const TrackLatencyInfo* tli = capture ? &_captureLatencyInfo : &_playbackLatencyInfo;
   return tli->_compensatorWriteOffset;
