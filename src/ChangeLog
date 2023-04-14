@@ -29,6 +29,8 @@
       Applied to audio controller values and graphs for now. More later.
       C/C++ have supported hex floats for many years. But Qt doesn't seem to natively.
 
+    * NEW: Export midi selected visible tracks only. In main app menu.
+
     * NEW: LV2 midi-out support added. Supports things like midi arpeggiators, midi effects etc.
 
     Fixed: VST midi-out: Recording times were way off. (Midi arpeggiators, midi effects etc.)

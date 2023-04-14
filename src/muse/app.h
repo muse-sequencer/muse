@@ -129,7 +129,7 @@ class MusE : public QMainWindow
     // File menu actions
     QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *fileNewFromTemplateAction;
     QAction *fileSaveRevisionAction, *fileSaveAsAction, *fileSaveAsNewProjectAction, *fileSaveAsTemplateAction;
-    QAction *fileImportMidiAction, *fileExportMidiAction;
+    QAction *fileImportMidiAction, *fileExportMidiAction, *fileExportMidiSelectedVisibleAction;
     QAction *fileImportPartAction, *fileImportWaveAction, *fileMoveWaveFiles, *quitAction;
     QAction *fileCloseAction;
     QAction *editSongInfoAction;
@@ -315,7 +315,7 @@ private slots:
     void importMidi();
     void importWave();
     void importPart();
-    void exportMidi();
+    void exportMidi(bool selectedVisibleTracksOnly = false);
     void findUnusedWaveFiles();
 
     void toggleTransport(bool);

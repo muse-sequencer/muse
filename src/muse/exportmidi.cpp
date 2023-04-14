@@ -578,14 +578,38 @@ namespace MusEGui {
 //   exportMidi
 //---------------------------------------------------------
 
-void MusE::exportMidi()
+void MusE::exportMidi(bool selectedVisibleTracksOnly)
       {
+      // Warn if no selected visible tracks.
+      {
+        bool doit = false;
+        MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
+        for(MusECore::ciMidiTrack im = mtl->cbegin(); im != mtl->cend(); ++im)
+        {
+          if(!selectedVisibleTracksOnly || ((*im)->selected() && (*im)->visible()))
+          {
+            doit = true;
+            break;
+          }
+        }
+        if(selectedVisibleTracksOnly && !doit)
+        {
+          QMessageBox::warning(this,
+            tr("MusE: Warning"),
+            tr("Select some visible tracks.\n"),
+                QMessageBox::Ok);
+            return;
+        }
+      }
+
       if(MusEGlobal::config.smfFormat == 0)  // Want single track? Warn if multiple ports in song...
       {
         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();       
         int prev_port = -1;
         for(MusECore::ciMidiTrack im = mtl->begin(); im != mtl->end(); ++im) 
         {
+          if(selectedVisibleTracksOnly && (!(*im)->selected() || !(*im)->visible()))
+            continue;
           int port = (*im)->outPort();
           if(prev_port == -1)
           {
@@ -646,6 +670,11 @@ void MusE::exportMidi()
           if(!(*im)->isMidiTrack())
             continue;
 
+          MusECore::MidiTrack* track = (MusECore::MidiTrack*)(*im);
+
+          if(selectedVisibleTracksOnly && (!track->selected() || !track->visible()))
+            continue;
+
           if(MusEGlobal::config.smfFormat != 0)
           {  
             mft = new MusECore::MidiFileTrack;
@@ -654,7 +683,6 @@ void MusE::exportMidi()
             ++track_count;
           }
 
-          MusECore::MidiTrack* track = (MusECore::MidiTrack*)(*im);
           const int port         = track->outPort();
           const int channel      = track->outChannel();
 
@@ -698,6 +726,9 @@ void MusE::exportMidi()
             continue;
 
           MusECore::MidiTrack* track = static_cast<MusECore::MidiTrack*>(*it);
+
+          if(selectedVisibleTracksOnly && (!track->selected() || !track->visible()))
+            continue;
 
           int port         = track->outPort();
           int channel      = track->outChannel();
