@@ -35,29 +35,27 @@
 #include <QToolBar>
 #include <QMessageBox>
 #include <QByteArray>
-//#include <QToolButton>
 #include <QComboBox>
 #include <QGroupBox>
 
+#include "app.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "filedialog.h"
 #include "slider.h"
-//#include "midictrl_consts.h"
 #include "plugin.h"
 #include "controlfifo.h"
 #include "icons.h"
 #include "song.h"
-#include "doublelabel.h"
 #include "fastlog.h"
 #include "checkbox.h"
 #include "comboboxpi.h"
 #include "meter.h"
 #include "utils.h"
 #include "pluglist.h"
-//#include "gui.h"
 #include "pluginsettings.h"
 #include "switch.h"
+#include "hex_float.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -70,17 +68,15 @@
 #include "audio.h"
 #include "al/dsp.h"
 
-//#include "muse_math.h"
-
 // Forwards from header:
 #include <QScrollArea>
-//#include <QShowEvent>
 #include <QHideEvent>
 #include <QAction>
-//#include <QSpinBox>
 #include "xml.h"
 #include "plugin_list.h"
 #include "track.h"
+#include "plugin_scan.h"
+#include "doublelabel.h"
 
 #ifdef _WIN32
 #define S_ISLNK(X) 0
@@ -727,73 +723,7 @@ bool PluginQuirks::fixNativeUIScaling() const {
 //   Plugin
 //---------------------------------------------------------
 
-Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, const QString& uri,
-               bool isDssi, bool isDssiSynth, bool isDssiVst, PluginFeatures_t reqFeatures)
-{
-  _isDssi = isDssi;
-  _isDssiSynth = isDssiSynth;
-  _isDssiVst = isDssiVst;
-  _isLV2Plugin = false;
-  _isLV2Synth = false;
-  _isVstNativePlugin = false;
-  _isVstNativeSynth = false;
-  _requiredFeatures = reqFeatures;
-  _usesTimePosition = false;
-
-
-  #ifdef DSSI_SUPPORT
-  dssi_descr = nullptr;
-  #endif
-
-  if(f)
-    fi = *f;
-  _uri = uri;
-
-  plugin = nullptr;
-  ladspa = nullptr;
-  _handle = nullptr;
-  _references = 0;
-  _instNo     = 0;
-  _label = QString(d->Label);
-  _name = QString(d->Name);
-  _uniqueID = d->UniqueID;
-  _maker = QString(d->Maker);
-  _copyright = QString(d->Copyright);
-
-  _portCount = d->PortCount;
-
-  _inports = 0;
-  _outports = 0;
-  _controlInPorts = 0;
-  _controlOutPorts = 0;
-  for(unsigned long k = 0; k < _portCount; ++k)
-  {
-    LADSPA_PortDescriptor pd = d->PortDescriptors[k];
-    if(pd & LADSPA_PORT_AUDIO)
-    {
-      if(pd & LADSPA_PORT_INPUT)
-        ++_inports;
-      else
-      if(pd & LADSPA_PORT_OUTPUT)
-        ++_outports;
-    }
-    else
-    if(pd & LADSPA_PORT_CONTROL)
-    {
-      if(pd & LADSPA_PORT_INPUT)
-        ++_controlInPorts;
-      else
-      if(pd & LADSPA_PORT_OUTPUT)
-        ++_controlOutPorts;
-    }
-  }
-
-  // Hack: Blacklist vst plugins in-place, configurable for now.
-  if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-        _requiredFeatures |= PluginNoInPlaceProcessing;
-}
-
-Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
+Plugin::Plugin()
 {
   _isDssi = false;
   _isDssiSynth = false;
@@ -802,6 +732,36 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
   _isLV2Synth = false;
   _isVstNativePlugin = false;
   _isVstNativeSynth = false;
+  _requiredFeatures = PluginNoFeatures;
+  _usesTimePosition = false;
+  _freewheelPortIndex = 0;
+  _latencyPortIndex = 0;
+  _enableOrBypassPortIndex = 0;
+  _pluginBypassType = PluginBypassTypeEmulatedEnableFunction;
+  _pluginLatencyReportingType = PluginLatencyTypeNone;
+  _pluginFreewheelType = PluginFreewheelTypeNone;
+
+  #ifdef DSSI_SUPPORT
+  dssi_descr = nullptr;
+  #endif
+
+  plugin = nullptr;
+  ladspa = nullptr;
+  _handle = nullptr;
+  _references = 0;
+  _instNo     = 0;
+  _uniqueID   = 0;
+
+  _portCount  = 0;
+  _inports = 0;
+  _outports = 0;
+  _controlInPorts = 0;
+  _controlOutPorts = 0;
+}
+
+Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
+ : Plugin()
+{
   _requiredFeatures = info._requiredFeatures;
   
   switch(info._type)
@@ -836,20 +796,9 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
     break;
   }
   
-  #ifdef DSSI_SUPPORT
-  dssi_descr = nullptr;
-  #endif
-
-//   fi = info._fi;
   fi = QFileInfo(PLUGIN_GET_QSTRING(info.filePath()));
   _uri = PLUGIN_GET_QSTRING(info._uri);
 
-  plugin = nullptr;
-  ladspa = nullptr;
-  _handle = nullptr;
-  _references = 0;
-  _instNo     = 0;
-  
   _label = PLUGIN_GET_QSTRING(info._label);
   _name = PLUGIN_GET_QSTRING(info._name);
   _uniqueID = info._uniqueID;
@@ -868,6 +817,15 @@ Plugin::Plugin(const MusEPlugin::PluginScanInfoStruct& info)
     _requiredFeatures |= PluginNoInPlaceProcessing;
   
   _usesTimePosition = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::SupportsTimePosition;
+
+  _freewheelPortIndex = info._freewheelPortIdx;
+  _pluginFreewheelType = info._pluginFreewheelType;
+
+  _latencyPortIndex = info._latencyPortIdx;
+  _pluginLatencyReportingType = info._pluginLatencyReportingType;
+
+    _enableOrBypassPortIndex = info._enableOrBypassPortIdx;
+  _pluginBypassType = info._pluginBypassType;
 }
 
 Plugin::~Plugin()
@@ -1082,6 +1040,40 @@ const CtrlVal::CtrlEnumValues* Plugin::ctrlEnumValues ( unsigned long ) const
     return nullptr;
 }
 
+QString Plugin::unitSymbol ( unsigned long ) const { return QString(); }
+int Plugin::valueUnit ( unsigned long ) const { return -1; }
+
+bool Plugin::usesTimePosition() const            { return _usesTimePosition; }
+unsigned long Plugin::freewheelPortIndex() const { return _freewheelPortIndex; }
+unsigned long Plugin::latencyPortIndex() const   { return _latencyPortIndex; }
+unsigned long Plugin::enableOrBypassPortIndex() const    { return _enableOrBypassPortIndex; }
+PluginLatencyReportingType Plugin::pluginLatencyReportingType() const { return _pluginLatencyReportingType; }
+PluginBypassType Plugin::pluginBypassType() const { return _pluginBypassType; }
+PluginFreewheelType Plugin::pluginFreewheelType() const { return _pluginFreewheelType; }
+float Plugin::getPluginLatency(void* /*handle*/) { return 0.0; }
+
+void Plugin::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/)
+{
+#ifdef DSSI_SUPPORT
+  if(isDssiPlugin() && dssi_descr)
+  {
+    if(dssi_descr->run_synth)
+    {
+      dssi_descr->run_synth(handle, n, nullptr, 0);
+      return;
+    }
+  }
+#endif
+
+  if(plugin)
+    plugin->run(handle, n);
+}
+
+
+//---------------------------------------------------------
+//   PluginGroups
+//---------------------------------------------------------
+
 void PluginGroups::shift_left(int first, int last)
 {
   for (int i=first; i<=last; i++)
@@ -1278,10 +1270,17 @@ Pipeline::Pipeline(const Pipeline& p, AudioTrack* t)
 
 Pipeline::~Pipeline()
       {
+      //fprintf(stderr, "~Pipeline\n");
       removeAll();
       for (int i = 0; i < MusECore::MAX_CHANNELS; ++i)
           if(buffer[i])
+          {
             ::free(buffer[i]);
+          }
+          //else
+          //{
+            //fprintf(stderr, "~Pipeline: buffer[%d] is NULL !\n", i);
+          //}
       }
 
 void Pipeline::initBuffers()
@@ -1457,6 +1456,32 @@ void Pipeline::removeAll()
       for (int i = 0; i < MusECore::PipelineDepth; ++i)
             remove(i);
       }
+
+//---------------------------------------------------------
+//   isActive
+//---------------------------------------------------------
+
+bool Pipeline::isActive(int idx) const
+{
+      PluginI* p = (*this)[idx];
+      if (p)
+            return p->active();
+      return false;
+}
+
+//---------------------------------------------------------
+//   setActive
+//---------------------------------------------------------
+
+void Pipeline::setActive(int idx, bool flag)
+{
+      PluginI* p = (*this)[idx];
+      if (p) {
+            p->setActive(flag);
+            if (p->gui())
+                  p->gui()->setActive(flag);
+            }
+}
 
 //---------------------------------------------------------
 //   isOn
@@ -1729,12 +1754,21 @@ bool Pipeline::nativeGuiVisible(int idx)
       return false;
       }
 
+void Pipeline::guiHeartBeat()
+{
+  for(int i = 0; i < MusECore::PipelineDepth; i++)
+  {
+    auto p = (*this)[i];
+    if(p)
+      p->guiHeartBeat();
+  }
+}
+
 //---------------------------------------------------------
 //   apply
-//   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, float** buffer1)
+void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, bool wantActive, float** buffer1)
 {
       bool swap = false;
 
@@ -1768,30 +1802,66 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, f
               continue;
 
             const float corr_offset = latency_corr_offsets[i];
-            if (p->on())
+            // If the plugin has a bypass control we let it run so it can do the pass-through,
+            //  where bypass can be smoother (anti-zipper) than our simpler on/off scheme,
+            //  and we manipulate the bypass control in the plugin's apply method.
+            // We hope that by allowing the plugin's bypass to operate, it might consume
+            //  less CPU time. Observations seem to counter that, it seems some processing
+            //  still goes on even in bypass mode. But we have no choice but to let it run
+            //  because that is the way it responds to UI commands, and various UI items
+            //  depend on a full-length run being executed (flashing lights etc.).
+            //
+            // POLICY DECISION: If the track is off and there is no plugin bypass control,
+            //  it's strange to do a full-length run just so it can respond to UI commands.
+            // It's a waste of CPU time since the data is discarded.
+            // Part of the idea of a track or plugin being off was to save CPU time.
+            bool hasEnableOrBypass = false;
+            switch(p->pluginBypassType())
+            {
+              case PluginBypassTypeEmulatedEnableFunction:
+              case PluginBypassTypeEmulatedEnableController:
+              break;
+
+              case PluginBypassTypeEnableFunction:
+              case PluginBypassTypeEnablePort:
+              case PluginBypassTypeBypassFunction:
+              case PluginBypassTypeBypassPort:
+                hasEnableOrBypass = true;
+              break;
+            }
+
+            // If the plugin has a REAL enable or bypass port or function, we ALWAYS do a full process
+            //  so IT can do the pass-through instead of us, where it can be smoother than our simple
+            //  on/off scheme (anti-zipper, crossfade etc).
+            // If the plugin has no enable or bypass feature (just our own emulated), and it is bypassed,
+            //  then we don't bother with a full process.
+            // We manipulate the enable/bypass port/function in the plugin's apply method.
+            if (wantActive && p->active() && (hasEnableOrBypass || p->on()))
             {
               if (!(p->requiredFeatures() & PluginNoInPlaceProcessing))
               {
                     if (swap)
-                          p->apply(pos, nframes, ports, buffer, buffer, corr_offset);
+                          p->apply(pos, nframes, ports, wantActive, buffer, buffer, corr_offset);
                     else
-                          p->apply(pos, nframes, ports, buffer1, buffer1, corr_offset);
+                          p->apply(pos, nframes, ports, wantActive, buffer1, buffer1, corr_offset);
               }
               else
               {
                     if (swap)
-                          p->apply(pos, nframes, ports, buffer, buffer1, corr_offset);
+                          p->apply(pos, nframes, ports, wantActive, buffer, buffer1, corr_offset);
                     else
-                          p->apply(pos, nframes, ports, buffer1, buffer, corr_offset);
+                          p->apply(pos, nframes, ports, wantActive, buffer1, buffer, corr_offset);
                     swap = !swap;
               }
             }
             else
             {
-              p->apply(pos, nframes, 0, 0, 0, corr_offset); // Do not process (run) audio, process controllers only.
+              // Apply. The plugin will see that either wantActive is false or the plugin is bypassed and has no
+              //  enable/bypass feature, and will connect to dummy ports. So we don't need to pass any buffers here.
+              p->apply(pos, nframes, ports, wantActive, nullptr, nullptr, corr_offset);
             }
       }
-      if (ports != 0 && swap)
+      if (wantActive && swap)
       {
             for (unsigned long i = 0; i < ports; ++i)
                   AL::dsp->cpy(buffer1[i], buffer[i], nframes);
@@ -1805,6 +1875,7 @@ void Pipeline::apply(unsigned pos, unsigned long ports, unsigned long nframes, f
 PluginIBase::PluginIBase()
 {
   _gui = 0;
+  _curActiveState = false;
 }
 
 PluginIBase::~PluginIBase()
@@ -2037,6 +2108,45 @@ bool PluginIBase::ctrlNotOnGui(long unsigned int i) const {
     return false;
 }
 
+const CtrlVal::CtrlEnumValues* PluginIBase::ctrlOutEnumValues(unsigned long i) const {
+    Q_UNUSED(i)
+    return nullptr;
+}
+
+QString PluginIBase::portGroupOut(long unsigned int i) const {
+    Q_UNUSED(i)
+    return QString();
+}
+
+bool PluginIBase::ctrlOutIsTrigger(long unsigned int i) const {
+    Q_UNUSED(i)
+    return false;
+}
+
+bool PluginIBase::ctrlOutNotOnGui(long unsigned int i) const {
+    Q_UNUSED(i)
+    return false;
+}
+
+QString PluginIBase::unitSymbol(long unsigned int i) const {
+    Q_UNUSED(i)
+    return QString();
+}
+
+QString PluginIBase::unitSymbolOut(long unsigned int i) const {
+    Q_UNUSED(i)
+    return QString();
+}
+
+int PluginIBase::valueUnit(long unsigned int i) const {
+    Q_UNUSED(i)
+    return -1;
+}
+
+int PluginIBase::valueUnitOut(long unsigned int i) const {
+    Q_UNUSED(i)
+    return -1;
+}
 
 QString PluginIBase::dssi_ui_filename() const
 {
@@ -2119,18 +2229,16 @@ void PluginI::init()
       controlOutPorts   = 0;
       _audioInSilenceBuf = 0;
       _audioOutDummyBuf  = 0;
-      _hasLatencyOutPort = false;
-      _latencyOutPort = 0;
+      _active           = true;
       _on               = true;
       initControlValues = false;
       _showNativeGuiPending = false;
       }
 
-PluginI::PluginI()
+PluginI::PluginI() : PluginIBase()
       {
       _id = -1;
       _track = 0;
-
       init();
       }
 
@@ -2146,6 +2254,7 @@ PluginI::~PluginI()
 
       if (_plugin) {
             deactivate();
+            cleanup();
             _plugin->incReferences(-1);
             }
 
@@ -2290,9 +2399,24 @@ void PluginI::setChannels(int c)
         }
       }
 
+#ifdef DSSI_SUPPORT
       // Activate new instances.
       for(int i = instances; i < ni; ++i)
-        _plugin->activate(handle[i]);
+      {
+        // Set current configuration values.
+        if(isDssiPlugin() && _plugin->dssi_descr->configure)
+        {
+          char *rv = _plugin->dssi_descr->configure(handle[i], DSSI_PROJECT_DIRECTORY_KEY,
+              MusEGlobal::museProject.toLatin1().constData()); //MusEGlobal::song->projectPath()
+
+          if(rv)
+          {
+            fprintf(stderr, "MusE: Warning: plugin doesn't like project directory: \"%s\"\n", rv);
+            free(rv);
+          }
+        }
+      }
+#endif
 
       // Initialize control values.
       if(initControlValues)
@@ -2330,6 +2454,14 @@ double PluginI::defaultValue(unsigned long param) const
     return 0.0;
 
   return _plugin->defaultValue(controls[param].idx);
+}
+
+double PluginI::defaultOutValue(unsigned long param) const
+{
+  if(param >= controlOutPorts)
+    return 0.0;
+
+  return _plugin->defaultValue(controlsOut[param].idx);
 }
 
 void PluginI::setCustomData(const std::vector<QString>&
@@ -2482,12 +2614,6 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
           else
           if(pd & LADSPA_PORT_OUTPUT)
           {
-            const char* pname = _plugin->portName(k);
-            if(pname == QString("latency") || pname == QString("_latency"))
-            {
-              _hasLatencyOutPort = true;
-              _latencyOutPort = curOutPort;
-            }
             controlsOut[curOutPort].idx = k;
             controlsOut[curOutPort].val     = 0.0;
             controlsOut[curOutPort].tmpVal  = 0.0;
@@ -2544,7 +2670,25 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
           abort();
       }
 #endif
-      activate();
+
+#ifdef DSSI_SUPPORT
+        // Set current configuration values.
+        if(isDssiPlugin() && _plugin->dssi_descr->configure)
+        {
+          for(int i = 0; i < instances; ++i)
+          {
+            char *rv = _plugin->dssi_descr->configure(handle[i], DSSI_PROJECT_DIRECTORY_KEY,
+                MusEGlobal::museProject.toLatin1().constData()); //MusEGlobal::song->projectPath()
+
+            if(rv)
+            {
+              fprintf(stderr, "MusE: Warning: plugin doesn't like project directory: \"%s\"\n", rv);
+              free(rv);
+            }
+          }
+        }
+#endif
+
       return false;
       }
 
@@ -2552,13 +2696,13 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 //   connect
 //---------------------------------------------------------
 
-void PluginI::connect(unsigned long ports, unsigned long offset, float** src, float** dst)
+void PluginI::connect(unsigned long ports, bool connectAllToDummyPorts, unsigned long offset, float** src, float** dst)
       {
       unsigned long port = 0;
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioIn(k)) {
-                        if(port < ports)
+                        if(!connectAllToDummyPorts && port < ports)
                           _plugin->connectPort(handle[i], k, src[port] + offset);
                         else
                           // Connect to an input silence buffer.
@@ -2571,7 +2715,7 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioOut(k)) {
-                        if(port < ports)
+                        if(!connectAllToDummyPorts && port < ports)
                           _plugin->connectPort(handle[i], k, dst[port] + offset);
                         else
                           // Connect to a dummy buffer.
@@ -2582,16 +2726,26 @@ void PluginI::connect(unsigned long ports, unsigned long offset, float** src, fl
             }
       }
 
+void PluginI::cleanup()
+{
+  for (int i = 0; i < instances; ++i) {
+        _plugin->cleanup(handle[i]);
+        }
+}
+
 //---------------------------------------------------------
 //   deactivate
 //---------------------------------------------------------
 
 void PluginI::deactivate()
       {
-      for (int i = 0; i < instances; ++i) {
-            _plugin->deactivate(handle[i]);
-            _plugin->cleanup(handle[i]);
-            }
+      if(_curActiveState)
+      {
+        _curActiveState = false;
+        for (int i = 0; i < instances; ++i) {
+              _plugin->deactivate(handle[i]);
+              }
+      }
       }
 
 //---------------------------------------------------------
@@ -2600,6 +2754,9 @@ void PluginI::deactivate()
 
 void PluginI::activate()
       {
+      if(_curActiveState)
+        return;
+
       for (int i = 0; i < instances; ++i)
             _plugin->activate(handle[i]);
       if (initControlValues) {
@@ -2613,6 +2770,7 @@ void PluginI::activate()
                   controls[i].tmpVal = controls[i].val;
                   }
             }
+      _curActiveState = true;
       }
 
 //---------------------------------------------------------
@@ -2621,16 +2779,61 @@ void PluginI::activate()
 
 float PluginI::latency() const
 {
-  // Do not report any latency if the plugin is not on.
-  if(!on())
+  // Do not report any latency if the plugin is not active.
+  if(!_curActiveState)
     return 0.0;
+
+  switch(pluginBypassType())
+  {
+    // If the plugin has no enable/bypass feature and
+    //  we are emulating it, if the plugin is bypassed
+    //  do not report any latency since our emulated
+    //  pass-through does not introduce any latency.
+    case PluginBypassTypeEmulatedEnableFunction:
+    case PluginBypassTypeEmulatedEnableController:
+      if(!on())
+        return 0.0;
+    break;
+
+    // Otherwise if the plugin has an enable/bypass feature,
+    //  go ahead and allow the plugin to report its latency,
+    //  regardless of whether it is bypassed or not.
+    case PluginBypassTypeEnableFunction:
+    case PluginBypassTypeEnablePort:
+    case PluginBypassTypeBypassFunction:
+    case PluginBypassTypeBypassPort:
+    break;
+  }
+
   if(cquirks()._overrideReportedLatency)
     return cquirks()._latencyOverrideValue;
-  if(!hasLatencyOutPort())
-    return 0.0;
-  return controlsOut[latencyOutPortIndex()].val;
+
+  switch(pluginLatencyReportingType())
+  {
+    case PluginLatencyTypeNone:
+    break;
+
+    case PluginLatencyTypeFunction:
+      // FIXME We can only deal with one instance's output for now. Just take the first instance's.
+      if(handle[0])
+        return _plugin->getPluginLatency(handle[0]);
+    break;
+
+    case PluginLatencyTypePort:
+      if(latencyOutPortIndex() < controlOutPorts)
+        return controlsOut[latencyOutPortIndex()].val;
+    break;
+  }
+  return 0.0;
 }
 
+bool PluginI::usesTransportSource() const          { return _plugin->usesTimePosition(); };
+unsigned long PluginI::latencyOutPortIndex() const { return _plugin->latencyPortIndex(); }
+unsigned long PluginI::freewheelPortIndex() const  { return _plugin->freewheelPortIndex(); }
+unsigned long PluginI::enableOrBypassPortIndex() const     { return _plugin->enableOrBypassPortIndex(); }
+PluginLatencyReportingType PluginI::pluginLatencyReportingType() const { return _plugin->pluginLatencyReportingType(); }
+PluginBypassType PluginI::pluginBypassType() const { return _plugin->pluginBypassType(); }
+PluginFreewheelType PluginI::pluginFreewheelType() const { return _plugin->pluginFreewheelType(); }
 
 //---------------------------------------------------------
 //   setControl
@@ -2694,9 +2897,15 @@ void PluginI::writeConfiguration(int level, Xml& xml)
 #endif
       for (unsigned long i = 0; i < controlPorts; ++i) {
             unsigned long idx = controls[i].idx;
-            QString s("control name=\"%1\" val=\"%2\" /");
-            xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(double(controls[i].tmpVal)).toLatin1().constData());
+            const QString s("control name=\"%1\" val=\"%2\" /");
+            // Use hex value string when appropriate.
+            xml.tag(level,
+              s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).
+                arg(MusELib::museStringFromDouble(double(controls[i].tmpVal))).toLatin1().constData());
             }
+      if (_active == false)
+            xml.intTag(level, "active", _active);
+
       if (_on == false)
             xml.intTag(level, "on", _on);
 
@@ -2744,7 +2953,8 @@ bool PluginI::loadControl(Xml& xml)
                         if (tag == "name")
                               name = xml.s2();
                         else if (tag == "val")
-                              val = xml.s2().toDouble();
+                              // Accept either decimal or hex value strings.
+                              val = MusELib::museStringToDouble(xml.s2());
                         break;
                   case Xml::TagEnd:
                         if (tag == "control") {
@@ -2821,6 +3031,11 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               }
                         if (tag == "control")
                               loadControl(xml);
+                        else if (tag == "active") {
+                              bool flag = xml.parseInt();
+                              if (!readPreset)
+                                    _active = flag;
+                              }
                         else if (tag == "on") {
                               bool flag = xml.parseInt();
                               if (!readPreset)
@@ -3046,6 +3261,19 @@ bool PluginI::nativeGuiVisible() const
   return false;
 }
 
+void PluginI::guiHeartBeat()
+{
+  PluginIBase::guiHeartBeat();
+#ifdef OSC_SUPPORT
+  // Update the DSSI UI's controls if needed, if it exists.
+  if(plugin() && isDssiPlugin())
+  {
+    for(unsigned long i = 0; i < controlPorts; ++i)
+      _oscif.oscSendControl(controls[i].idx, controls[i].val);
+  }
+#endif
+}
+
 //---------------------------------------------------------
 //   makeGui
 //---------------------------------------------------------
@@ -3065,6 +3293,14 @@ void PluginIBase::deleteGui()
     delete _gui;
     _gui = 0;
   }
+}
+
+void PluginIBase::guiHeartBeat()
+{
+  // Update our generic plugin UI's controls, if it exists.
+  auto g = gui();
+  if(g)
+    g->heartBeat();
 }
 
 //---------------------------------------------------------
@@ -3090,25 +3326,74 @@ QString PluginI::titlePrefix() const
 
 //---------------------------------------------------------
 //   apply
-//   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
 void PluginI::apply(unsigned pos, unsigned long n,
-                    unsigned long ports, float** bufIn, float** bufOut, float latency_corr_offset)
+                    unsigned long ports, bool wantActive, float** bufIn, float** bufOut, float latency_corr_offset)
 {
   const unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();
   unsigned long sample = 0;
+  const bool isOn = on();
+  const bool isActive = active();
 
+  const PluginBypassType bypassType = pluginBypassType();
+
+  // Activate or deactivate the plugin now, depending on the desired track and plugin active states.
+  // The two calls will do nothing if already in the desired state.
+  if(wantActive && isActive)
+    activate();
+  else
+    deactivate();
+
+  //  Normally if the plugin is inactive or off we tell it to connect to dummy audio ports.
+  //  But this can change depending on detected bypass type, below.
+  bool connectToDummyAudioPorts = !_curActiveState || !isOn;
+  //  Normally if the plugin is inactive or off we use a fixed controller period.
+  //  But this can change depending on detected bypass type, below.
+  bool usefixedrate = !_curActiveState || !isOn;
+  const unsigned long fin_nsamp = n;
+
+  // If the plugin has a REAL enable or bypass control port, we allow the plugin
+  //  a full-length run so that it can handle its own enabling or bypassing.
+  if(_curActiveState)
+  {
+    switch(bypassType)
+    {
+      case PluginBypassTypeEmulatedEnableController:
+      break;
+
+      case PluginBypassTypeEnablePort:
+      case PluginBypassTypeBypassPort:
+          connectToDummyAudioPorts = false;
+          usefixedrate = false;
+      break;
+
+      case PluginBypassTypeEmulatedEnableFunction:
+      break;
+
+      case PluginBypassTypeEnableFunction:
+      case PluginBypassTypeBypassFunction:
+          connectToDummyAudioPorts = false;
+      break;
+    }
+  }
+
+  const PluginFreewheelType freewheelType = pluginFreewheelType();
+  const unsigned long int freewheelIdx = freewheelPortIndex();
+
+  // See if the features require a fixed control period.
   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
-  //       For now we treat it like fixed size.
-  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
+  //       For now we treat it like fixed control period.
+  if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+    usefixedrate = true;
 
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
   // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
   //  so that users can select a small audio period but a larger control period.
-  const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > n) ? n : MusEGlobal::config.minControlProcessPeriod;
+  const unsigned long min_per =
+    (usefixedrate || MusEGlobal::config.minControlProcessPeriod > n) ? n : MusEGlobal::config.minControlProcessPeriod;
   const unsigned long min_per_mask = min_per-1;   // min_per must be power of 2
 
   AutomationType at = AUTO_OFF;
@@ -3121,7 +3406,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
 
     at = _track->automationType();
     cll = _track->controller();
-    if(_id != -1 && ports != 0)  // Don't bother if not 'running'.
+    if(_id != -1)
       icl_first = cll->lower_bound(genACnum(_id, 0));
   }
   const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
@@ -3132,9 +3417,9 @@ void PluginI::apply(unsigned pos, unsigned long n,
     controls[k].val = controls[k].tmpVal;
 
   int cur_slice = 0;
-  while(sample < n)
+  while(sample < fin_nsamp)
   {
-    unsigned long nsamp = n - sample;
+    unsigned long slice_samps = fin_nsamp - sample;
     const unsigned long slice_frame = pos + sample;
 
     // Process automation control values, while also determining the maximum acceptable
@@ -3142,11 +3427,15 @@ void PluginI::apply(unsigned pos, unsigned long n,
     //  from there, but this section determines where the next highest maximum frame
     //  absolutely needs to be for smooth playback of the controller value stream...
     //
-    if(ports != 0)    // Don't bother if not 'running'.
     {
       ciCtrlList icl = icl_first;
       for(unsigned long k = 0; k < controlPorts; ++k)
       {
+        // Don't process freewheel controller. Freewheel port is a bad candidate
+        //  for automation or user control, and should be hidden.
+        if(freewheelType == PluginFreewheelTypePort && freewheelIdx == k)
+          continue;
+
         CtrlList* cl = (cll && _id != -1 && icl != cll->end()) ? icl->second : nullptr;
         CtrlInterpolate& ci = controls[k].interp;
         // Always refresh the interpolate struct at first, since things may have changed.
@@ -3192,7 +3481,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
 
         if(!usefixedrate && MusEGlobal::audio->isPlaying())
         {
-          unsigned long samps = nsamp;
+          unsigned long samps = slice_samps;
           if(ci.eFrameValid)
             samps = (unsigned long)ci.eFrame - slice_frame;
 
@@ -3205,8 +3494,8 @@ void PluginI::apply(unsigned pos, unsigned long n,
           else
             samps = min_per;
 
-          if(samps < nsamp)
-            nsamp = samps;
+          if(samps < slice_samps)
+            slice_samps = samps;
 
         }
 
@@ -3220,6 +3509,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
         {
            for(int i = 0; i < instances; ++i)
            {
+              // Inform the GUI.
               (reinterpret_cast<LV2PluginWrapper *>(_plugin))->setLastStateControls(handle [i], k, true, false, true, 0.0f);
            }
         }
@@ -3228,13 +3518,13 @@ void PluginI::apply(unsigned pos, unsigned long n,
         controls[k].tmpVal = controls[k].val;  // Special for plugins: Deal with tmpVal.
 
 #ifdef PLUGIN_DEBUGIN_PROCESS
-        printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d nsamp:%lu \n", k, sample, frame, ci.eFrame, nsamp);
+        printf("PluginI::apply k:%lu sample:%lu frame:%lu nextFrame:%d slice_samps:%lu \n", k, sample, frame, ci.eFrame, slice_samps);
 #endif
       }
     }
 
 #ifdef PLUGIN_DEBUGIN_PROCESS
-    printf("PluginI::apply sample:%lu nsamp:%lu\n", sample, nsamp);
+    printf("PluginI::apply sample:%lu slice_samps:%lu\n", sample, slice_samps);
 #endif
 
     //
@@ -3269,12 +3559,16 @@ void PluginI::apply(unsigned pos, unsigned long n,
         continue;
       }
 
-      if(evframe >= n                                                               // Next events are for a later period.
-          || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
-          || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
-          || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
+      if(
+         // Next events are for a later period.
+         evframe >= n ||
+            // Next events are for a later run in this period. (Autom took prio.)
+           ((!usefixedrate && !found && !v.unique && (evframe - sample >= slice_samps))
+            // Eat up events within minimum slice - they're too close.
+            || (found && !v.unique && (evframe - sample >= min_per))
+            // Special for dssi-vst: Fixed rate and must reply to all.
+            || (usefixedrate && found && v.unique && v.idx == index)))
         break;
-//       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
       if(v.idx >= in_ctrls) // Sanity check
       {
@@ -3286,9 +3580,14 @@ void PluginI::apply(unsigned pos, unsigned long n,
       frame = evframe;
       index = v.idx;
 
-      if(ports == 0)                                              // Don't bother if not 'running'.
-        controls[v.idx].val = controls[v.idx].tmpVal = v.value;   // Might as well at least update these.
-      else
+      // Don't process items meant for a freewheel port. Freewheel port is a bad candidate
+      //  for automation or user control, and should be hidden.
+      if(freewheelType == PluginFreewheelTypePort && freewheelIdx == index)
+      {
+        _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
+        continue;
+      }
+
       {
         CtrlInterpolate* ci = &controls[v.idx].interp;
         // Tell it to stop the current ramp at this frame, when it does stop, set this value:
@@ -3309,6 +3608,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
          {
             for(int i = 0; i < instances; ++i)
             {
+               // Don't send gui control changes back to the gui, just update the last value.
                (reinterpret_cast<LV2PluginWrapper *>(_plugin))->setLastStateControls(handle [i], v.idx, true, true, false, v.value);
             }
          }
@@ -3319,25 +3619,19 @@ void PluginI::apply(unsigned pos, unsigned long n,
     }
 
     if(found && !usefixedrate) // If a control FIFO item was found, takes priority over automation controller stream.
-      nsamp = frame - sample;
+      slice_samps = frame - sample;
 
-    if(sample + nsamp > n)    // Safety check.
-      nsamp = n - sample;
+    if(sample + slice_samps > n)    // Safety check.
+      slice_samps = n - sample;
 
-    // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
-    // Note this means it is still possible to get stuck in the top loop (at least for a while).
-    if(nsamp != 0)
+    if(_curActiveState)
     {
-      if(ports != 0)     // Don't bother if not 'running'.
-      {
-        connect(ports, sample, bufIn, bufOut);
-
-        for(int i = 0; i < instances; ++i)
-          _plugin->apply(handle[i], nsamp, latency_corr_offset);
-      }
-
-      sample += nsamp;
+      connect(ports, connectToDummyAudioPorts, sample, bufIn, bufOut);
+      for(int i = 0; i < instances; ++i)
+        _plugin->apply(handle[i], slice_samps, latency_corr_offset);
     }
+
+    sample += slice_samps;
 
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
@@ -3617,6 +3911,14 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
       tools->addSeparator();
 
+      activeButton = new QAction(*trackOnSVGIcon, tr("Deactivate plugin"), this);
+      activeButton->setCheckable(true);
+      activeButton->setChecked(!plugin->active());
+      activeButton->setEnabled(plugin->hasActiveButton());
+      activeButton->setToolTip(tr("Deactivate plugin"));
+      connect(activeButton, &QAction::toggled, [this](bool v) { activeToggled(v); } );
+      tools->addAction(activeButton);
+
       onOff = new QAction(*muteSVGIcon, tr("Bypass plugin"), this);
       onOff->setCheckable(true);
       onOff->setChecked(!plugin->on());
@@ -3624,6 +3926,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       onOff->setToolTip(tr("Bypass plugin"));
       connect(onOff, &QAction::toggled, [this](bool v) { bypassToggled(v); } );
       tools->addAction(onOff);
+
+      tools->addSeparator();
 
       QAction* settings = new QAction(*settingsSVGIcon, tr("Plugin settings"), this);
       connect(settings, &QAction::triggered, this, &PluginGui::showSettings);
@@ -3642,7 +3946,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       else
           constructGUIFromPluginMetadata();
 
-      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+      _configChangedMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, [this]() { configChanged(); } );
       }
 
 //---------------------------------------------------------
@@ -3651,6 +3955,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
 PluginGui::~PluginGui()
       {
+      disconnect(_configChangedMetaConn);
+
       if (gw)
             delete[] gw;
       if (params)
@@ -3720,6 +4026,15 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
           gw[nobj].param   = parameter;
           gw[nobj].type    = -1;
           gw[nobj].pressed = false;
+          const LADSPA_PortRangeHint range = plugin->range(parameter);
+          gw[nobj].hint = range.HintDescriptor;
+          double lower = 0.0;     // default values
+          double upper = 1.0;
+          double dlower = lower;
+          double dupper = upper;
+          double val   = plugin->param(parameter);
+          double dval  = val;
+          getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
 
           if (strcmp(obj->metaObject()->className(), "MusEGui::Slider") == 0) {
                 gw[nobj].type = GuiWidgets::SLIDER;
@@ -3727,23 +4042,8 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                 s->setId(nobj);
                 s->setCursorHoming(true);
 
-                LADSPA_PortRangeHint range = plugin->range(parameter);
-                double lower = 0.0;     // default values
-                double upper = 1.0;
-                double dlower = lower;
-                double dupper = upper;
-                double val   = plugin->param(parameter);
-                double dval  = val;
-                getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
-
                 // TODO
                 //s->setThumbLength(1);
-                //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
-                //s->setScaleMaxMinor(5);
-                //s->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
-                //s->setScale(dlower, dupper, 1.0, false);
-                //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-                //s->setScaleBackBone(false);
                 //s->setFillThumb(false);
 
                 QFont fnt;
@@ -3754,13 +4054,23 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                 fnt.setHintingPreference(QFont::PreferVerticalHinting);
                 s->setFont(fnt);
                 s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
+                s->setScaleBackBone(false);
                 s->setSizeHint(200, 8);
 
-                for(unsigned long i = 0; i < nobj; i++)
-                {
-                  if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
-                    ((DoubleLabel*)gw[i].widget)->setSlider(s);
-                }
+                setupControllerWidgets(
+                  s, nullptr, nullptr, nullptr, 0,
+                  lower, upper,
+                  LADSPA_IS_HINT_INTEGER(range.HintDescriptor),
+                  LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor),
+                  false, //MusEGlobal::config.preferMidiVolumeDb,
+                  true,
+                  0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+                  MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+                  // No suffix needed here.
+                  QString());
+
+                s->setValue(val);
+
                 connect(s, QOverload<double, int, int>::of(&Slider::valueChanged), [=](double, int i, int) { guiParamChanged(i); } );
                 connect(s, &Slider::sliderPressed, [this](double v, int i) { guiSliderPressed(v, i); } );
                 connect(s, &Slider::sliderReleased, [this](double v, int i) { guiSliderReleased(v, i); } );
@@ -3771,21 +4081,30 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                 dl_obj = static_cast<DoubleLabel*>(obj);
                 dl_obj->setId(nobj);
                 dl_obj->setAlignment(Qt::AlignCenter);
-                for(unsigned long i = 0; i < nobj; i++)
-                {
-                  if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
-                  {
-                    dl_obj->setSlider((Slider*)gw[i].widget);
-                    break;
-                  }
-                }
-                connect((DoubleLabel*)obj, &DoubleLabel::valueChanged, [this](double, int i) { guiParamChanged(i); } );
+
+                setupControllerWidgets(
+                  nullptr, dl_obj, nullptr, nullptr, 0,
+                  lower, upper,
+                  LADSPA_IS_HINT_INTEGER(range.HintDescriptor),
+                  LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor),
+                  false, //MusEGlobal::config.preferMidiVolumeDb,
+                  true,
+                  0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+                  MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+                  // Use existing suffix.
+                  dl_obj->suffix());
+
+                dl_obj->setValue(val);
+
+                connect(dl_obj, &DoubleLabel::valueChanged, [this](double, int i) { guiParamChanged(i); } );
                 }
           else if (strcmp(obj->metaObject()->className(), "MusEGui::CheckBox") == 0) {
                 gw[nobj].type = GuiWidgets::CHECKBOX;
                 gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
                 cb_obj = static_cast<CheckBox*>(obj);
                 cb_obj->setId(nobj);
+                cb_obj->setChecked(val != 0.0);
+
                 connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { guiParamPressed(i); } );
                 connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { guiParamReleased(i); } );
                 connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint& p, int i) { guiSliderRightClicked(p, i); } );
@@ -3795,6 +4114,8 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
                 gw[nobj].widget->setContextMenuPolicy(Qt::CustomContextMenu);
                 sw_obj = static_cast<Switch*>(obj);
                 sw_obj->setId(nobj);
+                sw_obj->setChecked(val != 0.0);
+
                 connect(sw_obj, &Switch::toggleChanged, [this](bool, int i) { guiParamChanged(i); } );
                 connect(sw_obj, &Switch::switchPressed, [this](int i) { guiParamPressed(i); } );
                 connect(sw_obj, &Switch::switchReleased, [this](int i) { guiParamReleased(i); } );
@@ -3819,6 +4140,7 @@ void PluginGui::constructGUIFromFile(QFile& uifile) {
 //---------------------------------------------------------
 // construct GUI from plugin's meta data
 //---------------------------------------------------------
+
 void PluginGui::constructGUIFromPluginMetadata() {
 
     view = new QScrollArea;
@@ -3841,9 +4163,6 @@ void PluginGui::constructGUIFromPluginMetadata() {
 
     QFontMetrics fm = fontMetrics();
     int h           = fm.height() + 4;
-
-    Slider* sl_obj;
-    ComboBoxPI* cmb_obj;
 
     QString lastGroup;
 
@@ -3891,37 +4210,33 @@ void PluginGui::constructGUIFromPluginMetadata() {
             label = new QLabel(QString(plugin->paramName(i)), nullptr);
             CheckBox* cb = new CheckBox(mw, i, "param");
             cb->setId(i);
-            cb->setChecked(plugin->param(i) != 0.0);
+            cb->setChecked(val != 0.0);
             cb->setFixedHeight(h);
             params[i].actuator = cb;
 
-            params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            cb->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
             grid->addWidget(label, i, 0);
-            grid->addWidget(params[i].actuator, i, 1);
+            grid->addWidget(cb, i, 1);
 
-            CheckBox* cb_obj = (CheckBox*)params[i].actuator;
-
-            connect(cb_obj, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
-            connect(cb_obj, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
-            connect(cb_obj, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
+            connect(cb, &CheckBox::checkboxPressed, [this](int i) { switchPressed(i); } );
+            connect(cb, &CheckBox::checkboxReleased, [this](int i) { switchReleased(i); } );
+            connect(cb, &CheckBox::checkboxRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
 #else
             params[i].type = GuiParam::GUI_SWITCH;
             label = new QLabel(QString(plugin->paramName(i)), nullptr);
             Switch* sw = new Switch(i, mw, "param");
-            sw->setChecked(plugin->param(i) != 0.0);
+            sw->setChecked(val != 0.0);
             sw->setFixedHeight(h);
             params[i].actuator = sw;
 
-            params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            sw->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
             grid->addWidget(label, i, 0);
-            grid->addWidget(params[i].actuator, i, 1);
+            grid->addWidget(sw, i, 1);
 
-            Switch* sw_obj = (Switch*)params[i].actuator;
-
-            connect(sw_obj, &Switch::toggleChanged, [this](bool v, int i) { switchChanged(v, i); } );
-            connect(sw_obj, &Switch::switchPressed, [this](int i) { switchPressed(i); } );
-            connect(sw_obj, &Switch::switchReleased, [this](int i) { switchReleased(i); } );
-            connect(sw_obj, &Switch::switchRightClicked, [this](const QPoint& p, int i) { ctrlRightClicked(p, i); } );
+            connect(sw, &Switch::toggleChanged, [this](bool v, int i) { switchChanged(v, i); } );
+            connect(sw, &Switch::switchPressed, [this](int i) { switchPressed(i); } );
+            connect(sw, &Switch::switchReleased, [this](int i) { switchReleased(i); } );
+            connect(sw, &Switch::switchRightClicked, [this](const QPoint& p, int i) { ctrlRightClicked(p, i); } );
 #endif
         }
         else if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_ENUM
@@ -3945,24 +4260,17 @@ void PluginGui::constructGUIFromPluginMetadata() {
             grid->addWidget(label, i, 0);
             grid->addWidget(params[i].actuator, i, 1, 1, 2);
 
-            cmb_obj = static_cast<ComboBoxPI*>(params[i].actuator);
-
-            connect(cmb_obj, QOverload<int>::of(&ComboBoxPI::currentIndexChanged), [=]() { comboChanged(i); } );
-            connect(cmb_obj, &ComboBoxPI::rightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
+            connect(cmb, QOverload<int>::of(&ComboBoxPI::currentIndexChanged), [=]() { comboChanged(i); } );
+            connect(cmb, &ComboBoxPI::rightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
 
         }
         else {
             label           = new QLabel(QString(plugin->paramName(i)), nullptr);
             params[i].type  = GuiParam::GUI_SLIDER;
-            params[i].label = new DoubleLabel(val, lower, upper, nullptr);
+            params[i].label = new DoubleLabel(nullptr);
             params[i].label->setFrame(true);
             params[i].label->setAlignment(Qt::AlignCenter);
             params[i].label->setId(i);
-
-            if (plugin->ctrlValueType(i) == MusECore::CtrlValueType::VAL_INT)
-                params[i].label->setPrecision(0);
-            else
-                params[i].label->setPrecision(2);
 
             // Let sliders all have different but unique colors
             // Some prime number magic
@@ -3972,17 +4280,11 @@ void PluginGui::constructGUIFromPluginMetadata() {
             uint c3 = j * j * j * 43  % 256;
             QColor color(c1, c2, c3);
 
-            Slider* s = new Slider(0, "param", Qt::Horizontal,
-                                   Slider::InsideHorizontal, 8, color, ScaleDraw::TextHighlightSplitAndShadow);
+            Slider* s = new Slider(
+              0, "param", Qt::Horizontal, Slider::ScaleRightOrBottom, 8, color, ScaleDraw::TextHighlightNone);
 
             // TODO
             //s->setThumbLength(1);
-            //s->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
-            //s->setScaleMaxMinor(5);
-            //s->setScale(MusEGlobal::config.minSlider-0.1, 10.0, 6.0, false);
-            //s->setScale(dlower, dupper, 1.0, false);
-            //s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-            //s->setScaleBackBone(false);
             //s->setFillThumb(false);
 
             QFont fnt;
@@ -3993,15 +4295,26 @@ void PluginGui::constructGUIFromPluginMetadata() {
             s->setFont(fnt);
             s->setStyleSheet(MusECore::font2StyleSheetFull(fnt));
 
+            s->setScaleBackBone(false);
             s->setCursorHoming(true);
             s->setId(i);
-            s->setSizeHint(200, 8);
-            s->setRange(dlower, dupper);
-            if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
-                s->setStep(1.0);
-            s->setValue(dval);
+            s->setSizeHint(150, 8);
+
+            setupControllerWidgets(
+              s, params[i].label, nullptr, nullptr, 0,
+              lower, upper,
+              LADSPA_IS_HINT_INTEGER(range.HintDescriptor),
+              LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor),
+              false,
+              true,
+              0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+              MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+              plugin->unitSymbol(i));
+
+            s->setValue(val);
+            params[i].label->setValue(val);
+
             params[i].actuator = s;
-            params[i].label->setSlider(s);
 
             label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
             params[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -4010,13 +4323,12 @@ void PluginGui::constructGUIFromPluginMetadata() {
             grid->addWidget(params[i].label,    i, 1);
             grid->addWidget(params[i].actuator, i, 2);
 
-            sl_obj = static_cast<Slider*>(params[i].actuator);
-            connect(sl_obj, QOverload<double, int, int>::of(&Slider::valueChanged),
+            connect(s, QOverload<double, int, int>::of(&Slider::valueChanged),
                     [=](double v, int id, int scroll_mode) { sliderChanged(v, id, scroll_mode); } );
             connect(params[i].label, &DoubleLabel::valueChanged, [this](double v, int i) { labelChanged(v, i); } );
-            connect(sl_obj, &Slider::sliderPressed, [this](double v, int i) { sliderPressed(v, i); } );
-            connect(sl_obj, &Slider::sliderReleased, [this](double v, int i) { sliderReleased(v, i); } );
-            connect(sl_obj, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
+            connect(s, &Slider::sliderPressed, [this](double v, int i) { sliderPressed(v, i); } );
+            connect(s, &Slider::sliderReleased, [this](double v, int i) { sliderReleased(v, i); } );
+            connect(s, &Slider::sliderRightClicked, [this](const QPoint &p, int i) { ctrlRightClicked(p, i); } );
         }
 
         if (plugin->ctrlNotOnGui(i)) {
@@ -4034,7 +4346,6 @@ void PluginGui::constructGUIFromPluginMetadata() {
 
         groupBox = new QGroupBox(tr("Output controls"));
         grid = new QGridLayout(groupBox);
-//        grid->setSpacing(8);
         groupBox->setLayout(grid);
         vbox->addWidget(groupBox);
 
@@ -4053,26 +4364,38 @@ void PluginGui::constructGUIFromPluginMetadata() {
             getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
             label           = new QLabel(QString(plugin->paramOutName(i)), nullptr);
             paramsOut[i].type  = GuiParam::GUI_METER;
-            paramsOut[i].label = new DoubleLabel(val, lower, upper, nullptr);
-            paramsOut[i].label->setFrame(true);
-            paramsOut[i].label->setAlignment(Qt::AlignCenter);
-            paramsOut[i].label->setPrecision(2);
-            paramsOut[i].label->setId(i);
+            paramsOut[i].textLabel = new DoubleText(nullptr);
+            paramsOut[i].textLabel->setTextFormat(Qt::PlainText);
+            paramsOut[i].textLabel->setFrameShape(QFrame::Box);
+            paramsOut[i].textLabel->setAlignment(Qt::AlignCenter);
+            paramsOut[i].textLabel->setId(i);
+            paramsOut[i].textLabel->setValue(val);
 
-            Meter::MeterType mType=Meter::LinMeter;
-            //if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
-            if(LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor))
-                mType=Meter::DBMeter;
-            Meter* m = new Meter(this,
-                                 mType,
-                                 Qt::Horizontal,
-                                 dlower, dupper,
-                                 Meter::InsideHorizontal); //, ScaleDraw::TextHighlightNone);
+            Meter* m = new Meter(this);
+            m->setOrientation(Qt::Horizontal);
+            m->setVUSizeHint(QSize(60, 8));
+            m->setFrame(true, Qt::darkGray);
+            m->setScaleDist(2);
+            m->setTextHighlightMode(ScaleDraw::TextHighlightNone);
+
             m->setRefreshRate(MusEGlobal::config.guiRefresh);
-            m->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Maximum);
-            m->setVal(dval, dval, false);
+            m->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
             m->setScaleBackBone(false);
             m->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor);
+
+            setupControllerWidgets(
+              nullptr, nullptr, paramsOut[i].textLabel, &m, 1,
+              lower, upper,
+              LADSPA_IS_HINT_INTEGER(range.HintDescriptor),
+              LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor),
+              false, //MusEGlobal::config.preferMidiVolumeDb,
+              true,
+              0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+              MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+              plugin->unitSymbolOut(i));
+
+            m->setVal(val, val, false);
+
 
             QFont fnt;
             fnt.setFamily("Sans");
@@ -4084,17 +4407,16 @@ void PluginGui::constructGUIFromPluginMetadata() {
 
             paramsOut[i].actuator = m;
             label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-            paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
-            grid->addWidget(label, paramCnt+i, 0);
-            grid->addWidget(paramsOut[i].label,    paramCnt+i, 1);
-            grid->addWidget(paramsOut[i].actuator, paramCnt+i, 2);
+            paramsOut[i].textLabel->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+            grid->addWidget(label, i, 0);
+            grid->addWidget(paramsOut[i].textLabel, i, 1);
+            grid->addWidget(paramsOut[i].actuator, i, 2);
         }
     }
 
     vbox->addStretch(0);
     mw->setLayout(vbox);
 }
-
 
 void PluginGui::updateWindowTitle()
 {
@@ -4196,13 +4518,167 @@ void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
         dupper = upper;
         }
   if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor)) {
-        if (lower == 0.0)
-              lower = 0.001;
-        dlower = MusECore::fast_log10(lower)*20.0;
-        dupper = MusECore::fast_log10(upper)*20.0;
-        dval  = MusECore::fast_log10(dval) * 20.0;
+        if (lower <= 0.0)
+        {
+          dlower = MusEGlobal::config.minSlider;
+        }
+        else
+        {
+          dlower = muse_val2db(lower);
+        }
+        dupper = muse_val2db(upper);
+        dval  = muse_val2db(dval);
         }
 
+}
+
+//---------------------------------------------------------
+//   configChanged
+//---------------------------------------------------------
+
+void PluginGui::configChanged()
+{
+    if (paramsOut) {
+        for (unsigned long i = 0; i < plugin->parametersOut(); ++i) {
+            GuiParam* gp = &paramsOut[i];
+            const int hint = gp->hint;
+
+            const LADSPA_PortRangeHint range = plugin->rangeOut(i);
+            double lower = 0.0;     // default values
+            double upper = 32768.0; // Many latency outs have no hints so set this arbitrarily high
+            double dlower = lower;
+            double dupper = upper;
+            const double val   = plugin->paramOut(i);
+            double dval  = val;
+
+            getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+
+            if (gp->type == GuiParam::GUI_METER) {
+
+                setupControllerWidgets(
+                  nullptr, nullptr, paramsOut[i].textLabel, ((Meter**)(&gp->actuator)), 1,
+                  lower, upper,
+                  LADSPA_IS_HINT_INTEGER(hint),
+                  LADSPA_IS_HINT_LOGARITHMIC(hint),
+                  false,
+                  true,
+                  0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+                  MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+                  plugin->unitSymbolOut(i));
+
+                ((Meter*)(gp->actuator))->blockSignals(true);
+                paramsOut[i].textLabel->blockSignals(true);
+
+                ((Meter*)(gp->actuator))->setVal(val, val, false);
+                ((Meter*)(gp->actuator))->setRefreshRate(MusEGlobal::config.guiRefresh);
+                paramsOut[i].textLabel->setValue(val);
+
+                ((Meter*)(gp->actuator))->blockSignals(false);
+                paramsOut[i].textLabel->blockSignals(false);
+            }
+        }
+    }
+
+    if (params) {
+        for (unsigned long i = 0; i < plugin->parameters(); ++i) {
+            GuiParam* gp = &params[i];
+            const int hint = gp->hint;
+
+            const LADSPA_PortRangeHint range = plugin->range(i);
+            double lower = 0.0;     // default values
+            double upper = 1.0;
+            double dlower = lower;
+            double dupper = upper;
+            const double val   = plugin->param(i);
+            double dval  = val;
+
+            getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+
+            if (gp->type == GuiParam::GUI_SLIDER)
+            {
+
+                setupControllerWidgets(
+                  ((Slider*)(gp->actuator)), gp->label, nullptr, nullptr, 0,
+                  lower, upper,
+                  LADSPA_IS_HINT_INTEGER(hint),
+                  LADSPA_IS_HINT_LOGARITHMIC(hint),
+                  false,
+                  true,
+                  0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+                  MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+                  plugin->unitSymbol(i));
+
+                gp->actuator->blockSignals(true);
+                gp->label->blockSignals(true);
+
+                ((Slider*)(gp->actuator))->setValue(val);
+                gp->label->setValue(val);
+
+                gp->actuator->blockSignals(false);
+                gp->label->blockSignals(false);
+            }
+        }
+    }
+    else if (gw) {
+        for (unsigned long i = 0; i < nobj; ++i) {
+            QWidget* widget = gw[i].widget;
+            const int type = gw[i].type;
+            const int hint = gw[i].hint;
+            const unsigned long param = gw[i].param;
+            const LADSPA_PortRangeHint range = plugin->range(param);
+            double lower = 0.0;     // default values
+            double upper = 1.0;
+            double dlower = lower;
+            double dupper = upper;
+            const double val = plugin->param(param);
+            double dval  = val;
+
+            getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+
+            switch(type) {
+            case GuiWidgets::SLIDER:
+            {
+
+                setupControllerWidgets(
+                  ((Slider*)widget), nullptr, nullptr, nullptr, 0,
+                  lower, upper,
+                  LADSPA_IS_HINT_INTEGER(hint),
+                  LADSPA_IS_HINT_LOGARITHMIC(hint),
+                  false,
+                  true,
+                  0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+                  MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+                  // No suffix needed here.
+                  QString());
+
+                ((Slider*)widget)->blockSignals(true);
+                ((Slider*)widget)->setValue(val);
+                ((Slider*)widget)->blockSignals(false);
+            }
+            break;
+            case GuiWidgets::DOUBLE_LABEL:
+            {
+
+                setupControllerWidgets(
+                  nullptr, ((DoubleLabel*)widget), nullptr, nullptr, 0,
+                  lower, upper,
+                  LADSPA_IS_HINT_INTEGER(hint),
+                  LADSPA_IS_HINT_LOGARITHMIC(hint),
+                  false,
+                  true,
+                  0.5, 0.01, 1.0, 2, 2, 3, 20.0,
+                  MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+                  // Use existing suffix.
+                  ((DoubleLabel*)widget)->suffix());
+
+                ((DoubleLabel*)widget)->blockSignals(true);
+                ((DoubleLabel*)widget)->setValue(val);
+                ((DoubleLabel*)widget)->blockSignals(false);
+            }
+            break;
+            }
+        }
+    }
 }
 
 //---------------------------------------------------------
@@ -4218,7 +4694,7 @@ void PluginGui::heartBeat()
 //   ctrlPressed
 //---------------------------------------------------------
 
-void PluginGui::sliderPressed(double /*val*/, int param)
+void PluginGui::sliderPressed(double val, int param)
 {
       params[param].pressed = true;
       MusECore::AudioTrack* track = plugin->track();
@@ -4226,19 +4702,11 @@ void PluginGui::sliderPressed(double /*val*/, int param)
       if(id != -1)
       {
         id = MusECore::genACnum(id, param);
-          double val = ((Slider*)params[param].actuator)->value();
-          if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-                val = muse_db2val(val);
-          else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-                val = rint(val);
-          params[param].label->blockSignals(true);
-          params[param].label->setValue(val);
-          params[param].label->blockSignals(false);
-          if(track)
-          {
-            track->startAutoRecord(id, val);
-            track->setPluginCtrlVal(id, val);
-          }
+        if(track)
+        {
+          track->startAutoRecord(id, val);
+          track->setPluginCtrlVal(id, val);
+        }
       }
       plugin->enableController(param, false);
 }
@@ -4247,7 +4715,7 @@ void PluginGui::sliderPressed(double /*val*/, int param)
 //   ctrlReleased
 //---------------------------------------------------------
 
-void PluginGui::sliderReleased(double /*val*/, int param)
+void PluginGui::sliderReleased(double val, int param)
 {
     MusECore::AutomationType at = MusECore::AUTO_OFF;
     MusECore::AudioTrack* track = plugin->track();
@@ -4257,13 +4725,8 @@ void PluginGui::sliderReleased(double /*val*/, int param)
     int id = plugin->id();
     if(track && id != -1)
     {
-        id = MusECore::genACnum(id, param);
-        double val = ((Slider*)params[param].actuator)->value();
-        if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-            val = muse_db2val(val);
-        else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-            val = rint(val);
-        track->stopAutoRecord(id, val);
+      id = MusECore::genACnum(id, param);
+      track->stopAutoRecord(id, val);
     }
 
     if (at == MusECore::AUTO_OFF || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
@@ -4356,15 +4819,6 @@ void PluginGui::switchReleased(int param)
 void PluginGui::sliderChanged(double val, int param, int scrollMode)
 {
       MusECore::AudioTrack* track = plugin->track();
-
-      if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-            val = muse_db2val(val);
-      else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-            val = rint(val);
-
-      params[param].label->blockSignals(true);
-      params[param].label->setValue(val);
-      params[param].label->blockSignals(false);
       int id = plugin->id();
       if(track && id != -1)
       {
@@ -4402,15 +4856,6 @@ void PluginGui::switchChanged(bool val, int param)
 void PluginGui::labelChanged(double val, int param)
 {
       MusECore::AudioTrack* track = plugin->track();
-
-      double dval = val;
-      if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-            dval = MusECore::fast_log10(val) * 20.0;
-      else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-            dval = rint(val);
-      params[param].actuator->blockSignals(true);
-      ((Slider*)params[param].actuator)->setValue(dval);
-      params[param].actuator->blockSignals(false);
       int id = plugin->id();
       if(track && id != -1)
       {
@@ -4420,6 +4865,7 @@ void PluginGui::labelChanged(double val, int param)
       plugin->setParam(param, val);  // Schedules a timed control change.
       plugin->enableController(param, false);
 }
+
 
 //---------------------------------------------------------
 //   comboChanged
@@ -4536,6 +4982,17 @@ void PluginGui::save()
       }
 
 //---------------------------------------------------------
+//   activeToggled
+//---------------------------------------------------------
+
+void PluginGui::activeToggled(bool val)
+      {
+      updateWindowTitle();
+      plugin->setActive(!val);
+      MusEGlobal::song->update(SC_ROUTE);
+      }
+
+//---------------------------------------------------------
 //   bypassToggled
 //---------------------------------------------------------
 
@@ -4551,6 +5008,18 @@ void PluginGui::showSettings()
     PluginSettings settingsDialog(plugin, MusEGlobal::config.noPluginScaling, this);
     settingsDialog.setWindowTitle(tr("Plugin Settings"));
     settingsDialog.exec();
+}
+
+//---------------------------------------------------------
+//   setActive
+//---------------------------------------------------------
+
+void PluginGui::setActive(bool val)
+{
+      updateWindowTitle();
+      activeButton->blockSignals(true);
+      activeButton->setChecked(!val);
+      activeButton->blockSignals(false);
 }
 
 //---------------------------------------------------------
@@ -4574,37 +5043,29 @@ void PluginGui::updateValues()
     if (params) {
         for (unsigned long i = 0; i < plugin->parameters(); ++i) {
             GuiParam* gp = &params[i];
+            const double sv = plugin->param(i);
             if (gp->type == GuiParam::GUI_SLIDER) {
-                double lv = plugin->param(i);
-                double sv = lv;
-                if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                    sv = MusECore::fast_log10(lv) * 20.0;
-                else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
-                {
-                    sv = rint(lv);
-                    lv = sv;
-                }
                 gp->label->blockSignals(true);
                 gp->actuator->blockSignals(true);
-                gp->label->setValue(lv);
+                gp->label->setValue(sv);
                 ((Slider*)(gp->actuator))->setValue(sv);
                 gp->label->blockSignals(false);
                 gp->actuator->blockSignals(false);
             }
             else if (gp->type == GuiParam::GUI_CHECKBOX) {
                 gp->actuator->blockSignals(true);
-                ((CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
+                ((CheckBox*)(gp->actuator))->setChecked(int(sv));
                 gp->actuator->blockSignals(false);
             }
             else if (gp->type == GuiParam::GUI_SWITCH) {
                 gp->actuator->blockSignals(true);
-                ((Switch*)(gp->actuator))->setChecked(int(plugin->param(i)));
+                ((Switch*)(gp->actuator))->setChecked(int(sv));
                 gp->actuator->blockSignals(false);
             }
             else if (gp->type == GuiParam::GUI_ENUM) {
-                float sv = static_cast<float>(plugin->param(i));
+                const float sv = static_cast<float>(plugin->param(i));
                 ComboBoxPI *c = static_cast<ComboBoxPI*>(gp->actuator);
-                int idx = c->findData(sv);
+                const int idx = c->findData(sv);
                 gp->actuator->blockSignals(true);
                 c->setCurrentIndex(idx);
                 gp->actuator->blockSignals(false);
@@ -4614,9 +5075,9 @@ void PluginGui::updateValues()
     else if (gw) {
         for (unsigned long i = 0; i < nobj; ++i) {
             QWidget* widget = gw[i].widget;
-            int type = gw[i].type;
-            unsigned long param = gw[i].param;
-            double val = plugin->param(param);
+            const int type = gw[i].type;
+            const unsigned long param = gw[i].param;
+            const double val = plugin->param(param);
             widget->blockSignals(true);
             switch(type) {
             case GuiWidgets::SLIDER:
@@ -4655,100 +5116,72 @@ void PluginGui::updateControls()
         for (unsigned long i = 0; i < plugin->parametersOut(); ++i) {
             GuiParam* gp = &paramsOut[i];
             if (gp->type == GuiParam::GUI_METER) {
-                double lv = plugin->paramOut(i);
-                double sv = lv;
-                if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                    sv = MusECore::fast_log10(lv) * 20.0;
-                else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
-                {
-                    sv = rint(lv);
-                    lv = sv;
-                }
-                ((Meter*)(gp->actuator))->setVal(sv, sv, false);
-                gp->label->setValue(lv);
-
+                const double lv = plugin->paramOut(i);
+                ((Meter*)(gp->actuator))->setVal(lv, lv, false);
+                gp->textLabel->setValue(lv);
             }
         }
     }
 
-
     if (params) {
         for (unsigned long i = 0; i < plugin->parameters(); ++i) {
             GuiParam* gp = &params[i];
-            if(gp->pressed) // Inhibit the controller stream if control is currently pressed.
-                continue;
-            double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i),
+            const double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), i),
                                                             MusEGlobal::audio->curFramePos(),
                                                             !MusEGlobal::automation ||
                                                             plugin->track()->automationType() == MusECore::AUTO_OFF ||
                                                             !plugin->controllerEnabled(i));
             if (gp->type == GuiParam::GUI_SLIDER) {
-                {
-                    double sv = v;
-                    if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                        sv = MusECore::fast_log10(v) * 20.0;
-                    else
-                        if (LADSPA_IS_HINT_INTEGER(params[i].hint))
-                        {
-                            sv = rint(v);
-                            v = sv;
-                        }
-                    if(((Slider*)(gp->actuator))->value() != sv)
-                    {
-                        gp->label->blockSignals(true);
-                        gp->actuator->blockSignals(true);
-                        ((Slider*)(gp->actuator))->setValue(sv);
-                        gp->label->setValue(v);
-                        gp->actuator->blockSignals(false);
-                        gp->label->blockSignals(false);
-                    }
-                }
+                gp->label->blockSignals(true);
+                gp->actuator->blockSignals(true);
+                ((Slider*)(gp->actuator))->setValue(v);
+                gp->label->setValue(v);
+                gp->actuator->blockSignals(false);
+                gp->label->blockSignals(false);
             }
             else if (gp->type == GuiParam::GUI_CHECKBOX) {
+                if(gp->pressed) // Inhibit the controller stream if control is currently pressed.
+                    continue;
+                const bool b = (int)v;
+                if(((CheckBox*)(gp->actuator))->isChecked() != b)
                 {
-                    bool b = (int)v;
-                    if(((CheckBox*)(gp->actuator))->isChecked() != b)
-                    {
-                        gp->actuator->blockSignals(true);
-                        ((CheckBox*)(gp->actuator))->setChecked(b);
-                        gp->actuator->blockSignals(false);
-                    }
+                    gp->actuator->blockSignals(true);
+                    ((CheckBox*)(gp->actuator))->setChecked(b);
+                    gp->actuator->blockSignals(false);
                 }
             }
             else if (gp->type == GuiParam::GUI_SWITCH) {
+                if(gp->pressed) // Inhibit the controller stream if control is currently pressed.
+                    continue;
+                const bool b = (int)v;
+                if(((Switch*)(gp->actuator))->isChecked() != b)
                 {
-                    bool b = (int)v;
-                    if(((Switch*)(gp->actuator))->isChecked() != b)
-                    {
-                        gp->actuator->blockSignals(true);
-                        ((Switch*)(gp->actuator))->setChecked(b);
-                        gp->actuator->blockSignals(false);
-                    }
+                    gp->actuator->blockSignals(true);
+                    ((Switch*)(gp->actuator))->setChecked(b);
+                    gp->actuator->blockSignals(false);
                 }
             }
             else if (gp->type == GuiParam::GUI_ENUM) {
+                if(gp->pressed) // Inhibit the controller stream if control is currently pressed.
+                    continue;
+                const float sv = static_cast<float>(v);
+                ComboBoxPI *c = static_cast<ComboBoxPI*>(gp->actuator);
+                if (c->currentData().toFloat() != sv)
                 {
-                    float sv = static_cast<float>(v);
-                    ComboBoxPI *c = static_cast<ComboBoxPI*>(gp->actuator);
-                    if (c->currentData().toFloat() != sv)
-                    {
-                        int idx = c->findData(sv);
-                        gp->actuator->blockSignals(true);
-                        c->setCurrentIndex(idx);
-                        gp->actuator->blockSignals(false);
-                    }
+                    int idx = c->findData(sv);
+                    gp->actuator->blockSignals(true);
+                    c->setCurrentIndex(idx);
+                    gp->actuator->blockSignals(false);
                 }
             }
         }
     }
     else if (gw) {
         for (unsigned long i = 0; i < nobj; ++i) {
-            if(gw[i].pressed) // Inhibit the controller stream if control is currently pressed.
-                continue;
             QWidget* widget = gw[i].widget;
-            int type = gw[i].type;
-            unsigned long param = gw[i].param;
-            double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param),
+            const int type = gw[i].type;
+            const unsigned long param = gw[i].param;
+            const double v = plugin->track()->controller()->value(MusECore::genACnum(plugin->id(), param),
                                                             MusEGlobal::audio->curFramePos(),
                                                             !MusEGlobal::automation ||
                                                             plugin->track()->automationType() == MusECore::AUTO_OFF ||
@@ -4756,34 +5189,34 @@ void PluginGui::updateControls()
             widget->blockSignals(true);
             switch(type) {
             case GuiWidgets::SLIDER:
-            {
-                if(((Slider*)widget)->value() != v)
-                    ((Slider*)widget)->setValue(v);
-            }
-                break;
+                ((Slider*)widget)->setValue(v);
+            break;
             case GuiWidgets::DOUBLE_LABEL:
-            {
-                if(((DoubleLabel*)widget)->value() != v)
-                    ((DoubleLabel*)widget)->setValue(v);
-            }
-                break;
+                ((DoubleLabel*)widget)->setValue(v);
+            break;
             case GuiWidgets::CHECKBOX:
             {
-                bool b = (bool)v;
+                if(gw[i].pressed) // Inhibit the controller stream if control is currently pressed.
+                    continue;
+                const bool b = (bool)v;
                 if(((CheckBox*)widget)->isChecked() != b)
                     ((CheckBox*)widget)->setChecked(b);
             }
-                break;
+            break;
             case GuiWidgets::SWITCH:
             {
-                bool b = (bool)v;
+                if(gw[i].pressed) // Inhibit the controller stream if control is currently pressed.
+                    continue;
+                const bool b = (bool)v;
                 if(((Switch*)widget)->isChecked() != b)
                     ((Switch*)widget)->setChecked(b);
             }
                 break;
             case GuiWidgets::QCOMBOBOX:
             {
-                int n = (int)v;
+                if(gw[i].pressed) // Inhibit the controller stream if control is currently pressed.
+                    continue;
+                const int n = (int)v;
                 if(((QComboBox*)widget)->currentIndex() != n)
                     ((QComboBox*)widget)->setCurrentIndex(n);
             }
@@ -4801,8 +5234,8 @@ void PluginGui::updateControls()
 void PluginGui::guiParamChanged(unsigned long int idx)
 {
       QWidget* w = gw[idx].widget;
-      unsigned long param  = gw[idx].param;
-      int type   = gw[idx].type;
+      const unsigned long param  = gw[idx].param;
+      const int type   = gw[idx].type;
 
       MusECore::AudioTrack* track = plugin->track();
 
@@ -4828,32 +5261,6 @@ void PluginGui::guiParamChanged(unsigned long int idx)
             case GuiWidgets::QCOMBOBOX:
                   val = double(((QComboBox*)w)->currentIndex());
                   break;
-            }
-
-      for (unsigned long i = 0; i < nobj; ++i) {
-            QWidget* widget = gw[i].widget;
-            if (widget == w || param != gw[i].param)
-                  continue;
-            int typ   = gw[i].type;
-            widget->blockSignals(true);
-            switch(typ) {
-                  case GuiWidgets::SLIDER:
-                        ((Slider*)widget)->setValue(val);
-                        break;
-                  case GuiWidgets::DOUBLE_LABEL:
-                        ((DoubleLabel*)widget)->setValue(val);
-                        break;
-                  case GuiWidgets::CHECKBOX:
-                        ((CheckBox*)widget)->setChecked(int(val));
-                        break;
-                  case GuiWidgets::SWITCH:
-                        ((Switch*)widget)->setChecked(int(val));
-                        break;
-                  case GuiWidgets::QCOMBOBOX:
-                        ((QComboBox*)widget)->setCurrentIndex(int(val));
-                        break;
-                  }
-            widget->blockSignals(false);
             }
 
       int id = plugin->id();
@@ -4985,44 +5392,16 @@ void PluginGui::guiParamReleased(unsigned long int idx)
 //   guiSliderPressed
 //---------------------------------------------------------
 
-void PluginGui::guiSliderPressed(double /*val*/, unsigned long int idx)
+void PluginGui::guiSliderPressed(double val, unsigned long int idx)
 {
       gw[idx].pressed = true;
-      unsigned long param  = gw[idx].param;
-      QWidget *w = gw[idx].widget;
+      const unsigned long param  = gw[idx].param;
       MusECore::AudioTrack* track = plugin->track();
       int id = plugin->id();
       if(track && id != -1)
       {
         id = MusECore::genACnum(id, param);
-        const double val = ((Slider*)w)->value();
         track->startAutoRecord(id, val);
-        // Needed so that paging a slider updates a label or other buddy control.
-        for (unsigned long i = 0; i < nobj; ++i) {
-              QWidget* widget = gw[i].widget;
-              if (widget == w || param != gw[i].param)
-                    continue;
-              int type   = gw[i].type;
-              widget->blockSignals(true);
-              switch(type) {
-                    case GuiWidgets::SLIDER:
-                          ((Slider*)widget)->setValue(val);
-                          break;
-                    case GuiWidgets::DOUBLE_LABEL:
-                          ((DoubleLabel*)widget)->setValue(val);
-                          break;
-                    case GuiWidgets::CHECKBOX:
-                          ((CheckBox*)widget)->setChecked(int(val));
-                          break;
-                    case GuiWidgets::SWITCH:
-                          ((Switch*)widget)->setChecked(int(val));
-                          break;
-                    case GuiWidgets::QCOMBOBOX:
-                          ((QComboBox*)widget)->setCurrentIndex(int(val));
-                          break;
-                    }
-              widget->blockSignals(false);
-              }
         track->setPluginCtrlVal(id, val);
       }
       plugin->enableController(param, false);
@@ -5032,11 +5411,9 @@ void PluginGui::guiSliderPressed(double /*val*/, unsigned long int idx)
 //   guiSliderReleased
 //---------------------------------------------------------
 
-void PluginGui::guiSliderReleased(double /*val*/, unsigned long int idx)
+void PluginGui::guiSliderReleased(double val, unsigned long int idx)
       {
-      int param  = gw[idx].param;
-      QWidget *w = gw[idx].widget;
-
+      const int param  = gw[idx].param;
       MusECore::AutomationType at = MusECore::AUTO_OFF;
       MusECore::AudioTrack* track = plugin->track();
       if(track)
@@ -5047,8 +5424,6 @@ void PluginGui::guiSliderReleased(double /*val*/, unsigned long int idx)
       if(track && id != -1)
       {
         id = MusECore::genACnum(id, param);
-
-        const double val = ((Slider*)w)->value();
         track->stopAutoRecord(id, val);
       }
 
@@ -5089,7 +5464,8 @@ QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent,
   if(className == QString("MusEGui::DoubleLabel"))
     return new DoubleLabel(parent, name.toLatin1().constData());
   if(className == QString("MusEGui::Slider"))
-    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal, Slider::InsideHorizontal, 8, QColor(), ScaleDraw::TextHighlightSplitAndShadow);
+    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal,
+      Slider::ScaleRightOrBottom, 8, QColor(), ScaleDraw::TextHighlightNone);
   if(className == QString("MusEGui::CheckBox"))
     return new CheckBox(parent, -1, name.toLatin1().constData());
   if(className == QString("MusEGui::Switch"))

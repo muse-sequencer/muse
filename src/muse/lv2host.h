@@ -78,23 +78,16 @@
 #ifdef MIDNAM_SUPPORT
 #include "midnam_lv2.h"
 #endif
+#include "lv2/lv2plug.in/ns/extensions/units/units.h"
 
-#include <cstring>
-#include <iostream>
 #include <vector>
 #include <map>
-#include <set>
-#include <string>
-#include <utility>
-#include <array>
+#include <QString>
 #include <QMutex>
 #include <QSemaphore>
 #include <QThread>
 #include <QTimer>
 #include <QWindow>
-
-#include <assert.h>
-#include <algorithm>
 
 #include "globaldefs.h"
 #include "midictrl.h"
@@ -112,18 +105,16 @@
 // Define to use QWidget instead of QMainWindow for the plugin gui container.
 // #define LV2_GUI_USE_QWIDGET ;
 
+namespace MusEPlugin {
+class PluginScanInfoStruct;
+}
+
 namespace MusECore
 {
 
 #ifdef LV2_SUPPORT
 
 class LV2Synth;
-
-#define LV2_RT_FIFO_SIZE 128
-#define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16)))
-#define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE)
-
-#define OPERATIONS_FIFO_SIZE 256 // ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
 
 struct LV2MidiEvent
 {
@@ -159,7 +150,7 @@ public:
 #else
    LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChunk, size_t size);
 #endif
-   inline size_t mkPadSize(size_t size);
+   inline size_t mkPadSize(size_t size) const;
    inline void resetPointers(bool r, bool w);
    inline void resetBuffer();
 #ifdef LV2_EVENT_BUFFER_SUPPORT
@@ -171,6 +162,8 @@ public:
 #endif
    uint8_t *getRawBuffer();
    void dump();
+   // Returns true if there is something to read.
+   bool canRead() const;
 };
 
 class LV2SimpleRTFifo
@@ -192,7 +185,7 @@ private:
 public:
    LV2SimpleRTFifo(size_t size);
    ~LV2SimpleRTFifo();
-   inline size_t getItemSize(){return itemSize; }
+   inline size_t getItemSize();
    bool put(uint32_t port_index, uint32_t size, const void *data);
    bool get(uint32_t *port_index, size_t *szOut, char *data_out);
 };
@@ -204,26 +197,8 @@ typedef struct _lv2ExtProgram
    uint32_t prog;
    QString name;
    bool useIndex;
-   bool operator<(const _lv2ExtProgram& other) const
-   {
-      if(useIndex == other.useIndex && useIndex == true)
-         return index < other.index;
-
-      if(bank < other.bank)
-         return true;
-      else if(bank == other.bank && prog < other.prog)
-         return true;
-      return false;
-   }
-
-   bool operator==(const _lv2ExtProgram& other) const
-   {
-      if(useIndex == other.useIndex && useIndex == true)
-         return index == other.index;
-
-      return (bank == other.bank && prog == other.prog);
-   }
-
+   bool operator<(const _lv2ExtProgram& other) const;
+   bool operator==(const _lv2ExtProgram& other) const;
 
 } lv2ExtProgram;
 
@@ -231,11 +206,9 @@ typedef struct _lv2ExtProgram
 struct LV2MidiPort
 {
 #ifdef LV2_EVENT_BUFFER_SUPPORT
-    LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _f, bool _supportsTimePos) :
-        port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), supportsTimePos(_supportsTimePos), buffer(0){}
+    LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _f, bool _supportsTimePos);
 #else
-    LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _supportsTimePos) :
-        port ( _p ), index ( _i ), name ( _n ), supportsTimePos(_supportsTimePos), buffer(0){}
+    LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _supportsTimePos);
 #endif
     const LilvPort *port;
     uint32_t index; //plugin real port index
@@ -247,64 +220,52 @@ struct LV2MidiPort
     LV2EvBuf *buffer;
 };
 
+// Can be OR'd together.
 enum LV2ControlPortType
 {
-    LV2_PORT_INTEGER = 1,
-    LV2_PORT_CONTINUOUS,
-    LV2_PORT_LOGARITHMIC,
-    LV2_PORT_TOGGLE,
-    LV2_PORT_ENUMERATION
+    LV2_PORT_NO_FLAGS = 0x0,
+    LV2_PORT_INTEGER = 0x1,
+    LV2_PORT_LOGARITHMIC = 0x2,
+    LV2_PORT_TOGGLE = 0x4,
+    LV2_PORT_ENUMERATION = 0x8,
+    LV2_PORT_NON_CONTINUOUS = LV2_PORT_INTEGER | LV2_PORT_TOGGLE | LV2_PORT_ENUMERATION
 };
+// A combination of LV2ControlPortType flags.
+typedef int LV2ControlPortType_t;
 
 struct LV2ControlPort
 {
-   LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _c, const char *_n, const char *_s,
-                    LV2ControlPortType _ctype, bool _isCVPort = false, CtrlVal::CtrlEnumValues* scalePoints = nullptr,
+   LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _defVal, float _minVal, float _maxVal,
+                    const char *_name, const char *_symbol, int _unitTextIdx,
+                    LV2ControlPortType_t _ctype, bool _isCVPort = false, CtrlVal::CtrlEnumValues* scalePoints = nullptr,
                     QString group = QString(), bool isTrigger = false, bool notOnGui = false,
-                    bool isDiscrete = false )
-       : port ( _p ), index ( _i ), defVal ( _c ), minVal( _c ), maxVal ( _c ), cType(_ctype),
-         isCVPort(_isCVPort), scalePoints(scalePoints), group(group), isTrigger(isTrigger),
-         notOnGui(notOnGui), isDiscrete(isDiscrete)
-   {
-      cName = strdup ( _n );
-      cSym = strdup(_s);
-   }
-   LV2ControlPort ( const LV2ControlPort &other ) :
-      port ( other.port ), index ( other.index ), defVal ( other.defVal ),
-      minVal(other.minVal), maxVal(other.maxVal), cType(other.cType),
-      isCVPort(other.isCVPort), scalePoints(other.scalePoints), group(other.group),
-      isTrigger(other.isTrigger), notOnGui(other.notOnGui), isDiscrete(other.isDiscrete)
-   {
-      cName = strdup ( other.cName );
-      cSym = strdup(other.cSym);
-   }
-   ~LV2ControlPort()
-   {
-      free ( cName );      
-      cName = nullptr;
-      free(cSym);
-      cSym = nullptr;
-   }
+                    bool isDiscrete = false, bool hasStrictBounds = false, bool isSampleRate = false);
+   LV2ControlPort ( const LV2ControlPort &other );
+   ~LV2ControlPort();
+
    const LilvPort *port;
    uint32_t index; //plugin real port index
    float defVal; //default control value
    float minVal; //minimum control value
    float maxVal; //maximum control value
+   bool hasStrictBounds;
+   bool isSampleRate; // Any specified bounds should be interpreted as multiples of the sample rate
    char *cName; //cached value to share between function calls
    char *cSym; //cached port symbol
-   LV2ControlPortType cType;
+   LV2ControlPortType_t cType;
    bool isCVPort;
    const CtrlVal::CtrlEnumValues* scalePoints;
    QString group;
    bool isTrigger;
    bool notOnGui;
    bool isDiscrete;
+   // Index into global unit text string list. Can be -1 meaning no text.
+   int unitTextIdx;
 };
 
 struct LV2AudioPort
 {
-    LV2AudioPort ( const LilvPort *_p, uint32_t _i, float *_b, QString _n ) :
-        port ( _p ), index ( _i ), buffer ( _b ), name ( _n ) {}
+    LV2AudioPort ( const LilvPort *_p, uint32_t _i, float *_b, QString _n );
     const LilvPort *port;
     uint32_t index; //plugin real port index
     float *buffer; //audio buffer
@@ -313,10 +274,7 @@ struct LV2AudioPort
 
 struct cmp_str
 {
-    bool operator() ( char const *a, char const *b ) const
-    {
-        return std::strcmp ( a, b ) < 0;
-    }
+    bool operator() ( char const *a, char const *b ) const;
 };
 
 typedef std::vector<LV2MidiPort> LV2_MIDI_PORTS;
@@ -359,8 +317,8 @@ class LV2OperationMessage
     // Can be -1 for update all programs.
     int _index;
     
-    LV2OperationMessage() : _type(ProgramChanged), _index(-1) { }
-    LV2OperationMessage(Type type, int index = 0) : _type(type), _index(index) { }
+    LV2OperationMessage();
+    LV2OperationMessage(Type type, int index = 0);
 };
 
 
@@ -399,6 +357,7 @@ private:
     uint32_t _midi_event_id;
     LilvUIs *_uis;
     std::map<uint32_t, uint32_t> _idxToControlMap;
+    std::map<uint32_t, uint32_t> _idxToControlOutMap;
 
     LV2_PLUGIN_UI_TYPES _pluginUiTypes;
 
@@ -446,10 +405,6 @@ private:
     LV2_URID _uAtom_Sequence;
     LV2_URID _uAtom_StateChanged;
     LV2_URID _uAtom_Object;
-    bool _hasFreeWheelPort;
-    uint32_t _freeWheelPortIndex;
-    bool _hasLatencyPort;
-    uint32_t _latencyPortIndex;
     bool _usesTimePosition;
     bool _isConstructed;
     float *_pluginControlsDefault;
@@ -458,28 +413,21 @@ private:
     std::map<QString, LilvNode *> _presets;
 
 public:
-    virtual Type synthType() const {
-        return _isSynth ? LV2_SYNTH : LV2_EFFECT;
-    }
-    LV2Synth ( const QFileInfo &fi, const QString& uri, const QString& label, const QString& name, const QString& author, 
-               const LilvPlugin *_plugin, PluginFeatures_t reqFeatures = PluginNoFeatures );
+    virtual Type synthType() const;
+    LV2Synth (const MusEPlugin::PluginScanInfoStruct&, const LilvPlugin*);
     virtual ~LV2Synth();
 
     virtual SynthIF *createSIF ( SynthI * );
-    bool isSynth() { return _isSynth; }
+    bool isSynth();
 
     //own public functions
     LV2_URID mapUrid ( const char *uri );
     const char *unmapUrid ( LV2_URID id );
-    size_t inPorts() {
-        return _audioInPorts.size();
-    }
-    size_t outPorts() {
-        return _audioOutPorts.size();
-    }
-    bool isConstructed() {return _isConstructed; }
+    size_t inPorts();
+    size_t outPorts();
+    bool isConstructed();
     // Returns true if ANY of the midi input ports uses time position (transport).
-    bool usesTimePosition() const { return _usesTimePosition; }
+    bool usesTimePosition() const;
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static LV2UI_Request_Value_Status lv2ui_Request_Value (
@@ -557,12 +505,15 @@ private:
     float **_audioInBuffers;
     float **_audioOutBuffers;
     float  *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
+    // Just a place to connect all unused audio outputs.
+    float *_audioOutDummyBuf;
     // For plugins that DO support the programs extension. Returns true if the selection succeeded
     //  (ie the programs interface and functions exist).
     bool doSelectProgram(unsigned char channel, int bankH, int bankL, int prog);
     // For plugins that DO NOT support the programs extension. Sends as bankH/bankL/prog midi events.
     bool doSendProgram(unsigned char channel, int bankH, int bankL, int prog, LV2EvBuf *evBuf, long frame);
     inline void sendLv2MidiEvent(LV2EvBuf *evBuf, long frame, int paramCount, uint8_t a, uint8_t b = 0, uint8_t c = 0);
+    void eventReceived(uint32_t frames, uint32_t size, uint8_t* data);
     bool processEvent (const MidiPlayEvent &, LV2EvBuf *evBuf, long frame);
     bool lv2MidiControlValues ( size_t port, int ctlnum, int *min, int *max, int *def );
     float midi2Lv2Value ( unsigned long port, int ctlnum, int val );
@@ -572,82 +523,94 @@ private:
 #endif
 
     LV2PluginWrapper_State *_state;
-    
+
+protected:
+    void activate() override;
+    void deactivate() override;
+
 public:
     LV2SynthIF ( SynthI *s );
     virtual ~LV2SynthIF();
 
     //virtual methods from SynthIF
-    virtual void guiHeartBeat();
-    virtual bool hasGui() const;
-    virtual bool nativeGuiVisible() const;
-    virtual void showNativeGui ( bool v );
-    virtual bool hasNativeGui() const;
-    virtual void getNativeGeometry ( int *, int *, int *, int * ) const;
-    virtual void setNativeGeometry (int x, int y, int w, int h);
-    virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer );
-    virtual MidiPlayEvent receiveEvent();
-    virtual int eventsPending() const;
+    virtual void guiHeartBeat() override;
+    virtual bool hasGui() const override;
+    virtual bool nativeGuiVisible() const override;
+    virtual void showNativeGui ( bool v ) override;
+    virtual bool hasNativeGui() const override;
+    virtual void getNativeGeometry ( int *, int *, int *, int * ) const override;
+    virtual void setNativeGeometry (int x, int y, int w, int h) override;
+    virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer ) override;
+    virtual MidiPlayEvent receiveEvent() override;
+    virtual int eventsPending() const override;
 
-    virtual int channels() const;
-    virtual int totalOutChannels() const;
-    virtual int totalInChannels() const;
-    void activate();
-    virtual void deactivate();
-    virtual void deactivate3();
-    virtual QString getPatchName (int, int, bool ) const;
-    virtual void populatePatchPopup ( MusEGui::PopupMenu *, int, bool );
-    virtual void write ( int level, Xml &xml ) const;
-    virtual double getParameter ( unsigned long idx ) const;
+    virtual int channels() const override;
+    virtual int totalOutChannels() const override;
+    virtual int totalInChannels() const override;
+    virtual void deactivate3() override;
+    virtual QString getPatchName (int, int, bool ) const override;
+    virtual void populatePatchPopup ( MusEGui::PopupMenu *, int, bool ) override;
+    virtual void write ( int level, Xml &xml ) const override;
+    virtual double getParameter ( unsigned long idx ) const override;
     virtual double getParameterOut ( unsigned long n ) const;
-    virtual void setParameter ( unsigned long idx, double value );
-    virtual int getControllerInfo ( int id, QString* name, int *ctrl, int *min, int *max, int *initval );
+    virtual void setParameter ( unsigned long idx, double value ) override;
+    virtual int getControllerInfo ( int id, QString* name, int *ctrl, int *min, int *max, int *initval ) override;
     // Returns true if a note name list is found for the given patch.
     // If true, name either contains the note name, or is blank if no note name was found.
     // drum = Want percussion names, not melodic.
     virtual bool getNoteSampleName(
-      bool drum, int channel, int patch, int note, QString* name) const;
+      bool drum, int channel, int patch, int note, QString* name) const override;
 
-    virtual void writeConfiguration ( int level, Xml &xml );
-    virtual bool readConfiguration ( Xml &xml, bool readPreset=false );
+    virtual void writeConfiguration ( int level, Xml &xml ) override;
+    virtual bool readConfiguration ( Xml &xml, bool readPreset=false ) override;
 
-    virtual void setCustomData ( const std::vector<QString> & );
+    virtual void setCustomData ( const std::vector<QString> & ) override;
 
 
-    unsigned long parameters() const;
-    unsigned long parametersOut() const;
-    void setParam ( unsigned long i, double val );
-    double param ( unsigned long i ) const;
-    double paramOut ( unsigned long i ) const;
-    const char *paramName ( unsigned long i );
-    const char *paramOutName ( unsigned long i );
+    unsigned long parameters() const override;
+    unsigned long parametersOut() const override;
+    void setParam ( unsigned long i, double val ) override;
+    double param ( unsigned long i ) const override;
+    double paramOut ( unsigned long i ) const override;
+    const char *paramName ( unsigned long i ) const override;
+    const char *paramOutName ( unsigned long i ) const override;
     CtrlValueType ctrlValueType ( unsigned long ) const override;
     CtrlList::Mode ctrlMode ( unsigned long ) const override;
     const CtrlVal::CtrlEnumValues *ctrlEnumValues(unsigned long i) const override;
     QString portGroup(long unsigned int i) const override;
     bool ctrlIsTrigger(long unsigned int i) const override;
     bool ctrlNotOnGui(long unsigned int i) const override;
+    CtrlValueType ctrlOutValueType ( unsigned long ) const override;
+    CtrlList::Mode ctrlOutMode ( unsigned long ) const override;
+    const CtrlVal::CtrlEnumValues *ctrlOutEnumValues(unsigned long i) const override;
+    QString portGroupOut(long unsigned int i) const override;
+    bool ctrlOutIsTrigger(long unsigned int i) const override;
+    bool ctrlOutNotOnGui(long unsigned int i) const override;
+    // Returns a value unit string for displaying unit symbols.
+    QString unitSymbol(unsigned long i) const override;
+    QString unitSymbolOut(unsigned long i) const override;
+    // Returns index into the global value units for displaying unit symbols.
+    // Can be -1 meaning no units.
+    int valueUnit(unsigned long i) const override;
+    int valueUnitOut(unsigned long i) const override;
 
-    virtual LADSPA_PortRangeHint range(unsigned long i);
-    virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
-    bool hasLatencyOutPort() const;
-    unsigned long latencyOutPortIndex() const;
-    float latency() const;
+    LADSPA_PortRangeHint range(unsigned long i) const override;
+    LADSPA_PortRangeHint rangeOut(unsigned long i) const override;
+    void range(unsigned long i, float*, float*) const override;
+    void rangeOut(unsigned long i, float*, float*) const override;
+
     // Returns true if ANY of the midi input ports uses time position (transport).
-    bool usesTransportSource() const;
+    bool usesTransportSource() const override;
 
-    virtual void enableController(unsigned long i, bool v = true);
-    virtual bool controllerEnabled(unsigned long i) const;
-    virtual void enableAllControllers(bool v = true);
-    virtual void updateControllers();
+    virtual void enableController(unsigned long i, bool v = true) override;
+    virtual bool controllerEnabled(unsigned long i) const override;
+    virtual void enableAllControllers(bool v = true) override;
+    virtual void updateControllers() override;
 
     void populatePresetsMenu(MusEGui::PopupMenu *menu);
     void applyPreset(void *preset);
 
-
-    int id() {
-        return MusECore::MAX_PLUGINS;
-    }
+    int id() const override;
 
     static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
 #ifdef MIDNAM_SUPPORT
@@ -663,95 +626,7 @@ class LV2PluginWrapper_Worker;
 class LV2PluginWrapper_Window;
 
 struct LV2PluginWrapper_State {
-   LV2PluginWrapper_State():
-      _ifeatures(NULL),
-      _ppifeatures(NULL),
-      widget(NULL),      
-      handle(NULL),
-      uiDlHandle(NULL),
-      uiDesc(NULL),
-      uiInst(NULL),
-      inst(NULL),
-      lastControls(NULL),
-      controlsMask(NULL),
-      lastControlsOut(NULL),
-      plugInst(NULL),
-      sif(NULL),
-      synth(NULL),
-      human_id(NULL),
-      iState(NULL),
-      tmpValues(NULL),
-      numStateValues(0),
-      wrkDataBuffer(NULL),
-      wrkRespDataBuffer(NULL),
-      wrkThread(NULL),
-      wrkIface(NULL),
-      controlTimers(NULL),
-      deleteLater(false),
-
-      // Initialize these with invalid values such that the first call
-      //  of the send transport routine is guaranteed to update them.
-      curGlobalTempo(0),
-      curTempo(0),
-      curIsPlaying(false),
-      curFrame(0),
-      curTick(0),
-      curBeatsPerBar(0),
-      curBeatUnit(0),
-
-      hasGui(false),
-      hasExternalGui(false),
-      uiIdleIface(NULL),
-      uiCurrent(NULL),
-      uiX11Size(0, 0),
-      pluginWindow(NULL),
-      pluginQWindow(NULL),
-      prgIface(NULL),
-      uiPrgIface(NULL),
-      uiDoSelectPrg(false),
-      newPrgIface(false),
-#ifdef MIDNAM_SUPPORT
-      midnamIface(NULL),
-#endif
-      uiChannel(0),
-      uiBank(0),
-      uiProg(0),
-      gtk2Plug(NULL),
-      pluginCVPorts(NULL),
-      uiControlEvt(LV2_RT_FIFO_SIZE),
-      plugControlEvt(LV2_RT_FIFO_SIZE),
-      gtk2ResizeCompleted(false),
-      gtk2AllocateCompleted(false),
-      songDirtyPending(false),
-      uiIsOpening(false),
-      operationsFifo(OPERATIONS_FIFO_SIZE)
-   {
-      extHost.plugin_human_id = nullptr;
-      extHost.ui_closed = nullptr;
-      uiResize.handle = (LV2UI_Feature_Handle)this;
-      uiResize.ui_resize = LV2Synth::lv2ui_Resize;
-      uiRequestValue.handle = (LV2UI_Feature_Handle)this;
-      uiRequestValue.request = LV2Synth::lv2ui_Request_Value;
-
-      prgHost.handle = (LV2_Programs_Handle)this;
-      prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
-#ifdef MIDNAM_SUPPORT
-      midnamUpdate.handle = (LV2_Midnam_Handle)this;
-      midnamUpdate.update = LV2SynthIF::lv2midnam_Changed;
-#endif
-#ifdef LV2_MAKE_PATH_SUPPORT
-      makePath.handle = (LV2_State_Make_Path_Handle)this;
-      makePath.path = LV2Synth::lv2state_makePath;
-#endif
-      mapPath.handle = (LV2_State_Map_Path_Handle)this;
-      mapPath.absolute_path = LV2Synth::lv2state_absolutePath;
-      mapPath.abstract_path = LV2Synth::lv2state_abstractPath;
-
-      midiInPorts.clear();
-      midiOutPorts.clear();
-      idx2EvtPorts.clear();
-      inPortsMidi = outPortsMidi = 0;
-   }
+    LV2PluginWrapper_State();
 
     LV2_Feature *_ifeatures;
     LV2_Feature **_ppifeatures;
@@ -836,6 +711,7 @@ struct LV2PluginWrapper_State {
     bool gtk2AllocateCompleted;
     bool songDirtyPending;
     bool uiIsOpening;
+    bool active;
     LockFreeMPSCRingBuffer<LV2OperationMessage> operationsFifo;
 };
 
@@ -847,16 +723,12 @@ private:
     QSemaphore _mSem;
     bool _closing;
 public:
-    explicit LV2PluginWrapper_Worker ( LV2PluginWrapper_State *s ) : QThread(),
-       _state ( s ),
-       _mSem(0),
-       _closing(false)
-    {}
+    explicit LV2PluginWrapper_Worker ( LV2PluginWrapper_State *s );
 
     void run();
     LV2_Worker_Status scheduleWork();
     void makeWork();
-    void setClosing() {_closing = true; _mSem.release();}
+    void setClosing();
 
 };
 
@@ -884,8 +756,7 @@ public:
    ~LV2PluginWrapper_Window();
    void startNextTime();
    void stopNextTime();
-   void doChangeControls();
-   void setClosing(bool closing) {_closing = closing; }
+   void setClosing(bool closing);
 signals:
    void makeStopFromGuiThread();
    void makeStartFromGuiThread();
@@ -904,33 +775,34 @@ private:
     LADSPA_PortDescriptor *_fakePds;       
 public:
     LV2PluginWrapper ( LV2Synth *s, PluginFeatures_t reqFeatures = PluginNoFeatures );
-    LV2Synth *synth() {
-        return _synth;
-    }    
+    LV2Synth *synth() const;
     virtual ~LV2PluginWrapper();
-    virtual LADSPA_Handle instantiate ( PluginI * );
-    virtual int incReferences ( int ref );
-    virtual void activate ( LADSPA_Handle handle );
-    virtual void deactivate ( LADSPA_Handle handle );
-    virtual void cleanup ( LADSPA_Handle handle );
-    virtual void connectPort ( LADSPA_Handle handle, unsigned long port, float *value );
-    virtual void apply ( LADSPA_Handle handle, unsigned long n, float latency_corr = 0.0f );
-    virtual LADSPA_PortDescriptor portd ( unsigned long k ) const;
-
-    virtual LADSPA_PortRangeHint range ( unsigned long i );
-    virtual void range ( unsigned long i, float *min, float *max ) const;
-
-    virtual double defaultValue ( unsigned long port ) const;
-    virtual const char *portName ( unsigned long i );
-    virtual CtrlValueType ctrlValueType ( unsigned long ) const;
-    virtual const CtrlVal::CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
-    virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
+    virtual LADSPA_Handle instantiate ( PluginI * ) override;
+    virtual int incReferences ( int ref ) override;
+    virtual void activate ( LADSPA_Handle handle ) override;
+    virtual void deactivate ( LADSPA_Handle handle ) override;
+    virtual void cleanup ( LADSPA_Handle handle ) override;
+    virtual void connectPort ( LADSPA_Handle handle, unsigned long port, float *value ) override;
+    virtual void apply ( LADSPA_Handle handle, unsigned long n, float latency_corr = 0.0f ) override;
+    virtual LADSPA_PortDescriptor portd ( unsigned long k ) const override;
+    virtual LADSPA_PortRangeHint range ( unsigned long i ) const override;
+    virtual void range ( unsigned long i, float *min, float *max ) const override;
+    virtual double defaultValue ( unsigned long port ) const override;
+    virtual const char *portName ( unsigned long i ) const override;
+    virtual CtrlValueType ctrlValueType ( unsigned long ) const override;
+    virtual const CtrlVal::CtrlEnumValues* ctrlEnumValues ( unsigned long ) const override;
+    virtual CtrlList::Mode ctrlMode ( unsigned long ) const override;
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
+    // Returns a value unit string for displaying unit symbols.
+    QString unitSymbol(unsigned long ) const override;
+    // Returns index into the global value units for displaying unit symbols.
+    // Can be -1 meaning no units.
+    int valueUnit(unsigned long ) const override;
 
     void populatePresetsMenu(PluginI *p, MusEGui::PopupMenu *menu);
     void applyPreset(PluginI *p, void *preset);

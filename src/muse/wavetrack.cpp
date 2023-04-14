@@ -651,6 +651,9 @@ bool WaveTrack::getInputData(unsigned pos, int channels, unsigned nframes,
 
 bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, float** bp)
 {
+  if(off())
+    return false;
+
   bool have_data = false;
   
   const bool track_rec_flag = recordFlag();

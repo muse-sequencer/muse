@@ -91,6 +91,8 @@ public:
   
   float transportLatencyOut() const { return _transportLatencyOut; }
   void setTransportLatencyOut(float f) { _transportLatencyOut = f; }
+  // Dumps contents to stderr.
+  void dump(const char *objname = nullptr, const char *header = nullptr) const;
 };
 
 } // namespace MusECore

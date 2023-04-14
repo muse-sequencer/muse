@@ -26,16 +26,17 @@
 
 #define LV2_HOST_CPP
 
+#include <cstring>
 #include <string>
+#include <utility>
+#include <array>
+#include <algorithm>
+
 #include <string.h>
-//#include <signal.h>
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include <sys/stat.h>
 #include <iostream>
-//#include <time.h>
-//#include <dlfcn.h>
 #include <QMessageBox>
 #include <QDirIterator>
 #include <QInputDialog>
@@ -45,9 +46,9 @@
 #include <QUrl>
 //#include <QX11EmbedWidget>
 #include <QApplication>
-//#include <QCoreApplication>
 #include <QtGui/QWindow>
 #include <QVBoxLayout>
+#include <QStringList>
 
 #include "pluglist.h"
 #include "lv2host.h"
@@ -77,10 +78,10 @@
 #include <assert.h>
 #include <stdarg.h>
 
-//#include <sys/types.h>
-//#include <sys/stat.h>
-//#include <fcntl.h>
 #include <sord/sord.h>
+
+// Forwards from header:
+#include "plugin_scan.h"
 
 
 // Uncomment to print audio process info.
@@ -117,6 +118,11 @@
 //  use true 'wrap around' FIFOs because LSP plugins try to schedule MANY work requests in one run.
 // (That's up to 8 wave files per channel x 48 channels = 384 requests x 16 bytes per message = 6,144 bytes!).
 #define LV2_WRK_FIFO_SIZE 8192
+
+#define LV2_RT_FIFO_SIZE 128
+#define LV2_RT_FIFO_ITEM_SIZE (std::max(size_t(4096 * 16), size_t(MusEGlobal::segmentSize * 16)))
+#define LV2_EVBUF_SIZE (2*LV2_RT_FIFO_ITEM_SIZE)
+#define OPERATIONS_FIFO_SIZE 256 // ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(1024)) )
 
 namespace MusECore
 {
@@ -162,6 +168,15 @@ namespace MusECore
 #define LV2_F_MIDNAM_UPDATE LV2_MIDNAM__update
 #endif
 
+// LV2_CORE__enabled is MISSING in 1.18.2 but was added in 1.18.4
+#ifndef LV2_CORE__enabled
+#define LV2_CORE__enabled LV2_CORE_PREFIX "enabled" ///< http://lv2plug.in/ns/lv2core#enabled
+#endif
+
+#define LV2_F_SUPPORTS_STRICT_BOUNDS LV2_PORT_PROPS__supportsStrictBounds
+#define LV2_P_HAS_STRICT_BOUNDS LV2_PORT_PROPS__hasStrictBounds
+
+
 static LilvWorld *lilvWorld = nullptr;
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
 // static int uniqueID = 1;
@@ -191,8 +206,10 @@ typedef struct
     LilvNode *lv2_portInteger;
     LilvNode *lv2_portTrigger;
     LilvNode *lv2_portToggled;
+    LilvNode *lv2_portHasStrictBounds;
     LilvNode *lv2_TimePosition;
     LilvNode *lv2_FreeWheelPort;
+    LilvNode *lv2_EnabledPort;
     LilvNode *lv2_SampleRate;
     LilvNode *lv2_CVPort;
     LilvNode *lv2_psetPreset;
@@ -206,9 +223,93 @@ typedef struct
     LilvNode *lv2_minimum;
     LilvNode *lv2_maximum;
     LilvNode *lv2_default;
+    LilvNode *lv2_unit;
+    LilvNode *lv2_unitConversion;
+    LilvNode *lv2_unitPrefixConversion;
+    LilvNode *lv2_unitSymbol;
     LilvNode *pp_notOnGui;
     LilvNode *end;  ///< nullptr terminator for easy freeing of entire structure
 } CacheNodes;
+
+
+
+LV2ControlPort::LV2ControlPort ( const LilvPort *_p, uint32_t _i, float _defVal, float _minVal, float _maxVal,
+                    const char *_name, const char *_symbol, int _unitTextIdx,
+                    LV2ControlPortType_t _ctype, bool _isCVPort, CtrlVal::CtrlEnumValues* scalePoints,
+                    QString group, bool isTrigger, bool notOnGui,
+                    bool isDiscrete, bool _hasStrictBounds, bool _isSampleRate )
+       : port ( _p ), index ( _i ), defVal ( _defVal ), minVal( _minVal ), maxVal ( _maxVal ), hasStrictBounds(_hasStrictBounds),
+         isSampleRate(_isSampleRate), cType(_ctype), isCVPort(_isCVPort), scalePoints(scalePoints), group(group),
+         isTrigger(isTrigger), notOnGui(notOnGui), isDiscrete(isDiscrete), unitTextIdx(_unitTextIdx)
+   {
+      cName = strdup ( _name );
+      cSym = strdup(_symbol);
+   }
+
+LV2ControlPort::LV2ControlPort ( const LV2ControlPort &other ) :
+      port ( other.port ), index ( other.index ), defVal ( other.defVal ),
+      minVal(other.minVal), maxVal(other.maxVal), hasStrictBounds(other.hasStrictBounds), isSampleRate(other.isSampleRate),
+      cType(other.cType), isCVPort(other.isCVPort), scalePoints(other.scalePoints), group(other.group),
+      isTrigger(other.isTrigger), notOnGui(other.notOnGui), isDiscrete(other.isDiscrete), unitTextIdx(other.unitTextIdx)
+   {
+      cName = strdup ( other.cName );
+      cSym = strdup(other.cSym);
+   }
+
+
+LV2ControlPort::~LV2ControlPort()
+   {
+      free ( cName );
+      cName = nullptr;
+      free(cSym);
+      cSym = nullptr;
+   }
+
+bool cmp_str::operator() ( char const *a, char const *b ) const
+{
+    return std::strcmp ( a, b ) < 0;
+}
+
+inline size_t LV2SimpleRTFifo::getItemSize(){return itemSize; }
+
+bool _lv2ExtProgram::operator<(const _lv2ExtProgram& other) const
+{
+  if(useIndex == other.useIndex && useIndex == true)
+      return index < other.index;
+
+  if(bank < other.bank)
+      return true;
+  else if(bank == other.bank && prog < other.prog)
+      return true;
+  return false;
+}
+
+bool _lv2ExtProgram::operator==(const _lv2ExtProgram& other) const
+{
+  if(useIndex == other.useIndex && useIndex == true)
+      return index == other.index;
+
+  return (bank == other.bank && prog == other.prog);
+}
+
+#ifdef LV2_EVENT_BUFFER_SUPPORT
+LV2MidiPort::LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _f, bool _supportsTimePos) :
+        port ( _p ), index ( _i ), name ( _n ), old_api ( _f ), supportsTimePos(_supportsTimePos), buffer(0){}
+#else
+LV2MidiPort::LV2MidiPort (const LilvPort *_p, uint32_t _i, QString _n, bool _supportsTimePos) :
+        port ( _p ), index ( _i ), name ( _n ), supportsTimePos(_supportsTimePos), buffer(0){}
+#endif
+
+LV2AudioPort::LV2AudioPort ( const LilvPort *_p, uint32_t _i, float *_b, QString _n ) :
+        port ( _p ), index ( _i ), buffer ( _b ), name ( _n ) {}
+
+
+LV2OperationMessage::LV2OperationMessage() : _type(ProgramChanged), _index(-1) { }
+LV2OperationMessage::LV2OperationMessage(Type type, int index) : _type(type), _index(index) { }
+
+
+
+//=================================================================
 
 LV2_URID Synth_Urid_Map(LV2_URID_Unmap_Handle _host_data, const char *uri)
 {
@@ -271,6 +372,7 @@ LV2_Feature lv2Features [] =
     {LV2_F_OPTIONS, nullptr},
     {LV2_UI__resize, nullptr},
     {LV2_UI__requestValue, nullptr},
+    {LV2_F_SUPPORTS_STRICT_BOUNDS, nullptr},
     {LV2_PROGRAMS__Host, nullptr},
 #ifdef MIDNAM_SUPPORT
     {LV2_MIDNAM__update, nullptr},
@@ -304,7 +406,6 @@ void initLV2()
     MusEGui::lv2Gtk2Helper_init();
 #endif
 
-    std::set<std::string> supportedFeatures;
     uint32_t i = 0;
 
     if(MusEGlobal::debugMsg)
@@ -312,7 +413,6 @@ void initLV2()
 
     for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
     {
-        supportedFeatures.insert(lv2Features [i].URI);
         if(MusEGlobal::debugMsg)
             std::cerr << "\t" << lv2Features [i].URI << std::endl;
     }
@@ -341,8 +441,10 @@ void initLV2()
     lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
     lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
     lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
+    lv2CacheNodes.lv2_portHasStrictBounds = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__hasStrictBounds);
     lv2CacheNodes.lv2_TimePosition       = lilv_new_uri(lilvWorld, LV2_TIME__Position);
     lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
+    lv2CacheNodes.lv2_EnabledPort        = lilv_new_uri(lilvWorld, LV2_CORE__enabled);
     lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
     lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
     lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
@@ -356,6 +458,10 @@ void initLV2()
     lv2CacheNodes.lv2_minimum            = lilv_new_uri(lilvWorld, LV2_CORE__minimum);
     lv2CacheNodes.lv2_maximum            = lilv_new_uri(lilvWorld, LV2_CORE__maximum);
     lv2CacheNodes.lv2_default            = lilv_new_uri(lilvWorld, LV2_CORE__default);
+    lv2CacheNodes.lv2_unit               = lilv_new_uri(lilvWorld, LV2_UNITS__unit);
+    lv2CacheNodes.lv2_unitConversion     = lilv_new_uri(lilvWorld, LV2_UNITS__conversion);
+    lv2CacheNodes.lv2_unitPrefixConversion = lilv_new_uri(lilvWorld, LV2_UNITS__prefixConversion);
+    lv2CacheNodes.lv2_unitSymbol         = lilv_new_uri(lilvWorld, LV2_UNITS__symbol);
     lv2CacheNodes.pp_notOnGui            = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__notOnGUI);
     lv2CacheNodes.end                    = nullptr;
 
@@ -435,52 +541,9 @@ void initLV2()
                         }
                     }
 
-                    //QString pluginName = MusEPlugin::getQString(info._name);
-                    QString pluginName;
-
-                    LilvNode *nameNode = lilv_plugin_get_name(plugin);
-                    if(nameNode)
+                    if(!inf_name.isEmpty())
                     {
-                        if(lilv_node_is_string(nameNode))
-                            pluginName = QString(lilv_node_as_string(nameNode));
-                        lilv_node_free(nameNode);
-                    }
-
-                    if(!pluginName.isEmpty())
-                    {
-                        //QString pluginUri = MusEPlugin::getQString(info._uri);
-                        //QString pluginUri;
-                        //const LilvNode *uriNode = lilv_plugin_get_uri(plugin);
-                        //if(uriNode)
-                        //{
-                        //  if(lilv_node_is_string(uriNode))
-                        //    pluginUri = QString(lilv_node_as_string(uriNode));
-                        //}
-
-                        //const QString name = MusEPlugin::getQString(info._name);
-                        const QString name = QString(pluginName) + QString(" LV2");
-
-                        //QString label = QString(pluginUri) + QString("_LV2");
-                        //const QString label = MusEPlugin::getQString(info._label);
-
-                        //const QString author = MusEPlugin::getQString(info._maker);
-                        QString author;
-                        LilvNode *nAuthor = lilv_plugin_get_author_name(plugin);
-                        if(nAuthor)
-                        {
-                            author = lilv_node_as_string(nAuthor);
-                            lilv_node_free(nAuthor);
-                        }
-
-                        LV2Synth *new_synth = new LV2Synth(
-                            PLUGIN_GET_QSTRING(info.filePath()),
-                            inf_uri,
-                            name,
-                            name,
-                            author,
-                            plugin,
-                            info._requiredFeatures);
-
+                        LV2Synth *new_synth = new LV2Synth(info, plugin);
                         if(new_synth->isConstructed())
                         {
                             if(add_synth)
@@ -639,8 +702,6 @@ void LV2Synth::lv2ui_SendChangedControls(LV2PluginWrapper_State *state)
         }
     }
 }
-
-
 
 void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index, uint32_t buffer_size, uint32_t protocol, void const *buffer)
 {
@@ -1279,6 +1340,7 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
                 {
                     break;
                 }
+
                 if(type == state->synth->_uAtom_Object)
                 {
                     const LV2_Atom_Object_Body *aObjBody = reinterpret_cast<LV2_Atom_Object_Body *>(data);
@@ -1288,6 +1350,11 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
                         state->songDirtyPending = true;
                     }
                 }
+
+                // If it's a midi event send a copy of it to the host for recording etc.
+                if(type == state->synth->_midi_event_id)
+                  state->sif->eventReceived(frames, size, data);
+
                 if(state->uiInst == nullptr)
                 {
                     continue;
@@ -2748,31 +2815,21 @@ void LV2SynthIF::lv2midnam_Changed(LV2_Midnam_Handle handle)
 }
 #endif
 
-LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label, const QString& name, const QString& author,
-                   const LilvPlugin *_plugin, PluginFeatures_t reqFeatures)
-    : Synth(fi, uri, label, name, author, QString(""), reqFeatures),
-      _handle(_plugin),
-      _features(nullptr),
-      _ppfeatures(nullptr),
-      _options(nullptr),
-      _isSynth(false),
-      _uis(nullptr),
-      _hasFreeWheelPort(false),
-      _freeWheelPortIndex(0),
-      _hasLatencyPort(false),
-      _latencyPortIndex(0),
-      _usesTimePosition(false),
-      _isConstructed(false),
-      _pluginControlsDefault(nullptr),
-      _pluginControlsMin(nullptr),
-      _pluginControlsMax(nullptr)
+
+LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const LilvPlugin *_plugin)
+ : Synth(infoStruct),
+  _handle(_plugin),
+  _features(nullptr),
+  _ppfeatures(nullptr),
+  _options(nullptr),
+  _isSynth(false),
+  _uis(nullptr),
+  _usesTimePosition(false),
+  _isConstructed(false),
+  _pluginControlsDefault(nullptr),
+  _pluginControlsMin(nullptr),
+  _pluginControlsMax(nullptr)
 {
-
-    //fake id for LV2PluginWrapper functionality
-// LV2 does not use unique id numbers and frowns upon using anything but the uri.
-//    _uniqueID = uniqueID++;
-//    _uniqueID = 0;
-
     _midi_event_id = mapUrid(LV2_MIDI__MidiEvent);
 
     _uTime_Position        = mapUrid(LV2_TIME__Position);
@@ -2797,7 +2854,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
     _scaleFactor = (float)qApp->devicePixelRatio();
 
     //prepare features and options arrays
-    LV2_Options_Option _tmpl_options [] =
+    const LV2_Options_Option _tmpl_options [] =
     {
         {LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_SAMPLE_RATE), sizeof(float), uridBiMap.map(LV2_ATOM__Float), &_fSampleRate},
         {   LV2_OPTIONS_INSTANCE, 0, uridBiMap.map(LV2_P_MIN_BLKLEN), sizeof(int32_t),
@@ -2928,14 +2985,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
     _ppfeatures [i] = nullptr;
 
     //enum plugin ports;
-    uint32_t numPorts = lilv_plugin_get_num_ports(_handle);
-
-    const LilvPort *lilvFreeWheelPort = lilv_plugin_get_port_by_designation(_handle, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_FreeWheelPort);
-
-    uint32_t latency_port = 0;
-    const bool has_latency_port = lilv_plugin_has_latency(_handle);
-    if(has_latency_port)
-        latency_port = lilv_plugin_get_latency_port_index(_handle);
+    const uint32_t numPorts = lilv_plugin_get_num_ports(_handle);
 
     _pluginControlsDefault = new float [numPorts];
     _pluginControlsMin = new float [numPorts];
@@ -3008,7 +3058,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             }
 
             CtrlVal::CtrlEnumValues *enumValues = nullptr;
-            LV2ControlPortType _cType = LV2_PORT_CONTINUOUS;
+            LV2ControlPortType_t _cType = LV2_PORT_NO_FLAGS;
             if (lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portEnumeration)) {
                 LilvScalePoints* scalePoints = lilv_port_get_scale_points(_handle, _port);
                 if (scalePoints) {
@@ -3025,16 +3075,16 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
                         enumValues->insert(std::pair<float, QString>(value, lilv_node_as_string(lab)));
                     }
                     lilv_scale_points_free(scalePoints);
-                    _cType = LV2_PORT_ENUMERATION;
+                    _cType |= LV2_PORT_ENUMERATION;
                     enumsToFree.append(enumValues);
                 }
             }
-            else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
-                _cType = LV2_PORT_TOGGLE;
-            else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portInteger))
-                _cType = LV2_PORT_INTEGER;
-            else if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portLogarithmic))
-                _cType = LV2_PORT_LOGARITHMIC;
+            if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portToggled))
+                _cType |= LV2_PORT_TOGGLE;
+            if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portInteger))
+                _cType |= LV2_PORT_INTEGER;
+            if(lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portLogarithmic))
+                _cType |= LV2_PORT_LOGARITHMIC;
 
             bool notOnGui = false;
             if (lilv_port_has_property(_handle, _port, lv2CacheNodes.pp_notOnGui))
@@ -3045,10 +3095,8 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
                 isTrigger = true;
 
             const bool discrete = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portDiscrete);
-
-            cPorts->push_back(LV2ControlPort(_port, j, 0.0f, _portName, _portSym, _cType, isCVPort,
-                                             enumValues, groupString, isTrigger, notOnGui,
-                                             discrete));
+            const bool hasStrictBounds = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portHasStrictBounds);
+            bool isSampleRate = false;
 
             if(std::isnan(_pluginControlsDefault [j]))
                 _pluginControlsDefault [j] = 0;
@@ -3065,10 +3113,43 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
             }
             else if (lilv_port_has_property (_handle, _port, lv2CacheNodes.lv2_SampleRate))
             {
-                _pluginControlsDefault [j] *= MusEGlobal::sampleRate;
-                _pluginControlsMin [j] *= MusEGlobal::sampleRate;
-                _pluginControlsMax [j] *= MusEGlobal::sampleRate;
+                isSampleRate = true;
             }
+
+            // Get any value units.
+            int unitTextIdx = -1;
+            LilvNodes* units;
+            units = lilv_port_get_value(_handle, _port, lv2CacheNodes.lv2_unit);
+            if(units)
+            {
+              const unsigned int unitssz = lilv_nodes_size(units);
+              if (unitssz > 0) {
+                      //fprintf(stderr, "LV2 Port Units number of units:%d\n", unitssz);
+                      const LilvNode* unit = lilv_nodes_get_first(units);
+
+                      //if(lilv_node_is_uri(unit))
+                      //{
+                      //  const char * un = lilv_node_as_uri(unit);
+                      //  fprintf(stderr, "LV2 Port name:%s symbol:%s Units URI:%s\n", _portName, _portSym, un);
+                      //}
+
+                      LilvNode* symbol = lilv_world_get(lilvWorld, unit, lv2CacheNodes.lv2_unitSymbol, NULL);
+                      if (symbol) {
+                              //fprintf(stderr, "LV2 Port name:%s symbol:%s Units Symbol:%s\n", _portName, _portSym, lilv_node_as_string(symbol));
+                              const QString ss(lilv_node_as_string(symbol));
+                              unitTextIdx = MusEGlobal::valueUnits.addSymbol(ss);
+
+                              lilv_node_free(symbol);
+                      }
+              }
+            }
+            lilv_nodes_free(units);
+
+            cPorts->push_back(LV2ControlPort(
+              _port, j, _pluginControlsDefault [j], _pluginControlsMin [j], _pluginControlsMax [j],
+              _portName, _portSym, unitTextIdx, _cType, isCVPort,
+              enumValues, groupString, isTrigger, notOnGui,
+              discrete, hasStrictBounds, isSampleRate));
 
         }
         else if(lilv_port_is_a(_handle, _port, lv2CacheNodes.lv2_AudioPort))
@@ -3098,7 +3179,7 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
         else if(!optional)
         {
 //#ifdef DEBUG_LV2
-            std::cerr << "plugin has port with unknown type - ignoring plugin " << label.toStdString() << "!" << std::endl;
+            std::cerr << "plugin has port with unknown type - ignoring plugin " << infoStruct._label.toStdString() << "!" << std::endl;
 //#endif
             if(_nPname != nullptr)
                 lilv_node_free(_nPname);
@@ -3113,28 +3194,11 @@ LV2Synth::LV2Synth(const QFileInfo &fi, const QString& uri, const QString& label
     for(uint32_t j = 0; j < ci_sz; ++j)
     {
         _idxToControlMap.insert(std::pair<uint32_t, uint32_t>(_controlInPorts [j].index, j));
-        if(lilvFreeWheelPort != nullptr)
-        {
-            if(lilv_port_get_index(_handle, _controlInPorts [j].port) == lilv_port_get_index(_handle, lilvFreeWheelPort))
-            {
-                _hasFreeWheelPort = true;
-                _freeWheelPortIndex = j;
-            }
-        }
     }
 
-    if(has_latency_port)
-    {
-        const uint32_t co_sz = _controlOutPorts.size();
-        for(uint32_t j = 0; j < co_sz; ++j)
-        {
-            if(_controlOutPorts [j].index == latency_port)
-            {
-                _hasLatencyPort = true;
-                _latencyPortIndex = j;
-            }
-        }
-    }
+    const uint32_t co_sz = _controlOutPorts.size();
+    for(uint32_t j = 0; j < co_sz; ++j)
+      _idxToControlOutMap.insert(std::pair<uint32_t, uint32_t>(_controlOutPorts [j].index, j));
 
     const LilvPluginClass *cls = lilv_plugin_get_class(_plugin);
     const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
@@ -3275,6 +3339,18 @@ LV2Synth::~LV2Synth()
     }
 }
 
+Synth::Type LV2Synth::synthType() const {
+        return _isSynth ? Synth::LV2_SYNTH : Synth::LV2_EFFECT;
+}
+
+bool LV2Synth::isSynth() { return _isSynth; }
+size_t LV2Synth::inPorts() { return _audioInPorts.size(); }
+size_t LV2Synth::outPorts() { return _audioOutPorts.size(); }
+bool LV2Synth::isConstructed() {return _isConstructed; }
+bool LV2Synth::usesTimePosition() const { return _usesTimePosition; }
+
+
+
 SynthIF *LV2Synth::createSIF(SynthI *synthi)
 {
     ++_instances;
@@ -3330,6 +3406,9 @@ LV2SynthIF::~LV2SynthIF()
     if(_audioInSilenceBuf)
         free(_audioInSilenceBuf);
 
+    if(_audioOutDummyBuf)
+        free(_audioOutDummyBuf);
+
     if(_audioInBuffers)
     {
         delete [] _audioInBuffers;
@@ -3380,6 +3459,7 @@ LV2SynthIF::LV2SynthIF(SynthI *s): SynthIF(s)
     _inportsMidi = 0;
     _outportsMidi = 0;
     _audioInSilenceBuf = nullptr;
+    _audioOutDummyBuf = nullptr;
     _ifeatures = nullptr;
     _ppifeatures = nullptr;
     _state = nullptr;
@@ -3453,13 +3533,11 @@ bool LV2SynthIF::init(LV2Synth *s)
     {
         uint32_t idx = _controlInPorts [i].index;
         _controls [i].idx = idx;
-        _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal = _synth->_pluginControlsDefault [idx];
-        if(_synth->_hasFreeWheelPort && _synth->_freeWheelPortIndex == i)
+        _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal;
+        if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == i)
             _controls [i].enCtrl = false;
         else
             _controls [i].enCtrl = true;
-        _controlInPorts [i].minVal = _synth->_pluginControlsMin [idx];
-        _controlInPorts [i].maxVal = _synth->_pluginControlsMax [idx];
 
         int ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + i;
 
@@ -3484,36 +3562,29 @@ bool LV2SynthIF::init(LV2Synth *s)
             _controls[i].val = cl->curVal();
         }
 
-        cl->setRange(_synth->_pluginControlsMin [idx], _synth->_pluginControlsMax [idx]);
+        float mn, mx;
+        range(i, &mn, &mx);
+        cl->setRange(mn, mx);
         cl->setName(QString(_controlInPorts [i].cName));
         CtrlValueType vt = VAL_LINEAR;
-        switch(_controlInPorts [i].cType)
-        {
-        case LV2_PORT_ENUMERATION:
+        const LV2ControlPortType_t ct = _controlInPorts[i].cType;
+        if(ct & LV2_PORT_ENUMERATION)
             vt = VAL_ENUM;
-            break;
-        case LV2_PORT_CONTINUOUS:
-            vt = VAL_LINEAR;
-            break;
-        case LV2_PORT_INTEGER:
+        else if(ct & LV2_PORT_INTEGER)
             vt = VAL_INT;
-            break;
-        case LV2_PORT_LOGARITHMIC:
+        else if(ct & LV2_PORT_LOGARITHMIC)
             vt = VAL_LOG;
-            break;
-        case LV2_PORT_TOGGLE:
+        else if(ct & LV2_PORT_TOGGLE)
             vt = VAL_BOOL;
-            break;
-        default:
-            break;
-        }
 
         cl->setValueType(vt);
         // For now we do not allow interpolation of integer or enum controllers.
         // TODO: It would require custom line drawing and corresponding hit detection.
-        cl->setMode(!_controlInPorts [i].isDiscrete &&
-                    (_controlInPorts [i].cType == LV2_PORT_CONTINUOUS || _controlInPorts [i].cType == LV2_PORT_LOGARITHMIC) ?
+        cl->setMode(!_controlInPorts [i].isDiscrete && !(ct & LV2_PORT_NON_CONTINUOUS) ?
                       CtrlList::INTERPOLATE : CtrlList::DISCRETE);
+
+        // Set the value units index.
+        cl->setValueUnit(valueUnit(i));
 
         if(!_controlInPorts [i].isCVPort)
             lilv_instance_connect_port(_handle, idx, &_controls [i].val);
@@ -3523,10 +3594,8 @@ bool LV2SynthIF::init(LV2Synth *s)
     {
         uint32_t idx = _controlOutPorts [i].index;
         _controlsOut[i].idx = idx;
-        _controlsOut[i].val    = 0.0;
-        _controlsOut[i].tmpVal = 0.0;
         _controlsOut[i].enCtrl  = false;
-        _controlOutPorts [i].defVal = _controlOutPorts [i].minVal = _controlOutPorts [i].maxVal = 0.0;
+        _controlsOut [i].val = _controlsOut [i].tmpVal = _controlOutPorts [i].defVal;
         if(!_controlOutPorts [i].isCVPort)
             lilv_instance_connect_port(_handle, idx, &_controlsOut[i].val);
     }
@@ -3548,16 +3617,35 @@ bool LV2SynthIF::init(LV2Synth *s)
     }
 #endif
 
+#ifdef _WIN32
+    _audioOutDummyBuf = (float *) _aligned_malloc(16, sizeof(float) * MusEGlobal::segmentSize);
+    if(_audioOutDummyBuf == nullptr)
+    {
+        fprintf(stderr, "ERROR: LV2SynthIF::init: _aligned_malloc returned error: nullptr. Aborting!\n");
+        abort();
+    }
+#else
+    rv = posix_memalign((void **)&_audioOutDummyBuf, 16, sizeof(float) * MusEGlobal::segmentSize);
+
+    if(rv != 0)
+    {
+        fprintf(stderr, "ERROR: LV2SynthIF::init: posix_memalign returned error:%d. Aborting!\n", rv);
+        abort();
+    }
+#endif
+
     if(MusEGlobal::config.useDenormalBias)
     {
         for(unsigned q = 0; q < MusEGlobal::segmentSize; ++q)
         {
             _audioInSilenceBuf[q] = MusEGlobal::denormalBias;
+            _audioOutDummyBuf[q] = MusEGlobal::denormalBias;
         }
     }
     else
     {
         memset(_audioInSilenceBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
+        memset(_audioOutDummyBuf, 0, sizeof(float) * MusEGlobal::segmentSize);
     }
 
     //cache number of ports
@@ -3792,20 +3880,27 @@ int LV2SynthIF::totalOutChannels() const
 
 void LV2SynthIF::activate()
 {
+    if(_curActiveState)
+      return;
+
     if(_handle)
     {
         lilv_instance_activate(_handle);
+        SynthIF::activate();
     }
 }
 
 
 void LV2SynthIF::deactivate()
 {
+    if(!_curActiveState)
+      return;
+    SynthIF::deactivate();
+
     if(_handle)
     {
         lilv_instance_deactivate(_handle);
     }
-
 }
 
 void LV2SynthIF::deactivate3()
@@ -4135,6 +4230,158 @@ bool LV2SynthIF::getNoteSampleName(
 }
 #endif
 
+void LV2SynthIF::eventReceived(uint32_t frames, uint32_t size, uint8_t* data)
+{
+      if(size == 0)
+        return;
+
+      const int port = synti->midiPort();
+
+      MidiRecordEvent event;
+      event.setB(0);
+      //event.setPort(_port);
+      event.setPort(port);
+
+      // NOTE: From muse_qt4_evolution. Not done here in Muse-2 (yet).
+      // move all events 2*MusEGlobal::segmentSize into the future to get
+      // jitterfree playback
+      //
+      //  cycle   n-1         n          n+1
+      //          -+----------+----------+----------+-
+      //               ^          ^          ^
+      //               catch      process    play
+      //
+
+      // These events arrived in the previous period, and it may not have been at the audio position before this one (after a seek).
+      // This is how our ALSA driver works, events there are timestamped asynchronous of any process, referenced to the CURRENT audio
+      //  position, so that by the time of the NEXT process, THOSE events have also occurred in the previous period.
+      // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
+      //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
+      // If ALSA works OK than this should too...
+      const unsigned int abs_ft = MusEGlobal::audio->curSyncFrame() + frames;
+
+      event.setTime(abs_ft);
+      event.setTick(MusEGlobal::lastExtMidiSyncTick);
+
+      event.setChannel(data[0] & 0xf);
+      const int type = data[0] & 0xf0;
+      event.setType(type);
+
+      //fprintf(stderr, "LV2SynthIF::eventReceived(): frames:%d time:%d size:%d type:%x\n", frames, event.time(), size, type);
+
+      switch(type) {
+            case ME_NOTEON:
+                  if(size < 3)
+                    return;
+                  // REMOVE Tim. Noteoff. Added.
+                  // Convert zero-velocity note ons to note offs as per midi spec.
+                  if(data[2] == 0)
+                    event.setType(ME_NOTEOFF);
+                  event.setA(data[1]);
+                  event.setB(data[2]);
+                  break;
+
+            case ME_NOTEOFF:
+            case ME_CONTROLLER:
+            case ME_POLYAFTER:
+                  if(size < 3)
+                    return;
+                  event.setA(data[1]);
+                  event.setB(data[2]);
+                  break;
+            case ME_PROGRAM:
+            case ME_AFTERTOUCH:
+                  if(size < 2)
+                    return;
+                  event.setA(data[1]);
+                  break;
+
+            case ME_PITCHBEND:
+                  if(size < 3)
+                    return;
+                  event.setA(((data[2] << 7) + data[1]) - 8192);
+                  break;
+
+            case ME_SYSEX:
+                  {
+                    int type = data[0] & 0xff;
+                    switch(type)
+                    {
+// TODO: Sysex NOT supported with Vestige !
+//                           case ME_SYSEX:
+//
+//                                 // TODO: Deal with large sysex, which are broken up into chunks!
+//                                 // For now, do not accept if the last byte is not EOX, meaning it's a chunk with more chunks to follow.
+//                                 if(*(((unsigned char*)ev->buffer) + ev->size - 1) != ME_SYSEX_END)
+//                                 {
+//                                   if(MusEGlobal::debugMsg)
+//                                     printf("VstNativeSynthIF::eventReceived sysex chunks not supported!\n");
+//                                   return;
+//                                 }
+//
+//                                 //event.setTime(0);      // mark as used
+//                                 event.setType(ME_SYSEX);
+//                                 event.setData((unsigned char*)(ev->buffer + 1), ev->size - 2);
+//                                 break;
+                          case ME_MTC_QUARTER:
+                                if(size < 2 || port == -1)
+                                  return;
+                                MusEGlobal::midiSyncContainer.mtcInputQuarter(port, data[1]);
+                                return;
+                          case ME_SONGPOS:
+                                if(size < 3 || port == -1)
+                                  return;
+                                //MusEGlobal::midiSyncContainer.setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) << 7 )); // LSB then MSB
+                                MusEGlobal::midiSyncContainer.setSongPosition(port, data[1] | (data[2] << 7 )); // LSB then MSB
+                                return;
+                          //case ME_SONGSEL:
+                          //case ME_TUNE_REQ:
+                          //case ME_SENSE:
+                          //      return;
+
+// TODO: Hm, need the last frame time... Isn't that the same as audio->pos().frame() like above?
+//                           case ME_CLOCK:
+//                                     const jack_nframes_t abs_ft = jack_last_frame_time(jc) - MusEGlobal::segmentSize + ev->time;
+//                                     midiClockInput(abs_ft);
+//                                 return;
+//                           case ME_TICK:
+//                           case ME_START:
+//                           case ME_CONTINUE:
+//                           case ME_STOP:
+//                           {
+//                                 if(MusEGlobal::audioDevice && MusEGlobal::audioDevice->deviceType() == JACK_MIDI && _port != -1)
+//                                 {
+//                                   MusECore::JackAudioDevice* jad = static_cast<MusECore::JackAudioDevice*>(MusEGlobal::audioDevice);
+//                                   jack_client_t* jc = jad->jackClient();
+//                                   if(jc)
+//                                   {
+//                                     jack_nframes_t abs_ft = jack_last_frame_time(jc)  + ev->time;
+//                                     double abs_ev_t = double(jack_frames_to_time(jc, abs_ft)) / 1000000.0;
+//                                     MusEGlobal::midiSyncContainer.realtimeSystemInput(_port, type, abs_ev_t);
+//                                   }
+//                                 }
+//                                 return;
+//                           }
+
+                          //case ME_SYSEX_END:
+                                //break;
+                          //      return;
+                          default:
+                                if(MusEGlobal::debugMsg)
+                                  printf("LV2SynthIF::eventReceived unsupported system event 0x%02x\n", type);
+                                return;
+                    }
+                  }
+                  break;
+            default:
+              if(MusEGlobal::debugMsg)
+                printf("LV2SynthIF::eventReceived unknown event 0x%02x\n", type);
+              return;
+            }
+
+      // Let recordEvent handle it from here, with timestamps, filtering, gui triggering etc.
+      synti->recordEvent(event);
+}
 
 bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long frame)
 {
@@ -4440,28 +4687,70 @@ bool LV2SynthIF::processEvent(const MidiPlayEvent &e, LV2EvBuf *evBuf, long fram
 
 }
 
-
 bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int nframes, float **buffer)
 {
     const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
     // All ports must be connected to something!
-    const unsigned long nop = ((unsigned long) ports) > _outports ? _outports : ((unsigned long) ports);
+    const size_t nop = ((size_t) ports) > _outports ? _outports : ((size_t) ports);
+
+    const bool isOn = on();
+    const PluginBypassType bypassType = pluginBypassType();
+    //  Normally if the plugin is inactive or off we tell it to connect to dummy audio ports.
+    //  But this can change depending on detected bypass type, below.
+    bool connectToDummyAudioPorts = !_curActiveState || !isOn;
+    //  Normally if the plugin is inactive or off we use a fixed controller period.
+    //  But this can change depending on detected bypass type, below.
+    bool usefixedrate = !_curActiveState || !isOn;
+    const unsigned int fin_nsamp = nframes;
+
+    // If the plugin has a REAL enable or bypass control port, we allow the plugin
+    //  a full-length run so that it can handle its own enabling or bypassing.
+    if(_curActiveState)
+    {
+      switch(bypassType)
+      {
+        case PluginBypassTypeEmulatedEnableController:
+        case PluginBypassTypeEmulatedEnableFunction:
+        break;
+
+        case PluginBypassTypeEnablePort:
+        case PluginBypassTypeBypassPort:
+            connectToDummyAudioPorts = false;
+            usefixedrate = false;
+        break;
+
+        case PluginBypassTypeEnableFunction:
+        case PluginBypassTypeBypassFunction:
+            connectToDummyAudioPorts = false;
+        break;
+      }
+    }
+
+    // See if the features require a fixed control period.
     // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
-    //       For now we treat it like fixed size.
-    const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
+    //       For now we treat it like fixed control period.
+    if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+      usefixedrate = true;
+
+    // For now, the fixed size is clamped to the audio buffer size.
+    // TODO: We could later add slower processing over several cycles -
+    //  so that users can select a small audio period but a larger control period.
     const unsigned long min_per = (usefixedrate || MusEGlobal::config.minControlProcessPeriod > nframes) ? nframes : MusEGlobal::config.minControlProcessPeriod;
-    const unsigned long min_per_mask = min_per - 1; // min_per must be power of 2
+    const unsigned long min_per_mask = min_per-1;   // min_per must be power of 2
+
+    AudioTrack *atrack = track();
 
     // This value is negative for correction.
-    float latency_corr = 0.0f;
-    if(track())
+    float transportLatencyCorr = 0.0f;
+    if(atrack)
     {
-      const TrackLatencyInfo& li = track()->transportSource().getLatencyInfo(false);
-      latency_corr = li._sourceCorrectionValue;
+      TransportSource& ts = atrack->transportSource();
+      const TrackLatencyInfo& li = ts.getLatencyInfo(false);
+      if(li._canCorrectOutputLatency)
+        transportLatencyCorr = li._sourceCorrectionValue;
     }
 
     unsigned long sample = 0;
-    AudioTrack *atrack = track();
     const AutomationType at = atrack->automationType();
     const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
     CtrlListList *cll = atrack->controller();
@@ -4471,12 +4760,14 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
     LV2EvBuf *evBuf = (_inportsMidi > 0) ? _state->midiInPorts [0].buffer : nullptr;
 
     //set freewheeling property if plugin supports it
-    if(_synth->_hasFreeWheelPort)
+    if(_synth->_pluginFreewheelType == PluginFreewheelTypePort)
     {
-        _controls [_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
+      _controls [_synth->_freewheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
+      // In case the GUI would like to use the new value.
+      _state->controlsMask[_synth->_freewheelPortIndex] = true;
     }
 
-    if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
+    if(plug_id != -1)
     {
         icl_first = cll->lower_bound(genACnum(plug_id, 0));
     }
@@ -4484,7 +4775,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
     bool used_in_chan_array[_inports]; // Don't bother initializing if not 'running'.
 
     // Don't bother if not 'running'.
-    if(ports != 0)
+    if(_curActiveState)
     {
         // Initialize the array.
         for(size_t i = 0; i < _inports; ++i)
@@ -4524,11 +4815,16 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
         }
     }
 
+    // TODO: Should we implement emulated bypass for plugins without a bypass feature?
+    //       That could be very difficult. How to determine any relationships between
+    //        inputs and outputs? LV2 has some features for that. VST has speakers.
+    //       And what about midi ports...
+
     int cur_slice = 0;
 
-    while(sample < nframes)
+    while(sample < fin_nsamp)
     {
-        unsigned long nsamp = nframes - sample;
+        unsigned long slice_samps = fin_nsamp - sample;
         const unsigned long slice_frame = pos + sample;
 
         //
@@ -4537,14 +4833,13 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
         //  from there, but this section determines where the next highest maximum frame
         //  absolutely needs to be for smooth playback of the controller value stream...
         //
-        if(ports != 0)    // Don't bother if not 'running'.
         {
             ciCtrlList icl = icl_first;
 
             for(unsigned long k = 0; k < _inportsControl; ++k)
             {
                 //don't process freewheel port
-                if(_synth->_hasFreeWheelPort && _synth->_freeWheelPortIndex == k)
+                if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == k)
                     continue;
 
                 CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
@@ -4553,16 +4848,13 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
                 // Always refresh the interpolate struct at first, since things may have changed.
                 // Or if the frame is outside of the interpolate range - and eStop is not true.  // FIXME TODO: Be sure these comparisons are correct.
                 if(cur_slice == 0 || (!ci.eStop && MusEGlobal::audio->isPlaying() &&
-                                      (slice_frame < (unsigned long)ci.sFrame || (ci.eFrameValid && slice_frame >= (unsigned long)ci.eFrame))))
+                  (slice_frame < (unsigned long)ci.sFrame || (ci.eFrameValid && slice_frame >= (unsigned long)ci.eFrame))))
                 {
                     if(cl && plug_id != -1 && (unsigned long)cl->id() == genACnum(plug_id, k))
                     {
                         cl->getInterpolation(slice_frame, no_auto || !_controls[k].enCtrl, &ci);
-
                         if(icl != cll->end())
-                        {
                             ++icl;
-                        }
                     }
                     else
                     {
@@ -4599,7 +4891,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
 
                 if(!usefixedrate && MusEGlobal::audio->isPlaying())
                 {
-                    unsigned long samps = nsamp;
+                    unsigned long samps = slice_samps;
 
                     if(ci.eFrameValid)
                     {
@@ -4620,9 +4912,9 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
                         samps = min_per;
                     }
 
-                    if(samps < nsamp)
+                    if(samps < slice_samps)
                     {
-                        nsamp = samps;
+                        slice_samps = samps;
                     }
 
                 }
@@ -4635,6 +4927,7 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
                 {
                     _controls[k].val = ci.sVal;
                 }
+                // Inform the GUI.
                 _state->controlsMask [k] = true;
 
 #ifdef LV2_DEBUG_PROCESS
@@ -4644,15 +4937,14 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
             }
         }
 
-
         bool found = false;
         unsigned long frame = 0;
         unsigned long index = 0;
+        unsigned long evframe;
 
         // Get all control ring buffer items valid for this time period...
         while(!_controlFifo.isEmpty())
         {
-            unsigned long evframe;
             const ControlEvent& v = _controlFifo.peek();
             // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio.
             // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
@@ -4675,16 +4967,18 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
                 continue;
             }
 
-            if(evframe >= nframes                                                         // Next events are for a later period.
-                    || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp)) // Next events are for a later run in this period. (Autom took prio.)
-                    || (found && !v.unique && (evframe - sample >= min_per))                 // Eat up events within minimum slice - they're too close.
-                    || (usefixedrate && found && v.unique && v.idx == index))                // Fixed rate and must reply to all.
+            if(// Next events are for a later period.
+               evframe >= nframes
+               // Next events are for a later run in this period. (Autom took prio.)
+               || (!usefixedrate && !found && !v.unique && (evframe - sample >= slice_samps))
+               // Eat up events within minimum slice - they're too close.
+               || (found && !v.unique && (evframe - sample >= min_per))
+               // Fixed rate and must reply to all.
+               || (usefixedrate && found && v.unique && v.idx == index))
 
             {
                 break;
             }
-
-//          _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
 
             found = true;
             frame = evframe;
@@ -4697,33 +4991,27 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
             }
 
             //don't process freewheel port
-            if(_synth->_hasFreeWheelPort && _synth->_freeWheelPortIndex == index)
+            if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == index)
             {
                 _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
                 continue;
             }
 
-            if(ports == 0)                     // Don't bother if not 'running'.
-            {
-                _controls[index].val = v.value;   // Might as well at least update these.
-            }
-            else
-            {
-                CtrlInterpolate *ci = &_controls[index].interp;
-                // Tell it to stop the current ramp at this frame, when it does stop, set this value:
-                ci->eFrame = frame;
-                ci->eFrameValid = true;
-                ci->eVal   = v.value;
-                ci->eStop  = true;
-            }
+            CtrlInterpolate *ci = &_controls[index].interp;
+            // Tell it to stop the current ramp at this frame, when it does stop, set this value:
+            ci->eFrame = frame;
+            ci->eFrameValid = true;
+            ci->eVal   = v.value;
+            ci->eStop  = true;
 
             // Need to update the automation value, otherwise it overwrites later with the last automation value.
             if(plug_id != -1)
             {
                 synti->setPluginCtrlVal(genACnum(plug_id, index), v.value);
             }
-            if(v.fromGui) //don't send gui control changes back
+            if(v.fromGui)
             {
+                // Don't send gui control changes back to the gui, just update the last value.
                 _state->lastControls [index] = v.value;
                 _state->controlsMask [index] = false;
             }
@@ -4732,187 +5020,215 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
 
         if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
         {
-            nsamp = frame - sample;
+            slice_samps = frame - sample;
         }
 
-
-        if(sample + nsamp > nframes)         // Safety check.
+        if(sample + slice_samps > nframes)         // Safety check.
         {
-            nsamp = nframes - sample;
+            slice_samps = nframes - sample;
         }
 
-        // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
-        // Note this means it is still possible to get stuck in the top loop (at least for a while).
-        if(nsamp != 0)
         {
-            LV2Synth::lv2audio_preProcessMidiPorts(_state, sample, nsamp);
-            // Send transport events if any
-            // FIXME These need to be mixed and serialized with the the events below!
-            //       For now, SendTransport is not sliceable, it only sends one event at sample.
-            LV2Synth::lv2audio_SendTransport(_state, sample, nsamp, latency_corr);
+            LV2Synth::lv2audio_preProcessMidiPorts(_state, sample, slice_samps);
 
             // Get the state of the stop flag.
             const bool do_stop = synti->stopFlag();
+            // Get whether playback and user midi events can be written to this midi device.
+            const bool we = synti->writeEnable();
 
             MidiPlayEvent buf_ev;
 
-            // Transfer the user lock-free buffer events to the user sorted multi-set.
-            // False = don't use the size snapshot, but update it.
-            const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
-            for(unsigned int i = 0; i < usr_buf_sz; ++i)
+            // Only if active and not stopping and write enabled.
+            if(!do_stop && _curActiveState && we)
             {
-                if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-                    synti->_outUserEvents.insert(buf_ev);
+              // Send transport events if any
+              // FIXME These need to be mixed and serialized with the the events below!
+              //       For now, SendTransport is not sliceable, it only sends one event at sample.
+              LV2Synth::lv2audio_SendTransport(_state, sample, slice_samps, transportLatencyCorr);
             }
 
-            // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-            const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
-            for(unsigned int i = 0; i < pb_buf_sz; ++i)
+            // If stopping or not 'running' just purge ALL playback FIFO and container events.
+            // But do not clear the user ones. We need to hold on to them until active,
+            //  they may contain crucial events like loading a soundfont from a song file.
+            if(do_stop || !_curActiveState || !we)
             {
-                // Are we stopping? Just remove the item.
-                if(do_stop)
-                    synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
-                // Otherwise get the item.
-                else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+              //bool changed = false;
+
+              // Transfer the user lock-free buffer events to the user sorted multi-set.
+              // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+              const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+              for(unsigned int i = 0; i < usr_buf_sz; ++i)
+              {
+                  if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+                  {
+                      synti->_outUserEvents.addExclusive(buf_ev);
+                      //changed = true;
+                  }
+              }
+
+// Diagnostics.
+#if 0
+              if(changed)
+              {
+                fprintf(stderr, "time:\t\ttype:\t\tdataA:\t\tdataB:\n");
+                fprintf(stderr, "=====\t\t=====\t\t======\t\t======\n");
+                for(ciMPEvent i = synti->_outUserEvents.cbegin(); i != synti->_outUserEvents.cend(); ++i)
+                  fprintf(stderr, "%d\t\t%X\t\t%d\t\t%d\n", i->time(), i->type(), i->dataA(), i->dataB());
+                if(!synti->_outUserEvents.empty())
+                  fprintf(stderr, "\n");
+              }
+#endif
+
+              synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
+              synti->_outPlaybackEvents.clear();
+              // Reset the flag.
+              synti->setStopFlag(false);
+            }
+            else
+            {
+              // Transfer the user lock-free buffer events to the user sorted multi-set.
+              const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+              for(unsigned int i = 0; i < usr_buf_sz; ++i)
+              {
+                  if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+                      synti->_outUserEvents.insert(buf_ev);
+              }
+
+              // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+              const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+              for(unsigned int i = 0; i < pb_buf_sz; ++i)
+              {
+                if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
                     synti->_outPlaybackEvents.insert(buf_ev);
+              }
             }
 
-            // Are we stopping?
-            if(do_stop)
+            // Don't bother if not 'running'.
+            if(_curActiveState && we)
             {
-                // Transport has stopped, purge ALL further scheduled playback events now.
-                synti->_outPlaybackEvents.clear();
-                // Reset the flag.
-                synti->setStopFlag(false);
+              iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+              iMPEvent impe_us = synti->_outUserEvents.begin();
+              bool using_pb;
+
+              while(1)
+              {
+                  if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+                      using_pb = *impe_pb < *impe_us;
+                  else if(impe_pb != synti->_outPlaybackEvents.end())
+                      using_pb = true;
+                  else if(impe_us != synti->_outUserEvents.end())
+                      using_pb = false;
+                  else break;
+
+                  const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
+
+  #ifdef LV2_DEBUG
+                  fprintf(stderr, "LV2SynthIF::getData eventFifos event time:%d\n", e.time());
+  #endif
+
+                  // Event is for future?
+                  if(e.time() >= (sample + slice_samps + syncFrame))
+                      break;
+
+                  // Time-stamp the event.
+                  unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+                  ft = (ft < sample) ? 0 : ft - sample;
+
+                  if(ft >= slice_samps)
+                  {
+                      fprintf(stderr, "LV2SynthIF::getData: eventFifos event time:%d "
+                      "out of range. pos:%d syncFrame:%u ft:%u sample:%lu slice_samps:%lu\n",
+                              e.time(), pos, syncFrame, ft, sample, slice_samps);
+                      ft = slice_samps - 1;
+                  }
+                  if(processEvent(e, evBuf, ft))
+                  {
+
+                  }
+
+                  // Done with buffer's event. Remove it.
+                  // C++11.
+                  if(using_pb)
+                      impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+                  else
+                      impe_us = synti->_outUserEvents.erase(impe_us);
+              }
             }
-
-            iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
-            iMPEvent impe_us = synti->_outUserEvents.begin();
-            bool using_pb;
-
-            while(1)
-            {
-                if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
-                    using_pb = *impe_pb < *impe_us;
-                else if(impe_pb != synti->_outPlaybackEvents.end())
-                    using_pb = true;
-                else if(impe_us != synti->_outUserEvents.end())
-                    using_pb = false;
-                else break;
-
-                const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
-
-#ifdef LV2_DEBUG
-                fprintf(stderr, "LV2SynthIF::getData eventFifos event time:%d\n", e.time());
-#endif
-
-                if(e.time() >= (sample + nsamp + syncFrame))
-                    break;
-
-                if(ports != 0)  // Don't bother if not 'running'.
-                {
-                    // Time-stamp the event.
-                    unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
-                    ft = (ft < sample) ? 0 : ft - sample;
-
-                    if(ft >= nsamp)
-                    {
-                        fprintf(stderr, "LV2SynthIF::getData: eventFifos event time:%d out of range. pos:%d syncFrame:%u ft:%u sample:%lu nsamp:%lu\n",
-                                e.time(), pos, syncFrame, ft, sample, nsamp);
-                        ft = nsamp - 1;
-                    }
-                    if(processEvent(e, evBuf, ft))
-                    {
-
-                    }
-                }
-
-                // Done with ring buffer's event. Remove it.
-                // C++11.
-                if(using_pb)
-                    impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
-                else
-                    impe_us = synti->_outUserEvents.erase(impe_us);
-            }
-
-
-            if(ports != 0)  // Don't bother if not 'running'.
-            {
-
-                //connect ports
-                for(size_t j = 0; j < _inports; ++j)
-                {
-                    if(used_in_chan_array [j])
-                    {
-                        lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInBuffers [j] + sample);
-                    }
-                    else
-                    {
-                        lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInSilenceBuf + sample);
-                    }
-                }
-
-                for(size_t j = 0; j < nop; ++j)
-                {
-                    lilv_instance_connect_port(_handle, _audioOutPorts [j].index, buffer [j] + sample);
-                }
-
-                for(size_t j = nop; j < _outports; j++)
-                {
-                    lilv_instance_connect_port(_handle, _audioOutPorts [j].index, _audioOutBuffers [j] + sample);
-                }
-
-                for(size_t j = 0; j < _inportsControl; ++j)
-                {
-                    uint32_t idx = _controlInPorts [j].index;
-                    if(_state->pluginCVPorts [idx] != nullptr)
-                    {
-                        float cvVal = _controls [j].val;
-                        for(size_t jj = 0; jj < nsamp; ++jj)
-                        {
-                            _state->pluginCVPorts [idx] [jj + sample] = cvVal;
-                        }
-                        lilv_instance_connect_port(_handle, idx, _state->pluginCVPorts [idx] + sample);
-                    }
-                }
-#ifdef LV2_DEBUG_PROCESS
-                //dump atom sequence events to stderr
-                if(evBuf)
-                {
-                    evBuf->dump();
-                }
-#endif
-
-                lilv_instance_run(_handle, nsamp);
-            }
-
-            //notify worker about processed data (if any)
-            // Do it always, even if not 'running', in case we have 'left over' responses etc,
-            //  even though work is only initiated from 'run'.
-            const unsigned int rsp_buf_sz = _state->wrkRespDataBuffer->getSize(false);
-            for(unsigned int i_sz = 0; i_sz < rsp_buf_sz; ++i_sz)
-            {
-                if(_state->wrkIface && _state->wrkIface->work_response)
-                {
-                    void *wrk_data = nullptr;
-                    size_t wrk_data_sz = 0;
-                    if(_state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
-                      _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
-                }
-                _state->wrkRespDataBuffer->remove();
-            }
-
-            if(ports != 0)  // Don't bother if not 'running'.
-            {
-                //notify worker that this run() finished
-                if(_state->wrkIface && _state->wrkIface->end_run)
-                    _state->wrkIface->end_run(lilv_instance_get_handle(_handle));
-
-                LV2Synth::lv2audio_postProcessMidiPorts(_state, sample, nsamp);
-            }
-
-            sample += nsamp;
         }
+
+        // Don't bother if not 'running'.
+        if(_curActiveState)
+        {
+            //connect ports
+            // Connect all inputs either to the input buffers, or a silence buffer.
+            for(size_t j = 0; j < _inports; ++j)
+            {
+                if(!connectToDummyAudioPorts && used_in_chan_array [j])
+                    lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInBuffers [j] + sample);
+                else
+                    lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInSilenceBuf + sample);
+            }
+
+            for(size_t j = 0; j < _outports; ++j)
+            {
+                // Connect the given buffers directly to the ports, up to a max of synth ports.
+                if(!connectToDummyAudioPorts && j < nop)
+                    lilv_instance_connect_port(_handle, _audioOutPorts [j].index, buffer [j] + sample);
+                // Connect the remaining ports to some local buffers (not used yet).
+                else
+                    lilv_instance_connect_port(_handle, _audioOutPorts [j].index, _audioOutBuffers [j] + sample);
+            }
+
+            for(size_t j = 0; j < _inportsControl; ++j)
+            {
+                uint32_t idx = _controlInPorts [j].index;
+                if(_state->pluginCVPorts [idx] != nullptr)
+                {
+                    float cvVal = _controls [j].val;
+                    for(size_t jj = 0; jj < slice_samps; ++jj)
+                    {
+                        _state->pluginCVPorts [idx] [jj + sample] = cvVal;
+                    }
+                    lilv_instance_connect_port(_handle, idx, _state->pluginCVPorts [idx] + sample);
+                }
+            }
+#ifdef LV2_DEBUG_PROCESS
+            //dump atom sequence events to stderr
+            if(evBuf)
+            {
+                evBuf->dump();
+            }
+#endif
+
+            lilv_instance_run(_handle, slice_samps);
+        }
+
+        //notify worker about processed data (if any)
+        // Do it always, even if not 'running', in case we have 'left over' responses etc,
+        //  even though work is only initiated from 'run'.
+        const unsigned int rsp_buf_sz = _state->wrkRespDataBuffer->getSize(false);
+        for(unsigned int i_sz = 0; i_sz < rsp_buf_sz; ++i_sz)
+        {
+            if(_state->wrkIface && _state->wrkIface->work_response)
+            {
+                void *wrk_data = nullptr;
+                size_t wrk_data_sz = 0;
+                if(_state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
+                  _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
+            }
+            _state->wrkRespDataBuffer->remove();
+        }
+
+        if(_curActiveState)  // Don't bother if not 'running'.
+        {
+            //notify worker that this run() finished
+            if(_state->wrkIface && _state->wrkIface->end_run)
+                _state->wrkIface->end_run(lilv_instance_get_handle(_handle));
+
+            LV2Synth::lv2audio_postProcessMidiPorts(_state, sample, slice_samps);
+        }
+
+        sample += slice_samps;
 
         ++cur_slice; // Slice is done. Moving on to any next slice now...
     }
@@ -5018,6 +5334,8 @@ QString LV2SynthIF::getPatchName(int ch, int prog, bool drum) const
 
 void LV2SynthIF::guiHeartBeat()
 {
+    SynthIF::guiHeartBeat();
+
     //check for pending song dirty status
     if(_state->songDirtyPending) {
         MusEGlobal::song->setDirty();
@@ -5025,7 +5343,7 @@ void LV2SynthIF::guiHeartBeat()
     }
 
     LV2OperationMessage msg;
-    const unsigned int sz = _state->operationsFifo.getSize(false);
+    const unsigned int sz = _state->operationsFifo.getSize();
     for(unsigned int i = 0; i < sz; ++i)
     {
         if(!_state->operationsFifo.get(msg))
@@ -5372,12 +5690,12 @@ long unsigned int LV2SynthIF::parametersOut() const
     return _outportsControl;
 }
 
-const char *LV2SynthIF::paramName(long unsigned int i)
+const char *LV2SynthIF::paramName(long unsigned int i) const
 {
     return _controlInPorts [i].cName;
 }
 
-const char *LV2SynthIF::paramOutName(long unsigned int i)
+const char *LV2SynthIF::paramOutName(long unsigned int i) const
 {
     return _controlOutPorts [i].cName;
 }
@@ -5417,43 +5735,111 @@ bool LV2SynthIF::ctrlNotOnGui(long unsigned int i) const {
 
 CtrlValueType LV2SynthIF::ctrlValueType(unsigned long i) const
 {
-    CtrlValueType vt = VAL_LINEAR;
     assert(i < _inportsControl);
 
-    switch(_synth->_controlInPorts [i].cType)
-    {
-    case LV2_PORT_CONTINUOUS:
-        vt = VAL_LINEAR;
-        break;
-    case LV2_PORT_INTEGER:
-        vt = VAL_INT;
-        break;
-    case LV2_PORT_LOGARITHMIC:
-        vt = VAL_LOG;
-        break;
-    case LV2_PORT_TOGGLE:
-        vt = VAL_BOOL;
-        break;
-    case LV2_PORT_ENUMERATION:
+    CtrlValueType vt = VAL_LINEAR;
+
+    const LV2ControlPortType_t ct = _controlInPorts[i].cType;
+    if(ct & LV2_PORT_ENUMERATION)
         vt = VAL_ENUM;
-        break;
-    default:
-        break;
-    }
+    else if(ct & LV2_PORT_INTEGER)
+        vt = VAL_INT;
+    else if(ct & LV2_PORT_LOGARITHMIC)
+        vt = VAL_LOG;
+    else if(ct & LV2_PORT_TOGGLE)
+        vt = VAL_BOOL;
 
     return vt;
-
 }
 
 CtrlList::Mode LV2SynthIF::ctrlMode(unsigned long i) const
 {
     assert(i < _inportsControl);
 
-    return !_synth->_controlInPorts [i].isDiscrete && ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
-            ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
+    // For now we do not allow interpolation of integer or enum controllers.
+    // TODO: It would require custom line drawing and corresponding hit detection.
+    return !_controlInPorts [i].isDiscrete && !(_controlInPorts[i].cType & LV2_PORT_NON_CONTINUOUS) ?
+             CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
 
-LADSPA_PortRangeHint LV2SynthIF::range(unsigned long i)
+const CtrlVal::CtrlEnumValues* LV2SynthIF::ctrlOutEnumValues(unsigned long i) const {
+
+    if (i >= _outportsControl)
+        return nullptr;
+
+    return _controlOutPorts [i].scalePoints;
+}
+
+QString LV2SynthIF::portGroupOut(long unsigned int i) const {
+
+    if (i >= _outportsControl)
+        return QString();
+
+    return _controlOutPorts[i].group;
+}
+
+bool LV2SynthIF::ctrlOutIsTrigger(long unsigned int i) const {
+
+    if (i >= _outportsControl)
+        return false;
+
+    return _controlOutPorts[i].isTrigger;
+}
+
+bool LV2SynthIF::ctrlOutNotOnGui(long unsigned int i) const {
+
+    if (i >= _outportsControl)
+        return false;
+
+    return _controlOutPorts[i].notOnGui;
+}
+
+QString LV2SynthIF::unitSymbol(unsigned long i) const
+{
+    if (i >= _inportsControl)
+        return QString();
+    return MusEGlobal::valueUnits.symbol(_controlInPorts[i].unitTextIdx);
+}
+
+QString LV2SynthIF::unitSymbolOut(unsigned long i) const
+{
+    if (i >= _outportsControl)
+        return QString();
+    return MusEGlobal::valueUnits.symbol(_controlOutPorts[i].unitTextIdx);
+}
+
+int LV2SynthIF::valueUnit(unsigned long i) const { return _controlInPorts[i].unitTextIdx; }
+int LV2SynthIF::valueUnitOut(unsigned long i) const { return _controlOutPorts[i].unitTextIdx; }
+
+CtrlValueType LV2SynthIF::ctrlOutValueType(unsigned long i) const
+{
+    CtrlValueType vt = VAL_LINEAR;
+    assert(i < _outportsControl);
+
+    const LV2ControlPortType_t ct = _controlOutPorts[i].cType;
+    if(ct & LV2_PORT_ENUMERATION)
+        vt = VAL_ENUM;
+    else if(ct & LV2_PORT_INTEGER)
+        vt = VAL_INT;
+    else if(ct & LV2_PORT_LOGARITHMIC)
+        vt = VAL_LOG;
+    else if(ct & LV2_PORT_TOGGLE)
+        vt = VAL_BOOL;
+
+    return vt;
+}
+
+CtrlList::Mode LV2SynthIF::ctrlOutMode(unsigned long i) const
+{
+    assert(i < _outportsControl);
+
+    // For now we do not allow interpolation of integer or enum controllers.
+    // TODO: It would require custom line drawing and corresponding hit detection.
+    return !_controlOutPorts [i].isDiscrete && !(_controlOutPorts[i].cType & LV2_PORT_NON_CONTINUOUS) ?
+             CtrlList::INTERPOLATE : CtrlList::DISCRETE;
+}
+
+LADSPA_PortRangeHint LV2SynthIF::range(unsigned long i) const
 {
     assert(i < _inportsControl);
     LADSPA_PortRangeHint hint;
@@ -5461,20 +5847,30 @@ LADSPA_PortRangeHint LV2SynthIF::range(unsigned long i)
     hint.LowerBound = _controlInPorts [i].minVal;
     hint.UpperBound = _controlInPorts [i].maxVal;
 
-    if(hint.LowerBound == hint.LowerBound)
-    {
-        hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW;
-    }
+    if(_controlInPorts [i].isSampleRate)
+        hint.HintDescriptor |= LADSPA_HINT_SAMPLE_RATE;
 
-    if(hint.UpperBound == hint.UpperBound)
-    {
-        hint.HintDescriptor |= LADSPA_HINT_BOUNDED_ABOVE;
-    }
+    // LV2's hasStrictBounds doesn't quite mean the same thing as LADSPA's bound below/above.
+    // Our LV2 code already fixes the bounds to 0/1 if no lower/upper bounds are found.
+    // So we'll just indicate the bounds are always valid.
+    // TODO To make this compatible, we need to ask for the port's min/max values here
+    //       (using say lilv_port_get_range()) so that we can see if the values are valid.
+    //      Or else do not fix the bounds to 0/1 beforehand if they are not found.
+    //if(_controlInPorts [i].hasStrictBounds)
+    hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_BOUNDED_ABOVE;
+
+    const LV2ControlPortType_t ct = _controlInPorts [i].cType;
+    if(ct & LV2_PORT_INTEGER)
+        hint.HintDescriptor |= LADSPA_HINT_INTEGER;
+    if(ct & LV2_PORT_LOGARITHMIC)
+        hint.HintDescriptor |= LADSPA_HINT_LOGARITHMIC;
+    if(ct & LV2_PORT_TOGGLE)
+        hint.HintDescriptor |= LADSPA_HINT_TOGGLED;
 
     return hint;
 }
 
-LADSPA_PortRangeHint LV2SynthIF::rangeOut(unsigned long i)
+LADSPA_PortRangeHint LV2SynthIF::rangeOut(unsigned long i) const
 {
     assert(i < _outportsControl);
     LADSPA_PortRangeHint hint;
@@ -5482,49 +5878,95 @@ LADSPA_PortRangeHint LV2SynthIF::rangeOut(unsigned long i)
     hint.LowerBound = _controlOutPorts [i].minVal;
     hint.UpperBound = _controlOutPorts [i].maxVal;
 
-    if(hint.LowerBound == hint.LowerBound)
-    {
-        hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW;
-    }
+    if(_controlOutPorts [i].isSampleRate)
+        hint.HintDescriptor |= LADSPA_HINT_SAMPLE_RATE;
 
-    if(hint.UpperBound == hint.UpperBound)
-    {
-        hint.HintDescriptor |= LADSPA_HINT_BOUNDED_ABOVE;
-    }
+    // LV2's hasStrictBounds doesn't quite mean the same thing as LADSPA's bound below/above.
+    // Our LV2 code already fixes the bounds to 0/1 if no lower/upper bounds are found.
+    // So we'll just indicate the bounds are always valid.
+    // TODO To make this compatible, we need to ask for the port's min/max values here
+    //       (using say lilv_port_get_range()) so that we can see if the values are valid.
+    //      Or else do not fix the bounds to 0/1 beforehand if they are not found.
+    //if(_controlOutPorts [i].hasStrictBounds)
+    hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_BOUNDED_ABOVE;
+
+    const LV2ControlPortType_t ct = _controlOutPorts [i].cType;
+    if(ct & LV2_PORT_INTEGER)
+        hint.HintDescriptor |= LADSPA_HINT_INTEGER;
+    if(ct & LV2_PORT_LOGARITHMIC)
+        hint.HintDescriptor |= LADSPA_HINT_LOGARITHMIC;
+    if(ct & LV2_PORT_TOGGLE)
+        hint.HintDescriptor |= LADSPA_HINT_TOGGLED;
 
     return hint;
 
 }
 
-inline bool LV2SynthIF::hasLatencyOutPort() const
+void LV2SynthIF::range(unsigned long i, float* min, float* max) const
 {
-    return _synth->_hasLatencyPort;
+    if(_controlInPorts[i].cType & LV2_PORT_TOGGLE)
+    {
+      *min = 0.0;
+      *max = 1.0;
+      return;
+    }
+
+    float m = 1.0;
+    if(_controlInPorts[i].isSampleRate)
+      m = float(MusEGlobal::sampleRate);
+
+    // LV2's hasStrictBounds doesn't quite mean the same thing as LADSPA's bound below/above.
+    // Our LV2 code already fixes the bounds to 0/1 if no lower/upper bounds are found.
+    // So we'll just indicate the bounds are always valid.
+    // TODO To make this compatible, we need to ask for the port's min/max values here
+    //       (using say lilv_port_get_range()) so that we can see if the values are valid.
+    //      Or else do not fix the bounds to 0/1 beforehand if they are not found.
+    //if(_controlInPorts[i].hasStrictBounds)
+    {
+      *min = _controlInPorts[i].minVal * m;
+      *max = _controlInPorts[i].maxVal * m;
+    }
+    //else
+    //{
+    //  *min = 0.0;
+    //  *max = 1.0;
+    //}
 }
 
-inline unsigned long LV2SynthIF::latencyOutPortIndex() const
+void LV2SynthIF::rangeOut(unsigned long i, float* min, float* max) const
 {
-    return _synth->_latencyPortIndex;
+    if(_controlOutPorts[i].cType & LV2_PORT_TOGGLE)
+    {
+      *min = 0.0;
+      *max = 1.0;
+      return;
+    }
+
+    float m = 1.0;
+    if(_controlOutPorts[i].isSampleRate)
+      m = float(MusEGlobal::sampleRate);
+
+    // LV2's hasStrictBounds doesn't quite mean the same thing as LADSPA's bound below/above.
+    // Our LV2 code already fixes the bounds to 0/1 if no lower/upper bounds are found.
+    // So we'll just indicate the bounds are always valid.
+    // TODO To make this compatible, we need to ask for the port's min/max values here
+    //       (using say lilv_port_get_range()) so that we can see if the values are valid.
+    //      Or else do not fix the bounds to 0/1 beforehand if they are not found.
+    //if(_controlOutPorts[i].hasStrictBounds)
+    {
+      *min = _controlOutPorts[i].minVal * m;
+      *max = _controlOutPorts[i].maxVal * m;
+    }
+    //else
+    //{
+    //  *min = 0.0;
+    //  *max = 1.0;
+    //}
 }
 
 inline bool LV2SynthIF::usesTransportSource() const
 {
     return _synth->usesTimePosition();
-}
-
-//---------------------------------------------------------
-//   latency
-//---------------------------------------------------------
-
-float LV2SynthIF::latency() const
-{
-    // Do not report any latency if the plugin is not on.
-    if(!on())
-      return 0.0;
-    if(cquirks()._overrideReportedLatency)
-      return cquirks()._latencyOverrideValue;
-    if(!hasLatencyOutPort())
-      return 0.0;
-    return _controlsOut[latencyOutPortIndex()].val;
 }
 
 double LV2SynthIF::paramOut(long unsigned int i) const
@@ -5573,6 +6015,111 @@ bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
 {
     return MusECore::SynthIF::readConfiguration(xml, readPreset);
 }
+
+int LV2SynthIF::id() const { return MusECore::MAX_PLUGINS; }
+
+
+//==========================================================
+
+
+LV2PluginWrapper_State::LV2PluginWrapper_State():
+      _ifeatures(NULL),
+      _ppifeatures(NULL),
+      widget(NULL),
+      handle(NULL),
+      uiDlHandle(NULL),
+      uiDesc(NULL),
+      uiInst(NULL),
+      inst(NULL),
+      lastControls(NULL),
+      controlsMask(NULL),
+      lastControlsOut(NULL),
+      plugInst(NULL),
+      sif(NULL),
+      synth(NULL),
+      human_id(NULL),
+      iState(NULL),
+      tmpValues(NULL),
+      numStateValues(0),
+      wrkDataBuffer(NULL),
+      wrkRespDataBuffer(NULL),
+      wrkThread(NULL),
+      wrkIface(NULL),
+      controlTimers(NULL),
+      deleteLater(false),
+
+      // Initialize these with invalid values such that the first call
+      //  of the send transport routine is guaranteed to update them.
+      curGlobalTempo(0),
+      curTempo(0),
+      curIsPlaying(false),
+      curFrame(0),
+      curTick(0),
+      curBeatsPerBar(0),
+      curBeatUnit(0),
+
+      hasGui(false),
+      hasExternalGui(false),
+      uiIdleIface(NULL),
+      uiCurrent(NULL),
+      uiX11Size(0, 0),
+      pluginWindow(NULL),
+      pluginQWindow(NULL),
+      prgIface(NULL),
+      uiPrgIface(NULL),
+      uiDoSelectPrg(false),
+      newPrgIface(false),
+#ifdef MIDNAM_SUPPORT
+      midnamIface(NULL),
+#endif
+      uiChannel(0),
+      uiBank(0),
+      uiProg(0),
+      gtk2Plug(NULL),
+      pluginCVPorts(NULL),
+      uiControlEvt(LV2_RT_FIFO_SIZE),
+      plugControlEvt(LV2_RT_FIFO_SIZE),
+      gtk2ResizeCompleted(false),
+      gtk2AllocateCompleted(false),
+      songDirtyPending(false),
+      uiIsOpening(false),
+      active(false),
+      operationsFifo(OPERATIONS_FIFO_SIZE)
+   {
+      extHost.plugin_human_id = nullptr;
+      extHost.ui_closed = nullptr;
+      uiResize.handle = (LV2UI_Feature_Handle)this;
+      uiResize.ui_resize = LV2Synth::lv2ui_Resize;
+      uiRequestValue.handle = (LV2UI_Feature_Handle)this;
+      uiRequestValue.request = LV2Synth::lv2ui_Request_Value;
+
+      prgHost.handle = (LV2_Programs_Handle)this;
+      prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
+#ifdef MIDNAM_SUPPORT
+      midnamUpdate.handle = (LV2_Midnam_Handle)this;
+      midnamUpdate.update = LV2SynthIF::lv2midnam_Changed;
+#endif
+#ifdef LV2_MAKE_PATH_SUPPORT
+      makePath.handle = (LV2_State_Make_Path_Handle)this;
+      makePath.path = LV2Synth::lv2state_makePath;
+#endif
+      mapPath.handle = (LV2_State_Map_Path_Handle)this;
+      mapPath.absolute_path = LV2Synth::lv2state_absolutePath;
+      mapPath.abstract_path = LV2Synth::lv2state_abstractPath;
+
+      midiInPorts.clear();
+      midiOutPorts.clear();
+      idx2EvtPorts.clear();
+      inPortsMidi = outPortsMidi = 0;
+   }
+
+LV2PluginWrapper_Worker::LV2PluginWrapper_Worker ( LV2PluginWrapper_State *s ) : QThread(),
+       _state ( s ),
+       _mSem(0),
+       _closing(false)
+    {}
+
+void LV2PluginWrapper_Worker::setClosing() {_closing = true; _mSem.release();}
 
 void LV2PluginWrapper_Window::hideEvent(QHideEvent *e)
 {
@@ -5755,6 +6302,8 @@ void LV2PluginWrapper_Window::stopNextTime()
     emit makeStopFromGuiThread();
 }
 
+void LV2PluginWrapper_Window::setClosing(bool closing) {_closing = closing; }
+
 void LV2PluginWrapper_Window::updateGui()
 {
     if(_state->deleteLater || _closing)
@@ -5828,6 +6377,7 @@ void LV2PluginWrapper_Window::startFromGuiThread()
 
 
 LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
+ : Plugin()
 {
     _synth = s;
 
@@ -5877,21 +6427,9 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
     _fakeLd.PortDescriptors = _fakePds;
     _fakeLd.Properties = 0;
     plugin = &_fakeLd;
-    _isDssi = false;
-    _isDssiSynth = false;
-    _isVstNativePlugin = false;
-    _isVstNativeSynth = false;
-
-#ifdef DSSI_SUPPORT
-    dssi_descr = nullptr;
-#endif
 
     fi = _synth->info;
     _uri = _synth->uri();
-    ladspa = nullptr;
-    _handle = 0;
-    _references = 0;
-    _instNo     = 0;
     _label = _synth->name();
     _name = _synth->description();
     _uniqueID = plugin->UniqueID;
@@ -5899,13 +6437,14 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
     _copyright = _synth->version();
 
     _usesTimePosition = _synth->usesTimePosition();
+    _pluginFreewheelType = _synth->pluginFreewheelType();
+    _freewheelPortIndex = _synth->freewheelPortIndex();
+    _pluginLatencyReportingType = _synth->pluginLatencyReportingType();
+    _latencyPortIndex = _synth->latencyPortIndex();
+    _pluginBypassType = _synth->pluginBypassType();
+    _enableOrBypassPortIndex = _synth->enableOrBypassPortIndex();
 
     _portCount = plugin->PortCount;
-
-    _inports = 0;
-    _outports = 0;
-    _controlInPorts = 0;
-    _controlOutPorts = 0;
 
     for(unsigned long k = 0; k < _portCount; ++k)
     {
@@ -5944,6 +6483,8 @@ LV2PluginWrapper::~LV2PluginWrapper()
     free((void*)_fakeLd.Copyright);
     delete [] _fakePds;
 }
+
+LV2Synth *LV2PluginWrapper::synth() const { return _synth; }
 
 LADSPA_Handle LV2PluginWrapper::instantiate(PluginI *plugi)
 {
@@ -5992,13 +6533,21 @@ int LV2PluginWrapper::incReferences(int ref)
 void LV2PluginWrapper::activate(LADSPA_Handle handle)
 {
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+    if(!state || state->active)
+      return;
+
     lilv_instance_activate((LilvInstance *) state->handle);
+    state->active = true;
 }
 void LV2PluginWrapper::deactivate(LADSPA_Handle handle)
 {
     if (handle)
     {
         LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+        if(!state || !state->active)
+          return;
+        state->active = false;
+
         lilv_instance_deactivate((LilvInstance *) state->handle);
     }
 }
@@ -6026,10 +6575,24 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
     //       For now, SendTransport is not sliceable, it only sends one event at sample zero.
     LV2Synth::lv2audio_SendTransport(state, 0, n, latency_corr);
 
-    //set freewheeling property if plugin supports it
-    if(state->synth->_hasFreeWheelPort)
+    // If the plugin is off (on = false) and it has a REAL enable or bypass control port,
+    //  we force the enable port off (or the bypass port on) and let the plugin run
+    //  so that it can do its own bypassing.
+    // When the plugin is turned on again, the port is again set to the current controller
+    //  value, and this code does NOT run.
+    if(!state->plugInst->on() && state->synth->_pluginBypassType == PluginBypassTypeEnablePort)
     {
-        state->plugInst->controls[_synth->_freeWheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
+      const long unsigned int enableIdx = state->synth->_enableOrBypassPortIndex;
+      state->plugInst->controls[enableIdx].tmpVal = state->plugInst->controls[enableIdx].val = 0.0f;
+      // Inform the GUI.
+      state->controlsMask[enableIdx] = true;
+    }
+
+    if(state->synth->_pluginFreewheelType == PluginFreewheelTypePort)
+    {
+      state->plugInst->controls[state->synth->_freewheelPortIndex].val = MusEGlobal::audio->freewheel() ? 1.0f : 0.0f;
+      // In case the GUI would like to use the new value.
+      state->controlsMask[state->synth->_freewheelPortIndex] = true;
     }
 
     for(size_t j = 0; j < state->plugInst->controlPorts; ++j)
@@ -6060,7 +6623,6 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
         }
     }
 
-
     lilv_instance_run(state->handle, n);
 
     //notify worker about processed data (if any)
@@ -6083,7 +6645,6 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
     if(state->wrkIface && state->wrkIface->end_run)
         state->wrkIface->end_run(lilv_instance_get_handle(state->handle));
 
-
     LV2Synth::lv2audio_postProcessMidiPorts(state, 0, n);
 }
 LADSPA_PortDescriptor LV2PluginWrapper::portd(unsigned long k) const
@@ -6091,91 +6652,293 @@ LADSPA_PortDescriptor LV2PluginWrapper::portd(unsigned long k) const
     return _fakeLd.PortDescriptors[k];
 }
 
-LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i)
+LADSPA_PortRangeHint LV2PluginWrapper::range(unsigned long i) const
 {
     LADSPA_PortRangeHint hint;
     hint.HintDescriptor = 0;
     hint.LowerBound = _synth->_pluginControlsMin [i];
     hint.UpperBound = _synth->_pluginControlsMax [i];
 
-    if(hint.LowerBound == hint.LowerBound)
+    unsigned long j;
+    LV2_CONTROL_PORTS *cPorts;
     {
-        hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW;
+      const auto& it = _synth->_idxToControlMap.find(i);
+      if(it != _synth->_idxToControlMap.end())
+      {
+        j = it->second;
+        assert(j < _controlInPorts);
+        cPorts = &_synth->_controlInPorts;
+      }
+      else
+      {
+        const auto& it = _synth->_idxToControlOutMap.find(i);
+        if(it != _synth->_idxToControlOutMap.end())
+        {
+          j = it->second;
+          assert(j < _controlOutPorts);
+          cPorts = &_synth->_controlOutPorts;
+        }
+        else
+        {
+          assert(0);
+        }
+      }
     }
 
-    if(hint.UpperBound == hint.UpperBound)
-    {
-        hint.HintDescriptor |= LADSPA_HINT_BOUNDED_ABOVE;
-    }
+    if((*cPorts)[j].isSampleRate)
+        hint.HintDescriptor |= LADSPA_HINT_SAMPLE_RATE;
+
+    // LV2's hasStrictBounds doesn't quite mean the same thing as LADSPA's bound below/above.
+    // Our LV2 code already fixes the bounds to 0/1 if no lower/upper bounds are found.
+    // So we'll just indicate the bounds are always valid.
+    // TODO To make this compatible, we need to ask for the port's min/max values here
+    //       (using say lilv_port_get_range()) so that we can see if the values are valid.
+    //      Or else do not fix the bounds to 0/1 beforehand if they are not found.
+    //if((*cPorts)[j].hasStrictBounds)
+    hint.HintDescriptor |= LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_BOUNDED_ABOVE;
+
+    const LV2ControlPortType_t ct = (*cPorts)[j].cType;
+    if(ct & LV2_PORT_INTEGER)
+        hint.HintDescriptor |= LADSPA_HINT_INTEGER;
+    if(ct & LV2_PORT_LOGARITHMIC)
+        hint.HintDescriptor |= LADSPA_HINT_LOGARITHMIC;
+    if(ct & LV2_PORT_TOGGLE)
+        hint.HintDescriptor |= LADSPA_HINT_TOGGLED;
 
     return hint;
 }
 void LV2PluginWrapper::range(unsigned long i, float *min, float *max) const
 {
-    *min = _synth->_pluginControlsMin [i];
-    *max = _synth->_pluginControlsMax [i];
+    unsigned long j;
+    LV2_CONTROL_PORTS *cPorts;
+    {
+      const auto& it = _synth->_idxToControlMap.find(i);
+      if(it != _synth->_idxToControlMap.end())
+      {
+        j = it->second;
+        assert(j < _controlInPorts);
+        cPorts = &_synth->_controlInPorts;
+      }
+      else
+      {
+        const auto& it = _synth->_idxToControlOutMap.find(i);
+        if(it != _synth->_idxToControlOutMap.end())
+        {
+          j = it->second;
+          assert(j < _controlOutPorts);
+          cPorts = &_synth->_controlOutPorts;
+        }
+        else
+        {
+          assert(0);
+        }
+      }
+    }
+
+    if((*cPorts)[j].cType & LV2_PORT_TOGGLE)
+    {
+      *min = 0.0;
+      *max = 1.0;
+      return;
+    }
+
+    float m = 1.0;
+    if((*cPorts)[j].isSampleRate)
+      m = float(MusEGlobal::sampleRate);
+
+    // LV2's hasStrictBounds doesn't quite mean the same thing as LADSPA's bound below/above.
+    // Our LV2 code already fixes the bounds to 0/1 if no lower/upper bounds are found.
+    // So we'll just indicate the bounds are always valid.
+    // TODO To make this compatible, we need to ask for the port's min/max values here
+    //       (using say lilv_port_get_range()) so that we can see if the values are valid.
+    //      Or else do not fix the bounds to 0/1 beforehand if they are not found.
+    //if((*cPorts)[j].hasStrictBounds)
+    {
+      *min = (*cPorts)[j].minVal * m;
+      *max = (*cPorts)[j].maxVal * m;
+    }
+    //else
+    //{
+    //  *min = 0.0;
+    //  *max = 1.0;
+    //}
 }
 
 double LV2PluginWrapper::defaultValue(unsigned long port) const
 {
     return _synth->_pluginControlsDefault [port];
 }
-const char *LV2PluginWrapper::portName(unsigned long i)
+const char *LV2PluginWrapper::portName(unsigned long i) const
 {
     return lilv_node_as_string(lilv_port_get_name(_synth->_handle, lilv_plugin_get_port_by_index(_synth->_handle, i)));
 }
 
 const CtrlVal::CtrlEnumValues* LV2PluginWrapper::ctrlEnumValues(unsigned long i) const
 {
-    const auto& it = _synth->_idxToControlMap.find(i);
-    assert(it != _synth->_idxToControlMap.end());
-    i = it->second;
-    assert(i < _controlInPorts);
+    unsigned long j;
+    LV2_CONTROL_PORTS *cPorts;
+    {
+      const auto& it = _synth->_idxToControlMap.find(i);
+      if(it != _synth->_idxToControlMap.end())
+      {
+        j = it->second;
+        assert(j < _controlInPorts);
+        cPorts = &_synth->_controlInPorts;
+      }
+      else
+      {
+        const auto& it = _synth->_idxToControlOutMap.find(i);
+        if(it != _synth->_idxToControlOutMap.end())
+        {
+          j = it->second;
+          assert(j < _controlOutPorts);
+          cPorts = &_synth->_controlOutPorts;
+        }
+        else
+        {
+          assert(0);
+        }
+      }
+    }
 
-    return _synth->_controlInPorts [i].scalePoints;
+    return (*cPorts)[j].scalePoints;
 }
 
 CtrlValueType LV2PluginWrapper::ctrlValueType(unsigned long i) const
 {
     CtrlValueType vt = VAL_LINEAR;
-    const auto& it = _synth->_idxToControlMap.find(i);
-    assert(it != _synth->_idxToControlMap.end());
-    i = it->second;
-    assert(i < _controlInPorts);
 
-    switch(_synth->_controlInPorts [i].cType)
+    unsigned long j;
+    LV2_CONTROL_PORTS *cPorts;
     {
-    case LV2_PORT_CONTINUOUS:
-        vt = VAL_LINEAR;
-        break;
-    case LV2_PORT_INTEGER:
-        vt = VAL_INT;
-        break;
-    case LV2_PORT_LOGARITHMIC:
-        vt = VAL_LOG;
-        break;
-    case LV2_PORT_TOGGLE:
-        vt = VAL_BOOL;
-        break;
-    case LV2_PORT_ENUMERATION:
-        vt = VAL_ENUM;
-        break;
-    default:
-        break;
+      const auto& it = _synth->_idxToControlMap.find(i);
+      if(it != _synth->_idxToControlMap.end())
+      {
+        j = it->second;
+        assert(j < _controlInPorts);
+        cPorts = &_synth->_controlInPorts;
+      }
+      else
+      {
+        const auto& it = _synth->_idxToControlOutMap.find(i);
+        if(it != _synth->_idxToControlOutMap.end())
+        {
+          j = it->second;
+          assert(j < _controlOutPorts);
+          cPorts = &_synth->_controlOutPorts;
+        }
+        else
+        {
+          assert(0);
+        }
+      }
     }
+
+    const LV2ControlPortType_t ct = (*cPorts)[j].cType;
+    if(ct & LV2_PORT_ENUMERATION)
+        vt = VAL_ENUM;
+    else if(ct & LV2_PORT_INTEGER)
+        vt = VAL_INT;
+    else if(ct & LV2_PORT_LOGARITHMIC)
+        vt = VAL_LOG;
+    else if(ct & LV2_PORT_TOGGLE)
+        vt = VAL_BOOL;
+
 
     return vt;
 }
 CtrlList::Mode LV2PluginWrapper::ctrlMode(unsigned long i) const
 {
-    std::map<uint32_t, uint32_t>::iterator it = _synth->_idxToControlMap.find(i);
-    assert(it != _synth->_idxToControlMap.end());
-    i = it->second;
-    assert(i < _controlInPorts);
+    unsigned long j;
+    LV2_CONTROL_PORTS *cPorts;
+    {
+      const auto& it = _synth->_idxToControlMap.find(i);
+      if(it != _synth->_idxToControlMap.end())
+      {
+        j = it->second;
+        assert(j < _controlInPorts);
+        cPorts = &_synth->_controlInPorts;
+      }
+      else
+      {
+        const auto& it = _synth->_idxToControlOutMap.find(i);
+        if(it != _synth->_idxToControlOutMap.end())
+        {
+          j = it->second;
+          assert(j < _controlOutPorts);
+          cPorts = &_synth->_controlOutPorts;
+        }
+        else
+        {
+          assert(0);
+        }
+      }
+    }
 
-    return !_synth->_controlInPorts [i].isDiscrete && ((_synth->_controlInPorts [i].cType == LV2_PORT_CONTINUOUS)
-            ||(_synth->_controlInPorts [i].cType == LV2_PORT_LOGARITHMIC)) ? CtrlList::INTERPOLATE : CtrlList::DISCRETE;
+    return !(*cPorts)[j].isDiscrete && !((*cPorts)[j].cType & LV2_PORT_NON_CONTINUOUS) ?
+             CtrlList::INTERPOLATE : CtrlList::DISCRETE;
 }
+
+QString LV2PluginWrapper::unitSymbol(unsigned long i) const
+{
+    unsigned long j;
+    LV2_CONTROL_PORTS *cPorts;
+    {
+      const auto& it = _synth->_idxToControlMap.find(i);
+      if(it != _synth->_idxToControlMap.end())
+      {
+        j = it->second;
+        assert(j < _controlInPorts);
+        cPorts = &_synth->_controlInPorts;
+      }
+      else
+      {
+        const auto& it = _synth->_idxToControlOutMap.find(i);
+        if(it != _synth->_idxToControlOutMap.end())
+        {
+          j = it->second;
+          assert(j < _controlOutPorts);
+          cPorts = &_synth->_controlOutPorts;
+        }
+        else
+        {
+          assert(0);
+        }
+      }
+    }
+    return MusEGlobal::valueUnits.symbol((*cPorts)[j].unitTextIdx);
+}
+
+int LV2PluginWrapper::valueUnit(unsigned long i) const
+{
+    unsigned long j;
+    LV2_CONTROL_PORTS *cPorts;
+    {
+      const auto& it = _synth->_idxToControlMap.find(i);
+      if(it != _synth->_idxToControlMap.end())
+      {
+        j = it->second;
+        assert(j < _controlInPorts);
+        cPorts = &_synth->_controlInPorts;
+      }
+      else
+      {
+        const auto& it = _synth->_idxToControlOutMap.find(i);
+        if(it != _synth->_idxToControlOutMap.end())
+        {
+          j = it->second;
+          assert(j < _controlOutPorts);
+          cPorts = &_synth->_controlOutPorts;
+        }
+        else
+        {
+          assert(0);
+        }
+      }
+    }
+    return (*cPorts)[j].unitTextIdx;
+}
+
 bool LV2PluginWrapper::hasNativeGui() const
 {
     return (_synth->_pluginUiTypes.size() > 0);
@@ -6330,7 +7093,7 @@ LV2EvBuf::LV2EvBuf(bool isInput, LV2_URID atomTypeSequence, LV2_URID atomTypeChu
     resetBuffer();
 }
 
-size_t LV2EvBuf::mkPadSize(size_t size)
+size_t LV2EvBuf::mkPadSize(size_t size) const
 {
     return (size + 7U) & (~7U);
 }
@@ -6503,6 +7266,16 @@ bool LV2EvBuf::read(uint32_t *frames, uint32_t *type, uint32_t *size, uint8_t **
 uint8_t *LV2EvBuf::getRawBuffer()
 {
     return &_buffer [0];
+}
+
+bool LV2EvBuf::canRead() const
+{
+#ifdef LV2_EVENT_BUFFER_SUPPORT
+    if(_oldApi)
+      return curWPointer != sizeof(LV2_Event_Buffer);
+    else
+#endif
+      return curWPointer != sizeof(LV2_Atom_Sequence);
 }
 
 void LV2EvBuf::dump()

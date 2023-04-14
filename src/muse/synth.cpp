@@ -23,20 +23,9 @@
 
 #include <QMessageBox>
 
-//#include "config.h"
-#ifndef _WIN32
-//#include <sys/wait.h>
-//#include <sys/mman.h>
-#endif
-//#include <signal.h>
-//#include <pthread.h>
-//#include <unistd.h>
-//#include <errno.h>
 #include <vector>
-//#include <fcntl.h>
 #include <dlfcn.h>
 #include <stdio.h>
-//#include <string>
 
 #include <QDir>
 #include <QString>
@@ -48,8 +37,6 @@
 #include "audio.h"
 #include "event.h"
 #include "mpevent.h"
-//#include "audio.h"
-//#include "midiseq.h"
 #include "midictrl.h"
 #include "midiitransform.h"
 #include "mitplugin.h"
@@ -67,6 +54,7 @@
 #include "popupmenu.h"
 #include "xml.h"
 #include "xml_statistics.h"
+#include "plugin_scan.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -120,18 +108,28 @@ Synth* SynthList::find(const QString& fileCompleteBaseName, const QString& plugi
 //  SynthIF
 //--------------------------------
 
+SynthIF::SynthIF(SynthI* s) : PluginIBase()
+{
+  synti = s;
+}
+
 //--------------------------------
 // Methods for PluginIBase:
 //--------------------------------
 
 inline PluginFeatures_t SynthIF::requiredFeatures() const       { return PluginNoFeatures; }
+inline bool SynthIF::hasActiveButton() const { return false; }
+// Here we defer to the track's 'off' state.
+inline bool SynthIF::active() const { return !synti->off(); }
+// Here we defer to setting the track's 'off' state.
+inline void SynthIF::setActive(bool val) { synti->setOff(!val); }
 // Synth is not part of a rack plugin chain. It has no on/off (bypass) feature.
 inline bool SynthIF::hasBypass() const                          { return false; }
 // Synth is not part of a rack plugin chain. Always on.
 inline bool SynthIF::on() const                                 { return true; }
 inline void SynthIF::setOn(bool /*val*/)                        { }
-inline unsigned long SynthIF::pluginID()                        { return 0; }
-inline int SynthIF::id()                                        { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
+inline unsigned long SynthIF::pluginID() const                  { return 0; }
+inline int SynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
 inline QString SynthIF::pluginLabel() const                     { return QString(); }
 inline QString SynthIF::name() const                            { return synti->name(); }
 inline QString SynthIF::lib() const                             { return QString(); }
@@ -139,13 +137,16 @@ inline QString SynthIF::uri() const                             { return synti->
 inline QString SynthIF::dirPath() const                         { return QString(); }
 inline QString SynthIF::fileName() const                        { return QString(); }
 inline QString SynthIF::titlePrefix() const                     { return QString(); }
-inline MusECore::AudioTrack* SynthIF::track()                   { return static_cast < MusECore::AudioTrack* > (synti); }
+inline MusECore::AudioTrack* SynthIF::track() const             { return static_cast < MusECore::AudioTrack* > (synti); }
 inline void SynthIF::enableController(unsigned long, bool)  { }
 inline bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
 inline void SynthIF::enableAllControllers(bool)               { }
 inline void SynthIF::updateControllers()                        { }
-inline void SynthIF::activate()                                 { }
-inline void SynthIF::deactivate()                               { }
+inline void SynthIF::activate()
+{
+    _curActiveState = true;
+}
+inline void SynthIF::deactivate() { _curActiveState = false; }
 inline void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
 inline bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
 inline unsigned long SynthIF::parameters() const                { return 0; }
@@ -153,9 +154,9 @@ inline unsigned long SynthIF::parametersOut() const             { return 0; }
 inline void SynthIF::setParam(unsigned long, double)       { }
 inline double SynthIF::param(unsigned long) const              { return 0.0; }
 inline double SynthIF::paramOut(unsigned long) const          { return 0.0; }
-inline const char* SynthIF::paramName(unsigned long)          { return nullptr; }
-inline const char* SynthIF::paramOutName(unsigned long)       { return nullptr; }
-LADSPA_PortRangeHint SynthIF::range(unsigned long)
+inline const char* SynthIF::paramName(unsigned long) const    { return nullptr; }
+inline const char* SynthIF::paramOutName(unsigned long) const { return nullptr; }
+LADSPA_PortRangeHint SynthIF::range(unsigned long) const
 {
   LADSPA_PortRangeHint h;
   h.HintDescriptor = 0;
@@ -163,7 +164,7 @@ LADSPA_PortRangeHint SynthIF::range(unsigned long)
   h.UpperBound = 1.0;
   return h;
 }
-LADSPA_PortRangeHint SynthIF::rangeOut(unsigned long)
+LADSPA_PortRangeHint SynthIF::rangeOut(unsigned long) const
 {
   LADSPA_PortRangeHint h;
   h.HintDescriptor = 0;
@@ -171,11 +172,85 @@ LADSPA_PortRangeHint SynthIF::rangeOut(unsigned long)
   h.UpperBound = 1.0;
   return h;
 }
-inline bool SynthIF::hasLatencyOutPort() const { return false; }
-inline unsigned long SynthIF::latencyOutPortIndex() const { return 0; }
-inline float SynthIF::latency() const { return 0.0; }
+void SynthIF::range(unsigned long /*i*/, float* min, float* max) const
+{
+  *min = 0.0;
+  *max = 1.0;
+}
+void SynthIF::rangeOut(unsigned long /*i*/, float* min, float* max) const
+{
+  *min = 0.0;
+  *max = 1.0;
+}
+inline unsigned long SynthIF::latencyOutPortIndex() const { return synti->latencyOutPortIndex(); }
+inline unsigned long SynthIF::freewheelPortIndex() const { return synti->freewheelPortIndex(); }
+inline unsigned long SynthIF::enableOrBypassPortIndex() const
+{ return synti->enableOrBypassPortIndex(); }
+
+inline PluginLatencyReportingType SynthIF::pluginLatencyReportingType() const
+{ return synti->pluginLatencyReportingType(); }
+
+inline PluginBypassType SynthIF::pluginBypassType() const
+{ return synti->pluginBypassType(); }
+
+inline PluginFreewheelType SynthIF::pluginFreewheelType() const
+{ return synti->pluginFreewheelType(); }
+
 inline CtrlValueType SynthIF::ctrlValueType(unsigned long) const { return VAL_LINEAR; }
 inline CtrlList::Mode SynthIF::ctrlMode(unsigned long) const     { return CtrlList::INTERPOLATE; }
+inline CtrlValueType SynthIF::ctrlOutValueType(unsigned long) const { return VAL_LINEAR; }
+inline CtrlList::Mode SynthIF::ctrlOutMode(unsigned long) const     { return CtrlList::INTERPOLATE; }
+
+inline bool SynthIF::usesTransportSource() const { return false; }
+
+float SynthIF::latency() const
+{
+  // Do not report any latency if the plugin is not active.
+  if(!_curActiveState)
+    return 0.0;
+
+  switch(pluginBypassType())
+  {
+    // If the plugin has no enable/bypass feature and
+    //  we are emulating it, if the plugin is bypassed
+    //  do not report any latency since our emulated
+    //  pass-through does not introduce any latency.
+    case PluginBypassTypeEmulatedEnableFunction:
+    case PluginBypassTypeEmulatedEnableController:
+      if(!on())
+        return 0.0;
+    break;
+
+    // Otherwise if the plugin has an enable/bypass feature,
+    //  go ahead and allow the plugin to report its latency,
+    //  regardless of whether it is bypassed or not.
+    case PluginBypassTypeEnableFunction:
+    case PluginBypassTypeEnablePort:
+    case PluginBypassTypeBypassFunction:
+    case PluginBypassTypeBypassPort:
+    break;
+  }
+
+  if(cquirks()._overrideReportedLatency)
+    return cquirks()._latencyOverrideValue;
+
+  switch(pluginLatencyReportingType())
+  {
+    case PluginLatencyTypeNone:
+    break;
+
+    case PluginLatencyTypeFunction:
+      if(synti)
+        return synti->getPluginLatency(nullptr);
+    break;
+
+    case PluginLatencyTypePort:
+      if(latencyOutPortIndex() < parametersOut())
+        return paramOut(latencyOutPortIndex());
+    break;
+  }
+  return 0.0;
+}
 
 //-------------------------------------------------------------------------
 
@@ -300,13 +375,25 @@ static SynthI* createSynthInstance(
 //   Synth
 //---------------------------------------------------------
 
-Synth::Synth(const QFileInfo& fi, const QString& uri, QString label, QString descr,
-             QString maker, QString ver, PluginFeatures_t reqFeatures)
-   : info(fi), _uri(uri), _name(label), _description(descr),
-     _maker(maker), _version(ver), _requiredFeatures(reqFeatures)
-      {
-      _instances = 0;
-      }
+Synth::Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct)
+ : info(PLUGIN_GET_QSTRING(infoStruct.filePath())),
+   _uri(PLUGIN_GET_QSTRING(infoStruct._uri)),
+   _instances(0),
+   // The name, label, and description were historically shuffled around.
+   _name(PLUGIN_GET_QSTRING(infoStruct._label)),
+   _description(PLUGIN_GET_QSTRING(infoStruct._name)),
+   _maker(PLUGIN_GET_QSTRING(infoStruct._maker)),
+   _version(PLUGIN_GET_QSTRING(infoStruct._version)),
+   _requiredFeatures(infoStruct._requiredFeatures),
+   _freewheelPortIndex(infoStruct._freewheelPortIdx),
+   _latencyPortIndex(infoStruct._latencyPortIdx),
+   _enableOrBypassPortIndex(infoStruct._enableOrBypassPortIdx),
+   _pluginFreewheelType(infoStruct._pluginFreewheelType),
+   _pluginLatencyReportingType(infoStruct._pluginLatencyReportingType),
+   _pluginBypassType(infoStruct._pluginBypassType)
+{
+
+}
 
 bool Synth::midiToAudioCtrlMapped(unsigned long int midiCtrl, unsigned long int* audioCtrl) const
 {
@@ -336,6 +423,14 @@ bool Synth::hasMappedMidiToAudioCtrls() const
 {
   return !midiCtl2PortMap.empty();
 }
+
+inline unsigned long Synth::freewheelPortIndex() const { return _freewheelPortIndex; }
+inline unsigned long Synth::latencyPortIndex() const   { return _latencyPortIndex; }
+inline unsigned long Synth::enableOrBypassPortIndex() const    { return _enableOrBypassPortIndex; }
+inline PluginLatencyReportingType Synth::pluginLatencyReportingType() const { return _pluginLatencyReportingType; }
+inline PluginBypassType Synth::pluginBypassType() const { return _pluginBypassType; }
+inline PluginFreewheelType Synth::pluginFreewheelType() const { return _pluginFreewheelType; }
+inline float Synth::getPluginLatency(void* /*handle*/) { return 0.0; }
 
 //---------------------------------------------------------
 //   instantiate
@@ -401,6 +496,12 @@ void* MessSynth::instantiate(const QString& instanceName)
       MusEGlobal::undoSetuid();
       return mess;
       }
+
+MessSynth::MessSynth(const MusEPlugin::PluginScanInfoStruct& info)
+ : Synth(info), _descr(nullptr)
+{
+
+}
 
 //---------------------------------------------------------
 //   SynthI
@@ -512,8 +613,10 @@ int SynthI::height() const
 
 QString SynthI::open()
 {
+  _openFlags &= _rwFlags; // restrict to available bits
+
   // Make it behave like a regular midi device.
-  _readEnable = false;
+  _readEnable = (_openFlags & 0x02);
   _writeEnable = (_openFlags & 0x01);
 
   _state = QString("OK");
@@ -634,7 +737,7 @@ void SynthI::recordEvent(MidiRecordEvent& event)
 
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
       unsigned int ch = (typ == ME_SYSEX)? MusECore::MUSE_MIDI_CHANNELS : event.channel();
-      if(_recordFifo[ch].put(event))
+      if(!_recordFifo[ch]->put(event))
         fprintf(stderr, "SynthI::recordEvent: fifo channel %d overflow\n", ch);
       }
 
@@ -711,6 +814,28 @@ bool SynthI::hasMappedMidiToAudioCtrls() const
     return synthesizer->hasMappedMidiToAudioCtrls();
   return false;
 }
+
+void SynthI::guiHeartBeat()
+{
+  // Update the track's rack plugin generic or native UIs.
+  AudioTrack::guiHeartBeat();
+  // Update the synth's generic or native UI.
+  if(_sif)
+    _sif->guiHeartBeat();
+}
+
+inline unsigned long SynthI::latencyOutPortIndex() const { return synthesizer ? synthesizer->latencyPortIndex() : 0; }
+inline unsigned long SynthI::freewheelPortIndex() const { return synthesizer ? synthesizer->freewheelPortIndex() : 0; }
+inline unsigned long SynthI::enableOrBypassPortIndex() const { return synthesizer ? synthesizer->enableOrBypassPortIndex() : 0; }
+inline PluginLatencyReportingType SynthI::pluginLatencyReportingType() const
+{ return synthesizer ? synthesizer->pluginLatencyReportingType() : PluginLatencyTypeNone; }
+inline PluginBypassType SynthI::pluginBypassType() const
+{ return synthesizer ? synthesizer->pluginBypassType() : PluginBypassTypeEmulatedEnableFunction; }
+inline PluginFreewheelType SynthI::pluginFreewheelType() const
+{ return synthesizer ? synthesizer->pluginFreewheelType() : PluginFreewheelTypeNone; }
+// Returns the plugin latency, if it has such as function.
+// NOTE: If the plugin has a latency controller out, use that instead.
+float SynthI::getPluginLatency(void* h) { return synthesizer ? synthesizer->getPluginLatency(h) : 0.0; }
 
 //---------------------------------------------------------
 //   init
@@ -1007,13 +1132,7 @@ void initMidiSynth()
           }
           else
           {
-            MusEGlobal::synthis.push_back(
-              new MessSynth(PLUGIN_GET_QSTRING(info.filePath()),
-                            uri,
-                            PLUGIN_GET_QSTRING(info._name),
-                            PLUGIN_GET_QSTRING(info._description),
-                            QString(""),
-                            PLUGIN_GET_QSTRING(info._version)));
+            MusEGlobal::synthis.push_back(new MessSynth(info));
           }
         }
       }
@@ -1463,7 +1582,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfo(bool input, float finalWorstL
         track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
     }
 
-    if(openFlags() & 1 /*write*/)
+    if(writeEnable())
     {
       const int port = midiPort();
       if(port >= 0 && port < MusECore::MIDI_PORTS)
@@ -1476,7 +1595,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfo(bool input, float finalWorstL
           MidiTrack* track = static_cast<MidiTrack*>(tl[it]);
           if(track->outPort() != port)
             continue;
-          //if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
+          //if(!off() && !track->off() && (writeEnable()) && (passthru || input))
           if(!track->off())
             track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
         }
@@ -1498,7 +1617,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfo(bool input, float finalWorstL
                   if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
                     continue;
                   Track* track = ir->track;
-                  //if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
+                  //if(!off() && !track->off() && (writeEnable()) && (passthru || input))
                   if(!track->off())
                     track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
                 }
@@ -1609,7 +1728,7 @@ bool SynthI::isLatencyInputTerminal()
   }
 
   const int port = midiPort();
-  if((openFlags() & 1 /*write*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+  if((writeEnable()) && port >= 0 && port < MusECore::MIDI_PORTS)
   {
     MidiPort* mp = &MusEGlobal::midiPorts[port];
     const RouteList* mrl = mp->outRoutes();
@@ -1686,7 +1805,7 @@ bool SynthI::isLatencyOutputTerminal()
   }
 
   const int port = midiPort();
-  if((openFlags() & 1 /*write*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+  if((writeEnable()) && port >= 0 && port < MusECore::MIDI_PORTS)
   {
     MidiPort* mp = &MusEGlobal::midiPorts[port];
     const RouteList* mrl = mp->outRoutes();
@@ -1806,7 +1925,7 @@ TrackLatencyInfo& SynthI::getDominanceInfo(bool input)
       }
     }
 
-    if(openFlags() & 1 /*write*/)
+    if(writeEnable())
     {
       const int port = midiPort();
       if(port >= 0 && port < MusECore::MIDI_PORTS)
@@ -1820,7 +1939,7 @@ TrackLatencyInfo& SynthI::getDominanceInfo(bool input)
           if(track->outPort() != port)
             continue;
 
-          //if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
+          //if(!off() && !track->off() && (writeEnable()) && (passthru || input))
           if(!track->off())
           {
             const TrackLatencyInfo& li = track->getDominanceInfo(false);
@@ -1878,7 +1997,7 @@ TrackLatencyInfo& SynthI::getDominanceInfo(bool input)
     //                     else
     //                       used_chans[ir->channel] = true;
                     
-                  //if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
+                  //if(!off() && !track->off() && (writeEnable()) && (passthru || input))
                   if(!track->off())
                   {
                     const TrackLatencyInfo& li = track->getDominanceInfo(false);
@@ -2115,7 +2234,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfo(bool input)
       }
     }
 
-    if(openFlags() & 1 /*write*/)
+    if(writeEnable())
     {
       const int port = midiPort();
       if(port >= 0 && port < MusECore::MIDI_PORTS)
@@ -2129,7 +2248,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfo(bool input)
           if(track->outPort() != port)
             continue;
 
-          //if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
+          //if(!off() && !track->off() && (writeEnable()) && (passthru || input))
           if(!track->off())
           {
             const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
@@ -2194,7 +2313,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfo(bool input)
     //                     else
     //                       used_chans[ir->channel] = true;
                     
-                  //if(!off() && !track->off() && (openFlags() & 1 /*write*/) && (passthru || input))
+                  //if(!off() && !track->off() && (writeEnable()) && (passthru || input))
                   if(!track->off())
                   {
                     const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
@@ -2440,7 +2559,7 @@ TrackLatencyInfo& SynthI::getLatencyInfo(bool input)
         //ir->audioLatencyOut = 0.0f;
         //li._latencyOutMidiTrack = 0.0f;
 
-        if(!off() && !track->off() && (openFlags() & 1 /*write*/))
+        if(!off() && !track->off() && (writeEnable()))
         {
           TrackLatencyInfo& li = track->getLatencyInfo(false);
           // Whether the branch can dominate or correct latency or if we
@@ -2503,7 +2622,7 @@ TrackLatencyInfo& SynthI::getLatencyInfo(bool input)
                 // Default to zero.
                 ir->audioLatencyOut = 0.0f;
 
-                if(!off() && !track->off() && (openFlags() & 1 /*write*/)
+                if(!off() && !track->off() && (writeEnable())
                 {
                   TrackLatencyInfo& li = track->getLatencyInfo(false);
                   // Whether the branch can dominate or correct latency or if we
@@ -2570,7 +2689,7 @@ TrackLatencyInfo& SynthI::getLatencyInfo(bool input)
         // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
         //  because we don't have multiple Midi Track outputs yet, only a single output port.
         // So we must store this information here just for Midi Tracks.
-        li._latencyOutMetronome = route_worst_latency - li._latencyOutMetronome;
+        li._latencyOutMetronome = route_worst_latency - li._outputLatency;
         // Should not happen, but just in case.
         if((long int)li._latencyOutMetronome < 0)
           li._latencyOutMetronome = 0.0f;
@@ -2607,7 +2726,7 @@ TrackLatencyInfo& SynthI::getLatencyInfo(bool input)
         // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
         //  because we don't have multiple Midi Track outputs yet, only a single output port.
         // So we must store this information here just for Midi Tracks.
-        _transportSource.setTransportLatencyOut(route_worst_latency - li._latencyOutMetronome);
+        _transportSource.setTransportLatencyOut(route_worst_latency - li._outputLatency);
         // Should not happen, but just in case.
         if((long int)_transportSource.transportLatencyOut() < 0)
           _transportSource.setTransportLatencyOut(0.0f);
@@ -2674,7 +2793,7 @@ bool SynthI::isLatencyInputTerminalMidi(bool capture)
   }
   
   const int port = midiPort();
-  if(capture/*Tim*/ && (openFlags() & (/*capture ?*/ 2 /*: 1*/)) && port >= 0 && port < MusECore::MIDI_PORTS)
+  if(capture/*Tim*/ && ((/*capture ?*/ readEnable() /*: writeEnable()*/)) && port >= 0 && port < MusECore::MIDI_PORTS)
   {
     MidiPort* mp = &MusEGlobal::midiPorts[port];
     const RouteList* mrl = mp->outRoutes();
@@ -2752,7 +2871,7 @@ bool SynthI::isLatencyOutputTerminalMidi(bool capture)
   }
   
   const int port = midiPort();
-  if(capture/*Tim*/ && (openFlags() & (/*capture ?*/ 2 /*: 1*/)) && port >= 0 && port < MusECore::MIDI_PORTS)
+  if(capture/*Tim*/ && ((/*capture ?*/ readEnable() /*: writeEnable()*/)) && port >= 0 && port < MusECore::MIDI_PORTS)
   {
     MidiPort* mp = &MusEGlobal::midiPorts[port];
     const RouteList* mrl = mp->outRoutes();
@@ -2874,7 +2993,7 @@ TrackLatencyInfo& SynthI::getDominanceInfoMidi(bool capture, bool input)
         const int port = midiPort();
         if(!capture/*Tim*/ && port >= 0 && port < MusECore::MIDI_PORTS)
         {
-          if((openFlags() & (/*capture ? 2 :*/ 1)))
+          if(((/*capture ? readEnable() :*/ writeEnable())))
           {
     //         bool used_chans[MusECore::MUSE_MIDI_CHANNELS];
     //         for(int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i)
@@ -2892,7 +3011,7 @@ TrackLatencyInfo& SynthI::getDominanceInfoMidi(bool capture, bool input)
                 if(track->outPort() != port)
                   continue;
 
-                //if(!off() && (openFlags() & (/*capture ? 2 :*/ 1)) && !track->off() && (passthru || input))
+                //if(!off() && ((/*capture ? readEnable() :*/ writeEnable())) && !track->off() && (passthru || input))
                 if(!track->off())
                 {
                   const TrackLatencyInfo& li = track->getDominanceInfo(false);
@@ -2951,7 +3070,7 @@ TrackLatencyInfo& SynthI::getDominanceInfoMidi(bool capture, bool input)
     //                     else
     //                       used_chans[ir->channel] = true;
                           
-                        //if(!off() && (openFlags() & (/*capture ? 2 :*/ 1)) && !track->off() && (passthru || input))
+                        //if(!off() && ((/*capture ? readEnable() :*/ writeEnable())) && !track->off() && (passthru || input))
                         if(!track->off())
                         {
                           const TrackLatencyInfo& li = track->getDominanceInfo(false);
@@ -3007,8 +3126,8 @@ TrackLatencyInfo& SynthI::getDominanceInfoMidi(bool capture, bool input)
             //if(sendMetronome())
             if(metro_settings->midiClickFlag && metro_settings->clickPort == port)
             {
-              //if(!off() && (openFlags() & (capture ? 2 : 1)) && !MusECore::metronome->off() && (passthru || input))
-              if((openFlags() & (capture ? 2 : 1)) && !MusECore::metronome->off())
+              //if(!off() && ((capture ? readEnable() : writeEnable())) && !MusECore::metronome->off() && (passthru || input))
+              if(((capture ? readEnable() : writeEnable())) && !MusECore::metronome->off())
               {
                 const TrackLatencyInfo& li = MusECore::metronome->getDominanceInfoMidi(capture, false);
 
@@ -3049,7 +3168,7 @@ TrackLatencyInfo& SynthI::getDominanceInfoMidi(bool capture, bool input)
       
       // Set the correction of all connected input branches,
       //  but ONLY if the track is not off.
-      if(!off() && (openFlags() & (capture ? 2 : 1)))
+      if(!off() && ((capture ? readEnable() : writeEnable())))
       {
         if(input)
         {
@@ -3092,7 +3211,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfoMidi(bool capture, bool input)
       bool item_found = false;
 
       float worst_self_latency = 0.0f;
-      if(!input && !off() && (openFlags() & (capture ? 2 : 1)))
+      if(!input && !off() && ((capture ? readEnable() : writeEnable())))
       {
         worst_self_latency = getWorstSelfLatencyAudio();
         const float worst_midi = getWorstSelfLatencyMidi(false /*playback*/);
@@ -3178,7 +3297,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfoMidi(bool capture, bool input)
   //         bool all_chans = false;
 
           
-          if(openFlags() & (/*capture ? 2 :*/ 1))
+          if((/*capture ? readEnable() :*/ writeEnable()))
           {
             
     #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -3190,7 +3309,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfoMidi(bool capture, bool input)
               if(track->outPort() != port)
                 continue;
 
-              //if(!off() && (openFlags() & (/*capture ? 2 :*/ 1)) && !track->off() && (passthru || input))
+              //if(!off() && ((/*capture ? readEnable() :*/ writeEnable())) && !track->off() && (passthru || input))
               if(!track->off())
               {
                 const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
@@ -3256,7 +3375,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfoMidi(bool capture, bool input)
     //                     else
     //                       used_chans[ir->channel] = true;
                         
-                      //if(!off() && (openFlags() & (/*capture ? 2 :*/ 1)) && !track->off() && (passthru || input))
+                      //if(!off() && ((/*capture ? readEnable() :*/ writeEnable())) && !track->off() && (passthru || input))
                       if(!track->off())
                       {
                         const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
@@ -3317,8 +3436,8 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfoMidi(bool capture, bool input)
             //if(sendMetronome())
             if(metro_settings->midiClickFlag && metro_settings->clickPort == port)
             {
-              //if(!off() && (openFlags() & (capture ? 2 : 1)) && !MusECore::metronome->off() && (passthru || input))
-              if((openFlags() & (capture ? 2 : 1)) && !MusECore::metronome->off())
+              //if(!off() && ((capture ? readEnable() : writeEnable())) && !MusECore::metronome->off() && (passthru || input))
+              if(((capture ? readEnable() : writeEnable())) && !MusECore::metronome->off())
               {
                 const TrackLatencyInfo& li = MusECore::metronome->getDominanceLatencyInfoMidi(capture, false);
 
@@ -3365,7 +3484,7 @@ TrackLatencyInfo& SynthI::getDominanceLatencyInfoMidi(bool capture, bool input)
       
       // Set the correction of all connected input branches,
       //  but ONLY if the track is not off.
-      if(!off() && (openFlags() & (capture ? 2 : 1)))
+      if(!off() && ((capture ? readEnable() : writeEnable())))
       {
         if(input)
         {
@@ -3404,7 +3523,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfoMidi(bool capture, bool input,
   const bool passthru = canPassThruLatencyMidi(capture);
 
   float worst_self_latency = 0.0f;
-  if(!capture/*Tim*/ && !input && !off() && (openFlags() & 1 /*write*/))
+  if(!capture/*Tim*/ && !input && !off() && (writeEnable()))
   {
     worst_self_latency = getWorstSelfLatencyAudio();
     const float worst_midi = getWorstSelfLatencyMidi(false /*playback*/);
@@ -3432,7 +3551,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfoMidi(bool capture, bool input,
     const int port = midiPort();
     if(!capture/*Tim*/ && port >= 0 && port < MusECore::MIDI_PORTS)
     {
-      if((openFlags() & 1 /*write*/))
+      if((writeEnable()))
       {
     #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
         const MidiTrackList& tl = *MusEGlobal::song->midis();
@@ -3442,7 +3561,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfoMidi(bool capture, bool input,
           MidiTrack* track = static_cast<MidiTrack*>(tl[it]);
           if(track->outPort() != port)
             continue;
-          //if(!off() && (openFlags() & 1 /*write*/) && !track->off() && (passthru || input))
+          //if(!off() && (writeEnable()) && !track->off() && (passthru || input))
           if(!track->off())
             track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
         }
@@ -3469,7 +3588,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfoMidi(bool capture, bool input,
     //                     else
     //                       used_chans[ir->channel] = true;
                         
-                      //if(!off() && (openFlags() & 1 /*write*/) && !track->off() && (passthru || input))
+                      //if(!off() && (writeEnable()) && !track->off() && (passthru || input))
                       if(!track->off())
                         track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
                     }
@@ -3495,8 +3614,8 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfoMidi(bool capture, bool input,
       //if(sendMetronome())
       if(metro_settings->midiClickFlag && metro_settings->clickPort == port)
       {
-        //if(!off() && (openFlags() & 1 /*write*/) && !MusECore::metronome->off() && (passthru || input))
-        if((openFlags() & 1 /*write*/) && !MusECore::metronome->off())
+        //if(!off() && (writeEnable()) && !MusECore::metronome->off() && (passthru || input))
+        if((writeEnable()) && !MusECore::metronome->off())
           MusECore::metronome->setCorrectionLatencyInfoMidi(capture, finalWorstLatency, branch_lat);
       }
     }
@@ -3505,7 +3624,7 @@ TrackLatencyInfo& SynthI::setCorrectionLatencyInfoMidi(bool capture, bool input,
   // Set the correction of all connected input branches,
   //  but ONLY if the track is not off.
   // Capture devices cannot be corrected. Only playback devices. Tim.
-  if(!off() && (openFlags() & 1 /*write*/) && !capture/*Tim*/)
+  if(!off() && (writeEnable()) && !capture/*Tim*/)
   {
     if(input)
     {
@@ -3608,7 +3727,7 @@ TrackLatencyInfo& SynthI::getLatencyInfoMidi(bool capture, bool input)
         // Default to zero.
         //ir->audioLatencyOut = 0.0f;
 
-        if(!off() && (openFlags() & (/*capture ? 2 :*/ 1)) && !track->off())
+        if(!off() && ((/*capture ? readEnable() :*/ writeEnable())) && !track->off())
         {
           TrackLatencyInfo& li = track->getLatencyInfo(false);
           const bool participate =
@@ -3661,7 +3780,7 @@ TrackLatencyInfo& SynthI::getLatencyInfoMidi(bool capture, bool input)
               // Default to zero.
               ir->audioLatencyOut = 0.0f;
 
-              if(!off() && (openFlags() & (/*capture ? 2 :*/ 1)) && !track->off())
+              if(!off() && ((/*capture ? readEnable() :*/ writeEnable())) && !track->off())
               {
                 TrackLatencyInfo& li = track->getLatencyInfo(false);
                 const bool participate =
@@ -3700,7 +3819,11 @@ TrackLatencyInfo& SynthI::getLatencyInfoMidi(bool capture, bool input)
         // Default to zero.
         //ir->audioLatencyOut = 0.0f;
 
-        if((openFlags() & 1 /*write*/) && !MusECore::metronome->off() &&  // sendMetronome() &&
+        // Special for the built-in metronome.
+        // Default to zero.
+        _latencyInfo._latencyOutMetronome = 0.0f;
+
+        if((writeEnable()) && !MusECore::metronome->off() &&  // sendMetronome() &&
             metro_settings->midiClickFlag && metro_settings->clickPort == port)
         {
           TrackLatencyInfo& li = MusECore::metronome->getLatencyInfoMidi(capture, false);
@@ -3741,6 +3864,44 @@ TrackLatencyInfo& SynthI::getLatencyInfoMidi(bool capture, bool input)
           }
         }
       //}
+
+      // Special for the transport source.
+      // Default to zero.
+      _transportSource.setTransportLatencyOut(0.0f);
+      if(!off() && /*!_transportSource.off() &&*/ usesTransportSource())
+      {
+        TrackLatencyInfo& li = _transportSource.getLatencyInfo(false);
+
+        const bool participate =
+          li._canCorrectOutputLatency ||
+          li._canDominateOutputLatency ||
+          MusEGlobal::config.correctUnterminatedInBranchLatency;
+
+        if(participate)
+        {
+          // TODO: FIXME: Where to store? We have no route to store it in.
+          // Prepare the latency value to be passed to the compensator's writer,
+          //  by adjusting each route latency value. ie. the route with the worst-case
+          //  latency will get ZERO delay, while routes having smaller latency will get
+          //  MORE delay, to match all the signal timings together.
+          // The route's audioLatencyOut should have already been calculated and
+          //  conveniently stored in the route.
+
+  //             ir->audioLatencyOut = route_worst_latency - ir->audioLatencyOut;
+  //             // Should not happen, but just in case.
+  //             if((long int)ir->audioLatencyOut < 0)
+  //               ir->audioLatencyOut = 0.0f;
+
+          // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
+          //  because we don't have multiple Midi Track outputs yet, only a single output port.
+          // So we must store this information here just for Midi Tracks.
+          _transportSource.setTransportLatencyOut(route_worst_latency - li._outputLatency);
+          // Should not happen, but just in case.
+          if((long int)_transportSource.transportLatencyOut() < 0)
+            _transportSource.setTransportLatencyOut(0.0f);
+        }
+      }
+
     }
   }
 
@@ -3845,11 +4006,24 @@ void MessSynthIF::preProcessAlways()
 
 bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       {
-      for (int k = 0; k < ports; ++k)
-            memset(buffer[k], 0, n * sizeof(float));
+      if(!off())
+      {
+        for (int k = 0; k < ports; ++k)
+              memset(buffer[k], 0, n * sizeof(float));
+      }
 
       if(!_sif)
+      {
+        // The synth doesn't exist. Flush ring buffers and event lists.
+        eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
+        eventBuffers(MidiDevice::UserBuffer)->clearRead();
+        _outPlaybackEvents.clear();
+        _outUserEvents.clear();
+        // Reset the flag.
+        setStopFlag(false);
+
         return false;
+      }
 
       int p = midiPort();
       MidiPort* mp = (p != -1) ? &MusEGlobal::midiPorts[p] : 0;
@@ -3867,107 +4041,131 @@ bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigne
 
       // Get the state of the stop flag.
       const bool do_stop = synti->stopFlag();
+      // Get whether playback and user midi events can be written to this midi device.
+      const bool we = synti->writeEnable();
 
       MidiPlayEvent buf_ev;
-      
-      // Transfer the user lock-free buffer events to the user sorted multi-set.
-      // False = don't use the size snapshot, but update it.
-      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
-      for(unsigned int i = 0; i < usr_buf_sz; ++i)
+
+      // If stopping or not 'running' just purge ALL playback FIFO and container events.
+      // But do not clear the user ones. We need to hold on to them until active,
+      //  they may contain crucial events like loading a soundfont from a song file.
+      if(do_stop || !_curActiveState || !we)
       {
-        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-          synti->_outUserEvents.insert(buf_ev);
-      }
-      
-      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
-      for(unsigned int i = 0; i < pb_buf_sz; ++i)
-      {
-        // Are we stopping? Just remove the item.
-        if(do_stop)
-          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
-        // Otherwise get the item.
-        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
-          synti->_outPlaybackEvents.insert(buf_ev);
-      }
-  
-      // Are we stopping?
-      if(do_stop)
-      {
-        // Transport has stopped, purge ALL further scheduled playback events now.
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
+        {
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.addExclusive(buf_ev);
+        }
+
+        synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
         synti->_outPlaybackEvents.clear();
         // Reset the flag.
         synti->setStopFlag(false);
       }
-      
-      iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
-      iMPEvent impe_us = synti->_outUserEvents.begin();
-      bool using_pb;
-  
-      while(1)
-      {  
-        if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
-          using_pb = *impe_pb < *impe_us;
-        else if(impe_pb != synti->_outPlaybackEvents.end())
-          using_pb = true;
-        else if(impe_us != synti->_outUserEvents.end())
-          using_pb = false;
-        else break;
-        
-        const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
-        
-        const unsigned int evTime = ev.time();
-        if(evTime < syncFrame)
+      else
+      {
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
         {
-          if(evTime != 0)
-            fprintf(stderr, "MessSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n", 
-                    evTime, syncFrame, curPos);
-          frame = 0;
-        }
-        else
-          frame = evTime - syncFrame;
-
-        // Event is for future?
-        if(frame >= n) 
-        {
-          DEBUG_SYNTH(stderr, "MessSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n", 
-                  frame, n, evTime, syncFrame, curPos);
-          //continue;
-          break;
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.insert(buf_ev);
         }
 
-        if(frame > curPos)
+        // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+        const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+        for(unsigned int i = 0; i < pb_buf_sz; ++i)
         {
-          if (!_mess)
-            fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
-          else
-            _mess->process(pos, buffer, curPos, frame - curPos);
-          curPos = frame;
+          if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+            synti->_outPlaybackEvents.insert(buf_ev);
         }
-        
-        // If putEvent fails, although we would like to not miss events by keeping them
-        //  until next cycle and trying again, that can lead to a large backup of events
-        //  over a long time. So we'll just... miss them.
-        //putEvent(ev);
-        //synti->putEvent(ev);
-        processEvent(ev);
-        
-        // Done with ring buffer event. Remove it from FIFO.
-        // C++11.
-        if(using_pb)
-          impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
-        else
-          impe_us = synti->_outUserEvents.erase(impe_us);
       }
 
-      if(curPos < n)
+      // Don't bother if not 'running'.
+      //if(_curActiveState && we)
+      // NOTE: Unlike the other synths, we must allow for some MESS events to be processed even when inactive.
+      //       It is good that we can do that with MESS! The midi processing is SEPARATE from the audio processing.
+      //       Other plugin architectures combine it all into the run function, and it must be run to make any change.
+      if(we)
+      {
+        iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+        iMPEvent impe_us = synti->_outUserEvents.begin();
+        bool using_pb;
+
+        while(1)
+        {
+          if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+            using_pb = *impe_pb < *impe_us;
+          else if(impe_pb != synti->_outPlaybackEvents.end())
+            using_pb = true;
+          else if(impe_us != synti->_outUserEvents.end())
+            using_pb = false;
+          else break;
+
+          const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
+
+          const unsigned int evTime = ev.time();
+          if(evTime < syncFrame)
+          {
+            if(evTime != 0)
+              fprintf(stderr, "MessSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n",
+                      evTime, syncFrame, curPos);
+            frame = 0;
+          }
+          else
+            frame = evTime - syncFrame;
+
+          // Event is for future?
+          if(frame >= n)
+          {
+            DEBUG_SYNTH(stderr, "MessSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n",
+                    frame, n, evTime, syncFrame, curPos);
+            //continue;
+            break;
+          }
+
+          if(frame > curPos)
+          {
+            // Don't bother if not 'running'.
+            if(_curActiveState)
+            {
+
+              if (!_mess)
+                fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
+              else
+                _mess->process(pos, buffer, curPos, frame - curPos);
+            }
+            curPos = frame;
+          }
+
+          // If putEvent fails, although we would like to not miss events by keeping them
+          //  until next cycle and trying again, that can lead to a large backup of events
+          //  over a long time. So we'll just... miss them.
+          //putEvent(ev);
+          //synti->putEvent(ev);
+          processEvent(ev);
+
+          // Done with buffer event. Remove it.
+          // C++11.
+          if(using_pb)
+            impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+          else
+            impe_us = synti->_outUserEvents.erase(impe_us);
+        }
+      }
+
+      // Don't bother if not 'running'.
+      if(_curActiveState && curPos < n)
       {
         if (!_mess)
           fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
         else
           _mess->process(pos, buffer, curPos, n - curPos);
       }
-      
+
       return true;
 }
 

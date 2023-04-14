@@ -251,6 +251,8 @@ class CtrlList : public CtrlList_t {
       // PasteErase means erase target under the areas given if in PasteAreas mode.
       // PasteEraseRange means erase target full range from first to last paste item.
       enum PasteEraseOptions { PasteNoErase=0, PasteErase, PasteEraseRange, PasteEraseOptionsEnd };
+      enum DisplayHints { DisplayDefault, DisplayLogDB };
+
    private:
       // This is the controller's underlying mode. It is typically set once at creation,
       //  and never changed again and typically should not be.
@@ -271,6 +273,10 @@ class CtrlList : public CtrlList_t {
       QColor _displayColor;
       bool _visible;
       bool _dontShow; // when this is true the control exists but is not compatible with viewing in the arranger
+      // Index into the global value units for displaying unit symbols.
+      // Can be -1 meaning no units.
+      int _valueUnit;
+      DisplayHints _displayHint;
 
    public:
       CtrlList(bool dontShow=false);
@@ -367,6 +373,14 @@ class CtrlList : public CtrlList_t {
       void setVisible(bool v);
       bool isVisible() const;
       bool dontShow() const;
+      // Returns index into the global value units for displaying unit symbols.
+      // Can be -1 meaning no units.
+      int valueUnit() const;
+      // Sets index into the global value units for displaying unit symbols.
+      // Can be -1 meaning no units.
+      void setValueUnit(int idx);
+      DisplayHints displayHint() const;
+      void setDisplayHint(const DisplayHints&);
       };
 
 typedef CtrlList::iterator iCtrl;

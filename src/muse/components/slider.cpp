@@ -5,7 +5,7 @@
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
-//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2015-2023 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -22,7 +22,6 @@
 //  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 //=========================================================
-#include "muse_math.h"
 #include "mmath.h"
 
 #include <QPainterPath>
@@ -32,7 +31,9 @@
 #include "slider.h"
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_SLIDER(dev, format, args...) // fprintf(dev, format, ##args);
+//#include <stdio.h>
+#define DEBUG_SLIDER(dev, format, args...)        // fprintf(dev, format, ##args);
+#define DEBUG_SLIDER_PAINT(dev, format, args...)  // fprintf(dev, format, ##args);
 
 
 namespace MusEGui {
@@ -90,7 +91,7 @@ Slider::Slider(QWidget *parent, const char *name,
       d_radiusHandle = 2;
       d_useGradient = true;
 
-      d_scaleDist   = 4;
+      d_scaleDist   = 2;
       d_scaleStep   = 0.0;
       d_xMargin     = 0;
       d_yMargin     = 0;
@@ -150,7 +151,6 @@ Slider::~Slider()
 //-----------------------------------------------------
 void Slider::setThumbLength(int l)
 {
-//     d_thumbLength = MusECore::qwtMax(l,8);
     d_thumbLength = l;
     d_thumbHalf = d_thumbLength / 2;
     resize(size());
@@ -189,9 +189,7 @@ void Slider::setThumbWidth(int w)
 //------------------------------------------------------------
 void Slider::scaleChange()
 {
-    if (!hasUserScale())
-       d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
-    update();
+  adjustScale();
 }
 
 
@@ -206,11 +204,10 @@ void Slider::scaleChange()
 //------------------------------------------------------------
 void Slider::fontChange(const QFont & /*oldFont*/)
 {
-//     repaint();
     update();
 }
 
-void Slider::drawThumb(QPainter *p, const QRect &r)
+void Slider::drawThumb(QPainter *p, QPaintEvent *e)
 {
   p->setRenderHint(QPainter::Antialiasing);
 
@@ -229,109 +226,74 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
   thumbGrad.setColorAt(0.5, thumb_center);
   thumbGrad.setColorAt(1, thumb_edge);
 
-  const double rpos = (value(ConvertNone) - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
+  // Special for log scale: It wants unconverted log values.
+  const DoubleRange::ConversionMode cm = d_scale.logarithmic() ? ConvertNone : ConvertDefault;
+  // Use the limiting transform in case the value is out of bounds.
+  markerPos = d_scale.limTransform(internalValue(cm));
+  const int ipos = markerPos - d_thumbHalf;
 
+  QRect mkr;
+  QPainterPath tpp;
   if(d_orient == Qt::Horizontal)
   {
-    int crh, thh;
-//     if(d_scalePos == InsideHorizontal)
-//     {
-//       crh = height() - r.y() - d_yMargin - 2 * d_mMargin;
-//       thh = height() - r.y() - d_yMargin - d_mMargin;
-//     }
-//     else
-    {
-      crh = r.height() - 2 * d_mMargin;
-      thh = r.height();
-    }
-
-    const QRect cr(r.x(),
-                   r.y() + d_mMargin,
-                   r.width(),
-                   //r.height() - 2*d_mMargin);
-                   crh);
-
-    const int dist1 = int(double(cr.width() - d_thumbLength) * rpos);
-    const int ipos =  cr.x() + dist1;
-    markerPos = ipos + d_thumbHalf;
-
-    //
-    //  Draw thumb
-    //
-
-    QPainterPath thumb_rect = MusECore::roundedPath(ipos, r.y(),
-                                          //d_thumbLength, r.height(),
-                                          d_thumbLength, thh,
-                                          d_radiusHandle, d_radiusHandle,
-                                          (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight | MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
-
-//     thumbGrad.setStart(QPointF(0, cr.y()));
-//     thumbGrad.setFinalStop(QPointF(0, cr.y() + cr.height()));
+    // Thumb painter path.
+    tpp = MusECore::roundedPath(
+      ipos, d_sliderRect.y(),
+      d_thumbLength, d_sliderRect.height(),
+      d_radiusHandle, d_radiusHandle,
+      (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight | MusECore::CornerLowerLeft | MusECore::CornerLowerRight));
     thumbGrad.setStart(QPointF(ipos, 0));
     thumbGrad.setFinalStop(QPointF(ipos + d_thumbLength, 0));
-
-    if(d_fillThumb)
-      p->fillPath(thumb_rect, QBrush(thumbGrad));
-    else
-    {
-      p->setPen(pal.shadow().color());
-      p->drawPath(thumb_rect);
-    }
-
-    // center line
-    p->fillRect(ipos + d_thumbHalf, cr.y(), 1, cr.height(), pal.dark().color());
+    mkr = QRect(markerPos, d_sliderRect.y(), 1, d_sliderRect.height());
   }
   else
   {
-    int crw, thw;
-//     if(d_scalePos == InsideVertical)
-//     {
-//       crw = width() - r.x() - d_xMargin - 2 * d_mMargin;
-//       thw = width() - r.x() - d_xMargin - d_mMargin;
-//     }
-//     else
-    {
-      crw = r.width() - 2 * d_mMargin;
-      thw = r.width();
-    }
-
-    const QRect cr(r.x() + d_mMargin,
-                   r.y(),
-                   //r.width() - 2*d_mMargin,
-                   crw,
-                   r.height());
-
-    const int dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
-    const int ipos = cr.y() + dist1;
-    markerPos = ipos + d_thumbHalf;
-
-    //
-    //  Draw thumb
-    //
-
-    QPainterPath thumb_rect = MusECore::roundedPath(r.x(), ipos,
-                                          //r.width(), d_thumbLength,
-                                          thw, d_thumbLength,
-                                          d_radiusHandle, d_radiusHandle,
-                                          (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight | MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
-
-//     thumbGrad.setStart(QPointF(cr.x(), 0));
-//     thumbGrad.setFinalStop(QPointF(cr.x() + cr.width(), 0));
+    // Thumb painter path.
+    tpp = MusECore::roundedPath(
+      d_sliderRect.x(), ipos,
+      d_sliderRect.width(), d_thumbLength,
+      d_radiusHandle, d_radiusHandle,
+      (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight | MusECore::CornerLowerLeft | MusECore::CornerLowerRight));
     thumbGrad.setStart(QPointF(0, ipos));
     thumbGrad.setFinalStop(QPointF(0, ipos + d_thumbLength));
-
-    if(d_fillThumb)
-      p->fillPath(thumb_rect, QBrush(thumbGrad));
-    else
-    {
-      p->setPen(pal.shadow().color());
-      p->drawPath(thumb_rect);
-    }
-
-    // center line
-    p->fillRect(cr.x(), ipos + d_thumbHalf, cr.width(), 1, pal.dark().color());
+    mkr = QRect(d_sliderRect.x(), markerPos, d_sliderRect.width(), 1);
   }
 
+  const QBrush thumbbr(thumbGrad);
+
+  QRegion::const_iterator ireg_end = e->region().cend();
+  for(QRegion::const_iterator ireg = e->region().cbegin(); ireg != ireg_end; ++ireg)
+  {
+    const QRect& rect = *ireg;
+
+    // Draw thumb.
+    QPainterPath tp;
+    tp.addRect(rect);
+    tp = (tp & tpp).simplified();
+    if(!tp.isEmpty())
+    {
+      DEBUG_SLIDER_PAINT(stderr, "Slider::drawThumb: thumb\n");
+      //printQPainterPath(tp);
+
+      if(d_fillThumb)
+        p->fillPath(tp, thumbbr);
+      else
+      {
+        p->setPen(pal.shadow().color());
+        p->drawPath(tp);
+      }
+    }
+
+    // Draw thumb center line.
+    const QRect mpp = mkr & rect;
+    if(!mpp.isEmpty())
+    {
+      DEBUG_SLIDER_PAINT(stderr, "Slider::drawThumb: centre line\n");
+      //printQPainterPath(mpp);
+
+      p->fillRect(mpp, pal.dark().color());
+    }
+  }
 }
 
 //------------------------------------------------------------
@@ -339,132 +301,156 @@ void Slider::drawThumb(QPainter *p, const QRect &r)
 //     Draw the slider into the specified rectangle.
 //------------------------------------------------------------
 
-void Slider::drawSlider(QPainter *p, const QRect &r)
+void Slider::drawSlider(QPainter *p, QPaintEvent *e)
 {
     p->setRenderHint(QPainter::Antialiasing);
 
     const QPalette& pal = palette();
 
-    // for the full side
-    const double rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
-
     QColor f_mask_min(d_fillColor.isValid() ? d_fillColor : pal.highlight().color());
     QColor f_mask_max(f_mask_min);
     if (d_useGradient) {
         f_mask_min.setAlpha(40);
-        //f_mask_max.setAlpha(200);
         f_mask_max.setAlpha(255);
     }
+
+    // Special for log scale: It wants unconverted log values.
+    const DoubleRange::ConversionMode cm = d_scale.logarithmic() ? ConvertNone : ConvertDefault;
+    // Use the limiting transform in case the value is out of bounds.
+    markerPos = d_scale.limTransform(internalValue(cm));
+
+    QPainterPath e_rect;
+    QPainterPath f_rect;
     QLinearGradient f_mask;
+    const QBrush frame_br(d_frameColor);
 
     if (d_orient == Qt::Horizontal)
-        {
-
-        const QRect cr(r.x(),
-                       r.y() + r.height() / 2 - d_grooveWidth / 2,
-                       r.width(),
-                       d_grooveWidth);
-
-        QPainterPath clip_path;
-        clip_path.addRoundedRect(cr.x() + d_thumbHalf, cr.y(),
-                                 cr.width() - d_thumbLength, r.height(),
-                                 d_radius, d_radius);
-        p->setClipPath(clip_path);
-
-        //
-        // Draw background
-        //
-
-        const int dist1 = int(double(cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * rpos);
-        const int ipos =  cr.x() + dist1;
-        markerPos = ipos + d_thumbHalf;
+    {
+        const int rhw = d_grooveRect.x() + d_grooveRect.width() - markerPos - (d_fillThumb ? d_thumbHalf : 0);
+        const int lhw = markerPos - (d_fillThumb ? d_thumbHalf : 0) - d_grooveRect.x();
 
         //
         // Draw groove empty right side
         //
 
-        if(d_fillEmptySide)
+        if(rhw > 0 && d_fillEmptySide)
         {
-          QPainterPath e_rect = MusECore::roundedPath(ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf), cr.y(),
-                                            cr.width() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1, cr.height(),
-                                            d_radius, d_radius, (MusECore::Corner) (MusECore::CornerUpperRight | MusECore::CornerLowerRight) );
-
-          p->fillPath(e_rect, f_mask_min);
+          e_rect = MusECore::roundedPath(
+            markerPos + (d_fillThumb ? d_thumbHalf : 0),
+            d_grooveRect.y(),
+            rhw,
+            d_grooveRect.height(),
+            d_radius,
+            d_radius,
+            (MusECore::Corner) (MusECore::CornerUpperRight | MusECore::CornerLowerRight) );
         }
-
 
         //
         // Draw groove full left side
         //
 
-        f_mask.setColorAt(0, f_mask_min);
-        f_mask.setColorAt(1, f_mask_max);
-        f_mask.setStart(QPointF(cr.x(), cr.y()));
-        f_mask.setFinalStop(QPointF(cr.x() + ipos + (d_fillThumb ? 0 : d_thumbHalf), cr.y()));
-
-        QPainterPath f_rect = MusECore::roundedPath(cr.x(), cr.y(),
-                                          ipos + (d_fillThumb ? 0 : d_thumbHalf), cr.height(),
-                                          d_radius, d_radius,
-                                          (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerUpperLeft) );
-
-        p->fillPath(f_rect, QBrush(f_mask));
-        p->setClipping(false);
-        }
-    else // (d_orient == Qt::Vertical)
+        if(lhw > 0)
         {
-        const QRect cr(r.x() + r.width() / 2 - d_grooveWidth / 2,
-                       r.y(),
-                       d_grooveWidth,
-                       r.height());
+          f_mask.setColorAt(0, f_mask_min);
+          f_mask.setColorAt(1, f_mask_max);
+          f_mask.setStart(QPointF(d_grooveRect.x(), d_grooveRect.y()));
+          f_mask.setFinalStop(QPointF(markerPos - (d_fillThumb ? d_thumbHalf : 0), d_grooveRect.y()));
 
-        QPainterPath clip_path;
-        clip_path.addRoundedRect(cr.x(), cr.y() + d_thumbHalf,
-                                 cr.width(), r.height() - d_thumbLength,
-                                 d_radius, d_radius);
-        p->setClipPath(clip_path);
-
-        //
-        // Draw background
-        //
-
-        const int dist1 = int(double(cr.height() - (d_fillThumb ? d_thumbLength : d_thumbHalf)) * (1.0 - rpos));
-        const int ipos = cr.y() + dist1;
-        markerPos = ipos + d_thumbHalf;
+          f_rect = MusECore::roundedPath(
+            d_grooveRect.x(),
+            d_grooveRect.y(),
+            lhw,
+            d_grooveRect.height(),
+            d_radius,
+            d_radius,
+            (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerUpperLeft) );
+        }
+    }
+    else // (d_orient == Qt::Vertical)
+    {
+        const int lh = d_grooveRect.y() + d_grooveRect.height() - markerPos - (d_fillThumb ? d_thumbHalf : 0);
+        const int uh = markerPos - (d_fillThumb ? d_thumbHalf : 0) - d_grooveRect.y();
 
         //
         // Draw groove empty upper filling
         //
 
-        if(d_fillEmptySide)
+        if(uh > 0 && d_fillEmptySide)
         {
-          QPainterPath e_rect = MusECore::roundedPath(cr.x(), cr.y(),
-                                            cr.width(), ipos + (d_fillThumb ? 0 : d_thumbHalf),
-                                            d_radius, d_radius,
-                                            (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight) );
-
-          p->fillPath(e_rect, QBrush(f_mask_min));
+          e_rect = MusECore::roundedPath(
+            d_grooveRect.x(),
+            d_grooveRect.y(),
+            d_grooveRect.width(),
+            uh,
+            d_radius,
+            d_radius,
+            (MusECore::Corner) (MusECore::CornerUpperLeft | MusECore::CornerUpperRight) );
         }
 
         //
         // Draw groove lower filling mask
         //
 
-        f_mask.setColorAt(0, f_mask_max);
-        f_mask.setColorAt(1, f_mask_min);
-        f_mask.setStart(QPointF(cr.x(), markerPos));
-        f_mask.setFinalStop(QPointF(cr.x(), cr.y() + cr.height()));
+        if(lh > 0)
+        {
+          f_mask.setColorAt(0, f_mask_max);
+          f_mask.setColorAt(1, f_mask_min);
+          f_mask.setStart(QPointF(d_grooveRect.x(), markerPos + (d_fillThumb ? d_thumbHalf : 0)));
+          f_mask.setFinalStop(QPointF(d_grooveRect.x(), d_grooveRect.y() + d_grooveRect.height()));
 
-        QPainterPath f_rect = MusECore::roundedPath(cr.x(), ipos + (d_fillThumb ? d_thumbLength : d_thumbHalf),
-                                          cr.width(), cr.height() - (d_fillThumb ? d_thumbLength : d_thumbHalf) - dist1,
-                                          d_radius, d_radius, (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
-
-        p->fillPath(f_rect, QBrush(f_mask));
-        p->setClipping(false);
-
-    if (d_frame) {
-        p->setPen(d_frameColor);
-        p->drawPath(clip_path);
+          f_rect = MusECore::roundedPath(
+            d_grooveRect.x(),
+            markerPos + (d_fillThumb ? d_thumbHalf : 0),
+            d_grooveRect.width(),
+            lh,
+            d_radius,
+            d_radius,
+            (MusECore::Corner) (MusECore::CornerLowerLeft | MusECore::CornerLowerRight) );
+        }
     }
+
+    const QBrush fmask_min_brush(f_mask_min);
+    const QBrush fmask_brush(f_mask);
+    QPainterPath fin_path;
+
+    QRegion::const_iterator ireg_end = e->region().cend();
+    for(QRegion::const_iterator ireg = e->region().cbegin(); ireg != ireg_end; ++ireg)
+    {
+      const QRect& rect = *ireg;
+      QPainterPath tp;
+      tp.addRect(rect);
+
+      DEBUG_SLIDER_PAINT(stderr, "slider::drawSlider: region: x:%d y:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height());
+
+      fin_path = (e_rect & tp).simplified();
+      if(!fin_path.isEmpty())
+      {
+        DEBUG_SLIDER_PAINT(stderr, "slider::drawSlider:: e_rect\n");
+        //printQPainterPath(fin_path);
+
+        p->fillPath(e_rect, fmask_min_brush);
+      }
+
+      fin_path = (f_rect & tp).simplified();
+      if(!fin_path.isEmpty())
+      {
+        DEBUG_SLIDER_PAINT(stderr, "slider::drawSlider:: f_rect\n");
+        //printQPainterPath(fin_path);
+
+        p->fillPath(f_rect, fmask_brush);
+      }
+
+      if (d_frame)
+      {
+        fin_path = (d_framePath & tp).simplified();
+        if(!fin_path.isEmpty())
+        {
+          DEBUG_SLIDER_PAINT(stderr, "slider::drawSlider:: frame\n");
+          //printQPainterPath(fin_path);
+
+          p->fillPath(d_framePath, frame_br);
+        }
+      }
     }
 }
 
@@ -483,24 +469,25 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 //.u  Description
 //  Called by SliderBase
 //------------------------------------------------------------
+
 double Slider::getValue( const QPoint &p)
 {
   double rv;
   const QRect r = d_sliderRect;
-  const double val = value(ConvertNone);
+  const double val = internalValue(ConvertDefault);
 
   if(borderlessMouse() && d_scrollMode != ScrDirect)
   {
     DEBUG_SLIDER(stderr, "Slider::getValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n",
                          val, p.x(), p.y(), step(), p.x() * step());
     if(d_orient == Qt::Horizontal)
-      return val + p.x() * step();
+      return convertTo(val + p.x() * step(), ConvertDefault);
     else
-      return val - p.y() * step();
+      return convertTo(val - p.y() * step(), ConvertDefault);
   }
 
-  const double min = minValue(ConvertNone);
-  const double max = maxValue(ConvertNone);
+  const double min = internalMinValue(ConvertDefault);
+  const double max = internalMaxValue(ConvertDefault);
   const double drange = max - min;
 
   if(d_orient == Qt::Horizontal)
@@ -525,7 +512,7 @@ double Slider::getValue( const QPoint &p)
       rv =  min + rint(drange * (1.0 - dpos / dheight) / step()) * step();
     }
   }
-  return(rv);
+  return(convertTo(rv, ConvertDefault));
 }
 
 //------------------------------------------------------------
@@ -545,76 +532,84 @@ double Slider::getValue( const QPoint &p)
 //    Coarse mode (the normal mode) maps pixels to values depending on range and width,
 //     such that the slider follows the mouse cursor. Fine mode maps one step() value per pixel.
 //------------------------------------------------------------
+
 double Slider::moveValue(const QPoint &deltaP, bool fineMode)
 {
   double rv = d_valAccum;
   const QRect r = d_sliderRect;
 
-  const double val = value(ConvertNone);
+  const double fine_factor = fineMode ? 0.2 : 1.0;
+  const double step_factored = step() * fine_factor;
+  const double val = internalValue(ConvertDefault);
 
-  if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
+  if(borderlessMouse() && d_scrollMode != ScrDirect)
   {
     DEBUG_SLIDER(stderr, "Slider::moveValue value:%.20f p x:%d y:%d step:%.20f x change:%.20f\n",
                          val, deltaP.x(), deltaP.y(), step(), deltaP.x() * step());
 
     double newval;
     if(d_orient == Qt::Horizontal)
-      newval = val + deltaP.x() * step();
+      newval = val + deltaP.x() * step_factored;
     else
-      newval = val - deltaP.y() * step();
-    d_valAccum = newval; // Reset.
-    return newval;
+      newval = val - deltaP.y() * step_factored;
+    d_valAccum = convertTo(newval, ConvertDefault); // Reset.
+    return d_valAccum;
   }
 
-  const double min = minValue(ConvertNone);
-  const double max = maxValue(ConvertNone);
+  const double min = internalMinValue(ConvertDefault);
+  const double max = internalMaxValue(ConvertDefault);
   const double drange = max - min;
 
   if(d_orient == Qt::Horizontal)
   {
     if(r.width() <= d_thumbLength)
-      rv = 0.5 * (min + max);
+      return convertTo(0.5 * (min + max), ConvertDefault);
     else
     {
-      // Only if there is a change! Otherwise it adjusts the value on mouse release simply from
-      //  touching the control, we don't want that.
-      if(deltaP.x() != 0)
-      {
         const double dpos = double(deltaP.x());
         const double dwidth = double(r.width() - d_thumbLength);
-        const double dval_diff = (drange * dpos) / dwidth;
-        d_valAccum += dval_diff;
-        rv = rint(d_valAccum / step()) * step();
+        const double dval_diff = (drange * dpos * fine_factor) / dwidth;
+
+        const double valacc = convertFrom(d_valAccum, ConvertDefault) + dval_diff;
+        d_valAccum = convertTo(valacc, ConvertDefault);
 
         DEBUG_SLIDER(stderr, "Slider::moveValue Horizontal value:%.20f p dx:%d dy:%d drange:%.20f"
           " step:%.20f dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
           val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
-      }
+
+      // If it's integer or log + integer.
+      if(integer())
+        return rint(d_valAccum / step()) * step();
+      else
+        return convertTo(rint(valacc / step_factored) * step_factored, ConvertDefault);
     }
   }
   else
   {
     if(r.height() <= d_thumbLength)
-      rv = 0.5 * (min + max);
+      return convertTo(0.5 * (min + max), ConvertDefault);
     else
     {
-      // Only if there is a change! Otherwise it adjusts the value on mouse release simply from
-      //  touching the control, we don't want that.
-      if(deltaP.y() != 0)
-      {
         const double dpos = double(-deltaP.y());
         const double dheight = double(r.height() - d_thumbLength);
-        const double dval_diff = (drange * dpos) / dheight;
-        d_valAccum += dval_diff;
-        rv = rint(d_valAccum / step()) * step();
+        const double dval_diff = (drange * dpos * fine_factor) / dheight;
+
+        const double valacc = convertFrom(d_valAccum, ConvertDefault) + dval_diff;
+        d_valAccum = convertTo(valacc, ConvertDefault);
 
         DEBUG_SLIDER(stderr, "Slider::moveValue Vertical value:%.20f p dx:%d dy:%d drange:%.20f step:%.20f"
           " dval_diff:%.20f d_valAccum:%.20f rv:%.20f\n",
           val, deltaP.x(), deltaP.y(), drange, step(), dval_diff, d_valAccum, rv);
-      }
+
+      // If it's integer or log + integer.
+      if(integer())
+        return rint(d_valAccum / step()) * step();
+      else
+        return convertTo(rint(valacc / step_factored) * step_factored, ConvertDefault);
     }
   }
-  return(rv);
+
+  return rv;
 }
 
 //------------------------------------------------------------
@@ -632,6 +627,7 @@ double Slider::moveValue(const QPoint &deltaP, bool fineMode)
 //  Called by SliderBase
 //
 //------------------------------------------------------------
+
 void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction )
 {
   // If modifier or button is held, jump directly to the position at first.
@@ -663,29 +659,25 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
         direction = 0;
 
         int mp = 0;
-        QRect cr;
         QPoint cp;
-        int ipos,dist1;
-        double rpos;
-
-        cr = d_sliderRect;
-
-        rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
 
         if(d_orient == Qt::Horizontal)
         {
-          dist1 = int(double(cr.width() - d_thumbLength) * rpos);
-          ipos =  cr.x() + dist1;
-          mp = ipos + d_thumbHalf;
+          // Special for log scale: It wants unconverted log values.
+          const DoubleRange::ConversionMode cm = d_scale.logarithmic() ? ConvertNone : ConvertDefault;
+          // Use the limiting transform in case the value is out of bounds.
+          mp = d_scale.limTransform(internalValue(cm));
 
           p.setX(mp);
           cp = mapToGlobal( QPoint(mp, p.y()) );
         }
         else
         {
-          dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
-          ipos = cr.y() + dist1;
-          mp = ipos + d_thumbHalf;
+          // Special for log scale: It wants unconverted log values.
+          const DoubleRange::ConversionMode cm = d_scale.logarithmic() ? ConvertNone : ConvertDefault;
+          // Use the limiting transform in case the value is out of bounds.
+          mp = d_scale.limTransform(internalValue(cm));
+
           p.setY(mp);
           cp = mapToGlobal( QPoint(p.x(), mp) );
         }
@@ -738,156 +730,201 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::
 //.f  void Slider::paintEvent(QPaintEvent *e)
 //------------------------------------------------------------
 
-void Slider::paintEvent(QPaintEvent* /*ev*/)
+void Slider::paintEvent(QPaintEvent* ev)
 {
   QPainter p(this);
   if(d_grooveWidth != 0)
-    drawSlider(&p, d_sliderRect);
+    drawSlider(&p, ev);
 
   if(d_thumbLength != 0)
-    drawThumb(&p, d_sliderRect);
-  if(d_scalePos != None)
+    drawThumb(&p, ev);
+
+  if(d_scalePos != ScaleNone)
   {
-//     p.fillRect(rect(), palette().window());
-    p.setRenderHint(QPainter::Antialiasing, false);
-    d_scale.draw(&p, palette(), value());
+    // If any part of the total requested rectangle is part of the scale area,
+    //  draw the whole scale. TODO Try to refine scale draw routine.
+    if(!(ev->rect() & d_scaleRect).isEmpty())
+    {
+      DEBUG_SLIDER_PAINT(stderr, "Slider::paintEvent: Drawing scale\n");
+
+      //p.fillRect(rect(), palette().window());
+      p.setRenderHint(QPainter::Antialiasing, false);
+      // Special for log scale: It wants unconverted log values.
+      const DoubleRange::ConversionMode cm = d_scale.logarithmic() ? ConvertNone : ConvertDefault;
+      d_scale.draw(&p, palette(), internalValue(cm));
+    }
   }
 }
 
-void Slider::adjustSize(const QSize& s)
+void Slider::adjustSize(const QSize& /*s*/)
 {
     const QFontMetrics fm = fontMetrics();
-    const int sliderWidth = d_thumbWidth;
+
+    const QRect cr = contentsRect();
+    const int w  = cr.width() - 2 * d_xMargin;
+    const int h  = cr.height() - 2 * d_yMargin;
+    const int left = cr.x() + d_xMargin;
+    const int rightEnd = left + w;
+    //const int right = rightEnd - 1;
+    const int top = cr.y() + d_yMargin;
+    const int botEnd = top + h;
+    //const int bot = botEnd - 1;
+
     // reposition slider
     if(d_orient == Qt::Horizontal)
     {
+      const int xoff = qMax(d_thumbHalf, d_scale.originOffsetHint(fm, true).x());
+      const int slxfin = left + xoff;
+      const int slwfin = w - 2 * xoff;
+      const int scxfin = slxfin + d_thumbHalf;
+      const int scwfin = slwfin - d_thumbLength;
+
       switch(d_scalePos)
       {
-        case Top:
-            d_sliderRect.setRect(this->rect().x() + d_xMargin,
-              this->rect().y() + s.height() - 1
-              - d_yMargin - sliderWidth,
-              s.width() - 2 * d_xMargin,
-              sliderWidth);
-            d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-              d_sliderRect.y() - d_scaleDist,
-              d_sliderRect.width() - d_thumbLength,
-              ScaleDraw::Top);
+        case ScaleLeftOrTop:
+        {
+            const int smy = d_scale.maxHeight(fm);
+            d_scaleRect.setRect(slxfin, top, slwfin, smy);
+            d_scaleGeom.setRect(scxfin, top, scwfin, smy);
+            d_spacerRect.setRect(left, top + smy, w, d_scaleDist);
+            d_sliderRect.setRect(slxfin, top + smy + d_scaleDist, slwfin, h - smy);
+            d_scale.setGeometry(scxfin, top, scwfin);
+            break;
+        }
+
+        case ScaleRightOrBottom:
+        {
+            const int smy = d_scale.maxHeight(fm);
+            d_sliderRect.setRect(slxfin, top, slwfin, h - smy - d_scaleDist);
+            d_spacerRect.setRect(left, h - smy - d_scaleDist, w, d_scaleDist);
+            d_scaleRect.setRect(slxfin, botEnd - smy, slwfin, smy);
+            d_scaleGeom.setRect(scxfin, botEnd - smy, scwfin, smy);
+            d_scale.setGeometry(scxfin, botEnd - smy, scwfin);
+            break;
+        }
+
+        case ScaleInside:
+            d_scaleRect.setRect(slxfin, top, slwfin, h);
+            d_scaleGeom.setRect(scxfin, top, scwfin, h);
+            d_spacerRect.setRect(left, top, 0, 0);
+            d_sliderRect.setRect(slxfin, top, slwfin, h);;
+            d_scale.setGeometry(scxfin, top, scwfin);
             break;
 
-        case Bottom:
-            d_sliderRect.setRect(this->rect().x() + d_xMargin,
-              this->rect().y() + d_yMargin,
-              s.width() - 2*d_xMargin,
-              sliderWidth);
-            d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-              d_sliderRect.y() + d_sliderRect.height() +  d_scaleDist,
-              d_sliderRect.width() - d_thumbLength,
-              ScaleDraw::Bottom);
-            break;
-
-        case InsideHorizontal:
-            d_sliderRect.setRect(this->rect().x() + d_xMargin,
-              this->rect().y() + s.height() - 1
-              - d_yMargin - sliderWidth,
-              s.width() - 2 * d_xMargin,
-              sliderWidth);
-            d_scale.setGeometry(d_sliderRect.x() + d_thumbHalf,
-              //d_sliderRect.y() - d_scaleDist,
-              this->rect().y() + d_yMargin + d_scale.maxHeight(fm) + d_scaleDist,
-              d_sliderRect.width() - d_thumbLength,
-              ScaleDraw::InsideHorizontal);
-            break;
-
-        default:
-            d_sliderRect.setRect(this->rect().x(), this->rect().x(),
-              s.width(), s.height());
+        case ScaleNone:
+            d_sliderRect.setRect(left, top, w, h);
+            d_spacerRect.setRect(left, top, 0, 0);
+            d_scaleRect.setRect(left, top, 0, 0);
+            d_scaleGeom.setRect(left, top, 0, 0);
+            // Give the translators something to work with.
+            d_scale.setGeometry(left, top, w);
             break;
       }
+      d_grooveRect.setRect(
+        d_sliderRect.x() + d_thumbHalf,
+        d_sliderRect.y() + d_sliderRect.height() / 2 - d_grooveWidth / 2,
+        d_sliderRect.width() - d_thumbLength,
+        d_grooveWidth
+        );
     }
     else // d_orient == Qt::Vertical
     {
+      const int yoff = qMax(d_scale.originOffsetHint(fm, true).y() - d_thumbHalf, 0);
+      const int slyfin = top + yoff;
+      const int slhfin = h - 2 * yoff;
+      const int scyfin = slyfin + d_thumbHalf;
+      const int schfin = slhfin - d_thumbLength;
       switch(d_scalePos)
       {
-        case Left:
-            d_sliderRect.setRect(this->rect().x() + s.width()
-              - sliderWidth - 1 - d_xMargin,
-              this->rect().y() + d_yMargin,
-              sliderWidth,
-              s.height() - 2 * d_yMargin);
-            d_scale.setGeometry(d_sliderRect.x() - d_scaleDist,
-              d_sliderRect.y() + d_thumbHalf,
-              s.height() - d_thumbLength,
-              ScaleDraw::Left);
-            break;
-
-        case Right:
+        case ScaleLeftOrTop:
         {
-            d_sliderRect.setRect(this->rect().x() + d_xMargin,
-              this->rect().y() + d_yMargin,
-              sliderWidth,
-              s.height() - 2* d_yMargin);
-            d_scale.setGeometry(this->rect().x() + d_sliderRect.width()
-              + d_scaleDist,
-              d_sliderRect.y() + d_thumbHalf,
-              s.height() - d_thumbLength,
-              ScaleDraw::Right);
+            const int smx = d_scale.maxWidth(fm, false);
+            d_scaleRect.setRect(left, slyfin, smx, slhfin);
+            d_scaleGeom.setRect(left, scyfin, smx, schfin);
+            d_spacerRect.setRect(left + smx, top, d_scaleDist, h);
+            d_sliderRect.setRect(left + smx + d_scaleDist, slyfin, w - smx, slhfin);
+            d_scale.setGeometry(left, scyfin, schfin);
             break;
         }
 
-        case InsideVertical:
+        case ScaleRightOrBottom:
         {
-//             d_sliderRect.setRect(this->rect().x() + s.width()
-//               - sliderWidth - 1 - d_xMargin,
-//             d_sliderRect.setRect(this->rect().x() + d_xMargin,
-//             d_sliderRect.setRect(this->rect().x() + d_xMargin + d_scale.maxLabelWidth(fm, false) - sliderWidth,
+            const int smx = d_scale.maxWidth(fm, false);
+            d_sliderRect.setRect(left, slyfin, w - smx - d_scaleDist, slhfin);
+            d_spacerRect.setRect(w - smx - d_scaleDist, top, d_scaleDist, h);
+            d_scaleRect.setRect(rightEnd - smx, slyfin, smx, slhfin);
+            d_scaleGeom.setRect(rightEnd - smx, scyfin, smx, schfin);
+            d_scale.setGeometry(rightEnd - smx, scyfin, schfin);
+            break;
+        }
+
+        case ScaleInside:
+        {
             const int mxlw = d_scale.maxLabelWidth(fm, false);
             const int sclw = d_scale.scaleWidth();
-            const int sldw = mxlw > sliderWidth ? sliderWidth : mxlw;
-            const int sldoffs = mxlw > sliderWidth ? ((mxlw - sldw) / 2) : 0;
-            const int fh = fm.ascent() + 2;
-            const int fh2 = fh / 2;
-            const int margin = d_thumbLength > fh ? d_thumbLength : fh;
-            const int margin2 = d_thumbHalf > fh2 ? d_thumbHalf : fh2;
-            const int sldymargin = fh > d_thumbLength ? fh - d_thumbLength : 0;
-            const int sldymargin2 = fh2 > d_thumbHalf ? fh2 - d_thumbHalf : 0;
+            const int sldoffs = mxlw > d_thumbWidth ? ((mxlw - d_thumbWidth) / 2) : 0;
+            const int grooveoffs = d_thumbWidth > d_grooveWidth ? (d_thumbWidth - d_grooveWidth) / 2 : 0;
+            const int scloffs = qMax(d_grooveWidth + grooveoffs, mxlw);
 
-//             d_sliderRect.setRect(this->rect().x() + (s.width() - 1) - sliderWidth - sclw + sldoffs, // - d_xMargin,
-            d_sliderRect.setRect(this->rect().x() + s.width() - sliderWidth - sclw + sldoffs, // - d_xMargin,
-//               this->rect().y() + d_yMargin,
-              this->rect().y() + d_yMargin + sldymargin2,
-              sliderWidth,
-//               s.height() - 2 * d_yMargin);
-//               s.height() - margin - 2 * d_yMargin);
-              s.height() - sldymargin - 2 * d_yMargin);
+            d_sliderRect.setRect(
+              left + sldoffs,
+              slyfin,
+              d_thumbWidth,
+              slhfin
+            );
 
-            //d_scale.setGeometry(d_sliderRect.x() - d_scaleDist,
-//             d_scale.setGeometry(this->rect().x() + d_xMargin + d_scale.maxWidth(fm, false) + d_scaleDist,
-            d_scale.setGeometry(this->rect().x() + d_xMargin + mxlw + sclw + d_scaleDist,
-//               d_sliderRect.y() + d_thumbHalf,
-//               d_sliderRect.y(),
-              this->rect().y() + d_yMargin + margin2,
-//               s.height() - d_thumbLength,
-//               s.height() - margin,
-//               d_sliderRect.height(),
-              s.height() - margin - 2 * d_yMargin,
-              ScaleDraw::InsideVertical);
+            // Not used.
+            d_spacerRect.setRect(left, top, 0, 0);
+
+            d_scaleRect.setRect(
+              left + grooveoffs /*+ d_scaleDist*/,
+              scyfin,
+              mxlw + sclw,
+              schfin
+            );
+
+            d_scale.setGeometry(
+              left + scloffs /*+ mxlw*/ + sclw /*+ d_scaleDist*/ - 3,
+              scyfin,
+              schfin
+            );
+
+            break;
         }
-        break;
 
-        default:
-            d_sliderRect.setRect(this->rect().x(), this->rect().x(),
-              s.width(), s.height());
+        case ScaleNone:
+            d_sliderRect.setRect(left, top, w, h);
+            d_spacerRect.setRect(left, top, 0, 0);
+            d_scaleRect.setRect(left, top, 0, 0);
+            d_scaleGeom.setRect(left, top, 0, 0);
+            // Give the translators something to work with.
+            d_scale.setGeometry(left, top, h);
             break;
       }
+      d_grooveRect.setRect(
+        d_sliderRect.x() + d_sliderRect.width() / 2 - d_grooveWidth / 2,
+        d_sliderRect.y() + d_thumbHalf,
+        d_grooveWidth,
+        d_sliderRect.height() - d_thumbLength
+        );
     }
+
+  QPainterPath fr_path;
+  if (d_frame)
+  {
+    fr_path.addRoundedRect(d_grooveRect, d_radius, d_radius);
+    QPainterPath fr_inside_path;
+    fr_inside_path.addRoundedRect(d_grooveRect.adjusted(1, 1, -1, -1), d_radius, d_radius);
+    fr_path = (fr_path - fr_inside_path).simplified();
+  }
+  d_framePath = fr_path;
 
   adjustScale();
 }
 
 void Slider::adjustScale()
 {
-  const double range = maxValue() - minValue();
+  const double range = internalMaxValue(ConvertDefault) - internalMinValue(ConvertDefault);
   if(range == 0.0)
     return;
 
@@ -909,21 +946,24 @@ void Slider::adjustScale()
 
     if(hasUserScale())
     {
-      if(d_sliderRect.width() != 0)
+      // Don't mess with the step in scale log mode, it can end up way too high.
+      // Typically we want the scale log step to remain at 1 decade.
+      // FIXME: Find a way to scale it.
+      if(!d_scale.scaleDiv().logScale() && d_scaleRect.width() != 0)
       {
-        const int fact = (int)(3.0 * range / (double)(d_sliderRect.width())) + 1;
+        const int fact = (int)(3.0 * range / (double)(d_scaleRect.width())) + 1;
         mstep *= fact;
       }
     }
     else
     {
-      maxMaj = (int)((double)(d_sliderRect.width()) / (1.5 * ((double)unit_w)));
+      maxMaj = (int)((double)(d_scaleRect.width()) / (1.5 * ((double)unit_w)));
       if(maxMaj < 1)
         maxMaj = 1;
       if(maxMaj > 5)
         maxMaj = 5;
     }
-    maxMin = (int)((double)(d_sliderRect.width()) / (1.5 * ((double)unit_w)));
+    maxMin = (int)((double)(d_scaleRect.width()) / (1.5 * ((double)unit_w)));
     if(maxMin < 1)
       maxMin = 1;
     if(maxMin > 5)
@@ -937,21 +977,24 @@ void Slider::adjustScale()
 
     if(hasUserScale())
     {
-      if(d_sliderRect.height() != 0)
+      // Don't mess with the step in scale log mode, it can end up way too high.
+      // Typically we want the scale log step to remain at 1 decade.
+      // FIXME: Find a way to scale it.
+      if(!d_scale.scaleDiv().logScale() && d_scaleRect.height() != 0)
       {
-        const int fact = (int)(3.0 * range / (double)(d_sliderRect.height())) + 1;
+        const int fact = (int)(3.0 * range / (double)(d_scaleRect.height())) + 1;
         mstep *= fact;
       }
     }
     else
     {
-      maxMaj = (int)((double)(d_sliderRect.height()) / (1.5 * ((double)unit_h)));
+      maxMaj = (int)((double)(d_scaleRect.height()) / (1.5 * ((double)unit_h)));
       if(maxMaj < 1)
         maxMaj = 1;
       if(maxMaj > 5)
         maxMaj = 5;
     }
-    maxMin = (int)((double)(d_sliderRect.height()) / (1.5 * ((double)unit_h)));
+    maxMin = (int)((double)(d_scaleRect.height()) / (1.5 * ((double)unit_h)));
     if(maxMin < 1)
       maxMin = 1;
     if(maxMin > 5)
@@ -962,11 +1005,16 @@ void Slider::adjustScale()
   d_maxMajor = maxMaj;
   d_maxMinor = maxMin;
   if(hasUserScale())
-    d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, mstep, log());
+  {
+    const ScaleDiv& sd = d_scale.scaleDiv();
+    // Keep the existing minimum and maximum, and log scale option.
+    d_scale.setScale(sd.lBound(), sd.hBound(), d_maxMajor, d_maxMinor, mstep, sd.logScale());
+  }
   else
-    d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, log());
-//   update();
+    d_scale.setScale(internalMinValue(), internalMaxValue(), d_maxMajor, d_maxMinor, mstep, log());
+
   updateGeometry();
+  update();
 }
 
 //------------------------------------------------------------
@@ -986,39 +1034,29 @@ void Slider::resizeEvent(QResizeEvent *e)
     adjustSize(e->size());
 }
 
-void Slider::setScale(double vmin, double vmax, int logarithmic)
+void Slider::setScale(double vmin, double vmax, ScaleIf::ScaleType scaleType, double dBFactor, double logFactor)
 {
-  ScaleIf::setScale(vmin, vmax, logarithmic);
-  // Must adjust the scale.
-   adjustScale();
+  ScaleIf::setScale(vmin, vmax, scaleType, dBFactor, logFactor);
 }
 
-void Slider::setScale(double vmin, double vmax, double step, int logarithmic)
+void Slider::setScale(double vmin, double vmax, double step, ScaleIf::ScaleType scaleType, double dBFactor, double logFactor)
 {
-  ScaleIf::setScale(vmin, vmax, step, logarithmic);
-  // Must adjust the scale.
-  adjustScale();
+  ScaleIf::setScale(vmin, vmax, step, scaleType, dBFactor, logFactor);
 }
 
 void Slider::setScale(const ScaleDiv &s)
 {
   ScaleIf::setScale(s);
-  // Must adjust the scale.
-   adjustScale();
 }
 
 void Slider::setScaleMaxMajor(int ticks)
 {
   ScaleIf::setScaleMaxMajor(ticks);
-  // Must adjust the scale.
-   adjustScale();
 }
 
 void Slider::setScaleMaxMinor(int ticks)
 {
   ScaleIf::setScaleMaxMinor(ticks);
-  // Must adjust the scale.
-   adjustScale();
 }
 
 void Slider::setScaleBackBone(bool v)
@@ -1026,6 +1064,77 @@ void Slider::setScaleBackBone(bool v)
   ScaleIf::setScaleBackBone(v);
   // Must adjust the scale.
   adjustScale();
+}
+
+void Slider::partialUpdate()
+{
+  // Special for log scale: It wants unconverted log values.
+  const DoubleRange::ConversionMode cm = d_scale.logarithmic() ? ConvertNone : ConvertDefault;
+  const int prevPix = d_scale.limTransform(prevValue(cm));
+  const int curPix = d_scale.limTransform(internalValue(cm));
+  QRegion reg;
+
+  // If the left or lower side is using a gradient, we must update that
+  //  whole side since the gradient changes with value.
+  if(d_useGradient)
+  {
+    switch(d_orient)
+    {
+      case Qt::Vertical:
+      {
+        const int y1 = qMin(prevPix, curPix) - d_thumbHalf;
+        const int y2 = d_sliderRect.y() + d_sliderRect.height();
+        reg += QRect(
+          d_sliderRect.x(),
+          y1,
+          d_sliderRect.width(),
+          y2 - y1);
+      }
+      break;
+
+      case Qt::Horizontal:
+      {
+        const int x1 = d_sliderRect.x();
+        const int x2 = qMax(prevPix, curPix) + d_thumbHalf;
+        reg += QRect(
+          x1,
+          d_sliderRect.y(),
+          x2 - d_sliderRect.x(),
+          d_sliderRect.height());
+      }
+      break;
+    }
+  }
+  else
+  {
+    const int p1 = qMin(prevPix, curPix) - d_thumbHalf;
+    const int p2 = qMax(prevPix, curPix) + d_thumbHalf;
+    switch(d_orient)
+    {
+      case Qt::Vertical:
+      {
+        reg += QRect(
+          d_sliderRect.x(),
+          p1,
+          d_sliderRect.width(),
+          p2 - p1);
+      }
+      break;
+
+      case Qt::Horizontal:
+      {
+        reg += QRect(
+          p1,
+          d_sliderRect.y(),
+          p2 - p1,
+          d_sliderRect.height());
+      }
+      break;
+    }
+  }
+
+  if(!reg.isEmpty())
+    update(reg);
 }
 
 //------------------------------------------------------------
@@ -1040,7 +1149,8 @@ void Slider::setScaleBackBone(bool v)
 
 void Slider::valueChange()
       {
-      update();
+      // Region-based update more fine-grained than update().
+      partialUpdate();
 
       // HACK
       // In direct mode let the inherited classes (this) call these in their valueChange() methods,
@@ -1070,11 +1180,8 @@ void Slider::valueChange()
 //------------------------------------------------------------
 void Slider::rangeChange()
 {
-    if (!hasUserScale())
-       d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
+    adjustScale();
     SliderBase::rangeChange();
-//     repaint();
-    update();
 }
 
 //------------------------------------------------------------
@@ -1117,7 +1224,7 @@ QSize Slider::sizeHint() const
       const QFontMetrics fm = fontMetrics();
       int msWidth = 0, msHeight = 0;
 
-      if (d_scalePos != None)
+      if (d_scalePos != ScaleNone)
       {
         msWidth = d_scale.maxWidth(fm, false);
         msHeight = d_scale.maxHeight(fm);
@@ -1130,22 +1237,22 @@ QSize Slider::sizeHint() const
             const int smw = msWidth + d_scaleDist;
             switch(d_scalePos)
             {
-              case Left:
-              case Right:
-                w = 2*d_xMargin + d_thumbWidth + smw + 2;
+              case ScaleLeftOrTop:
+              case ScaleRightOrBottom:
+                w = contentsMargins().left() + contentsMargins().right() + 2*d_xMargin + d_thumbWidth + smw;
               break;
 
-              case InsideVertical:
+              case ScaleInside:
               {
-                const int aw = smw > d_thumbWidth ? smw : d_thumbWidth;
-                w = 2*d_xMargin + aw + 2;
+                const int mxlw = d_scale.maxLabelWidth(fm, false);
+                const int sclw = d_scale.scaleWidth();
+                const int scloffs = d_thumbWidth > mxlw ? ((d_thumbWidth - mxlw) /*/ 2*/) : 0;
+                const int aw = scloffs + mxlw + sclw + d_scaleDist;
+                w = contentsMargins().left() + contentsMargins().right() + 2*d_xMargin + aw;
               }
               break;
 
-              case Top:
-              case Bottom:
-              case InsideHorizontal:
-              case None:
+              case ScaleNone:
               break;
             }
           }
@@ -1157,22 +1264,19 @@ QSize Slider::sizeHint() const
             const int smh = msHeight + d_scaleDist;
             switch(d_scalePos)
             {
-              case Top:
-              case Bottom:
-                h = 2*d_yMargin + d_thumbWidth + smh;
+              case ScaleLeftOrTop:
+              case ScaleRightOrBottom:
+                h = contentsMargins().top() + contentsMargins().bottom() + 2*d_yMargin + d_thumbWidth + smh;
               break;
 
-              case InsideHorizontal:
+              case ScaleInside:
               {
                 const int ah = smh > d_thumbWidth ? smh : d_thumbWidth;
-                h = 2*d_yMargin + ah;
+                h = contentsMargins().top() + contentsMargins().bottom() + 2*d_yMargin + ah;
               }
               break;
 
-              case Left:
-              case Right:
-              case InsideVertical:
-              case None:
+              case ScaleNone:
               break;
             }
           }
@@ -1184,12 +1288,12 @@ QSize Slider::sizeHint() const
         switch(d_orient)
         {
           case Qt::Vertical:
-                w = 16;
+                w = d_thumbWidth + 2*d_xMargin;
                 h = vertical_hint;
                 break;
           case Qt::Horizontal:
-                h = 16;
                 w = horizontal_hint;
+                h = d_thumbWidth + 2*d_yMargin;
                 break;
         }
       }
@@ -1204,60 +1308,7 @@ QSize Slider::sizeHint() const
 void Slider::setOrientation(Qt::Orientation o)
       {
       d_orient = o;
-      ScaleDraw::OrientationX so = ScaleDraw::Bottom;
-      switch(d_orient) {
-            case Qt::Vertical:
-                  switch(d_scalePos)
-                  {
-                    case Right:
-                      so = ScaleDraw::Right;
-                    break;
-                    case Left:
-                      so = ScaleDraw::Left;
-                    break;
-                    case InsideVertical:
-                      so = ScaleDraw::InsideVertical;
-                    break;
-                    case Bottom:
-                    case Top:
-                    case InsideHorizontal:
-                    case None:
-                    break;
-                  }
-            break;
-            case Qt::Horizontal:
-                  switch(d_scalePos)
-                  {
-                    case Bottom:
-                      so = ScaleDraw::Bottom;
-                    break;
-                    case Top:
-                      so = ScaleDraw::Top;
-                    break;
-                    case InsideHorizontal:
-                      so = ScaleDraw::InsideHorizontal;
-                    break;
-                    case Right:
-                    case Left:
-                    case InsideVertical:
-                    case None:
-                    break;
-                  }
-            break;
-            }
-
-      d_scale.setGeometry(0, 0, 40, so);
-      if (d_orient == Qt::Vertical)
-      {
-            setMinimumSize(10,20);
-      }
-      else
-      {
-            setMinimumSize(20,10);
-      }
-      QRect r = geometry();
-      setGeometry(r.x(), r.y(), r.height(), r.width());
-      update();
+      setScalePos(d_scalePos);
       }
 
 Qt::Orientation Slider::orientation() const
@@ -1265,13 +1316,25 @@ Qt::Orientation Slider::orientation() const
       return d_orient;
       }
 
-int Slider::scaleEndpointsMargin() const
+QMargins Slider::scaleEndpointsMargins() const
 {
-  const QFontMetrics fm = fontMetrics();
-  const int fh = fm.ascent() + 2;
-  const int fh2 = fh / 2;
-  const int margin2 = d_thumbHalf > fh2 ? d_thumbHalf : fh2;
-  return d_yMargin + margin2;
+  const QPoint offs = d_scale.originOffsetHint(fontMetrics(), true);
+  const int ioffs = orientation() == Qt::Vertical ? offs.y() : offs.x();
+  const int mg = qMax(d_thumbHalf, ioffs);
+  int l, r, t, b;
+  if(orientation() == Qt::Vertical)
+  {
+    l = r = 0;
+    t = mg + d_yMargin + contentsMargins().top();
+    b = mg + d_yMargin + contentsMargins().bottom();
+  }
+  else
+  {
+    l = mg + d_xMargin + contentsMargins().left();
+    r = mg + d_xMargin + contentsMargins().right();
+    t = b = 0;
+  }
+  return QMargins(l, t, r, b);
 }
 
 double Slider::lineStep() const
@@ -1291,5 +1354,75 @@ void Slider::setLineStep(double)
 void Slider::setPageStep(double)
       {
       }
+
+int Slider::grooveWidth() const { return d_grooveWidth; }
+void Slider::setGrooveWidth(int w) { d_grooveWidth = w; updateGeometry(); update(); }
+
+//  QColor Slider::fillColor() const { return d_fillColor; }
+void Slider::setFillColor(const QColor& color) { d_fillColor = color; update(); }
+void Slider::setHandleColor(const QColor& color) { d_handleColor = color; update(); }
+
+bool Slider::fillThumb() const { return d_fillThumb; }
+void Slider::setFillThumb(bool v) { d_fillThumb = v; updateGeometry(); update(); }
+
+bool Slider::fillEmptySide() const { return d_fillEmptySide; }
+void Slider::setFillEmptySide(bool v) { d_fillEmptySide = v; updateGeometry(); update(); }
+
+void Slider::setRadius(int r) { d_radius = r; updateGeometry(); update(); }
+void Slider::setRadiusHandle(int r) { d_radiusHandle = r; updateGeometry(); update(); }
+void Slider::setHandleHeight(int h) { d_thumbLength = h; updateGeometry(); update(); }
+void Slider::setHandleWidth(int w) { d_thumbWidth = w; d_thumbHalf = d_thumbLength / 2; updateGeometry(); update(); }
+void Slider::setUseGradient(bool b) { d_useGradient = b; updateGeometry(); update(); }
+void Slider::setScalePos(const ScalePos& s)
+{
+  d_scalePos = s;
+  switch(d_orient)
+  {
+    case Qt::Vertical:
+      switch(d_scalePos)
+      {
+        case ScaleLeftOrTop:
+          d_scale.setOrientation(ScaleDraw::Left);
+        break;
+        case ScaleRightOrBottom:
+          d_scale.setOrientation(ScaleDraw::Right);
+        break;
+        case ScaleInside:
+          d_scale.setOrientation(ScaleDraw::InsideVertical);
+        break;
+        case ScaleNone:
+          // At least set a sensible direction so the translators work.
+          d_scale.setOrientation(ScaleDraw::InsideVertical);
+        break;
+      }
+    break;
+
+    case Qt::Horizontal:
+      switch(d_scalePos)
+      {
+        case ScaleLeftOrTop:
+          d_scale.setOrientation(ScaleDraw::Top);
+        break;
+        case ScaleRightOrBottom:
+          d_scale.setOrientation(ScaleDraw::Bottom);
+        break;
+        case ScaleInside:
+          d_scale.setOrientation(ScaleDraw::InsideHorizontal);
+        break;
+        case ScaleNone:
+          // At least set a sensible direction so the translators work.
+          d_scale.setOrientation(ScaleDraw::InsideHorizontal);
+        break;
+      }
+    break;
+  }
+  updateGeometry();
+  update();
+}
+void Slider::setFrame(bool b) { d_frame = b; updateGeometry(); update(); }
+void Slider::setFrameColor(QColor c) { d_frameColor = c; update(); }
+int Slider::scaleDist() const { return d_scaleDist; }
+void Slider::setScaleDist(int d) {d_scaleDist = d; updateGeometry(); update(); }
+
 
 } // namespace MusEGui

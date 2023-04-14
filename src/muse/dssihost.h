@@ -92,8 +92,6 @@ class DssiSynth : public Synth {
       bool _isDssiVst;
 
    public:
-      DssiSynth(QFileInfo&, const QString& uri, const DSSI_Descriptor*, bool isDssiVst = false, 
-                PluginFeatures_t reqFeatures = PluginNoFeatures); // removed const for QFileInfo
       DssiSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~DssiSynth();
       virtual Type synthType() const { return DSSI_SYNTH; }
@@ -124,9 +122,7 @@ class DssiSynthIF : public SynthIF
       
       Port* _controls;
       Port* _controlsOut;
-      bool          _hasLatencyOutPort;
-      unsigned long _latencyOutPort;
-      
+
       #ifdef OSC_SUPPORT
       OscDssiIF _oscif;
       #endif
@@ -139,7 +135,11 @@ class DssiSynthIF : public SynthIF
       float** _audioInBuffers;
       float** _audioOutBuffers;
       float*  _audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
-      
+
+   protected:
+      void activate();
+      void deactivate();
+
    public:
       DssiSynthIF(SynthI* s);
       
@@ -194,8 +194,8 @@ class DssiSynthIF : public SynthIF
       // Methods for PluginIBase:
       //-------------------------
       
-      unsigned long pluginID();        
-      int id();
+      unsigned long pluginID() const;
+      int id() const;
       QString pluginLabel() const;  
       QString lib() const;            
       QString uri() const;
@@ -205,23 +205,21 @@ class DssiSynthIF : public SynthIF
       bool controllerEnabled(unsigned long i) const;          
       void enableAllControllers(bool v = true);
       void updateControllers();
-      void activate();
-      void deactivate();
-
       unsigned long parameters() const;                            
       unsigned long parametersOut() const;
       void setParam(unsigned long i, double val); 
       double param(unsigned long i) const;        
       double paramOut(unsigned long i) const;        
-      const char* paramName(unsigned long i);     
-      const char* paramOutName(unsigned long i);
-      LADSPA_PortRangeHint range(unsigned long i);
-      LADSPA_PortRangeHint rangeOut(unsigned long i);
-      bool hasLatencyOutPort() const;
-      unsigned long latencyOutPortIndex() const;
-      float latency() const;
-      CtrlValueType ctrlValueType(unsigned long i) const; 
+      const char* paramName(unsigned long i) const;
+      const char* paramOutName(unsigned long i) const;
+      LADSPA_PortRangeHint range(unsigned long i) const;
+      LADSPA_PortRangeHint rangeOut(unsigned long i) const;
+      void range(unsigned long i, float*, float*) const;
+      void rangeOut(unsigned long i, float*, float*) const;
+      CtrlValueType ctrlValueType(unsigned long i) const;
       CtrlList::Mode ctrlMode(unsigned long i) const; 
+      CtrlValueType ctrlOutValueType(unsigned long i) const;
+      CtrlList::Mode ctrlOutMode(unsigned long i) const;
 
       friend class DssiSynth;
       };

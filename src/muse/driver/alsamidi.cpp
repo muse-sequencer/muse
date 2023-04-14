@@ -880,6 +880,17 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
 {
   // Get the state of the stop flag.
   const bool do_stop = stopFlag();
+  const bool do_process = _writeEnable && alsaSeq && adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN;
+  bool rpnReserved = false;
+  {
+    const int mport = midiPort();
+    if(mport >= 0 && mport < MIDI_PORTS)
+    {
+      const MidiInstrument *instr = MusEGlobal::midiPorts[mport].instrument();
+      if(instr)
+        rpnReserved = instr->RPN_Ctrls_Reserved();
+    }
+  }
 
   //--------------------------------------------------------------------------------
   // For now we stop ALL ring buffer processing until any sysex transmission is finished.
@@ -887,167 +898,197 @@ void MidiAlsaDevice::processMidi(unsigned int curFrame)
   //--------------------------------------------------------------------------------
   
   SysExOutputProcessor* sop = sysExOutProcessor();
-  switch(sop->state())
+  // Don't bother if not 'running'.
+  if(do_process)
   {
-    case SysExOutputProcessor::Clear:
-      // Proceed with normal ring buffer processing, below...
-    break;
-    
-    case SysExOutputProcessor::Sending:
-    {
-      // Current chunk is meant for a future cycle?
-      if(sop->curChunkFrame() > curFrame)
-        break; 
 
-      const size_t len = sop->curChunkSize();
-      if(len > 0)
+    switch(sop->state())
+    {
+      case SysExOutputProcessor::Clear:
+        // Proceed with normal ring buffer processing, below...
+      break;
+
+      case SysExOutputProcessor::Sending:
       {
-        unsigned char buf[len];
-        if(sop->getCurChunk(buf, MusEGlobal::sampleRate))
+        // Current chunk is meant for a future cycle?
+        if(sop->curChunkFrame() > curFrame)
+          break;
+
+        const size_t len = sop->curChunkSize();
+        if(len > 0)
         {
-          snd_seq_event_t event;
-          snd_seq_ev_clear(&event);
-          event.queue   = SND_SEQ_QUEUE_DIRECT;
-          event.source  = musePort;
-          event.dest    = adr;
-          snd_seq_ev_set_sysex(&event, len, buf);
-          putAlsaEvent(&event);
+          unsigned char buf[len];
+          if(sop->getCurChunk(buf, MusEGlobal::sampleRate))
+          {
+            snd_seq_event_t event;
+            snd_seq_ev_clear(&event);
+            event.queue   = SND_SEQ_QUEUE_DIRECT;
+            event.source  = musePort;
+            event.dest    = adr;
+            snd_seq_ev_set_sysex(&event, len, buf);
+            putAlsaEvent(&event);
+          }
+        }
+        else
+        {
+          fprintf(stderr, "Error: MidiAlsaDevice::processMidi(): curChunkSize is zero while state is Sending\n");
+          // Should not happen. Protection against accidental zero chunk size while sending.
+          // Let's just clear the thing.
+          sop->clear();
         }
       }
-      else
+      break;
+
+      case SysExOutputProcessor::Finished:
       {
-        fprintf(stderr, "Error: MidiAlsaDevice::processMidi(): curChunkSize is zero while state is Sending\n");
-        // Should not happen. Protection against accidental zero chunk size while sending.
-        // Let's just clear the thing.
+        // Wait for the last chunk to transmit.
+        if(sop->curChunkFrame() > curFrame)
+          break;
+        // Now we are truly done. Clear or reset the processor, which
+        //  sets the state to Clear. Prefer reset for speed but clear is OK,
+        //  the EvData reference will already have been released.
+        //sop->reset();
         sop->clear();
       }
+      break;
     }
-    break;
-    
-    case SysExOutputProcessor::Finished:
-    {
-      // Wait for the last chunk to transmit.
-      if(sop->curChunkFrame() > curFrame)
-        break;
-      // Now we are truly done. Clear or reset the processor, which
-      //  sets the state to Clear. Prefer reset for speed but clear is OK,
-      //  the EvData reference will already have been released.
-      //sop->reset();
-      sop->clear();
-    }
-    break;
   }
   
   MidiPlayEvent buf_ev;
-  
-  // Transfer the user lock-free buffer events to the user sorted multi-set.
-  // False = don't use the size snapshot, but update it.
-  const unsigned int usr_buf_sz = eventBuffers(UserBuffer)->getSize(false);
-  for(unsigned int i = 0; i < usr_buf_sz; ++i)
+
+  // If stopping or not 'running' just purge ALL playback FIFO and container events.
+  // But do not clear the user ones. We need to hold on to them until active,
+  //  they may contain crucial events like loading a soundfont from a song file.
+  if(do_stop || !do_process)
   {
-    if(eventBuffers(UserBuffer)->get(buf_ev))
-      _outUserEvents.insert(buf_ev);
-  }
-  
-  // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-  const unsigned int pb_buf_sz = eventBuffers(PlaybackBuffer)->getSize(false);
-  for(unsigned int i = 0; i < pb_buf_sz; ++i)
-  {
-    // Are we stopping? Just remove the item.
-    if(do_stop)
-      eventBuffers(PlaybackBuffer)->remove();
-    // Otherwise get the item.
-    else if(eventBuffers(PlaybackBuffer)->get(buf_ev))
-      _outPlaybackEvents.insert(buf_ev);
-  }
-  
-  // Are we stopping?
-  if(do_stop)
-  {
-    // Transport has stopped, purge ALL further scheduled playback events now.
+    // Transfer the user lock-free buffer events to the user sorted multi-set.
+    // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+    const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
+    for(unsigned int i = 0; i < usr_buf_sz; ++i)
+    {
+      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      {
+        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+        if(!rpnReserved || !buf_ev.isNativeRPN())
+          _outUserEvents.addExclusive(buf_ev, rpnReserved);
+      }
+    }
+
+    eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
     _outPlaybackEvents.clear();
     // Reset the flag.
     setStopFlag(false);
   }
-  
-  iMPEvent impe_pb = _outPlaybackEvents.begin();
-  iMPEvent impe_us = _outUserEvents.begin();
-  bool using_pb;
-  
-  while(1)
+  else
   {
-    if(impe_pb != _outPlaybackEvents.end() && impe_us != _outUserEvents.end())
-      using_pb = *impe_pb < *impe_us;
-    else if(impe_pb != _outPlaybackEvents.end())
-      using_pb = true;
-    else if(impe_us != _outUserEvents.end())
-      using_pb = false;
-    else break;
-    
-    const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
-    
-    #ifdef ALSA_DEBUG
-    fprintf(stderr, "INFO: MidiAlsaDevice::processMidi() evTime:%u curFrame:%u\n", e.time(), curFrame);
-    #endif
-    
-    // Event is meant for next cycle?
-    if(e.time() > curFrame)
+    // Transfer the user lock-free buffer events to the user sorted multi-set.
+    const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
+    for(unsigned int i = 0; i < usr_buf_sz; ++i)
     {
-#ifdef ALSA_DEBUG
-      fprintf(stderr, " alsa play event is for future:%lu, breaking loop now\n", e.time());
-#endif
-      break; 
+      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      {
+        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+        if(!rpnReserved || !buf_ev.isNativeRPN())
+          _outUserEvents.insert(buf_ev);
+      }
     }
 
-    // Is the sysex processor not in a Clear state?
-    // Only realtime events are allowed to be sent while a sysex is in progress.
-    // The delayed events list is pre-allocated with reserve().
-    // According to http://en.cppreference.com/w/cpp/container/vector/clear,
-    //  clear() shall not change the capacity. That statement references here:
-    // https://stackoverflow.com/questions/18467624/what-does-the-standard-say-
-    //  about-how-calling-clear-on-a-vector-changes-the-capac/18467916#18467916
-    // But http://www.cplusplus.com/reference/vector/vector/clear
-    //  has not been updated to clarify this situation.
-    if(sop->state() != SysExOutputProcessor::Clear)
+    // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+    const unsigned int pb_buf_sz = eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+    for(unsigned int i = 0; i < pb_buf_sz; ++i)
     {
-      // Is it a realtime message?
-      if(e.type() >= 0xf8 && e.type() <= 0xff)
-        // Process it now.
-        processEvent(e);
+      if(eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+      {
+        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+        if(!rpnReserved || !buf_ev.isNativeRPN())
+          _outPlaybackEvents.insert(buf_ev);
+      }
+    }
+  }
+
+  // Don't bother if not 'running'.
+  if(do_process)
+  {
+
+    iMPEvent impe_pb = _outPlaybackEvents.begin();
+    iMPEvent impe_us = _outUserEvents.begin();
+    bool using_pb;
+
+    while(1)
+    {
+      if(impe_pb != _outPlaybackEvents.end() && impe_us != _outUserEvents.end())
+        using_pb = *impe_pb < *impe_us;
+      else if(impe_pb != _outPlaybackEvents.end())
+        using_pb = true;
+      else if(impe_us != _outUserEvents.end())
+        using_pb = false;
+      else break;
+
+      const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
+
+      #ifdef ALSA_DEBUG
+      fprintf(stderr, "INFO: MidiAlsaDevice::processMidi() evTime:%u curFrame:%u\n", e.time(), curFrame);
+      #endif
+
+      // Event is meant for next cycle?
+      if(e.time() > curFrame)
+      {
+  #ifdef ALSA_DEBUG
+        fprintf(stderr, " alsa play event is for future:%lu, breaking loop now\n", e.time());
+  #endif
+        break;
+      }
+
+      // Is the sysex processor not in a Clear state?
+      // Only realtime events are allowed to be sent while a sysex is in progress.
+      // The delayed events list is pre-allocated with reserve().
+      // According to http://en.cppreference.com/w/cpp/container/vector/clear,
+      //  clear() shall not change the capacity. That statement references here:
+      // https://stackoverflow.com/questions/18467624/what-does-the-standard-say-
+      //  about-how-calling-clear-on-a-vector-changes-the-capac/18467916#18467916
+      // But http://www.cplusplus.com/reference/vector/vector/clear
+      //  has not been updated to clarify this situation.
+      if(sop->state() != SysExOutputProcessor::Clear)
+      {
+        // Is it a realtime message?
+        if(e.type() >= 0xf8 && e.type() <= 0xff)
+          // Process it now.
+          processEvent(e);
+        else
+          // Store it for later.
+          _sysExOutDelayedEvents->push_back(e);
+      }
       else
-        // Store it for later.
-        _sysExOutDelayedEvents->push_back(e);
+      {
+        // Process any delayed events.
+        const unsigned int sz = _sysExOutDelayedEvents->size();
+        for(unsigned int i = 0; i < sz; ++i)
+          processEvent(_sysExOutDelayedEvents->at(i));
+
+        // Let's check that capacity out of curiosity...
+        const unsigned int cap = _sysExOutDelayedEvents->capacity();
+        // Done with the delayed event list. Clear it.
+        _sysExOutDelayedEvents->clear();
+
+        // Throw up a developer warning if things are fishy.
+        if(_sysExOutDelayedEvents->capacity() != cap)
+          fprintf(stderr, "WARNING: MidiAlsaDevice::processMidi() delayed events vector "
+                  "capacity:%u is not the same as before clear:%u\n",
+                  (unsigned int)_sysExOutDelayedEvents->capacity(), cap);
+
+        // If processEvent fails, although we would like to not miss events by keeping them
+        //  until next cycle and trying again, that can lead to a large backup of events
+        //  over a long time. So we'll just... miss them.
+        processEvent(e);
+      }
+
+      // Successfully processed event. Remove it from FIFO.
+      // C++11.
+      if(using_pb)
+        impe_pb = _outPlaybackEvents.erase(impe_pb);
+      else
+        impe_us = _outUserEvents.erase(impe_us);
     }
-    else
-    {
-      // Process any delayed events.
-      const unsigned int sz = _sysExOutDelayedEvents->size();
-      for(unsigned int i = 0; i < sz; ++i)
-        processEvent(_sysExOutDelayedEvents->at(i));
-      
-      // Let's check that capacity out of curiosity...
-      const unsigned int cap = _sysExOutDelayedEvents->capacity();
-      // Done with the delayed event list. Clear it.
-      _sysExOutDelayedEvents->clear();
-      
-      // Throw up a developer warning if things are fishy.
-      if(_sysExOutDelayedEvents->capacity() != cap)
-        fprintf(stderr, "WARNING: MidiAlsaDevice::processMidi() delayed events vector "
-                "capacity:%u is not the same as before clear:%u\n", 
-                (unsigned int)_sysExOutDelayedEvents->capacity(), cap);
-      
-      // If processEvent fails, although we would like to not miss events by keeping them
-      //  until next cycle and trying again, that can lead to a large backup of events
-      //  over a long time. So we'll just... miss them.
-      processEvent(e);
-    }
-    
-    // Successfully processed event. Remove it from FIFO.
-    // C++11.
-    if(using_pb)
-      impe_pb = _outPlaybackEvents.erase(impe_pb);
-    else
-      impe_us = _outUserEvents.erase(impe_us);
   }
 }
 
@@ -2176,6 +2217,32 @@ void MidiAlsaDevice::dump(const snd_seq_event_t* ev)
       fprintf(stderr, "ALSA dump event: unknown type:%u\n", ev->type);
     break;
   }
+}
+
+unsigned int MidiAlsaDevice::portLatency(void* /*port*/, bool capture) const
+{
+  // NOTE: The OUTPUT side has near-zero latency (determined by the timer used).
+  //       The events sent to it can be played almost immediately.
+  //       Meanwhile, technically the INPUT side has near-zero latency at
+  //        the driver level (it responds immediately to input) -- BUT --
+  //        the input events are placed into the recording buffer where they are
+  //        processed in the NEXT upcoming audio cycle. Thus their timestamps
+  //        are actually one cycle LATE. In effect the input is like Jack -
+  //        by the time the midi process routine gets it, it has latency.
+  if(capture)
+  {
+    const bool active = _readEnable && alsaSeq && adr.client != SND_SEQ_ADDRESS_UNKNOWN && adr.port != SND_SEQ_ADDRESS_UNKNOWN;
+    return active ? MusEGlobal::segmentSize : 0;
+  }
+  else
+    return 0;
+}
+
+float MidiAlsaDevice::selfLatencyMidi(int channel, bool capture) const
+{
+  float l = MidiDevice::selfLatencyMidi(channel, capture);
+  l += portLatency(nullptr, capture);
+  return l;
 }
 
 } // namespace MusECore

@@ -155,6 +155,7 @@ file (GLOB core_source_files
       waveevent.cpp
       wavetrack.cpp
       steprec.cpp
+      value_units.cpp
       xml_statistics.cpp
       )
 file (GLOB main_source_files

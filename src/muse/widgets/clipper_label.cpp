@@ -118,18 +118,17 @@ void ClipperLabel::setVal(double v, bool force)
 
    _value = v;
 
-      v = MusECore::fast_log10(v) * 20.0;
-      
-      if(v >= -60.0f)
-      {
-        _text = locale().toString(v, 'f', 1);
-      }
-      else
-      {
-        _text = QString("-");
-        _text += QChar(0x221e); // The infinty character
-        
-      }
+    // Force a hard lower limit of -120 dB.
+    if(v >= 0.0 && ((v = MusECore::fast_log10(v) * 20.0) >= -120.0))
+    {
+      _text = locale().toString(v, 'f', 1);
+    }
+    else
+    {
+      _text = QString("-");
+      _text += QChar(0x221e); // The infinty character
+
+    }
 
    update();
 

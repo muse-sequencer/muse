@@ -28,7 +28,6 @@
 //#define _CTRL_DEBUG_
 
 #include <QLocale>
-#include <map>
 
 #include "muse_math.h"
 #include "gconfig.h"
@@ -36,6 +35,7 @@
 #include "globals.h"
 #include "ctrl.h"
 #include "midictrl.h"
+#include "hex_float.h"
 
 // Forwards from header:
 #include "xml.h"
@@ -449,11 +449,13 @@ CtrlList::CtrlList(bool dontShow)
       _default = 0.0;
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
-      _min     = 0;
-      _max     = 0;
+      _min     = 0.0;
+      _max     = 1.0;
       _valueType = VAL_LINEAR;
       _dontShow = dontShow;
       _visible = false;
+      _valueUnit = -1;
+      _displayHint = DisplayDefault;
       initColor(0);
       }
 
@@ -463,9 +465,11 @@ CtrlList::CtrlList(int id, bool dontShow)
       _default = 0.0;
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
-      _min     = 0;
-      _max     = 0;
+      _min     = 0.0;
+      _max     = 1.0;
       _valueType = VAL_LINEAR;
+      _valueUnit = -1;
+      _displayHint = DisplayDefault;
 
       _dontShow = dontShow;
       _visible = false;
@@ -484,13 +488,15 @@ CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v
       _valueType = v;
       _dontShow = dontShow;
       _visible = false;
+      _valueUnit = -1;
+      _displayHint = DisplayDefault;
       initColor(id);
 }
 
 CtrlList::CtrlList(const CtrlList& l, int flags)
 {
-  _id        = l._id;
-  _valueType = l._valueType;
+  _id          = l._id;
+  _valueType   = l._valueType;
   assign(l, flags | ASSIGN_PROPERTIES);
 }
 
@@ -509,6 +515,8 @@ CtrlList::CtrlList(const CtrlList& cl)
   _dontShow      = cl._dontShow;
   _displayColor  = cl._displayColor;
   _visible       = cl._visible;
+  _valueUnit     = cl._valueUnit;
+  _displayHint   = cl._displayHint;
 }
 
 //---------------------------------------------------------
@@ -528,6 +536,8 @@ void CtrlList::assign(const CtrlList& l, int flags)
     _dontShow      = l._dontShow;
     _displayColor  = l._displayColor;
     _visible       = l._visible;
+    _valueUnit     = l._valueUnit;
+    _displayHint   = l._displayHint;
   }
   
   if(flags & ASSIGN_VALUES)
@@ -597,7 +607,7 @@ void CtrlList::getInterpolation(unsigned int frame, bool cur_val_only, CtrlInter
 //---------------------------------------------------------
 //   interpolate
 //   Returns interpolated value at given frame, from a CtrlInterpolate struct.
-//   For speed, no checking is done for frame = frame2, val1 = val2 or even CtrlInterpolate::doInterp.
+//   For speed, no checking is done for frame = frame2, or even CtrlInterpolate::doInterp.
 //   Those are to be taken care of before calling this routine. See getInterpolation().
 //---------------------------------------------------------
 
@@ -607,23 +617,43 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp) 
   const unsigned int frame2 = interp.eFrame;
   double val1 = interp.sVal;
   double val2 = interp.eVal;
+
+  const bool islog = _valueType == MusECore::CtrlValueType::VAL_LOG;
+  const double clmax = museMax(_min, _max);
+  const double clmin = museMin(_min, _max);
+  const double clmin_lim = museRangeMinValHint(
+    clmin, clmax,
+    islog,
+    _valueType == MusECore::CtrlValueType::VAL_INT,
+    _displayHint == MusECore::CtrlList::DisplayLogDB,
+    MusEGlobal::config.minSlider,
+    0.05);
+
+  //--------------------------------------------------
+  // Handle special cases we can get out of the way.
+  //--------------------------------------------------
   if(!interp.eFrameValid || frame >= frame2)
   {
-    if(_valueType == VAL_LOG)
+    if(islog && val2 <= clmin_lim)
     {
-      const double min = exp10(MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
-      if(val2 < min)
-        val2 = min;
+      // If the minimum allows to go to zero, and if the value is equal
+      //  to or less than our minimum setting, make it jump to 0.0 (-inf).
+      if(clmin <= 0.0)
+        return 0.0;
+      // Otherwise just limit the value to the minimum.
+      else
+        return clmin_lim;
     }
     return val2;
   }
-  if(frame <= frame1)
+  if(frame <= frame1 || val1 == val2)
   {
-    if(_valueType == VAL_LOG)
+    if(islog && val1 <= clmin_lim)
     {
-      const double min = exp10(MusEGlobal::config.minSlider / 20.0);  // TODO Try fastexp10
-      if(val1 < min)
-        val1 = min;
+      if(clmin <= 0.0)
+        return 0.0;
+      else
+        return clmin_lim;
     }
     return val1;
   }
@@ -632,36 +662,32 @@ double CtrlList::interpolate(unsigned int frame, const CtrlInterpolate& interp) 
   switch(_valueType)
   {
     case VAL_LOG:
+      if(val1 <= clmin_lim)
+        val1 = clmin_lim;
       val1 = 20.0*fast_log10(val1);
-      if (val1 < MusEGlobal::config.minSlider)
-        val1=MusEGlobal::config.minSlider;
+      if(val2 <= clmin_lim)
+        val2 = clmin_lim;
       val2 = 20.0*fast_log10(val2);
-      if (val2 < MusEGlobal::config.minSlider)
-        val2=MusEGlobal::config.minSlider;
-
-      val2 -= val1;
-      val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
+      val1 += (double(frame - frame1) * (val2 - val1)) / double(frame2 - frame1);
       val1 = exp10(val1/20.0);
       rv = val1;
     break;
 
     case VAL_LINEAR:
-      val2 -= val1;
-      val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
+      val1 += (double(frame - frame1) * (val2 - val1)) / double(frame2 - frame1);
       rv = val1;
     break;
 
     case VAL_INT:
     {
-      val2 -= val1;
-      val1 += (double(frame - frame1) * val2) / double(frame2 - frame1);
+      val1 += (double(frame - frame1) * (val2 - val1)) / double(frame2 - frame1);
       // Here we want to round halfway cases rather than floor or ceil
       //  so that the result is split evenly on the graph.
       val1 = round(val1);
       // Now we must make sure the result isn't out of bounds.
       // If the min or max happen to be in between values, we need to truncate them.
-      const double mint = trunc(_min);
-      const double maxt = trunc(_max);
+      const double mint = trunc(clmin);
+      const double maxt = trunc(clmax);
       if(val1 < mint)
         val1 = mint;
       if(val1 > maxt)
@@ -743,35 +769,75 @@ double CtrlList::value(unsigned int frame, bool cur_val_only, unsigned int* next
       switch(_valueType)
       {
         case VAL_LOG:
-          val1 = 20.0*fast_log10(val1);
-          if (val1 < MusEGlobal::config.minSlider)
-            val1=MusEGlobal::config.minSlider;
-          val2 = 20.0*fast_log10(val2);
-          if (val2 < MusEGlobal::config.minSlider)
-            val2=MusEGlobal::config.minSlider;
-          val2  -= val1;
-          val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
-          val1 = exp10(val1/20.0);
-          rv = val1;
+        {
+          const double clmax = museMax(_min, _max);
+          const double clmin = museMin(_min, _max);
+          const double clmin_lim = museRangeMinValHint(
+            clmin, clmax,
+            true,
+            false,
+            _displayHint == MusECore::CtrlList::DisplayLogDB,
+            MusEGlobal::config.minSlider,
+            0.05);
+
+          //--------------------------------------------------
+          // Handle special cases we can get out of the way.
+          //--------------------------------------------------
+          if(frame >= frame2)
+          {
+            if(val2 <= clmin_lim)
+            {
+              // If the minimum allows to go to zero, and if the value is equal
+              //  to or less than our minimum setting, make it jump to 0.0 (-inf).
+              if(clmin <= 0.0)
+                val2 = 0.0;
+              // Otherwise just limit the value to the minimum.
+              else
+                val2 = clmin_lim;
+            }
+            rv = val2;
+          }
+          else if(frame <= frame1 || val1 == val2)
+          {
+            if(val1 <= clmin_lim)
+            {
+              if(clmin <= 0.0)
+                val1 = 0.0;
+              else
+                val1 = clmin_lim;
+            }
+            rv = val1;
+          }
+          else
+          {
+            if(val1 <= clmin_lim)
+              val1 = clmin_lim;
+            if(val2 <= clmin_lim)
+              val2 = clmin_lim;
+            val1 = 20.0*fast_log10(val1);
+            val2 = 20.0*fast_log10(val2);
+            val1 += (double(frame - frame1) * (val2 - val1)) / double(frame2 - frame1);
+            val1 = exp10(val1 / 20.0);
+            rv = val1;
+          }
+        }
         break;
 
         case VAL_LINEAR:
-          val2  -= val1;
-          val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
+          val1 += (double(frame - frame1) * (val2 - val1)) / double(frame2 - frame1);
           rv = val1;
         break;
 
         case VAL_INT:
         {
-          val2  -= val1;
-          val1 += (double(frame - frame1) * val2)/double(frame2 - frame1);
+          val1 += (double(frame - frame1) * (val2 - val1)) / double(frame2 - frame1);
           // Here we want to round halfway cases rather than floor or ceil
           //  so that the result is split evenly on the graph.
           val1 = round(val1);
           // Now we must make sure the result isn't out of bounds.
           // If the min or max happen to be in between values, we need to truncate them.
-          const double mint = trunc(_min);
-          const double maxt = trunc(_max);
+          const double mint = trunc(museMin(_min, _max));
+          const double maxt = trunc(museMax(_min, _max));
           if(val1 < mint)
             val1 = mint;
           if(val1 > maxt)
@@ -822,6 +888,10 @@ QColor CtrlList::color() const { return _displayColor; }
 void CtrlList::setVisible(bool v) { _visible = v; }
 bool CtrlList::isVisible() const { return _visible; }
 bool CtrlList::dontShow() const { return _dontShow; }
+int CtrlList::valueUnit() const { return _valueUnit; }
+void CtrlList::setValueUnit(int idx) { _valueUnit = idx; }
+CtrlList::DisplayHints CtrlList::displayHint() const { return _displayHint; }
+void CtrlList::setDisplayHint(const CtrlList::DisplayHints &h) { _displayHint = h; }
 
 //---------------------------------------------------------
 //   curVal
@@ -1262,7 +1332,8 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
       ++i;
     }
 
-    val = loc.toDouble(vs, &ok);
+    // Accept either decimal or hex value strings.
+    val = MusELib::museStringToDouble(vs, &ok);
     if(!ok)
     {
       fprintf(stderr,"CtrlList::readValues failed reading value string: %s\n", vs.toLatin1().constData());
@@ -1324,6 +1395,8 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
     if(!groupEnd)
       flags |= CtrlVal::VAL_NON_GROUP_END;
     // Add will replace if found.
+    // Although we should limit the value to min/max right now, we can't do that yet
+    //  because min/max might not have been set yet.
     add(frame, val, flags);
 
     if(i == len)
@@ -1364,7 +1437,8 @@ bool CtrlList::read(Xml& xml)
                         }
                         else if (tag == "cur")
                         {
-                              _curVal = loc.toDouble(xml.s2(), &ok);
+                              // Accept either decimal or hex value strings.
+                              _curVal = MusELib::museStringToDouble(xml.s2(), &ok);
                               if(!ok)
                                 fprintf(stderr, "CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLatin1().constData());
                         }
@@ -1398,14 +1472,16 @@ bool CtrlList::read(Xml& xml)
                         }
                         else if (tag == "min")
                         {
-                              min = loc.toDouble(xml.s2(), &minOk);
+                              // Accept either decimal or hex value strings.
+                              min = MusELib::museStringToDouble(xml.s2(), &minOk);
                               if(!minOk)
                                 fprintf(stderr, "CtrlList::read failed reading min string: %s\n",
                                         xml.s2().toLatin1().constData());
                         }
                         else if (tag == "max")
                         {
-                              max = loc.toDouble(xml.s2(), &maxOk);
+                              // Accept either decimal or hex value strings.
+                              max = MusELib::museStringToDouble(xml.s2(), &maxOk);
                               if(!maxOk)
                                 fprintf(stderr, "CtrlList::read failed reading max string: %s\n",
                                         xml.s2().toLatin1().constData());
@@ -1443,22 +1519,24 @@ bool CtrlList::read(Xml& xml)
 
 void CtrlList::write(int level, Xml& xml, bool /*isCopy*/) const
 {
-        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(id()).arg(curVal());
+        // Use hex value string when appropriate.
+        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(id()).arg(MusELib::museStringFromDouble(curVal()));
         s += QString(" color=\"%1\" visible=\"%2\"").arg(color().name()).arg(isVisible());
         xml.tag(level++, s.toLatin1().constData());
         int i = 0;
         for (ciCtrl ic = cbegin(); ic != cend(); ++ic) {
               // Write the item's frame and value.
-              QString s = QString("%1 %2").arg(ic->first).arg(ic->second.value());
+              // Use hex value string when appropriate.
+              QString ss = QString("%1 %2").arg(ic->first).arg(MusELib::museStringFromDouble(ic->second.value()));
 
               CtrlVal::CtrlValueFlags flags = ic->second.flags();
               // This write() is for the song files. Strip out some flags to avoid clutter since
               //  they do not need to be stored or restored.
               flags &= ~CtrlVal::VAL_NON_GROUP_END;
               if(flags != CtrlVal::VAL_NOFLAGS)
-                s += QString(" %1").arg(flags);
-              s += ", ";
-              xml.nput(level, s.toLatin1().constData());
+                ss += QString(" %1").arg(flags);
+              ss += ", ";
+              xml.nput(level, ss.toLatin1().constData());
 
               ++i;
               if (i >= 4) {

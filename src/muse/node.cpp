@@ -1005,7 +1005,24 @@ void AudioTrack::copyData(unsigned pos,
     for(i = 0; i < trackChans; ++i)
       _meter[i] = 0.0;
 
-    if(off())
+    const bool isOff = off();
+    // If this is a synth track, set the synth plugin active or inactive as appropriate.
+    if(isSynthTrack())
+    {
+      SynthI* si = static_cast<SynthI*>(this);
+      SynthIF* sif = si->sif();
+      if(sif)
+      {
+        // Activate or deactivate the plugin now, depending on the desired track and plugin active states.
+        // The two calls will do nothing if already in the desired state.
+        if(isOff)
+          sif->deactivate();
+        else
+          sif->activate();
+      }
+    }
+
+    if(isOff)
     {
       #ifdef NODE_DEBUG_PROCESS
       fprintf(stderr, "MusE: AudioTrack::copyData name:%s dstChannels:%d Off, zeroing buffers\n", name().toLatin1().constData(), availDstChannels);
@@ -1028,7 +1045,9 @@ void AudioTrack::copyData(unsigned pos,
         }
       }
 
-      _efxPipe->apply(pos, 0, nframes, 0);  // Just process controls only, not audio (do not 'run').
+      getData(pos, srcTotalOutChans, nframes, nullptr);
+      // Apply, but tell the efx pipe that the track is off.
+      _efxPipe->apply(pos, trackChans, nframes, false, nullptr);
       processTrackCtrls(pos, 0, nframes, 0);
 
       //for(i = 0; i < trackChans; ++i)
@@ -1073,7 +1092,7 @@ void AudioTrack::copyData(unsigned pos,
     //---------------------------------------------------
 
     // Allow it to process even if muted so that when mute is turned off, left-over buffers (reverb tails etc) can die away.
-    _efxPipe->apply(pos, trackChans, nframes, buffer);
+    _efxPipe->apply(pos, trackChans, nframes, true, buffer);
 
     //---------------------------------------------------
     // apply volume, pan
@@ -1107,8 +1126,6 @@ void AudioTrack::copyData(unsigned pos,
          _isClipped[c] = true;
     }
 
-// REMOVE Tim. monitor. Changed.
-//    if(isMute())
     // Are both playback and input are muted?
     if(isMute() && !isRecMonitored())
     {
@@ -1485,6 +1502,7 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
       // We want this (wave) track's input latency.
       const TrackLatencyInfo& li = getLatencyInfo(true /*input*/);
       route_worst_case_latency = li._inputLatency;
+      //li.dump(name().toLatin1().constData(), "AudioTrack::putFifo input");
     }
   }
         
@@ -1508,6 +1526,9 @@ bool AudioTrack::putFifo(int channels, unsigned long n, float** bp)
 
 bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** buffer)
       {
+      if(off())
+        return false;
+
       // use supplied buffers
       const RouteList* rl = inRoutes();
       const bool use_latency_corr = useLatencyCorrection();
@@ -1613,6 +1634,9 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 
 bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffer)
       {
+      if(off())
+        return false;
+
       if (!MusEGlobal::checkAudioDevice()) return false;
       
       const bool use_latency_corr = useLatencyCorrection();
@@ -1808,6 +1832,11 @@ void Track::resetAllMeter()
             (*i)->resetMeter();
       }
 
+//---------------------------------------------------------
+//   guiHeartBeat
+//---------------------------------------------------------
+
+void Track::guiHeartBeat() { }
 
 //---------------------------------------------------------
 //   setRecordFlag2

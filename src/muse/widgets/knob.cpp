@@ -79,6 +79,7 @@ Knob::Knob(QWidget* parent, const char* name)
       l_slope = 0;
       l_const = 100;
 
+      d_scale.setOrientation(ScaleDraw::Round);
       setMinimumSize(30,30);
       setUpdateTime(50);
       }
@@ -173,7 +174,7 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
       QPen pn;
       pn.setCapStyle(Qt::FlatCap);
 
-      pn.setColor(d_shinyColor.lighter(l_const + fabs(value() * l_slope)));
+      pn.setColor(d_shinyColor.lighter(l_const + fabs(internalValue() * l_slope)));
       pn.setWidth(d_shineWidth * 2);
       p->setPen(pn);
       p->drawArc(aRect, 0, 360 * 16);
@@ -255,12 +256,12 @@ double Knob::getValue(const QPoint &p)
 
     arc = atan2(-dx,dy) * 180.0 / M_PI;
 
-    newValue =  0.5 * (minValue() + maxValue())
-       + (arc + d_nTurns * 360.0) * (maxValue() - minValue())
+    newValue =  0.5 * (internalMinValue() + internalMaxValue())
+       + (arc + d_nTurns * 360.0) * (internalMaxValue() - internalMinValue())
     / d_totalAngle;
 
-    oneTurn = fabs(maxValue() - minValue()) * 360.0 / d_totalAngle;
-    eqValue = value() + d_mouseOffset;
+    oneTurn = fabs(internalMaxValue() - internalMinValue()) * 360.0 / d_totalAngle;
+    eqValue = internalValue() + d_mouseOffset;
 
     if (fabs(newValue - eqValue) > 0.5 * oneTurn)
     {
@@ -312,7 +313,7 @@ double Knob::moveValue(const QPoint &deltaP, bool /*fineMode*/)
     const double dy = double(cy - new_p.y());
     const double arc = atan2(-dx, dy) * 180.0 / M_PI;
 
-    const double val = value(ConvertNone);
+    const double val = internalValue(ConvertNone);
     
 //     if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
 //     {
@@ -323,8 +324,8 @@ double Knob::moveValue(const QPoint &deltaP, bool /*fineMode*/)
 //       return d_valAccum;
 //     }
 
-    const double min = minValue(ConvertNone);
-    const double max = maxValue(ConvertNone);
+    const double min = internalMinValue(ConvertNone);
+    const double max = internalMaxValue(ConvertNone);
     const double drange = max - min;
     
     const double last_val =  0.5 * (min + max) + (last_arc + d_nTurns * 360.0) * drange / d_totalAngle;
@@ -427,7 +428,7 @@ void Knob::rangeChange()
 {
     if (!hasUserScale())
     {
-  d_scale.setScale(minValue(), maxValue(),
+  d_scale.setScale(internalMinValue(), internalMaxValue(),
        d_maxMajor, d_maxMinor);
     }
     recalcAngle();
@@ -461,7 +462,7 @@ void Knob::resizeEvent(QResizeEvent* ev)
       y = kRect.y() - d_scaleDist;
       int w = width + 2 * d_scaleDist;
 
-      d_scale.setGeometry(x, y, w, ScaleDraw::Round);
+      d_scale.setGeometry(x, y, w);
       }
 
 //------------------------------------------------------------
@@ -624,15 +625,15 @@ void Knob::recalcAngle()
     //
     // calculate the angle corresponding to the value
     //
-    if (maxValue() == minValue())
+    if (internalMaxValue() == internalMinValue())
     {
   d_angle = 0;
   d_nTurns = 0;
     }
     else
     {
-  d_angle = (value() - 0.5 * (minValue() + maxValue()))
-     / (maxValue() - minValue()) * d_totalAngle;
+  d_angle = (internalValue() - 0.5 * (internalMinValue() + internalMaxValue()))
+     / (internalMaxValue() - internalMinValue()) * d_totalAngle;
   d_nTurns = floor((d_angle + 180.0) / 360.0);
   d_angle = d_angle - d_nTurns * 360.0;
   

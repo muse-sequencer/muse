@@ -39,6 +39,7 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "rasterizer.h"
+#include "value_units.h"
 
 #include <unistd.h>
 
@@ -82,6 +83,8 @@ enum SelectableAudioBackendDevices {
 extern QTimer* heartBeatTimer;
 
 extern MusEGui::Rasterizer *globalRasterizer;
+
+extern MusECore::ValueUnits_t valueUnits;
 
 extern bool blinkTimerPhase;
 

@@ -131,6 +131,9 @@ void MidiDevice::init()
       _rwFlags       = 3;
       _openFlags     = 3;
       _port          = -1;
+
+      for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS + 1; ++ch)
+        _recordFifo[ch] = new MidiRecFifo(MIDI_REC_FIFO_SIZE);
       }
 
 //---------------------------------------------------------
@@ -168,6 +171,8 @@ MidiDevice::~MidiDevice()
       delete _userEventBuffers;
     if(_playbackEventBuffers)
       delete _playbackEventBuffers;
+    for(int ch = 0; ch < MusECore::MUSE_MIDI_CHANNELS + 1; ++ch)
+      if(_recordFifo[ch]) delete _recordFifo[ch];
 }
 
 QString MidiDevice::deviceTypeString() const
@@ -256,8 +261,8 @@ void MidiDevice::afterProcess()
   for(unsigned int i = 0; i < MusECore::MUSE_MIDI_CHANNELS + 1; ++i)
   {
     while (_tmpRecordCount[i]--)
-      _recordFifo[i].remove();
-  } 
+      _recordFifo[i]->remove();
+  }
 }
 
 //---------------------------------------------------------
@@ -268,8 +273,8 @@ void MidiDevice::afterProcess()
 void MidiDevice::beforeProcess()
 {
   for(unsigned int i = 0; i < MusECore::MUSE_MIDI_CHANNELS + 1; ++i)
-    _tmpRecordCount[i] = _recordFifo[i].getSize();
-  
+    _tmpRecordCount[i] = _recordFifo[i]->getSize();
+
   // Reset this.
   _sysexFIFOProcessed = false;
 }
@@ -371,7 +376,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
       unsigned int ch = (typ == ME_SYSEX)? MusECore::MUSE_MIDI_CHANNELS : event.channel();
-      if(_recordFifo[ch].put(event))
+      if(!_recordFifo[ch]->put(event))
         fprintf(stderr, "MidiDevice::recordEvent: fifo channel %d overflow\n", ch);
       }
 
@@ -600,8 +605,8 @@ void MidiDevice::handleStop()
   if(!MusEGlobal::extSyncFlag)
   {
     // Shall we check open flags? DELETETHIS 4?
-    //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-    //if(!(dev->openFlags() & 1))
+    //if(!(dev->rwFlags() & 0x1) || !(dev->writeEnable()))
+    //if(!(dev->writeEnable()))
     //  return;
           
     MidiSyncInfo& si = mp->syncInfo();
@@ -895,7 +900,6 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
       bool item_found = false;
 
       const int port = midiPort();
-      const int open_flags = openFlags();
 
       // Gather latency info from all connected input branches,
       //  but ONLY if the track is not off.
@@ -907,7 +911,7 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
       // When that happens, all the "Have we been here before...?" checks say 'no'
       //  because each call has not finished yet, where at the end we say 'yes'.
       // So I'm not sure how we could support the above future plan, if any.
-      if(!capture && (open_flags & (/*capture ? 2 :*/ 1)) && (passthru || input) &&
+      if(!capture && ((/*capture ? readEnable() :*/ writeEnable())) && (passthru || input) &&
         port >= 0 && port < MusECore::MIDI_PORTS)
       {
 //         bool used_chans[MusECore::MUSE_MIDI_CHANNELS];
@@ -1076,7 +1080,7 @@ TrackLatencyInfo& MidiDevice::getDominanceInfoMidi(bool capture, bool input)
       
       // Set the correction of all connected input branches,
       //  but ONLY if the track is not off.
-      if((open_flags & (capture ? 2 : 1)))
+      if((capture ? readEnable() : writeEnable()))
       {
         if(input)
         {
@@ -1118,10 +1122,8 @@ TrackLatencyInfo& MidiDevice::getDominanceLatencyInfoMidi(bool capture, bool inp
 
       bool item_found = false;
 
-      const int open_flags = openFlags();
-
       float worst_self_latency = 0.0f;
-      if(!input && (open_flags & (capture ? 2 : 1)))
+      if(!input && ((capture ? readEnable() : writeEnable())))
         worst_self_latency = getWorstSelfLatencyMidi(capture);
       
       const int port = midiPort();
@@ -1131,7 +1133,7 @@ TrackLatencyInfo& MidiDevice::getDominanceLatencyInfoMidi(bool capture, bool inp
       // Currently there are no routes FROM tracks (audio or midi) TO midi capture devices,
       //  only TO midi playback devices.
       // CAUTION: See the warning in getDominanceInfoMidi about infinite recursion.
-      if(!capture && (open_flags & (/*capture ? 2 :*/ 1)) && (passthru || input) &&
+      if(!capture && ((/*capture ? readEnable() :*/ writeEnable())) && (passthru || input) &&
         port >= 0 && port < MusECore::MIDI_PORTS)
       {
 //         bool used_chans[MusECore::MUSE_MIDI_CHANNELS];
@@ -1148,7 +1150,7 @@ TrackLatencyInfo& MidiDevice::getDominanceLatencyInfoMidi(bool capture, bool inp
           if(track->outPort() != port)
             continue;
           
-          //if((open_flags & (/*capture ? 2 :*/ 1)) && !track->off() && (passthru || input))
+          //if(((/*capture ? readEnable() :*/ writeEnable())) && !track->off() && (passthru || input))
           if(!track->off())
           {
             const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
@@ -1214,7 +1216,7 @@ TrackLatencyInfo& MidiDevice::getDominanceLatencyInfoMidi(bool capture, bool inp
 //                     else
 //                       used_chans[ir->channel] = true;
                     
-                  //if((open_flags & (/*capture ? 2 :*/ 1)) && !track->off() && (passthru || input))
+                  //if(((/*capture ? readEnable() :*/ writeEnable())) && !track->off() && (passthru || input))
                   if(!track->off())
                   {
                     const TrackLatencyInfo& li = track->getDominanceLatencyInfo(false);
@@ -1274,7 +1276,7 @@ TrackLatencyInfo& MidiDevice::getDominanceLatencyInfoMidi(bool capture, bool inp
           //if(sendMetronome())
           if(metro_settings->midiClickFlag && metro_settings->clickPort == port)
           {
-            //if((open_flags & (/*capture ? 2 :*/ 1)) && !MusECore::metronome->off() && (passthru || input))
+            //if(((/*capture ? readEnable() :*/ writeEnable())) && !MusECore::metronome->off() && (passthru || input))
             if(!MusECore::metronome->off())
             {
               const TrackLatencyInfo& li = MusECore::metronome->getDominanceLatencyInfoMidi(capture, false);
@@ -1321,7 +1323,7 @@ TrackLatencyInfo& MidiDevice::getDominanceLatencyInfoMidi(bool capture, bool inp
       
       // Set the correction of all connected input branches,
       //  but ONLY if the track is not off.
-      if((open_flags & (capture ? 2 : 1)))
+      if(((capture ? readEnable() : writeEnable())))
       {
         if(input)
         {
@@ -1359,10 +1361,8 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
 
   const bool passthru = canPassThruLatencyMidi(capture);
 
-  const int open_flags = openFlags();
-
   float worst_self_latency = 0.0f;
-  if(!input && (open_flags & 1 /*write*/))
+  if(!input && (writeEnable()))
     worst_self_latency = getWorstSelfLatencyMidi(capture);
       
   // The _trackLatency should already be calculated in the dominance scan.
@@ -1372,7 +1372,7 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
   // Currently there are no routes FROM tracks (audio or midi) TO midi capture devices,
   //  only TO midi playback devices.
   // CAUTION: See the warning in getDominanceInfoMidi about infinite recursion.
-  if(!capture && (open_flags & 1 /*write*/) && (passthru || input) &&
+  if(!capture && (writeEnable()) && (passthru || input) &&
     port >= 0 && port < MusECore::MIDI_PORTS)
   {
     // Set the correction of all connected input branches.
@@ -1385,7 +1385,7 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
       MidiTrack* track = static_cast<MidiTrack*>(tl[it]);
       if(track->outPort() != port)
         continue;
-      //if((open_flags & 1 /*write*/) && !track->off() && (passthru || input))
+      //if((writeEnable()) && !track->off() && (passthru || input))
       if(!track->off())
         track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
     }
@@ -1407,7 +1407,7 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
               if(ir->channel < -1 || ir->channel >= MusECore::MUSE_MIDI_CHANNELS)
                 continue;
               Track* track = ir->track;
-              //if((open_flags & 1 /*write*/) && !track->off() && (passthru || input))
+              //if((writeEnable()) && !track->off() && (passthru || input))
               if(!track->off())
                 track->setCorrectionLatencyInfo(false, finalWorstLatency, branch_lat);
             }
@@ -1429,7 +1429,7 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
       //if(sendMetronome())
       if(metro_settings->midiClickFlag && metro_settings->clickPort == port)
       {
-        //if((open_flags & 1 /*write*/) && !MusECore::metronome->off() && (passthru || input))
+        //if((writeEnable()) && !MusECore::metronome->off() && (passthru || input))
         if(!MusECore::metronome->off())
           MusECore::metronome->setCorrectionLatencyInfoMidi(capture, false, finalWorstLatency, branch_lat);
       }
@@ -1438,7 +1438,7 @@ TrackLatencyInfo& MidiDevice::setCorrectionLatencyInfoMidi(bool capture, bool in
 
   // Set the correction of all connected input branches,
   //  but ONLY if the track is not off.
-  if(open_flags & 1 /*write*/ && !capture/*Tim*/)
+  if(writeEnable() && !capture/*Tim*/)
   {
     if(input)
     {
@@ -1485,7 +1485,6 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
   const bool passthru = canPassThruLatencyMidi(capture);
 
   const int port = midiPort();
-  const int open_flags = openFlags();
 
   if(passthru || input)
   {
@@ -1507,7 +1506,7 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
         // Default to zero.
         //ir->audioLatencyOut = 0.0f;
 
-        if((open_flags & (/*capture ? 2 :*/ 1)) && !track->off())
+        if(((/*capture ? readEnable() :*/ writeEnable())) && !track->off())
         {
           TrackLatencyInfo& li = track->getLatencyInfo(false);
 
@@ -1563,7 +1562,7 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
                     // Default to zero.
                     ir->audioLatencyOut = 0.0f;
 
-                    if((open_flags & (/*capture ? 2 :*/ 1)) && !track->off())
+                    if(((/*capture ? readEnable() :*/ writeEnable())) && !track->off())
                     {
                       const TrackLatencyInfo& li = track->getLatencyInfo(false);
                       const bool participate =
@@ -1602,7 +1601,11 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
         // Default to zero.
         //ir->audioLatencyOut = 0.0f;
 
-        if((open_flags & (/*capture ? 2 :*/ 1)) && !MusECore::metronome->off() && // sendMetronome() &&
+        // Special for the built-in metronome.
+        // Default to zero.
+        //li._latencyOutMetronome = 0.0f;
+
+        if(((/*capture ? readEnable() :*/ writeEnable())) && !MusECore::metronome->off() && // sendMetronome() &&
           metro_settings->midiClickFlag && metro_settings->clickPort == port)
         {
           TrackLatencyInfo& li = MusECore::metronome->getLatencyInfoMidi(capture, false);
@@ -1637,7 +1640,7 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
             // Special for Midi Tracks: We don't have Midi Track to Midi Port routes yet
             //  because we don't have multiple Midi Track outputs yet, only a single output port.
             // So we must store this information here just for Midi Tracks.
-            li._latencyOutMetronome = route_worst_latency - li._latencyOutMetronome;
+            li._latencyOutMetronome = route_worst_latency - li._outputLatency;
             // Should not happen, but just in case.
             if((long int)li._latencyOutMetronome < 0)
               li._latencyOutMetronome = 0.0f;

@@ -29,7 +29,6 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
-//#include <QPalette>
 #include <QStyledItemDelegate>
 #include <QUrl>
 #include <QScrollBar>
@@ -52,10 +51,6 @@
 #include "lv2host.h"
 #endif
 
-//#include <QDragEnterEvent>
-//#include <QDragLeaveEvent>
-//#include <QDropEvent>
-//#include <QMouseEvent>
 #include <QEvent>
 #include "track.h"
 #include "background_painter.h"
@@ -110,7 +105,8 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
       QRect cr = QRect(rr.x() + itemXMargin, rr.y() + itemYMargin,
                        rr.width() - 2 * itemXMargin, rr.height() - 2 * itemYMargin);
 
-      const QRect onrect = (tr->efxPipe() && tr->efxPipe()->isOn(index.row())) ? rr : QRect();
+      const QRect onrect =
+        (tr->efxPipe() && tr->efxPipe()->isOn(index.row()) && tr->efxPipe()->isActive(index.row())) ? rr : QRect();
       ItemBackgroundPainter* ibp = er->getBkgPainter();
       ibp->drawBackground(painter,
                           rr,
@@ -315,9 +311,10 @@ void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
                   }
             int idx = row(it);
 	    if (replace)
-                  MusEGlobal::audio->msgAddPlugin(track, idx, nullptr);
-            MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
-            updateContents();
+            track->addPlugin(nullptr, idx);
+      track->addPlugin(plugi, idx);
+
+      updateContents();
             }
       }
 
@@ -339,7 +336,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             //mute  = pipe->isOn(idx);
             }
 
-      enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
+      enum { NEW, CHANGE, UP, DOWN, REMOVE, ACTIVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QMenu* menu = new QMenu;
 
       if (pipe->empty(idx)) {
@@ -355,6 +352,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       QAction* downAction = menu->addAction(tr("Move Down"));//, DOWN, DOWN);
       QAction* removeAction = menu->addAction(tr("Remove"));//,    REMOVE, REMOVE);
       menu->addSeparator();
+      QAction* activeAction = menu->addAction(tr("Active"));//,    ACTIVE, ACTIVE);
       QAction* bypassAction = menu->addAction(tr("Bypass"));//,    BYPASS, BYPASS);
       menu->addSeparator();
       QAction* showGuiAction = menu->addAction(tr("Show Generic GUI"));//,  SHOW, SHOW);
@@ -368,14 +366,17 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       upAction->setData(UP);
       downAction->setData(DOWN);
       removeAction->setData(REMOVE);
+      activeAction->setData(ACTIVE);
       bypassAction->setData(BYPASS);
       showGuiAction->setData(SHOW);
       showNativeGuiAction->setData(SHOW_NATIVE);
 
+      activeAction->setCheckable(true);
       bypassAction->setCheckable(true);
       showGuiAction->setCheckable(true);
       showNativeGuiAction->setCheckable(true);
 
+      activeAction->setChecked(pipe->isActive(idx));
       bypassAction->setChecked(!pipe->isOn(idx));
       showGuiAction->setChecked(pipe->guiVisible(idx));
       showNativeGuiAction->setChecked(pipe->nativeGuiVisible(idx));
@@ -388,6 +389,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             upAction->setEnabled(false);
             downAction->setEnabled(false);
             removeAction->setEnabled(false);
+            activeAction->setEnabled(false);
             bypassAction->setEnabled(false);
             showGuiAction->setEnabled(false);
             showNativeGuiAction->setEnabled(false);
@@ -454,8 +456,14 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   break;
                   }
             case REMOVE:
-                  MusEGlobal::audio->msgAddPlugin(track, idx, nullptr);
+                  track->addPlugin(nullptr, idx);
                   break;
+            case ACTIVE:
+                  {
+                  bool flag = !pipe->isActive(idx);
+                  pipe->setActive(idx, flag);
+                  break;
+                  }
             case BYPASS:
                   {
                   bool flag = !pipe->isOn(idx);
@@ -686,7 +694,7 @@ void EffectRack::dropEvent(QDropEvent *event)
                 if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
                       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
                       {
-                        MusEGlobal::audio->msgAddPlugin(track, idx, nullptr);
+                        track->addPlugin(nullptr, idx);
                         MusEGlobal::song->update(SC_RACK);
                       }
                 else {
@@ -819,7 +827,7 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                                   }
                               else {
                                   //printf("instantiated!\n");
-                                  MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
+                                  track->addPlugin(plugi, idx);
                                   MusEGlobal::song->update(SC_RACK);
                                   if (plugi->guiVisible())
                                     plugi->gui()->updateWindowTitle();

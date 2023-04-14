@@ -269,11 +269,11 @@ void MidiPort::setMidiDevice(MidiDevice* dev, MidiInstrument* instrument)
 
 bool MidiPort::sendPendingInitializations(bool force)
 {
-  if(!_device || !(_device->openFlags() & 1))   // Not writable?
+  if(!_device || !_device->writeEnable())   // Not writable?
     return false;
   
   bool rv = true;
-  int port = portno();
+  const int port = portno();
   
   //
   // test for explicit instrument initialization
@@ -281,14 +281,14 @@ bool MidiPort::sendPendingInitializations(bool force)
 
 //   unsigned last_tick = 0;
   unsigned last_frame = 0;
-  MusECore::MidiInstrument* instr = instrument();
+  const MusECore::MidiInstrument* instr = instrument();
   if(instr && MusEGlobal::config.midiSendInit && (force || !_initializationsSent))
   {
     // Send the Instrument Init sequences.
-    EventList* events = instr->midiInit();
+    const EventList* events = instr->midiInit();
     if(!events->empty())
     {
-      for(iEvent ie = events->begin(); ie != events->end(); ++ie) 
+      for(ciEvent ie = events->cbegin(); ie != events->cend(); ++ie)
       {
         if(ie->second.type() == Sysex)
           last_frame += sysexDuration(ie->second.dataLen(), MusEGlobal::sampleRate);
@@ -314,11 +314,14 @@ bool MidiPort::sendPendingInitializations(bool force)
 
 bool MidiPort::sendInitialControllers(unsigned start_time)
 {
+  if(!_device)
+    return false;
+
   MusECore::MetronomeSettings* metro_settings = 
     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
 
   bool rv = true;
-  int port = portno();
+  const int port = portno();
   
   // Find all channels of this port used in the song...
   bool usedChans[MusECore::MUSE_MIDI_CHANNELS];
@@ -330,7 +333,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
     usedChans[metro_settings->clickChan] = true;
     ++usedChanCount;
   }
-  for(ciMidiTrack imt = MusEGlobal::song->midis()->begin(); imt != MusEGlobal::song->midis()->end(); ++imt)
+  for(ciMidiTrack imt = MusEGlobal::song->midis()->cbegin(); imt != MusEGlobal::song->midis()->cend(); ++imt)
   {
     if((*imt)->type() == MusECore::Track::DRUM)
     {
@@ -368,7 +371,7 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
   {
     MusECore::MidiControllerList* cl = new MusECore::MidiControllerList();
 
-    MidiController* mc;
+    const MidiController* mc;
 
     for(int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan)
     {
@@ -377,29 +380,63 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 
       const int patch = hwCtrlState(chan, CTRL_PROGRAM);
       cl->clear();
-      instrument()->getControllers(cl, chan, patch);
+      _instrument->getControllers(cl, chan, patch);
 
-      for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc) 
+      // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are
+      //  ALREADY defined as Controller7 or part of Controller14. Cached, for speed.
+      const bool patch_rpn_reserved = _instrument->RPN_Ctrls_Reserved(chan, patch);
+      if(!patch_rpn_reserved)
+      {
+        // Start by nulling these controllers, to avoid any accidental settings later.
+        _device->putEvent(MidiPlayEvent(start_time, port, chan, ME_CONTROLLER, CTRL_HRPN, 0x7f), MidiDevice::NotLate);
+        _device->putEvent(MidiPlayEvent(start_time, port, chan, ME_CONTROLLER, CTRL_LRPN, 0x7f), MidiDevice::NotLate);
+        _device->putEvent(MidiPlayEvent(start_time, port, chan, ME_CONTROLLER, CTRL_HNRPN, 0x7f), MidiDevice::NotLate);
+        _device->putEvent(MidiPlayEvent(start_time, port, chan, ME_CONTROLLER, CTRL_LNRPN, 0x7f), MidiDevice::NotLate);
+      }
+
+      for(ciMidiController imc = cl->begin(); imc != cl->end(); ++imc)
       {
         mc = imc->second;
         ciMidiCtrlValList i;
 
-        // Look for an initial value for this midi controller, on this midi channel, in the song...
-        for(i = _controller->begin(); i != _controller->end(); ++i) 
+        switch(mc->num())
         {
-          int channel = i->first >> 24;
-          int cntrl   = i->first & 0xffffff;
-          int val     = i->second->hwVal();
+          // Allow these inital values if the controller list does not have standard RPN. (The enums alias to generic numbers).
+          // Do not send any of these inital values if the controller has standard RPN. (The enums are meaningful).
+          // 1) It is impossible to know which should come first/last (ie. which was last adjusted) - the RPNs or the data.
+          // 2) This is an ineffective way to set a default value of one single RPN controller. Better use our built-ins.
+          case CTRL_HRPN:
+          case CTRL_LRPN:
+          case CTRL_HNRPN:
+          case CTRL_LNRPN:
+          case CTRL_HDATA:
+          case CTRL_LDATA:
+          case CTRL_DATA_INC:
+          case CTRL_DATA_DEC:
+            if(!patch_rpn_reserved)
+              continue;
+          break;
+
+          default:
+          break;
+        }
+
+        // Look for an initial value for this midi controller, on this midi channel, in the song...
+        for(i = _controller->cbegin(); i != _controller->cend(); ++i)
+        {
+          const int channel = i->first >> 24;
+          const int cntrl   = i->first & 0xffffff;
+          const int val     = i->second->hwVal();
           if(channel == chan && cntrl == mc->num() && val != CTRL_VAL_UNKNOWN)
             break;
         }  
         // If no initial value was found for this midi controller, on this midi channel, in the song...
-        if(i == _controller->end())
+        if(i == _controller->cend())
         {
           // If the instrument's midi controller has an initial value, send it now.
           if(mc->initVal() != CTRL_VAL_UNKNOWN)
           {
-            int ctl = mc->num();
+            const int ctl = mc->num();
             // Note the addition of bias!
             _device->putEvent(MidiPlayEvent(start_time, port, chan,
               ME_CONTROLLER, ctl, mc->initVal() + mc->bias()), MidiDevice::NotLate);
@@ -413,15 +450,42 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
     delete cl;
   }
 
+  // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are
+  //  ALREADY defined as Controller7 or part of Controller14. Cached, for speed.
+  const bool instr_rpn_reserved = _instrument && !_device->isSynti() && _instrument->RPN_Ctrls_Reserved();
+
   // init HW controller state
-  for (iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) 
+  for (ciMidiCtrlValList i = _controller->cbegin(); i != _controller->cend(); ++i)
   {
-      int channel = i->first >> 24;
+      const int channel = i->first >> 24;
       if(!usedChans[channel])
         continue;  // This channel on this port is not used in the song.
-      int cntrl   = i->first & 0xffffff;
-      int val     = i->second->hwVal();
-      if (val != CTRL_VAL_UNKNOWN) 
+      const int cntrl = i->first & 0xffffff;
+
+      // Allow these values if the controller list does not have standard RPN. (The enums alias to generic numbers).
+      // Do not send any of these values if the controller has standard RPN. (The enums are meaningful).
+      // 1) It is impossible to know which should come first/last (ie. which was last adjusted) - the RPNs or the data.
+      // 2) This is an ineffective way to set a default value of one single RPN controller. Better use our built-ins.
+      switch(cntrl)
+      {
+        case CTRL_HRPN:
+        case CTRL_LRPN:
+        case CTRL_HNRPN:
+        case CTRL_LNRPN:
+        case CTRL_HDATA:
+        case CTRL_LDATA:
+        case CTRL_DATA_INC:
+        case CTRL_DATA_DEC:
+          if(!instr_rpn_reserved)
+            continue;
+        break;
+
+        default:
+        break;
+      }
+
+      const int val = i->second->hwVal();
+      if (val != CTRL_VAL_UNKNOWN)
       {
         _device->putEvent(MidiPlayEvent(start_time, port, channel,
           ME_CONTROLLER, cntrl, val), MidiDevice::NotLate);
@@ -482,151 +546,6 @@ const QString& MidiPort::portname() const
             return _device->name();
       else
             return none;
-      }
-
-//---------------------------------------------------------
-//   tryCtrlInitVal
-//   To be called from realtime audio thread only.
-//---------------------------------------------------------
-
-void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
-{
-  // Look for an initial value in the song for this midi controller, on this midi channel... (p4.0.27)
-  iMidiCtrlValList i = _controller->find(chan, ctl);
-  if(i != _controller->end()) 
-  {
-    int v = i->second->value(0);   // Value at tick 0.
-    if(v != CTRL_VAL_UNKNOWN)
-    {
-      if(_device)
-        _device->putEvent(MidiPlayEvent(0, portno(), chan, ME_CONTROLLER, ctl, v), MidiDevice::NotLate);
-        
-      // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
-      setHwCtrlState(chan, ctl, v);
-      
-      return;
-    }  
-  }
-  
-  // No initial value was found in the song for this midi controller on this midi channel. Try the instrument...
-  if(_instrument)
-  {
-    const int patch = hwCtrlState(chan, CTRL_PROGRAM);
-    const MidiController* mc = instrument()->findController(ctl, chan, patch);
-
-    int initval = mc->initVal();
-    
-    // Initialize from either the instrument controller's initial value, or the supplied value.
-    if(initval != CTRL_VAL_UNKNOWN)
-    {
-      if(_device)
-      {
-        MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
-      _device->putEvent(ev, MidiDevice::NotLate);
-      }  
-      setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, initval + mc->bias());
-      
-      return;
-    }
-  }
-  
-  // No initial value was found in the song or instrument for this midi controller. Just send the given value.
-  if(_device)
-  {
-    MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, val);
-    _device->putEvent(ev, MidiDevice::NotLate);
-  }  
-  setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, val);
-}      
-      
-//---------------------------------------------------------
-//   sendGmInitValues
-//---------------------------------------------------------
-
-void MidiPort::sendGmInitValues()
-{
-  for (int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i) {
-        // By T356. Initialize from instrument controller if it has an initial value, otherwise use the specified value.
-        // Tested: Ultimately, a track's controller stored values take priority by sending any 'zero time' value 
-        //  AFTER these GM/GS/XG init routines are called via initDevices().
-        tryCtrlInitVal(i, CTRL_PROGRAM,      0);
-        tryCtrlInitVal(i, CTRL_PITCH,        0);
-        tryCtrlInitVal(i, CTRL_VOLUME,     100);
-        tryCtrlInitVal(i, CTRL_PANPOT,      64);
-        tryCtrlInitVal(i, CTRL_REVERB_SEND, 40);
-        tryCtrlInitVal(i, CTRL_CHORUS_SEND,  0);
-        }
-}
-
-//---------------------------------------------------------
-//   sendGsInitValues
-//---------------------------------------------------------
-
-void MidiPort::sendGsInitValues()
-{
-  sendGmInitValues();
-}
-
-//---------------------------------------------------------
-//   sendXgInitValues
-//---------------------------------------------------------
-
-void MidiPort::sendXgInitValues()
-{
-  for (int i = 0; i < MusECore::MUSE_MIDI_CHANNELS; ++i) {
-        // By T356. Initialize from instrument controller if it has an initial value, otherwise use the specified value.
-        tryCtrlInitVal(i, CTRL_PROGRAM, 0);
-        tryCtrlInitVal(i, CTRL_MODULATION, 0);
-        tryCtrlInitVal(i, CTRL_PORTAMENTO_TIME, 0);
-        tryCtrlInitVal(i, CTRL_VOLUME, 0x64);
-        tryCtrlInitVal(i, CTRL_PANPOT, 0x40);
-        tryCtrlInitVal(i, CTRL_EXPRESSION, 0x7f);
-        tryCtrlInitVal(i, CTRL_SUSTAIN, 0x0);
-        tryCtrlInitVal(i, CTRL_PORTAMENTO, 0x0);
-        tryCtrlInitVal(i, CTRL_SOSTENUTO, 0x0);
-        tryCtrlInitVal(i, CTRL_SOFT_PEDAL, 0x0);
-        tryCtrlInitVal(i, CTRL_HARMONIC_CONTENT, 0x40);
-        tryCtrlInitVal(i, CTRL_RELEASE_TIME, 0x40);
-        tryCtrlInitVal(i, CTRL_ATTACK_TIME, 0x40);
-        tryCtrlInitVal(i, CTRL_BRIGHTNESS, 0x40);
-        tryCtrlInitVal(i, CTRL_REVERB_SEND, 0x28);
-        tryCtrlInitVal(i, CTRL_CHORUS_SEND, 0x0);
-        tryCtrlInitVal(i, CTRL_VARIATION_SEND, 0x0);
-        }
-}
-
-//---------------------------------------------------------
-//   sendGmOn
-//    send GM-On message to midi device and keep track
-//    of device state
-//---------------------------------------------------------
-
-void MidiPort::sendGmOn()
-      {
-      sendSysex(gmOnMsg, gmOnMsgLen);
-      }
-
-//---------------------------------------------------------
-//   sendGsOn
-//    send Roland GS-On message to midi device and keep track
-//    of device state
-//---------------------------------------------------------
-
-void MidiPort::sendGsOn()
-      {
-      sendSysex(gsOnMsg2, gsOnMsg2Len);
-      sendSysex(gsOnMsg3, gsOnMsg3Len);
-      }
-
-//---------------------------------------------------------
-//   sendXgOn
-//    send Yamaha XG-On message to midi device and keep track
-//    of device state
-//---------------------------------------------------------
-
-void MidiPort::sendXgOn()
-      {
-      sendSysex(xgOnMsg, xgOnMsgLen);
       }
 
 //---------------------------------------------------------

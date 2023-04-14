@@ -145,20 +145,6 @@ void Audio::msgAddRoute1(Route src, Route dst)
       }
 
 //---------------------------------------------------------
-//   msgAddPlugin
-//---------------------------------------------------------
-
-void Audio::msgAddPlugin(AudioTrack* node, int idx, PluginI* plugin)
-      {
-      AudioMsg msg;
-      msg.id     = AUDIO_ADDPLUGIN;
-      msg.snode  = node;
-      msg.ival   = idx;
-      msg.plugin = plugin;
-      sendMsg(&msg);
-      }
-
-//---------------------------------------------------------
 //   msgSetPrefader
 //---------------------------------------------------------
 
@@ -604,7 +590,7 @@ void Audio::msgInitMidiDevices(bool force)
         {
           MidiPort* mp = &MusEGlobal::midiPorts[metro_settings->clickPort];
           if(mp->device() && 
-             (mp->device()->openFlags() & 1) && 
+             (mp->device()->writeEnable()) &&
              mp->instrument() && !mp->instrument()->midiInit()->empty() &&
              !mp->initSent())
             found = true;
@@ -615,7 +601,7 @@ void Audio::msgInitMidiDevices(bool force)
           for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
           {
             MidiPort* mp = &MusEGlobal::midiPorts[i];
-            if(mp->device() && (mp->device()->openFlags() & 1) && 
+            if(mp->device() && (mp->device()->writeEnable()) &&
               mp->instrument() && !mp->instrument()->midiInit()->empty() &&
               !mp->initSent())
             {
@@ -649,25 +635,14 @@ void Audio::msgInitMidiDevices(bool force)
           }
         }
       }
-      
-// We can either try to do it in one cycle with one message,
-//  or by idling the sequencer (gaining safe access to all structures)
-//  for as much time as we need.
-// Here we COULD get away with the audio 'hiccup' that idling causes,
-//  because it's unlikely someone would initialize during play...
-// But no midi is processed, so let's switch this only if requiring
-//  large numbers of init values causes a problem later...
-#if 1         
-      AudioMsg msg;
-      msg.id = SEQM_INIT_DEVICES;
-      msg.a = force;
-      sendMessage(&msg, false);
-#else      
-      msgIdle(true); 
+
+      // Calling initDevices() is not realtime safe. It may allocate and fill containers etc.
+      // So to give us lots of time we pause the audio and command processing, and run it here in the GUI thread.
+      // Of course this causes an audio dropout, but should be acceptable and not too surprising given the type of operation.
+      msgIdle(true);
       initDevices(force);
-      msgIdle(false); 
-#endif
-      
+      msgIdle(false);
+
       }
 
 //---------------------------------------------------------

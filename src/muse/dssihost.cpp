@@ -85,26 +85,6 @@ void initDSSI()
 #ifdef DSSI_SUPPORT
         if(MusEGlobal::loadDSSI)
         {
-          // * Done in plugin.cpp already. *
-          //if(info._class & PluginScanInfo::PluginClassEffect)
-          //{
-          //  // Make sure it doesn't already exist.
-          //  if(const Plugin* pl = MusEGlobal::plugins.find(info._fi.completeBaseName(), info._label))
-          //  {
-          //    fprintf(stderr, "Ignoring DSSI effect label:%s path:%s duplicate of path:%s\n",
-          //            info._label.toLatin1().constData(),
-          //            info._fi.filePath().toLatin1().constData(),
-          //            pl->filePath().toLatin1().constData());
-          //    
-          //  }
-          //  else
-          //  {
-          //    if(MusEGlobal::debugMsg)
-          //      info.dump(message);
-          //    MusEGlobal::plugins.add(info);
-          //  }
-          //}
-            
           // For now we allow effects as a synth track. Until we allow programs (and midi) in the effect rack.
           if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect ||
             info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
@@ -153,75 +133,12 @@ void initDSSI()
 //   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
 //---------------------------------------------------------
 
-DssiSynth::DssiSynth(QFileInfo& fi, const QString& uri, const DSSI_Descriptor* d,
-                     bool isDssiVst, PluginFeatures_t reqFeatures) : // ddskrjo removed const from QFileInfo
-  Synth(fi, uri, QString(d->LADSPA_Plugin->Label), QString(d->LADSPA_Plugin->Name),
-        QString(d->LADSPA_Plugin->Maker), QString(), reqFeatures) 
-{
-  df = 0;
-  handle = 0;
-  dssi = 0;
-  _isDssiVst = isDssiVst;
-  _hasGui = false;
-  
-  const LADSPA_Descriptor* descr = d->LADSPA_Plugin;
-  
-  _portCount = descr->PortCount;
-  
-  _inports = 0;
-  _outports = 0;
-  _controlInPorts = 0;
-  _controlOutPorts = 0;
-  for(unsigned long k = 0; k < _portCount; ++k) 
-  {
-    LADSPA_PortDescriptor pd = descr->PortDescriptors[k];
-    if(pd & LADSPA_PORT_AUDIO)
-    {
-      if(pd & LADSPA_PORT_INPUT)
-        ++_inports;
-      else
-      if(pd & LADSPA_PORT_OUTPUT)
-        ++_outports;
-    }    
-    else
-    if(pd & LADSPA_PORT_CONTROL)
-    {
-      if(pd & LADSPA_PORT_INPUT)
-        ++_controlInPorts;
-      else
-      if(pd & LADSPA_PORT_OUTPUT)
-        ++_controlOutPorts;
-    }    
-  }
-  
-  // Hack: Blacklist vst plugins in-place, configurable for now. 
-  if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-    _requiredFeatures |= PluginNoInPlaceProcessing;
-}
-
-//---------------------------------------------------------
-//   DssiSynth
-//   Synth.name    =  plug.Label (In LADSPA and DSSI this is the more important unique string)
-//   Synth.descr   =  plug.Name  (In LADSPA and DSSI this is the less important name string)
-//   Synth.maker   =  plug.maker 
-//   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
-//---------------------------------------------------------
-
 DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info) 
- : Synth(PLUGIN_GET_QSTRING(info.filePath()),
-         PLUGIN_GET_QSTRING(info._uri),
-         PLUGIN_GET_QSTRING(info._label),
-         PLUGIN_GET_QSTRING(info._name),
-         PLUGIN_GET_QSTRING(info._maker),
-         QString(),
-         info._requiredFeatures) 
+ : Synth(info), handle(nullptr), dssi(nullptr), df(nullptr)
+
 {
-  df = 0;
-  handle = 0;
-  dssi = 0;
   _isDssiVst = info._type == MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST;
   
-//   _hasGui = false;
   _hasGui = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasGui;
 
   _portCount = info._portCount;
@@ -601,19 +518,15 @@ bool DssiSynthIF::init(DssiSynth* s)
             cl->setName(QString(name));
             cl->setValueType(ladspaCtrlValueType(ld, k));
             cl->setMode(ladspaCtrlMode(ld, k));
-            
+            // Set the value units index.
+            cl->setValueUnit(valueUnit(cip));
+
             ld->connect_port(_handle, k, &_controls[cip].val);
             
             ++cip;
           }
           else if (LADSPA_IS_PORT_OUTPUT(pd))
           {
-            const char* pname = ld->PortNames[k];
-            if(pname == QString("latency") || pname == QString("_latency"))
-            {
-              _hasLatencyOutPort = true;
-              _latencyOutPort = cop;
-            }
             _controlsOut[cop].idx = k;
             _controlsOut[cop].val    = 0.0;
             _controlsOut[cop].tmpVal = 0.0;
@@ -678,8 +591,6 @@ DssiSynthIF::DssiSynthIF(SynthI* s)
       _handle = nullptr;
       _controls = 0;
       _controlsOut = 0;
-      _hasLatencyOutPort = false;
-      _latencyOutPort = 0;
       _audioInBuffers = 0;
       _audioInSilenceBuf = 0;
       _audioOutBuffers = 0;
@@ -775,33 +686,6 @@ int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const
   return 2; 
 }
         
-bool DssiSynthIF::hasLatencyOutPort() const
-{
-  return _hasLatencyOutPort;
-}
-
-unsigned long DssiSynthIF::latencyOutPortIndex() const
-{
-  return _latencyOutPort;
-}
-
-//---------------------------------------------------------
-//   latency
-//---------------------------------------------------------
-
-float DssiSynthIF::latency() const
-{
-  // Do not report any latency if the plugin is not on.
-  if(!on())
-    return 0.0;
-  if(cquirks()._overrideReportedLatency)
-    return cquirks()._latencyOverrideValue;
-  if(!hasLatencyOutPort())
-    return 0.0;
-  return _controlsOut[latencyOutPortIndex()].val;
-}
-
-
 //---------------------------------------------------------
 //   getParameter
 //---------------------------------------------------------
@@ -1421,7 +1305,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 
 //---------------------------------------------------------
 //   getData
-//   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
 bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nframes, float** buffer)
@@ -1441,6 +1324,12 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
   unsigned long sample = 0;
 
+  const bool isOn = on();
+  const PluginBypassType bypassType = pluginBypassType();
+
+  //  Normally if the plugin is inactive or off we tell it to connect to dummy audio ports.
+  //  But this can change depending on detected bypass type, below.
+  bool connectToDummyAudioPorts = !_curActiveState || !isOn;
   // NOTE Tested: Variable run-lengths worked superbly for LADSPA and DSSI synths. But DSSI-VST definitely
   //  does NOT like changing sample run length. It crashes the plugin and Wine (but MusE keeps running!).
   // Furthermore, it resizes the shared memory (mmap, remap) upon each run length DIFFERENT from the last.
@@ -1459,7 +1348,40 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   // Must make this detectable for dssi vst synths, just like the plugins' in-place blacklist.
   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
   //       For now we treat it like fixed size.
-  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
+  //
+  //  Normally if the plugin is inactive or off we use a fixed controller period.
+  //  But this can change depending on detected bypass type, below.
+  bool usefixedrate = !_curActiveState || !isOn;
+  const unsigned int fin_nsamp = nframes;
+
+  // If the plugin has a REAL enable or bypass control port, we allow the plugin
+  //  a full-length run so that it can handle its own enabling or bypassing.
+  if(_curActiveState)
+  {
+    switch(bypassType)
+    {
+      case PluginBypassTypeEmulatedEnableController:
+      case PluginBypassTypeEmulatedEnableFunction:
+      break;
+
+      case PluginBypassTypeEnablePort:
+      case PluginBypassTypeBypassPort:
+          connectToDummyAudioPorts = false;
+          usefixedrate = false;
+      break;
+
+      case PluginBypassTypeEnableFunction:
+      case PluginBypassTypeBypassFunction:
+          connectToDummyAudioPorts = false;
+      break;
+    }
+  }
+
+  // See if the features require a fixed control period.
+  // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
+  //       For now we treat it like fixed control period.
+  if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+    usefixedrate = true;
 
   // Note for dssi-vst this MUST equal MusEGlobal::audio period. It doesn't like broken-up runs (it stutters),
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
@@ -1476,22 +1398,23 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   CtrlListList* cll = atrack->controller();
   ciCtrlList icl_first;
   const int plug_id = id();
-  if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
+  if(plug_id != -1)  // Don't bother if not 'running'.
     icl_first = cll->lower_bound(genACnum(plug_id, 0));
 
   #ifdef DSSI_DEBUG_PROCESS
   fprintf(stderr, "DssiSynthIF::getData: Handling inputs...\n");
   #endif
 
-  bool used_in_chan_array[in_ports]; // Don't bother initializing if not 'running'. 
-  
+  bool used_in_chan_array[in_ports]; // Don't bother initializing if not 'running'.
+
+  // Gather input data from connected input routes.
   // Don't bother if not 'running'.
-  if(ports != 0)
+  if(_curActiveState)
   {
     // Initialize the array.
     for(unsigned long i = 0; i < in_ports; ++i)
       used_in_chan_array[i] = false;
-    
+
     if(!atrack->noInRoute())
     {
       RouteList *irl = atrack->inRoutes();
@@ -1499,7 +1422,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
       {
         if(i->track->isMidiTrack())
           continue;
-        // Only this synth knows how many destination channels there are, 
+        // Only this synth knows how many destination channels there are,
         //  while only the track knows how many source channels there are.
         // So take care of the destination channels here, and let the track handle the source channels.
         const int dst_ch = i->channel <= -1 ? 0 : i->channel;
@@ -1513,11 +1436,11 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         int fin_dst_chs = dst_chs;
         if((unsigned long)(dst_ch + fin_dst_chs) > in_ports)
           fin_dst_chs = in_ports - dst_ch;
-            
-        static_cast<AudioTrack*>(i->track)->copyData(pos, 
-                                                     dst_ch, dst_chs, fin_dst_chs, 
-                                                     src_ch, src_chs, 
-                                                     nframes, &_audioInBuffers[0], 
+
+        static_cast<AudioTrack*>(i->track)->copyData(pos,
+                                                     dst_ch, dst_chs, fin_dst_chs,
+                                                     src_ch, src_chs,
+                                                     nframes, &_audioInBuffers[0],
                                                      false, used_in_chan_array);
         const int nxt_ch = dst_ch + fin_dst_chs;
         for(int ch = dst_ch; ch < nxt_ch; ++ch)
@@ -1525,15 +1448,20 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
       }
     }
   }
-  
+
+  // TODO: Should we implement emulated bypass for plugins without a bypass feature?
+  //       That could be very difficult. How to determine any relationships between
+  //        inputs and outputs? LV2 has some features for that. VST has speakers.
+  //       And what about midi ports...
+
   #ifdef DSSI_DEBUG_PROCESS
   fprintf(stderr, "DssiSynthIF::getData: Processing automation control values...\n");
   #endif
 
   int cur_slice = 0;
-  while(sample < nframes)
+  while(sample < fin_nsamp)
   {
-    unsigned long nsamp = nframes - sample;
+    unsigned long slice_samps = fin_nsamp - sample;
     const unsigned long slice_frame = pos + sample;
 
     //
@@ -1542,7 +1470,6 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
     //  from there, but this section determines where the next highest maximum frame
     //  absolutely needs to be for smooth playback of the controller value stream...
     //
-    if(ports != 0)    // Don't bother if not 'running'.
     {
       ciCtrlList icl = icl_first;
       for(unsigned long k = 0; k < in_ctrls; ++k)
@@ -1592,7 +1519,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 
         if(!usefixedrate && MusEGlobal::audio->isPlaying())
         {
-          unsigned long samps = nsamp;
+          unsigned long samps = slice_samps;
           if(ci.eFrameValid)
             samps = (unsigned long)ci.eFrame - slice_frame;
 
@@ -1605,8 +1532,8 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
           else
             samps = min_per;
 
-          if(samps < nsamp)
-            nsamp = samps;
+          if(samps < slice_samps)
+                        slice_samps = samps;
 
         }
 
@@ -1646,7 +1573,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
       // Protection. Observed this condition. Why? Supposed to be linear timestamps.
       if(found && evframe < frame)
       {
-        fprintf(stderr, 
+        fprintf(stderr,
           "DssiSynthIF::getData *** Error: Event out of order: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d syncFrame:%lu nframes:%u v.frame:%lu\n",
           evframe, frame, v.idx, v.value, v.unique, syncFrame, nframes, v.frame);
 
@@ -1655,10 +1582,14 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         continue;
       }
 
-      if(evframe >= nframes                                                         // Next events are for a later period.
-          || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
-          || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
-          || (usefixedrate && found && v.unique && v.idx == index))                 // Special for dssi-vst: Fixed rate and must reply to all.
+      if(// Next events are for a later period.
+         evframe >= nframes
+         // Next events are for a later run in this period. (Autom took prio.)
+         || (!usefixedrate && !found && !v.unique && (evframe - sample >= slice_samps))
+         // Eat up events within minimum slice - they're too close.
+         || (found && !v.unique && (evframe - sample >= min_per))
+         // Special for dssi-vst: Fixed rate and must reply to all.
+         || (usefixedrate && found && v.unique && v.idx == index))
         break;
 
       if(v.idx >= in_ctrls) // Sanity check.
@@ -1671,126 +1602,137 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
       frame = evframe;
       index = v.idx;
 
-      if(ports == 0)                     // Don't bother if not 'running'.
-        _controls[v.idx].val = v.value;   // Might as well at least update these.
-      else
       {
         CtrlInterpolate* ci = &_controls[v.idx].interp;
         // Tell it to stop the current ramp at this frame, when it does stop, set this value:
         ci->eFrame = frame;
         ci->eFrameValid = true;
         ci->eVal   = v.value;
-        ci->eStop  = true;  
+        ci->eStop  = true;
       }
 
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(plug_id != -1)
         synti->setPluginCtrlVal(genACnum(plug_id, v.idx), v.value);
-      
+
       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
     if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
-      nsamp = frame - sample;
+            slice_samps = frame - sample;
 
-    if(sample + nsamp > nframes)         // Safety check.
-      nsamp = nframes - sample;
+    if(sample + slice_samps > nframes)         // Safety check.
+            slice_samps = nframes - sample;
 
-    // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
-    // Note this means it is still possible to get stuck in the top loop (at least for a while).
-    if(nsamp != 0)
     {
       unsigned long nevents = 0;
       // Get the state of the stop flag.
       const bool do_stop = synti->stopFlag();
+      // Get whether playback and user midi events can be written to this midi device.
+      const bool we = synti->writeEnable();
 
       MidiPlayEvent buf_ev;
-      
-      // Transfer the user lock-free buffer events to the user sorted multi-set.
-      // False = don't use the size snapshot, but update it.
-      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
-      for(unsigned int i = 0; i < usr_buf_sz; ++i)
+
+      // If stopping or not 'running' just purge ALL playback FIFO and container events.
+      // But do not clear the user ones. We need to hold on to them until active,
+      //  they may contain crucial events like loading a soundfont from a song file.
+      if(do_stop || !_curActiveState || !we)
       {
-        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-          synti->_outUserEvents.insert(buf_ev);
-      }
-      
-      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
-      for(unsigned int i = 0; i < pb_buf_sz; ++i)
-      {
-        // Are we stopping? Just remove the item.
-        if(do_stop)
-          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
-        // Otherwise get the item.
-        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
-          synti->_outPlaybackEvents.insert(buf_ev);
-      }
-  
-      // Are we stopping?
-      if(do_stop)
-      {
-        // Transport has stopped, purge ALL further scheduled playback events now.
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
+        {
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.addExclusive(buf_ev);
+        }
+
+        synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
         synti->_outPlaybackEvents.clear();
         // Reset the flag.
         synti->setStopFlag(false);
       }
-      
-      // Count how many events we need.
-      for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+      else
       {
-        const MidiPlayEvent& e = *impe;
-        if(e.time() >= (syncFrame + sample + nsamp))
-          break;
-        ++nevents;
-      }
-      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
-      {
-        const MidiPlayEvent& e = *impe;
-        if(e.time() >= (syncFrame + sample + nsamp))
-          break;
-        ++nevents;
-      }
-      
-      snd_seq_event_t events[nevents];
-      
-      iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
-      iMPEvent impe_us = synti->_outUserEvents.begin();
-      bool using_pb;
-  
-      unsigned long event_counter = 0;
-      while(1)
-      {
-        if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
-          using_pb = *impe_pb < *impe_us;
-        else if(impe_pb != synti->_outPlaybackEvents.end())
-          using_pb = true;
-        else if(impe_us != synti->_outUserEvents.end())
-          using_pb = false;
-        else break;
-        
-        const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
-
-        #ifdef DSSI_DEBUG
-        fprintf(stderr, "DssiSynthIF::getData eventFifos event time:%d\n", e.time());
-        #endif
-
-        if(e.time() >= (syncFrame + sample + nsamp))
-          break;
-
-        if(ports != 0)  // Don't bother if not 'running'.
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
         {
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.insert(buf_ev);
+        }
+
+        // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+        const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+        for(unsigned int i = 0; i < pb_buf_sz; ++i)
+        {
+          if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+            synti->_outPlaybackEvents.insert(buf_ev);
+        }
+      }
+
+      // Don't bother if not 'running'.
+      if(_curActiveState && we)
+      {
+        // Count how many events we need.
+        for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+        {
+          const MidiPlayEvent& e = *impe;
+          if(e.time() >= (syncFrame + sample + slice_samps))
+            break;
+          ++nevents;
+        }
+        for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
+        {
+          const MidiPlayEvent& e = *impe;
+          if(e.time() >= (syncFrame + sample + slice_samps))
+            break;
+          ++nevents;
+        }
+      }
+
+      snd_seq_event_t events[nevents];
+
+      // Don't bother if not 'running'.
+      if(_curActiveState && we)
+      {
+        iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+        iMPEvent impe_us = synti->_outUserEvents.begin();
+        bool using_pb;
+
+        unsigned long event_counter = 0;
+        while(1)
+        {
+          if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+            using_pb = *impe_pb < *impe_us;
+          else if(impe_pb != synti->_outPlaybackEvents.end())
+            using_pb = true;
+          else if(impe_us != synti->_outUserEvents.end())
+            using_pb = false;
+          else break;
+
+          const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
+
+          #ifdef DSSI_DEBUG
+          fprintf(stderr, "DssiSynthIF::getData eventFifos event time:%d\n", e.time());
+          #endif
+
+          // Event is for future?
+          if(e.time() >= (sample + slice_samps + syncFrame))
+            break;
+
           // Returns false if the event was not filled. It was handled, but some other way.
           if(processEvent(e, &events[event_counter]))
           {
             // Time-stamp the event.
             unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
             ft = (ft < sample) ? 0 : ft - sample;
-            if (ft >= nsamp)
+            if (ft >= slice_samps)
             {
-                fprintf(stderr, "DssiSynthIF::getData: eventFifos event time:%d out of range. pos:%d syncFrame:%lu ft:%u sample:%lu nsamp:%lu\n", 
-                        e.time(), pos, syncFrame, ft, sample, nsamp);
-                ft = nsamp - 1;
+                fprintf(stderr, "DssiSynthIF::getData: eventFifos event time:%d "
+                "out of range. pos:%d syncFrame:%lu ft:%u sample:%lu slice_samps:%lu\n",
+                        e.time(), pos, syncFrame, ft, sample, slice_samps);
+                ft = slice_samps - 1;
             }
             // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count.
             //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
@@ -1798,35 +1740,40 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 
             ++event_counter;
           }
+
+          // Done with buffer's event. Remove it.
+          // C++11.
+          if(using_pb)
+            impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+          else
+            impe_us = synti->_outUserEvents.erase(impe_us);
         }
-        
-        // Done with ring buffer's event. Remove it.
-        // C++11.
-        if(using_pb)
-          impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
-        else
-          impe_us = synti->_outUserEvents.erase(impe_us);
+
+        if(event_counter < nevents)
+          nevents = event_counter;
       }
 
-      if(event_counter < nevents)
-        nevents = event_counter;
-      
-      #ifdef DSSI_DEBUG_PROCESS
-      fprintf(stderr, "DssiSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
-      #endif
-
-      if(ports != 0)  // Don't bother if not 'running'.
+      // Don't bother if not 'running'.
+      if(_curActiveState)
       {
-        // Connect the given buffers directly to the ports, up to a max of synth ports.
-        for(unsigned long k = 0; k < nop; ++k)
-          descr->connect_port(_handle, _synth->oIdx[k], buffer[k] + sample);
-        // Connect the remaining ports to some local buffers (not used yet).
-        for(unsigned long k = nop; k < out_ports; ++k)
-          descr->connect_port(_handle, _synth->oIdx[k], _audioOutBuffers[k] + sample);
-        // Connect all inputs either to some local buffers, or a silence buffer.
+        #ifdef DSSI_DEBUG_PROCESS
+        fprintf(stderr, "DssiSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
+        #endif
+
+        for(unsigned long k = 0; k < out_ports; ++k)
+        {
+          if(!connectToDummyAudioPorts && k < nop)
+            // Connect the given buffers directly to the ports, up to a max of synth ports.
+            descr->connect_port(_handle, _synth->oIdx[k], buffer[k] + sample);
+          else
+            // Connect the remaining ports to some local buffers (not used yet).
+            descr->connect_port(_handle, _synth->oIdx[k], _audioOutBuffers[k] + sample);
+        }
+
+        // Connect all inputs either to the input buffers, or a silence buffer.
         for(unsigned long k = 0; k < in_ports; ++k)
         {
-          if(used_in_chan_array[k])
+          if(!connectToDummyAudioPorts && used_in_chan_array[k])
             descr->connect_port(_handle, _synth->iIdx[k], _audioInBuffers[k] + sample);
           else
             descr->connect_port(_handle, _synth->iIdx[k], _audioInSilenceBuf + sample);
@@ -1835,12 +1782,12 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         // Run the synth for a period of time. This processes events and gets/fills our local buffers...
         if(_synth->dssi->run_synth)
         {
-          _synth->dssi->run_synth(_handle, nsamp, events, nevents);
+          _synth->dssi->run_synth(_handle, slice_samps, events, nevents);
         }
         else if (_synth->dssi->run_multiple_synths)
         {
           snd_seq_event_t* ev = events;
-          _synth->dssi->run_multiple_synths(1, &_handle, nsamp, &ev, &nevents);
+          _synth->dssi->run_multiple_synths(1, &_handle, slice_samps, &ev, &nevents);
         }
         // TIP: Until we add programs to plugins, uncomment these four checks to load dssi effects as synths, in order to have programs.
         //else
@@ -1850,7 +1797,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         //}
       }
 
-      sample += nsamp;
+      sample += slice_samps;
     }
 
     ++cur_slice; // Slice is done. Moving on to any next slice now...
@@ -1893,6 +1840,8 @@ void DssiSynth::incInstances(int val)
 
 void DssiSynthIF::guiHeartBeat()
 {
+  SynthIF::guiHeartBeat();
+
   #ifdef OSC_SUPPORT
   int chn = 0;  // TODO: Channel?
   int hb, lb, pr;
@@ -2415,8 +2364,8 @@ void DssiSynthIF::deactivate3()
 // Methods for PluginIBase:
 //--------------------------------
 
-unsigned long DssiSynthIF::pluginID()                        { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->UniqueID : 0; }
-int DssiSynthIF::id()                                        { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
+unsigned long DssiSynthIF::pluginID() const                  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->UniqueID : 0; }
+int DssiSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth.
 QString DssiSynthIF::pluginLabel() const                     { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
 QString DssiSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
 QString DssiSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
@@ -2434,10 +2383,14 @@ void DssiSynthIF::enableAllControllers(bool v)
 void DssiSynthIF::updateControllers() { }
 void DssiSynthIF::activate()
 {
+  if(_curActiveState)
+    return;
   if(_synth && _synth->dssi && _synth->dssi->LADSPA_Plugin && _synth->dssi->LADSPA_Plugin->activate)
-    //for (int i = 0; i < instances; ++i)
-    //  _plugin->activate(handle[i]);
+  {
     _synth->dssi->LADSPA_Plugin->activate(_handle);
+    SynthIF::activate();
+  }
+
 
 // REMOVE Tim. Or keep? From PluginI::activate().
 //   if (initControlValues) {
@@ -2454,11 +2407,11 @@ void DssiSynthIF::activate()
 }
 void DssiSynthIF::deactivate()
 {
-  if(!_synth || !_synth->dssi || !_synth->dssi->LADSPA_Plugin ||!_synth->dssi->LADSPA_Plugin->deactivate)
+  if(!_curActiveState)
     return;
-  //for (int i = 0; i < instances; ++i)
-  //  synth->dssi->LADSPA_Plugin->deactivate(handle[i]);
-  _synth->dssi->LADSPA_Plugin->deactivate(_handle);
+  SynthIF::deactivate();
+  if(_synth && _synth->dssi && _synth->dssi->LADSPA_Plugin && _synth->dssi->LADSPA_Plugin->deactivate)
+    _synth->dssi->LADSPA_Plugin->deactivate(_handle);
 }
 
 unsigned long DssiSynthIF::parameters() const                { return _synth ? _synth->_controlInPorts : 0; }
@@ -2466,12 +2419,26 @@ unsigned long DssiSynthIF::parametersOut() const             { return _synth ? _
 void DssiSynthIF::setParam(unsigned long i, double val)      { setParameter(i, val); }
 double DssiSynthIF::param(unsigned long i) const             { return getParameter(i); }
 double DssiSynthIF::paramOut(unsigned long i) const          { return getParameterOut(i); }
-const char* DssiSynthIF::paramName(unsigned long i)          { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controls[i].idx] : 0; }
-const char* DssiSynthIF::paramOutName(unsigned long i)       { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controlsOut[i].idx] : 0; }
-LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controls[i].idx]; }
-LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned long i)  { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controlsOut[i].idx]; }
-CtrlValueType DssiSynthIF::ctrlValueType(unsigned long i) const { return ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controls[i].idx); }
-CtrlList::Mode DssiSynthIF::ctrlMode(unsigned long i) const     { return ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controls[i].idx); };
+const char* DssiSynthIF::paramName(unsigned long i) const
+  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controls[i].idx] : 0; }
+const char* DssiSynthIF::paramOutName(unsigned long i) const
+  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controlsOut[i].idx] : 0; }
+LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i) const
+  { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controls[i].idx]; }
+LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned long i) const
+  { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controlsOut[i].idx]; }
+void DssiSynthIF::range(unsigned long i, float* min, float* max) const
+  { ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controls[i].idx, min, max); }
+void DssiSynthIF::rangeOut(unsigned long i, float* min, float* max) const
+  { ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx, min, max); }
+CtrlValueType DssiSynthIF::ctrlValueType(unsigned long i) const
+  { return ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controls[i].idx); }
+CtrlList::Mode DssiSynthIF::ctrlMode(unsigned long i) const
+  { return ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controls[i].idx); };
+CtrlValueType DssiSynthIF::ctrlOutValueType(unsigned long i) const
+  { return ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx); }
+CtrlList::Mode DssiSynthIF::ctrlOutMode(unsigned long i) const
+  { return ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx); };
 
 } // namespace MusECore
 

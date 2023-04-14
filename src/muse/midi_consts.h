@@ -27,7 +27,7 @@
 
 namespace MusECore {
 
-enum {
+enum ME_EVENT_TYPE {
       ME_NOTEOFF     = 0x80,
       ME_NOTEON      = 0x90,
       ME_POLYAFTER   = 0xa0,

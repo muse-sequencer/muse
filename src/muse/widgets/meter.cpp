@@ -6,7 +6,7 @@
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
-//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011-2023 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -31,12 +31,12 @@
 #include <algorithm>
 
 #include "meter.h"
-// #include "utils.h"
 #include "fastlog.h"
-#include "muse_math.h"
 
-// Just an experiment. Some undesirable effects, see below...
-//#define _USE_CLIPPER 1 
+// For debugging output: Uncomment the fprintf section.
+//#include <stdio.h>
+#define DEBUG_METER(dev, format, args...)        // fprintf(dev, format, ##args);
+#define DEBUG_METER_PAINT(dev, format, args...)  // fprintf(dev, format, ##args);
 
 namespace MusEGui {
 
@@ -44,28 +44,11 @@ namespace MusEGui {
 //   MeterLayout
 //---------------------------------------------------------
 
-MeterLayout::MeterLayout(int endsMargin, QWidget* parent)
-  : QVBoxLayout(parent), _endsMargin(endsMargin)
+MeterLayout::MeterLayout(QWidget* parent)
+  : QVBoxLayout(parent)
 {
-  _spacer1 = new QSpacerItem(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
-  _spacer2 = new QSpacerItem(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
   _hlayout = new QHBoxLayout();
-  addSpacerItem(_spacer1);
   addLayout(_hlayout);
-  addSpacerItem(_spacer2);
-}
-
-int MeterLayout::meterEndsMargin() const
-{
-  return _endsMargin;
-}
-
-void MeterLayout::setMeterEndsMargin(int m)
-{
-  _endsMargin = m;
-  _spacer1->changeSize(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
-  _spacer2->changeSize(0, _endsMargin, QSizePolicy::Maximum, QSizePolicy::Maximum);
-  invalidate();
 }
 
 QHBoxLayout* MeterLayout::hlayout()
@@ -78,7 +61,7 @@ QHBoxLayout* MeterLayout::hlayout()
 //---------------------------------------------------------
 
 Meter::Meter(QWidget* parent, 
-             MeterType type, 
+             bool isInteger, bool isLog,
              Qt::Orientation orient, 
              double scaleMin, double scaleMax,
              ScalePos scalePos, 
@@ -87,7 +70,7 @@ Meter::Meter(QWidget* parent,
              int refreshRate)
    : QFrame(parent), 
      _primaryColor(primaryColor), 
-     _scalePos(scalePos), 
+     _scalePos(scalePos),
      _refreshRate(refreshRate) //Qt::WNoAutoErase
       {
       setBackgroundRole(QPalette::NoRole);
@@ -108,23 +91,75 @@ Meter::Meter(QWidget* parent,
 // //       setStyleSheet("font: 9px \"Sans\"; ");
 //       setStyleSheet(MusECore::font2StyleSheet(fnt));
       
-      mtype = type;
-      _orient = orient;
+      _isLog = isLog;
+      _isInteger = isInteger;
+      _dBFactor = 20.0;
+      _dBFactorInv = 1.0/_dBFactor;
+      _logFactor = 1.0;
+
+      _VUSizeHint = QSize(10, 10);
+      _reverseDirection = false;
       d_scale.setTextHighlightMode(textHighlightMode);
-      _scaleDist   = 0;    // Leftover from class Slider. Maybe use later?
-      _showText   = false;
-      overflow    = false;
+      _scaleDist    = 2;
+      _showText     = false;
+      overflow      = false;
       cur_pixv      = -1;     // Flag as -1 to initialize in paint.
       last_pixv     = 0;
       cur_pixmax    = 0;
       last_pixmax   = 0;
-      val         = 0.0;
-      targetVal   = 0.0;
+      val           = 0.0;
+      targetVal     = 0.0;
       targetValStep = 0.0;
-      maxVal      = 0.0;
-      targetMaxVal = 0.0;
-      minScale    = scaleMin;
-      maxScale    = scaleMax;
+      maxVal        = 0.0;
+      targetMaxVal  = 0.0;
+      minScale = minScaleLog = scaleMin;
+      maxScale = maxScaleLog = scaleMax;
+      setOrientation(orient);
+
+      // If it's integer or log integer.
+      if(_isInteger)
+      {
+        scaleMin = rint(scaleMin);
+        scaleMax = rint(scaleMax);
+      }
+
+      if(_isLog)
+      {
+        if(_isInteger)
+        {
+          // Force a hard lower limit of integer 1.
+          if(scaleMin <= 0.0)
+            scaleMin = 1.0;
+          if(scaleMax <= 0.0)
+            scaleMax = 1.0;
+          scaleMin /= _logFactor;
+          scaleMax /= _logFactor;
+          minScaleLog = scaleMin;
+          maxScaleLog = scaleMax;
+          minScale = _dBFactor * MusECore::fast_log10(scaleMin);
+          maxScale = _dBFactor * MusECore::fast_log10(scaleMax);
+        }
+        else
+        {
+          // Force a hard lower limit of -120 dB.
+          if(scaleMin <= 0.0)
+          {
+            minScaleLog = 0.000001;
+            minScale = -120;
+          }
+          else
+            minScale = _dBFactor * MusECore::fast_log10(scaleMin);
+
+          if(scaleMax <= 0.0)
+          {
+            maxScaleLog = 0.000001;
+            maxScale = -120;
+          }
+          else
+            maxScale = _dBFactor * MusECore::fast_log10(scaleMax);
+        }
+      }
+
       yellowScale = -10;
       redScale    = 0;
       setLineWidth(0);
@@ -198,9 +233,7 @@ Meter::Meter(QWidget* parent,
 //------------------------------------------------------------
 void Meter::scaleChange()
 {
-    if (!hasUserScale())
-       d_scale.setScale(maxScale, minScale, d_maxMajor, d_maxMinor);
-    update();
+  adjustScale();
 }
 
 QSize Meter::sizeHint() const
@@ -208,85 +241,61 @@ QSize Meter::sizeHint() const
   int w = 40;
   int h = 40;
   const QFontMetrics fm = fontMetrics();
-  int msWidth = 0, msHeight = 0;
+  const QMargins mg = contentsMargins();
+  const int fw = frameWidth();
+  const int vufw = _frame ? 1 : 0;
 
-  if(_scalePos != None) 
+  const int msWidth = d_scale.maxWidth(fm, false);
+  const int msHeight = d_scale.maxHeight(fm);
+
+  switch(_orient)
   {
-    msWidth = d_scale.maxWidth(fm, false);
-    msHeight = d_scale.maxHeight(fm);
+    case Qt::Vertical:
+    {
+      w = _VUSizeHint.width();
+      switch(_scalePos)
+      {
+        case ScaleLeftOrTop:
+        case ScaleRightOrBottom:
+          w += msWidth + _scaleDist;
+        break;
 
-    switch(_orient) 
-    {
-      case Qt::Vertical:
-      {
-        const int smw = msWidth + _scaleDist;
-        switch(_scalePos)
-        {
-          case Left:
-          case Right:
-            //w = 2*d_xMargin + d_thumbWidth + smw + 2;
-            w = smw + 2;
-          break;
-          
-          case InsideVertical:
-          {
-            //const int aw = smw > d_thumbWidth ? smw : d_thumbWidth;
-            //w = 2*d_xMargin + aw + 2;
-            w = smw + 2;
-          }
-          break;
-          
-          case Top:
-          case Bottom:
-          case InsideHorizontal:
-          case None:
-          break;
-        }
+        case ScaleInside:
+          if(msWidth > w)
+            w = msWidth;
+        break;
+
+        case ScaleNone:
+        break;
       }
-      break;
-        
-      case Qt::Horizontal:
-      {
-        const int smh = msHeight + _scaleDist;
-        switch(_scalePos)
-        {
-          case Top:
-          case Bottom:
-            //h = 2*d_yMargin + d_thumbWidth + smh;
-            h = smh;
-          break;
-          
-          case InsideHorizontal:
-          {
-            //const int ah = smh > d_thumbWidth ? smh : d_thumbWidth;
-            //h = 2*d_yMargin + ah;
-            h = smh;
-          }
-          break;
-          
-          case Left:
-          case Right:
-          case InsideVertical:
-          case None:
-          break;
-        }
-      }
-      break;
+      w += mg.left() + mg.right() + 2 * fw + 2 * vufw;
     }
-  }
-  else
-  {      // no scale
-    switch(_orient) 
+    break;
+
+    case Qt::Horizontal:
     {
-      case Qt::Vertical:
-            w = 16;
-            break;
-      case Qt::Horizontal:
-            h = 16;
-            break;
+      h = _VUSizeHint.height();
+      switch(_scalePos)
+      {
+        case ScaleLeftOrTop:
+        case ScaleRightOrBottom:
+          h += msHeight + _scaleDist;
+        break;
+
+        case ScaleInside:
+          if(msHeight > h)
+            h = msHeight;
+        break;
+
+        case ScaleNone:
+        break;
+      }
+      h += mg.top() + mg.bottom() + 2 * fw + 2 * vufw;
     }
+    break;
   }
-  //fprintf(stderr, "Meter::sizeHint w:%d, h:%d\n", w, h);
+
+  DEBUG_METER(stderr, "Meter::sizeHint w:%d, h:%d\n", w, h);
   return QSize(w, h);
 }
 
@@ -296,7 +305,7 @@ QSize Meter::sizeHint() const
 
 void Meter::updateText(double val)
 {
-  if(val >= -60.0f)
+  if(val > minScaleLog)
     _text = locale().toString(val, 'f', 1);
   else
   {
@@ -349,156 +358,360 @@ void Meter::updateText(double val)
 //---------------------------------------------------------
 
 void Meter::setVal(double v, double max, bool ovl)
-      {
-      overflow = ovl;
-      bool ud = false;
+{
+  overflow = ovl;
+  bool ud = false;
 
-      if(mtype == DBMeter)
+  const int wend  = _VURect.width();
+  const int hend  = _VURect.height();
+  const int left = _VURect.x();
+  const int rightEnd = left + wend;
+  const int right = rightEnd - 1;
+  const int top = _VURect.y();
+  const int botEnd = top + hend;
+  const int bot = botEnd - 1;
+
+  //------------------------------------------------------------------------
+  //   Prevent very small, slow decaying values from hogging the meter time.
+  //   Do not start the fall timer in such a case.
+  //   With log we can simply test if the value is below the finite minimum.
+  //   With non-log the task is more complex since the minimum can be zero.
+  //------------------------------------------------------------------------
+  if(_isLog)
+  {
+    if(_isInteger)
+    {
+      v /= _logFactor;
+      max /= _logFactor;
+    }
+
+    if(v <= minScaleLog)
+    {
+      if(targetVal != minScaleLog)
       {
-        double minScaleLin = muse_db2val(minScale);
-        if((v >= minScaleLin && targetVal != v) || targetVal >= minScaleLin)
-        {
-          targetVal = v;
-          ud = true;
-        }
+        targetVal = minScaleLog;
+        ud = true;
+      }
+    }
+    else if(targetVal != v)
+    {
+      targetVal = v;
+      ud = true;
+    }
+
+    if(max <= minScaleLog)
+    {
+      if(maxVal != minScaleLog)
+      {
+        targetMaxVal = minScaleLog;
+        ud = true;
+      }
+    }
+    else if(maxVal != max)
+    {
+      targetMaxVal = max;
+      ud = true;
+    }
+  }
+  else
+  {
+    // Test if the value is enough to light up pixel '1' or higher.
+    // Otherwise if it would only light up pixel '0' then don't bother
+    //  starting the fall timer because we are already at the lowest point.
+    int pixv, mpixv, cmpv;
+    int *cmpvA, *cmpvB, *cmpmA, *cmpmB;
+    if(_orient == Qt::Vertical)
+    {
+      // Reverse here means top to bottom.
+      if(_reverseDirection)
+      {
+        cmpv = top;
+        cmpvA = &cmpv;
+        cmpvB = &pixv;
+        cmpmA = &cmpv;
+        cmpmB = &mpixv;
       }
       else
       {
-        if(targetVal != v)
-        {
-          targetVal = v;
-          ud = true;
-        }
+        cmpv = bot;
+        cmpvA = &pixv;
+        cmpvB = &cmpv;
+        cmpmA = &mpixv;
+        cmpmB = &cmpv;
       }
-
-      if(ud || (maxVal != max))
+      pixv  = d_scale.limTransform(v);
+      mpixv = d_scale.limTransform(max);
+    }
+    else
+    {
+      // Reverse here means right to left.
+      if(_reverseDirection)
       {
-         targetMaxVal = max;
-         if(!fallingTimer.isActive())
-         {
-            fallingTimer.start(1000/std::max(30, _refreshRate));
-         }
+        cmpv = right;
+        cmpvA = &pixv;
+        cmpvB = &cmpv;
+        cmpmA = &mpixv;
+        cmpmB = &cmpv;
       }
-      
+      else
+      {
+        cmpv = left;
+        cmpvA = &cmpv;
+        cmpvB = &pixv;
+        cmpmA = &cmpv;
+        cmpmB = &mpixv;
+      }
+      pixv = d_scale.limTransform(v);
+      mpixv = d_scale.limTransform(max);
+    }
 
+    if(*cmpvA >= *cmpvB)
+    {
+      if(targetVal != minScaleLog)
+      {
+        targetVal = minScaleLog;
+        targetMaxVal = max;
+        ud = true;
+      }
+    }
+    else if(targetVal != v)
+    {
+      targetVal = v;
+      targetMaxVal = max;
+      ud = true;
+    }
+
+    if(*cmpmA >= *cmpmB)
+    {
+      if(maxVal != minScaleLog)
+      {
+        targetMaxVal = minScaleLog;
+        ud = true;
+      }
+    }
+    else if(maxVal != max)
+    {
+      targetMaxVal = max;
+      ud = true;
+    }
+  }
+
+  if(ud)
+  {
+      if(!fallingTimer.isActive())
+      {
+        fallingTimer.start(1000/std::max(30, _refreshRate));
+      }
+  }
 }
 
 void Meter::updateTargetMeterValue()
 {
-   double range = maxScale - minScale;
-   int fw = frameWidth();
-   int w  = width() - 2*fw;
-   int h  = height() - 2*fw;
-   QRect udRect;
-   bool udPeak = false;
+   const int wend  = _VURect.width();
+   const int hend  = _VURect.height();
+   const int left = _VURect.x();
+   const int rightEnd = left + wend;
+   const int right = rightEnd - 1;
+   const int top = _VURect.y();
+   const int botEnd = top + hend;
+   const int bot = botEnd - 1;
+
    bool ud = false;
 
-   if(targetVal > val)
+   QRegion udRegion;
+
+   // Is the falling value already less than or equal to the target value?
+   if(val <= targetVal)
    {
+      // Stop the timer but allow one final update.
+      if(fallingTimer.isActive())
+        fallingTimer.stop();
       val = targetVal;
       targetValStep = 0;
       ud = true;
    }
-   else if(targetVal < val)
+   // If the falling value is higher than the target value, keep on fallin'...
+   else if(val > targetVal)
    {
-      targetValStep = (val - targetVal) / ((double)(1000 / std::max(30, _refreshRate + 1)) / 7.0f);
-      val -= targetValStep;
-      if(val < targetVal)
+      // Test if the value has already reached the minimum.
+      // The pixel section below can also do this (sooner than this can).
+      if(val <= minScaleLog)
       {
-         val = targetVal;
+        // Stop the timer but allow one final update.
+        if(fallingTimer.isActive())
+          fallingTimer.stop();
+        // Force val to targetVal, because it may not have reached its target.
+        val = targetVal;
+        targetValStep = 0;
+      }
+      else
+      {
+        targetValStep = (val - targetVal) / ((double)(1000 / std::max(30, _refreshRate + 1)) / 7.0f);
+        // A catch-all to ensure that targetValStep is never allowed to be zero,
+        //  so that the value always (eventually) reaches its target.
+        if(targetValStep <= 0.0000000001) // 10^-9 (1 billionth)
+          targetValStep = 0.0000000001;
+
+        val -= targetValStep;
+        if(val < targetVal)
+        {
+          val = targetVal;
+          // Stop the timer but allow one final update.
+          if(fallingTimer.isActive())
+            fallingTimer.stop();
+          targetValStep = 0;
+        }
       }
       ud = true;
    }
 
-   const double transl_val = val - minScale;
-   
+   // Update the previous (erase) and current (draw) maximum line areas.
    if(maxVal != targetMaxVal)
    {
      maxVal = targetMaxVal;
-     const double v = (mtype == DBMeter) ? (MusECore::fast_log10(maxVal) * 20.0) : maxVal;
-     
+     const double v = (_isLog) ? (MusECore::fast_log10(maxVal) * _dBFactor) : maxVal;
+
      if(_orient == Qt::Vertical)
      { 
-       cur_pixmax = maxVal == 0 ? fw : int(((maxScale - v) * h)/range);
+       // Reverse here means top to bottom.
+       if(_reverseDirection)
+         cur_pixmax = d_scale.limTransform(v);
+       else
+         cur_pixmax = d_scale.limTransform(v);
+       if(cur_pixmax > bot)
+         cur_pixmax = bot;
+       else if(cur_pixmax < top)
+         cur_pixmax = top;
+
        if(_showText)
          updateText(v);
-       if(cur_pixmax > h) 
-         cur_pixmax = h;
-       // Not using regions. Just lump them together.
-       udRect = QRect(fw, last_pixmax, w, 1) | QRect(fw, cur_pixmax, w, 1);
+       if(cur_pixmax != last_pixmax)
+       {
+         udRegion += QRect(left, last_pixmax, wend, 1);
+         udRegion += QRect(left, cur_pixmax, wend, 1);
+       }
      }
      else
      {
-       //cur_pixmax = maxVal == 0 ? fw : int(((maxScale - v) * w)/range);
-       cur_pixmax = maxVal == 0 ? w - fw : int((v * w)/range);
+       // Reverse here means top to bottom.
+       if(_reverseDirection)
+         cur_pixmax = d_scale.limTransform(v);
+       else
+         cur_pixmax = d_scale.limTransform(v);
+       if(cur_pixmax < left)
+         cur_pixmax = left;
+       else if(cur_pixmax > right)
+         cur_pixmax = right;
+
        if(_showText)
          updateText(v);
-       if(cur_pixmax > w) 
-         cur_pixmax = w;
-       // Not using regions. Just lump them together.
-       udRect = QRect(last_pixmax, fw, 1, h) | QRect(cur_pixmax, fw, 1, w);
+       if(cur_pixmax != last_pixmax)
+       {
+         udRegion += QRect(last_pixmax, top, 1, hend);
+         udRegion += QRect(cur_pixmax, top, 1, hend);
+       }
      }
      
-     //printf("Meter::setVal peak cur_ymax:%d last_ymax:%d\n", cur_ymax, last_ymax);
      last_pixmax = cur_pixmax;
      ud = true;
-     udPeak = true;
    }
 
    if(ud)
    {
      if(_orient == Qt::Vertical)
      {
-       if(cur_pixv > h) 
-         cur_pixv = h;
-       if(mtype == DBMeter)
-         cur_pixv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
-         //cur_pixv = transl_val <= 0.0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);  // TODO
+       // Reverse here means top to bottom.
+       const int cmpv = _reverseDirection ? top : bot;
+       if(_isLog)
+       {
+         if(val <= minScaleLog)
+         {
+           cur_pixv = cmpv;
+         }
+         else
+         {
+           const double vdb = MusECore::fast_log10(val) * _dBFactor;
+           cur_pixv = d_scale.limTransform(vdb);
+         }
+       }
        else
-         cur_pixv = val == 0 ? h : int(((maxScale - val) * h)/range);
-         //cur_pixv = int(((maxScale - transl_val) * h)/range);     // TODO
-       
-      //printf("Meter::setVal cur_yv:%d last_yv:%d\n", cur_yv, last_yv);
-      int y1, y2;
-      if(last_pixv < cur_pixv) { y1 = last_pixv; y2 = cur_pixv; } else { y1 = cur_pixv; y2 = last_pixv; }
-      last_pixv = cur_pixv;
+       {
+         if(val <= minScale)
+         {
+           cur_pixv = cmpv;
+         }
+         else
+         {
+           cur_pixv = d_scale.limTransform(val);
+         }
+       }
 
-      if(udPeak)
-        update(udRect | QRect(fw, y1, w, y2 - y1 + 1));
-        //repaint(udRect | QRect(fw, y1, w, y2 - y1 + 1));
-      else
-        update(QRect(fw, y1, w, y2 - y1 + 1));
-        //repaint(QRect(fw, y1, w, y2 - y1 + 1));
+      // If the pixel representation of val is at pixel '0', then the 'falling value'
+      //  timer has finished its job - even if val has not quite reached its target value.
+      if(cur_pixv == cmpv)
+      {
+        if(fallingTimer.isActive())
+          fallingTimer.stop();
+        val = targetVal;
+        targetValStep = 0;
+      }
+
+      if(cur_pixv != last_pixv)
+      {
+        int y1, y2;
+        if(last_pixv < cur_pixv) { y1 = last_pixv; y2 = cur_pixv; } else { y1 = cur_pixv; y2 = last_pixv; }
+        udRegion += QRect(left, y1, wend, y2 - y1 + 1);
+        last_pixv = cur_pixv;
+      }
      }
      else
      {
-       if(cur_pixv > w) 
-         cur_pixv = w;
-       if(mtype == DBMeter)
-         //cur_pixv = val == 0 ? 0 : int((MusECore::fast_log10(val) * 20.0 * w)/range);
-         cur_pixv = transl_val <= 0.0 ? 0 : int((MusECore::fast_log10(transl_val) * 20.0 * w)/range); // FIXME: Comparison correct?
+       const int cmpv = _reverseDirection ? right : left;
+       if(_isLog)
+       {
+         if(val <= minScaleLog)
+         {
+           cur_pixv = cmpv;
+         }
+         else
+         {
+           const double vdb = MusECore::fast_log10(val) * _dBFactor;
+           cur_pixv = d_scale.limTransform(vdb);
+         }
+       }
        else
-         //cur_pixv =  int((val * w)/range);
-         cur_pixv =  int((transl_val * w)/range);
-       
-      //printf("Meter::setVal cur_yv:%d last_yv:%d\n", cur_yv, last_yv);
-      int x1, x2;
-      if(last_pixv < cur_pixv) { x1 = last_pixv; x2 = cur_pixv; } else { x1 = cur_pixv; x2 = last_pixv; }
-      last_pixv = cur_pixv;
+       {
+         if(val <= minScale)
+         {
+           cur_pixv = cmpv;
+         }
+         else
+         {
+           cur_pixv = d_scale.limTransform(val);
+         }
+       }
 
-      if(udPeak)
-        update(udRect | QRect(x1, fw, x2 - x1 + 1, h));
-        //repaint(udRect | QRect(x1, fw, x2 - x1 + 1, h));
-      else
-        update(QRect(x1, fw, x2 - x1 + 1, h));
-        //repaint(QRect(x1, fw, x2 - x1 + 1, h));
+      // If the pixel representation of val is at pixel '0', then the 'falling value'
+      //  timer has finished its job - even if val has not quite reached its target value.
+      if(cur_pixv == cmpv)
+      {
+        if(fallingTimer.isActive())
+          fallingTimer.stop();
+        val = targetVal;
+        targetValStep = 0;
+      }
+
+      if(cur_pixv != last_pixv)
+      {
+        int x1, x2;
+        if(last_pixv < cur_pixv) { x1 = last_pixv; x2 = cur_pixv; } else { x1 = cur_pixv; x2 = last_pixv; }
+        udRegion += QRect(x1, top, x2 - x1 + 1, hend);
+        last_pixv = cur_pixv;
+      }
      }
    }
-   if(!ud)
-   {
-      fallingTimer.stop();
-   }
-
+   if(!udRegion.isEmpty())
+     update(udRegion);
 }
 
 
@@ -519,19 +732,68 @@ void Meter::resetPeaks()
 //   setRange
 //---------------------------------------------------------
 
-void Meter::setRange(double min, double max)
+void Meter::setRange(double min, double max, bool isInteger, bool isLog)
       {
-      if(min == minScale && max == maxScale)   // p4.0.45
+      double min_log = min;
+      double max_log = max;
+
+      _isInteger = isInteger;
+      _isLog = isLog;
+
+      // If it's integer or log integer.
+      if(_isInteger)
+      {
+        min = rint(min);
+        max = rint(max);
+      }
+
+      if(_isLog)
+      {
+        if(_isInteger)
+        {
+          // Force a hard lower limit of integer 1.
+          if(min <= 0.0)
+            min = 1.0;
+          if(max <= 0.0)
+            max = 1.0;
+          min /= _logFactor;
+          max /= _logFactor;
+          min_log = min;
+          max_log = max;
+          min = _dBFactor * MusECore::fast_log10(min);
+          max = _dBFactor * MusECore::fast_log10(max);
+        }
+        else
+        {
+          // Force a hard lower limit of -120 dB.
+          if(min <= 0.0)
+          {
+            min_log = 0.000001;
+            min = -120;
+          }
+          else
+            min = _dBFactor * MusECore::fast_log10(min);
+
+          if(max <= 0.0)
+          {
+            max_log = 0.000001;
+            max = -120;
+          }
+          else
+            max = _dBFactor * MusECore::fast_log10(max);
+        }
+      }
+
+      if(min == minScale && max == maxScale && min_log == minScaleLog && max_log == maxScaleLog)
         return;
-      
+
       minScale = min;
       maxScale = max;
+      minScaleLog = min_log;
+      maxScaleLog = max_log;
       cur_pixv = -1;  // Force re-initialization.
-      
-      if (!hasUserScale())
-        d_scale.setScale(minScale, maxScale, d_maxMajor, d_maxMinor);
-      
-      update();
+
+      adjustScale();
       }
 
 //---------------------------------------------------------
@@ -573,7 +835,7 @@ void Meter::setPrimaryColor(const QColor& color, const QColor &bgColor)
   
   update(); 
 }
-      
+
 //---------------------------------------------------------
 //   paintEvent
 //---------------------------------------------------------
@@ -583,172 +845,193 @@ void Meter::paintEvent(QPaintEvent* ev)
   // For some reason upon resizing we get double calls here and in resizeEvent.
 
   QPainter p(this);
-  const int fw = frameWidth();
-  const int w  = width() - 2*fw;
-  const int h  = height() - 2*fw;
+
+  const int wend  = _VURect.width();
+  const int hend  = _VURect.height();
+  const int w  = wend - 1;
+  const int h  = hend - 1;
+  const int left = _VURect.x();
+  const int rightEnd = left + wend;
+  const int right = rightEnd - 1;
+  const int top = _VURect.y();
+  const int botEnd = top + hend;
+  const int bot = botEnd - 1;
+
   p.setRenderHint(QPainter::Antialiasing);
 
   //p.fillRect(0, 0, width(), height(), QColor(50, 50, 50));
 
-  const double range = maxScale - minScale;     
-  const double transl_val = val - minScale;
-  
+
+  QBrush maskgrad;
+  if (_vu3d)
+  {
+    maskGrad.setStart(QPointF(left, top));
+    if(_orient == Qt::Vertical)
+      maskGrad.setFinalStop(QPointF(w, top));
+    else
+      maskGrad.setFinalStop(QPointF(left, h));
+    maskgrad = QBrush(maskGrad);
+  }
+
+  const QBrush frame_br(_frameColor);
+  const QBrush peak_br(peak_color);
+  const QBrush& bkr_br = palette().window();
+
   bool textDrawn = false;
   QRegion::const_iterator ireg_end = ev->region().cend();
   for(QRegion::const_iterator ireg = ev->region().cbegin(); ireg != ireg_end; ++ireg)
   {
     const QRect& rect = *ireg;
+    QPainterPath rectpath;
+    rectpath.addRect(rect);
 
-    // Tested OK! Small non-overlapping rectangles.
-    //fprintf(stderr, "Meter::paintEvent rcount:%d ridx:%d rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", 
-    //                rectCount, ri, rect.x(), rect.y(), rect.width(), rect.height(), w, h);
+    const QRect vur = rect & _VURect;
 
-    QPainterPath drawingPath, updatePath, finalPath, cornerPath;
-    //bool updFull = false;
-    
-    // Initialize. Can't do in ctor, must be done after layouts have been done. Most reliable to do it here.
-    if(cur_pixv == -1) 
+    DEBUG_METER_PAINT(stderr, "meter::paint: region: x:%d y:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height());
+
+    // Fill any background path.
+    const QPainterPath bkpath = _bkgPath & rectpath;
+    if(!bkpath.isEmpty())
     {
-      if(_orient == Qt::Vertical)
+      DEBUG_METER_PAINT(stderr, "meter::paint: background:\n");
+      //printQPainterPath(bkpath);
+
+      p.fillPath(bkpath, bkr_br);
+    }
+
+    // If no part of the requested rectangle is part of the VU area, just continue.
+    if(!vur.isEmpty())
+    {
+
+      // Tested OK! Small non-overlapping rectangles.
+      //DEBUG_METER_PAINT(stderr, "Meter::paintEvent rcount:%d ridx:%d rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n",
+      //                rectCount, ri, rect.x(), rect.y(), rect.width(), rect.height(), w, h);
+
+      QPainterPath updatePath, finalPath;
+
+      // Initialize. Can't do in ctor, must be done after layouts have been done. Most reliable to do it here.
+      if(cur_pixv == -1)
       {
-        if(mtype == DBMeter)
-        {  
-          cur_pixv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
-          cur_pixmax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
-        }  
+        if(_orient == Qt::Vertical)
+        {
+          if(_isLog)
+          {
+            cur_pixv = d_scale.limTransform(MusECore::fast_log10(val) * _dBFactor);
+            cur_pixmax = d_scale.limTransform(MusECore::fast_log10(maxVal) * _dBFactor);
+          }
+          else
+          {
+            cur_pixv = d_scale.limTransform(val);
+            cur_pixmax = d_scale.limTransform(maxVal);
+          }
+          if(cur_pixv > bot) cur_pixv = bot;
+          last_pixv = cur_pixv;
+          if(cur_pixmax > bot) cur_pixmax = bot;
+          last_pixmax = cur_pixmax;
+          // Update the whole VU area.
+          updatePath.addRect(_VURect);
+        }
         else
-        {  
-          cur_pixv = val == 0 ? h : int(((maxScale - val) * h)/range);
-          cur_pixmax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
-        }  
-        if(cur_pixv > h) cur_pixv = h;
-        last_pixv = cur_pixv;
-        if(cur_pixmax > h) cur_pixmax = h;
-        last_pixmax = cur_pixmax;
-        //updFull = true;
-        updatePath.addRect(fw, fw, w, h);  // Update the whole thing
+        {
+          if(_isLog)
+          {
+            cur_pixv = d_scale.limTransform(MusECore::fast_log10(val) * _dBFactor);
+            cur_pixmax = d_scale.limTransform(MusECore::fast_log10(maxVal) * _dBFactor);
+          }
+          else
+          {
+            cur_pixv = d_scale.limTransform(val);
+            cur_pixmax = d_scale.limTransform(maxVal);
+          }
+          if(cur_pixv > right) cur_pixv = right;
+          last_pixv = cur_pixv;
+          if(cur_pixmax > right) cur_pixmax = right;
+          last_pixmax = cur_pixmax;
+          // Update the whole VU area.
+          updatePath.addRect(_VURect);
+        }
       }
       else
-      {
-        if(mtype == DBMeter)
-        {  
-          cur_pixv = transl_val <= 0.0 ? 0 : int(((MusECore::fast_log10(transl_val) * 20.0) * w)/range);
-          cur_pixmax = maxVal <= 0.0 ? w - fw : int(((MusECore::fast_log10(maxVal) * 20.0) * w)/range);
-        }  
-        else
-        {  
-          cur_pixv = int((transl_val * w)/range);
-          cur_pixmax = maxVal <= 0.0 ? w - fw : int((maxVal * w)/range);
-        }  
-        if(cur_pixv > w) cur_pixv = w;
-        last_pixv = cur_pixv;
-        if(cur_pixmax > w) cur_pixmax = w;
-        last_pixmax = cur_pixmax;
-        //updFull = true;
-        updatePath.addRect(fw, fw, w, h);  // Update the whole thing
-      }
-    }
-    else
-      updatePath.addRect(rect.x(), rect.y(), rect.width(), rect.height());  // Update only the requested rectangle
-    
+        updatePath.addRect(vur);  // Update only the requested rectangle
 
-    drawingPath.addRoundedRect(fw, fw, w, h, _radius, _radius);  // The actual desired shape of the meter
-    finalPath = drawingPath & updatePath;
+      finalPath = (_VUPath & updatePath).simplified();
 
-    // Draw corners as normal background colour.
-    cornerPath = updatePath - finalPath;            // Elegantly simple. Path subtraction! Wee...
-    if(!cornerPath.isEmpty())
-      p.fillPath(cornerPath, palette().window());  
-    
-#ifdef _USE_CLIPPER
-    p.setClipPath(finalPath);       //  Meh, nice but not so good. Clips at edge so antialising has no effect! Can it be done ?
-#endif
+      // Draw the red, green, and yellow sections.
+      drawVU(p, vur, finalPath, cur_pixv);
 
-    // Draw the red, green, and yellow sections.
-    drawVU(p, rect, finalPath, cur_pixv);
-
-    // Draw the peak white line.
-    //if(updFull || (cur_ymax >= rect.y() && cur_ymax < rect.height()))
-    {
+      // Draw the peak white line.
       p.setRenderHint(QPainter::Antialiasing, false);  // No antialiasing. Makes the line fuzzy, double height, or not visible at all.
-
-      //p.setPen(peak_color);
-      //p.drawLine(fw, cur_ymax, w, cur_ymax); // Undesirable. Draws outside the top rounded corners.
-      //
-      //QPainterPath path; path.moveTo(fw, cur_ymax); path.lineTo(w, cur_ymax);  // ? Didn't work. No line at all.
-      //p.drawPath(path & finalPath);
       QPainterPath path;
       if(_orient == Qt::Vertical)
-        path.addRect(fw, cur_pixmax + cur_pixmax % 2 + 1, w, 1);
+        path.addRect(left, cur_pixmax, wend, 1);
       else
-        path.addRect(cur_pixmax + cur_pixmax % 2 + 1, fw, 1, h);
-      path &= finalPath;
+        path.addRect(cur_pixmax, top, 1, hend);
+      path = (path & finalPath).simplified();
       if(!path.isEmpty())
-        p.fillPath(path, QBrush(peak_color));
-    }
-    
-    if (_vu3d) {
-        // Draw the transparent layer on top of everything to give a 3d look
-        p.setRenderHint(QPainter::Antialiasing);
-        maskGrad.setStart(QPointF(fw, fw));
-        if(_orient == Qt::Vertical)
-            maskGrad.setFinalStop(QPointF(w, fw));
-        else
-            maskGrad.setFinalStop(QPointF(fw, h));
-#ifdef _USE_CLIPPER
-        p.fillRect(rect, QBrush(maskGrad));
-#else
-        //QPainterPath path; path.addRect(fw, fw, w);
-        //p.fillPath(finalPath & path, QBrush(maskGrad));
-        p.fillPath(finalPath, QBrush(maskGrad));
+        p.fillPath(path, peak_br);
 
-#endif      
-    }
-
-    if (_frame) {
-        p.setPen(_frameColor);
-        QPainterPath framePath;
-        framePath.addRoundedRect(fw, fw, w, h, _radius, _radius);
-        p.setClipPath(finalPath);
-        p.drawPath(framePath);
-        p.setClipping(false);
-    }
-
-    if(_showText)
-    {
-      const QRect rr(rect.y(), rect.x(), rect.height(), rect.width()); // Rotate 90 degrees.
-      if(!textDrawn && rr.intersects(_textRect))
+      if (_vu3d)
       {
-        textDrawn = true;
-        //fprintf(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());
-        //p.setFont(_textFont);
-        p.setPen(Qt::white);
-        
-        if(_orient == Qt::Vertical)
+          // Draw the transparent layer on top of everything to give a 3d look
+          p.setRenderHint(QPainter::Antialiasing);
+          p.fillPath(finalPath, maskgrad);
+      }
+
+      if(_showText)
+      {
+        const QRect rr(rect.y(), rect.x(), rect.height(), rect.width()); // Rotate 90 degrees.
+        if(!textDrawn && rr.intersects(_textRect))
         {
-          p.rotate(90);
-          p.translate(0, -frameGeometry().width());
-        }
-        
-        //p.drawText(txtXOff, txtYOff, _textSize.width(), _textSize.height(), Qt::AlignLeft | Qt::AlignVCenter, _text);
-        p.drawText(_textRect, Qt::AlignLeft | Qt::AlignVCenter, _text);
-        //p.drawPixmap(fw, fw, _textPM);
-        
-        if(_orient == Qt::Vertical)
-        {
-          // Restore.
-          p.translate(0, frameGeometry().width());
-          p.rotate(-90);
+          textDrawn = true;
+          DEBUG_METER_PAINT(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());
+          //p.setFont(_textFont);
+          p.setPen(Qt::white);
+
+          if(_orient == Qt::Vertical)
+          {
+            p.rotate(90);
+            p.translate(0, -frameGeometry().width());
+          }
+
+          //p.drawText(txtXOff, txtYOff, _textSize.width(), _textSize.height(), Qt::AlignLeft | Qt::AlignVCenter, _text);
+          p.drawText(_textRect, Qt::AlignLeft | Qt::AlignVCenter, _text);
+          //p.drawPixmap(fw, fw, _textPM);
+
+          if(_orient == Qt::Vertical)
+          {
+            // Restore.
+            p.translate(0, frameGeometry().width());
+            p.rotate(-90);
+          }
         }
       }
     }
+
+    if (_frame)
+    {
+      const QPainterPath fp = (_VUFramePath & rectpath).simplified();
+      if(!fp.isEmpty())
+      {
+        DEBUG_METER_PAINT(stderr, "meter::paint: frame\n");
+        //printQPainterPath(fp);
+
+        p.fillPath(fp, frame_br);
+      }
+    }
+
   }
   
-  if(_scalePos != None) 
+  if(_scalePos != ScaleNone)
   {
-//  p.fillRect(rect(), palette().window());
-    p.setRenderHint(QPainter::Antialiasing, false);
-    d_scale.draw(&p, palette());
+    // If any part of the total requested rectangle is part of the scale area,
+    //  draw the whole scale. TODO Try to refine scale draw routine.
+    if(!(ev->rect() & _scaleRect).isEmpty())
+    {
+      DEBUG_METER_PAINT(stderr, "meter::paint: scale\n");
+
+      p.setRenderHint(QPainter::Antialiasing, false);
+      d_scale.draw(&p, palette());
+    }
   }
 }
 
@@ -758,435 +1041,488 @@ void Meter::paintEvent(QPaintEvent* ev)
 
 void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath, int pixv)
 {
-      int fw = frameWidth();
-      int w  = width() - 2*fw;
-      int h  = height() - 2*fw;
+      const int wend  = _VURect.width();
+      const int hend  = _VURect.height();
+      //const int w  = wend - 1;
+      //const int h  = hend - 1;
+      const int left = _VURect.x();
+      const int rightEnd = left + wend;
+      //const int right = rightEnd - 1;
+      const int top = _VURect.y();
+      const int botEnd = top + hend;
+      //const int bot = botEnd - 1;
 
       // Test OK. We are passed small rectangles on small value changes.
-      //printf("Meter::drawVU rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height(), w, h); 
+      //DEBUG_METER_PAINT(stderr, "Meter::drawVU rx:%d ry:%d rw:%d rh:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height(), w, h);
 
       if(_orient == Qt::Vertical)
       {  
-        //QRect pr(0, 0,  w, 0);
-        if(mtype == DBMeter)     // Meter type is dB...
+        if(_isLog)     // Meter type is dB...
         {
-          double range = maxScale - minScale;
-          int y1 = int((maxScale - redScale) * h / range);
-          int y2 = int((maxScale - yellowScale) * h / range);
-
-          if (_vu3d) {
-              darkGradGreen.setStart(QPointF(fw, y2));
-              darkGradGreen.setFinalStop(QPointF(fw, h));
-              darkGradYellow.setStart(QPointF(fw, y1));
-              darkGradYellow.setFinalStop(QPointF(fw, y2));
-              darkGradRed.setStart(QPointF(fw, fw));
-              darkGradRed.setFinalStop(QPointF(fw, y1));
-          }
-
-          lightGradGreen.setStart(QPointF(fw, y2));
-          lightGradGreen.setFinalStop(QPointF(fw, h));
-          lightGradYellow.setStart(QPointF(fw, y1));
-          lightGradYellow.setFinalStop(QPointF(fw, y2));
-          lightGradRed.setStart(QPointF(fw, fw));
-          lightGradRed.setFinalStop(QPointF(fw, y1));
-
-  #ifdef _USE_CLIPPER
-          if(yv < y1)
+          int y1, y2;
+          if(_reverseDirection)
           {
-            // Red section:
-            pr.setTop(fw); pr.setHeight(yv);
-            p.fillRect(pr, QBrush(darkGradRed));     // dark red  
-            pr.setTop(yv); pr.setHeight(y1-yv);
-            p.fillRect(pr & rect, QBrush(lightGradRed));     // light red
-            
-            // Yellow section:
-            pr.setTop(y1); pr.setHeight(y2-y1);
-            p.fillRect(pr & rect, QBrush(lightGradYellow));     // light yellow
-            
-            // Green section:
-            pr.setTop(y2); pr.setHeight(h-y2);
-            p.fillRect(pr & rect, QBrush(lightGradGreen));     // light green
+            y1 = d_scale.limTransform(yellowScale);
+            y2 = d_scale.limTransform(redScale);
           }
           else
-          if(yv < y2)
           {
-            // Red section:
-            pr.setTop(fw); pr.setHeight(y1);
-            p.fillRect(pr & rect, QBrush(darkGradRed));     // dark red  
-            
-            // Yellow section:
-            pr.setTop(y1); pr.setHeight(yv-y1);
-            p.fillRect(pr & rect, QBrush(darkGradYellow));     // dark yellow
-            pr.setTop(yv); pr.setHeight(y2-yv);
-            p.fillRect(pr & rect, QBrush(lightGradYellow));     // light yellow
-            
-            // Green section:
-            pr.setTop(y2); pr.setHeight(h-y2);
-            p.fillRect(pr & rect, QBrush(lightGradGreen));     // light green
+            y1 = d_scale.limTransform(redScale);
+            y2 = d_scale.limTransform(yellowScale);
           }
-          else
-          //if(yv <= y3)   
+
+          if(_reverseDirection)
           {
-            // Red section:
-            pr.setTop(fw); pr.setHeight(y1);
-            p.fillRect(pr & rect, QBrush(darkGradRed));     // dark red  
-            
-            // Yellow section:
-            pr.setTop(y1); pr.setHeight(y2-y1);
-            p.fillRect(pr & rect, QBrush(darkGradYellow));     // dark yellow
-            
-            // Green section:
-            pr.setTop(y2); pr.setHeight(yv-y2);
-            p.fillRect(pr & rect, QBrush(darkGradGreen));     // dark green
-            pr.setTop(yv); pr.setHeight(h-yv);
-            p.fillRect(pr & rect, QBrush(lightGradGreen));     // light green
+            if(pixv < y1)
+            {
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, top, wend, pixv - top); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+              {
+                QPainterPath path; path.addRect(left, pixv, wend, y1 - pixv); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);       // dark green
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(left, y1, wend, y2 - y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, y2, wend, botEnd - y2); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+            }
+            else
+            if(pixv < y2)
+            {
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, top, wend, y1 - top); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(left, y1, wend, pixv - y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+              {
+                QPainterPath path; path.addRect(left, pixv, wend, y2 - pixv); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, y2, wend, botEnd - y2); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+            }
+            else
+            //if(yv <= y3)
+            {
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, top, wend, y1 - top); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(left, y1, wend, y2 - y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, y2, wend, pixv - y2); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradRed));   // light red
+              }
+              {
+                QPainterPath path; path.addRect(left, pixv, wend, botEnd - pixv); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);   // dark red
+              }
+            }
+
+            // Separators:
+            {
+              QRect r(left, y1, wend, 1); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
+            {
+              QRect r(left, y2, wend, 1); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
           }
-        }  
-        else     // Meter type is linear...
-        {
-          pr.setTop(fw); pr.setHeight(yv);
-          p.fillRect(pr & rect, QBrush(darkGradGreen));   // dark green
-          pr.setTop(yv); pr.setHeight(h-yv);
-          p.fillRect(pr & rect, QBrush(lightGradGreen));   // light green
+          else //========== Not _reverseDirection ==========
+          {
+            if(pixv < y1)
+            {
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, top, wend, pixv); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+              {
+                QPainterPath path; path.addRect(left, pixv, wend, y1 - pixv); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradRed));       // light red
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(left, y1, wend, y2 - y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, y2, wend, botEnd - y2); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+            }
+            else
+            if(pixv < y2)
+            {
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, top, wend, y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(left, y1, wend, pixv - y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+              {
+                QPainterPath path; path.addRect(left, pixv, wend, y2 - pixv); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, y2, wend, botEnd - y2); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+            }
+            else
+            //if(yv <= y3)
+            {
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, top, wend, y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(left, y1, wend, y2 - y1); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, y2, wend, pixv - y2); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
+              }
+              {
+                QPainterPath path; path.addRect(left, pixv, wend, botEnd - pixv); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+            }
+
+            // Separators:
+            {
+              QRect r(left, y1, wend, 1); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
+            {
+              QRect r(left, y2, wend, 1); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
+          }
         }
-
-  #else   // NOT    _USE_CLIPPER
-
-          if(pixv < y1)
-          {
-            // Red section:
-            {
-              QPainterPath path; path.addRect(fw, fw, w, pixv); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
-            }
-            {
-              QPainterPath path; path.addRect(fw, pixv, w, y1-pixv); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradRed));       // light red
-            }
-            
-            // Yellow section:
-            {
-              QPainterPath path; path.addRect(fw, y1, w, y2-y1); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradYellow));   // light yellow
-            }
-            
-            // Green section:
-            {
-              QPainterPath path; path.addRect(fw, y2, w, h-y2); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradGreen));   // light green
-            }
-          }
-          else
-          if(pixv < y2)
-          {
-            // Red section:
-            {
-              QPainterPath path; path.addRect(fw, fw, w, y1); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
-            }
-            
-            // Yellow section:
-            {
-              QPainterPath path; path.addRect(fw, y1, w, pixv-y1); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
-            }
-            {
-              QPainterPath path; path.addRect(fw, pixv, w, y2-pixv); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradYellow));   // light yellow
-            }
-            
-            // Green section:
-            {
-              QPainterPath path; path.addRect(fw, y2, w, h-y2); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradGreen));   // light green
-            }
-          }
-          else
-          //if(yv <= y3)   
-          {
-            // Red section:
-            {
-              QPainterPath path; path.addRect(fw, fw, w, y1); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
-            }
-            
-            // Yellow section:
-            {
-              QPainterPath path; path.addRect(fw, y1, w, y2-y1); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
-            }
-            
-            // Green section:
-            {
-              QPainterPath path; path.addRect(fw, y2, w, pixv-y2); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
-            }
-            {
-              QPainterPath path; path.addRect(fw, pixv, w, h-pixv); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradGreen));   // light green
-            }
-          }
-
-          // Separators: 
-          {
-            QRect r(0, y1, w, 1); r &= rect;
-            if(!r.isNull())
-              p.fillRect(r, separator_color);
-          }
-          {
-            QRect r(0, y2, w, 1); r &= rect;
-            if(!r.isNull())
-              p.fillRect(r, separator_color);
-          }
-        }  
         else      // Meter type is linear...
         {
-            if (_vu3d) {
-                darkGradGreen.setStart(QPointF(fw, fw));
-                darkGradGreen.setFinalStop(QPointF(fw, h));
-            }
-
-          lightGradGreen.setStart(QPointF(fw, fw));
-          lightGradGreen.setFinalStop(QPointF(fw, h));
-
           {
-            QPainterPath path; path.addRect(fw, fw, w, pixv); path &= drawPath;
+            QPainterPath path; path.addRect(left, top, wend, pixv); path &= drawPath;
             if(!path.isEmpty())
               p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
           }
           {
-            QPainterPath path; path.addRect(fw, pixv, w, h-pixv); path &= drawPath;
+            QPainterPath path; path.addRect(left, pixv, wend, botEnd - pixv); path &= drawPath;
             if(!path.isEmpty())
               p.fillPath(path, QBrush(lightGradGreen));   // light green
           }
         }
 
-#endif  // NOT   _USE_CLIPPER
 
       }
       else    // Horizontal meter
       {
-        //QRect pr(0, 0,  w, 0);
-        if(mtype == DBMeter)     // Meter type is dB...
+        if(_isLog)     // Meter type is dB...
         {
-          double range = maxScale - minScale;
-          int x1 = int(redScale * w / range);
-          int x2 = int(yellowScale * w / range);
-
-          if (_vu3d) {
-              darkGradGreen.setStart(QPointF(x2, fw));
-              darkGradGreen.setFinalStop(QPointF(w, fw));
-              darkGradYellow.setStart(QPointF(x1, fw));
-              darkGradYellow.setFinalStop(QPointF(x2, fw));
-              darkGradRed.setStart(QPointF(fw, fw));
-              darkGradRed.setFinalStop(QPointF(x1, fw));
-          }
-
-          lightGradGreen.setStart(QPointF(x2, fw));
-          lightGradGreen.setFinalStop(QPointF(w, fw));
-          lightGradYellow.setStart(QPointF(x1, fw));
-          lightGradYellow.setFinalStop(QPointF(x2, fw));
-          lightGradRed.setStart(QPointF(fw, fw));
-          lightGradRed.setFinalStop(QPointF(x1, fw));
-
-  #ifdef _USE_CLIPPER
-          if(yv < y1)
+          int x1, x2;
+          if(_reverseDirection)
           {
-            // Red section:
-            pr.setTop(fw); pr.setHeight(yv);
-            p.fillRect(pr, QBrush(darkGradRed));     // dark red  
-            pr.setTop(yv); pr.setHeight(y1-yv);
-            p.fillRect(pr & rect, QBrush(lightGradRed));     // light red
-            
-            // Yellow section:
-            pr.setTop(y1); pr.setHeight(y2-y1);
-            p.fillRect(pr & rect, QBrush(lightGradYellow));     // light yellow
-            
-            // Green section:
-            pr.setTop(y2); pr.setHeight(h-y2);
-            p.fillRect(pr & rect, QBrush(lightGradGreen));     // light green
+            x1 = d_scale.limTransform(redScale);
+            x2 = d_scale.limTransform(yellowScale);
           }
           else
-          if(yv < y2)
           {
-            // Red section:
-            pr.setTop(fw); pr.setHeight(y1);
-            p.fillRect(pr & rect, QBrush(darkGradRed));     // dark red  
-            
-            // Yellow section:
-            pr.setTop(y1); pr.setHeight(yv-y1);
-            p.fillRect(pr & rect, QBrush(darkGradYellow));     // dark yellow
-            pr.setTop(yv); pr.setHeight(y2-yv);
-            p.fillRect(pr & rect, QBrush(lightGradYellow));     // light yellow
-            
-            // Green section:
-            pr.setTop(y2); pr.setHeight(h-y2);
-            p.fillRect(pr & rect, QBrush(lightGradGreen));     // light green
-          }
-          else
-          //if(yv <= y3)   
-          {
-            // Red section:
-            pr.setTop(fw); pr.setHeight(y1);
-            p.fillRect(pr & rect, QBrush(darkGradRed));     // dark red  
-            
-            // Yellow section:
-            pr.setTop(y1); pr.setHeight(y2-y1);
-            p.fillRect(pr & rect, QBrush(darkGradYellow));     // dark yellow
-            
-            // Green section:
-            pr.setTop(y2); pr.setHeight(yv-y2);
-            p.fillRect(pr & rect, QBrush(darkGradGreen));     // dark green
-            pr.setTop(yv); pr.setHeight(h-yv);
-            p.fillRect(pr & rect, QBrush(lightGradGreen));     // light green
-          }
-        }  
-        else     // Meter type is linear...
-        {
-          pr.setTop(fw); pr.setHeight(yv);
-          p.fillRect(pr & rect, QBrush(darkGradGreen));   // dark green
-          pr.setTop(yv); pr.setHeight(h-yv);
-          p.fillRect(pr & rect, QBrush(lightGradGreen));   // light green
-        }
-
-  #else   // NOT    _USE_CLIPPER
-
-          if(pixv < x1)
-          {
-            // Red section:
-            {
-              QPainterPath path; path.addRect(fw, fw, pixv, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
-            }
-            {
-              QPainterPath path; path.addRect(pixv, fw, x1-pixv, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradRed));       // light red
-            }
-            
-            // Yellow section:
-            {
-              QPainterPath path; path.addRect(x1, fw, x2-x1, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradYellow));   // light yellow
-            }
-            
-            // Green section:
-            {
-              QPainterPath path; path.addRect(x2, fw, w-x2, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradGreen));   // light green
-            }
-          }
-          else
-          if(pixv < x2)
-          {
-            // Red section:
-            {
-              QPainterPath path; path.addRect(fw, fw, x1, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
-            }
-            
-            // Yellow section:
-            {
-              QPainterPath path; path.addRect(x1, fw, pixv-x1, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
-            }
-            {
-              QPainterPath path; path.addRect(pixv, fw, x2-pixv, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradYellow));   // light yellow
-            }
-            
-            // Green section:
-            {
-              QPainterPath path; path.addRect(x2, fw, w-x2, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradGreen));   // light green
-            }
-          }
-          else
-          //if(yv <= y3)   
-          {
-            // Red section:
-            {
-              QPainterPath path; path.addRect(fw, fw, x1, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
-            }
-            
-            // Yellow section:
-            {
-              QPainterPath path; path.addRect(x1, fw, x2-x1, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
-            }
-            
-            // Green section:
-            {
-              QPainterPath path; path.addRect(x2, fw, pixv-x2, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
-            }
-            {
-              QPainterPath path; path.addRect(pixv, fw, w-pixv, h); path &= drawPath;
-              if(!path.isEmpty())
-                p.fillPath(path, QBrush(lightGradGreen));   // light green
-            }
+            x1 = d_scale.limTransform(yellowScale);
+            x2 = d_scale.limTransform(redScale);
           }
 
-          // Separators: 
+          if(_reverseDirection)
           {
-            QRect r(x1, 0, 1, h); r &= rect;
-            if(!r.isNull())
-              p.fillRect(r, separator_color);  
-          }  
+            if(pixv < x1)
+            {
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, top, pixv - left, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+              {
+                QPainterPath path; path.addRect(pixv, top, x1 - pixv, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradRed));       // light red
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(x1, top, x2 - x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+
+              // Green section:
+              {
+                QPainterPath path; path.addRect(x2, top, rightEnd - x2, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+            }
+            else
+            if(pixv < x2)
+            {
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, top, x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(x1, top, pixv - x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+              {
+                QPainterPath path; path.addRect(pixv, top, x2 - pixv, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+
+              // Green section:
+              {
+                QPainterPath path; path.addRect(x2, top, rightEnd - x2, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+            }
+            else
+            //if(yv <= y3)
+            {
+              // Red section:
+              {
+                QPainterPath path; path.addRect(left, top, x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(x1, top, x2 - x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+
+              // Green section:
+              {
+                QPainterPath path; path.addRect(x2, top, pixv - x2, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
+              }
+              {
+                QPainterPath path; path.addRect(pixv, top, rightEnd - pixv, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+            }
+
+            // Separators:
+            {
+              QRect r(x1, top, 1, hend); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
+            {
+              QRect r(x2, top, 1, hend); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
+          }
+          else  //========== Not _reverseDirection ==========
           {
-            QRect r(x2, 0, 1, h); r &= rect;
-            if(!r.isNull())
-              p.fillRect(r, separator_color);  
-          }  
+            if(pixv < x1)
+            {
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, top, pixv - left, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+              {
+                QPainterPath path; path.addRect(pixv, top, x1 - pixv, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(x1, top, x2 - x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+
+              // Red section:
+              {
+                QPainterPath path; path.addRect(x2, top, rightEnd - x2, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);   // dark red
+              }
+            }
+            else
+            if(pixv < x2)
+            {
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, top, x1 - left, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(x1, top, pixv - x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+              {
+                QPainterPath path; path.addRect(pixv, top, x2 - pixv, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradYellow) : _bgColor);   // dark yellow
+              }
+
+              // Red section:
+              {
+                QPainterPath path; path.addRect(x2, top, rightEnd - x2, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);       // dark red
+              }
+            }
+            else
+            //if(yv <= y3)
+            {
+              // Green section:
+              {
+                QPainterPath path; path.addRect(left, top, x1 - left, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradGreen));   // light green
+              }
+
+              // Yellow section:
+              {
+                QPainterPath path; path.addRect(x1, top, x2 - x1, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradYellow));   // light yellow
+              }
+
+              // Red section:
+              {
+                QPainterPath path; path.addRect(x2, top, pixv - x2, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, QBrush(lightGradRed));   // light red
+              }
+              {
+                QPainterPath path; path.addRect(pixv, top, rightEnd - pixv, hend); path &= drawPath;
+                if(!path.isEmpty())
+                  p.fillPath(path, _vu3d ? QBrush(darkGradRed) : _bgColor);   // dark red
+              }
+            }
+
+            // Separators:
+            {
+              QRect r(x1, top, 1, hend); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
+            {
+              QRect r(x2, top, 1, hend); r &= rect;
+              if(!r.isNull())
+                p.fillRect(r, separator_color);
+            }
+          }
         }  
         else      // Meter type is linear...
         {
-            if (_vu3d) {
-                darkGradGreen.setStart(QPointF(fw, fw));
-                darkGradGreen.setFinalStop(QPointF(w, fw));
-            }
-
-          lightGradGreen.setStart(QPointF(fw, fw));
-          lightGradGreen.setFinalStop(QPointF(w, fw));
-
           {
-            QPainterPath path; path.addRect(fw, fw, pixv, h); path &= drawPath;
+            QPainterPath path; path.addRect(left, top, pixv - left, hend); path &= drawPath;
             if(!path.isEmpty())
               p.fillPath(path, QBrush(lightGradGreen));   // light green
           }
           {
-            QPainterPath path; path.addRect(pixv, fw, w, h); path &= drawPath;
+            QPainterPath path; path.addRect(pixv, top, rightEnd - pixv, hend); path &= drawPath;
             if(!path.isEmpty())
               p.fillPath(path, _vu3d ? QBrush(darkGradGreen) : _bgColor);   // dark green
           }
         }
-
-#endif  // NOT   _USE_CLIPPER
       }
-
 }
 
 //---------------------------------------------------------
@@ -1195,161 +1531,399 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
 
 void Meter::resizeEvent(QResizeEvent* ev)
 {
-   // For some reason upon resizing we get double calls here and in paintEvent.
-   //printf("Meter::resizeEvent w:%d h:%d\n", ev->size().width(), ev->size().height());
-
-   cur_pixv = -1;  // Force re-initialization.
    QFrame::resizeEvent(ev);
 
-   //update(); //according to docs, update will be called automatically
-   
-    QSize s = ev->size();
-  
+   // Tested: Hm, we are given zero height at first, even in the event's size() member,
+   //  and even after calling the base resizeEvent()!
+
+   // For some reason upon resizing we get double calls here and in paintEvent.
+   //DEBUG_METER("Meter::resizeEvent w:%d h:%d\n", ev->size().width(), ev->size().height());
+
+   const int fw = frameWidth();
+   const QRect cr = contentsRect();
+   const int crw  = cr.width() - 2*fw;
+   const int crh  = cr.height() - 2*fw;
+   const int crleft = cr.x() + fw;
+   const int crrightEnd = crleft + crw;
+   //const int crright = crrightEnd - 1;
+   const int crtop = cr.y() + fw;
+   const int crbotEnd = crtop + crh;
+   //const int crbot = crbotEnd - 1;
+   const int vufw = _frame ? 1 : 0;
+
+   cur_pixv = -1;  // Force re-initialization.
+
     const QFontMetrics fm = fontMetrics();
-    // reposition slider
+
+    // Clear might be a bit too new at 5.13
+    //_bkgPath.clear();
+    QPainterPath bkgpath;
+
     if(_orient == Qt::Horizontal)
     {
+      const int xoff = d_scale.originOffsetHint(fm, true).x();
+      const int xfin = crleft + xoff;
+      const int wfin = crw - 2 * xoff;
+
+      const int amleft = qMax(_alignmentMargins.left() - (xfin + vufw), 0);
+      const int amright = qMax(_alignmentMargins.right() - (xoff + contentsMargins().right() + fw + vufw), 0);
+      const int amtotal = amleft + amright;
+
       switch(_scalePos)
       {
-        case Top:
-            d_scale.setGeometry(this->rect().x(),
-              this->rect().y() + s.height() - 1 - _scaleDist,
-              s.width(),
-              ScaleDraw::Top);
+        case ScaleLeftOrTop:
+        {
+            const int smy = d_scale.maxHeight(fm);
+            _VUFrameRect.setRect(xfin + amleft, crtop + smy + _scaleDist, wfin - amtotal, crh - smy);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _scaleRect.setRect(crleft + amleft, crtop, crw - amtotal, smy);
+            _scaleGeom.setRect(_VURect.x(), crtop, _VURect.width(), smy);
+            _spacerRect.setRect(crleft, crtop + smy, crw, _scaleDist);
+            d_scale.setGeometry(_VURect.x(), crtop, _VURect.width());
             break;
-      
-        case Bottom:
-            d_scale.setGeometry(this->rect().x(),
-              this->rect().y() + s.height() + _scaleDist,
-              s.width(),
-              ScaleDraw::Bottom);
+        }
+
+        case ScaleRightOrBottom:
+        {
+            const int smy = d_scale.maxHeight(fm);
+            _VUFrameRect.setRect(xfin + amleft, crtop, wfin - amtotal, crh - smy - _scaleDist);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _spacerRect.setRect(crleft, crh - smy - _scaleDist, crw, _scaleDist);
+            _scaleRect.setRect(crleft + amleft, crbotEnd - smy, crw - amtotal, smy);
+            _scaleGeom.setRect(_VURect.x(), crbotEnd - smy, _VURect.width(), smy);
+            d_scale.setGeometry(_VURect.x(), crbotEnd - smy, _VURect.width());
             break;
-      
-        case InsideHorizontal:
-            d_scale.setGeometry(this->rect().x(),
-              this->rect().y() + d_scale.maxHeight(fm) + _scaleDist,
-              s.width(),
-              ScaleDraw::InsideHorizontal);
+        }
+
+        case ScaleInside:
+            _VUFrameRect.setRect(xfin + amleft, crtop, wfin - amtotal, crh);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _scaleRect.setRect(crleft + amleft, _VURect.y(), crw - amtotal, _VURect.height());
+            _scaleGeom.setRect(_VURect.x(), _VURect.y(), _VURect.width(), _VURect.height());
+            _spacerRect.setRect(crleft, crtop, 0, 0);
+            d_scale.setGeometry(_VURect.x(), _VURect.y(), _VURect.width());
             break;
-            
-        default:
+
+        case ScaleNone:
+            _VUFrameRect.setRect(xfin + amleft, crtop, wfin - amtotal, crh);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _spacerRect.setRect(crleft, crtop, 0, 0);
+            _scaleRect.setRect(crleft, crtop, 0, 0);
+            _scaleGeom.setRect(crleft, crtop, 0, 0);
+            // Give the translators something to work with.
+            d_scale.setGeometry(_VURect.x(), _VURect.y(), _VURect.width());
             break;
       }
     }
     else // d_orient == Qt::Vertical
     {
+      const int yoff = d_scale.originOffsetHint(fm, true).y();
+      const int yfin = crtop + yoff;
+      const int hfin = crh - 2 * yoff;
+      const int smx = d_scale.maxWidth(fm, false);
+
+      const int amtop = qMax(_alignmentMargins.top() - (yfin + vufw), 0);
+      const int ambot = qMax(_alignmentMargins.bottom() - (yoff + contentsMargins().bottom() + fw + vufw), 0);
+      const int amtotal = amtop + ambot;
+
       switch(_scalePos)
       {
-        case Left:
-            d_scale.setGeometry(this->rect().x() - _scaleDist,
-              this->rect().y(),
-              s.height(),
-              ScaleDraw::Left);
-            break;
-            
-        case Right:
-            d_scale.setGeometry(this->rect().x() + width() + _scaleDist,
-              this->rect().y(),
-              s.height(),
-              ScaleDraw::Right);
-            break;
-            
-        case InsideVertical:
+        case ScaleLeftOrTop:
         {
-            const int mxlw = d_scale.maxLabelWidth(fm, false);
-            const int sclw = d_scale.scaleWidth();
-            
-            d_scale.setGeometry(this->rect().x() + mxlw + sclw + _scaleDist,
-              this->rect().y(),                                
-              s.height(),
-              ScaleDraw::InsideVertical);
+            _VUFrameRect.setRect(crleft + smx + _scaleDist, yfin + amtop, crw - smx, hfin - amtotal);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _scaleRect.setRect(crleft, crtop + amtop, smx, crh - amtotal);
+            _scaleGeom.setRect(crleft, _VURect.y(), smx, _VURect.height());
+            _spacerRect.setRect(crleft + smx, crtop, _scaleDist, crh);
+            d_scale.setGeometry(crleft, _VURect.y(), _VURect.height());
+            break;
         }
+
+        case ScaleRightOrBottom:
+        {
+            _VUFrameRect.setRect(crleft, yfin + amtop, crw - smx - _scaleDist, hfin - amtotal);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _spacerRect.setRect(crw - smx - _scaleDist, crtop, _scaleDist, crh);
+            _scaleRect.setRect(crrightEnd - smx, crtop + amtop, smx, crh - amtotal);
+            _scaleGeom.setRect(crrightEnd - smx, _VURect.y(), smx, _VURect.height());
+            d_scale.setGeometry(crrightEnd - smx, _VURect.y(), _VURect.height());
+            break;
+        }
+
+        case ScaleInside:
+            _VUFrameRect.setRect(crleft, yfin + amtop, crw, hfin - amtotal);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _scaleRect.setRect(_VURect.x() + _VURect.width() - smx, crtop + amtop, smx, crh - amtotal);
+            _scaleGeom.setRect(_VURect.x() + _VURect.width() - smx, _VURect.y(), smx, _VURect.height());
+            _spacerRect.setRect(crleft, crtop, 0, 0);
+            d_scale.setGeometry(_VURect.x() + _VURect.width() - 1, _VURect.y(), _VURect.height());
         break;
-            
-        default:
+
+        case ScaleNone:
+            _VUFrameRect.setRect(crleft, yfin + amtop, crw, hfin - amtotal);
+            _VURect = _VUFrameRect.adjusted(vufw, vufw, -vufw, -vufw);
+            _spacerRect.setRect(crleft, crtop, 0, 0);
+            _scaleRect.setRect(crleft, crtop, 0, 0);
+            _scaleGeom.setRect(crleft, crtop, 0, 0);
+            // Give the translators something to work with.
+            d_scale.setGeometry(_VURect.x(), _VURect.y(), _VURect.height());
             break;
       }
     }
-  
+
+  // The actual desired shape of the meter.
+  QPainterPath vupath;
+  vupath.addRoundedRect(_VURect, _radius, _radius);
+  // Assign, since clear() might be a bit too new at 5.13
+  _VUPath = vupath;
+
+  QPainterPath rectpath;
+  rectpath.addRect(rect());
+
+  QPainterPath vufrpath;
+  if(_frame)
+  {
+    vufrpath.addRoundedRect(_VUFrameRect, _radius, _radius);
+    bkgpath = rectpath - vufrpath;
+    vufrpath -= _VUPath;
+  }
+  else
+  {
+    bkgpath = rectpath - _VUPath;
+  }
+
+  _VUFramePath = vufrpath.simplified();
+
+  // Assign, since clear() might be a bit too new at 5.13
+  _bkgPath = bkgpath.simplified();
+
+  DEBUG_METER(stderr, "Meter::resizeEvent: _bkgPath:\n");
+  //printQPainterPath(_bkgPath);
+
+  {
+    const int wend  = _VURect.width();
+    const int hend  = _VURect.height();
+    const int w  = wend - 1;
+    const int h  = hend - 1;
+    const int left = _VURect.x();
+    //const int rightEnd = left + wend;
+    //const int right = rightEnd - 1;
+    const int top = _VURect.y();
+    const int botEnd = top + hend;
+    //const int bot = botEnd - 1;
+
+    if(_orient == Qt::Vertical)
+    {
+      if(_isLog)     // Meter type is dB...
+      {
+        int y1, y2;
+        if(_reverseDirection)
+        {
+          y1 = d_scale.limTransform(yellowScale);
+          y2 = d_scale.limTransform(redScale);
+          if (_vu3d) {
+              darkGradGreen.setStart(QPointF(left, top));
+              darkGradGreen.setFinalStop(QPointF(left, y1));
+              darkGradYellow.setStart(QPointF(left, y1));
+              darkGradYellow.setFinalStop(QPointF(left, y2));
+              darkGradRed.setStart(QPointF(left, y2));
+              darkGradRed.setFinalStop(QPointF(left, botEnd));
+          }
+
+          lightGradGreen.setStart(QPointF(left, top));
+          lightGradGreen.setFinalStop(QPointF(left, y1));
+          lightGradYellow.setStart(QPointF(left, y1));
+          lightGradYellow.setFinalStop(QPointF(left, y2));
+          lightGradRed.setStart(QPointF(left, y2));
+          lightGradRed.setFinalStop(QPointF(left, botEnd));
+        }
+        else
+        {
+          y1 = d_scale.limTransform(redScale);
+          y2 = d_scale.limTransform(yellowScale);
+          if (_vu3d) {
+              darkGradGreen.setStart(QPointF(left, y2));
+              darkGradGreen.setFinalStop(QPointF(left, botEnd));
+              darkGradYellow.setStart(QPointF(left, y1));
+              darkGradYellow.setFinalStop(QPointF(left, y2));
+              darkGradRed.setStart(QPointF(left, top));
+              darkGradRed.setFinalStop(QPointF(left, y1));
+          }
+
+          lightGradGreen.setStart(QPointF(left, y2));
+          lightGradGreen.setFinalStop(QPointF(left, botEnd));
+          lightGradYellow.setStart(QPointF(left, y1));
+          lightGradYellow.setFinalStop(QPointF(left, y2));
+          lightGradRed.setStart(QPointF(left, top));
+          lightGradRed.setFinalStop(QPointF(left, y1));
+        }
+      }
+      else
+      {
+        if (_vu3d)
+        {
+              darkGradGreen.setStart(QPointF(left, top));
+              darkGradGreen.setFinalStop(QPointF(left, h));
+        }
+
+        lightGradGreen.setStart(QPointF(left, top));
+        lightGradGreen.setFinalStop(QPointF(left, h));
+      }
+    }
+    else   // Meter is horizontal
+    {
+      if(_isLog)     // Meter type is dB...
+      {
+        int x1, x2;
+        if(_reverseDirection)
+        {
+          x1 = d_scale.limTransform(redScale);
+          x2 = d_scale.limTransform(yellowScale);
+          if (_vu3d) {
+              darkGradGreen.setStart(QPointF(x2, top));
+              darkGradGreen.setFinalStop(QPointF(w, top));
+              darkGradYellow.setStart(QPointF(x1, top));
+              darkGradYellow.setFinalStop(QPointF(x2, top));
+              darkGradRed.setStart(QPointF(left, top));
+              darkGradRed.setFinalStop(QPointF(x1, top));
+          }
+
+          lightGradGreen.setStart(QPointF(x2, top));
+          lightGradGreen.setFinalStop(QPointF(w, top));
+          lightGradYellow.setStart(QPointF(x1, top));
+          lightGradYellow.setFinalStop(QPointF(x2, top));
+          lightGradRed.setStart(QPointF(left, top));
+          lightGradRed.setFinalStop(QPointF(x1, top));
+        }
+        else
+        {
+          x1 = d_scale.limTransform(yellowScale);
+          x2 = d_scale.limTransform(redScale);
+          if (_vu3d) {
+              darkGradGreen.setStart(QPointF(left, top));
+              darkGradGreen.setFinalStop(QPointF(x1, top));
+              darkGradYellow.setStart(QPointF(x1, top));
+              darkGradYellow.setFinalStop(QPointF(x2, top));
+              darkGradRed.setStart(QPointF(x2, top));
+              darkGradRed.setFinalStop(QPointF(w, top));
+          }
+
+          lightGradGreen.setStart(QPointF(left, top));
+          lightGradGreen.setFinalStop(QPointF(x1, top));
+          lightGradYellow.setStart(QPointF(x1, top));
+          lightGradYellow.setFinalStop(QPointF(x2, top));
+          lightGradRed.setStart(QPointF(x2, top));
+          lightGradRed.setFinalStop(QPointF(w, top));
+        }
+      }
+      else
+      {
+        if (_vu3d)
+        {
+            darkGradGreen.setStart(QPointF(left, top));
+            darkGradGreen.setFinalStop(QPointF(w, top));
+        }
+        lightGradGreen.setStart(QPointF(left, top));
+        lightGradGreen.setFinalStop(QPointF(w, top));
+      }
+    }
+  }
+
   adjustScale();
 }
 
 void Meter::adjustScale()
 {
-//   d_maxMinor = maxMin;
-//   if(hasUserScale())
-//     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, mstep, log());
-//   else
-//     d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor, log());
-//   update();
-//   const double range = maxScale() - minScale();
-//   if(range == 0.0)
-//     return;
-// 
-//   int maxMaj = 5;
-//   int maxMin = 3;
-//   double mstep = scaleStep();
-// 
-//   QFontMetrics fm = fontMetrics();
-//   if(_orient == Qt::Horizontal)
-//   {
-//     int unit_w = fm.width("888.8888");
-//     if(unit_w == 0)
-//       unit_w = 20;
-// 
-//     if(hasUserScale())
-//     {
-//       if(d_sliderRect.width() != 0)
-//       {
-//         const int fact = (int)(3.0 * range / (double)(d_sliderRect.width())) + 1;
-//         mstep *= fact;
-//       }
-//     }
-//     else
-//     {
-//       maxMaj = (int)((double)(d_sliderRect.width()) / (1.5 * ((double)unit_w)));
-//       if(maxMaj < 1)
-//         maxMaj = 1;
-//       if(maxMaj > 5)
-//         maxMaj = 5;
-//     }
-//     maxMin = (int)((double)(d_sliderRect.width()) / (1.5 * ((double)unit_w)));
-//     if(maxMin < 1)
-//       maxMin = 1;
-//     if(maxMin > 5)
-//       maxMin = 5;
-//   }
-//   else
-//   {
-//     int unit_h = fm.height();
-//     if(unit_h == 0)
-//       unit_h = 20;
-//     
-//     if(hasUserScale())
-//     {
-//       if(d_sliderRect.height() != 0)
-//       {
-//         const int fact = (int)(3.0 * range / (double)(d_sliderRect.height())) + 1;
-//         mstep *= fact;
-//       }
-//     }
-//     else
-//     {
-//       maxMaj = (int)((double)(d_sliderRect.height()) / (1.5 * ((double)unit_h)));
-//       if(maxMaj < 1)
-//         maxMaj = 1;
-//       if(maxMaj > 5)
-//         maxMaj = 5;
-//     }
-//     maxMin = (int)((double)(d_sliderRect.height()) / (1.5 * ((double)unit_h)));
-//     if(maxMin < 1)
-//       maxMin = 1;
-//     if(maxMin > 5)
-//       maxMin = 5;
-//   }
-// 
-//   //fprintf(stderr, "Slider::adjustScale: maxMaj:%d maxMin:%d scaleStep:%f\n", maxMaj, maxMin, mstep);
-//   d_maxMajor = maxMaj;
+  const double range = maxScale - minScale;
+  if(range == 0.0)
+    return;
+
+  int maxMaj = 5;
+  int maxMin = 3;
+  double mstep = scaleStep();
+
+  const QFontMetrics fm = fontMetrics();
+  if(_orient == Qt::Horizontal)
+  {
+// Width() is obsolete. Qt >= 5.11 use horizontalAdvance().
+#if QT_VERSION >= 0x050b00
+    int unit_w = fm.horizontalAdvance("888.8888");
+#else
+    int unit_w = fm.width("888.8888");
+#endif
+    if(unit_w == 0)
+      unit_w = 20;
+
+    if(hasUserScale())
+    {
+      // Don't mess with the step in scale log mode, it can end up way too high.
+      // Typically we want the scale log step to remain at 1 decade.
+      // Here it was observed going to 19! FIXME: Find a way to scale it.
+      if(!d_scale.scaleDiv().logScale() && _scaleRect.width() != 0)
+      {
+        const int fact = (int)(3.0 * range / (double)(_scaleRect.width())) + 1;
+        mstep *= fact;
+      }
+    }
+    else
+    {
+      maxMaj = (int)((double)(_scaleRect.width()) / (1.5 * ((double)unit_w)));
+      if(maxMaj < 1)
+        maxMaj = 1;
+      if(maxMaj > 5)
+        maxMaj = 5;
+    }
+    maxMin = (int)((double)(_scaleRect.width()) / (1.5 * ((double)unit_w)));
+    if(maxMin < 1)
+      maxMin = 1;
+    if(maxMin > 5)
+      maxMin = 5;
+  }
+  else // Vertical
+  {
+    int unit_h = fm.height();
+    if(unit_h == 0)
+      unit_h = 20;
+
+    if(hasUserScale())
+    {
+      // Don't mess with the step in scale log mode, it can end up way too high.
+      // Typically we want the scale log step to remain at 1 decade.
+      // Here it was observed going to 19! FIXME: Find a way to scale it.
+      if(!d_scale.scaleDiv().logScale() && _scaleRect.height() != 0)
+      {
+        const int fact = (int)(3.0 * range / (double)(_scaleRect.height())) + 1;
+        mstep *= fact;
+      }
+    }
+    else
+    {
+      maxMaj = (int)((double)(_scaleRect.height()) / (1.5 * ((double)unit_h)));
+      if(maxMaj < 1)
+        maxMaj = 1;
+      if(maxMaj > 5)
+        maxMaj = 5;
+    }
+    maxMin = (int)((double)(_scaleRect.height()) / (1.5 * ((double)unit_h)));
+    if(maxMin < 1)
+      maxMin = 1;
+    if(maxMin > 5)
+      maxMin = 5;
+  }
+
+  d_maxMajor = maxMaj;
+  d_maxMinor = maxMin;
+  if(hasUserScale())
+  {
+    const ScaleDiv& sd = d_scale.scaleDiv();
+    // Keep the existing minimum and maximum, and log scale option.
+    d_scale.setScale(sd.lBound(), sd.hBound(), d_maxMajor, d_maxMinor, mstep, sd.logScale());
+  }
+  else
+    d_scale.setScale(minScale, maxScale, d_maxMajor, d_maxMinor, mstep, log());
+
+  updateGeometry();
+  update();
 }
 
 //---------------------------------------------------------
@@ -1360,5 +1934,117 @@ void Meter::mousePressEvent(QMouseEvent*)
       {
       emit mousePress();
       }
+
+bool Meter::log() const        { return _isLog; }
+void Meter::setLog(bool v)     { _isLog = v; }
+bool Meter::integer() const    { return _isInteger; }
+void Meter::setInteger(bool v) { _isInteger = v; }
+void Meter::setDBFactor(double v) { _dBFactor = v; _dBFactorInv = 1.0/_dBFactor; }
+
+void Meter::setLogFactor(double v)
+{
+  if(_isLog)
+  {
+    // Set the new factor.
+    _logFactor = v;
+    // Reset the value.
+    setVal(val / _logFactor, val / _logFactor, false);
+    update();
+    return;
+  }
+
+  // Set the new factor.
+  _logFactor = v;
+  update();
+}
+
+bool Meter::reverseDirection() const { return _reverseDirection; }
+void Meter::setReverseDirection(bool v)
+{
+  _reverseDirection = v;
+  updateGeometry();
+  update();
+}
+
+Meter::ScalePos Meter::scalePos() const { return _scalePos; }
+void Meter::setScalePos(const ScalePos& pos)
+{
+  _scalePos = pos;
+  switch(_orient)
+  {
+    case Qt::Vertical:
+      switch(_scalePos)
+      {
+        case ScaleLeftOrTop:
+          d_scale.setOrientation(ScaleDraw::Left);
+        break;
+        case ScaleRightOrBottom:
+          d_scale.setOrientation(ScaleDraw::Right);
+        break;
+        case ScaleInside:
+          d_scale.setOrientation(ScaleDraw::InsideVertical);
+        break;
+        case ScaleNone:
+          // At least set a sensible direction so the translators work.
+          d_scale.setOrientation(ScaleDraw::InsideVertical);
+        break;
+      }
+    break;
+
+    case Qt::Horizontal:
+      switch(_scalePos)
+      {
+        case ScaleLeftOrTop:
+          d_scale.setOrientation(ScaleDraw::Top);
+        break;
+        case ScaleRightOrBottom:
+          d_scale.setOrientation(ScaleDraw::Bottom);
+        break;
+        case ScaleInside:
+          d_scale.setOrientation(ScaleDraw::InsideHorizontal);
+        break;
+        case ScaleNone:
+          // At least set a sensible direction so the translators work.
+          d_scale.setOrientation(ScaleDraw::InsideHorizontal);
+        break;
+      }
+    break;
+  }
+  updateGeometry();
+  update();
+}
+
+int Meter::scaleDist() const { return _scaleDist; }
+void Meter::setScaleDist(int d) {_scaleDist = d; updateGeometry(); update(); }
+
+ScaleDraw::TextHighlightMode Meter::textHighlightMode() const { return d_scale.textHighlightMode(); }
+void Meter::setTextHighlightMode(ScaleDraw::TextHighlightMode mode)
+{
+  d_scale.setTextHighlightMode(mode);
+  updateGeometry();
+  update();
+}
+
+bool Meter::showText() const { return _showText; }
+void Meter::setShowText(bool v) { _showText = v; updateGeometry(); update(); }
+
+Qt::Orientation Meter::orientation() const { return _orient; }
+void Meter::setOrientation(Qt::Orientation o)
+{
+  _orient = o;
+  setScalePos(_scalePos);
+  //updateGeometry();
+}
+
+int Meter::radius() const { return _radius; }
+void Meter::setRadius(int radius) { _radius = radius; updateGeometry(); update(); }
+int Meter::vu3d() const { return _vu3d; }
+void Meter::setVu3d(int vu3d) { _vu3d = vu3d; updateGeometry(); update(); }
+
+void Meter::setFrame(bool frame, const QColor& color) { _frame = frame; _frameColor = color; updateGeometry(); update(); }
+void Meter::setAlignmentMargins(const QMargins& mg) { _alignmentMargins = mg; updateGeometry(); update(); }
+
+QSize Meter::VUSizeHint() const { return _VUSizeHint; }
+void Meter::setVUSizeHint(const QSize& s) { _VUSizeHint = s; updateGeometry(); update(); }
 
 } // namespace MusEGui

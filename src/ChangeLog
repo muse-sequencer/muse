@@ -1,3 +1,123 @@
+14.04.2023
+    * Spring 2023 large fixes and features: (Tim)
+
+    * NEW: Soft bypass support for plugins.
+      Different types are supported: True soft bypass controller (LV2, future VST3),
+       soft bypass function with no controller (VST2), emulated bypass controller (TODO),
+       and regular emulated bypass with no controller (LADSPA, DSSI etc.).
+      When a plugin is soft bypassed we (must) let it run ALWAYS so that the plugin handles
+       all the bypassing itself (we trust - hope - it will be 'lighter' CPU usage).
+      The generic plugin UI 'Bypass' button overrides any soft bypass controller graph.
+
+    * NEW: Generic plugin UI 'Off' button. This completely bypasses the plugin even if
+       it has soft bypass. It is the ultimate 'turn off' mechanism, guaranteed to
+       bypass all processing, whereas 'Bypass' may still process if it's soft.
+
+    * NEW: Some entry boxes (log, linear) now support metric suffixes, where appropriate.
+      You can type "0.000001234" or "1.234u", and "12345" or "12.345K" for example.
+
+    * NEW: Value units. Where supported (LV2), units will be shown in the edit boxes
+       such as Hz, dB, ms etc. Don't be alarmed if you see things like "1.234K ms".
+      I just had to keep the units and the metric suffixes separate, it was the only way.
+      LV2 has unit conversions, but they were not quite robust enough to do what I wanted.
+      Plus when units change say from "s" to "min", then our slider/meter scales would show
+       wrong units and would have to dynamically change with the units. Very difficult.
+
+    * NEW: Hexadecimal floating point storage. Preserves 100% accuracy in song files.
+      Used where appropriate (too many decimal digits).
+      Both hex and decimal values can be mixed (manual decimal entry for example).
+      Applied to audio controller values and graphs for now. More later.
+      C/C++ have supported hex floats for many years. But Qt doesn't seem to natively.
+
+    * NEW: LV2 midi-out support added. Supports things like midi arpeggiators, midi effects etc.
+
+    Fixed: VST midi-out: Recording times were way off. (Midi arpeggiators, midi effects etc.)
+    Added: Latency correction for VST midi-out.
+
+    Fixed: Crash in undo/redo system: Major regression several months ago.
+    For example delete a part or track, then undo redo etc. caused crash.
+    Rewrote undo's clearDelete() and deleteUndoOp() routines.
+
+    Fixed: Crash when removing or replacing plugins from rack.
+    Some heavy graphics moves were being done in realtime thread.
+
+    Fixed: Crash in track list TList::mouseReleaseEvent() when track is NULL.
+
+    Fixed: Crash in midi/synth configuration dialog when clicking on port device column.
+    Popup's action text was being read AFTER the popup was deleted.
+    Seems to be my fault from 2019 according to annotations?
+
+    Fixed: Crashes in remaining places calling wrong undo constructor. See 06.12.2022
+
+    Fixed: Occasional show-stopping glitch when recording or live-monitoring midi:
+    Notes would become badly timed, very old notes would play along with new ones in a
+     weird 'cycling' effect, requiring restart.
+    Replaced old class MidiRecFifo with more recent LockFreeMPSCRingBuffer<MidiRecordEvent>.
+    Caught old class skipping read position and mis-reporting the size, leaving a messed-up state.
+    It was concluded that this may have been an concurrency/atomic problem.
+    LockFreeMPSCRingBuffer was added few years ago. It has worked flawlessly so far.
+    Stack Exchange was consulted on the old class and whether the newer FIFO was really sound.
+    Old class agreed bad - use of 'volatile'. New class favourable but with TOC-TOU warnings.
+    Hopefully this cures the bug. Remains to be seen again - or not?
+
+    Fixed: Pianoroll and drum editor: Copy/paste broken:
+    Oops! Pasted from bar 0 instead of first copied note.
+    Rewrote pasting routines in functions.cpp
+
+    Fixed: When track off could not click on mixer strip expand arrow icon or double click name.
+    Don't disable the track mixer strip label.
+
+    Fixed: 'Fine' slider Shift key operation (was making it coarse not fine, and
+     plugin sliders were messed up - moving way too much when Shift held).
+
+    Fixed: Midi event buffers overflow when a synth track's synth is 'unavailable'.
+    Flush ring buffers and device event lists in SynthI::getData().
+
+    Fixed: Editors: Opening multiple parts in editor (via arranger right-click popup)
+     also caused track rename dialog to pop up.
+    Do not respond to actions that have no integer data value.
+
+    Fixed: Wave Editor: Could not open multiple parts (via arranger right-click popup).
+
+    Fixed: Audio track automation graphs: Copying+pasting points from multiple controllers:
+    Oops. They were accumulating in each target controller graph as paste progressed.
+    It was a problem in functions.cpp : readAudioAutomation().
+
+    Fixed: All places using MidiDevice::openFlags() to check if read/write is OK
+     have been changed to use MidiDevice::readEnable()/writeEnable().
+    This is because openFlags() are the DESIRED flags whereas readEnable()/writeEnable()
+     indicate whether the device was ACTUALLY successful in opening in read/write mode.
+    So it's more faithful to the read/write columns of Devices list in Midi Config dialog.
+
+    * Major plugin/controller/logarithmic/UI changes: (Tim)
+
+      Fixed broken plugin/synth logarithmic audio controls, edit boxes, and graphs.
+
+      Significant streamlining and redesign of classes Meter, Slider, DRange, DoubleLabel,
+       mixer strips AStrip and MStrip, generic plugin UI, and several others.
+      Support logarithmic and dB controller streams.
+      Previously mixer strips and generic plugin UI were responsible for all conversions
+       to and from log, dB, or integer values, to be shown in sliders, meters, and boxes.
+      Now all of these widgets operate independently and do all conversions themselves.
+      In other words they simply 'hook onto' a controller stream with no further work
+       required by the parent. That cleaned up strips and generic plugin UI code
+       A WHOLE LOT.
+
+      Significant speed optimizations: Classes Meter, Slider, DRange, and DoubleLabel
+       are now highly optimized for drawing. They use QRegion for fine-grained
+       updating and painting. Most paths and rectangles are pre-calculated in
+       resizeEvent() instead of paintEvent(). In particular, Meter is one of the
+       few large widgets that is constantly being animated, and it is very fast now.
+
+      Fixed weak support for rare 'reverse' controllers where minimum is greater than maximum.
+      (AlienWah plugin 'phase control' for example.)
+
+      When the minimum slider and minimum meter Global Settings differ, meter scales
+       are automatically shown. They MUST be shown to avoid the misconception
+       that the meter scale is the same as the slider scale, which it is not!
+
+      Replaced generic plugin UI meter output edit boxes (useless) with faster labels.
+
 06.12.2022
     * Fixed issue with wrong constructor being instantiated when clicking
       rec-arm and input monitor when having multiple tracks selected (rj)

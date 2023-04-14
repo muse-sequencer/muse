@@ -24,6 +24,8 @@
 #ifndef __MATH_H__
 #define __MATH_H__
 
+#include "muse_math.h"
+
 #define LOG_MIN 1.0e-100
 #define LOG_MAX 1.0e100
 

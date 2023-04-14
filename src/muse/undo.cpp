@@ -407,12 +407,32 @@ void UndoOp::dump()
 //    deleteUndoOp
 //---------------------------------------------------------
 
-void deleteUndoOp(UndoOp& op)
+void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
 {
+  //====================================================================
+  // NOTE: Whether or not to delete operations may depend on whether
+  //        they are contained in an undo or a redo list.
+  //       For example, a DeletePart UNDO operation contains a part pointer
+  //        that was removed from a part list. The part is isolated and is
+  //        hanging around in the undo list waiting to be re-added.
+  //       It is SAFE to delete this part pointer.
+  //       But an AddPart UNDO operation contains a part pointer that was
+  //        added to a part list. The part is used by a song.
+  //       It is NOT SAFE to delete this part pointer.
+  //       Closing cleanup routines will take care of it.
+  //       Similar (but reversed) rules apply to REDO lists.
+  //
+  //       Meanwhile, UNDO operations AddMarker, DeleteMarker and so on
+  //        contain pointers that are 'local' to the undo structure.
+  //       They are copies of data, and usually deleted at operation end.
+  //       It is SAFE to delete these pointers.
+  //       They do not care if they are contained in an UNDO or a REDO list.
+  //====================================================================
+
   switch(op.type)
   {
     case UndoOp::DeleteTrack:
-          if(op.track)
+          if(op.track && doUndos)
           {
             delete const_cast<Track*>(op.track);
             op.track = nullptr;
@@ -420,7 +440,23 @@ void deleteUndoOp(UndoOp& op)
           break;
 
     case UndoOp::DeletePart:
-          if(op.part)
+          if(op.part && doUndos)
+          {
+            delete const_cast<Part*>(op.part);
+            op.part = nullptr;
+          }
+          break;
+
+    case UndoOp::AddTrack:
+          if(op.track && doRedos)
+          {
+            delete const_cast<Track*>(op.track);
+            op.track = nullptr;
+          }
+          break;
+
+    case UndoOp::AddPart:
+          if(op.part && doRedos)
           {
             delete const_cast<Part*>(op.part);
             op.part = nullptr;
@@ -532,7 +568,7 @@ void UndoList::clearDelete()
       {
         Undo& u = *iu;
         for(iUndoOp i = u.begin(); i != u.end(); ++i)
-          deleteUndoOp(*i);
+          deleteUndoOp(*i, true, false);
         u.clear();
       }
     }
@@ -542,7 +578,7 @@ void UndoList::clearDelete()
       {
         Undo& u = *iu;
         for(riUndoOp i = u.rbegin(); i != u.rend(); ++i)
-          deleteUndoOp(*i);
+          deleteUndoOp(*i, false, true);
         u.clear();
       }
     }
@@ -2797,8 +2833,12 @@ void Song::revertOperationGroup1(Undo& operations)
                           {
                             SynthI* s = (SynthI*)editable_track;
                             Synth* sy = s->synth();
-                            if(!s->isActivated()) 
+                            if(!s->sif() || !sy)
+                            {
+                              // Persistent storage: If the synth is not found allow the track to load.
+                              // It's OK if sy is NULL. initInstance needs to do a few things.
                               s->initInstance(sy, s->name());
+                            }
                             // FIXME TODO: We want to restore any ports using this instrument via the undo
                             //  system but ATM a few other things can set the instrument without an undo
                             //  operation so the undo sequence would not be correct. So we don't have much
@@ -3952,7 +3992,9 @@ void Song::executeOperationGroup1(Undo& operations)
                           {
                             SynthI* s = (SynthI*)editable_track;
                             Synth* sy = s->synth();
-                            if(!s->isActivated()) 
+                            if(!s->sif() || !sy)
+                              // Persistent storage: If the synth is not found allow the track to load.
+                              // It's OK if sy is NULL. initInstance needs to do a few things.
                               s->initInstance(sy, s->name());
                           }
                           break;

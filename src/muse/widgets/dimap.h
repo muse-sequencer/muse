@@ -31,7 +31,8 @@ namespace MusEGui {
 
 class DiMap
       {
-      double d_x1, d_x2;  // double interval boundaries
+      double d_x1_log, d_x2_log;  // double interval boundaries, original unconverted
+      double d_x1, d_x2;  // double interval boundaries, converted
       int d_y1,d_y2;      // integer interval boundaries
       double d_cnv;       // conversion factor
       bool d_log;		// logarithmic scale?

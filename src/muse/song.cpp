@@ -1950,11 +1950,11 @@ void Song::beat()
       // Process any messages from audio controller changes.
       processIpcCtrlGUIMessages();
 
-      // Update synth native guis at the heartbeat rate.
-      for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
-        (*is)->guiHeartBeat();
+      // Update all track plugin/synth guis etc. at the heartbeat rate.
+      for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++it)
+        (*it)->guiHeartBeat();
 
-      int eventsToProcess = realtimeMidiEvents->getSize(false);
+      int eventsToProcess = realtimeMidiEvents->getSize();
       while (eventsToProcess--)
       {
           MidiRecordEvent currentEvent;
@@ -2024,7 +2024,7 @@ void Song::beat()
           } // CC
       }
 
-    int mmcToProcess = mmcEvents->getSize(false);
+    int mmcToProcess = mmcEvents->getSize();
     while (mmcToProcess--)
     {
         MMC_Commands command;
@@ -2152,7 +2152,8 @@ void Song::setRecordFlag(Track* track, bool val, Undo* operations)
   if(operations)
   {
     // The undo system calls setRecordFlag1 for us.
-    operations->push_back(UndoOp(UndoOp::SetTrackRecord, track, val, float(0), float(0), float(0), float(0)));
+    operations->push_back(UndoOp(
+      UndoOp::SetTrackRecord, track, val, double(0), double(0), double(0), double(0)));
   }
   else
   {
@@ -2945,19 +2946,21 @@ int Song::execAutomationCtlPopup(Track* track, const QPoint& menupos, MidiAudioC
   switch(sel)
   {
     case SET_EVENT:
-          MusEGlobal::song->applyOperation(UndoOp(UndoOp::ModifyAudioCtrlVal, track, id, frame, frame, eventVal, ctlval));
+          MusEGlobal::song->applyOperation(UndoOp(
+            UndoOp::ModifyAudioCtrlVal, track, double(id), double(frame), double(frame), eventVal, ctlval));
     break;
     case ADD_EVENT:
           MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddAudioCtrlVal,
-            track, id, frame,
+            track, double(id), double(frame),
             // The undo system automatically sets the VAL_DISCRETE flag if the controller mode is DISCRETE.
             // Here is a tough decision regarding choice of discrete vs. interpolated:
             // Do we obey the discrete/interpolated toolbar button?
             // Given the (now) reduced role of interpolated graphs, maybe best to force these points to discrete. (Tim)
-            ctlval, CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE));
+            ctlval, double(CtrlVal::VAL_SELECTED | CtrlVal::VAL_DISCRETE)));
     break;
     case CLEAR_EVENT:
-          MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteAudioCtrlVal, track, id, frame, 0, 0, 0));
+          MusEGlobal::song->applyOperation(
+            UndoOp(UndoOp::DeleteAudioCtrlVal, track, id, frame, double(0), double(0), double(0)));
     break;
 
     case CLEAR_RANGE:
@@ -3328,7 +3331,7 @@ bool Song::processIpcInEventBuffers()
   //-----------------------------------------------------------
   
   // False = don't use the size snapshot, but update it.
-  const unsigned int sz = _ipcInEventBuffers->getSize(false);
+  const unsigned int sz = _ipcInEventBuffers->getSize();
   for(unsigned int i = 0; i < sz; ++i)
   {
     buf_ev = _ipcInEventBuffers->peek(i);
@@ -3434,8 +3437,7 @@ bool Song::processIpcOutEventBuffers()
 {
   // Receive hardware state events sent from various threads to this audio thread.
   // Update hardware state so gui controls are updated.
-  // False = don't use the size snapshot, but update it.
-  const int sz = _ipcOutEventBuffers->getSize(false);
+  const int sz = _ipcOutEventBuffers->getSize();
   MidiPlayEvent ev;
   for(int i = 0; i < sz; ++i)
   {
@@ -3570,7 +3572,7 @@ bool CtrlGUIMessageTrackMap::add(
 // Called by gui thread only. Returns true on success.
 bool Song::processIpcCtrlGUIMessages()
 {
-  unsigned int sz = _ipcCtrlGUIMessages->getSize(false);
+  unsigned int sz = _ipcCtrlGUIMessages->getSize();
   if(sz > 0)
   {
     CtrlGUIMessageTrackMap tm;
@@ -4320,9 +4322,9 @@ void Song::insertTrack0(Track* track, int idx)
                   {
                   SynthI* s = (SynthI*)track;
                   Synth* sy = s->synth();
-                  if (!s->isActivated()) {
+                  if (!s->sif() || !sy) {
                         // Persistent storage: If the synth is not found allow the track to load.
-                        // It's OK if s is NULL. initInstance needs to do a few things.
+                        // It's OK if sy is NULL. initInstance needs to do a few things.
                         s->initInstance(sy, s->name());
                         }
                   MusEGlobal::midiDevices.add(s);
@@ -4599,8 +4601,10 @@ void Song::restartRecording(bool discard)
 
         const int idx = _tracks.index(cTrk) + idx_cnt++;
         operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddTrack, idx + 1, nTrk));
-        operations.push_back(UndoOp(UndoOp::SetTrackMute, cTrk, true, 0, 0, 0, 0));
-        operations.push_back(UndoOp(UndoOp::SetTrackRecord, cTrk, false, 0, 0, 0, 0));
+        operations.push_back(UndoOp(
+          UndoOp::SetTrackMute, cTrk, true, double(0), double(0), double(0), double(0)));
+        operations.push_back(UndoOp(
+          UndoOp::SetTrackRecord, cTrk, false, double(0), double(0), double(0), double(0)));
         setRecordFlag(nTrk, true, &operations);
       }
       if (cTrk->isMidiTrack())
@@ -4784,9 +4788,8 @@ void Song::setAudioConvertersOfflineOperation(
           if(!converter && !cur_converter)
             continue;
 
-          // REMOVE Tim. samplerate. Added. Diagnostics.
-          fprintf(stderr, "Song::setAudioConvertersOfflineOperation Setting sndfile:%s to isOffline:%d\n",
-                  sndfile.name().toLocal8Bit().constData(), isOffline);
+          //fprintf(stderr, "Song::setAudioConvertersOfflineOperation Setting sndfile:%s to isOffline:%d\n",
+          //        sndfile.name().toLocal8Bit().constData(), isOffline);
           
           ops.add(PendingOperationItem(
             sndfile,

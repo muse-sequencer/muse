@@ -22,17 +22,12 @@
 //=========================================================
 
 #include <stdio.h>
-//#include <errno.h>
-//#include <unistd.h>
-//#include <stdlib.h>
 
 #include <QActionGroup>
 #include <QDir>
 #include <QFileInfo>
-//#include <QToolButton>
 
 #include "globals.h"
-//#include "config.h"
 
 namespace MusEGlobal {
 
@@ -77,6 +72,10 @@ const QString selectableAudioBackendDevices[] = {
 const int numRtAudioDevices = 6;
 
 MusEGui::Rasterizer *globalRasterizer = nullptr;
+
+// This holds all the unit symbols found. Intead of storing many copies of the same texts
+//  (dB, Hz, frames etc.) all over the place, we store an index into this list.
+MusECore::ValueUnits_t valueUnits;
 
 QTimer* heartBeatTimer;
 

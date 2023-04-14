@@ -69,6 +69,7 @@
 #include "meter.h"
 
 // For debugging output: Uncomment the fprintf section.
+//#include <stdio.h>
 #define DEBUG_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
 
 using MusECore::UndoOp;
@@ -491,12 +492,11 @@ double ComponentRack::componentMaxValue(const ComponentWidget& cw) const
 }
 
 void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, double max, bool updateOnly,
-                                      double step, int pageSize, 
-                                      DoubleRange::ConversionMode mode)
+                                      double step, int pageSize)
 {
   if(!cw._widget)
     return;
-  
+
   switch(cw._widgetType)
   {
     case CompactSliderComponentWidget:
@@ -507,7 +507,7 @@ void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, dou
         if(updateOnly)
           w->blockSignals(true);
         if(min != w->minValue() && max != w->maxValue())
-          w->setRange(min, max, step, pageSize, mode);
+          w->setRange(min, max, step, pageSize);
         else if(min != w->minValue())
           w->setMinValue(max);
         else
@@ -526,7 +526,7 @@ void ComponentRack::setComponentRange(const ComponentWidget& cw, double min, dou
         if(updateOnly)
           w->blockSignals(true);
         if(min != w->minValue() && max != w->maxValue())
-          w->setRange(min, max, step, pageSize, mode);
+          w->setRange(min, max, step, pageSize);
         else if(min != w->minValue())
           w->setMinValue(max);
         else
@@ -851,14 +851,6 @@ TrackNameLabel::TrackNameLabel(QWidget* parent)
     _hovered = false;
 }
 
-//TrackNameLabel::TrackNameLabel(const QString& text, QWidget* parent, const char* name, Qt::WindowFlags f)
-// : QLabel(text, parent, name, f)
-//{
-//    _style3d = true;
-//    _hasExpandIcon = false;
-//    _expandIconPressed = false;
-//}
-
 void TrackNameLabel::mouseDoubleClickEvent(QMouseEvent* ev)
 {
   ev->accept();
@@ -884,10 +876,7 @@ void TrackNameLabel::paintEvent(QPaintEvent* ev)
   p.save();
     
   const QRect r = rect();
-
   p.fillRect(r.x(), r.y(), _expandIconWidth, r.height(), palette().mid());
-
-  //expandLeftRightSVGIcon->paint(&p, r.x() + r.width() - _expandIconWidth, r.y(), _expandIconWidth, r.height());
   expandLeftRightSVGIcon->paint(&p, r.x(), r.y(), _expandIconWidth, r.height());
   
   p.restore();
@@ -969,7 +958,6 @@ void TrackNameLabel::enterEvent(QEvent *e)
 //   Strip
 //---------------------------------------------------------
 
-//const int Strip::FIXED_METER_WIDTH = 7;
 
 //---------------------------------------------------------
 //   setRecordFlag
@@ -2170,24 +2158,13 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
     double ma_val = val;
     if(id == MusECore::CTRL_VOLUME)
     {
-      if(MusEGlobal::config.preferMidiVolumeDb)
+      // It's a log scale. We need to convert to Db and
+      //  scale the linear value by 2 since the midi scale is
+      //  twice the usual Db per step. Then convert back to log.
+      if(m_val > 0)
       {
-        if(ma_val <= MusEGlobal::config.minSlider)
-          m_val = ma_val = 0.0;
-        else
-        {
-          m_val = double(i_m_max) * muse_db2val(m_val);
-          ma_val = double(i_m_max) * muse_db2val(ma_val / 2.0);
-        }
-      }
-      else
-      {
-        // It's a linear scale. We need to convert to Db and
-        //  scale the linear value by 2 since the midi scale is
-        //  twice the usual Db per step. Then convert back to linear.
-        m_val = muse_val2db(m_val / double(i_m_max)) * 2.0;
-        m_val *= 2.0;
-        m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
+        m_val = museValToDb(m_val / double(i_m_max), 2 * 40.0);
+        m_val = double(i_m_max) * museDbToVal(m_val, 1 / 40.0);
       }
     }
 
@@ -2271,6 +2248,7 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
         //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
         const double a_min = cl->minVal();
         const double a_max = (a_ctlnum == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+
         const double a_range = a_max - a_min;
         const double a_val = (m_fact * a_range) + a_min;
 
@@ -2315,21 +2293,17 @@ void Strip::componentChanged(int type, double val, bool off, int id, int scrollM
     //----------------------------------------------------------
     double a_val = val;
     double ma_val = val;
-    if(id == MusECore::AC_VOLUME)
-    {
-      if(ma_val <= MusEGlobal::config.minSlider)
-        a_val = ma_val = 0.0;
-      else
-      {
-        a_val = muse_db2val(a_val);
-        ma_val = muse_db2val(ma_val / 2.0);
-      }
-    }
+    if(ma_val <= 0.0)
+      ma_val = MusEGlobal::config.minSlider;
+    else
+      ma_val = muse_val2db(ma_val);
+    ma_val = muse_db2val(ma_val / 2.0);
 
     // The audio volume can go above 0dB (amplification) while
     //  the top midi value of 127 represents 0dB. Cut it off at 0dB.
     const double a_min = cl->minVal();
     const double a_max = (id == MusECore::AC_VOLUME) ? 1.0 : cl->maxVal();
+
     const double a_range = a_max - a_min;
     if(a_range < 0.0001) // Avoid divide by zero.
       return;
@@ -2462,27 +2436,16 @@ void Strip::componentPressed(int type, double val, int id)
     //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
     //----------------------------------------------------------
     double m_val = val;
-    double ma_val = val;
+//     double ma_val = val;
     if(id == MusECore::CTRL_VOLUME)
     {
-      if(MusEGlobal::config.preferMidiVolumeDb)
+      // It's a log scale. We need to convert to Db and
+      //  scale the linear value by 2 since the midi scale is
+      //  twice the usual Db per step. Then convert back to log.
+      if(m_val > 0)
       {
-        if(ma_val <= MusEGlobal::config.minSlider)
-          m_val = ma_val = 0.0;
-        else
-        {
-          m_val = double(i_m_max) * muse_db2val(m_val);
-          ma_val = double(i_m_max) * muse_db2val(ma_val / 2.0);
-        }
-      }
-      else
-      {
-        // It's a linear scale. We need to convert to Db and
-        //  scale the linear value by 2 since the midi scale is
-        //  twice the usual Db per step. Then convert back to linear.
-        m_val = muse_val2db(m_val / double(i_m_max)) * 2.0;
-        m_val *= 2.0;
-        m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
+        m_val = museValToDb(m_val / double(i_m_max), 2 * 40.0);
+        m_val = double(i_m_max) * museDbToVal(m_val, 1 / 40.0);
       }
     }
 
@@ -2565,14 +2528,6 @@ void Strip::componentPressed(int type, double val, int id)
     }
 
     double a_val = val;
-    if(id == MusECore::AC_VOLUME)
-    {
-      if(a_val <= MusEGlobal::config.minSlider)
-        a_val = 0.0;
-      else
-        a_val = muse_db2val(a_val);
-    }
-
     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
     for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
     {
@@ -2652,27 +2607,16 @@ void Strip::componentReleased(int type, double val, int id)
     //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
     //----------------------------------------------------------
     double m_val = val;
-    double ma_val = val;
+//     double ma_val = val;
     if(id == MusECore::CTRL_VOLUME)
     {
-      if(MusEGlobal::config.preferMidiVolumeDb)
+      // It's a log scale. We need to convert to Db and
+      //  scale the linear value by 2 since the midi scale is
+      //  twice the usual Db per step. Then convert back to log.
+      if(m_val > 0)
       {
-        if(ma_val <= MusEGlobal::config.minSlider)
-          m_val = ma_val = 0.0;
-        else
-        {
-          m_val = double(i_m_max) * muse_db2val(m_val);
-          ma_val = double(i_m_max) * muse_db2val(ma_val / 2.0);
-        }
-      }
-      else
-      {
-        // It's a linear scale. We need to convert to Db and
-        //  scale the linear value by 2 since the midi scale is
-        //  twice the usual Db per step. Then convert back to linear.
-        m_val = muse_val2db(m_val / double(i_m_max)) * 2.0;
-        m_val *= 2.0;
-        m_val = double(i_m_max) * muse_db2val(m_val / 2.0);
+        m_val = museValToDb(m_val / double(i_m_max), 2 * 40.0);
+        m_val = double(i_m_max) * museDbToVal(m_val, 1 / 40.0);
       }
     }
 
@@ -2762,14 +2706,6 @@ void Strip::componentReleased(int type, double val, int id)
     //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
     //----------------------------------------------------------
     double a_val = val;
-    if(id == MusECore::AC_VOLUME)
-    {
-      if(a_val <= MusEGlobal::config.minSlider)
-        a_val = 0.0;
-      else
-        a_val = muse_db2val(a_val);
-    }
-
     MusECore::TrackList* tracks = MusEGlobal::song->tracks();
     for(MusECore::iTrack it = tracks->begin(); it != tracks->end(); ++it)
     {
@@ -3095,18 +3031,12 @@ void Strip::componentIncremented(int type, double oldCompVal, double newCompVal,
     // Unusual, it is a factor of 40 not 20. Since muse_db2val()
     //  does 10 ^ (volume dB / 20), just divide volume dB by 2.
     //----------------------------------------------------------
-    double a_val = newCompVal;
     double ma_val = newCompVal;
-    if(id == MusECore::AC_VOLUME)
-    {
-      if(ma_val <= MusEGlobal::config.minSlider)
-        a_val = ma_val = 0.0;
-      else
-      {
-        a_val = muse_db2val(a_val);
-        ma_val = muse_db2val(ma_val / 2.0);
-      }
-    }
+    if(ma_val <= 0.0)
+      ma_val = MusEGlobal::config.minSlider;
+    else
+      ma_val = muse_val2db(ma_val);
+    ma_val = muse_db2val(ma_val / 2.0);
 
     // The audio volume can go above 0dB (amplification) while
     //  the top midi value of 127 represents 0dB. Cut it off at 0dB.

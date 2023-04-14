@@ -35,6 +35,7 @@
 #include "globals.h"
 #include "song.h"
 #include "track.h"
+#include "plugin_scan.h"
 
 // If sysex support is ever added, make sure this number is unique among all the
 //  MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
@@ -62,8 +63,9 @@ static MetronomeSynth* metronomeSynth = 0;
 
 class MetronomeSynth : public Synth {
    public:
-      MetronomeSynth(const QFileInfo& fi, const QString& uri) :
-        Synth(fi, uri, QString("Metronome"), QString("Metronome"), QString(), QString()) {}
+      MetronomeSynth(const MusEPlugin::PluginScanInfoStruct& infoStruct) :
+        Synth(infoStruct) {}
+
       virtual ~MetronomeSynth() {}
       inline virtual Type synthType() const { return METRO_SYNTH; }
       inline virtual void incInstances(int) {}
@@ -129,7 +131,6 @@ class MetronomeSynthIF : public SynthIF
             }
       virtual ~MetronomeSynthIF();
 
-      inline virtual void guiHeartBeat()  {  }
       inline virtual bool guiVisible() const { return false; }
       inline virtual bool hasGui() const { return false; }
       inline virtual bool nativeGuiVisible() const { return false; }
@@ -195,96 +196,111 @@ bool MetronomeSynthIF::getData(MidiPort*, unsigned /*pos*/, int/*ports*/, unsign
 
       // Get the state of the stop flag.
       const bool do_stop = synti->stopFlag();
+      // Get whether playback and user midi events can be written to this midi device.
+      const bool we = synti->writeEnable();
 
       MidiPlayEvent buf_ev;
 
-      // Transfer the user lock-free buffer events to the user sorted multi-set.
-      // False = don't use the size snapshot, but update it.
-      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
-      for(unsigned int i = 0; i < usr_buf_sz; ++i)
+      // If stopping or not 'running' just purge ALL playback FIFO and container events.
+      // But do not clear the user ones. We need to hold on to them until active,
+      //  they may contain crucial events like loading a soundfont from a song file.
+      if(do_stop || !_curActiveState || !we)
       {
-        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-          synti->_outUserEvents.insert(buf_ev);
-      }
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
+        {
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.addExclusive(buf_ev);
+        }
 
-      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
-      for(unsigned int i = 0; i < pb_buf_sz; ++i)
-      {
-        // Are we stopping? Just remove the item.
-        if(do_stop)
-          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
-        // Otherwise get the item.
-        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
-          synti->_outPlaybackEvents.insert(buf_ev);
-      }
-
-      // Are we stopping?
-      if(do_stop)
-      {
-        // Transport has stopped, purge ALL further scheduled playback events now.
+        synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
         synti->_outPlaybackEvents.clear();
         // Reset the flag.
         synti->setStopFlag(false);
       }
-
-      iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
-      iMPEvent impe_us = synti->_outUserEvents.begin();
-      bool using_pb;
-
-      while(1)
+      else
       {
-        if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
-          using_pb = *impe_pb < *impe_us;
-        else if(impe_pb != synti->_outPlaybackEvents.end())
-          using_pb = true;
-        else if(impe_us != synti->_outUserEvents.end())
-          using_pb = false;
-        else break;
-
-        const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
-
-        const unsigned int evTime = ev.time();
-        if(evTime < syncFrame)
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
         {
-          fprintf(stderr, "MetronomeSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n",
-                  evTime, syncFrame, curPos);
-          frame = 0;
-        }
-        else
-          frame = evTime - syncFrame;
-
-        // Event is for future?
-        if(frame >= n)
-        {
-          DEBUG_TICKSYNTH(stderr, "MetronomeSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n",
-                  frame, n, evTime, syncFrame, curPos);
-          //continue;
-          break;
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.insert(buf_ev);
         }
 
-        if(frame > curPos)
+        // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+        const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+        for(unsigned int i = 0; i < pb_buf_sz; ++i)
         {
-          process(buffer, curPos, frame - curPos);
-          curPos = frame;
+          if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+            synti->_outPlaybackEvents.insert(buf_ev);
         }
-
-        // If putEvent fails, although we would like to not miss events by keeping them
-        //  until next cycle and trying again, that can lead to a large backup of events
-        //  over a long time. So we'll just... miss them.
-        //putEvent(ev);
-        //synti->putEvent(ev);
-        processEvent(ev);
-
-        // Done with ring buffer event. Remove it from FIFO.
-        // C++11.
-        if(using_pb)
-          impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
-        else
-          impe_us = synti->_outUserEvents.erase(impe_us);
       }
 
-      if(curPos < n)
+      // Don't bother if not 'running'.
+      if(_curActiveState && we)
+      {
+        iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+        iMPEvent impe_us = synti->_outUserEvents.begin();
+        bool using_pb;
+
+        while(1)
+        {
+          if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+            using_pb = *impe_pb < *impe_us;
+          else if(impe_pb != synti->_outPlaybackEvents.end())
+            using_pb = true;
+          else if(impe_us != synti->_outUserEvents.end())
+            using_pb = false;
+          else break;
+
+          const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
+
+          const unsigned int evTime = ev.time();
+          if(evTime < syncFrame)
+          {
+            fprintf(stderr, "MetronomeSynthIF::getData() evTime:%u < syncFrame:%u!! curPos=%d\n",
+                    evTime, syncFrame, curPos);
+            frame = 0;
+          }
+          else
+            frame = evTime - syncFrame;
+
+          // Event is for future?
+          if(frame >= n)
+          {
+            DEBUG_TICKSYNTH(stderr, "MetronomeSynthIF::getData(): Event for future, breaking loop: frame:%u n:%d evTime:%u syncFrame:%u curPos:%d\n",
+                    frame, n, evTime, syncFrame, curPos);
+            //continue;
+            break;
+          }
+
+          if(frame > curPos)
+          {
+            process(buffer, curPos, frame - curPos);
+            curPos = frame;
+          }
+
+          // If putEvent fails, although we would like to not miss events by keeping them
+          //  until next cycle and trying again, that can lead to a large backup of events
+          //  over a long time. So we'll just... miss them.
+          //putEvent(ev);
+          //synti->putEvent(ev);
+          processEvent(ev);
+
+          // Done with ring buffer event. Remove it from FIFO.
+          // C++11.
+          if(using_pb)
+            impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+          else
+            impe_us = synti->_outUserEvents.erase(impe_us);
+        }
+      }
+
+      // Don't bother if not 'running'.
+      if(_curActiveState && curPos < n)
         process(buffer, curPos, n - curPos);
 
       return true;
@@ -628,13 +644,13 @@ bool MetronomeSynthI::isLatencyInputTerminal()
   if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
       const int port = metro_settings->clickPort;
-      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      if((readEnable()) && port >= 0 && port < MusECore::MIDI_PORTS)
       {
         const MidiPort* mp = &MusEGlobal::midiPorts[port];
         const MidiDevice* md = mp->device();
         // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
         //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
-        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        if(md && ((md->writeEnable()) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           _latencyInfo._isLatencyInputTerminal = false;
           _latencyInfo._isLatencyInputTerminalProcessed = true;
@@ -682,13 +698,13 @@ bool MetronomeSynthI::isLatencyOutputTerminal()
   if(metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
       const int port = metro_settings->clickPort;
-      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      if((readEnable()) && port >= 0 && port < MusECore::MIDI_PORTS)
       {
         const MidiPort* mp = &MusEGlobal::midiPorts[port];
         const MidiDevice* md = mp->device();
         // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
         //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
-        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        if(md && ((md->writeEnable()) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           _latencyInfo._isLatencyOutputTerminal = false;
           _latencyInfo._isLatencyOutputTerminalProcessed = true;
@@ -742,13 +758,13 @@ bool MetronomeSynthI::isLatencyInputTerminalMidi(bool capture)
   if(capture/*Tim*/ && metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
       const int port = metro_settings->clickPort;
-      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      if((readEnable()) && port >= 0 && port < MusECore::MIDI_PORTS)
       {
         const MidiPort* mp = &MusEGlobal::midiPorts[port];
         const MidiDevice* md = mp->device();
         // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
         //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
-        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        if(md && ((md->writeEnable()) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           tli->_isLatencyInputTerminal = false;
           tli->_isLatencyInputTerminalProcessed = true;
@@ -794,13 +810,13 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
   if(capture/*Tim*/ && metro_settings->midiClickFlag /*&& !precount_mute_metronome*/)
   {
       const int port = metro_settings->clickPort;
-      if((openFlags() & 2 /*read*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+      if((readEnable()) && port >= 0 && port < MusECore::MIDI_PORTS)
       {
         const MidiPort* mp = &MusEGlobal::midiPorts[port];
         const MidiDevice* md = mp->device();
         // TODO Make a new SynthI::isReadable and isWritable to replace this and MANY others in the app, and add to some places
         //       where it's not even used. Prevent sending to the synth, maybe finally get rid of the flushing in SynthI::preProcessAlways()
-        if(md && ((md->openFlags() & 1 /*write*/) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
+        if(md && ((md->writeEnable()) && (!md->isSynti() || !static_cast<const SynthI*>(md)->off())))
         {
           tli->_isLatencyOutputTerminal = false;
           tli->_isLatencyOutputTerminalProcessed = true;
@@ -825,12 +841,13 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
 
 void initMetronome()
       {
-      QFileInfo fi;
-      metronomeSynth = new MetronomeSynth(fi, QString());
+      MusEPlugin::PluginScanInfoStruct info;
+      info._name = info._description = QString("Metronome");
+      metronomeSynth = new MetronomeSynth(info);
       metronome = new MetronomeSynthI();
-
-      QString name("metronome");
-      metronome->initInstance(metronomeSynth, name);
+      // Returns false on success.
+      if(!metronome->initInstance(metronomeSynth, QString("metronome")))
+        metronome->open();
       }
 
 //---------------------------------------------------------
@@ -840,7 +857,10 @@ void initMetronome()
 void exitMetronome()
 {
       if(metronome)
+      {
+        metronome->close();
         delete metronome;
+      }
       metronome = 0;
 
       if(metronomeSynth)

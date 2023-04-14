@@ -36,6 +36,7 @@
 #include <QUiLoader>
 #include <QRect>
 #include <QList>
+#include <QMetaObject>
 
 #include <ladspa.h>
 
@@ -73,6 +74,7 @@ class QToolButton;
 namespace MusEGui {
 class PluginGui;
 class DoubleLabel;
+class DoubleText;
 }
 
 namespace MusEPlugin {
@@ -131,14 +133,17 @@ class Plugin {
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
 
       bool _usesTimePosition;
+      unsigned long _freewheelPortIndex;
+      unsigned long _latencyPortIndex;
+      unsigned long _enableOrBypassPortIndex;
+      PluginLatencyReportingType _pluginLatencyReportingType;
+      PluginBypassType _pluginBypassType;
+      PluginFreewheelType _pluginFreewheelType;
 
       PluginFeatures_t _requiredFeatures;
 
    public:
-      Plugin() {} //empty constructor for LV2PluginWrapper
-      Plugin(QFileInfo* f, const LADSPA_Descriptor* d, const QString& uri,
-             bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
-             PluginFeatures_t reqFeatures = PluginNoFeatures);
+      Plugin();
       Plugin(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Plugin();
       virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
@@ -157,12 +162,13 @@ class Plugin {
       virtual int incReferences(int);
       int instNo()                                 { return _instNo++;        }
 
-      bool isDssiPlugin() const { return _isDssi; }
-      bool isDssiSynth() const  { return _isDssiSynth; }
+      inline bool isDssiPlugin() const { return _isDssi; }
+      inline bool isDssiSynth() const  { return _isDssiSynth; }
+      inline bool isDssiVst() const  { return _isDssiVst; }
       inline bool isLV2Plugin() const { return _isLV2Plugin; } //inline it to use in RT audio thread
-      bool isLV2Synth() const { return _isLV2Synth; }
+      inline bool isLV2Synth() const { return _isLV2Synth; }
       inline bool isVstNativePlugin() const { return _isVstNativePlugin; } //inline it to use in RT audio thread
-      bool isVstNativeSynth() const { return _isVstNativeSynth; }
+      inline bool isVstNativeSynth() const { return _isVstNativeSynth; }
 
       virtual LADSPA_Handle instantiate(PluginI *);
       virtual void activate(LADSPA_Handle handle) {
@@ -181,10 +187,7 @@ class Plugin {
             if(plugin)
               plugin->connect_port(handle, port, value);
             }
-      virtual void apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/ = 0.0f) {
-            if(plugin)
-              plugin->run(handle, n);
-            }
+      virtual void apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/ = 0.0f);
 
       #ifdef OSC_SUPPORT
       int oscConfigure(LADSPA_Handle handle, const char* key, const char* value);
@@ -196,23 +199,43 @@ class Plugin {
             return plugin ? plugin->PortDescriptors[k] : 0;
             }
 
-      virtual LADSPA_PortRangeHint range(unsigned long i) {
+      // This version of range does not apply any changes, such as sample rate, to the bounds.
+      // The information returned is verbose. See the other range() which does apply changes.
+      virtual LADSPA_PortRangeHint range(unsigned long i) const {
             // FIXME:
             //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
             return plugin->PortRangeHints[i];
             }
 
       virtual double defaultValue(unsigned long port) const;
+      // This version of range applies any changes, such as sample rate, to the bounds.
+      // The information returned is not verbose. See the other range() which does not apply changes.
       virtual void range(unsigned long i, float*, float*) const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
       virtual const CtrlVal::CtrlEnumValues* ctrlEnumValues ( unsigned long ) const;
+      // Returns a value unit string for displaying unit symbols.
+      virtual QString unitSymbol ( unsigned long ) const;
+      // Returns index into the global value units for displaying unit symbols.
+      // Can be -1 meaning no units.
+      virtual int valueUnit ( unsigned long ) const;
 
-      virtual const char* portName(unsigned long i) {
+      virtual const char* portName(unsigned long i) const {
             return plugin ? plugin->PortNames[i] : 0;
             }
 
-      bool usesTimePosition() const         { return _usesTimePosition; }
+      bool usesTimePosition() const;
+      unsigned long freewheelPortIndex() const;
+      unsigned long latencyPortIndex() const;
+      unsigned long enableOrBypassPortIndex() const;
+      PluginLatencyReportingType pluginLatencyReportingType() const;
+      PluginBypassType pluginBypassType() const;
+      PluginFreewheelType pluginFreewheelType() const;
+
+      // Returns the plugin latency, if it has such as function.
+      // NOTE: If the plugin has a latency controller out, use that instead.
+      virtual float getPluginLatency(void* /*handle*/);
+
       unsigned long inports() const         { return _inports; }
       unsigned long outports() const        { return _outports; }
       unsigned long controlInPorts() const  { return _controlInPorts; }
@@ -247,13 +270,6 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 
 class PluginList : public std::list<Plugin *> {
    public:
-      void add(QFileInfo* fi, const LADSPA_Descriptor* d, const QString& uri,
-               bool isDssi = false, bool isDssiSynth = false, bool isDssiVst = false,
-               PluginFeatures_t reqFeatures = PluginNoFeatures)
-      {
-        push_back(new Plugin(fi, d, uri, isDssi, isDssiSynth, isDssiVst, reqFeatures));
-      }
-
       void add(const MusEPlugin::PluginScanInfoStruct& scan_info)
       { push_back(new Plugin(scan_info)); }
 
@@ -349,18 +365,26 @@ class PluginIBase
       QRect _guiGeometry;
       QRect _nativeGuiGeometry;
       PluginQuirks _quirks;
+      // True if activate has been called. False by default or if deactivate has been called.
+      bool _curActiveState;
 
       void makeGui();
+
+      virtual void activate() = 0;
+      virtual void deactivate() = 0;
 
    public:
       PluginIBase();
       virtual ~PluginIBase();
       virtual PluginFeatures_t requiredFeatures() const = 0;
-      virtual bool hasBypass() const = 0;
+      inline virtual bool hasActiveButton() const = 0;
+      inline virtual bool active() const = 0;
+      inline virtual void setActive(bool v) = 0;
+      inline virtual bool hasBypass() const = 0;
       virtual bool on() const = 0;
       virtual void setOn(bool val) = 0;
-      virtual unsigned long pluginID() = 0;
-      virtual int id() = 0;
+      virtual unsigned long pluginID() const = 0;
+      virtual int id() const = 0;
       virtual QString pluginLabel() const = 0;
       virtual QString name() const = 0;
       virtual QString uri() const = 0;
@@ -369,15 +393,12 @@ class PluginIBase
       virtual QString fileName() const = 0;
       virtual QString titlePrefix() const = 0;
 
-      virtual AudioTrack* track() = 0;
+      virtual AudioTrack* track() const = 0;
 
       virtual void enableController(unsigned long i, bool v = true) = 0;
       virtual bool controllerEnabled(unsigned long i) const = 0;
       virtual void enableAllControllers(bool v = true) = 0;
       virtual void updateControllers() = 0;
-
-      virtual void activate() = 0;
-      virtual void deactivate() = 0;
 
       virtual void writeConfiguration(int level, Xml& xml) = 0;
       virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
@@ -388,16 +409,27 @@ class PluginIBase
       virtual void setParam(unsigned long i, double val) = 0;
       virtual double param(unsigned long i) const = 0;
       virtual double paramOut(unsigned long i) const = 0;
-      virtual const char* paramName(unsigned long i) = 0;
-      virtual const char* paramOutName(unsigned long i) = 0;
+      virtual const char* paramName(unsigned long i) const = 0;
+      virtual const char* paramOutName(unsigned long i) const = 0;
+      // These versions of range do not apply any changes, such as sample rate, to the bounds.
+      // The information returned is verbose. See the other range() which does apply changes.
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
-      virtual LADSPA_PortRangeHint range(unsigned long i) = 0;
-      virtual LADSPA_PortRangeHint rangeOut(unsigned long i) = 0;
+      virtual LADSPA_PortRangeHint range(unsigned long i) const = 0;
+      virtual LADSPA_PortRangeHint rangeOut(unsigned long i) const = 0;
+      // These versions of range apply any changes, such as sample rate, to the bounds.
+      // The information returned is not verbose. See the other range() which does not apply changes.
+      virtual void range(unsigned long i, float*, float*) const = 0;
+      virtual void rangeOut(unsigned long i, float*, float*) const = 0;
 
       virtual bool usesTransportSource() const = 0;
-      virtual bool hasLatencyOutPort() const = 0;
       virtual unsigned long latencyOutPortIndex() const = 0;
       virtual float latency() const = 0;
+      virtual unsigned long freewheelPortIndex() const = 0;
+      virtual unsigned long enableOrBypassPortIndex() const = 0;
+      virtual PluginLatencyReportingType pluginLatencyReportingType() const = 0;
+      virtual PluginBypassType pluginBypassType() const = 0;
+      virtual PluginFreewheelType pluginFreewheelType() const = 0;
+
       const PluginQuirks& cquirks() const { return _quirks; }
       PluginQuirks& quirks() { return _quirks; }
       
@@ -408,12 +440,25 @@ class PluginIBase
       virtual QString portGroup(long unsigned int i) const;
       virtual bool ctrlIsTrigger(long unsigned int i) const;
       virtual bool ctrlNotOnGui(long unsigned int i) const;
+      virtual CtrlValueType ctrlOutValueType(unsigned long i) const = 0;
+      virtual CtrlList::Mode ctrlOutMode(unsigned long i) const = 0;
+      virtual const CtrlVal::CtrlEnumValues *ctrlOutEnumValues(unsigned long i) const;
+      virtual QString portGroupOut(long unsigned int i) const;
+      virtual bool ctrlOutIsTrigger(long unsigned int i) const;
+      virtual bool ctrlOutNotOnGui(long unsigned int i) const;
+      // Returns a value unit string for displaying unit symbols.
+      virtual QString unitSymbol(long unsigned int i) const;
+      virtual QString unitSymbolOut(long unsigned int i) const;
+      // Returns index into the global value units for displaying unit symbols.
+      // Can be -1 meaning no units.
+      virtual int valueUnit ( unsigned long i) const;
+      virtual int valueUnitOut ( unsigned long i) const;
 
       QString dssi_ui_filename() const;
 
       MusEGui::PluginGui* gui() const { return _gui; }
       void deleteGui();
-      
+      virtual void guiHeartBeat();
       virtual void showGui();
       virtual void showGui(bool);
       virtual bool guiVisible() const;
@@ -426,7 +471,7 @@ class PluginIBase
       virtual void saveGeometry(int x, int y, int w, int h);
       // Returns the saved gui geometry.
       virtual void savedGeometry(int *x, int *y, int *w, int *h) const;
-      
+
       virtual void showNativeGui() { }
       virtual void showNativeGui(bool) { }
       virtual bool nativeGuiVisible() const { return false; }
@@ -472,12 +517,10 @@ class PluginI : public PluginIBase {
       unsigned long controlPorts;      
       unsigned long controlOutPorts;    
       
-      bool          _hasLatencyOutPort;
-      unsigned long _latencyOutPort;
-
       float *_audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
       float *_audioOutDummyBuf;  // A place to connect unused outputs.
       
+      bool _active;
       bool _on;
       bool initControlValues;
       QString _name;
@@ -490,6 +533,10 @@ class PluginI : public PluginIBase {
 
       void init();
 
+   protected:
+      void activate();
+      void deactivate();
+
    public:
       PluginI();
       virtual ~PluginI();
@@ -498,29 +545,33 @@ class PluginI : public PluginIBase {
 
       virtual PluginFeatures_t requiredFeatures() const { return _plugin->requiredFeatures(); }
       
-      bool hasBypass() const  { return true; };
+      inline bool hasActiveButton() const { return true; }
+      inline bool active() const { return _active; }
+      inline void setActive(bool v) { _active = v; }
+
+      inline bool hasBypass() const  { return true; };
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
 
-      void setTrack(AudioTrack* t)  { _track = t; }
-      AudioTrack* track()           { return _track; }
-      unsigned long pluginID()      { return _plugin->id(); }
+      void setTrack(AudioTrack* t)   { _track = t; }
+      AudioTrack* track() const      { return _track; }
+      unsigned long pluginID() const { return _plugin->id(); }
       void setID(int i);
-      int id()                      { return _id; }
+      int id() const                 { return _id; }
       void updateControllers();
 
       bool initPluginInstance(Plugin*, int channels);
       void setChannels(int);
-      void connect(unsigned long ports, unsigned long offset, float** src, float** dst);
+      void connect(unsigned long ports, bool connectAllToDummyPorts, unsigned long offset, float** src, float** dst);
       void apply(unsigned pos, unsigned long n,
-                 unsigned long ports, float** bufIn, float** bufOut, float latency_corr_offset = 0.0f);
+                 unsigned long ports, bool wantActive, float** bufIn, float** bufOut, float latency_corr_offset = 0.0f);
 
       void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }
       bool controllerEnabled(unsigned long i) const           { return controls[i].enCtrl; }
       void enableAllControllers(bool v = true);
 
-      void activate();
-      void deactivate();
+      void cleanup();
+
       QString pluginLabel() const    { return _plugin->label(); }
       QString label() const          { return _label; }
       QString name() const           { return _name; }
@@ -551,6 +602,7 @@ class PluginI : public PluginIBase {
       void showNativeGui(bool);
       bool isShowNativeGuiPending() { return _showNativeGuiPending; }
       bool nativeGuiVisible() const;
+      void guiHeartBeat();
 
       unsigned long parameters() const           { return controlPorts; }
       unsigned long parametersOut() const           { return controlOutPorts; }
@@ -559,22 +611,40 @@ class PluginI : public PluginIBase {
       double param(unsigned long i) const        { return controls[i].val; }
       double paramOut(unsigned long i) const        { return controlsOut[i].val; }
       double defaultValue(unsigned long param) const;
-      const char* paramName(unsigned long i)     { return _plugin->portName(controls[i].idx); }
-      const char* paramOutName(unsigned long i)     { return _plugin->portName(controlsOut[i].idx); }
+      double defaultOutValue(unsigned long param) const;
+      const char* paramName(unsigned long i) const     { return _plugin->portName(controls[i].idx); }
+      const char* paramOutName(unsigned long i) const     { return _plugin->portName(controlsOut[i].idx); }
       LADSPA_PortDescriptor portd(unsigned long i) const { return _plugin->portd(controls[i].idx); }
+      LADSPA_PortDescriptor portdOut(unsigned long i) const { return _plugin->portd(controlsOut[i].idx); }
       void range(unsigned long i, float* min, float* max) const { _plugin->range(controls[i].idx, min, max); }
+      void rangeOut(unsigned long i, float* min, float* max) const { _plugin->range(controlsOut[i].idx, min, max); }
       bool isAudioIn(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_IN) == IS_AUDIO_IN; }
       bool isAudioOut(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_OUT) == IS_AUDIO_OUT; }
-      LADSPA_PortRangeHint range(unsigned long i) { return _plugin->range(controls[i].idx); }
-      LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
-      bool usesTransportSource() const { return _plugin->usesTimePosition(); };
-      bool hasLatencyOutPort() const { return _hasLatencyOutPort; }
-      unsigned long latencyOutPortIndex() const { return _latencyOutPort; }
+      LADSPA_PortRangeHint range(unsigned long i) const { return _plugin->range(controls[i].idx); }
+      LADSPA_PortRangeHint rangeOut(unsigned long i) const { return _plugin->range(controlsOut[i].idx); }
+      bool usesTransportSource() const;
+      unsigned long latencyOutPortIndex() const;
       float latency() const;
+      unsigned long freewheelPortIndex() const;
+      unsigned long enableOrBypassPortIndex() const;
+      PluginLatencyReportingType pluginLatencyReportingType() const;
+      PluginBypassType pluginBypassType() const;
+      PluginFreewheelType pluginFreewheelType() const;
+
       CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
       const CtrlVal::CtrlEnumValues* ctrlEnumValues( unsigned long i) const { return _plugin->ctrlEnumValues(controls[i].idx); }
       CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
-      virtual void setCustomData(const std::vector<QString> &customParams);
+      void setCustomData(const std::vector<QString> &customParams);
+      CtrlValueType ctrlOutValueType(unsigned long i) const { return _plugin->ctrlValueType(controlsOut[i].idx); }
+      const CtrlVal::CtrlEnumValues* ctrlOutEnumValues( unsigned long i) const { return _plugin->ctrlEnumValues(controlsOut[i].idx); }
+      CtrlList::Mode ctrlOutMode(unsigned long i) const { return _plugin->ctrlMode(controlsOut[i].idx); }
+      // Returns a value unit string for displaying unit symbols.
+      QString unitSymbol(long unsigned int i) const { return _plugin->unitSymbol(controls[i].idx); }
+      QString unitSymbolOut(long unsigned int i) const { return _plugin->unitSymbol(controlsOut[i].idx); }
+      // Returns index into the global value units for displaying unit symbols.
+      // Can be -1 meaning no units.
+      int valueUnit ( unsigned long i) const { return _plugin->valueUnit(controls[i].idx); }
+      int valueUnitOut ( unsigned long i) const { return _plugin->valueUnit(controlsOut[i].idx); }
       };
 
 //---------------------------------------------------------
@@ -593,6 +663,8 @@ class Pipeline : public std::vector<PluginI*> {
       void insert(PluginI* p, int index);
       void remove(int index);
       void removeAll();
+      bool isActive(int idx) const;
+      void setActive(int, bool);
       bool isOn(int idx) const;
       void setOn(int, bool);
       QString label(int idx) const;
@@ -608,7 +680,10 @@ class Pipeline : public std::vector<PluginI*> {
       void deleteAllGuis();
       bool guiVisible(int);
       bool nativeGuiVisible(int);
-      void apply(unsigned pos, unsigned long ports, unsigned long nframes, float** buffer);
+      void guiHeartBeat();
+
+      void apply(unsigned pos, unsigned long ports, unsigned long nframes, bool wantActive, float** buffer);
+
       void move(int idx1, int idx2);
       bool empty(int idx) const;
       void setChannels(int);
@@ -659,6 +734,7 @@ struct GuiParam {
       bool pressed;
 
       MusEGui::DoubleLabel* label;
+      MusEGui::DoubleText* textLabel;
       QWidget* actuator;  // Slider or Toggle Button (SWITCH)
       };
 
@@ -675,6 +751,7 @@ struct GuiWidgets {
             };
       QWidget* widget;
       int type;
+      int hint;
       unsigned long param;
       bool pressed;
       };
@@ -693,15 +770,12 @@ class PluginGui : public QMainWindow {
       unsigned long nobj;             // number of widgets in gw
       GuiWidgets* gw;
 
+      QAction* activeButton;
       QAction* onOff;
-//      QAction* transpGovLatencyAct;
-//      QAction* fixedSpeedAct;
-//      QAction* overrideLatencyAct;
-//      QSpinBox* latencyOverrideEntry;
       QWidget* mw;            // main widget
       QScrollArea* view;
-//      QToolButton* fixNativeUIScalingTB;
-//      QString fixScalingTooltip[3];
+
+      QMetaObject::Connection _configChangedMetaConn;
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
@@ -716,13 +790,9 @@ class PluginGui : public QMainWindow {
    private slots:
       void load();
       void save();
+      void activeToggled(bool);
       void bypassToggled(bool);
       void showSettings();
-//      void transportGovernsLatencyToggled(bool);
-//      void fixNativeUIScalingTBClicked();
-//      void fixedSpeedToggled(bool);
-//      void overrideReportedLatencyToggled(bool);
-//      void latencyOverrideValueChanged(int);
       void sliderChanged(double value, int id, int scrollMode);
       void switchChanged(bool value, int id);
       void labelChanged(double, int);
@@ -740,13 +810,15 @@ class PluginGui : public QMainWindow {
       void guiSliderRightClicked(const QPoint &, unsigned long int);
       void guiContextMenuReq(unsigned long int idx);
 
-   protected slots:
-      virtual void heartBeat();
+   public slots:
+      void heartBeat();
+      void configChanged();
 
    public:
       PluginGui(MusECore::PluginIBase*);
-
       ~PluginGui();
+
+      void setActive(bool);
       void setOn(bool);
       void updateValues();
       void updateWindowTitle();

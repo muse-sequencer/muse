@@ -98,13 +98,13 @@ class SliderBase : public QWidget, public DoubleRange
   bool d_trackingTempDisable;
   double d_valueAtPress;
   
-  bool valueHasChangedAtRelease() const { return value(ConvertNone) != d_valueAtPress; }
+  bool valueHasChangedAtRelease() const;
   
   virtual void setMass(double val);
   void setPosition(const QPoint &p);
   void movePosition(const QPoint &deltaP, bool fineMode);
   virtual void valueChange();
-  virtual double mass() const { return d_mass; }
+  virtual double mass() const;
 
   void wheelEvent(QWheelEvent *e);
   void timerEvent(QTimerEvent *e);
@@ -126,15 +126,15 @@ class SliderBase : public QWidget, public DoubleRange
            int &scrollMode, int &direction) = 0;
 
   // Show a handy tooltip value box.
-  virtual void showValueToolTip(QPoint) { }
+  virtual void showValueToolTip(QPoint);
   // Same as sliderPressed signal, except it's not a signal and is called before sliderPressed is emitted.
-  virtual void processSliderPressed(int) { }
+  virtual void processSliderPressed(int);
   // Same as sliderReleased signal, except it's not a signal and is called before sliderReleased is emitted.
-  virtual void processSliderReleased(int) { }
+  virtual void processSliderReleased(int);
     
  public slots:
-  void setValue(double val, ConversionMode mode = ConvertDefault);
-  void fitValue(double val, ConversionMode mode = ConvertDefault);
+  void setValue(double val);
+  void fitValue(double val);
   void incValue(int steps);
   
  signals:
@@ -153,37 +153,35 @@ class SliderBase : public QWidget, public DoubleRange
   virtual ~SliderBase();
 
   // Useful for signal mappers where we can't pass scroll mode.
-  int scrollMode() const { return d_scrollMode; }
-  bool mouseGrabbed() const { return _mouseGrabbed; }
-  bool isPressed() const { return _pressed; }
+  int scrollMode() const;
+  bool mouseGrabbed() const;
+  bool isPressed() const;
 
-  bool cursorHoming() const { return _cursorHoming; }
-  void setCursorHoming(bool b) { _cursorHoming = b; }
-  bool borderlessMouse() const { return _borderlessMouse; }
-  void setBorderlessMouse(bool v) { _borderlessMouse = v; update(); }
+  bool cursorHoming() const;
+  void setCursorHoming(bool b);
+  bool borderlessMouse() const;
+  void setBorderlessMouse(bool v);
   // The allowed mouse buttons which will cause a page step.
-  Qt::MouseButtons pagingButtons() const { return _pagingButtons; }
+  Qt::MouseButtons pagingButtons() const;
   // Set the allowed mouse buttons which will cause a page step.
-  void setPagingButtons(Qt::MouseButtons buttons) { _pagingButtons = buttons; }
+  void setPagingButtons(Qt::MouseButtons buttons);
   
-  bool enableValueToolTips() const { return d_enableValueToolTips; }
-  void setEnableValueToolTips(bool enable) { d_enableValueToolTips = enable; }
-  bool showValueToolTipsOnHover() const { return d_showValueToolTipsOnHover; }
-  void setShowValueToolTipsOnHover(bool enable) { d_showValueToolTipsOnHover = enable; }
+  bool enableValueToolTips() const;
+  void setEnableValueToolTips(bool enable);
+  bool showValueToolTipsOnHover() const;
+  void setShowValueToolTipsOnHover(bool enable);
 
   void setUpdateTime(int t);
   void stopMoving();
-  bool tracking() const { return d_tracking; }
+  bool tracking() const;
   void setTracking(bool enable);
-  bool trackingIsActive() const { return d_tracking && !d_trackingTempDisable; }
+  bool trackingIsActive() const;
 
   void stepPages(int pages);
-  void setMinValue(double v, ConversionMode mode = ConvertDefault) 
-    { DoubleRange::setRange(v, maxValue(mode), 0.0, 1, mode); }
-  void setMaxValue(double v, ConversionMode mode = ConvertDefault) 
-    { DoubleRange::setRange(minValue(mode), v, 0.0, 1, mode); }
-  int id() const             { return _id; }
-  void setId(int i)          { _id = i; }
+  void setMinValue(double v);
+  void setMaxValue(double v);
+  int id() const;
+  void setId(int i);
   };
 
 } // namespace MusEGui

@@ -290,7 +290,7 @@ bool scanLadspaPorts(
         const QString pname = PLUGIN_SET_CSTRING(ladspa_descr->PortNames[k]);
         if(pname == QString("latency") || pname == QString("_latency"))
         {
-          info->_pluginFlags |= PluginScanInfoStruct::HasLatencyPort;
+          info->_pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
           info->_latencyPortIdx = k;
         }
       }
@@ -429,7 +429,7 @@ bool scanLadspaDescriptor(
           const QString pname(PLUGIN_SET_CSTRING(ladspa_descr->PortNames[k]));
           if(pname == QString("latency") || pname == QString("_latency"))
           {
-            info->_pluginFlags |= PluginScanInfoStruct::HasLatencyPort;
+            info->_pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
             info->_latencyPortIdx = k;
           }
         }
@@ -1162,22 +1162,20 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
       info->_vstPluginFlags |= MusECore::canSendVstEvents;
     if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"sendVstMidiEvent", 0.0f) > 0)
       info->_vstPluginFlags |= MusECore::canSendVstMidiEvents;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"sendVstTimeInfo", 0.0f) > 0)
-      info->_vstPluginFlags |= MusECore::canSendVstTimeInfo;
     if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"receiveVstMidiEvent", 0.0f) > 0)
       info->_vstPluginFlags |= MusECore::canReceiveVstMidiEvents;
     if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"receiveVstTimeInfo", 0.0f) > 0)
       info->_vstPluginFlags |= MusECore::canReceiveVstTimeInfo;
     if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"offline", 0.0f) > 0)
       info->_vstPluginFlags |= MusECore::canProcessVstOffline;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"plugAsChannelInsert", 0.0f) > 0)
-      info->_vstPluginFlags |= MusECore::canUseVstAsInsert;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"plugAsSend", 0.0f) > 0)
-      info->_vstPluginFlags |= MusECore::canUseVstAsSend;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"mixDryWet", 0.0f) > 0)
-      info->_vstPluginFlags |= MusECore::canMixVstDryWet;
     if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"midiProgramNames", 0.0f) > 0)
       info->_vstPluginFlags |= MusECore::canVstMidiProgramNames;
+    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"bypass", 0.0f) > 0)
+    {
+      info->_vstPluginFlags |= MusECore::canVstBypass;
+      //info->_pluginFlags |= PluginScanInfoStruct::HasBypassFunction;
+      info->_pluginBypassType = MusECore::PluginBypassTypeBypassFunction;
+    }
   }
 
   if((plugin->flags & effFlagsIsSynth) ||
@@ -1362,6 +1360,12 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
         xml.intTag(level, "pluginVersionMinor", info._pluginVersionMinor);
       if(info._pluginFlags != 0)
         xml.intTag(level, "pluginFlags", info._pluginFlags);
+      if(info._pluginLatencyReportingType != 0)
+        xml.intTag(level, "latencyReportingType", info._pluginLatencyReportingType);
+      if(info._pluginBypassType != 0)
+        xml.intTag(level, "pluginBypassType", info._pluginBypassType);
+      if(info._pluginFreewheelType != 0)
+        xml.intTag(level, "pluginFreewheelType", info._pluginFreewheelType);
       if(info._portCount != 0)
         xml.uintTag(level, "portCount", info._portCount);
       if(info._inports != 0)
@@ -1376,10 +1380,44 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
         xml.uintTag(level, "evInports", info._eventInPorts);
       if(info._eventOutPorts != 0)
         xml.uintTag(level, "evOutports", info._eventOutPorts);
-      if((info._pluginFlags & PluginScanInfoStruct::HasFreewheelPort) || info._freewheelPortIdx != 0)
-        xml.uintTag(level, "freewheelPortIdx", info._freewheelPortIdx);
-      if((info._pluginFlags & PluginScanInfoStruct::HasLatencyPort) || info._latencyPortIdx != 0)
-        xml.uintTag(level, "latencyPortIdx", info._latencyPortIdx);
+
+      switch(info._pluginFreewheelType)
+      {
+        case MusECore::PluginFreewheelTypeNone:
+        case MusECore::PluginFreewheelTypeFunction:
+
+        break;
+        case MusECore::PluginFreewheelTypePort:
+          xml.uintTag(level, "freewheelPortIdx", info._freewheelPortIdx);
+        break;
+      }
+
+      switch(info._pluginLatencyReportingType)
+      {
+        case MusECore::PluginLatencyTypeNone:
+        case MusECore::PluginLatencyTypeFunction:
+
+        break;
+        case MusECore::PluginLatencyTypePort:
+          //do_latency_idx = true;
+          xml.uintTag(level, "latencyPortIdx", info._latencyPortIdx);
+        break;
+      }
+
+      switch(info._pluginBypassType)
+      {
+        case MusECore::PluginBypassTypeEmulatedEnableFunction:
+        case MusECore::PluginBypassTypeEnableFunction:
+        case MusECore::PluginBypassTypeBypassFunction:
+        break;
+
+        case MusECore::PluginBypassTypeEmulatedEnableController:
+        case MusECore::PluginBypassTypeEnablePort:
+        case MusECore::PluginBypassTypeBypassPort:
+          xml.uintTag(level, "enableOrBypassPortIdx", info._enableOrBypassPortIdx);
+        break;
+      }
+
       if(info._requiredFeatures != 0)
         xml.intTag(level, "requiredFeatures", info._requiredFeatures);
       if(info._vstPluginFlags != MusECore::vstPluginNoFlags)
@@ -1842,6 +1880,14 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 #define LV2_F_MIDNAM_UPDATE LV2_MIDNAM__update
 #endif
 
+// LV2_CORE__enabled is MISSING in 1.18.2 but was added in 1.18.4
+#ifndef LV2_CORE__enabled
+#define LV2_CORE__enabled LV2_CORE_PREFIX "enabled" ///< http://lv2plug.in/ns/lv2core#enabled
+#endif
+
+#define LV2_F_SUPPORTS_STRICT_BOUNDS LV2_PORT_PROPS__supportsStrictBounds
+#define LV2_P_HAS_STRICT_BOUNDS LV2_PORT_PROPS__hasStrictBounds
+
 //uri cache structure.
 typedef struct
 {
@@ -1864,8 +1910,10 @@ typedef struct
    LilvNode *lv2_portInteger;
    LilvNode *lv2_portTrigger;
    LilvNode *lv2_portToggled;
+   LilvNode *lv2_portHasStrictBounds;
    LilvNode *lv2_TimePosition;
    LilvNode *lv2_FreeWheelPort;
+   LilvNode *lv2_EnablePort;
    LilvNode *lv2_isLive;
    LilvNode *lv2_HardRealtimeCapable;
    LilvNode *lv2_InPlaceBroken;
@@ -1880,7 +1928,7 @@ typedef struct
 
 static CacheNodes lv2CacheNodes;
 
-// NOTE: Please ensure that what is here matches what is in plugin_cache_writer.cpp
+// NOTE: Please ensure that what is here matches what is in lv2host.cpp
 LV2_Feature lv2Features [] =
 {
    {LV2_F_URID_MAP, nullptr},
@@ -1901,6 +1949,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_OPTIONS, nullptr},
    {LV2_UI__resize, nullptr},
    {LV2_UI__requestValue, nullptr},
+   {LV2_F_SUPPORTS_STRICT_BOUNDS, nullptr},
    {LV2_PROGRAMS__Host, nullptr},
 #ifdef MIDNAM_SUPPORT
    {LV2_MIDNAM__update, nullptr},
@@ -1921,19 +1970,35 @@ void scanLv2Ports(const LilvPlugin *plugin,
                   PluginScanInfoStruct* info,
                   bool /*debugStdErr*/)
 {
+  bool hasEnable = false;
+  bool hasLatency = false;
+  bool hasFreewheel = false;
+  unsigned long int enableIdx = 0;
+  unsigned long int latencyIdx = 0;
+  unsigned long int freewheelIdx = 0;
+
   // Does this plugin have a 'freewheel' port?
   if(const LilvPort *lilvFreeWheelPort =
     lilv_plugin_get_port_by_designation(
       plugin, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_FreeWheelPort))
   {
-    info->_pluginFlags |= PluginScanInfoStruct::HasFreewheelPort;
-    info->_freewheelPortIdx = lilv_port_get_index(plugin, lilvFreeWheelPort);
+    hasFreewheel = true;
+    freewheelIdx = lilv_port_get_index(plugin, lilvFreeWheelPort);
+  }
+
+  // Does this plugin have an 'enable' port?
+  if(const LilvPort *lilvEnablePort =
+    lilv_plugin_get_port_by_designation(
+      plugin, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_EnablePort))
+  {
+    hasEnable = true;
+    enableIdx = lilv_port_get_index(plugin, lilvEnablePort);
   }
 
   if(lilv_plugin_has_latency(plugin))
   {
-    info->_pluginFlags |= PluginScanInfoStruct::HasLatencyPort;
-    info->_latencyPortIdx = lilv_plugin_get_latency_port_index(plugin);
+    hasLatency = true;
+    latencyIdx = lilv_plugin_get_latency_port_index(plugin);
   }
 
   info->_portCount = lilv_plugin_get_num_ports(plugin);
@@ -2004,17 +2069,6 @@ void scanLv2Ports(const LilvPlugin *plugin,
     {
       port_info._type |= PluginPortInfo::ControlPort;
 
-//       port_info._valueType = PluginPortInfo::LinearVal;
-//       if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portDiscrete))
-//         port_info._valueFlags = PluginPortInfo::IntegerVal;
-//       else if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portInteger))
-//         port_info._valueFlags = PluginPortInfo::IntegerVal;
-//       else if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portTrigger)
-//               || lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portToggled))
-//         port_info._valueFlags = PluginPortInfo::ToggledVal;
-//       else if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portLogarithmic))
-//         port_info._valueFlags = PluginPortInfo::LogVal;
-
       if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portDiscrete))
         port_info._valueFlags |= PluginPortInfo::IntegerVal;
 
@@ -2047,6 +2101,9 @@ void scanLv2Ports(const LilvPlugin *plugin,
         pluginControlsMax[k] = 1;
       else
         port_info._valueFlags |= PluginPortInfo::HasMax;
+
+      if(lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_portHasStrictBounds))
+        port_info._valueFlags |= PluginPortInfo::HasStrictBounds;
 
       // Is it a specialized audio control port?
       if(isCVPort)
@@ -2152,9 +2209,32 @@ void scanLv2Ports(const LilvPlugin *plugin,
     if(port_info._type & PluginPortInfo::ControlPort)
     {
       if(port_info._type & PluginPortInfo::InputPort)
+      {
+        if(hasFreewheel && k == freewheelIdx)
+        {
+          port_info._flags |= PluginPortInfo::IsFreewheel;
+          info->_pluginFreewheelType = MusECore::PluginFreewheelTypePort;
+          info->_freewheelPortIdx = cip;
+
+        }
+        if(hasEnable && k == enableIdx)
+        {
+          port_info._flags |= PluginPortInfo::IsEnable;
+          info->_pluginBypassType = MusECore::PluginBypassTypeEnablePort;
+          info->_enableOrBypassPortIdx = cip;
+        }
         ++cip;
+      }
       else if(port_info._type & PluginPortInfo::OutputPort)
+      {
+        if(hasLatency && k == latencyIdx)
+        {
+          port_info._flags |= PluginPortInfo::IsLatency;
+          info->_pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
+          info->_latencyPortIdx = cop;
+        }
         ++cop;
+      }
     }
     if(port_info._type & PluginPortInfo::MidiPort)
     {
@@ -2162,18 +2242,6 @@ void scanLv2Ports(const LilvPlugin *plugin,
         ++eip;
       else if(port_info._type & PluginPortInfo::OutputPort)
         ++eop;
-    }
-
-    if((info->_pluginFlags & PluginScanInfoStruct::HasFreewheelPort) &&
-       k == info->_freewheelPortIdx)
-    {
-      port_info._flags |= PluginPortInfo::IsFreewheel;
-    }
-
-    if((info->_pluginFlags & PluginScanInfoStruct::HasLatencyPort) &&
-       k == info->_latencyPortIdx)
-    {
-      port_info._flags |= PluginPortInfo::IsLatency;
     }
 
     info->_portList.push_back(port_info);
@@ -2235,6 +2303,8 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
         reqfeat |= MusECore::PluginPowerOf2BlockSize;
       else if(std::strcmp(uri, LV2_F_COARSE_BLOCK_LENGTH) == 0)
         reqfeat |= MusECore::PluginCoarseBlockSize;
+      else if(std::strcmp(uri, LV2_F_SUPPORTS_STRICT_BOUNDS) == 0)
+        reqfeat |= MusECore::PluginSupportStrictBounds;
     }
     else
     {
@@ -2279,7 +2349,7 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   const char *clsname = lilv_node_as_uri(ncuri);
   if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
   {
-    info._class |= PluginScanInfoStruct::PluginClassEffect;
+    info._class |= PluginScanInfoStruct::PluginClassInstrument;
   }
 
   if(LilvNode *nAuthor = lilv_plugin_get_author_name(plugin))
@@ -2294,19 +2364,35 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   }
   else
   {
+    bool hasEnable = false;
+    bool hasLatency = false;
+    bool hasFreewheel = false;
+    unsigned long int enableIdx = 0;
+    unsigned long int latencyIdx = 0;
+    unsigned long int freewheelIdx = 0;
+
     // Does this plugin have a 'freewheel' port?
     if(const LilvPort *lilvFreeWheelPort =
       lilv_plugin_get_port_by_designation(
         plugin, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_FreeWheelPort))
     {
-      info._pluginFlags |= PluginScanInfoStruct::HasFreewheelPort;
-      info._freewheelPortIdx = lilv_port_get_index(plugin, lilvFreeWheelPort);
+      hasFreewheel = true;
+      freewheelIdx = lilv_port_get_index(plugin, lilvFreeWheelPort);
+    }
+
+    // Does this plugin have an 'enable' port?
+    if(const LilvPort *lilvEnablePort =
+      lilv_plugin_get_port_by_designation(
+        plugin, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_EnablePort))
+    {
+      hasEnable = true;
+      enableIdx = lilv_port_get_index(plugin, lilvEnablePort);
     }
 
     if(lilv_plugin_has_latency(plugin))
     {
-      info._pluginFlags |= PluginScanInfoStruct::HasLatencyPort;
-      info._latencyPortIdx = lilv_plugin_get_latency_port_index(plugin);
+      hasLatency = true;
+      latencyIdx = lilv_plugin_get_latency_port_index(plugin);
     }
 
     info._portCount = lilv_plugin_get_num_ports(plugin);
@@ -2338,9 +2424,29 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
       if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_ControlPort) || isCVPort)
       {
         if(is_output)
+        {
+          if(hasLatency && k == latencyIdx)
+          {
+            info._pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
+            info._latencyPortIdx = cop;
+          }
           ++cop;
+        }
         else
+        {
+          if(hasFreewheel && k == freewheelIdx)
+          {
+            info._pluginFreewheelType = MusECore::PluginFreewheelTypePort;
+            info._freewheelPortIdx = cip;
+
+          }
+          if(hasEnable && k == enableIdx)
+          {
+            info._pluginBypassType = MusECore::PluginBypassTypeEnablePort;
+            info._enableOrBypassPortIdx = cip;
+          }
           ++cip;
+        }
       }
       else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_AudioPort))
       {
@@ -2460,8 +2566,10 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   lv2CacheNodes.lv2_portInteger        = lilv_new_uri(lilvWorld, LV2_CORE__integer);
   lv2CacheNodes.lv2_portTrigger        = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__trigger);
   lv2CacheNodes.lv2_portToggled        = lilv_new_uri(lilvWorld, LV2_CORE__toggled);
+  lv2CacheNodes.lv2_portHasStrictBounds = lilv_new_uri(lilvWorld, LV2_PORT_PROPS__hasStrictBounds);
   lv2CacheNodes.lv2_TimePosition       = lilv_new_uri(lilvWorld, LV2_TIME__Position);
   lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
+  lv2CacheNodes.lv2_EnablePort         = lilv_new_uri(lilvWorld, LV2_CORE__enabled);
   lv2CacheNodes.lv2_isLive             = lilv_new_uri(lilvWorld, LV2_CORE__isLive);
   lv2CacheNodes.lv2_HardRealtimeCapable= lilv_new_uri(lilvWorld, LV2_CORE__hardRTCapable);
   lv2CacheNodes.lv2_InPlaceBroken      = lilv_new_uri(lilvWorld, LV2_CORE__inPlaceBroken);
@@ -2552,9 +2660,10 @@ void scanAllPlugins(
     // Now do LinuxVST plugins...
     scanLinuxVSTPlugins(list, scanPorts, debugStdErr);
 
-  if(types & (PluginScanInfoStruct::PluginTypeLV2))
-    // Now do LV2 plugins...
-    scanLv2Plugins(list, scanPorts, debugStdErr);
+// SPECIAL for LV2: No need for a cache file. Do not create one here. Read directly into the list later.
+//   if(types & (PluginScanInfoStruct::PluginTypeLV2))
+//     // Now do LV2 plugins...
+//     scanLv2Plugins(list, scanPorts, debugStdErr);
 }
 
 typedef std::map<QString, std::int64_t, std::less<QString> > filepath_set;

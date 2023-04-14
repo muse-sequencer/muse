@@ -236,8 +236,8 @@ void CompactSlider::processSliderReleased(int)
 
 QString CompactSlider::toolTipValueText(bool inclLabel, bool inclVal) const
 { 
-  const double minV = minValue(ConvertNone);
-  const double val = value(ConvertNone);
+  const double minV = minValue();
+  const double val = value();
   const QString comp_val_text = isOff() ? d_offText :
                                 ((val <= minV && !d_specialValueText.isEmpty()) ? 
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
@@ -346,7 +346,7 @@ void CompactSlider::setThumbWidth(int w)
 void CompactSlider::scaleChange()
 {
     if (!hasUserScale())
-       d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
+       d_scale.setScale(internalMinValue(), internalMaxValue(), d_maxMajor, d_maxMinor);
     update();
 }
 
@@ -385,7 +385,7 @@ double CompactSlider::getValue( const QPoint &p)
 {
   double rv;
   const QRect r = d_sliderRect;
-  const double val = value(ConvertNone);
+  const double val = internalValue(ConvertNone);
 
   if(borderlessMouse() && d_scrollMode != ScrDirect)
   {
@@ -397,8 +397,8 @@ double CompactSlider::getValue( const QPoint &p)
       return val - p.y() * step();
   }
   
-  const double min = minValue(ConvertNone);
-  const double max = maxValue(ConvertNone);
+  const double min = internalMinValue(ConvertNone);
+  const double max = internalMaxValue(ConvertNone);
   const double drange = max - min;
   
   if(d_orient == Qt::Horizontal)
@@ -449,7 +449,7 @@ double CompactSlider::moveValue(const QPoint &deltaP, bool fineMode)
   double rv = d_valAccum;
   const QRect r = d_sliderRect;
 
-  const double val = value(ConvertNone);
+  const double val = internalValue(ConvertNone);
 
   if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
   {
@@ -465,8 +465,8 @@ double CompactSlider::moveValue(const QPoint &deltaP, bool fineMode)
     return newval;
   }
   
-  const double min = minValue(ConvertNone);
-  const double max = maxValue(ConvertNone);
+  const double min = internalMinValue(ConvertNone);
+  const double max = internalMaxValue(ConvertNone);
   const double drange = max - min;
 
   if(d_orient == Qt::Horizontal)
@@ -564,7 +564,7 @@ void CompactSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, con
 
         cr = d_sliderRect;
   
-        rpos = (value(ConvertNone)  - minValue(ConvertNone)) / (maxValue(ConvertNone) - minValue(ConvertNone));
+        rpos = (internalValue(ConvertNone)  - internalMinValue(ConvertNone)) / (internalMaxValue(ConvertNone) - internalMinValue(ConvertNone));
   
         if(d_orient == Qt::Horizontal)
         {
@@ -700,10 +700,10 @@ void CompactSlider::getPixelValues()
 {
   const int val_width_range = ((d_orient == Qt::Horizontal) ? d_sliderRect.width(): d_sliderRect.height());
   const int val_pix_range = val_width_range - 1;
-  const double minV = minValue(ConvertNone);
-  const double maxV = maxValue(ConvertNone);
+  const double minV = internalMinValue(ConvertNone);
+  const double maxV = internalMaxValue(ConvertNone);
   const double range = maxV - minV;
-  const double val = value(ConvertNone);
+  const double val = internalValue(ConvertNone);
 
   if(range == 0.0)
   {
@@ -882,8 +882,8 @@ void CompactSlider::paintEvent(QPaintEvent* /*ev*/)
       p.fillPath(offPath, linearGrad_a);
 
 
-  const double minV = minValue(ConvertNone);
-  const double val = value(ConvertNone);
+  const double minV = internalMinValue(ConvertNone);
+  const double val = internalValue(ConvertNone);
 
   const QRect bar_area((d_orient == Qt::Horizontal) ?
                       QRect(d_sliderRect.x(),
@@ -1098,7 +1098,7 @@ void CompactSlider::mouseDoubleClickEvent(QMouseEvent* e)
         if(_hasOffMode)
         {
           setOff(!isOff()); // Just toggle the off state.
-          emit valueChanged(value(), id()); 
+          emit valueChanged(value(), id());
           e->accept();    
           return;
         }
@@ -1373,7 +1373,7 @@ void CompactSlider::setOff(bool v)
     return;
   _off = v; 
   update(); 
-  emit valueStateChanged(value(), isOff(), id(), d_scrollMode); 
+  emit valueStateChanged(value(), isOff(), id(), d_scrollMode);
 }
 
 void CompactSlider::setHasOffMode(bool v)
@@ -1382,12 +1382,12 @@ void CompactSlider::setHasOffMode(bool v)
   setOff(false);
 }
 
-void CompactSlider::setValueState(double v, bool off, ConversionMode mode)
+void CompactSlider::setValueState(double v, bool off)
 {
   // Do not allow setting value from the external while mouse is pressed.
   if(_pressed)
     return;
-  
+
   bool do_off_upd = false;
   bool do_val_upd = false;
   // Both setOff and setValue emit valueStateChanged and setValue emits valueChanged.
@@ -1398,24 +1398,22 @@ void CompactSlider::setValueState(double v, bool off, ConversionMode mode)
   if(isOff() != off)
   {
     do_off_upd = true;
-    setOff(off); 
+    setOff(off);
   }
-//   if(value() != v)
-  if(value(mode) != v)
+  if(value() != v)
   {
     do_val_upd = true;
-//     setValue(v);
-    setValue(v, mode);
+    setValue(v);
   }
   if(!blocked)
     blockSignals(false);
-  
+
   if(do_off_upd || do_val_upd)
-    update(); 
+    update();
   if(do_val_upd)
     emit valueChanged(value(), id());
   if(do_off_upd || do_val_upd)
-    emit valueStateChanged(value(), isOff(), id(), d_scrollMode); 
+    emit valueStateChanged(value(), isOff(), id(), d_scrollMode);
 }
 
 
@@ -1478,7 +1476,7 @@ void CompactSlider::valueChange()
 void CompactSlider::rangeChange()
 {
     if (!hasUserScale())
-       d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
+       d_scale.setScale(internalMinValue(), internalMaxValue(), d_maxMajor, d_maxMinor);
     getPixelValues();
     SliderBase::rangeChange();
 //     repaint();

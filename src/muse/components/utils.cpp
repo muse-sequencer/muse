@@ -43,6 +43,10 @@
 #include "utils.h"
 #include "xml.h"
 #include "gconfig.h"
+#include "slider.h"
+#include "doublelabel.h"
+#include "meter.h"
+#include "ctrl.h"
 
 #include <QDebug>
 
@@ -1088,62 +1092,574 @@ void drawSegmentedVLine(QPainter* p, int x, int y1, int y2, int segLength, int /
 
 //---------------------------------------------------------
 //
-//  logToVal
-//   - represent logarithmic value on linear scale from 0 to 1
+//  normalizedValueFromRange
+//   - represent value on linear scale from 0 to 1
 //
 //---------------------------------------------------------
-double logToVal(double inLog, double min, double max)
+
+double normalizedValueFromRange(double in, const MusECore::CtrlList *cl)
 {
-    if (inLog < min) inLog = min;
-    if (inLog > max) inLog = max;
-    double linMin = 20.0*log10(min);
-    double linMax = 20.0*log10(max);
-    double linVal = 20.0*log10(inLog);
+  const MusECore::CtrlValueType vt = cl->valueType();
+  const bool islog = vt == MusECore::CtrlValueType::VAL_LOG;
+  double max = museMax(cl->minVal(), cl->maxVal());
+  double min = museRangeMinValHint(
+    museMin(cl->minVal(), cl->maxVal()), max,
+    islog,
+    vt == MusECore::CtrlValueType::VAL_INT,
+    cl->displayHint() == MusECore::CtrlList::DisplayLogDB,
+    MusEGlobal::config.minSlider,
+    0.05);
 
-    double outVal = (linVal-linMin) / (linMax - linMin);
+  if(in < min)
+    in = min;
+  if(in > max)
+    in = max;
 
-    return outVal;
+  if(islog)
+  {
+    min = museValToDb(min);
+    max = museValToDb(max);
+    in = museValToDb(in);
+  }
+
+  double outVal = (in - min) / (max - min);
+  if(outVal < 0.0) outVal = 0.0;
+  if(outVal > 1.0) outVal = 1.0;
+
+  return outVal;
 }
 
 //---------------------------------------------------------
 //
-//  valToLog
-//   - represent value from 0 to 1 as logarithmic value between min and max
+//  normalizedValueToRange
+//   - represent value from 0 to 1 as value between min and max
 //
 //---------------------------------------------------------
-double valToLog(double inV, double min, double max)
+
+double normalizedValueToRange(double in, const MusECore::CtrlList *cl)
 {
-    double linMin = 20.0*log10(min);
-    double linMax = 20.0*log10(max);
+  const MusECore::CtrlValueType vt = cl->valueType();
+  const bool islog = vt == MusECore::CtrlValueType::VAL_LOG;
+  const double clmax = museMax(cl->minVal(), cl->maxVal());
+  const double clmin = museRangeMinValHint(
+    museMin(cl->minVal(), cl->maxVal()), clmax,
+    islog,
+    vt == MusECore::CtrlValueType::VAL_INT,
+    cl->displayHint() == MusECore::CtrlList::DisplayLogDB,
+    MusEGlobal::config.minSlider,
+    0.05);
 
-    double linVal = (inV * (linMax - linMin)) + linMin;
-    double outVal = exp10((linVal)/20.0);
+  double min = clmin, max = clmax;
 
-    if (outVal > max) outVal = max;
-    if (outVal < min) outVal = min;
-    return outVal;
+  if(islog)
+  {
+    min = museValToDb(min);
+    max = museValToDb(max);
+  }
+
+  if(in < 0.0) in = 0.0;
+  if(in > 1.0) in = 1.0;
+
+  double outVal = (in * (max - min)) + min;
+  if(islog)
+    outVal = museDbToVal(outVal);
+
+  if (outVal > clmax) outVal = clmax;
+  if (outVal < clmin) outVal = clmin;
+  return outVal;
 }
 
 //---------------------------------------------------------
 //
-//  deltaValToLog
+//  deltaNormalizedValueToRange
 //
 //---------------------------------------------------------
-double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max)
+
+double deltaNormalizedValueToRange(double in, double inDeltaNormalized, const MusECore::CtrlList *cl)
 {
-    if (inLog < min) inLog = min;
-    if (inLog > max) inLog = max;
-    const double linMin = 20.0*log10(min);
-    const double linMax = 20.0*log10(max);
-    const double linVal = 20.0*log10(inLog);
-    const double linDeltaVal = (inLinDeltaNormalized * (linMax - linMin)) /*+ linMin*/;
+  const MusECore::CtrlValueType vt = cl->valueType();
+  const bool islog = vt == MusECore::CtrlValueType::VAL_LOG;
+  const double clmax = museMax(cl->minVal(), cl->maxVal());
+  const double clmin = museMin(cl->minVal(), cl->maxVal());
+  const double clmin_lim = museRangeMinValHint(
+    clmin, clmax,
+    islog,
+    vt == MusECore::CtrlValueType::VAL_INT,
+    cl->displayHint() == MusECore::CtrlList::DisplayLogDB,
+    MusEGlobal::config.minSlider,
+    0.05);
 
-    double outVal = ((linVal /*- linMin*/) /*/ (linMax - linMin)*/) + linDeltaVal;
-    outVal = exp10((outVal)/20.0);
-    if (outVal > max) outVal = max;
-    if (outVal < min) outVal = min;
+  double min = clmin_lim, max = clmax;
 
-    return outVal;
+  if(in < min)
+    in = min;
+  if(in > max)
+    in = max;
+
+  if(islog)
+  {
+    min = museValToDb(min);
+    max = museValToDb(max);
+    in  = museValToDb(in);
+  }
+
+  double outVal = in + (inDeltaNormalized * (max - min));
+  if(outVal < min) outVal = min;
+  if(outVal > max) outVal = max;
+
+  if(islog)
+  {
+    // If the minimum allows to go to zero, and if the final dB value is equal
+    //  to our minimum dB setting, make it jump to 0.0 (-inf).
+    if(clmin <= 0.0 && outVal == min)
+      return 0.0;
+    outVal = museDbToVal(outVal);
+  }
+  // 'Snap' to integer or boolean
+  else if (cl->mode() == MusECore::CtrlList::DISCRETE)
+  {
+    outVal = rint(outVal + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
+  }
+
+  if (outVal < clmin_lim) outVal = clmin_lim;
+  if (outVal > clmax) outVal = clmax;
+
+  return outVal;
 }
+
 
 } // namespace MusECore
+
+
+namespace MusEGui {
+
+void setupControllerWidgets(
+  Slider* s, DoubleLabel* sl, DoubleText* dt, Meter** m, int numMeters,
+  double lower, double upper, bool isInt, bool isLog, bool displayAsDB,
+  bool showMeterScale,
+  double volSliderStepDb, double volSliderStepLin, double volSliderStepInt,
+  int volSliderPrecDb, int volSliderPrecLin, int volSliderPrecLog, double dBFactor,
+  double minSliderDB, double minMeterDB, const QString &suffix)
+{
+  // If there's a suffix and its first character is not a space, insert one.
+  QString fin_suffix(suffix);
+  if(!fin_suffix.isEmpty() && !fin_suffix.at(0).isSpace())
+    fin_suffix.insert(0, ' ');
+
+  if(isLog)
+  {
+    if(isInt)
+    {
+      if(displayAsDB)
+      {
+        const double dBFactorInv = 1.0 / dBFactor;
+        // Special for when the minimum is 0.0 (-inf dB):
+        // Force the minimum to the app's minimum slider dB setting, in an integer form.
+        const double min = museRangeMinValHint(lower, upper, isLog, isInt, displayAsDB, minSliderDB, dBFactorInv);
+
+        if(s)
+        {
+          s->blockSignals(true);
+          // Set the slider and label to log + integer mode.
+          s->setLog(true);
+          s->setInteger(true);
+          s->setDBFactor(dBFactor);
+          // Set the slider and label log scaling factor.
+          s->setLogFactor(upper);
+          s->setLogCanZero(lower <= 0.0);
+          s->setRange(min, upper, volSliderStepInt);
+          s->setScale(min, upper, 6.0, ScaleIf::ScaleDB, dBFactor, upper);
+          s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
+          //s->setScaleMaxMinor(5);
+          s->blockSignals(false);
+        }
+        if(sl)
+        {
+          sl->blockSignals(true);
+          sl->setLog(true);
+          sl->setInteger(true);
+          sl->setDisplayDB(true);
+          sl->setDBFactor(dBFactor);
+          sl->setLogFactor(upper);
+          sl->setLogCanZero(lower <= 0.0);
+          sl->setRange(min, upper);
+          sl->setStep(volSliderStepInt);
+          sl->setDisplayPrecision(volSliderPrecDb);
+          sl->setUnlimitedEntryPrecision(false);
+          //sl->setOff(min - 10.0);
+          sl->setSuffix(fin_suffix);
+          sl->setLogZeroSpecialText(QString('-') + QChar(0x221e) + fin_suffix);  // The infinity character.
+          //sl->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
+          sl->blockSignals(false);
+        }
+        if(dt)
+        {
+          dt->blockSignals(true);
+          dt->setLog(true);
+          dt->setInteger(true);
+          dt->setDisplayDB(true);
+          dt->setDBFactor(dBFactor);
+          dt->setLogFactor(upper);
+          dt->setLogCanZero(lower <= 0.0);
+          dt->setRange(min, upper);
+          dt->setPrecision(volSliderPrecDb);
+          //dt->setOff(min - 10.0);
+          dt->setSuffix(fin_suffix);
+          dt->setLogZeroSpecialText(QString('-') + QChar(0x221e) + fin_suffix);  // The infinity character.
+          //dt->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
+          dt->blockSignals(false);
+        }
+        if(m)
+        {
+          // Special for when the minimum is 0.0 (-inf dB):
+          // Force the minimum to the app's minimum meter dB setting, in an integer form.
+          const double meter_min = museRangeMinValHint(lower, upper, isLog, isInt, displayAsDB, minMeterDB, dBFactorInv);
+
+          for(int i = 0; i < numMeters; ++i)
+          {
+            m[i]->blockSignals(true);
+            if(showMeterScale && i == numMeters - 1)
+              m[i]->setScalePos(Meter::ScaleRightOrBottom);
+            else
+              m[i]->setScalePos(Meter::ScaleNone);
+            m[i]->setDBFactor(dBFactor);
+            m[i]->setLogFactor(upper);
+            //m[i]->setLogCanZero(lower <= 0.0);
+            m[i]->setRange(meter_min, upper, true, true);
+            m[i]->setScale(meter_min, upper, 6.0, ScaleIf::ScaleDB, dBFactor, upper);
+            m[i]->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
+            m[i]->blockSignals(false);
+          }
+        }
+      }
+      // Prefer int not dB.
+      else
+      {
+        if(s)
+        {
+          s->blockSignals(true);
+          // Set both the slider and label to linear + integer mode.
+          s->setLog(false);
+          s->setInteger(true);
+          s->setRange(lower, upper, volSliderStepInt);
+          s->setScale(lower, upper, 10.0, ScaleIf::ScaleLinear);
+          s->setSpecialText(QString());
+          //s->setScaleMaxMinor(5);
+          s->blockSignals(false);
+        }
+        if(sl)
+        {
+          sl->blockSignals(true);
+          sl->setLog(false);
+          sl->setInteger(true);
+          sl->setDisplayDB(false);
+          sl->setRange(lower, upper);
+          sl->setStep(volSliderStepInt);
+          sl->setDisplayPrecision(0);
+          sl->setUnlimitedEntryPrecision(false);
+          //sl->setOff(lower - 10.0);
+          sl->setSuffix(fin_suffix);
+          //sl->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
+          sl->blockSignals(false);
+        }
+        if(dt)
+        {
+          dt->blockSignals(true);
+          dt->setLog(false);
+          dt->setInteger(true);
+          dt->setDisplayDB(false);
+          dt->setRange(lower, upper);
+          dt->setPrecision(0);
+          //dt->setOff(lower - 10.0);
+          dt->setSuffix(fin_suffix);
+          //dt->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
+          dt->blockSignals(false);
+        }
+        if(m)
+        {
+          for(int i = 0; i < numMeters; ++i)
+          {
+            m[i]->blockSignals(true);
+            if(showMeterScale && i == numMeters - 1)
+              m[i]->setScalePos(Meter::ScaleRightOrBottom);
+            else
+              m[i]->setScalePos(Meter::ScaleNone);
+            m[i]->setRange(lower, upper, true, false);
+            m[i]->setScale(lower, upper, 10.0, ScaleIf::ScaleLinear);
+            m[i]->setSpecialText(QString());
+            m[i]->blockSignals(false);
+          }
+        }
+      }
+    }
+    // Log and not int.
+    else
+    {
+      // Log and dB display.
+      if(displayAsDB)
+      {
+        const double dBFactorInv = 1.0 / dBFactor;
+        // Special for when the minimum is 0.0 (-inf dB):
+        // Force the slider and label minimum to the app's minimum slider dB setting.
+        const double min = museRangeMinValHint(lower, upper, isLog, isInt, displayAsDB, minSliderDB, dBFactorInv);
+
+        if(s)
+        {
+          s->blockSignals(true);
+          s->setLog(true);
+          s->setInteger(false);
+          s->setDBFactor(dBFactor);
+          // Set the slider and label log scaling factor.
+          s->setLogFactor(1.0);
+          // Tell the slider and label to jump to 0.0 (-inf dB) when the value equals the minimum.
+          // (Otherwise if controller minimum is not zero we obey whatever the controller wants.)
+          s->setLogCanZero(lower <= 0.0);
+          s->setRange(min, upper, volSliderStepDb);
+          s->setScale(min, upper, 6.0, ScaleIf::ScaleDB, dBFactor, 1.0);
+          s->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
+          //s->setScaleMaxMinor(5);
+          s->blockSignals(false);
+        }
+        if(sl)
+        {
+          sl->blockSignals(true);
+          sl->setLog(true);
+          sl->setInteger(false);
+          sl->setDisplayDB(true);
+          sl->setDBFactor(dBFactor);
+          sl->setLogFactor(1.0);
+          sl->setLogCanZero(lower <= 0.0);
+          sl->setRange(min, upper);
+          sl->setStep(volSliderStepDb);
+          sl->setDisplayPrecision(volSliderPrecDb);
+          sl->setUnlimitedEntryPrecision(false);
+          //sl->setOff(min - 10.0);
+          sl->setSuffix(fin_suffix);
+          sl->setLogZeroSpecialText(QString('-') + QChar(0x221e) + fin_suffix);
+          sl->blockSignals(false);
+        }
+        if(dt)
+        {
+          dt->blockSignals(true);
+          dt->setLog(true);
+          dt->setInteger(false);
+          dt->setDisplayDB(true);
+          dt->setDBFactor(dBFactor);
+          dt->setLogFactor(1.0);
+          dt->setLogCanZero(lower <= 0.0);
+          dt->setRange(min, upper);
+          dt->setPrecision(volSliderPrecDb);
+          //dt->setOff(min - 10.0);
+          dt->setSuffix(fin_suffix);
+          dt->setLogZeroSpecialText(QString('-') + QChar(0x221e) + fin_suffix);
+          dt->blockSignals(false);
+        }
+        if(m)
+        {
+          // Special for when the minimum is 0.0 (-inf dB):
+          // Force the meter minimum to the app's minimum meter dB setting.
+          const double meter_min = museRangeMinValHint(lower, upper, isLog, isInt, displayAsDB, minMeterDB, dBFactorInv);
+
+          for(int i = 0; i < numMeters; ++i)
+          {
+            m[i]->blockSignals(true);
+            if(showMeterScale && i == numMeters - 1)
+              m[i]->setScalePos(Meter::ScaleRightOrBottom);
+            else
+              m[i]->setScalePos(Meter::ScaleNone);
+            m[i]->setDBFactor(dBFactor);
+            m[i]->setLogFactor(1.0);
+            //m[i]->setLogCanZero(lower <= 0.0);
+            m[i]->setRange(meter_min, upper, false, true);
+            m[i]->setScale(meter_min, upper, 6.0, ScaleIf::ScaleDB, dBFactor, 1.0);
+            m[i]->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
+            m[i]->blockSignals(false);
+          }
+        }
+      }
+      // Log and not dB display.
+      else
+      {
+        // Special for when the minimum is 0.0:
+        // Force the minimum to an appropriate value.
+        const double min = museRangeMinValHint(lower, upper, isLog, isInt, displayAsDB);
+
+        if(s)
+        {
+          s->blockSignals(true);
+          s->setLog(true);
+          s->setInteger(false);
+          // Tell the slider and label to jump to 0.0 when the value equals the minimum.
+          // (Otherwise if controller minimum is not zero we obey whatever the controller wants.)
+          s->setLogCanZero(lower <= 0.0);
+          s->setRange(min, upper, volSliderStepDb);
+          // Set the step to 1 decade, which is the minimum allowed by a log scale.
+          s->setScale(min, upper, 1.0, ScaleIf::ScaleLog);
+          s->setSpecialText(QString());
+          //s->setScaleMaxMinor(5);
+          s->blockSignals(false);
+        }
+        if(sl)
+        {
+          sl->blockSignals(true);
+          sl->setLog(true);
+          sl->setInteger(false);
+          sl->setDisplayDB(false);
+          sl->setLogCanZero(lower <= 0.0);
+          sl->setRange(min, upper);
+          sl->setStep(volSliderStepDb);
+          // Turn on metric suffixes to avoid long decimal precision with log.
+          sl->setTextFormat('M');
+          sl->setDisplayPrecision(volSliderPrecLog);
+          // Turn on unlimited entry precision so that users can enter long decimals instead of metric suffixes,
+          //  even with a low display precision.
+          sl->setUnlimitedEntryPrecision(true);
+          //sl->setOff(min - 10.0);
+          sl->setSuffix(fin_suffix);
+          sl->setLogZeroSpecialText(QString());
+          sl->blockSignals(false);
+        }
+        if(dt)
+        {
+          dt->blockSignals(true);
+          dt->setLog(true);
+          dt->setInteger(false);
+          dt->setDisplayDB(false);
+          dt->setLogCanZero(lower <= 0.0);
+          dt->setRange(min, upper);
+          // Turn on metric prefixes to avoid long decimal precision with log.
+          dt->setTextFormat('M');
+          dt->setPrecision(volSliderPrecLog);
+          //dt->setOff(min - 10.0);
+          dt->setSuffix(fin_suffix);
+          dt->setLogZeroSpecialText(QString());
+          dt->blockSignals(false);
+        }
+        if(m)
+        {
+//           // Special for when the minimum is 0.0:
+//           // Force the meter to a minimum.
+//           //double meter_min = lower;
+//           double meter_min = min;
+//           //if(meter_min <= 0.0)
+//           // TODO
+//           //  meter_min = museDbToVal(minMeterDB, dBFactorInv);
+
+          // Special for when the minimum is 0.0:
+          // Force the meter to a minimum.
+          const double meter_min = museRangeMinValHint(lower, upper, isLog, isInt, displayAsDB);
+
+          for(int i = 0; i < numMeters; ++i)
+          {
+            m[i]->blockSignals(true);
+            if(showMeterScale && i == numMeters - 1)
+              m[i]->setScalePos(Meter::ScaleRightOrBottom);
+            else
+              m[i]->setScalePos(Meter::ScaleNone);
+            m[i]->setDBFactor(dBFactor);
+            m[i]->setLogFactor(upper);
+            //m[i]->setLogCanZero(lower <= 0.0);
+            m[i]->setRange(meter_min, upper, false, false);
+            // Set the step to 1 decade, which is the minimum allowed by a log scale.
+            m[i]->setScale(meter_min, upper, 1.0, ScaleIf::ScaleLog);
+            m[i]->setSpecialText(QString());
+            m[i]->blockSignals(false);
+          }
+        }
+      }
+    }
+  }
+  // Int or none, and not log.
+  else
+  {
+    if(s)
+    {
+      s->blockSignals(true);
+      s->setLog(false);
+      s->setInteger(isInt);
+      s->setRange(lower, upper, isInt ? volSliderStepInt : volSliderStepLin);
+      s->setScale(lower, upper, 10.0, ScaleIf::ScaleLinear);
+      s->setSpecialText(QString());
+      //s->setScaleMaxMinor(5);
+      s->blockSignals(false);
+    }
+    if(sl)
+    {
+      sl->blockSignals(true);
+      sl->setLog(false);
+      sl->setInteger(isInt);
+      sl->setDisplayDB(false);
+      sl->setRange(lower, upper);
+      sl->setStep(isInt ? volSliderStepInt : volSliderStepLin);
+      // Turn on metric suffixes to avoid long decimal precision.
+      if(!isInt)
+        sl->setTextFormat('M');
+      sl->setDisplayPrecision(isInt ? 0 : volSliderPrecLin);
+      // Turn on unlimited entry precision so that users can enter long decimals,
+      //  instead of metric suffixes even with a low display precision.
+      sl->setUnlimitedEntryPrecision(isInt ? false : true);
+      //sl->setOff(lower - 10.0);
+      sl->setSuffix(fin_suffix);
+      sl->blockSignals(false);
+    }
+    if(dt)
+    {
+      dt->blockSignals(true);
+      dt->setLog(false);
+      dt->setInteger(isInt);
+      dt->setDisplayDB(false);
+      dt->setRange(lower, upper);
+      dt->setPrecision(isInt ? 0 : volSliderPrecLin);
+      //dt->setOff(lower - 10.0);
+      dt->setSuffix(fin_suffix);
+      dt->blockSignals(false);
+    }
+    if(m)
+    {
+      for(int i = 0; i < numMeters; ++i)
+      {
+        m[i]->blockSignals(true);
+        if(showMeterScale && i == numMeters - 1)
+          m[i]->setScalePos(Meter::ScaleRightOrBottom);
+        else
+          m[i]->setScalePos(Meter::ScaleNone);
+        m[i]->setRange(lower, upper, true, false);
+        m[i]->setScale(lower, upper, 10.0, ScaleIf::ScaleLinear);
+        m[i]->setSpecialText(QString());
+        m[i]->blockSignals(false);
+      }
+    }
+  }
+}
+
+void printQPainterPath(const QPainterPath& p)
+{
+  const int n = p.elementCount();
+  for(int i = 0; i < n; ++i)
+  {
+    const QPainterPath::Element e = p.elementAt(i);
+    const int& x = e.x;
+    const int& y = e.y;
+    const QPainterPath::ElementType& t = e.type;
+
+    fprintf(stderr, "Painter path: ");
+    switch(t)
+    {
+      case QPainterPath::MoveToElement:
+        fprintf(stderr, "MoveTo ");
+      break;
+      case QPainterPath::LineToElement:
+        fprintf(stderr, "LineTo ");
+      break;
+      case QPainterPath::CurveToElement:
+        fprintf(stderr, "CurveTo ");
+      break;
+      case QPainterPath::CurveToDataElement:
+        fprintf(stderr, "CurveToData ");
+      break;
+    }
+    fprintf(stderr, "x:%d y:%d\n", x, y);
+  }
+}
+
+} // namespace MusEGui

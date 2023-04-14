@@ -95,29 +95,23 @@ struct PluginPortInfo
     HasMin = 0x20,
     HasMax = 0x40,
     HasDefault = 0x80,
-    HasStep = 0x100 };
+    HasStep = 0x100,
+    HasStrictBounds = 0x200 };
   typedef int PortValueFlags_t;
 
   enum PortFlags { NoPortFlags = 0x00,
     // Indicates min and max should be scaled by the current samplerate.
     ScaleBySamplerate = 0x01,
-    
-    // Indicates min is valid, and should be scaled by the current samplerate
-    //  if ScaleBySamplerate is true. Otherwise min is set to zero.
-    //BoundedBelow = 0x02,
-    
-    // Indicates max is valid, and should be scaled by the current samplerate
-    //  if ScaleBySamplerate is true. Otherwise max is set to one.
-    //BoundedAbove = 0x04
-    
     // Whether the port is intended for latency reporting.
     IsLatency = 0x02,
-    
     // Whether the port is an audio port which is used for high-speed control signals.
     IsCVPort = 0x04,
-    
     SupportsTimePosition = 0x08,
-    IsFreewheel = 0x10
+    IsFreewheel = 0x10,
+    // Whether the port is designated an enable port.
+    IsEnable = 0x20,
+    // Whether the port is designated a bypass port.
+    IsBypass = 0x20
   };
   typedef int PortFlags_t;
 
@@ -187,8 +181,12 @@ class PluginScanInfoStruct
     typedef int PluginClass_t;
 
     enum PluginFlags { NoPluginFlags = 0x00,
-      HasGui = 0x01, HasChunks = 0x02, Realtime = 0x04, HardRealtimeCapable = 0x08, HasFreewheelPort = 0x10,
-      HasLatencyPort = 0x20, SupportsTimePosition = 0x40 };
+      HasGui = 0x01, HasChunks = 0x02, Realtime = 0x04, HardRealtimeCapable = 0x08,
+      // Obsolete flag. Kept for backward compatibility.
+      HasFreewheelPort = 0x10,
+      // Obsolete flag. Kept for backward compatibility.
+      HasLatencyPort = 0x20,
+      SupportsTimePosition = 0x40 };
     typedef int PluginFlags_t;
     
   //private:
@@ -239,11 +237,16 @@ class PluginScanInfoStruct
     unsigned long _eventInPorts;
     unsigned long _eventOutPorts;
 
-    // Freewheel port index ff HasFreewheelPort is true.
+    // Freewheel port index if HasFreewheelPort is true.
     unsigned long _freewheelPortIdx;
     // Latency port index if HasLatencyPort is true.
     unsigned long _latencyPortIdx;
-    
+    // Enable or bypass port index if UseEmulatedEnableController or HasEnablePort or HasBypassPort are true.
+    unsigned long _enableOrBypassPortIdx;
+    MusECore::PluginLatencyReportingType _pluginLatencyReportingType;
+    MusECore::PluginBypassType _pluginBypassType;
+    MusECore::PluginFreewheelType _pluginFreewheelType;
+
     // Port number to control input index. Item is -1 if it's not a control input.
     // TODO: Not used yet.
     //std::vector<unsigned long> rpIdx;
@@ -283,6 +286,10 @@ class PluginScanInfoStruct
       _eventOutPorts(0),
       _freewheelPortIdx(0),
       _latencyPortIdx(0),
+      _enableOrBypassPortIdx(0),
+      _pluginLatencyReportingType(MusECore::PluginLatencyTypeNone),
+      _pluginBypassType(MusECore::PluginBypassTypeEmulatedEnableFunction),
+      _pluginFreewheelType(MusECore::PluginFreewheelTypeNone),
       _requiredFeatures(MusECore::PluginNoFeatures),
       _vstPluginFlags(MusECore::vstPluginNoFlags)
       { };

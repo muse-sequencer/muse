@@ -1042,7 +1042,8 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
             channel = qMax(channel, 0);
 
             if(channel != mt->outChannel())
-                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, mt, mt->outChannel(), channel, 0, 0, 0));
+                operations.push_back(MusECore::UndoOp(
+                  MusECore::UndoOp::ModifyTrackChannel, mt, mt->outChannel(), channel, double(0), double(0), double(0)));
         }
         else
         {
@@ -1063,7 +1064,8 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
                 channel = qMax(channel, 0);
 
                 if(channel != t->outChannel() && (doAllTracks || t->selected()))
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->outChannel(), channel, 0, 0, 0));
+                    operations.push_back(MusECore::UndoOp(
+                      MusECore::UndoOp::ModifyTrackChannel, t, t->outChannel(), channel, double(0), double(0), double(0)));
             }
         }
 
@@ -1088,7 +1090,8 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
                 channel = qMax(channel, 1);
 
                 if(channel != track->channels())
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, track, track->channels(), channel, 0, 0, 0));
+                    operations.push_back(MusECore::UndoOp(
+                      MusECore::UndoOp::ModifyTrackChannel, track, track->channels(), channel, double(0), double(0), double(0)));
             }
             else
             {
@@ -1111,7 +1114,8 @@ void TList::setTrackChannel(MusECore::Track *track, bool isDelta, int channel, i
                     channel = qMax(channel, 1);
 
                     if(channel != t->channels() && (doAllTracks || t->selected()))
-                        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyTrackChannel, t, t->channels(), channel, 0, 0, 0));
+                        operations.push_back(MusECore::UndoOp(
+                          MusECore::UndoOp::ModifyTrackChannel, t, t->channels(), channel, double(0), double(0), double(0)));
                 }
             }
 
@@ -2269,7 +2273,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     for (const auto tit : *tl)
                     {
                         if (tit->selected() && tit->canRecordMonitor())
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, tit, val, float(0), float(0), float(0), float(0)));
+                            operations.push_back(MusECore::UndoOp(
+                              MusECore::UndoOp::SetTrackRecMonitor, tit, val, double(0), double(0), double(0), double(0)));
                     }
                     if (!operations.empty())
                         MusEGlobal::song->applyOperationGroup(operations);
@@ -2292,7 +2297,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                     if(other_t->type() != t->type())
                         continue;
-                    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackRecMonitor, other_t, val, 0, 0, 0, 0));
+                    operations.push_back(MusECore::UndoOp(
+                      MusECore::UndoOp::SetTrackRecMonitor, other_t, val, double(0), double(0), double(0), double(0)));
                 }
                 if(!operations.empty())
                 {
@@ -2470,14 +2476,16 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                     for (const auto it : *tracks) {
                         if (it->selected() && it->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state, 0, 0, 0, 0));
+                            operations.push_back(MusECore::UndoOp(
+                              MusECore::UndoOp::SetTrackSolo, it, state, double(0), double(0), double(0), double(0)));
                     }
                 }
                 else if (ctrl) // toggle ALL tracks
                 {
                     for (const auto it : *tracks) {
                         if (it->type() != MusECore::Track::AUDIO_OUTPUT)
-                            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackSolo, it, state, 0, 0, 0, 0));
+                            operations.push_back(MusECore::UndoOp(
+                              MusECore::UndoOp::SetTrackSolo, it, state, double(0), double(0), double(0), double(0)));
                     }
                 }
                 if(!operations.empty())
@@ -2892,11 +2900,14 @@ void TList::outputAutoMenuSorted(PopupMenu* p, QList<const MusECore::CtrlList*> 
 void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff, bool state)
 {
     if (turnOff)
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, state, 0, 0, 0, 0));
+        operations.push_back(MusECore::UndoOp(
+          MusECore::UndoOp::SetTrackOff, t, state, double(0), double(0), double(0), double(0)));
     else if (t->off())
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackOff, t, false, 0, 0, 0, 0));
+        operations.push_back(MusECore::UndoOp(
+          MusECore::UndoOp::SetTrackOff, t, false, double(0), double(0), double(0), double(0)));
     else
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, t, state, 0, 0, 0, 0));
+        operations.push_back(MusECore::UndoOp(
+          MusECore::UndoOp::SetTrackMute, t, state, double(0), double(0), double(0), double(0)));
 }
 
 void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
@@ -3340,37 +3351,40 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
     }
     else
     {
-      TrackColumn col = TrackColumn(header->logicalIndexAt(x));
-      switch (col)
+      if(t)
       {
-        case COL_MUTE:
+        TrackColumn col = TrackColumn(header->logicalIndexAt(x));
+        switch (col)
         {
-          // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
-          // Only if momentary and the track is not off and is muted.
-          if(MusEGlobal::config.momentaryMute && !t->off() && t->mute())
+          case COL_MUTE:
           {
-            MusECore::PendingOperationList operations;
-            operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
-            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+            // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+            // Only if momentary and the track is not off and is muted.
+            if(MusEGlobal::config.momentaryMute && !t->off() && t->mute())
+            {
+              MusECore::PendingOperationList operations;
+              operations.add(MusECore::PendingOperationItem(t, !t->mute(), MusECore::PendingOperationItem::SetTrackMute));
+              MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+            }
           }
-        }
-        break;
+          break;
 
-        case COL_SOLO:
-        {
-          // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
-          // Only if momentary and the track is soloed.
-          if(MusEGlobal::config.momentarySolo && t->solo())
+          case COL_SOLO:
           {
-            MusECore::PendingOperationList operations;
-            operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackSolo));
-            MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+            // This is a minor operation easily manually undoable. Let's not clog the undo list with it.
+            // Only if momentary and the track is soloed.
+            if(MusEGlobal::config.momentarySolo && t->solo())
+            {
+              MusECore::PendingOperationList operations;
+              operations.add(MusECore::PendingOperationItem(t, false, MusECore::PendingOperationItem::SetTrackSolo));
+              MusEGlobal::audio->msgExecutePendingOperations(operations, true);
+            }
           }
-        }
-        break;
+          break;
 
-        default:
-        break;
+          default:
+          break;
+        }
       }
     }
 

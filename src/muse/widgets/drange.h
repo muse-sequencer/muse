@@ -44,10 +44,16 @@ class DoubleRange
       int d_pageSize;
       double d_value;
       double d_exactValue;
+      double d_prevValue;
       double d_exactPrevValue;
       bool d_periodic;
       bool d_log;
       bool d_integer;
+      bool d_logCanZero;
+      double d_dBFactor, d_dBFactorInv, d_logFactor;
+
+      // In log mode, returns the log factor, otherwise returns 1.0.
+      //inline double realLogFactor() const { return d_log ? d_logFactor : 1.0; }
 
       void setNewValue(double x, bool align = false);
 
@@ -55,41 +61,60 @@ class DoubleRange
      enum ConversionMode { ConvertNone, ConvertDefault, ConvertInt, ConvertLog };
       
    protected:
-      double convertFrom(double x, ConversionMode mode = ConvertDefault) const;
-      double convertTo(double x, ConversionMode mode = ConvertDefault) const;
-      double exactValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_exactValue, mode); }
-      double exactPrevValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_exactPrevValue, mode); }
-      virtual void valueChange() {}
-      virtual void stepChange()  {}
-      virtual void rangeChange() {}
+      double internalMaxValue(ConversionMode mode = ConvertNone) const;
+      double internalMinValue(ConversionMode mode = ConvertNone) const;
+      // Returns the current internal value which is never below minimum, even in log mode. See value().
+      double internalValue(ConversionMode mode = ConvertNone) const;
+      void setInternalValue(double x, ConversionMode mode = ConvertNone);
+      void internalFitValue(double x, ConversionMode mode = ConvertNone);
+      double convertFrom(double x, ConversionMode mode = ConvertNone) const;
+      double convertTo(double x, ConversionMode mode = ConvertNone) const;
+      double exactValue(ConversionMode mode = ConvertNone) const;
+      double exactPrevValue(ConversionMode mode = ConvertNone) const;
+      double prevValue(ConversionMode mode = ConvertNone) const;
+      virtual void valueChange();
+      virtual void stepChange();
+      virtual void rangeChange();
 
    public:
       DoubleRange();
-      virtual ~DoubleRange(){}
+      virtual ~DoubleRange();
 
-      double value(ConversionMode mode = ConvertDefault) const;
-      virtual void setValue(double x, ConversionMode mode = ConvertDefault);
+      // Returns the current value.
+      // In log mode, when the value is equal to or less than the minimum AND logCanOff is true,
+      //  this will return 0.0 (-inf dB). See internalValue().
+      double value() const;
+      virtual void setValue(double x);
 
-      virtual void fitValue(double x, ConversionMode mode = ConvertDefault);
+      virtual void fitValue(double x);
       virtual void incValue(int);
       virtual void incPages(int);
       void setPeriodic(bool tf);
-      void setRange   (double vmin, double vmax, double vstep = 0.0, int pagesize = 1, ConversionMode mode = ConvertDefault);
-      void setLogRange(double vmin, double vmax, double vstep = 0.0, int pagesize = 1);
+      void setRange   (double vmin, double vmax, double vstep = 0.0, int pagesize = 1);
       void setStep(double);
 
-      double maxValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_maxValue, mode); }
-      void setMaxLogValue(double v);
-      double minValue(ConversionMode mode = ConvertDefault) const { return convertTo(d_minValue, mode); }
-      void setMinLogValue(double v);
-      bool periodic()  const  { return d_periodic; }
-      int pageSize() const    { return d_pageSize; }
+      double maxValue() const;
+      double minValue() const;
+      bool periodic()  const;
+      int pageSize() const;
       double step() const;
       
-      bool log() const        { return d_log; }
-      void setLog(bool v)     { d_log = v; }
-      bool integer() const    { return d_integer; }
-      void setInteger(bool v) { d_integer = v; }
+      bool log() const;
+      void setLog(bool v);
+      bool integer() const;
+      void setInteger(bool v);
+      // Sets whether a log value jumps to zero (-inf dB) when it reaches the given minimum which in most cases
+      //  will be set to something above zero (the app's minimum slider dB setting) - even if the controller
+      //  itself goes all the way to zero. Use with valueWithLogOff().
+      void setLogCanZero(bool v);
+      // In log mode, sets the dB factor when conversions are done.
+      // For example 20 * log10() for signals, 10 * log10() for power, and 40 * log10() for MIDI volume.
+      void setDBFactor(double v = 20.0);
+      // Sets the scale of a log range. For example a MIDI volume control can set a logFactor = 127
+      //  so that the range can conveniently be set to 0-127. (With MIDI volume, dBFactor would be
+      //  set to 40.0, as per MMA specs.) Min, max, off, input and output values are all scaled by this factor,
+      //  but step is not.
+      void setLogFactor(double v = 1.0);
       };
 
 } // namespace MusEGui

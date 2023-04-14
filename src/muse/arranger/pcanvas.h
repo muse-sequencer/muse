@@ -39,6 +39,7 @@
 #include "ctrl.h"
 #include "citem.h"
 #include "pos.h"
+#include "gconfig.h"
 
 
 // Forward declarations:
@@ -116,21 +117,22 @@ struct AutomationObject {
 //---------------------------------------------------------
 
 enum PartOperations {
-  OP_RENAME = 0,
-  OP_DELETE = 1,
-  OP_SPLIT = 2,
-  OP_GLUE = 3,
-  OP_CUT = 4,
-  OP_COPY = 5,
-  OP_GLUESELECTION = 6,
+  OP_BASE_ENUM = 30000,
+  OP_RENAME = OP_BASE_ENUM,
+  OP_DELETE,
+  OP_SPLIT,
+  OP_GLUE,
+  OP_CUT,
+  OP_COPY,
+  OP_GLUESELECTION,
 
-  OP_WAVEEDIT = 14,
-  OP_DECLONE = 15,
-  OP_SAVEPARTTODISK = 16,
-  OP_FILEINFO = 17,
-  OP_SELECT_CLONES = 18,
-  OP_NORMALIZE = 19,
-  OP_PARTCOLORBASE = 20,
+  OP_DECLONE,
+  OP_SAVEPARTTODISK,
+  OP_FILEINFO,
+  OP_SELECT_CLONES,
+  OP_NORMALIZE,
+  OP_PARTCOLORBASE,
+  OP_ONE_PAST_END_ENUM = OP_PARTCOLORBASE + NUM_PARTCOLORS
 };
 
 enum AudioAutomationOperations {
@@ -258,11 +260,11 @@ class PartCanvas : public Canvas {
       //          2     move only vertical
       void processAutomationMovements(QPoint pos, int dir, bool rasterize);
       // Uses fast_log10() instead of log10().
-      double logToVal(double inLog, double min, double max) const;
+      double normalizedValueFromRange(double in, const MusECore::CtrlList *cl) const;
       // Uses fast_log10() instead of log10().
-      double valToLog(double inV, double min, double max) const;
+      double normalizedValueToRange(double in, const MusECore::CtrlList *cl) const;
       // Uses log10() instead of fast_log10().
-      double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max) const;
+      double deltaNormalizedValueToRange(double in, double inDeltaNormalized, const MusECore::CtrlList *cl) const;
       // Given a frame, finds the corresponding item and returns its value, and returns
       //  the minimum and maximum frame that the given frame can be moved to.
       // Returns true on success, false if no item was found for the given frame.
@@ -280,6 +282,7 @@ class PartCanvas : public Canvas {
       // Returns true is anything was added to undo. False if not or error.
       bool commitAutomationChanges(MusECore::Undo& undo, bool isCopy);
       void showStatusTip(QMouseEvent *event) const;
+      void setAutomationCurrentText(const MusECore::CtrlList *cl, double val);
 
 
    protected:

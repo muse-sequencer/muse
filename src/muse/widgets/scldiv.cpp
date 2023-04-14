@@ -24,7 +24,6 @@
 
 #include <algorithm>
 
-#include "muse_math.h"
 #include "scldiv.h"
 #include "mmath.h"
 
@@ -292,7 +291,8 @@ bool ScaleDiv::rebuild(double x1, double x2, int maxMajSteps, int maxMinSteps,
 bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
 {
 
-   int nMaj, nMin, minSize, i0,i,k;
+   long int nMaj;
+   int nMin, minSize, i0,i,k;
    double val, mval;
    double firstTick, lastTick;
    double minStep;
@@ -324,7 +324,7 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
    firstTick = ceil( (d_lBound - step_eps * d_majStep) / d_majStep) * d_majStep;
    lastTick = floor( (d_hBound + step_eps * d_majStep) / d_majStep) * d_majStep;
 
-   nMaj = MusECore::qwtMin(10000, int(rint((lastTick - firstTick) / d_majStep)) + 1);
+   nMaj = MusECore::qwtMin(10000L, (long int)(rint((lastTick - firstTick) / d_majStep)) + 1);
 
    d_majMarks.resize(nMaj);
    MusECore::qwtLinSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
@@ -409,7 +409,8 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
    double firstTick, lastTick;
    double lFirst, lLast;
    double val, sval, minStep, minFactor;
-   int nMaj, nMin, minSize, i, k, k0, kstep, kmax, i0;
+   long int nMaj;
+   int nMin, minSize, i, k, k0, kstep, kmax, i0;
    bool rv = true;
    double width;
 
@@ -463,7 +464,7 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
    firstTick = exp10(lFirst);
    lastTick = exp10(lLast);
 
-   nMaj = MusECore::qwtMin(10000, int(rint(MusECore::qwtAbs(lLast - lFirst) / d_majStep)) + 1);
+   nMaj = MusECore::qwtMin(10000L, (long int)(rint(MusECore::qwtAbs(lLast - lFirst) / d_majStep)) + 1);
 
    d_majMarks.resize(nMaj);
    MusECore::qwtLogSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);

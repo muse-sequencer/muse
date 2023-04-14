@@ -28,6 +28,7 @@
 
 #include <QString>
 #include <QRect>
+#include <QPoint>
 
 #include "dimap.h"
 #include "scldiv.h"
@@ -77,32 +78,31 @@ class ScaleDraw : public DiMap {
       
       bool d_drawBackBone;
 
-      // Like QString::number except it allows special 'M' format (Metric suffix G, M, K).
-      QString composeLabelText(double val, char fmt, int prec) const;
-      
       void drawTick(QPainter *p, const QPalette& palette, double curValue, double val, int len) const;
       void drawBackbone(QPainter *p, const QPalette& palette, double curValue) const;
       void drawLabel(QPainter *p, const QPalette& palette, double curValue, double val, bool isSpecialText = false) const;
-	
+
    public:
 
       ScaleDraw();
 
       void setScale(const ScaleDiv &s);
       void setScale(double vmin, double vmax, int maxMajIntv, int maxMinIntv,
-	   double step = 0.0, int logarithmic = 0);
-      void setGeometry(int xorigin, int yorigin, int length, OrientationX o);
+        double step = 0.0, int logarithmic = 0);
+      QPoint originOffsetHint(const QFontMetrics&, bool worst = false) const;
+      void setGeometry(int xorigin, int yorigin, int length);
       void setAngleRange(double angle1, double angle2);
-      // Special 'M' format (Metric suffix G, M, K) supported.
+      // Special 'M' format (Metric suffix G, M, K, m, n, p) supported.
       void setLabelFormat(char f, int prec);
-      void setBackBone(bool v) { d_drawBackBone = v; }
+      void setBackBone(bool v);
       
-      const ScaleDiv& scaleDiv() const { return d_scldiv; }
-      OrientationX orientation() const { return d_orient; }
-      TextHighlightMode textHighlightMode() const { return d_textHighlightMode; }
-      void setTextHighlightMode(TextHighlightMode mode) { d_textHighlightMode = mode; }
-      QString specialText() const           { return _specialText; }
-      void setSpecialText(const QString& s) { _specialText = s; }
+      const ScaleDiv& scaleDiv() const;
+      OrientationX orientation() const;
+      void setOrientation(const OrientationX&);
+      TextHighlightMode textHighlightMode() const;
+      void setTextHighlightMode(TextHighlightMode mode);
+      QString specialText() const;
+      void setSpecialText(const QString& s);
       
       QRect maxBoundingRect(const QFontMetrics& fm) const;
       int maxWidth(const QFontMetrics& fm, bool worst = true, int penWidth = 1) const;

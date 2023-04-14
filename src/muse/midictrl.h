@@ -182,7 +182,7 @@ class MidiCtrlValListList : public MidiCtrlValListList_t {
       // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are ALREADY 
       //  defined as Controller7 or part of Controller14. Cached, for speed.
       // Used (at least) by midi input encoders to quickly arbitrate new input.
-      bool RPN_Ctrls_Reserved() { return _RPN_Ctrls_Reserved; }
+      inline bool RPN_Ctrls_Reserved() const { return _RPN_Ctrls_Reserved; }
       // Manual check and update of the flag. For convenience, returns the flag.
       // Cost depends on types and number of list controllers, so it is good for deferring 
       //  an update until AFTER some lengthy list operation. JUST BE SURE to call this!

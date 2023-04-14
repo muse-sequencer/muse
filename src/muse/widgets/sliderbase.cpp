@@ -23,8 +23,6 @@
 //
 //=========================================================
 
-#include <stdio.h>
-#include "muse_math.h"
 #include "sliderbase.h"
 #include "mmath.h"
 #include <QWheelEvent>
@@ -36,9 +34,11 @@
 #include <QCursor>
 //#include <QToolTip>
 #include <QScreen>
+// Needed for a warning
+#include <stdio.h>
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_SLIDER_BASE(dev, format, args...)  //fprintf(dev, format, ##args);
+#define DEBUG_SLIDER_BASE(dev, format, args...)  // fprintf(dev, format, ##args);
 
 
 namespace MusEGui {
@@ -198,13 +198,14 @@ void SliderBase::setMouseGrab(bool grabbed)
 //.u  Syntax
 //.f  void SliderBase::wheelEvent(QWheelEvent *e)
 //------------------------------------------------------------
+
 void SliderBase::wheelEvent(QWheelEvent *e)
 {
       e->accept();
       // Do not allow setting value from the external while mouse is pressed.
       if(_pressed)
         return;
-      
+
       // this leads to incomprehensible values for the user, why not just use the step? (kybos)
       //      float inc = (maxValue(ConvertNone) - minValue(ConvertNone)) / 40;
       //      if (e->modifiers() == Qt::ShiftModifier)
@@ -214,7 +215,7 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       //        inc = step();
 
       float inc = step();
-      if (e->modifiers() == Qt::ShiftModifier)
+      if (!integer() && e->modifiers() == Qt::ShiftModifier)
           inc /= 5; // this at least works well with the default audio slider (kybos)
 
       const QPoint pixelDelta = e->pixelDelta();
@@ -227,10 +228,12 @@ void SliderBase::wheelEvent(QWheelEvent *e)
       else
         return;
 
+      // Special for log + integer.
+      const ConversionMode mode = log() && integer() ? ConvertNone : ConvertDefault;
       if (delta > 0)
-            setValue(value(ConvertNone)+inc, ConvertNone);
+            setInternalValue(internalValue(mode)+inc, mode);
       else
-            setValue(value(ConvertNone)-inc, ConvertNone);
+            setInternalValue(internalValue(mode)-inc, mode);
 
       // Show a handy tooltip value box.
       if(d_enableValueToolTips)
@@ -239,7 +242,7 @@ void SliderBase::wheelEvent(QWheelEvent *e)
 #else
         showValueToolTip(e->globalPos());
 #endif
-      
+
      emit sliderMoved(value(), _id);
      emit sliderMoved(value(), _id, (bool)(e->modifiers() & Qt::ShiftModifier));
 }
@@ -311,7 +314,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
 
       _mouseDeltaAccum = QPoint(); // Reset.
       _lastGlobalMousePos = e->globalPos();
-      d_valueAtPress = value(ConvertNone);
+      d_valueAtPress = internalValue(ConvertNone);
       d_valAccum = d_valueAtPress; // Reset.
       
       d_trackingTempDisable = meta; // Generate automation graph recording straight lines if modifier held.
@@ -412,9 +415,9 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   {
                     d_mouseOffset = 0.0;
                     //setPosition(p); // No, it subtracts d_mouseOffset which leaves net zero in case of last line above.
-                    DoubleRange::fitValue(getValue(p));
+                    DoubleRange::internalFitValue(getValue(p), ConvertNone);
                     // Must set this so that mouseReleaseEvent reads the right value.
-                    d_valAccum = value(ConvertNone);
+                    d_valAccum = internalValue(ConvertNone);
                   }
                   
                   // HACK
@@ -423,7 +426,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   // ScrDirect mode only happens once upon press with a modifier. After that, another mode is set.
                   // Hack: Since valueChange() is NOT called if nothing changed, call these in that case.
                   if(d_scrollMode != ScrDirect || 
-                     value(ConvertNone) == d_valueAtPress)
+                     internalValue(ConvertNone) == d_valueAtPress)
                   {
                     processSliderPressed(_id);
                     emit sliderPressed(value(), _id);
@@ -461,7 +464,7 @@ void SliderBase::buttonReleased()
     if (!trackingIsActive() && valueHasChangedAtRelease())
     {
        emit valueChanged(value(), _id);
-       emit valueChanged(value(), _id, d_scrollMode); 
+       emit valueChanged(value(), _id, d_scrollMode);
     }
 }
 
@@ -482,13 +485,15 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
 {
   int ms = 0;
   _ignoreMouseMove = false;
+  const QPoint pos = e->pos();
   const Qt::MouseButton button = e->button();
   const bool clicked = (button == Qt::LeftButton || button == Qt::MiddleButton);
   const bool shift = e->modifiers() & Qt::ShiftModifier;
   
   _pressed = e->buttons() != Qt::NoButton;
-  DEBUG_SLIDER_BASE(stderr, "SliderBase::mouseReleaseEvent pos x:%d y:%d last x:%d y:%d e->buttons():%d button:%d _pressed:%d val:%.20f d_valueAtPress:%.20f\n", 
-                    e->pos().x(), e->pos().y(), _lastMousePos.x(), _lastMousePos.y(), int(e->buttons()), button, _pressed, value(), d_valueAtPress);
+  DEBUG_SLIDER_BASE(stderr, "SliderBase::mouseReleaseEvent pos x:%d y:%d last x:%d y:%d "
+    "e->buttons():%d button:%d _pressed:%d val:%.20f d_valueAtPress:%.20f\n",
+    pos.x(), pos.y(), _lastMousePos.x(), _lastMousePos.y(), int(e->buttons()), button, _pressed, value(), d_valueAtPress);
 
   e->accept();
   switch(d_scrollMode)
@@ -514,8 +519,10 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
       }
       else
       {
-//         setPosition(e->pos());
-        movePosition(e->pos() - _lastMousePos, shift);
+        // Don't bother if the slider did not move, to avoid unwanted further snapping to alignment.
+        // If the slider is working properly then where it is right now should be where it is left.
+        if(pos != _lastMousePos)
+          movePosition(pos - _lastMousePos, shift);
         d_direction = 0;
         d_mouseOffset = 0;
         if (d_mass > 0.0)
@@ -538,8 +545,10 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
     break;
 
     case ScrDirect:
-//       setPosition(e->pos());
-      movePosition(e->pos() - _lastMousePos, shift);
+      // Don't bother if the slider did not move, to avoid unwanted further snapping to alignment.
+      // If the slider is working properly then where it is right now should be where it is left.
+      if(pos != _lastMousePos)
+        movePosition(pos - _lastMousePos, shift);
       d_direction = 0;
       d_mouseOffset = 0;
       d_scrollMode = ScrNone;
@@ -589,7 +598,7 @@ void SliderBase::mouseReleaseEvent(QMouseEvent *e)
 void SliderBase::setPosition(const QPoint &p)
 {
     DEBUG_SLIDER_BASE(stderr, "SliderBase::setPosition calling fitValue(x:%d, y:%d) d_mouseOffset:%.20f\n", p.x(), p.y(), d_mouseOffset);
-    DoubleRange::fitValue(getValue(p) - d_mouseOffset);
+    DoubleRange::internalFitValue(getValue(p) - d_mouseOffset, ConvertNone);
 }
 
 //------------------------------------------------------------
@@ -612,7 +621,15 @@ void SliderBase::setPosition(const QPoint &p)
 void SliderBase::movePosition(const QPoint &deltaP, bool fineMode)
 {
     DEBUG_SLIDER_BASE(stderr, "SliderBase::movePosition calling fitValue(delta x:%d, y:%d) fineMode:%d\n", deltaP.x(), deltaP.y(), fineMode);
-    DoubleRange::fitValue(moveValue(deltaP, fineMode));
+
+    // Don't bother in integer or log integer mode because there is no 'finer' than integers.
+    if(fineMode && !integer())
+      // moveValue already does the alignment for us. Don't call internalFitValue
+      //  because it is negating the fineMode effect!
+      DoubleRange::setInternalValue(moveValue(deltaP, fineMode), ConvertNone);
+    else
+      // FIXME This is kind of odd. MoveValue already aligns, so fitValue is just duplicating the work ???
+      DoubleRange::internalFitValue(moveValue(deltaP, fineMode), ConvertNone);
 }
 
 //------------------------------------------------------------
@@ -676,7 +693,7 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
     return;
   }
   
-  const double prevValue = value(ConvertNone);
+  const double prevValue = internalValue(ConvertNone);
   
   if (d_scrollMode == ScrMouse )
   {
@@ -728,7 +745,7 @@ void SliderBase::mouseMoveEvent(QMouseEvent *e)
     }
 
     //const bool valch = (valueHasChangedAtRelease());
-    const bool valch = value(ConvertNone) != prevValue;
+    const bool valch = internalValue(ConvertNone) != prevValue;
 
     // Show a handy tooltip value box.
     if(d_enableValueToolTips && valch)
@@ -844,7 +861,7 @@ void SliderBase::focusOutEvent(QFocusEvent* e)
 
 void SliderBase::timerEvent(QTimerEvent*)
 {
-  const double prevValue = value(ConvertNone);
+  const double prevValue = internalValue(ConvertNone);
   double newval;
   double inc = step();
 
@@ -855,7 +872,7 @@ void SliderBase::timerEvent(QTimerEvent*)
       {
         d_speed *= exp( - double(d_updTime) * 0.001 / d_mass );
         newval = exactValue(ConvertNone) + d_speed * double(d_updTime);
-        DoubleRange::fitValue(newval);
+        DoubleRange::internalFitValue(newval, ConvertNone);
         // stop if d_speed < one step per second
         if (fabs(d_speed) < 0.001 * fabs(step()))
         {
@@ -871,7 +888,7 @@ void SliderBase::timerEvent(QTimerEvent*)
     case ScrPage:
       DoubleRange::incPages(d_direction);
   
-      if(value(ConvertNone) != prevValue)
+      if(internalValue(ConvertNone) != prevValue)
       {
         // Show a handy tooltip value box.
         if(d_enableValueToolTips)
@@ -889,9 +906,9 @@ void SliderBase::timerEvent(QTimerEvent*)
     break;
     
     case ScrTimer:
-      DoubleRange::fitValue(value(ConvertNone) +  double(d_direction) * inc);
-  
-      if(value(ConvertNone) != prevValue)
+      DoubleRange::internalFitValue(internalValue(ConvertNone) +  double(d_direction) * inc, ConvertNone);
+
+      if(internalValue(ConvertNone) != prevValue)
       {
         // Show a handy tooltip value box.
         if(d_enableValueToolTips)
@@ -939,10 +956,13 @@ void SliderBase::valueChange()
 {
     if (trackingIsActive())
     {
-       emit valueChanged(value(), _id); 
-       emit valueChanged(value(), _id, d_scrollMode); 
+       emit valueChanged(value(), _id);
+       emit valueChanged(value(), _id, d_scrollMode);
     }
 }
+
+bool SliderBase::valueHasChangedAtRelease() const { return internalValue(ConvertNone) != d_valueAtPress; }
+
 
 //------------------------------------------------------------
 //
@@ -999,16 +1019,15 @@ void SliderBase::setMass(double val)
 //  @SliderBase::fitValue@
 //------------------------------------------------------------
 
-void SliderBase::setValue(double val, ConversionMode mode)
+void SliderBase::setValue(double val)
       {
       // Do not allow setting value from the external while mouse is pressed.
       if(_pressed)
         return;
       if (d_scrollMode == ScrMouse)
             stopMoving();
-      DoubleRange::setValue(val, mode);
+      DoubleRange::setValue(val);
       }
-
 
 //------------------------------------------------------------
 //
@@ -1022,15 +1041,15 @@ void SliderBase::setValue(double val, ConversionMode mode)
 //.u  See also:
 //  @SliderBase::setValue@
 //------------------------------------------------------------
-void SliderBase::fitValue(double val, ConversionMode mode)
+
+void SliderBase::fitValue(double val)
 {
     // Do not allow setting value from the external while mouse is pressed.
     if(_pressed)
       return;
     if (d_scrollMode == ScrMouse) stopMoving();
-    DoubleRange::fitValue(val, mode);
+    DoubleRange::fitValue(val);
 }
-
 
 //------------------------------------------------------------
 //
@@ -1082,6 +1101,35 @@ void SliderBase::stepPages(int pages)
   emit sliderMoved(value(), _id, false);
 }
 
+double SliderBase::mass() const { return d_mass; }
+void SliderBase::showValueToolTip(QPoint) { }
+void SliderBase::processSliderPressed(int) { }
+void SliderBase::processSliderReleased(int) { }
+int SliderBase::scrollMode() const { return d_scrollMode; }
+bool SliderBase::mouseGrabbed() const { return _mouseGrabbed; }
+bool SliderBase::isPressed() const { return _pressed; }
+
+bool SliderBase::cursorHoming() const { return _cursorHoming; }
+void SliderBase::setCursorHoming(bool b) { _cursorHoming = b; }
+bool SliderBase::borderlessMouse() const { return _borderlessMouse; }
+void SliderBase::setBorderlessMouse(bool v) { _borderlessMouse = v; update(); }
+Qt::MouseButtons SliderBase::pagingButtons() const { return _pagingButtons; }
+void SliderBase::setPagingButtons(Qt::MouseButtons buttons) { _pagingButtons = buttons; }
+
+bool SliderBase::enableValueToolTips() const { return d_enableValueToolTips; }
+void SliderBase::setEnableValueToolTips(bool enable) { d_enableValueToolTips = enable; }
+bool SliderBase::showValueToolTipsOnHover() const { return d_showValueToolTipsOnHover; }
+void SliderBase::setShowValueToolTipsOnHover(bool enable) { d_showValueToolTipsOnHover = enable; }
+
+bool SliderBase::tracking() const { return d_tracking; }
+bool SliderBase::trackingIsActive() const { return d_tracking && !d_trackingTempDisable; }
+
+void SliderBase::setMinValue(double v)
+  { DoubleRange::setRange(v, maxValue(), 0.0, 1); }
+void SliderBase::setMaxValue(double v)
+  { DoubleRange::setRange(minValue(), v, 0.0, 1); }
+int SliderBase::id() const             { return _id; }
+void SliderBase::setId(int i)          { _id = i; }
 
 //------------------------------------------------------------
 //

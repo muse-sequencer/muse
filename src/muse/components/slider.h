@@ -6,7 +6,7 @@
 //    Copyright (C) 1997  Josef Wilgen
 //    (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
-//  (C) Copyright 2015-2016 Tim E. Real (terminator356 on sourceforge)
+//  (C) Copyright 2015-2023 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -29,6 +29,7 @@
 
 #include <QWidget>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPaintEvent>
 #include <QString>
 #include <QResizeEvent>
@@ -38,6 +39,7 @@
 #include <QRect>
 #include <QBrush>
 #include <QFont>
+#include <QMargins>
 
 #include "sclif.h"
 #include "sliderbase.h"
@@ -50,14 +52,14 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 class Slider : public SliderBase, public ScaleIf
-      {
+{
   Q_OBJECT
   Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
   Q_PROPERTY( double pageStep READ pageStep WRITE setPageStep )
   Q_PROPERTY( Qt::Orientation orientation READ orientation WRITE setOrientation )
 
  public:
-  enum ScalePos { None, Left, Right, Top, Bottom, InsideHorizontal, InsideVertical };
+  enum ScalePos { ScaleNone, ScaleLeftOrTop, ScaleRightOrBottom, ScaleInside };
 
  private:
   Qt::Orientation d_orient;
@@ -76,6 +78,11 @@ class Slider : public SliderBase, public ScaleIf
   bool d_useGradient;
 
   QRect d_sliderRect;
+  QRect d_scaleRect;
+  QRect d_scaleGeom;
+  QRect d_spacerRect;
+  QRect d_grooveRect;
+  QPainterPath d_framePath;
 
   int d_thumbLength;
   int d_thumbHalf;
@@ -98,9 +105,9 @@ class Slider : public SliderBase, public ScaleIf
   void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
 
   protected:
-  virtual void drawThumb (QPainter *p, const QRect &r);
-  virtual void drawSlider (QPainter *p, const QRect &r);
-  
+  virtual void drawThumb (QPainter *p, QPaintEvent *e);
+  virtual void drawSlider (QPainter *p, QPaintEvent *e);
+
   //  Determine the value corresponding to a specified mouse location.
   //  If borderless mouse is enabled p is a delta value not absolute, so can be negative.
   double getValue(const QPoint &p);
@@ -108,6 +115,9 @@ class Slider : public SliderBase, public ScaleIf
   double moveValue(const QPoint& /*deltaP*/, bool /*fineMode*/ = false);
   //  Determine scrolling mode and direction.
   void getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::KeyboardModifiers& modifiers, int &scrollMode, int &direction);
+
+  // Does a fine-grained region painting update of areas that moved or changed.
+  void partialUpdate();
 
   // Setup all slider and scale rectangles.
   void adjustSize(const QSize& s);
@@ -125,27 +135,38 @@ class Slider : public SliderBase, public ScaleIf
   
   Slider(QWidget *parent, const char *name = 0,
          Qt::Orientation orient = Qt::Vertical,
-         ScalePos scalePos = None,
+         ScalePos scalePos = ScaleNone,
          int grooveWidth = 8,
          QColor fillColor = QColor(),
          ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone,
          QColor handleColor = QColor());
   
-  ~Slider();
+  virtual ~Slider();
   void setThumbLength(int l);
   void setThumbWidth(int w);
 
   void setOrientation(Qt::Orientation o);
   Qt::Orientation orientation() const;
 
-  int scaleEndpointsMargin() const;
+  QMargins scaleEndpointsMargins() const;
 
-  void setScale (double vmin, double vmax, int logarithmic = 0);
-  void setScale (double vmin, double vmax, double step, int logarithmic = 0);
+  // In log mode, dBFactor sets the dB factor when conversions are done.
+  // For example 20 * log10() for signals, 10 * log10() for power, and 40 * log10() for MIDI volume.
+  // logFactor sets the scale of the range. For example a MIDI volume control can set a logFactor = 127
+  //  so that the range can conveniently be set to 0-127. (With MIDI volume, dBFactor would be
+  //  set to 40.0, as per MMA specs.)
+  void setScale (double vmin, double vmax, ScaleIf::ScaleType scaleType = ScaleIf::ScaleLinear,
+    double dBFactor = 20.0, double logFactor = 1.0);
+  void setScale (double vmin, double vmax, double step, ScaleIf::ScaleType scaleType = ScaleIf::ScaleLinear,
+    double dBFactor = 20.0, double logFactor = 1.0);
   void setScale(const ScaleDiv &s);
   void setScaleMaxMajor( int ticks);
   void setScaleMaxMinor( int ticks);
   void setScaleBackBone(bool v);
+  // Returns the space between the VU and the scale.
+  int scaleDist() const;
+  // Sets the space between the VU and the scale.
+  void setScaleDist(int);
 
   double lineStep() const;
   double pageStep() const;
@@ -154,31 +175,31 @@ class Slider : public SliderBase, public ScaleIf
   void setPageStep(double);
 
   void setMargins(int x, int y);
-  int grooveWidth() const { return d_grooveWidth; }
-  void setGrooveWidth(int w) { d_grooveWidth = w; }
+  int grooveWidth() const;
+  void setGrooveWidth(int w);
   
-//  QColor fillColor() const { return d_fillColor; }
-  void setFillColor(const QColor& color) { d_fillColor = color; update(); }
-  void setHandleColor(const QColor& color) { d_handleColor = color; update(); }
+//  QColor fillColor() const;
+  void setFillColor(const QColor& color);
+  void setHandleColor(const QColor& color);
   
-  bool fillThumb() const { return d_fillThumb; }
-  void setFillThumb(bool v) { d_fillThumb = v; }
+  bool fillThumb() const;
+  void setFillThumb(bool v);
   
-  bool fillEmptySide() const { return d_fillEmptySide; }
-  void setFillEmptySide(bool v) { d_fillEmptySide = v; }
+  bool fillEmptySide() const;
+  void setFillEmptySide(bool v);
   
   virtual QSize sizeHint() const;
   void setSizeHint(uint w, uint h);
 
-  void setRadius(int r) { d_radius = r; }
-  void setRadiusHandle(int r) { d_radiusHandle = r; }
-  void setHandleHeight(int h) { d_thumbLength = h; }
-  void setHandleWidth(int w) { d_thumbWidth = w; d_thumbHalf = d_thumbLength / 2; }
-  void setUseGradient(bool b) { d_useGradient = b; }
-  void setScalePos(ScalePos s) { d_scalePos = s; }
-  void setFrame(bool b) { d_frame = b; }
-  void setFrameColor(QColor c) { d_frameColor = c; }
-      };
+  void setRadius(int r);
+  void setRadiusHandle(int r);
+  void setHandleHeight(int h);
+  void setHandleWidth(int w);
+  void setUseGradient(bool b);
+  void setScalePos(const ScalePos& s);
+  void setFrame(bool b);
+  void setFrameColor(QColor c);
+};
 
 } // namespace MusEGui
 

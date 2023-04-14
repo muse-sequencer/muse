@@ -35,13 +35,18 @@ namespace MusEGui {
 
 class ScaleIf
       {
+  public:
+  enum ScaleType { ScaleLinear, ScaleLog, ScaleDB };
+
+  private:
 	bool d_userScale;
 
   protected:
+  ScaleType _scaleType;
 	ScaleDraw d_scale;
 	int d_maxMajor;
 	int d_maxMinor;
-        double d_scaleStep;
+  double d_scaleStep;
 	bool hasUserScale() {return d_userScale;}
 	virtual void scaleChange() = 0;
 
@@ -49,19 +54,26 @@ class ScaleIf
 	ScaleIf();
       virtual ~ScaleIf() {};
 	
-	void setScale (double vmin, double vmax, int logarithmic = 0);
-	void setScale (double vmin, double vmax, double step, int logarithmic = 0);
-	void setScale(const ScaleDiv &s);
-	void setScaleMaxMajor( int ticks);
-	void setScaleMaxMinor( int ticks);
-        void setScaleBackBone(bool v) { d_scale.setBackBone(v); }
-        QString specialText() const           { return d_scale.specialText(); }
-        void setSpecialText(const QString& s) { d_scale.setSpecialText(s); }
-	void autoScale();
+  // In log mode, dBFactor sets the dB factor when conversions are done.
+  // For example 20 * log10() for signals, 10 * log10() for power, and 40 * log10() for MIDI volume.
+  // logFactor sets the scale of the range. For example a MIDI volume control can set a logFactor = 127
+  //  so that the range can conveniently be set to 0-127. (With MIDI volume, dBFactor would be
+  //  set to 40.0, as per MMA specs.)
+  void setScale (double vmin, double vmax,
+    ScaleType scaleType = ScaleLinear, double dBFactor = 20.0, double logFactor = 1.0);
+  void setScale (double vmin, double vmax, double step,
+    ScaleType scaleType = ScaleLinear, double dBFactor = 20.0, double logFactor = 1.0);
+  void setScale(const ScaleDiv &s);
+  void setScaleMaxMajor( int ticks);
+  void setScaleMaxMinor( int ticks);
+  void setScaleBackBone(bool v) { d_scale.setBackBone(v); }
+  QString specialText() const           { return d_scale.specialText(); }
+  void setSpecialText(const QString& s) { d_scale.setSpecialText(s); }
+  void autoScale();
 
-	int scaleMaxMinor() const {return d_maxMinor;}
-	int scaleMaxMajor() const {return d_maxMinor;}
-        double scaleStep() const { return d_scaleStep; }
+  int scaleMaxMinor() const {return d_maxMinor;}
+  int scaleMaxMajor() const {return d_maxMinor;}
+  double scaleStep() const { return d_scaleStep; }
       };
 
 } // namespace MusEGui

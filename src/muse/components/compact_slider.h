@@ -314,8 +314,8 @@ class CompactSlider : public SliderBase, public ScaleIf
     // By default it is assumed that setting a value naturally implies resetting the 'off' state to false.
     // Emits valueChanged and valueStateChanged signals if required.
     // Note setOff and SliderBase::setValue are also available.
-    void setValueState(double v, bool off = false, ConversionMode mode = ConvertDefault);
-    
+    void setValueState(double v, bool off = false);
+
     QSize margins() const { return QSize(d_xMargin, d_yMargin); }
     int xMargin() const { return d_xMargin; }
     int yMargin() const { return d_yMargin; }

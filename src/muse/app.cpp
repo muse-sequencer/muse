@@ -3734,7 +3734,7 @@ void MusE::takeAutomationSnapshot()
                   // Do we obey the discrete/interpolated toolbar button?
                   // Given the (now) reduced role of interpolated graphs, maybe best to force these points to discrete. (Tim)
                   undo.push_back(MusECore::UndoOp(MusECore::UndoOp::AddAudioCtrlVal,
-                    track, icl->second->id(), frame, val, MusECore::CtrlVal::VAL_SELECTED));
+                    track, double(icl->second->id()), double(frame), val, double(MusECore::CtrlVal::VAL_SELECTED)));
                     // The undo system automatically sets the VAL_DISCRETE flag if the controller mode is DISCRETE.
                     // | (MusEGlobal::config.audioAutomationDrawDiscrete ? MusECore::CtrlVal::VAL_DISCRETE : MusECore::CtrlVal::VAL_NOFLAGS)));
                   }

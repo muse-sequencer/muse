@@ -102,7 +102,7 @@ extern uint64_t curTimeUS();
 const char* seqMsgList[] = {
       "SEQM_REVERT_OPERATION_GROUP", "SEQM_EXECUTE_OPERATION_GROUP",
       "SEQM_EXECUTE_PENDING_OPERATIONS", 
-      "SEQM_RESET_DEVICES", "SEQM_INIT_DEVICES", "SEQM_PANIC",
+      "SEQM_RESET_DEVICES", "SEQM_PANIC",
       "SEQM_MIDI_LOCAL_OFF",
       "SEQM_PLAY_MIDI_EVENT",
       "SEQM_SET_HW_CTRL_STATE",
@@ -111,7 +111,6 @@ const char* seqMsgList[] = {
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
-      "AUDIO_ADDPLUGIN",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
       "AUDIO_SWAP_PLUGINS",
       "AUDIO_SEEK_PREV_AC_EVENT",
@@ -1445,9 +1444,6 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_SET_CHANNELS:
                   msg->snode->setChannels(msg->ival);
                   break;
-            case AUDIO_ADDPLUGIN:
-                  msg->snode->addPlugin(msg->plugin, msg->ival);
-                  break;
             case AUDIO_SWAP_PLUGINS:
                   msg->snode->swapPlugins(msg->a, msg->b);
                   break;
@@ -1475,9 +1471,6 @@ void Audio::processMsg(AudioMsg* msg)
                     if(MusEGlobal::midiPorts[i].device())                       
                       MusEGlobal::midiPorts[i].instrument()->reset(i);
                   }      
-                  break;
-            case SEQM_INIT_DEVICES:
-                  initDevices(msg->a);
                   break;
             case SEQM_MIDI_LOCAL_OFF:
                   sendLocalOff();
@@ -1866,7 +1859,8 @@ void Audio::recordStop(bool restart, Undo* ops)
             if (track->recordFlag() || MusEGlobal::song->bounceTrack == track) {
                   MusEGlobal::song->cmdAddRecordedWave(track, startRecordPos, restart ? _pos : endRecordPos, operations);
                   if(!restart)
-                    operations.push_back(UndoOp(UndoOp::SetTrackRecord, track, false, 0, 0, 0, 0, true)); // True = non-undoable.
+                    operations.push_back(UndoOp(
+                      UndoOp::SetTrackRecord, track, false, double(0), double(0), double(0), double(0), true)); // True = non-undoable.
                   }
             }
       MidiTrackList* ml = MusEGlobal::song->midis();
@@ -1898,7 +1892,8 @@ void Audio::recordStop(bool restart, Undo* ops)
         {            
           MusEGlobal::song->bounceOutput = nullptr;
           ao->setRecFile(nullptr); // if necessary, this automatically deletes _recFile
-          operations.push_back(UndoOp(UndoOp::SetTrackRecord, ao, false, 0, 0, 0, 0, true));  // True = non-undoable.
+          operations.push_back(UndoOp(
+            UndoOp::SetTrackRecord, ao, false, double(0), double(0), double(0), double(0), true));  // True = non-undoable.
         }
       }  
       MusEGlobal::song->bounceTrack = nullptr;

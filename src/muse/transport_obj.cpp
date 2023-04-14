@@ -21,6 +21,8 @@
 //
 //===================================================================
 
+#include <stdio.h>
+
 #include "transport_obj.h"
 
 namespace MusECore {
@@ -280,5 +282,9 @@ TrackLatencyInfo& TransportSource::getLatencyInfo(bool input)
   return _latencyInfo;
 }
 
+void TransportSource::dump(const char *objname, const char *header) const
+{
+  fprintf(stderr, "%s %s TransportSource: _transportLatencyOut:%f _canCorrect:%d\n", objname, header, _transportLatencyOut, _canCorrect);
+}
 
 } // namespace MusECore

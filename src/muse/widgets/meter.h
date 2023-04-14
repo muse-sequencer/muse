@@ -6,7 +6,7 @@
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
-//  (C) Copyright 2011-2016 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011-2023 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -37,6 +37,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QSpacerItem>
+#include <QSize>
+#include <QMargins>
 
 #include "sclif.h"
 #include "scldraw.h"
@@ -52,25 +54,16 @@ namespace MusEGui {
 class MeterLayout : public QVBoxLayout {
     Q_OBJECT
 
-    Q_PROPERTY(int endsMargin READ meterEndsMargin WRITE setMeterEndsMargin)
-    
-    int _endsMargin;
     QHBoxLayout* _hlayout;
-    QSpacerItem* _spacer1;
-    QSpacerItem* _spacer2;
-    
+
   public:
-    MeterLayout(int endsMargin = 0, QWidget* parent = nullptr);
-    int meterEndsMargin() const;
-    void setMeterEndsMargin(int m);
+    MeterLayout(QWidget* parent = nullptr);
     // This is the horizontal layout where meters can be added.
     QHBoxLayout* hlayout();
 };
 
 // -----------------------------------------------
 //   Meter:
-//   Convenience class that can align the ends of meters
-//    with class Slider scale end points, for example.
 // -----------------------------------------------
 
 class Meter : public QFrame, public ScaleIf {
@@ -83,8 +76,7 @@ class Meter : public QFrame, public ScaleIf {
     int _vu3d;
 
    public:
-      enum MeterType {DBMeter, LinMeter};
-      enum ScalePos { None, Left, Right, Top, Bottom, InsideHorizontal, InsideVertical };
+      enum ScalePos { ScaleNone, ScaleLeftOrTop, ScaleRightOrBottom, ScaleInside };
 
    private:
      QColor _primaryColor;
@@ -125,7 +117,6 @@ class Meter : public QFrame, public ScaleIf {
 
       QColor separator_color;
       QColor peak_color;
-//      int xrad, yrad;
 
       virtual void resizeEvent(QResizeEvent*);
       virtual void paintEvent(QPaintEvent*);
@@ -135,8 +126,13 @@ class Meter : public QFrame, public ScaleIf {
       void adjustScale();
       
    private:
-      MeterType mtype;
+      bool _isLog;
+      bool _isInteger;
+      bool _logCanZero;
+      double _dBFactor, _dBFactorInv, _logFactor;
+      QSize _VUSizeHint;
       Qt::Orientation _orient;
+      bool _reverseDirection;
       ScalePos _scalePos;
       int _refreshRate;
       int _scaleDist;
@@ -147,11 +143,22 @@ class Meter : public QFrame, public ScaleIf {
       double maxVal;
       double targetMaxVal;
       double minScale, maxScale;
+      double minScaleLog, maxScaleLog;
       int yellowScale, redScale;
       int cur_pixv, last_pixv, cur_pixmax, last_pixmax;
       bool _showText;
       QString _text;
       QRect _textRect;
+      QRect _VURect;
+      QRect _scaleRect;
+      QRect _scaleGeom;
+      QRect _spacerRect;
+      QRect _VUFrameRect;
+      QMargins _alignmentMargins;
+      QPainterPath _bkgPath;
+      QPainterPath _VUPath;
+      QPainterPath _VUFramePath;
+
       void updateText(double val);
 
       void drawVU(QPainter& p, const QRect&, const QPainterPath&, int);
@@ -170,35 +177,69 @@ class Meter : public QFrame, public ScaleIf {
 
    public:
       Meter(QWidget* parent, 
-            MeterType type = DBMeter, 
+            bool isInteger = false, bool isLog = true,
             Qt::Orientation orient = Qt::Vertical, 
             double scaleMin = -60.0, double scaleMax = 10.0,
-            ScalePos scalePos = None, 
+            ScalePos scalePos = ScaleNone,
             const QColor& primaryColor = QColor(0, 255, 0),
             ScaleDraw::TextHighlightMode textHighlightMode = ScaleDraw::TextHighlightNone,
             int refreshRate = 20);
-      
+
 //      QColor primaryColor() const { return _primaryColor; }
       void setPrimaryColor(const QColor& color, const QColor& bgColor = Qt::black);
       
-      void setRange(double min, double max);
+      void setRange(double min, double max, bool isInteger = false, bool isLog = true);
 
       void setRefreshRate(int rate);
       
-      bool showText() const { return _showText; }
-      void setShowText(bool v) { _showText = v; update(); }
+      bool showText() const;
+      void setShowText(bool v);
       
-      Qt::Orientation orientation() const { return _orient; }
-      void setOrientation(Qt::Orientation o) { _orient = o; update(); }
-      
+      Qt::Orientation orientation() const;
+      void setOrientation(Qt::Orientation o);
+
+      // TODO: Support for reverse direction is not complete yet.
+      bool reverseDirection() const;
+      void setReverseDirection(bool);
+
+      ScalePos scalePos() const;
+      void setScalePos(const ScalePos&);
+      // Returns the space between the VU and the scale.
+      int scaleDist() const;
+      // Sets the space between the VU and the scale.
+      void setScaleDist(int);
+
+      ScaleDraw::TextHighlightMode textHighlightMode() const;
+      void setTextHighlightMode(ScaleDraw::TextHighlightMode = ScaleDraw::TextHighlightNone);
+
+      QSize VUSizeHint() const;
+      void setVUSizeHint(const QSize&);
       virtual QSize sizeHint() const;
 
-      int radius() const { return _radius; }
-      void setRadius(int radius) { _radius = radius; }
-      int vu3d() const { return _vu3d; }
-      void setVu3d(int vu3d) { _vu3d = vu3d; }
+      int radius() const;
+      void setRadius(int radius);
+      int vu3d() const;
+      void setVu3d(int vu3d);
 
-      void setFrame(bool frame, const QColor& color) { _frame = frame; _frameColor = color; }
+      void setFrame(bool frame, const QColor& color);
+      // Sets an extra margin that helps align the VU rectangle top/bottom or left/right
+      //  with an external rectangle's top/bottom or left/right such as the groove of a slider.
+      // The parameter is an amount from the edge of for example a slider to the edge of its groove.
+      // This will attempt to ensure that the meter's VU rectangle precisely aligns with the slider groove.
+      void setAlignmentMargins(const QMargins&);
+
+      bool log() const;
+      void setLog(bool v);
+      bool integer() const;
+      void setInteger(bool v);
+      // In log mode, sets the dB factor when conversions are done.
+      // For example 20 * log10() for signals, 10 * log10() for power, and 40 * log10() for MIDI volume.
+      void setDBFactor(double v = 20.0);
+      // Sets the scale of a log range. For example a MIDI volume control can set a logFactor = 127
+      //  so that the range can conveniently be set to 0-127. (With MIDI volume, dBFactor would be
+      //  set to 40.0, as per MMA specs.) Min, max, off, input and output values are all scaled by this factor,
+      //  but step is not.
+      void setLogFactor(double v = 1.0);
       };
 
 } // namespace MusEGui

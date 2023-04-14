@@ -153,6 +153,8 @@ CompactKnob::CompactKnob(QWidget* parent, const char* name,
       _radius = 2;
       _drawChord = false;
 
+      d_scale.setOrientation(ScaleDraw::Round);
+
       setUpdateTime(50);
       }
 
@@ -219,8 +221,8 @@ void CompactKnob::processSliderReleased(int)
 
 QString CompactKnob::toolTipValueText(bool inclLabel, bool inclVal) const
 {
-  const double minV = minValue(ConvertNone);
-  const double val = value(ConvertNone);
+  const double minV = minValue();
+  const double val = value();
   const QString comp_val_text = isOff() ? d_offText :
                                 ((val <= minV && !d_specialValueText.isEmpty()) ?
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix));
@@ -298,7 +300,7 @@ void CompactKnob::setTotalAngle (double angle)
 // parameters to the parent class' setRange() function.
 //------------------------------------------------------------
 
-void CompactKnob::setRange(double vmin, double vmax, double vstep, int pagesize, DoubleRange::ConversionMode mode)
+void CompactKnob::setRange(double vmin, double vmax, double vstep, int pagesize)
       {
       // divide by zero protection. probably too cautious
       if (! (vmin == vmax || qMax(-vmin, vmax) == 0))
@@ -311,7 +313,7 @@ void CompactKnob::setRange(double vmin, double vmax, double vstep, int pagesize,
                   l_const = 100 - l_slope * vmin;
                   }
             }
-      SliderBase::setRange(vmin, vmax, vstep, pagesize, mode);
+      SliderBase::setRange(vmin, vmax, vstep, pagesize);
       }
 
 void CompactKnob::setShowValue(bool show)
@@ -347,7 +349,7 @@ void CompactKnob::setHasOffMode(bool v)
   setOff(false);
 }
 
-void CompactKnob::setValueState(double v, bool off, ConversionMode mode)
+void CompactKnob::setValueState(double v, bool off)
 {
   // Do not allow setting value from the external while mouse is pressed.
   if(_pressed)
@@ -365,10 +367,10 @@ void CompactKnob::setValueState(double v, bool off, ConversionMode mode)
     do_off_upd = true;
     setOff(off);
   }
-  if(value(mode) != v)
+  if(value() != v)
   {
     do_val_upd = true;
-    setValue(v, mode);
+    setValue(v);
   }
   if(!blocked)
     blockSignals(false);
@@ -449,12 +451,12 @@ double CompactKnob::getValue(const QPoint &p)
 
     arc = atan2(-dx,dy) * 180.0 / M_PI;
 
-    newValue =  0.5 * (minValue() + maxValue())
-       + (arc + d_nTurns * 360.0) * (maxValue() - minValue())
+    newValue =  0.5 * (internalMinValue() + internalMaxValue())
+       + (arc + d_nTurns * 360.0) * (internalMaxValue() - internalMinValue())
     / d_totalAngle;
 
-    oneTurn = fabs(maxValue() - minValue()) * 360.0 / d_totalAngle;
-    eqValue = value() + d_mouseOffset;
+    oneTurn = fabs(internalMaxValue() - internalMinValue()) * 360.0 / d_totalAngle;
+    eqValue = internalValue() + d_mouseOffset;
 
     if (fabs(newValue - eqValue) > 0.5 * oneTurn)
     {
@@ -505,7 +507,7 @@ double CompactKnob::moveValue(const QPoint &deltaP, bool /*fineMode*/)
     const double dy = double(cy - new_p.y());
     const double arc = atan2(-dx, dy) * 180.0 / M_PI;
 
-    const double val = value(ConvertNone);
+    const double val = internalValue(ConvertNone);
 
 //     if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
 //     {
@@ -516,8 +518,8 @@ double CompactKnob::moveValue(const QPoint &deltaP, bool /*fineMode*/)
 //       return d_valAccum;
 //     }
 
-    const double min = minValue(ConvertNone);
-    const double max = maxValue(ConvertNone);
+    const double min = internalMinValue(ConvertNone);
+    const double max = internalMaxValue(ConvertNone);
     const double drange = max - min;
 
     const double last_val =  0.5 * (min + max) + (last_arc + d_nTurns * 360.0) * drange / d_totalAngle;
@@ -623,7 +625,7 @@ void CompactKnob::getScrollMode( QPoint &p, const Qt::MouseButton &button, const
 void CompactKnob::rangeChange()
 {
     if (!hasUserScale())
-      d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
+      d_scale.setScale(internalMinValue(), internalMaxValue(), d_maxMajor, d_maxMinor);
     recalcAngle();
     SliderBase::rangeChange();
 //     resize(size());
@@ -709,7 +711,7 @@ void CompactKnob::resizeEvent(QResizeEvent* ev)
       y = _knobRect.y() - d_scaleDist;
       int w = sz + 2 * d_scaleDist;
 
-      d_scale.setGeometry(x, y, w, ScaleDraw::Round);
+      d_scale.setGeometry(x, y, w);
       }
 
 void CompactKnob::showEditor()
@@ -859,7 +861,7 @@ void CompactKnob::drawKnob(QPainter* p, const QRect& r)
         QPen pn;
         pn.setCapStyle(Qt::FlatCap);
 
-        pn.setColor(d_shinyColor.lighter(l_const + fabs(value() * l_slope)));
+        pn.setColor(d_shinyColor.lighter(l_const + fabs(internalValue() * l_slope)));
         pn.setWidth(d_shineWidth * 2);
         p->setPen(pn);
         p->drawArc(aRect, 0, 360 * 16);
@@ -1057,8 +1059,8 @@ void CompactKnob::drawLabel(QPainter* painter)
 
   if(_showValue)
   {
-    const double minV = minValue(ConvertNone);
-    const double val = value(ConvertNone);
+    const double minV = internalMinValue(ConvertNone);
+    const double val = internalValue(ConvertNone);
     const QString val_txt = (val <= minV && !d_specialValueText.isEmpty()) ?
                                 d_specialValueText : (d_valPrefix + locale().toString(val, 'f', _valueDecimals) + d_valSuffix);
     const QRect val_br = fm.boundingRect(val_txt);
@@ -1304,15 +1306,15 @@ void CompactKnob::recalcAngle()
   //
   // calculate the angle corresponding to the value
   //
-  if (maxValue() == minValue())
+  if (internalMaxValue() == internalMinValue())
   {
     d_angle = 0;
     d_nTurns = 0;
   }
   else
   {
-    d_angle = (value() - 0.5 * (minValue() + maxValue()))
-      / (maxValue() - minValue()) * d_totalAngle;
+    d_angle = (internalValue() - 0.5 * (internalMinValue() + internalMaxValue()))
+      / (internalMaxValue() - internalMinValue()) * d_totalAngle;
     d_nTurns = floor((d_angle + 180.0) / 360.0);
     d_angle = d_angle - d_nTurns * 360.0;
   }

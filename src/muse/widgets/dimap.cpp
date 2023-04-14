@@ -22,7 +22,6 @@
 //
 //=========================================================
 
-#include "muse_math.h"
 #include "dimap.h"
 #include "mmath.h"
 
@@ -56,11 +55,12 @@ const double DiMap::LogMax = 1.0e150;
 
 DiMap::DiMap()
       {
-      d_x1 = 0.0;
-      d_x2 = 1.0;
+      d_x1_log = d_x1 = 0.0;
+      d_x2_log = d_x2 = 1.0;
       d_y1 = 0;
       d_y2 = 1;
       d_cnv = 1.0;
+      d_log = false;
       }
 
 //------------------------------------------------------------
@@ -113,7 +113,7 @@ DiMap::~DiMap()
 
 bool DiMap::contains(double x) const
       {
-      return ( (x >= MusECore::qwtMin(d_x1, d_x1)) && (x <= MusECore::qwtMax(d_x1, d_x2)));
+      return ( (x >= MusECore::qwtMin(d_x1_log, d_x1_log)) && (x <= MusECore::qwtMax(d_x1_log, d_x2_log)));
       }
 
 //------------------------------------------------------------
@@ -151,6 +151,9 @@ void DiMap::setDblRange(double d1, double d2, bool lg)
       {
       if (lg) {
             d_log = true;
+            d_x1_log = d1;
+            d_x2_log = d2;
+
             if (d1 < LogMin)
                   d1 = LogMin;
             else if (d1 > LogMax)
@@ -166,8 +169,8 @@ void DiMap::setDblRange(double d1, double d2, bool lg)
             }
       else {
             d_log = false;
-            d_x1 = d1;
-            d_x2 = d2;
+            d_x1_log = d_x1 = d1;
+            d_x2_log = d_x2 = d2;
             }
       newFactor();
       }
@@ -269,10 +272,10 @@ double DiMap::invTransform(int y) const
 
 int DiMap::limTransform(double x) const
       {
-      if ( x > MusECore::qwtMax(d_x1, d_x2) )
-            x = MusECore::qwtMax(d_x1, d_x2);
-      else if ( x < MusECore::qwtMin(d_x1, d_x2))
-            x = MusECore::qwtMin(d_x1, d_x2);
+      if ( x > MusECore::qwtMax(d_x1_log, d_x2_log) )
+            x = MusECore::qwtMax(d_x1_log, d_x2_log);
+      else if ( x < MusECore::qwtMin(d_x1_log, d_x2_log))
+            x = MusECore::qwtMin(d_x1_log, d_x2_log);
       return transform(x);
       }
 

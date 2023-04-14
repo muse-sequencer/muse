@@ -119,6 +119,8 @@ struct TrackLatencyInfo
 
   // Initializes (resets) the structure to prepare for (re)computation.
   void initialize();
+  // Dumps contents to stderr.
+  void dump(const char *objname = nullptr, const char *header = nullptr) const;
 };
 
 } // namespace MusECore

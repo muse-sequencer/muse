@@ -26,6 +26,7 @@
 ##
 file (GLOB muse_string_source_files
       strntcpy.cpp
+      hex_float.cpp
       )
 
 ##
@@ -50,6 +51,15 @@ set (FILES_TO_TRANSLATE
 ## set_target_properties( muse_string
       ## PROPERTIES OUTPUT_NAME muse_helper_str
 ##      )
+
+##
+## Linkage
+##
+
+target_link_libraries(muse_string
+      ${QT_LIBRARIES}
+      )
+
 
 ##
 ## Install location

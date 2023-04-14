@@ -711,10 +711,11 @@ MidiControllerList::MidiControllerList(const MidiControllerList& mcl) : std::map
   update_RPN_Ctrls_Reserved();
 }
 
-bool MidiControllerList::add(MidiController* mc, bool update) 
-{ 
+bool MidiControllerList::add(MidiController* mc, bool update)
+{
   const int num = mc->num();
-  if(!_RPN_Ctrls_Reserved && update)
+  const bool rv = insert(MidiControllerListPair(num, mc)).second;
+  if(rv && !_RPN_Ctrls_Reserved && update)
   {
     const bool isCtl7  = ((num & CTRL_OFFSET_MASK) == CTRL_7_OFFSET);
     const bool isCtl14 = ((num & CTRL_OFFSET_MASK) == CTRL_14_OFFSET);
@@ -732,7 +733,7 @@ bool MidiControllerList::add(MidiController* mc, bool update)
         _RPN_Ctrls_Reserved = true;
     }
     if(!_RPN_Ctrls_Reserved && isCtl14)
-    {    
+    {
       const int h = (num >> 8) & 0xff;
       if(h == CTRL_HDATA    ||
          h == CTRL_LDATA    ||
@@ -741,11 +742,11 @@ bool MidiControllerList::add(MidiController* mc, bool update)
          h == CTRL_HNRPN    ||
          h == CTRL_LNRPN    ||
          h == CTRL_HRPN     ||
-         h == CTRL_LRPN)     
+         h == CTRL_LRPN)
         _RPN_Ctrls_Reserved = true;
     }
   }
-  return insert(MidiControllerListPair(num, mc)).second; 
+  return rv;
 }
 
 void MidiControllerList::del(iMidiController ictl, bool update) 

@@ -76,7 +76,11 @@ namespace MusECore {
 unsigned _lastEvTime = 0;
 #endif
 
-  
+inline static bool midiDeviceWritable(const MidiDevice* md)
+{
+  return md && md->writeEnable() && (md->isSynti() ? !static_cast<const SynthI*>(md)->off() : true);
+}
+
 extern void dump(const unsigned char* p, int n);
 
 // Division can be zero meaning the event times are to be taken verbosely
@@ -780,10 +784,6 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
             }
       }
 
-} // namespace MusECore
-
-namespace MusECore {
-
 //---------------------------------------------------------
 //   midiPortsChanged
 //---------------------------------------------------------
@@ -896,8 +896,8 @@ void Audio::seekMidi()
      metro_settings->clickPort < MusECore::MIDI_PORTS &&
      metro_settings->clickChan < MusECore::MUSE_MIDI_CHANNELS)
     used_ports[metro_settings->clickPort] |= (1 << metro_settings->clickChan);
-  MidiTrackList* tl = MusEGlobal::song->midis();
-  for(ciMidiTrack imt = tl->begin(); imt != tl->end(); ++imt)
+  const MidiTrackList* tl = MusEGlobal::song->midis();
+  for(ciMidiTrack imt = tl->cbegin(); imt != tl->cend(); ++imt)
   {
     MidiTrack* mt = *imt;
     
@@ -1010,8 +1010,8 @@ void Audio::seekMidi()
       if(mp->syncInfo().MRTOut())
       {
         // Shall we check for device write open flag to see if it's ok to send?...
-        //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
-        //if(!(openFlags() & 1))
+        //if(!(rwFlags() & 0x1) || !(writeEnable()))
+        //if(!(writeEnable()))
         //  continue;
         mp->sendStop();
       }    
@@ -1041,25 +1041,25 @@ void Audio::seekMidi()
       }
     }
     
-    MidiInstrument* instr = mp->instrument();
-    MidiCtrlValListList* cll = mp->controller();
+    const MidiInstrument* instr = mp->instrument();
+    const MidiCtrlValListList* cll = mp->controller();
 
-    for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
+    for(ciMidiCtrlValList ivl = cll->cbegin(); ivl != cll->cend(); ++ivl)
     {
-      MidiCtrlValList* vl = ivl->second;
-      int chan = ivl->first >> 24;
+      const MidiCtrlValList* vl = ivl->second;
+      const int chan = ivl->first >> 24;
       if(!(used_ports[i] & (1 << chan)))  // Channel not used in song?
         continue;
-      int ctlnum = vl->num();
+      const int ctlnum = vl->num();
 
       // Find the first non-muted value at the given tick...
       bool values_found = false;
       bool found_value = false;
       
-      iMidiCtrlVal imcv = vl->lower_bound(pos);
-      if(imcv != vl->end() && imcv->first == pos)
+      ciMidiCtrlVal imcv = vl->lower_bound(pos);
+      if(imcv != vl->cend() && imcv->first == pos)
       {
-        for( ; imcv != vl->end() && imcv->first == pos; ++imcv)
+        for( ; imcv != vl->cend() && imcv->first == pos; ++imcv)
         {
           const Part* p = imcv->second.part;
           if(!p)
@@ -1080,7 +1080,7 @@ void Audio::seekMidi()
       }
       else
       {
-        while(imcv != vl->begin())
+        while(imcv != vl->cbegin())
         {
           --imcv;
           const Part* p = imcv->second.part;
@@ -1113,25 +1113,57 @@ void Audio::seekMidi()
         {
           if(const Part* p = imcv->second.part)
           {
-            if(Track* t = p->track())
+            if(const Track* t = p->track())
             {
               if(t->type() == MusECore::Track::DRUM)
               {
-                MidiTrack* mt = static_cast<MidiTrack*>(t);
-                int v_idx = ctlnum & 0x7f;
+                const MidiTrack* mt = static_cast<const MidiTrack*>(t);
+                const int v_idx = ctlnum & 0x7f;
                 fin_ctlnum = (ctlnum & ~0xff) | mt->drummap()[v_idx].anote;
-                int map_port = mt->drummap()[v_idx].port;
+                const int map_port = mt->drummap()[v_idx].port;
                 if(map_port != -1)
                 {
                   fin_port = map_port;
                   fin_mp = &MusEGlobal::midiPorts[fin_port];
                 }
-                int map_chan = mt->drummap()[v_idx].channel;
+                const int map_chan = mt->drummap()[v_idx].channel;
                 if(map_chan != -1)
                   fin_chan = map_chan;
               }
             }
           }
+        }
+
+        MidiDevice *fin_md = fin_mp->device();
+        switch(fin_ctlnum)
+        {
+          case CTRL_HRPN:
+          case CTRL_LRPN:
+          case CTRL_HNRPN:
+          case CTRL_LNRPN:
+          case CTRL_HDATA:
+          case CTRL_LDATA:
+          case CTRL_DATA_INC:
+          case CTRL_DATA_DEC:
+          {
+            const int fin_patch = fin_mp->hwCtrlState(chan, CTRL_PROGRAM);
+            const MidiInstrument *finInstr = fin_mp->instrument();
+            // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are
+            //  ALREADY defined as Controller7 or part of Controller14. Cached, for speed.
+            const bool patch_rpn_reserved = finInstr && fin_md && !fin_md->isSynti() && finInstr->RPN_Ctrls_Reserved(fin_chan, fin_patch);
+            // Allow these values if the controller list does not have standard RPN. (The enums alias to generic numbers).
+            // Do not send any of these values if the controller has standard RPN. (The enums are meaningful).
+            // 1) It is impossible to know which should come first/last (ie. which was last adjusted) - the RPNs or the data.
+            // 2) This is an ineffective way to set a default value of one single RPN controller. Better use our built-ins.
+            // 3) This would require finding what the value of every used RPN controller is at the new position, which we
+            //     don't keep track of, and would require searching all the way backwards to see what was set. Tricky.
+            if(!patch_rpn_reserved)
+              continue;
+          }
+          break;
+
+          default:
+          break;
         }
 
         const MidiPlayEvent ev(0, fin_port, fin_chan, ME_CONTROLLER, fin_ctlnum, imcv->second.val);
@@ -1140,8 +1172,8 @@ void Audio::seekMidi()
         // Don't bother sending any sustain values to the device, because we already
         //  just sent out zero sustain values, above. Just set the hw state.
         // When play resumes, the correct values are sent again if necessary in Audio::startRolling().
-        if(fin_ctlnum != CTRL_SUSTAIN && fin_mp->device())
-          fin_mp->device()->putEvent(ev, MidiDevice::NotLate);
+        if(fin_md && fin_ctlnum != CTRL_SUSTAIN)
+          fin_md->putEvent(ev, MidiDevice::NotLate);
       }
 
       // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
@@ -1325,6 +1357,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
       int defaultPort = port;
       MidiPort* mp = &MusEGlobal::midiPorts[port];
       MidiDevice* md = mp->device();
+      const bool md_writable = midiDeviceWritable(md);
 
       const unsigned int pos_fr = _pos.frame() + latency_offset;
       const unsigned int next_pos_fr = pos_fr + frames;
@@ -1488,17 +1521,19 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
 
                               // Handle events to different port than standard.
                               MidiDevice* fin_md = (port == defaultPort) ? md : MusEGlobal::midiPorts[port].device();
-                              if(fin_md)
+                              const bool finmd_writable = midiDeviceWritable(fin_md);
+                              if(finmd_writable)
+                              {
                                 fin_md->putEvent(MusECore::MidiPlayEvent(frame, port, channel, MusECore::ME_NOTEON, pitch, velo), 
                                   MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
-                              // The stuck notes handling code deals with conversion to frames and latency offset etc.
-                              MusECore::MidiPlayEvent fin_ev(tick + len, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff);
-                              // Pass the latency value to the driver so that it can include the value when converting
-                              //  the tick time into frames given the tempo AT THAT MOMENT.
-                              // In this scheme the latency value should always be positive, representing only a correction offset.
-                              fin_ev.setLatency(latency_offset);
-                              track->addStuckNote(fin_ev);
-
+                                // The stuck notes handling code deals with conversion to frames and latency offset etc.
+                                MusECore::MidiPlayEvent fin_ev(tick + len, port, channel, MusECore::ME_NOTEOFF, pitch, veloOff);
+                                // Pass the latency value to the driver so that it can include the value when converting
+                                //  the tick time into frames given the tempo AT THAT MOMENT.
+                                // In this scheme the latency value should always be positive, representing only a correction offset.
+                                fin_ev.setLatency(latency_offset);
+                                track->addStuckNote(fin_ev);
+                              }
                               if(velo > track->activity())
                                 track->setActivity(velo);
                               }
@@ -1534,7 +1569,8 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                                     //       which so far was meant for (N)RPN stuff. For now, just force it.
                                     // This is the audio thread. Just set directly.
                                     mpAlt->setHwCtrlState(mpeAlt);
-                                    if(MidiDevice* mdAlt = mpAlt->device())
+                                    MidiDevice* mdAlt = mpAlt->device();
+                                    if(midiDeviceWritable(mdAlt))
                                       mdAlt->putEvent(mpeAlt, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
                                     
                                     break;  // Break out.
@@ -1546,14 +1582,14 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts,
                                 //       which so far was meant for (N)RPN stuff. For now, just force it.
                                 // This is the audio thread. Just set directly.
                                 mp->setHwCtrlState(mpe);
-                                if(md)
+                                if(md_writable)
                                   md->putEvent(mpe, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
                               }
                               break;
 
                         default:
                           
-                              if(md)
+                              if(md_writable)
                               {
                                  md->putEvent(ev.asMidiPlayEvent(frame, port, channel), 
                                                   MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
@@ -1710,11 +1746,11 @@ void Audio::processMidi(unsigned int frames)
 
         for(int chan = 0; chan < MusECore::MUSE_MIDI_CHANNELS; ++chan)
         {
-          MusECore::MidiRecFifo& rf = md->recordEvents(chan);
+          MusECore::MidiRecFifo *rf = md->recordEvents(chan);
           int count = md->tmpRecordCount(chan);
           for(int i = 0; i < count; ++i)
           {
-            const MusECore::MidiRecordEvent& event(rf.peek(i));
+            const MusECore::MidiRecordEvent& event(rf->peek(i));
 
             int etype = event.type();
             if(etype == MusECore::ME_CONTROLLER || etype == MusECore::ME_PITCHBEND || etype == MusECore::ME_PROGRAM)
@@ -2041,6 +2077,8 @@ void Audio::processMidi(unsigned int frames)
             if(mp)
               md = mp->device();
 
+            const bool md_writable = midiDeviceWritable(md);
+
             // only add track events if the track is unmuted and turned on
             if(!track->isMute() && !track->off())
             {
@@ -2060,6 +2098,8 @@ void Audio::processMidi(unsigned int frames)
                       if(MusEGlobal::config.enableLatencyCorrection && !extsync)
                       {
                           const TrackLatencyInfo& li = track->getLatencyInfo(false);
+                          //li.dump(track->name().toLatin1().constData(), "midi track output");
+
                           // This value is negative for correction.
                           const float mlat = li._sourceCorrectionValue;
                           if((int)mlat < 0)
@@ -2079,6 +2119,20 @@ void Audio::processMidi(unsigned int frames)
                     }
                 }
             }
+
+//             //--------------------------------------------------------------------
+//             // Account for the midi track's input latency correction and/or compensation.
+//             //--------------------------------------------------------------------
+// //             unsigned int input_worstcase_latency = 0;
+//             // TODO How to handle when external sync is on. For now, don't try to correct.
+//             if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+//             {
+//                 const TrackLatencyInfo& li = track->getLatencyInfo(true /*input*/);
+// //                 if((int)li._inputLatency > 0)
+// //                   input_worstcase_latency = li._inputLatency;
+//
+//                 //li.dump(track->name().toLatin1().constData(), "track input");
+//             }
 
             //
             //----------midi recording
@@ -2126,18 +2180,21 @@ void Audio::processMidi(unsigned int frames)
                           if(!dev->sysexFIFOProcessed())
                           {
                             // Set to the sysex fifo at first.
-                            MidiRecFifo& rf = dev->recordEvents(MusECore::MUSE_MIDI_CHANNELS);
+                            MidiRecFifo *rf = dev->recordEvents(MusECore::MUSE_MIDI_CHANNELS);
                             // Get the frozen snapshot of the size.
                             int count = dev->tmpRecordCount(MusECore::MUSE_MIDI_CHANNELS);
 
                             for(int i = 0; i < count; ++i)
                             {
-                              MidiRecordEvent event(rf.peek(i));
+                              MidiRecordEvent event(rf->peek(i));
+
                               event.setPort(t_port);
                               event.setChannel(t_channel);
                               // don't echo controller changes back to software
                               // synthesizer:
-                              if(md && track_rec_monitor)
+                              // Do not send live events to the device if it's a synth and its track is off.
+                              // Prevents buffer overload on inactive synth track.
+                              if(md && track_rec_monitor && md_writable)
                               {
                                 // Do not echo synth events back to the same synth instance under any circumstances,
                                 //  not even if monitor (echo) is on.
@@ -2202,11 +2259,67 @@ void Audio::processMidi(unsigned int frames)
                             dev->setSysexFIFOProcessed(true);
                           }
 
-                          MidiRecFifo& rf = dev->recordEvents(channel);
+                          MidiRecFifo *rf = dev->recordEvents(channel);
+
                           int count = dev->tmpRecordCount(channel);
                           for(int i = 0; i < count; ++i)
                           {
-                                MidiRecordEvent event(rf.peek(i));
+                                MidiRecordEvent event(rf->peek(i));
+//                                 unsigned int in_dev_out_latency = 0;
+                                const int in_port = event.port();
+                                MidiDevice* in_dev = nullptr;
+                                if(in_port >= 0 && in_port < MIDI_PORTS)
+                                  in_dev = MusEGlobal::midiPorts[in_port].device();
+
+                                //--------------------------------------------------------------------
+                                // Get the input device's output latency.
+                                //--------------------------------------------------------------------
+//                                 // TODO How to handle when external sync is on. For now, don't try to correct.
+//                                 if(MusEGlobal::config.enableLatencyCorrection && !extsync && in_dev)
+//                                 {
+//                                   const TrackLatencyInfo& li_midi = in_dev->getLatencyInfoMidi(true /*capture*/, false /*output*/);
+//                                   if((int)li._outputLatency > 0)
+//                                     in_dev_out_latency = li._outputLatency;
+//
+//                                   //fprintf(stderr, "midi track input: input_worstcase_latency:%d\n", input_worstcase_latency);
+//                                   //li_midi.dump(in_dev->name().toLatin1().constData(), "midi info: capture device output");
+//                                 }
+
+                                //--------------------------------------------------------------------
+                                // Account for the transport latency correction and/or compensation.
+                                //--------------------------------------------------------------------
+                                unsigned int transport_lat_offset = 0;
+                                // TODO How to handle when external sync is on. For now, don't try to correct.
+                                if(MusEGlobal::config.enableLatencyCorrection && !extsync && in_dev)
+                                {
+                                  // Only for synthesizers.
+                                  if(in_dev->isSynti())
+                                  {
+                                    SynthI *si = static_cast<SynthI*>(in_dev);
+                                    AudioTrack *at = static_cast<AudioTrack*>(si);
+                                    TransportSource& ts = at->transportSource();
+                                    const TrackLatencyInfo& li = ts.getLatencyInfo(false);
+
+                                    //const TrackLatencyInfo& li_synth = si->getLatencyInfo(false /*output*/);
+                                    //li_synth.dump(si->name().toLatin1().constData(), "in synth audio output");
+                                    //ts.dump(at->name().toLatin1().constData(), "synth track transport source info");
+                                    //li.dump(in_dev->name().toLatin1().constData(), "synth track transport source output");
+
+                                    if(li._canCorrectOutputLatency)
+                                    {
+                                      // This value is negative for correction.
+                                      const float latency_corr = li._sourceCorrectionValue;
+                                      if((int)latency_corr < 0)
+                                      {
+                                        // Convert to a positive offset.
+                                        const unsigned int l = (unsigned int)(-latency_corr);
+                                        if(l > transport_lat_offset)
+                                          transport_lat_offset = l;
+                                      }
+                                    }
+                                  }
+                                }
+
                                 int defaultPort = devport;
                                 int drumRecPitch=0; //prevent compiler warning: variable used without initialization
                                 MidiController *mc = nullptr;
@@ -2324,18 +2437,53 @@ void Audio::processMidi(unsigned int frames)
 
                                   // All recorded events arrived in previous period. Shift into this period for playback.
                                   //  frameoffset needed to make process happy.
+                                  // NOTE: ALL events arriving from the FIFOs should have been time stamped as being
+                                  //        from the PREVIOUS cycle, meaning their time says they are late.
+                                  //       However, even for 'late' timestamps it is possible for the events be SYNCHRONIZED
+                                  //        correctly to the transport. Transport latency CORRECTION allows moving the transport
+                                  //        time forward so that the events coming out of synth devices are in fact synchronized,
+                                  //        enabled with a special quirk setting since it is only desired to apply it in special
+                                  //        cases like metronome or arpeggiator synths.
+                                  //       It just that all such events (from the various devices) are placed into the FIFOs
+                                  //        to be read in the NEXT (this) cycle. So the time they are stamped with is 'late'
+                                  //        but they may in fact be 'in time'.
+                                  //
+                                  //       Instead of simply adding segmentSize (below), it would be natural to use the
+                                  //        synth track's li._inputLatency value (the worst-case latency of all the inputs)
+                                  //        to streamline this part into the latency system.
+                                  //       But unfortunately, when transport latency correction is applied, the _inputLatency
+                                  //        value can be zero (because it has been corrected!).
+                                  //       There was no other value to use in the latency info structure, which could be seen.
+                                  //       Instead, keep the fixed segmentSize (below) but apply transport latency correction
+                                  //        as a special separate value when recording (below).
+                                  //
+                                  //       Also noticed: One would figure that the events from devices with LESS latency
+                                  //        than the worst-case should be compensated for with an additional latency to
+                                  //        match the worst-case so that at least events are synchronized to EACH OTHER.
+                                  //       Like this:
+                                  //         unsigned int t = et + in_dev_out_latency + (input_worstcase_latency - in_dev_out_latency);
+                                  //       But notice how 'in_dev_out_latency' CANCELS OUT!
+                                  //       So apparently applying a fixed value (say _inputLatency or segmentSize) to all the
+                                  //        incoming branches is correct.
+                                  //       Like this:
+                                  //         unsigned int t = et + input_worstcase_latency;
+                                  //       It may be because here we have the luxury of setting ABSOLUTELY how much time
+                                  //        to add to the event time.
+
                                   unsigned int et = event.time();
                                   // The events arrived in the previous period. Shift into this period for playback.
                                   // The events are already biased with the last frame time.
                                   unsigned int t = et + MusEGlobal::segmentSize;
+
                                   // Protection from slight errors in estimated frame time.
                                   if(t >= (syncFrame + MusEGlobal::segmentSize))
                                   {
-                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n", 
+                                    DEBUG_MIDI(stderr, "Error: Audio::processMidi(): event: t:%u >= syncFrame:%u + segmentSize:%u (==%u)\n",
                                             t, syncFrame, MusEGlobal::segmentSize, syncFrame + MusEGlobal::segmentSize);
-                                    
+
                                     t = syncFrame + (MusEGlobal::segmentSize - 1);
                                   }
+
                                   event.setTime(t);
                                   // Check if we're outputting to another port than default:
                                   if (devport == defaultPort) {
@@ -2350,40 +2498,49 @@ void Audio::processMidi(unsigned int frames)
                                           {
                                             MidiInstrument* minstr = MusEGlobal::midiPorts[t_port].instrument();
                                             const MidiInstrument::NoteOffMode nom = minstr->noteOffMode();
-                                            // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
-                                            // This allows drum input triggers (no note offs at all), although it is awkward to
-                                            //  first have to choose an output instrument with no note-off mode.
-                                            if(nom == MidiInstrument::NoteOffNone)
-                                            {
-                                              if(event.isNoteOff())
-                                                // Try to remove any corresponding stuck live note.
-                                                track->removeStuckLiveNote(t_port, event.channel(), event.dataA());
-//                                               md->addScheduledEvent(event);
-                                              md->putEvent(event, MidiDevice::NotLate);
-                                            }
-                                            else if(event.isNoteOff())
+                                            const bool nom_none = nom == MidiInstrument::NoteOffNone;
+                                            if(event.isNoteOff())
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
-                                              if(track->removeStuckLiveNote(t_port, event.channel(), event.dataA()))
-//                                                 md->addScheduledEvent(event);
+                                              // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
+                                              // This allows drum input triggers (no note offs at all), although it is awkward to
+                                              //  first have to choose an output instrument with no note-off mode.
+                                              // When the device is off or inactive, its buffer is NOT processed.
+                                              // In that case, with no note-off mode, do not send.
+                                              if(track->removeStuckLiveNote(t_port, event.channel(), event.dataA()) ||
+                                                 (nom_none && md_writable))
+                                                //md->addScheduledEvent(event);
                                                 md->putEvent(event, MidiDevice::NotLate);
                                             }
                                             else if(event.isNote())
                                             {
-                                              // Check if a stuck live note exists on any track.
-                                              ciMidiTrack it_other = mtl->begin();
-                                              for( ; it_other != mtl->end(); ++it_other)
+                                              // Do not send live note-ons to the device if it is off or inactive.
+                                              // Prevents backlogged notes from playing when on or active again.
+                                              if(md_writable)
                                               {
-                                                if((*it_other)->stuckLiveNoteExists(t_port, event.channel(), event.dataA()))
-                                                  break;
-                                              }
-                                              // Only if NO stuck live note existed do we schedule the note on to play.
-                                              if(it_other == mtl->end())
-                                              {
-                                                if(track->addStuckLiveNote(t_port, event.channel(), event.dataA()))
-//                                                   md->addScheduledEvent(event);
+                                                // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
+                                                // This allows drum input triggers (no note offs at all), although it is awkward to
+                                                //  first have to choose an output instrument with no note-off mode.
+                                                if(nom_none)
                                                   md->putEvent(event, MidiDevice::NotLate);
+                                                else
+                                                {
+                                                  // Check if a stuck live note exists on any track.
+                                                  ciMidiTrack it_other = mtl->cbegin();
+                                                  for( ; it_other != mtl->cend(); ++it_other)
+                                                  {
+                                                    if((*it_other)->stuckLiveNoteExists(t_port, event.channel(), event.dataA()))
+                                                      break;
+                                                  }
+                                                  // Only if NO stuck live note existed do we schedule the note on to play.
+                                                  if(it_other == mtl->cend())
+                                                  {
+                                                    if(track->addStuckLiveNote(t_port, event.channel(), event.dataA()))
+                                                      //md->addScheduledEvent(event);
+                                                      md->putEvent(event, MidiDevice::NotLate);
+                                                  }
+                                                }
                                               }
                                             }
                                             else
@@ -2392,6 +2549,9 @@ void Audio::processMidi(unsigned int frames)
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
                                               // This is the audio thread. Just set directly.
                                               MusEGlobal::midiPorts[t_port].setHwCtrlState(event);
+                                              // When the device is off or inactive, its buffer is NOT processed.
+                                              // The device will eliminate multiple redundant events, so that some events
+                                              //  can be held until ready to be sent yet buffer overflow is minimized.
                                               md->putEvent(event, MidiDevice::NotLate);
                                             }
                                           }
@@ -2403,47 +2563,56 @@ void Audio::processMidi(unsigned int frames)
                                         //if(mdAlt && track_rec_monitor && !track->off() && !track->isMute())
                                         if(mdAlt && track_rec_monitor)
                                         {
+                                          const bool mdalt_writable = midiDeviceWritable(mdAlt);
                                           // Do not echo synth events back to the same synth instance under any circumstances,
                                           //  not even if monitor (echo) is on.
                                           if(!dev->isSynti() || dev != mdAlt)
                                           {
                                             MidiInstrument* minstr = MusEGlobal::midiPorts[devport].instrument();
                                             MidiInstrument::NoteOffMode nom = minstr->noteOffMode();
-                                            // If the instrument has no note-off mode, do not use the
-                                            //  stuck notes mechanism, just send as is.
-                                            // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
-                                            // This allows drum input triggers (no note offs at all), although it is awkward to
-                                            //  first have to choose an output instrument with no note-off mode.
-                                            if(nom == MidiInstrument::NoteOffNone)
-                                            {
-                                              if(event.isNoteOff())
-                                                // Try to remove any corresponding stuck live note.
-                                                track->removeStuckLiveNote(event.port(), event.channel(), event.dataA());
-//                                               mdAlt->addScheduledEvent(event);
-                                              mdAlt->putEvent(event, MidiDevice::NotLate);
-                                            }
-                                            else if(event.isNoteOff())
+                                            const bool nom_none = nom == MidiInstrument::NoteOffNone;
+                                            if(event.isNoteOff())
                                             {
                                               // Try to remove any corresponding stuck live note.
                                               // Only if a stuck live note existed do we schedule the note off to play.
-                                              if(track->removeStuckLiveNote(event.port(), event.channel(), event.dataA()))
-//                                                 mdAlt->addScheduledEvent(event);
+                                              // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
+                                              // This allows drum input triggers (no note offs at all), although it is awkward to
+                                              //  first have to choose an output instrument with no note-off mode.
+                                              // When the device is off or inactive, its buffer is NOT processed.
+                                              // In that case, with no note-off mode, do not send.
+                                              if(track->removeStuckLiveNote(event.port(), event.channel(), event.dataA()) ||
+                                                 (nom_none && mdalt_writable))
+                                                //mdAlt->addScheduledEvent(event);
                                                 mdAlt->putEvent(event, MidiDevice::NotLate);
                                             }
                                             else if(event.isNote())
                                             {
-                                              // Check if a stuck live note exists on any track.
-                                              ciMidiTrack it_other = mtl->begin();
-                                              for( ; it_other != mtl->end(); ++it_other)
+                                              // Do not send live note-ons to the device if it is off or inactive.
+                                              // Prevents backlogged notes from playing when on or active again.
+                                              if(mdalt_writable)
                                               {
-                                                if((*it_other)->stuckLiveNoteExists(event.port(), event.channel(), event.dataA()))
-                                                  break;
-                                              }
-                                              // Only if NO stuck live note existed do we schedule the note on to play.
-                                              if(it_other == mtl->end())
-                                              {
-                                                if(track->addStuckLiveNote(event.port(), event.channel(), event.dataA()))
+                                                // If the instrument has no note-off mode, do not use the stuck notes mechanism, send as is.
+                                                // This allows drum input triggers (no note offs at all), although it is awkward to
+                                                //  first have to choose an output instrument with no note-off mode.
+                                                if(nom_none)
                                                   mdAlt->putEvent(event, MidiDevice::NotLate);
+                                                else
+                                                {
+                                                  // Check if a stuck live note exists on any track.
+                                                  ciMidiTrack it_other = mtl->cbegin();
+                                                  for( ; it_other != mtl->cend(); ++it_other)
+                                                  {
+                                                    if((*it_other)->stuckLiveNoteExists(event.port(), event.channel(), event.dataA()))
+                                                      break;
+                                                  }
+                                                  // Only if NO stuck live note existed do we schedule the note on to play.
+                                                  if(it_other == mtl->cend())
+                                                  {
+                                                    if(track->addStuckLiveNote(event.port(), event.channel(), event.dataA()))
+                                                      //mdAlt->addScheduledEvent(event);
+                                                      mdAlt->putEvent(event, MidiDevice::NotLate);
+                                                  }
+                                                }
                                               }
                                             }
                                             else
@@ -2452,6 +2621,9 @@ void Audio::processMidi(unsigned int frames)
                                               //       which so far was meant for (N)RPN stuff. For now, just force it.
                                               // This is the audio thread. Just set directly.
                                               MusEGlobal::midiPorts[devport].setHwCtrlState(event);
+                                              // When the device is off or inactive, its buffer is NOT processed.
+                                              // The device will eliminate multiple redundant events, so that some events
+                                              //  can be held until ready to be sent yet buffer overflow is minimized.
                                               mdAlt->putEvent(event, MidiDevice::NotLate);
                                             }
                                           }
@@ -2483,7 +2655,6 @@ void Audio::processMidi(unsigned int frames)
                                     {
                                       // REMOVE Tim. latency. Removed. Oops, with ALSA this adds undesired shift forward!
 //                                       // All recorded events arrived in the previous period. Shift into this period for record.
-                                      // REMOVE Tim. latency. Changed. Oops, with ALSA this adds undesired shift forward!
                                       // And with Jack midi we currently already shift forward, in the input routine!
                                       // But I'm debating where to add the correction factor - I really need to add it here
                                       //  (exactly like the WaveTrack recording correction) but a very simple fix would be
@@ -2505,6 +2676,7 @@ void Audio::processMidi(unsigned int frames)
 //                                         t = syncFrame + (MusEGlobal::segmentSize - 1);
 //                                       }
                                       unsigned int t = et;
+
                                       // Protection from slight errors in estimated frame time.
                                       if(t >= syncFrame)
                                       {
@@ -2518,7 +2690,8 @@ void Audio::processMidi(unsigned int frames)
                                       //  the first chunk's time in a multi-chunk sysex.
                                       const unsigned int a_fr = pos().frame() + t;
                                       const unsigned int fin_fr = syncFrame > a_fr ? 0 : a_fr - syncFrame;
-                                      event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr));
+                                      // Be sure to include any transport latency correction offset (positive value).
+                                      event.setTime(MusEGlobal::tempomap.frame2tick(fin_fr + transport_lat_offset));
                                     }
 
                                     // In these next steps, it is essential to set the recorded event's port
@@ -2949,7 +3122,7 @@ void Audio::processPrecount(unsigned int frames)
           ev.setA(metro_settings->measureClickNote);
           ev.setB(metro_settings->measureClickVelo);
         }
-        if (md) {
+        if (midiDeviceWritable(md)) {
           MusECore::MidiPlayEvent evmidi = ev;
           
 #ifdef DEBUG_MIDI_TIMING_DIFFS
@@ -2981,7 +3154,7 @@ void Audio::processPrecount(unsigned int frames)
           //md->addStuckNote(evmidi);
           md->putEvent(evmidi, MidiDevice::NotLate, MidiDevice::UserBuffer);
         }
-        if (metro_settings->audioClickFlag) {
+        if (metro_settings->audioClickFlag && midiDeviceWritable(metronome)) {
           ev.setA(audioTickSound);
           DEBUG_MIDI_METRONOME(stderr, "Audio::processMidi: precount: metronome->putEvent\n");
           metronome->putEvent(ev, MidiDevice::NotLate, MidiDevice::PlaybackBuffer);
@@ -3030,6 +3203,7 @@ void Audio::processMidiMetronome(unsigned int frames)
 
       if (playing)
       {
+            const bool md_writable = midiDeviceWritable(md);
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
@@ -3045,7 +3219,7 @@ void Audio::processMidiMetronome(unsigned int frames)
             //--------------------------------------------------------------------
 
             // TODO How to handle when external sync is on. For now, don't try to correct.
-            if(md && MusEGlobal::config.enableLatencyCorrection && !extsync)
+            if(metronome && md_writable && MusEGlobal::config.enableLatencyCorrection && !extsync)
             {
               if(metro_settings->midiClickFlag)
               {
@@ -3157,7 +3331,7 @@ void Audio::processMidiMetronome(unsigned int frames)
                   if(!precount_mute_metronome)
                   {
                     // Don't bother sending to midi out if velocity is zero.
-                    if (metro_settings->midiClickFlag && md && ev.dataB() > 0) {
+                    if (metro_settings->midiClickFlag && md_writable && ev.dataB() > 0) {
                       MusECore::MidiPlayEvent evmidi = ev;
                       
   #ifdef DEBUG_MIDI_TIMING_DIFFS
@@ -3258,6 +3432,7 @@ void Audio::processAudioMetronome(unsigned int frames)
       
       if (playing)
       {
+            const bool metro_writable = midiDeviceWritable(metronome);
             int bar, beat, z, n;
             unsigned tick;
             AudioTickSound audioTickSound = MusECore::beatSound;
@@ -3272,7 +3447,7 @@ void Audio::processAudioMetronome(unsigned int frames)
             // Account for the metronome's latency correction and/or compensation.
             //--------------------------------------------------------------------
             // TODO How to handle when external sync is on. For now, don't try to correct.
-            if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+            if(MusEGlobal::config.enableLatencyCorrection && !extsync && metro_writable)
             {
               if(metro_settings->audioClickFlag)
               {
@@ -3368,7 +3543,8 @@ void Audio::processAudioMetronome(unsigned int frames)
                   // Should the metronome be played after precount?
                   if(!precount_mute_metronome)
                   {
-                    if (metro_settings->audioClickFlag) {
+                    if (metro_settings->audioClickFlag && metro_writable)
+                    {
                       MusECore::MidiPlayEvent ev(evtime, 0, 0,
                         MusECore::ME_NOTEON, audioTickSound, 0);
                       DEBUG_MIDI_METRONOME(stderr, "Audio::processAudioMetronome: playing: metronome->putEvent\n");

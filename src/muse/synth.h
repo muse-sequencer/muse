@@ -50,6 +50,10 @@ namespace MusEGui {
 class PopupMenu;
 }
 
+namespace MusEPlugin {
+class PluginScanInfoStruct;
+}
+
 namespace MusECore {
 
 class MidiPort;
@@ -76,16 +80,20 @@ class Synth {
       QString _version;
       PluginFeatures_t _requiredFeatures;
 
+      unsigned long _freewheelPortIndex;
+      unsigned long _latencyPortIndex;
+      unsigned long _enableOrBypassPortIndex;
+      PluginFreewheelType _pluginFreewheelType;
+      PluginLatencyReportingType _pluginLatencyReportingType;
+      PluginBypassType _pluginBypassType;
+
       MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to audio port numbers.
       MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps audio port numbers to midi controller numbers.
 
    public:
       enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, VST_NATIVE_SYNTH, VST_NATIVE_EFFECT, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
 
-      Synth(const QFileInfo& fi, const QString& uri,
-            QString label, QString descr, QString maker, QString ver, 
-            PluginFeatures_t reqFeatures = PluginNoFeatures);
-
+      Synth(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Synth() {}
 
       virtual Type synthType() const = 0;
@@ -113,6 +121,16 @@ class Synth {
       // Returns true if there are any mapped midi to audio controllers.
       bool hasMappedMidiToAudioCtrls() const;
 
+      unsigned long freewheelPortIndex() const;
+      unsigned long latencyPortIndex() const;
+      unsigned long enableOrBypassPortIndex() const;
+      PluginLatencyReportingType pluginLatencyReportingType() const;
+      PluginBypassType pluginBypassType() const;
+      PluginFreewheelType pluginFreewheelType() const;
+      // Returns the plugin latency, if it has such as function.
+      // NOTE: If the plugin has a latency controller out, use that instead.
+      virtual float getPluginLatency(void* /*handle*/);
+
       virtual SynthIF* createSIF(SynthI*) = 0;
       };
 
@@ -124,14 +142,11 @@ class MessSynth : public Synth {
       const MESS* _descr;
 
    public:
-      MessSynth(const QFileInfo& fi, QString uri, QString label, QString descr, QString maker, QString ver) :
-               Synth(fi, uri, label, descr, maker, ver) { _descr = 0; }
-
+      MessSynth(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~MessSynth() {}
+
       inline virtual Type synthType() const { return MESS_SYNTH; }
-
       virtual void* instantiate(const QString&);
-
       virtual SynthIF* createSIF(SynthI*);
       };
 
@@ -151,7 +166,7 @@ class SynthIF : public PluginIBase {
       SynthI* synti;
 
    public:
-      SynthIF(SynthI* s) { synti = s; }
+      SynthIF(SynthI* s);
       virtual ~SynthIF() {}
 
       // Provide proper outside access instead of relying on being a 'friend' of SynthI.
@@ -161,7 +176,6 @@ class SynthIF : public PluginIBase {
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       inline virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; }
 
-      virtual void guiHeartBeat() = 0;
       virtual void showGui(bool v) { if(synti && hasGui()) PluginIBase::showGui(v); } 
       virtual bool hasGui() const = 0;
       virtual bool hasNativeGui() const = 0;
@@ -192,11 +206,14 @@ class SynthIF : public PluginIBase {
       //-------------------------
 
       virtual PluginFeatures_t requiredFeatures() const;
+      virtual bool hasActiveButton() const;
+      virtual bool active() const;
+      virtual void setActive(bool);
       virtual bool hasBypass() const;
       virtual bool on() const;
       virtual void setOn(bool val);
-      virtual unsigned long pluginID();
-      virtual int id();
+      virtual unsigned long pluginID() const;
+      virtual int id() const;
       virtual QString pluginLabel() const;
       virtual QString name() const;
       virtual QString lib() const;
@@ -204,7 +221,7 @@ class SynthIF : public PluginIBase {
       virtual QString dirPath() const;
       virtual QString fileName() const;
       virtual QString titlePrefix() const;
-      virtual AudioTrack* track();
+      virtual AudioTrack* track() const;
       virtual void enableController(unsigned long i, bool v = true);
       virtual bool controllerEnabled(unsigned long i) const;
       virtual void enableAllControllers(bool v = true);
@@ -220,24 +237,28 @@ class SynthIF : public PluginIBase {
       virtual void setParam(unsigned long i, double val);
       virtual double param(unsigned long i) const;
       virtual double paramOut(unsigned long i) const;
-      virtual const char* paramName(unsigned long i);
-      virtual const char* paramOutName(unsigned long i);
+      virtual const char* paramName(unsigned long i) const;
+      virtual const char* paramOutName(unsigned long i) const;
       // FIXME TODO: Either find a way to agnosticize these two ranges, or change them from ladspa ranges to a new MusE range class.
-      virtual LADSPA_PortRangeHint range(unsigned long i);
-      virtual LADSPA_PortRangeHint rangeOut(unsigned long i);
-      virtual bool hasLatencyOutPort() const;
+      virtual LADSPA_PortRangeHint range(unsigned long i) const;
+      virtual LADSPA_PortRangeHint rangeOut(unsigned long i) const;
+      virtual void range(unsigned long i, float*, float*) const;
+      virtual void rangeOut(unsigned long i, float*, float*) const;
       virtual unsigned long latencyOutPortIndex() const;
       virtual float latency() const;
+      virtual unsigned long freewheelPortIndex() const;
+      virtual unsigned long enableOrBypassPortIndex() const;
+      virtual PluginLatencyReportingType pluginLatencyReportingType() const;
+      virtual PluginBypassType pluginBypassType() const;
+      virtual PluginFreewheelType pluginFreewheelType() const;
       virtual CtrlValueType ctrlValueType(unsigned long i) const;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const;
+      virtual CtrlValueType ctrlOutValueType(unsigned long i) const;
+      virtual CtrlList::Mode ctrlOutMode(unsigned long i) const;
 
-//       // Returns true if the transport source is connected to any of the
-//       //  track's midi input ports (ex. synth ports not muse midi ports).
-//       // If midiport is -1, returns true if ANY port is connected.
-//       virtual bool transportSourceConnected(unsigned int /*midiport*/ = -1) const { return false; }
       // Returns true if the transport source is connected to any of the
       //  track's midi input ports (ex. synth ports not muse midi ports).
-      virtual bool usesTransportSource() const { return false; }
+      virtual bool usesTransportSource() const;
       };
 
 //---------------------------------------------------------
@@ -299,9 +320,6 @@ class SynthI : public AudioTrack, public MidiDevice,
       //  into the eventFifos.
       virtual unsigned int pbForwardShiftFrames() const;
 
-      virtual QString open();
-      virtual void close();
-
    public:
       friend class SynthIF;
       friend class MessSynthIF;
@@ -324,6 +342,9 @@ class SynthI : public AudioTrack, public MidiDevice,
       bool initInstance(Synth* s, const QString& instanceName);
       inline virtual float selfLatencyAudio(int channel) const
         { return (_sif ? _sif->latency() : 0) + AudioTrack::selfLatencyAudio(channel); }
+
+      virtual QString open();
+      virtual void close();
 
       void read(Xml&, XmlReadStatistics* stats = nullptr);
       virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const;
@@ -375,7 +396,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Returns true if there are any mapped midi to audio controllers.
       bool hasMappedMidiToAudioCtrls() const;
 
-      void guiHeartBeat()     { if(!_sif) return; else _sif->guiHeartBeat(); }
+      virtual void guiHeartBeat();
       bool guiVisible() const { if(!_sif) return false; else return _sif->guiVisible(); }
       void showGui(bool v)    { if(!_sif) return; else _sif->showGui(v); }
       bool hasGui() const     { if(!_sif) return false; else return _sif->hasGui(); }
@@ -402,11 +423,6 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual void processMidi(unsigned int /*curFrame*/ = 0);
       void preProcessAlways();
 
-//       // Returns true if the transport source is connected to any of the
-//       //  track's midi input ports (ex. synth ports not muse midi ports).
-//       // If midiport is -1, returns true if ANY port is connected.
-//       virtual bool transportSourceConnected(int midiport = -1) const
-//         { if(_sif) return _sif->transportSourceConnected(midiport); return false; }
       // Returns true if the transport source is connected to any of the
       //  track's midi input ports (ex. synth ports not muse midi ports).
       virtual bool usesTransportSource() const
@@ -444,12 +460,20 @@ class SynthI : public AudioTrack, public MidiDevice,
       inline int eventsPending() const    { if(!_sif) return 0; else return _sif->eventsPending(); }
       void deactivate2();
       void deactivate3();
-      inline bool isActivated() const         { return synthesizer && _sif; }
       inline virtual bool hasAuxSend() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
 
+      unsigned long latencyOutPortIndex() const;
+      unsigned long freewheelPortIndex() const;
+      unsigned long enableOrBypassPortIndex() const;
+      PluginLatencyReportingType pluginLatencyReportingType() const;
+      PluginBypassType pluginBypassType() const;
+      PluginFreewheelType pluginFreewheelType() const;
+      // Returns the plugin latency, if it has such as function.
+      // NOTE: If the plugin has a latency controller out, use that instead.
+      virtual float getPluginLatency(void* /*handle*/);
       };
 
 //---------------------------------------------------------

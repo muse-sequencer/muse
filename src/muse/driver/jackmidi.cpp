@@ -537,7 +537,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       
       // Split the events up into channel fifos. Special 'channel' number 17 for sysex events.
       unsigned int ch = (typ == ME_SYSEX)? MusECore::MUSE_MIDI_CHANNELS : event.channel();
-      if(_recordFifo[ch].put(event))
+      if(!_recordFifo[ch]->put(event))
         printf("MidiJackDevice::recordEvent: fifo channel %d overflow\n", ch);
       }
 
@@ -1270,83 +1270,116 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event, void* evBuffer)
 
 void MidiJackDevice::processMidi(unsigned int curFrame)
 {
-  void* port_buf = 0;
+  void* port_buf = nullptr;
   if(_out_client_jackport && _writeEnable)  
   {
     port_buf = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);
-    jack_midi_clear_buffer(port_buf);
+    if(port_buf)
+      jack_midi_clear_buffer(port_buf);
   }  
   
   // Get the state of the stop flag.
   const bool do_stop = stopFlag();
+  bool rpnReserved = false;
+  {
+    const int mport = midiPort();
+    if(mport >= 0 && mport < MIDI_PORTS)
+    {
+      const MidiInstrument *instr = MusEGlobal::midiPorts[mport].instrument();
+      if(instr)
+        rpnReserved = instr->RPN_Ctrls_Reserved();
+    }
+  }
 
   MidiPlayEvent buf_ev;
-  
-  // Transfer the user lock-free buffer events to the user sorted multi-set.
-  // False = don't use the size snapshot, but update it.
-  const unsigned int usr_buf_sz = eventBuffers(UserBuffer)->getSize(false);
-  for(unsigned int i = 0; i < usr_buf_sz; ++i)
+
+  // If stopping or not 'running' just purge ALL playback FIFO and container events.
+  // But do not clear the user ones. We need to hold on to them until active,
+  //  they may contain crucial events like loading a soundfont from a song file.
+  if(do_stop || !port_buf)
   {
-    if(eventBuffers(UserBuffer)->get(buf_ev))
-      _outUserEvents.insert(buf_ev);
-  }
-  
-  // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-  const unsigned int pb_buf_sz = eventBuffers(PlaybackBuffer)->getSize(false);
-  for(unsigned int i = 0; i < pb_buf_sz; ++i)
-  {
-    // Are we stopping? Just remove the item.
-    if(do_stop)
-      eventBuffers(PlaybackBuffer)->remove();
-    // Otherwise get the item.
-    else if(eventBuffers(PlaybackBuffer)->get(buf_ev))
-      _outPlaybackEvents.insert(buf_ev);
-  }
-  
-  // Are we stopping?
-  if(do_stop)
-  {
-    // Transport has stopped, purge ALL further scheduled playback events now.
+    // Transfer the user lock-free buffer events to the user sorted multi-set.
+    // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+    const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
+    for(unsigned int i = 0; i < usr_buf_sz; ++i)
+    {
+      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      {
+        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+        if(!rpnReserved || !buf_ev.isNativeRPN())
+          _outUserEvents.addExclusive(buf_ev, rpnReserved);
+      }
+    }
+
+    eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
     _outPlaybackEvents.clear();
     // Reset the flag.
     setStopFlag(false);
   }
-  
-  iMPEvent impe_pb = _outPlaybackEvents.begin();
-  iMPEvent impe_us = _outUserEvents.begin();
-  bool using_pb;
-  
-  while(1)
-  {  
-    if(impe_pb != _outPlaybackEvents.end() && impe_us != _outUserEvents.end())
-      using_pb = *impe_pb < *impe_us;
-    else if(impe_pb != _outPlaybackEvents.end())
-      using_pb = true;
-    else if(impe_us != _outUserEvents.end())
-      using_pb = false;
-    else break;
-    
-    const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
-    
-    if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
+  else
+  {
+    // Transfer the user lock-free buffer events to the user sorted multi-set.
+    const unsigned int usr_buf_sz = eventBuffers(MidiDevice::UserBuffer)->getSize();
+    for(unsigned int i = 0; i < usr_buf_sz; ++i)
     {
-      #ifdef JACK_MIDI_DEBUG
-      fprintf(stderr, "MusE: Jack midi: putted event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
-      #endif
-      break;
+      if(eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+      {
+        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+        if(!rpnReserved || !buf_ev.isNativeRPN())
+          _outUserEvents.insert(buf_ev);
+      }
     }
 
-    // If processEvent fails, although we would like to not miss events by keeping them
-    //  until next cycle and trying again, that can lead to a large backup of events
-    //  over a long time. So we'll just... miss them.
-    processEvent(ev, port_buf);
-    
-    // Successfully processed event. Remove it from FIFO.
-    // C++11.
-    if(using_pb)
-      impe_pb = _outPlaybackEvents.erase(impe_pb);
-    else
-      impe_us = _outUserEvents.erase(impe_us);
+    // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+    const unsigned int pb_buf_sz = eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+    for(unsigned int i = 0; i < pb_buf_sz; ++i)
+    {
+      if(eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+      {
+        // Do not send native RPN if any of the EIGHT standard General Midi RPN controllers are reserved.
+        if(!rpnReserved || !buf_ev.isNativeRPN())
+          _outPlaybackEvents.insert(buf_ev);
+      }
+    }
+  }
+
+  // Don't bother if not 'running'.
+  if(port_buf)
+  {
+
+    iMPEvent impe_pb = _outPlaybackEvents.begin();
+    iMPEvent impe_us = _outUserEvents.begin();
+    bool using_pb;
+
+    while(1)
+    {
+      if(impe_pb != _outPlaybackEvents.end() && impe_us != _outUserEvents.end())
+        using_pb = *impe_pb < *impe_us;
+      else if(impe_pb != _outPlaybackEvents.end())
+        using_pb = true;
+      else if(impe_us != _outUserEvents.end())
+        using_pb = false;
+      else break;
+
+      const MidiPlayEvent& ev = using_pb ? *impe_pb : *impe_us;
+
+      if(ev.time() >= (curFrame + MusEGlobal::segmentSize))
+      {
+        #ifdef JACK_MIDI_DEBUG
+        fprintf(stderr, "MusE: Jack midi: putted event is for future:%lu, breaking loop now\n", ev.time() - curFrame);
+        #endif
+        break;
+      }
+
+      processEvent(ev, port_buf);
+
+      // Successfully processed event. Remove it from FIFO.
+      // C++11.
+      if(using_pb)
+        impe_pb = _outPlaybackEvents.erase(impe_pb);
+      else
+        impe_us = _outUserEvents.erase(impe_us);
+    }
   }
 }
 
@@ -1375,8 +1408,11 @@ unsigned int MidiJackDevice::portLatency(void* /*port*/, bool capture) const
   //         (Also there is the user latency from command line or QJackCtl.)
   //         In other words, the Jack command line -p (number of periods) ONLY applies to audio output ports.
   
-  //fprintf(stderr, "MidiJackDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
-  //        port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
+  // Actually I recall that in Jack 1, or Jack 2 synchronous mode, the output latency is ONE period.
+  // TODO FIXME Fix that below, somehow?
+
+//   fprintf(stderr, "MidiJackDevice::portLatency port:%p capture:%d c_range.min:%d c_range.max:%d p_range.min:%d p_range.max:%d\n",
+//           port, capture, c_range.min, c_range.max, p_range.min, p_range.max);
 
   if(capture)
   {
@@ -1394,6 +1430,10 @@ unsigned int MidiJackDevice::portLatency(void* /*port*/, bool capture) const
 
 // REMOVE Tim. latency. TESTING Reinstate. For simulating non-functional jack midi latency. This seems to work well.
 //     return p_range.max;
+
+    // Actually I recall that in Jack 1, or Jack 2 synchronous mode, the output latency is ONE period.
+    // TODO FIXME Fix that here, somehow?
+
     return MusEGlobal::segmentSize * 2;
   }
 }

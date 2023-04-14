@@ -119,8 +119,9 @@ void VerticalMeter::resetPeaks()
 //   setRange
 //---------------------------------------------------------
 
-void VerticalMeter::setRange(double min, double max)
+void VerticalMeter::setRange(double min, double max, MeterType type)
       {
+      mtype = type;
       minScale = min;
       maxScale = max;
       update();

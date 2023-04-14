@@ -290,9 +290,9 @@ SimpleSynthGui::SimpleSynthGui(int sampleRate)
 
       chnMeter[i] = new MusEGui::Meter(channelButtonGroups[i]);
       chnMeter[i]->setFixedWidth(9);
+      chnMeter[i]->setRange(SS_minMeterVal, 10.0, false /*isInteger*/, true /*isLog*/);
       chnMeter[i]->setVal(0.0, 0.0, false);
       meterVal[i] = peakVal[i] = 0.0;
-      chnMeter[i]->setRange(SS_minMeterVal, 10.0);
       chnMeter[i]->show();
       volLayout->addWidget(chnMeter[i]);
 

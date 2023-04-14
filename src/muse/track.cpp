@@ -40,15 +40,11 @@
 #include "globals.h"
 #include "config.h"
 
-//#include <QMessageBox>
-
 // Forwards from header:
 #include "midiport.h"
-//#include "plugin.h"
 #include "xml.h"
 #include "midiedit/drummap.h"
 #include "minstrument.h"
-//#include "latency_compensator.h"
 #include "xml_statistics.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
@@ -1108,7 +1104,7 @@ bool MidiTrack::isLatencyInputTerminal()
   {
     MidiPort* mp = &MusEGlobal::midiPorts[port];
     MidiDevice* md = mp->device();
-    if(md && (md->openFlags() & 1 /*write*/))
+    if(md && (md->writeEnable()))
     {
       // If it's a non-synth device, or a synth that is not off.
       if(!md->isSynti() || !static_cast<SynthI*>(md)->off())
@@ -1138,7 +1134,7 @@ bool MidiTrack::isLatencyInputTerminal()
         if(!md)
           continue;
 
-        if(md->openFlags() & 1 /*write*/)
+        if(md->writeEnable())
         {
           _latencyInfo._isLatencyInputTerminal = false;
           _latencyInfo._isLatencyInputTerminalProcessed = true;
@@ -1177,13 +1173,13 @@ bool MidiTrack::isLatencyOutputTerminal()
 
 #ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
   const int port = outPort();
-  //if((openFlags() & (capture ? 2 : 1)) && port >= 0 && port < MusECore::MIDI_PORTS)
-  //if((openFlags() & 1 /*write*/) && port >= 0 && port < MusECore::MIDI_PORTS)
+  //if(((capture ? readEnable() : writeEnable())) && port >= 0 && port < MusECore::MIDI_PORTS)
+  //if((writeEnable()) && port >= 0 && port < MusECore::MIDI_PORTS)
   if(port >= 0 && port < MusECore::MIDI_PORTS)
   {
     MidiPort* mp = &MusEGlobal::midiPorts[port];
     MidiDevice* md = mp->device();
-    if(md && (md->openFlags() & 1 /*write*/))
+    if(md && (md->writeEnable()))
     {
       // If it's a non-synth device, or a synth that is not off.
       if(!md->isSynti() || !static_cast<SynthI*>(md)->off())
@@ -1213,7 +1209,7 @@ bool MidiTrack::isLatencyOutputTerminal()
         if(!md)
           continue;
 
-        if(md->openFlags() & 1 /*write*/)
+        if(md->writeEnable())
         {
           _latencyInfo._isLatencyOutputTerminal = false;
           _latencyInfo._isLatencyOutputTerminalProcessed = true;
@@ -1284,8 +1280,8 @@ TrackLatencyInfo& MidiTrack::getDominanceInfo(bool input)
               if(!md)
                 continue;
 
-              //if(!off() && (md->openFlags() & 2 /*read*/) &&  (passthru || input))
-              if(md->openFlags() & 2 /*read*/)
+              //if(!off() && (md->readEnable()) &&  (passthru || input))
+              if(md->readEnable())
               {
                 const TrackLatencyInfo& li = md->getDominanceInfoMidi(true /*capture*/, false);
 
@@ -1402,8 +1398,8 @@ TrackLatencyInfo& MidiTrack::getDominanceLatencyInfo(bool input)
               if(!md)
                 continue;
 
-              //if(!off() && (md->openFlags() & 2 /*read*/) &&  (passthru || input))
-              if(md->openFlags() & 2 /*read*/)
+              //if(!off() && (md->readEnable()) &&  (passthru || input))
+              if(md->readEnable())
               {
                 const TrackLatencyInfo& li = md->getDominanceLatencyInfoMidi(true /*capture*/, false);
 
@@ -1521,8 +1517,8 @@ TrackLatencyInfo& MidiTrack::setCorrectionLatencyInfo(bool input, float finalWor
             const MidiPort* mp = &MusEGlobal::midiPorts[ir->midiPort];
             MidiDevice* md = mp->device();
 
-            //if(!off() && md && (md->openFlags() & 2 /*read*/) && (passthru || input))
-            if(md && (md->openFlags() & 2 /*read*/))
+            //if(!off() && md && (md->readEnable()) && (passthru || input))
+            if(md && (md->readEnable()))
               md->setCorrectionLatencyInfoMidi(true /*capture*/, false, finalWorstLatency, branch_lat);
           }
           break;
@@ -1605,7 +1601,7 @@ TrackLatencyInfo& MidiTrack::getLatencyInfo(bool input)
             // Default to zero.
             ir->audioLatencyOut = 0.0f;
 
-            if(!off() && (md->openFlags() & 2 /*read*/))
+            if(!off() && (md->readEnable()))
             {
               const TrackLatencyInfo& li = md->getLatencyInfoMidi(true /*capture*/, false);
               const bool participate =
@@ -1969,9 +1965,9 @@ bool MidiTrack::removeStuckLiveNote(int port, int chan, int note)
 //   Return true if note exists.
 //---------------------------------------------------------
 
-bool MidiTrack::stuckLiveNoteExists(int port, int chan, int note)
+bool MidiTrack::stuckLiveNoteExists(int port, int chan, int note) const
 {
-  for(ciMPEvent k = stuckLiveNotes.begin(); k != stuckLiveNotes.end(); ++k)
+  for(ciMPEvent k = stuckLiveNotes.cbegin(); k != stuckLiveNotes.cend(); ++k)
   {
     // We're looking for port, channel, and note. Time and velocity are not relevant.
     if((*k).port() == port &&

@@ -67,6 +67,7 @@ class DoubleSpinBox : public QDoubleSpinBox {
       DoubleSpinBox(double minValue, double maxValue, double step = 1.0, QWidget* parent=0);
 };
 
+
 } // namespace MusEGui
 
 #endif

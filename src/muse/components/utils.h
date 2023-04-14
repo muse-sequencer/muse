@@ -41,7 +41,15 @@ class QFrame;
 class QWidget;
 class QPainter;
 
+namespace MusEGui {
+  class Slider;
+  class DoubleLabel;
+  class DoubleText;
+  class Meter;
+}
+
 namespace MusECore {
+  class CtrlList;
 
 enum Corner { CornerUpperLeft = 0x1, CornerUpperRight = 0x2, CornerLowerLeft = 0x4, CornerLowerRight = 0x8, CornerAll = 0xF };
 
@@ -87,11 +95,29 @@ extern void drawSegmentedHLine(QPainter* p, int x1, int x2, int y, int segLength
 extern void drawSegmentedVLine(QPainter* p, int x, int y1, int y2, int segLength, int offset = 0);
 
 // Instead of fast_log10() etc., these use the system versions log10() etc., for more accuracy.
-extern double logToVal(double inLog, double min, double max);
-extern double valToLog(double inV, double min, double max);
-extern double deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max);
+extern double normalizedValueFromRange(double in, const CtrlList *cl);
+extern double normalizedValueToRange(double in, const CtrlList *cl);
+extern double deltaNormalizedValueToRange(double in, double inDeltaNormalized, const CtrlList *cl);
+
 
 } // namespace MusECore
+
+namespace MusEGui {
+
+// Default dBFactor is standard 'signal' dB range.
+extern void setupControllerWidgets(
+  Slider* = nullptr, DoubleLabel* = nullptr, DoubleText* = nullptr, Meter** = nullptr, int numMeters = 0,
+  double lower = 0.0, double upper = 1.0, bool isInt = false, bool isLog = false, bool displayAsDB = false,
+  bool showMeterScale = false,
+  double volSliderStepDb = 0.5, double volSliderStepLin = 0.01, double volSliderStepInt = 1.0,
+  int volSliderPrecDb = 2, int volSliderPrecLin = 2, int volSliderPrecLog = 3, double dBFactor = 20.0,
+  double minSliderDB = -60.0, double minMeterDB = -60.0, const QString &suffix = QString());
+
+// Handy exploratory function that prints out the contents of a QPainterPath.
+// Crucial for determining when to optimize with QPainterPath::simplified().
+extern void printQPainterPath(const QPainterPath& p);
+
+} // namespace MusEGui
 
 #endif
 

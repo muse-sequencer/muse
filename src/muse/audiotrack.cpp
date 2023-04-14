@@ -41,8 +41,6 @@
 #include "plugin.h"
 #include "audiodev.h"
 #include "synth.h"
-#include "dssihost.h"
-#include "vst_native.h"
 #include "app.h"
 #include "controlfifo.h"
 #include "fastlog.h"
@@ -306,7 +304,11 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       _automationType = AUTO_OFF;
       setChannels(channels);
 
-      addController(new CtrlList(AC_VOLUME,"Volume",0.001,3.163 /* roughly 10 db */, VAL_LOG));
+      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG);
+      cl->setValueUnit(MusEGlobal::valueUnits.addSymbol("dB"));
+      cl->setDisplayHint(CtrlList::DisplayLogDB);
+      addController(cl);
+
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
       addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*don't show in arranger */));
       _controlPorts = 3;
@@ -344,7 +346,11 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
       recFileNumber = 1;
 
-      addController(new CtrlList(AC_VOLUME,"Volume",0.001,3.163 /* roughly 10 db */, VAL_LOG));
+      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG);
+      cl->setValueUnit(MusEGlobal::valueUnits.addSymbol("dB"));
+      cl->setDisplayHint(CtrlList::DisplayLogDB);
+      addController(cl);
+
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
       addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*don't show in arranger */));
       _controlPorts = 3;
@@ -675,6 +681,12 @@ Part* AudioTrack::newPart(Part*, bool /*clone*/)
 
 void AudioTrack::addPlugin(PluginI* plugin, int idx)
 {
+  // Some heavy lifting required here, not easily done
+  //  in the realtime thread. Idle the audio processing.
+  // Here any glitches in the audio would be acceptable.
+  // Gain access to structures, and sync with audio.
+  MusEGlobal::audio->msgIdle(true);
+
   if (plugin == 0)
   {
     PluginI* oldPlugin = (*_efxPipe)[idx];
@@ -693,6 +705,10 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
   }
   efxPipe()->insert(plugin, idx);
   setupPlugin(plugin, idx);
+
+  MusEGlobal::audio->msgIdle(false);
+
+  MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
 }
 
 //---------------------------------------------------------
@@ -719,6 +735,8 @@ void AudioTrack::setupPlugin(PluginI* plugin, int idx)
       cl->setValueType(plugin->ctrlValueType(i));
       cl->setMode(plugin->ctrlMode(i));
       cl->setCurVal(plugin->param(i));
+      // Set the value units index.
+      cl->setValueUnit(plugin->valueUnit(i));
       addController(cl);
     }
   }
@@ -1453,7 +1471,7 @@ TrackLatencyInfo& AudioTrack::getLatencyInfo(bool input)
 
         // Special for metronome: We don't have metronome routes yet.
         // So we must store this information here just for the metronome.
-        li._latencyOutMetronome = route_worst_latency - li._latencyOutMetronome;
+        li._latencyOutMetronome = route_worst_latency - li._outputLatency;
         // Should not happen, but just in case.
         if((long int)li._latencyOutMetronome < 0)
           li._latencyOutMetronome = 0.0f;
@@ -2143,6 +2161,8 @@ void AudioTrack::mapRackPluginsToControllers()
       l->setValueType(p->ctrlValueType(i));
       l->setMode(p->ctrlMode(i));
       l->setCurVal(p->param(i));
+      // Set the value units index.
+      l->setValueUnit(p->valueUnit(i));
     }
   }
 
@@ -2206,6 +2226,13 @@ RouteCapabilitiesStruct AudioTrack::routeCapabilities() const
   s._trackChannels._inChannels = s._trackChannels._outChannels = totalProcessBuffers();
   s._trackChannels._inRoutable = s._trackChannels._outRoutable = (s._trackChannels._inChannels != 0);
   return s;
+}
+
+void AudioTrack::guiHeartBeat()
+{
+  auto p = efxPipe();
+  if(p)
+    p->guiHeartBeat();
 }
 
 //---------------------------------------------------------
@@ -2852,6 +2879,9 @@ void AudioAux::read(Xml& xml, XmlReadStatistics*)
 
 bool AudioAux::getData(unsigned pos, int ch, unsigned samples, float** data)
       {
+      if(off())
+        return false;
+
       // Make sure all the aux-supporting tracks are processed first so aux data is gathered.
       TrackList* tl = MusEGlobal::song->tracks();
       AudioTrack* track;

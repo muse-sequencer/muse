@@ -23,6 +23,7 @@
 //=========================================================
 
 #include "sclif.h"
+#include "muse_math.h"
 
 namespace MusEGui {
 
@@ -61,6 +62,7 @@ namespace MusEGui {
 
 ScaleIf::ScaleIf()
       {
+      _scaleType = ScaleLinear;
       d_userScale = false;
       d_maxMajor = 5;
       d_maxMinor = 3;
@@ -92,9 +94,9 @@ ScaleIf::ScaleIf()
 //  @ScaleIf::autoScale@
 //------------------------------------------------------------
 
-void ScaleIf::setScale(double vmin, double vmax, int logarithmic)
+void ScaleIf::setScale(double vmin, double vmax, ScaleType scaleType, double dBFactor, double logFactor)
       {
-      setScale(vmin,vmax,0.0,logarithmic);
+      setScale(vmin,vmax,0.0,scaleType,dBFactor,logFactor);
       }
 
 //------------------------------------------------------------
@@ -119,12 +121,32 @@ void ScaleIf::setScale(double vmin, double vmax, int logarithmic)
 //  	widget's range.
 //------------------------------------------------------------
 
-void ScaleIf::setScale(double vmin, double vmax, double step, int logarithmic)
+void ScaleIf::setScale(double vmin, double vmax, double step, ScaleType scaleType, double dBFactor, double logFactor)
       {
+      bool log = false;
+      switch(scaleType)
+      {
+        case ScaleLinear:
+        break;
+        case ScaleLog:
+          log = true;
+        break;
+        case ScaleDB:
+          // Force a hard lower limit of -120 dB.
+          if(vmin <= 0.0)
+            vmin = -120;
+          else
+            vmin = museValToDb(vmin / logFactor, dBFactor);
+          if(vmax <= 0.0)
+            vmax = -120;
+          else
+            vmax = museValToDb(vmax / logFactor, dBFactor);
+        break;
+      }
+
       d_scaleStep = step;
       ScaleDiv oldscl(d_scale.scaleDiv());
-
-      d_scale.setScale(vmin, vmax, d_maxMajor, d_maxMinor, step, logarithmic);
+      d_scale.setScale(vmin, vmax, d_maxMajor, d_maxMinor, step, log);
       d_userScale = true;
       if (oldscl != d_scale.scaleDiv())
             scaleChange();
@@ -144,6 +166,7 @@ void ScaleIf::setScale(double vmin, double vmax, double step, int logarithmic)
 void ScaleIf::setScale(const ScaleDiv &s)
       {
       d_scale.setScale(s);
+      d_userScale = true;
       scaleChange();
       }
 

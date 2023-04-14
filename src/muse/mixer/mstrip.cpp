@@ -72,15 +72,18 @@
 #endif
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_MIDI_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
+//#include <stdio.h>
+#define DEBUG_MIDI_STRIP(dev, format, args...)  // fprintf(dev, format, ##args);
 
 namespace MusEGui {
 
 const double MidiStrip::volSliderStepLin =  1.0;
 
-const double MidiStrip::volSliderStepDb =  0.5;
+// This is a MIDI log integer step (0 - 127).
+const double MidiStrip::volSliderStepDb =  1.0;
 const double MidiStrip::volSliderMaxDb  =  0.0;
 const int    MidiStrip::volSliderPrecDb =    1;
+const QString MidiStrip::volDBSymbol("dB");
 
 const int MidiStrip::xMarginHorSlider = 1;
 const int MidiStrip::yMarginHorSlider = 1;
@@ -1023,7 +1026,7 @@ void MidiComponentRack::patchPopupActivated(QAction* act)
 
 void MidiComponentRack::controllerChanged(int v, int id)
 {
-  DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::controllerChanged id:%d val:%d\n", id, val);
+  DEBUG_MIDI_STRIP(stderr, "MidiComponentRack::controllerChanged id:%d val:%d\n", id, v);
 
 //   if (inHeartBeat)
 //         return;
@@ -1440,7 +1443,7 @@ MidiStripProperties::MidiStripProperties()
     _sliderBackbone = false;
     _sliderFillHandle = true;
     _sliderGrooveWidth = 14;
-    _sliderScalePos = Slider::InsideVertical;
+    _sliderScalePos = Slider::ScaleInside;
     _sliderFrame = false;
     _sliderFrameColor = Qt::darkGray;
     _meterWidth = Strip::FIXED_METER_WIDTH;
@@ -1460,10 +1463,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       {
       inHeartBeat = true;
       _heartBeatCounter = 0;
-      volume = MusECore::CTRL_VAL_UNKNOWN;
-
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
-      _preferMidiVolumeDb = MusEGlobal::config.preferMidiVolumeDb;
 
       slider        = nullptr;
       sl            = nullptr;
@@ -1555,7 +1555,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       const int chan  = t->outChannel();
       MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME, chan); // Auto-create the controller if necessary.
 
-      slider = new Slider(nullptr, "vol", Qt::Vertical, Slider::InsideVertical, 14,
+      slider = new Slider(nullptr, "vol", Qt::Vertical, Slider::ScaleInside, 14,
                           MusEGlobal::config.midiVolumeSliderColor, 
                           ScaleDraw::TextHighlightSplitAndShadow,
                           MusEGlobal::config.midiVolumeHandleColor);
@@ -1581,18 +1581,22 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       slider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
       slider->setMinimumHeight(80);
 
-      _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
+      _meterLayout = new MeterLayout();
       _meterLayout->setMargin(0);
       _meterLayout->setSpacing(props.meterSpacing());
 
-      meter[0] = new Meter(nullptr, Meter::LinMeter, Qt::Vertical, 0.0, 127.0);
+      meter[0] = new Meter(nullptr);
+      meter[0]->setOrientation(Qt::Vertical);
       meter[0]->setRefreshRate(MusEGlobal::config.guiRefresh);
       meter[0]->setContentsMargins(0, 0, 0, 0);
       meter[0]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-      meter[0]->setFixedWidth(props.meterWidth());
+      meter[0]->setVUSizeHint(QSize(props.meterWidth(), 20));
+      meter[0]->setTextHighlightMode(ScaleDraw::TextHighlightNone);
+      meter[0]->setScaleBackBone(false);
       meter[0]->setPrimaryColor(MusEGlobal::config.midiMeterPrimaryColor,
                                 MusEGlobal::config.meterBackgroundColor);
       meter[0]->setFrame(props.meterFrame(), props.meterFrameColor());
+      meter[0]->setAlignmentMargins(slider->scaleEndpointsMargins());
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       _meterLayout->hlayout()->addWidget(meter[0], Qt::AlignHCenter);
            
@@ -1610,8 +1614,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       sl->setSpecialText(tr("off"));
       sl->setToolTip(tr("Volume/Gain\n(Ctrl-double-click on/off)"));
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      // Set the label's slider 'buddy'.
-      sl->setSlider(slider);
+
 //      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
 
       // Special for midi volume slider and label: Setup midi volume as decibel preference.
@@ -1623,10 +1626,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
 
       if(mc)
       {
-        double dlv;
         double v = mp->hwDCtrlState(chan, MusECore::CTRL_VOLUME);
         if(MusECore::MidiController::dValIsUnknown(v))
         {
+          sl->setValue(sl->off());
           double lastv = mp->lastValidHWDCtrlState(chan, MusECore::CTRL_VOLUME);
           if(MusECore::MidiController::dValIsUnknown(lastv))
           {
@@ -1637,36 +1640,17 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
           }
           else
             v = lastv - double(mc->bias());
-          dlv = sl->off() - 1.0;
+          slider->setValue(v);
         }
         else
         {
-          if(v <= 0.0)
-            dlv = sl->minValue() - 0.5 * (sl->minValue() - sl->off());
-          else
-          {
-            dlv = _preferMidiVolumeDb ? (muse_val2db(v / double(mc->maxVal())) * 2.0) : v;
-            if(dlv > sl->maxValue())
-              dlv = sl->maxValue();
-          }
           // Auto bias...
           v -= double(mc->bias());
+          slider->setValue(v);
+          sl->setValue(v);
         }
-        double slv;
-        if(v <= 0.0)
-        {
-          if(_preferMidiVolumeDb)
-            slv = MusEGlobal::config.minSlider;
-          else
-            slv = 0.0;
-        }
-        else
-          slv = _preferMidiVolumeDb ? (muse_val2db(v / double(mc->maxVal())) * 2.0) : v;
-
-        slider->setValue(slv);
-        sl->setValue(dlv);
       }
-        
+
       connect(slider, SIGNAL(valueChanged(double,int,int)), SLOT(setVolume(double,int,int)));
       connect(slider, SIGNAL(sliderRightClicked(QPoint,int)), SLOT(controlRightClicked(QPoint,int)));
       connect(slider, SIGNAL(sliderPressed(double, int)), SLOT(volumePressed(double, int)));
@@ -1697,7 +1681,6 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       QFrame *sliderMeterFrame = new QFrame;
       sliderMeterFrame->setObjectName("SliderMeterFrameMidi");
       sliderMeterFrame->setLayout(sliderHLayout);
-//      sliderMeterFrame->setLayout(sliderGrid);
       sliderMeterFrame->setMinimumWidth(cMinStripWidth);
 
       QHBoxLayout *sliderMeterLayout = new QHBoxLayout();
@@ -2093,8 +2076,6 @@ QWidget* MidiStrip::setupComponentTabbing(QWidget* previousWidget)
 
 void MidiStrip::setupMidiVolume()
 {
-  const bool show_db = MusEGlobal::config.preferMidiVolumeDb;
-
   if(track && track->isMidiTrack())
   {
     const int num = MusECore::CTRL_VOLUME;
@@ -2104,80 +2085,26 @@ void MidiStrip::setupMidiVolume()
     MusECore::MidiController* mc = mp->midiController(num, chan, false);
     if(!mc)
       return;
-    const int mn = mc->minVal();
-    const int mx = mc->maxVal();
+    const double mn = mc->minVal();
+    const double mx = mc->maxVal();
 
-    if(show_db)
-    {
-      slider->setRange(MusEGlobal::config.minSlider, volSliderMaxDb, volSliderStepDb);
-      //slider->setScaleMaxMinor(5);
-      slider->setScale(MusEGlobal::config.minSlider, volSliderMaxDb, 6.0, false);
-      //slider->setSpecialText(tr("off"));
-      //slider->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-
-      sl->setPrecision(volSliderPrecDb);
-      sl->setRange(MusEGlobal::config.minSlider, volSliderMaxDb);
-      sl->setOff(MusEGlobal::config.minSlider);
-      //sl->setSpecialText(tr("off"));
-      //sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + "dB");  // The infinity character.
-      //sl->setToolTip(tr("Volume/gain"));
-      sl->setSuffix("dB");
-    }
-    else
-    {
-      slider->setRange(double(mn), double(mx), volSliderStepLin);
-      //slider->setScaleMaxMinor(5);
-      slider->setScale(double(mn), double(mx), 10.0, false);
-      //slider->setSpecialText(tr("off"));
-      //slider->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-
-      sl->setPrecision(0);
-      sl->setRange(double(mn), double(mx));
-      sl->setOff(double(mn) - 1.0); // Reset to default.
-      //sl->setSpecialText(tr("off"));
-      //sl->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-      //sl->setToolTip(tr("Volume/gain\n(Ctrl-double-click on/off)"));
-      sl->setSuffix(QString());
-    }
-
-    // Invalidate the cached volume so that the next heartbeat updates with a new value.
-    volume = MusECore::CTRL_VAL_UNKNOWN;
-
-    if(_preferMidiVolumeDb != show_db)
-    {
-      const int chan = mt->outChannel();
-      const double d_lastv = mp->lastValidHWDCtrlState(chan, num);
-      const double d_curv = mp->hwDCtrlState(chan, num);
-
-      if(MusECore::MidiController::dValIsUnknown(d_curv))
-      {
-        // If no value has ever been set yet, use the current knob value
-        //  (or the controller's initial value?) to 'turn on' the controller.
-        if(MusECore::MidiController::dValIsUnknown(d_lastv))
-        {
-          double slider_v = slider->value();
-          if(slider_v == 0.0)
-          {
-            if(show_db)
-              slider_v = MusEGlobal::config.minSlider;
-          }
-          else
-          {
-            if(show_db)
-              slider_v = muse_val2db(slider_v / double(mx)) * 2.0;
-            else
-              slider_v = double(mx) * muse_db2val(slider_v / 2.0);
-          }
-
-          slider->blockSignals(true);
-          slider->setValue(slider_v);
-          slider->blockSignals(false);
-        }
-      }
-    }
+    setupControllerWidgets(
+      slider, sl, nullptr, meter, 1,
+      mn, mx,
+      // Is integer.
+      true,
+      // Is log.
+      true,
+      // Display as dB?
+      MusEGlobal::config.preferMidiVolumeDb,
+      // If the slider and meter scales differ (minimum values differ), then we really ought to
+      //  show a separate meter scale. Otherwise only the slider scale is shown, which gives the
+      //  false impression that the meter scale is the same as the slider's scale, which it is not.
+      MusEGlobal::config.preferMidiVolumeDb && MusEGlobal::config.minSlider != MusEGlobal::config.minMeter,
+      volSliderStepDb, volSliderStepLin, 1.0, volSliderPrecDb, 0, 3, 40.0,
+      MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+      MusEGlobal::config.preferMidiVolumeDb ? volDBSymbol : QString());
   }
-
-  _preferMidiVolumeDb = show_db;
 }
 
 //---------------------------------------------------------
@@ -2197,8 +2124,6 @@ void MidiStrip::updateOffState()
       _infoRack->setEnabled(val);
       _lowerRack->setEnabled(val);
       
-      label->setEnabled(val);
-
       if (_recMonitor)
             _recMonitor->setEnabled(val);
       if (record)
@@ -2343,12 +2268,11 @@ void MidiStrip::configChanged()
   // Special for midi volume slider and label: Setup midi volume as decibel preference.
   setupMidiVolume();
 
-  // REMOVE Tim. mixer. Added.
   // In case something in the slider changed, update the meter layout.
   // TODO This is somewhat crude, might miss automatic changes.
   // Later link up MeterLayout and Slider better.
-  _meterLayout->setMeterEndsMargin(slider->scaleEndpointsMargin());
-  
+  meter[0]->setAlignmentMargins(slider->scaleEndpointsMargins());
+
   _upperRack->configChanged();
   _infoRack->configChanged();
   _lowerRack->configChanged();
@@ -2485,19 +2409,17 @@ void MidiStrip::volLabelDoubleClicked()
   MusECore::MidiController* mc = mp->midiController(num, chan, false);
   if(!mc)
     return;
-  
+
   const double lastv = mp->lastValidHWDCtrlState(chan, num);
   const double curv = mp->hwDCtrlState(chan, num);
 
   if(MusECore::MidiController::dValIsUnknown(curv))
   {
-    // If no value has ever been set yet, use the current knob value 
+    // If no value has ever been set yet, use the current knob value
     //  (or the controller's initial value?) to 'turn on' the controller.
     if(MusECore::MidiController::dValIsUnknown(lastv))
     {
       double slv = slider->value();
-      if(_preferMidiVolumeDb)
-        slv = double(mc->maxVal()) * muse_db2val(slv / 2.0);
       if(slv < double(mc->minVal()))
         slv = mc->minVal();
       if(slv > double(mc->maxVal()))
@@ -2510,7 +2432,7 @@ void MidiStrip::volLabelDoubleClicked()
     {
       mp->putControllerValue(outport, chan, num, lastv, false);
     }
-  }  
+  }
   else
   {
     if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
@@ -2542,50 +2464,40 @@ void MidiStrip::offToggled(bool val)
 void MidiStrip::heartBeat()
       {
       inHeartBeat = true;
-      
+
       // Try to avoid calling MidiInstrument::getPatchName too often.
       if(++_heartBeatCounter >= 10)
         _heartBeatCounter = 0;
-      
+
       if(track && track->isMidiTrack())
       {
         int act = track->activity();
         double m_val = slider->value();
 
-        if(_preferMidiVolumeDb)
-        {
-          MusECore::MidiTrack* t = static_cast<MusECore::MidiTrack*>(track);
-          const int port = t->outPort();
-          MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
-          const int chan = t->outChannel();
-          MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_VOLUME, chan, false);
-          if(!mctl)
-              return;
+        MusECore::MidiTrack* t = static_cast<MusECore::MidiTrack*>(track);
+        const int port = t->outPort();
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        const int chan = t->outChannel();
+        MusECore::MidiController* mctl = mp->midiController(MusECore::CTRL_VOLUME, chan, false);
 
-          m_val = double(mctl->maxVal()) * muse_db2val(m_val / 2.0);
-          m_val += double(mctl->bias());
-          
-          if(m_val < double(mctl->minVal()))
-            m_val = double(mctl->minVal());
-          if(m_val > double(mctl->maxVal()))
-            m_val = double(mctl->maxVal());
+        if(mctl)
+        {
+          double dact = double(act) * (m_val / mctl->maxVal());
+
+          if((int)dact > track->lastActivity())
+            track->setLastActivity((int)dact);
+
+          if(meter[0])
+            meter[0]->setVal(dact, track->lastActivity(), false);
+
+          // Gives reasonable decay with gui update set to 20/sec.
+          if(act)
+            track->setActivity((int)((double)act * 0.8));
         }
-        
-        double dact = double(act) * (m_val / 127.0);
-          
-        if((int)dact > track->lastActivity())
-          track->setLastActivity((int)dact);
-        
-        if(meter[0]) 
-          meter[0]->setVal(dact, track->lastActivity(), false);  
-        
-        // Gives reasonable decay with gui update set to 20/sec.
-        if(act)
-          track->setActivity((int)((double)act * 0.8));
       }
-      
+
       updateControls();
-      
+
       _upperRack->updateComponents();
       _infoRack->updateComponents();
       _lowerRack->updateComponents();
@@ -2622,27 +2534,25 @@ void MidiStrip::updateControls()
   if(sl->isEnabled() != enable)
     sl->setEnabled(enable);
 
-  if(enable)
+  if(!enable)
+    return;
+
+  MusECore::MidiCtrlValList* mcvl = imcvl->second;
+  double d_hwVal = mcvl->hwDVal();
+  int bias = 0;
+  MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME, channel, false);
+  if(mc)
+    bias = mc->bias();
+
+  if(mcvl->hwValIsUnknown())
   {
-    MusECore::MidiCtrlValList* mcvl = imcvl->second;
-    double d_hwVal = mcvl->hwDVal();
-    int max = 127;
-    int bias = 0;
-    MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME, channel, false);
-    if(mc)
-    {
-      max = mc->maxVal();
-      bias = mc->bias();
-    }
+    sl->blockSignals(true);
+    sl->setValue(sl->off());
+    sl->blockSignals(false);
 
-    if(mcvl->hwValIsUnknown())
+    d_hwVal = mcvl->lastValidHWDVal();
+    if(mcvl->lastHwValIsUnknown())
     {
-      sl->setValue(sl->off() - 1.0);
-      volume = MusECore::CTRL_VAL_UNKNOWN;
-
-      d_hwVal = mcvl->lastValidHWDVal();
-      if(mcvl->lastHwValIsUnknown())
-      {
 // TODO
 //         if(!control->isOff())
 //         {
@@ -2650,87 +2560,28 @@ void MidiStrip::updateControls()
 //           control->setOff(true);
 //           control->blockSignals(false);
 //         }
-      }
-      else
-      {
-        d_hwVal -= double(bias);
-
-        double slider_v;
-        if(d_hwVal <= 0.0)
-        {
-          if(_preferMidiVolumeDb)
-            slider_v = MusEGlobal::config.minSlider;
-          else
-            slider_v = 0.0;
-        }
-        else
-        {
-          if(_preferMidiVolumeDb)
-          {
-            slider_v = muse_val2db(d_hwVal / double(max)) * 2.0;
-            if(slider_v < MusEGlobal::config.minSlider)
-              slider_v = MusEGlobal::config.minSlider;
-          }
-          else
-            slider_v = d_hwVal;
-        }
-
-        if(slider_v != slider->value())
-        {
-          slider->blockSignals(true);
-          slider->setValue(slider_v);
-          slider->blockSignals(false);
-        }
-      }
     }
     else
     {
-      double d_vol = d_hwVal;
       d_hwVal -= double(bias);
-      if(d_hwVal != volume)
-      {
-        double slider_v;
-        if(d_hwVal <= 0.0)
-        {
-          if(_preferMidiVolumeDb)
-            slider_v = MusEGlobal::config.minSlider;
-          else
-            slider_v = 0.0;
-        }
-        else
-        {
-          if(_preferMidiVolumeDb)
-          {
-            slider_v = muse_val2db(d_hwVal / double(max)) * 2.0;
-            if(slider_v < MusEGlobal::config.minSlider)
-              slider_v = MusEGlobal::config.minSlider;
-          }
-          else
-            slider_v = d_hwVal;
-        }
-
-        if(slider_v != slider->value())
-        {
-          slider->blockSignals(true);
-          slider->setValue(slider_v);
-          slider->blockSignals(false);
-        }
-
-        if(d_vol <= 0.0)
-          sl->setValue(sl->minValue() - 0.5 * (sl->minValue() - sl->off()));
-        else
-        {
-          double sl_v = _preferMidiVolumeDb ? (muse_val2db(d_vol / double(max)) * 2.0) : d_vol;
-
-          if(sl_v > sl->maxValue())
-            sl->setValue(sl->maxValue());
-          else
-            sl->setValue(sl_v);
-        }
-
-        volume = d_hwVal;
-      }
+      slider->blockSignals(true);
+      slider->setValue(d_hwVal);
+      slider->blockSignals(false);
     }
+  }
+  else
+  {
+    d_hwVal -= double(bias);
+
+//   DEBUG_MIDI_STRIP(stderr, "Update: d_hwVal:%f\n", d_hwVal);
+
+    slider->blockSignals(true);
+    slider->setValue(d_hwVal);
+    slider->blockSignals(false);
+
+    sl->blockSignals(true);
+    sl->setValue(d_hwVal);
+    sl->blockSignals(false);
   }
 }
 
@@ -2752,20 +2603,15 @@ void MidiStrip::ctrlChanged(double v, bool off, int num, int scrollMode)
       MusECore::MidiController* mctl = mp->midiController(num, chan, false);
       if(mctl)
       {
-        double m_val = v;
-        if(_preferMidiVolumeDb)
-          m_val = double(mctl->maxVal()) * muse_db2val(m_val / 2.0);
-
-        if(off || (m_val < double(mctl->minVal())) || (m_val > double(mctl->maxVal())))
+        if(off)
         {
           if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
-            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(MusEGlobal::audio->curFrame(), port, chan,
-                                                      MusECore::ME_CONTROLLER,
-                                                      num,
-                                                      MusECore::CTRL_VAL_UNKNOWN));
+            mp->putHwCtrlEvent(MusECore::MidiPlayEvent(
+              MusEGlobal::audio->curFrame(), port, chan, MusECore::ME_CONTROLLER, num, MusECore::CTRL_VAL_UNKNOWN));
         }
         else
         {
+          double m_val = v;
           m_val += double(mctl->bias());
           mp->putControllerValue(port, chan, num, m_val, false);
         }
@@ -2780,16 +2626,17 @@ void MidiStrip::ctrlChanged(double v, bool off, int num, int scrollMode)
 
 void MidiStrip::volLabelChanged(double val)
 {
+  DEBUG_MIDI_STRIP(stderr, "Vol label %f\n", val);
   ctrlChanged(val, false, MusECore::CTRL_VOLUME, SliderBase::ScrNone);
 }
-      
+
 //---------------------------------------------------------
 //   setVolume
 //---------------------------------------------------------
 
 void MidiStrip::setVolume(double val, int id, int scrollMode)
 {
-      DEBUG_MIDI_STRIP("Vol %d\n", lrint(val));
+      DEBUG_MIDI_STRIP(stderr, "Vol %f\n", val);
       ctrlChanged(val, false, id, scrollMode);
 }
 
@@ -2858,10 +2705,7 @@ void MidiStrip::incVolume(int incrementValue)
   if(mctl)
   {
     // Get the slider's current value.
-    const double prev_val = slider->value();
-    double d_prev_val = prev_val;
-    if(_preferMidiVolumeDb)
-      d_prev_val = double(mctl->maxVal()) * muse_db2val(d_prev_val / 2.0);
+    double prev_val = slider->value();
 
     // Increment the slider. Do not allow signalling.
     slider->blockSignals(true);
@@ -2871,8 +2715,6 @@ void MidiStrip::incVolume(int incrementValue)
     const double new_val = slider->value();
 
     double d_new_val = new_val;
-    if(_preferMidiVolumeDb)
-      d_new_val = double(mctl->maxVal()) * muse_db2val(d_new_val / 2.0);
 
     if((d_new_val < double(mctl->minVal())) || (d_new_val > double(mctl->maxVal())))
     {

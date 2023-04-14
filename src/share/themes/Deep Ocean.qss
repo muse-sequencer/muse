@@ -415,8 +415,8 @@ MusEGui--AudioStripProperties {
 /* draw groove part above the handle */
     qproperty-sliderFillOver: true; 
     qproperty-sliderUseGradient: false;
-/* None = 0, Left = 1, Right = 2, InsideVertical = 6 */
-    qproperty-sliderScalePos: 2; 
+/* ScaleNone = 0, ScaleLeftOrTop = 1, ScaleRightOrBottom = 2, ScaleInside = 3 */
+    qproperty-sliderScalePos: 2;
 /* draw vertical line in slider scale
     qproperty-sliderBackbone: true; 
 */
@@ -445,8 +445,8 @@ MusEGui--MidiStripProperties {
 /* draw groove part above the handle */
     qproperty-sliderFillOver: true; 
     qproperty-sliderUseGradient: false;
-/* None = 0, Left = 1, Right = 2, InsideVertical = 6 */
-    qproperty-sliderScalePos: 2; 
+/* ScaleNone = 0, ScaleLeftOrTop = 1, ScaleRightOrBottom = 2, ScaleInside = 3 */
+    qproperty-sliderScalePos: 2;
 /* draw vertical line in slider scale
     qproperty-sliderBackbone: true;
 */

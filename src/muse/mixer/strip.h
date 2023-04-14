@@ -312,8 +312,7 @@ class ComponentRack : public QFrame
     virtual double componentMinValue(const ComponentWidget&) const;
     virtual double componentMaxValue(const ComponentWidget&) const;
     virtual void setComponentRange(const ComponentWidget&, double min, double max, bool updateOnly = true,
-                                   double step = 0.0, int pageSize = 1,
-                                   DoubleRange::ConversionMode mode = DoubleRange::ConvertDefault);
+                                   double step = 0.0, int pageSize = 1);
     virtual void setComponentMinValue(const ComponentWidget&, double min, bool updateOnly = true);
     virtual void setComponentMaxValue(const ComponentWidget&, double max, bool updateOnly = true);
     virtual double componentValue(const ComponentWidget&) const;

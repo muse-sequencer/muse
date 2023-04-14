@@ -54,12 +54,6 @@ typedef class VstNativeSynthIF VSTPlugin;
 
 #include "aeffectx.h"
 
-#ifdef VST_VESTIGE_SUPPORT
-#ifndef effGetProgramNameIndexed
-#define effGetProgramNameIndexed 29
-#endif
-#endif
-
 #ifndef VST_2_4_EXTENSIONS
 #ifndef VST_VESTIGE_SUPPORT
 typedef long     VstInt32;
@@ -127,6 +121,7 @@ class VstNativeSynth : public Synth {
       VstPluginFlags_t _flags;
       VstIntPtr _id;
       bool _isSynth;
+      bool _usesTransportSource;
 
       unsigned long /*_portCount,*/ _inports, _outports, _controlInPorts; //, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
@@ -136,12 +131,9 @@ class VstNativeSynth : public Synth {
       bool _hasChunks;
 
    public:
-      VstNativeSynth(const QFileInfo& fi, const QString& uri, AEffect* plugin,
-                     const QString& label, const QString& desc, const QString& maker, const QString& ver,
-                     VstIntPtr id, void *dlHandle, bool isSynth, PluginFeatures_t reqFeatures = PluginNoFeatures);
       VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info);
-
       virtual ~VstNativeSynth() {}
+
       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
       virtual void incInstances(int val);
       virtual AEffect* instantiate(void *userData);
@@ -151,12 +143,12 @@ class VstNativeSynth : public Synth {
       unsigned long inPorts()     const { return _inports; }
       unsigned long outPorts()    const { return _outports; }
       unsigned long inControls()  const { return _controlInPorts; }
-      //unsigned long outControls() const { return _controlOutPorts; }
 
       int vstVersion()  const { return _vst_version; }
       bool hasChunks()  const { return _hasChunks; }
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
       bool isSynth() { return _isSynth; }
+      bool usesTransportSource() const { return _usesTransportSource; }
 
       static VstIntPtr pluginHostCallback(VstNativeSynthOrPlugin *userData, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
       static int guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned long param_idx, float value);
@@ -166,6 +158,9 @@ class VstNativeSynth : public Synth {
 
       void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
       void vstconfSet(AEffect *plugin, const std::vector<QString> & customParams);
+
+      // Enables or disables the plugin, if it has such as function.
+      void setPluginEnabled(AEffect *plugin, bool en);
       };
 
 //---------------------------------------------------------
@@ -195,7 +190,6 @@ class VstNativeSynthIF : public SynthIF
 
       VstNativeSynth* _synth;
       AEffect* _plugin;
-      bool _active;    // Whether it's safe to call effIdle or effEditIdle.
       MusEGui::VstNativeEditor* _editor;
       bool _guiVisible;
       bool _inProcess; // To inform the callback of the 'process level' - are we in the audio thread?
@@ -209,6 +203,9 @@ class VstNativeSynthIF : public SynthIF
 
       VstNativeSynthOrPlugin userData;
 
+      // Temporary variable holds value to be passed to the callback routine.
+      float _transportLatencyCorr;
+
       std::vector<VST_Program> programs;
       void queryPrograms();
       void doSelectProgram(int bankH, int bankL, int prog);
@@ -221,6 +218,10 @@ class VstNativeSynthIF : public SynthIF
 
       void eventReceived(VstMidiEvent*);
 
+   protected:
+      void activate() override;
+      void deactivate() override;
+
    public:
       VstNativeSynthIF(SynthI* s);
       virtual ~VstNativeSynthIF();
@@ -232,56 +233,61 @@ class VstNativeSynthIF : public SynthIF
                   if(_plugin) {return _plugin->dispatcher(_plugin, opcode, index, value, ptr, opt); } return 0;  }
       void idleEditor();
 
-      virtual void guiHeartBeat();
-      virtual bool hasGui() const { return true; }
-      virtual bool nativeGuiVisible() const;
-      virtual void showNativeGui(bool v);
-      virtual bool hasNativeGui() const;
-      virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const ;
-      virtual void setNativeGeometry(int, int, int, int);
-      virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned nframes, float** buffer) ;
-      virtual MidiPlayEvent receiveEvent();
-      virtual int eventsPending() const { return 0; }
-      virtual int channels() const;
-      virtual int totalOutChannels() const;
-      virtual int totalInChannels() const;
-      virtual void deactivate3();
-      virtual QString getPatchName(int chan, int prog, bool drum) const;
-      virtual void populatePatchPopup(MusEGui::PopupMenu* menu, int chan, bool drum);
-      virtual void write(int level, Xml& xml) const;
-      virtual double getParameter(unsigned long idx) const;
-      virtual void setParameter(unsigned long idx, double value);
-      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
+      virtual void guiHeartBeat() override;
+      virtual bool hasGui() const override { return true; }
+      virtual bool nativeGuiVisible() const override;
+      virtual void showNativeGui(bool v) override;
+      virtual bool hasNativeGui() const override;
+      virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const override;
+      virtual void setNativeGeometry(int, int, int, int) override;
+      virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned nframes, float** buffer) override;
+      virtual MidiPlayEvent receiveEvent() override;
+      virtual int eventsPending() const override { return 0; }
+      virtual int channels() const override;
+      virtual int totalOutChannels() const override;
+      virtual int totalInChannels() const override;
+      virtual void deactivate3() override;
+      virtual QString getPatchName(int chan, int prog, bool drum) const override;
+      virtual void populatePatchPopup(MusEGui::PopupMenu* menu, int chan, bool drum) override;
+      virtual void write(int level, Xml& xml) const override;
+      virtual double getParameter(unsigned long idx) const override;
+      virtual void setParameter(unsigned long idx, double value) override;
+      virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) override { return 0; }
 
       //-------------------------
       // Methods for PluginIBase:
       //-------------------------
-      unsigned long pluginID();
-      int id();
-      QString pluginLabel() const;
-      QString lib() const;
-      QString uri() const;
-      QString dirPath() const;
-      QString fileName() const;
-      void enableController(unsigned long i, bool v = true);
-      bool controllerEnabled(unsigned long i) const;
-      void enableAllControllers(bool v = true);
-      void updateControllers();
-      void activate();
-      void deactivate();
-
-      unsigned long parameters() const;
-      unsigned long parametersOut() const;
-      void setParam(unsigned long i, double val);
-      double param(unsigned long i) const;
-      double paramOut(unsigned long i) const;
-      const char* paramName(unsigned long i);
-      const char* paramOutName(unsigned long i);
-      LADSPA_PortRangeHint range(unsigned long i);
-      LADSPA_PortRangeHint rangeOut(unsigned long i);
-      CtrlValueType ctrlValueType(unsigned long i) const;
-      CtrlList::Mode ctrlMode(unsigned long i) const;
-      void setCustomData ( const std::vector<QString> & );
+      unsigned long pluginID() const override;
+      int id() const override;
+      QString pluginLabel() const override;
+      QString lib() const override;
+      QString uri() const override;
+      QString dirPath() const override;
+      QString fileName() const override;
+      void enableController(unsigned long i, bool v = true) override;
+      bool controllerEnabled(unsigned long i) const override;
+      void enableAllControllers(bool v = true) override;
+      void updateControllers() override;
+      unsigned long parameters() const override;
+      unsigned long parametersOut() const override;
+      void setParam(unsigned long i, double val) override;
+      double param(unsigned long i) const override;
+      double paramOut(unsigned long i) const override;
+      const char* paramName(unsigned long i) const override;
+      const char* paramOutName(unsigned long i) const override;
+      LADSPA_PortRangeHint range(unsigned long i) const override;
+      LADSPA_PortRangeHint rangeOut(unsigned long i) const override;
+      void range(unsigned long i, float*, float*) const override;
+      void rangeOut(unsigned long i, float*, float*) const override;
+      CtrlValueType ctrlValueType(unsigned long i) const override;
+      CtrlList::Mode ctrlMode(unsigned long i) const override;
+      CtrlValueType ctrlOutValueType(unsigned long i) const override;
+      CtrlList::Mode ctrlOutMode(unsigned long i) const override;
+      void setCustomData ( const std::vector<QString> & ) override;
+      // Returns true if ANY of the midi input ports uses transport source.
+      bool usesTransportSource() const override;
+      // Temporary variable holds value to be passed to the callback routine.
+      float transportLatencyCorr() const;
       };
 
 class VstNativePluginWrapper_State : public QObject
@@ -300,6 +306,9 @@ public:
    bool guiVisible;
    bool inProcess;
    bool active;
+   bool curEnabledState;
+   // Temporary variable holds value to be passed to the callback routine.
+   float _latency_corr;
    VstNativePluginWrapper_State()
    {
       plugin = 0;
@@ -311,6 +320,8 @@ public:
       userData.pstate = this;
       inProcess = false;
       active = false;
+      curEnabledState = true;
+      _latency_corr = 0.0f;
    }
    virtual ~VstNativePluginWrapper_State() {}
    void editorDeleted()
@@ -355,11 +366,11 @@ public:
     virtual void apply ( LADSPA_Handle handle, unsigned long n, float latency_corr = 0.0f );
     virtual LADSPA_PortDescriptor portd ( unsigned long k ) const;
 
-    virtual LADSPA_PortRangeHint range ( unsigned long i );
+    virtual LADSPA_PortRangeHint range ( unsigned long i ) const;
     virtual void range (unsigned long, float *min, float *max ) const;
 
     virtual double defaultValue ( unsigned long port ) const;
-    virtual const char *portName (unsigned long port );
+    virtual const char *portName (unsigned long port ) const;
     virtual CtrlValueType ctrlValueType ( unsigned long ) const;
     virtual CtrlList::Mode ctrlMode ( unsigned long ) const;
     virtual bool hasNativeGui() const;

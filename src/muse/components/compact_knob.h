@@ -211,8 +211,7 @@ class CompactKnob : public SliderBase, public ScaleIf
                                       int xMargin = 0,
                                       int yMargin = 0);
 
-      void setRange(double vmin, double vmax, double vstep = 0.0,
-                    int pagesize = 1, DoubleRange::ConversionMode mode = ConvertDefault);
+      void setRange(double vmin, double vmax, double vstep = 0.0, int pagesize = 1);
 
       QString labelText() const { return d_labelText; };
       void setLabelText(const QString& t) { d_labelText = t; update(); }
@@ -264,7 +263,7 @@ class CompactKnob : public SliderBase, public ScaleIf
       // By default it is assumed that setting a value naturally implies resetting the 'off' state to false.
       // Emits valueChanged and valueStateChanged signals if required.
       // Note setOff and SliderBase::setValue are also available.
-      void setValueState(double v, bool off = false, ConversionMode mode = ConvertDefault);
+      void setValueState(double v, bool off = false);
 
       QSize margins() const { return QSize(d_xMargin, d_yMargin); }
       int xMargin() const { return d_xMargin; }

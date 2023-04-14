@@ -313,12 +313,7 @@ class MidiStrip : public Strip {
       bool _isExpanded;
       // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
-      // Current local state of midi volume as decibels preference.
-      bool _preferMidiVolumeDb;
-
       int _heartBeatCounter;
-
-      double volume;
       bool inHeartBeat;
 
       void updateControls();
@@ -363,6 +358,7 @@ class MidiStrip : public Strip {
       static const double volSliderStepDb;
       static const double volSliderMaxDb;
       static const int    volSliderPrecDb;
+      static const QString volDBSymbol;
 
       static const int xMarginHorSlider;
       static const int yMarginHorSlider;

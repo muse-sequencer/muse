@@ -235,7 +235,10 @@ namespace MusECore {
 
 // unit private functions:
 
-bool read_eventlist_and_part(Xml& xml, EventList* el, QUuid* part_id);
+bool read_eventlist_and_part(
+  Xml& xml, EventList* el, QUuid* part_id,
+  PosLen* poslenResult = nullptr, int* numEvents = nullptr,
+	const Part** destPart = nullptr, RelevantSelectedEvents_t relevant = AllEventsRelevant, int ctrlNum = 0);
 
 // -----------------------
 
@@ -993,9 +996,26 @@ QMimeData* file_to_mimedata(FILE *datafile, QString mimeType)
 	return md;
 }
 
-bool read_eventlist_and_part(Xml& xml, EventList* el, QUuid* part_id) // true on success, false on failure
+// true on success, false on failure
+// If poslenResult is valid then destPart, relevant and ctrlNum are meaningful.
+bool read_eventlist_and_part(
+  Xml& xml, EventList* el, QUuid* part_id,
+  PosLen* poslenResult, int* numEvents,
+	const Part** destPart, RelevantSelectedEvents_t relevant, int ctrlNum)
 {
 	*part_id = QUuid();
+
+	PosLen res;
+	bool wave = false;
+	if(poslenResult && destPart && *destPart)
+		wave = (*destPart)->partType() == Part::WavePartType;
+	res.setType(wave ? Pos::FRAMES : Pos::TICKS);
+
+	int e_found = 0;
+	bool first_found = false;
+	unsigned start_time = 0;
+	unsigned end_time = 0;
+
 
 	for (;;)
 	{
@@ -1009,7 +1029,17 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, QUuid* part_id) // true on
 
 			case Xml::Attribut:
 				if (tag == "part_id")
+				{
 					*part_id = QUuid(xml.s2());
+					if(poslenResult && destPart && !*destPart)
+					{
+						*destPart = partFromSerialNumber(*part_id);
+						if(!*destPart)
+							return false;
+						wave = (*destPart)->partType() == Part::WavePartType;
+						res.setType(wave ? Pos::FRAMES : Pos::TICKS);
+					}
+				}
 				else
 					printf("unknown attribute '%s' in read_eventlist_and_part(), ignoring it...\n", tag.toLatin1().data());
 				break;
@@ -1019,7 +1049,101 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, QUuid* part_id) // true on
 				{
 					Event e(Note);
 					e.read(xml);
-					el->add(e);
+
+
+					// Only events of the given type are considered.
+					const EventType et = e.type();
+					switch(et)
+					{
+						case Note:
+							if(!poslenResult || (!wave && (relevant & NotesRelevant)))
+							{
+								// Don't add Note event types if they have no length.
+								// Hm, it is possible for zero-length events to be
+								//  accidentally present in the list. So the user should
+								//  at least be allowed to cut and paste them. The EventList
+								//  class will probably be correcting this condition anyway
+								//  when adding the event to the list.
+								//if(e.lenValue() == 0)
+								//  continue;
+								if(!first_found)
+								{
+									start_time = e.posValue();
+									first_found = true;
+								}
+								if(e.endPosValue() > end_time)
+									end_time = e.endPosValue();
+								++e_found;
+								el->add(e);
+							}
+						break;
+
+						case Wave:
+							if(!poslenResult || (wave && (relevant & WaveRelevant)))
+							{
+								// Don't add Wave event types if they have no length.
+								//if(e.lenValue() == 0)
+								//  continue;
+								if(!first_found)
+								{
+									start_time = e.posValue();
+									first_found = true;
+								}
+								if(e.endPosValue() > end_time)
+									end_time = e.endPosValue();
+								++e_found;
+								el->add(e);
+							}
+						break;
+
+						case Controller:
+						case Meta:
+						case Sysex:
+							if(!poslenResult || (!wave &&
+								  ((et == Controller && (relevant & ControllersRelevant) && ((ctrlNum < 0 || e.dataA() == ctrlNum))) ||
+								  (et == Meta && (relevant & MetaRelevant)) ||
+								  (et == Sysex && (relevant & SysexRelevant)))))
+							{
+// 							switch(et)
+// 							{
+// 								case Controller:
+// 									if((relevant & ControllersRelevant) == NoEventsRelevant)
+// 										continue;
+// 									if(ctrlNum >= 0 && e.dataA() != ctrlNum)
+// 										continue;
+// 								break;
+//
+// 								case Meta:
+// 									if((relevant & MetaRelevant) == NoEventsRelevant)
+// 										continue;
+// 								break;
+//
+// 								case Sysex:
+// 									if((relevant & SysexRelevant) == NoEventsRelevant)
+// 										continue;
+// 								break;
+//
+// 								default:
+// 									continue;
+// 								break;
+// 							}
+								// For these events, even if duplicates are already found at this position,
+								//  the range is still the same, which simplifies this code - go ahead and count it...
+
+								if(!first_found)
+								{
+									start_time = e.posValue();
+									first_found = true;
+								}
+								// For these events, minimum 1 unit time, to qualify as a valid 'range'.
+								if((e.posValue() + 1) > end_time)
+									end_time = e.posValue() + 1;
+								++e_found;
+								el->add(e);
+							}
+						break;
+					}
+
 				}
 				else
 					xml.unknown("read_eventlist_and_part");
@@ -1027,7 +1151,15 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, QUuid* part_id) // true on
 
 			case Xml::TagEnd:
 				if (tag == "eventlist")
+				{
+					res.setPosValue(start_time);
+					res.setLenValue(end_time - start_time);
+					if(poslenResult)
+						*poslenResult = res;
+					if(numEvents)
+						*numEvents = e_found;
 					return true;
+				}
 
 			default:
 				break;
@@ -1706,7 +1838,8 @@ bool delete_selected_audio_automation(Undo& operations)
       {
         if(!ic->second.selected())
           continue;
-        operations.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, at, icl->second->id(), ic->first, 0, 0, 0));
+        operations.push_back(UndoOp(
+          UndoOp::DeleteAudioCtrlVal, at, icl->second->id(), ic->first, double(0), double(0), double(0)));
         changed = true;
       }
     }
@@ -2373,7 +2506,6 @@ bool readAudioAutomation(MusECore::Xml& xml, MusECore::PasteCtrlTrackMap* pctm)
 {
   QUuid trackUuid;
   MusECore::PasteCtrlListList pcll;
-  MusECore::PasteCtrlListStruct pcls;
 
   for (;;) {
         MusECore::Xml::Token token = xml.parse();
@@ -2385,6 +2517,7 @@ bool readAudioAutomation(MusECore::Xml& xml, MusECore::PasteCtrlTrackMap* pctm)
               case MusECore::Xml::TagStart:
                     if (tag == "controller")
                     {
+                      MusECore::PasteCtrlListStruct pcls;
                       if(!pcls._ctrlList.read(xml) || pcls._ctrlList.id() < 0)
                         return false;
                       if(!pcls._ctrlList.empty())
@@ -2626,10 +2759,6 @@ void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToR
     return;
   const MusECore::CtrlList* track_cl = track_icl->second;
 
-  double min, max, trackMin, trackMax;
-  cl.range(&min, &max);
-  track_cl->range(&trackMin, &trackMax);
-
   MusECore::Undo operations;
   unsigned int startPos=MusEGlobal::song->vcpos();
   set<MusECore::Track*> affected_tracks;
@@ -2651,35 +2780,12 @@ void pasteAudioAutomation(MusECore::AudioTrack* track, int ctrlId, /*bool fitToR
     {
       ctrlFrame = ic->first;
       const MusECore::CtrlVal& cv = ic->second;
-
-      newValue = cv.value();
-
-      if (cl.valueType() == MusECore::VAL_LOG ) {
-        newValue = logToVal(newValue, min, max); // represent volume between 0 and 1
-        if(newValue < 0) newValue = 0.0;
-      }
-      else
-        newValue = (newValue-min)/(max-min);  // we need to set curVal between 0 and 1
+      newValue = normalizedValueFromRange(cv.value(), &cl); // represent volume between 0 and 1
 
       //if(fitToRange)
       {
-        if (track_cl->valueType() == MusECore::VAL_LOG ) {
-          newValue = valToLog(newValue, trackMin, trackMax);
-          if (newValue< trackMin) newValue=trackMin;
-          if (newValue>trackMax) newValue=trackMax;
-        }
-        else
-          newValue = newValue * (trackMax-trackMin) + trackMin;
+        newValue = normalizedValueToRange(newValue, track_cl);
       }
-//         else
-//         {
-//           if (track_cl->valueType() == MusECore::VAL_LOG )
-//             newValue = valToLog(newValue, min, max);
-//           else
-//             newValue = newValue * (max-min) + min;
-//           if (newValue<trackMin) newValue=trackMin;
-//           if (newValue>trackMax) newValue=trackMax;
-//         }
 
       // Even in PasteNoErase mode, we must still erase any existing
       //  items at the locations that we wish to paste to.
@@ -3071,7 +3177,11 @@ void pasteEventList(
   const Part* source_part = nullptr,
   // Whether to erase ('cut') the source events after pasting.
   bool erase_source = false,
-  const Pos& start_pos = Pos(),
+  // The starting position and length of the range of events in el. For speed this must be know beforehand.
+  const PosLen& eventlist_range = PosLen(),
+  // The number of events in el. For speed this must be know beforehand.
+  int num_events = 0,
+
   int max_distance=3072,
   // Options. Default is erase target existing controllers first + erase wysiwyg.
   const FunctionOptionsStruct& options = FunctionOptionsStruct(),
@@ -3087,9 +3197,7 @@ void pasteEventList(
   )
 {
   const bool wave_mode = dest_part->partType() == Part::WavePartType;
-  
-  int num_events;
-  PosLen el_range = el.evrange(wave_mode, relevant, &num_events, paste_to_ctrl_num);
+
   if(num_events <= 0)
     return;
   
@@ -3107,14 +3215,13 @@ void pasteEventList(
   // This is exactly what the copy/cut functions do before they write the results
   //  to an output file. But here the events in the directly-passed source list
   //  cannot be time-modified beforehand. So here we subtract this start position:
-  el_range -= start_pos;
-  
+
   const unsigned pos_value = pos.posValue(time_type);
   unsigned dest_part_pos_value = dest_part->posValue(time_type);
   unsigned dest_part_end_value = dest_part->end().posValue(time_type);
   dest_track=dest_part->track();
   old_dest_part=dest_part;
-  unsigned first_paste_pos_value = el_range.posValue() + pos_value;
+  unsigned first_paste_pos_value = pos_value;
   bool create_new_part = ( (first_paste_pos_value < dest_part_pos_value) || // dest_part begins too late
       ( ( (dest_part_end_value + max_distance < first_paste_pos_value) ||   // dest_part is too far away
                           always_new_part ) && !never_new_part ) );    // respect function arguments
@@ -3122,8 +3229,8 @@ void pasteEventList(
   for (int i=0;i<amount;i++)
   {
     unsigned curr_pos = pos_value + i*raster;
-    first_paste_pos_value = el_range.posValue() + curr_pos;
-    
+    first_paste_pos_value = curr_pos;
+
     if (create_new_part)
     {
       dest_part = nullptr;
@@ -3135,7 +3242,8 @@ void pasteEventList(
         const unsigned rast_pos_tick = MusEGlobal::sigmap.raster1(pos_tick, config.division);
         newpart->setTick(rast_pos_tick);
         const unsigned len_rast_off_value = pos_tick >= rast_pos_tick ? pos_tick - rast_pos_tick : 0;
-        newpart->setLenValue(el_range.lenValue() + len_rast_off_value, time_type);
+        // TODO: Probably length should be properly converted ???
+        newpart->setLenValue(eventlist_range.lenValue() + len_rast_off_value, time_type);
         dest_part = newpart;
         dest_part_pos_value = dest_part->posValue(time_type);
         dest_part_end_value = dest_part->end().posValue(time_type);
@@ -3190,7 +3298,7 @@ void pasteEventList(
       unsigned tick = e.posValue(time_type) + curr_pos;
 
       // Be sure to subtract the position of the very first event of interest.
-      const unsigned sp_val = start_pos.posValue(time_type);
+      const unsigned sp_val = eventlist_range.posValue(time_type);
       if(tick >= sp_val)
         tick -= sp_val;
       else
@@ -3514,18 +3622,15 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
         {
           EventList el;
           QUuid part_id;
+          PosLen poslen;
+					int numevents = 0;
+          const Part* dest_part = paste_into_part;
 
-          if (!read_eventlist_and_part(xml, &el, &part_id))
+          if (!read_eventlist_and_part(xml, &el, &part_id, &poslen, &numevents, &dest_part, relevant, paste_to_ctrl_num))
           {
             printf("ERROR: reading eventlist from clipboard failed. ignoring this one...\n");
             break;
           }
-          
-          const Part* dest_part;
-          if (paste_into_part == nullptr)
-            dest_part = partFromSerialNumber(part_id);
-          else
-            dest_part=paste_into_part;
           
           if (dest_part == nullptr)
           {
@@ -3554,7 +3659,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
           pasteEventList(
             el, pos, ((Part*)dest_part), operations, add_operations,
             expand_map, new_part_map, nullptr, false,
-            Pos(), max_distance, options, amount, raster, relevant, paste_to_ctrl_num);
+            poslen, numevents, max_distance, options, amount, raster, relevant, paste_to_ctrl_num);
         }
         else
           xml.unknown("paste_items_at");
@@ -3611,9 +3716,6 @@ void paste_items_at(
     expand_map_t expand_map;
     new_part_map_t new_part_map;
 
-    // Find the lowest position of all the events - the 'start' position.
-    const Pos start_pos = tag_list->globalStats().evrange(relevant);
-
     // At this point the tag list's event list will still have any controller
     //  visual lengths HACK applied.
     // Those lengths will be reset below. But for now we could use them...
@@ -3660,9 +3762,13 @@ void paste_items_at(
       // Grab the event list and find the number of relevant events.
       const EventList& el = itl->evlist();
 
+      const bool wave_mode = dest_part->partType() == Part::WavePartType;
+      int num_events = 0;
+      const PosLen el_range = el.evrange(wave_mode, relevant, &num_events, paste_to_ctrl_num);
+
       pasteEventList(
         el, pos, ((Part*)dest_part), operations, add_operations,
-        expand_map, new_part_map, src_part, cut_mode, start_pos, max_distance, options,
+        expand_map, new_part_map, src_part, cut_mode, el_range, num_events, max_distance, options,
         amount, raster, relevant, paste_to_ctrl_num);
     }
 

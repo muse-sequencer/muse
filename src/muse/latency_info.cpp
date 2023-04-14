@@ -21,6 +21,8 @@
 //
 //===================================================================
 
+#include <stdio.h>
+
 #include "latency_info.h"
 
 namespace MusECore {
@@ -59,6 +61,77 @@ void TrackLatencyInfo::initialize()
   _latencyOutMidiTrack = 0.0f;
   // Special for Metronome:
   _latencyOutMetronome = 0.0f;
+}
+
+void TrackLatencyInfo::dump(const char *objname, const char *header) const
+{
+  fprintf(stderr,
+    "====%s=%s=TrackLatencyInfo=========\n"
+    "_dominanceProcessed:%d\n"
+    "_dominanceInputProcessed:%d\n"
+    "canDominateProcessed:%d\n"
+    "canDominateInputProcessed:%d\n"
+    "correctionProcessed:%d\n"
+    "correctionInputProcessed:%d\n"
+    "worstPluginLatencyProcessed:%d\n"
+    "worstPluginLatency:%f\n"
+    "worstPortLatencyProcessed:%d\n"
+    "worstPortLatency:%f\n"
+    "processed:%d\n"
+    "inputProcessed:%d\n"
+    "worstSelfLatency:%f\n"
+    "worstSelfLatencyMidi:%f\n"
+    "worstSelfLatencyProcessed:%d\n"
+    "worstSelfLatencyMidiProcessed:%d\n"
+    "outputLatency:%f\n"
+    "inputLatency:%f\n"
+    "isLatencyInputTerminal:%d\n"
+    "isLatencyOutputTerminal:%d\n"
+    "isLatencyInputTerminalProcessed:%d\n"
+    "isLatencyOutputTerminalProcessed:%d\n"
+    "canDominateOutputLatency:%d\n"
+    "canDominateInputLatency:%d\n"
+    "canCorrectOutputLatency:%d\n"
+    "sourceCorrectionValue:%f\n"
+    "compensatorWriteOffset:%ld\n"
+
+    "latencyOutMidiTrack:%f\n"
+    "latencyOutMetronome:%f\n"
+    "====================================\n",
+
+    objname,
+    header,
+    _dominanceProcessed,
+    _dominanceInputProcessed,
+    _canDominateProcessed,
+    _canDominateInputProcessed,
+    _correctionProcessed,
+    _correctionInputProcessed,
+    _worstPluginLatencyProcessed,
+    _worstPluginLatency,
+    _worstPortLatencyProcessed,
+    _worstPortLatency,
+    _processed,
+    _inputProcessed,
+    _worstSelfLatency,
+    _worstSelfLatencyMidi,
+    _worstSelfLatencyProcessed,
+    _worstSelfLatencyMidiProcessed,
+    _outputLatency,
+    _inputLatency,
+    _isLatencyInputTerminal,
+    _isLatencyOutputTerminal,
+    _isLatencyInputTerminalProcessed,
+    _isLatencyOutputTerminalProcessed,
+    _canDominateOutputLatency,
+    _canDominateInputLatency,
+    _canCorrectOutputLatency,
+    _sourceCorrectionValue,
+    _compensatorWriteOffset,
+    _latencyOutMidiTrack,
+    _latencyOutMetronome
+  );
+
 }
 
 } // namespace MusECore

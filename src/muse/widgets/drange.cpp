@@ -23,16 +23,13 @@
 //
 //=========================================================
 
-#include "muse_math.h"
-
 //#include <QtGlobal>
 
 #include "mmath.h"
 #include "drange.h"
-#include "fastlog.h"
-//#include "muse_math.h"
 
 // For debugging output: Uncomment the fprintf section.
+//#include <stdio.h>
 #define DEBUG_DRANGE(dev, format, args...) // fprintf(dev, format, ##args);
 
 
@@ -66,12 +63,18 @@ DoubleRange::DoubleRange()
       d_maxValue = 100.0;
       d_exactPrevValue = 0.0;
       d_exactValue = 0.0;
-      d_value = 0.0;
+      d_prevValue = d_value = 0.0;
       d_step  = 0.1;
       d_periodic = false;
       d_log = false;
       d_integer = false;
+      d_logCanZero = false;
+      d_dBFactor = 20.0;
+      d_dBFactorInv = 1.0/d_dBFactor;
+      d_logFactor = 1.0;
       }
+
+DoubleRange::~DoubleRange(){}
 
 //---------------------------------------------------------
 //   convertTo
@@ -83,26 +86,27 @@ double DoubleRange::convertTo(double x, ConversionMode mode) const
   {
     case ConvertNone:
       return x;
-      
+
     case ConvertDefault:
+    {
+      double rv = x;
       if(d_log)
-        return muse_db2val(x);
-      if(d_integer)
-        return rint(x);
-      return x;
+        rv = d_logFactor * museDbToVal(rv, d_dBFactorInv);
+      return rv;
+    }
     break;
-    
+
     case ConvertInt:
       return rint(x);
     break;
-    
+
     case ConvertLog:
-      return muse_db2val(x);
+      return d_logFactor * museDbToVal(x, d_dBFactorInv);
     break;
   }
   return x;
 }
-      
+
 //---------------------------------------------------------
 //   convertTo
 //---------------------------------------------------------
@@ -113,35 +117,40 @@ double DoubleRange::convertFrom(double x, ConversionMode mode) const
   {
     case ConvertNone:
       return x;
-      
+
     case ConvertDefault:
-      if(d_log) 
+    {
+      double rv = x;
+      if(d_log)
       {
-        if(x == 0.0f)
-          return d_minValue;
-        else 
-          return MusECore::fast_log10(x) * 20.0f;
+        if(rv <= 0.0)
+        {
+          if(d_integer)
+            rv = rint(d_minValue);
+          else
+            rv = museValToDb(d_minValue / d_logFactor, d_dBFactor);
+        }
+        else
+          rv = museValToDb(rv / d_logFactor, d_dBFactor);
       }
-      else if(d_integer)
-        return rint(x);
-      else 
-        return x;
+      return rv;
+    }
     break;
-    
+
     case ConvertInt:
       return rint(x);
     break;
-    
+
     case ConvertLog:
-      if(x == 0.0f)
-        x = d_minValue;
-      else 
-        x = MusECore::fast_log10(x) * 20.0f;
+      if(x <= 0.0)
+        x = museValToDb(d_minValue / d_logFactor, d_dBFactor);
+      else
+        x = museValToDb(x / d_logFactor, d_dBFactor);
     break;
   }
   return x;
 }
-      
+
 //---------------------------------------------------------
 //   setNewValue
 //---------------------------------------------------------
@@ -149,13 +158,10 @@ double DoubleRange::convertFrom(double x, ConversionMode mode) const
 void DoubleRange::setNewValue(double x, bool align)
       {
       DEBUG_DRANGE(stderr, "DoubleRange::setNewValue TOP val:%.20f d_value:%.20f\n", x, d_value);
-        
-      if(x == d_value)
-        return;
-      
+
       const double vmin = MusECore::qwtMin(d_minValue, d_maxValue);
       const double vmax = MusECore::qwtMax(d_minValue, d_maxValue);
-      const double prevValue = d_value;
+      d_prevValue = d_value;
 
       // Range check
 
@@ -163,44 +169,76 @@ void DoubleRange::setNewValue(double x, bool align)
             if ((d_periodic) && (vmin != vmax))
                   d_value = x + ceil((vmin - x) / (vmax - vmin))
                      * (vmax - vmin);
-            else
-                  d_value = vmin;
+            else if(d_value == vmin)
+                  return;
+            d_value = vmin;
             }
       else if (x > vmax) {
             if ((d_periodic) && (vmin != vmax))
                   d_value = x - ceil( ( x - vmax) / (vmax - vmin ))
                      * (vmax - vmin);
-            else
-                  d_value = vmax;
+            else if(d_value == vmax)
+                  return;
+            d_value = vmax;
             }
       else
             d_value = x;
+
+      if(d_value == d_prevValue)
+        return;
 
       d_exactPrevValue = d_exactValue;
       d_exactValue = d_value;
 
       // align to grid
       if (align) {
-            if (d_step != 0.0)
-                  d_value = d_minValue + rint((d_value - d_minValue) / d_step ) * d_step;
+            // If it's log but not integer.
+            if(d_log && !d_integer)
+            {
+              if (d_step != 0.0)
+              {
+                  // Don't touch the value if it's already at a boundary, to avoid introducing unwanted error.
+                  if(d_value > vmin && d_value < vmax)
+                  {
+                    const double mn = museValToDb(vmin / d_logFactor, d_dBFactor);
+                    double v = museValToDb(d_value / d_logFactor, d_dBFactor);
+                    d_value = d_logFactor * museDbToVal(mn + rint((v - mn) / d_step ) * d_step, d_dBFactorInv);
+                  }
+              }
+              else
+              {
+                    d_value = vmin;
+              }
+            }
+            // It's integer or log integer, or none.
             else
-                  d_value = d_minValue;
-	
-            // correct rounding error at the border
-            if (fabs(d_value - d_maxValue) < MinEps * MusECore::qwtAbs(d_step))
-                  d_value = d_maxValue;
+            {
+              // Don't touch the value if it's already at a boundary, to avoid introducing unwanted error.
+              if(d_value > vmin && d_value < vmax)
+              {
+                  if (d_step != 0.0)
+                        d_value = vmin + rint((d_value - vmin) / d_step ) * d_step;
+                  else
+                        d_value = vmin;
 
-            // correct rounding error if value = 0
-            if (fabs(d_value) < MinEps * MusECore::qwtAbs(d_step))
-                  d_value = 0.0;
+                  // correct rounding error at the border
+                  if (fabs(d_value - vmax) < MinEps * MusECore::qwtAbs(d_step))
+                        d_value = vmax;
+
+                  // correct rounding error if value = 0
+                  if (fabs(d_value) < MinEps * MusECore::qwtAbs(d_step))
+                        d_value = 0.0;
+              }
+            }
             }
       DEBUG_DRANGE(stderr, "                         BOTTOM val:%.20f d_value:%.20f\n", x, d_value);
-      if (prevValue != d_value)
+      if (d_prevValue != d_value)
       {
             DEBUG_DRANGE(stderr, "  not equal, calling valueChange\n");
             valueChange();
       }
       }
+
 
 //---------------------------------------------------------
 //   fitValue
@@ -211,9 +249,9 @@ void DoubleRange::setNewValue(double x, bool align)
 //	be mapped to a point in the interval such that
 //---------------------------------------------------------
 
-void DoubleRange::fitValue(double x, ConversionMode mode)
+void DoubleRange::fitValue(double x)
       {
-      setNewValue(convertFrom(x, mode), true);
+      setNewValue(x, true);
       }
 
 //---------------------------------------------------------
@@ -228,9 +266,9 @@ void DoubleRange::fitValue(double x, ConversionMode mode)
 //    with an integer number n.
 //---------------------------------------------------------
 
-void DoubleRange::setValue(double x, ConversionMode mode)
+void DoubleRange::setValue(double x)
       {
-      setNewValue(convertFrom(x, mode), false);
+      setNewValue(x, false);
       }
 
 //---------------------------------------------------------
@@ -246,15 +284,41 @@ void DoubleRange::setValue(double x, ConversionMode mode)
 //	  to a better one.
 //---------------------------------------------------------
 
-void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize, ConversionMode mode)
+void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize)
       {
-      vmin = convertFrom(vmin, mode);
-      vmax = convertFrom(vmax, mode);
+      // If it's integer or log integer.
+      if(d_integer)
+      {
+        vmin = rint(vmin);
+        vmax = rint(vmax);
+      }
+
+      // If it's log or log integer.
+      if(d_log)
+      {
+        if(d_integer)
+        {
+          // Force a hard lower limit of integer 1.
+          if(vmin <= 0.0)
+            vmin = 1.0;
+          if(vmax <= 0.0)
+            vmax = 1.0;
+        }
+        else
+        {
+          // Force a hard lower limit of -120 dB.
+          if(vmin <= 0.0)
+            vmin = 0.000001;
+          if(vmax <= 0.0)
+            vmax = 0.000001;
+        }
+      }
+
       bool rchg = ((d_maxValue != vmax) || (d_minValue != vmin));
 
-      if(!rchg && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
+      if(!rchg && vstep == d_step && pageSize == d_pageSize)
         return;
-      
+
       if (rchg) {
             d_minValue = vmin;
             d_maxValue = vmax;
@@ -269,13 +333,15 @@ void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize,
       //
       // limit page size
       //
-      d_pageSize = MusECore::qwtLim(pageSize,0, int(MusECore::qwtAbs((d_maxValue - d_minValue) / d_step)));
+      d_pageSize = MusECore::qwtLim(
+        pageSize,0,
+        int(MusECore::qwtAbs((d_maxValue - d_minValue) / (d_step * (d_log ? d_logFactor : 1.0)))));
 
       //
       // If the value lies out of the range, it
       // will be changed. Note that it will not be adjusted to
       // the new step width.
-      setNewValue(d_value, false);
+      setNewValue(d_value / (d_log ? d_logFactor : 1.0), false);
 
       // call notifier after the step width has been
       // adjusted.
@@ -292,9 +358,14 @@ void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize,
 
 void DoubleRange::setStep(double vstep)
       {
-    double newStep,intv;
+      double newStep,intv;
 
-    intv = d_maxValue - d_minValue;
+      // If it's log but not integer.
+      if(d_log && !d_integer)
+        intv = museValToDb(d_maxValue / d_logFactor, d_dBFactor) - museValToDb(d_minValue / d_logFactor, d_dBFactor);
+      // It's integer or log integer, or none.
+      else
+        intv = d_maxValue - d_minValue;
 
       if (vstep == 0.0)
             newStep = intv * DefaultRelStep;
@@ -303,7 +374,7 @@ void DoubleRange::setStep(double vstep)
                   newStep = -vstep;
             else
                   newStep = vstep;
-	
+
             if ( fabs(newStep) < fabs(MinRelStep * intv) )
                   newStep = MinRelStep * intv;
             }
@@ -314,6 +385,7 @@ void DoubleRange::setStep(double vstep)
             stepChange();
             }
       }
+
 
 //---------------------------------------------------------
 //   setPeriodic
@@ -344,7 +416,13 @@ void DoubleRange::setPeriodic(bool tf)
 
 void DoubleRange::incValue(int nSteps)
       {
-      setNewValue(d_value + double(nSteps) * d_step, true);
+      // If it's log but not integer.
+      if(d_log && !d_integer)
+        setNewValue(d_logFactor * museDbToVal((museValToDb(d_value / d_logFactor, d_dBFactor) +
+          double(nSteps) * d_step), d_dBFactorInv), true);
+      // It's integer or log integer, or none.
+      else
+        setNewValue(d_value + double(nSteps) * d_step, true);
       }
 
 //---------------------------------------------------------
@@ -354,8 +432,13 @@ void DoubleRange::incValue(int nSteps)
 
 void DoubleRange::incPages(int nPages)
       {
-      setNewValue(d_value + double(nPages) * double(d_pageSize)
-         * d_step, true);
+      // If it's log but not integer.
+      if(d_log && !d_integer)
+        setNewValue(d_logFactor * museDbToVal(museValToDb(d_value / d_logFactor, d_dBFactor) +
+          double(nPages) * double(d_pageSize) * d_step, d_dBFactorInv), true);
+      // It's integer or log integer, or none.
+      else
+        setNewValue(d_value + double(nPages) * double(d_pageSize) * d_step, true);
       }
 
 //---------------------------------------------------------
@@ -367,79 +450,87 @@ double DoubleRange::step() const
       return MusECore::qwtAbs(d_step);
       }
 
+double DoubleRange::internalMaxValue(ConversionMode mode) const { return convertFrom(d_maxValue, mode); }
+double DoubleRange::internalMinValue(ConversionMode mode) const { return convertFrom(d_minValue, mode); }
+
 //---------------------------------------------------------
-//   value
+//   internalValue
+//    Returns the current internal value which is never below minimum,
+//     even in log mode. See value().
 //---------------------------------------------------------
 
-double DoubleRange::value(ConversionMode mode) const
+double DoubleRange::internalValue(ConversionMode mode) const
       {
-      return convertTo(d_value, mode);
+      return convertFrom(d_value, mode);
       }
 
 //---------------------------------------------------------
-//   minLogValue
+//   setInternalValue
+//    Set a new value without adjusting to the step raster
+//    The value is clipped when it lies outside the range.
+//	When the range is @DoubleRange::periodic@, it will
+//	be mapped to a point in the interval such that
+//
+//		new value := x + n * (max. value - min. value)
+//
+//    with an integer number n.
 //---------------------------------------------------------
 
-//double AbstractSlider::minValue() const {
-//  return _log ? pow(10.0, _minValue*0.05f) : _minValue;
-//}
+void DoubleRange::setInternalValue(double x, ConversionMode mode)
+      {
+      setNewValue(convertTo(x, mode), false);
+      }
 
 //---------------------------------------------------------
-//   setMinLogValue
+//   value
+//    Returns the current value.
+//    In log mode, when the value is equal to or less than the minimum
+//     AND logCanOff is true, this will return 0.0 (-inf dB). See internalValue().
 //---------------------------------------------------------
 
-void DoubleRange::setMinLogValue(double val) {
-  if (d_log) {
-    if (val == 0.0f) d_minValue = -100;
-    else d_minValue = MusECore::fast_log10(val) * 20.0f;
-  }
-  else d_minValue = val;
-}
-
-//---------------------------------------------------------
-//   maxLogValue
-//---------------------------------------------------------
-
-//double AbstractSlider::maxValue() const {
-//  return _log ? pow(10.0, _maxValue*0.05f) : _maxValue;
-//}
-
-//---------------------------------------------------------
-//   setMaxLogValue
-//---------------------------------------------------------
-
-void DoubleRange::setMaxLogValue(double val) 
+double DoubleRange::value() const
 {
-  if (d_log) 
-  {
-    d_maxValue = MusECore::fast_log10(val) * 20.0f;
-  }
-  else d_maxValue = val;
+  // In log mode, when the value equals min, return 0.0 (-inf dB).
+  if(d_log && d_logCanZero && d_value <= d_minValue)
+    return 0.0;
+  return d_value;
 }
 
-void DoubleRange::setLogRange(double a, double b, double vstep, int pagesize) 
+void DoubleRange::internalFitValue(double x, ConversionMode mode)
+      {
+      setNewValue(convertTo(x, mode), true);
+      }
+
+double DoubleRange::exactValue(ConversionMode mode) const { return convertFrom(d_exactValue, mode); }
+double DoubleRange::exactPrevValue(ConversionMode mode) const { return convertFrom(d_exactPrevValue, mode); }
+double DoubleRange::prevValue(ConversionMode mode) const { return convertFrom(d_prevValue, mode); }
+void DoubleRange::valueChange() {}
+void DoubleRange::stepChange()  {}
+void DoubleRange::rangeChange() {}
+double DoubleRange::maxValue() const { return d_maxValue; }
+double DoubleRange::minValue() const { return d_minValue; }
+bool DoubleRange::periodic()  const  { return d_periodic; }
+int DoubleRange::pageSize() const    { return d_pageSize; }
+bool DoubleRange::log() const        { return d_log; }
+void DoubleRange::setLog(bool v)     { d_log = v; }
+bool DoubleRange::integer() const    { return d_integer; }
+void DoubleRange::setInteger(bool v) { d_integer = v; }
+void DoubleRange::setLogCanZero(bool v) { d_logCanZero = v; }
+void DoubleRange::setDBFactor(double v) { d_dBFactor = v; d_dBFactorInv = 1.0/d_dBFactor; }
+
+void DoubleRange::setLogFactor(double v)
 {
-//   setMinLogValue(a);
-//   setMaxLogValue(b);
-  
-  double mn = 0, mx = 0;
-  if(d_log) 
+  if(d_log)
   {
-    if(a == 0.0f) 
-      d_minValue = -100;
-    else 
-      mn = MusECore::fast_log10(a) * 20.0f;
+    // Set the new factor.
+    d_logFactor = v;
+    // Reset the value.
+    DoubleRange::setValue(d_value / d_logFactor);
+    return;
   }
-  else 
-    mn = a;
 
-  if(d_log) 
-    mx = MusECore::fast_log10(b) * 20.0f;
-  else 
-    mx = b;
-  
-  setRange(mn, mx, vstep, pagesize);
+  // Set the new factor.
+  d_logFactor = v;
 }
-
 
 } // namespace MusEGui

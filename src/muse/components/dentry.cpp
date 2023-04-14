@@ -20,8 +20,6 @@
 //
 //=========================================================
 
-#include <stdio.h>
-
 #include <QWidget>
 #include <QWheelEvent>
 #include <QMouseEvent>
@@ -35,6 +33,10 @@
 #include "dentry.h"
 #include "globals.h"
 #include "gconfig.h"
+
+// For debugging output: Uncomment the fprintf section.
+//#include <stdio.h>
+#define DEBUG_DENTRY(dev, format, args...)  // fprintf(dev, format, ##args);
 
 #define TIMER1    400
 #define TIMER2    200
@@ -53,7 +55,7 @@ namespace MusEGui {
 Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
       {
       setObjectName(name);
-      _slider = 0;      
+      _slider = 0;
       _id = -1;
       //setAutoFillBackground(true);
       timer = new QTimer(this);
@@ -61,7 +63,7 @@ Dentry::Dentry(QWidget* parent, const char* name) : QLineEdit(parent)
       val = 0.01;
       connect(this, &QLineEdit::editingFinished, [this]() { endEdit(); } );
       setCursor(QCursor(Qt::ArrowCursor));
-      evx = 1;
+      _mousePressed = _keyUpPressed = _keyDownPressed = false;
       }
 
 //---------------------------------------------------------
@@ -75,10 +77,13 @@ void Dentry::contextMenuEvent(QContextMenuEvent * e)
 
 void Dentry::focusOutEvent(QFocusEvent* e)
 {
+  DEBUG_DENTRY(stderr, "Dentry::focusOutEvent\n");
+
   e->ignore();
   QLineEdit::focusOutEvent(e);
 
   // Clear the undo history.
+  // Don't allow the changed signal.
   blockSignals(true);
   setString(val);
   blockSignals(false);
@@ -90,12 +95,31 @@ void Dentry::focusOutEvent(QFocusEvent* e)
 
 void Dentry::endEdit()
       {
-      if (isModified()) {
-            if (setSValue(text())) {
-                  setString(val);
+      _mousePressed = _keyUpPressed = _keyDownPressed = false;
+
+      // NOTE: DO NOT rely on isModified() to determine if the text changed.
+      //       Especially with a validator in place, the line editor can reset
+      //        the modified flag. Tested: Possibly a slight QUIRK or BUG in the way
+      //        QWidgetLineControl::finishChange() and QWidgetLineControl::internalSetText()
+      //        call each other, resulting in two calls to our validate(), and on the
+      //        second call the modified flag has been reset.
+      //       Especially when using the validator's fixup(). It resets the flag.
+      //if (isModified())
+      {
+            DEBUG_DENTRY(stderr, "Dentry::endEdit: modified:%d\n", isModified());
+            bool changed;
+            if (setSValue(text(), &changed)) {
+                  // If the value was not changed, it is important to re-update the text.
+                  // For example, text like "1.0u" might be converted (log clipped) to 0.0 and if that
+                  //  is already the value it won't be changed, so the text must be updated to 0.0 again.
+                  if(!changed)
+                    setString(val);
                   return;
                   }
-            }
+      }
+      DEBUG_DENTRY(stderr, "Dentry::endEdit: Conversion FAILED. Restoring value.\n");
+
+      // The text to value conversion failed. Restore the text from the current value.
       setString(val);
       }
 
@@ -118,12 +142,12 @@ void Dentry::mousePressEvent(QMouseEvent* event)
         return;
       }
 
+      _mousePressed = true;
+
       if(m_button == Qt::LeftButton)
         QLineEdit::mousePressEvent(event);
 
       button = m_button;
-      starty = event->y();
-      evx    = event->x();
       timecount = 0;
       repeat();
       timer->start(TIMER1);
@@ -194,13 +218,13 @@ void Dentry::repeat()
                   if(_slider)
                     _slider->stepPages(-1);
                   else  
-                    decValue(evx);
+                    decValue(1);
                   break;
             case Qt::RightButton:
                   if(_slider)
                     _slider->stepPages(1);
                   else  
-                    incValue(evx);
+                    incValue(1);
                   break;
             default:
                   break;
@@ -217,6 +241,8 @@ void Dentry::mouseReleaseEvent(QMouseEvent* ev)
       // Don't call ancestor to avoid middle button pasting.
       //LineEdit::mouseReleaseEvent(ev);
 
+      _mousePressed = false;
+
       button = Qt::NoButton;
       timer->stop();
       }
@@ -231,8 +257,6 @@ void Dentry::mouseDoubleClickEvent(QMouseEvent* event)
       if (event->button() != Qt::LeftButton) {
             //mousePressEvent(event);
             button = event->button();
-            starty = event->y();
-            evx    = event->x();
             timecount = 0;
             repeat();
             timer->start(TIMER1);
@@ -248,22 +272,26 @@ void Dentry::mouseDoubleClickEvent(QMouseEvent* event)
 
 void Dentry::keyPressEvent(QKeyEvent* e)
 {
+  DEBUG_DENTRY(stderr, "Dentry::keyPressEvent: key:%d modified:%d\n", e->key(), isModified());
+
+  // Check common key sequences first, over specific keys...
+  if(e->matches(QKeySequence::Cancel))
+  {
+    if(isModified())
+    {
+      // Restore the displayed current value.
+      blockSignals(true);
+      setString(val);
+      blockSignals(false);
+    }
+    // Let the app or some higher-up use it, such as for yielding focus.
+    e->ignore();
+    return;
+  }
+
   bool inc = true;
   switch (e->key())
   {
-    case Qt::Key_Escape:
-      if(isModified())
-      {
-        // Restore the displayed current value.
-        blockSignals(true);
-        setString(val);
-        blockSignals(false);
-      }
-      // Let the app or some higher-up use it, such as for yielding focus.
-      e->ignore();
-      return;
-    break;
-
     case Qt::Key_Enter:
     case Qt::Key_Return:
       // Forward it, and let ancestor have it, such as for yielding focus.
@@ -274,64 +302,21 @@ void Dentry::keyPressEvent(QKeyEvent* e)
 
     case Qt::Key_Up:
       inc = true;
+      _keyUpPressed = true;
     break;
 
     case Qt::Key_Down:
       inc = false;
-    break;
-
-    case Qt::Key_0:
-    case Qt::Key_1:
-    case Qt::Key_2:
-    case Qt::Key_3:
-    case Qt::Key_4:
-    case Qt::Key_5:
-    case Qt::Key_6:
-    case Qt::Key_7:
-    case Qt::Key_8:
-    case Qt::Key_9:
-    case Qt::Key_Period:
-    case Qt::Key_Plus:
-    case Qt::Key_Minus:
-    case Qt::Key_Left:
-    case Qt::Key_Right:
-    case Qt::Key_Insert:
-    case Qt::Key_Delete:
-    case Qt::Key_Home:
-    case Qt::Key_End:
-    case Qt::Key_PageUp:
-    case Qt::Key_PageDown:
-    case Qt::Key_Backspace:
-      // Eat up the key, but let ancestor use it.
-      e->accept();
-      QLineEdit::keyPressEvent(e);
-      return;
-    break;
-    
-    case Qt::Key_Space:
-    case Qt::Key_Comma:
-      // Eat up the key.
-      // This is what Qt spin boxes do. They eat space but pass others like function keys.
-      e->accept();
-      return;
+      _keyDownPressed = true;
     break;
 
     default:
       // Let the app or some higher-up use it.
       e->ignore();
-      if(e->modifiers() & (Qt::AltModifier | Qt::MetaModifier | Qt::ControlModifier))
-        // Let ancestor use it.
-        QLineEdit::keyPressEvent(e);
+      // Let ancestor use it.
+      QLineEdit::keyPressEvent(e);
       return;
     break;
-  }
-
-  if(e->modifiers() & (Qt::AltModifier | Qt::MetaModifier | Qt::ControlModifier))
-  {
-    // Let ancestor or some higher-up handle it.
-    e->ignore();
-    QLineEdit::keyPressEvent(e);
-    return;
   }
 
   e->accept();
@@ -364,27 +349,44 @@ void Dentry::keyPressEvent(QKeyEvent* e)
   //  showValueToolTip(e->globalPos());
 }
 
+void Dentry::keyReleaseEvent(QKeyEvent* e)
+{
+  DEBUG_DENTRY(stderr, "Dentry::keyReleaseEvent: key:%d modified:%d\n", e->key(), isModified());
+//   e->ignore();
+
+  switch (e->key())
+  {
+    case Qt::Key_Up:
+      _keyUpPressed = false;
+    break;
+
+    case Qt::Key_Down:
+      _keyDownPressed = false;
+    break;
+
+    default:
+      QLineEdit::keyReleaseEvent(e);;
+    break;
+  }
+}
+
 //---------------------------------------------------------
 //   setValue
 //---------------------------------------------------------
 
 void Dentry::setValue(double v)
       {
-      if (v == val)
-           return;
-      setString(v);
-#if 0
-      if (setString(v)) {
-            clearFocus();
-            if (!drawFrame)
-                  QLineEdit::setFrame(false);
-            setEnabled(false);
-            }
-      else {
-            setEnabled(true);
-            }
-#endif
-      val = v;
+        // Unless linked to a slider, do not allow setting value from the external
+        //  while mouse is pressed or key up/down is pressed.
+        if(!_slider && (_mousePressed || _keyUpPressed || _keyDownPressed))
+          return;
+        setNewValue(v);
       }
+
+double Dentry::value() const { return val; };
+int Dentry::id() const    { return _id; }
+void Dentry::setId(int i) { _id = i; }
+SliderBase* Dentry::slider() const            { return _slider; }
+void Dentry::setSlider(SliderBase* s)         { _slider = s; }
 
 } // namespace MusEGui

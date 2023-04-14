@@ -52,7 +52,7 @@ DoubleSpinBox::DoubleSpinBox(QWidget* parent)
   DoubleSpinBoxLineEdit* le = new DoubleSpinBoxLineEdit(this);
   setLineEdit(le);
   setKeyboardTracking(false);
-  
+
   connect(le, SIGNAL(doubleClicked()),     this, SIGNAL(doubleClicked()));
   connect(le, SIGNAL(ctrlDoubleClicked()), this, SIGNAL(ctrlDoubleClicked()));
   //connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
@@ -71,6 +71,7 @@ DoubleSpinBox::DoubleSpinBox(double minValue, double maxValue, double step, QWid
   connect(le, SIGNAL(ctrlDoubleClicked()), this, SIGNAL(ctrlDoubleClicked()));
   //connect(le, SIGNAL(ctrlClicked()), this, SIGNAL(ctrlClicked()));
 }
+
 
 void DoubleSpinBox::keyPressEvent(QKeyEvent* ev)
 {

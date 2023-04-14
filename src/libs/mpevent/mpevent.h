@@ -30,12 +30,6 @@
 #include "memory.h"
 #include <cstddef>
 
-// Play events ring buffer size
-//#define MIDI_FIFO_SIZE    4096
-
-// Record events ring buffer size
-#define MIDI_REC_FIFO_SIZE  256
-
 namespace MusECore {
 
 //---------------------------------------------------------
@@ -55,58 +49,50 @@ class MEvent {
       int _loopNum; // The loop count when the note was recorded.
 
    public:
-      MEvent() : _time(0), _port(0), _channel(0), _type(0), _a(0), _b(0), _loopNum(0) { }
-      MEvent(const MEvent& e) : _time(e._time), edata(e.edata), _port(e._port), _channel(e._channel),
-             _type(e._type), _a(e._a), _b(e._b), _loopNum(e._loopNum) { }
-      MEvent(unsigned tm, int p, int c, int t, int a, int b)
-        : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b), _loopNum(0) { }
+      MEvent();
+      MEvent(const MEvent& e);
+      MEvent(unsigned tm, int p, int c, int t, int a, int b);
       MEvent(unsigned t, int p, int type, const unsigned char* data, int len);
-      MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe), _loopNum(0) { }
+      MEvent(unsigned t, int p, int tpe, EvData d);
 
-      virtual ~MEvent()         {}
+      virtual ~MEvent();
 
-      MEvent& operator=(const MEvent& ed) {
-            _time    = ed._time;
-            edata    = ed.edata;
-            _port    = ed._port;
-            _channel = ed._channel;
-            _type    = ed._type;
-            _a       = ed._a;
-            _b       = ed._b;
-            _loopNum = ed._loopNum;
-            return *this;
-            }
+      MEvent& operator=(const MEvent& ed);
       
       int sortingWeight() const;
       
-      int port()    const      { return _port;    }
-      int channel() const      { return _channel; }
-      int type()    const      { return _type;    }
-      int dataA()   const      { return _a;       }
-      int dataB()   const      { return _b;       }
-      unsigned time() const    { return _time;    }
-      int loopNum() const      { return _loopNum; }
+      int port()    const;
+      int channel() const;
+      int type()    const;
+      int dataA()   const;
+      int dataB()   const;
+      unsigned time() const;
+      int loopNum() const;
 
-      void setPort(int val)    { _port = val;     }
-      void setChannel(int val) { _channel = val;  }
-      void setType(int val)    { _type = val;     }
-      void setA(int val)       { _a = val;        }
-      void setB(int val)       { _b = val;        }
-      void setTime(unsigned val) { _time = val;   }
-      void setLoopNum(int n)   { _loopNum = n;    }
+      void setPort(int val);
+      void setChannel(int val);
+      void setType(int val);
+      void setA(int val);
+      void setB(int val);
+      void setTime(unsigned val);
+      void setLoopNum(int n);
 
-      const EvData& eventData() const { return edata; }
-      unsigned char* data()    { return edata.data(); }
-      const unsigned char* constData() const { return edata.constData(); }
-      int len() const                 { return edata.dataLen(); }
-      void setData(const EvData& e)   { edata = e; }
-      void setData(const unsigned char* p, int len) { edata.setData(p, len); }
+      const EvData& eventData() const;
+      unsigned char* data();
+      const unsigned char* constData() const;
+      int len() const;
+      void setData(const EvData& e);
+      void setData(const unsigned char* p, int len);
 
-      bool isNote() const      { return _type == 0x90; }
-      bool isNoteOff() const   { return (_type == 0x80)||(_type == 0x90 && _b == 0); }
+      bool isNote() const;
+      bool isNoteOff() const;
       bool operator<(const MEvent&) const;
-      bool isValid() const { return _type != 0; }
-      
+      bool isValid() const;
+      // Returns true if the event is any of the EIGHT standard General Midi RPN controllers.
+      bool isStandardRPN() const;
+      // Returns true if the event is one of our own native compound RPN controller ie. (N)RPN, (N)RPN14.
+      bool isNativeRPN() const;
+
       // Returns a valid source controller number (above zero), 
       //  translated from the event to proper internal control type.
       // For example 
@@ -129,21 +115,18 @@ class MidiRecordEvent : public MEvent {
    private:
       unsigned int _tick; // To store tick when external sync is on, required besides frame.
    public:
-      MidiRecordEvent() : MEvent(), _tick(0) {}
-      MidiRecordEvent(const MidiRecordEvent& e) : MEvent(e), _tick(e._tick) {}
-      MidiRecordEvent(const MEvent& e) : MEvent(e), _tick(0) {}
-      MidiRecordEvent(unsigned tm, int p, int c, int t, int a, int b)
-        : MEvent(tm, p, c, t, a, b), _tick(0) {}
-      MidiRecordEvent(unsigned t, int p, int tpe, const unsigned char* data, int len)
-        : MEvent(t, p, tpe, data, len), _tick(0) {}
-      MidiRecordEvent(unsigned t, int p, int type, EvData data)
-        : MEvent(t, p, type, data), _tick(0) {}
-      virtual ~MidiRecordEvent() {}
+      MidiRecordEvent();
+      MidiRecordEvent(const MidiRecordEvent& e);
+      MidiRecordEvent(const MEvent& e);
+      MidiRecordEvent(unsigned tm, int p, int c, int t, int a, int b);
+      MidiRecordEvent(unsigned t, int p, int tpe, const unsigned char* data, int len);
+      MidiRecordEvent(unsigned t, int p, int type, EvData data);
+      virtual ~MidiRecordEvent();
 
-      MidiRecordEvent& operator=(const MidiRecordEvent& e) { MEvent::operator=(e); _tick = e._tick; return *this; }
+      MidiRecordEvent& operator=(const MidiRecordEvent& e);
 
-      unsigned int tick() {return _tick;}
-      void setTick(unsigned int tick) {_tick = tick;}
+      unsigned int tick();
+      void setTick(unsigned int tick);
       };
 
 //---------------------------------------------------------
@@ -159,42 +142,18 @@ class MidiPlayEvent : public MEvent {
       //  needs to know what the the original note-on latency was when it was scheduled.
       int _latency;
    public:
-      MidiPlayEvent() : MEvent(), _latency(0) {}
-      MidiPlayEvent(const MidiPlayEvent& e) : MEvent(e), _latency(e._latency) {}
-      MidiPlayEvent(const MEvent& e) : MEvent(e), _latency(0) {}
-      MidiPlayEvent(unsigned tm, int p, int c, int t, int a, int b)
-        : MEvent(tm, p, c, t, a, b), _latency(0) {}
-      MidiPlayEvent(unsigned t, int p, int type, const unsigned char* data, int len)
-        : MEvent(t, p, type, data, len), _latency(0) {}
-      MidiPlayEvent(unsigned t, int p, int type, EvData data)
-        : MEvent(t, p, type, data), _latency(0) {}
-      virtual ~MidiPlayEvent() {}
+      MidiPlayEvent();
+      MidiPlayEvent(const MidiPlayEvent& e);
+      MidiPlayEvent(const MEvent& e);
+      MidiPlayEvent(unsigned tm, int p, int c, int t, int a, int b);
+      MidiPlayEvent(unsigned t, int p, int type, const unsigned char* data, int len);
+      MidiPlayEvent(unsigned t, int p, int type, EvData data);
+      virtual ~MidiPlayEvent();
 
-      MidiPlayEvent& operator=(const MidiPlayEvent& e) { MEvent::operator=(e); _latency = e._latency; return *this; }
+      MidiPlayEvent& operator=(const MidiPlayEvent& e);
 
-      int latency() {return _latency;}
-      void setLatency(int latency) {_latency = latency;}
-      };
-
-//---------------------------------------------------------
-//   MidiRecFifo
-//---------------------------------------------------------
-
-class MidiRecFifo {
-      MidiRecordEvent fifo[MIDI_REC_FIFO_SIZE];
-      volatile int size;
-      int wIndex;
-      int rIndex;
-
-   public:
-      MidiRecFifo()  { clear(); }
-      bool put(const MidiRecordEvent& event);   // returns true on fifo overflow
-      MidiRecordEvent get();
-      const MidiRecordEvent& peek(int = 0);
-      void remove();
-      bool isEmpty() const { return size == 0; }
-      void clear()         { size = 0, wIndex = 0, rIndex = 0; }
-      int getSize() const  { return size; }
+      int latency();
+      void setLatency(int latency);
       };
 
 //---------------------------------------------------------
@@ -288,6 +247,16 @@ class MPEventList : public MPEL {
       // It will not handle duplicate events at DIFFERENT times.
       // Replaces event if it already exists.
       void add(const MidiPlayEvent& ev);
+      // Optimize to replace duplicate events at ANY time starting from the end of the list.
+      // Replaces event if it already exists.
+      // This looks backwards for the first occurance of a similar event and replaces it if found.
+      // This is mainly designed for a MidiDevice's queue buffer when the device is 'off' to avoid
+      //  large backlog of events waiting to be sent when the device comes back on. Some event types
+      //  are ignored or handled differently.
+      // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
+      // If RPNControllersReserved is false, it will optimize the EIGHT RPN standard controllers in a special way.
+      // If RPNControllersReserved is true, it will treat such controllers as ordinary generic controllers.
+      void addExclusive(const MidiPlayEvent& ev, bool RPNControllersReserved = false);
 };
 
 typedef MPEventList::iterator iMPEvent;
@@ -307,6 +276,16 @@ class SeqMPEventList : public SMPEL {
       // It will not handle duplicate events at DIFFERENT times.
       // Replaces event if it already exists.
       void add(const MidiPlayEvent& ev);
+      // Optimize to replace duplicate events at ANY time starting from the end of the list.
+      // Replaces event if it already exists.
+      // This looks backwards for the first occurance of a similar event and replaces it if found.
+      // This is mainly designed for a MidiDevice's queue buffer when the device is 'off' to avoid
+      //  large backlog of events waiting to be sent when the device comes back on. Some event types
+      //  are ignored or handled differently.
+      // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
+      // If RPNControllersReserved is false, it will optimize the EIGHT RPN standard controllers in a special way.
+      // If RPNControllersReserved is true, it will treat such controllers as ordinary generic controllers.
+      void addExclusive(const MidiPlayEvent& ev, bool RPNControllersReserved = false);
 };
 
 typedef SeqMPEventList::iterator iSeqMPEvent;

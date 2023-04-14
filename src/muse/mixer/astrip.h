@@ -32,7 +32,6 @@
 #include "strip.h"
 #include "meter.h"
 
-
 // Forward declarations:
 class QHBoxLayout;
 
@@ -251,9 +250,6 @@ class AudioStrip : public Strip {
       QPushButton* pre;
       QPushButton* off;
 
-      double volume;
-      bool _volPressed;
-
       QString colorNameButton;
 
       ClipperLabel* _clipperLabel[MusECore::MAX_CHANNELS];
@@ -297,8 +293,8 @@ class AudioStrip : public Strip {
       virtual ~AudioStrip();
 
       static const double volSliderStep;
-      static const double volSliderMax;
       static const int    volSliderPrec;
+      static const QString volDBSymbol;
 
       static const double auxSliderStep;
       static const double auxSliderMax;

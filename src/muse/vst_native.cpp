@@ -63,6 +63,33 @@
 //#define VST_NATIVE_DEBUG
 //#define VST_NATIVE_DEBUG_PROCESS
 
+#ifdef VST_VESTIGE_SUPPORT
+#ifndef effGetProgramNameIndexed
+#define effGetProgramNameIndexed 29
+#endif
+#ifndef effFlagsProgramChunks
+#define effFlagsProgramChunks 32
+#endif
+#ifndef effGetChunk
+#define effGetChunk 23
+#endif
+#ifndef effSetChunk
+#define effSetChunk 24
+#endif
+#ifndef effCanBeAutomated
+#define effCanBeAutomated 26
+#endif
+#ifndef effSetBypass
+#define effSetBypass 44
+#endif
+#ifndef effStartProcess
+#define effStartProcess 71
+#endif
+#ifndef effStopProcess
+#define effStopProcess 72
+#endif
+#endif
+
 namespace MusECore {
 
 extern JackAudioDevice* jackAudio;
@@ -420,81 +447,19 @@ void initVST_Native()
 //   VstNativeSynth
 //---------------------------------------------------------
 
-VstNativeSynth::VstNativeSynth(const QFileInfo& fi, const QString& uri, AEffect* plugin, 
-                               const QString& label, const QString& desc, const QString& maker, const QString& ver, 
-                               VstIntPtr id, void *dlHandle, bool isSynth, PluginFeatures_t reqFeatures)
-  : Synth(fi, uri, label, desc, maker, ver, reqFeatures)
-{
-  _handle = dlHandle;
-  _id = id;
-  _hasGui = plugin->flags & effFlagsHasEditor;
-  _inports = plugin->numInputs;
-  _outports = plugin->numOutputs;
-  _controlInPorts = plugin->numParams;
-//#ifndef VST_VESTIGE_SUPPORT
-  _hasChunks = plugin->flags & 32 /*effFlagsProgramChunks*/;
-//#else
- // _hasChunks = false;
-//#endif
-  
-  _flags = 0;
-  _vst_version = 0;
-  _vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, nullptr, 0.0f);
-  // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-  if(_vst_version >= 2)
-  {
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"receiveVstEvents", 0.0f) > 0)
-      _flags |= canReceiveVstEvents;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"sendVstEvents", 0.0f) > 0)
-      _flags |= canSendVstEvents;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"sendVstMidiEvent", 0.0f) > 0)
-      _flags |= canSendVstMidiEvents;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"sendVstTimeInfo", 0.0f) > 0)
-      _flags |= canSendVstTimeInfo;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"receiveVstMidiEvent", 0.0f) > 0)
-      _flags |= canReceiveVstMidiEvents;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"receiveVstTimeInfo", 0.0f) > 0)
-      _flags |= canReceiveVstTimeInfo;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"offline", 0.0f) > 0)
-      _flags |=canProcessVstOffline;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"plugAsChannelInsert", 0.0f) > 0)
-      _flags |= canUseVstAsInsert;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"plugAsSend", 0.0f) > 0)
-      _flags |= canUseVstAsSend;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"mixDryWet", 0.0f) > 0)
-      _flags |= canMixVstDryWet;
-    if(plugin->dispatcher(plugin, effCanDo, 0, 0, (void*)"midiProgramNames", 0.0f) > 0)
-      _flags |= canVstMidiProgramNames;
-  }
-  _isSynth = isSynth;
-}
-
 VstNativeSynth::VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info)
-  : Synth(PLUGIN_GET_QSTRING(info.filePath()),
-          PLUGIN_GET_QSTRING(info._uri),
-          PLUGIN_GET_QSTRING(info._label),
-          PLUGIN_GET_QSTRING(info._description),
-          PLUGIN_GET_QSTRING(info._maker),
-          PLUGIN_GET_QSTRING(info._version),
-          info._requiredFeatures)
+  : Synth(info), _handle(nullptr)
 {
-//   _handle = dlHandle;
-  _handle = nullptr;
   _id = info._subID;
   _hasGui = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasGui;
   _inports = info._inports;
   _outports = info._outports;
   _controlInPorts = info._controlInPorts;
-  
-//#ifndef VST_VESTIGE_SUPPORT
   _hasChunks = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasChunks;
-//#else
- // _hasChunks = false;
-//#endif
-  
   _vst_version = info._apiVersionMajor;
   _flags = info._vstPluginFlags;
   _isSynth = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+  _usesTransportSource = info._vstPluginFlags & canReceiveVstTimeInfo;
 }
 
 //---------------------------------------------------------
@@ -652,13 +617,6 @@ _error:
 bool VstNativeSynth::openPlugin(AEffect* plugin)
 {
   plugin->dispatcher(plugin, effOpen, 0, 0, nullptr, 0);
-
-  // work around to get airwave to work (author contacted so maybe another solution will
-  // reveal itself)
-  plugin->dispatcher(plugin, effSetSampleRate, 0, 0, nullptr, MusEGlobal::sampleRate);
-  plugin->dispatcher(plugin, effSetBlockSize, 0, MusEGlobal::segmentSize, nullptr, 0.0f);
-  plugin->dispatcher(plugin, effMainsChanged, 0, 1, nullptr, 0.0f);
-
   //plugin->dispatcher(plugin, effSetProgram, 0, 0, nullptr, 0.0f); // REMOVE Tim. Or keep?
   return true;
 }
@@ -670,7 +628,12 @@ bool VstNativeSynth::openPlugin(AEffect* plugin)
 SynthIF* VstNativeSynth::createSIF(SynthI* s)
       {
       VstNativeSynthIF* sif = new VstNativeSynthIF(s);
-      sif->init(this);
+      if(!sif->init(this))
+      {
+          delete sif;
+          sif = nullptr;
+      }
+
       return sif;
       }
 
@@ -684,16 +647,15 @@ VstNativeSynthIF::VstNativeSynthIF(SynthI* s) : SynthIF(s)
       _gw = nullptr;
       _synth = nullptr;
       _plugin = nullptr;
-      _active = false;
       _editor = nullptr;
       _inProcess = false;
        _controls = nullptr;
-//       controlsOut = 0;
       _audioInBuffers = nullptr;
       _audioInSilenceBuf = nullptr;
       _audioOutBuffers = nullptr;
       userData.pstate = 0;
       userData.sif = this;
+      _transportLatencyCorr = 0.0f;
 }
 
 VstNativeSynthIF::~VstNativeSynthIF()
@@ -881,7 +843,7 @@ bool VstNativeSynthIF::init(Synth* s)
           cl = icl->second;
           _controls[i].val = cl->curVal();
           
-          if(dispatch(26 /*effCanBeAutomated*/, i, 0, nullptr, 0.0f) == 1)
+          if(dispatch(effCanBeAutomated, i, 0, nullptr, 0.0f) == 1)
           {
             double v = cl->curVal();
             if(v != _plugin->getParameter(_plugin, i))
@@ -896,10 +858,10 @@ bool VstNativeSynthIF::init(Synth* s)
         
         cl->setRange(min, max);
         cl->setName(QString(param_name));
-        //cl->setValueType(ladspaCtrlValueType(ld, k));
         cl->setValueType(ctrlValueType(i));
-        //cl->setMode(ladspaCtrlMode(ld, k));
         cl->setMode(ctrlMode(i));
+        // Set the value units index.
+        cl->setValueUnit(valueUnit(i));
       }
       
       activate();     
@@ -939,8 +901,7 @@ void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int leve
               name.toLatin1().constData(), vstVersion());
       unsigned long len = 0;
       void* p = 0;
-      len = plugin->dispatcher(plugin, 23 /* effGetChunk */, 0, 0, &p, 0.0);
-
+      len = plugin->dispatcher(plugin, effGetChunk, 0, 0, &p, 0.0);
       if (len)
       {
          QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
@@ -984,9 +945,14 @@ void VstNativeSynth::vstconfSet(AEffect *plugin, const std::vector<QString> &cus
       if(dec64.isEmpty())
         dec64 = QByteArray::fromBase64(paramIn);
       
-      plugin->dispatcher(plugin, 24 /* effSetChunk */, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
+      plugin->dispatcher(plugin, effSetChunk, 0, dec64.size(), (void*)dec64.data(), 0.0); // index 0: is bank 1: is program
       break; //one customData tag includes all data in base64
    }
+}
+
+void VstNativeSynth::setPluginEnabled(AEffect *plugin, bool en)
+{
+   plugin->dispatcher(plugin, effSetBypass, 0, !en, nullptr, 0.0f);
 }
 
 //---------------------------------------------------------
@@ -1058,17 +1024,55 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 #endif
       memset(&_timeInfo, 0, sizeof(_timeInfo));
 
-      unsigned int curr_frame = MusEGlobal::audio->pos().frame();
-      _timeInfo.samplePos = (double)curr_frame;
+      const bool extsync = MusEGlobal::extSyncFlag;
+      unsigned int cur_frame = MusEGlobal::audio->pos().frame();
+      unsigned int cur_tick = MusEGlobal::audio->tickPos();
+
+      float latency_corr = 0.0f;
+      if(userData->sif)
+        latency_corr = userData->sif->transportLatencyCorr();
+      else if(userData->pstate) // TODO Plugin midi
+        latency_corr = userData->pstate->_latency_corr;
+
+      unsigned int lat_offset = 0;
+
+      //--------------------------------------------------------------------
+      // Account for the latency correction and/or compensation.
+      //--------------------------------------------------------------------
+      // TODO How to handle when external sync is on. For now, don't try to correct.
+      if(MusEGlobal::config.enableLatencyCorrection && !extsync)
+      {
+        // This value is negative for correction.
+        if((int)latency_corr < 0)
+        {
+          // Convert to a positive offset.
+          const unsigned int l = (unsigned int)(-latency_corr);
+          if(l > lat_offset)
+            lat_offset = l;
+        }
+        if(lat_offset != 0)
+        {
+          // Be sure to correct both the frame and the tick.
+          // Some plugins may use the frame, others the beat.
+          cur_frame += lat_offset;
+          Pos ppp(cur_frame, false);
+          cur_tick = ppp.tick();
+          //ppp += nsamp;
+          //next_tick = ppp.tick();
+        }
+      }
+
+      _timeInfo.samplePos = (double)cur_frame;
       _timeInfo.sampleRate = (double)MusEGlobal::sampleRate;
       _timeInfo.flags = 0;
 
-      Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : curr_frame, MusEGlobal::extSyncFlag ? true : false);
+      //Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : cur_frame, MusEGlobal::extSyncFlag ? true : false);
 
       if(value & kVstBarsValid)
       {
-         int p_bar, p_beat, p_tick;
-         p.mbt(&p_bar, &p_beat, &p_tick);
+         int p_bar, p_beat;
+         unsigned p_tick;
+         MusEGlobal::sigmap.tickValues(cur_tick, &p_bar, &p_beat, &p_tick);
          _timeInfo.barStartPos = (double)Pos(p_bar, 0, 0).tick() / (double)MusEGlobal::config.division;
          _timeInfo.flags |= kVstBarsValid;
       }
@@ -1076,7 +1080,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       if(value & kVstTimeSigValid)
       {
          int z, n;
-         MusEGlobal::sigmap.timesig(p.tick(), z, n);
+         MusEGlobal::sigmap.timesig(cur_tick, z, n);
 
 #ifndef VST_VESTIGE_SUPPORT
          _timeInfo.timeSigNumerator = (long)z;
@@ -1090,13 +1094,13 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 
       if(value & kVstPpqPosValid)
       {
-         _timeInfo.ppqPos = (double)MusEGlobal::audio->tickPos() / (double)MusEGlobal::config.division;
+         _timeInfo.ppqPos = (double)cur_tick / (double)MusEGlobal::config.division;
          _timeInfo.flags |= kVstPpqPosValid;
       }
 
       if(value & kVstTempoValid)
       {
-         double tempo = MusEGlobal::tempomap.tempo(p.tick());
+         const double tempo = MusEGlobal::tempomap.tempo(cur_tick);
          _timeInfo.tempo = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
          _timeInfo.flags |= kVstTempoValid;
       }
@@ -1249,6 +1253,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
             !strcmp((char*)ptr, "sendVstMidiEvent") ||
             !strcmp((char*)ptr, "sendVstTimeInfo") ||
             !strcmp((char*)ptr, "sizeWindow") ||
+            // What's this? Can't find it anywhere in the 2.4 SDK.
             !strcmp((char*)ptr, "supplyIdle"))
          return 1;
 
@@ -1408,16 +1413,14 @@ void VstNativeSynthIF::idleEditor()
 
 void VstNativeSynthIF::guiHeartBeat()
 {
+  SynthIF::guiHeartBeat();
+
 #ifdef VST_NATIVE_DEBUG
   fprintf(stderr, "VstNativeSynthIF::guiHeartBeat %p\n", this);
 #endif
 
-  // REMOVE Tim. Or keep.
-  if(_plugin && _active)
+  if(_plugin && _curActiveState)
   {
-//#ifdef VST_FORCE_DEPRECATED   // REMOVE Tim. Or keep
-    //_plugin->dispatcher(_plugin, effIdle, 0, 0, nullptr, 0.0f);
-//#endif
      if(_guiVisible)
      {
        _plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
@@ -1571,18 +1574,18 @@ void VstNativeSynthIF::eventReceived(VstMidiEvent* ev)
       // So, technically this is correct. What MATTERS is how we adjust the times for storage, and/or simultaneous playback in THIS period,
       //  and TEST: we'll need to make sure any non-contiguous previous period is handled correctly by process - will it work OK as is?
       // If ALSA works OK than this should too...
-      event.setTime(MusEGlobal::audio->pos().frame() + ev->deltaFrames);
+      const unsigned int abs_ft = MusEGlobal::audio->curSyncFrame() + ev->deltaFrames;
+      event.setTime(abs_ft);
+
       event.setTick(MusEGlobal::lastExtMidiSyncTick);
 
-//       event.setChannel(*(ev->buffer) & 0xf);
-//       int type = *(ev->buffer) & 0xf0;
-//       int a    = *(ev->buffer + 1) & 0x7f;
-//       int b    = *(ev->buffer + 2) & 0x7f;
       event.setChannel(ev->midiData[0] & 0xf);
       int type = ev->midiData[0] & 0xf0;
       int a    = ev->midiData[1] & 0x7f;
       int b    = ev->midiData[2] & 0x7f;
       event.setType(type);
+
+      //fprintf(stderr, "VstNativeSynthIF::eventReceived(): ev->deltaFrames:%d time:%d type:%x a:%d b:%d\n", ev->deltaFrames, event.time(), type, a, b);
 
       switch(type) {
             case ME_NOTEON:
@@ -1766,25 +1769,19 @@ void VstNativeSynthIF::queryPrograms()
       {
         buf[0] = 0;
 
-//#ifndef VST_VESTIGE_SUPPORT
         // value = category. -1 = regular linear.
         if(dispatch(effGetProgramNameIndexed, prog, -1, buf, 0.0f) == 0)  
         {
-//#endif
           dispatch(effSetProgram, 0, prog, nullptr, 0.0f);
           dispatch(effGetProgramName, 0, 0, buf, 0.0f);
           need_restore = true;
-//#ifndef VST_VESTIGE_SUPPORT
         }
-//#endif
 
         int bankH = (prog >> 14) & 0x7f;
         int bankL = (prog >> 7) & 0x7f;
         int patch = prog & 0x7f;
         VST_Program p;
         p.name    = QString(buf);
-        //p.program = prog & 0x7f;
-        //p.bank    = prog << 7;
         p.program = (bankH << 16) | (bankL << 8) | patch;
         programs.push_back(p);
       }
@@ -1899,7 +1896,6 @@ QString VstNativeSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/) co
         hbank = 0;
   unsigned long p = (hbank << 16) | (lbank << 8) | program;
   unsigned long vp          = (hbank << 14) | (lbank << 7) | program;
-  //if((int)vp < _plugin->numPrograms)
   if(vp < programs.size())
   {
     for(std::vector<VST_Program>::const_iterator i = programs.begin(); i != programs.end(); ++i)
@@ -2171,6 +2167,11 @@ void VstNativeSynthIF::setCustomData(const std::vector< QString > &customParams)
 {
   _synth->vstconfSet(_plugin, customParams);
 }
+
+bool VstNativeSynthIF::usesTransportSource() const { return _synth->usesTransportSource(); }
+
+// Temporary variable holds value to be passed to the callback routine.
+float VstNativeSynthIF::transportLatencyCorr() const { return _transportLatencyCorr; }
 
 //---------------------------------------------------------
 //   getData
@@ -2516,7 +2517,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                     {
                       fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
                       // 10 = 2 bytes header + "VSTSAVE" + 1 byte flags (compression etc)
-                      dispatch(24 /* effSetChunk */, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
+                      dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }
 //#else
 //                    fprintf(stderr, "support for vst chunks not compiled in!\n");
@@ -2567,9 +2568,47 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 
   unsigned long sample = 0;
 
+  const bool isOn = on();
+  const PluginBypassType bypassType = pluginBypassType();
+
+  //  Normally if the plugin is inactive or off we tell it to connect to dummy audio ports.
+  //  But this can change depending on detected bypass type, below.
+  bool connectToDummyAudioPorts = !_curActiveState || !isOn;
+  //  Normally if the plugin is inactive or off we use a fixed controller period.
+  //  But this can change depending on detected bypass type, below.
+  bool usefixedrate = !_curActiveState || !isOn;
+  const unsigned int fin_nsamp = nframes;
+
+  // If the plugin has a REAL enable or bypass control port, we allow the plugin
+  //  a full-length run so that it can handle its own enabling or bypassing.
+  if(_curActiveState)
+  {
+    switch(bypassType)
+    {
+      case PluginBypassTypeEmulatedEnableController:
+      break;
+
+      case PluginBypassTypeEnablePort:
+      case PluginBypassTypeBypassPort:
+          connectToDummyAudioPorts = false;
+          usefixedrate = false;
+      break;
+
+      case PluginBypassTypeEmulatedEnableFunction:
+      break;
+
+      case PluginBypassTypeEnableFunction:
+      case PluginBypassTypeBypassFunction:
+          connectToDummyAudioPorts = false;
+      break;
+    }
+  }
+
+  // See if the features require a fixed control period.
   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
-  //       For now we treat it like fixed size.
-  const bool usefixedrate = (requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize));
+  //       For now we treat it like fixed control period.
+  if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+    usefixedrate = true;
 
   // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
@@ -2578,13 +2617,24 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   const unsigned long min_per_mask = min_per-1;   // min_per must be power of 2
 
   AudioTrack* atrack = track();
+
+  // This value is negative for correction.
+  _transportLatencyCorr = 0.0f;
+  if(atrack)
+  {
+    TransportSource& ts = atrack->transportSource();
+    const TrackLatencyInfo& li = ts.getLatencyInfo(false);
+    if(li._canCorrectOutputLatency)
+      _transportLatencyCorr = li._sourceCorrectionValue;
+  }
+
   const AutomationType at = atrack->automationType();
   const bool no_auto = !MusEGlobal::automation || at == AUTO_OFF;
   const unsigned long in_ctrls = _synth->inControls();
   CtrlListList* cll = atrack->controller();
   ciCtrlList icl_first;
   const int plug_id = id();
-  if(plug_id != -1 && ports != 0)  // Don't bother if not 'running'.
+  if(plug_id != -1)
     icl_first = cll->lower_bound(genACnum(plug_id, 0));
 
   // Inform the host callback we are in the audio thread.
@@ -2596,8 +2646,9 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
   
   bool used_in_chan_array[in_ports]; // Don't bother initializing if not 'running'. 
   
+  // Gather input data from connected input routes.
   // Don't bother if not 'running'.
-  if(ports != 0)
+  if(_curActiveState /*&& isOn*/)
   {
     // Initialize the array.
     for(unsigned long i = 0; i < in_ports; ++i)
@@ -2637,14 +2688,19 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
     }
   }
 
+  // TODO: Should we implement emulated bypass for plugins without a bypass feature?
+  //       That could be very difficult. How to determine any relationships between
+  //        inputs and outputs? LV2 has some features for that. VST has speakers.
+  //       And what about midi ports...
+
   #ifdef VST_NATIVE_DEBUG_PROCESS
   fprintf(stderr, "VstNativeSynthIF::getData: Processing automation control values...\n");
   #endif
 
   int cur_slice = 0;
-  while(sample < nframes)
+  while(sample < fin_nsamp)
   {
-    unsigned long nsamp = nframes - sample;
+    unsigned long slice_samps = fin_nsamp - sample;
     const unsigned long slice_frame = pos + sample;
 
     //
@@ -2653,7 +2709,6 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
     //  from there, but this section determines where the next highest maximum frame
     //  absolutely needs to be for smooth playback of the controller value stream...
     //
-    if(ports != 0)    // Don't bother if not 'running'.
     {
       ciCtrlList icl = icl_first;
       for(unsigned long k = 0; k < in_ctrls; ++k)
@@ -2703,7 +2758,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 
         if(!usefixedrate && MusEGlobal::audio->isPlaying())
         {
-          unsigned long samps = nsamp;
+          unsigned long samps = slice_samps;
           if(ci.eFrameValid)
             samps = (unsigned long)ci.eFrame - slice_frame;
           
@@ -2716,8 +2771,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
           else
             samps = min_per;
 
-          if(samps < nsamp)
-            nsamp = samps;
+          if(samps < slice_samps)
+            slice_samps = samps;
 
         }
 
@@ -2729,7 +2784,7 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
         if(_controls[k].val != new_val)
         {
           _controls[k].val = new_val;
-          if(dispatch(26 /*effCanBeAutomated*/, k, 0, nullptr, 0.0f) == 1)
+          if(dispatch(effCanBeAutomated, k, 0, nullptr, 0.0f) == 1)
           {
             if(_plugin->getParameter(_plugin, k) != new_val)
               _plugin->setParameter(_plugin, k, new_val);
@@ -2741,14 +2796,15 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
         }
 
 #ifdef VST_NATIVE_DEBUG_PROCESS
-        fprintf(stderr, "VstNativeSynthIF::getData k:%lu sample:%lu frame:%lu ci.eFrame:%d nsamp:%lu \n", k, sample, frame, ci.eFrame, nsamp);
+        fprintf(stderr, "VstNativeSynthIF::getData k:%lu sample:%lu frame:%lu ci.eFrame:%d slice_samps:%lu \n",
+                k, sample, frame, ci.eFrame, slice_samps);
 #endif
         
       }
     }
     
 #ifdef VST_NATIVE_DEBUG_PROCESS
-      fprintf(stderr, "VstNativeSynthIF::getData sample:%lu nsamp:%lu\n", sample, nsamp);
+      fprintf(stderr, "VstNativeSynthIF::getData sample:%lu slice_samps:%lu\n", sample, slice_samps);
 #endif
 
     bool found = false;
@@ -2780,10 +2836,14 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
         continue;
       }
 
-      if(evframe >= nframes                                                         // Next events are for a later period.
-          || (!usefixedrate && !found && !v.unique && (evframe - sample >= nsamp))  // Next events are for a later run in this period. (Autom took prio.)
-          || (found && !v.unique && (evframe - sample >= min_per))                  // Eat up events within minimum slice - they're too close.
-          || (usefixedrate && found && v.unique && v.idx == index))                 // Fixed rate and must reply to all.
+      if(// Next events are for a later period.
+         evframe >= nframes
+         // Next events are for a later run in this period. (Autom took prio.)
+         || (!usefixedrate && !found && !v.unique && (evframe - sample >= slice_samps))
+         // Eat up events within minimum slice - they're too close.
+         || (found && !v.unique && (evframe - sample >= min_per))
+         // Fixed rate and must reply to all.
+         || (usefixedrate && found && v.unique && v.idx == index))
         break;
 
       if(v.idx >= in_ctrls) // Sanity check.
@@ -2796,24 +2856,6 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       frame = evframe;
       index = v.idx;
 
-      if(ports == 0)                     // Don't bother if not 'running'.
-      {
-        _controls[v.idx].val = v.value;   // Might as well at least update these.
-// #ifndef VST_VESTIGE_SUPPORT
-//         if(dispatch(effCanBeAutomated, v.idx, 0, nullptr, 0.0f) == 1)
-//         {
-// #endif
-//           if(v.value != _plugin->getParameter(_plugin, v.idx))
-//             _plugin->setParameter(_plugin, v.idx, v.value);
-// #ifndef VST_VESTIGE_SUPPORT
-//         }
-//   #ifdef VST_NATIVE_DEBUG
-//         else
-//           fprintf(stderr, "VstNativeSynthIF::getData %s parameter:%lu cannot be automated\n", name().toLatin1().constData(), v.idx);
-//   #endif
-// #endif
-      }
-      else
       {
         CtrlInterpolate* ci = &_controls[v.idx].interp;
         // Tell it to stop the current ramp at this frame, when it does stop, set this value:
@@ -2826,105 +2868,115 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
       // Need to update the automation value, otherwise it overwrites later with the last automation value.
       if(plug_id != -1)
         synti->setPluginCtrlVal(genACnum(plug_id, v.idx), v.value);
-      
+
+      // TODO: Possible FIXME: Where is setParameter? Shouldn't it be called?
       _controlFifo.remove();               // Done with the ring buffer's item. Remove it.
     }
 
     if(found && !usefixedrate)  // If a control FIFO item was found, takes priority over automation controller stream.
-      nsamp = frame - sample;
+      slice_samps = frame - sample;
 
-    if(sample + nsamp > nframes)         // Safety check.
-      nsamp = nframes - sample;
+    if(sample + slice_samps > nframes)         // Safety check.
+      slice_samps = nframes - sample;
 
-    // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
-    // Note this means it is still possible to get stuck in the top loop (at least for a while).
-    if(nsamp != 0)
     {
       unsigned long nevents = 0;
+
       // Get the state of the stop flag.
       const bool do_stop = synti->stopFlag();
+      // Get whether playback and user midi events can be written to this midi device.
+      const bool we = synti->writeEnable();
 
       MidiPlayEvent buf_ev;
-      
-      // Transfer the user lock-free buffer events to the user sorted multi-set.
-      // False = don't use the size snapshot, but update it.
-      const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize(false);
-      for(unsigned int i = 0; i < usr_buf_sz; ++i)
+
+      // If stopping or not 'running' just purge ALL playback FIFO and container events.
+      // But do not clear the user ones. We need to hold on to them until active,
+      //  they may contain crucial events like loading a soundfont from a song file.
+      if(do_stop || !_curActiveState || !we)
       {
-        if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-          synti->_outUserEvents.insert(buf_ev);
-      }
-      
-      // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-      const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize(false);
-      for(unsigned int i = 0; i < pb_buf_sz; ++i)
-      {
-        // Are we stopping? Just remove the item.
-        if(do_stop)
-          synti->eventBuffers(MidiDevice::PlaybackBuffer)->remove();
-        // Otherwise get the item.
-        else if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
-          synti->_outPlaybackEvents.insert(buf_ev);
-      }
-  
-      // Are we stopping?
-      if(do_stop)
-      {
-        // Transport has stopped, purge ALL further scheduled playback events now.
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
+        {
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.addExclusive(buf_ev);
+        }
+
+        synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
         synti->_outPlaybackEvents.clear();
         // Reset the flag.
         synti->setStopFlag(false);
       }
-      
-      // Count how many events we need.
-      for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+      else
       {
-        const MidiPlayEvent& e = *impe;
-        if(e.time() >= (syncFrame + sample + nsamp))
-          break;
-        ++nevents;
-      }
-      for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
-      {
-        const MidiPlayEvent& e = *impe;
-        if(e.time() >= (syncFrame + sample + nsamp))
-          break;
-        ++nevents;
-      }
-      
-      VstMidiEvent events[nevents];
-      char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
-      VstEvents *vst_events = (VstEvents*)evbuf;
-      vst_events->numEvents = 0;
-      vst_events->reserved  = 0;
-  
-      iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
-      iMPEvent impe_us = synti->_outUserEvents.begin();
-      bool using_pb;
-  
-      unsigned long event_counter = 0;
-      while(1)
-      {
-        if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
-          using_pb = *impe_pb < *impe_us;
-        else if(impe_pb != synti->_outPlaybackEvents.end())
-          using_pb = true;
-        else if(impe_us != synti->_outUserEvents.end())
-          using_pb = false;
-        else break;
-        
-        const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
-
-        #ifdef VST_NATIVE_DEBUG
-        fprintf(stderr, "VstNativeSynthIF::getData eventFifos event time:%d\n", e.time());
-        #endif
-
-        // Event is for future?
-        if(e.time() >= (sample + nsamp + syncFrame))
-          break;
-
-        if(ports != 0)  // Don't bother if not 'running'.
+        // Transfer the user lock-free buffer events to the user sorted multi-set.
+        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+        for(unsigned int i = 0; i < usr_buf_sz; ++i)
         {
+          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+            synti->_outUserEvents.insert(buf_ev);
+        }
+
+        // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+        const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+        for(unsigned int i = 0; i < pb_buf_sz; ++i)
+        {
+          if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+            synti->_outPlaybackEvents.insert(buf_ev);
+        }
+      }
+
+      // Don't bother if not 'running'.
+      if(_curActiveState && we)
+      {
+        // Count how many events we need.
+        for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+        {
+          const MidiPlayEvent& e = *impe;
+          if(e.time() >= (syncFrame + sample + slice_samps))
+            break;
+          ++nevents;
+        }
+        for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
+        {
+          const MidiPlayEvent& e = *impe;
+          if(e.time() >= (syncFrame + sample + slice_samps))
+            break;
+          ++nevents;
+        }
+
+        VstMidiEvent events[nevents];
+        char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
+        VstEvents *vst_events = (VstEvents*)evbuf;
+        vst_events->numEvents = 0;
+        vst_events->reserved  = 0;
+
+        iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+        iMPEvent impe_us = synti->_outUserEvents.begin();
+        bool using_pb;
+
+        unsigned long event_counter = 0;
+        while(1)
+        {
+          if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+            using_pb = *impe_pb < *impe_us;
+          else if(impe_pb != synti->_outPlaybackEvents.end())
+            using_pb = true;
+          else if(impe_us != synti->_outUserEvents.end())
+            using_pb = false;
+          else break;
+
+          const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
+
+          #ifdef VST_NATIVE_DEBUG
+          fprintf(stderr, "VstNativeSynthIF::getData eventFifos event time:%d\n", e.time());
+          #endif
+
+          // Event is for future?
+          if(e.time() >= (sample + slice_samps + syncFrame))
+            break;
+
           // Returns false if the event was not filled. It was handled, but some other way.
           if(processEvent(e, &events[event_counter]))
           {
@@ -2932,69 +2984,75 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
             unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
             ft = (ft < sample) ? 0 : ft - sample;
 
-            if(ft >= nsamp)
+            if(ft >= slice_samps)
             {
-                fprintf(stderr, "VstNativeSynthIF::getData: eventFifos event time:%d out of range. pos:%d syncFrame:%u ft:%u sample:%lu nsamp:%lu\n", 
-                        e.time(), pos, syncFrame, ft, sample, nsamp);
-                ft = nsamp - 1;
+                fprintf(stderr, "VstNativeSynthIF::getData: eventFifos event time:%d "
+                "out of range. pos:%d syncFrame:%u ft:%u sample:%lu slice_samps:%lu\n",
+                        e.time(), pos, syncFrame, ft, sample, slice_samps);
+                ft = slice_samps - 1;
             }
             vst_events->events[event_counter] = (VstEvent*)&events[event_counter];
             events[event_counter].deltaFrames = ft;
 
             ++event_counter;
           }
-        }
-        // Done with ring buffer's event. Remove it.
-        // C++11.
-        if(using_pb)
-          impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
-        else
-          impe_us = synti->_outUserEvents.erase(impe_us);
-      }
-      
-      if(event_counter < nevents)
-        nevents = event_counter;
-      
-      #ifdef VST_NATIVE_DEBUG_PROCESS
-      fprintf(stderr, "VstNativeSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
-      #endif
 
-      if(ports != 0)  // Don't bother if not 'running'.
-      {
+          // Done with buffer's event. Remove it.
+          // C++11.
+          if(using_pb)
+            impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+          else
+            impe_us = synti->_outUserEvents.erase(impe_us);
+        }
+
+        if(event_counter < nevents)
+          nevents = event_counter;
+
         // Set the events pointer.
         if(nevents > 0)
         {
           vst_events->numEvents = nevents;
           dispatch(effProcessEvents, 0, 0, vst_events, 0.0f);
         }
-
-        float* in_bufs[in_ports];
-        float* out_bufs[out_ports];
-
-        // Connect the given buffers directly to the ports, up to a max of synth ports.
-        for(unsigned long k = 0; k < nop; ++k)
-          out_bufs[k] = buffer[k] + sample;
-        // Connect the remaining ports to some local buffers (not used yet).
-        for(unsigned long k = nop; k < out_ports; ++k)
-          out_bufs[k] = _audioOutBuffers[k] + sample;
-        // Connect all inputs either to some local buffers, or a silence buffer.
-        for(unsigned long k = 0; k < in_ports; ++k)
-        {
-          if(used_in_chan_array[k])
-            in_bufs[k] = _audioInBuffers[k] + sample;
-          else
-            in_bufs[k] = _audioInSilenceBuf + sample;
-        }
-
-        // Run the synth for a period of time. This processes events and gets/fills our local buffers...
-        if((_plugin->flags & effFlagsCanReplacing) && _plugin->processReplacing)
-        {
-          _plugin->processReplacing(_plugin, in_bufs, out_bufs, nsamp);
-        }
       }
-      
-      sample += nsamp;
     }
+
+    #ifdef VST_NATIVE_DEBUG_PROCESS
+    fprintf(stderr, "VstNativeSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
+    #endif
+
+    // Don't bother if not 'running'.
+    if(_curActiveState)
+    {
+      float* in_bufs[in_ports];
+      float* out_bufs[out_ports];
+      for(unsigned long k = 0; k < out_ports; ++k)
+      {
+        if(!connectToDummyAudioPorts && k < nop)
+          // Connect the given buffers directly to the ports, up to a max of synth ports.
+          out_bufs[k] = buffer[k] + sample;
+        else
+          // Connect the remaining ports to some local buffers (not used yet).
+          out_bufs[k] = _audioOutBuffers[k] + sample;
+      }
+
+      // Connect all inputs either to the input buffers, or a silence buffer.
+      for(unsigned long k = 0; k < in_ports; ++k)
+      {
+        if(!connectToDummyAudioPorts && used_in_chan_array[k])
+          in_bufs[k] = _audioInBuffers[k] + sample;
+        else
+          in_bufs[k] = _audioInSilenceBuf + sample;
+      }
+
+      // Run the synth for a period of time. This processes events and gets/fills our local buffers...
+      if((_plugin->flags & effFlagsCanReplacing) && _plugin->processReplacing)
+      {
+        _plugin->processReplacing(_plugin, in_bufs, out_bufs, slice_samps);
+      }
+    }
+
+    sample += slice_samps;
 
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
@@ -3009,8 +3067,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 // Methods for PluginIBase:
 //--------------------------------
 
-unsigned long VstNativeSynthIF::pluginID()                        { return (_plugin) ? _plugin->uniqueID : 0; }
-int VstNativeSynthIF::id()                                        { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth. 
+unsigned long VstNativeSynthIF::pluginID() const                  { return (_plugin) ? _plugin->uniqueID : 0; }
+int VstNativeSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
 QString VstNativeSynthIF::pluginLabel() const                     { return _synth ? QString(_synth->name()) : QString(); } // FIXME Maybe wrong
 QString VstNativeSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
 QString VstNativeSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
@@ -3029,17 +3087,14 @@ void VstNativeSynthIF::enableAllControllers(bool v)
 void VstNativeSynthIF::updateControllers() { }
 void VstNativeSynthIF::activate()
 {
+  if(_curActiveState)
+    return;
+
   // Set some default properties
   dispatch(effSetSampleRate, 0, 0, nullptr, MusEGlobal::sampleRate);
   dispatch(effSetBlockSize, 0, MusEGlobal::segmentSize, nullptr, 0.0f);
-  //for (unsigned short i = 0; i < instances(); ++i) {
-  //        dispatch(i, effMainsChanged, 0, 1, nullptr, 0.0f);
   dispatch(effMainsChanged, 0, 1, nullptr, 0.0f);
-#ifndef VST_VESTIGE_SUPPORT
-  //dispatch(i, effStartProcess, 0, 0, nullptr, 0.0f);
   dispatch(effStartProcess, 0, 0, nullptr, 0.0f);
-#endif
-  //}
 
 // REMOVE Tim. Or keep? From PluginI::activate().
 //   if (initControlValues) {
@@ -3053,19 +3108,15 @@ void VstNativeSynthIF::activate()
 //               controls[i].tmpVal = controls[i].val;
 //               }
 //         }
-  _active = true;
+  SynthIF::activate();
 }
 void VstNativeSynthIF::deactivate()
 {
-  _active = false;
-  //for (unsigned short i = 0; i < instances(); ++i) {
-#ifndef VST_VESTIGE_SUPPORT
-  //dispatch(i, effStopProcess, 0, 0, nullptr, 0.0f);
+  if(!_curActiveState)
+    return;
+  SynthIF::deactivate();
   dispatch(effStopProcess, 0, 0, nullptr, 0.0f);
-#endif
-  //dispatch(i, effMainsChanged, 0, 0, nullptr, 0.0f);
   dispatch(effMainsChanged, 0, 0, nullptr, 0.0f);
-  //}
 }
 
 unsigned long VstNativeSynthIF::parameters() const                { return _synth ? _synth->inControls() : 0; }
@@ -3073,7 +3124,7 @@ unsigned long VstNativeSynthIF::parametersOut() const             { return 0; }
 void VstNativeSynthIF::setParam(unsigned long i, double val)       { setParameter(i, val); }
 double VstNativeSynthIF::param(unsigned long i) const              { return getParameter(i); }
 double VstNativeSynthIF::paramOut(unsigned long) const            { return 0.0; }
-const char* VstNativeSynthIF::paramName(unsigned long i)          
+const char* VstNativeSynthIF::paramName(unsigned long i) const
 {
   if(!_plugin)
     return 0;
@@ -3083,8 +3134,8 @@ const char* VstNativeSynthIF::paramName(unsigned long i)
   return buf;
 }
 
-const char* VstNativeSynthIF::paramOutName(unsigned long)       { return 0; }
-LADSPA_PortRangeHint VstNativeSynthIF::range(unsigned long /*i*/)     
+const char* VstNativeSynthIF::paramOutName(unsigned long) const       { return 0; }
+LADSPA_PortRangeHint VstNativeSynthIF::range(unsigned long /*i*/) const
 {
   LADSPA_PortRangeHint h;
   // FIXME TODO:
@@ -3093,7 +3144,7 @@ LADSPA_PortRangeHint VstNativeSynthIF::range(unsigned long /*i*/)
   h.UpperBound = 1.0;
   return h;
 }
-LADSPA_PortRangeHint VstNativeSynthIF::rangeOut(unsigned long)  
+LADSPA_PortRangeHint VstNativeSynthIF::rangeOut(unsigned long) const
 {
   // There are no output controls.
   LADSPA_PortRangeHint h;
@@ -3102,11 +3153,27 @@ LADSPA_PortRangeHint VstNativeSynthIF::rangeOut(unsigned long)
   h.UpperBound = 1.0;
   return h;
 }
+void VstNativeSynthIF::range(unsigned long /*i*/, float* min, float* max) const
+{
+  // FIXME TODO:
+  *min = 0.0;
+  *max = 1.0;
+}
+void VstNativeSynthIF::rangeOut(unsigned long /*i*/, float* min, float* max) const
+{
+  // There are no output controls.
+  *min = 0.0;
+  *max = 1.0;
+}
 // FIXME TODO:
 CtrlValueType VstNativeSynthIF::ctrlValueType(unsigned long /*i*/) const { return VAL_LINEAR; }
 CtrlList::Mode VstNativeSynthIF::ctrlMode(unsigned long /*i*/) const     { return CtrlList::INTERPOLATE; }
+// There are no output controls.
+CtrlValueType VstNativeSynthIF::ctrlOutValueType(unsigned long /*i*/) const { return VAL_LINEAR; }
+CtrlList::Mode VstNativeSynthIF::ctrlOutMode(unsigned long /*i*/) const     { return CtrlList::INTERPOLATE; }
 
 VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures_t reqFeatures)
+ : Plugin()
 {
    _synth = s;
 
@@ -3147,33 +3214,23 @@ VstNativePluginWrapper::VstNativePluginWrapper(VstNativeSynth *s, PluginFeatures
    _fakeLd.PortDescriptors = _fakePds;
    _fakeLd.Properties = 0;
    plugin = &_fakeLd;
-   _isDssi = false;
-   _isDssiSynth = false;
-   _isLV2Plugin = false;
-   _isLV2Synth = false;
-
-#ifdef DSSI_SUPPORT
-   dssi_descr = nullptr;
-#endif
 
    fi = _synth->info;
    _uri = _synth->uri();
-   ladspa = nullptr;
-   _handle = 0;
-   _references = 0;
-   _instNo     = 0;
    _label = _synth->name();
    _name = _synth->description();
    _uniqueID = plugin->UniqueID;
    _maker = _synth->maker();
    _copyright = _synth->version();
 
-   _portCount = plugin->PortCount;
+    _pluginFreewheelType = _synth->pluginFreewheelType();
+    _freewheelPortIndex = _synth->freewheelPortIndex();
+    _pluginLatencyReportingType = _synth->pluginLatencyReportingType();
+    _latencyPortIndex = _synth->latencyPortIndex();
+    _pluginBypassType = _synth->pluginBypassType();
+    _enableOrBypassPortIndex = _synth->enableOrBypassPortIndex();
 
-   _inports = 0;
-   _outports = 0;
-   _controlInPorts = 0;
-   _controlOutPorts = 0;
+   _portCount = plugin->PortCount;
 
    for(unsigned long k = 0; k < _portCount; ++k)
    {
@@ -3309,13 +3366,13 @@ int VstNativePluginWrapper::incReferences(int ref)
 void VstNativePluginWrapper::activate(LADSPA_Handle handle)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+   if(!state || state->active)
+     return;
    // Set some default properties
    dispatch(state, effSetSampleRate, 0, 0, nullptr, MusEGlobal::sampleRate);
    dispatch(state, effSetBlockSize, 0, MusEGlobal::segmentSize, nullptr, 0.0f);
-   //for (unsigned short i = 0; i < instances(); ++i) {
-   //        dispatch(i, effMainsChanged, 0, 1, nullptr, 0.0f);
    dispatch(state, effMainsChanged, 0, 1, nullptr, 0.0f);
-   dispatch(state, 71 /*effStartProcess*/, 0, 0, nullptr, 0.0f);
+   dispatch(state, effStartProcess, 0, 0, nullptr, 0.0f);
 
    if(state->plugin->getParameter)
    {
@@ -3330,12 +3387,10 @@ void VstNativePluginWrapper::activate(LADSPA_Handle handle)
 void VstNativePluginWrapper::deactivate(LADSPA_Handle handle)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
-   if(!state)
-   {
+   if(!state || !state->active)
       return;
-   }
    state->active = false;
-   dispatch(state, 72 /*effStopProcess*/, 0, 0, nullptr, 0.0f);
+   dispatch(state, effStopProcess, 0, 0, nullptr, 0.0f);
    dispatch(state, effMainsChanged, 0, 0, nullptr, 0.0f);
 }
 
@@ -3380,10 +3435,33 @@ void VstNativePluginWrapper::connectPort(LADSPA_Handle handle, unsigned long por
 
 }
 
-void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/)
+void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latency_corr)
 {
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
    state->inProcess = true;
+   // Pass the value to the callback routine.
+   state->_latency_corr = latency_corr;
+
+  // If the plugin is active now, we can set the enable/bypass function.
+  // Calling an enable/bypass function while the plugin is inactive
+  //  might not be a good idea. How would we know it worked? Would it
+  //  remember and take effect when reactivated, or would it take effect
+  //  immediately, or would it be ignored?
+  // So we defer until activated...
+  if(state->active && _pluginBypassType == PluginBypassTypeBypassFunction)
+  {
+    // To avoid repeated settings, we keep a current state and compare with it.
+    // The initial value is ON since it is assumed the plugin is created in
+    //  the ON state. There is no reliable way to read the plugin's current state,
+    //  for example VST2 has no such read function.
+    const bool isOn = state->pluginI->on();
+    if(state->curEnabledState != isOn)
+    {
+      _synth->setPluginEnabled(state->plugin, isOn);
+      state->curEnabledState = isOn;
+    }
+  }
+
    if(state->pluginI->controls)
    {
       for(size_t i = 0; i < _controlInPorts; i++)
@@ -3393,7 +3471,7 @@ void VstNativePluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float 
             continue;
          }
          state->inControlLastValues [i] = state->pluginI->controls [i].val;
-         if(dispatch(state, 26 /*effCanBeAutomated*/, i, 0, nullptr, 0.0f) == 1)
+         if(dispatch(state, effCanBeAutomated, i, 0, nullptr, 0.0f) == 1)
          {
             if(state->plugin->getParameter && state->plugin->setParameter)
             {
@@ -3417,7 +3495,7 @@ LADSPA_PortDescriptor VstNativePluginWrapper::portd(unsigned long k) const
    return _fakeLd.PortDescriptors[k];
 }
 
-LADSPA_PortRangeHint VstNativePluginWrapper::range(unsigned long)
+LADSPA_PortRangeHint VstNativePluginWrapper::range(unsigned long) const
 {
    LADSPA_PortRangeHint hint;
    hint.HintDescriptor = 0;
@@ -3441,7 +3519,7 @@ double VstNativePluginWrapper::defaultValue(unsigned long port) const
    return inControlDefaults [port];
 }
 
-const char *VstNativePluginWrapper::portName(unsigned long port)
+const char *VstNativePluginWrapper::portName(unsigned long port) const
 {
    return portNames [port].c_str();
 }

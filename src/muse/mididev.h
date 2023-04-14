@@ -81,6 +81,8 @@ struct MidiOutputParams {
 //   MidiDevice
 //---------------------------------------------------------
 
+typedef LockFreeMPSCRingBuffer<MidiRecordEvent> MidiRecFifo;
+
 class MidiDevice {
    public:
       // Types of MusE midi devices.
@@ -159,7 +161,7 @@ class MidiDevice {
       LockFreeMPSCRingBuffer<MidiPlayEvent> *_userEventBuffers;
       
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
-      MidiRecFifo _recordFifo[MusECore::MUSE_MIDI_CHANNELS + 1];   
+      MidiRecFifo *_recordFifo[MusECore::MUSE_MIDI_CHANNELS + 1];
 
       // To hold current output program, and RPN/NRPN parameter numbers and values.
       MidiOutputParams _curOutParamNums[MusECore::MUSE_MIDI_CHANNELS];
@@ -255,6 +257,8 @@ class MidiDevice {
       inline void setrwFlags(int val)         { _rwFlags = val; }
       inline const QString& state() const     { return _state; }
       inline void setState(const QString& s)  { _state = s; }
+      inline bool readEnable() const          { return _readEnable; }
+      inline bool writeEnable() const         { return _writeEnable; }
 
       inline virtual bool isSynti() const     { return false; }
       inline virtual int selectRfd()          { return -1; }
@@ -292,7 +296,7 @@ class MidiDevice {
       void beforeProcess();
       void afterProcess();
       int tmpRecordCount(const unsigned int ch)     { return _tmpRecordCount[ch]; }
-      MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
+      MidiRecFifo *recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
       

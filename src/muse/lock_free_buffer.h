@@ -4,7 +4,7 @@
 //
 //  lock_free_buffer.h
 //  (C) Copyright 1999-2002 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2012, 2017 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2012, 2017, 2022 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -64,8 +64,8 @@ class LockFreeBuffer
           delete[] _fifo;
       }
 
-      int id() const { return _id; }
-      
+      inline int id() const { return _id; }
+
       void setCapacity(int capacity = 2)
       {
         if(_fifo)
@@ -79,7 +79,7 @@ class LockFreeBuffer
       // Returns true on fifo overflow
       bool put(const T& item)
       {
-        if (_size < _capacity) 
+        if (_size < _capacity)
         {
           _fifo[_wIndex] = item;
           _wIndex = (_wIndex + 1) % _capacity;
@@ -115,7 +115,7 @@ class LockFreeBuffer
 //         const int idx = (_rIndex + n) % _capacity;
 //         return _fifo[idx];
 //       }
-      
+
       // This is only for the reader.
       // Returns true if error (nothing to remove).
       bool remove()
@@ -130,19 +130,19 @@ class LockFreeBuffer
       // This is only for the reader.
       // Returns the number of items in the buffer.
       // If NOT requesting the size snapshot, this conveniently stores a snapshot (cached) version 
-      //  of the size for consistent behaviour later. If requesting the size snapshot, it does not 
+      //  of the size for consistent behaviour later. If requesting the size snapshot, it does not
       //  update the snapshot itself.
       int getSize(bool useSizeSnapshot/* = false*/)
-      { 
-        const int sz = useSizeSnapshot ? _sizeSnapshot : _size; 
+      {
+        const int sz = useSizeSnapshot ? _sizeSnapshot : _size;
         if(!useSizeSnapshot)
-          _sizeSnapshot = sz; 
+          _sizeSnapshot = sz;
         return sz;
       }
       // This is only for the reader.
       bool isEmpty(bool useSizeSnapshot/* = false*/) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size == 0; }
       // This is not thread safe, call it only when it is safe to do so.
-      void clear()         { _size = 0; _sizeSnapshot = 0; _wIndex = 0; _rIndex = 0; }
+      void clear()        { _size = 0; _sizeSnapshot = 0; _wIndex = 0; _rIndex = 0; }
       // Clear the 'read' side of the ring buffer, which also clears the size.
       // NOTE: A corresponding clearWrite() is not provided because
       //  it is dangerous to reset the size from the sender side -
@@ -507,7 +507,7 @@ class LockFreeMPSCBuffer
       LockFreeMPSCBuffer() { clear(); }
       
       // Returns the buffer capacity.
-      unsigned int bufferCapacity() const { return capacity; }
+      inline unsigned int bufferCapacity() const { return capacity; }
       
       // This is only for the writer.
       // Returns true on success, false if buffer overflow.
@@ -540,10 +540,10 @@ class LockFreeMPSCBuffer
       {
         if(index >= capacity)
           return false;
-        
+
         // Expecting hasData true.
         bool expected = true;
-        // Safely check if there is data in the bin, and reset the 
+        // Safely check if there is data in the bin, and reset the
         //  bin's hasData and inUse flags. Clear the hasData flag first !!!
         if(_hasData[index].compare_exchange_strong(expected, false))
         {
@@ -564,13 +564,13 @@ class LockFreeMPSCBuffer
       {
         if(index >= capacity)
           return false;
-        
+
         // Expecting hasData true.
         bool expected = true;
         // Safely check and reset the bin's hasData and inUse flags.
         if(_hasData[index].compare_exchange_strong(expected, false))
         {
-          _inUse[index].store(false); 
+          _inUse[index].store(false);
           // Success.
           return true;
         }
@@ -580,29 +580,29 @@ class LockFreeMPSCBuffer
       
       // Not thread safe. Only call when safe to do so,
       //  like constructor etc.
-      void clear() 
-      { 
-        for(unsigned int i = 0; i < capacity; ++i) 
-        { 
+      void clear()
+      {
+        for(unsigned int i = 0; i < capacity; ++i)
+        {
           // Clear the hasData flag first !!!
           _hasData[i].store(false);
           // Now clear the inUse flag !!!
           _inUse[i].store(false);
-        } 
+        }
       }
       
       // This is only for the reader.
-      void clearRead() 
-      { 
+      void clearRead()
+      {
         bool expected;
-        for(unsigned int i = 0; i < capacity; ++i) 
-        { 
+        for(unsigned int i = 0; i < capacity; ++i)
+        {
           // Expecting hasData true. Must reset expected each time.
           expected = true;
           // Safely check and reset the bin's hasData and inUse flags.
           if(_hasData[i].compare_exchange_strong(expected, false))
-            _inUse[i].store(false); 
-        } 
+            _inUse[i].store(false);
+        }
       }
 };
 
@@ -620,7 +620,6 @@ class LockFreeMPSCRingBuffer
       std::atomic<unsigned int> _wIndex;
       std::atomic<unsigned int> _rIndex;
       unsigned int _capacityMask;
-      unsigned int _sizeSnapshot;
       
       // Rounds to the nearest or equal power of 2.
       // For 0, 1, and 2, always returns 2.
@@ -655,6 +654,7 @@ class LockFreeMPSCRingBuffer
         _capacity = roundCapacity(capacity);
         _capacityMask = _capacity - 1;
         _fifo = new T[_capacity];
+        clear();
       }
 
       // This is only for the writer.
@@ -662,9 +662,9 @@ class LockFreeMPSCRingBuffer
       bool put(const T& item)
       {
         // Buffer full? Overflow condition.
-        if(_size.load() >= _capacity) 
+        if(getSize() >= _capacity)
           return false;
-        
+
         // Safely read, then increment, the current write position.
         //std::atomic<unsigned int> pos = _wIndex++;
         unsigned int pos = _wIndex++;
@@ -684,9 +684,9 @@ class LockFreeMPSCRingBuffer
       bool get(T& dst)
       {
         // Nothing to read?
-        if(_size.load() == 0)
+        if(isEmpty())
           return false;
-        
+
         // Safely read, then increment, the current read position.
         //std::atomic<unsigned int> pos = _rIndex++;
         unsigned int pos = _rIndex++;
@@ -727,9 +727,9 @@ class LockFreeMPSCRingBuffer
       bool remove()
       {
         // Nothing to read?
-        if(_size.load() == 0)
+        if(isEmpty())
           return false;
-        
+
         // Safely increment the current read position.
         _rIndex++;
         // Now safely decrement the size.
@@ -740,27 +740,31 @@ class LockFreeMPSCRingBuffer
 
       // This is only for the reader.
       // Returns the number of items in the buffer.
-      // If NOT requesting the size snapshot, this conveniently stores a snapshot (cached) version 
-      //  of the size for consistent behaviour later. If requesting the size snapshot, it does not 
-      //  update the snapshot itself.
-      unsigned int getSize(bool useSizeSnapshot/* = false*/)
-      { 
-        const unsigned int sz = useSizeSnapshot ? _sizeSnapshot : _size.load();
-        if(!useSizeSnapshot)
-          _sizeSnapshot = sz; 
-        return sz;
-      }
+      inline unsigned int getSize() const { return _size.load(); }
       // This is only for the reader.
-      bool isEmpty(bool useSizeSnapshot/* = false*/) const { return useSizeSnapshot ? _sizeSnapshot == 0 : _size.load() == 0; }
+      inline bool isEmpty() const { return _size.load() == 0; }
       // This is not thread safe, call it only when it is safe to do so.
-      void clear() { _size.store(0); _sizeSnapshot = 0; _wIndex.store(0); _rIndex.store(0); }
+      void clear() { _size.store(0); _wIndex.store(0); _rIndex.store(0); }
       // This is only for the reader.
       // Clear the 'read' side of the ring buffer, which also clears the size.
       // NOTE: A corresponding clearWrite() is not provided because it is dangerous to reset 
       //  the size from the sender side - the receiver might cache the size, briefly. 
       // The sender should only grow the size while the receiver should only shrink it.
-      //void clearRead() { _size = 0; _sizeSnapshot = 0; _rIndex = _wIndex; }
-      void clearRead() { _size.store(0); _sizeSnapshot = 0; _rIndex.store(_wIndex); }
+      void clearRead()
+      {
+        //_size = 0; _rIndex = _wIndex;
+        //_size.store(0); _rIndex.store(_wIndex);
+
+        // Safely get a snapshot of the current size.
+        // Between here and the next lines, the size might increase from put().
+        // So we increment/decrement relatively, which is equivalent to
+        //  calling remove(), sz times.
+        const unsigned int sz = getSize();
+        // Safely increment the current read position.
+        _rIndex += sz;
+        // Now safely decrement the size.
+        _size -= sz;
+      }
 };
 
 } // namespace MusECore

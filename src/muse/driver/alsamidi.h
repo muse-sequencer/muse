@@ -92,6 +92,11 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void setAddressPort(int port) { adr.port = port; }
       // We (ab)use the ALSA value SND_SEQ_ADDRESS_UNKNOWN to mean 'unavailable' - if BOTH client and port equal it.
       virtual bool isAddressUnknown() const { return adr.client == SND_SEQ_ADDRESS_UNKNOWN || adr.port == SND_SEQ_ADDRESS_UNKNOWN; }
+
+      virtual unsigned int portLatency(void* port, bool capture) const;
+      // The contribution to latency by the device's own members (midi effect rack, Jack ports etc).
+      // A midi device can contain both an input and an output. The 'capture' parameter determines which one.
+      virtual float selfLatencyMidi(int /*channel*/, bool /*capture*/) const;
       };
 
 #endif // ALSA_SUPPORT

@@ -1478,12 +1478,29 @@ void MidiInstrument::getControllers(MidiControllerList* dest, int channel, int p
 #endif
   mcl = controller();
   // Copy the instrument controller pointers directly to the destination.
+  // The midnam has priority, since this is a map.
   // Defer the RPN update until after done.
   for(imc = mcl->begin(); imc != mcl->end(); ++imc)
     dest->add(imc->second, false);
 
   // Be sure to call this since we deferred it above.
   dest->update_RPN_Ctrls_Reserved();
+}
+
+bool MidiInstrument::RPN_Ctrls_Reserved(int channel, int patch) const
+{
+  bool midnam_rsv = false;
+#ifdef MIDNAM_SUPPORT
+  // Is there a midnam controller list for the given channel and patch?
+  const MidiControllerList* mcl = _midnamDocument.getControllers(channel, patch);
+  // Check if the midnam controller list reserves any of the EIGHT standard General Midi RPN controllers.
+  if(mcl && mcl->RPN_Ctrls_Reserved())
+    midnam_rsv = true;
+#endif
+  // Check if this instrument's controller list reserves any of the EIGHT standard General Midi RPN controllers.
+  // If either the midnam or the instrument contains reserved RPN controllers, then the whole combined
+  //  instrument is considered to reserve them.
+  return midnam_rsv || controller()->RPN_Ctrls_Reserved();
 }
 
 #ifdef _USE_INSTRUMENT_OVERRIDES_

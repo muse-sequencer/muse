@@ -159,7 +159,7 @@ void ThinSlider::setThumbWidth(int w)
 void ThinSlider::scaleChange()
 {
     if (!hasUserScale())
-       d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
+       d_scale.setScale(internalMinValue(), internalMaxValue(), d_maxMajor, d_maxMinor);
     update();
 }
 
@@ -213,7 +213,7 @@ void ThinSlider::drawSlider(QPainter *p, const QRect &r)
     e_mask.setColorAt(1, e_mask_edge);
     
     // for the full side
-    rpos = (value()  - minValue()) / (maxValue() - minValue());
+    rpos = (internalValue()  - internalMinValue()) / (internalMaxValue() - internalMinValue());
     
     int f_brightness = 155 * rpos + 100;
     int f_alpha;
@@ -419,13 +419,13 @@ double ThinSlider::getValue( const QPoint &p)
   
   if (r.width() <= d_thumbLength)
   {
-      rv = 0.5 * (minValue() + maxValue());
+      rv = 0.5 * (internalMinValue() + internalMaxValue());
   }
   else
   {
       pos = p.x() - r.x() - d_thumbHalf;
-      rv  =  minValue() +
-         rint( (maxValue() - minValue()) * double(pos)
+      rv  =  internalMinValue() +
+         rint( (internalMaxValue() - internalMinValue()) * double(pos)
         / double(r.width() - d_thumbLength)
         / step() ) * step();
   }
@@ -435,13 +435,13 @@ double ThinSlider::getValue( const QPoint &p)
     {
   if (r.height() <= d_thumbLength)
   {
-      rv = 0.5 * (minValue() + maxValue());
+      rv = 0.5 * (internalMinValue() + internalMaxValue());
   }
   else
   {
       pos = p.y() - r.y() - d_thumbHalf;
-      rv =  minValue() +
-         rint( (maxValue() - minValue()) *
+      rv =  internalMinValue() +
+         rint( (internalMaxValue() - internalMinValue()) *
         (1.0 - double(pos)
          / double(r.height() - d_thumbLength))
         / step() ) * step();
@@ -475,7 +475,7 @@ double ThinSlider::moveValue(const QPoint &deltaP, bool fineMode)
   double rv = d_valAccum;
   const QRect r = d_sliderRect;
 
-  const double val = value(ConvertNone);
+  const double val = internalValue(ConvertNone);
 
   if((fineMode || borderlessMouse()) && d_scrollMode != ScrDirect)
   {
@@ -488,8 +488,8 @@ double ThinSlider::moveValue(const QPoint &deltaP, bool fineMode)
     return newval;
   }
   
-  const double min = minValue(ConvertNone);
-  const double max = maxValue(ConvertNone);
+  const double min = internalMinValue(ConvertNone);
+  const double max = internalMaxValue(ConvertNone);
   const double drange = max - min;
 
   if(d_orient == Qt::Horizontal)
@@ -563,7 +563,7 @@ void ThinSlider::getScrollMode( QPoint &p, const Qt::MouseButton &button, const 
 
         cr = d_sliderRect;
   
-        rpos = (value()  - minValue()) / (maxValue() - minValue());
+        rpos = (internalValue()  - internalMinValue()) / (internalMaxValue() - internalMinValue());
   
         if(d_orient == Qt::Horizontal)
         {
@@ -772,7 +772,7 @@ void ThinSlider::valueChange()
 void ThinSlider::rangeChange()
 {
     if (!hasUserScale())
-       d_scale.setScale(minValue(), maxValue(), d_maxMajor, d_maxMinor);
+       d_scale.setScale(internalMinValue(), internalMaxValue(), d_maxMajor, d_maxMinor);
     SliderBase::rangeChange();
     repaint();
 }

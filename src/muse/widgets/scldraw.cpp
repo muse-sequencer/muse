@@ -28,7 +28,6 @@
 #include <QPalette>
 #include <QApplication>
 
-#include "muse_math.h"
 #include "mmath.h"
 #include "scldraw.h"
 
@@ -109,14 +108,15 @@ ScaleDraw::ScaleDraw()
 
     d_minAngle = -135 * 16;
     d_maxAngle = 135 * 16;
-    d_fmt = 'M'; // Metric suffix G M K.
+    d_fmt = 'M'; // Metric suffix G M K m n p.
     d_prec = 4;
 
     d_drawBackBone = true;
     d_textHighlightMode = TextHighlightNone;
-    
+
+    d_orient = Top;
     // initialize scale and geometry
-    setGeometry(0,0,100,Bottom);
+    setGeometry(0,0,100);
     setScale(0,100,0,0,10);
 }
 
@@ -167,16 +167,34 @@ void ScaleDraw::setScale(const ScaleDiv &s)
     setDblRange(d_scldiv.lBound(),d_scldiv.hBound(),d_scldiv.logScale());
 }
 
-QString ScaleDraw::composeLabelText(double val, char fmt, int prec) const
+// Like QString::number except it allows special 'M' format (Metric suffix G, M, K, m, n, p).
+static QString composeLabelText(double val, char fmt, int prec)
 {
   if(fmt == 'M')
   {
-    if(val > 1000000000.0)
-      return QString("%L1").arg(val / 1000000000.0, 0, 'g', prec) + "G";
-    else if(val > 1000000.0)
-      return QString("%L1").arg(val / 1000000.0, 0, 'g', prec) + "M";
-    else if(val > 1000.0)
-      return QString("%L1").arg(val / 1000.0, 0, 'g', prec) + "K";
+    const double av = MusECore::qwtAbs(val);
+    if(av >= 1.0e9)
+      return QString("%L1").arg(val / 1.0e9, 0, 'g', prec) + "G";
+    else if(av >= 1.0e6)
+      return QString("%L1").arg(val / 1.0e6, 0, 'g', prec) + "M";
+    else if(av >= 1.0e3)
+      return QString("%L1").arg(val / 1.0e3, 0, 'g', prec) + "K";
+    // NOTICE the sequence here: 0.01 will say 0.01, but 0.009 will say 9m.
+    // It makes scales symmetrical about 1 and looks more pleasing.
+    // For example 0.001 - 1000 = 1m - 1K, and 0.009 - 1000 = 9m - 1K.
+    // It also saves a digit!
+    // Using 9's to avoid rounding errors.
+    else if(av >= 9.9999e-3)
+      return QString("%L1").arg(val, 0, 'g', prec);
+    else if(av >= 9.9999e-6)
+      return QString("%L1").arg(val * 1.0e3, 0, 'g', prec) + "m";
+    else if(av >= 9.9999e-9)
+      return QString("%L1").arg(val * 1.0e6, 0, 'g', prec) + "u";
+    else if(av >= 9.9999e-12)
+      return QString("%L1").arg(val * 1.0e9, 0, 'g', prec) + "n";
+    else if(av >= 9.9999e-15)
+      return QString("%L1").arg(val * 1.0e12, 0, 'g', prec) + "p";
+    // Catch zero. And for anything else, just default to scientific format.
     else
       return QString("%L1").arg(val, 0, 'g', prec);
   }
@@ -628,9 +646,9 @@ void ScaleDraw::drawBackbone(QPainter *p, const QPalette& /*palette*/, double /*
 //		circle.
 //
 //------------------------------------------------------------
-void ScaleDraw::setGeometry(int xorigin, int yorigin, int length, OrientationX o)
-{
 
+void ScaleDraw::setGeometry(int xorigin, int yorigin, int length)
+{
     d_xorg = xorigin;
     d_yorg = yorigin;
     d_radius = double(length) * 0.5;
@@ -642,24 +660,32 @@ void ScaleDraw::setGeometry(int xorigin, int yorigin, int length, OrientationX o
     else
        d_len = minLen;
 
-    d_orient = o;
-
     switch(d_orient)
     {
-    case Left:
-    case Right:
-    case InsideVertical:
-	setIntRange(d_yorg + d_len - 1, d_yorg);
-	break;
-    case Round:
-	setIntRange(d_minAngle, d_maxAngle);
-	break;
-    case Top:
-    case Bottom:
-    case InsideHorizontal:
-	setIntRange(d_xorg, d_xorg + d_len - 1);
-	break;
+      case Left:
+      case Right:
+      case InsideVertical:
+        setIntRange(d_yorg + d_len - 1, d_yorg);
+      break;
+
+      case Round:
+        setIntRange(d_minAngle, d_maxAngle);
+      break;
+
+      case Top:
+      case Bottom:
+      case InsideHorizontal:
+        setIntRange(d_xorg, d_xorg + d_len - 1);
+      break;
     }
+}
+
+QPoint ScaleDraw::originOffsetHint(const QFontMetrics& fm, bool worst) const
+{
+  return QPoint(
+    maxLabelWidth(fm, worst) / 2 /*+ d_hpad*/,
+    (fm.ascent() + 1) / 2 /*+ d_vpad*/
+  );
 }
 
 //------------------------------------------------------------
@@ -706,14 +732,12 @@ int ScaleDraw::maxHeight(const QFontMetrics& fm, int /*penWidth*/) const
     case Bottom:
     case Round:
     case InsideHorizontal:
-        //rv = penWidth + d_vpad + d_majLen + fm.height();
         rv = 2 * d_vpad + d_majLen + fm.ascent();
         break;
     case Left:
     case Right:
     case InsideVertical:
-        //rv = d_len + ((fm.height() + 1) / 2);
-        rv = d_len + ((fm.ascent() + 1) / 2);
+        rv = d_len + fm.ascent() + 1 /*+ 2 * d_vpad*/;
         break;
     }
 
@@ -899,7 +923,7 @@ void ScaleDraw::setAngleRange(double angle1, double angle2)
 //
 //.u	Description
 //	 Format character and precision have the same meaning as for the
-//	 QString class, with one exception: Special format 'M' (Metric suffix G M K)
+//	 QString class, with one exception: Special format 'M' (Metric suffix G M K m n p)
 //
 //
 //.u	See also
@@ -959,7 +983,9 @@ int ScaleDraw::maxLabelWidth(const QFontMetrics& fm, bool worst) const
 #endif
         }
     }
-    return rv;
+    // Add 1 to guarantee that 1/2 usages include all pixels,
+    //  so that all callers do not have to add 1.
+    return rv + 1;
 }
 
 //------------------------------------------------------------
@@ -993,6 +1019,15 @@ int ScaleDraw::scaleWidth(int penWidth) const
   }
   return d_len;
 }
+
+void ScaleDraw::setBackBone(bool v) { d_drawBackBone = v; }
+const ScaleDiv& ScaleDraw::scaleDiv() const { return d_scldiv; }
+ScaleDraw::OrientationX ScaleDraw::orientation() const { return d_orient; }
+void ScaleDraw::setOrientation(const OrientationX& o) { d_orient = o; }
+ScaleDraw::TextHighlightMode ScaleDraw::textHighlightMode() const { return d_textHighlightMode; }
+void ScaleDraw::setTextHighlightMode(TextHighlightMode mode) { d_textHighlightMode = mode; }
+QString ScaleDraw::specialText() const           { return _specialText; }
+void ScaleDraw::setSpecialText(const QString& s) { _specialText = s; }
 
 //------------------------------------------------------------
 //

@@ -56,7 +56,7 @@ class VerticalMeter : public Meter {
 
    public:
       VerticalMeter(QWidget* parent, MeterType type = DBMeter);
-      void setRange(double min, double max);
+      void setRange(double min, double max, MeterType type = DBMeter);
       };
 
 } // namespace MusEGui

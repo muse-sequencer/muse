@@ -1255,7 +1255,8 @@ bool Song::event(QEvent* _e)
                   bool muted = e->getP1() == 1;
                   // No undo.
                   // Operation is undoable but do not start/end undo.
-                  MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::SetTrackMute, track, muted, 0, 0, 0, 0),
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                    MusECore::UndoOp::SetTrackMute, track, muted, double(0), double(0), double(0), double(0)),
                                                    MusECore::Song::OperationUndoableUpdate);
                   break;
                   }

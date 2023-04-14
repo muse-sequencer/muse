@@ -22,9 +22,6 @@
 //
 //=========================================================
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include <QLayout>
 #include <QVBoxLayout>
 #include <QApplication>
@@ -75,14 +72,14 @@
 #include "clipper_label.h"
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_AUDIO_STRIP(dev, format, args...)  //fprintf(dev, format, ##args);
-
+//#include <stdio.h>
+#define DEBUG_AUDIO_STRIP(dev, format, args...) // fprintf(dev, format, ##args);
 
 namespace MusEGui {
 
 const double AudioStrip::volSliderStep =  0.5;
-const double AudioStrip::volSliderMax  = 10.0;
-const int    AudioStrip::volSliderPrec =    1;
+const int     AudioStrip::volSliderPrec =    1;
+const QString AudioStrip::volDBSymbol("dB");
 
 const double AudioStrip::auxSliderStep =  1.0;
 const double AudioStrip::auxSliderMax  = 10.0;
@@ -122,7 +119,7 @@ void AudioComponentRack::newComponent( ComponentDescriptor* desc, const Componen
     case aStripAuxComponent:
     {
       val = _track->auxSend(desc->_index);
-      //if(val == 0.0)
+      //if(val <= 0.0)
       if(val < MusEGlobal::config.minSlider)
         val = MusEGlobal::config.minSlider;
       else
@@ -494,7 +491,7 @@ void AudioComponentRack::updateComponents()
       case aStripAuxComponent:
       {
         double val = _track->auxSend(cw._index);
-        if(val == 0.0)
+        if(val <= 0.0)
           val = MusEGlobal::config.minSlider;
         else
         {
@@ -807,7 +804,7 @@ AudioStripProperties::AudioStripProperties()
     _sliderBackbone = false;
     _sliderFillHandle = true;
     _sliderGrooveWidth = 14;
-    _sliderScalePos = Slider::InsideVertical;
+    _sliderScalePos = Slider::ScaleInside;
     _sliderFrame = false;
     _sliderFrameColor = Qt::darkGray;
     _meterWidth = Strip::FIXED_METER_WIDTH;
@@ -950,20 +947,47 @@ void AudioStrip::configChanged()
   slider->setHandleColor(MusEGlobal::config.audioVolumeHandleColor);
 
   // Adjust minimum volume slider and label values.
-  slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
-  slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
+  double track_vol = 0.0;
+  double vol_min = 0.0;
+  double vol_max = 3.16227766017 /* roughly 10 db */;
+  if(!track->isMidiTrack())
+  {
+    const MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
+    track_vol = at->volume();
+    MusECore::ciCtrlList ic = at->controller()->find(MusECore::AC_VOLUME);
+    if(ic != at->controller()->cend())
+      ic->second->range(&vol_min, &vol_max);
+  }
 
-  sl->setRange(MusEGlobal::config.minSlider, volSliderMax);
-  sl->setOff(MusEGlobal::config.minSlider);
+  setupControllerWidgets(
+    slider, sl, nullptr, meter, channel,
+    vol_min, vol_max,
+    false,
+    true,
+    true,
+    // If the slider and meter scales differ (minimum values differ), then we really ought to
+    //  show a separate meter scale. Otherwise only the slider scale is shown, which gives the
+    //  false impression that the meter scale is the same as the slider's scale, which it is not.
+    MusEGlobal::config.minSlider != MusEGlobal::config.minMeter,
+    volSliderStep, 0.01, 1.0, volSliderPrec, 2, 3, 20.0,
+    MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+    volDBSymbol);
+
+  slider->blockSignals(true);
+  sl->blockSignals(true);
+
+  // Reset the values to re-align.
+  // FIXME TODO: We shouldn't have to do this here, the controls should do it automatically.
+  slider->setValue(track_vol);
+  sl->setValue(track_vol);
+
+  slider->blockSignals(false);
+  sl->blockSignals(false);
+
+
   // Enable special hack for line edits.
 //  if(sl->enableStyleHack() != MusEGlobal::config.lineEditStyleHack)
 //    sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
-
-  // REMOVE Tim. mixer. Added.
-  // In case something in the slider changed, update the meter layout.
-  // TODO This is somewhat crude, might miss automatic changes.
-  // Later link up MeterLayout and Slider better.
-  _meterLayout->setMeterEndsMargin(slider->scaleEndpointsMargin());
 
   // Possible, but leave it to the background painter for now.
   //rack->setActiveColor(MusEGlobal::config.rackItemBackgroundColor);
@@ -980,10 +1004,13 @@ void AudioStrip::configChanged()
   // Adjust minimum meter values, and colours.
   for(int c = 0; c < channel; ++c)
   {
-    meter[c]->setRange(MusEGlobal::config.minMeter, volSliderMax);
     meter[c]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
                               MusEGlobal::config.meterBackgroundColor);
     meter[c]->setRefreshRate(MusEGlobal::config.guiRefresh);
+    // In case something in the slider changed, update the meter alignment margins.
+    // TODO This is somewhat crude, might miss automatic changes.
+    // Maybe later link up MeterLayout and Slider better?
+    meter[c]->setAlignmentMargins(slider->scaleEndpointsMargins());
   }
 
 }
@@ -1079,21 +1106,10 @@ void AudioStrip::songChanged(MusECore::SongChangedStruct_t val)
 
 void AudioStrip::updateVolume()
 {
-      if(_volPressed) // Inhibit the controller stream if control is currently pressed.
-        return;
       double vol = static_cast<MusECore::AudioTrack*>(track)->volume();
-      if (vol != volume)
       {
           double val;
-          if(vol == 0.0)
-            val = MusEGlobal::config.minSlider;
-          else
-          {
-            val = muse_val2db(vol);
-            if(val < MusEGlobal::config.minSlider)
-              val = MusEGlobal::config.minSlider;
-          }
-
+          val = vol;
           slider->blockSignals(true);
           sl->blockSignals(true);
           // Slider::fitValue should not be required since the log function is accurate but rounded to the nearest .000001
@@ -1101,7 +1117,6 @@ void AudioStrip::updateVolume()
           sl->setValue(val);
           sl->blockSignals(false);
           slider->blockSignals(false);
-          volume = vol;
           }
 }
 
@@ -1135,7 +1150,6 @@ void AudioStrip::updateOffState()
 
       if (track->type() != MusECore::Track::AUDIO_SOFTSYNTH)
             stereo->setEnabled(val);
-      label->setEnabled(val);
 
       // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track!
       // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels.
@@ -1225,19 +1239,12 @@ void AudioStrip::volumeChanged(double val, int id, int scrollMode)
   if(!track || track->isMidiTrack())
     return;
 
-  double vol;
-  if (val <= MusEGlobal::config.minSlider)
-    vol = 0.0;
-  else
-    vol = muse_db2val(val);
-  volume = vol;
-
   MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
   // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
   // ScrDirect mode is one-time only on press with modifier.
   if(scrollMode != SliderBase::ScrDirect)
-    at->recordAutomation(id, vol);
-  at->setParam(id, vol);  // Schedules a timed control change.
+    at->recordAutomation(id, val);
+  at->setParam(id, val);  // Schedules a timed control change.
   at->enableController(id, false);
 
   componentChanged(ComponentRack::controllerComponent, val, false, id, scrollMode);
@@ -1252,18 +1259,9 @@ void AudioStrip::volumePressed(double val, int id)
       DEBUG_AUDIO_STRIP(stderr, "AudioStrip::volumePressed\n");
       if(!track || track->isMidiTrack())
         return;
-      _volPressed = true;
-      double vol;
-      if (val <= MusEGlobal::config.minSlider)
-        vol = 0.0;
-      else
-        vol = muse_db2val(val);
-      volume = vol;
-      DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", volume);
-
       MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
-      at->startAutoRecord(id, vol);
-      at->setVolume(vol);
+      at->startAutoRecord(id, val);
+      at->setVolume(val);
       //at->setParam(MusECore::AC_VOLUME, val);   // Schedules a timed control change. // TODO Try this instead
       DEBUG_AUDIO_STRIP(stderr, "    calling enableController(false)\n");
       at->enableController(id, false);
@@ -1283,17 +1281,14 @@ void AudioStrip::volumeReleased(double val, int id)
 
       MusECore::AudioTrack* at = static_cast<MusECore::AudioTrack*>(track);
       MusECore::AutomationType atype = at->automationType();
-      DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", volume);
-      at->stopAutoRecord(id, volume);
-
+      DEBUG_AUDIO_STRIP(stderr, "    val:%.20f\n", val);
+      at->stopAutoRecord(id, val);
       if(atype == MusECore::AUTO_OFF || (atype == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) || atype == MusECore::AUTO_TOUCH)
       {
         DEBUG_AUDIO_STRIP(stderr, "    calling enableController(true)\n");
         at->enableController(id, true);
       }
-
       componentReleased(ComponentRack::controllerComponent, val, id);
-      _volPressed = false;
       }
 
 //---------------------------------------------------------
@@ -1314,20 +1309,8 @@ void AudioStrip::volLabelChanged(double val)
       if(!track || track->isMidiTrack())
         return;
       MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
-      double v = val;
-      double vol;
-      if (v <= MusEGlobal::config.minSlider) {
-            vol = 0.0;
-            v = MusEGlobal::config.minSlider;
-            }
-      else
-            vol = muse_db2val(v);
-      volume = vol;
-      slider->blockSignals(true);
-      slider->setValue(v);
-      slider->blockSignals(false);
-      t->startAutoRecord(MusECore::AC_VOLUME, vol);
-      t->setParam(MusECore::AC_VOLUME, vol);  // Schedules a timed control change.
+      t->startAutoRecord(MusECore::AC_VOLUME, val);
+      t->setParam(MusECore::AC_VOLUME, val);  // Schedules a timed control change.
       t->enableController(MusECore::AC_VOLUME, false);
 
       componentChanged(ComponentRack::controllerComponent, val, false, MusECore::AC_VOLUME, SliderBase::ScrNone);
@@ -1348,50 +1331,82 @@ void AudioStrip::resetClipper()
 
 void AudioStrip::updateChannels()
 {
-    MusECore::AudioTrack* t = static_cast<MusECore::AudioTrack*>(track);
+    const MusECore::AudioTrack* t = static_cast<const MusECore::AudioTrack*>(track);
     int c = t->channels();
     DEBUG_AUDIO_STRIP(stderr, "AudioStrip::updateChannels track channels:%d current channels:%d\n", c, channel);
 
-    if (c > channel) {
-        for (int cc = channel; cc < c; ++cc) {
-            _clipperLabel[cc] = new ClipperLabel();
-            _clipperLabel[cc]->setContentsMargins(0, 0, 0, 0);
-            _clipperLabel[cc]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-            setClipperTooltip(cc);
-            _clipperLayout->addWidget(_clipperLabel[cc]);
-            connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
+    double vol_min = 0.0;
+    double vol_max = 3.16227766017 /* roughly 10 db */;
+    MusECore::ciCtrlList ic = t->controller()->find(MusECore::AC_VOLUME);
+    if(ic != t->controller()->cend())
+      ic->second->range(&vol_min, &vol_max);
 
-            meter[cc] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
-            meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
-            meter[cc]->setFixedWidth(props.meterWidth());
-            meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-            meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
-                                       MusEGlobal::config.meterBackgroundColor);
-            meter[cc]->setFrame(props.meterFrame(), props.meterFrameColor());
-            connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
-            _meterLayout->hlayout()->addWidget(meter[cc], Qt::AlignLeft);
-            //                  meter[cc]->show();
+    const int maxc = qMax(c, channel);
+    for(int cc = 0; cc < maxc; ++cc)
+    {
+      if(cc >= c)
+      {
+        if(_clipperLabel[cc])
+            delete _clipperLabel[cc];
+        _clipperLabel[cc] = nullptr;
+
+        if(meter[cc])
+            delete meter[cc];
+        meter[cc] = nullptr;
+      }
+      else
+      {
+        if(cc >= channel)
+        {
+          _clipperLabel[cc] = new ClipperLabel();
+          _clipperLabel[cc]->setContentsMargins(0, 0, 0, 0);
+          _clipperLabel[cc]->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+          setClipperTooltip(cc);
+          _clipperLayout->addWidget(_clipperLabel[cc]);
+          connect(_clipperLabel[cc], SIGNAL(clicked()), SLOT(resetClipper()));
+
+          meter[cc] = new Meter(this);
+          meter[cc]->setOrientation(Qt::Vertical);
+          meter[cc]->setRefreshRate(MusEGlobal::config.guiRefresh);
+          meter[cc]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+          meter[cc]->setTextHighlightMode(ScaleDraw::TextHighlightNone);
+          meter[cc]->setScaleBackBone(false);
+          meter[cc]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
+                                      MusEGlobal::config.meterBackgroundColor);
+          meter[cc]->setFrame(props.meterFrame(), props.meterFrameColor());
         }
+
+        const int chdiv = (!meter[cc]->vu3d() && !props.meterWidthPerChannel()) ? c : 1;
+        meter[cc]->setVUSizeHint(QSize(props.meterWidth() / chdiv, 20));
+      }
     }
-    else if (c < channel) {
-        for (int cc = channel-1; cc >= c; --cc) {
-            if(_clipperLabel[cc])
-                delete _clipperLabel[cc];
-            _clipperLabel[cc] = nullptr;
 
-            if(meter[cc])
-                delete meter[cc];
-            meter[cc] = nullptr;
-        }
-    }
+    setupControllerWidgets(
+      nullptr, nullptr, nullptr, meter, c,
+      vol_min, vol_max,
+      false,
+      true,
+      true,
+      // If the slider and meter scales differ (minimum values differ), then we really ought to
+      //  show a separate meter scale. Otherwise only the slider scale is shown, which gives the
+      //  false impression that the meter scale is the same as the slider's scale, which it is not.
+      MusEGlobal::config.minSlider != MusEGlobal::config.minMeter,
+      volSliderStep, 0.01, 1.0, volSliderPrec, 2, 3, 20.0,
+      MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+      volDBSymbol);
 
-    if (meter[0] && !meter[0]->vu3d() && !props.meterWidthPerChannel()) {
-        for (int ch = 0; ch < c; ++ch) {
-            meter[ch]->setFixedWidth(props.meterWidth() / c);
-        }
+    for(int cc = channel; cc < c; ++cc)
+    {
+      // TODO This is somewhat crude, might miss automatic changes.
+      // Maybe later link up MeterLayout and Slider better?
+      meter[cc]->setAlignmentMargins(slider->scaleEndpointsMargins());
+      _meterLayout->hlayout()->addWidget(meter[cc], Qt::AlignLeft);
+      // meter[cc]->show();
+      connect(meter[cc], SIGNAL(mousePress()), this, SLOT(resetClipper()));
     }
 
     channel = c;
+
     stereo->blockSignals(true);
     stereo->setChecked(channel == 2);
     stereo->blockSignals(false);
@@ -1417,9 +1432,6 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
 
       MusECore::Track::TrackType type = at->type();
-
-      volume        = -1.0;
-      _volPressed   = false;
 
       slider        = nullptr;
       sl            = nullptr;
@@ -1597,7 +1609,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
 
       sliderGrid->addLayout(_clipperLayout, 0, 0, 1, 2, Qt::AlignCenter);
 
-      slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::InsideVertical, 14,
+      slider = new Slider(this, "vol", Qt::Vertical, MusEGui::Slider::ScaleInside, 14,
                           MusEGlobal::config.audioVolumeSliderColor,
                           ScaleDraw::TextHighlightSplitAndShadow,
                           MusEGlobal::config.audioVolumeHandleColor);
@@ -1606,12 +1618,16 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       slider->setContentsMargins(0, 0, 0, 0);
       slider->setCursorHoming(true);
       DEBUG_AUDIO_STRIP(stderr, "AudioStrip::AudioStrip new slider: step:%.20f\n", volSliderStep);
-      slider->setRange(MusEGlobal::config.minSlider, volSliderMax, volSliderStep);
-      //slider->setScaleMaxMinor(5);
-      slider->setScale(MusEGlobal::config.minSlider, volSliderMax, 6.0, false);
-      slider->setSpecialText(QString('-') + QChar(0x221e)); // The infinity character.
-      slider->setScaleBackBone(props.sliderBackbone());
 
+      sl = new DoubleLabel(this);
+
+      double vol_min = 0.0;
+      double vol_max = 3.16227766017 /* roughly 10 db */;
+      MusECore::iCtrlList ic = at->controller()->find(MusECore::AC_VOLUME);
+      if(ic != at->controller()->end())
+        ic->second->range(&vol_min, &vol_max);
+
+      slider->setScaleBackBone(props.sliderBackbone());
       slider->setRadius(props.sliderRadius());
       slider->setRadiusHandle(props.sliderRadiusHandle());
       slider->setHandleHeight(props.sliderHandleHeight());
@@ -1628,44 +1644,35 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       slider->setMinimumHeight(80);
 
       double track_vol = at->volume();
-      if(track_vol == 0.0)
-        track_vol = MusEGlobal::config.minSlider;
-      else
-      {
-        track_vol = muse_val2db(track_vol);
-        if(track_vol < MusEGlobal::config.minSlider)
-          track_vol = MusEGlobal::config.minSlider;
-      }
-      // Slider::fitValue() not required so far. The log function is accurate but rounded to the nearest .000001
-      slider->setValue(track_vol);
 
-      sliderGrid->addWidget(slider, 1, 0, Qt::AlignHCenter);
+//       // Slider::fitValue() not required so far. The log function is accurate but rounded to the nearest .000001
+//       slider->setValue(track_vol);
 
-      _meterLayout = new MeterLayout(slider->scaleEndpointsMargin());
+      _meterLayout = new MeterLayout();
       _meterLayout->setMargin(0);
       _meterLayout->setSpacing(props.meterSpacing());
 
-      sliderGrid->addLayout(_meterLayout, 1, 1, Qt::AlignHCenter);
-
       for (int i = 0; i < channel; ++i) {
-          meter[i] = new Meter(this, Meter::DBMeter, Qt::Vertical, MusEGlobal::config.minMeter, volSliderMax);
+          meter[i] = new Meter(this);
+          meter[i]->setOrientation(Qt::Vertical);
           meter[i]->setRefreshRate(MusEGlobal::config.guiRefresh);
           if (meter[i]->vu3d() || props.meterWidthPerChannel()) {
-              meter[i]->setFixedWidth(props.meterWidth());
+              meter[i]->setVUSizeHint(QSize(props.meterWidth(), 20));
           }
           else {
-              meter[i]->setFixedWidth(props.meterWidth() / channel);
+              meter[i]->setVUSizeHint(QSize(props.meterWidth() / channel, 20));
           }
           meter[i]->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-          meter[i]->setRange(MusEGlobal::config.minMeter, volSliderMax);
+          meter[i]->setTextHighlightMode(ScaleDraw::TextHighlightNone);
+          meter[i]->setScaleBackBone(false);
           meter[i]->setPrimaryColor(MusEGlobal::config.audioMeterPrimaryColor,
                                     MusEGlobal::config.meterBackgroundColor);
           meter[i]->setFrame(props.meterFrame(), props.meterFrameColor());
-          connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
+          meter[i]->setAlignmentMargins(slider->scaleEndpointsMargins());
           _meterLayout->hlayout()->addWidget(meter[i], Qt::AlignHCenter);
+          connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetClipper()));
       }
 
-      sl = new DoubleLabel(0.0, MusEGlobal::config.minSlider, volSliderMax, this);
       sl->setObjectName("VolumeEditAudio");
       sl->setContentsMargins(0, 0, 0, 0);
       sl->setTextMargins(0, 0, 0, 0);
@@ -1675,23 +1682,38 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       sl->setAlignment(Qt::AlignCenter);
       //sl->setAutoFillBackground(true);
 
-      sl->setSlider(slider);
       //sl->setBackgroundRole(QPalette::Mid);
       sl->setToolTip(tr("Volume/Gain"));
-      sl->setSuffix("dB");
-      sl->setSpecialText(QString('-') + QChar(0x221e) + QChar(' ') + "dB");
-      sl->setOff(MusEGlobal::config.minSlider);
-      sl->setPrecision(volSliderPrec);
       sl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-      sl->setValue(track_vol);
 //      sl->setEnableStyleHack(MusEGlobal::config.lineEditStyleHack);
+
+      setupControllerWidgets(
+        slider, sl, nullptr, meter, channel,
+        vol_min, vol_max,
+        false,
+        true,
+        true,
+        // If the slider and meter scales differ (minimum values differ), then we really ought to
+        //  show a separate meter scale. Otherwise only the slider scale is shown, which gives the
+        //  false impression that the meter scale is the same as the slider's scale, which it is not.
+        MusEGlobal::config.minSlider != MusEGlobal::config.minMeter,
+        volSliderStep, 0.01, 1.0, volSliderPrec, 2, 3, 20.0,
+        MusEGlobal::config.minSlider, MusEGlobal::config.minMeter,
+        volDBSymbol);
+
+      // Slider::fitValue() not required so far. The log function is accurate but rounded to the nearest .000001
+      slider->setValue(track_vol);
+      sl->setValue(track_vol);
+
+      sliderGrid->addWidget(slider, 1, 0, Qt::AlignHCenter);
+      sliderGrid->addLayout(_meterLayout, 1, 1, Qt::AlignHCenter);
+
 
       // If smart focus is on redirect strip focus to slider label.
       //if(MusEGlobal::config.smartFocus)
 //         setFocusProxy(sl);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
-      connect(slider, SIGNAL(valueChanged(double,int)), sl, SLOT(setValue(double)));
       connect(slider, SIGNAL(valueChanged(double,int,int)), SLOT(volumeChanged(double,int,int)));
       connect(slider, SIGNAL(sliderMoved(double,int,bool)), SLOT(volumeMoved(double,int,bool)));
       connect(slider, SIGNAL(sliderPressed(double, int)), SLOT(volumePressed(double,int)));
@@ -2135,12 +2157,11 @@ void AudioStrip::incVolume(int increaseValue)
     d_new_val = 0.0;
   else
     d_new_val = muse_db2val(d_new_val);
-  volume = d_new_val;
 
   // Hack: Be sure to ignore in ScrDirect mode since we get both pressed AND changed signals.
   // ScrDirect mode is one-time only on press with modifier.
 //   if(scrollMode != SliderBase::ScrDirect)
-    at->recordAutomation(id, d_new_val);
+  at->recordAutomation(id, d_new_val);
   at->setParam(id, d_new_val);  // Schedules a timed control change.
   at->enableController(id, false);
 

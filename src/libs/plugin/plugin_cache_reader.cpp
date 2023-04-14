@@ -313,7 +313,21 @@ bool readPluginScanInfo(MusECore::Xml& xml, PluginScanInfoStruct* info, bool rea
                         else if (tag == "pluginVersionMinor")
                               info->_pluginVersionMinor = xml.parseInt();
                         else if (tag == "pluginFlags")
+                        {
                               info->_pluginFlags = xml.parseInt();
+                              // Obsolete flag. Kept for backward compatibility.
+                              if(info->_pluginFlags & PluginScanInfoStruct::HasLatencyPort)
+                                info->_pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
+                              // Obsolete flag. Kept for backward compatibility.
+                              if(info->_pluginFlags & PluginScanInfoStruct::HasFreewheelPort)
+                                info->_pluginFreewheelType = MusECore::PluginFreewheelTypePort;
+                        }
+                        else if (tag == "latencyReportingType")
+                              info->_pluginLatencyReportingType = MusECore::PluginLatencyReportingType(xml.parseInt());
+                        else if (tag == "pluginFreewheelType")
+                              info->_pluginFreewheelType = MusECore::PluginFreewheelType(xml.parseInt());
+                        else if (tag == "pluginBypassType")
+                              info->_pluginBypassType = MusECore::PluginBypassType(xml.parseInt());
                         else if (tag == "portCount")
                               info->_portCount = xml.parseUInt();
                         else if (tag == "inports")
@@ -332,6 +346,8 @@ bool readPluginScanInfo(MusECore::Xml& xml, PluginScanInfoStruct* info, bool rea
                               info->_freewheelPortIdx = xml.parseUInt();
                         else if (tag == "latencyPortIdx")
                               info->_latencyPortIdx = xml.parseUInt();
+                        else if (tag == "enableOrBypassPortIdx")
+                              info->_enableOrBypassPortIdx = xml.parseUInt();
                         else if (tag == "requiredFeatures")
                               info->_requiredFeatures = xml.parseInt();
                         else if (tag == "vstPluginFlags")

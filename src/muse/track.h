@@ -302,6 +302,7 @@ class Track {
       virtual void preProcessAlways()    { }
 
       TransportSource& transportSource() { return _transportSource; }
+      const TransportSource& transportSource() const { return _transportSource; }
 //       // Returns true if the transport source is connected to any of the
 //       //  track's midi input ports (ex. synth ports not muse midi ports).
 //       // If midiport is -1, returns true if ANY port is connected.
@@ -387,6 +388,8 @@ class Track {
       double meter(int ch) const  { return _meter[ch]; }
       double peak(int ch) const   { return _peak[ch]; }
       void resetMeter();
+      // Drives things like plugin/synth GUIs.
+      virtual void guiHeartBeat();
 
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
@@ -553,7 +556,7 @@ class MidiTrack : public Track {
       // These are only for 'live' (rec) notes for which we don't have a note-off time yet. Even times = 0.
       virtual bool addStuckLiveNote(int port, int chan, int note, int vel = 64);
       virtual bool removeStuckLiveNote(int port, int chan, int note);
-      virtual bool stuckLiveNoteExists(int port, int chan, int note);
+      virtual bool stuckLiveNoteExists(int port, int chan, int note) const;
 
       virtual bool canRecord() const  { return true; }
       virtual bool canRecordMonitor() const { return true; }
@@ -862,6 +865,9 @@ class AudioTrack : public Track {
       void seekPrevACEvent(int);
       void seekNextACEvent(int);
       AuxSendValueList *getAuxSendValueList() { return &_auxSend; }
+
+      // Drives things like plugin/synth GUIs.
+      virtual void guiHeartBeat();
       };
 
 //---------------------------------------------------------

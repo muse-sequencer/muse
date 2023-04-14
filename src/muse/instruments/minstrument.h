@@ -447,10 +447,16 @@ class MidiInstrument {
       // Fills a given MidiControllerList with all available controllers for a given channel and patch.
       // By default it gathers from this instrument's MidiControllerList map just like calling controller().
       // But if channel or patch are given (not default), it gathers from BOTH the midnam's MidiControllerList
-      //  and the instrument's MidiControllerList.
+      //  and the instrument's MidiControllerList. The midnam has priority, since this is a map.
       // This would not be suitable for realtime code since it may allocate. And it copies all the items to dest.
       void getControllers(MidiControllerList* dest, int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
-      
+      // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are
+      //  ALREADY defined as Controller7 or part of Controller14. Checks BOTH the midnam's MidiControllerList
+      //  and the instrument's MidiControllerList. If either the midnam or the instrument contains
+      //  reserved RPN controllers, then the whole combined instrument is considered to reserve them.
+      // Used (at least) by midi input encoders to quickly arbitrate new input.
+      bool RPN_Ctrls_Reserved(int channel = -1, int patch = CTRL_PROGRAM_VAL_DONT_CARE) const;
+
       // Virtual so that inheriters (synths etc) can return whatever they want.
       virtual NoteOffMode noteOffMode() const { return _noteOffMode; }
       // For non-synths, users can set this value.

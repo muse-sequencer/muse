@@ -78,6 +78,7 @@
 #include "name_factory.h"
 #include "song.h"
 #include "helper.h"
+#include "hex_float.h"
 
 // Forwards from header:
 #include <QDropEvent>
@@ -1083,8 +1084,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   }
                   break;
             case MusECore::Track::WAVE: {
-                  QAction *act_wedit = partPopup->addAction(*waveeditorSVGIcon, tr("Wave Edit..."));
-                  act_wedit->setData(OP_WAVEEDIT);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin()->startWaveEditAction);
                   QAction *act_wexport = partPopup->addAction(tr("Save Part to Disk..."));
                   act_wexport->setData(OP_SAVEPARTTODISK);
                   QAction *act_wfinfo = partPopup->addAction(tr("File Info..."));
@@ -1324,10 +1324,6 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    case OP_GLUESELECTION:
       MusECore::merge_selected_parts();
       break;
-
-   case OP_WAVEEDIT:    // wave edit
-      emit startEditor(pl, 4);
-      return;
    case OP_DECLONE:    // declone
    {
       MusECore::Part* spart  = npart->part();
@@ -1399,9 +1395,12 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
       MusEGlobal::song->normalizeWaveParts(item->part());
       break;
    }
-   case OP_PARTCOLORBASE ... NUM_PARTCOLORS+20:
+   case OP_PARTCOLORBASE ... OP_ONE_PAST_END_ENUM:
    {
-      curColorIndex = n - 20;
+      if(n == OP_ONE_PAST_END_ENUM)
+        break;
+
+      curColorIndex = n - OP_PARTCOLORBASE;
 
       if (item->isSelected()) {
           //Loop through all parts and set color on selected:
@@ -1487,13 +1486,18 @@ bool PartCanvas::mousePress(QMouseEvent* event)
         act = menu->exec(event->globalPos());
         if(act)
         {
-          const int n = act->data().toInt();
-          if(n < TOOLS_ID_BASE)
-            itemPopup(curItem, n, ev_pos);
-          else if(n >= TOOLS_ID_BASE && n < AUTO_OP_BASE_ENUM)
-            canvasPopup(n);
-          else if(n >= AUTO_OP_BASE_ENUM && n <= AUTO_OP_END_ENUM)
-            automationPopup(n);
+          // Do not respond to the action if it does not have an integer data.
+          // Some of these actions are shared with menus, they are automatically executed but they have no data value.
+          if(act->data().canConvert<int>())
+          {
+            const int n = act->data().toInt();
+            if(n >= OP_BASE_ENUM && n < OP_ONE_PAST_END_ENUM)
+              itemPopup(curItem, n, ev_pos);
+            else if(n >= TOOLS_ID_BASE && n < AUTO_OP_BASE_ENUM)
+              canvasPopup(n);
+            else if(n >= AUTO_OP_BASE_ENUM && n <= AUTO_OP_END_ENUM)
+              automationPopup(n);
+          }
         }
         delete menu;
         ret = false;
@@ -1537,7 +1541,9 @@ bool PartCanvas::mousePress(QMouseEvent* event)
                           // Ctrl key not pressed? Unselect all other vertices.
                           if(!ctrlkey)
                             unselectAllAutomation(operations);
-                          if(newAutomationVertex( ev_pos, operations, shiftkey))
+                          // FIXME: There is a conflict here. Holding the shift key for no-snap
+                          //         also activates the constricted horizontal/vertical movement.
+                          if(newAutomationVertex( ev_pos, operations, !shiftkey))
                           {
                             // Reset.
                             automation.controllerState = doNothing;
@@ -1843,26 +1849,14 @@ bool PartCanvas::selectLasso(bool toggle, MusECore::Undo* undo)
           if(e_ic == cl->cbegin())
             continue;
 
-          double min, max;
-          cl->range(&min,&max);
-
           for(MusECore::ciCtrl ic = s_ic; ic != e_ic; ++ ic)
           {
             const MusECore::CtrlVal& cv = ic->second;
-
-            double y = cv.value();
-            if (cl->valueType() == MusECore::VAL_LOG ) {
-              y = logToVal(y, min, max); // represent volume between 0 and 1
-              if(y < 0) y = 0.0;
-            }
-            else
-              y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
-
+            const double y = normalizedValueFromRange(cv.value(), cl); // represent volume between 0 and 1
             const int eventY = /*mapy*/(trackY + trackH - 2 - y * trackH);
 
             if(eventY < lasso_SY || eventY >= lasso_EY)
               continue;
-
 
             const bool sel = toggle ? !(toggle && cv.selected()) : true;
             // If toggle (ctrl) is false, all points will have been scheduled for deselection first,
@@ -1932,6 +1926,53 @@ void PartCanvas::showStatusTip(QMouseEvent* event) const {
             hoverItem = nullptr;
         }
     }
+}
+
+void PartCanvas::setAutomationCurrentText(const MusECore::CtrlList *cl, double val)
+{
+  const QString unit = MusEGlobal::valueUnits.symbol(cl->valueUnit());
+  QString valtxt;
+  bool dosuff = true;
+  if(cl->valueType() == MusECore::VAL_LOG && cl->displayHint() == MusECore::CtrlList::DisplayLogDB)
+  {
+    // Is it outside of the allowable range?
+    // NOTE: In this control we don't limit the log lower end to min.
+    // This way even a rogue or pre-existing value that is lower than min will
+    //  at least be displayed, which is hopefully helpful to inform the user.
+    if(val < 0.0)
+    {
+      valtxt = QString("---");
+      dosuff = false;
+    }
+    else
+    {
+      // Special for dB display and log zero: Show a special text.
+      if(val == 0.0)
+      {
+        valtxt = QString('-') + QChar(0x221e); // The infinity character
+      }
+      else
+      {
+        // Here we'll use accuracy for precise numeric value, instead of fast_log10.
+        val = museValToDb(val);
+        valtxt = QString::number(val, 'f', 3);
+      }
+    }
+  }
+  else
+  {
+    valtxt = QString::number(val, 'f', 3);
+  }
+
+  // Attach the suffix.
+  if(dosuff && !unit.isEmpty())
+  {
+    // If the first character is not a space, insert one.
+    if(!unit.at(0).isSpace())
+      valtxt += QChar(' ');
+    valtxt += unit;
+  }
+  automation.currentText = QString("Param:%1 Value:%2").arg(cl->name()).arg(valtxt);
 }
 
 void PartCanvas::setCursor()
@@ -4155,15 +4196,18 @@ bool PartCanvas::copyAudioAutomation(
           //  where the target destinations could be chosen. (A sort of paste 'router'?)
           //
           // Store the current samplerate of these values so that the reader can convert.
+          // Use hex value string when appropriate.
           const QString s= QString("controller id=\"%1\" valueType=\"%2\" min=\"%3\" max=\"%4\" samplerate=\"%5\"")
-              .arg(cl->id()).arg(cl->valueType()).arg(cl->minVal()).arg(cl->maxVal()).arg(MusEGlobal::sampleRate);
+              .arg(cl->id()).arg(cl->valueType()).arg(MusELib::museStringFromDouble(cl->minVal())).
+              arg(MusELib::museStringFromDouble(cl->maxVal())).arg(MusEGlobal::sampleRate);
           xml.tag(level++, s.toLatin1().constData());
 
           itemFound = true;
         }
 
         // Write the item's frame and value.
-        QString s = QString("%1 %2").arg(ic->first).arg(ic->second.value());
+        // Use hex value string when appropriate.
+        QString s = QString("%1 %2").arg(ic->first).arg(MusELib::museStringFromDouble(ic->second.value()));
         MusECore::CtrlVal::CtrlValueFlags flags = ic->second.flags();
         // Strip out the group flag because we're determining it here.
         flags &= ~MusECore::CtrlVal::VAL_NON_GROUP_END;
@@ -4949,21 +4993,11 @@ void PartCanvas::drawAutomationFills(QPainter& p, const QRect& rr, MusECore::Aud
 
     int newX = oldX;
     int oldY = -1;
-
-    double min, max;
-    cl->range(&min,&max);
     //const bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;
 
     // Start the oldY off with the current value.
     {
-      double startVal = cl->curVal();
-      if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-        startVal = logToVal(startVal, min, max); // represent volume between 0 and 1
-        if (startVal < 0) startVal = 0.0;
-      }
-      else {
-        startVal = (startVal - min)/(max-min);  // we need to set curVal between 0 and 1
-      }
+      const double startVal = normalizedValueFromRange(cl->curVal(), cl); // represent volume between 0 and 1
       oldY = bottom - rmapy_f(startVal) * height;
     }
     int newY = oldY;
@@ -5115,15 +5149,7 @@ void PartCanvas::drawAutomationFills(QPainter& p, const QRect& rr, MusECore::Aud
         continue;
       }
 
-
-      double y = value;
-      if (cl->valueType() == MusECore::VAL_LOG ) {
-        y = logToVal(y, min, max); // represent volume between 0 and 1
-        if (y < 0) y = 0.0;
-      }
-      else
-        y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
-
+      const double y = normalizedValueFromRange(value, cl); // represent volume between 0 and 1
       newY = bottom - rmapy_f(y) * height;
       newX = mapx(MusEGlobal::tempomap.frame2tick(frame));
 
@@ -5210,21 +5236,11 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
 
     int newX = oldX;
     int oldY = -1;
-
-    double min, max;
-    cl->range(&min,&max);
     const bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;
 
     // Start the oldY off with the current value.
     {
-      double startVal = cl->curVal();
-      if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-        startVal = logToVal(startVal, min, max); // represent volume between 0 and 1
-        if (startVal < 0) startVal = 0.0;
-      }
-      else {
-        startVal = (startVal - min)/(max-min);  // we need to set curVal between 0 and 1
-      }
+      const double startVal = normalizedValueFromRange(cl->curVal(), cl); // represent volume between 0 and 1
       oldY = bottom - rmapy_f(startVal) * height;
     }
     int newY = oldY;
@@ -5372,15 +5388,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
         continue;
       }
 
-
-      double y = value;
-      if (cl->valueType() == MusECore::VAL_LOG ) {
-        y = logToVal(y, min, max); // represent volume between 0 and 1
-        if (y < 0) y = 0.0;
-      }
-      else
-        y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
-
+      const double y = normalizedValueFromRange(value, cl); // represent volume between 0 and 1
       newY = bottom - rmapy_f(y) * height;
       newX = mapx(MusEGlobal::tempomap.frame2tick(frame));
 
@@ -5745,8 +5753,6 @@ bool PartCanvas::drawAutomationPoint(
   const int bottom = rr.bottom() - _automationBottomMargin;
   const int top = rr.top() + _automationTopMargin;
   const int height = bottom - top;
-  double min, max;
-  cl->range(&min,&max);
 
   const bool isCurrent =
     automation.currentTrack == t &&
@@ -5754,13 +5760,7 @@ bool PartCanvas::drawAutomationPoint(
     automation.currentCtrlList == cl &&
     automation.currentWorkingFrame == currentFrame;
 
-  double y = value;
-  if (cl->valueType() == MusECore::VAL_LOG ) {
-    y = logToVal(y, min, max); // represent volume between 0 and 1
-    if(y < 0) y = 0.0;
-  }
-  else
-    y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
+  const double y = normalizedValueFromRange(value, cl); // represent volume between 0 and 1
 
   if(isCurrent)
     p.setPen(currentPen);
@@ -5806,8 +5806,6 @@ bool PartCanvas::fillAutomationPoint(
   const int bottom = rr.bottom() - _automationBottomMargin;
   const int top = rr.top() + _automationTopMargin;
   const int height = bottom - top;
-  double min, max;
-  cl->range(&min,&max);
 
   const bool isCurrent =
     automation.currentTrack == t &&
@@ -5815,14 +5813,7 @@ bool PartCanvas::fillAutomationPoint(
     automation.currentCtrlList == cl &&
     automation.currentWorkingFrame == currentFrame;
 
-  double y = value;
-  if (cl->valueType() == MusECore::VAL_LOG ) {
-    y = logToVal(y, min, max); // represent volume between 0 and 1
-    if(y < 0) y = 0.0;
-  }
-  else
-    y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
-
+  const double y = normalizedValueFromRange(value, cl); // represent volume between 0 and 1
   const int ypixel = bottom - rmapy_f(y) * height;
   if(fullSize)
   {
@@ -5887,8 +5878,6 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
 
       int xpixel = 0;
       int ypixel = 0;
-      double min, max;
-      cl->range(&min,&max);
       QPen pen1(cl->color());
       pen1.setCosmetic(true);
       const QColor line_col = cl->color();
@@ -5900,14 +5889,7 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
       // Draw the current automation value text.
       if(automation.currentTrack == t && automation.currentCtrlValid && automation.currentCtrlList == cl)
       {
-        double y = automation.currentVal;
-        if (cl->valueType() == MusECore::VAL_LOG ) {
-          y = logToVal(y, min, max); // represent volume between 0 and 1
-          if (y < 0) y = 0.0;
-        }
-        else
-          y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
-
+        const double y = normalizedValueFromRange(automation.currentVal, cl); // represent volume between 0 and 1
         ypixel = bottom - rmapy_f(y) * height;
         xpixel = mapx(MusEGlobal::tempomap.frame2tick(automation.currentWorkingFrame));
 
@@ -5927,14 +5909,7 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
 // Name text has been moved to the track list automation column. Keep in case improved later?
 #if 0
       // Draw the controller name text.
-      double yfirst;
-      if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-        yfirst = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
-        if (yfirst < 0) yfirst = 0.0;
-      }
-      else {
-        yfirst = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
-      }
+      double yfirst = logToVal(cl->curVal(), cl); // represent volume between 0 and 1
       yfirst = bottom - rmapy_f(yfirst) * height;
       //const int xTextPos = mapx(0) > rmapx(0) ? mapx(0) + 5 : rmapx(0) + 5; // follow window..(doesn't work very well)
       const int xTextPos = mapx(0) + 5;
@@ -6052,33 +6027,19 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         int eventOldY = -1;
         int eventY = eventOldY;
         bool cvDiscrete = true;
-        double min, max;
-        cl->range(&min,&max);
         bool discrete = cl->mode() == MusECore::CtrlList::DISCRETE;
 
         // First check that there IS automation for this controller, ic == cl->end means no automation
         if(ic == cl->end())
         {
-          double y;
-          if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-            y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
-            if (y < 0) y = 0.0;
-          }
-          else
-            y = (cl->curVal() - min)/(max-min);  // we need to set curVal between 0 and 1
+          const double y = normalizedValueFromRange(cl->curVal(), cl); // represent volume between 0 and 1
           eventY = eventOldY = mapy(bottom - y * height);
         }
         else // we have automation, loop through it
         {
           for (; ic!=cl->end(); ++ic)
           {
-            double y = ic->second.value();
-            if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-              y = logToVal(y, min, max); // represent volume between 0 and 1
-              if (y < 0) y = 0;
-            }
-            else
-              y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
+            const double y = normalizedValueFromRange(ic->second.value(), cl); // represent volume between 0 and 1
 
             eventY = mapy(bottom - y * height);
             eventX = mapx(MusEGlobal::tempomap.frame2tick(ic->first));
@@ -6171,9 +6132,7 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
         // Store the value.
         automation.currentVal = closest_point_value;
         // Store the text.
-        if(closest_point_cl->valueType() == MusECore::VAL_LOG)
-          closest_point_value = muse_val2db(closest_point_value); // Here we can use the slower but accurate function.
-        automation.currentText = QString("Param:%1 Value:%2").arg(closest_point_cl->name()).arg(closest_point_value, 0, 'g', 3);
+        setAutomationCurrentText(closest_point_cl, closest_point_value);
 
         setCursor();
 
@@ -6481,7 +6440,8 @@ void PartCanvas::deleteSelectedAutomation(MusECore::Undo& undo) const
       for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
       {
         const unsigned int frame = iail->first;
-        undo.push_back(UndoOp(UndoOp::DeleteAudioCtrlVal, track, ctrlId, frame, 0, 0, 0));
+        undo.push_back(UndoOp(
+          UndoOp::DeleteAudioCtrlVal, track, ctrlId, frame, double(0), double(0), double(0)));
       }
     }
   }
@@ -6496,8 +6456,6 @@ void PartCanvas::alignSelectedAutomation(MusECore::Undo& undo) const
   const int curid = automation.currentCtrlList->id();
   const unsigned int curframe = automation.currentFrame;
   const double curval = automation.currentVal;
-  double min, max, trackMin, trackMax;
-  automation.currentCtrlList->range(&min, &max);
 
   for(MusECore::ciAudioAutomationItemTrackMap iatm = automation.currentCtrlFrameList.cbegin();
       iatm != automation.currentCtrlFrameList.cend(); ++iatm)
@@ -6514,7 +6472,6 @@ void PartCanvas::alignSelectedAutomation(MusECore::Undo& undo) const
       if(icl == at->controller()->cend())
         continue;
       const MusECore::CtrlList* track_cl = icl->second;
-      track_cl->range(&trackMin, &trackMax);
 
       const MusECore::AudioAutomationItemList& ail = iaim->second._selectedList;
       for(MusECore::ciAudioAutomationItemList iail = ail.cbegin(); iail != ail.cend(); ++iail)
@@ -6525,26 +6482,14 @@ void PartCanvas::alignSelectedAutomation(MusECore::Undo& undo) const
           continue;
 
         double newValue = curval;
-
         if(track_cl != automation.currentCtrlList)
         {
-          if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG ) {
-            newValue = logToVal(newValue, min, max); // represent volume between 0 and 1
-            if(newValue < 0) newValue = 0.0;
-          }
-          else
-            newValue = (newValue-min)/(max-min);  // we need to set curVal between 0 and 1
-
-          if (track_cl->valueType() == MusECore::VAL_LOG ) {
-            newValue = valToLog(newValue, trackMin, trackMax);
-            if (newValue< trackMin) newValue=trackMin;
-            if (newValue>trackMax) newValue=trackMax;
-          }
-          else
-            newValue = newValue * (trackMax-trackMin) + trackMin;
+          newValue = normalizedValueFromRange(newValue, automation.currentCtrlList); // represent volume between 0 and 1
+          newValue = normalizedValueToRange(newValue, track_cl);
         }
 
-        undo.push_back(UndoOp(UndoOp::ModifyAudioCtrlVal, track, ctrlId, frame, frame, iail->second._value, newValue));
+        undo.push_back(UndoOp(
+          UndoOp::ModifyAudioCtrlVal, track, double(ctrlId), double(frame), double(frame), iail->second._value, newValue));
       }
     }
   }
@@ -6734,10 +6679,7 @@ bool PartCanvas::newAutomationVertex(QPoint pos, MusECore::Undo& undo, bool snap
     ctrlInterpolate.doInterp ? automation.currentCtrlList->interpolate(frame, ctrlInterpolate) : ctrlInterpolate.sVal;
 
   // Keep a string for easy displaying of automation values
-  double displayCvVal =  cvval;
-  if(automation.currentCtrlList->valueType() == MusECore::VAL_LOG)
-    displayCvVal = muse_val2db(cvval);
-  automation.currentText = QString("Param:%1 Value:%2").arg(automation.currentCtrlList->name()).arg(displayCvVal, 0, 'g', 3);
+  setAutomationCurrentText(automation.currentCtrlList, cvval);
 
   // Now that we have a track, cl, and frame for a new vertex, set the automation object mode to moving.
   automation.currentFrame = automation.currentWorkingFrame = frame;
@@ -6745,76 +6687,153 @@ bool PartCanvas::newAutomationVertex(QPoint pos, MusECore::Undo& undo, bool snap
   automation.currentCtrlValid = true;
   automation.breakUndoCombo = true;
 
-  undo.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack, automation.currentCtrlList->id(), frame,
-      cvval, MusECore::CtrlVal::VAL_SELECTED |
+  undo.push_back(UndoOp(UndoOp::AddAudioCtrlVal, automation.currentTrack,
+      (automation.currentCtrlList->id()), double(frame),
+      cvval, double(MusECore::CtrlVal::VAL_SELECTED |
         // The undo system automatically sets the VAL_DISCRETE flag if the controller mode is DISCRETE.
-        (MusEGlobal::config.audioAutomationDrawDiscrete ? MusECore::CtrlVal::VAL_DISCRETE : MusECore::CtrlVal::VAL_NOFLAGS)));
+        (MusEGlobal::config.audioAutomationDrawDiscrete ? MusECore::CtrlVal::VAL_DISCRETE : MusECore::CtrlVal::VAL_NOFLAGS))));
 
   return true;
 }
 
 //---------------------------------------------------------
 //
-//  logToVal
-//   - represent logarithmic value on linear scale from 0 to 1
+//  normalizedValueFromRange
+//   - represent value on linear scale from 0 to 1
 //
 //---------------------------------------------------------
-double PartCanvas::logToVal(double inLog, double min, double max) const
+
+double PartCanvas::normalizedValueFromRange(double in, const MusECore::CtrlList *cl) const
 {
-    if (inLog < min) inLog = min;
-    if (inLog > max) inLog = max;
-    double linMin = 20.0*MusECore::fast_log10(min);
-    double linMax = 20.0*MusECore::fast_log10(max);
-    double linVal = 20.0*MusECore::fast_log10(inLog);
+  const MusECore::CtrlValueType vt = cl->valueType();
+  const bool islog = vt == MusECore::CtrlValueType::VAL_LOG;
+  double max = qMax(cl->minVal(), cl->maxVal());
+  double min = museRangeMinValHint(
+    qMin(cl->minVal(), cl->maxVal()), max,
+    islog,
+    vt == MusECore::CtrlValueType::VAL_INT,
+    cl->displayHint() == MusECore::CtrlList::DisplayLogDB,
+    MusEGlobal::config.minSlider,
+    0.05);
 
-    double outVal = (linVal-linMin) / (linMax - linMin);
+  if(in < min)
+    in = min;
+  if(in > max)
+    in = max;
 
-    return outVal;
+  if(islog)
+  {
+    min = 20.0*MusECore::fast_log10(min);
+    max = 20.0*MusECore::fast_log10(max);
+    in = 20.0*MusECore::fast_log10(in);
+  }
+
+  double outVal = (in - min) / (max - min);
+  if(outVal < 0.0) outVal = 0.0;
+  if(outVal > 1.0) outVal = 1.0;
+
+  return outVal;
 }
 
 //---------------------------------------------------------
 //
-//  valToLog
-//   - represent value from 0 to 1 as logarithmic value between min and max
+//  normalizedValueToRange
+//   - represent value from 0 to 1 as value between min and max
 //
 //---------------------------------------------------------
-double PartCanvas::valToLog(double inV, double min, double max) const
+
+double PartCanvas::normalizedValueToRange(double in, const MusECore::CtrlList *cl) const
 {
-    double linMin = 20.0*MusECore::fast_log10(min);
-    double linMax = 20.0*MusECore::fast_log10(max);
+  const MusECore::CtrlValueType vt = cl->valueType();
+  const bool islog = vt == MusECore::CtrlValueType::VAL_LOG;
+  const double clmax = qMax(cl->minVal(), cl->maxVal());
+  const double clmin = museRangeMinValHint(
+    qMin(cl->minVal(), cl->maxVal()), clmax,
+    islog,
+    vt == MusECore::CtrlValueType::VAL_INT,
+    cl->displayHint() == MusECore::CtrlList::DisplayLogDB,
+    MusEGlobal::config.minSlider,
+    0.05);
 
-    double linVal = (inV * (linMax - linMin)) + linMin;
-    double outVal = exp10((linVal)/20.0);
+  double min = clmin, max = clmax;
 
-    //printf("::valToLog inV %f outVal %f linVal %f min %f max %f\n", inV, outVal, linVal, min, max);
-    if (outVal > max) outVal = max;
-    if (outVal < min) outVal = min;
-    return outVal;
-}
+  if(islog)
+  {
+    min = 20.0*MusECore::fast_log10(min);
+    max = 20.0*MusECore::fast_log10(max);
+  }
 
-//---------------------------------------------------------
-//
-//  deltaValToLog
-//
-//---------------------------------------------------------
-double PartCanvas::deltaValToLog(double inLog, double inLinDeltaNormalized, double min, double max) const
-{
-    if (inLog < min) inLog = min;
-    if (inLog > max) inLog = max;
-    //const double linMin = 20.0*MusECore::fast_log10(min);
-    //const double linMax = 20.0*MusECore::fast_log10(max);
-    //const double linVal = 20.0*MusECore::fast_log10(inLog);
-    const double linMin = 20.0*log10(min);
-    const double linMax = 20.0*log10(max);
-    const double linVal = 20.0*log10(inLog);
-    const double linDeltaVal = (inLinDeltaNormalized * (linMax - linMin)) /*+ linMin*/;
+  if(in < 0.0) in = 0.0;
+  if(in > 1.0) in = 1.0;
 
-    double outVal = linVal + linDeltaVal;
+  double outVal = (in * (max - min)) + min;
+  if(islog)
     outVal = exp10((outVal)/20.0);
-    if (outVal > max) outVal = max;
-    if (outVal < min) outVal = min;
 
-    return outVal;
+  if (outVal > clmax) outVal = clmax;
+  if (outVal < clmin) outVal = clmin;
+  return outVal;
+}
+
+//---------------------------------------------------------
+//
+//  deltaNormalizedValueToRange
+//
+//---------------------------------------------------------
+
+double PartCanvas::deltaNormalizedValueToRange(double in, double inDeltaNormalized, const MusECore::CtrlList *cl) const
+{
+  const MusECore::CtrlValueType vt = cl->valueType();
+  const bool islog = vt == MusECore::CtrlValueType::VAL_LOG;
+  const double clmax = qMax(cl->minVal(), cl->maxVal());
+  const double clmin = qMin(cl->minVal(), cl->maxVal());
+  const double clmin_lim = museRangeMinValHint(
+    clmin, clmax,
+    islog,
+    vt == MusECore::CtrlValueType::VAL_INT,
+    cl->displayHint() == MusECore::CtrlList::DisplayLogDB,
+    MusEGlobal::config.minSlider,
+    0.05);
+
+  double min = clmin_lim, max = clmax;
+
+  if(in < min)
+    in = min;
+  if(in > max)
+    in = max;
+
+  if(islog)
+  {
+    min = museValToDb(min);
+    max = museValToDb(max);
+    in  = museValToDb(in);
+//     min = 20.0*MusECore::fast_log10(min);
+//     max = 20.0*MusECore::fast_log10(max);
+//     in = 20.0*MusECore::fast_log10(in);
+  }
+
+  double outVal = in + (inDeltaNormalized * (max - min));
+  if(outVal < min) outVal = min;
+  if(outVal > max) outVal = max;
+
+  if(islog)
+  {
+    // If the minimum allows to go to zero, and if the final dB value is equal
+    //  to our minimum dB setting, make it jump to 0.0 (-inf).
+    if(clmin <= 0.0 && outVal == min)
+      return 0.0;
+    outVal = museDbToVal(outVal);
+  }
+  // 'Snap' to integer or boolean
+  else if (cl->mode() == MusECore::CtrlList::DISCRETE)
+  {
+    outVal = rint(outVal + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
+  }
+
+  if (outVal < clmin_lim) outVal = clmin_lim;
+  if (outVal > clmax) outVal = clmax;
+
+  return outVal;
 }
 
 //---------------------------------------------------------
@@ -6948,29 +6967,11 @@ void PartCanvas::moveItems(const QPoint& inPos, int dir, bool rasterize)
         {
           if(deltaY != 0)
           {
-            double min, max;
-            cl->range(&min,&max);
-            double cvval;
-            if (cl->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-                cvval = deltaValToLog(aai._value, -curTrackDeltaYNormalized, min, max);
-            }
-            else {
-              // we need to set val between 0 and 1 (unless integer)
-              cvval = -curTrackDeltaYNormalized * (max-min) + aai._value;
-              // 'Snap' to integer or boolean
-              if (cl->mode() == MusECore::CtrlList::DISCRETE)
-                cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
-              if (cvval< min) cvval=min;
-              if (cvval>max) cvval=max;
-            }
-
+            const double cvval = deltaNormalizedValueToRange(aai._value, -curTrackDeltaYNormalized, cl);
             if(isCurrent)
             {
               // Store the text.
-              double displayCvVal =  cvval;
-              if(cl->valueType() == MusECore::VAL_LOG)
-                displayCvVal = muse_val2db(cvval);
-              automation.currentText = QString("Param:%1 Value:%2").arg(cl->name()).arg(displayCvVal, 0, 'g', 3);
+              setAutomationCurrentText(cl, cvval);
               automation.currentVal = cvval;
             }
 

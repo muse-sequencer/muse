@@ -727,6 +727,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     }
                     
                     n = act->data().toInt();
+                    const QString acttxt = act->text();
                     delete pup;
                     
                     MusECore::MidiDevice* sdev = 0;
@@ -760,7 +761,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       else //if(n < 0x40000000)
                         typ = MusECore::MidiDevice::SYNTH_MIDI;
                       
-                      sdev = MusEGlobal::midiDevices.find(act->text(), typ);
+                      sdev = MusEGlobal::midiDevices.find(acttxt, typ);
                       // Is it the current device? Reset it to <none>.
                       if(sdev == dev)
                         sdev = 0;

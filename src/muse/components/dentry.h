@@ -23,7 +23,6 @@
 #ifndef __DENTRY_H__
 #define __DENTRY_H__
 
-//#include "line_edit.h"
 #include <QLineEdit>
 
 class QWidget;
@@ -50,14 +49,17 @@ class Dentry : public QLineEdit {
 
       SliderBase* _slider;
       int button;
-      int starty;
       QTimer* timer;
-      int evx;
       int timecount;
+      bool _mousePressed;
+      bool _keyUpPressed;
+      bool _keyDownPressed;
 
    protected:
       int _id;
       double val;
+
+      virtual bool setNewValue(double) = 0;
 
       virtual void wheelEvent(QWheelEvent*);
       virtual void mousePressEvent(QMouseEvent*);
@@ -68,11 +70,14 @@ class Dentry : public QLineEdit {
       virtual void focusOutEvent(QFocusEvent*);
 
       virtual void keyPressEvent(QKeyEvent*);
+      virtual void keyReleaseEvent(QKeyEvent*);
 
       virtual void incValue(int steps = 1) = 0;
       virtual void decValue(int steps = 1) = 0;
-      virtual bool setString(double) = 0;
-      virtual bool setSValue(const QString&) = 0;
+      virtual void setString(double) = 0;
+      // Returns false if the text failed conversion, true if OK.
+      // Changed is set true if the value was changed, false if not.
+      virtual bool setSValue(const QString&, bool *changed = nullptr) = 0;
 
    private slots:
       void repeat();
@@ -90,11 +95,11 @@ class Dentry : public QLineEdit {
 
    public:
       Dentry(QWidget*, const char* name=0);
-      double value() const { return val; }
-      int id() const    { return _id; }
-      void setId(int i) { _id = i; }
-      SliderBase* slider() const            { return _slider; }
-      void setSlider(SliderBase* s)         { _slider = s; }
+      virtual double value() const;
+      int id() const;
+      void setId(int i);
+      SliderBase* slider() const;
+      void setSlider(SliderBase* s);
       };
 
 } // namespace MusEGui

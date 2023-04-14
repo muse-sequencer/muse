@@ -60,7 +60,7 @@ class ExtMidiClock;
 enum {
       SEQM_REVERT_OPERATION_GROUP, SEQM_EXECUTE_OPERATION_GROUP, 
       SEQM_EXECUTE_PENDING_OPERATIONS,
-      SEQM_RESET_DEVICES, SEQM_INIT_DEVICES, SEQM_PANIC,
+      SEQM_RESET_DEVICES, SEQM_PANIC,
       SEQM_MIDI_LOCAL_OFF,
       SEQM_PLAY_MIDI_EVENT,
       SEQM_SET_HW_CTRL_STATE,
@@ -69,7 +69,6 @@ enum {
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
-      AUDIO_ADDPLUGIN,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
       AUDIO_SWAP_PLUGINS,
       AUDIO_SEEK_PREV_AC_EVENT,
@@ -287,7 +286,6 @@ class Audio {
       void msgRemoveRoute1(Route, Route); 
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
-      void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetPrefader(AudioTrack*, int);
       void msgSetChannels(AudioTrack*, int);
       void msgLocalOff();

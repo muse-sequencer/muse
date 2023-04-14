@@ -162,7 +162,6 @@ class MidiPort {
       MidiController* midiController(int num, int chan = -1, bool createIfNotFound = true) const;
       MidiCtrlValList* addManagedController(int channel, int ctrl);
       // To be called from realtime audio thread only.
-      void tryCtrlInitVal(int chan, int ctl, int val);
       int limitValToInstrCtlRange(int ctl, int val, int chan = -1);
       double limitValToInstrCtlRange(int ctl, double val, int chan = -1);
       int limitValToInstrCtlRange(const MidiController* mc, int val);
@@ -189,12 +188,6 @@ class MidiPort {
       
       // send events to midi device and keep track of
       // device state:
-      void sendGmOn();
-      void sendGsOn();
-      void sendXgOn();
-      void sendGmInitValues();
-      void sendGsInitValues();
-      void sendXgInitValues();
       void sendStart();
       void sendStop();
       void sendContinue();
