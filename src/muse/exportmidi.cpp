@@ -477,7 +477,7 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
 //   addTrackEvents
 //---------------------------------------------------------
 
-static void addTrackEvents(MPEventList* l, int port, int channel, const MidiTrack* track)
+static void addTrackEvents(MPEventList* l, int port, int channel, const MidiTrack* track, bool selectedPartsOnly = false)
 {
   //---------------------------------------------------
   //    Write all track events.
@@ -486,6 +486,8 @@ static void addTrackEvents(MPEventList* l, int port, int channel, const MidiTrac
   const MusECore::PartList* parts = track->cparts();
   for (MusECore::ciPart p = parts->cbegin(); p != parts->cend(); ++p) {
         const MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
+        if(selectedPartsOnly && !part->selected())
+          continue;
         MusECore::addEventList(part->events(), l, track, part, port, channel); 
         }
 }
@@ -578,25 +580,54 @@ namespace MusEGui {
 //   exportMidi
 //---------------------------------------------------------
 
-void MusE::exportMidi(bool selectedVisibleTracksOnly)
+void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly)
       {
-      // Warn if no selected visible tracks.
+      // Warn if no selected visible tracks, or no selected parts.
+      if(selectedVisibleTracksOnly || selectedPartsOnly)
       {
-        bool doit = false;
+        bool havtracks = false;
+        bool haveparts = false;
         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
         for(MusECore::ciMidiTrack im = mtl->cbegin(); im != mtl->cend(); ++im)
         {
-          if(!selectedVisibleTracksOnly || ((*im)->selected() && (*im)->visible()))
+          // Only selected visible tracks.
+          if(selectedVisibleTracksOnly && (*im)->selected() && (*im)->visible())
           {
-            doit = true;
-            break;
+            havtracks = true;
+            if(!selectedPartsOnly)
+              break;
           }
+
+          if(selectedPartsOnly)
+          {
+            const MusECore::PartList* parts = (*im)->cparts();
+            for (MusECore::ciPart p = parts->cbegin(); p != parts->cend(); ++p)
+            {
+              const MusECore::MidiPart* part = (MusECore::MidiPart*) (p->second);
+              // Only selected parts on visible tracks.
+              if(part->selected() && (*im)->visible())
+              {
+                haveparts = true;
+                if(!selectedVisibleTracksOnly)
+                  break;
+              }
+            }
+          }
+
         }
-        if(selectedVisibleTracksOnly && !doit)
+        if(selectedVisibleTracksOnly && !havtracks)
         {
           QMessageBox::warning(this,
             tr("MusE: Warning"),
             tr("Select some visible tracks.\n"),
+                QMessageBox::Ok);
+            return;
+        }
+        if(selectedPartsOnly && !haveparts)
+        {
+          QMessageBox::warning(this,
+            tr("MusE: Warning"),
+            tr("Select some parts on visible tracks.\n"),
                 QMessageBox::Ok);
             return;
         }
@@ -610,6 +641,25 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly)
         {
           if(selectedVisibleTracksOnly && (!(*im)->selected() || !(*im)->visible()))
             continue;
+
+          if(selectedPartsOnly)
+          {
+            bool haveparts = false;
+            const MusECore::PartList* parts = (*im)->cparts();
+            for (MusECore::ciPart p = parts->cbegin(); p != parts->cend(); ++p)
+            {
+              const MusECore::MidiPart* part = (MusECore::MidiPart*) (p->second);
+              // Only selected parts on visible tracks.
+              if(part->selected() && (*im)->visible())
+              {
+                haveparts = true;
+                break;
+              }
+            }
+            if(!haveparts)
+              continue;
+          }
+
           int port = (*im)->outPort();
           if(prev_port == -1)
           {
@@ -675,6 +725,24 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly)
           if(selectedVisibleTracksOnly && (!track->selected() || !track->visible()))
             continue;
 
+          if(selectedPartsOnly)
+          {
+            bool haveparts = false;
+            const MusECore::PartList* parts = track->cparts();
+            for (MusECore::ciPart p = parts->cbegin(); p != parts->cend(); ++p)
+            {
+              const MusECore::MidiPart* part = (MusECore::MidiPart*) (p->second);
+              // Only selected parts on visible tracks.
+              if(part->selected() && track->visible())
+              {
+                haveparts = true;
+                break;
+              }
+            }
+            if(!haveparts)
+              continue;
+          }
+
           if(MusEGlobal::config.smfFormat != 0)
           {  
             mft = new MusECore::MidiFileTrack;
@@ -710,7 +778,7 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly)
             }
           }
           // Write all track events.
-          addTrackEvents(l, port, channel, track);
+          addTrackEvents(l, port, channel, track, selectedPartsOnly);
 
           ++tr_cnt;
         }
@@ -737,6 +805,9 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly)
           for (MusECore::iPart ip = parts->begin(); ip != parts->end(); ++ip)
           {
             MusECore::MidiPart* part = (MusECore::MidiPart*) (ip->second);
+            // Only selected parts on visible tracks.
+            if(selectedPartsOnly && (!part->selected() || !track->visible()))
+              continue;
             const MusECore::EventList& evlist = part->events();
             for (MusECore::ciEvent iev = evlist.begin(); iev != evlist.end(); ++iev)
             {

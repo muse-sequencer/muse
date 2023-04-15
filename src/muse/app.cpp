@@ -646,6 +646,7 @@ MusE::MusE() : QMainWindow()
       fileExportMidiAction = new QAction(tr("Export Midi File..."), this);
       fileExportMidiSelectedVisibleAction = new QAction(tr("Export Selected Visible Tracks To Midi File..."), this);
       fileImportPartAction = new QAction(tr("Import Part..."), this);
+      fileExportSelectedPartsAction = new QAction(tr("Export Selected Parts To Midi File..."), this);
 
       fileImportWaveAction = new QAction(tr("Import Audio File..."), this);
       fileMoveWaveFiles = new QAction(tr("Find Unused Wave Files..."), this);
@@ -771,7 +772,8 @@ MusE::MusE() : QMainWindow()
       
       connect(fileImportMidiAction, SIGNAL(triggered()), SLOT(importMidi()));
       connect(fileExportMidiAction, &QAction::triggered, [this]() { exportMidi(); } );
-      connect(fileExportMidiSelectedVisibleAction, &QAction::triggered, [this]() { exportMidi(true); } );
+      connect(fileExportMidiSelectedVisibleAction, &QAction::triggered, [this]() { exportMidi(true /*selected visible tracks only*/); } );
+      connect(fileExportSelectedPartsAction, &QAction::triggered, [this]() { exportMidi(false, true /*selected parts only*/); } );
       connect(fileImportPartAction, SIGNAL(triggered()), SLOT(importPart()));
 
       connect(fileImportWaveAction, SIGNAL(triggered()), SLOT(importWave()));
@@ -966,7 +968,10 @@ MusE::MusE() : QMainWindow()
       menu_file->addAction(fileImportMidiAction);
       menu_file->addAction(fileExportMidiAction);
       menu_file->addAction(fileExportMidiSelectedVisibleAction);
+      menu_file->addSeparator();
       menu_file->addAction(fileImportPartAction);
+      menu_file->addAction(fileExportSelectedPartsAction);
+      menu_file->addSeparator();
       menu_file->addAction(fileImportWaveAction);
       menu_file->addSeparator();
       menu_file->addAction(fileMoveWaveFiles);
