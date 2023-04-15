@@ -1352,7 +1352,7 @@ void LV2Synth::lv2audio_postProcessMidiPorts(LV2PluginWrapper_State *state, unsi
                 }
 
                 // If it's a midi event send a copy of it to the host for recording etc.
-                if(type == state->synth->_midi_event_id)
+                if(state->sif && type == state->synth->_midi_event_id)
                   state->sif->eventReceived(frames, size, data);
 
                 if(state->uiInst == nullptr)
