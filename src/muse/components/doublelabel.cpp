@@ -24,6 +24,7 @@
 
 #include <QWidget>
 #include <QKeyEvent>
+#include <QLocale>
 
 #include "doublelabel.h"
 
@@ -681,7 +682,7 @@ double DoubleLabel::valueFromText(const QString& s, bool *ok) const
   QString sTrimmed = _validator->stripped(s);
   // Strip and grab the multiplier character, and get the multiplier value.
   const double multiplier = multiplierValue(_validator->findAndStripMultiplier(sTrimmed));
-  double v = sTrimmed.toDouble(&rok);
+  double v = QLocale().toDouble(sTrimmed, &rok);
   if (rok) {
     // Apply the multiplier to the number that was typed in.
     v *= multiplier;

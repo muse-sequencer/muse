@@ -1,3 +1,7 @@
+15.04.2023
+    - From 14.04: Unable to enter values in entry boxes in locales other than 'C'. (Tim)
+      Oops, add locale in DoubleLabel::valueFromText(). Test OK with locale = fr.
+
 14.04.2023
     * Spring 2023 large fixes and features: (Tim)
 
