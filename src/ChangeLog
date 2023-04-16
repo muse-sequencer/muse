@@ -1,3 +1,7 @@
+16.04.2023
+    - From 14.04: Old songs' automation values not loading correctly in locales other than 'C'. (Tim)
+      Oops, force c locale to 'C' in museStringFromDouble() and museStringToDouble().
+      Using a per-thread thread-safe technique with uselocale() et al.
 15.04.2023
     - From 14.04: Unable to enter values in entry boxes in locales other than 'C'. (Tim)
       Oops, add locale in DoubleLabel::valueFromText(). Test OK with locale = fr.

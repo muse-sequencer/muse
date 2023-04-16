@@ -23,6 +23,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
+#include <locale>
+
 #include <QString>
 
 #include "hex_float.h"
@@ -31,6 +33,14 @@ namespace MusELib {
 
 QString museStringFromDouble(double v)
 {
+  // NOTE: snprintf can be locale sensitive! We should force the locale to standard 'C'.
+  // Use a per-thread thread-safe technique instead of setting the global locale.
+  // Note this C locale is NOT the same as the application's C++ locale.
+  // Setting LANG environment variable before running is different than setting our -l switch.
+  locale_t nloc = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+  assert(nloc != (locale_t) 0);
+  uselocale(nloc);
+
   bool useh = false;
   int sz;
   // How many characters required in the decimal string?
@@ -54,17 +64,40 @@ QString museStringFromDouble(double v)
     std::snprintf(&buf[0], buf.size(), "%a", v);
   else
     std::snprintf(&buf[0], buf.size(), "%.100g", v);
-  return &buf[0];
+
+  // NOTE: LC_GLOBAL_HANDLE? Seems to be a mistake in the uselocale() documentation example.
+  //uselocale(LC_GLOBAL_HANDLE);
+  // So the new locale is no longer in use.
+  uselocale(LC_GLOBAL_LOCALE);
+  freelocale(nloc);
+
+  return QString(&buf[0]);
 }
 
 double museStringToDouble(const QString &s, bool *ok)
 {
   const char *sc = s.toLatin1().constData();
   char *end;
+
+  // NOTE: strtod is locale sensitive! We must force the locale to standard 'C'.
+  // Use a per-thread thread-safe technique instead of setting the global locale.
+  // Note this C locale is NOT the same as the application's C++ locale.
+  // Setting LANG environment variable before running is different than setting our -l switch.
+  locale_t nloc = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+  assert(nloc != (locale_t) 0);
+  uselocale(nloc);
+
   const double rv = std::strtod(sc, &end);
   if(ok)
     // If the conversion fails, strtod sets end = input string.
     *ok = end != sc;
+
+  // NOTE: LC_GLOBAL_HANDLE? Seems to be a mistake in the uselocale() documentation example.
+  //uselocale(LC_GLOBAL_HANDLE);
+  // So the new locale is no longer in use.
+  uselocale(LC_GLOBAL_LOCALE);
+  freelocale(nloc);
+
   return rv;
 }
 
