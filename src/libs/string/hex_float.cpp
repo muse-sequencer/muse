@@ -22,6 +22,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cassert>
 #include <vector>
 #include <locale>
 
