@@ -1928,6 +1928,7 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
             MusEGlobal::song->dirty = false;
             setWindowTitle(projectTitle(project.absoluteFilePath()));
             saveIncrement = 0;
+            setStatusBarText(tr("Project saved."), 600);
             return true;
             }
       }

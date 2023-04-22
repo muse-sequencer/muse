@@ -1,3 +1,5 @@
+22.04.2023:
+    - Briefly show "Project saved." message on status bar after project has been saved (rj)
 16.04.2023
     - From 14.04: Old songs' automation values not loading correctly in locales other than 'C'. (Tim)
       Oops, force c locale to 'C' in museStringFromDouble() and museStringToDouble().
