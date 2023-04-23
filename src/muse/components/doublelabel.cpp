@@ -237,10 +237,10 @@ QVariant SuperDoubleValidator::validateAndInterpret(QString &input, int &pos, QV
                 }
             }
         } else {
-            const QChar last = copy.back();
+            const QChar last = copy.at(copy.size() - 1);
             const bool groupEnd = copy.endsWith(group);
             const QStringView head(copy.constData(), groupEnd ? len - group.size() : len - 1);
-            const QChar secondLast = head.back();
+            const QChar secondLast = head.at(head.size() - 1);
             if ((groupEnd || last.isSpace()) && (head.endsWith(group) || secondLast.isSpace())) {
                 state = QValidator::Invalid;
                 goto end;
