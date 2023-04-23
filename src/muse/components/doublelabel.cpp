@@ -927,18 +927,19 @@ void DoubleLabel::keyPressEvent(QKeyEvent* e)
     {
       const int ssz = _suffix.size();
       const int tsz = text().size();
-      const int ss = selectionStart();
-      const int se = selectionEnd();
+      const int selstart = selectionStart();
+      const int selend = selectionStart() + selectedText().size();
+//      const int se = selectionEnd();
       const int suffs = tsz - ssz;
       // Adjust any selection so that any suffix is not erased.
-      if(se >= suffs)
+      if(selend >= suffs)
       {
         DEBUG_DOUBLELABEL(stderr, "DoubleLabel::keyPressEvent: Fixing selection\n");
         blockSignals(true);
-        if(ss >= suffs)
+        if(selstart >= suffs)
           deselect();
         else
-          setSelection(ss, suffs - ss);
+          setSelection(selstart, suffs - selstart);
         blockSignals(false);
       }
     }
