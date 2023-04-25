@@ -20,6 +20,7 @@
     - Fixed: Midi export: Do not export events that are outside part borders.
     - Refine spamatica's "Fixed compatibility with qt5.9.5" commit 489034a.
     - Refine spamatica's "Fixed another qt5.9.5 compatibility issue" commit a335362.
+    - Refine spamatica's "fixed another compat build error" commit 3c6777f.
 22.04.2023:
     - Briefly show "Project saved." message on status bar after project has been saved (rj)
 16.04.2023

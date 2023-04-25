@@ -241,15 +241,21 @@ QVariant SuperDoubleValidator::validateAndInterpret(QString &input, int &pos, QV
                 }
             }
         } else {
+// Qt >= 5.10 use back().
+#if QT_VERSION >= 0x050a00
+            const QChar last = copy.back();
+#else
             const QChar last = copy.at(copy.size() - 1);
+#endif
             const bool groupEnd = copy.endsWith(group);
-// Qt >= 5.10 use QStringView.
+// Qt >= 5.10 use QStringView and back().
 #if QT_VERSION >= 0x050a00
             const QStringView head(copy.constData(), groupEnd ? len - group.size() : len - 1);
+            const QChar secondLast = head.back();
 #else
             const QString head(copy.constData(), groupEnd ? len - group.size() : len - 1);
-#endif
             const QChar secondLast = head.at(head.size() - 1);
+#endif
             if ((groupEnd || last.isSpace()) && (head.endsWith(group) || secondLast.isSpace())) {
                 state = QValidator::Invalid;
                 goto end;
