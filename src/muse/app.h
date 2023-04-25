@@ -315,7 +315,7 @@ private slots:
     void importMidi();
     void importWave();
     void importPart();
-    void exportMidi(bool selectedVisibleTracksOnly = false, bool selectedPartsOnly = false);
+    void exportMidi(bool selectedVisibleTracksOnly = false, bool selectedPartsOnly = false, bool alignPartsToStart = false);
     void findUnusedWaveFiles();
 
     void toggleTransport(bool);

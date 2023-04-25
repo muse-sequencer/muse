@@ -772,8 +772,10 @@ MusE::MusE() : QMainWindow()
       
       connect(fileImportMidiAction, SIGNAL(triggered()), SLOT(importMidi()));
       connect(fileExportMidiAction, &QAction::triggered, [this]() { exportMidi(); } );
-      connect(fileExportMidiSelectedVisibleAction, &QAction::triggered, [this]() { exportMidi(true /*selected visible tracks only*/); } );
-      connect(fileExportSelectedPartsAction, &QAction::triggered, [this]() { exportMidi(false, true /*selected parts only*/); } );
+      connect(fileExportMidiSelectedVisibleAction, &QAction::triggered, [this]()
+        { exportMidi(true /*selected visible tracks only*/); } );
+      connect(fileExportSelectedPartsAction, &QAction::triggered, [this]()
+        { exportMidi(false, true /*selected parts only*/, MusEGlobal::config.exportSelectedPartsAlignToBar0); } );
       connect(fileImportPartAction, SIGNAL(triggered()), SLOT(importPart()));
 
       connect(fileImportWaveAction, SIGNAL(triggered()), SLOT(importWave()));

@@ -26,6 +26,7 @@
 
 #include <QMainWindow>
 #include <QScrollArea>
+#include <QMetaObject>
 
 #include "type_defs.h"
 #include "gconfig.h"
@@ -145,6 +146,9 @@ class AudioMixerApp : public QMainWindow {
       QAction* changeTrackNameId;
       QAction* hideStripId;
 
+      QMetaObject::Connection _songChangedMetaConn;
+      QMetaObject::Connection _configChangedMetaConn;
+
     // Current local state of knobs versus sliders preference global setting.
       bool _preferKnobs;
       // Hack flag to prevent overwriting the config geometry when resizing.
@@ -211,6 +215,8 @@ class AudioMixerApp : public QMainWindow {
 
    public:
       AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool docked);
+      virtual ~AudioMixerApp();
+
       void clearAndDelete();
       
       // Sets up tabbing for the entire mixer. Strip by strip.

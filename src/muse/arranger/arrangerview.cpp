@@ -137,7 +137,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
-  connect(MusEGlobal::muse, &MusE::configChanged, editTools, &EditToolBar::configChanged);
+  _configChangedEditToolsMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, editTools, &EditToolBar::configChanged);
   connect(automationModeToolBar, &AutomationModeToolBar::interpolateModeChanged, [this](int mode) { automationInterpolateModeChanged(mode); } );
   connect(automationModeToolBar, &AutomationModeToolBar::boxModeChanged, [this](int mode) { automationBoxModeChanged(mode); } );
   connect(automationModeToolBar, &AutomationModeToolBar::optimizeChanged, [this](bool v) { automationOptimizeChanged(v); } );
@@ -337,10 +337,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   //---------------------------------------------------
   //  Connect script receiver
   //---------------------------------------------------
-  connect(&scripts,
+  _deliveredScriptReceivedMetaConn = connect(&scripts,
           &MusECore::Scripts::execDeliveredScriptReceived,
           [this](int id) { execDeliveredScript(id); } );
-  connect(&scripts,
+  _userScriptReceivedMetaConn = connect(&scripts,
           &MusECore::Scripts::execUserScriptReceived,
           [this](int id) { execUserScript(id); } );
 
@@ -429,7 +429,9 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 ArrangerView::~ArrangerView()
 {
-  
+  disconnect(_configChangedEditToolsMetaConn);
+  disconnect(_deliveredScriptReceivedMetaConn);
+  disconnect(_userScriptReceivedMetaConn);
 }
 
 void ArrangerView::closeEvent(QCloseEvent* e)

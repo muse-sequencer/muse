@@ -34,6 +34,7 @@
 #include "midictrl_consts.h"
 #include "scripts.h"
 
+#include <QMetaObject>
 
 // Forward declarations:
 class QAction;
@@ -157,6 +158,10 @@ class PianoRoll : public MidiEditor {
       bool _playEvents;
       EventCanvas::PlayEventsMode _playEventsMode;
 
+      QMetaObject::Connection _configChangedTools2MetaConn;
+      QMetaObject::Connection _deliveredScriptReceivedMetaConn;
+      QMetaObject::Connection _userScriptReceivedMetaConn;
+
       void initShortcuts();
       void setupNewCtrl(CtrlEdit* ctrlEdit);
       void setEventColorMode(MidiEventColorMode);
@@ -214,6 +219,7 @@ class PianoRoll : public MidiEditor {
    public:
       PianoRoll(MusECore::PartList*, QWidget* parent = nullptr, const char* name = nullptr,
                 unsigned initPos = INT_MAX, bool showDefaultControls = false);
+      virtual ~PianoRoll();
       void readStatus(MusECore::Xml&) override;
       void writeStatus(int, MusECore::Xml&) const override;
       static void readConfiguration(MusECore::Xml&);

@@ -263,8 +263,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       //connect(view, &ScrollArea::layoutRequest, [this]() { setSizing(); } );
       //connect(view, QOverload<>::of(&ScrollArea::layoutRequest), [=]() { setSizing(); } );
       
-      connect(MusEGlobal::song, &MusECore::Song::songChanged, [this](MusECore::SongChangedStruct_t f) { songChanged(f); } );
-      connect(MusEGlobal::muse, &MusEGui::MusE::configChanged, [this]() { configChanged(); } );
+      _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged, [this](MusECore::SongChangedStruct_t f) { songChanged(f); } );
+      _configChangedMetaConn = connect(MusEGlobal::muse, &MusEGui::MusE::configChanged, [this]() { configChanged(); } );
 
       initMixer();
       updateStripList();
@@ -274,6 +274,12 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c, bool d
       central->installEventFilter(this);
       mixerLayout->installEventFilter(this);
       view ->installEventFilter(this);
+}
+
+AudioMixerApp::~AudioMixerApp()
+{
+  disconnect(_songChangedMetaConn);
+  disconnect(_configChangedMetaConn);
 }
 
 void AudioMixerApp::stripsMenu()

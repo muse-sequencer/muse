@@ -626,86 +626,70 @@ void buildMidiEventList(EventList* del, const MPEventList& el, MidiTrack* track,
                   //    Check for and prevent duplicate events
                   //-------------------------------------------
 
-                  const int midi_evtype = ev.type();
-                  const bool midi_noteoff = (midi_evtype == ME_NOTEOFF) || (midi_evtype == ME_NOTEON && ev.dataB() == 0);
-                  const bool midi_noteon = midi_evtype == ME_NOTEON && ev.dataB() != 0;
-                  const bool midi_controller = midi_evtype == ME_CONTROLLER;
-                  bool noteon_found = false;
-                  bool noteoff_found = false;
-                  bool ctrlval_found = false;
-                  //bool other_ctrlval_found = false;
-                  if(i != el.begin())
+                  // Handle controllers differently since there's a state machine involved.
+                  // An individual CTRL_HRPN CTRL_HDATA etc. will never make it through to the other block below.
+                  // By ths point, a controller event is already fully formed.
+                  if(e.type() == MusECore::Controller)
                   {
-                    iMPEvent k = i;
-                    while(k != el.begin())
+                    // It is FORBIDDEN to have multiple controller values at the same time with the same controller number.
+                    // The container might not do the check itself.
+                    if(!mel.controllerValueExists(e))
+                      mel.add(e);
+                  }
+                  else
+                  {
+                    const int midi_evtype = ev.type();
+                    const bool midi_noteoff = (midi_evtype == ME_NOTEOFF) || (midi_evtype == ME_NOTEON && ev.dataB() == 0);
+                    const bool midi_noteon = midi_evtype == ME_NOTEON && ev.dataB() != 0;
+                    bool noteon_found = false;
+                    bool noteoff_found = false;
+                    if(i != el.begin())
                     {
-                      --k;
-                      MidiPlayEvent k_ev = *k;
-                      if(k_ev.channel() != ev.channel() || k_ev.port() != ev.port())
-                        continue;
-                      const int check_midi_evtype = k_ev.type();
-                      const bool check_midi_noteoff = (check_midi_evtype == ME_NOTEOFF) || (check_midi_evtype == ME_NOTEON && k_ev.dataB() == 0);
-                      const bool check_midi_noteon = check_midi_evtype == ME_NOTEON && k_ev.dataB() != 0;
-                      const bool check_midi_controller = check_midi_evtype == ME_CONTROLLER;
-                      if(midi_noteon || midi_noteoff)
+                      iMPEvent k = i;
+                      while(k != el.begin())
                       {
-                        if(ev.dataA() == k_ev.dataA())  // Note
+                        --k;
+                        MidiPlayEvent k_ev = *k;
+                        if(k_ev.channel() != ev.channel() || k_ev.port() != ev.port())
+                          continue;
+                        const int check_midi_evtype = k_ev.type();
+                        const bool check_midi_noteoff = (check_midi_evtype == ME_NOTEOFF) || (check_midi_evtype == ME_NOTEON && k_ev.dataB() == 0);
+                        const bool check_midi_noteon = check_midi_evtype == ME_NOTEON && k_ev.dataB() != 0;
+                        if(midi_noteon || midi_noteoff)
                         {
-                          if(check_midi_noteon)
+                          if(ev.dataA() == k_ev.dataA())  // Note
                           {
-                            // Check the instrument's note-off mode: If it does not support note-offs,
-                            //  don't bother doing duplicate note-on checks.
-                            // This allows drum input triggers (no note offs at all), although it is awkward to
-                            //  first have to choose an output instrument with no note-off mode.
-                            if(!midi_noteon || (nom != MidiInstrument::NoteOffNone))
-                              noteon_found = true;
-                            break;
-                          }
-                          if(check_midi_noteoff)
-                          {
-                            noteoff_found = true;
-                            break;
+                            if(check_midi_noteon)
+                            {
+                              // Check the instrument's note-off mode: If it does not support note-offs,
+                              //  don't bother doing duplicate note-on checks.
+                              // This allows drum input triggers (no note offs at all), although it is awkward to
+                              //  first have to choose an output instrument with no note-off mode.
+                              if(!midi_noteon || (nom != MidiInstrument::NoteOffNone))
+                                noteon_found = true;
+                              break;
+                            }
+                            if(check_midi_noteoff)
+                            {
+                              noteoff_found = true;
+                              break;
+                            }
                           }
                         }
-                      }
-                      else if(midi_controller)
-                      {
-                        if(ev.dataA() == k_ev.dataA())     // Controller number
+                        else
                         {
-                          if(check_midi_controller)
-                          {
-                            // All we can really do is prevent multiple events at the same time.
-                            // We must allow multiple events at different times having the same value,
-                            //  since the sender may have wanted it that way (a 'flat' graph).
-                            if(ev.time() == k_ev.time())     // Event time
-                              ctrlval_found = true;
-                            // Optimization: Do not allow multiple events at different times having the same value.
-                            // Nice, but can't really discard these, sender may have wanted it that way (a 'flat' graph).
-                          #if 0
-                            if(ev.dataB() == k_ev.dataB()) // Controller value
-                              ctrlval_found = true;
-                            else
-                              other_ctrlval_found = true;
-                          #endif
-                            break;
-                          }
+                          // TODO: Other types!
                         }
-                      }
-                      else
-                      {
-                        // TODO: Other types!
                       }
                     }
+                    // Accept the event only if no duplicate was found. // TODO: Other types!
+                    if((midi_noteon && !noteon_found) ||
+                      (midi_noteoff && !noteoff_found) ||
+                      // Accept any other type of event.
+                      (!midi_noteon && !midi_noteoff) )
+                      mel.add(e);
                   }
-                  // Accept the event only if no duplicate was found. // TODO: Other types!
-                  if((midi_noteon && !noteon_found) ||
-                    (midi_noteoff && !noteoff_found) ||
-                    //(midi_controller && (other_ctrlval_found || !ctrlval_found)))
-                    (midi_controller && !ctrlval_found) ||
-                    // Accept any other type of event.
-                    (!midi_noteon && !midi_noteoff && !midi_controller) )
-                    mel.add(e);
-                  }
+                }
             }  // i != el.end()
 
 
@@ -1072,7 +1056,7 @@ void Audio::seekMidi()
           if(p->mute())
             continue;
           const Track* track = p->track();
-          if(track && (track->isMute() || track->off()))
+          if(!track || track->isMute() || track->off())
             continue;
           found_value = true;
           break;
@@ -1095,7 +1079,7 @@ void Audio::seekMidi()
           if(p->mute())
             continue;
           const Track* track = p->track();
-          if(track && (track->isMute() || track->off()))
+          if(!track || track->isMute() || track->off())
             continue;
           found_value = true;
           break;
@@ -1192,7 +1176,7 @@ void Audio::seekMidi()
           //        instrument's global PROGRAM controller (does not care about channel or current patch).
           const int patch = mp->hwCtrlState(chan, CTRL_PROGRAM);
           const MidiController* mc = instr->findController(vl->num(), chan, patch);
-          if(mc->initVal() != CTRL_VAL_UNKNOWN)
+          if(mc && mc->initVal() != CTRL_VAL_UNKNOWN)
           {
             //fprintf(stderr, "Audio::seekMidi: !values_found: calling sendEvent: ctlnum:%d val:%d\n", ctlnum, mc->initVal() + mc->bias());
             // Use sendEvent to get the optimizations and limiting. No force sending. Note the addition of bias.

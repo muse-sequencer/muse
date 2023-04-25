@@ -27,6 +27,7 @@
 #include "type_defs.h"
 #include "midieditor.h"
 
+#include <QMetaObject>
 
 // Forward declarations:
 class QMenu;
@@ -85,6 +86,8 @@ class WaveEdit : public MidiEditor {
       MusEGui::Splitter* hsplitter;
 
       RasterLabelCombo* rasterLabel;
+
+      QMetaObject::Connection _configChangedTools2MetaConn;
 
       static int _rasterInit;
       static int _trackInfoWidthInit;

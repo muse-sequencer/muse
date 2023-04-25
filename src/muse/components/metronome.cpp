@@ -186,13 +186,19 @@ MetronomeConfig::MetronomeConfig(QWidget* parent)
       connect(accent1VolumeSlider, &QSlider::valueChanged, [this](int v) { accent1VolumeChanged(v); } );
       connect(accent2VolumeSlider, &QSlider::valueChanged, [this](int v) { accent2VolumeChanged(v); } );
       connect(radioSamples2, &QRadioButton::toggled, [this]() { switchSamples(); } );
-      connect(MusEGlobal::song, &MusECore::Song::songChanged, [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
+      _songChangedMetaConn =
+        connect(MusEGlobal::song, &MusECore::Song::songChanged, [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
       connect(globalSettingsButton, &QRadioButton::toggled, [this]() { switchSettings(); } );
       connect(accentPresets, &QListWidget::itemActivated, [this](QListWidgetItem* item) { accentPresetsItemActivated(item); } );
       connect(addAccentPresetButton, &QToolButton::clicked, [this]() { addAccentsPresetClicked(); } );
       connect(delAccentPresetButton, &QToolButton::clicked, [this]() { delAccentsPresetClicked(); } );
       connect(useAccentPresetButton, &QToolButton::clicked, [this]() { useAccentsPresetClicked(); } );
       connect(accentsDefaultsButton, &QToolButton::clicked, [this]() { accentsResetDefaultClicked(); } );
+}
+
+MetronomeConfig::~MetronomeConfig()
+{
+  disconnect(_songChangedMetaConn);
 }
 
 void MetronomeConfig::songChanged(MusECore::SongChangedStruct_t type)

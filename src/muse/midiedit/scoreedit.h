@@ -41,6 +41,8 @@
 #include <string>
 #include <QUuid>
 
+#include <QMetaObject>
+
 using std::set;
 using std::pair;
 using std::map;
@@ -164,7 +166,9 @@ class ScoreEdit : public TopWin
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
 		MusEGui::MTScaleFlo* time_bar;
-		
+
+		QMetaObject::Connection _configChangedEditToolsMetaConn;
+
 		bool apply_velo;
 		
 		static set<QString> names;
@@ -201,7 +205,7 @@ class ScoreEdit : public TopWin
 		
 	public:
         ScoreEdit(QWidget* parent = nullptr, const char* name = nullptr, unsigned initPos = INT_MAX);
-        ~ScoreEdit() override;
+        virtual ~ScoreEdit() override;
 
         void writeStatus(int level, MusECore::Xml& xml) const override;
         void readStatus(MusECore::Xml& xml) override;

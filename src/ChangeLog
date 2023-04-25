@@ -1,3 +1,23 @@
+25.04.2023:
+    - Follow-ups to 14.04.2023: More fixes/features. (Tim)
+    * NEW: Export midi: When exporting only selected parts, a new option in the import/export settings
+       dialog allows alignment of the exported parts to bar zero (removes unused space to the left).
+    - Fixed crashes: Certain operations, for example when turning off grid after markers added.
+      Lambda from MasterEdit.cpp was still active after MasterEdit closed and deleted!
+       connect(MusEGlobal::muse, &MusE::configChanged, [this]() { configChanged(); } );
+      Fixed all places using lambda connections from outside. Delete the connections in the destructors.
+      Qt docs warn that such connections are NOT automatically deleted.
+    - Fixed: Midi export: Old, slight timing mistake in 14-bit/(N)RPN/Patch controller event export times.
+      Was sending each component event at t, t + 1, t + 2 etc. All component events should be at the same time.
+    - Fixed: Midi playback and midi export: Some or all (N)RPN controller graph values were being discarded.
+      Was a problem with optimization in MPEventList::add(). Re-wrote to be less strictly optimizing.
+    - Fixed: Midi import, export, and recording: Channel-less event types were not sorted correctly in the event list.
+      In MEvent::operator<(), do not compare channels if either event is channel-less.
+    - Fixed: Midi import, export, and recording: Patch event types were not sorted correctly in the event list.
+      In MEvent::sortingWeight(), ensure high and low bank controller events come before program events.
+    - Fixed: Midi recording and midi import: Composite controllers like (N)RPN and Patch were mis-read as non-composite.
+      Re-wrote ending (optimizing) part of midi.cpp:buildMidiEventList(). Handle controllers separately than other events.
+    - Fixed: Midi export: Do not export events that are outside part borders.
 22.04.2023:
     - Briefly show "Project saved." message on status bar after project has been saved (rj)
 16.04.2023

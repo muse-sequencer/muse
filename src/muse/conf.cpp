@@ -1091,6 +1091,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               MusEGlobal::config.exportDrumMapOverrides = xml.parseInt();
                         else if (tag == "exportChannelOverridesToNewTrack")
                               MusEGlobal::config.exportChannelOverridesToNewTrack = xml.parseInt();
+                        else if (tag == "exportSelectedPartsAlignToBar0")
+                              MusEGlobal::config.exportSelectedPartsAlignToBar0 = xml.parseInt();
                         else if (tag == "exportModeInstr")
                               MusEGlobal::config.exportModeInstr = xml.parseInt();
                         else if (tag == "importMidiDefaultInstr")
@@ -2038,6 +2040,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "exportPortDeviceSMF0", MusEGlobal::config.exportPortDeviceSMF0);
       xml.intTag(level, "exportDrumMapOverrides", MusEGlobal::config.exportDrumMapOverrides);
       xml.intTag(level, "exportChannelOverridesToNewTrack", MusEGlobal::config.exportChannelOverridesToNewTrack);
+      xml.intTag(level, "exportSelectedPartsAlignToBar0", MusEGlobal::config.exportSelectedPartsAlignToBar0);
       xml.intTag(level, "exportModeInstr", MusEGlobal::config.exportModeInstr);
       xml.strTag(level, "importMidiDefaultInstr", MusEGlobal::config.importMidiDefaultInstr);
       xml.intTag(level, "startMode", MusEGlobal::config.startMode);
@@ -2361,6 +2364,7 @@ void MidiFileConfig::updateValues()
       exportPortDeviceSMF0->setChecked(MusEGlobal::config.exportPortDeviceSMF0);
       drumMapOverrides->setChecked(MusEGlobal::config.exportDrumMapOverrides);
       channelOverridesToNewTrack->setChecked(MusEGlobal::config.exportChannelOverridesToNewTrack);
+      exportSelectedPartsAlignBar0->setChecked(MusEGlobal::config.exportSelectedPartsAlignToBar0);
       exportPortMetas->setChecked(MusEGlobal::config.exportPortsDevices & MusEGlobal::PORT_NUM_META);
       exportDeviceNameMetas->setChecked(MusEGlobal::config.exportPortsDevices & MusEGlobal::DEVICE_NAME_META);
       exportModeSysexes->setChecked(MusEGlobal::config.exportModeInstr & MusEGlobal::MODE_SYSEX);
@@ -2398,6 +2402,7 @@ void MidiFileConfig::okClicked()
       MusEGlobal::config.exportPortDeviceSMF0 = exportPortDeviceSMF0->isChecked();  
       MusEGlobal::config.exportDrumMapOverrides = drumMapOverrides->isChecked();
       MusEGlobal::config.exportChannelOverridesToNewTrack = channelOverridesToNewTrack->isChecked();
+      MusEGlobal::config.exportSelectedPartsAlignToBar0 = exportSelectedPartsAlignBar0->isChecked();
 
       MusEGlobal::config.exportPortsDevices = 0;
       if(exportPortMetas->isChecked())

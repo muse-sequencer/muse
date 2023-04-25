@@ -23,6 +23,7 @@
 //=========================================================
 
 #include <stdio.h>
+#include <stdint.h>
 #include <QString>
 #include <QMessageBox>
 
@@ -43,20 +44,27 @@
 #include "drummap.h"
 #include "gconfig.h"
 
+// Undefine if and when multiple output routes are added to midi tracks.
+#define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+
 namespace MusECore {
 
 //---------------------------------------------------------
 //   addMarkerList
 //---------------------------------------------------------
 
-static void addMarkerList(MPEventList* l, int port = 0)
+static void addMarkerList(MPEventList* l, unsigned int startOffset = 0, int port = 0)
 {
-  MusECore::MarkerList* ml = MusEGlobal::song->marker();
-  for (MusECore::ciMarker m = ml->begin(); m != ml->end(); ++m) {
-        QByteArray ba = m->second.name().toLatin1();
+  const MusECore::MarkerList* ml = MusEGlobal::song->marker();
+  for (MusECore::ciMarker m = ml->cbegin(); m != ml->cend(); ++m) {
+        const QByteArray ba = m->second.name().toLatin1();
         const char* name = ba.constData();
-        int len = ba.length();
-        MusECore::MidiPlayEvent ev(m->first, port, MusECore::ME_META, (const unsigned char*)name, len);
+        const int len = ba.length();
+        unsigned int tk = m->second.tick();
+        if(tk < startOffset)
+          continue;
+        tk -= startOffset;
+        MusECore::MidiPlayEvent ev(tk, port, MusECore::ME_META, (const unsigned char*)name, len);
         ev.setA(MusECore::ME_META_TEXT_6_MARKER);
         l->add(ev);
         }
@@ -68,10 +76,10 @@ static void addMarkerList(MPEventList* l, int port = 0)
 
 static void addCopyright(MPEventList* l, int port = 0)
 {
-  QByteArray ba = MusEGlobal::config.copyright.toLatin1();
+  const QByteArray ba = MusEGlobal::config.copyright.toLatin1();
   const char* copyright = ba.constData();
   if (copyright && *copyright) {
-        int len = ba.length();
+        const int len = ba.length();
         MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)copyright, len);
         ev.setA(MusECore::ME_META_TEXT_2_COPYRIGHT);
         l->add(ev);
@@ -85,9 +93,9 @@ static void addCopyright(MPEventList* l, int port = 0)
 static void addComment(MPEventList* l, const Track* track, int port = 0)
 {
     if (!track->comment().isEmpty()) {
-          QByteArray ba = track->comment().toLatin1();
+          const QByteArray ba = track->comment().toLatin1();
           const char* comment = ba.constData();
-          int len = ba.length();
+          const int len = ba.length();
           MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)comment, len);
           ev.setA(MusECore::ME_META_TEXT_1_COMMENT);
           l->add(ev);
@@ -98,17 +106,19 @@ static void addComment(MPEventList* l, const Track* track, int port = 0)
 //   addTempomap
 //---------------------------------------------------------
 
-static void addTempomap(MPEventList* l, int port = 0)
+static void addTempomap(MPEventList* l, unsigned int startOffset = 0, int port = 0)
 {
-  MusECore::TempoList* tl = &MusEGlobal::tempomap;
-  for (MusECore::ciTEvent e = tl->begin(); e != tl->end(); ++e) {
-        MusECore::TEvent* event = e->second;
+  const MusECore::TempoList* tl = &MusEGlobal::tempomap;
+  MusECore::ciTEvent e = tl->upper_bound(startOffset);
+  for ( ; e != tl->cend(); ++e) {
+        const MusECore::TEvent* event = e->second;
+        const unsigned int tk = event->tick > startOffset ? event->tick - startOffset : 0;
         unsigned char data[3];
-        int tempo = event->tempo;
+        const int tempo = event->tempo;
         data[2] = tempo & 0xff;
         data[1] = (tempo >> 8) & 0xff;
         data[0] = (tempo >> 16) & 0xff;
-        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, 3);
+        MusECore::MidiPlayEvent ev(tk, port, MusECore::ME_META, data, 3);
         ev.setA(MusECore::ME_META_SET_TEMPO);
         l->add(ev);
         }
@@ -118,12 +128,14 @@ static void addTempomap(MPEventList* l, int port = 0)
 //   addTimeSignatures
 //---------------------------------------------------------
 
-static void addTimeSignatures(MPEventList* l, int port = 0)
+static void addTimeSignatures(MPEventList* l, unsigned int startOffset = 0, int port = 0)
 {
   const MusECore::SigList* sl = &MusEGlobal::sigmap;
-  for (MusECore::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
+  MusECore::ciSigEvent e = sl->upper_bound(startOffset);
+  for ( ; e != sl->cend(); ++e) {
         MusECore::SigEvent* event = e->second;
-        int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
+        const unsigned int tk = event->tick > startOffset ? event->tick - startOffset : 0;
+        const int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
         unsigned char data[sz];
         data[0] = event->sig.z;
         switch(event->sig.n) {
@@ -144,24 +156,26 @@ static void addTimeSignatures(MPEventList* l, int port = 0)
         {
           data[2] = 24;
           data[3] = 8;
-        }  
-        
-        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, sz);
-          
+        }
+
+        MusECore::MidiPlayEvent ev(tk, port, MusECore::ME_META, data, sz);
+
         ev.setA(MusECore::ME_META_TIME_SIGNATURE);
         l->add(ev);
         }
 }
-                        
+
 //---------------------------------------------------------
 //   addKeySignatures
 //---------------------------------------------------------
 
-static void addKeySignatures(MPEventList* l, int port = 0)
+static void addKeySignatures(MPEventList* l, unsigned int startOffset = 0, int port = 0)
 {
-  MusECore::KeyList* kl = &MusEGlobal::keymap;
-  for (MusECore::ciKeyEvent e = kl->cbegin(); e != kl->cend(); ++e) {
+  const MusECore::KeyList* kl = &MusEGlobal::keymap;
+  MusECore::ciKeyEvent e = kl->upper_bound(startOffset);
+  for ( ; e != kl->cend(); ++e) {
         const MusECore::KeyEvent& event = e->second;
+        const unsigned int tk = event.tick > startOffset ? event.tick - startOffset : 0;
         char kc = 0;
         switch(event.key)
         {
@@ -213,12 +227,12 @@ static void addKeySignatures(MPEventList* l, int port = 0)
           case KEY_GES: //sounds like FIS: but uses b instead of #
             kc = -5;
           break;
-          
+
         };
         unsigned char data[2];
         data[1] = event.minor;
         data[0] = kc;
-        MusECore::MidiPlayEvent ev(event.tick, port, MusECore::ME_META, data, 2);
+        MusECore::MidiPlayEvent ev(tk, port, MusECore::ME_META, data, 2);
         ev.setA(MusECore::ME_META_KEY_SIGNATURE);
         l->add(ev);
         }
@@ -239,21 +253,21 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             int dataH = (b >> 7) & 0x7f;
             int dataL = b & 0x7f;
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, ctrlH, dataH));
-            l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, ctrlL, dataL));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, ctrlL, dataL));
             }
       else if (a >= CTRL_RPN_OFFSET && a < (CTRL_RPN_OFFSET + 0x10000)) {     // RPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-            l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-            l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
       else if (a >= CTRL_NRPN_OFFSET && a < (CTRL_NRPN_OFFSET + 0x10000)) {     // NRPN 7-Bit Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-            l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-            l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HDATA, b));
             }
       else if (a == CTRL_PITCH) {
             int r_a = b + 8192;
@@ -264,7 +278,6 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             int hb = (b >> 16) & 0xff;
             int lb = (b >> 8) & 0xff;
             int pr = b & 0x7f;
-            int tickoffset = 0;
             // REMOVE Tim. Song type removal. Hm, TEST is this OK here?
             //switch(MusEGlobal::song->mtype()) {
             //      case MT_GM:       // no HBANK/LBANK
@@ -274,15 +287,13 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             //      case MT_UNKNOWN:
                         if (hb != 0xff) {
                               l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HBANK, hb));
-                              ++tickoffset;
                               }
                         if (lb != 0xff) {
-                              l->add(MidiPlayEvent(tick+tickoffset, port, channel, ME_CONTROLLER, CTRL_LBANK, lb));
-                              ++tickoffset;
+                              l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_LBANK, lb));
                               }
             //            break;
             //      }
-            l->add(MidiPlayEvent(tick+tickoffset, port, channel, ME_PROGRAM, pr, 0));
+            l->add(MidiPlayEvent(tick, port, channel, ME_PROGRAM, pr, 0));
             }
       else if(a == CTRL_AFTERTOUCH)
       {
@@ -299,22 +310,281 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
             int dataL = b & 0x7f;
-            l->add(MidiPlayEvent(tick,   port, channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
-            l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
-            l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
-            l->add(MidiPlayEvent(tick+3, port, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HRPN, ctrlH));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_LRPN, ctrlL));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
             }
       else if (a >= CTRL_NRPN14_OFFSET && a < (CTRL_NRPN14_OFFSET + 0x10000)) {     // NRPN14 Controller
             int ctrlH = (a >> 8) & 0x7f;
             int ctrlL = a & 0x7f;
             int dataH = (b >> 7) & 0x7f;
             int dataL = b & 0x7f;
-            l->add(MidiPlayEvent(tick,   port, channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
-            l->add(MidiPlayEvent(tick+1, port, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
-            l->add(MidiPlayEvent(tick+2, port, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
-            l->add(MidiPlayEvent(tick+3, port, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HNRPN, ctrlH));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_LNRPN, ctrlL));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HDATA, dataH));
+            l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_LDATA, dataL));
             }
       }
+
+//---------------------------------------------------------
+//   addInitialControllerValues
+//---------------------------------------------------------
+
+static void addInitialControllerValues(
+  const MusECore::MidiTrack* mt, MPEventList* destMPEL, unsigned int startOffset = 0, unsigned int trackPartsStartOffset = 0)
+{
+  DrumMap dm;
+
+//   MusECore::MetronomeSettings* metro_settings =
+//     MusEGlobal::metroUseSongSettings ? &MusEGlobal::metroSongSettings : &MusEGlobal::metroGlobalSettings;
+
+//   const unsigned int pos = startOffset;
+
+  // Bit-wise channels that are used.
+  int used_ports[MusECore::MIDI_PORTS];
+  // Initialize the array.
+  for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
+    used_ports[i] = 0;
+
+//   // Find all used channels on all used ports.
+//   if(MusEGlobal::song->click() &&
+//      metro_settings->clickPort < MusECore::MIDI_PORTS &&
+//      metro_settings->clickChan < MusECore::MUSE_MIDI_CHANNELS)
+//     used_ports[metro_settings->clickPort] |= (1 << metro_settings->clickChan);
+
+  //if(!selectedVisibleTracksOnly || (mt->selected() && mt->visible()))
+  {
+
+#ifdef _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
+
+    // TODO: These don't belong on this track.
+//     if(mt->isDrumTrack())
+//     {
+//       for(int i = 0; i < DRUM_MAPSIZE; ++i)
+//       {
+//         // Default to track port if -1 and track channel if -1.
+//         int mport = mt->drummap()[i].port;
+//         if(mport == -1)
+//           mport = mt->outPort();
+//         int mchan = mt->drummap()[i].channel;
+//         if(mchan == -1)
+//           mchan = mt->outChannel();
+//         if(mport >= 0 && mport < MusECore::MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
+//           used_ports[mport] |= (1 << mchan);
+//       }
+//     }
+//     else
+    {
+        const int mport = mt->outPort();
+        const int mchan = mt->outChannel();
+        if(mport >= 0 && mport < MusECore::MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
+          used_ports[mport] |= (1 << mchan);
+    }
+
+#else
+    const MusECore::RouteList* rl = mt->outRoutes();
+    for(MusECore::ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+    {
+      switch(ir->type)
+      {
+        case MusECore::Route::MIDI_PORT_ROUTE:
+        {
+    // TODO: These don't belong on this track.
+//           if(mt->isDrumTrack())
+//           {
+//             for(int i = 0; i < DRUM_MAPSIZE; ++i)
+//             {
+//               // Default to track port if -1 and track channel if -1.
+//               int mport = mt->drummap()[i].port;
+//               if(mport == -1)
+//                 mport = mt->outPort();
+//               int mchan = mt->drummap()[i].channel;
+//               if(mchan == -1)
+//                 mchan = mt->outChannel();
+//               if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
+//                 used_ports[mport] |= (1 << mchan);
+//             }
+//           }
+//           else
+          {
+              const int mport = ir->midiPort;
+              const int mchan = ir->channel;
+              if(mport >= 0 && mport < MIDI_PORTS && mchan >= 0 && mchan < MusECore::MUSE_MIDI_CHANNELS)
+                used_ports[mport] |= (1 << mchan);
+          }
+        }
+        break;
+
+        case MusECore::Route::TRACK_ROUTE:
+        case MusECore::Route::JACK_ROUTE:
+        case MusECore::Route::MIDI_DEVICE_ROUTE:
+        break;
+      }
+    }
+#endif
+  }
+
+  for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
+  {
+    if(used_ports[i] == 0)
+      continue;
+
+    MidiPort* mp = &MusEGlobal::midiPorts[i];
+    const MidiCtrlValListList* cll = mp->controller();
+    for(ciMidiCtrlValList ivl = cll->cbegin(); ivl != cll->cend(); ++ivl)
+    {
+      const MidiCtrlValList* vl = ivl->second;
+      const int chan = ivl->first >> 24;
+      if(!(used_ports[i] & (1 << chan)))  // Channel not used in song?
+        continue;
+      const int ctlnum = vl->num();
+
+      // Find the first non-muted value at the given tick...
+      bool found_value = false;
+
+      ciMidiCtrlVal imcv = vl->upper_bound(startOffset);
+      while(imcv != vl->cbegin())
+      {
+        --imcv;
+        const Part* p = imcv->second.part;
+        if(!p)
+          continue;
+        // Ignore values that are outside of the part.
+        unsigned t = imcv->first;
+        if(t < p->tick() || t >= (p->tick() + p->lenTick()))
+          continue;
+//         if(pos < p->tick() || pos >= (p->tick() + p->lenTick()))
+//           continue;
+        // Ignore if part or track is muted or off.
+        if(/*!selectedVisibleTracksOnly &&*/ p->mute())
+          continue;
+        const Track* track = p->track();
+        if(!track)
+          continue;
+        if((/*!selectedVisibleTracksOnly &&*/ (track->isMute() || track->off())) /*||
+            (selectedVisibleTracksOnly && (!track->selected() || !track->isVisible()))*/ )
+          continue;
+//         // Only selected parts on visible tracks.
+//         if(selectedPartsOnly && (/*!p->selected() ||*/ !track->isVisible()))
+//           continue;
+        // A suitable value was found. However, if it is at the exact time requested,
+        //  do not use it and break out since it means there is an event at that position and
+        //  the event processing section will take care of it. (Eliminates double entry attempts).
+        if(t == startOffset)
+          break;
+        found_value = true;
+        break;
+      }
+
+      if(found_value)
+      {
+        int fin_port = i;
+//         MidiPort* fin_mp = mp;
+        int fin_chan = chan;
+        int fin_ctlnum = ctlnum;
+//         // Is it a drum controller event, according to the track port's instrument?
+//         if(mp->drumController(ctlnum))
+//         {
+//           if(const Part* p = imcv->second.part)
+//           {
+//             if(const Track* t = p->track())
+//             {
+//               if(t->type() == MusECore::Track::DRUM)
+//               {
+//                 const MidiTrack* mt = static_cast<const MidiTrack*>(t);
+//                 const int v_idx = ctlnum & 0x7f;
+//                 fin_ctlnum = (ctlnum & ~0xff) | mt->drummap()[v_idx].anote;
+//                 const int map_port = mt->drummap()[v_idx].port;
+//                 if(map_port != -1)
+//                 {
+//                   fin_port = map_port;
+//                   fin_mp = &MusEGlobal::midiPorts[fin_port];
+//                 }
+//                 const int map_chan = mt->drummap()[v_idx].channel;
+//                 if(map_chan != -1)
+//                   fin_chan = map_chan;
+//               }
+//             }
+//           }
+//         }
+
+//         MidiDevice *fin_md = fin_mp->device();
+//         switch(fin_ctlnum)
+//         {
+//           case CTRL_HRPN:
+//           case CTRL_LRPN:
+//           case CTRL_HNRPN:
+//           case CTRL_LNRPN:
+//           case CTRL_HDATA:
+//           case CTRL_LDATA:
+//           case CTRL_DATA_INC:
+//           case CTRL_DATA_DEC:
+//           {
+//             const int fin_patch = fin_mp->hwCtrlState(chan, CTRL_PROGRAM);
+//             const MidiInstrument *finInstr = fin_mp->instrument();
+//             // Returns true if any of the EIGHT reserved General Midi (N)RPN control numbers are
+//             //  ALREADY defined as Controller7 or part of Controller14. Cached, for speed.
+//             const bool patch_rpn_reserved = finInstr && fin_md && !fin_md->isSynti() && finInstr->RPN_Ctrls_Reserved(fin_chan, fin_patch);
+//             // Allow these values if the controller list does not have standard RPN. (The enums alias to generic numbers).
+//             // Do not send any of these values if the controller has standard RPN. (The enums are meaningful).
+//             // 1) It is impossible to know which should come first/last (ie. which was last adjusted) - the RPNs or the data.
+//             // 2) This is an ineffective way to set a default value of one single RPN controller. Better use our built-ins.
+//             // 3) This would require finding what the value of every used RPN controller is at the new position, which we
+//             //     don't keep track of, and would require searching all the way backwards to see what was set. Tricky.
+//             if(!patch_rpn_reserved)
+//               continue;
+//           }
+//           break;
+//
+//           default:
+//           break;
+//         }
+
+        if(MusEGlobal::config.exportDrumMapOverrides)
+        {
+          // Is it a drum controller event, according to the track port's instrument?
+          if(MusEGlobal::midiPorts[i].drumController(ctlnum))
+          {
+            if(const Part* p = imcv->second.part)
+            {
+              if(const Track* t = p->track())
+              {
+                if (t && t->type() == MusECore::Track::DRUM) {
+                  const MidiTrack* mt = static_cast<const MidiTrack*>(t);
+                  int v_idx = ctlnum & 0x7f;
+                  mt->getMapItemAt(imcv->first, v_idx, dm, WorkingDrumMapEntry::AllOverrides);
+                  fin_ctlnum = (ctlnum & ~0xff) | dm.anote;
+                  // Default to track port if -1 and track channel if -1.
+                  // Port is only allowed to change in format 1.
+                  if(dm.port != -1 && MusEGlobal::config.smfFormat != 0)
+                    fin_port = dm.port;
+                  if(dm.channel != -1)
+                    fin_chan = dm.channel;
+                }
+              }
+            }
+          }
+        }
+
+        // If the port or channel is overridden by a drum map, DO NOT add the event here
+        //  because it requires its own track. That is taken care of in exportMidi().
+        if(fin_port != i ||
+          // Channel is allowed to be different but can only cause a new track in format 1.
+          (fin_chan != chan && MusEGlobal::config.exportChannelOverridesToNewTrack && MusEGlobal::config.smfFormat != 0))
+          continue;
+
+        addController(destMPEL, trackPartsStartOffset - startOffset, fin_port, fin_chan, fin_ctlnum, imcv->second.val);
+      }
+
+      // Either no value was found, or they were outside parts, or pos is in the unknown area before the first value.
+      // Don't bother sending instrument default initial values instead, like we do in Audio::seekMidi().
+      // We'll leave that up to the player to set appropriate instrument controller defaults.
+      // (Also, without refinement the section in Audio::seekMidi() can only do this at position 0,
+      //  due to possible 'skipped' values outside parts, above.)
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   addEventList
@@ -323,15 +593,29 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
 //---------------------------------------------------------
 
 static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventList* mpevlist,
-                         const MusECore::MidiTrack* track, const MusECore::Part* part, int port, int channel)
+                         const MusECore::MidiTrack* track, const MusECore::Part* part,
+                         int port, int channel, unsigned int startOffset = 0)
 {      
   DrumMap dm;
   for (MusECore::ciEvent i = evlist.cbegin(); i != evlist.cend(); ++i) 
   {
     const MusECore::Event& ev = i->second;
-    int tick = ev.tick();
+
+    // TODO FIXME: Change these casts to MUSE_TIME_UINT_TO_INT64 when the branch containing that define is merged.
+    int64_t tick = (int64_t)(int) ev.tick();
+    int64_t newtick = tick;
+    int64_t ptick = 0;
+
     if(part)
-      tick += part->tick();
+    {
+      const int64_t plentick = (int64_t)(int) part->lenTick();
+      // Do not add events that are outside of the part borders.
+      if(tick < 0 || tick >= plentick)
+        continue;
+      ptick = (int64_t)(int) part->tick();
+      tick += ptick;
+      newtick = tick - startOffset;
+    }
     switch (ev.type()) 
     {
           case MusECore::Note:
@@ -406,11 +690,11 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                 if (len <= 0)
                       len = 1;
 
-                mpevlist->add(MusECore::MidiPlayEvent(tick, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, velo));
+                mpevlist->add(MusECore::MidiPlayEvent(newtick, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, velo));
                 if(MusEGlobal::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
-                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, 0));
+                  mpevlist->add(MusECore::MidiPlayEvent(newtick+len, fin_port, fin_chan, MusECore::ME_NOTEON, fin_pitch, 0));
                 else
-                  mpevlist->add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEOFF, fin_pitch, veloOff));
+                  mpevlist->add(MusECore::MidiPlayEvent(newtick+len, fin_port, fin_chan, MusECore::ME_NOTEOFF, fin_pitch, veloOff));
                 }
                 break;
 
@@ -447,21 +731,21 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
                   (fin_chan != channel && MusEGlobal::config.exportChannelOverridesToNewTrack && MusEGlobal::config.smfFormat != 0))
                   continue;
 
-                addController(mpevlist, tick, fin_port, fin_chan, fin_ctlnum, ev.dataB());
+                addController(mpevlist, newtick, fin_port, fin_chan, fin_ctlnum, ev.dataB());
           }
                 break;
 
           case MusECore::Sysex:
                 { 
-                  mpevlist->add(MusECore::MidiPlayEvent(tick, port, MusECore::ME_SYSEX, ev.eventData()));
-                  //MusECore::MidiPlayEvent ev(tick, port, MusECore::ME_SYSEX, ev.eventData());
+                  mpevlist->add(MusECore::MidiPlayEvent(newtick, port, MusECore::ME_SYSEX, ev.eventData()));
+                  //MusECore::MidiPlayEvent ev(newtick, port, MusECore::ME_SYSEX, ev.eventData());
                   //ev.setChannel(channel);  // Sysex are channelless, but this is required for sorting!
                   //mpevlist->add(ev);
                 }
                 break;
           case MusECore::Meta:
                 {
-                MusECore::MidiPlayEvent mpev(tick, port, MusECore::ME_META, ev.eventData());
+                MusECore::MidiPlayEvent mpev(newtick, port, MusECore::ME_META, ev.eventData());
                 mpev.setA(ev.dataA());
                 //mpev.setChannel(channel);  // Metas are channelless, but this is required for sorting!
                 mpevlist->add(mpev);
@@ -477,18 +761,29 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
 //   addTrackEvents
 //---------------------------------------------------------
 
-static void addTrackEvents(MPEventList* l, int port, int channel, const MidiTrack* track, bool selectedPartsOnly = false)
+static void addTrackEvents(
+  MPEventList* l, int port, int channel, const MidiTrack* track,
+  unsigned int startOffset = 0, bool selectedPartsOnly = false)
 {
   //---------------------------------------------------
   //    Write all track events.
   //---------------------------------------------------
 
+  bool first = true;
   const MusECore::PartList* parts = track->cparts();
   for (MusECore::ciPart p = parts->cbegin(); p != parts->cend(); ++p) {
         const MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
         if(selectedPartsOnly && !part->selected())
           continue;
-        MusECore::addEventList(part->events(), l, track, part, port, channel); 
+        if(first)
+        {
+          first = false;
+          // Write any existing controller values leading up to the given time.
+          // If there are values at the exact given time, it means there are events
+          //  at those times so we ignore them and let the events processing handle them.
+          addInitialControllerValues(track, l, startOffset, part->tick());
+        }
+        MusECore::addEventList(part->events(), l, track, part, port, channel, startOffset);
         }
 }
 
@@ -580,20 +875,23 @@ namespace MusEGui {
 //   exportMidi
 //---------------------------------------------------------
 
-void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly)
+void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly, bool alignPartsToStart)
       {
+      unsigned int startingOffset = 0;
+
       // Warn if no selected visible tracks, or no selected parts.
       if(selectedVisibleTracksOnly || selectedPartsOnly)
       {
-        bool havtracks = false;
+        bool havetracks = false;
         bool haveparts = false;
+        bool firstpart = true;
         MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
         for(MusECore::ciMidiTrack im = mtl->cbegin(); im != mtl->cend(); ++im)
         {
           // Only selected visible tracks.
           if(selectedVisibleTracksOnly && (*im)->selected() && (*im)->visible())
           {
-            havtracks = true;
+            havetracks = true;
             if(!selectedPartsOnly)
               break;
           }
@@ -608,14 +906,21 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly)
               if(part->selected() && (*im)->visible())
               {
                 haveparts = true;
-                if(!selectedVisibleTracksOnly)
+                if(alignPartsToStart)
+                {
+                  const unsigned int tk = part->tick();
+                  if(firstpart || tk < startingOffset)
+                    startingOffset = tk;
+                  firstpart = false;
+                }
+                else //if(!selectedVisibleTracksOnly)
                   break;
               }
             }
           }
 
         }
-        if(selectedVisibleTracksOnly && !havtracks)
+        if(selectedVisibleTracksOnly && !havetracks)
         {
           QMessageBox::warning(this,
             tr("MusE: Warning"),
@@ -702,17 +1007,17 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly)
       mtl->push_back(mft);
       MusECore::MPEventList* l = &(mft->events);
       // Write track marker
-      addMarkerList(l);
+      addMarkerList(l, startingOffset);
       // Write copyright
       addCopyright(l);
       // Write comment // TODO Remove?
       //addComment(l, track);
       // Write tempomap
-      addTempomap(l);
+      addTempomap(l, startingOffset);
       // Write time signatures
-      addTimeSignatures(l);
+      addTimeSignatures(l, startingOffset);
       // Write key signatures
-      addKeySignatures(l);
+      addKeySignatures(l, startingOffset);
 
         int tr_cnt = 0;
         for(MusECore::ciTrack im = tl->cbegin(); im != tl->cend(); ++im)
@@ -777,8 +1082,9 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly)
               used_ports.insert(port);
             }
           }
+
           // Write all track events.
-          addTrackEvents(l, port, channel, track, selectedPartsOnly);
+          addTrackEvents(l, port, channel, track, startingOffset, selectedPartsOnly);
 
           ++tr_cnt;
         }
@@ -925,11 +1231,11 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly)
                           if (len <= 0)
                                 len = 1;
 
-                          aux_mft->events.add(MusECore::MidiPlayEvent(tick, fin_port, fin_chan, MusECore::ME_NOTEON, pitch, velo));
+                          aux_mft->events.add(MusECore::MidiPlayEvent(tick - startingOffset, fin_port, fin_chan, MusECore::ME_NOTEON, pitch, velo));
                           if(MusEGlobal::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
-                            aux_mft->events.add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEON, pitch, 0));
+                            aux_mft->events.add(MusECore::MidiPlayEvent(tick+len-startingOffset, fin_port, fin_chan, MusECore::ME_NOTEON, pitch, 0));
                           else
-                            aux_mft->events.add(MusECore::MidiPlayEvent(tick+len, fin_port, fin_chan, MusECore::ME_NOTEOFF, pitch, veloOff));
+                            aux_mft->events.add(MusECore::MidiPlayEvent(tick+len-startingOffset, fin_port, fin_chan, MusECore::ME_NOTEOFF, pitch, veloOff));
                           }
                           break;
 
@@ -1008,7 +1314,7 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly)
                             ++track_count;
                           }
 
-                          MusECore::addController(&aux_mft->events, tick, fin_port, fin_chan, fin_ctlnum, ev.dataB());
+                          MusECore::addController(&aux_mft->events, tick - startingOffset, fin_port, fin_chan, fin_ctlnum, ev.dataB());
                     }
                           break;
 

@@ -47,7 +47,8 @@ MEvent::MEvent(const MEvent& e) : _time(e._time), edata(e.edata), _port(e._port)
         _type(e._type), _a(e._a), _b(e._b), _loopNum(e._loopNum) { }
 MEvent::MEvent(unsigned tm, int p, int c, int t, int a, int b)
   : _time(tm), _port(p), _channel(c & 0xf), _type(t), _a(a), _b(b), _loopNum(0) { }
-MEvent::MEvent(unsigned t, int p, int tpe, EvData d) : _time(t), edata(d), _port(p), _type(tpe), _loopNum(0) { }
+MEvent::MEvent(unsigned t, int p, int tpe, EvData d) :
+  _time(t), edata(d), _port(p), _channel(0), _type(tpe), _a(0), _b(0), _loopNum(0) { }
 
 MEvent::MEvent(unsigned t, int port, int tpe, const unsigned char* data, int len)
       {
@@ -57,6 +58,7 @@ MEvent::MEvent(unsigned t, int port, int tpe, const unsigned char* data, int len
       _type = tpe;
       _loopNum = 0;
       setChannel(0);
+      _a = _b = 0;
       }
 
 MEvent::~MEvent() {}
@@ -96,14 +98,18 @@ int MEvent::sortingWeight() const
     case ME_CONTROLLER:
       switch(_a)
       {
+        case CTRL_HBANK:
+        case CTRL_LBANK:
+          return 20;
+
         case CTRL_PROGRAM:
           return 21;  
         default:
           return 24;
       }
     case ME_PROGRAM:
-      return 20;  
-      
+      return 21;
+
     case ME_CLOCK:
       return 0;  
     case ME_MTC_QUARTER:
@@ -183,6 +189,49 @@ bool MEvent::operator<(const MEvent& e) const
             return time() < e.time();
       if (port() != e.port())
             return port() < e.port();
+
+      // Do not compare channels if either event is a channel-less event.
+      // In that case the sorting weight function will do all the work.
+      switch(e.type())
+      {
+        case ME_SYSEX:
+        case ME_SYSEX_END:
+        case ME_META:
+        case ME_START:
+        case ME_STOP:
+        case ME_CONTINUE:
+        case ME_TUNE_REQ:
+        case ME_SONGPOS:
+        case ME_SONGSEL:
+        case ME_CLOCK:
+        case ME_MTC_QUARTER:
+        case ME_TICK:
+        case ME_SENSE:
+          return sortingWeight() < e.sortingWeight();
+        break;
+        default:
+        break;
+      }
+      switch(type())
+      {
+        case ME_SYSEX:
+        case ME_SYSEX_END:
+        case ME_META:
+        case ME_START:
+        case ME_STOP:
+        case ME_CONTINUE:
+        case ME_TUNE_REQ:
+        case ME_SONGPOS:
+        case ME_SONGSEL:
+        case ME_CLOCK:
+        case ME_MTC_QUARTER:
+        case ME_TICK:
+        case ME_SENSE:
+          return sortingWeight() < e.sortingWeight();
+        break;
+        default:
+        break;
+      }
 
       // play note off events first to prevent overlapping
       // notes
@@ -407,48 +456,204 @@ void MPEventList::add(const MidiPlayEvent& ev)
     break;
   }
 
+  bool rpnFound = false;
+  bool dataFound = false;
+  bool patchOrSysexFound = false;
+  bool canOptimizePatch = true;
+
   MPEventListRangePair_t range = equal_range(ev);
-  for(iterator impe = range.first; impe != range.second; ++impe)
+  if(range.first != end())
   {
-    // Note that (multi)set iterators are constant and can't be modified.
-    // The only option is to erase the old item(s), then insert a new item.
-    const MidiPlayEvent& mpe = *impe;
-
-    // The type, time, port, and channel should already be equal, according to the operator< method.
-    switch((ME_EVENT_TYPE)ev.type())
+    iterator impe = range.second;
+    while(impe != range.first)
     {
-      case ME_CONTROLLER:
-      case ME_NOTEON:
-      case ME_NOTEOFF:
-      case ME_POLYAFTER:
-        // Are the notes or controller numbers the same?
-        if(mpe.dataA() != ev.dataA())
-          continue;
-        // If the velocities or values are the same, just ignore.
-        if(mpe.dataB() == ev.dataB())
-          return;
-        // Erase the item, and insert the replacement.
-        erase(impe);
-        insert(ev);
-        return;
-      break;
+      --impe;
 
-      case ME_PROGRAM:
-      case ME_AFTERTOUCH:
-      case ME_PITCHBEND:
-      case ME_SONGPOS:
-      case ME_SONGSEL:
-          // If the values are the same, just ignore.
-          if(mpe.dataA() == ev.dataA())
+      // Note that (multi)set iterators are constant and can't be modified.
+      // The only option is to erase the old item(s), then insert a new item.
+      const MidiPlayEvent& mpe = *impe;
+
+      // The port and channel should be equal.
+      if(mpe.port() != ev.port() || mpe.channel() != ev.channel())
+        continue;
+
+      switch((ME_EVENT_TYPE)mpe.type())
+      {
+        case ME_CONTROLLER:
+          switch(mpe.dataA())
+          {
+            case CTRL_HDATA:
+            case CTRL_LDATA:
+            case CTRL_DATA_DEC:
+            case CTRL_DATA_INC:
+              dataFound = true;
+              canOptimizePatch = false;
+            break;
+
+            case CTRL_HRPN:
+            case CTRL_LRPN:
+            case CTRL_HNRPN:
+            case CTRL_LNRPN:
+              rpnFound = true;
+              canOptimizePatch = false;
+            break;
+
+            case CTRL_HBANK:
+            case CTRL_LBANK:
+            case CTRL_PROGRAM:
+              patchOrSysexFound = true;
+            break;
+
+            default:
+              canOptimizePatch = false;
+            break;
+          }
+        break;
+
+        case ME_NOTEON:
+        case ME_NOTEOFF:
+        case ME_AFTERTOUCH:
+        case ME_POLYAFTER:
+        case ME_PITCHBEND:
+          canOptimizePatch = false;
+        break;
+
+        case ME_META:
+        case ME_SYSEX:
+        case ME_SYSEX_END:
+          canOptimizePatch = false;
+          patchOrSysexFound = true;
+        break;
+
+        case ME_PROGRAM:
+          patchOrSysexFound = true;
+        break;
+
+        default:
+          canOptimizePatch = false;
+        break;
+      }
+
+      // The type should be equal beyond this point.
+      if(mpe.type() != ev.type())
+        continue;
+
+      switch((ME_EVENT_TYPE)ev.type())
+      {
+        case ME_CONTROLLER:
+        {
+          // Are the controller numbers the same?
+          if(mpe.dataA() != ev.dataA())
+            continue;
+          // If the values are the same, just return.
+          if(mpe.dataB() == ev.dataB())
             return;
+
+          switch(ev.dataA())
+          {
+            case CTRL_HRPN:
+            case CTRL_LRPN:
+            case CTRL_HNRPN:
+            case CTRL_LNRPN:
+              // If a data controller or patch or sysex came after this, don't touch this, just insert normally.
+              if(patchOrSysexFound || dataFound)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+
+            case CTRL_HDATA:
+            case CTRL_LDATA:
+              // If an (N)RPN controller or patch or sysex came after this, don't touch this, just insert normally.
+              if(patchOrSysexFound || rpnFound)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+
+            case CTRL_HBANK:
+            case CTRL_LBANK:
+            case CTRL_PROGRAM:
+              // If there are certain other events after this, don't touch this, just insert normally.
+              if(!canOptimizePatch)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+
+            default:
+              // If a patch or sysex came after this, don't touch this, just insert normally.
+              if(patchOrSysexFound)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+          }
+
           // Erase the item, and insert the replacement.
+          // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
           erase(impe);
           insert(ev);
           return;
-      break;
+        }
+        break;
 
-      default:
-      break;
+        case ME_NOTEON:
+        case ME_NOTEOFF:
+        case ME_POLYAFTER:
+        {
+          // Are the note numbers the same?
+          if(mpe.dataA() != ev.dataA())
+            continue;
+          // If the values are the same, just return.
+          if(mpe.dataB() == ev.dataB())
+            return;
+          // If a patch or sysex came after this, don't touch this, just insert normally.
+          if(patchOrSysexFound)
+          {
+            insert(ev);
+            return;
+          }
+          // Erase the item, and insert the replacement.
+          // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
+          erase(impe);
+          insert(ev);
+          return;
+        }
+        break;
+
+        case ME_PROGRAM:
+        case ME_AFTERTOUCH:
+        case ME_PITCHBEND:
+        case ME_SONGPOS:
+        case ME_SONGSEL:
+        {
+            // If the values are the same, just return.
+            if(mpe.dataA() == ev.dataA())
+              return;
+            // If this is ME_PROGRAM and there are certain other events after this, don't touch this, just insert normally.
+            // Or if this is not ME_PROGRAM and a patch or sysex came after this, don't touch this, just insert normally.
+            if((!canOptimizePatch && ev.type() == ME_PROGRAM) ||
+              (patchOrSysexFound && ev.type() != ME_PROGRAM))
+            {
+              insert(ev);
+              return;
+            }
+            // Erase the item, and insert the replacement.
+            // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
+            erase(impe);
+            insert(ev);
+            return;
+        }
+        break;
+
+        default:
+        break;
+      }
     }
   }
 
@@ -753,48 +958,204 @@ void SeqMPEventList::add(const MidiPlayEvent& ev)
     break;
   }
 
+  bool rpnFound = false;
+  bool dataFound = false;
+  bool patchOrSysexFound = false;
+  bool canOptimizePatch = true;
+
   SeqMPEventListRangePair_t range = equal_range(ev);
-  for(iterator impe = range.first; impe != range.second; ++impe)
+  if(range.first != end())
   {
-    // Note that (multi)set iterators are constant and can't be modified.
-    // The only option is to erase the old item(s), then insert a new item.
-    const MidiPlayEvent& mpe = *impe;
-
-    // The type, time, port, and channel should already be equal, according to the operator< method.
-    switch((ME_EVENT_TYPE)ev.type())
+    iterator impe = range.second;
+    while(impe != range.first)
     {
-      case ME_CONTROLLER:
-      case ME_NOTEON:
-      case ME_NOTEOFF:
-      case ME_POLYAFTER:
-        // Are the notes or controller numbers the same?
-        if(mpe.dataA() != ev.dataA())
-          continue;
-        // If the velocities or values are the same, just ignore.
-        if(mpe.dataB() == ev.dataB())
-          return;
-        // Erase the item, and insert the replacement.
-        erase(impe);
-        insert(ev);
-        return;
-      break;
+      --impe;
 
-      case ME_PROGRAM:
-      case ME_AFTERTOUCH:
-      case ME_PITCHBEND:
-      case ME_SONGPOS:
-      case ME_SONGSEL:
-          // If the values are the same, just ignore.
-          if(mpe.dataA() == ev.dataA())
+      // Note that (multi)set iterators are constant and can't be modified.
+      // The only option is to erase the old item(s), then insert a new item.
+      const MidiPlayEvent& mpe = *impe;
+
+      // The port and channel should be equal.
+      if(mpe.port() != ev.port() || mpe.channel() != ev.channel())
+        continue;
+
+      switch((ME_EVENT_TYPE)mpe.type())
+      {
+        case ME_CONTROLLER:
+          switch(mpe.dataA())
+          {
+            case CTRL_HDATA:
+            case CTRL_LDATA:
+            case CTRL_DATA_DEC:
+            case CTRL_DATA_INC:
+              dataFound = true;
+              canOptimizePatch = false;
+            break;
+
+            case CTRL_HRPN:
+            case CTRL_LRPN:
+            case CTRL_HNRPN:
+            case CTRL_LNRPN:
+              rpnFound = true;
+              canOptimizePatch = false;
+            break;
+
+            case CTRL_HBANK:
+            case CTRL_LBANK:
+            case CTRL_PROGRAM:
+              patchOrSysexFound = true;
+            break;
+
+            default:
+              canOptimizePatch = false;
+            break;
+          }
+        break;
+
+        case ME_NOTEON:
+        case ME_NOTEOFF:
+        case ME_AFTERTOUCH:
+        case ME_POLYAFTER:
+        case ME_PITCHBEND:
+          canOptimizePatch = false;
+        break;
+
+        case ME_META:
+        case ME_SYSEX:
+        case ME_SYSEX_END:
+          canOptimizePatch = false;
+          patchOrSysexFound = true;
+        break;
+
+        case ME_PROGRAM:
+          patchOrSysexFound = true;
+        break;
+
+        default:
+          canOptimizePatch = false;
+        break;
+      }
+
+      // The type should be equal beyond this point.
+      if(mpe.type() != ev.type())
+        continue;
+
+      switch((ME_EVENT_TYPE)ev.type())
+      {
+        case ME_CONTROLLER:
+        {
+          // Are the controller numbers the same?
+          if(mpe.dataA() != ev.dataA())
+            continue;
+          // If the values are the same, just return.
+          if(mpe.dataB() == ev.dataB())
             return;
+
+          switch(ev.dataA())
+          {
+            case CTRL_HRPN:
+            case CTRL_LRPN:
+            case CTRL_HNRPN:
+            case CTRL_LNRPN:
+              // If a data controller or patch or sysex came after this, don't touch this, just insert normally.
+              if(patchOrSysexFound || dataFound)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+
+            case CTRL_HDATA:
+            case CTRL_LDATA:
+              // If an (N)RPN controller or patch or sysex came after this, don't touch this, just insert normally.
+              if(patchOrSysexFound || rpnFound)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+
+            case CTRL_HBANK:
+            case CTRL_LBANK:
+            case CTRL_PROGRAM:
+              // If there are certain other events after this, don't touch this, just insert normally.
+              if(!canOptimizePatch)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+
+            default:
+              // If a patch or sysex came after this, don't touch this, just insert normally.
+              if(patchOrSysexFound)
+              {
+                insert(ev);
+                return;
+              }
+            break;
+          }
+
           // Erase the item, and insert the replacement.
+          // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
           erase(impe);
           insert(ev);
           return;
-      break;
+        }
+        break;
 
-      default:
-      break;
+        case ME_NOTEON:
+        case ME_NOTEOFF:
+        case ME_POLYAFTER:
+        {
+          // Are the note numbers the same?
+          if(mpe.dataA() != ev.dataA())
+            continue;
+          // If the values are the same, just return.
+          if(mpe.dataB() == ev.dataB())
+            return;
+          // If a patch or sysex came after this, don't touch this, just insert normally.
+          if(patchOrSysexFound)
+          {
+            insert(ev);
+            return;
+          }
+          // Erase the item, and insert the replacement.
+          // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
+          erase(impe);
+          insert(ev);
+          return;
+        }
+        break;
+
+        case ME_PROGRAM:
+        case ME_AFTERTOUCH:
+        case ME_PITCHBEND:
+        case ME_SONGPOS:
+        case ME_SONGSEL:
+        {
+            // If the values are the same, just return.
+            if(mpe.dataA() == ev.dataA())
+              return;
+            // If this is ME_PROGRAM and there are certain other events after this, don't touch this, just insert normally.
+            // Or if this is not ME_PROGRAM and a patch or sysex came after this, don't touch this, just insert normally.
+            if((!canOptimizePatch && ev.type() == ME_PROGRAM) ||
+              (patchOrSysexFound && ev.type() != ME_PROGRAM))
+            {
+              insert(ev);
+              return;
+            }
+            // Erase the item, and insert the replacement.
+            // Note this will NOT eliminate any FURTHER duplicates that may have already existed. Only the last one found.
+            erase(impe);
+            insert(ev);
+            return;
+        }
+        break;
+
+        default:
+        break;
+      }
     }
   }
 

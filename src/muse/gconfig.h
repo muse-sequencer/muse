@@ -331,6 +331,7 @@ struct GlobalConfigValues {
       QString importMidiDefaultInstr;  // Default to this instrument not Generic, if no match found
       bool exportDrumMapOverrides; // Apply Port, Channel, and ANote drum map overrides to export
       bool exportChannelOverridesToNewTrack; // Drum map Channel overrides go to a separate track
+      bool exportSelectedPartsAlignToBar0;   // When exporting only selected parts, align their leftmost position with bar 0.
 
       int startMode;          // 0 - start with last song
                               // 1 - start with default template

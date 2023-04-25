@@ -604,9 +604,9 @@ int MidiCtrlValList::visibleValue(unsigned int tick, bool inclMutedParts, bool i
   {
     --i;
     const Part* part = i->second.part;
-    // Ignore values that are outside of the part.
-    if(tick < part->tick() || tick >= (part->tick() + part->lenTick()))
-      continue;
+    // Ignore values that are outside of the part. Nope, we need them.
+    //if(tick < part->tick() || tick >= (part->tick() + part->lenTick()))
+    //  continue;
     // Ignore if part or track is muted or off.
     if(!inclMutedParts && part->mute())
       continue;

@@ -28,6 +28,7 @@
 #include "noteinfo.h"
 #include "cobject.h"
 
+#include <QMetaObject>
 
 // Forward declarations:
 class QCloseEvent;
@@ -70,6 +71,9 @@ class MasterEdit : public MidiEditor {
       QToolButton* gridOnButton;
       int editTools;
       
+      QMetaObject::Connection _configChangedMetaConn;
+      QMetaObject::Connection _configChangedTools2MetaConn;
+
       static int _rasterInit;
       
       virtual void keyPressEvent(QKeyEvent*);

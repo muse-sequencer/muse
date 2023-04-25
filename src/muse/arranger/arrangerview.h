@@ -29,6 +29,7 @@
 #include "cobject.h"
 #include "scripts.h"
 
+#include <QMetaObject>
 
 // Forward declarations:
 class QCloseEvent;
@@ -116,6 +117,10 @@ private:
 
     MusECore::Scripts scripts;
     QMenu* menuScripts;
+
+    QMetaObject::Connection _configChangedEditToolsMetaConn;
+    QMetaObject::Connection _deliveredScriptReceivedMetaConn;
+    QMetaObject::Connection _userScriptReceivedMetaConn;
 
 private slots:
     void globalCut();

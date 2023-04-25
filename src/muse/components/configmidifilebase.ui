@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>461</width>
-    <height>527</height>
+    <height>586</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="importTab">
       <attribute name="title">
@@ -468,6 +468,23 @@ In this mode the track events can be on different
         <widget class="QCheckBox" name="exportPortDeviceSMF0">
          <property name="text">
           <string>Export a Port/Device meta for format 0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>When exporting only selected parts:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="exportSelectedPartsAlignBar0">
+         <property name="text">
+          <string>Align leftmost part with bar 0 (remove all unused space)</string>
          </property>
         </widget>
        </item>

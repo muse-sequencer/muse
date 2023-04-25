@@ -258,7 +258,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     edit_tools->set(MusEGui::PointerTool);
     score_canvas->set_tool(MusEGui::PointerTool);
     connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
-    connect(MusEGlobal::muse, &MusE::configChanged, edit_tools, &EditToolBar::configChanged);
+    _configChangedEditToolsMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, edit_tools, &EditToolBar::configChanged);
 
     QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
     steprec_tools->setObjectName("Score tools");
@@ -663,6 +663,7 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 
 ScoreEdit::~ScoreEdit()
 {
+    disconnect(_configChangedEditToolsMetaConn);
     names.erase(name);
 }
 

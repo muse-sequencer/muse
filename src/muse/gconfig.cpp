@@ -292,6 +292,7 @@ GlobalConfigValues config = {
       QString("GM"),                // importMidiDefaultInstr Default to this instrument not Generic, if no match found
       true,                         // exportDrumMapOverrides Apply drum map overrides to export
       true,                         // exportChannelOverridesToNewTrack Drum map Channel overrides go to a separate track
+      false,                        // exportSelectedPartsAlignToBar0 When exporting only selected parts, align their leftmost position with bar 0
       1,                            // startMode
       QString(""),                  // start song path
       false,                        // startSongLoadConfig

@@ -353,10 +353,10 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuScripts = menuBar()->addMenu(tr("&Scripts"));
       menuScripts->menuAction()->setStatusTip(tr("Scripts are applied to all or selected events. User scripts can be added in '~/.config/MusE/MusE/scripts/'. See 'MIDI scripting' in MusE wiki."));
       scripts.populateScriptMenu(menuScripts);
-      connect(&scripts,
+      _deliveredScriptReceivedMetaConn = connect(&scripts,
               &MusECore::Scripts::execDeliveredScriptReceived,
               [this](int id) { execDeliveredScript(id); } );
-      connect(&scripts,
+      _userScriptReceivedMetaConn = connect(&scripts,
               &MusECore::Scripts::execUserScriptReceived,
               [this](int id) { execUserScript(id); } );
 
@@ -605,7 +605,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       canvas->setCanvasTools(drumeditTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
-      connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
+      _configChangedTools2MetaConn = connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
       connect(canvas, SIGNAL(horizontalZoom(bool,const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
@@ -777,6 +777,13 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         }
       }
       }
+
+DrumEdit::~DrumEdit()
+{
+  disconnect(_configChangedTools2MetaConn);
+  disconnect(_deliveredScriptReceivedMetaConn);
+  disconnect(_userScriptReceivedMetaConn);
+}
 
 //---------------------------------------------------------
 //   songChanged1

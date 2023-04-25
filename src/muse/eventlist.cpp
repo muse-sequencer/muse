@@ -495,7 +495,6 @@ void EventList::findControllers(bool wave, FindMidiCtlsList_t* outList, int find
   }
 }
 
-// REMOVE Tim. ctrl. Added.
 ciEvent EventList::findControllerAt(const Event& event) const
 {
   cEventRange range = equal_range(event.posValue());
@@ -507,7 +506,6 @@ ciEvent EventList::findControllerAt(const Event& event) const
   return cend();
 }
 
-// REMOVE Tim. ctrl. Added.
 iEvent EventList::findControllerAt(const Event& event)
 {
   EventRange range = equal_range(event.posValue());
@@ -519,7 +517,6 @@ iEvent EventList::findControllerAt(const Event& event)
   return end();
 }
 
-// REMOVE Tim. ctrl. Added.
 bool EventList::controllerValueExists(const Event& event) const
 {
   cEventRange range = equal_range(event.posValue());

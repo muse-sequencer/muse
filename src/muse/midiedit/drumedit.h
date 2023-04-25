@@ -34,6 +34,7 @@
 
 #include <QString>
 #include <QVector>
+#include <QMetaObject>
 
 
 // Forward declarations:
@@ -132,6 +133,10 @@ private:
     QAction *startListEditAction;
     QAction* selectRangeToSelectionAction;
 
+    QMetaObject::Connection _configChangedTools2MetaConn;
+    QMetaObject::Connection _deliveredScriptReceivedMetaConn;
+    QMetaObject::Connection _userScriptReceivedMetaConn;
+
     void initShortcuts();
     void setupNewCtrl(CtrlEdit* ctrlEdit);
 
@@ -199,6 +204,7 @@ signals:
 public:
     DrumEdit(MusECore::PartList*, QWidget* parent = nullptr, const char* name = nullptr,
              unsigned initPos = INT_MAX, bool showDefaultControls = false);
+    virtual ~DrumEdit();
     virtual void readStatus(MusECore::Xml&) override;
     virtual void writeStatus(int, MusECore::Xml&) const override;
     static void readConfiguration(MusECore::Xml& xml);

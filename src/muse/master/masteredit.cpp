@@ -265,7 +265,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       canvas->setFocus();
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));
-      connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
+      _configChangedTools2MetaConn = connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
       connect(vscroll, SIGNAL(scrollChanged(int)),   canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)), canvas, SLOT(setYMag(int)));
 
@@ -289,7 +289,7 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       connect(canvas, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), SLOT(songChanged(MusECore::SongChangedStruct_t)));
 
-      connect(MusEGlobal::muse, &MusE::configChanged, [this]() { configChanged(); } );
+      _configChangedMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, [this]() { configChanged(); } );
 
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
@@ -308,6 +308,8 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
 
 MasterEdit::~MasterEdit()
       {
+        disconnect(_configChangedMetaConn);
+        disconnect(_configChangedTools2MetaConn);
       }
 
 //---------------------------------------------------------

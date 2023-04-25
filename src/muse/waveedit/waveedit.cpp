@@ -429,7 +429,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
-      connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
+      _configChangedTools2MetaConn = connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
 
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setXMag(int)));
@@ -605,6 +605,7 @@ void WaveEdit::setTime(unsigned samplepos)
 WaveEdit::~WaveEdit()
       {
       DEBUG_WAVEEDIT(stderr, "WaveEdit dtor\n");
+      disconnect(_configChangedTools2MetaConn);
       }
 
 //---------------------------------------------------------

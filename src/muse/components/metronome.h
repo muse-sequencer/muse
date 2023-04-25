@@ -30,6 +30,7 @@
 #include "metronome_class.h"
 
 #include <QFrame>
+#include <QMetaObject>
 
 class QDialog;
 class QPaintEvent;
@@ -78,6 +79,8 @@ class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
    private:
       enum AccentPresetsDataRole { BeatsRole = Qt::UserRole, PresetIdRole, PresetTypeRole };
       enum AccentPresetTypeIndex { FactoryPresetType = 0, UserPresetType = 1 };
+
+      QMetaObject::Connection _songChangedMetaConn;
 
       //-----------------------
       // BEGIN Lambda 'slots'.
@@ -130,6 +133,7 @@ class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
 
    public:
       MetronomeConfig(QWidget* parent=0);
+      virtual ~MetronomeConfig();
 
       void updateValues();
       };
