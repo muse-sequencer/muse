@@ -949,8 +949,12 @@ void DoubleLabel::keyPressEvent(QKeyEvent* e)
       const int ssz = _suffix.size();
       const int tsz = text().size();
       const int selstart = selectionStart();
+// Qt >= 5.10 use selectionEnd().
+#if QT_VERSION >= 0x050a00
+      const int selend = selectionEnd();
+#else
       const int selend = selectionStart() + selectedText().size();
-//      const int se = selectionEnd();
+#endif
       const int suffs = tsz - ssz;
       // Adjust any selection so that any suffix is not erased.
       if(selend >= suffs)

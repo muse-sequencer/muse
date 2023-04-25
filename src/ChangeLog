@@ -18,7 +18,8 @@
     - Fixed: Midi recording and midi import: Composite controllers like (N)RPN and Patch were mis-read as non-composite.
       Re-wrote ending (optimizing) part of midi.cpp:buildMidiEventList(). Handle controllers separately than other events.
     - Fixed: Midi export: Do not export events that are outside part borders.
-    - Refine spamatica's "Fixed compatibility with qt5.9.5" commit 489034A.
+    - Refine spamatica's "Fixed compatibility with qt5.9.5" commit 489034a.
+    - Refine spamatica's "Fixed another qt5.9.5 compatibility issue" commit a335362.
 22.04.2023:
     - Briefly show "Project saved." message on status bar after project has been saved (rj)
 16.04.2023
