@@ -1039,51 +1039,30 @@ void Audio::seekMidi()
       // Find the first non-muted value at the given tick...
       bool values_found = false;
       bool found_value = false;
-      
-      ciMidiCtrlVal imcv = vl->lower_bound(pos);
-      if(imcv != vl->cend() && imcv->first == pos)
+
+      ciMidiCtrlVal imcv = vl->upper_bound(pos);
+      while(imcv != vl->cbegin())
       {
-        for( ; imcv != vl->cend() && imcv->first == pos; ++imcv)
-        {
-          const Part* p = imcv->second.part;
-          if(!p)
-            continue;
-          // Ignore values that are outside of the part.
-          if(pos < p->tick() || pos >= (p->tick() + p->lenTick()))
-            continue;
-          values_found = true;
-          // Ignore if part or track is muted or off.
-          if(p->mute())
-            continue;
-          const Track* track = p->track();
-          if(!track || track->isMute() || track->off())
-            continue;
-          found_value = true;
-          break;
-        }
-      }
-      else
-      {
-        while(imcv != vl->cbegin())
-        {
-          --imcv;
-          const Part* p = imcv->second.part;
-          if(!p)
-            continue;
-          // Ignore values that are outside of the part.
-          unsigned t = imcv->first;
-          if(t < p->tick() || t >= (p->tick() + p->lenTick()))
-            continue;
-          values_found = true;
-          // Ignore if part or track is muted or off.
-          if(p->mute())
-            continue;
-          const Track* track = p->track();
-          if(!track || track->isMute() || track->off())
-            continue;
-          found_value = true;
-          break;
-        }
+        --imcv;
+        const Part* p = imcv->second.part;
+        if(!p)
+          continue;
+        // Ignore values that are outside of the part.
+        unsigned t = imcv->first;
+        if(t < p->tick() || t >= (p->tick() + p->lenTick()))
+          continue;
+        // Required? It seems not. From previous version of this code block, first section.
+        //if(pos < p->tick() || pos >= (p->tick() + p->lenTick()))
+        //  continue;
+        values_found = true;
+        // Ignore if part or track is muted or off.
+        if(p->mute())
+          continue;
+        const Track* track = p->track();
+        if(!track || track->isMute() || track->off())
+          continue;
+        found_value = true;
+        break;
       }
 
       if(found_value)
