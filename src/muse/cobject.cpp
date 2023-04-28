@@ -758,7 +758,11 @@ QString TopWin::typeName(ToplevelType t)
     switch (t)
     {
     case PIANO_ROLL: return tr("Piano roll");
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
     case LISTE: return tr("List editor");
+#else
+    //case LISTE: return tr("List editor");
+#endif
     case DRUM: return tr("Drum editor");
     case MASTER: return tr("Master track editor");
     case WAVE: return tr("Wave editor");

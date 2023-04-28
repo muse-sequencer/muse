@@ -1,5 +1,11 @@
 28.04.2023:
-    - Fixed: Event List Editor: Added missing 'Display' menu. (Tim)
+    - Revert: Pull 1099: "Move event list editor from dock to window." (Tim)
+      This was kinda not good. The list editor really belongs in a dock beside the pr/drum editor
+       as a 'companion' since highlighting notes is supposed to work both ways. It is more
+       convenient to have the two editors side-by-side rather than having the event list editor
+       in a separate tab or floating. The pull code was kept. A define in cobject.h switches
+       between the pull being off or on. It is called MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099.
+    - Fixed: Event List Editor: (When pull 1099 is applied) Added missing 'Display' menu. (Tim)
       Allows to 'float' the event list editor window.
     - Fixed issue 1119: Routing doesn't work with utf-8 symbols in names. (Tim)
       Changed all QString::toLatin1()/tolocal8Bit() usages to QString::toUtf8() in the following files so far:

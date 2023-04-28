@@ -486,8 +486,13 @@ QString EventListItem::text(int col) const
 //   ListEdit
 //---------------------------------------------------------
 
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
 ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
     : MidiEditor(TopWin::LISTE, 0, pl, parent, name)
+#else
+ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
+    : QWidget(parent)
+#endif
 {
     setObjectName("ListEdit");
     _isDeleting = false;
@@ -498,11 +503,13 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
     selectedTick=0;
 
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
     menuConfig = menuBar()->addMenu(tr("&Display"));
     menuConfig->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
     menuConfig->addAction(subwinAction);
 //    menuConfig->addAction(shareAction);
     menuConfig->addAction(fullscreenAction);
+#endif
 
     noteAction = new QAction(tr("Note"));
     sysexAction = new QAction(tr("SysEx"));
@@ -640,7 +647,11 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
     //    Rest
     //---------------------------------------------------
 
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
     //QGridLayout* mainGrid = new QGridLayout(this);
+#else
+    QGridLayout* mainGrid = new QGridLayout(this);
+#endif
     mainGrid->setRowStretch(1, 100);
     mainGrid->setColumnStretch(0, 100);
     mainGrid->addWidget(tb, 0, 0);

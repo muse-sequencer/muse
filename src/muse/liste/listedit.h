@@ -30,7 +30,9 @@
 
 #include <QUuid>
 
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
 class QMenu;
+#endif
 class QAction;
 class QActionGroup;
 class QCloseEvent;
@@ -53,7 +55,11 @@ namespace MusEGui {
 //   ListEdit
 //---------------------------------------------------------
 
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
 class ListEdit : public MidiEditor {
+#else
+class ListEdit : public QWidget {
+#endif
       Q_OBJECT
     
       QTreeWidget* liste;
@@ -75,7 +81,9 @@ class ListEdit : public MidiEditor {
       void initShortcuts();
       void genPartlist();
 
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
       QMenu *menuConfig;
+#endif
 
       QAction *noteAction, *sysexAction, *ctrlAction, *metaAction;
       QAction *incAction, *decAction, *deleteAction;
@@ -93,11 +101,19 @@ class ListEdit : public MidiEditor {
 
    public slots:
       void songChanged(MusECore::SongChangedStruct_t);
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
+      void focusCanvas() override;
+#else
       void focusCanvas();
+#endif
 
    public:
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
       ListEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0);
-      ~ListEdit();
+#else
+      ListEdit(MusECore::PartList*, QWidget* parent = 0);
+#endif
+      virtual ~ListEdit();
       MusECore::PartList* parts()            { return _pl;  }
       const MusECore::PartList* parts() const { return _pl;  }
       };

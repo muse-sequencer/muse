@@ -2383,7 +2383,11 @@ void MusE::startEditor(MusECore::PartList* pl, int type)
       {
       switch (type) {
             case 0: startPianoroll(pl, true); break;
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
             case 1: startListEditor(pl, true); break;
+#else
+            case 1: startListEditor(pl); break;
+#endif
             case 3: startDrumEditor(pl, true); break;
             case 4: startWaveEditor(pl); break;
             }
@@ -2584,12 +2588,19 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
     if (!newwin && findOpenListEditor(pl))
         return;
 
-    //QDockWidget* dock = new QDockWidget("List Editor", this);
+#ifndef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
+    QDockWidget* dock = new QDockWidget("List Editor", this);
+#endif
+
 //    dock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl, this);
+
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
     listEditor->setOpenInNewWin(newwin);
     listEditor->show();
-    //dock->setWidget(listEditor);
+#else
+    dock->setWidget(listEditor);
+#endif
 
     {
         int bar1, bar2, xx;
@@ -2598,15 +2609,17 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
         MusEGlobal::sigmap.tickValues(p->tick(), &bar1, &xx, &x);
         MusEGlobal::sigmap.tickValues(p->tick() + p->lenTick(), &bar2, &xx, &x);
 
-        //dock->setWindowTitle("Event List <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
+#ifndef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
+        dock->setWindowTitle("Event List <" + p->name() + QString("> %1-%2").arg(bar1+1).arg(bar2+1));
+#endif
     }
 
-    //dock->setObjectName(dock->windowTitle());
-
-    //addDockWidget(Qt::BottomDockWidgetArea, dock);
+#ifndef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
+    dock->setObjectName(dock->windowTitle());
+    addDockWidget(Qt::BottomDockWidgetArea, dock);
 //    addTabbedDock(Qt::BottomDockWidgetArea, dock);
-
-    //dock->setAttribute(Qt::WA_DeleteOnClose);
+    dock->setAttribute(Qt::WA_DeleteOnClose);
+#endif
 
     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
 }
@@ -3599,7 +3612,11 @@ again:
             break;
         case MusEGui::TopWin::PIANO_ROLL:
         case MusEGui::TopWin::SCORE:
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
         case MusEGui::TopWin::LISTE:
+#else
+        //case MusEGui::TopWin::LISTE:
+#endif
         case MusEGui::TopWin::DRUM:
         case MusEGui::TopWin::MASTER:
         case MusEGui::TopWin::WAVE:

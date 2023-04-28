@@ -31,6 +31,8 @@
 #include <QByteArray>
 #include <QString>
 
+// REMOVE Tim. buf. Added.
+//#define MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
 
 // Forward declarations:
 class QMdiSubWindow;
@@ -54,7 +56,13 @@ class TopWin : public QMainWindow
       Q_OBJECT
 
    public:
-      enum ToplevelType { PIANO_ROLL=0, DRUM, LISTE, MASTER, WAVE, SCORE, ARRANGER, // no gaps in the enum!
+      enum ToplevelType { PIANO_ROLL=0, DRUM,
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
+        LISTE,
+#else
+        //LISTE,
+#endif
+        MASTER, WAVE, SCORE, ARRANGER, // no gaps in the enum!
 #ifdef PATCHBAY
          M_PATCHBAY,
 #endif /* PATCHBAY */
