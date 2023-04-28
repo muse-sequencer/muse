@@ -1865,8 +1865,23 @@ void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_
               continue;
             
 
+// Diagnostics. For simulating non-latin1 characters in Jack port names.
+#if 0
+            if(nsz >= 12)
+            {
+              const QString s = QString(*p) + QString("㑭,㑮.㑯,㑰");
+              fprintf(stderr, "port name latin1: %s\n", s.toLatin1().constData());
+              fprintf(stderr, "port name utf8: %s\n", s.toUtf8().constData());
+              fprintf(stderr, "port name local8bit: %s\n", s.toLocal8Bit().constData());
+              strncpy(buffer, s.toUtf8().constData(), nsz);
+              fprintf(stderr, "port name buffer: %s\n", buffer);
+            }
+            else
+#endif
+
             strncpy(buffer, *p, nsz);
-            if((aliases == 0) || (aliases == 1)) 
+
+            if((aliases == 0) || (aliases == 1))
             {
               char a2[nsz]; 
               char* al[2];

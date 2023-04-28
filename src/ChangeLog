@@ -1,3 +1,8 @@
+28.04.2023:
+    - Fixed issue 1119: Routing doesn't work with utf-8 symbols in names. (Tim)
+      Changed all QString::toLatin1()/tolocal8Bit() usages to QString::toUtf8() in the following files so far:
+       jack.cpp, jackmidi.cpp, route.cpp.
+      TODO: CHECK: Likely (many) more to do, EXCEPT some parts like xml, where we want SOME latin1 compatibility.
 25.04.2023:
     - Follow-ups to 14.04.2023: More fixes/features. (Tim)
     * NEW: Export midi: When exporting only selected parts, a new option in the import/export settings
