@@ -498,6 +498,12 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
     selectedTick=0;
 
+    menuConfig = menuBar()->addMenu(tr("&Display"));
+    menuConfig->menuAction()->setStatusTip(tr("Display menu: Display options specific to current editor."));
+    menuConfig->addAction(subwinAction);
+//    menuConfig->addAction(shareAction);
+    menuConfig->addAction(fullscreenAction);
+
     noteAction = new QAction(tr("Note"));
     sysexAction = new QAction(tr("SysEx"));
     ctrlAction = new QAction(tr("Ctrl"));

@@ -30,6 +30,7 @@
 
 #include <QUuid>
 
+class QMenu;
 class QAction;
 class QActionGroup;
 class QCloseEvent;
@@ -73,6 +74,8 @@ class ListEdit : public MidiEditor {
 
       void initShortcuts();
       void genPartlist();
+
+      QMenu *menuConfig;
 
       QAction *noteAction, *sysexAction, *ctrlAction, *metaAction;
       QAction *incAction, *decAction, *deleteAction;

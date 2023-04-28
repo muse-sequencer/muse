@@ -1,4 +1,6 @@
 28.04.2023:
+    - Fixed: Event List Editor: Added missing 'Display' menu. (Tim)
+      Allows to 'float' the event list editor window.
     - Fixed issue 1119: Routing doesn't work with utf-8 symbols in names. (Tim)
       Changed all QString::toLatin1()/tolocal8Bit() usages to QString::toUtf8() in the following files so far:
        jack.cpp, jackmidi.cpp, route.cpp, routepopup.cpp.
