@@ -800,7 +800,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     int row = 0;
     for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip)
     {
-      QByteArray ba = (*ip).toLatin1();
+      QByteArray ba = (*ip).toUtf8();
       const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
@@ -873,7 +873,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
         act = lb->addAction(*ip);
         act->setCheckable(true);
         
-        QByteArray ba = (*ip).toLatin1();
+        QByteArray ba = (*ip).toUtf8();
         const char* port_name = ba.constData();
         char good_name[ROUTE_PERSISTENT_NAME_SIZE];
         void* const port = MusEGlobal::audioDevice->findPort(port_name);
@@ -907,7 +907,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
           act = lb->addAction(*ip);
           act->setCheckable(true);
           
-          QByteArray ba = (*ip).toLatin1();
+          QByteArray ba = (*ip).toUtf8();
           const char* port_name = ba.constData();
           char good_name[ROUTE_PERSISTENT_NAME_SIZE];
           void* const port = MusEGlobal::audioDevice->findPort(port_name);
@@ -1848,7 +1848,7 @@ void RoutePopupMenu::mouseMoveEvent(QMouseEvent* e)
 
 void RoutePopupMenu::routePopupHovered(QAction* action)
 {  
-   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::popHovered this:%p action:%p _hoverIsFromMouse:%d text:%s\n", this, action, _hoverIsFromMouse, action->text().toLatin1().constData());
+   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::popHovered this:%p action:%p _hoverIsFromMouse:%d text:%s\n", this, action, _hoverIsFromMouse, action->text().toUtf8().constData());
   
   // Ignore if this hover was from mouse.
   // Also, we get this hovered signal even if the hovered action is from another popup, so ignore it. 
@@ -2753,8 +2753,8 @@ void RoutePopupMenu::jackRouteActivated(QAction* action, const MusECore::Route& 
 void RoutePopupMenu::audioTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations)
 {
   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::audioTrackPopupActivated: action text:%s checked:%d name:%s\n", 
-          action->text().toLatin1().constData(), action->isChecked(), 
-          action->objectName().toLatin1().constData());
+          action->text().toUtf8().constData(), action->isChecked(),
+          action->objectName().toUtf8().constData());
   
   MusECore::Track* track = _route.track;
   // Check for custom routing matrix action.
@@ -2905,8 +2905,8 @@ void RoutePopupMenu::audioTrackPopupActivated(QAction* action, MusECore::Route& 
 void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations)
 {
   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::midiTrackPopupActivated: action text:%s checked:%d name:%s\n", 
-          action->text().toLatin1().constData(), action->isChecked(),
-          action->objectName().toLatin1().constData());
+          action->text().toUtf8().constData(), action->isChecked(),
+          action->objectName().toUtf8().constData());
   
   MusECore::Track* track = _route.track;
   if(rem_route.type == MusECore::Route::TRACK_ROUTE && rem_route.track &&
@@ -3255,8 +3255,8 @@ void RoutePopupMenu::midiTrackPopupActivated(QAction* action, MusECore::Route& r
 void RoutePopupMenu::trackPopupActivated(QAction* action, MusECore::Route& rem_route, MusECore::PendingOperationList& operations)
 {
   DEBUG_PRST_ROUTES(stderr, "RoutePopupMenu::trackPopupActivated: action text:%s checked:%d name:%s\n", 
-          action->text().toLatin1().constData(), action->isChecked(), 
-          action->objectName().toLatin1().constData());
+          action->text().toUtf8().constData(), action->isChecked(),
+          action->objectName().toUtf8().constData());
   
   MusECore::Track* track = _route.track;
   // Make sure the track still exists.
