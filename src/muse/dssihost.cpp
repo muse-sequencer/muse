@@ -1624,6 +1624,9 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
     if(sample + slice_samps > nframes)         // Safety check.
             slice_samps = nframes - sample;
 
+    // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
+    // Note this means it is still possible to get stuck in the top loop (at least for a while).
+    if(slice_samps != 0)
     {
       unsigned long nevents = 0;
       // Get the state of the stop flag.

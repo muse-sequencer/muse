@@ -993,12 +993,16 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
    }
 
    case audioMasterIdle:
+   {
       // call application idle routine (this will
       // call effEditIdle for all open editors too)
       //_plugin->updateParamValues(false);
-      //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
-      ///idleEditor();  // REMOVE Tim. Or keep.
+      if(userData->sif)
+        userData->sif->idleEditor();
+      else if(userData->pstate)
+        userData->pstate->idleEditor();
       return 0;
+   }
 
    case audioMasterGetTime:
    {
@@ -1280,14 +1284,6 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 
       //_plugin->updateParamValues(false);
       //QApplication::processEvents();     // REMOVE Tim. Or keep. Commented in QTractor.
-      AEffect *vstPlug = 0;
-      if(userData->sif)
-         vstPlug = userData->sif->_plugin;
-      else if(userData->pstate)
-         vstPlug = userData->pstate->plugin;
-
-      vstPlug->dispatcher(vstPlug, effEditIdle, 0, 0, nullptr, 0.0f);  // ?
-
       return 0;
    }
 
@@ -1401,10 +1397,11 @@ void VstNativeSynthIF::idleEditor()
   fprintf(stderr, "VstNativeSynthIF::idleEditor %p\n", this);
 #endif
 
-  // REMOVE Tim. Or keep.
-  //_plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
-  //if(_editor)
-  //  _editor->update();
+  if(_editor)
+  {
+    _plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
+     _editor->update();
+  }
 }
 
 //---------------------------------------------------------
@@ -1423,9 +1420,7 @@ void VstNativeSynthIF::guiHeartBeat()
   {
      if(_guiVisible)
      {
-       _plugin->dispatcher(_plugin, effEditIdle, 0, 0, nullptr, 0.0f);
-       if(_editor)
-         _editor->update();
+       idleEditor();
      }
   }
 }
@@ -2879,180 +2874,185 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
     if(sample + slice_samps > nframes)         // Safety check.
       slice_samps = nframes - sample;
 
+    // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
+    // Note this means it is still possible to get stuck in the top loop (at least for a while).
+    if(slice_samps != 0)
     {
-      unsigned long nevents = 0;
-
-      // Get the state of the stop flag.
-      const bool do_stop = synti->stopFlag();
-      // Get whether playback and user midi events can be written to this midi device.
-      const bool we = synti->writeEnable();
-
-      MidiPlayEvent buf_ev;
-
-      // If stopping or not 'running' just purge ALL playback FIFO and container events.
-      // But do not clear the user ones. We need to hold on to them until active,
-      //  they may contain crucial events like loading a soundfont from a song file.
-      if(do_stop || !_curActiveState || !we)
       {
-        // Transfer the user lock-free buffer events to the user sorted multi-set.
-        // To avoid too many events building up in the buffer while inactive, use the exclusive add.
-        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
-        for(unsigned int i = 0; i < usr_buf_sz; ++i)
+        unsigned long nevents = 0;
+
+        // Get the state of the stop flag.
+        const bool do_stop = synti->stopFlag();
+        // Get whether playback and user midi events can be written to this midi device.
+        const bool we = synti->writeEnable();
+
+        MidiPlayEvent buf_ev;
+
+        // If stopping or not 'running' just purge ALL playback FIFO and container events.
+        // But do not clear the user ones. We need to hold on to them until active,
+        //  they may contain crucial events like loading a soundfont from a song file.
+        if(do_stop || !_curActiveState || !we)
         {
-          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-            synti->_outUserEvents.addExclusive(buf_ev);
-        }
-
-        synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
-        synti->_outPlaybackEvents.clear();
-        // Reset the flag.
-        synti->setStopFlag(false);
-      }
-      else
-      {
-        // Transfer the user lock-free buffer events to the user sorted multi-set.
-        const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
-        for(unsigned int i = 0; i < usr_buf_sz; ++i)
-        {
-          if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-            synti->_outUserEvents.insert(buf_ev);
-        }
-
-        // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-        const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
-        for(unsigned int i = 0; i < pb_buf_sz; ++i)
-        {
-          if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
-            synti->_outPlaybackEvents.insert(buf_ev);
-        }
-      }
-
-      // Don't bother if not 'running'.
-      if(_curActiveState && we)
-      {
-        // Count how many events we need.
-        for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
-        {
-          const MidiPlayEvent& e = *impe;
-          if(e.time() >= (syncFrame + sample + slice_samps))
-            break;
-          ++nevents;
-        }
-        for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
-        {
-          const MidiPlayEvent& e = *impe;
-          if(e.time() >= (syncFrame + sample + slice_samps))
-            break;
-          ++nevents;
-        }
-
-        VstMidiEvent events[nevents];
-        char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
-        VstEvents *vst_events = (VstEvents*)evbuf;
-        vst_events->numEvents = 0;
-        vst_events->reserved  = 0;
-
-        iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
-        iMPEvent impe_us = synti->_outUserEvents.begin();
-        bool using_pb;
-
-        unsigned long event_counter = 0;
-        while(1)
-        {
-          if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
-            using_pb = *impe_pb < *impe_us;
-          else if(impe_pb != synti->_outPlaybackEvents.end())
-            using_pb = true;
-          else if(impe_us != synti->_outUserEvents.end())
-            using_pb = false;
-          else break;
-
-          const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
-
-          #ifdef VST_NATIVE_DEBUG
-          fprintf(stderr, "VstNativeSynthIF::getData eventFifos event time:%d\n", e.time());
-          #endif
-
-          // Event is for future?
-          if(e.time() >= (sample + slice_samps + syncFrame))
-            break;
-
-          // Returns false if the event was not filled. It was handled, but some other way.
-          if(processEvent(e, &events[event_counter]))
+          // Transfer the user lock-free buffer events to the user sorted multi-set.
+          // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+          const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+          for(unsigned int i = 0; i < usr_buf_sz; ++i)
           {
-            // Time-stamp the event.
-            unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
-            ft = (ft < sample) ? 0 : ft - sample;
-
-            if(ft >= slice_samps)
-            {
-                fprintf(stderr, "VstNativeSynthIF::getData: eventFifos event time:%d "
-                "out of range. pos:%d syncFrame:%u ft:%u sample:%lu slice_samps:%lu\n",
-                        e.time(), pos, syncFrame, ft, sample, slice_samps);
-                ft = slice_samps - 1;
-            }
-            vst_events->events[event_counter] = (VstEvent*)&events[event_counter];
-            events[event_counter].deltaFrames = ft;
-
-            ++event_counter;
+            if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+              synti->_outUserEvents.addExclusive(buf_ev);
           }
 
-          // Done with buffer's event. Remove it.
-          // C++11.
-          if(using_pb)
-            impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
-          else
-            impe_us = synti->_outUserEvents.erase(impe_us);
+          synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
+          synti->_outPlaybackEvents.clear();
+          // Reset the flag.
+          synti->setStopFlag(false);
         }
-
-        if(event_counter < nevents)
-          nevents = event_counter;
-
-        // Set the events pointer.
-        if(nevents > 0)
+        else
         {
-          vst_events->numEvents = nevents;
-          dispatch(effProcessEvents, 0, 0, vst_events, 0.0f);
+          // Transfer the user lock-free buffer events to the user sorted multi-set.
+          const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+          for(unsigned int i = 0; i < usr_buf_sz; ++i)
+          {
+            if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+              synti->_outUserEvents.insert(buf_ev);
+          }
+
+          // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+          const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+          for(unsigned int i = 0; i < pb_buf_sz; ++i)
+          {
+            if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+              synti->_outPlaybackEvents.insert(buf_ev);
+          }
+        }
+
+        // Don't bother if not 'running'.
+        if(_curActiveState && we)
+        {
+          // Count how many events we need.
+          for(ciMPEvent impe = synti->_outPlaybackEvents.begin(); impe != synti->_outPlaybackEvents.end(); ++impe)
+          {
+            const MidiPlayEvent& e = *impe;
+            if(e.time() >= (syncFrame + sample + slice_samps))
+              break;
+            ++nevents;
+          }
+          for(ciMPEvent impe = synti->_outUserEvents.begin(); impe != synti->_outUserEvents.end(); ++impe)
+          {
+            const MidiPlayEvent& e = *impe;
+            if(e.time() >= (syncFrame + sample + slice_samps))
+              break;
+            ++nevents;
+          }
+
+          VstMidiEvent events[nevents];
+          char evbuf[sizeof(VstMidiEvent*) * nevents + sizeof(VstEvents)];
+          VstEvents *vst_events = (VstEvents*)evbuf;
+          vst_events->numEvents = 0;
+          vst_events->reserved  = 0;
+
+          iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+          iMPEvent impe_us = synti->_outUserEvents.begin();
+          bool using_pb;
+
+          unsigned long event_counter = 0;
+          while(1)
+          {
+            if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+              using_pb = *impe_pb < *impe_us;
+            else if(impe_pb != synti->_outPlaybackEvents.end())
+              using_pb = true;
+            else if(impe_us != synti->_outUserEvents.end())
+              using_pb = false;
+            else break;
+
+            const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
+
+            #ifdef VST_NATIVE_DEBUG
+            fprintf(stderr, "VstNativeSynthIF::getData eventFifos event time:%d\n", e.time());
+            #endif
+
+            // Event is for future?
+            if(e.time() >= (sample + slice_samps + syncFrame))
+              break;
+
+            // Returns false if the event was not filled. It was handled, but some other way.
+            if(processEvent(e, &events[event_counter]))
+            {
+              // Time-stamp the event.
+              unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+              ft = (ft < sample) ? 0 : ft - sample;
+
+              if(ft >= slice_samps)
+              {
+                  fprintf(stderr, "VstNativeSynthIF::getData: eventFifos event time:%d "
+                  "out of range. pos:%d syncFrame:%u ft:%u sample:%lu slice_samps:%lu\n",
+                          e.time(), pos, syncFrame, ft, sample, slice_samps);
+                  ft = slice_samps - 1;
+              }
+              vst_events->events[event_counter] = (VstEvent*)&events[event_counter];
+              events[event_counter].deltaFrames = ft;
+
+              ++event_counter;
+            }
+
+            // Done with buffer's event. Remove it.
+            // C++11.
+            if(using_pb)
+              impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+            else
+              impe_us = synti->_outUserEvents.erase(impe_us);
+          }
+
+          if(event_counter < nevents)
+            nevents = event_counter;
+
+          // Set the events pointer.
+          if(nevents > 0)
+          {
+            vst_events->numEvents = nevents;
+            dispatch(effProcessEvents, 0, 0, vst_events, 0.0f);
+          }
         }
       }
+
+      #ifdef VST_NATIVE_DEBUG_PROCESS
+      fprintf(stderr, "VstNativeSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
+      #endif
+
+      // Don't bother if not 'running'.
+      if(_curActiveState)
+      {
+        float* in_bufs[in_ports];
+        float* out_bufs[out_ports];
+        for(unsigned long k = 0; k < out_ports; ++k)
+        {
+          if(!connectToDummyAudioPorts && k < nop)
+            // Connect the given buffers directly to the ports, up to a max of synth ports.
+            out_bufs[k] = buffer[k] + sample;
+          else
+            // Connect the remaining ports to some local buffers (not used yet).
+            out_bufs[k] = _audioOutBuffers[k] + sample;
+        }
+
+        // Connect all inputs either to the input buffers, or a silence buffer.
+        for(unsigned long k = 0; k < in_ports; ++k)
+        {
+          if(!connectToDummyAudioPorts && used_in_chan_array[k])
+            in_bufs[k] = _audioInBuffers[k] + sample;
+          else
+            in_bufs[k] = _audioInSilenceBuf + sample;
+        }
+
+        // Run the synth for a period of time. This processes events and gets/fills our local buffers...
+        if((_plugin->flags & effFlagsCanReplacing) && _plugin->processReplacing)
+        {
+          _plugin->processReplacing(_plugin, in_bufs, out_bufs, slice_samps);
+        }
+      }
+
+      sample += slice_samps;
     }
-
-    #ifdef VST_NATIVE_DEBUG_PROCESS
-    fprintf(stderr, "VstNativeSynthIF::getData: Connecting and running. sample:%lu nsamp:%lu nevents:%lu\n", sample, nsamp, nevents);
-    #endif
-
-    // Don't bother if not 'running'.
-    if(_curActiveState)
-    {
-      float* in_bufs[in_ports];
-      float* out_bufs[out_ports];
-      for(unsigned long k = 0; k < out_ports; ++k)
-      {
-        if(!connectToDummyAudioPorts && k < nop)
-          // Connect the given buffers directly to the ports, up to a max of synth ports.
-          out_bufs[k] = buffer[k] + sample;
-        else
-          // Connect the remaining ports to some local buffers (not used yet).
-          out_bufs[k] = _audioOutBuffers[k] + sample;
-      }
-
-      // Connect all inputs either to the input buffers, or a silence buffer.
-      for(unsigned long k = 0; k < in_ports; ++k)
-      {
-        if(!connectToDummyAudioPorts && used_in_chan_array[k])
-          in_bufs[k] = _audioInBuffers[k] + sample;
-        else
-          in_bufs[k] = _audioInSilenceBuf + sample;
-      }
-
-      // Run the synth for a period of time. This processes events and gets/fills our local buffers...
-      if((_plugin->flags & effFlagsCanReplacing) && _plugin->processReplacing)
-      {
-        _plugin->processReplacing(_plugin, in_bufs, out_bufs, slice_samps);
-      }
-    }
-
-    sample += slice_samps;
 
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }
@@ -3602,12 +3602,22 @@ void VstNativePluginWrapper_State::heartBeat()
    {
       if(guiVisible)
       {
-        plugin->dispatcher(plugin, effEditIdle, 0, 0, nullptr, 0.0f);
-        if(editor)
-          editor->update();
+        idleEditor();
       }
    }
+}
 
+void VstNativePluginWrapper_State::idleEditor()
+{
+#ifdef VST_NATIVE_DEBUG
+  fprintf(stderr, "VstNativePluginWrapper_State::idleEditor %p\n", this);
+#endif
+
+  if(editor)
+  {
+    plugin->dispatcher(plugin, effEditIdle, 0, 0, nullptr, 0.0f);
+    editor->update();
+  }
 }
 
 } // namespace MusECore

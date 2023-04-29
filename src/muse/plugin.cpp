@@ -3624,14 +3624,19 @@ void PluginI::apply(unsigned pos, unsigned long n,
     if(sample + slice_samps > n)    // Safety check.
       slice_samps = n - sample;
 
-    if(_curActiveState)
+    // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
+    // Note this means it is still possible to get stuck in the top loop (at least for a while).
+    if(slice_samps != 0)
     {
-      connect(ports, connectToDummyAudioPorts, sample, bufIn, bufOut);
-      for(int i = 0; i < instances; ++i)
-        _plugin->apply(handle[i], slice_samps, latency_corr_offset);
-    }
+      if(_curActiveState)
+      {
+        connect(ports, connectToDummyAudioPorts, sample, bufIn, bufOut);
+        for(int i = 0; i < instances; ++i)
+          _plugin->apply(handle[i], slice_samps, latency_corr_offset);
+      }
 
-    sample += slice_samps;
+      sample += slice_samps;
+    }
 
     ++cur_slice; // Slice is done. Moving on to any next slice now...
   }

@@ -31,7 +31,6 @@
 #include <QByteArray>
 #include <QString>
 
-// REMOVE Tim. buf. Added.
 //#define MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
 
 // Forward declarations:

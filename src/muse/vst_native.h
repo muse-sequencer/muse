@@ -337,6 +337,7 @@ public:
    {
       guiVisible = false;
    }
+   void idleEditor();
 protected slots:
    virtual void heartBeat();
 };

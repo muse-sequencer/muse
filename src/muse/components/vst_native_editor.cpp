@@ -108,7 +108,17 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
 
 VstNativeEditor::~VstNativeEditor()
 {
-
+   close();
+   if(_sif)
+   {
+     _sif->editorDeleted();
+     _sif = nullptr;
+   }
+   if(_pstate)
+   {
+      _pstate->editorDeleted();
+      _pstate = nullptr;
+   }
 }
 
 //---------------------------------------------------------------------
@@ -246,23 +256,24 @@ void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
       killTimer(resizeTimerId);
       resizeTimerId = 0;
    }*/
+
+   QWidget::closeEvent(pCloseEvent);
+}
+
+void VstNativeEditor::close()
+{
+   QWidget::close();
    if(_sif)
    {
      _sif->dispatch(effEditClose, 0, 0, nullptr, 0.0f);
      _sif->editorClosed();
-     _sif->editorDeleted();
-     _sif = nullptr;
    }
 
    if(_pstate)
    {
       _pstate->plugin->dispatcher(_pstate->plugin, effEditClose, 0, 0, nullptr, 0.0f);
       _pstate->editorClosed();
-      _pstate->editorDeleted();
-      _pstate = nullptr;
    }
-
-   QWidget::closeEvent(pCloseEvent);
 }
 
 //---------------------------------------------------------------------

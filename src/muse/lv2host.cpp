@@ -5028,207 +5028,212 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
             slice_samps = nframes - sample;
         }
 
+        // TODO: Don't allow zero-length runs. This could/should be checked in the control loop instead.
+        // Note this means it is still possible to get stuck in the top loop (at least for a while).
+        if(slice_samps != 0)
         {
-            LV2Synth::lv2audio_preProcessMidiPorts(_state, sample, slice_samps);
+          {
+              LV2Synth::lv2audio_preProcessMidiPorts(_state, sample, slice_samps);
 
-            // Get the state of the stop flag.
-            const bool do_stop = synti->stopFlag();
-            // Get whether playback and user midi events can be written to this midi device.
-            const bool we = synti->writeEnable();
+              // Get the state of the stop flag.
+              const bool do_stop = synti->stopFlag();
+              // Get whether playback and user midi events can be written to this midi device.
+              const bool we = synti->writeEnable();
 
-            MidiPlayEvent buf_ev;
+              MidiPlayEvent buf_ev;
 
-            // Only if active and not stopping and write enabled.
-            if(!do_stop && _curActiveState && we)
-            {
-              // Send transport events if any
-              // FIXME These need to be mixed and serialized with the the events below!
-              //       For now, SendTransport is not sliceable, it only sends one event at sample.
-              LV2Synth::lv2audio_SendTransport(_state, sample, slice_samps, transportLatencyCorr);
-            }
-
-            // If stopping or not 'running' just purge ALL playback FIFO and container events.
-            // But do not clear the user ones. We need to hold on to them until active,
-            //  they may contain crucial events like loading a soundfont from a song file.
-            if(do_stop || !_curActiveState || !we)
-            {
-              //bool changed = false;
-
-              // Transfer the user lock-free buffer events to the user sorted multi-set.
-              // To avoid too many events building up in the buffer while inactive, use the exclusive add.
-              const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
-              for(unsigned int i = 0; i < usr_buf_sz; ++i)
+              // Only if active and not stopping and write enabled.
+              if(!do_stop && _curActiveState && we)
               {
-                  if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-                  {
-                      synti->_outUserEvents.addExclusive(buf_ev);
-                      //changed = true;
-                  }
+                // Send transport events if any
+                // FIXME These need to be mixed and serialized with the the events below!
+                //       For now, SendTransport is not sliceable, it only sends one event at sample.
+                LV2Synth::lv2audio_SendTransport(_state, sample, slice_samps, transportLatencyCorr);
               }
 
-// Diagnostics.
-#if 0
-              if(changed)
+              // If stopping or not 'running' just purge ALL playback FIFO and container events.
+              // But do not clear the user ones. We need to hold on to them until active,
+              //  they may contain crucial events like loading a soundfont from a song file.
+              if(do_stop || !_curActiveState || !we)
               {
-                fprintf(stderr, "time:\t\ttype:\t\tdataA:\t\tdataB:\n");
-                fprintf(stderr, "=====\t\t=====\t\t======\t\t======\n");
-                for(ciMPEvent i = synti->_outUserEvents.cbegin(); i != synti->_outUserEvents.cend(); ++i)
-                  fprintf(stderr, "%d\t\t%X\t\t%d\t\t%d\n", i->time(), i->type(), i->dataA(), i->dataB());
-                if(!synti->_outUserEvents.empty())
-                  fprintf(stderr, "\n");
-              }
-#endif
+                //bool changed = false;
 
-              synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
-              synti->_outPlaybackEvents.clear();
-              // Reset the flag.
-              synti->setStopFlag(false);
-            }
-            else
-            {
-              // Transfer the user lock-free buffer events to the user sorted multi-set.
-              const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
-              for(unsigned int i = 0; i < usr_buf_sz; ++i)
-              {
-                  if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
-                      synti->_outUserEvents.insert(buf_ev);
-              }
+                // Transfer the user lock-free buffer events to the user sorted multi-set.
+                // To avoid too many events building up in the buffer while inactive, use the exclusive add.
+                const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+                for(unsigned int i = 0; i < usr_buf_sz; ++i)
+                {
+                    if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+                    {
+                        synti->_outUserEvents.addExclusive(buf_ev);
+                        //changed = true;
+                    }
+                }
 
-              // Transfer the playback lock-free buffer events to the playback sorted multi-set.
-              const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
-              for(unsigned int i = 0; i < pb_buf_sz; ++i)
-              {
-                if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
-                    synti->_outPlaybackEvents.insert(buf_ev);
-              }
-            }
-
-            // Don't bother if not 'running'.
-            if(_curActiveState && we)
-            {
-              iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
-              iMPEvent impe_us = synti->_outUserEvents.begin();
-              bool using_pb;
-
-              while(1)
-              {
-                  if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
-                      using_pb = *impe_pb < *impe_us;
-                  else if(impe_pb != synti->_outPlaybackEvents.end())
-                      using_pb = true;
-                  else if(impe_us != synti->_outUserEvents.end())
-                      using_pb = false;
-                  else break;
-
-                  const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
-
-  #ifdef LV2_DEBUG
-                  fprintf(stderr, "LV2SynthIF::getData eventFifos event time:%d\n", e.time());
+  // Diagnostics.
+  #if 0
+                if(changed)
+                {
+                  fprintf(stderr, "time:\t\ttype:\t\tdataA:\t\tdataB:\n");
+                  fprintf(stderr, "=====\t\t=====\t\t======\t\t======\n");
+                  for(ciMPEvent i = synti->_outUserEvents.cbegin(); i != synti->_outUserEvents.cend(); ++i)
+                    fprintf(stderr, "%d\t\t%X\t\t%d\t\t%d\n", i->time(), i->type(), i->dataA(), i->dataB());
+                  if(!synti->_outUserEvents.empty())
+                    fprintf(stderr, "\n");
+                }
   #endif
 
-                  // Event is for future?
-                  if(e.time() >= (sample + slice_samps + syncFrame))
-                      break;
-
-                  // Time-stamp the event.
-                  unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
-                  ft = (ft < sample) ? 0 : ft - sample;
-
-                  if(ft >= slice_samps)
-                  {
-                      fprintf(stderr, "LV2SynthIF::getData: eventFifos event time:%d "
-                      "out of range. pos:%d syncFrame:%u ft:%u sample:%lu slice_samps:%lu\n",
-                              e.time(), pos, syncFrame, ft, sample, slice_samps);
-                      ft = slice_samps - 1;
-                  }
-                  if(processEvent(e, evBuf, ft))
-                  {
-
-                  }
-
-                  // Done with buffer's event. Remove it.
-                  // C++11.
-                  if(using_pb)
-                      impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
-                  else
-                      impe_us = synti->_outUserEvents.erase(impe_us);
+                synti->eventBuffers(MidiDevice::PlaybackBuffer)->clearRead();
+                synti->_outPlaybackEvents.clear();
+                // Reset the flag.
+                synti->setStopFlag(false);
               }
-            }
-        }
-
-        // Don't bother if not 'running'.
-        if(_curActiveState)
-        {
-            //connect ports
-            // Connect all inputs either to the input buffers, or a silence buffer.
-            for(size_t j = 0; j < _inports; ++j)
-            {
-                if(!connectToDummyAudioPorts && used_in_chan_array [j])
-                    lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInBuffers [j] + sample);
-                else
-                    lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInSilenceBuf + sample);
-            }
-
-            for(size_t j = 0; j < _outports; ++j)
-            {
-                // Connect the given buffers directly to the ports, up to a max of synth ports.
-                if(!connectToDummyAudioPorts && j < nop)
-                    lilv_instance_connect_port(_handle, _audioOutPorts [j].index, buffer [j] + sample);
-                // Connect the remaining ports to some local buffers (not used yet).
-                else
-                    lilv_instance_connect_port(_handle, _audioOutPorts [j].index, _audioOutBuffers [j] + sample);
-            }
-
-            for(size_t j = 0; j < _inportsControl; ++j)
-            {
-                uint32_t idx = _controlInPorts [j].index;
-                if(_state->pluginCVPorts [idx] != nullptr)
+              else
+              {
+                // Transfer the user lock-free buffer events to the user sorted multi-set.
+                const unsigned int usr_buf_sz = synti->eventBuffers(MidiDevice::UserBuffer)->getSize();
+                for(unsigned int i = 0; i < usr_buf_sz; ++i)
                 {
-                    float cvVal = _controls [j].val;
-                    for(size_t jj = 0; jj < slice_samps; ++jj)
-                    {
-                        _state->pluginCVPorts [idx] [jj + sample] = cvVal;
-                    }
-                    lilv_instance_connect_port(_handle, idx, _state->pluginCVPorts [idx] + sample);
+                    if(synti->eventBuffers(MidiDevice::UserBuffer)->get(buf_ev))
+                        synti->_outUserEvents.insert(buf_ev);
                 }
-            }
-#ifdef LV2_DEBUG_PROCESS
-            //dump atom sequence events to stderr
-            if(evBuf)
-            {
-                evBuf->dump();
-            }
-#endif
 
-            lilv_instance_run(_handle, slice_samps);
+                // Transfer the playback lock-free buffer events to the playback sorted multi-set.
+                const unsigned int pb_buf_sz = synti->eventBuffers(MidiDevice::PlaybackBuffer)->getSize();
+                for(unsigned int i = 0; i < pb_buf_sz; ++i)
+                {
+                  if(synti->eventBuffers(MidiDevice::PlaybackBuffer)->get(buf_ev))
+                      synti->_outPlaybackEvents.insert(buf_ev);
+                }
+              }
+
+              // Don't bother if not 'running'.
+              if(_curActiveState && we)
+              {
+                iMPEvent impe_pb = synti->_outPlaybackEvents.begin();
+                iMPEvent impe_us = synti->_outUserEvents.begin();
+                bool using_pb;
+
+                while(1)
+                {
+                    if(impe_pb != synti->_outPlaybackEvents.end() && impe_us != synti->_outUserEvents.end())
+                        using_pb = *impe_pb < *impe_us;
+                    else if(impe_pb != synti->_outPlaybackEvents.end())
+                        using_pb = true;
+                    else if(impe_us != synti->_outUserEvents.end())
+                        using_pb = false;
+                    else break;
+
+                    const MidiPlayEvent& e = using_pb ? *impe_pb : *impe_us;
+
+    #ifdef LV2_DEBUG
+                    fprintf(stderr, "LV2SynthIF::getData eventFifos event time:%d\n", e.time());
+    #endif
+
+                    // Event is for future?
+                    if(e.time() >= (sample + slice_samps + syncFrame))
+                        break;
+
+                    // Time-stamp the event.
+                    unsigned int ft = (e.time() < syncFrame) ? 0 : e.time() - syncFrame;
+                    ft = (ft < sample) ? 0 : ft - sample;
+
+                    if(ft >= slice_samps)
+                    {
+                        fprintf(stderr, "LV2SynthIF::getData: eventFifos event time:%d "
+                        "out of range. pos:%d syncFrame:%u ft:%u sample:%lu slice_samps:%lu\n",
+                                e.time(), pos, syncFrame, ft, sample, slice_samps);
+                        ft = slice_samps - 1;
+                    }
+                    if(processEvent(e, evBuf, ft))
+                    {
+
+                    }
+
+                    // Done with buffer's event. Remove it.
+                    // C++11.
+                    if(using_pb)
+                        impe_pb = synti->_outPlaybackEvents.erase(impe_pb);
+                    else
+                        impe_us = synti->_outUserEvents.erase(impe_us);
+                }
+              }
+          }
+
+          // Don't bother if not 'running'.
+          if(_curActiveState)
+          {
+              //connect ports
+              // Connect all inputs either to the input buffers, or a silence buffer.
+              for(size_t j = 0; j < _inports; ++j)
+              {
+                  if(!connectToDummyAudioPorts && used_in_chan_array [j])
+                      lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInBuffers [j] + sample);
+                  else
+                      lilv_instance_connect_port(_handle, _audioInPorts [j].index, _audioInSilenceBuf + sample);
+              }
+
+              for(size_t j = 0; j < _outports; ++j)
+              {
+                  // Connect the given buffers directly to the ports, up to a max of synth ports.
+                  if(!connectToDummyAudioPorts && j < nop)
+                      lilv_instance_connect_port(_handle, _audioOutPorts [j].index, buffer [j] + sample);
+                  // Connect the remaining ports to some local buffers (not used yet).
+                  else
+                      lilv_instance_connect_port(_handle, _audioOutPorts [j].index, _audioOutBuffers [j] + sample);
+              }
+
+              for(size_t j = 0; j < _inportsControl; ++j)
+              {
+                  uint32_t idx = _controlInPorts [j].index;
+                  if(_state->pluginCVPorts [idx] != nullptr)
+                  {
+                      float cvVal = _controls [j].val;
+                      for(size_t jj = 0; jj < slice_samps; ++jj)
+                      {
+                          _state->pluginCVPorts [idx] [jj + sample] = cvVal;
+                      }
+                      lilv_instance_connect_port(_handle, idx, _state->pluginCVPorts [idx] + sample);
+                  }
+              }
+  #ifdef LV2_DEBUG_PROCESS
+              //dump atom sequence events to stderr
+              if(evBuf)
+              {
+                  evBuf->dump();
+              }
+  #endif
+
+              lilv_instance_run(_handle, slice_samps);
+          }
+
+          //notify worker about processed data (if any)
+          // Do it always, even if not 'running', in case we have 'left over' responses etc,
+          //  even though work is only initiated from 'run'.
+          const unsigned int rsp_buf_sz = _state->wrkRespDataBuffer->getSize(false);
+          for(unsigned int i_sz = 0; i_sz < rsp_buf_sz; ++i_sz)
+          {
+              if(_state->wrkIface && _state->wrkIface->work_response)
+              {
+                  void *wrk_data = nullptr;
+                  size_t wrk_data_sz = 0;
+                  if(_state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
+                    _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
+              }
+              _state->wrkRespDataBuffer->remove();
+          }
+
+          if(_curActiveState)  // Don't bother if not 'running'.
+          {
+              //notify worker that this run() finished
+              if(_state->wrkIface && _state->wrkIface->end_run)
+                  _state->wrkIface->end_run(lilv_instance_get_handle(_handle));
+
+              LV2Synth::lv2audio_postProcessMidiPorts(_state, sample, slice_samps);
+          }
+
+          sample += slice_samps;
         }
-
-        //notify worker about processed data (if any)
-        // Do it always, even if not 'running', in case we have 'left over' responses etc,
-        //  even though work is only initiated from 'run'.
-        const unsigned int rsp_buf_sz = _state->wrkRespDataBuffer->getSize(false);
-        for(unsigned int i_sz = 0; i_sz < rsp_buf_sz; ++i_sz)
-        {
-            if(_state->wrkIface && _state->wrkIface->work_response)
-            {
-                void *wrk_data = nullptr;
-                size_t wrk_data_sz = 0;
-                if(_state->wrkRespDataBuffer->peek(&wrk_data, &wrk_data_sz))
-                  _state->wrkIface->work_response(lilv_instance_get_handle(_handle), wrk_data_sz, wrk_data);
-            }
-            _state->wrkRespDataBuffer->remove();
-        }
-
-        if(_curActiveState)  // Don't bother if not 'running'.
-        {
-            //notify worker that this run() finished
-            if(_state->wrkIface && _state->wrkIface->end_run)
-                _state->wrkIface->end_run(lilv_instance_get_handle(_handle));
-
-            LV2Synth::lv2audio_postProcessMidiPorts(_state, sample, slice_samps);
-        }
-
-        sample += slice_samps;
 
         ++cur_slice; // Slice is done. Moving on to any next slice now...
     }
