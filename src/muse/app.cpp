@@ -3673,6 +3673,9 @@ bool MusE::clearSong(bool clear_all)
     //  and does not state any exceptions (like DeferredDelete).
     //===================================================================================
     // TESTED: Yep. Apparently that's still true today. WTF?
+    // Posted bug report. Immediate reply from Qt bugs:
+    // "Not a bug. Deferred deletions depend on the loop nesting level and calling processEvents or sendPostedEvents
+    //  directly will not cause those you've just posted to get processed. You need return."
 
     //qApp->sendPostedEvents();
     qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
