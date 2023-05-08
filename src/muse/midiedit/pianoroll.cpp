@@ -637,6 +637,11 @@ void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
           checkTrackInfoTrack();
         }
         
+        songChanged(bits);
+
+        if (parts()->empty())
+          return;
+
         if (bits & SC_DIVISION_CHANGED)
         {
           // The division has changed. The raster table and raster model will have been
@@ -654,14 +659,12 @@ void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
           // Now set a reasonable zoom (mag) range.
           setupHZoomRange();
         }
-        
+
         if (bits & SC_SOLO)
         {
           if(canvas->track())
             toolbar->setSolo(canvas->track()->solo());
         }
-        
-        songChanged(bits);
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)

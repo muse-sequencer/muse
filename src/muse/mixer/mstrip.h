@@ -352,7 +352,7 @@ class MidiStrip : public Strip {
 
    public:
       MidiStrip(QWidget* parent, MusECore::MidiTrack*, bool hasHandle = false, bool isEmbedded = true, bool isDocked = false);
-      
+
       static const double volSliderStepLin;
 
       static const double volSliderStepDb;

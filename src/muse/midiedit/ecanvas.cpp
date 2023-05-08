@@ -342,6 +342,9 @@ void EventCanvas::songChanged(MusECore::SongChangedStruct_t flags)
             updateItems();
             }
 
+      if(editor->parts()->empty())
+        return;
+
       MusECore::Event event;
       MusECore::MidiPart* part   = 0;
       int x            = 0;
@@ -391,8 +394,8 @@ void EventCanvas::songChanged(MusECore::SongChangedStruct_t flags)
       if(f1 || f2)
         emit selectionChanged(x, event, part, !f1);
       
-      if (curPart == 0)
-            curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
+      if (!curPart)
+        curPart = editor->parts()->begin()->second;
       redraw();
       }
 

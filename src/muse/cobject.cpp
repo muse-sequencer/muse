@@ -208,6 +208,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 //    {
 //        setParent(nullptr);
 //    }
+
 }
 
 TopWin::~TopWin()

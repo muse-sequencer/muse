@@ -746,6 +746,11 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         if(bits & SC_TRACK_REMOVED)
           checkTrackInfoTrack();
         
+        songChanged(bits);
+
+        if (parts()->empty())
+          return;
+
         if (bits & SC_DIVISION_CHANGED)
         {
           // The division has changed. The raster table and raster model will have been
@@ -763,16 +768,14 @@ void WaveEdit::songChanged1(MusECore::SongChangedStruct_t bits)
           // Now set a reasonable zoom (mag) range.
           setupHZoomRange();
         }
-        
+
         if (bits & SC_SOLO)
         {
           MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
           solo->blockSignals(true);
           solo->setChecked(part->track()->solo());
           solo->blockSignals(false);
-        }  
-        
-        songChanged(bits);
+        }
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)

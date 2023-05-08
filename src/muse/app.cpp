@@ -1444,10 +1444,13 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       microSleep(100000);
       progress->setValue(10);
       qApp->processEvents();
+
       bool loadOk = loadProjectFile1(name, songTemplate, doReadMidiPorts);
       microSleep(100000);
       progress->setValue(90);
+
       qApp->processEvents();
+
       if (restartSequencer)
           seqStart();
         // REMOVE Tim. Persistent routes. TESTING.
@@ -1456,6 +1459,7 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 
       arrangerView->updateVisibleTracksButtons();
       progress->setValue(100);
+
       qApp->processEvents();
       delete progress;
       progress = nullptr;
@@ -1777,6 +1781,7 @@ void MusE::fileClose()
 
     microSleep(100000);
     qApp->processEvents();
+
     if (restartSequencer)
         seqStart();
     if(!clearOk)
@@ -1807,7 +1812,7 @@ void MusE::fileClose()
     arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
     arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
 }
-      
+
 //---------------------------------------------------------
 //   setUntitledProject
 //---------------------------------------------------------
@@ -3604,8 +3609,13 @@ bool MusE::clearSong(bool clear_all)
     }
     microSleep(100000);
 
-again:
-    for (const auto& i : toplevels) {
+    // We must make a working COPY of the top level list because some of their
+    //  closeEvent() functions eventually call MusE::topLevelDeleting() which
+    //  erases the top level from the list! So we have a delete-while-iterate
+    //  situation but we don't have access to the erased iterator, and it's
+    //  kind of murky whether they would even call topLevelDeleting().
+    const MusEGui::ToplevelList tll = toplevels;
+    for (const auto& i : tll) {
         MusEGui::TopWin* tl = i;
         switch (tl->type()) {
         case MusEGui::TopWin::ARRANGER:
@@ -3624,14 +3634,48 @@ again:
             if(tl->isVisible())   // Don't keep trying to close, only if visible.
             {
                 if(!tl->close())
-                    fprintf(stderr, "MusE::clearSong TopWin did not close!\n");
-                goto again;
+                {
+                  fprintf(stderr, "MusE::clearSong TopWin:%p did not close! Waiting...\n", tl);
+                  while(!tl->close())
+                    qApp->processEvents();
+                }
             }
         }
         case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
             break;
         }
     }
+
+    // Are any of the windows marked as 'delete on close'?
+    // Then we MUST wait until they delete, otherwise crashes will happen
+    //  when the song is cleared due to still-active signal/slot connections
+    //  and attempts by the various top levels to access non-existant tracks etc.
+    // It turns out that close() will call deleteLater() - NOT delete!
+    // Simply calling processEvents() several times did not let them delete.
+    // From help on QCoreApplication::processEvents():
+    // "In the event that you are running a local loop which calls this function continuously, without an event loop,
+    //   the DeferredDelete events will not be processed. This can affect the behaviour of widgets, e.g. QToolTip,
+    //   that rely on DeferredDelete events to function properly. An alternative would be to call sendPostedEvents()
+    //   from within that local loop."
+
+    //===================================================================================
+    // From https://lists.qt-project.org/pipermail/qt-interest-old/2010-April/022513.html
+    //
+    // However, deleting a QObject with:
+    //      someObj->deleteLater();
+    //  and then doing:
+    //      qApp->sendPostedEvents();
+    //  does not result in 'someObj' being deleted. For that to happen, I have to explicitly call:
+    //      qApp->sendPostedEvents(0, QEvent::DeferredDelete);
+    //
+    // Is this a bug or expected behavior?  The documentation of
+    //  sendPostedEvents() would suggest that simply all events are dispatched,
+    //  and does not state any exceptions (like DeferredDelete).
+    //===================================================================================
+    // TESTED: Yep. Apparently that's still true today. WTF?
+
+    //qApp->sendPostedEvents();
+    qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
     closeDocks();
 

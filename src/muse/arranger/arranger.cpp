@@ -1201,17 +1201,18 @@ void Arranger::verticalScrollSetYpos(unsigned ypos)
 
 void Arranger::clear()
       {
+
       {
         AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(1));
         if (w)
-              delete w;
+          delete w;
         trackInfoWidget->addWidget(0, 1);
       }
       
       {
         MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(2));
         if (w)
-              delete w;
+          delete w;
         trackInfoWidget->addWidget(0, 2);
       }
       

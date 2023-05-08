@@ -798,6 +798,11 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
         if(bits & SC_TRACK_REMOVED)
           checkTrackInfoTrack();
 
+        songChanged(bits);
+
+        if (parts()->empty())
+          return;
+
         if (bits & SC_DIVISION_CHANGED)
         {
           // The division has changed. The raster table and raster model will have been
@@ -816,17 +821,15 @@ void DrumEdit::songChanged1(MusECore::SongChangedStruct_t bits)
           setupHZoomRange();
         }
 
+        if ( ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+                       SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED) ) )
+          ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+
         if (bits & SC_SOLO)
         {
             if(canvas->track())
               toolbar->setSolo(canvas->track()->solo());
         }
-
-        if ( ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
-                       SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED) ) )
-          ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
-
-        songChanged(bits);
 
         // We'll receive SC_SELECTION if a different part is selected.
         // Addition - also need to respond here to moving part to another track. (Tim)

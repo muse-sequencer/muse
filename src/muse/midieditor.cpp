@@ -487,14 +487,15 @@ void MidiEditor::songChanged(MusECore::SongChangedStruct_t type)
             if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {
                   genPartlist();
-                  // close window if editor has no parts anymore
-                  if (parts()->empty()) {
-                        close();
-                        return;
-                        }
                   }
             if (canvas)
                   canvas->songChanged(type);
+
+            // close window if editor has no parts anymore
+            if (parts()->empty()) {
+                  close();
+                  return;
+                  }
 
             if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
                | SC_PART_INSERTED | SC_TRACK_REMOVED)) {

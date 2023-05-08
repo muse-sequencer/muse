@@ -1,3 +1,10 @@
+08.05.2023:
+    - Fixed: Ancient crashes when loading another song or file > new or file > close. (Tim)
+      In MusE::clearSong(), after calling close() on the windows (which may be marked as delete-on-close),
+       make freakin' sure to call "qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete)".
+      It turns out that delete-on-close calls deleteLater() - NOT delete!
+      It also turns out that there's a kind of Qt bug where you cannot simply call sendPostedEvents(0, 0).
+      See comments in MusE::clearSong() about how difficult this was, and how the solution was found.
 29.04.2023:
     - Fixed: Synths/plugins: Crashes in getData()/apply(). Caused by 14.04 changes. (Tim)
       Oops. Reinstate check for zero slice size in LV2 VST DSSI ::getData(), and PluginI::apply().
