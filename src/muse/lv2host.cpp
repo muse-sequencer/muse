@@ -3098,12 +3098,14 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
             const bool hasStrictBounds = lilv_port_has_property(_handle, _port, lv2CacheNodes.lv2_portHasStrictBounds);
             bool isSampleRate = false;
 
+            // TODO: When min or max are unspecified, it is likely intended to let the user set them.
+            // We have no mechanism to do that. So we'll just set 0 and 1 for now.
             if(std::isnan(_pluginControlsDefault [j]))
                 _pluginControlsDefault [j] = 0;
             if(std::isnan(_pluginControlsMin [j]))
                 _pluginControlsMin [j] = 0;
             if(std::isnan(_pluginControlsMax [j]))
-                _pluginControlsMax [j] = 0;
+                _pluginControlsMax [j] = 1;
 
             if(isCVPort)
             {

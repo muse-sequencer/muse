@@ -1,3 +1,6 @@
+09.05.2023:
+    - LV2: Slight tweak: When a control port's maximum is not specified, set to 1 instead of 0. (Tim)
+      TODO: It's likely intended to allow user settable min and max, but we have no mechanism to let them.
 08.05.2023:
     - Fixed: Ancient crashes when loading another song or file > new or file > close. (Tim)
       In MusE::clearSong(), after calling close() on the windows (which may be marked as delete-on-close),
