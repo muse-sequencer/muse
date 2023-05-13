@@ -69,6 +69,10 @@ void MusE::importMidi()
 
 void MusE::importMidi(const QString &file)
       {
+      // Are we already busy waiting for something while loading or closing another project?
+      if(_busyWithLoading)
+        return;
+
       QString fn;
       if (file.isEmpty()) {
                fn = MusEGui::getOpenFileName(MusEGlobal::lastMidiPath, MusEGlobal::midi_file_pattern, this,

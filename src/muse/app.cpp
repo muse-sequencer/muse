@@ -34,7 +34,6 @@
 //#include <QStyleFactory>
 #include <QTextStream>
 #include <QInputDialog>
-#include <QAction>
 #include <QStringList>
 #include <QPushButton>
 #include <QDir>
@@ -116,6 +115,7 @@
 #include <QTimer>
 //#include <QMdiSubWindow>
 #include <QDockWidget>
+#include <QAction>
 #include "track.h"
 //#include "minstrument.h"
 #include "midiport.h"
@@ -152,6 +152,9 @@
   #include "rhythm.h"
 #endif
 
+// For debugging song clearing and loading: Uncomment the fprintf section.
+#define DEBUG_LOADING_AND_CLEARING(dev, format, args...) // fprintf(dev, format, ##args);
+
 namespace MusECore {
 extern void exitJackAudio();
 extern void exitDummyAudio();
@@ -182,7 +185,82 @@ lash_client_t * lash_client = 0;
 
 
 
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+MusE::LoadingFinishStruct::LoadingFinishStruct(Type type, Flags flags, const QString &fileName)
+  : _type(type), _flags(flags), _fileName(fileName)
+{
+}
+#endif
 
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+void MusE::executeLoadingFinish()
+{
+  const int sz = _loadingFinishStructList.size();
+  for(int i = 0; i < sz; ++i)
+  {
+    const LoadingFinishStruct& lfs = _loadingFinishStructList.at(i);
+
+    switch(lfs._type)
+    {
+      case LoadingFinishStruct::LoadProjectFile:
+        DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (LoadProjectFile)\n", i, lfs._type);
+
+        finishLoadProjectFile(lfs._flags & MusE::LoadingFinishStruct::RestartSequencer);
+        break;
+      case LoadingFinishStruct::LoadProjectFile1:
+        DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (LoadProjectFile1)\n", i, lfs._type);
+
+        finishLoadProjectFile1(
+          lfs._fileName,
+          lfs._flags & MusE::LoadingFinishStruct::SongTemplate,
+          lfs._flags & MusE::LoadingFinishStruct::DoReadMidiPorts);
+        break;
+      case LoadingFinishStruct::ClearSong:
+        DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (ClearSong)\n", i, lfs._type);
+
+        finishClearSong(
+          lfs._flags & MusE::LoadingFinishStruct::DoReadMidiPorts);
+        break;
+      case LoadingFinishStruct::LoadTemplate:
+        DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (LoadTemplate)\n", i, lfs._type);
+
+        finishLoadTemplate();
+        break;
+      case LoadingFinishStruct::LoadDefaultTemplate:
+        DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (LoadDefaultTemplate)\n", i, lfs._type);
+
+        finishLoadDefaultTemplate();
+        break;
+      case LoadingFinishStruct::FileClose:
+        DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (FileClose)\n", i, lfs._type);
+
+        finishFileClose(lfs._flags & MusE::LoadingFinishStruct::RestartSequencer);
+        break;
+    }
+  }
+  _loadingFinishStructList.clear();
+}
+#endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+void MusE::topWinDestroyed(QObject *obj)
+{
+  const int idx = _pendingTopWinDestructions.indexOf(obj);
+  if(idx != -1)
+    _pendingTopWinDestructions.removeAt(idx);
+
+  DEBUG_LOADING_AND_CLEARING(stderr, "MusE::topWinDestroyed obj:%p idx:%d _pendingTopWinDestructions:%d\n",
+    obj, idx, _pendingTopWinDestructions.size());
+
+  // Still more deletions to wait for?
+  if(!_pendingTopWinDestructions.empty())
+    return;
+
+  // All top level deletions that we were waiting for have now been deleted.
+  // Now it is safe to execute the finishing functions and clear the finishing list.
+  executeLoadingFinish();
+}
+#endif
 
 //---------------------------------------------------------
 //   sleep function
@@ -387,6 +465,9 @@ MusE::MusE() : QMainWindow()
       waitingForTopwin      = nullptr;
       _lastProjectWasTemplate = false;
       _lastProjectLoadedConfig = true;
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+      _busyWithLoading      = false;
+#endif
 
       appName               = PACKAGE_NAME;
       setWindowTitle(appName);
@@ -1322,6 +1403,9 @@ void MusE::setDirty()
 
 void MusE::loadDefaultSong(const QString& filename_override, bool use_template, bool load_config)
 {
+  DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadDefaultSong: filename_override:%s use_template:%d load_config %d\n",
+              filename_override.toUtf8().constData(), use_template, load_config);
+
   QString name;
   bool useTemplate = false;
   bool loadConfig = true;
@@ -1408,8 +1492,12 @@ void MusE::localOff()
 // for drop:
 void MusE::loadProjectFile(const QString& name)
       {
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile: name:%s\n", name.toUtf8().constData());
+
       loadProjectFile(name, false, false);
       }
+
+#ifdef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
 
 bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
@@ -1476,6 +1564,119 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       return loadOk;
       }
 
+#else
+
+bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMidiPorts, bool *doRestartSequencer)
+      {
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile: name:%s songTemplate:%d doReadMidiPorts:%d _busyWithLoading:%d\n",
+        name.toUtf8().constData(), songTemplate, doReadMidiPorts, _busyWithLoading);
+
+      // Are we already busy waiting for something while loading or closing another project?
+      if(_busyWithLoading)
+        return false;
+
+      _busyWithLoading = true;
+
+      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+      if(!progress)
+          progress = new QProgressDialog();
+
+      QString label = "Loading project " + QFileInfo(name).fileName();
+      progress->setLabelText(label);
+//       progress->setWindowModality(Qt::WindowModal); // REMOVE Tim. Persistent routes. Removed for version warning dialog to take priority. FIXME
+      progress->setCancelButton(nullptr);
+      if (!songTemplate)
+        progress->setMinimumDuration(0); // if we are loading a template it will probably be fast and we can wait before showing the dialog
+
+      //
+      // stop audio threads if running
+      //
+      progress->setValue(0);
+      qApp->processEvents();
+      bool restartSequencer = MusEGlobal::audio->isRunning();
+      if(doRestartSequencer)
+        *doRestartSequencer = restartSequencer;
+      if (restartSequencer) {
+            if (MusEGlobal::audio->isPlaying()) {
+                  MusEGlobal::audio->msgPlay(false);
+                  while (MusEGlobal::audio->isPlaying())
+                        qApp->processEvents();
+                  }
+            seqStop();
+            // REMOVE Tim. Persistent routes. TESTING.
+            //MusEGlobal::audio->msgIdle(true);
+            }
+      microSleep(100000);
+      progress->setValue(10);
+      qApp->processEvents();
+
+      const bool loadOk = loadProjectFile1(name, songTemplate, doReadMidiPorts);
+      if(!loadOk)
+      {
+        // Clear these, they might not be empty.
+        _pendingTopWinDestructions.clear();
+        _loadingFinishStructList.clear();
+        finishLoadProjectFile(restartSequencer);
+        return false;
+      }
+
+      // If there is nothing to wait for to be deleted, then just continue finishing.
+      if(_pendingTopWinDestructions.empty())
+      {
+        // Should already be clear, but just in case.
+        _loadingFinishStructList.clear();
+        finishLoadProjectFile(restartSequencer);
+      }
+      else
+      {
+        _loadingFinishStructList.append(MusE::LoadingFinishStruct(
+          MusE::LoadingFinishStruct::LoadProjectFile,
+          (restartSequencer ? MusE::LoadingFinishStruct::RestartSequencer : MusE::LoadingFinishStruct::NoFlag)));
+      }
+
+      return true;
+      }
+
+#endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+bool MusE::finishLoadProjectFile(bool restartSequencer)
+      {
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadProjectFile: restartSequencer:%d\n", restartSequencer);
+
+      microSleep(100000);
+      progress->setValue(90);
+
+      qApp->processEvents();
+
+      if (restartSequencer)
+          seqStart();
+        // REMOVE Tim. Persistent routes. TESTING.
+        //MusEGlobal::audio->msgIdle(false);
+      //MusEGlobal::song->connectPorts();
+
+      arrangerView->updateVisibleTracksButtons();
+      progress->setValue(100);
+
+      qApp->processEvents();
+      delete progress;
+      progress = nullptr;
+
+      QApplication::restoreOverrideCursor();
+
+      // Prompt and send init sequences.
+      MusEGlobal::audio->msgInitMidiDevices(false);
+
+      if (MusEGlobal::song->getSongInfo().length()>0 && MusEGlobal::song->showSongInfoOnStartup()) {
+          startSongInfo(false);
+        }
+
+      _busyWithLoading = false;
+      return true;
+      }
+#endif
+
 //---------------------------------------------------------
 //   loadProjectFile
 //    load *.med, *.mid, *.kar
@@ -1486,6 +1687,8 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 //
 //    returns false if aborted
 //---------------------------------------------------------
+
+#ifdef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
 
 bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
@@ -1602,7 +1805,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                       {
                         // Suggest the current system sample rate.
                         sugg_val = MusEGlobal::sampleRate;
-                        sugg_phrase = 
+                        sugg_phrase =
                         tr("The project has no project sample rate (added 2011).\n"
                            "Please enter a rate. The current system rate (%1Hz)\n"
                            " is suggested, and cancelling uses it:").arg(MusEGlobal::sampleRate);
@@ -1629,8 +1832,8 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                       else
                         MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
                     }
-                  
-                    if (!songTemplate && 
+
+                    if (!songTemplate &&
                         //MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO &&  // Why exclude dummy?
                         MusEGlobal::projectSampleRate != MusEGlobal::sampleRate)
                     {
@@ -1649,7 +1852,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                       //convertProjectSampleRate();
                     }
                   }
-                  
+
                   if(f) {
                         MusECore::Xml xml(f);
                         read(xml, doReadMidiPorts, songTemplate);
@@ -1705,7 +1908,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 //       autoMixerAction->setChecked(MusEGlobal::automation);
 
       showBigtime(MusEGlobal::config.bigTimeVisible);
-      
+
       // NOTICE! Mixers may set their own maximum size according to their content, on SongChanged.
       //         Therefore if the mixer is ALREADY OPEN, it may have a maximum size imposed on it,
       //          which may be SMALLER than any new size we might try to set after this.
@@ -1755,9 +1958,312 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       return true;
       }
 
+#else
+
+bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
+      {
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
+        name.toUtf8().constData(), songTemplate, doReadMidiPorts);
+
+      const bool isOk = clearSong(doReadMidiPorts);  // Allow not touching things like midi ports.
+      if(!isOk)
+        return false;
+
+      // If there is nothing to wait for to be deleted, then just continue finishing.
+      if(_pendingTopWinDestructions.empty())
+      {
+        // Should already be clear, but just in case.
+        _loadingFinishStructList.clear();
+        finishLoadProjectFile1(name, songTemplate, doReadMidiPorts);
+      }
+      else
+      {
+        _loadingFinishStructList.append(MusE::LoadingFinishStruct(
+          MusE::LoadingFinishStruct::LoadProjectFile1,
+          (songTemplate ? MusE::LoadingFinishStruct::SongTemplate : MusE::LoadingFinishStruct::NoFlag) |
+          (doReadMidiPorts ? MusE::LoadingFinishStruct::DoReadMidiPorts : MusE::LoadingFinishStruct::NoFlag),
+          name));
+      }
+      return true;
+      }
+
+#endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
+      {
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
+        name.toUtf8().constData(), songTemplate, doReadMidiPorts);
+
+      if (mixer1)
+            mixer1->clearAndDelete();
+      if (mixer2)
+            mixer2->clearAndDelete();
+      _arranger->clear();      // clear track info
+
+      MusEGlobal::recordAction->setChecked(false);
+
+      progress->setValue(20);
+      qApp->processEvents();
+
+      QFileInfo fi(name);
+      if (songTemplate)
+      {
+            if(!fi.isReadable()) {
+                QMessageBox::critical(this, QString("MusE"),
+                    tr("Cannot read template"));
+                QApplication::restoreOverrideCursor();
+                return false;
+                }
+            project.setFile(MusEGui::getUniqueUntitledName());
+            MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+            QDir::setCurrent(QDir::homePath());
+            }
+      else {
+            fprintf(stderr, "Setting project path to %s\n", fi.absolutePath().toLocal8Bit().constData());
+            MusEGlobal::museProject = fi.absolutePath();
+            project.setFile(name);
+            QDir::setCurrent(MusEGlobal::museProject);
+            }
+
+      _lastProjectFilePath = name;
+      _lastProjectWasTemplate = songTemplate;
+      _lastProjectLoadedConfig = doReadMidiPorts;
+
+      QString ex = fi.completeSuffix().toLower();
+      QString mex = ex.section('.', -1, -1);
+      if((mex == "gz") || (mex == "bz2"))
+        mex = ex.section('.', -2, -2);
+
+      if (ex.isEmpty() || mex == "med") {
+            //
+            //  read *.med file
+            //
+            bool popenFlag;
+            FILE* f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
+            if (f == nullptr) {
+                  if (errno != ENOENT) {
+                        QMessageBox::critical(this, QString("MusE"),
+                           tr("File open error"));
+                        setUntitledProject();
+                        _lastProjectFilePath = QString();
+                        }
+                  else
+                        setConfigDefaults();
+                  }
+            else {
+
+                  if(songTemplate)
+                  {
+                    // The project is a template. Set the project's sample rate
+                    //  to the system rate.
+                    // NOTE: A template should never contain anything 'frame' related
+                    //        like wave parts and events, or even audio automation graphs !
+                    //       That is more under the category of say, 'demo songs'.
+                    //       And here is the reason why:
+                    MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
+                  }
+                  else
+                  {
+                    MusECore::Xml d_xml(f);
+                    MusECore::SongfileDiscovery d_list(MusEGlobal::museProject);
+                    d_list.readSongfile(d_xml);
+
+                    // If it is a compressed file we cannot seek the stream, we must reopen it.
+                    if(popenFlag)
+                    {
+                      pclose(f);
+                      f = nullptr;
+                      f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
+                      if (f == nullptr) {
+                            if (errno != ENOENT) {
+                                  QMessageBox::critical(this, QString("MusE"),
+                                    tr("File open error"));
+                                  setUntitledProject();
+                                  _lastProjectFilePath = QString();
+                                  }
+                            else
+                                  setConfigDefaults();
+                            }
+                    }
+                    else
+                    {
+                      // Be kind. Rewind.
+                      fseek(f, 0, SEEK_SET);
+                    }
+
+                    // Is there a project sample rate setting in the song? (Setting added circa 2011).
+                    if(d_list._waveList._projectSampleRateValid)
+                    {
+                      MusEGlobal::projectSampleRate = d_list._waveList._projectSampleRate;
+                    }
+                    else
+                    {
+                      int sugg_val;
+                      QString sugg_phrase;
+                      if(d_list._waveList.empty())
+                      {
+                        // Suggest the current system sample rate.
+                        sugg_val = MusEGlobal::sampleRate;
+                        sugg_phrase =
+                        tr("The project has no project sample rate (added 2011).\n"
+                           "Please enter a rate. The current system rate (%1Hz)\n"
+                           " is suggested, and cancelling uses it:").arg(MusEGlobal::sampleRate);
+                      }
+                      else
+                      {
+                        // Suggest the most common sample rate used in the song.
+                        sugg_val = d_list._waveList.getMostCommonSamplerate();
+                        sugg_phrase =
+                        tr("The project has audio waves, but no project sample rate (added 2011).\n"
+                           "Please enter a rate. The most common wave rate found is suggested,\n"
+                           " the project was probably made with it. Cancelling uses the\n"
+                           " current system rate (%1Hz):").arg(MusEGlobal::sampleRate);
+                      }
+
+                      bool ok;
+                      const int res = QInputDialog::getInt(
+                        this, tr("Project sample rate"),
+                        sugg_phrase, sugg_val,
+                        0, (10 * 1000 * 1000), 1, &ok);
+
+                      if(ok)
+                        MusEGlobal::projectSampleRate = res;
+                      else
+                        MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
+                    }
+
+                    if (!songTemplate &&
+                        //MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO &&  // Why exclude dummy?
+                        MusEGlobal::projectSampleRate != MusEGlobal::sampleRate)
+                    {
+                      QString msg = QString("The sample rate in this project (%1Hz) and the\n"
+                        " current system setting (%2Hz) differ.\n"
+                        "Project timing will be scaled to match the new sample rate.\n"
+                        "Caution: Accuracy and sound quality may vary with rate and settings.\n\n"
+                        "Live realtime audio sample rate converters will be enabled\n"
+                        " on audio files where required.\n"
+                        "The files can be permanently converted to the new sample rate.\n\n"
+                        "Save this song if you are sure you didn't mean to open it\n"
+                        " at the original sample rate.").arg(MusEGlobal::projectSampleRate).arg(MusEGlobal::sampleRate);
+                      QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", msg);
+                      // Automatically convert the project.
+                      // No: Try to keep the rate until user tells it to change.
+                      //convertProjectSampleRate();
+                    }
+                  }
+
+                  if(f) {
+                        MusECore::Xml xml(f);
+                        read(xml, doReadMidiPorts, songTemplate);
+                        bool fileError = ferror(f);
+                        popenFlag ? pclose(f) : fclose(f);
+                        if (fileError) {
+                              QMessageBox::critical(this, QString("MusE"),
+                                tr("File read error"));
+                              setUntitledProject();
+                              _lastProjectFilePath = QString();
+                              }
+                        }
+                  }
+            }
+      else if (mex == "mid" || mex == "kar") {
+            setConfigDefaults();
+            if (!importMidi(name, false))
+            {
+                  setUntitledProject();
+                  _lastProjectFilePath = QString();
+            }
+            }
+      else {
+            QMessageBox::critical(this, QString("MusE"),
+               tr("Unknown File Format: %1").arg(ex));
+            setUntitledProject();
+            _lastProjectFilePath = QString();
+            }
+      if (!songTemplate) {
+            addProjectToRecentList(project.absoluteFilePath());
+            setWindowTitle(projectTitle(project.absoluteFilePath()));
+            }
+
+      for (const auto& it : toplevels) {
+          if (it->isMdiWin() && it->type() == TopWin::ARRANGER) {
+              mdiArea->setActiveSubWindow(it->getMdiWin());
+              break;
+          }
+      }
+
+      MusEGlobal::song->dirty = false;
+      progress->setValue(30);
+      qApp->processEvents();
+
+      viewTransportAction->setChecked(MusEGlobal::config.transportVisible);
+      viewBigtimeAction->setChecked(MusEGlobal::config.bigTimeVisible);
+      viewMarkerAction->setChecked(MusEGlobal::config.markerVisible);
+//      viewArrangerAction->setChecked(MusEGlobal::config.arrangerVisible);
+
+// REMOVE Tim. automation. Removed.
+// Deprecated. MusEGlobal::automation is now fixed TRUE
+//   for now until we decide what to do with it.
+//       autoMixerAction->setChecked(MusEGlobal::automation);
+
+      showBigtime(MusEGlobal::config.bigTimeVisible);
+
+      // NOTICE! Mixers may set their own maximum size according to their content, on SongChanged.
+      //         Therefore if the mixer is ALREADY OPEN, it may have a maximum size imposed on it,
+      //          which may be SMALLER than any new size we might try to set after this.
+      //         So we MUST RESET maximium size now, BEFORE attempts to set size. As per docs:
+      if(mixer1)
+      {
+        mixer1->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
+      }
+      if(mixer2)
+      {
+        mixer2->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
+      }
+
+      showMixer1(MusEGlobal::config.mixer1Visible);
+      showMixer2(MusEGlobal::config.mixer2Visible);
+
+// Loading a file should not manipulate the geometry of the main window (kybos)
+//      resize(MusEGlobal::config.geometryMain.size());
+//      move(MusEGlobal::config.geometryMain.topLeft());
+
+      transport->move(MusEGlobal::config.geometryTransport.topLeft());
+      showTransport(MusEGlobal::config.transportVisible);
+
+      progress->setValue(40);
+      qApp->processEvents();
+
+      transport->setMasterFlag(MusEGlobal::tempomap.masterFlag());
+      MusEGlobal::punchinAction->setChecked(MusEGlobal::song->punchin());
+      MusEGlobal::punchoutAction->setChecked(MusEGlobal::song->punchout());
+      MusEGlobal::loopAction->setChecked(MusEGlobal::song->loop());
+      // Inform the rest of the app the song changed, with all flags MINUS
+      //  these flags which are already sent in the call to MusE::read() above:
+      MusEGlobal::song->update(~SC_TRACK_INSERTED);
+      MusEGlobal::song->updatePos();
+      arrangerView->clipboardChanged(); // enable/disable "Paste"
+      arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+      arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+      progress->setValue(50);
+      qApp->processEvents();
+
+      // Moved here from above due to crash with a song loaded and then File->New.
+      // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
+      showMarker(MusEGlobal::config.markerVisible);
+
+      return true;
+      }
+#endif
+
 //---------------------------------------------------------
 //   fileClose
 //---------------------------------------------------------
+
+#ifdef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
 
 void MusE::fileClose()
 {
@@ -1813,6 +2319,104 @@ void MusE::fileClose()
     arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
 }
 
+#else
+
+void MusE::fileClose()
+{
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::fileClose: _busyWithLoading:%d\n", _busyWithLoading);
+
+    // Are we already busy waiting for something while loading or closing another project?
+    if(_busyWithLoading)
+      return;
+
+    _busyWithLoading = true;
+
+    // For now we just don't read the ports, leaving the last setup intact.
+    const bool doReadMidiPorts = false;
+
+    bool restartSequencer = MusEGlobal::audio->isRunning();
+    if (restartSequencer) {
+          if (MusEGlobal::audio->isPlaying()) {
+                MusEGlobal::audio->msgPlay(false);
+                while (MusEGlobal::audio->isPlaying())
+                      qApp->processEvents();
+                }
+          seqStop();
+          }
+    microSleep(100000);
+    qApp->processEvents();
+
+    // Allow not touching things like midi ports.
+    const bool clearOk = clearSong(doReadMidiPorts);
+
+    microSleep(100000);
+    qApp->processEvents();
+
+    if(!clearOk)
+    {
+      if (restartSequencer)
+        seqStart();
+      _busyWithLoading = false;
+      return;
+    }
+
+    // If there is nothing to wait for to be deleted, then just continue finishing.
+    if(_pendingTopWinDestructions.empty())
+    {
+      // Should already be clear, but just in case.
+      _loadingFinishStructList.clear();
+      finishFileClose(restartSequencer);
+    }
+    else
+    {
+      _loadingFinishStructList.append(MusE::LoadingFinishStruct(
+        MusE::LoadingFinishStruct::FileClose,
+        (restartSequencer ? MusE::LoadingFinishStruct::RestartSequencer : MusE::LoadingFinishStruct::NoFlag)));
+    }
+}
+
+#endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+void MusE::finishFileClose(bool restartSequencer)
+{
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishFileClose: restartSequencer:%d\n", restartSequencer);
+
+    microSleep(100000);
+    qApp->processEvents();
+
+    if (restartSequencer)
+        seqStart();
+
+    MusEGlobal::recordAction->setChecked(false);
+
+    //setConfigDefaults();
+    const QString name(MusEGui::getUniqueUntitledName());
+    MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+    //QDir::setCurrent(QDir::homePath());
+    QDir::setCurrent(MusEGlobal::museProject);
+    project.setFile(name);
+    _lastProjectFilePath = QString();
+    _lastProjectWasTemplate = false;
+    _lastProjectLoadedConfig = true;
+
+    setWindowTitle(projectTitle(name));
+
+    //writeTopwinState=true;
+
+    MusEGlobal::song->dirty = false;
+
+    // Inform the rest of the app the song changed, with all flags.
+    MusEGlobal::song->update(SC_EVERYTHING);
+    MusEGlobal::song->updatePos();
+    arrangerView->clipboardChanged(); // enable/disable "Paste"
+    arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+    arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+
+    _busyWithLoading = false;
+}
+#endif
+
 //---------------------------------------------------------
 //   setUntitledProject
 //---------------------------------------------------------
@@ -1844,6 +2448,12 @@ void MusE::setConfigDefaults()
 
 void MusE::loadProject()
       {
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProject: _busyWithLoading:%d\n", _busyWithLoading);
+
+      // Are we already busy waiting for something while loading or closing another project?
+      if(_busyWithLoading)
+        return;
+
       bool doReadMidiPorts;
       QString fn = MusEGui::getOpenFileName(QString(""), MusEGlobal::med_file_pattern, this,
          tr("MusE: load project"), &doReadMidiPorts);
@@ -1858,6 +2468,8 @@ void MusE::loadProject()
 //   loadTemplate
 //---------------------------------------------------------
 
+#ifdef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+
 void MusE::loadTemplate()
       {
       bool doReadMidiPorts;
@@ -1869,18 +2481,106 @@ void MusE::loadTemplate()
             }
       }
 
+#else
+
+void MusE::loadTemplate()
+      {
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadTemplate: _busyWithLoading:%d\n", _busyWithLoading);
+
+      // Are we already busy waiting for something while loading or closing another project?
+      if(_busyWithLoading)
+        return;
+
+      bool doReadMidiPorts;
+      const QString fn = MusEGui::getOpenFileName(QString("templates"), MusEGlobal::med_file_pattern, this,
+                                               tr("MusE: load template"), &doReadMidiPorts, MusEGui::MFileDialog::GLOBAL_VIEW);
+      if (fn.isEmpty())
+        return;
+
+      bool restartSequencer = false;
+      const bool isOk = loadProjectFile(fn, true, doReadMidiPorts, &restartSequencer);
+      if (!isOk)
+        return;
+
+      // If there is nothing to wait for to be deleted, then just continue finishing.
+      if(_pendingTopWinDestructions.empty())
+      {
+        // Should already be clear, but just in case.
+        _loadingFinishStructList.clear();
+        finishLoadTemplate();
+      }
+      else
+      {
+        _loadingFinishStructList.append(MusE::LoadingFinishStruct(
+          MusE::LoadingFinishStruct::LoadTemplate));
+      }
+      }
+
+#endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+void MusE::finishLoadTemplate()
+{
+  DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadTemplate\n");
+
+  setUntitledProject();
+}
+#endif
+
 //---------------------------------------------------------
 //   loadDefaultTemplate
 //---------------------------------------------------------
 
+#ifdef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+
 void MusE::loadDefaultTemplate()
 {
-
     bool isOk = loadProjectFile(MusEGlobal::museGlobalShare + QString("/templates/default.med"), true, false);
 
     if (isOk)
       setUntitledProject();
 }
+
+#else
+
+void MusE::loadDefaultTemplate()
+{
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadDefaultTemplate: _busyWithLoading:%d\n", _busyWithLoading);
+
+    // Are we already busy waiting for something while loading or closing another project?
+    if(_busyWithLoading)
+      return;
+
+    const QString fn(MusEGlobal::museGlobalShare + QString("/templates/default.med"));
+    bool restartSequencer = false;
+    const bool isOk = loadProjectFile(fn, true, false, &restartSequencer);
+    if (!isOk)
+      return;
+
+    // If there is nothing to wait for to be deleted, then just continue finishing.
+    if(_pendingTopWinDestructions.empty())
+    {
+      // Should already be clear, but just in case.
+      _loadingFinishStructList.clear();
+      finishLoadDefaultTemplate();
+    }
+    else
+    {
+      _loadingFinishStructList.append(MusE::LoadingFinishStruct(
+        MusE::LoadingFinishStruct::LoadDefaultTemplate));
+    }
+}
+
+#endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+void MusE::finishLoadDefaultTemplate()
+{
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadDefaultTemplate\n");
+
+    setUntitledProject();
+}
+#endif
 
 //---------------------------------------------------------
 //   save
@@ -3581,6 +4281,8 @@ MusE::lash_idle_cb ()
 //    If clear_all is false, it will not touch things like midi ports.
 //---------------------------------------------------------
 
+#ifdef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+
 bool MusE::clearSong(bool clear_all)
 {
     if (MusEGlobal::song->dirty) {
@@ -3688,6 +4390,170 @@ bool MusE::clearSong(bool clear_all)
     microSleep(100000);
     return true;
 }
+
+#else
+
+bool MusE::clearSong(bool clear_all)
+{
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::clearSong: clar_all:%d _busyWithLoading:%d\n",
+      clear_all, _busyWithLoading);
+
+//     // Are we already busy waiting for something while loading or closing another project?
+//     if(_busyWithLoading)
+//       return false;
+
+    if (MusEGlobal::song->dirty) {
+        int n = 0;
+        n = QMessageBox::warning(this, appName,
+                                 tr("The current project contains unsaved data.\n"
+                                    "Save current project before continuing?"),
+                                 tr("&Save"), tr("&Discard"), tr("&Cancel"), 0, 2);
+        switch (n) {
+        case 0:
+            if (!save())      // abort if save failed
+                return false;
+            break;
+        case 1:
+            break;
+        case 2:
+            return false;
+        default:
+            fprintf(stderr, "InternalError: gibt %d\n", n);
+        }
+    }
+    if (MusEGlobal::audio->isPlaying()) {
+        MusEGlobal::audio->msgPlay(false);
+        while (MusEGlobal::audio->isPlaying())
+            qApp->processEvents();
+    }
+    microSleep(100000);
+
+    _pendingTopWinDestructions.clear();
+
+    // We must make a working COPY of the top level list because some of their
+    //  closeEvent() functions eventually call MusE::topLevelDeleting() which
+    //  erases the top level from the list! So we have a delete-while-iterate
+    //  situation but we don't have access to the erased iterator, and it's
+    //  kind of murky whether they would even call topLevelDeleting().
+    const MusEGui::ToplevelList tll = toplevels;
+    for (const auto& i : tll) {
+        MusEGui::TopWin* tl = i;
+        switch (tl->type()) {
+        case MusEGui::TopWin::ARRANGER:
+            break;
+        case MusEGui::TopWin::PIANO_ROLL:
+        case MusEGui::TopWin::SCORE:
+#ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
+        case MusEGui::TopWin::LISTE:
+#else
+        //case MusEGui::TopWin::LISTE:
+#endif
+        case MusEGui::TopWin::DRUM:
+        case MusEGui::TopWin::MASTER:
+        case MusEGui::TopWin::WAVE:
+        {
+            if(tl->isVisible())   // Don't keep trying to close, only if visible.
+            {
+                // Is it to be deleted upon closing?
+                if(tl->testAttribute(Qt::WA_DeleteOnClose))
+                {
+                  // First time? Append a loading finish structure.
+                  if(_pendingTopWinDestructions.empty())
+                  {
+                    _loadingFinishStructList.append(MusE::LoadingFinishStruct(
+                      MusE::LoadingFinishStruct::ClearSong,
+                      clear_all ? MusE::LoadingFinishStruct::ClearAll : MusE::LoadingFinishStruct::NoFlag));
+                  }
+                  // Append it to the list of objects waiting to be deleted.
+                  _pendingTopWinDestructions.append(tl);
+                }
+
+                DEBUG_LOADING_AND_CLEARING(stderr, "MusE::clearSong closing TopWin:%p <%s>\n",
+                  tl, TopWin::typeName(tl->type()).toUtf8().constData());
+
+                if(!tl->close())
+                {
+                  // It is possible something held it up from closing.
+                  fprintf(stderr, "MusE::clearSong TopWin:%p <%s> did not close! Waiting...\n",
+                    tl, TopWin::typeName(tl->type()).toUtf8().constData());
+                  while(!tl->close())
+                    qApp->processEvents();
+                }
+            }
+        }
+        case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+            break;
+        }
+    }
+
+    // If there is nothing to wait for to be deleted, then just continue finishing.
+    if(_pendingTopWinDestructions.empty())
+    {
+      // Should already be clear, but just in case.
+      _loadingFinishStructList.clear();
+      finishClearSong(clear_all);
+    }
+
+    // Are any of the windows marked as 'delete on close'?
+    // Then we MUST wait until they delete, otherwise crashes will happen
+    //  when the song is cleared due to still-active signal/slot connections
+    //  and attempts by the various top levels to access non-existant tracks etc.
+    // It turns out that close() will call deleteLater() - NOT delete!
+    // Simply calling processEvents() several times did not let them delete.
+    // From help on QCoreApplication::processEvents():
+    // "In the event that you are running a local loop which calls this function continuously, without an event loop,
+    //   the DeferredDelete events will not be processed. This can affect the behaviour of widgets, e.g. QToolTip,
+    //   that rely on DeferredDelete events to function properly. An alternative would be to call sendPostedEvents()
+    //   from within that local loop."
+
+    //===================================================================================
+    // From https://lists.qt-project.org/pipermail/qt-interest-old/2010-April/022513.html
+    //
+    // However, deleting a QObject with:
+    //      someObj->deleteLater();
+    //  and then doing:
+    //      qApp->sendPostedEvents();
+    //  does not result in 'someObj' being deleted. For that to happen, I have to explicitly call:
+    //      qApp->sendPostedEvents(0, QEvent::DeferredDelete);
+    //
+    // Is this a bug or expected behavior?  The documentation of
+    //  sendPostedEvents() would suggest that simply all events are dispatched,
+    //  and does not state any exceptions (like DeferredDelete).
+    //===================================================================================
+    // TESTED: Yep. Apparently that's still true today. WTF?
+    // Posted bug report. Immediate reply from Qt bugs:
+    // "Not a bug. Deferred deletions depend on the loop nesting level and calling processEvents or sendPostedEvents
+    //  directly will not cause those you've just posted to get processed. You need return."
+
+//     //qApp->sendPostedEvents();
+//     qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);
+//
+//     closeDocks();
+//
+//     microSleep(100000);
+//     _arranger->songIsClearing();
+//     MusEGlobal::song->clear(true, clear_all);
+//     microSleep(100000);
+    return true;
+}
+
+#endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+bool MusE::finishClearSong(bool clear_all)
+{
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishClearSong\n");
+
+    closeDocks();
+
+    microSleep(100000);
+    _arranger->songIsClearing();
+    MusEGlobal::song->clear(true, clear_all);
+    microSleep(100000);
+    return true;
+
+}
+#endif
 
 //---------------------------------------------------------
 //   startEditInstrument

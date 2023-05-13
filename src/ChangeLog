@@ -1,3 +1,8 @@
+13.05.2023:
+    - Rewrite of 08.05.2023: Use alternate method for top level closing (wait for destroyed signals). (Tim)
+      Qt bug reports response told me not to do it the other way.
+    - Fixed: Pre-existing long-time crashes pressing Ctrl-N (New) -O (Open) etc. more than once rapidly.
+      Install mechanism to ignore such multiple actions while in the middle of clearing/loading a song.
 09.05.2023:
     - LV2: Slight tweak: When a control port's maximum is not specified, set to 1 instead of 0. (Tim)
       TODO: It's likely intended to allow user settable min and max, but we have no mechanism to let them.

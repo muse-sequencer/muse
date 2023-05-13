@@ -34,6 +34,7 @@
 #include <QRect>
 #include <QString>
 #include <QPointer>
+#include <QList>
 
 #include <list>
 #include <time.h>
@@ -42,6 +43,14 @@
 #include <unistd.h>
 #endif
 
+// NOTE: When closing top level windows we MUST wait until they have deleted before proceeding.
+//       The problem is that close() calls deleteLater() - NOT delete. There are two ways to handle this.
+//       The simplest method that works is using QCoreApplication::sendPostedEvents().
+//       But advice from Qt bugs said not to do that.
+//       So instead we will use a safer but much more complicated method of waiting for destroyed() signals.
+//       See MusE::clearSong() for details.
+//       This define switches beween the two methods, in case there are any problems with either.
+//#define USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
 
 // Forward declarations:
 class QCloseEvent;
@@ -53,6 +62,7 @@ class QTimer;
 class QMdiSubWindow;
 class MuseMdiArea;
 class QDockWidget;
+class QAction;
 
 namespace MusECore {
 class AudioOutput;
@@ -110,6 +120,26 @@ class MasterEdit;
 class MusE : public QMainWindow
 {
     Q_OBJECT
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+    class LoadingFinishStruct
+    {
+      public:
+        enum Type { LoadProjectFile, LoadProjectFile1, ClearSong, LoadTemplate, LoadDefaultTemplate, FileClose };
+        enum Flag { NoFlag = 0x0, SongTemplate = 0x1, DoReadMidiPorts = 0x2, ClearAll = 0x4, RestartSequencer = 0x8 };
+        typedef int Flags;
+
+        Type _type;
+        Flags _flags;
+        QString _fileName;
+
+        LoadingFinishStruct(Type type, Flags flags = NoFlag, const QString &fileName = QString());
+    };
+    QList<LoadingFinishStruct> _loadingFinishStructList;
+    QList<QObject*> _pendingTopWinDestructions;
+    bool _busyWithLoading;
+#endif
+
     enum {CMD_FOLLOW_NO, CMD_FOLLOW_JUMP, CMD_FOLLOW_CONTINUOUS };
 
     //File menu items:
@@ -293,6 +323,16 @@ class MusE : public QMainWindow
     int avrCpuLoadCounter;
     float fCurCpuLoad;
 
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+    bool finishLoadProjectFile(bool restartSequencer);
+    bool finishLoadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts);
+    bool finishClearSong(bool clear_all);
+    void finishLoadTemplate();
+    void finishLoadDefaultTemplate();
+    void finishFileClose(bool restartSequencer);
+    void executeLoadingFinish();
+#endif
+
 signals:
     void configChanged();
     void activeTopWinChanged(MusEGui::TopWin*);
@@ -377,7 +417,11 @@ public slots:
     void bounceToTrack(MusECore::AudioOutput* ao = nullptr);
     void closeEvent(QCloseEvent*event) override;
     void loadProjectFile(const QString&);
+#ifdef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
     bool loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts);
+#else
+    bool loadProjectFile(const QString&, bool songTemplate, bool doReadMidiPorts, bool *doRestartSequencer = nullptr);
+#endif
     void fileClose();
     void toplevelDeleting(MusEGui::TopWin* tl);
     bool seqRestart();
@@ -431,6 +475,10 @@ public slots:
 
     void addProjectToRecentList(const QString& name);
     void saveProjectRecentList();
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+    void topWinDestroyed(QObject *obj);
+#endif
 
 public:
     MusE();
