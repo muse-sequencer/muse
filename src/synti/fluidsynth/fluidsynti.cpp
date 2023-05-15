@@ -120,6 +120,11 @@ QString projPathPtr;
 //
 FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoaderMutex(_GlobalSfLoaderMutex)
       {
+#ifdef HAVE_INSTPATCH
+      /* initialize libInstPatch */
+      ipatch_init ();
+#endif
+
       gui = nullptr;
       setSampleRate(sr);
       _settings = new_fluid_settings();
@@ -199,6 +204,11 @@ FluidSynth::~FluidSynth()
             std::cerr << DEBUG_ARGS << "error while destroying synth: " << fluid_synth_error(fluidsynth) << std::endl;
             return;
             }
+#endif
+
+#ifdef HAVE_INSTPATCH
+      /* close libInstPatch */
+      ipatch_close ();
 #endif
       }
 
@@ -955,9 +965,6 @@ static void loadNoteSampleNames(FluidSoundFont& font)
   GError *err = nullptr;
   const QByteArray ba = font.file_name.toLatin1();
   const char* fname = ba.constData();
-
-  /* initialize libInstPatch */
-  ipatch_init ();
 
   sffile = ipatch_sf2_file_new ();
 

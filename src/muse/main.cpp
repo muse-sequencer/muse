@@ -586,6 +586,16 @@ int main(int argc, char* argv[])
       #endif
 
 
+#ifdef HAVE_INSTPATCH
+      // See https://github.com/brummer10/Fluida.lv2/issues/18
+      // It was recommended that the host call this, even though we also call this in our fluidsynth MESS plugin.
+      // Avoids crashes with external plugins using fluidsynth and/or libinstpatch.
+      // We initialize it here so that we own the library and ultimately we close it here as well.
+      // Note that both ipatch_init() and ipatch_close() are also called by our fluidsynth MESS plugin.
+      // initialize libInstPatch:
+      ipatch_init ();
+#endif
+
       QString last_project_filename;
       bool last_project_was_template = false;
       bool last_project_loaded_config = false;
@@ -1157,14 +1167,6 @@ int main(int argc, char* argv[])
         //-------------------------------------------------------
         //    END SHOW MUSE SPLASH SCREEN
         //-------------------------------------------------------
-
-#ifdef HAVE_INSTPATCH
-        // See https://github.com/brummer10/Fluida.lv2/issues/18
-        // It was recommended that the host call this, even though we also call this in our fluidsynth MESS plugin.
-        // Avoids crashes with external plugins using fluidsynth and/or libinstpatch.
-        // initialize libInstPatch:
-        ipatch_init ();
-#endif
 
         //-------------------------------------------------------
         //    BEGIN Plugin scanning
@@ -1754,7 +1756,16 @@ int main(int argc, char* argv[])
       // END Restart loop. For (re)starting the app.
       //============================================
 
-      if(MusEGlobal::debugMsg) 
+#ifdef HAVE_INSTPATCH
+      // See above ipatch_init(), and https://github.com/brummer10/Fluida.lv2/issues/18
+      // It was recommended that the host call this, to be clean.
+      // Note that both ipatch_init() and ipatch_close() are also called by our fluidsynth MESS plugin.
+      // We initialize it here so that we own the library and ultimately we close it here as well.
+      // close libInstPatch:
+      ipatch_close ();
+#endif
+
+      if(MusEGlobal::debugMsg)
         fprintf(stderr, "Finished! Exiting main, return value:%d\n", rv);
       return rv;
       
