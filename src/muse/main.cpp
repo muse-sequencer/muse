@@ -88,6 +88,14 @@
 #include <lash/lash.h>
 #endif
 
+#ifdef HAVE_INSTPATCH
+// I get several warnings that turn into errors on my system. This fixed it.
+#ifndef GLIB_DISABLE_DEPRECATION_WARNINGS
+#define GLIB_DISABLE_DEPRECATION_WARNINGS
+#endif
+#include <libinstpatch/libinstpatch.h>
+#endif
+
 namespace MusECore {
 extern bool initDummyAudio();
 #ifdef HAVE_RTAUDIO
@@ -1149,6 +1157,14 @@ int main(int argc, char* argv[])
         //-------------------------------------------------------
         //    END SHOW MUSE SPLASH SCREEN
         //-------------------------------------------------------
+
+#ifdef HAVE_INSTPATCH
+        // See https://github.com/brummer10/Fluida.lv2/issues/18
+        // It was recommended that the host call this, even though we also call this in our fluidsynth MESS plugin.
+        // Avoids crashes with external plugins using fluidsynth and/or libinstpatch.
+        // initialize libInstPatch:
+        ipatch_init ();
+#endif
 
         //-------------------------------------------------------
         //    BEGIN Plugin scanning
