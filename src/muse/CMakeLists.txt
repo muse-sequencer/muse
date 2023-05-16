@@ -368,7 +368,8 @@ if(LV2_SUPPORT)
       target_link_libraries(lv2host_module ${LILV_LIBRARIES})
       target_link_libraries(lv2host_module ${SORD_LIBRARIES})
       target_link_libraries(lv2host_module ${LV2_LIBRARIES})
-      
+      target_link_libraries(lv2host_module ${SERD_LIBRARIES})
+
       if(HAVE_GTK2)
             target_link_libraries(lv2host_module lv2_gtk2_support)
       endif(HAVE_GTK2)

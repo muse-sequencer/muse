@@ -1,3 +1,8 @@
+16.05.2023
+    - Fixed (maybe): LV2: Missing link with libserd. (Tim)
+      Found this at opensuse live build log/multimedia:proaudio/muse/openSUSE_Tumbleweed/x86_64:
+      "undefined reference to symbol 'serd_node_new_file_uri'"
+      Only one serd call was added in 2015 by danvd. A later neglect by me perhaps?
 15.05.2023:
     - Fixed: Crashes with certain plugins that use libinstpatch (Fluida lv2 etc). (Tim)
       It was recommended to call ipatch_init() in the main app. This was added.

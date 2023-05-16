@@ -545,22 +545,25 @@ endif (ENABLE_VST_VESTIGE)
 
 if (ENABLE_LV2)
 
+    set (muse_serd_ver "0.30.0")
     set (muse_sord_ver "0.16.0")
     set (muse_lv2_ver "1.18.0")
     set (muse_lilv_ver "0.24.0" )
 
     PKG_CHECK_MODULES(LILV lilv-0>=${muse_lilv_ver})
+    PKG_CHECK_MODULES(SERD serd-0>=${muse_serd_ver})
     PKG_CHECK_MODULES(SORD sord-0>=${muse_sord_ver})
     PKG_CHECK_MODULES(LV2 lv2>=${muse_lv2_ver})
-    
-    if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+
+    if (LILV_FOUND AND SORD_FOUND AND SERD_FOUND AND LV2_FOUND)
         set(LV2_SUPPORT ON)
         include_directories(${LILV_INCLUDE_DIRS})
+        include_directories(${SERD_INCLUDE_DIRS})
         include_directories(${SORD_INCLUDE_DIRS})
         include_directories(${LV2_INCLUDE_DIRS})
-    endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+    endif (LILV_FOUND AND SORD_FOUND AND SERD_FOUND AND LV2_FOUND)
 
-    if (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+    if (LILV_FOUND AND SORD_FOUND AND SERD_FOUND AND LV2_FOUND)
         ## find Gtk2
         if(ENABLE_LV2_GTK2)
           find_package(GTK2 COMPONENTS gtk gtkmm)
@@ -568,15 +571,15 @@ if (ENABLE_LV2)
               set(HAVE_GTK2 ON)
           endif(GTK2_FOUND)
         endif(ENABLE_LV2_GTK2)
-        
+
         include_directories(${PROJECT_SOURCE_DIR}/muse/lv2Support)
-        
+
         ## Do we want to support LV2 makePath?
         if(ENABLE_LV2_MAKE_PATH)
           set(LV2_MAKE_PATH_SUPPORT ON)
         endif(ENABLE_LV2_MAKE_PATH)
 
-    endif (LILV_FOUND AND SORD_FOUND AND LV2_FOUND)
+    endif (LILV_FOUND AND SORD_FOUND AND SERD_FOUND AND LV2_FOUND)
 
 else (ENABLE_LV2)
       message("LV2 disabled")
@@ -915,14 +918,14 @@ if (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 endif (ENABLE_INSTPATCH AND (NOT INSTPATCH_FOUND))
 
 if (ENABLE_LV2)
-    if (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+    if (NOT (LILV_FOUND AND SORD_FOUND AND SERD_FOUND AND LV2_FOUND))
         message("** WARNING: LV2 support was chosen, but development files were not found or too old:")
-        message("   Requires lv2 >= " ${muse_lv2_ver} ", lilv-0 >= " ${muse_lilv_ver} ", sord-0 >= " ${muse_sord_ver})
-    else (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+        message("   Requires lv2 >= " ${muse_lv2_ver} ", lilv-0 >= " ${muse_lilv_ver} ", sord-0 >= " ${muse_sord_ver} ", serd-0 >= " ${muse_serd_ver})
+    else (NOT (LILV_FOUND AND SORD_FOUND AND SERD_FOUND AND LV2_FOUND))
         if (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
             message("** WARNING: LV2 GTK2 support is enabled, but Gtk2 (gtkmm-2, gtk+-2) development files were not found. LV2 Gtk2 UI support is disabled.")
         endif (ENABLE_LV2_GTK2 AND (NOT GTK2_FOUND))
-    endif (NOT (LILV_FOUND AND SORD_FOUND AND LV2_FOUND))
+    endif (NOT (LILV_FOUND AND SORD_FOUND AND SERD_FOUND AND LV2_FOUND))
 endif (ENABLE_LV2)
 
 if (ENABLE_RUBBERBAND AND (NOT RUBBERBAND_FOUND))

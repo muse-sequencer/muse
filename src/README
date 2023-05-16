@@ -120,6 +120,8 @@ details.
         lilv >= 0.24.0 (development files)
         sord >= 0.16.0 (development files)
           http://drobilla.net/software
+        serd >= 0.30.0 (development files)
+          http://drobilla.net/software
 
         lv2 >= 1.18.0 (development files)
           http://lv2plug.in
