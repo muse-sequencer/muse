@@ -219,7 +219,7 @@ void MusE::executeLoadingFinish()
         DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (ClearSong)\n", i, lfs._type);
 
         finishClearSong(
-          lfs._flags & MusE::LoadingFinishStruct::DoReadMidiPorts);
+          lfs._flags & MusE::LoadingFinishStruct::ClearAll);
         break;
       case LoadingFinishStruct::LoadTemplate:
         DEBUG_LOADING_AND_CLEARING(stderr, "MusE::executeLoadingFinish lfs idx:%d type:%d (LoadTemplate)\n", i, lfs._type);

@@ -1,3 +1,5 @@
+17.05.2023
+    - Fixed serious typo at 13.05.2023: On load, midi config wasn't cleared, causing crashes. (Tim)
 16.05.2023
     - Fixed (maybe): LV2: Missing link with libserd. (Tim)
       Found this at opensuse live build log/multimedia:proaudio/muse/openSUSE_Tumbleweed/x86_64:
