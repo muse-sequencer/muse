@@ -24,6 +24,8 @@
 #ifndef __AUDIOPREFETCH_H__
 #define __AUDIOPREFETCH_H__
 
+#include <atomic>
+
 #include "thread.h"
 
 namespace MusECore {
@@ -39,8 +41,8 @@ class AudioPrefetch : public Thread {
       void prefetch(bool doSeek);
       void seek(unsigned pos);
 
-      volatile int seekCount;
-      
+      std::atomic<int> seekCount;
+
    public:
       AudioPrefetch(const char* name);
       
@@ -50,7 +52,7 @@ class AudioPrefetch : public Thread {
       void msgTick(bool isRecTick, bool isPlayTick);
       void msgSeek(unsigned samplePos, bool force=false);
       
-      bool seekDone() const { return seekCount == 0; }
+      bool seekDone() const;
       };
 
 } // namespace MusECore

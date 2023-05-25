@@ -56,11 +56,11 @@ class ClipItem : public QTreeWidgetItem {
       //virtual QString text(int) const;
 
    public:
-      ClipItem(QTreeWidget*, const MusECore::SndFileR&);
-      MusECore::SndFileR* wf() { return &_wf; }
+      ClipItem(QTreeWidget*, const MusECore::SndFileR);
+      MusECore::SndFileR wf() { return _wf; }
       };
 
-ClipItem::ClipItem(QTreeWidget* parent, const MusECore::SndFileR& w)
+ClipItem::ClipItem(QTreeWidget* parent, const MusECore::SndFileR w)
    : QTreeWidgetItem(parent), _wf(w)
       {
         setText(COL_NAME,       _wf.name());

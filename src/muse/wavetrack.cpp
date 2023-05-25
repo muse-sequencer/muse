@@ -682,13 +682,21 @@ bool WaveTrack::getData(unsigned framePos, int dstChannels, unsigned nframe, flo
     
     // The data retrieved by this will already be latency compensated.
     have_data = getInputData(framePos, dstChannels, nframe, used_in_chan_array, bp);
-    
+
+// Reference counting diagnostics.
+//     if(!_recFile.isNull())
+//       fprintf(stderr, "WaveTrack::getData before recfile() ref count:%d\n", _recFile.getRefCount());
+
     // Do we want to record the incoming data?
     if(have_data && track_rec_flag && 
       (MusEGlobal::audio->isRecording() ||
        (MusEGlobal::song->record() && MusEGlobal::extSyncFlag && MusEGlobal::midiSyncContainer.isPlaying())) && 
       recFile())
     {
+
+// Reference counting diagnostics.
+//       fprintf(stderr, "WaveTrack::getData after recfile() ref count:%d\n", _recFile.getRefCount());
+
       if(MusEGlobal::audio->freewheel())
       {
       }

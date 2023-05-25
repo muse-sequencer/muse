@@ -49,6 +49,7 @@ void initAudioPrefetch()
   MusEGlobal::audioPrefetch = new AudioPrefetch("Prefetch");
 }
 
+// Diagnostics.
 //#define AUDIOPREFETCH_DEBUG
 
 enum { PREFETCH_TICK, PREFETCH_SEEK
@@ -72,7 +73,7 @@ AudioPrefetch::AudioPrefetch(const char* name)
    : Thread(name)
       {
       seekPos  = ~0;
-      seekCount = 0;
+      seekCount.store(0);
       }
 
 //---------------------------------------------------------
@@ -92,6 +93,7 @@ static void readMsgP(void* p, void*)
 void AudioPrefetch::start(int priority, void *)
       {
       clearPollFd();
+      seekCount.store(0);
       addPollFd(toThreadFdr, POLLIN, MusECore::readMsgP, this, 0);
       Thread::start(priority);
       }
@@ -116,7 +118,8 @@ void AudioPrefetch::processMsg1(const void* m)
                   if(msg->_isRecTick) // Was the tick generated when audio record was on?
                   {
                         #ifdef AUDIOPREFETCH_DEBUG
-                        fprintf(stderr, "AudioPrefetch::processMsg1: PREFETCH_TICK: isRecTick\n");
+                        fprintf(stderr, "AudioPrefetch::processMsg1: PREFETCH_TICK: isRecTick running:%d seekCount:%d\n",
+                                isRunning(), seekCount.load());
                         #endif
                         MusEGlobal::audio->writeTick();
                   }
@@ -125,7 +128,8 @@ void AudioPrefetch::processMsg1(const void* m)
                   if(msg->_isPlayTick) // Was the tick generated when audio playback was on?
                   {
                     #ifdef AUDIOPREFETCH_DEBUG
-                    fprintf(stderr, "AudioPrefetch::processMsg1: PREFETCH_TICK: isPlayTick\n");
+                    fprintf(stderr, "AudioPrefetch::processMsg1: PREFETCH_TICK: isPlayTick running:%d seekCount:%d\n",
+                            isRunning(), seekCount.load());
                     #endif
                     prefetch(false);
                   }
@@ -134,7 +138,8 @@ void AudioPrefetch::processMsg1(const void* m)
                   break;
             case PREFETCH_SEEK:
                   #ifdef AUDIOPREFETCH_DEBUG
-                  fprintf(stderr, "AudioPrefetch::processMsg1 PREFETCH_SEEK msg->pos:%d\n", msg->pos);
+                  fprintf(stderr, "AudioPrefetch::processMsg1 PREFETCH_SEEK msg->pos:%d running:%d seekCount:%d\n",
+                          msg->pos, isRunning(), seekCount.load());
                   #endif
                   
                   // process seek in background
@@ -151,6 +156,11 @@ void AudioPrefetch::processMsg1(const void* m)
 
 void AudioPrefetch::msgTick(bool isRecTick, bool isPlayTick)
       {
+      #ifdef AUDIOPREFETCH_DEBUG
+      fprintf(stderr, "AudioPrefetch::msgTick: isRecTick:%d isPlayTick:%d running:%d seekCount:%d\n",
+              isRecTick, isPlayTick, isRunning(), seekCount.load());
+      #endif
+
       PrefetchMsg msg;
       msg.id  = PREFETCH_TICK;
       msg.pos = 0; // seems to be unused, was uninitialized.
@@ -168,13 +178,18 @@ void AudioPrefetch::msgTick(bool isRecTick, bool isPlayTick)
 
 void AudioPrefetch::msgSeek(unsigned samplePos, bool force)
       {
+      #ifdef AUDIOPREFETCH_DEBUG
+      fprintf(stderr, "AudioPrefetch::msgSeek: samplePos:%d force:%d seekPos:%d running:%d seekCount:%d\n",
+              samplePos, force, seekPos, isRunning(), seekCount.load());
+      #endif
+
       if (samplePos == seekPos && !force)
             return;
 
       ++seekCount;
       
       #ifdef AUDIOPREFETCH_DEBUG
-      fprintf(stderr, "AudioPrefetch::msgSeek samplePos:%u force:%d seekCount:%d\n", samplePos, force, seekCount);
+      fprintf(stderr, " ... seekCount incremented:%d\n", seekCount.load());
       #endif
       
       PrefetchMsg msg;
@@ -210,6 +225,10 @@ void AudioPrefetch::prefetch(bool doSeek)
 
             Fifo* fifo = track->prefetchFifo();
             const int empty_count = fifo->getEmptyCount();
+
+            // Diagnostics.
+            //if(empty_count >= 256)
+            //  fprintf(stderr, "WARNING: AudioPrefetch::prefetch: track:%s empty_count:%d >= 512\n", track->name().toUtf8().constData(), empty_count);
 
             // Nothing to fill?
             if(empty_count <= 0)
@@ -278,25 +297,25 @@ void AudioPrefetch::prefetch(bool doSeek)
 void AudioPrefetch::seek(unsigned seekTo)
       {
       #ifdef AUDIOPREFETCH_DEBUG
-      fprintf(stderr, "AudioPrefetch::seek to:%u seekCount:%d\n", seekTo, seekCount);
+      fprintf(stderr, "AudioPrefetch::seek to:%u running:%d seekCount:%d\n", seekTo, isRunning(), seekCount.load());
       #endif
-      
+
       // Speedup: More than one seek message pending?
-      // Eat up seek messages until we get to the very LATEST one, 
+      // Eat up seek messages until we get to the very LATEST one,
       //  because all the rest which came before it are irrelevant now,
       //  and processing them all was taking extreme time, especially with
       //  resampling enabled.
-      // In particular, when the user 'slides' the play cursor back and forth   
+      // In particular, when the user 'slides' the play cursor back and forth
       //  there are MANY seek messages in the pipe, and with resampling enabled
       //  it was taking minutes to finish seeking. If the user hit play during that time,
       //  things were messed up (FIFO underruns, choppy intermittent sound etc).
       // Added by Tim. p3.3.20
-      if(seekCount > 1)
+      if(seekCount.load() > 1)
       {
         --seekCount;
         return;
       }
-      
+
       WaveTrackList* tl = MusEGlobal::song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
@@ -304,20 +323,26 @@ void AudioPrefetch::seek(unsigned seekTo)
             track->setPrefetchWritePos(seekTo);
             track->seekData(seekTo);
             }
-      
+
       // Indicate do a seek command before read (only on the first fetch).
       prefetch(true);
-      
+
       // To help speed things up even more, check the count again. Return if more seek messages are pending. (p3.3.20)
-      if(seekCount > 1)
+      if(seekCount.load() > 1)
       {
         --seekCount;
         return;
-      }  
-            
+      }
+
       seekPos  = seekTo;
       --seekCount;
+
+      #ifdef AUDIOPREFETCH_DEBUG
+      fprintf(stderr, " ... final seekCount:%d\n", seekCount.load());
+      #endif
       }
+
+bool AudioPrefetch::seekDone() const { return seekCount.load() == 0; }
 
 } // namespace MusECore
 

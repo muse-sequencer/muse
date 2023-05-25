@@ -33,7 +33,6 @@
 #include <QMainWindow>
 #include <QRect>
 #include <QString>
-#include <QPointer>
 #include <QList>
 
 #include <list>
@@ -109,6 +108,11 @@ class CpuToolbar;
 class CpuStatusBar;
 class SnooperDialog;
 class MasterEdit;
+class MidiEditor;
+class ListEdit;
+class PianoRoll;
+class WaveEdit;
+class DrumEdit;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x8000
 
@@ -268,7 +272,6 @@ class MusE : public QMainWindow
     ArrangerView* arrangerView;
     MidiTransformerDialog* midiTransformerDialog;
     QMenu* openRecent;
-    QPointer<MasterEdit> masterEditor;
 
     bool writeTopwinState;
     bool dockMixerA;
@@ -306,8 +309,8 @@ class MusE : public QMainWindow
     void addTabbedDock(Qt::DockWidgetArea area, QDockWidget *widget);
     void saveStateExtra();
     void saveStateTopLevels();
-    bool findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl);
-    bool findOpenListEditor(MusECore::PartList* pl);
+    MusEGui::MidiEditor* findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl = nullptr);
+    MusEGui::ListEdit* findOpenListEditor(MusECore::PartList* pl);
     bool filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartList* pl);
     void updateStatusBar();
     void setAndAdjustFonts();
@@ -441,19 +444,21 @@ public slots:
     void startEditor(MusECore::PartList*, int);
     void startScoreQuickly();
     void startPianoroll(bool newwin = false);
-    void startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls = false, bool newwin = false);
+    MusEGui::PianoRoll* startPianoroll(
+      MusECore::PartList* pl, bool showDefaultCtrls = false, bool newwin = false, bool *createdNotFound = nullptr);
     void startWaveEditor(bool newwin = false);
-    void startWaveEditor(MusECore::PartList*, bool newwin = false);
+    MusEGui::WaveEdit* startWaveEditor(MusECore::PartList*, bool newwin = false, bool *createdNotFound = nullptr);
     void openInScoreEdit(ScoreEdit* destination, MusECore::PartList* pl, bool allInOne=false);
     void openInScoreEdit(ScoreEdit* destination, bool allInOne=false);
     void openInScoreEdit_allInOne(QWidget* destination);
     void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
-    void startMasterEditor();
+    MusEGui::MasterEdit* startMasterEditor(bool *createdNotFound = nullptr);
     void showMasterList(bool);
     void startListEditor(bool newwin = false);
     void startListEditor(MusECore::PartList*, bool newwin = false);
     void startDrumEditor(bool newwin = false);
-    void startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls = false, bool newwin = false);
+    MusEGui::DrumEdit* startDrumEditor(
+      MusECore::PartList* pl, bool showDefaultCtrls = false, bool newwin = false, bool *createdNotFound = nullptr);
     void startEditor(MusECore::Track*);
     void startMidiTransformer();
     void startSnooper();
@@ -482,6 +487,7 @@ public slots:
 
 public:
     MusE();
+    virtual ~MusE();
 
     void populateAddTrack();
 

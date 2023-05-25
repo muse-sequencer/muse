@@ -69,7 +69,6 @@
 #include "wave_helper.h"
 #include "icons.h"
 #include "listedit.h"
-#include "master/masteredit.h"
 #include "midiseq.h"
 #include "mitplugin.h"
 #include "mittranspose.h"
@@ -151,6 +150,12 @@
 #ifdef BUILD_EXPERIMENTAL
   #include "rhythm.h"
 #endif
+#include "midieditor.h"
+#include "listedit.h"
+#include "pianoroll.h"
+#include "waveedit.h"
+#include "drumedit.h"
+#include "master/masteredit.h"
 
 // For debugging song clearing and loading: Uncomment the fprintf section.
 #define DEBUG_LOADING_AND_CLEARING(dev, format, args...) // fprintf(dev, format, ##args);
@@ -279,6 +284,42 @@ void microSleep(long msleep)
 
 bool MusE::seqStart()
       {
+      // Set the prefetch thread priority to zero so that it doesn't run in realtime.
+      // It will have a default priority (usually OTHER).
+      const int pfprio = 0;
+      if(MusEGlobal::audioPrefetch)
+      {
+        if(!MusEGlobal::audioPrefetch->isRunning())
+        {
+          MusEGlobal::audioPrefetch->start(pfprio);
+          //
+          // wait for audio prefetch to start
+          //
+          for(int i = 0; i < 60; ++i)
+          {
+            if(MusEGlobal::audioPrefetch->isRunning())
+              break;
+            sleep(1);
+          }
+          if(!MusEGlobal::audioPrefetch->isRunning())
+          {
+            QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio disk prefetch!"),
+                tr("Timeout waiting for audio disk prefetch thread to run.\n"));
+          }
+// TESTING: Shouldn't be required now. audio->start() below will seek the transport which will seek the prefetch. I think...
+//           else
+//           {
+//             // Diagnostics.
+//             fprintf(stderr, "MusE::seqStart: Calling audioPrefetch->msgSeek: audio pos:%d\n", MusEGlobal::audio->pos().frame());
+//
+//             // In case prefetch is not filled, do it now.
+//             MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true); // Force it upon startup only.
+//           }
+        }
+      }
+      else
+        fprintf(stderr, "seqStart(): audioPrefetch is NULL\n");
+
       if(MusEGlobal::audio)
       {
         if(!MusEGlobal::audio->isRunning())
@@ -310,43 +351,6 @@ bool MusE::seqStart()
       }
       else
         fprintf(stderr, "seqStart(): audio is NULL\n");
-
-
-      // Now it is safe to ask the driver for realtime priority
-
-      int pfprio = 0;
-      // TODO: Hm why is prefetch priority so high again? Was it to overcome some race problems? Should it be lowest - disk thread?
-      if(MusEGlobal::audioDevice)
-      {
-        MusEGlobal::realTimePriority = MusEGlobal::audioDevice->realtimePriority();
-        if(MusEGlobal::debugMsg)
-          fprintf(stderr, "MusE::seqStart: getting audio driver MusEGlobal::realTimePriority:%d\n", MusEGlobal::realTimePriority);
-
-        // NOTE: MusEGlobal::realTimeScheduling can be true (gotten using jack_is_realtime()),
-        //  while the determined MusEGlobal::realTimePriority can be 0.
-        // MusEGlobal::realTimePriority is gotten using pthread_getschedparam() on the client thread
-        //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
-        if(MusEGlobal::realTimeScheduling)
-        {
-          if(MusEGlobal::realTimePriority - 5 >= 0)
-            pfprio = MusEGlobal::realTimePriority - 5;
-        }
-        // FIXME: The realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
-      }
-      else
-        fprintf(stderr, "seqStart(): audioDevice is NULL\n");
-
-      if(MusEGlobal::audioPrefetch)
-      {
-        if(!MusEGlobal::audioPrefetch->isRunning())
-        {
-          MusEGlobal::audioPrefetch->start(pfprio);
-          // In case prefetch is not filled, do it now.
-          MusEGlobal::audioPrefetch->msgSeek(MusEGlobal::audio->pos().frame(), true); // Force it upon startup only.
-        }
-      }
-      else
-        fprintf(stderr, "seqStart(): audioPrefetch is NULL\n");
 
       if(MusEGlobal::midiSeq)
         MusEGlobal::midiSeq->start(0); // Prio unused, set in start.
@@ -453,7 +457,6 @@ MusE::MusE() : QMainWindow()
       //audioMixer            = 0;
       mixer1                = nullptr;
       mixer2                = nullptr;
-      masterEditor          = nullptr;
       routeDialog           = nullptr;
       watchdogThread        = 0;
       editInstrument        = nullptr;
@@ -1266,6 +1269,18 @@ MusE::MusE() : QMainWindow()
       updateWindowMenu();
 }
 
+MusE::~MusE()
+{
+  DEBUG_LOADING_AND_CLEARING(stderr, "~MusE:%p\n", this);
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+  // This destructor is called before the TopWin destructors (which seem to be called with deleteLate()).
+  // So we need to manually disconnect them now, otherwise by the time we are notified of their destruction
+  //  in MusE::topWinDestroyed(), MusE has already been destroyed, causing crashes!
+  toplevels.disconnectAllTopWinDestroyedMetaConn();
+#endif
+}
+
 //---------------------------------------------------------
 //   setAndAdjustFonts
 //---------------------------------------------------------
@@ -1965,6 +1980,12 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
         name.toUtf8().constData(), songTemplate, doReadMidiPorts);
 
+      if (mixer1)
+            mixer1->clearAndDelete();
+      if (mixer2)
+            mixer2->clearAndDelete();
+      _arranger->clear();      // clear track info
+
       const bool isOk = clearSong(doReadMidiPorts);  // Allow not touching things like midi ports.
       if(!isOk)
         return false;
@@ -1994,12 +2015,6 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
       {
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
         name.toUtf8().constData(), songTemplate, doReadMidiPorts);
-
-      if (mixer1)
-            mixer1->clearAndDelete();
-      if (mixer2)
-            mixer2->clearAndDelete();
-      _arranger->clear();      // clear track info
 
       MusEGlobal::recordAction->setChecked(false);
 
@@ -3191,13 +3206,25 @@ void MusE::startPianoroll(bool newwin)
     startPianoroll(pl, true, newwin);
 }
 
-void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool newwin)
+MusEGui::PianoRoll* MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool newwin, bool *createdNotFound)
 {
     if (!filterInvalidParts(TopWin::PIANO_ROLL, pl))
-        return;
+    {
+        if(createdNotFound)
+          *createdNotFound = false;
+        return nullptr;
+    }
 
-    if (!newwin && findOpenEditor(TopWin::PIANO_ROLL, pl))
-        return;
+    if (!newwin)
+    {
+      MusEGui::PianoRoll* pianoroll = static_cast<MusEGui::PianoRoll*>(findOpenEditor(TopWin::PIANO_ROLL, pl));
+      if(pianoroll)
+      {
+        if(createdNotFound)
+          *createdNotFound = false;
+        return pianoroll;
+      }
+    }
 
     MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(pianoroll);
@@ -3206,8 +3233,10 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls, bool ne
     connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
     updateWindowMenu();
+    if(createdNotFound)
+      *createdNotFound = true;
+    return pianoroll;
 }
-
 
 bool MusE::filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartList* pl) {
 
@@ -3227,11 +3256,11 @@ bool MusE::filterInvalidParts(const TopWin::ToplevelType type, MusECore::PartLis
     return true;
 }
 
-bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl) {
+MusEGui::MidiEditor* MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* pl) {
 
     if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier
             && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
-        return false;
+        return nullptr;
 
     for (const auto& it : toplevels) {
         if (it->type() != type)
@@ -3239,27 +3268,34 @@ bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* p
 
         MusEGui::MidiEditor* med = dynamic_cast<MusEGui::MidiEditor*>(it);
         if (med == nullptr)
-            return false;
+            return nullptr;
 
-        const MusECore::PartList* pl_tmp = med->parts();
+        if(pl)
+        {
+          const MusECore::PartList* pl_tmp = med->parts();
 
-        if (pl_tmp->size() != pl->size())
-            continue;
+          if (pl_tmp->size() != pl->size())
+              continue;
 
-        bool found = false;
-        for (const auto& it_pl : *pl) {
-            for (const auto& it_pl_tmp : *pl_tmp) {
-                if (it_pl.second->uuid() == it_pl_tmp.second->uuid()) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                break;
+          bool found = false;
+          for (const auto& it_pl : *pl)
+          {
+              found = false;
+              for (const auto& it_pl_tmp : *pl_tmp)
+              {
+                  if (it_pl.second->uuid() == it_pl_tmp.second->uuid())
+                  {
+                      found = true;
+                      break;
+                  }
+              }
+              if (!found)
+                  break;
+          }
+
+          if (!found)
+              continue;
         }
-
-        if (!found)
-            continue;
 
         med->setHScrollOffset(_arranger->cursorValue());
 
@@ -3268,10 +3304,10 @@ bool MusE::findOpenEditor(const TopWin::ToplevelType type, MusECore::PartList* p
         else
             it->activateWindow();
 
-        return true;
+        return med;
     }
 
-    return false;
+    return nullptr;
 }
 
 //---------------------------------------------------------
@@ -3329,17 +3365,18 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
 }
 
-bool MusE::findOpenListEditor(MusECore::PartList* pl) {
+MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
 
     if (QGuiApplication::keyboardModifiers() & Qt::ControlModifier
             && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
-        return false;
+        return nullptr;
 
     for (const auto& d : findChildren<QDockWidget*>()) {
         if (strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") != 0)
             continue;
 
-        const MusECore::PartList* pl_tmp = static_cast<MusEGui::ListEdit*>(d->widget())->parts();
+        MusEGui::ListEdit* le = static_cast<MusEGui::ListEdit*>(d->widget());
+        const MusECore::PartList* pl_tmp = le->parts();
 
         if (pl->begin()->second->uuid() != pl_tmp->begin()->second->uuid())
             continue;
@@ -3348,29 +3385,43 @@ bool MusE::findOpenListEditor(MusECore::PartList* pl) {
             toggleDocksAction->setChecked(true);
         d->raise();
 
-        return true;
+        return le;
     }
 
-    return false;
+    return nullptr;
 }
 
 //---------------------------------------------------------
 //   startMasterEditor
 //---------------------------------------------------------
 
-void MusE::startMasterEditor()
+MusEGui::MasterEdit* MusE::startMasterEditor(bool *createdNotFound)
 {
-    if (!masterEditor) {
-        masterEditor = new MusEGui::MasterEdit(this);
-        toplevels.push_back(masterEditor);
-        masterEditor->show();
-        connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-        updateWindowMenu();
-    } else {
-        if (masterEditor->isMdiWin())
-            mdiArea->setActiveSubWindow(masterEditor->getMdiWin());
-        else
-            masterEditor->activateWindow();
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::startMasterEditor\n");
+
+    MusEGui::MasterEdit* me = static_cast<MusEGui::MasterEdit*>(findOpenEditor(TopWin::MASTER));
+    if(me)
+    {
+      if (me->isMdiWin())
+          mdiArea->setActiveSubWindow(me->getMdiWin());
+      else
+          me->activateWindow();
+      if(createdNotFound)
+        *createdNotFound = false;
+      return me;
+    }
+    else
+    {
+      me = new MusEGui::MasterEdit(this);
+      toplevels.push_back(me);
+      me->show();
+      connect(me, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
+      // Already done in master edit.
+      //connect(MusEGlobal::muse, SIGNAL(configChanged()), me, SLOT(configChanged()));
+      updateWindowMenu();
+      if(createdNotFound)
+        *createdNotFound = true;
+      return me;
     }
 }
 
@@ -3399,13 +3450,25 @@ void MusE::startDrumEditor(bool newwin)
     startDrumEditor(pl, true, newwin);
 }
 
-void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls, bool newwin)
+MusEGui::DrumEdit* MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls, bool newwin, bool *createdNotFound)
 {
     if (!filterInvalidParts(TopWin::DRUM, pl))
-        return;
+    {
+        if(createdNotFound)
+          *createdNotFound = false;
+        return nullptr;
+    }
 
-    if (!newwin &&findOpenEditor(TopWin::DRUM, pl))
-        return;
+    if (!newwin)
+    {
+      MusEGui::DrumEdit* drumEditor = static_cast<MusEGui::DrumEdit*>(findOpenEditor(TopWin::DRUM, pl));
+      if(drumEditor)
+      {
+        if(createdNotFound)
+          *createdNotFound = false;
+        return drumEditor;
+      }
+    }
 
     MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, nullptr, _arranger->cursorValue(), showDefaultCtrls);
     toplevels.push_back(drumEditor);
@@ -3414,6 +3477,9 @@ void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls, bool n
     connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
     updateWindowMenu();
+    if(createdNotFound)
+      *createdNotFound = true;
+    return drumEditor;
 }
 
 //---------------------------------------------------------
@@ -3430,10 +3496,18 @@ void MusE::startWaveEditor(bool newwin)
     startWaveEditor(pl, newwin);
 }
 
-void MusE::startWaveEditor(MusECore::PartList* pl, bool newwin)
+MusEGui::WaveEdit* MusE::startWaveEditor(MusECore::PartList* pl, bool newwin, bool *createdNotFound)
 {
-    if (! newwin && findOpenEditor(TopWin::WAVE, pl))
-        return;
+    if (! newwin)
+    {
+      MusEGui::WaveEdit *waveEditor = static_cast<MusEGui::WaveEdit*>(findOpenEditor(TopWin::WAVE, pl));
+      if(waveEditor)
+      {
+        if(createdNotFound)
+          *createdNotFound = false;
+        return waveEditor;
+      }
+    }
 
     MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl, this);
     toplevels.push_back(waveEditor);
@@ -3442,6 +3516,9 @@ void MusE::startWaveEditor(MusECore::PartList* pl, bool newwin)
     connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
     connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     updateWindowMenu();
+    if(createdNotFound)
+      *createdNotFound = true;
+    return waveEditor;
 }
 
 
@@ -4395,7 +4472,7 @@ bool MusE::clearSong(bool clear_all)
 
 bool MusE::clearSong(bool clear_all)
 {
-    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::clearSong: clar_all:%d _busyWithLoading:%d\n",
+    DEBUG_LOADING_AND_CLEARING(stderr, "MusE::clearSong: clear_all:%d _busyWithLoading:%d\n",
       clear_all, _busyWithLoading);
 
 //     // Are we already busy waiting for something while loading or closing another project?

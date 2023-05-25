@@ -30,6 +30,7 @@
 #include <list>
 #include <QByteArray>
 #include <QString>
+#include <QMetaObject>
 
 //#define MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
 
@@ -106,6 +107,8 @@ class TopWin : public QMainWindow
       void setOpenInNewWin(bool newwin);
 //      void resize(const QSize&);
  
+      void disconnectTopWinDestroyedMetaConn();
+
 //      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
 //      static bool _sharesMenusToolbars[TOPLEVELTYPE_LAST_ENTRY];
       static bool _openTabbed[TOPLEVELTYPE_LAST_ENTRY];
@@ -115,6 +118,7 @@ class TopWin : public QMainWindow
       bool _sharesToolsAndMenu;
       std::list<QToolBar*> _toolbars;
       bool _initalizing;
+      QMetaObject::Connection _topWinDestroyedMetaConn;
 
       void createMdiWrapper();
       
@@ -171,6 +175,7 @@ typedef std::list<TopWin*>::const_iterator ciToplevel;
 class ToplevelList : public std::list<TopWin* > {
    public:
         TopWin* findType(TopWin::ToplevelType) const;
+        void disconnectAllTopWinDestroyedMetaConn();
       };
 
 } // namespace MusEGui

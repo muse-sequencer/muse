@@ -27,6 +27,9 @@
 #include <list>
 #include <vector>
 #include <sndfile.h>
+#include <atomic>
+// For atomic<U*>, according to docs.
+#include <memory>
 
 #include <QString>
 #include <QFileInfo>
@@ -107,7 +110,7 @@ class SndFile {
       size_t realWrite(int srcChannels, float** src, size_t n, size_t offs = 0, bool liveWaveUpdate = false);
       
    protected:
-      int refCount;
+      std::atomic_int refCount;
 
    public:
       // Constructor for file operation.
@@ -217,7 +220,6 @@ class SndFile {
       int channels() const;
       int samplerate() const;
       int format() const;
-      int sampleBits() const;
       void setFormat(int fmt, int ch, int rate, sf_count_t frames = 0);
 
       size_t read(int channel, float**, size_t, bool overwrite = true);
@@ -264,73 +266,86 @@ class SndFile {
 //    SndFile with reference count
 //---------------------------------------------------------
 
+class atomicSndFile : public std::atomic<SndFile*>
+{
+  public:
+    inline SndFile* operator->() { return load(); }
+    inline const SndFile* operator->() const { return load(); }
+    inline SndFile* operator*() { return load(); }
+    inline const SndFile* operator*() const { return load(); }
+    inline atomicSndFile& operator=(SndFile* ptr) { store(ptr); return *this; }
+    inline bool operator==(SndFile* c) const { return load() == c; }
+    inline operator bool() const { return load() != nullptr; }
+    inline bool isNull() const { return load() == nullptr; }
+
+};
+
 class SndFileR {
-      SndFile* sf;
+      atomicSndFile sf;
 
    public:
-      SndFileR() { sf = 0; }
+      SndFileR();
       SndFileR(SndFile* _sf);
       SndFileR(const SndFileR& ed);
       SndFileR& operator=(SndFile* ptr);
       SndFileR& operator=(const SndFileR& ed);
-      bool operator==(const SndFileR& c) const { return sf == c.sf; }
-      bool operator==(SndFile* c) const { return sf == c; }
-      SndFile* operator->() { return sf; }
-      const SndFile* operator->() const { return sf; }
+      bool operator==(const SndFileR& c) const;
+      bool operator==(SndFile* c) const;
+      SndFile* operator->();
+      const SndFile* operator->() const;
 
-      SndFile* operator*() { return sf; }
-      const SndFile* operator*() const { return sf; }
+      SndFile* operator*();
+      const SndFile* operator*() const;
 
-      operator bool() { return sf!=nullptr; }
+      operator bool() const;
       ~SndFileR();
-      int getRefCount() const { return sf ? sf->getRefCount() : 0; }
-      bool isNull() const     { return sf == 0; }
+
+      int getRefCount() const;
+
+      bool isNull() const;
 
       // Whether to use any converter(s) at all.
-      bool useConverter() const { return sf ? sf->useConverter() : false; }
+      bool useConverter() const;
 
       // Whether the converter is in offline mode.
       // Always use isOffline() to check instead of reading the member directly.
-      bool isOffline() { return sf ? sf->isOffline() : false; }
+      bool isOffline();
       // Set the converter offline mode.
       // Returns whether the mode was actually changed.
-      bool setOffline(bool v)
-      { return sf ? sf->setOffline(v) : false; }
+      bool setOffline(bool v);
 
       // Creates a new converter based on the supplied settings and AudioConverterSettings::ModeType mode.
-      // If isLocalSettings is true, settings is treated as a local settings which may override the 
+      // If isLocalSettings is true, settings is treated as a local settings which may override the
       //  global default settings.
-      // If isLocalSettings is false, settings is treated as the global default settings and is 
+      // If isLocalSettings is false, settings is treated as the global default settings and is
       //  directly used instead of the comparison to, and possible use of, the global default above.
       AudioConverterPluginI* setupAudioConverter(
-        const AudioConverterSettingsGroup* settings, 
+        const AudioConverterSettingsGroup* settings,
         const AudioConverterSettingsGroup* defaultSettings,
-        bool isLocalSettings, 
-        AudioConverterSettings::ModeType mode, 
+        bool isLocalSettings,
+        AudioConverterSettings::ModeType mode,
         bool doResample,
-        bool doStretch) const
-      { return sf ? sf->setupAudioConverter(
-          settings, defaultSettings, isLocalSettings, mode, doResample, doStretch) : nullptr; }
+        bool doStretch) const;
 
       // When using the virtual interface, be sure to call setFormat before opening.
-      bool openRead(bool createCache=true) { return sf ? sf->openRead(createCache) : true;  }
-      bool openWrite()        { return sf ? sf->openWrite() : true; }
-      void close()            { if(sf) sf->close();     }
-      void remove()           { if(sf) sf->remove();    }
+      bool openRead(bool createCache=true);
+      bool openWrite();
+      void close();
+      void remove();
 
-      bool isOpen() const     { return sf ? sf->isOpen() : false; }
+      bool isOpen() const;
       // Whether the file was opened with write mode.
-      bool isWritable() const { return sf ? sf->isWritable() : false; }
-      void update(bool showProgress = true) { if(sf) sf->update(showProgress); }
+      bool isWritable() const;
+      void update(bool showProgress = true);
 
-      QString basename() const { return sf ? sf->basename() : QString(); }
-      QString dirPath() const  { return sf ? sf->dirPath() : QString(); }
-      QString canonicalDirPath() const  { return sf ? sf->canonicalDirPath() : QString(); }
-      QString path() const     { return sf ? sf->path() : QString(); }
-      QString canonicalPath() const  { return sf ? sf->canonicalPath() : QString(); }
-      QString name() const     { return sf ? sf->name() : QString(); }
+      QString basename() const;
+      QString dirPath() const;
+      QString canonicalDirPath() const;
+      QString path() const;
+      QString canonicalPath() const;
+      QString name() const;
       // Whether the file itself is writable (ie also in a writable directory etc.)
-      bool isFileWritable() const { return sf ? sf->isFileWritable() : false; }
+      bool isFileWritable() const;
 
       // Ratio of the file's sample rate to the current audio sample rate.
       inline double sampleRateRatio() const { return sf ? sf->sampleRateRatio() : 1.0; };
@@ -340,85 +355,60 @@ class SndFileR {
       inline sf_count_t convertPosition(sf_count_t pos) const { return sf ? sf->convertPosition(pos) : pos; };
       // Convert a resampled or stretched frame position to its unresampled or unstretched position.
       inline sf_count_t unConvertPosition(sf_count_t pos) const { return sf ? sf->unConvertPosition(pos) : pos; };
-      // Returns whether ANY stretch event has a stretch ratio other than 1.0 
+      // Returns whether ANY stretch event has a stretch ratio other than 1.0
       //  ie. the map is stretched, a stretcher must be engaged.
-      bool isStretched() const { return sf ? sf->isStretched() : false; }
-      // Returns whether ANY stretch event has a pitch ratio other than 1.0 
+      bool isStretched() const;
+      // Returns whether ANY stretch event has a pitch ratio other than 1.0
       //  ie. the map is pitch shifted, a shifter must be engaged.
-      bool isPitchShifted() const { return sf ? sf->isPitchShifted() : false; }
-      // Returns whether ANY stretch event has a samplerate ratio other than 1.0 
+      bool isPitchShifted() const;
+      // Returns whether ANY stretch event has a samplerate ratio other than 1.0
       //  ie. the map is stretched, a samplerate converter must be engaged.
-      bool isResampled() const { return sf ? sf->isResampled() : false; }
-      
-      sf_count_t samples() const    { return sf ? sf->samples() : 0; }
-      // Returns number of samples, adjusted for file-to-system samplerate ratio.
-      sf_count_t samplesConverted() const { return sf ? sf->samplesConverted() : 0; }
+      bool isResampled() const;
 
-      int channels() const   { return sf ? sf->channels() : 0; }
-      int samplerate() const { return sf ? sf->samplerate() : 0; }
-      int format() const     { return sf ? sf->format() : 0; }
-      int sampleBits() const      { return sf ? sf->sampleBits() : 0; }
-      void setFormat(int fmt, int ch, int rate, sf_count_t frames = 0) {
-            if(sf) sf->setFormat(fmt, ch, rate, frames);
-            }
-      size_t readWithHeap(int channel, float** f, size_t n, bool overwrite = true) {
-            return sf ? sf->readWithHeap(channel, f, n, overwrite) : 0;
-            }
-      size_t read(int channel, float** f, size_t n, bool overwrite = true) {
-            return sf ? sf->read(channel, f, n, overwrite) : 0;
-            }
-      size_t readDirect(float* f, size_t n) { return sf ? sf->readDirect(f, n) : 0; }  
-      
-      size_t write(int channel, float** f, size_t n, bool liveWaveUpdate /*= false*/) {
-            return sf ? sf->write(channel, f, n, liveWaveUpdate) : 0;
-            }
-            
+      sf_count_t samples() const;
+      // Returns number of samples, adjusted for file-to-system samplerate ratio.
+      sf_count_t samplesConverted() const;
+
+      int channels() const;
+      int samplerate() const;
+      int format() const;
+      void setFormat(int fmt, int ch, int rate, sf_count_t frames = 0);
+      size_t readWithHeap(int channel, float** f, size_t n, bool overwrite = true);
+      size_t read(int channel, float** f, size_t n, bool overwrite = true);
+      size_t readDirect(float* f, size_t n);
+
+      size_t write(int channel, float** f, size_t n, bool liveWaveUpdate /*= false*/);
+
       // For now I must provide separate routines here, don't want to upset anything else.
       // Reads realtime audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
       sf_count_t readConverted(sf_count_t pos, int channel,
-                               float** buffer, sf_count_t frames, bool overwrite = true) {
-            return sf ? sf->readConverted(pos, channel, buffer, frames, overwrite) : 0; }
+                               float** buffer, sf_count_t frames, bool overwrite = true);
       // Reads graphical audio converted if a samplerate or shift/stretch converter is active. Otherwise a normal read.
       void readConverted(SampleV* s, int mag, unsigned pos, sf_count_t offset,
-                         bool overwrite = true, bool allowSeek = true) {
-            if(sf) sf->readConverted(s, mag, pos, offset, overwrite, allowSeek); }
+                         bool overwrite = true, bool allowSeek = true);
       // Seeks to a converted position if a samplerate or shift/stretch converter is active. Otherwise a normal seek.
       // The offset is the offset into the sound file and is NOT converted.
-      sf_count_t seekConverted(sf_count_t frames, int whence, int offset)
-      { return sf ? sf->seekConverted(frames, whence, offset) : 0; }
-      AudioConverterPluginI* staticAudioConverter(AudioConverterSettings::ModeType mode) const
-      { return sf ? sf->staticAudioConverter(mode) : 0; }
-      void setStaticAudioConverter(AudioConverterPluginI* converter, AudioConverterSettings::ModeType mode)
-      { if(sf) sf->setStaticAudioConverter(converter, mode); }
-      AudioConverterSettingsGroup* audioConverterSettings() const { return sf ? sf->audioConverterSettings() : 0; }
-      void setAudioConverterSettings(AudioConverterSettingsGroup* settings)
-      { if(sf) sf->setAudioConverterSettings(settings); }
-      StretchList* stretchList() const { return sf ? sf->stretchList() : 0; }
-      
+      sf_count_t seekConverted(sf_count_t frames, int whence, int offset);
+      AudioConverterPluginI* staticAudioConverter(AudioConverterSettings::ModeType mode) const;
+      void setStaticAudioConverter(AudioConverterPluginI* converter, AudioConverterSettings::ModeType mode);
+      AudioConverterSettingsGroup* audioConverterSettings() const;
+      void setAudioConverterSettings(AudioConverterSettingsGroup* settings);
+      StretchList* stretchList() const;
+
       // Absolute minimum and maximum ratios depending on chosen converters. -1 means infinite, don't care.
-      double minStretchRatio() const
-      { return sf ? sf->minStretchRatio() : 1.0; }
-      double maxStretchRatio() const
-      { return sf ? sf->maxStretchRatio() : 1.0; }
-      double minSamplerateRatio() const
-      { return sf ? sf->minSamplerateRatio() : 1.0; }
-      double maxSamplerateRatio() const
-      { return sf ? sf->maxSamplerateRatio() : 1.0; }
-      double minPitchShiftRatio() const
-      { return sf ? sf->minPitchShiftRatio() : 1.0; }
-      double maxPitchShiftRatio() const
-      { return sf ? sf->maxPitchShiftRatio() : 1.0; }
+      double minStretchRatio() const;
+      double maxStretchRatio() const;
+      double minSamplerateRatio() const;
+      double maxSamplerateRatio() const;
+      double minPitchShiftRatio() const;
+      double maxPitchShiftRatio() const;
 
-      sf_count_t seek(sf_count_t frames, int whence) { return sf ? sf->seek(frames, whence) : 0; }
-      sf_count_t seekUI(sf_count_t frames, int whence) { return sf ? sf->seekUI(frames, whence) : 0; }
-      sf_count_t seekUIConverted(sf_count_t frames, int whence, sf_count_t offset)
-        { return sf ? sf->seekUIConverted(frames, whence, offset) : 0; }
-      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true) {
-            if(sf) sf->read(s, mag, pos, overwrite, allowSeek);
-            }
-      QString strerror() const { return sf ? sf->strerror() : QString(); }
+      sf_count_t seek(sf_count_t frames, int whence);
+      sf_count_t seekUI(sf_count_t frames, int whence);
+      sf_count_t seekUIConverted(sf_count_t frames, int whence, sf_count_t offset);
+      void read(SampleV* s, int mag, unsigned pos, bool overwrite = true, bool allowSeek = true);
+      QString strerror() const;
       };
-
 
 //---------------------------------------------------------
 //   SndFileList

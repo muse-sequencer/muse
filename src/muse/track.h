@@ -726,8 +726,8 @@ class AudioTrack : public Track {
       void mapRackPluginsToControllers();
       void showPendingPluginNativeGuis();
 
-      SndFileR recFile() const           { return _recFile; }
-      void setRecFile(SndFileR sf)       { _recFile = sf; }
+      SndFileR recFile() const;
+      void setRecFile(SndFileR sf);
 
       CtrlListList* controller()         { return &_controller; }
       const CtrlListList* controller() const { return &_controller; }

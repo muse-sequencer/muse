@@ -2022,7 +2022,10 @@ void AudioTrack::record()
 
                         if(use_latency_corr)
                           pos -= latency;
-                      
+
+                        // Reference counting diagnostics.
+                        // fprintf(stderr, "AudioTrack::record _recFile ref count:%d\n", _recFile.getRefCount());
+
                         // FIXME If we are to support writing compressed file types, we probably shouldn't be seeking here. REMOVE Tim. Wave.
                         _recFile->seek(pos, 0);
                         _recFile->write(_channels, buffer, MusEGlobal::segmentSize, MusEGlobal::config.liveWaveUpdate);
@@ -2276,6 +2279,9 @@ CtrlListList* AudioTrack::erasedController()              { return &_erasedContr
 const CtrlListList* AudioTrack::erasedController() const  { return &_erasedController; }
 CtrlListList* AudioTrack::noEraseController()             { return &_noEraseController; }
 const CtrlListList* AudioTrack::noEraseController() const { return &_noEraseController; }
+
+SndFileR AudioTrack::recFile() const           { return _recFile; }
+void AudioTrack::setRecFile(SndFileR sf)       { _recFile = sf; }
 
 //---------------------------------------------------------
 //   setParam

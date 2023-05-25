@@ -1716,18 +1716,40 @@ int ClipList::idx(const Clip& clip) const
 //   SndFileR
 //---------------------------------------------------------
 
+SndFileR::SndFileR()
+{
+  DEBUG_WAVE(stderr, "SndFileR() this:%p\n", this);
+  sf.store(nullptr);
+}
+
 SndFileR::SndFileR(SndFile* _sf)
       {
-      sf = _sf;
-      if (sf)
-            (sf->refCount)++;
+      DEBUG_WAVE(stderr, "SndFileR(SndFile* _sf) this:%p sndfile:%p\n", this, _sf);
+
+      // Since we know that whoever is calling wants to increase the reference count,
+      //  do it now as soon as possible to prevent object's deletion by another thread.
+      if (_sf)
+        _sf->refCount++;
+      sf.store(_sf);
       }
 
 SndFileR::SndFileR(const SndFileR& ed)
       {
-      sf = ed.sf;
-      if (sf)
-            (sf->refCount)++;
+      DEBUG_WAVE(stderr, "SndFileR(const SndFileR& ed) this:%p sndfile:%p\n", this, ed.sf.load());
+
+      SndFile *ed_sf = ed.sf.load();
+      // Since we know that whoever is calling wants to increase the reference count,
+      //  do it now as soon as possible to prevent object's deletion by another thread.
+      if (ed_sf)
+        ed_sf->refCount++;
+      sf.store(ed_sf);
+      }
+
+SndFileR::~SndFileR()
+      {
+      DEBUG_WAVE(stderr, "~SndFileR this:%p sndfile:%p\n", this, sf.load());
+
+      *this=nullptr; // decrease the refcounter, maybe delete
       }
 
 //---------------------------------------------------------
@@ -1736,14 +1758,25 @@ SndFileR::SndFileR(const SndFileR& ed)
 
 SndFileR& SndFileR::operator=(SndFile* ptr)
 {
-      if (sf == ptr)
-            return *this;
-      if (sf && --(sf->refCount) == 0) {
-            delete sf;
-            }
-      sf = ptr;
-      if (sf)
-            (sf->refCount)++;
+      // Since we know that whoever is calling wants to increase the reference count,
+      //  do it now as soon as possible to prevent object's deletion by another thread.
+      if (ptr)
+        ptr->refCount++;
+
+      // Do two things at once: Swap, and get the old pointer.
+      SndFile* loc_sf = sf.exchange(ptr);
+
+// Meh, let's just skip the check, to tighten the timimg. No real harm done, the ref count will +1 then -1.
+//       if (loc_sf == ptr)
+//         return *this;
+//       // Since we know that whoever is calling wants to increase the reference count,
+//       //  do it now as soon as possible to prevent object's deletion by another thread.
+//       if (ptr)
+//         ptr->refCount++;
+
+      if (loc_sf && --(loc_sf->refCount) == 0)
+        delete loc_sf;
+
       return *this;
 }
 
@@ -1752,14 +1785,111 @@ SndFileR& SndFileR::operator=(const SndFileR& ed)
       return operator=(ed.sf);
       }
 
-//---------------------------------------------------------
-//   ~SndFileR
-//---------------------------------------------------------
+SndFile* SndFileR::operator->() { return sf.load(); }
+const SndFile* SndFileR::operator->() const { return sf.load(); }
+SndFile* SndFileR::operator*() { return sf.load(); }
+const SndFile* SndFileR::operator*() const { return sf.load(); }
+SndFileR::operator bool() const { return sf.load()!=nullptr; }
+bool SndFileR::operator==(const SndFileR& c) const { return sf.load() == c.sf; }
+bool SndFileR::operator==(SndFile* c) const { return sf.load() == c; }
+int SndFileR::getRefCount() const { return sf ? sf->getRefCount() : 0; }
+bool SndFileR::isNull() const { return sf.isNull(); }
 
-SndFileR::~SndFileR()
-      {
-      *this=nullptr; // decrease the refcounter, maybe delete
+bool SndFileR::useConverter() const { return sf ? sf->useConverter() : false; }
+
+bool SndFileR::isOffline() { return sf ? sf->isOffline() : false; }
+bool SndFileR::setOffline(bool v)
+{ return sf ? sf->setOffline(v) : false; }
+
+AudioConverterPluginI* SndFileR::setupAudioConverter(
+  const AudioConverterSettingsGroup* settings,
+  const AudioConverterSettingsGroup* defaultSettings,
+  bool isLocalSettings,
+  AudioConverterSettings::ModeType mode,
+  bool doResample,
+  bool doStretch) const
+{ return sf ? sf->setupAudioConverter(
+    settings, defaultSettings, isLocalSettings, mode, doResample, doStretch) : nullptr; }
+
+bool SndFileR::openRead(bool createCache) { return sf ? sf->openRead(createCache) : true;  }
+bool SndFileR::openWrite()        { return sf ? sf->openWrite() : true; }
+void SndFileR::close()            { if(sf) sf->close();     }
+void SndFileR::remove()           { if(sf) sf->remove();    }
+
+bool SndFileR::isOpen() const     { return sf ? sf->isOpen() : false; }
+bool SndFileR::isWritable() const { return sf ? sf->isWritable() : false; }
+void SndFileR::update(bool showProgress) { if(sf) sf->update(showProgress); }
+
+QString SndFileR::basename() const { return sf ? sf->basename() : QString(); }
+QString SndFileR::dirPath() const  { return sf ? sf->dirPath() : QString(); }
+QString SndFileR::canonicalDirPath() const  { return sf ? sf->canonicalDirPath() : QString(); }
+QString SndFileR::path() const     { return sf ? sf->path() : QString(); }
+QString SndFileR::canonicalPath() const  { return sf ? sf->canonicalPath() : QString(); }
+QString SndFileR::name() const     { return sf ? sf->name() : QString(); }
+bool SndFileR::isFileWritable() const { return sf ? sf->isFileWritable() : false; }
+
+bool SndFileR::isStretched() const { return sf ? sf->isStretched() : false; }
+bool SndFileR::isPitchShifted() const { return sf ? sf->isPitchShifted() : false; }
+bool SndFileR::isResampled() const { return sf ? sf->isResampled() : false; }
+
+sf_count_t SndFileR::samples() const    { return sf ? sf->samples() : 0; }
+sf_count_t SndFileR::samplesConverted() const { return sf ? sf->samplesConverted() : 0; }
+
+int SndFileR::channels() const   { return sf ? sf->channels() : 0; }
+int SndFileR::samplerate() const { return sf ? sf->samplerate() : 0; }
+int SndFileR::format() const     { return sf ? sf->format() : 0; }
+void SndFileR::setFormat(int fmt, int ch, int rate, sf_count_t frames) {
+      if(sf) sf->setFormat(fmt, ch, rate, frames);
       }
+size_t SndFileR::readWithHeap(int channel, float** f, size_t n, bool overwrite) {
+      return sf ? sf->readWithHeap(channel, f, n, overwrite) : 0;
+      }
+size_t SndFileR::read(int channel, float** f, size_t n, bool overwrite) {
+      return sf ? sf->read(channel, f, n, overwrite) : 0;
+      }
+size_t SndFileR::readDirect(float* f, size_t n) { return sf ? sf->readDirect(f, n) : 0; }
+
+size_t SndFileR::write(int channel, float** f, size_t n, bool liveWaveUpdate /*= false*/) {
+      return sf ? sf->write(channel, f, n, liveWaveUpdate) : 0;
+      }
+
+sf_count_t SndFileR::readConverted(sf_count_t pos, int channel,
+                          float** buffer, sf_count_t frames, bool overwrite) {
+      return sf ? sf->readConverted(pos, channel, buffer, frames, overwrite) : 0; }
+void SndFileR::readConverted(SampleV* s, int mag, unsigned pos, sf_count_t offset,
+                    bool overwrite, bool allowSeek) {
+      if(sf) sf->readConverted(s, mag, pos, offset, overwrite, allowSeek); }
+sf_count_t SndFileR::seekConverted(sf_count_t frames, int whence, int offset)
+{ return sf ? sf->seekConverted(frames, whence, offset) : 0; }
+AudioConverterPluginI* SndFileR::staticAudioConverter(AudioConverterSettings::ModeType mode) const
+{ return sf ? sf->staticAudioConverter(mode) : 0; }
+void SndFileR::setStaticAudioConverter(AudioConverterPluginI* converter, AudioConverterSettings::ModeType mode)
+{ if(sf) sf->setStaticAudioConverter(converter, mode); }
+AudioConverterSettingsGroup* SndFileR::audioConverterSettings() const { return sf ? sf->audioConverterSettings() : 0; }
+void SndFileR::setAudioConverterSettings(AudioConverterSettingsGroup* settings)
+{ if(sf) sf->setAudioConverterSettings(settings); }
+StretchList* SndFileR::stretchList() const { return sf ? sf->stretchList() : 0; }
+
+double SndFileR::minStretchRatio() const
+{ return sf ? sf->minStretchRatio() : 1.0; }
+double SndFileR::maxStretchRatio() const
+{ return sf ? sf->maxStretchRatio() : 1.0; }
+double SndFileR::minSamplerateRatio() const
+{ return sf ? sf->minSamplerateRatio() : 1.0; }
+double SndFileR::maxSamplerateRatio() const
+{ return sf ? sf->maxSamplerateRatio() : 1.0; }
+double SndFileR::minPitchShiftRatio() const
+{ return sf ? sf->minPitchShiftRatio() : 1.0; }
+double SndFileR::maxPitchShiftRatio() const
+{ return sf ? sf->maxPitchShiftRatio() : 1.0; }
+
+sf_count_t SndFileR::seek(sf_count_t frames, int whence) { return sf ? sf->seek(frames, whence) : 0; }
+sf_count_t SndFileR::seekUI(sf_count_t frames, int whence) { return sf ? sf->seekUI(frames, whence) : 0; }
+sf_count_t SndFileR::seekUIConverted(sf_count_t frames, int whence, sf_count_t offset)
+  { return sf ? sf->seekUIConverted(frames, whence, offset) : 0; }
+void SndFileR::read(SampleV* s, int mag, unsigned pos, bool overwrite, bool allowSeek)
+  { if(sf) sf->read(s, mag, pos, overwrite, allowSeek); }
+QString SndFileR::strerror() const { return sf ? sf->strerror() : QString(); }
 
 } // namespace MusECore
 

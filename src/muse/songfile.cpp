@@ -37,6 +37,8 @@
 #include "cobject.h"
 #include "drumedit.h"
 #include "pianoroll.h"
+#include "waveedit.h"
+#include "master/masteredit.h"
 #include "scoreedit.h"
 #include "globals.h"
 #include "xml.h"
@@ -992,7 +994,6 @@ void MusE::readToplevels(MusECore::Xml& xml)
                     pl->add(part);
             }
             else if (tag == "pianoroll") {
-                // p3.3.34
                 // Do not open if there are no parts.
                 // Had bogus '-1' part index for list edit in med file,
                 //  causing list edit to segfault on song load.
@@ -1000,11 +1001,24 @@ void MusE::readToplevels(MusECore::Xml& xml)
                 //  current part didn't exist anymore, so no index number
                 //  could be found for it on write. Watching... may be fixed.
                 // But for now be safe for all the top levels...
-                if(!pl->empty())
+                if(pl->empty())
+                  xml.skip(tag);
+                else
                 {
-                    startPianoroll(pl);
-                    toplevels.back()->readStatus(xml);
+                  bool createdNotFound = false;
+                  MusEGui::PianoRoll *pr = startPianoroll(pl, false, false, &createdNotFound);
+                  if(pr && createdNotFound)
+                  {
+                    pr->readStatus(xml);
                     pl = new MusECore::PartList;
+                  }
+                  else
+                  {
+                    // Should not really happen.
+                    fprintf(stderr, "WARNING: MusE::read: pianoroll already exists or was not created\n");
+                    pl->clear();
+                    xml.skip(tag);
+                  }
                 }
             }
             else if (tag == "scoreedit") {
@@ -1014,30 +1028,70 @@ void MusE::readToplevels(MusECore::Xml& xml)
                 connect(score, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
                 score->show();
                 score->readStatus(xml);
+                // Part list is not used.
+                pl->clear();
             }
             else if (tag == "drumedit") {
-                if(!pl->empty())
+                if(pl->empty())
+                  xml.skip(tag);
+                else
                 {
-                    startDrumEditor(pl);
-                    toplevels.back()->readStatus(xml);
+                  bool createdNotFound = false;
+                  MusEGui::DrumEdit *de = startDrumEditor(pl, false, false, &createdNotFound);
+                  if(de && createdNotFound)
+                  {
+                    de->readStatus(xml);
                     pl = new MusECore::PartList;
+                  }
+                  else
+                  {
+                    // Should not really happen.
+                    fprintf(stderr, "WARNING: MusE::read: drum editor already exists or was not created\n");
+                    pl->clear();
+                    xml.skip(tag);
+                  }
                 }
             }
             else if (tag == "master") {
-                startMasterEditor();
-                toplevels.back()->readStatus(xml);
+                bool createdNotFound = false;
+                MusEGui::MasterEdit *me = startMasterEditor(&createdNotFound);
+                if(me && createdNotFound)
+                  me->readStatus(xml);
+                else
+                {
+                  // Should not really happen.
+                  fprintf(stderr, "WARNING: MusE::read: master editor already exists or was not created\n");
+                  xml.skip(tag);
+                }
+                // Part list is not used.
+                pl->clear();
             }
             else if (tag == "arrangerview") {
                 TopWin* tw = toplevels.findType(TopWin::ARRANGER);
                 tw->readStatus(xml);
                 tw->showMaximized();
+                // Part list is not used.
+                pl->clear();
             }
             else if (tag == "waveedit") {
-                if(!pl->empty())
+                if(pl->empty())
+                  xml.skip(tag);
+                else
                 {
-                    startWaveEditor(pl);
-                    toplevels.back()->readStatus(xml);
+                  bool createdNotFound = false;
+                  MusEGui::WaveEdit *we = startWaveEditor(pl, false, &createdNotFound);
+                  if(we && createdNotFound)
+                  {
+                    we->readStatus(xml);
                     pl = new MusECore::PartList;
+                  }
+                  else
+                  {
+                    // Should not really happen.
+                    fprintf(stderr, "WARNING: MusE::read: wave editor already exists or was not created\n");
+                    pl->clear();
+                    xml.skip(tag);
+                  }
                 }
             }
             else

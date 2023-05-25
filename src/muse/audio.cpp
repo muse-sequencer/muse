@@ -1584,6 +1584,8 @@ void Audio::seek(const Pos& p)
           //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
           // This does not wait.
           // FIXME: Actually it WILL until the the message is sent, but which is usually right away.
+          // Diagnostics.
+          //fprintf(stderr, "Audio::seek: pos:%d\n", _pos.frame());
           MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
         }
               

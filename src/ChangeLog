@@ -1,3 +1,36 @@
+25.05.2023
+    - Fixed: More crashes / bad behaviour during song (re)loading. Further to 08.05.2023. (Tim)
+      Eliminated QPointer<MasterEdit> in class MusE. Bug was pre-existing (not me).
+      The pointer was failing to nullify itself soon enough, causing crashes and/or errors like:
+        "QMdiArea::setActiveSubWindow: window is not inside workspace" and "unknown tag <...> at line xxxx".
+
+    - Fixed: Rewrote several functions in class MusE for more safety. readToplevels() and accompanying
+        findOpenEditor(), startDrumEditor(), startMasterEditor(), startWaveEditor(), startPianoroll().
+      It was too easy for readToplevels() to mess up badly if it failed starting an editor.
+
+    - Fixed: Some, possibly all, ancient intermittent crashes when recording or playing wave tracks.
+      Our SndFile class used a reference counting system but it was non-atomic and not thread-safe.
+      Code disassembly revealed timing holes where other threads could wreak havoc.
+      Replaced with atomic reference counter and atomic pointer to SndFile.
+      Carefully rearranged and rewrote the reference counting system. Testing stable so far...
+
+    - Fixed: Transport completely unresponsive upon song load, intermittent. (My fault long ago).
+      Do not call audioPrefetch->msgSeek() in seqStart() since it's already initiated by audio start.
+      It was a non-no: Two different threads - gui and audio - had put seek messages into the prefetch
+        message pipe. The result was chaos with 'seekCount' on the prefetch end of the pipe.
+      Reset prefetch 'seekCount' to zero in AudioPrefetch::start(). In case 'seekCount' ever messes up
+        again, this allows simply reloading a song, or menu > 'Restart Audio', to fix the problem.
+      Disk prefetch thread is NO LONGER REALTIME! It is now a default NORMAL thread. (My fault long ago).
+      Rewrote MusE::seqStart() so prefetch is started before audio. Also, wait until prefetch is running!
+      TESTED OK playing and recording complex songs. The prefetch cache maintained a high fill level.
+      TODO: Now that disk prefetch thread is no longer realtime, replace its pthreads with QThread,
+        for easier cross-compatibility!
+      TO FIX: A small bug where the transport sometimes fails to return to the saved place on song load.
+
+    - Fixed: Subtle error: Editors wouldn't open multiple parts sometimes.
+      Failed if another editor contained the same number of parts AND at least one of the same parts.
+      It was a pre-existing bug in MusE::findOpenEditor() (not me).
+
 17.05.2023
     - Fixed serious typo at 13.05.2023: On load, midi config wasn't cleared, causing crashes. (Tim)
 16.05.2023

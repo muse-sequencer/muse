@@ -1927,7 +1927,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
     
       case PendingOperationItem::ModifyLocalAudioConverterSettings:
-        if(poi._type == PendingOperationItem::ModifyLocalAudioConverterSettings && *poi._sndFileR == *op._sndFileR &&
+        if(poi._type == PendingOperationItem::ModifyLocalAudioConverterSettings && poi._sndFileR == op._sndFileR &&
            poi._audio_converter_settings == op._audio_converter_settings)
         {
           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double ModifyLocalAudioConverterSettings. Ignoring.\n");
@@ -1936,7 +1936,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
     
       case PendingOperationItem::ModifyLocalAudioConverter:
-        if(poi._type == PendingOperationItem::ModifyLocalAudioConverter && *poi._sndFileR == *op._sndFileR &&
+        if(poi._type == PendingOperationItem::ModifyLocalAudioConverter && poi._sndFileR == op._sndFileR &&
            poi._audio_converter == op._audio_converter &&
            poi._audio_converter_ui == op._audio_converter_ui)
         {
@@ -1946,7 +1946,7 @@ bool PendingOperationList::add(PendingOperationItem op)
       break;
     
       case PendingOperationItem::SetAudioConverterOfflineMode:
-        if(poi._type == PendingOperationItem::SetAudioConverterOfflineMode && *poi._sndFileR == *op._sndFileR &&
+        if(poi._type == PendingOperationItem::SetAudioConverterOfflineMode && poi._sndFileR == op._sndFileR &&
            poi._audio_converter == op._audio_converter)
         {
           ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Double SetAudioConverterOfflineMode. Ignoring.\n");
