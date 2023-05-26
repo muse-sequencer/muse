@@ -1,3 +1,6 @@
+26.05.2023
+    - Fixed: DSSI plugins: Crash with plugins that have run_multiple_synths(). (Tim)
+      The function was not being called correctly, valid arrays must be passed even if empty.
 25.05.2023
     - Fixed: More crashes / bad behaviour during song (re)loading. Further to 08.05.2023. (Tim)
       Eliminated QPointer<MasterEdit> in class MusE. Bug was pre-existing (not me).

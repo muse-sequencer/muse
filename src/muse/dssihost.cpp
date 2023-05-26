@@ -1785,12 +1785,15 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
         // Run the synth for a period of time. This processes events and gets/fills our local buffers...
         if(_synth->dssi->run_synth)
         {
-          _synth->dssi->run_synth(_handle, slice_samps, events, nevents);
+          _synth->dssi->run_synth(_handle, slice_samps, nevents == 0 ? nullptr : events, nevents);
         }
         else if (_synth->dssi->run_multiple_synths)
         {
-          snd_seq_event_t* ev = events;
-          _synth->dssi->run_multiple_synths(1, &_handle, slice_samps, &ev, &nevents);
+          snd_seq_event_t* ev[1];
+          unsigned long nev[1];
+          ev[0] = (nevents == 0 ? nullptr : events);
+          nev[0] = nevents;
+          _synth->dssi->run_multiple_synths(1, &_handle, slice_samps, ev, nev);
         }
         // TIP: Until we add programs to plugins, uncomment these four checks to load dssi effects as synths, in order to have programs.
         //else
