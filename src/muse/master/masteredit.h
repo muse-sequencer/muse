@@ -39,7 +39,6 @@ namespace MusEGui {
 class Master;
 class MTScale;
 class PosLabel;
-class ScrollScale;
 class SigScale;
 class TempoEdit;
 class TempoLabel;
@@ -56,8 +55,6 @@ class MasterEdit : public MidiEditor {
       Q_OBJECT
     
       Master* canvas;
-      MusEGui::ScrollScale* hscroll;
-      MusEGui::ScrollScale* vscroll;
       MusEGui::MTScale* time1;
       MusEGui::MTScale* time2;
       MusEGui::SigScale* sign;

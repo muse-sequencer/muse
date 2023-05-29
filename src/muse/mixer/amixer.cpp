@@ -962,9 +962,15 @@ void AudioMixerApp::addStrip(const MusECore::Track* t, const MusEGlobal::StripCo
 
     // Make them non-embedded: Moveable, hideable, and with an expander handle.
     if (t->isMidiTrack())
+    {
           strip = new MidiStrip(central, (MusECore::MidiTrack*)t, true, false, _docked);
+          DEBUG_MIXER(stderr, "AudioMixerApp::addStrip: MidiStrip%p\n", strip);
+    }
     else
+    {
           strip = new AudioStrip(central, (MusECore::AudioTrack*)t, true, false, _docked);
+          DEBUG_MIXER(stderr, "AudioMixerApp::addStrip: AudioStrip%p\n", strip);
+    }
 
     // Broadcast changes to other selected tracks.
     strip->setBroadcastChanges(true);

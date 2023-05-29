@@ -1419,6 +1419,7 @@ void AudioStrip::updateChannels()
 
 AudioStrip::~AudioStrip()
       {
+        DEBUG_AUDIO_STRIP(stderr, "~AudioStrip:%p\n", this);
       }
 
 //---------------------------------------------------------
@@ -1429,6 +1430,7 @@ AudioStrip::~AudioStrip()
 AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle, bool isEmbedded, bool isDocked)
    : Strip(parent, at, hasHandle, isEmbedded, isDocked)
       {
+      DEBUG_AUDIO_STRIP(stderr, "AudioStrip::AudioStrip:%p\n", this);
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
 
       MusECore::Track::TrackType type = at->type();
@@ -1928,6 +1930,9 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       connect(_lowerRack, SIGNAL(componentMoved(int,double,int,bool)), SLOT(componentMoved(int,double,int,bool)));
       connect(_lowerRack, SIGNAL(componentPressed(int,double,int)), SLOT(componentPressed(int,double,int)));
       connect(_lowerRack, SIGNAL(componentReleased(int,double,int)), SLOT(componentReleased(int,double,int)));
+      // When closing/(re)loading, we must wait for this to delete to avoid crashes
+      //  due to still active external connections like heartBeatTimer.
+      MusEGlobal::muse->addPendingObjectDestruction(this);
 }
 
 

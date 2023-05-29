@@ -213,6 +213,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
     xscroll = new QScrollBar(Qt::Horizontal, mainw);
     yscroll = new QScrollBar(Qt::Vertical, mainw);
     time_bar = new MusEGui::MTScaleFlo(score_canvas, mainw);
+    // When closing/(re)loading, we must wait for this to delete to avoid crashes
+    //  due to still active external connections like heartBeatTimer.
+    MusEGlobal::muse->addPendingObjectDestruction(time_bar);
 
     connect(xscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(x_scroll_event(int)));
     connect(score_canvas, SIGNAL(xscroll_changed(int)), xscroll,   SLOT(setValue(int)));
@@ -1625,6 +1628,10 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 
     ensurePolished();
     init_pixmaps();
+
+    // When closing/(re)loading, we must wait for this to delete to avoid crashes
+    //  due to still active external connections like heartBeatTimer.
+    MusEGlobal::muse->addPendingObjectDestruction(this);
 }
 
 ScoreCanvas::~ScoreCanvas()

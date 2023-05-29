@@ -1461,6 +1461,7 @@ MidiStripProperties::MidiStripProperties()
 MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bool isEmbedded, bool isDocked)
    : Strip(parent, t, hasHandle, isEmbedded, isDocked)
       {
+      DEBUG_MIDI_STRIP(stderr, "MidiStrip::MidiStrip:%p\n", this);
       inHeartBeat = true;
       _heartBeatCounter = 0;
       _preferKnobs = MusEGlobal::config.preferKnobsVsSliders;
@@ -1864,6 +1865,10 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t, bool hasHandle, bo
       connect(_lowerRack, SIGNAL(componentPressed(int,double,int)), SLOT(componentPressed(int,double,int)));
       connect(_lowerRack, SIGNAL(componentReleased(int,double,int)), SLOT(componentReleased(int,double,int)));
 
+      // When closing/(re)loading, we must wait for this to delete to avoid crashes
+      //  due to still active external connections like heartBeatTimer.
+      MusEGlobal::muse->addPendingObjectDestruction(this);
+
       inHeartBeat = false;
       }
 
@@ -1875,6 +1880,11 @@ void MidiStrip::setStripStyle() {
             + "#Strip > QAbstractButton { padding: 0px; qproperty-iconSize:" +
                   QString::number(iconSize) + "px; }"
             + "#Strip #TrackOffButton { qproperty-iconSize:" + QString::number(iconSize - 2) + "px; }");
+}
+
+MidiStrip::~MidiStrip()
+{
+  DEBUG_MIDI_STRIP(stderr, "~MidiStrip:%p\n", this);
 }
 
 //---------------------------------------------------

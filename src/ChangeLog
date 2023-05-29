@@ -1,3 +1,11 @@
+29.05.2023
+    - Fixed: Still more crashes / bad behaviour on song (re)load. Further to 25.05.2023. (Tim)
+      Fix at 13.05.2023 (wait for top level widgets to be deleted before continuing with load) was good
+       but needed to include more than just the top levels. Child widget destructors are called AFTER
+       the parent. So there was no choice - add SOME of those widgets to the list of pending deletes.
+      Specifically, widgets connected to external signals heartBeat timer, songChanged, configChanged.
+    - Fixed: Another crash in Master Editor: Removed members 'hscroll' and 'vscroll' which were hiding
+       base MidiEditor versions causing crash. Also initialize base hscroll, vscroll, time to null.
 26.05.2023
     - Fixed: DSSI plugins: Crash with plugins that have run_multiple_synths(). (Tim)
       The function was not being called correctly, valid arrays must be passed even if empty.

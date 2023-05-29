@@ -34,6 +34,8 @@
 #include <QRect>
 #include <QString>
 #include <QList>
+#include <QMap>
+#include <QMetaObject>
 
 #include <list>
 #include <time.h>
@@ -140,7 +142,26 @@ class MusE : public QMainWindow
         LoadingFinishStruct(Type type, Flags flags = NoFlag, const QString &fileName = QString());
     };
     QList<LoadingFinishStruct> _loadingFinishStructList;
-    QList<QObject*> _pendingTopWinDestructions;
+    struct ObjectDestructionStruct
+    {
+      QMetaObject::Connection _conn;
+      bool _waitForDelete;
+      ObjectDestructionStruct(const QMetaObject::Connection& conn, bool waitForDelete = false);
+    };
+    class ObjectDestructions : public QMap<QObject*, ObjectDestructionStruct>
+    {
+      public:
+        // findWait: True: Search only those marked with wait. False: Search only those NOT marked with wait.
+        // Use normal find() to search all.
+        Iterator findObject(QObject* obj, bool findWait);
+        ConstIterator findObject(QObject* obj, bool findWait) const;
+        // Returns true if there are any objects marked as waiting.
+        bool hasWaitingObjects() const;
+        // Sets or clears all as to wait. Returns true if not empty (has any waiting objects).
+        bool markAll(bool asWait);
+    };
+
+    ObjectDestructions _pendingObjectDestructions;
     bool _busyWithLoading;
 #endif
 
@@ -482,7 +503,7 @@ public slots:
     void saveProjectRecentList();
 
 #ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
-    void topWinDestroyed(QObject *obj);
+    void objectDestroyed(QObject *obj);
 #endif
 
 public:
@@ -553,6 +574,11 @@ public:
 #ifdef HAVE_LASH
     void lash_idle_cb ();
 #endif
+
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+    void addPendingObjectDestruction(QObject*);
+#endif
+
 };
 
 //extern void addProject(const QString& name);

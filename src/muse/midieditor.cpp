@@ -81,7 +81,10 @@ MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
       
       trackInfoWidget = nullptr;
       selected = nullptr;
-      
+      hscroll = nullptr;
+      vscroll = nullptr;
+      time = nullptr;
+
       //wview    = 0;
       _curDrumInstrument = -1;
       mainw    = new QWidget(this);
@@ -558,6 +561,8 @@ void MidiEditor::addNewParts(const std::map< const MusECore::Part*, std::set<con
 }
 
 void MidiEditor::setHScrollOffset(const int value) {
+    if(!hscroll)
+      return;
     int min, max;
     hscroll->range(&min, &max);
     int pos = qMin(qMax(min, value), max);

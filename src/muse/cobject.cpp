@@ -215,9 +215,9 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 #ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
     // Inform when destroyed.
-    // We do not want the arranger included here.
-//     if(_type != ARRANGER)
-    _topWinDestroyedMetaConn = connect(this, &TopWin::destroyed, [](QObject *obj) { MusEGlobal::muse->topWinDestroyed(obj); } );
+    // We do not want the ArrangerView included here.
+    if(_type != ARRANGER)
+      MusEGlobal::muse->addPendingObjectDestruction(this);
 #endif
 
 }
@@ -833,13 +833,6 @@ void TopWin::setOpenInNewWin(bool newwin)
         setIsMdiWin(true);
 }
 
-void TopWin::disconnectTopWinDestroyedMetaConn()
-{
-#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
-  disconnect(_topWinDestroyedMetaConn);
-#endif
-}
-
 //void TopWin::windowStateChanged(Qt::WindowStates oldState, Qt::WindowStates newState)
 //{
 //    // Due to bug in Oxygen and Breeze at least on *buntu 16.04 LTS and some other distros,
@@ -862,12 +855,6 @@ TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
             return (*i);
     }
     return nullptr;
-}
-
-void ToplevelList::disconnectAllTopWinDestroyedMetaConn()
-{
-  for(iterator i = begin(); i != end(); ++i)
-    (*i)->disconnectTopWinDestroyedMetaConn();
 }
 
 } // namespace MusEGui

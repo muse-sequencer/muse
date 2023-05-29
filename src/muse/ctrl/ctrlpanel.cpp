@@ -147,6 +147,9 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
       setLayout(vbox);
+      // When closing/(re)loading, we must wait for this to delete to avoid crashes
+      //  due to still active external connections like heartBeatTimer.
+      MusEGlobal::muse->addPendingObjectDestruction(this);
       }
 
 void CtrlPanel::buildPanel()

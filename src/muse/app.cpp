@@ -195,6 +195,47 @@ MusE::LoadingFinishStruct::LoadingFinishStruct(Type type, Flags flags, const QSt
   : _type(type), _flags(flags), _fileName(fileName)
 {
 }
+
+MusE::ObjectDestructionStruct::ObjectDestructionStruct(const QMetaObject::Connection& conn, bool waitForDelete)
+{
+  _conn = conn;
+  _waitForDelete = waitForDelete;
+}
+
+MusE::ObjectDestructions::Iterator MusE::ObjectDestructions::findObject(QObject* obj, bool findWait)
+{
+  ObjectDestructions::Iterator it = QMap<QObject*, ObjectDestructionStruct>::find(obj);
+  const bool found = it != end();
+  if(found)
+  {
+    if(it.value()._waitForDelete == findWait)
+      return it;
+  }
+  return end();
+}
+MusE::ObjectDestructions::ConstIterator MusE::ObjectDestructions::findObject(QObject* obj, bool findWait) const
+{
+  ObjectDestructions::ConstIterator it = QMap<QObject*, ObjectDestructionStruct>::constFind(obj);
+  const bool found = it != constEnd();
+  if(found && it.value()._waitForDelete == findWait)
+    return it;
+  return constEnd();
+}
+bool MusE::ObjectDestructions::hasWaitingObjects() const
+{
+  for(ObjectDestructions::ConstIterator it = constBegin(); it != constEnd(); ++it)
+  {
+    if(it.value()._waitForDelete)
+      return true;
+  }
+  return false;
+}
+bool MusE::ObjectDestructions::markAll(bool asWait)
+{
+  for(ObjectDestructions::Iterator it = begin(); it != end(); ++it)
+    it.value()._waitForDelete = asWait;
+  return !empty();
+}
 #endif
 
 #ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
@@ -248,17 +289,19 @@ void MusE::executeLoadingFinish()
 #endif
 
 #ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
-void MusE::topWinDestroyed(QObject *obj)
+void MusE::objectDestroyed(QObject *obj)
 {
-  const int idx = _pendingTopWinDestructions.indexOf(obj);
-  if(idx != -1)
-    _pendingTopWinDestructions.removeAt(idx);
+  // Find any object regardless of being marked to wait for.
+  ObjectDestructions::Iterator it = _pendingObjectDestructions.find(obj);
+  const bool found = it != _pendingObjectDestructions.end();
+  if(found)
+    _pendingObjectDestructions.erase(it);
 
-  DEBUG_LOADING_AND_CLEARING(stderr, "MusE::topWinDestroyed obj:%p idx:%d _pendingTopWinDestructions:%d\n",
-    obj, idx, _pendingTopWinDestructions.size());
+  DEBUG_LOADING_AND_CLEARING(stderr, "MusE::objectDestroyed obj:%p found:%d _pendingObjectDestructions (after erase):%d\n",
+    obj, found, _pendingObjectDestructions.size());
 
   // Still more deletions to wait for?
-  if(!_pendingTopWinDestructions.empty())
+  if(_pendingObjectDestructions.hasWaitingObjects())
     return;
 
   // All top level deletions that we were waiting for have now been deleted.
@@ -1276,8 +1319,11 @@ MusE::~MusE()
 #ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
   // This destructor is called before the TopWin destructors (which seem to be called with deleteLate()).
   // So we need to manually disconnect them now, otherwise by the time we are notified of their destruction
-  //  in MusE::topWinDestroyed(), MusE has already been destroyed, causing crashes!
-  toplevels.disconnectAllTopWinDestroyedMetaConn();
+  //  in MusE::objectDestroyed(), MusE has already been destroyed, causing crashes!
+  for(ObjectDestructions::ConstIterator it = _pendingObjectDestructions.constBegin();
+      it != _pendingObjectDestructions.constEnd(); ++it)
+    disconnect(it.value()._conn);
+  _pendingObjectDestructions.clear();
 #endif
 }
 
@@ -1507,7 +1553,7 @@ void MusE::localOff()
 // for drop:
 void MusE::loadProjectFile(const QString& name)
       {
-      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile: name:%s\n", name.toUtf8().constData());
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile(name:%s)\n", name.toUtf8().constData());
 
       loadProjectFile(name, false, false);
       }
@@ -1630,14 +1676,14 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
       if(!loadOk)
       {
         // Clear these, they might not be empty.
-        _pendingTopWinDestructions.clear();
+        _pendingObjectDestructions.clear();
         _loadingFinishStructList.clear();
         finishLoadProjectFile(restartSequencer);
         return false;
       }
 
       // If there is nothing to wait for to be deleted, then just continue finishing.
-      if(_pendingTopWinDestructions.empty())
+      if(!_pendingObjectDestructions.hasWaitingObjects())
       {
         // Should already be clear, but just in case.
         _loadingFinishStructList.clear();
@@ -1991,7 +2037,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
         return false;
 
       // If there is nothing to wait for to be deleted, then just continue finishing.
-      if(_pendingTopWinDestructions.empty())
+      if(!_pendingObjectDestructions.hasWaitingObjects())
       {
         // Should already be clear, but just in case.
         _loadingFinishStructList.clear();
@@ -2170,6 +2216,9 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
 
                   if(f) {
                         MusECore::Xml xml(f);
+                        // NOTE: During loading, new items may be added to _pendingObjectDestructions.
+                        //       They will be marked as not waiting for deletion so that they do not
+                        //        interfere with items marked as waiting for deletion, during closing/loading.
                         read(xml, doReadMidiPorts, songTemplate);
                         bool fileError = ferror(f);
                         popenFlag ? pclose(f) : fclose(f);
@@ -2376,7 +2425,7 @@ void MusE::fileClose()
     }
 
     // If there is nothing to wait for to be deleted, then just continue finishing.
-    if(_pendingTopWinDestructions.empty())
+    if(!_pendingObjectDestructions.hasWaitingObjects())
     {
       // Should already be clear, but just in case.
       _loadingFinishStructList.clear();
@@ -2518,7 +2567,7 @@ void MusE::loadTemplate()
         return;
 
       // If there is nothing to wait for to be deleted, then just continue finishing.
-      if(_pendingTopWinDestructions.empty())
+      if(!_pendingObjectDestructions.hasWaitingObjects())
       {
         // Should already be clear, but just in case.
         _loadingFinishStructList.clear();
@@ -2573,7 +2622,7 @@ void MusE::loadDefaultTemplate()
       return;
 
     // If there is nothing to wait for to be deleted, then just continue finishing.
-    if(_pendingTopWinDestructions.empty())
+    if(!_pendingObjectDestructions.hasWaitingObjects())
     {
       // Should already be clear, but just in case.
       _loadingFinishStructList.clear();
@@ -4425,6 +4474,8 @@ bool MusE::clearSong(bool clear_all)
         }
     }
 
+    // Just some useful info and previous tests and attempts...
+    //
     // Are any of the windows marked as 'delete on close'?
     // Then we MUST wait until they delete, otherwise crashes will happen
     //  when the song is cleared due to still-active signal/slot connections
@@ -4505,7 +4556,19 @@ bool MusE::clearSong(bool clear_all)
     }
     microSleep(100000);
 
-    _pendingTopWinDestructions.clear();
+    // Mark all objects currently in the list as waiting to be deleted.
+    // NOTE: During loading, new items may be added to _pendingObjectDestructions.
+    // They will be marked as not waiting for deletion so that they do not
+    //  interfere with items marked as waiting for deletion, during closing/loading.
+    const bool hasWaitingObjects =_pendingObjectDestructions.markAll(true);
+
+    // Are there objects that we must wait for to be deleted? Append a loading finish structure.
+    if(hasWaitingObjects)
+    {
+      _loadingFinishStructList.append(MusE::LoadingFinishStruct(
+        MusE::LoadingFinishStruct::ClearSong,
+        clear_all ? MusE::LoadingFinishStruct::ClearAll : MusE::LoadingFinishStruct::NoFlag));
+    }
 
     // We must make a working COPY of the top level list because some of their
     //  closeEvent() functions eventually call MusE::topLevelDeleting() which
@@ -4531,20 +4594,6 @@ bool MusE::clearSong(bool clear_all)
         {
             if(tl->isVisible())   // Don't keep trying to close, only if visible.
             {
-                // Is it to be deleted upon closing?
-                if(tl->testAttribute(Qt::WA_DeleteOnClose))
-                {
-                  // First time? Append a loading finish structure.
-                  if(_pendingTopWinDestructions.empty())
-                  {
-                    _loadingFinishStructList.append(MusE::LoadingFinishStruct(
-                      MusE::LoadingFinishStruct::ClearSong,
-                      clear_all ? MusE::LoadingFinishStruct::ClearAll : MusE::LoadingFinishStruct::NoFlag));
-                  }
-                  // Append it to the list of objects waiting to be deleted.
-                  _pendingTopWinDestructions.append(tl);
-                }
-
                 DEBUG_LOADING_AND_CLEARING(stderr, "MusE::clearSong closing TopWin:%p <%s>\n",
                   tl, TopWin::typeName(tl->type()).toUtf8().constData());
 
@@ -4564,13 +4613,18 @@ bool MusE::clearSong(bool clear_all)
     }
 
     // If there is nothing to wait for to be deleted, then just continue finishing.
-    if(_pendingTopWinDestructions.empty())
+    // Note it is possible some of the objects may have been already immediately deleted
+    //  by closing the top wins, and they would have been removed from the list by our
+    //  destroyed() handler, so we check again whether the list is empty.
+    if(!_pendingObjectDestructions.hasWaitingObjects())
     {
       // Should already be clear, but just in case.
       _loadingFinishStructList.clear();
       finishClearSong(clear_all);
     }
 
+    // Just some useful info and previous tests and attempts...
+    //
     // Are any of the windows marked as 'delete on close'?
     // Then we MUST wait until they delete, otherwise crashes will happen
     //  when the song is cleared due to still-active signal/slot connections
@@ -4597,7 +4651,7 @@ bool MusE::clearSong(bool clear_all)
     //  sendPostedEvents() would suggest that simply all events are dispatched,
     //  and does not state any exceptions (like DeferredDelete).
     //===================================================================================
-    // TESTED: Yep. Apparently that's still true today. WTF?
+    // TESTED: Yep. Apparently that's still true today. ???
     // Posted bug report. Immediate reply from Qt bugs:
     // "Not a bug. Deferred deletions depend on the loop nesting level and calling processEvents or sendPostedEvents
     //  directly will not cause those you've just posted to get processed. You need return."
@@ -6101,4 +6155,12 @@ QMenu* MusE::createPopupMenu() {
     return menu;
 }
 
+#ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+void MusE::addPendingObjectDestruction(QObject* obj)
+{
+  const QMetaObject::Connection conn = connect(obj, &QObject::destroyed, [this](QObject *obj) { objectDestroyed(obj); } );
+  if(conn)
+    _pendingObjectDestructions.insert(obj, ObjectDestructionStruct(conn));
+}
+#endif
 } //namespace MusEGui
