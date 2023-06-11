@@ -41,6 +41,9 @@
 #include "track.h"
 #include "xml.h"
 
+// For debugging loading, saving, copy, paste, clone: Uncomment the fprintf section.
+#define DEBUG_PART_LOADSAVE(dev, format, args...) // fprintf(dev, format, ##args);
+
 namespace MusECore {
 
 //---------------------------------------------------------
@@ -168,7 +171,11 @@ void Part::unchainClone()
   // Isolate the part.
   _prevClone = this;
   _nextClone = this;
-  
+
+  DEBUG_PART_LOADSAVE(stderr, "Part::unchainClone:%p %s muuid cur:%s new:%s\n",
+    this, name().toUtf8().constData(),
+    _clonemaster_uuid.toString().toUtf8().constData(), _uuid.toString().toUtf8().constData());
+
   _clonemaster_uuid = this->_uuid;
 }
 
@@ -193,13 +200,24 @@ void Part::chainClone(Part* p)
   
   // we only chain clones. we must trust in the GUI thread that the eventlist is consistent.
   
-  this->_clonemaster_uuid = p->_uuid;
+  DEBUG_PART_LOADSAVE(stderr, "Part::chainClone:%p %s part:%p %s muuid cur:%s new:%s\n",
+    this, name().toUtf8().constData(),
+    p, p->name().toUtf8().constData(),
+    _clonemaster_uuid.toString().toUtf8().constData(), p->_uuid.toString().toUtf8().constData());
+
+  this->_clonemaster_uuid = p->clonemaster_uuid();
 }
 
 void Part::rechainClone()
 {
     if(_backupClone)
     {
+      DEBUG_PART_LOADSAVE(stderr, "Part::rechainClone:%p %s muuid:%s _backupClone:%p %s muuid:%s calling chainClone...\n",
+        this, name().toUtf8().constData(),
+        _clonemaster_uuid.toString().toUtf8().constData(),
+        _backupClone, _backupClone->name().toUtf8().constData(),
+        _backupClone->clonemaster_uuid().toString().toUtf8().constData());
+
         this->chainClone(_backupClone);
         _backupClone = nullptr;
     }
@@ -897,18 +915,5 @@ bool WavePart::closeAllEvents()
   }
   return closed;
 }
-      
-//---------------------------------------------------------
-//   ClonePart
-//---------------------------------------------------------
-
-ClonePart::ClonePart(const Part* p, int i) 
-{
-  cp = p;
-  id = i;
-  is_deleted = false;
-  _uuid = QUuid::createUuid();
-}
-
 
 } // namespace MusECore

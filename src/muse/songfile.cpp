@@ -60,6 +60,9 @@
 // Forwards from header:
 #include "xml_statistics.h"
 
+// For debugging loading, saving, copy, paste, clone: Uncomment the fprintf section.
+#define DEBUG_SONGFILE(dev, format, args...) // fprintf(dev, format, ##args);
+
 namespace MusECore {
 
 
@@ -143,7 +146,10 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
       Track* t = nullptr;
       Track* fin_track = nullptr;
       Part* npart = nullptr;
+      Track::TrackType xmlTrackType = Track::MIDI;
+      bool xmlTrackTypeValid = false;
       bool clone = true;
+      bool xmlPartWasClone = false;
       bool wave = false;
       const TrackList* tl = MusEGlobal::song->tracks();
       const ciTrack itlend = tl->cend();
@@ -161,26 +167,6 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                           if(!trackUuid.isNull()) // If a track serial number was found...
                             origTrack = tl->findUuid(trackUuid);
 
-// TODO Maybe use this?
-//                           // If a track was given and an original track was found but
-//                           //  their types do not match, return.
-//                           if(origTrack) {
-//                             if(track && origTrack->type() != track->type())
-//                             {
-//                               xml.skip("part");
-//                               return nullptr;
-//                             }
-//                           }
-//                           else {
-//                             // If a track was given and an original track type was given but
-//                             //  their types do not match, return.
-//                             if(track && trackType != track->type())
-//                             {
-//                               xml.skip("part");
-//                               return nullptr;
-//                             }
-//                           }
-
                           // Track given? Use it.
                           if(track)
                             fin_track = track;
@@ -194,8 +180,23 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                             return nullptr;
                           }
 
+                          bool uuidFoundInTracks = false;
+
+                          DEBUG_SONGFILE(stderr, "Part::readFromXml: fin_track:%p %s stats:%p doClone:%d\n",
+                            fin_track, fin_track->name().toUtf8().constData(), stats, doClone);
+
                           if(!cloneUuid.isNull()) // If a clone uuid was found...
                           {
+                            DEBUG_SONGFILE(stderr, " cloneUuid valid:%s\n",
+                              cloneUuid.toString().toUtf8().constData());
+
+                            // The original track type and the destination track type must be the same.
+                            if(!xmlTrackTypeValid || xmlTrackType != fin_track->type())
+                            {
+                              xml.skip("part");
+                              return nullptr;
+                            }
+
                             // Find a clone part in the stats list with the same clonemaster id.
                             if(stats)
                             {
@@ -203,32 +204,65 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                               if(part)
                               {
                                 npart = fin_track->newPart(part, true);
+
+                                DEBUG_SONGFILE(stderr, " found in stats: part:%p npart:%p muuid:%s\n",
+                                  part,
+                                  npart, npart->clonemaster_uuid().toString().toUtf8().constData());
+
                                 break;
                               }
                             }
 
-                            // Do we want to create a clone of an original existing part?
-                            if(doClone)
+                            // Find any existing track clone part with the same clonemaster id.
+                            for(ciTrack it = tl->cbegin(); it != itlend; ++it)
                             {
-                              // Find any existing track clone part with the same clonemaster id.
-                              for(ciTrack it = tl->cbegin(); it != itlend; ++it)
+                              t = *it;
+
+                              // The found track type and the destination track type must be the same.
+                              if(t->type() != fin_track->type())
+                                continue;
+
+                              Part* part = t->parts()->findCloneMaster(cloneUuid);
+                              if(part)
                               {
-                                t = *it;
-                                Part* part = t->parts()->findCloneMaster(cloneUuid);
-                                if(part)
+                                uuidFoundInTracks = true;
+
+                                DEBUG_SONGFILE(stderr, " found in track:%p %s part:%p hasClones:%d\n",
+                                  t, t->name().toUtf8().constData(), part, part->hasClones());
+
+                                // Is the found part a clone?
+                                const bool isclone = part->hasClones();
+
+                                if(
+                                  // If the found part is a clone, then clone it. Always.
+                                  isclone ||
+                                  // The found part is not a clone. Do we WANT to clone it?
+                                  (doClone &&
+                                  // Only if the xml part was NOT a clone.
+                                  // Do not clone the found part if the xml part was a clone
+                                  //  and the found part is not. That is possible: Copy two clones,
+                                  //  then de-clone one of them, then paste. This will handle it smoothly,
+                                  //  ensuring two pasted clones WITHOUT chaining to the existing (now) non-clone.
+                                  !xmlPartWasClone))
                                 {
                                   // Create a clone. It must still be added later in a operationgroup
                                   // The track (t) that we happened to find a cloneable part on
                                   //  is NOT the track we want to paste to. We want the given track.
                                   npart = fin_track->newPart(part, true);
-                                  break;
+
+                                  DEBUG_SONGFILE(stderr, " npart:%p muuid:%s\n",
+                                    npart, npart->clonemaster_uuid().toString().toUtf8().constData());
                                 }
+                                break;
                               }
                             }
                           }
 
-                          if(cloneId != -1) // If an id was found...
+                          // If the part has not been created and an id was found...
+                          if(!npart && cloneId != -1)
                           {
+                            DEBUG_SONGFILE(stderr, " cloneId valid:%d\n", cloneId);
+
                             // Find a clone part in the stats list with the same clone id.
                             if(stats)
                             {
@@ -236,6 +270,11 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                               if(part)
                               {
                                 npart = fin_track->newPart(part, true);
+
+                                DEBUG_SONGFILE(stderr, " found in stats: part:%p npart:%p muuid:%s\n",
+                                  part,
+                                  npart, npart->clonemaster_uuid().toString().toUtf8().constData());
+
                                 break;
                               }
                             }
@@ -243,7 +282,6 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
 
                           if(!npart) // If the part still has not been created yet...
                           {
-
                             // If we're pasting to selected track and the 'wave'
                             //  variable is valid, check for mismatch...
                             if(wave || !trackIsParent)
@@ -272,14 +310,27 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                             //  attribute section did not create a clone from any matching part.
                             clone = false;
 
+                            DEBUG_SONGFILE(stderr, " new npart:%p muuid:%s\n",
+                              npart, npart->clonemaster_uuid().toString().toUtf8().constData());
+
                             // New part creates its own clone master uuid, but we need to replace it.
-                            if(!cloneUuid.isNull())
+                            // ONLY if the uuid was not already found in tracks.
+                            // That handles the situation where parts are copied, then erased, then pasted.
+                            if(!cloneUuid.isNull() && !uuidFoundInTracks)
+                            {
                               npart->setClonemasterUuid(cloneUuid);
+                              DEBUG_SONGFILE(stderr, " set npart muuid:%s\n",
+                                npart->clonemaster_uuid().toString().toUtf8().constData());
+                            }
 
                             // If an id or uuid was found, add the part to the clone list
                             //  so that subsequent parts can look it up and clone from it...
+                            // Include the given uuid since the new part's uuid may be different (see above).
                             if(stats && (!cloneUuid.isNull() || cloneId != -1))
-                              stats->_parts.push_back(XmlReadStatsStruct(npart, cloneId));
+                            {
+                              DEBUG_SONGFILE(stderr, " adding to stats: cloneId:%d\n", cloneId);
+                              stats->_parts.push_back(XmlReadStatsStruct(npart, cloneUuid, cloneId));
+                            }
                           }
                         }
 
@@ -313,8 +364,6 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                               if(!clone)
                               {
                                 EventType type = Wave;
-//                                 if(track->isMidiTrack())
-                                //if(fin_track->isMidiTrack())
                                 if(npart->partType() == Part::MidiPartType)
                                   type = Note;
                                 Event e(type);
@@ -359,9 +408,9 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                         {
                           cloneUuid = QUuid(xml.s2());
                         }
-                        // Obsolete.
                         else if(tag == "isclone")
                         {
+                          xmlPartWasClone = xml.s2().toInt();
                         }
                         else if (tag == "trackUuid")
                         {
@@ -369,8 +418,8 @@ Part* Part::readFromXml(Xml& xml, Track* track, XmlReadStatistics* stats, bool d
                         }
                         else if (tag == "trackType")
                         {
-                          // Not used yet.
-                          //trackType = Track::TrackType(xml.s2().toUInt());
+                          xmlTrackType = Track::TrackType(xml.s2().toUInt());
+                          xmlTrackTypeValid = true;
                         }
                         else
                           fprintf(stderr, "Part::readFromXml unknown tag %s\n", tag.toLatin1().constData());
@@ -407,9 +456,12 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths, XmlWrite
 
       bool midi = partType() == Part::MidiPartType;
 
-      bool clonemasterExists = false;
-      if(stats && stats->clonemasterPartExists(clonemaster_uuid()))
-        clonemasterExists = true;
+      int clonemasterID = -1;
+      if(stats)
+        clonemasterID = stats->cloneID(clonemaster_uuid());
+      const bool clonemasterIDFound = clonemasterID != -1;
+
+      const bool hasclones = hasClones();
 
       xml.nput(level, "<part");
 
@@ -421,28 +473,32 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths, XmlWrite
       //if(isCopy || saveUuidsInSong)
       //  xml.nput(" uuidSn=\"%s\"", uuid().toString().toLatin1().constData());
 
-      if(hasClones())
+      if(hasclones)
       {
         // If this is the first time writing a clone part with this clonemaster serial number,
-        //  remember the part.
-        if(stats && !clonemasterExists)
-          stats->_parts.insert(const_cast<Part*>(this));
-
-        if(isCopy || saveUuidsInSong)
-        {
-          // Write the full globally unique clonemaster identifier.
-          xml.nput(" uuid=\"%s\"", clonemaster_uuid().toString().toLatin1().constData());
-        }
-        else
-        {
-          // Write a 'clonemaster counter' using the increasing parts container size.
-          // These numbers look nicer than a clonemaster serial number or uuid.
-          // They conveniently start at zero so users can easily read the various
-          //  clone chains in a song file.
-          if(stats)
-            xml.nput(" cloneId=\"%d\"", stats->cloneIDCount());
-        }
+        //  remember the part and grab its clone ID counter after adding.
+        if(stats && !clonemasterIDFound)
+          clonemasterID = stats->addPart(const_cast<Part*>(this));
       }
+
+      if(isCopy || saveUuidsInSong)
+      {
+        // Write the full globally unique clonemaster identifier.
+        xml.nput(" uuid=\"%s\"", clonemaster_uuid().toString().toLatin1().constData());
+      }
+      else if(hasclones)
+      {
+        // Write a 'clonemaster counter' using the increasing parts container size.
+        // These numbers look nicer than a clonemaster serial number or uuid.
+        // They conveniently start at zero so users can easily read the various
+        //  clone chains in a song file.
+        if(stats)
+          xml.nput(" cloneId=\"%d\"", clonemasterID);
+      }
+
+      // If this is a copy operation, not a song save operation, include whether the part is a clone.
+      if(isCopy && hasclones)
+        xml.nput(" isclone=\"1\"");
 
       // If this is a copy operation, not a song save operation, include
       //  information about the original track to help with pasting or
@@ -469,7 +525,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths, XmlWrite
       //  write the events, even if this part itself is a clone.
       // Otherwise another part with that clonemaster serial number has already written
       //  its events. Don't bother writing this part's events since they would be redundant.
-      if ( !clonemasterExists ) {
+      if ( !clonemasterIDFound ) {
             for (ciEvent e = events().begin(); e != events().end(); ++e)
                   e->second.write(level, xml, *this, forceWavePaths);
             }

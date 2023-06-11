@@ -35,20 +35,25 @@ class Part;
 
 struct XmlWriteStatistics
 {
-  std::set<Part*> _parts;
+  std::vector<Part*> _parts;
 
   Part* findClonemasterPart(const QUuid&) const;
   bool clonemasterPartExists(const QUuid&) const;
-  int cloneIDCount() const;
+  // Returns the clone ID count if found. Returns -1 if not found.
+  int cloneID(const QUuid&) const;
+  // Returns the clone ID counter after adding.
+  int addPart(Part*);
 };
 
 struct XmlReadStatsStruct
 {
   Part* _part;
   int _cloneNum;
+  QUuid _fileUuid;
 
   // CloneNum is only used for song files. Other operations use part uuids.
-  XmlReadStatsStruct(Part* part, int cloneNum = -1);
+  // fileUuid is the original clonemaster uuid found in the xml.
+  XmlReadStatsStruct(Part* part, const QUuid& fileUuid, int cloneNum = -1);
 };
 
 struct XmlReadStatistics

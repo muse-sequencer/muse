@@ -31,7 +31,7 @@ namespace MusECore {
 
 Part* XmlWriteStatistics::findClonemasterPart(const QUuid& cloneUuid) const
 {
-  for(std::set<Part*>::const_iterator ip = _parts.cbegin(); ip != _parts.cend(); ++ip)
+  for(std::vector<Part*>::const_iterator ip = _parts.cbegin(); ip != _parts.cend(); ++ip)
   {
     if((*ip)->clonemaster_uuid() == cloneUuid)
       return *ip;
@@ -41,7 +41,7 @@ Part* XmlWriteStatistics::findClonemasterPart(const QUuid& cloneUuid) const
 
 bool XmlWriteStatistics::clonemasterPartExists(const QUuid& cloneUuid) const
 {
-  for(std::set<Part*>::const_iterator ip = _parts.cbegin(); ip != _parts.cend(); ++ip)
+  for(std::vector<Part*>::const_iterator ip = _parts.cbegin(); ip != _parts.cend(); ++ip)
   {
     if((*ip)->clonemaster_uuid() == cloneUuid)
       return true;
@@ -49,18 +49,26 @@ bool XmlWriteStatistics::clonemasterPartExists(const QUuid& cloneUuid) const
   return false;
 }
 
-int XmlWriteStatistics::cloneIDCount() const
+int XmlWriteStatistics::cloneID(const QUuid& cloneUuid) const
 {
-  // We want the clone id count to start at 0 if empty and 0 with one item,
-  //  1 with two items, 2 with 3 items etc.
-  if(_parts.empty())
-    return 0;
+  int i = 0;
+  for(std::vector<Part*>::const_iterator ip = _parts.cbegin(); ip != _parts.cend(); ++ip, ++i)
+  {
+    if((*ip)->clonemaster_uuid() == cloneUuid)
+      return i;
+  }
+  return -1;
+}
+
+int XmlWriteStatistics::addPart(Part* part)
+{
+  _parts.push_back(part);
   return _parts.size() - 1;
 }
 
 
-XmlReadStatsStruct::XmlReadStatsStruct(Part* part, int cloneNum)
-  : _part(part), _cloneNum(cloneNum)
+XmlReadStatsStruct::XmlReadStatsStruct(Part* part, const QUuid& fileUuid, int cloneNum)
+  : _part(part), _cloneNum(cloneNum), _fileUuid(fileUuid)
 {
 }
 
@@ -68,7 +76,7 @@ Part* XmlReadStatistics::findClonemasterPart(const QUuid& cloneUuid) const
 {
   for(std::vector<XmlReadStatsStruct>::const_iterator ip = _parts.cbegin(); ip != _parts.cend(); ++ip)
   {
-    if(ip->_part->clonemaster_uuid() == cloneUuid)
+    if(ip->_fileUuid == cloneUuid)
       return ip->_part;
   }
   return nullptr;
@@ -78,7 +86,7 @@ bool XmlReadStatistics::clonemasterPartExists(const QUuid& cloneUuid) const
 {
   for(std::vector<XmlReadStatsStruct>::const_iterator ip = _parts.cbegin(); ip != _parts.cend(); ++ip)
   {
-    if(ip->_part->clonemaster_uuid() == cloneUuid)
+    if(ip->_fileUuid == cloneUuid)
       return true;
   }
   return false;

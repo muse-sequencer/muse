@@ -2026,6 +2026,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
         name.toUtf8().constData(), songTemplate, doReadMidiPorts);
 
+// REMOVE Tim. buf. Removed. Moved into clearSong().
       if (mixer1)
             mixer1->clearAndDelete();
       if (mixer2)
@@ -4556,6 +4557,13 @@ bool MusE::clearSong(bool clear_all)
     }
     microSleep(100000);
 
+// REMOVE Tim. buf. Added. Moved here from loadProjectFile1().
+//     if (mixer1)
+//           mixer1->clearAndDelete();
+//     if (mixer2)
+//           mixer2->clearAndDelete();
+//     _arranger->clear();      // clear track info
+
     // Mark all objects currently in the list as waiting to be deleted.
     // NOTE: During loading, new items may be added to _pendingObjectDestructions.
     // They will be marked as not waiting for deletion so that they do not
@@ -4569,6 +4577,13 @@ bool MusE::clearSong(bool clear_all)
         MusE::LoadingFinishStruct::ClearSong,
         clear_all ? MusE::LoadingFinishStruct::ClearAll : MusE::LoadingFinishStruct::NoFlag));
     }
+
+// REMOVE Tim. buf. Added. Moved here from loadProjectFile1().
+//     if (mixer1)
+//           mixer1->clearAndDelete();
+//     if (mixer2)
+//           mixer2->clearAndDelete();
+//     _arranger->clear();      // clear track info
 
     // We must make a working COPY of the top level list because some of their
     //  closeEvent() functions eventually call MusE::topLevelDeleting() which

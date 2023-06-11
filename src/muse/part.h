@@ -265,17 +265,6 @@ class WavePart : public Part {
       virtual void dump(int n = 0) const;
       };
 
-struct ClonePart {
-      const Part* cp;
-      int id;
-      QUuid _uuid;
-      bool is_deleted;
-      ClonePart(const Part*, int i = -1);
-      };
-
-typedef std::list<ClonePart> CloneList;
-typedef CloneList::iterator iClone;
-
 //---------------------------------------------------------
 //   PartList
 //---------------------------------------------------------
