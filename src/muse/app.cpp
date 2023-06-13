@@ -2026,13 +2026,6 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
         name.toUtf8().constData(), songTemplate, doReadMidiPorts);
 
-// REMOVE Tim. buf. Removed. Moved into clearSong().
-      if (mixer1)
-            mixer1->clearAndDelete();
-      if (mixer2)
-            mixer2->clearAndDelete();
-      _arranger->clear();      // clear track info
-
       const bool isOk = clearSong(doReadMidiPorts);  // Allow not touching things like midi ports.
       if(!isOk)
         return false;
@@ -4557,13 +4550,6 @@ bool MusE::clearSong(bool clear_all)
     }
     microSleep(100000);
 
-// REMOVE Tim. buf. Added. Moved here from loadProjectFile1().
-//     if (mixer1)
-//           mixer1->clearAndDelete();
-//     if (mixer2)
-//           mixer2->clearAndDelete();
-//     _arranger->clear();      // clear track info
-
     // Mark all objects currently in the list as waiting to be deleted.
     // NOTE: During loading, new items may be added to _pendingObjectDestructions.
     // They will be marked as not waiting for deletion so that they do not
@@ -4578,12 +4564,15 @@ bool MusE::clearSong(bool clear_all)
         clear_all ? MusE::LoadingFinishStruct::ClearAll : MusE::LoadingFinishStruct::NoFlag));
     }
 
-// REMOVE Tim. buf. Added. Moved here from loadProjectFile1().
-//     if (mixer1)
-//           mixer1->clearAndDelete();
-//     if (mixer2)
-//           mixer2->clearAndDelete();
-//     _arranger->clear();      // clear track info
+    //====================================================================================
+    // BEGIN Closing and/or deleting. Some deletions may be immediate, others delete later.
+    //====================================================================================
+
+    if (mixer1)
+          mixer1->clearAndDelete();
+    if (mixer2)
+          mixer2->clearAndDelete();
+    _arranger->clear();      // clear track info
 
     // We must make a working COPY of the top level list because some of their
     //  closeEvent() functions eventually call MusE::topLevelDeleting() which
@@ -4626,16 +4615,24 @@ bool MusE::clearSong(bool clear_all)
             break;
         }
     }
+    //====================================================================================
+    // END Closing and/or deleting.
+    //====================================================================================
 
     // If there is nothing to wait for to be deleted, then just continue finishing.
     // Note it is possible some of the objects may have been already immediately deleted
     //  by closing the top wins, and they would have been removed from the list by our
     //  destroyed() handler, so we check again whether the list is empty.
-    if(!_pendingObjectDestructions.hasWaitingObjects())
+    // If there WERE objects waiting, but NOW there are none, it means immediate deletions
+    //  took place which emptied the list, which upon being emptied in destroyed() handler
+    //  ALREADY called finishClearSong(), so do NOT continue finishing.
+    const bool nowHasWaitingObjects = _pendingObjectDestructions.hasWaitingObjects();
+    if(!nowHasWaitingObjects)
     {
       // Should already be clear, but just in case.
       _loadingFinishStructList.clear();
-      finishClearSong(clear_all);
+      if(!hasWaitingObjects)
+        finishClearSong(clear_all);
     }
 
     // Just some useful info and previous tests and attempts...

@@ -758,8 +758,8 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
               {
                 if(!MusEGlobal::song->trackExists(t))
                 {
-                  delete w;
                   trackInfoWidget->addWidget(nullptr, 1);
+                  delete w;
                   selected = nullptr;
                   switchInfo(0);
                 } 
@@ -776,8 +776,8 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
               {
                 if(!MusEGlobal::song->trackExists(t))
                 {
-                  delete w;
                   trackInfoWidget->addWidget(nullptr, 2);
+                  delete w;
                   selected = nullptr;
                   switchInfo(0);
                 } 
@@ -1204,19 +1204,19 @@ void Arranger::clear()
 
       {
         AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(1));
+        trackInfoWidget->addWidget(nullptr, 1);
         if (w)
           delete w;
-        trackInfoWidget->addWidget(0, 1);
       }
-      
+
       {
         MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(2));
+        trackInfoWidget->addWidget(nullptr, 2);
         if (w)
           delete w;
-        trackInfoWidget->addWidget(0, 2);
       }
-      
-      selected = 0;
+
+      selected = nullptr;
       }
 
 //void Arranger::wheelEvent(QWheelEvent* ev)
@@ -1293,10 +1293,10 @@ void Arranger::switchInfo(int n)
             MidiStrip* w = static_cast<MidiStrip*>(trackInfoWidget->getWidget(2));
             if (w)
             {
+              trackInfoWidget->addWidget(nullptr, 2);
               //fprintf(stderr, "Arranger::switchInfo audio strip: deleting midi strip\n");
               delete w;
               //w->deleteLater();
-              trackInfoWidget->addWidget(nullptr, 2);
             }
           }
           {
@@ -1304,6 +1304,7 @@ void Arranger::switchInfo(int n)
               if (w == nullptr || selected != w->getTrack()) {
                     if (w)
                     {
+                          trackInfoWidget->addWidget(nullptr, 1);
                           //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
                           delete w;
                           //w->deleteLater();
@@ -1321,7 +1322,7 @@ void Arranger::switchInfo(int n)
                     //  and the strip's songChanged() seems to be called before Arranger songChanged()
                     //  gets called and has a chance to stop the crash.
                     //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
-                    
+
                     connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                     w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                     trackInfoWidget->addWidget(w, 1);
@@ -1336,10 +1337,10 @@ void Arranger::switchInfo(int n)
             AudioStrip* w = static_cast<AudioStrip*>(trackInfoWidget->getWidget(1));
             if (w)
             {
+              trackInfoWidget->addWidget(nullptr, 1);
               //fprintf(stderr, "Arranger::switchInfo midi strip: deleting audio strip\n");
               delete w;
               //w->deleteLater();
-              trackInfoWidget->addWidget(nullptr, 1);
             }
           }
           {
@@ -1347,6 +1348,7 @@ void Arranger::switchInfo(int n)
             if (w == nullptr || selected != w->getTrack()) {
                   if (w)
                   {
+                        trackInfoWidget->addWidget(nullptr, 2);
                         //fprintf(stderr, "Arranger::switchInfo deleting strip\n");
                         delete w;
                         //w->deleteLater();
@@ -1360,7 +1362,7 @@ void Arranger::switchInfo(int n)
 
                   // No. See above.
                   //connect(MusEGlobal::song, SIGNAL(songChanged(MusECore::SongChangedStruct_t)), w, SLOT(songChanged(MusECore::SongChangedStruct_t)));
-                  
+
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                   trackInfoWidget->addWidget(w, 2);
@@ -1369,7 +1371,7 @@ void Arranger::switchInfo(int n)
                   }
           }
         }
-            
+
       if (trackInfoWidget->curIdx() == n)
             return;
       trackInfoWidget->raiseWidget(n);

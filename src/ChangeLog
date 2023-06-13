@@ -1,3 +1,7 @@
+13.06.2023
+    - Fixed: File menu > close hanging. Further to 13.05.2023 (Tim)
+      Check if immediate deletions took place. Also, in track info panel, NULL the strip widgets
+       BEFORE deleting them, instead of deleting then nulling.
 12.06.2023
     - Oops. Fixed mistake at 15.05.2023: Link libinstpatch with 'muse' module, not 'core'. (Tim)
 11.06.2023
