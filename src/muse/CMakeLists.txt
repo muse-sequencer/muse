@@ -314,8 +314,6 @@ target_link_libraries(core
       ${SNDFILE_LIBRARIES}
       # Note that this also appears in the audio_convert/src_resampler shared library.
       ${SAMPLERATE_LIBRARIES}
-      # Note that this also appears in the fluidsynth MESS shared library.
-      ${INSTPATCH_LIBRARIES}
       ${REM_LIB}
       ${FST_LIB}
       dl
@@ -387,6 +385,8 @@ endif(LV2_SUPPORT)
 target_link_libraries(muse
       midiedit
       core
+      # Note that this also appears in the fluidsynth MESS shared library.
+      ${INSTPATCH_LIBRARIES}
       )
 
 target_link_libraries(icons

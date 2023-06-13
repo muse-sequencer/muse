@@ -1,3 +1,5 @@
+12.06.2023
+    - Oops. Fixed mistake at 15.05.2023: Link libinstpatch with 'muse' module, not 'core'. (Tim)
 11.06.2023
     - Fixed issue 1120 "Cannot clone parts". (Tim)
       Several pieces of code were fixed, including one 10-year-old mistake.
