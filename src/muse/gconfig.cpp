@@ -278,7 +278,7 @@ GlobalConfigValues config = {
       QString(""),                  // copyright string for smf export
       1,                            // smf export file format
       false,                        // midi export file 2 byte timesigs instead of 4
-      true,                         // optimize midi export file note offs
+      false,                        // optimize midi export file note offs
       true,                         // expRunningStatus; Save space by using running status
       true,                         // Split imported tracks into multiple parts.
       false,                         // useLastEditedEvent
