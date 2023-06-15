@@ -1,3 +1,6 @@
+15.06.2023
+    - Fixed issue 1121: Undefined symbol ipatch_close. (Tim)
+      ipatch_close was introduced in libinstpatch 1.1.0
 13.06.2023
     - Fixed: File menu > close hanging. Further to 13.05.2023 (Tim)
       Check if immediate deletions took place. Also, in track info panel, NULL the strip widgets

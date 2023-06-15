@@ -207,8 +207,13 @@ FluidSynth::~FluidSynth()
 #endif
 
 #ifdef HAVE_INSTPATCH
-      /* close libInstPatch */
+      // close libInstPatch (Added in version 1.1.0)
+#if ((IPATCH_VERSION_MAJOR >= 2) ||        \
+     ((IPATCH_VERSION_MAJOR == 1) &&       \
+      ((IPATCH_VERSION_MINOR >= 2) ||      \
+       ((IPATCH_VERSION_MINOR == 1) && IPATCH_VERSION_MICRO >= 0))))
       ipatch_close ();
+#endif
 #endif
       }
 

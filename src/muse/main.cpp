@@ -1761,8 +1761,13 @@ int main(int argc, char* argv[])
       // It was recommended that the host call this, to be clean.
       // Note that both ipatch_init() and ipatch_close() are also called by our fluidsynth MESS plugin.
       // We initialize it here so that we own the library and ultimately we close it here as well.
-      // close libInstPatch:
+      // close libInstPatch (Added in version 1.1.0):
+#if ((IPATCH_VERSION_MAJOR >= 2) ||        \
+     ((IPATCH_VERSION_MAJOR == 1) &&       \
+      ((IPATCH_VERSION_MINOR >= 2) ||      \
+       ((IPATCH_VERSION_MINOR == 1) && IPATCH_VERSION_MICRO >= 0))))
       ipatch_close ();
+#endif
 #endif
 
       if(MusEGlobal::debugMsg)
