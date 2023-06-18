@@ -4840,11 +4840,16 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
 
             for(unsigned long k = 0; k < _inportsControl; ++k)
             {
+                CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
+
                 //don't process freewheel port
                 if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == k)
+                {
+                    if(cl && icl != cll->end())
+                       ++icl;
                     continue;
+                }
 
-                CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
                 CtrlInterpolate &ci = _controls[k].interp;
 
                 // Always refresh the interpolate struct at first, since things may have changed.

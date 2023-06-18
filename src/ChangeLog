@@ -1,3 +1,5 @@
+17.06.2023
+    - Fixed: LV2 Synths like Odin-II not responding to automation since around 29.04.2023. (Tim)
 15.06.2023
     - Fixed issue 1121: Undefined symbol ipatch_close. (Tim)
       ipatch_close was introduced in libinstpatch 1.1.0
