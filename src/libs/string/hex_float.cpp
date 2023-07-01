@@ -40,7 +40,14 @@ QString museStringFromDouble(double v)
 
 double museStringToDouble(const QString &s, bool *ok)
 {
-    return s.toDouble(ok);
+    std::stringstream ss;
+    double value;
+    size_t end;
+    ss.imbue(std::locale("C"));
+    ss << s.toStdString();
+    value = std::stod(ss.str(), &end);
+    *ok = (s.size() == end);
+    return value;
 }
 } // namespace MusELib
 
