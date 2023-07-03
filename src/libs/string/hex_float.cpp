@@ -21,7 +21,10 @@
 //=========================================================
 
 #include <sstream>
+
 #include <QString>
+#include <QByteArray>
+
 #include "hex_float.h"
 
 namespace MusELib {
@@ -77,7 +80,8 @@ namespace MusELib {
 
 double museStringToDouble(const QString &s, bool *ok)
 {
-  const char *sc = s.toLatin1().constData();
+  const QByteArray ba = s.toLatin1();
+  const char *sc = ba.constData();
   char *end;
 
   // NOTE: strtod is locale sensitive! We must force the locale to standard 'C'.
