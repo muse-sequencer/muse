@@ -1,3 +1,6 @@
+06.07.2023
+    - Hexfloat values: Rework code with help from donarturo11. (Tim)
+      Avoid per-thread thread-safe locale calls (uselocale etc). Not available on mingw for ex.
 17.06.2023
     - Fixed: LV2 Synths like Odin-II not responding to automation since around 29.04.2023. (Tim)
 15.06.2023

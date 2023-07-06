@@ -20,6 +20,7 @@
 //
 //=========================================================
 
+#include <cstdlib>
 #include <sstream>
 
 #include <QString>
@@ -29,82 +30,9 @@
 
 namespace MusELib {
 
-//===================================================================================
-// WORK IN PROGRESS:
-// @donarturo11 Provided these new versions below, but museStringToDouble() needs more work.
-// It does not work properly with locales.
-//===================================================================================
-
-// QString museStringFromDouble(double v)
-// {
-//   // NOTE: snprintf can be locale sensitive! We should force the locale to standard 'C'.
-//   // Use a per-thread thread-safe technique instead of setting the global locale.
-//   // Note this C locale is NOT the same as the application's C++ locale.
-//   // Setting LANG environment variable before running is different than setting our -l switch.
-//   locale_t nloc = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
-//   assert(nloc != (locale_t) 0);
-//   uselocale(nloc);
-//
-//   bool useh = false;
-//   int sz;
-//   // How many characters required in the decimal string?
-//   // Use a very large precision to get all the digits.
-//   sz = std::snprintf(nullptr, 0, "%.100g", v);
-//   // If the decimal size is 10 or less, use it.
-//   if(sz > 10)
-//   {
-//     // How many characters required in the hex string?
-//     const int hsz = std::snprintf(nullptr, 0, "%a", v);
-//     // If the hex size is less than the decimal size, use it.
-//     if(hsz < sz)
-//     {
-//       sz = hsz;
-//       useh = true;
-//     }
-//   }
-//   // Note +1 for null terminator since the returned size doesn't include it.
-//   std::vector<char> buf(sz + 1);
-//   if(useh)
-//     std::snprintf(&buf[0], buf.size(), "%a", v);
-//   else
-//     std::snprintf(&buf[0], buf.size(), "%.100g", v);
-//
-//   // NOTE: LC_GLOBAL_HANDLE? Seems to be a mistake in the uselocale() documentation example.
-//   //uselocale(LC_GLOBAL_HANDLE);
-//   // So the new locale is no longer in use.
-//   uselocale(LC_GLOBAL_LOCALE);
-//   freelocale(nloc);
-//
-//   return QString(&buf[0]);
-// }
-
-double museStringToDouble(const QString &s, bool *ok)
-{
-  const QByteArray ba = s.toLatin1();
-  const char *sc = ba.constData();
-  char *end;
-
-  // NOTE: strtod is locale sensitive! We must force the locale to standard 'C'.
-  // Use a per-thread thread-safe technique instead of setting the global locale.
-  // Note this C locale is NOT the same as the application's C++ locale.
-  // Setting LANG environment variable before running is different than setting our -l switch.
-  locale_t nloc = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
-  assert(nloc != (locale_t) 0);
-  uselocale(nloc);
-
-  const double rv = std::strtod(sc, &end);
-  if(ok)
-    // If the conversion fails, strtod sets end = input string.
-    *ok = end != sc;
-
-  // NOTE: LC_GLOBAL_HANDLE? Seems to be a mistake in the uselocale() documentation example.
-  //uselocale(LC_GLOBAL_HANDLE);
-  // So the new locale is no longer in use.
-  uselocale(LC_GLOBAL_LOCALE);
-  freelocale(nloc);
-
-  return rv;
-}
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+QString hexfloatDecimalPoint = QString('.');
+#endif
 
 QString museStringFromDouble(double v)
 {
@@ -119,17 +47,65 @@ QString museStringFromDouble(double v)
     return QString::fromLatin1(ss.str().c_str());
 }
 
-// double museStringToDouble(const QString &s, bool *ok)
-// {
-//     std::stringstream ss;
-//     double value;
-//     size_t end;
-//     ss.imbue(std::locale("C"));
-//     ss << s.toStdString();
-//     value = std::stod(ss.str(), &end);
-//     *ok = (s.size() == end);
-//     return value;
-// }
+double museStringToDouble(const QString &s, bool *ok)
+{
+//==================================================================
+// Check if C++ istringstream supports hexfloat formatting.
+// As of summer 2023, only experimental clang versions support this.
+// And C++ is still in the process of adding support.
+//==================================================================
+#ifdef HAVE_ISTRINGSTREAM_HEXFLOAT
+
+  // If C++ istringstream supports hexfloat, use it.
+  std::istringstream ss(s.toStdString());
+  ss.imbue(std::locale("C"));
+  double value = 0.0;
+  ss >> value;
+  if(ok)
+    *ok = true;
+
+#else
+
+  // Is it a hex number?
+  if(s.startsWith("0x", Qt::CaseInsensitive) ||
+     s.startsWith("-0x", Qt::CaseInsensitive) ||
+     s.startsWith("+0x", Qt::CaseInsensitive))
+  {
+    // Note that strtod is locale sensitive. One way around this to call thread-safe per-thread uselocale() etc.
+    // If C++ istringstream does not support hexfloat, replace the known '.' decimal point with the current locale decimal point.
+    //
+    // From docs:
+    //  Hexadecimal floating-point expression. It consists of the following parts:
+    //    (optional) plus or minus sign
+    //    0x or 0X
+    //    nonempty sequence of hexadecimal digits optionally containing a decimal-point character
+    //     (as determined by the current C locale) (defines significand)
+    //    (optional) p or P followed with optional minus or plus sign and nonempty sequence of decimal digits (defines exponent to base 2)
+    //
+    // Therefore in case of hexfloats, the decimal point should be the only thing requiring alteration here.
+    // Note that hexfloatDecimalPoint is a QString.
+
+    QString s2(s);
+    s2.replace(QChar('.'), hexfloatDecimalPoint);
+    const QByteArray ba = s2.toUtf8();
+
+    const char *sc = ba.constData();
+    char *end;
+    const double rv = std::strtod(sc, &end);
+    if(ok)
+      // "The function sets the pointer pointed to by str_end to point to the character past the last character interpreted."
+      *ok = (end - sc) == ba.size();
+
+    return rv;
+  }
+  else // Not a hex number.
+  {
+    // Just use normal toDouble(). Does not care about locale. Uses 'C' locale.
+    return s.toDouble(ok);
+  }
+
+#endif // HAVE_ISTRINGSTREAM_HEXFLOAT
+}
 
 } // namespace MusELib
 

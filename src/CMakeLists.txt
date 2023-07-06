@@ -31,6 +31,27 @@ include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
 
+
+# ==================================================================
+# Check if C++ istringstream supports hexfloat formatting.
+# As of summer 2023, only experimental clang versions support this.
+# And C++ is still in the process of adding support.
+# ==================================================================
+include(cmake/CheckIStringStreamHexfloat.cmake)
+# We don't want this variable cached, but the only mechanism for check_cxx_source_runs etc.
+#  to store in a normal variable (NO_CACHE) is only available in cmake >= 3.25.
+# So get rid of the cached variable now.
+unset(ISTRINGSTREAM_SUPPORTS_HEXFLOAT CACHE)
+check_istringstream_hexfloat(ISTRINGSTREAM_SUPPORTS_HEXFLOAT)
+if(ISTRINGSTREAM_SUPPORTS_HEXFLOAT EQUAL 1)
+    set(HAVE_ISTRINGSTREAM_HEXFLOAT ON)
+    message("C++ istringstream supports hexfloat.")
+else (ISTRINGSTREAM_SUPPORTS_HEXFLOAT EQUAL 1)
+    message("C++ istringstream does not support hexfloat. Using alternate hexfloat techniques instead.")
+endif(ISTRINGSTREAM_SUPPORTS_HEXFLOAT EQUAL 1)
+# =========================================================
+
+
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
 ## FIXME FIXME: For the github automatic build actions:

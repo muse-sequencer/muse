@@ -96,6 +96,10 @@
 #include <libinstpatch/libinstpatch.h>
 #endif
 
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+#include <hex_float.h>
+#endif
+
 namespace MusECore {
 extern bool initDummyAudio();
 #ifdef HAVE_RTAUDIO
@@ -1122,6 +1126,13 @@ int main(int argc, char* argv[])
           fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
           MusEGlobal::hIsB = false;
         }
+
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+        // If C++ istringstream does not support hexfloat, grab the locale decimal point for use later in a workaround.
+        // "Note: This function [decimalPoint()] shall change to return a QString instead of QChar in Qt6.
+        //  Callers are encouraged to exploit the QString(QChar) constructor to convert early in preparation for this."
+        MusELib::hexfloatDecimalPoint = QString(QLocale().decimalPoint());
+#endif
 
         QApplication::addLibraryPath(MusEGlobal::museGlobalLib + "/qtplugins");
         if (MusEGlobal::debugMsg) {
