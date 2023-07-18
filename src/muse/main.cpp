@@ -45,8 +45,12 @@
 #include <QTime>
 #include <QDebug>
 #include <QElapsedTimer>
+// REMOVE Tim. hex. Added.
+#include <QTextCodec>
 
 //#include <iostream>
+// REMOVE Tim. hex. Added.
+#include <clocale>
 
 #include <time.h>
 #ifndef _WIN32
@@ -1098,6 +1102,17 @@ int main(int argc, char* argv[])
         srand(time(nullptr));   // initialize random number generator
         //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
 
+// REMOVE Tim. hex. Added.
+        {
+          fprintf(stderr, "Qt system locale: %s\n",QLocale::system().name().toUtf8().constData());
+          fprintf(stderr, "Existing Qt locale: %s\n",QLocale().name().toUtf8().constData());
+          fprintf(stderr, "QTextCodec for Qt locale: %s\n", QTextCodec::codecForLocale()->name().constData());
+          //fprintf(stderr, "Qt locale bcp47Name: %s\n",QLocale().bcp47Name().toUtf8().constData());
+          fprintf(stderr, "Qt locale override: %s\n",locale_override.toUtf8().constData());
+          const char* cur_c_locale = std::setlocale(LC_ALL, nullptr);
+          fprintf(stderr, "Existing std::locale: %s\n", cur_c_locale);
+        }
+
         static QTranslator translator(nullptr);
         {
           QString locale(QLocale::system().name());
@@ -1117,14 +1132,34 @@ int main(int argc, char* argv[])
           }
 
           QLocale def_loc(locale);
+// REMOVE Tim. hex. Added comment.
+          // Set the QLocale default locale.
           QLocale::setDefault(def_loc);
+// REMOVE Tim. hex. Added.
+          // In this application there may sometimes be the unavoidable use of certain
+          //  locale-aware c functions, like using strtod for its hexfloat support.
+          // Therefore we must also set the c locale here so that those functions
+          //  use the correct locale. The QLocale and c locale might be different.
+          // FIXME: Parts such as ".utf8" are NOT in the QLocale name.
+          //        How to preserve it? Answer: QTextCodec seems to provide the utf8 string.
+          //std::setlocale(LC_ALL, QLocale().name().toUtf8().constData());
         }
 
-        fprintf(stderr, "LOCALE %s\n",QLocale().name().toLatin1().data());
+// REMOVE Tim. hex. Changed.
+//         fprintf(stderr, "LOCALE %s\n",QLocale().name().toLatin1().data());
+        fprintf(stderr, "New Qt locale: %s\n",QLocale().name().toLatin1().data());
+        fprintf(stderr, "QTextCodec for new Qt locale: %s\n", QTextCodec::codecForLocale()->name().constData());
 
         if (QLocale().name() == "de" || locale_override == "de") {
           fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
           MusEGlobal::hIsB = false;
+        }
+
+// REMOVE Tim. hex. Added.
+        {
+          //fprintf(stderr, "New Qt locale: %s\n",QLocale().name().toUtf8().constData());
+          const char* new_c_locale = std::setlocale(LC_ALL, nullptr);
+          fprintf(stderr, "New std::locale: %s\n", new_c_locale);
         }
 
 #ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
