@@ -20,13 +20,19 @@
 //
 //=========================================================
 
-#include <cstdlib>
-#include <sstream>
-
-#include <QString>
-#include <QByteArray>
-
 #include "hex_float.h"
+
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+#include <cstdlib>
+#include <QByteArray>
+#endif
+
+#include <sstream>
+#include <clocale>
+
+// Forwards from header:
+#include <QString>
+
 
 namespace MusELib {
 
@@ -64,15 +70,18 @@ double museStringToDouble(const QString &s, bool *ok)
   if(ok)
     *ok = true;
 
-#else
+#else // C++ istringstream does not support hexfloat
 
   // Is it a hex number?
   if(s.startsWith("0x", Qt::CaseInsensitive) ||
      s.startsWith("-0x", Qt::CaseInsensitive) ||
      s.startsWith("+0x", Qt::CaseInsensitive))
   {
-    // Note that strtod is locale sensitive. One way around this to call thread-safe per-thread uselocale() etc.
-    // If C++ istringstream does not support hexfloat, replace the known '.' decimal point with the current locale decimal point.
+    // Note that strtod is locale sensitive.
+    // We DO NOT want locale influence here. Just standard "C" locale. This function is intended for file IO.
+    // One way around this is to call thread-safe per-thread functions uselocale() etc. but they aren't found on some platforms (mingw).
+    //
+    // Instead of trying to set locale to match our data, try the opposite: Translate the data to match locale.
     //
     // From docs:
     //  Hexadecimal floating-point expression. It consists of the following parts:
@@ -83,7 +92,9 @@ double museStringToDouble(const QString &s, bool *ok)
     //    (optional) p or P followed with optional minus or plus sign and nonempty sequence of decimal digits (defines exponent to base 2)
     //
     // Therefore in case of hexfloats, the decimal point should be the only thing requiring alteration here.
-    // Note that hexfloatDecimalPoint is a QString.
+    // Note that our hexfloatDecimalPoint is a QString.
+    //
+    // Replace the known '.' decimal point with the current locale decimal point:
 
     QString s2(s);
     s2.replace(QChar('.'), hexfloatDecimalPoint);
