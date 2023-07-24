@@ -3797,7 +3797,7 @@ int PluginI::oscControl(unsigned long port, float value)
 
   if(port >= _plugin->rpIdx.size())
   {
-    fprintf(stderr, "PluginI::oscControl: port number:%lu is out of range of index list size:%zd\n", port, _plugin->rpIdx.size());
+    fprintf(stderr, "PluginI::oscControl: port number:%lu is out of range of index list size:%i\n", port, (int) _plugin->rpIdx.size());
     return 0;
   }
 
