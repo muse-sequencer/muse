@@ -62,4 +62,9 @@
 #define LIBDIR              "${MusE_LIB_DIR}"
 #define BINDIR              "${MusE_BIN_DIR}"
 #define VST_SDK_QUIRK_DEF   "${VST_SDK_QUIRK}"
+#ifdef _WIN32 // in liblo windows code is in WIN32 definition
+  #ifndef WIN32
+  #define WIN32
+  #endif
+#endif
 #endif // _MUSE_CONFIG_H_
