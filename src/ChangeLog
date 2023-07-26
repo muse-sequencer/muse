@@ -1,3 +1,5 @@
+26.07.2023
+    - Fixed broken midi to logarithimic audio controller assignment, such as volume. (Tim)
 06.07.2023
     - Hexfloat values: Rework code with help from donarturo11. (Tim)
       Avoid per-thread thread-safe locale calls (uselocale etc). Not available on mingw for ex.

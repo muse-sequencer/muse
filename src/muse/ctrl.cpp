@@ -152,22 +152,37 @@ void CtrlList::initColor(int i)
 
 double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlStruct* /*mapper*/, int midi_ctlnum, int midi_val)
 {
-  double fmin, fmax;
-  audio_ctrl_list->range(&fmin, &fmax);
+  double amin, amax, fmin, fmax;
+  audio_ctrl_list->range(&amin, &amax);
+  // Support 'reversed' controls.
+  bool areversed;
+  if(amin > amax)
+  {
+    fmin = amax;
+    fmax = amin;
+    areversed = true;
+  }
+  else
+  {
+    fmin = amin;
+    fmax = amax;
+    areversed = false;
+  }
   double frng = fmax - fmin;             // The audio control range.
-  
+
   MidiController::ControllerType t = midiControllerType(midi_ctlnum);
   CtrlValueType aud_t = audio_ctrl_list->valueType();
-  
+  const int ac_id = audio_ctrl_list->id();
+
   #ifdef _CTRL_DEBUG_
-  printf("midi2AudioCtrlValue: midi_ctlnum:%d val:%d fmin:%f fmax:%f\n", midi_ctlnum, midi_val, fmin, fmax);  
-  #endif  
-  
+  fprintf(stderr, "midi2AudioCtrlValue: midi_ctlnum:%d val:%d fmin:%f fmax:%f\n", midi_ctlnum, midi_val, fmin, fmax);
+  #endif
+
   int ctlmn = 0;
   int ctlmx = 127;
-  
+
   int bval = midi_val;
-  switch(t) 
+  switch(t)
   {
     case MidiController::RPN:
     case MidiController::NRPN:
@@ -195,58 +210,148 @@ double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlS
       break;
   }
 
-  double fictlrng = double(ctlmx - ctlmn);   // Float version of the integer midi range.
-  double normval = double(bval) / fictlrng;  // Float version of the normalized midi value.
+  double fictlrng;   // Float version of the integer midi range.
+  double normval;  // Float version of the normalized midi value.
 
   // ----------  TODO: Do stuff with the mapper, if supplied.
-  
+
   if(aud_t == VAL_LOG)
   {
-    // FIXME: Although this should be correct, some sliders show "---" at top end, some don't. 
-    // Possibly because of use of fast_log10 in value(), and in sliders and automation IIRC.
-    fmin = 20.0*log10(fmin);
-    fmax = 20.0*log10(fmax);
-    frng = fmax - fmin;
-    double ret = exp10((normval * frng + fmin) / 20.0);
+    double ret, fmindb, fmaxdb, frngdb;
+    // If the audio controller minimum is 0.0 (-inf dB).
+    if(fmin <= 0.0)
+    {
+      // If the midi value is zero.
+      if(bval == 0)
+      {
+        // Return 0.0 (-inf dB).
+        #ifdef _CTRL_DEBUG_
+        fprintf(stderr, "midi2AudioCtrlValue: is VAL_LOG, audio controller min is zero, midi value is 0, returning 0.\n");
+        #endif
+        return 0.0;
+      }
+
+      // Adjust the midi scale bottom end by +1.
+      fictlrng = double(ctlmx - (ctlmn + 1));
+    }
+    else
+    {
+      fictlrng = double(ctlmx - ctlmn);
+    }
+
+    normval = double(bval) / fictlrng;
+
+    // Special support for built-in audio volume controllers.
+    if(ac_id == AC_VOLUME)
+    {
+      // If the audio controller minimum is 0.0 (-inf dB).
+      if(fmin <= 0.0)
+        // For the volume control, use the app's minimum slider dB setting directly,
+        //  since that's what it's meant for.
+        fmindb = MusEGlobal::config.minSlider;
+      else
+        fmindb = 20.0*log10(fmin);
+      fmaxdb = 20.0*log10(fmax);
+    }
+    else
+    {
+      // For all other controls, find an appropriate minimum value.
+      const double fminhint = museRangeMinValHint(fmin, fmax, true, false, false, MusEGlobal::config.minSlider);
+      // FIXME: Although this should be correct, some sliders show "---" at top end, some don't.
+      // Possibly because of use of fast_log10 in value(), and in sliders and automation IIRC.
+      fmindb = 20.0*log10(fminhint);
+      fmaxdb = 20.0*log10(fmax);
+    }
+
+    frngdb = fmaxdb - fmindb;
+    if(areversed)
+      ret = exp10((fmaxdb - normval * frngdb) / 20.0);
+    else
+      ret = exp10((normval * frngdb + fmindb) / 20.0);
+
+    if(ret < fmin)
+      ret = fmin;
+    if(ret > fmax)
+      ret = fmax;
+
     #ifdef _CTRL_DEBUG_
-    printf("midi2AudioCtrlValue: is VAL_LOG normval:%f frng:%f returning:%f\n", normval, frng, ret);          
+    fprintf(stderr, "midi2AudioCtrlValue: is VAL_LOG normval:%f frng:%f frngdb:%f returning:%f\n", normval, frng, frngdb, ret);
     #endif
     return ret;
   }
+
+  fictlrng = double(ctlmx - ctlmn);
+  normval = double(bval) / fictlrng;
 
   if(aud_t == VAL_LINEAR)
   {
-    double ret = normval * frng + fmin;
+    double ret;
+    if(areversed)
+      ret = fmax - normval * frng;
+    else
+      ret = normval * frng + fmin;
+    if(ret < fmin)
+      ret = fmin;
+    if(ret > fmax)
+      ret = fmax;
     #ifdef _CTRL_DEBUG_
-    printf("midi2AudioCtrlValue: is VAL_LINEAR normval:%f frng:%f returning:%f\n", normval, frng, ret);       
+    fprintf(stderr, "midi2AudioCtrlValue: is VAL_LINEAR normval:%f frng:%f returning:%f\n", normval, frng, ret);
     #endif
     return ret;
   }
 
-  if(aud_t == VAL_INT)
+  // TODO VAL_ENUM should be handled separately. Should not assume it is consecutive integers.
+  if(aud_t == VAL_INT || aud_t == VAL_ENUM)
   {
-    double ret = int(normval * frng + fmin);
-    #ifdef _CTRL_DEBUG_
-    printf("midi2AudioCtrlValue: is VAL_INT returning:%f\n", ret);   
-    #endif
-    return ret;  
-  }
-  
-  if(aud_t == VAL_BOOL) 
-  {
-    #ifdef _CTRL_DEBUG_
-    printf("midi2AudioCtrlValue: is VAL_BOOL\n");  
-    #endif
-    //if(midi_val > ((ctlmx - ctlmn)/2 + ctlmn))
-    if((normval * frng + fmin) > (frng/2.0 + fmin))
-      return fmax;
+    double ret;
+    if(areversed)
+      ret = int(fmax - normval * frng);
     else
-      return fmin;
+      ret = int(normval * frng + fmin);
+    if(ret < fmin)
+      ret = fmin;
+    if(ret > fmax)
+      ret = fmax;
+    #ifdef _CTRL_DEBUG_
+    fprintf(stderr, "midi2AudioCtrlValue: is VAL_INT returning:%f\n", ret);
+    #endif
+    return ret;
   }
-  
-  printf("midi2AudioCtrlValue: unknown audio controller type:%d\n", aud_t);
+
+  if(aud_t == VAL_BOOL)
+  {
+    #ifdef _CTRL_DEBUG_
+    fprintf(stderr, "midi2AudioCtrlValue: is VAL_BOOL\n");
+    #endif
+    // From offical midi 1.0 specs:
+    // "If a receiver is expecting switch information it should recognize 0-63 (00H-3FH) as "OFF"
+    //   and 64-127 (40H-7FH) as "ON". This is because a receiver has no way of knowing whether the
+    //   message information is from a switch or a continuous controller."
+    //if(midi_val > ((ctlmx - ctlmn)/2 + ctlmn))
+    if(areversed)
+    {
+      if((fmax - normval * frng) > (fmax - frng/2.0))
+        return fmin;
+      else
+        return fmax;
+    }
+    else
+    {
+      if((normval * frng + fmin) > (frng/2.0 + fmin))
+        return fmax;
+      else
+        return fmin;
+    }
+  }
+
+  // TODO Where to grab the enum list from?
+  //if(aud_t == VAL_ENUM)
+  //{
+  //}
+
+  fprintf(stderr, "midi2AudioCtrlValue: unknown audio controller type:%d\n", aud_t);
   return 0.0;
-}      
+}
 
 //---------------------------------------------------------
 // Midi to audio controller stuff
