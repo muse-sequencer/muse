@@ -151,7 +151,7 @@ void StretchList::del(int types, MuseFrame_t frame, bool do_normalize)
   iStretchListItem e = find(frame);
   if(e == end()) 
   {
-    ERROR_TIMESTRETCH(stderr, "StretchList::del(%ld): not found\n", frame);
+    ERROR_TIMESTRETCH(stderr, "StretchList::del(%ld): not found\n", (long int) frame);
     return;
   }
 

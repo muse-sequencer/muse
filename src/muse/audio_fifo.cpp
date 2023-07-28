@@ -77,7 +77,7 @@ void Fifo::clear()
 bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos, float latency)
       {
       #ifdef FIFO_DEBUG
-      fprintf(stderr, "FIFO::put segs:%d samples:%ld pos:%ld count:%d\n", segs, samples, pos, muse_atomic_read(&count));
+      fprintf(stderr, "FIFO::put segs:%d samples:%ld pos:%ld count:%d\n", segs, (long int) samples, (long int) pos, muse_atomic_read(&count));
       #endif
 
       if (muse_atomic_read(&count) == nbuffer) {
@@ -96,14 +96,14 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos, floa
             b->buffer = (float *) _aligned_malloc(16, sizeof(float *) * n);
             if(b->buffer == nullptr)
             {
-               fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
+               fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, (unsigned long int) samples, (unsigned int) pos);
                return true;
             }
 #else
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
-              fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+              fprintf(stderr, "Fifo::put could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, (long int) samples, (long int) pos);
               return true;
             }
 #endif
@@ -111,7 +111,7 @@ bool Fifo::put(int segs, MuseCount_t samples, float** src, MuseCount_t pos, floa
             }
       if(!b->buffer)
       {
-        fprintf(stderr, "Fifo::put no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+        fprintf(stderr, "Fifo::put no buffer! segs:%d samples:%ld pos:%ld\n", segs, (long int) samples, (long int) pos);
         return true;
       }
 
@@ -148,7 +148,7 @@ bool Fifo::peek(int segs, MuseCount_t samples, float** dst, MuseCount_t* pos, fl
       FifoBuffer* b = buffer[ridx];
       if(!b->buffer)
       {
-        fprintf(stderr, "Fifo::peek/get no buffer! segs:%d samples:%ld b->pos:%ld\n", segs, samples, b->pos);
+        fprintf(stderr, "Fifo::peek/get no buffer! segs:%d samples:%ld b->pos:%ld\n", segs, (long int) samples, (long int) b->pos);
         return true;
       }
 
@@ -228,14 +228,14 @@ bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_
             b->buffer = (float *) _aligned_malloc(16, sizeof(float *) * n);
             if(b->buffer == nullptr)
             {
-               fprintf(stderr, "Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+               fprintf(stderr, "Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, (long int) samples, (long int) pos);
                return true;
             }
 #else
             int rv = posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
             if(rv != 0 || !b->buffer)
             {
-              fprintf(stderr, "Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+              fprintf(stderr, "Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%ld pos:%ld\n", segs, (long int) samples, (long int) pos);
               return true;
             }
 #endif
@@ -243,7 +243,7 @@ bool Fifo::getWriteBuffer(int segs, MuseCount_t samples, float** buf, MuseCount_
             }
       if(!b->buffer)
       {
-        fprintf(stderr, "Fifo::getWriteBuffer no buffer! segs:%d samples:%ld pos:%ld\n", segs, samples, pos);
+        fprintf(stderr, "Fifo::getWriteBuffer no buffer! segs:%d samples:%ld pos:%ld\n", segs, (long int) samples, (long int) pos);
         return true;
       }
 
