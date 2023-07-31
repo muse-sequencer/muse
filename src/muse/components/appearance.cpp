@@ -48,6 +48,7 @@
 #include "globals.h"
 // Specify muse here, two reports of "conf.h" pointing to ALSA conf.h !
 #include "muse/conf.h"
+#include "config.h"
 
 // Forwards from header:
 #include <QTimer>
@@ -1820,7 +1821,7 @@ void Appearance::on_pbSetFontFamily_clicked()
 
 void Appearance::on_helpButton_clicked()
 {
-    QString s("https://github.com/muse-sequencer/muse/wiki/ui-customizing");
+    QString s(ORGANIZATION_HELP_URL "uicustom");
     MusEGlobal::muse->launchBrowser(s);
 }
 

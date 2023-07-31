@@ -1,6 +1,8 @@
 31.07.2023
     - Fixed midi remote control: Don't accept note-offs. (Tim)
       Symptoms were: Double step-record entries, transport record toggling, double play etc.
+    - Changed all references to the app's url, help url etc. (Website has changed).
+      Created ORGANIZATION_URL, ORGANIZATION_HELP_URL, ORGANIZATION_CODE_REPO_URL in config.h.in
 26.07.2023
     - Fixed broken midi to logarithmic audio controller assignment, such as volume. (Tim)
 06.07.2023

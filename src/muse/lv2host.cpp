@@ -449,8 +449,8 @@ void initLV2()
     lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
     lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
     lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, LILV_NS_RDFS "label");
-    lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
-    lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
+    lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionSavePreset");
+    lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionUpdatePresets");
     lv2CacheNodes.lv2_portEnumeration    = lilv_new_uri(lilvWorld, LV2_CORE__enumeration);
     lv2CacheNodes.lv2_rdfsRange          = lilv_new_uri(lilvWorld, LILV_NS_RDFS "range");
     lv2CacheNodes.pg_group               = lilv_new_uri(lilvWorld, LV2_PORT_GROUPS__group);

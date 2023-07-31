@@ -1,5 +1,5 @@
 To get started with MusE why don't you visit the <br>
-<a href="https://github.com/muse-sequencer/muse/wiki/Tutorials">tutorials</a>
+<a href="https://muse-sequencer.github.io/docs/tutorials">tutorials</a>
 
 MusE can add effects in realtime for audio tracks,<br>
 check the effect rack on the mixer strip
