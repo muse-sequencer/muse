@@ -1973,33 +1973,33 @@ void Song::beat()
               // filter midi remote control events
               //---------------------------------------------------
               bool consumed = false;
-              if (MusEGlobal::rcEnable) {
-                  if (dataA == MusEGlobal::rcStopNote) {
-                      setStop(true);
-                      consumed = true;
-                  } else if (dataA == MusEGlobal::rcRecordNote) {
-                      if (currentEvent.type() == ME_NOTEOFF)
-                        setRecord(false);
-                      else
-                        setRecord(true);
-                      consumed = true;
-                  } else if (dataA == MusEGlobal::rcGotoLeftMarkNote) {
-                      setPos(CPOS, pos[LPOS].tick(), true, true, true);
-                      consumed = true;
-                  } else if (dataA == MusEGlobal::rcPlayNote) {
-                      setPlay(true);
-                      consumed = true;
-                  } else if (dataA == MusEGlobal::rcForwardNote) {
-                      _fastMove = FAST_FORWARD;
-                      consumed = true;
-                  } else if (dataA == MusEGlobal::rcBackwardNote) {
-                      _fastMove = FAST_REWIND;
-                      consumed = true;
-                  }
+              if (currentEvent.type() == ME_NOTEON)
+              {
+                if (MusEGlobal::rcEnable) {
+                    if (dataA == MusEGlobal::rcStopNote) {
+                        setStop(true);
+                        consumed = true;
+                    } else if (dataA == MusEGlobal::rcRecordNote) {
+                        setRecord(!record());
+                        consumed = true;
+                    } else if (dataA == MusEGlobal::rcGotoLeftMarkNote) {
+                        setPos(CPOS, pos[LPOS].tick(), true, true, true);
+                        consumed = true;
+                    } else if (dataA == MusEGlobal::rcPlayNote) {
+                        setPlay(true);
+                        consumed = true;
+                    } else if (dataA == MusEGlobal::rcForwardNote) {
+                        _fastMove = FAST_FORWARD;
+                        consumed = true;
+                    } else if (dataA == MusEGlobal::rcBackwardNote) {
+                        _fastMove = FAST_REWIND;
+                        consumed = true;
+                    }
+                }
               }
 
               if (!consumed)
-                  emit MusEGlobal::song->midiNote(dataA, dataB);
+                  emit MusEGlobal::song->midiNote(dataA, currentEvent.type() == ME_NOTEOFF ? 0 : dataB);
           } // NOTES
 
           if (MusEGlobal::rcEnableCC && currentEvent.type() == ME_CONTROLLER)
