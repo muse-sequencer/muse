@@ -439,7 +439,7 @@ bool WaveTrack::getPrefetchData(
         if(corr_frame_end_pos <= pos)
         {
           if(MusEGlobal::debugMsg)
-            fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), frame_pos, pos);
+            fprintf(stderr, "fifo get(%s) (A) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), (long int) frame_pos, (long int) pos);
           return false;
         }
       }
@@ -514,7 +514,7 @@ bool WaveTrack::getPrefetchData(
       if(pos != expect_nextpos)
       {
         if(MusEGlobal::debugMsg)
-          fprintf(stderr, "fifo get(%s) (B) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), expect_nextpos, pos);
+          fprintf(stderr, "fifo get(%s) (B) error expected %ld, got %ld\n", name().toLocal8Bit().constData(), (long int) expect_nextpos, (long int) pos);
         return false;
       }
 

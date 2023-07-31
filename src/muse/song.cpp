@@ -830,7 +830,7 @@ void Song::selectEvent(Event& event, Part* part, bool select)
     {
       // This can be normal for some (redundant) operations.
       if(MusEGlobal::debugMsg)
-	fprintf(stderr, "Song::selectEvent event not found in part:%s size:%zd\n", p->name().toLatin1().constData(), p->nonconst_events().size());
+	fprintf(stderr, "Song::selectEvent event not found in part:%s size:%ld\n", p->name().toLatin1().constData(), (long unsigned int) p->nonconst_events().size());
     }
     else
       ie->second.setSelected(select);
@@ -1694,7 +1694,7 @@ void Song::update(MusECore::SongChangedStruct_t flags, bool allowRecursion)
       if (level && !allowRecursion) {
             fprintf(stderr, "THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08lx %08lx), level %d!\n"
                    "                          the songChanged() signal is NOT emitted. this will\n"
-                   "                          probably cause windows being not up-to-date.\n", flags.flagsHi(), flags.flagsLo(), level);
+                   "                          probably cause windows being not up-to-date.\n", (long unsigned int) flags.flagsHi(), (long unsigned int) flags.flagsLo(), level);
             return;
             }
       ++level;
@@ -4689,7 +4689,7 @@ void Song::stretchListDelOperation(
   
   iStretchListItem e = stretch_list->find(frame);
   if (e == stretch_list->end()) {
-        ERROR_TIMESTRETCH(stderr, "Song::stretchListDelOperation frame:%ld not found\n", frame);
+        ERROR_TIMESTRETCH(stderr, "Song::stretchListDelOperation frame:%ld not found\n", (long int) frame);
         return;
         }
   PendingOperationItem poi(types, stretch_list, e, PendingOperationItem::DeleteStretchListRatioAt);
@@ -4702,7 +4702,7 @@ void Song::stretchListModifyOperation(
 {
   iStretchListItem ie = stretch_list->find(frame);
   if(ie == stretch_list->end()) {
-        ERROR_TIMESTRETCH(stderr, "Song::stretchListModifyOperation frame:%ld not found\n", frame);
+        ERROR_TIMESTRETCH(stderr, "Song::stretchListModifyOperation frame:%ld not found\n", (long int) frame);
         return;
         }
   ops.add(PendingOperationItem(type, stretch_list, ie, frame, value, PendingOperationItem::ModifyStretchListRatioAt));

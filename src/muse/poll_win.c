@@ -79,7 +79,7 @@ compute_select_revents(int fd, short events,
 }
 
 static int
-compute_wait_revents(HANDLE h, short events, int object, int wait_rc)
+compute_wait_revents(HANDLE h, short events, long unsigned int object, long unsigned int wait_rc)
 {
 	int rc = 0;
 	INPUT_RECORD record;

@@ -3143,8 +3143,8 @@ bool checkPluginCacheFiles(
             else
                 std::fprintf(stderr, "Modified plugin: %s (Cache ts: %ld / File ts: %ld)\n",
                              icfps->first.toLatin1().data(),
-                             icfps->second,
-                             ifpset->second);
+                             (long int) icfps->second,
+                             (long int) ifpset->second);
         }
 
         break;
