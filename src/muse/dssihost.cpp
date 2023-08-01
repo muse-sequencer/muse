@@ -1252,7 +1252,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
                   if(n != synth->_controlInPorts)
                     printf("DssiSynthIF::processEvent Warning: PARAMSAVE number of floats:%lu != number of controls:%lu\n", n, synth->_controlInPorts);
                   
-                  // Point to location after "PARAMSAVE", version major and minor, bank and progam.
+                  // Point to location after "PARAMSAVE", version major and minor, bank and program.
                   float* const fp = (float*)(e.data() + 9 + 2 + 2 * sizeof(unsigned long)); 
                   
                   for(unsigned long i = 0; i < synth->_controlInPorts && i < n; ++i)

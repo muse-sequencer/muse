@@ -82,7 +82,7 @@ struct TrackLatencyInfo
   // Whether this track (and the branch it is in) can force other parallel branches to
   //  increase their latency compensation to match this one.
   // If false, this branch will NOT disturb other parallel branches' compensation,
-  //  intead only allowing compensation UP TO the worst case in other branches.
+  //  instead only allowing compensation UP TO the worst case in other branches.
   bool _canDominateOutputLatency;
   bool _canDominateInputLatency;
   // Whether this track and its branch can correct for latency, not just compensate.

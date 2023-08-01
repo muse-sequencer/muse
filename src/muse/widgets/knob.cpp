@@ -389,7 +389,7 @@ void Knob::getScrollMode( QPoint &p, const Qt::MouseButton &button, const Qt::Ke
     int dx, dy, r;
     double arc;
 
-    /*Qt::ButtonState but= button ;*/ // prevent compiler warning : unsused variable
+    /*Qt::ButtonState but= button ;*/ // prevent compiler warning : unused variable
     r = kRect.width() / 2;
 
     dx = kRect.x() + r - p.x();

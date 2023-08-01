@@ -328,7 +328,7 @@ details.
         MusE is a realtime program which requires special rights to work properly.
 
       - Check if you are running a sufficiently new linux kernel > 2.6.x
-        A modern, standard destop kernel should suit virtually all needs.
+        A modern, standard desktop kernel should suit virtually all needs.
         For even stricter realtime performance a so-called 'low latency'
          or 'realtime' kernel may be available. Check your distro's packages
          for availability.
@@ -439,7 +439,7 @@ details.
       Known bugs:
   =============================
 
-      The odd weirdness happens and some things may not be completely implemeneted
+      The odd weirdness happens and some things may not be completely implemented
       though we hope it is as stable for you as it is for us!
 
       If you differ in this opinion we are grateful for all reported issues.

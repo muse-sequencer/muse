@@ -69,7 +69,7 @@ StretchList::~StretchList()
 
 void StretchList::add(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, bool do_normalize)
 {
-  // Some '1.0' values will be filled in if neccessary by normalize() below.
+  // Some '1.0' values will be filled in if necessary by normalize() below.
   double str = 1.0;
   double srr = 1.0;
   double psr = 1.0;

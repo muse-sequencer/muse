@@ -282,7 +282,7 @@ void ScaleDraw::draw(QPainter *p, const QPalette& palette, double curValue)// co
 
 //------------------------------------------------------------
 //.F ScaleDraw::drawTick
-//	Draws a singls scale tick
+//	Draws a single scale tick
 //
 //.u Parameters
 //.p  QPainter *p, double val, int len

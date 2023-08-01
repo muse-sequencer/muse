@@ -254,7 +254,7 @@ struct PendingOperationItem
   iMarker _iMarker;
   Route _src_route;
   Route _dst_route;
-  // SndFileR is only 8 bytes but can't be in a union becuase of non-trivial destructor (?).
+  // SndFileR is only 8 bytes but can't be in a union because of non-trivial destructor (?).
   SndFileR _sndFileR;
   
   union {
@@ -308,8 +308,8 @@ struct PendingOperationItem
   //  NOTICE: Where these constructors take pointers to allocated objects,
   //           some of them we do NOT take ownership of, while some we do.
   //          It mostly depends on whether the undo system (which is by far
-  //           top user of this operations sytem) needs to keep them around
-  //           or whther the objects are temporary once-only things.
+  //           top user of this operations system) needs to keep them around
+  //           or whether the objects are temporary once-only things.
   //          For example strings created by the undo system are kept and
   //           put onto the undo stack so we don't take ownership of them,
   //           while swap-out lists created by the undo system are temporary

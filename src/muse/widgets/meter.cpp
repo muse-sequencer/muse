@@ -310,7 +310,7 @@ void Meter::updateText(double val)
   else
   {
     _text = QString("-");
-    _text += QChar(0x221e); // The infinty character
+    _text += QChar(0x221e); // The infinity character
   }
   
   const QFontMetrics fm = fontMetrics();

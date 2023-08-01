@@ -50,7 +50,7 @@
 //       But advice from Qt bugs said not to do that.
 //       So instead we will use a safer but much more complicated method of waiting for destroyed() signals.
 //       See MusE::clearSong() for details.
-//       This define switches beween the two methods, in case there are any problems with either.
+//       This define switches between the two methods, in case there are any problems with either.
 //#define USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
 
 // Forward declarations:

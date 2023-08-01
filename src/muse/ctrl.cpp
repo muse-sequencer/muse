@@ -323,7 +323,7 @@ double midi2AudioCtrlValue(const CtrlList* audio_ctrl_list, const MidiAudioCtrlS
     #ifdef _CTRL_DEBUG_
     fprintf(stderr, "midi2AudioCtrlValue: is VAL_BOOL\n");
     #endif
-    // From offical midi 1.0 specs:
+    // From official midi 1.0 specs:
     // "If a receiver is expecting switch information it should recognize 0-63 (00H-3FH) as "OFF"
     //   and 64-127 (40H-7FH) as "ON". This is because a receiver has no way of knowing whether the
     //   message information is from a switch or a continuous controller."

@@ -126,7 +126,7 @@ void ClipperLabel::setVal(double v, bool force)
     else
     {
       _text = QString("-");
-      _text += QChar(0x221e); // The infinty character
+      _text += QChar(0x221e); // The infinity character
 
     }
 
