@@ -224,7 +224,7 @@ class ElidedLabel : public QFrame
 //    QString text() const { return _text; }
 //    void setText(const QString& txt);
 
-//    // This tooltip text is appened to the normal text, to form a compound tooltip.
+//    // This tooltip text is appended to the normal text, to form a compound tooltip.
 //    QString tooltipText() const { return _tooltipText; }
 //    void setTooltipText(const QString& txt);
     

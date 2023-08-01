@@ -198,7 +198,7 @@ void ClipListEdit::songChanged(MusECore::SongChangedStruct_t type)
 //   startChanged
 //---------------------------------------------------------
 
-void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler warning: unsused parameter
+void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler warning: unused parameter
       {
 //      editor->view->triggerUpdate(); DELETETHIS whole function?
       }
@@ -207,7 +207,7 @@ void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler 
 //   lenChanged
 //---------------------------------------------------------
 
-void ClipListEdit::lenChanged(const MusECore::Pos& /*pos*/) //prevent compiler warning: unsused parameter
+void ClipListEdit::lenChanged(const MusECore::Pos& /*pos*/) //prevent compiler warning: unused parameter
       {
 //      curClip.setLenFrame(pos.frame()); DELETETHIS whole function?
 //      editor->view->triggerUpdate();

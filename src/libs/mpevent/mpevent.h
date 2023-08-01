@@ -249,7 +249,7 @@ class MPEventList : public MPEL {
       void add(const MidiPlayEvent& ev);
       // Optimize to replace duplicate events at ANY time starting from the end of the list.
       // Replaces event if it already exists.
-      // This looks backwards for the first occurance of a similar event and replaces it if found.
+      // This looks backwards for the first occurrence of a similar event and replaces it if found.
       // This is mainly designed for a MidiDevice's queue buffer when the device is 'off' to avoid
       //  large backlog of events waiting to be sent when the device comes back on. Some event types
       //  are ignored or handled differently.
@@ -278,7 +278,7 @@ class SeqMPEventList : public SMPEL {
       void add(const MidiPlayEvent& ev);
       // Optimize to replace duplicate events at ANY time starting from the end of the list.
       // Replaces event if it already exists.
-      // This looks backwards for the first occurance of a similar event and replaces it if found.
+      // This looks backwards for the first occurrence of a similar event and replaces it if found.
       // This is mainly designed for a MidiDevice's queue buffer when the device is 'off' to avoid
       //  large backlog of events waiting to be sent when the device comes back on. Some event types
       //  are ignored or handled differently.

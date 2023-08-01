@@ -73,7 +73,7 @@ const int numRtAudioDevices = 6;
 
 MusEGui::Rasterizer *globalRasterizer = nullptr;
 
-// This holds all the unit symbols found. Intead of storing many copies of the same texts
+// This holds all the unit symbols found. Instead of storing many copies of the same texts
 //  (dB, Hz, frames etc.) all over the place, we store an index into this list.
 MusECore::ValueUnits_t valueUnits;
 

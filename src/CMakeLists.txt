@@ -689,7 +689,7 @@ endif ( ENABLE_INSTPATCH )
 
 if ( ENABLE_MIDNAM )
   # Ain't much to do here... yet... Looking at you XSD and therefore Xerces,
-  #  to read the offical midnam DTD document.
+  #  to read the official midnam DTD document.
   # Can we get away with just generating the hxx/cxx and slapping only them into the project?
   # Or will we have to generate the hxx/cxx here for example (or in our midnam cmake file)
   #  for machine-specific differences?

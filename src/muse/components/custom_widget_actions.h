@@ -86,7 +86,7 @@ struct RouteChannelArrayItem
   bool _value;
   // Accompanying text beside the switch.
   QString _text;
-  // Rectangle of the swich portion.
+  // Rectangle of the switch portion.
   QRect _rect;
   RouteChannelArrayItem() { _value = false; }
 };

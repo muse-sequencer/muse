@@ -827,7 +827,7 @@ void MidiSyncContainer::alignAllTicks(int frameOverride)
 
       int tempo = MusEGlobal::tempomap.tempo(0);
 
-      // use the last old values to give start values for the tripple buffering
+      // use the last old values to give start values for the triple buffering
       int recTickSpan = recTick1 - recTick2;
       int songTickSpan = (int)(songtick1 - songtick2);    //prevent compiler warning:  casting double to int
       storedtimediffs = 0; // pretend there is no sync history

@@ -3000,7 +3000,7 @@ bool PendingOperationList::add(PendingOperationItem op)
           }
           else
           {
-            // Special: Do not 'cancel' out this one. The selecions may need to affect all events.
+            // Special: Do not 'cancel' out this one. The selections may need to affect all events.
             // Simply replace the value.
             poi._boolA = op._boolA; 
             // An operation will still take place.

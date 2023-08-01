@@ -401,8 +401,8 @@ bool MidiPort::sendInitialControllers(unsigned start_time)
 
         switch(mc->num())
         {
-          // Allow these inital values if the controller list does not have standard RPN. (The enums alias to generic numbers).
-          // Do not send any of these inital values if the controller has standard RPN. (The enums are meaningful).
+          // Allow these initial values if the controller list does not have standard RPN. (The enums alias to generic numbers).
+          // Do not send any of these initial values if the controller has standard RPN. (The enums are meaningful).
           // 1) It is impossible to know which should come first/last (ie. which was last adjusted) - the RPNs or the data.
           // 2) This is an ineffective way to set a default value of one single RPN controller. Better use our built-ins.
           case CTRL_HRPN:

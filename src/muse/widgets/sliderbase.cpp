@@ -1134,7 +1134,7 @@ void SliderBase::setId(int i)          { _id = i; }
 //------------------------------------------------------------
 //
 //.F  SliderBase::getValue
-//  Determine the value corresponding to a specified poind
+//  Determine the value corresponding to a specified point
 //
 //.u  Syntax
 //.f  void SliderBase::getValue(const QPoint &p)

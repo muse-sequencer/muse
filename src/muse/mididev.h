@@ -318,14 +318,14 @@ class MidiDevice {
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one.
       // If false, this branch will NOT disturb other parallel branches' compensation,
-      //  intead only allowing compensation UP TO the worst case in other branches.
+      //  instead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateOutputLatencyMidi(bool capture) const;
       virtual bool canDominateInputLatencyMidi(bool capture) const;
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one - IF this track is an end-point
       //  and the branch allows domination.
       // If false, this branch will NOT disturb other parallel branches' compensation,
-      //  intead only allowing compensation UP TO the worst case in other branches.
+      //  instead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateEndPointLatencyMidi(bool capture) const;
       // Whether this track and its branch can correct for latency, not just compensate.
       inline virtual bool canCorrectOutputLatencyMidi() const { return false; }
@@ -356,7 +356,7 @@ class MidiDevice {
       //  in a branch of the graph.
       virtual TrackLatencyInfo& setCorrectionLatencyInfoMidi(bool capture, bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getLatencyInfoMidi(bool capture, bool input);
-      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechanism is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
       virtual unsigned long latencyCompWriteOffsetMidi(bool capture) const;

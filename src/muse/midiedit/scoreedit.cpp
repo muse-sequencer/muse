@@ -1950,7 +1950,7 @@ void ScoreCanvas::init_pixmaps()
 {
     if (!pixmaps_initalized)
     {
-        if (debugMsg) cout << "initalizing colors..." << endl;
+        if (debugMsg) cout << "initializing colors..." << endl;
 
         mycolors = new QColor[NUM_MYCOLORS];
 
@@ -4791,7 +4791,7 @@ void ScoreCanvas::set_pixels_per_whole(int val)
  int tick = 0;
     int old_xpos=x_pos;
     if (x_pos!=0) tick=x_to_tick(x_pos);
-    // the above saves us from a division by zero when initalizing
+    // the above saves us from a division by zero when initializing
     // ScoreCanvas; then x_pos will be 0 and x_to_tick (causing the
     // division by zero) won't be called. also, when x_pos=0, and the
     // above would not be done, after that function, x_pos will be

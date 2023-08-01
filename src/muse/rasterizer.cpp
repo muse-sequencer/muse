@@ -122,7 +122,7 @@ void Rasterizer::updateRasterizer()
 
     const int num_rasters = _rows * num_cols;
     _rasterArray = new int[num_rasters];
-    // Initalize the array elements to -1 (invalid).
+    // Initialize the array elements to -1 (invalid).
     for(int i = 0; i < num_rasters; ++i)
       _rasterArray[i] = -1;
 

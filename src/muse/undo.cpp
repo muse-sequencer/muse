@@ -1907,7 +1907,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             }
             else
             {
-              // Special: Do not 'cancel' out this one. The selecions may need to affect all events.
+              // Special: Do not 'cancel' out this one. The selections may need to affect all events.
               // Simply replace a with the new value.
               uo.a = n_op.a;
               return;  

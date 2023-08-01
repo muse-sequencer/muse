@@ -104,7 +104,7 @@ class CtrlVal {
       typedef int CtrlValueFlags;
 
       // An extension of the CtrlValueFlag enum. Together with CtrlValueFlag, these indicate
-      //  the desired fields to be modified in a modify method or commmand.
+      //  the desired fields to be modified in a modify method or command.
       // VAL_MODIFY_SAME_AS means when used as add or modify flags use the same flags as the other,
       //  but don't use the flag for BOTH at the same time - one must be valid.
       enum CtrlModifyValueFlag { VAL_MODIFY_NOFLAGS = 0x00, VAL_MODIFY_VALUE = VAL_FLAGS_END << 1,

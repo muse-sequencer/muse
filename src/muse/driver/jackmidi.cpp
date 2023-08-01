@@ -520,7 +520,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
             return;
             }
 
-      // transfer also to gui for realtime playback and remote controll
+      // transfer also to gui for realtime playback and remote control
       if (typ == ME_NOTEON || typ == ME_NOTEOFF)
       {
           MusEGlobal::song->putEvent(event);

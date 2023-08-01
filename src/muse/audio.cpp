@@ -582,7 +582,7 @@ void Audio::reSyncAudio()
     //  either via changes to tempo map or the static tempo value. The actual transport frame is allowed
     //  to continue progressing naturally but our representation of it (_pos) jumps to a new value
     //  so that the relation between ticks and frames in all our tempo routines remains correct.
-    // But the relation betweeen actual transport frame and current tick will still be incorrect
+    // But the relation between actual transport frame and current tick will still be incorrect
     //  for the given new tempo value, that is why this adjustment to our _pos is needed.
     // Another solution would be to actually seek the transport to the correct frame.
     // In either solution any waves will jump to a new position but midi will continue on.

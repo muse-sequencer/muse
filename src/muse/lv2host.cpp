@@ -114,7 +114,7 @@
 // Some plugins send out lots of (small message) work requests in one run even before the worker can run them.
 // Using our custom non-splitting data FIFO, we might typically set a size higher than what a true 'wrap around'
 //  data FIFO would use. But that's still far better than using a very wasteful fixed-size item based FIFO.
-// Actually, to accomodate say, the LSP 48 channel samplers, we MUST set this fairly high - even if we were to
+// Actually, to accommodate say, the LSP 48 channel samplers, we MUST set this fairly high - even if we were to
 //  use true 'wrap around' FIFOs because LSP plugins try to schedule MANY work requests in one run.
 // (That's up to 8 wave files per channel x 48 channels = 384 requests x 16 bytes per message = 6,144 bytes!).
 #define LV2_WRK_FIFO_SIZE 8192

@@ -71,7 +71,7 @@ class FunctionDialogBase : public QDialog
     FunctionDialogBase(QWidget* parent = 0);
     virtual ~FunctionDialogBase();
 
-    // Returns true if the tag was handled by this base class, otherwsise false.
+    // Returns true if the tag was handled by this base class, otherwise false.
     static bool read_configuration(const QString& tag, MusECore::Xml& xml);
     // Writes a small portion, just part of the overall method in the sub classes.
     virtual void write_configuration(int level, MusECore::Xml& xml);

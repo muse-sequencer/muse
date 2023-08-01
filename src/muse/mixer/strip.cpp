@@ -1349,7 +1349,7 @@ void Strip::labelContextMenuReq(const QPoint& /*p*/)
   QMenu* menu = new QMenu;
   QAction* act = nullptr;
 
-  // Only show these items if the strip is embedded ouside the mixer,
+  // Only show these items if the strip is embedded outside the mixer,
   //  since we now have mixer menu items for these.
   if(isEmbedded())
   {
