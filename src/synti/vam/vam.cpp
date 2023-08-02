@@ -343,7 +343,7 @@ bool VAM::init(const char* name)
               lin2exp[i] = 1.5 * tmp * tmp * tmp - 0.69 * tmp * tmp + 0.16 * tmp;
               }
           int sr = sampleRate();
-          /* Build up denormalised oscilator wavetables, these are sample_rate
+          /* Build up denormalised oscillator wavetables, these are sample_rate
              long, costs more RAM to create them but makes frequency calcs much
              cheaper, and means that interpolation isn't that necessary, esp if
              you use integer frequencies */
