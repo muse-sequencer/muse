@@ -474,6 +474,10 @@ if (ENABLE_RTAUDIO)
       if (RTAUDIO_FOUND)
             include_directories(${RTAUDIO_INCLUDE_DIRS})
             set(HAVE_RTAUDIO ON)
+            # NOTE: RtAudio's package config (.pc) file contains api type flags
+            #        that probably should be used. The header file rtaudio.h needs this.
+            # set(CMAKE_CXX_FLAGS ${RTAUDIO_CFLAGS} ${CMAKE_CXX_FLAGS})
+            #add_compile_options(${RTAUDIO_CFLAGS})
       endif (RTAUDIO_FOUND)
 else (ENABLE_RTAUDIO)
       message("RTAUDIO disabled")

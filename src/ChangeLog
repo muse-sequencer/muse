@@ -1,3 +1,6 @@
+03.08.2023
+    - Fixed issue 1233: RtAudio 6 compatibility. (Tim)
+      Tested OK with RtAudio 6.0.1
 31.07.2023
     - Fixed midi remote control: Don't accept note-offs. (Tim)
       Symptoms were: Double step-record entries, transport record toggling, double play etc.

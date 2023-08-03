@@ -221,8 +221,14 @@ bool RtAudioDevice::start(int priority)
   
   RtAudio::DeviceInfo in_di  = dac->getDeviceInfo(inParameters.deviceId);
   RtAudio::DeviceInfo out_di = dac->getDeviceInfo(outParameters.deviceId);
-  
+
+// At this time, all versions >= 6 have RTAUDIO_VERSION_MAJOR defined.
+#ifdef RTAUDIO_VERSION_MAJOR
+  // ID 0 means invalid.
+  if(in_di.ID == 0 || out_di.ID == 0)
+#else
   if(!in_di.probed || !out_di.probed)
+#endif
   {
     fprintf(stderr, "Error: RtAudioDevice: Could not probe device info.\n");
   }
@@ -315,6 +321,23 @@ bool RtAudioDevice::start(int priority)
   
   double data[2];
 
+// At this time, all versions >= 6 have RTAUDIO_VERSION_MAJOR defined.
+#ifdef RTAUDIO_VERSION_MAJOR
+    if(dac->openStream( &outParameters, &inParameters, RTAUDIO_FLOAT32,
+                     MusEGlobal::sampleRate, &MusEGlobal::segmentSize,
+                     &processAudio, (void *)&data,
+                     &options ) != RtAudioErrorType::RTAUDIO_NO_ERROR)
+    {
+      fprintf(stderr, "Error: RtAudioDevice: Cannot open device for streaming:\n%s\n", dac->getErrorText().c_str());
+      return false;
+    }
+
+    if(dac->startStream() != RtAudioErrorType::RTAUDIO_NO_ERROR)
+    {
+      fprintf(stderr, "Error: RtAudioDevice: Cannot start stream:\n%s\n", dac->getErrorText().c_str());
+      return false;
+    }
+#else
   try {
 
     dac->openStream( &outParameters, &inParameters, RTAUDIO_FLOAT32, 
@@ -329,6 +352,7 @@ bool RtAudioDevice::start(int priority)
     fprintf(stderr, "Error: RtAudioDevice: Cannot open device for streaming!.\n");
     return false;
   }
+#endif
 
   DEBUG_RTAUDIO(stderr, "RtAudioDevice:start actual options: flags:%d numberOfBuffers:%d priority:%d streamName:%s\n", 
           options.flags, options.numberOfBuffers, options.priority, options.streamName.c_str());
@@ -338,6 +362,14 @@ bool RtAudioDevice::start(int priority)
 
 void RtAudioDevice::stop ()
 {
+// At this time, all versions >= 6 have RTAUDIO_VERSION_MAJOR defined.
+#ifdef RTAUDIO_VERSION_MAJOR
+  if (dac->isStreamRunning())
+  {
+    if(dac->stopStream() != RtAudioErrorType::RTAUDIO_NO_ERROR)
+      fprintf(stderr, "Error: RtAudioDevice: Cannot stop stream:\n%s\n", dac->getErrorText().c_str());
+  }
+#else
   try {
 
     if (dac->isStreamRunning()) {
@@ -348,8 +380,8 @@ void RtAudioDevice::stop ()
 
     e.printMessage();
   }
+#endif
   if ( dac->isStreamOpen() ) {
-
     dac->closeStream();
   }
 }

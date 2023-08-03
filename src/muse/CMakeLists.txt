@@ -248,6 +248,7 @@ set_target_properties( core
       PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK}"
       OUTPUT_NAME muse_core
       )
+
 set_target_properties( muse
       PROPERTIES OUTPUT_NAME ${MusE_EXEC_NAME}
       )
