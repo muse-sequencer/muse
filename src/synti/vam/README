@@ -30,7 +30,7 @@ VAM: Virtual Analog for MusE
     To have fun with VAM MusE really should be started with -R.
     Otherwise VAM will produce mostly noise, like clicks.
     If you're familiar with analog or virtual analog synthesizers
-    using VAM souldn't be a problem.
+    using VAM shouldn't be a problem.
 
     If you add some cool LADSPA plugins like delay or chorus to VAM's
     output, you'll get _much_ better sounds, playing without effects
