@@ -69,7 +69,8 @@ double museStringToDouble(const QString &s, bool *ok)
   ss >> value;
   if(ok)
     *ok = true;
-
+  return value;
+    
 #else // C++ istringstream does not support hexfloat
 
   // Is it a hex number?
