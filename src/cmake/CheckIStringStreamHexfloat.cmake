@@ -6,7 +6,7 @@ function(check_istringstream_hexfloat varname)
   #include <clocale>
   int main() {
   std::istringstream ss(\"0x1.8p+0\");
-  ss.imbue(std::locale("C"));
+  ss.imbue(std::locale(\"C\"));
   double value = 0.0;
   ss >> value;
   return value != 1.5;
