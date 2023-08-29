@@ -1954,7 +1954,20 @@ void Song::beat()
       for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++it)
         (*it)->guiHeartBeat();
 
-      enum { RTM_NONE, RTM_STOP, RTM_PLAY, RTM_REC, RTM_GOLMARK, RTM_FF, RTM_REW} prevRtmType = RTM_NONE;
+      enum {
+        RTM_NONE,
+        RTM_STOP,
+        RTM_PLAY_ON,
+        RTM_PLAY_OFF,
+        RTM_REC_ON,
+        RTM_REC_OFF,
+        RTM_GOLMARK,
+        RTM_FF_ON,
+        RTM_FF_OFF,
+        RTM_REW_ON,
+        RTM_REW_OFF
+      } prevRtmType = RTM_NONE;
+
       // A blank, invalid event to start with.
       MidiRecordEvent learnEv;
 
@@ -2009,9 +2022,9 @@ void Song::beat()
               {
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_REC)
+                  if(prevRtmType != RTM_REC_ON)
                   {
-                    prevRtmType = RTM_REC;
+                    prevRtmType = RTM_REC_ON;
                     if(!record())
                       setRecord(true);
                   }
@@ -2037,9 +2050,9 @@ void Song::beat()
               {
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_PLAY)
+                  if(prevRtmType != RTM_PLAY_ON)
                   {
-                    prevRtmType = RTM_PLAY;
+                    prevRtmType = RTM_PLAY_ON;
                     if(MusEGlobal::checkAudioDevice() && !MusEGlobal::audio->isPlaying())
                       setPlay(true);
                   }
@@ -2060,9 +2073,9 @@ void Song::beat()
               {
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_FF)
+                  if(prevRtmType != RTM_FF_ON)
                   {
-                    prevRtmType = RTM_FF;
+                    prevRtmType = RTM_FF_ON;
                     if(_fastMove != FAST_FORWARD)
                       _fastMove = FAST_FORWARD;
                   }
@@ -2083,9 +2096,9 @@ void Song::beat()
               {
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_REW)
+                  if(prevRtmType != RTM_REW_ON)
                   {
-                    prevRtmType = RTM_REW;
+                    prevRtmType = RTM_REW_ON;
                     if(_fastMove != FAST_REWIND)
                       _fastMove = FAST_REWIND;
                   }
@@ -2120,13 +2133,13 @@ void Song::beat()
                 // Ignore these.
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValToggle:
-                    prevRtmType = RTM_REC;
+                    prevRtmType = RTM_REC_OFF;
                 break;
 
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_REC)
+                  if(prevRtmType != RTM_REC_OFF)
                   {
-                    prevRtmType = RTM_REC;
+                    prevRtmType = RTM_REC_OFF;
                     if(record())
                       setRecord(false);
                   }
@@ -2140,13 +2153,13 @@ void Song::beat()
                 // Ignore these.
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValToggle:
-                    prevRtmType = RTM_PLAY;
+                    prevRtmType = RTM_PLAY_OFF;
                 break;
 
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_PLAY)
+                  if(prevRtmType != RTM_PLAY_OFF)
                   {
-                    prevRtmType = RTM_PLAY;
+                    prevRtmType = RTM_PLAY_OFF;
                     if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isPlaying())
                       setStop(true);
                   }
@@ -2160,13 +2173,13 @@ void Song::beat()
                 // Ignore these.
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValToggle:
-                    prevRtmType = RTM_FF;
+                    prevRtmType = RTM_FF_OFF;
                 break;
 
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_FF)
+                  if(prevRtmType != RTM_FF_OFF)
                   {
-                    prevRtmType = RTM_FF;
+                    prevRtmType = RTM_FF_OFF;
                     if(_fastMove == FAST_FORWARD)
                       setStop(true);
                   }
@@ -2180,13 +2193,13 @@ void Song::beat()
                 // Ignore these.
                 case MidiRemoteStruct::MidiRemoteValTrigger:
                 case MidiRemoteStruct::MidiRemoteValToggle:
-                    prevRtmType = RTM_REW;
+                    prevRtmType = RTM_REW_OFF;
                 break;
 
                 case MidiRemoteStruct::MidiRemoteValMomentary:
-                  if(prevRtmType != RTM_REW)
+                  if(prevRtmType != RTM_REW_OFF)
                   {
-                    prevRtmType = RTM_REW;
+                    prevRtmType = RTM_REW_OFF;
                     if(_fastMove == FAST_REWIND)
                       setStop(true);
                   }
@@ -2211,13 +2224,13 @@ void Song::beat()
                   // Ignore these.
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValToggle:
-                      prevRtmType = RTM_PLAY;
+                      prevRtmType = RTM_PLAY_OFF;
                   break;
 
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_PLAY)
+                    if(prevRtmType != RTM_PLAY_OFF)
                     {
-                      prevRtmType = RTM_PLAY;
+                      prevRtmType = RTM_PLAY_OFF;
                       if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isPlaying())
                         setStop(true);
                     }
@@ -2231,13 +2244,13 @@ void Song::beat()
                   // Ignore these.
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValToggle:
-                      prevRtmType = RTM_REC;
+                      prevRtmType = RTM_REC_OFF;
                   break;
 
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_REC)
+                    if(prevRtmType != RTM_REC_OFF)
                     {
-                      prevRtmType = RTM_REC;
+                      prevRtmType = RTM_REC_OFF;
                       if(record())
                         setRecord(false);
                     }
@@ -2251,13 +2264,13 @@ void Song::beat()
                   // Ignore these.
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValToggle:
-                      prevRtmType = RTM_FF;
+                      prevRtmType = RTM_FF_OFF;
                   break;
 
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_FF)
+                    if(prevRtmType != RTM_FF_OFF)
                     {
-                      prevRtmType = RTM_FF;
+                      prevRtmType = RTM_FF_OFF;
                       if(_fastMove == FAST_FORWARD)
                         setStop(true);
                     }
@@ -2271,13 +2284,13 @@ void Song::beat()
                   // Ignore these.
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValToggle:
-                      prevRtmType = RTM_REW;
+                      prevRtmType = RTM_REW_OFF;
                   break;
 
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_REW)
+                    if(prevRtmType != RTM_REW_OFF)
                     {
-                      prevRtmType = RTM_REW;
+                      prevRtmType = RTM_REW_OFF;
                       if(_fastMove == FAST_REWIND)
                         setStop(true);
                     }
@@ -2301,9 +2314,9 @@ void Song::beat()
                 {
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_PLAY)
+                    if(prevRtmType != RTM_PLAY_ON)
                     {
-                      prevRtmType = RTM_PLAY;
+                      prevRtmType = RTM_PLAY_ON;
                       if(MusEGlobal::checkAudioDevice() && !MusEGlobal::audio->isPlaying())
                         setPlay(true);
                     }
@@ -2324,9 +2337,9 @@ void Song::beat()
                 {
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_REC)
+                    if(prevRtmType != RTM_REC_ON)
                     {
-                      prevRtmType = RTM_REC;
+                      prevRtmType = RTM_REC_ON;
                       if(!record())
                         setRecord(true);
                     }
@@ -2352,9 +2365,9 @@ void Song::beat()
                 {
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_FF)
+                    if(prevRtmType != RTM_FF_ON)
                     {
-                      prevRtmType = RTM_FF;
+                      prevRtmType = RTM_FF_ON;
                       if(_fastMove != FAST_FORWARD)
                         _fastMove = FAST_FORWARD;
                     }
@@ -2375,9 +2388,9 @@ void Song::beat()
                 {
                   case MidiRemoteStruct::MidiRemoteValTrigger:
                   case MidiRemoteStruct::MidiRemoteValMomentary:
-                    if(prevRtmType != RTM_REW)
+                    if(prevRtmType != RTM_REW_ON)
                     {
-                      prevRtmType = RTM_REW;
+                      prevRtmType = RTM_REW_ON;
                       if(_fastMove != FAST_REWIND)
                         _fastMove = FAST_REWIND;
                     }
