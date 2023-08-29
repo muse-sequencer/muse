@@ -42,22 +42,21 @@ class MidiRemoteStruct
     int _noteport;
     // Can be -1 meaning 'any'.
     int _notechannel;
-    // Can be -1 meaning 'unused'.
+    // Can be 0 - 127.
     int _note;
     bool _ccenable;
     // Can be -1 meaning 'any'.
     int _ccport;
     // Can be -1 meaning 'any'.
     int _ccchannel;
-    // Can be -1 meaning 'unused'.
+    // Can be 0 - 127.
     int _ccnum;
-    // Can be CCValUnknown meaning 'unknown' or 'unused'.
     MidiRemoteValType _noteValType;
     MidiRemoteValType _ccValType;
 
     MidiRemoteStruct(
-      int noteport = -1, int notechannel = -1, int note = -1, MidiRemoteValType notevaltype = MidiRemoteValTrigger, bool noteenable = false,
-      int ccport = -1, int ccchannel = -1, int ccnum = -1, MidiRemoteValType ccvaltype = MidiRemoteValTrigger, bool ccenable = false);
+      int noteport = -1, int notechannel = -1, int note = 0, MidiRemoteValType notevaltype = MidiRemoteValTrigger, bool noteenable = false,
+      int ccport = -1, int ccchannel = -1, int ccnum = 0, MidiRemoteValType ccvaltype = MidiRemoteValTrigger, bool ccenable = false);
 
     void read(const char *name, Xml&);
     void write(const char *name, int level, Xml&) const;
