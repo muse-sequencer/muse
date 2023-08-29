@@ -1954,6 +1954,10 @@ void Song::beat()
       for(ciTrack it = _tracks.begin(); it != _tracks.end(); ++it)
         (*it)->guiHeartBeat();
 
+      enum { RTM_NONE, RTM_STOP, RTM_PLAY, RTM_REC, RTM_GOLMARK, RTM_FF, RTM_REW} prevRtmType = RTM_NONE;
+      // A blank, invalid event to start with.
+      MidiRecordEvent learnEv;
+
       int eventsToProcess = realtimeMidiEvents->getSize();
       while (eventsToProcess--)
       {
@@ -1967,62 +1971,446 @@ void Song::beat()
           int dataA = currentEvent.dataA();
           int dataB = currentEvent.dataB();
 
-          if (currentEvent.type() == ME_NOTEON || currentEvent.type() == ME_NOTEOFF)
-          {
-              //---------------------------------------------------
-              // filter midi remote control events
-              //---------------------------------------------------
-              bool consumed = false;
-              if (currentEvent.type() == ME_NOTEON)
-              {
-                if (MusEGlobal::rcEnable) {
-                    if (dataA == MusEGlobal::rcStopNote) {
-                        setStop(true);
-                        consumed = true;
-                    } else if (dataA == MusEGlobal::rcRecordNote) {
-                        setRecord(!record());
-                        consumed = true;
-                    } else if (dataA == MusEGlobal::rcGotoLeftMarkNote) {
-                        setPos(CPOS, pos[LPOS].tick(), true, true, true);
-                        consumed = true;
-                    } else if (dataA == MusEGlobal::rcPlayNote) {
-                        setPlay(true);
-                        consumed = true;
-                    } else if (dataA == MusEGlobal::rcForwardNote) {
-                        _fastMove = FAST_FORWARD;
-                        consumed = true;
-                    } else if (dataA == MusEGlobal::rcBackwardNote) {
-                        _fastMove = FAST_REWIND;
-                        consumed = true;
-                    }
-                }
-              }
+          const int port = currentEvent.port();
+          const int chan = currentEvent.channel();
+          const bool isNoteOn = currentEvent.type() == ME_NOTEON && dataB != 0;
+          const bool isNoteOff = currentEvent.type() == ME_NOTEOFF || (currentEvent.type() == ME_NOTEON && dataB == 0);
+          const bool isCtrl = currentEvent.type() == ME_CONTROLLER;
+          const bool isPbOrPg = currentEvent.type() == ME_PITCHBEND || currentEvent.type() == ME_PROGRAM;
+          const MidiRemote *curRem = MusEGlobal::midiRemoteUseSongSettings ? MusEGlobal::song->midiRemote() : &MusEGlobal::midiRemote;
 
-              if (!consumed)
-                  emit MusEGlobal::song->midiNote(dataA, currentEvent.type() == ME_NOTEOFF ? 0 : dataB);
+          // Whatever came in, should we keep it as a learning value?
+          if((MusEGlobal::midiRemoteIsLearning && (isNoteOn || isNoteOff || isCtrl)) ||
+             (MusEGlobal::midiToAudioAssignIsLearning && (isPbOrPg || isCtrl)))
+          {
+            // Since the learning is only as current as the LATEST learn event, ignore all except the last event.
+            learnEv = currentEvent;
+          }
+
+          //---------------------------------------------------
+          // filter midi remote control events
+          //---------------------------------------------------
+
+          // TODO: Some functions, such as play, could be moved into the realtime thread, like the MMC does.
+          //       That would shorten the response time a little, avoiding the ring buffer.
+          else if (isNoteOn)
+          {
+            if(curRem->_stop.matchesNote(port, chan, dataA))
+            {
+              if(prevRtmType != RTM_STOP)
+              {
+                prevRtmType = RTM_STOP;
+                setStop(true);
+              }
+            }
+            else if(curRem->_rec.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_rec._noteValType)
+              {
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_REC)
+                  {
+                    prevRtmType = RTM_REC;
+                    if(!record())
+                      setRecord(true);
+                  }
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                  prevRtmType = RTM_NONE;
+                  setRecord(!record());
+                break;
+              }
+            }
+            else if(curRem->_gotoLeftMark.matchesNote(port, chan, dataA))
+            {
+              if(prevRtmType != RTM_GOLMARK)
+              {
+                prevRtmType = RTM_GOLMARK;
+                setPos(CPOS, pos[LPOS].tick(), true, true, true);
+              }
+            }
+            else if(curRem->_play.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_play._noteValType)
+              {
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_PLAY)
+                  {
+                    prevRtmType = RTM_PLAY;
+                    if(MusEGlobal::checkAudioDevice() && !MusEGlobal::audio->isPlaying())
+                      setPlay(true);
+                  }
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                  prevRtmType = RTM_NONE;
+                  if(!MusEGlobal::checkAudioDevice() || MusEGlobal::audio->isPlaying())
+                    setStop(true);
+                  else
+                    setPlay(true);
+                break;
+              }
+            }
+            else if(curRem->_forward.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_forward._noteValType)
+              {
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_FF)
+                  {
+                    prevRtmType = RTM_FF;
+                    if(_fastMove != FAST_FORWARD)
+                      _fastMove = FAST_FORWARD;
+                  }
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                  prevRtmType = RTM_NONE;
+                  if(_fastMove == FAST_FORWARD)
+                    setStop(true);
+                  else
+                    _fastMove = FAST_FORWARD;
+                break;
+              }
+            }
+            else if(curRem->_backward.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_backward._noteValType)
+              {
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_REW)
+                  {
+                    prevRtmType = RTM_REW;
+                    if(_fastMove != FAST_REWIND)
+                      _fastMove = FAST_REWIND;
+                  }
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                  prevRtmType = RTM_NONE;
+                  if(_fastMove == FAST_REWIND)
+                    setStop(true);
+                  else
+                    _fastMove = FAST_REWIND;
+                break;
+              }
+            }
+            else if(curRem->_stepRecRest.matchesNote(port, chan, dataA))
+            {
+              prevRtmType = RTM_NONE;
+              emit MusEGlobal::song->midiNote(-1, dataB);
+            }
+            else if(MusEGlobal::midiRemote.matchesStepRec(port, chan))
+            {
+              prevRtmType = RTM_NONE;
+              emit MusEGlobal::song->midiNote(dataA, dataB);
+            }
+          }
+          else if (isNoteOff)
+          {
+            if(curRem->_rec.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_rec._noteValType)
+              {
+                // Ignore these.
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_REC;
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_REC)
+                  {
+                    prevRtmType = RTM_REC;
+                    if(record())
+                      setRecord(false);
+                  }
+                break;
+              }
+            }
+            else if(curRem->_play.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_play._noteValType)
+              {
+                // Ignore these.
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_PLAY;
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_PLAY)
+                  {
+                    prevRtmType = RTM_PLAY;
+                    if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isPlaying())
+                      setStop(true);
+                  }
+                break;
+              }
+            }
+            else if(curRem->_forward.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_forward._noteValType)
+              {
+                // Ignore these.
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_FF;
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_FF)
+                  {
+                    prevRtmType = RTM_FF;
+                    if(_fastMove == FAST_FORWARD)
+                      setStop(true);
+                  }
+                break;
+              }
+            }
+            else if(curRem->_backward.matchesNote(port, chan, dataA))
+            {
+              switch(curRem->_backward._noteValType)
+              {
+                // Ignore these.
+                case MidiRemoteStruct::MidiRemoteValTrigger:
+                case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_REW;
+                break;
+
+                case MidiRemoteStruct::MidiRemoteValMomentary:
+                  if(prevRtmType != RTM_REW)
+                  {
+                    prevRtmType = RTM_REW;
+                    if(_fastMove == FAST_REWIND)
+                      setStop(true);
+                  }
+                break;
+              }
+            }
+            else if(MusEGlobal::midiRemote.matchesStepRec(port, chan))
+            {
+              prevRtmType = RTM_NONE;
+              emit MusEGlobal::song->midiNote(dataA, 0);
+            }
           } // NOTES
 
-          if (MusEGlobal::rcEnableCC && currentEvent.type() == ME_CONTROLLER)
+          else if (isCtrl)
           {
-              if (dataA == MusEGlobal::rcStopCC)
-                  setStop(true);
-              else if (dataA == MusEGlobal::rcPlayCC)
-                  setPlay(true);
-              else if (dataA == MusEGlobal::rcRecordCC)
+            if (dataB == 0)
+            {
+              if(curRem->_play.matchesCC(port, chan, dataA))
               {
-                if (dataB == 0)
-                  setRecord(false);
-                else
-                  setRecord(true);
+                switch(curRem->_play._ccValType)
+                {
+                  // Ignore these.
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                      prevRtmType = RTM_PLAY;
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_PLAY)
+                    {
+                      prevRtmType = RTM_PLAY;
+                      if(MusEGlobal::checkAudioDevice() && MusEGlobal::audio->isPlaying())
+                        setStop(true);
+                    }
+                  break;
+                }
               }
-              else if (dataA == MusEGlobal::rcGotoLeftMarkCC)
+              else if(curRem->_rec.matchesCC(port, chan, dataA))
+              {
+                switch(curRem->_rec._ccValType)
+                {
+                  // Ignore these.
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                      prevRtmType = RTM_REC;
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_REC)
+                    {
+                      prevRtmType = RTM_REC;
+                      if(record())
+                        setRecord(false);
+                    }
+                  break;
+                }
+              }
+              else if(curRem->_forward.matchesCC(port, chan, dataA))
+              {
+                switch(curRem->_forward._ccValType)
+                {
+                  // Ignore these.
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                      prevRtmType = RTM_FF;
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_FF)
+                    {
+                      prevRtmType = RTM_FF;
+                      if(_fastMove == FAST_FORWARD)
+                        setStop(true);
+                    }
+                  break;
+                }
+              }
+              else if(curRem->_backward.matchesCC(port, chan, dataA))
+              {
+                switch(curRem->_backward._ccValType)
+                {
+                  // Ignore these.
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                      prevRtmType = RTM_REW;
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_REW)
+                    {
+                      prevRtmType = RTM_REW;
+                      if(_fastMove == FAST_REWIND)
+                        setStop(true);
+                    }
+                  break;
+                }
+              }
+            }
+            else // dataB != 0
+            {
+              if(curRem->_stop.matchesCC(port, chan, dataA))
+              {
+                if(prevRtmType != RTM_STOP)
+                {
+                  prevRtmType = RTM_STOP;
+                  setStop(true);
+                }
+              }
+              else if(curRem->_play.matchesCC(port, chan, dataA))
+              {
+                switch(curRem->_play._ccValType)
+                {
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_PLAY)
+                    {
+                      prevRtmType = RTM_PLAY;
+                      if(MusEGlobal::checkAudioDevice() && !MusEGlobal::audio->isPlaying())
+                        setPlay(true);
+                    }
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_NONE;
+                    if(!MusEGlobal::checkAudioDevice() || MusEGlobal::audio->isPlaying())
+                      setStop(true);
+                    else
+                      setPlay(true);
+                  break;
+                }
+              }
+              else if(curRem->_rec.matchesCC(port, chan, dataA))
+              {
+                switch(curRem->_rec._ccValType)
+                {
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_REC)
+                    {
+                      prevRtmType = RTM_REC;
+                      if(!record())
+                        setRecord(true);
+                    }
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_NONE;
+                    setRecord(!record());
+                  break;
+                }
+              }
+              else if(curRem->_gotoLeftMark.matchesCC(port, chan, dataA))
+              {
+                if(prevRtmType != RTM_GOLMARK)
+                {
+                  prevRtmType = RTM_GOLMARK;
                   setPos(CPOS, pos[LPOS].tick(), true, true, true);
-              else if (dataA == MusEGlobal::rcForwardCC)
-                  _fastMove = FAST_FORWARD;
-              else if (dataA == MusEGlobal::rcBackwardCC)
-                  _fastMove = FAST_REWIND;
+                }
+              }
+              else if(curRem->_forward.matchesCC(port, chan, dataA))
+              {
+                switch(curRem->_forward._ccValType)
+                {
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_FF)
+                    {
+                      prevRtmType = RTM_FF;
+                      if(_fastMove != FAST_FORWARD)
+                        _fastMove = FAST_FORWARD;
+                    }
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_NONE;
+                    if(_fastMove == FAST_FORWARD)
+                      setStop(true);
+                    else
+                      _fastMove = FAST_FORWARD;
+                  break;
+                }
+              }
+              else if(curRem->_backward.matchesCC(port, chan, dataA))
+              {
+                switch(curRem->_backward._ccValType)
+                {
+                  case MidiRemoteStruct::MidiRemoteValTrigger:
+                  case MidiRemoteStruct::MidiRemoteValMomentary:
+                    if(prevRtmType != RTM_REW)
+                    {
+                      prevRtmType = RTM_REW;
+                      if(_fastMove != FAST_REWIND)
+                        _fastMove = FAST_REWIND;
+                    }
+                  break;
+
+                  case MidiRemoteStruct::MidiRemoteValToggle:
+                    prevRtmType = RTM_NONE;
+                    if(_fastMove == FAST_REWIND)
+                      setStop(true);
+                    else
+                      _fastMove = FAST_REWIND;
+                  break;
+                }
+              }
+              else if(curRem->_stepRecRest.matchesCC(port, chan, dataA))
+              {
+                prevRtmType = RTM_NONE;
+                emit MusEGlobal::song->midiNote(-1, 0);
+              }
+            }
           } // CC
+
+          // Unrecognized
+          else
+          {
+            prevRtmType = RTM_NONE;
+          }
       }
+
+    // If there was any learn event, send it now.
+    // Since the learning is only as current as the LATEST learn event, ignore all except the last event.
+    if(learnEv.isValid())
+      emit midiLearnReceived(learnEv);
 
     int mmcToProcess = mmcEvents->getSize();
     while (mmcToProcess--)
@@ -2377,6 +2765,12 @@ void Song::clear(bool signal, bool clear_all)
       MusEGlobal::metroUseSongSettings = false;
       if(MusEGlobal::metroSongSettings.metroAccentsMap)
         MusEGlobal::metroSongSettings.metroAccentsMap->clear();
+
+      // Clear the song-specific midi remote settings.
+      // A loaded song can override these if it chooses.
+      MusEGlobal::midiRemoteUseSongSettings = false;
+      MusEGlobal::midiRemoteIsLearning = false;
+      midiRemote()->initialize();
 
       undoList->clearDelete();
       redoList->clearDelete();
@@ -5421,5 +5815,7 @@ void Song::setCycleMode(int val) {
 }
 
 MidiAudioCtrlMap* Song::midiAssignments() { return &_midiAssignments; }
+
+MidiRemote* Song::midiRemote() { return &_midiRemote; }
 
 } // namespace MusECore

@@ -4953,13 +4953,24 @@ void ScoreCanvas::set_steprec(bool flag)
 
 void ScoreCanvas::midi_note(int pitch, int velo)
 {
-    if (velo)
-        held_notes[pitch]=true;
-    else
-        held_notes[pitch]=false;
+    // Ignore invalid pitches such as rest notes.
+    if(pitch >= 0)
+    {
+      if (velo)
+          held_notes[pitch]=true;
+      else
+          held_notes[pitch]=false;
+    }
 
     if ( srec && selected_part && !MusEGlobal::audio->isPlaying() && velo )
-        steprec->record(selected_part,pitch,quant_ticks(),quant_ticks(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
+        steprec->record(
+          selected_part,
+          pitch,
+          quant_ticks(),
+          quant_ticks(),
+          velo,
+          MusEGlobal::globalKeyState&Qt::ControlModifier,
+          MusEGlobal::globalKeyState&Qt::ShiftModifier);
 }
 
 

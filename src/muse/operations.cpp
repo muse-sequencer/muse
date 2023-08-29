@@ -35,6 +35,7 @@
 #include "metronome_class.h"
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
+#include "midiremote.h"
 
 // Enable for debugging:
 //#define _PENDING_OPS_DEBUG_
@@ -185,7 +186,9 @@ unsigned int PendingOperationItem::getIndex() const
     case EnableAllAudioControllers:
     case GlobalSelectAllEvents:
     case SwitchMetronomeSettings:
+    case SwitchMidiRemoteSettings:
     case ModifyMetronomeAccentMap:
+    case ModifyMidiRemote:
     case SetExternalSyncFlag:
     case SetUseJackTransport:
     case SetUseMasterTrack:
@@ -1599,6 +1602,27 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     }
     break;
 
+    case SwitchMidiRemoteSettings:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage SwitchMidiRemoteSettings: settings:%p val:%d\n", _bool_pointer, _boolA);
+#endif
+      *_bool_pointer = _boolA;
+      flags |= SC_MIDI_REMOTE;
+    }
+    break;
+
+    case ModifyMidiRemote:
+    {
+#ifdef _PENDING_OPS_DEBUG_
+      fprintf(stderr, "PendingOperationItem::executeRTStage ModifyMidiRemote: old map:%p new map:%p\n", _midiRemote, _newMidiRemote);
+#endif
+      // (Don't forget to delete the new pointer in the non-RT stage.)
+      *_midiRemote = *_newMidiRemote;
+      flags |= SC_MIDI_REMOTE;
+    }
+    break;
+
     case SetUseJackTransport:
     {
 #ifdef _PENDING_OPS_DEBUG_
@@ -1822,6 +1846,12 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
       // At this point _newMetroAccentsMap is the original list that was replaced. Delete it now.
       if(_newMetroAccentsMap)
         delete _newMetroAccentsMap;
+    break;
+
+    case ModifyMidiRemote:
+      // Done with _newMidiRemote. Delete it now.
+      if(_newMidiRemote)
+        delete _newMidiRemote;
     break;
 
     default:
@@ -3069,6 +3099,31 @@ bool PendingOperationList::add(PendingOperationItem op)
 //         }
       break;
       
+      case PendingOperationItem::SwitchMidiRemoteSettings:
+        if(poi._type == PendingOperationItem::SwitchMidiRemoteSettings &&
+          (poi._bool_pointer == op._bool_pointer))
+        {
+          if(poi._boolA == op._boolA)
+          {
+            fprintf(stderr, "MusE error: PendingOperationList::add(): Double SwitchMidiRemoteSettings. Ignoring.\n");
+            // No operation will take place.
+            return false;
+          }
+          else
+          {
+            // Enable or disable followed by disable or enable is useless. Cancel out both by erasing the command.
+            erase(ipos->second);
+            _map.erase(ipos);
+            // No operation will take place.
+            return false;
+          }
+        }
+      break;
+
+      case PendingOperationItem::ModifyMidiRemote:
+// TODO Not quite right yet.
+      break;
+
       case PendingOperationItem::SetExternalSyncFlag:
         if(poi._type == PendingOperationItem::SetExternalSyncFlag && 
           (poi._bool_pointer == op._bool_pointer))

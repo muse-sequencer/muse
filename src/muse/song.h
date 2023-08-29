@@ -43,7 +43,7 @@
 #include "mpevent.h"
 #include "wave.h"
 #include "ctrl.h"
-
+#include "midiremote.h"
 
 //#define IPC_EVENT_FIFO_SIZE ( std::min( std::max(size_t(256), size_t(MusEGlobal::segmentSize * 16)),  size_t(16384)) )
 
@@ -157,6 +157,8 @@ class Song : public QObject {
       //  a specific track (for example it might affect only selected tracks).
       // There is also a list in class Track for controllers and various things.
       MidiAudioCtrlMap _midiAssignments;
+
+      MidiRemote _midiRemote;
 
       // Used for fastforward and fastrewind states (currently only through MIDI remote control)
       FastMove _fastMove = NORMAL_MOVEMENT;
@@ -555,7 +557,8 @@ class Song : public QObject {
 
       SynthI* createSynthI(const QString& sclass, const QString& uri, const QString& label = QString(),
                            Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
-      
+      MidiRemote* midiRemote();
+
       //-----------------------------------------
       //   Debug
       //-----------------------------------------
@@ -642,6 +645,7 @@ class Song : public QObject {
       void sigDirty();
       void recModeChanged(int);
       void cycleModeChanged(int);
+      void midiLearnReceived(const MidiRecordEvent&);
       };
 
 } // namespace MusECore

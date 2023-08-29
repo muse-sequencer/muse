@@ -46,6 +46,7 @@
 #include "drummap.h"
 #include "helper.h"
 #include "ticksynth.h"
+#include "midiremote.h"
 
 // Forwards from header:
 //#include "xml.h"
@@ -360,13 +361,20 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             }
 
       // transfer also to gui for realtime playback and remote control
-      if (typ == ME_NOTEON || typ == ME_NOTEOFF)
       {
+        const bool nt = typ == ME_NOTEON || typ == ME_NOTEOFF;
+        const bool cc = typ == ME_CONTROLLER;
+        const bool pbpg = typ == ME_PITCHBEND || typ == ME_PROGRAM;
+        const MidiRemote *curRem = MusEGlobal::midiRemoteUseSongSettings ? MusEGlobal::song->midiRemote() : &MusEGlobal::midiRemote;
+
+        // Try to put only what we need to avoid overloading.
+        if (((nt || cc) &&
+             (curRem->matches(event.port(), event.channel(), event.dataA(), nt, cc, nt) || MusEGlobal::midiRemoteIsLearning)) ||
+            ((cc || pbpg) &&
+              MusEGlobal::midiToAudioAssignIsLearning))
+        {
           MusEGlobal::song->putEvent(event);
-      }
-      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER)
-      {
-          MusEGlobal::song->putEvent(event);
+        }
       }
 
       // Do not bother recording if it is NOT actually being used by a port.

@@ -1,3 +1,7 @@
+28.08.2023
+    * New: Midi remote control feature redesigned. (Tim)
+      Now with learning, port, channel, value type trigger/toggle/momentary, global/song settings.
+    - Also rewrote midi-to-audio controller assignment learning code, to follow these changes.
 03.08.2023
     - Fixed issue 1233: RtAudio 6 compatibility. (Tim)
       Tested OK with RtAudio 6.0.1

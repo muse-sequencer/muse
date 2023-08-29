@@ -483,7 +483,7 @@ static void loadConfigMetronom(Xml& xml, MetronomeSettings* metro_settings)
 //   readSeqConfiguration
 //---------------------------------------------------------
 
-static void readSeqConfiguration(Xml& xml, MetronomeSettings* metro_settings, bool skipMidiPorts)
+static void readSeqConfiguration(Xml& xml, bool isGlobal, bool skipMidiPorts)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -493,45 +493,71 @@ static void readSeqConfiguration(Xml& xml, MetronomeSettings* metro_settings, bo
             switch (token) {
                   case Xml::TagStart:
                         if (tag == "metronom")
-                              loadConfigMetronom(xml, metro_settings);
+                              loadConfigMetronom(xml, isGlobal ? &MusEGlobal::metroGlobalSettings : &MusEGlobal::metroSongSettings);
                         else if (tag == "mididevice")
                               readConfigMidiDevice(xml);
                         else if (tag == "midiport")
                               readConfigMidiPort(xml, skipMidiPorts);
 
-                        else if (tag == "rcStop")
-                              MusEGlobal::rcStopNote = xml.parseInt();
+                        // Separate RC values are obsolete. Keep for backwards compatibilty.
                         else if (tag == "rcEnable")
-                              MusEGlobal::rcEnable = xml.parseInt();
+                        {
+                            MusEGlobal::midiRemote._stop._noteenable =
+                            MusEGlobal::midiRemote._rec._noteenable =
+                            MusEGlobal::midiRemote._gotoLeftMark._noteenable =
+                            MusEGlobal::midiRemote._play._noteenable =
+                            MusEGlobal::midiRemote._stepRecRest._noteenable =
+                            MusEGlobal::midiRemote._forward._noteenable =
+                            MusEGlobal::midiRemote._backward._noteenable =
+                              xml.parseInt();
+                        }
+                        else if (tag == "rcStop")
+                            MusEGlobal::midiRemote._stop._note = xml.parseInt();
                         else if (tag == "rcRecord")
-                              MusEGlobal::rcRecordNote = xml.parseInt();
+                            MusEGlobal::midiRemote._rec._note = xml.parseInt();
                         else if (tag == "rcGotoLeft")
-                              MusEGlobal::rcGotoLeftMarkNote = xml.parseInt();
+                            MusEGlobal::midiRemote._gotoLeftMark._note = xml.parseInt();
                         else if (tag == "rcPlay")
-                              MusEGlobal::rcPlayNote = xml.parseInt();
+                            MusEGlobal::midiRemote._play._note = xml.parseInt();
                         else if (tag == "rcSteprec")
-                              MusEGlobal::rcSteprecNote = xml.parseInt();
+                            MusEGlobal::midiRemote._stepRecRest._note = xml.parseInt();
                         else if (tag == "rcForward")
-                            MusEGlobal::rcForwardNote = xml.parseInt();
+                            MusEGlobal::midiRemote._forward._note = xml.parseInt();
                         else if (tag == "rcRewind")
-                            MusEGlobal::rcBackwardNote = xml.parseInt();
-
+                            MusEGlobal::midiRemote._backward._note = xml.parseInt();
                         else if (tag == "rcEnableCC")
-                            MusEGlobal::rcEnableCC = xml.parseInt();
+                        {
+                            MusEGlobal::midiRemote._stop._ccenable =
+                            MusEGlobal::midiRemote._rec._ccenable =
+                            MusEGlobal::midiRemote._gotoLeftMark._ccenable =
+                            MusEGlobal::midiRemote._play._ccenable =
+                            MusEGlobal::midiRemote._stepRecRest._ccenable =
+                            MusEGlobal::midiRemote._forward._ccenable =
+                            MusEGlobal::midiRemote._backward._ccenable =
+                              xml.parseInt();
+                        }
                         else if (tag == "rcStopCC")
-                            MusEGlobal::rcStopCC = xml.parseInt();
+                            MusEGlobal::midiRemote._stop._ccnum = xml.parseInt();
                         else if (tag == "rcRecordCC")
-                            MusEGlobal::rcRecordCC = xml.parseInt();
+                            MusEGlobal::midiRemote._rec._ccnum = xml.parseInt();
                         else if (tag == "rcGotoLeftCC")
-                            MusEGlobal::rcGotoLeftMarkCC = xml.parseInt();
+                            MusEGlobal::midiRemote._gotoLeftMark._ccnum = xml.parseInt();
                         else if (tag == "rcPlayCC")
-                            MusEGlobal::rcPlayCC = xml.parseInt();
-//                        else if (tag == "rcInsertRest")
-//                            MusEGlobal::rcInsertPauseCC = xml.parseInt();
+                            MusEGlobal::midiRemote._play._ccnum = xml.parseInt();
                         else if (tag == "rcForwardCC")
-                            MusEGlobal::rcForwardCC = xml.parseInt();
+                            MusEGlobal::midiRemote._forward._ccnum = xml.parseInt();
                         else if (tag == "rcRewindCC")
-                            MusEGlobal::rcBackwardCC = xml.parseInt();
+                            MusEGlobal::midiRemote._backward._ccnum = xml.parseInt();
+
+                        else if (tag == "midiRemoteUseSongSettings")
+                            MusEGlobal::midiRemoteUseSongSettings = xml.parseInt();
+                        else if (tag == "midiRemote")
+                        {
+                            if(isGlobal)
+                              MusEGlobal::midiRemote.read(xml);
+                            else
+                              MusEGlobal::song->midiRemote()->read(xml);
+                        }
                         else
                               xml.unknown("Seq");
                         break;
@@ -571,9 +597,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                            midiport configuration and VOLUME.
                         */
                         if (tag == "sequencer") {
-                              readSeqConfiguration(xml,
-                                doReadGlobalConfig ? &MusEGlobal::metroGlobalSettings : &MusEGlobal::metroSongSettings,
-                                !doReadMidiPortConfig);
+                              readSeqConfiguration(xml, doReadGlobalConfig, !doReadMidiPortConfig);
                               break;
                               }
                         else if (tag == "waveTracksVisible")
@@ -1611,23 +1635,16 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       // Write the global user accent presets - ONLY if saving global configuration.
       writeMetronomeConfiguration(level, xml, !writePortInfo);
 
-      xml.intTag(level, "rcEnable",   MusEGlobal::rcEnable);
-      xml.intTag(level, "rcStop",     MusEGlobal::rcStopNote);
-      xml.intTag(level, "rcRecord",   MusEGlobal::rcRecordNote);
-      xml.intTag(level, "rcGotoLeft", MusEGlobal::rcGotoLeftMarkNote);
-      xml.intTag(level, "rcPlay",     MusEGlobal::rcPlayNote);
-      xml.intTag(level, "rcSteprec",  MusEGlobal::rcSteprecNote);
-      xml.intTag(level, "rcForward",  MusEGlobal::rcForwardNote);
-      xml.intTag(level, "rcRewind",   MusEGlobal::rcBackwardNote);
-
-      xml.intTag(level, "rcEnableCC",   MusEGlobal::rcEnableCC);
-      xml.intTag(level, "rcStopCC",     MusEGlobal::rcStopCC);
-      xml.intTag(level, "rcRecordCC",   MusEGlobal::rcRecordCC);
-      xml.intTag(level, "rcGotoLeftCC", MusEGlobal::rcGotoLeftMarkCC);
-      xml.intTag(level, "rcPlayCC",     MusEGlobal::rcPlayCC);
-//      xml.intTag(level, "rcInsertRest", MusEGlobal::rcInsertPauseCC);
-      xml.intTag(level, "rcForwardCC",  MusEGlobal::rcForwardCC);
-      xml.intTag(level, "rcRewindCC",   MusEGlobal::rcBackwardCC);
+      // Save song-specific or global midi remote settings?
+      if(writePortInfo)
+      {
+        xml.intTag(level, "midiRemoteUseSongSettings", MusEGlobal::midiRemoteUseSongSettings);
+        MusEGlobal::song->midiRemote()->write(level, xml);
+      }
+      else
+      {
+        MusEGlobal::midiRemote.write(level, xml);
+      }
 
       if (writePortInfo) {
             for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd)

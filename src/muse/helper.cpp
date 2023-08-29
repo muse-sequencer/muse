@@ -45,8 +45,6 @@
 #include "menutitleitem.h"
 #include "dssihost.h"
 #include "lv2host.h"
-// REMOVE Tim. Removed. Not needed.
-// #include "vst_native.h"
 #include "appearance.h"
 #include "event.h"
 #include "popupmenu.h"

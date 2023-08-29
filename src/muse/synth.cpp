@@ -47,6 +47,7 @@
 #include "pluglist.h"
 #include "ticksynth.h"
 #include "undo.h"
+#include "midiremote.h"
 
 // Forwards from header:
 #include "midiport.h"
@@ -723,9 +724,20 @@ void SynthI::recordEvent(MidiRecordEvent& event)
 //      Especially since buggy ones may repeat events multiple times.
 #if 1
       // transfer also to gui for realtime playback and remote control
-      if (typ == ME_NOTEON || typ == ME_NOTEOFF)
       {
+        const bool nt = typ == ME_NOTEON || typ == ME_NOTEOFF;
+        //const bool cc = typ == ME_CONTROLLER;
+        //const bool pbpg = typ == ME_PITCHBEND || typ == ME_PROGRAM;
+        const MidiRemote *curRem = MusEGlobal::midiRemoteUseSongSettings ? MusEGlobal::song->midiRemote() : &MusEGlobal::midiRemote;
+
+        // Try to put only what we need to avoid overloading.
+        if (((nt /*|| cc*/) &&
+             (curRem->matches(event.port(), event.channel(), event.dataA(), nt, /*cc*/ false, nt) || MusEGlobal::midiRemoteIsLearning)) /*||
+            ((cc || pbpg) &&
+              MusEGlobal::midiToAudioAssignIsLearning)*/)
+        {
           MusEGlobal::song->putEvent(event);
+        }
       }
 
 #endif

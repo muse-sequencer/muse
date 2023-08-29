@@ -149,6 +149,7 @@ struct SongChangedStruct_t
 #define SC_AUDIO_CONTROLLER_SELECTION MusECore::SongChangedStruct_t(0x4000000000000) // An audio controller value was added deleted or modified.
 #define SC_AUDIO_CTRL_PASTE_ERASE_MODE MusECore::SongChangedStruct_t(0x8000000000000) // The audio controller paste erase mode was changed.
 #define SC_AUDIO_CTRL_MOVE_MODE       MusECore::SongChangedStruct_t(0x10000000000000) // The audio controller move mode was changed.
+#define SC_MIDI_REMOTE                MusECore::SongChangedStruct_t(0x20000000000000) // The midi remote settings changed.
 #define SC_EVERYTHING                 MusECore::SongChangedStruct_t(-1, -1)       // global update
 
 

@@ -24,13 +24,23 @@
 
 #include "globals.h"
 #include "globaldefs.h"
+#include "midi_consts.h"
 #include "mididev.h"
 #include "midiport.h"
 #include "midictrl.h"
 #include "audio.h"
 #include "app.h"
+#include "song.h"
 
-//#include <QTimer>
+// Forwards from header:
+#include "pitchedit.h"
+#include <QCloseEvent>
+#include <QShowEvent>
+#include <QWidget>
+#include <QComboBox>
+#include <QSpinBox>
+#include <QCheckBox>
+#include <QPushButton>
 
 namespace MusEGui {
 
@@ -60,7 +70,7 @@ MidiAudioControl::MidiAudioControl(bool enableAssignType, bool assignToSong, int
   _port = port;
   _chan = chan;
   _ctrl = ctrl;
-  _is_learning = false;
+  MusEGlobal::midiToAudioAssignIsLearning = false;
   _enableAssignType = enableAssignType;
   _assignToSong = assignToSong;
   
@@ -77,115 +87,28 @@ MidiAudioControl::MidiAudioControl(bool enableAssignType, bool assignToSong, int
 
   updateDialog();
   
-  connect(learnPushButton, SIGNAL(clicked(bool)), SLOT(learnChanged(bool)));
-  connect(portComboBox, SIGNAL(currentIndexChanged(int)), SLOT(portChanged(int)));
-  connect(channelSpinBox, SIGNAL(valueChanged(int)), SLOT(chanChanged()));
-  connect(controlTypeComboBox, SIGNAL(currentIndexChanged(int)), SLOT(ctrlTypeChanged(int)));
-  connect(ctrlHiSpinBox, SIGNAL(valueChanged(int)), SLOT(ctrlHChanged()));
-  connect(ctrlLoSpinBox, SIGNAL(valueChanged(int)), SLOT(ctrlLChanged()));
-  connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
-  connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat()));
+  // Special for these: Need qt helper overload for these lambdas.
+  connect(portComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int idx) { portChanged(idx); } );
+  connect(controlTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int idx) { ctrlTypeChanged(idx); } );
+  connect(channelSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [=]() { chanChanged(); } );
+  connect(ctrlHiSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [=]() { ctrlHChanged(); } );
+  connect(ctrlLoSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), [=]() { ctrlLChanged(); } );
+
+  connect(learnPushButton, &QPushButton::clicked, [this](bool v) { learnChanged(v); } );
 
   connect(typeTrackButton, &QRadioButton::clicked, [=]() { assignTrackTriggered(); } );
   connect(typeSongButton, &QRadioButton::clicked, [=]() { assignSongTriggered(); } );
+
+  _configChangedConn = connect(MusEGlobal::muse, &MusEGui::MusE::configChanged, this, &MidiAudioControl::configChanged);
+  _learnReceivedConn = connect(MusEGlobal::song, &MusECore::Song::midiLearnReceived, this, &MidiAudioControl::midiLearnReceived);
 }
 
-void MidiAudioControl::heartbeat()
+MidiAudioControl::~MidiAudioControl()
 {
-  if(_is_learning)
-  {
-    if(MusEGlobal::midiLearnPort != -1) 
-    {
-      int port_item = portComboBox->findData(MusEGlobal::midiLearnPort);
-      if(port_item != -1 && port_item != portComboBox->currentIndex())
-      {
-        _port = MusEGlobal::midiLearnPort;
-        portComboBox->blockSignals(true);
-        portComboBox->setCurrentIndex(port_item);
-        portComboBox->blockSignals(false);
-      }
-    }
-    
-    if(MusEGlobal::midiLearnChan != -1 && (MusEGlobal::midiLearnChan + 1) != channelSpinBox->value())
-    {
-      _chan = MusEGlobal::midiLearnChan;
-      channelSpinBox->blockSignals(true);
-      channelSpinBox->setValue(_chan + 1);
-      channelSpinBox->blockSignals(false);
-    }
-
-    if(MusEGlobal::midiLearnCtrl != -1)
-    {
-      MusECore::MidiController::ControllerType type = MusECore::midiControllerType(MusEGlobal::midiLearnCtrl);
-      int idx = controlTypeComboBox->findData(type);
-      if(idx != -1 && idx != controlTypeComboBox->currentIndex())
-      {
-        controlTypeComboBox->blockSignals(true);
-        controlTypeComboBox->setCurrentIndex(idx);
-        controlTypeComboBox->blockSignals(false);
-      }
-
-      int hv = (MusEGlobal::midiLearnCtrl >> 8) & 0xff;
-      int lv = MusEGlobal::midiLearnCtrl & 0xff;
-
-      switch(type)
-      {
-        case MusECore::MidiController::Program:
-        case MusECore::MidiController::Pitch:
-        case MusECore::MidiController::PolyAftertouch: // Unsupported yet. Need a way to select pitch.
-        case MusECore::MidiController::Aftertouch:
-          ctrlHiSpinBox->setEnabled(false);
-          ctrlLoSpinBox->setEnabled(false);
-          ctrlHiSpinBox->blockSignals(true);
-          ctrlLoSpinBox->blockSignals(true);
-          ctrlHiSpinBox->setValue(0);
-          ctrlLoSpinBox->setValue(0);
-          ctrlHiSpinBox->blockSignals(false);
-          ctrlLoSpinBox->blockSignals(false);
-          break;
-        case MusECore::MidiController::Controller7:
-          ctrlHiSpinBox->setEnabled(false);
-          ctrlLoSpinBox->setEnabled(true);
-
-          ctrlHiSpinBox->blockSignals(true);
-          ctrlHiSpinBox->setValue(0);
-          ctrlHiSpinBox->blockSignals(false);
-
-          if(lv != ctrlLoSpinBox->value())
-          {
-            ctrlLoSpinBox->blockSignals(true);
-            ctrlLoSpinBox->setValue(lv);
-            ctrlLoSpinBox->blockSignals(false);
-          }
-          break;
-        case MusECore::MidiController::Controller14:  
-        case MusECore::MidiController::RPN:
-        case MusECore::MidiController::RPN14:
-        case MusECore::MidiController::NRPN:
-        case MusECore::MidiController::NRPN14:
-          ctrlHiSpinBox->setEnabled(true);
-          ctrlLoSpinBox->setEnabled(true);
-          if(hv != ctrlHiSpinBox->value())
-          {
-            ctrlHiSpinBox->blockSignals(true);
-            ctrlHiSpinBox->setValue(hv);
-            ctrlHiSpinBox->blockSignals(false);
-          }
-          if(lv != ctrlLoSpinBox->value())
-          {
-            ctrlLoSpinBox->blockSignals(true);
-            ctrlLoSpinBox->setValue(lv);
-            ctrlLoSpinBox->blockSignals(false);
-          }
-          break;
-        default:
-          printf("FIXME: MidiAudioControl::heartbeat: Unknown control type: %d\n", type);
-          break;
-      }
-      
-      _ctrl = MusECore::midiCtrlTerms2Number(type, (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value());
-    }
-  }
+  // Clear the learn settings.
+  MusEGlobal::midiToAudioAssignIsLearning = false;
+  disconnect(_configChangedConn);
+  disconnect(_learnReceivedConn);
 }
 
 int MidiAudioControl::port() const { return _port; }
@@ -196,18 +119,15 @@ bool MidiAudioControl::assignToSong() const { return _assignToSong; }
 
 void MidiAudioControl::learnChanged(bool v)
 {
-  _is_learning = v;
-  if(_is_learning)
-    MusEGlobal::audio->msgStartMidiLearn();  // Resets the learn values to -1.
+  MusEGlobal::midiToAudioAssignIsLearning = v;
 }
 
 void MidiAudioControl::resetLearn()
 {
-  _is_learning = false;
+  MusEGlobal::midiToAudioAssignIsLearning = false;
   learnPushButton->blockSignals(true);
   learnPushButton->setChecked(false);
   learnPushButton->blockSignals(false);
-  MusEGlobal::audio->msgStartMidiLearn();  // Resets the learn values to -1.
 }
 
 void MidiAudioControl::portChanged(int idx)
@@ -232,7 +152,8 @@ void MidiAudioControl::updateCtrlBoxes()
 {
   if(controlTypeComboBox->currentIndex() == -1)
     return;
-  MusECore::MidiController::ControllerType t = (MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt();
+  MusECore::MidiController::ControllerType t =
+    (MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt();
 
   switch(t)
   {
@@ -277,7 +198,7 @@ void MidiAudioControl::ctrlTypeChanged(int idx)
 
   updateCtrlBoxes();
   
-  _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
+  _ctrl = (ctrlHiSpinBox->value() << 8) + (ctrlLoSpinBox->value() & 0xff);
   _ctrl = MusECore::midiCtrlTerms2Number((MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(idx).toInt(), _ctrl);
 
   resetLearn();
@@ -287,8 +208,9 @@ void MidiAudioControl::ctrlHChanged()
 {
   if(controlTypeComboBox->currentIndex() == -1)
     return;
-  _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
-  _ctrl = MusECore::midiCtrlTerms2Number((MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt(), _ctrl);
+  _ctrl = (ctrlHiSpinBox->value() << 8) + (ctrlLoSpinBox->value() & 0xff);
+  _ctrl = MusECore::midiCtrlTerms2Number(
+    (MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt(), _ctrl);
 
   resetLearn();
 }
@@ -297,7 +219,7 @@ void MidiAudioControl::ctrlLChanged()
 {
   if(controlTypeComboBox->currentIndex() == -1)
     return;
-  _ctrl = (ctrlHiSpinBox->value() << 8) + ctrlLoSpinBox->value();
+  _ctrl = (ctrlHiSpinBox->value() << 8) + (ctrlLoSpinBox->value() & 0xff);
   _ctrl = MusECore::midiCtrlTerms2Number((MusECore::MidiController::ControllerType)controlTypeComboBox->itemData(controlTypeComboBox->currentIndex()).toInt(), _ctrl);
 
   resetLearn();
@@ -412,5 +334,141 @@ void MidiAudioControl::updateDialog()
       break;
   }
 }
+
+void MidiAudioControl::midiLearnReceived(const MusECore::MidiRecordEvent& ev)
+{
+  if(learnPushButton->isChecked())
+  {
+    const int type = ev.type();
+    const int port = ev.port();
+    const int chan = ev.channel();
+    const int dataA = ev.dataA();
+
+    if(type == MusECore::ME_CONTROLLER || type == MusECore::ME_PITCHBEND || type == MusECore::ME_PROGRAM)
+    {
+      selectPort(portComboBox, port);
+
+      _chan = chan;
+      channelSpinBox->blockSignals(true);
+      channelSpinBox->setValue(chan + 1);
+      channelSpinBox->blockSignals(false);
+
+      int ctl;
+      if(type == MusECore::ME_PITCHBEND)
+        ctl = MusECore::CTRL_PITCH;
+      else if(type == MusECore::ME_PROGRAM)
+        ctl = MusECore::CTRL_PROGRAM;
+      else
+        ctl = dataA;
+
+      selectCtrl(controlTypeComboBox, ctrlHiSpinBox, ctrlLoSpinBox, ctl);
+    }
+  }
+}
+
+void MidiAudioControl::selectPort(QComboBox *cb, int port)
+{
+  if(port < 0 || port >= MusECore::MIDI_PORTS)
+  {
+    fprintf(stderr, "MidiAudioControl::selectPort: Invalid port:%d\n", port);
+    return;
+  }
+  int idx = cb->findData(port);
+  // If the port is not found in the list, add it now.
+  if(idx == -1)
+  {
+    const QString pname = MusEGlobal::midiPorts[port].portname();
+    const QString name = QString("%1:%2").arg(port + 1).arg(pname);
+    cb->addItem(name, port);
+  }
+  idx = cb->findData(port);
+  if(idx == -1)
+  {
+    fprintf(stderr, "MidiAudioControl::selectPort: Port not found!:%d\n", port);
+  }
+  else
+  {
+    _port = port;
+    cb->blockSignals(true);
+    cb->setCurrentIndex(idx);
+    cb->blockSignals(false);
+  }
+}
+
+void MidiAudioControl::selectCtrl(QComboBox *typecb, QSpinBox *hisb, QSpinBox *losb, int ctrl)
+{
+  if(ctrl == -1)
+    return;
+
+  const MusECore::MidiController::ControllerType type = MusECore::midiControllerType(ctrl);
+  const int idx = typecb->findData(type);
+  if(idx != -1 && idx != typecb->currentIndex())
+  {
+    typecb->blockSignals(true);
+    typecb->setCurrentIndex(idx);
+    typecb->blockSignals(false);
+  }
+
+  const int hv = (ctrl >> 8) & 0xff;
+  const int lv = ctrl & 0xff;
+
+  switch(type)
+  {
+    case MusECore::MidiController::Program:
+    case MusECore::MidiController::Pitch:
+    case MusECore::MidiController::PolyAftertouch: // Unsupported yet. Need a way to select pitch.
+    case MusECore::MidiController::Aftertouch:
+      hisb->setEnabled(false);
+      losb->setEnabled(false);
+      hisb->blockSignals(true);
+      losb->blockSignals(true);
+      hisb->setValue(0);
+      losb->setValue(0);
+      hisb->blockSignals(false);
+      losb->blockSignals(false);
+      break;
+    case MusECore::MidiController::Controller7:
+      hisb->setEnabled(false);
+      losb->setEnabled(true);
+
+      hisb->blockSignals(true);
+      hisb->setValue(0);
+      hisb->blockSignals(false);
+
+      if(lv != losb->value())
+      {
+        losb->blockSignals(true);
+        losb->setValue(lv);
+        losb->blockSignals(false);
+      }
+      break;
+    case MusECore::MidiController::Controller14:
+    case MusECore::MidiController::RPN:
+    case MusECore::MidiController::RPN14:
+    case MusECore::MidiController::NRPN:
+    case MusECore::MidiController::NRPN14:
+      hisb->setEnabled(true);
+      losb->setEnabled(true);
+      if(hv != hisb->value())
+      {
+        hisb->blockSignals(true);
+        hisb->setValue(hv);
+        hisb->blockSignals(false);
+      }
+      if(lv != losb->value())
+      {
+        losb->blockSignals(true);
+        losb->setValue(lv);
+        losb->blockSignals(false);
+      }
+      break;
+    default:
+      fprintf(stderr, "FIXME: MidiAudioControl::selectCtrl: Unknown control type: %d\n", type);
+      break;
+  }
+
+  _ctrl = MusECore::midiCtrlTerms2Number(type, (hisb->value() << 8) + (losb->value() & 0xff));
+}
+
 
 }  // namespace MusEGui

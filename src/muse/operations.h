@@ -53,6 +53,7 @@ class MidiPort;
 class MetroAccentsMap;
 class AudioConverterSettingsGroup;
 class AudioConverterPluginI;
+class MidiRemote;
 
 typedef std::list < iMidiCtrlValList > MidiCtrlValListIterators_t;
 typedef MidiCtrlValListIterators_t::iterator iMidiCtrlValListIterators_t;
@@ -190,7 +191,8 @@ struct PendingOperationItem
     ModifyAudioSamples,
     SwitchMetronomeSettings, ModifyMetronomeAccentMap,
     SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack,
-    ModifyMarkerList
+    ModifyMarkerList,
+    SwitchMidiRemoteSettings, ModifyMidiRemote
     }; 
                               
   PendingOperationType _type;
@@ -221,6 +223,7 @@ struct PendingOperationItem
     MarkerList** _orig_marker_list;
     float** _audioSamplesPointer;
     MetroAccentsMap** _metroAccentsMap;
+    MidiRemote* _midiRemote;
   };
             
   union {
@@ -239,6 +242,7 @@ struct PendingOperationItem
     bool* _bool_pointer;
     MetroAccentsMap* _newMetroAccentsMap;
     AudioConverterSettingsGroup* _audio_converter_settings;
+    MidiRemote* _newMidiRemote;
   };
 
   iPart _iPart; 
@@ -575,9 +579,12 @@ struct PendingOperationItem
   PendingOperationItem(MetroAccentsMap** old_map, MetroAccentsMap* new_map, PendingOperationType type = ModifyMetronomeAccentMap)
     { _type = type; _metroAccentsMap = old_map; _newMetroAccentsMap = new_map; }
 
-  // Type is SwitchMetronomeSettings, SetExternalSyncFlag, SetUseJackTransport.
+  // Type is SwitchMetronomeSettings, SetExternalSyncFlag, SetUseJackTransport, SwitchMidiRemoteSettings.
   PendingOperationItem(bool* bool_pointer, bool v, PendingOperationType type)
     { _type = type; _bool_pointer = bool_pointer; _boolA = v; }
+
+  PendingOperationItem(MidiRemote* old_remote, MidiRemote* new_remote, PendingOperationType type = ModifyMidiRemote)
+    { _type = type; _midiRemote = old_remote; _newMidiRemote = new_remote; }
 
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers, UpdateAllAudioCtrlGroups.
     { _type = type; }

@@ -1735,11 +1735,6 @@ void Audio::processMidi(unsigned int frames)
                 val = event.dataA();
               }
 
-              // Midi learn!
-              MusEGlobal::midiLearnPort = port;
-              MusEGlobal::midiLearnChan = chan;
-              MusEGlobal::midiLearnCtrl = ctl;
-
               // Time here needs to be frames always.
               const unsigned int ev_t = event.time();
 

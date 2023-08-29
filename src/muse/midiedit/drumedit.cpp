@@ -856,6 +856,10 @@ void DrumEdit::midiNote(int pitch, int velo)
 
     //      *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
+    // Ignore invalid pitches such as rest notes.
+    if(pitch < 0)
+      return;
+
     if ((DrumCanvas*)(canvas)->midiin())
     {
         int index=0;

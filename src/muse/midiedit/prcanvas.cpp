@@ -1245,7 +1245,14 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       }
       
       if (_steprec && curPart) // && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record]
-          steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift, -1 /* anything which is != rcSteprecNote */);
+          steprec->record(
+            curPart,
+            pitch,
+            editor->raster(),
+            editor->raster(),
+            velocity,
+            MusEGlobal::globalKeyState&Qt::ControlModifier,
+            shift);
       }
 
 //---------------------------------------------------------
@@ -1587,25 +1594,36 @@ void PianoCanvas::midiNote(int pitch, int velo)
       {
       if (MusEGlobal::debugMsg) printf("PianoCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
 
-      if (velo)
-        noteHeldDown[pitch]=true;
-      else
-        noteHeldDown[pitch]=false;
-
-      if (MusEGlobal::heavyDebugMsg)
+      // Ignore invalid pitches such as rest notes.
+      if(pitch >= 0)
       {
-        printf("  held down notes are: ");
-        for (int i=0;i<128;i++)
-          if (noteHeldDown[i])
-            printf("%i ",i);
-        printf("\n");
+        if (velo)
+          noteHeldDown[pitch]=true;
+        else
+          noteHeldDown[pitch]=false;
+
+        if (MusEGlobal::heavyDebugMsg)
+        {
+          printf("  held down notes are: ");
+          for (int i=0;i<128;i++)
+            if (noteHeldDown[i])
+              printf("%i ",i);
+          printf("\n");
+        }
       }
 
       if (_midiin && _steprec && curPart
          && !MusEGlobal::audio->isPlaying() && velo && pos[0] >= start_tick
          /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
          && !(MusEGlobal::globalKeyState & Qt::AltModifier)) {
-                     steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
+                     steprec->record(
+                       curPart,
+                       pitch,
+                       editor->raster(),
+                       editor->raster(),
+                       velo,
+                       MusEGlobal::globalKeyState&Qt::ControlModifier,
+                       MusEGlobal::globalKeyState&Qt::ShiftModifier);
          }
       }
 

@@ -310,34 +310,20 @@ MusECore::MetronomeSettings metroSongSettings;
 // Whether to use the global or song metronome settings.
 bool metroUseSongSettings = false;
 
-bool rcEnable = false;
-unsigned char rcStopNote = 28;
-unsigned char rcRecordNote = 31;
-unsigned char rcGotoLeftMarkNote = 33;
-unsigned char rcPlayNote = 29;
-unsigned char rcSteprecNote = 36;
-unsigned char rcForwardNote = 26;
-unsigned char rcBackwardNote = 24;
 
-bool rcEnableCC = false;
-unsigned char rcGotoLeftMarkCC = 111;
-unsigned char rcBackwardCC = 112;
-unsigned char rcForwardCC = 113;
-unsigned char rcStopCC = 114;
-unsigned char rcPlayCC = 115;
-//unsigned char rcInsertPauseCC = 116;
-unsigned char rcRecordCC = 117;
+MusECore::MidiRemote midiRemote;
+// Whether the midi remote control dialog box is currently learning.
+bool midiRemoteIsLearning = false;
+// Whether to use the global or song metronome settings.
+bool midiRemoteUseSongSettings = false;
+
+// Whether the midi to audio assignment dialog box is currently learning.
+bool midiToAudioAssignIsLearning = false;
 
 // REMOVE Tim. automation. Remove this.
 // Deprecated. MusEGlobal::automation is now fixed TRUE
 //   for now until we decide what to do with it.
 bool automation = true;
-
-// Midi learn params. These will be initialized to -1 by any midi learn function, 
-//  and then filled by the midi engine in response to the drivers.
-int midiLearnPort = -1;
-int midiLearnChan = -1;
-int midiLearnCtrl = -1;
 
 const QString inputRoutingToolTipBase = QObject::tr("Input routing");
 const QString noInputRoutingToolTipWarn = inputRoutingToolTipBase + QString("\n") + QObject::tr("Warning: No input routes! Click to connect...");
