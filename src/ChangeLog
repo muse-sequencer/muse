@@ -1,3 +1,6 @@
+30.08.2023
+    - Fixed issue 1238: Not responding to program MSB from inputs. (Tim)
+      Ancient bug, 20 years? midiFilterCtrlxxx globals were init with 0, should be -1.
 28.08.2023
     * New: Midi remote control feature redesigned. (Tim)
       Now with learning, port, channel, value type trigger/toggle/momentary, global/song settings.
