@@ -485,6 +485,7 @@ static void loadConfigMetronom(Xml& xml, MetronomeSettings* metro_settings)
 
 static void readSeqConfiguration(Xml& xml, bool isGlobal, bool skipMidiPorts)
       {
+      MidiRemote *midiRem = isGlobal ? &MusEGlobal::midiRemote : MusEGlobal::song->midiRemote();
       for (;;) {
             Xml::Token token = xml.parse();
             if (token == Xml::Error || token == Xml::End)
@@ -502,52 +503,52 @@ static void readSeqConfiguration(Xml& xml, bool isGlobal, bool skipMidiPorts)
                         // Separate RC values are obsolete. Keep for backwards compatibilty.
                         else if (tag == "rcEnable")
                         {
-                            MusEGlobal::midiRemote._stop._noteenable =
-                            MusEGlobal::midiRemote._rec._noteenable =
-                            MusEGlobal::midiRemote._gotoLeftMark._noteenable =
-                            MusEGlobal::midiRemote._play._noteenable =
-                            MusEGlobal::midiRemote._stepRecRest._noteenable =
-                            MusEGlobal::midiRemote._forward._noteenable =
-                            MusEGlobal::midiRemote._backward._noteenable =
+                            midiRem->_stop._noteenable =
+                            midiRem->_rec._noteenable =
+                            midiRem->_gotoLeftMark._noteenable =
+                            midiRem->_play._noteenable =
+                            midiRem->_stepRecRest._noteenable =
+                            midiRem->_forward._noteenable =
+                            midiRem->_backward._noteenable =
                               xml.parseInt();
                         }
                         else if (tag == "rcStop")
-                            MusEGlobal::midiRemote._stop._note = xml.parseInt();
+                            midiRem->_stop._note = xml.parseInt();
                         else if (tag == "rcRecord")
-                            MusEGlobal::midiRemote._rec._note = xml.parseInt();
+                            midiRem->_rec._note = xml.parseInt();
                         else if (tag == "rcGotoLeft")
-                            MusEGlobal::midiRemote._gotoLeftMark._note = xml.parseInt();
+                            midiRem->_gotoLeftMark._note = xml.parseInt();
                         else if (tag == "rcPlay")
-                            MusEGlobal::midiRemote._play._note = xml.parseInt();
+                            midiRem->_play._note = xml.parseInt();
                         else if (tag == "rcSteprec")
-                            MusEGlobal::midiRemote._stepRecRest._note = xml.parseInt();
+                            midiRem->_stepRecRest._note = xml.parseInt();
                         else if (tag == "rcForward")
-                            MusEGlobal::midiRemote._forward._note = xml.parseInt();
+                            midiRem->_forward._note = xml.parseInt();
                         else if (tag == "rcRewind")
-                            MusEGlobal::midiRemote._backward._note = xml.parseInt();
+                            midiRem->_backward._note = xml.parseInt();
                         else if (tag == "rcEnableCC")
                         {
-                            MusEGlobal::midiRemote._stop._ccenable =
-                            MusEGlobal::midiRemote._rec._ccenable =
-                            MusEGlobal::midiRemote._gotoLeftMark._ccenable =
-                            MusEGlobal::midiRemote._play._ccenable =
-                            MusEGlobal::midiRemote._stepRecRest._ccenable =
-                            MusEGlobal::midiRemote._forward._ccenable =
-                            MusEGlobal::midiRemote._backward._ccenable =
+                            midiRem->_stop._ccenable =
+                            midiRem->_rec._ccenable =
+                            midiRem->_gotoLeftMark._ccenable =
+                            midiRem->_play._ccenable =
+                            midiRem->_stepRecRest._ccenable =
+                            midiRem->_forward._ccenable =
+                            midiRem->_backward._ccenable =
                               xml.parseInt();
                         }
                         else if (tag == "rcStopCC")
-                            MusEGlobal::midiRemote._stop._ccnum = xml.parseInt();
+                            midiRem->_stop._ccnum = xml.parseInt();
                         else if (tag == "rcRecordCC")
-                            MusEGlobal::midiRemote._rec._ccnum = xml.parseInt();
+                            midiRem->_rec._ccnum = xml.parseInt();
                         else if (tag == "rcGotoLeftCC")
-                            MusEGlobal::midiRemote._gotoLeftMark._ccnum = xml.parseInt();
+                            midiRem->_gotoLeftMark._ccnum = xml.parseInt();
                         else if (tag == "rcPlayCC")
-                            MusEGlobal::midiRemote._play._ccnum = xml.parseInt();
+                            midiRem->_play._ccnum = xml.parseInt();
                         else if (tag == "rcForwardCC")
-                            MusEGlobal::midiRemote._forward._ccnum = xml.parseInt();
+                            midiRem->_forward._ccnum = xml.parseInt();
                         else if (tag == "rcRewindCC")
-                            MusEGlobal::midiRemote._backward._ccnum = xml.parseInt();
+                            midiRem->_backward._ccnum = xml.parseInt();
 
                         else if (tag == "midiRemoteUseSongSettings")
                             MusEGlobal::midiRemoteUseSongSettings = xml.parseInt();
