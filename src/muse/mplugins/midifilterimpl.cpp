@@ -35,19 +35,19 @@ namespace MusEGui {
 
 void MidiFilterConfig::setCtrl1(int n)
       {
-      MusEGlobal::midiFilterCtrl1 = n-1;
+      MusEGlobal::midiFilterCtrl1 = n;
       }
 void MidiFilterConfig::setCtrl2(int n)
       {
-      MusEGlobal::midiFilterCtrl2 = n-1;
+      MusEGlobal::midiFilterCtrl2 = n;
       }
 void MidiFilterConfig::setCtrl3(int n)
       {
-      MusEGlobal::midiFilterCtrl3 = n-1;
+      MusEGlobal::midiFilterCtrl3 = n;
       }
 void MidiFilterConfig::setCtrl4(int n)
       {
-      MusEGlobal::midiFilterCtrl4 = n-1;
+      MusEGlobal::midiFilterCtrl4 = n;
       }
 
 
@@ -59,10 +59,10 @@ MidiFilterConfig::MidiFilterConfig(QDialog* parent)
   : QDialog(parent)
       {
       setupUi(this);
-      cb1->setCurrentIndex(MusEGlobal::midiFilterCtrl1 + 1);
-      cb2->setCurrentIndex(MusEGlobal::midiFilterCtrl2 + 1);
-      cb3->setCurrentIndex(MusEGlobal::midiFilterCtrl3 + 1);
-      cb4->setCurrentIndex(MusEGlobal::midiFilterCtrl4 + 1);
+      cb1->setCurrentIndex(MusEGlobal::midiFilterCtrl1);
+      cb2->setCurrentIndex(MusEGlobal::midiFilterCtrl2);
+      cb3->setCurrentIndex(MusEGlobal::midiFilterCtrl3);
+      cb4->setCurrentIndex(MusEGlobal::midiFilterCtrl4);
 
       rf1->setChecked(MusEGlobal::midiRecordType & 1);
       rf2->setChecked(MusEGlobal::midiRecordType & 2);

@@ -280,10 +280,10 @@ int midiInputPorts   = 0;    // receive from all devices
 int midiInputChannel = 0;    // receive all channel
 int midiRecordType   = 0;    // receive all events
 int midiThruType = 0;        // transmit all events
-int midiFilterCtrl1 = -1;    // no controller filtered
-int midiFilterCtrl2 = -1;
-int midiFilterCtrl3 = -1;
-int midiFilterCtrl4 = -1;
+int midiFilterCtrl1 = 0;     // val 0 means no controller filtered. val >= 1 means controller number (val - 1)
+int midiFilterCtrl2 = 0;
+int midiFilterCtrl3 = 0;
+int midiFilterCtrl4 = 0;
 
 QActionGroup* undoRedo;
 QAction* undoAction;

@@ -223,10 +223,12 @@ bool filterEvent(const MEvent& event, int type, bool thru)
             case ME_CONTROLLER:
                   if (type & MIDI_FILTER_CTRL)
                         return true;
-                  if (!thru && (MusEGlobal::midiFilterCtrl1 == event.dataA()
-                     || MusEGlobal::midiFilterCtrl2 == event.dataA()
-                     || MusEGlobal::midiFilterCtrl3 == event.dataA()
-                     || MusEGlobal::midiFilterCtrl4 == event.dataA())) {
+                  if (!thru &&
+                     // Val 0 means no controller filtered. Val >= 1 means controller number (val - 1).
+                     ((MusEGlobal::midiFilterCtrl1 > 0 && (MusEGlobal::midiFilterCtrl1 - 1) == event.dataA()) ||
+                      (MusEGlobal::midiFilterCtrl2 > 0 && (MusEGlobal::midiFilterCtrl2 - 1) == event.dataA()) ||
+                      (MusEGlobal::midiFilterCtrl3 > 0 && (MusEGlobal::midiFilterCtrl3 - 1) == event.dataA()) ||
+                      (MusEGlobal::midiFilterCtrl4 > 0 && (MusEGlobal::midiFilterCtrl4 - 1) == event.dataA()))) {
                         return true;
                         }
                   break;
