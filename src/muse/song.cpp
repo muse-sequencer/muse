@@ -2408,7 +2408,7 @@ void Song::beat()
               else if(curRem->_stepRecRest.matchesCC(port, chan, dataA))
               {
                 prevRtmType = RTM_NONE;
-                emit MusEGlobal::song->midiNote(-1, 0);
+                emit MusEGlobal::song->midiNote(-1, dataB);
               }
             }
           } // CC
