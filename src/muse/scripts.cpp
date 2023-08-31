@@ -58,7 +58,9 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
     progress.setRange(0,parts->size());
     progress.setValue(0);
     progress.setCancelButton(nullptr);
-    MusEGlobal::song->startUndo(); // undo this entire block
+
+    Undo ops;
+
     for (const auto& i : *parts) {
         //const char* tmp = tmpnam(NULL);
         char tmp[16] = "muse-tmp-XXXXXX";
@@ -107,18 +109,14 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
                 sprintf(tempStr,"NOTE %d %d %d %d\n", ev.tick(), ev.dataA(),  ev.lenTick(), ev.dataB());
                 writeStringToFile(fp,tempStr);
 
-                // Operation is undoable but do not start/end undo.
                 // Indicate do not do port controller values and clone parts.
-                MusEGlobal::song->applyOperation(UndoOp(UndoOp::DeleteEvent,
-                                                        ev, part, false, false), Song::OperationUndoable);
+                ops.push_back(UndoOp(UndoOp::DeleteEvent, ev, part, false, false));
 
             } else if (ev.type()==Controller) {
                 sprintf(tempStr,"CONTROLLER %d %d %d %d\n", ev.tick(), ev.dataA(), ev.dataB(), ev.dataC());
                 writeStringToFile(fp,tempStr);
-                // Operation is undoable but do not start/end undo.
                 // Indicate do not do port controller values and clone parts.
-                MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,
-                                                                  ev, part, false, false), Song::OperationUndoable);
+                ops.push_back(UndoOp(UndoOp::DeleteEvent, ev, part, false, false));
             }
         }
         fclose(fp);
@@ -134,7 +132,6 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
         if (myProcess->exitCode()) {
             QMessageBox::warning(parent, tr("MusE - external script failed"),
                                  tr("MusE was unable to launch the script, error message:\n%1").arg(QString(errStr)));
-            MusEGlobal::song->endUndo(SC_EVENT_REMOVED);
             return;
         }
         if (errStr.size()> 0) {
@@ -171,10 +168,8 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
                     e.setPitch(pitch);
                     e.setVelo(velo);
                     e.setLenTick(len);
-                    // Operation is undoable but do not start/end undo.
                     // Indicate do not do port controller values and clone parts.
-                    MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent,
-                                                            e, part, false, false), Song::OperationUndoable);
+                    ops.push_back(UndoOp(UndoOp::AddEvent, e, part, false, false));
                 }
                 if (line.startsWith("CONTROLLER"))
                 {
@@ -189,10 +184,8 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
                     e.setA(a);
                     e.setB(b);
                     e.setC(c);
-                    // Operation is undoable but do not start/end undo.
                     // Indicate do not do port controller values and clone parts.
-                    MusEGlobal::song->applyOperation(UndoOp(UndoOp::AddEvent,
-                                                            e, part, false, false), Song::OperationUndoable);
+                    ops.push_back(UndoOp(UndoOp::AddEvent, e, part, false, false));
                 }
             }
             file.close();
@@ -203,9 +196,9 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
         progress.setValue(progress.value()+1);
     } // for
 
-    MusEGlobal::song->endUndo(SC_EVENT_REMOVED);
+    // Operation is undoable but do not start/end undo.
+    MusEGlobal::song->applyOperationGroup(ops);
 }
-
 
 void Scripts::populateScriptMenu(QMenu* menuScripts)
 {

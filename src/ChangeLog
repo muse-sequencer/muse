@@ -1,3 +1,7 @@
+31.08.2023
+    - Fixed issue 1106: Running scripts in midi editors takes waaay too long. (Tim)
+      In Scripts::executeScript(): Changed from applyOperation for each event
+       which is very slow, to applyOperationGroup just once for the whole lot.
 30.08.2023
     - Fixed issue 1238: Not responding to program MSB from inputs. (Tim)
       Ancient bug, 20 years? Problem with Midi Filter and midiFilterCtrlxxx globals.
