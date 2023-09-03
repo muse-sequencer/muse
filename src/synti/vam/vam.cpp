@@ -210,8 +210,6 @@ class VAM : public MessMono {
       virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setNativeGeometry(int x, int y, int w, int h);
       virtual void processMessages();
-// REMOVE Tim. fluid. Changed.
-//       virtual void process(unsigned pos, float**, int, int);
       virtual void process(unsigned pos, float** ports, int numPorts, int offset, int sampleCount);
       virtual void note(int channel, int pitch, int velo);
       virtual bool setController(int channel, int ctrl, int val);
@@ -477,8 +475,6 @@ void VAM::processMessages()
 //   Called from host, ONLY if output path is connected.
 //---------------------------------------------------------
 
-// REMOVE Tim. fluid. Changed.
-// void VAM::process(unsigned /*pos*/, float** ports, int offset, int sampleCount)
 void VAM::process(unsigned /*pos*/, float** ports, int /*numPorts*/, int offset, int sampleCount)
       {
       /*

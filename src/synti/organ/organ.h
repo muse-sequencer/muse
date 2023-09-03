@@ -193,8 +193,6 @@ class Organ : public Mess {
 
    public:
       virtual void processMessages();
-// REMOVE Tim. fluid. Changed.
-//       virtual void process(unsigned pos, float**, int, int);
       virtual void process(unsigned pos, float **ports, int numPorts, int offset, int sampleCount);
       virtual bool playNote(int channel, int pitch, int velo);
       virtual bool setController(int channel, int ctrl, int val);

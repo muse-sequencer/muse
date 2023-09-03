@@ -817,8 +817,6 @@ void SimpleSynth::processMessages()
     \param len - nr of samples to process
  */
 //---------------------------------------------------------
-// REMOVE Tim. fluid. Changed.
-// void SimpleSynth::process(unsigned /*pos*/, float** out, int offset, int len)
 void SimpleSynth::process(unsigned /*pos*/, float** out, int /*numPorts*/, int offset, int len)
 {
    /*
