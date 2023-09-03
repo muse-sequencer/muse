@@ -603,8 +603,10 @@ class DeicsOnze : public Mess {
 
   virtual bool playNote(int channel, int pitch, int velo);
   virtual void processMessages();
-  virtual void process(unsigned pos, float** buffer, int offset, int n);
-  
+// REMOVE Tim. fluid. Changed.
+//   virtual void process(unsigned pos, float** buffer, int offset, int n);
+  virtual void process(unsigned pos, float** buffer, int numPorts, int offset, int n);
+
   // GUI interface routines
   virtual bool hasNativeGui() const { return true; }
   virtual bool nativeGuiVisible() const;

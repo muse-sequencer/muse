@@ -4045,7 +4045,7 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       return true;
       }
 
-bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigned n, float** buffer)
+bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned n, float** buffer)
 {
       const unsigned int syncFrame = MusEGlobal::audio->curSyncFrame();
       unsigned int curPos = 0;
@@ -4148,7 +4148,7 @@ bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigne
               if (!_mess)
                 fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
               else
-                _mess->process(pos, buffer, curPos, frame - curPos);
+                _mess->process(pos, buffer, ports, curPos, frame - curPos);
             }
             curPos = frame;
           }
@@ -4175,7 +4175,7 @@ bool MessSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int /*ports*/, unsigne
         if (!_mess)
           fprintf(stderr, "MessSynthIF::getData() should not happen - no _mess\n");
         else
-          _mess->process(pos, buffer, curPos, n - curPos);
+          _mess->process(pos, buffer, ports, curPos, n - curPos);
       }
 
       return true;

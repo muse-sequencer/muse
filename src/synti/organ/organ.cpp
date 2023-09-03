@@ -229,7 +229,9 @@ void Organ::processMessages()
 //   Called from host, ONLY if output path is connected.
 //---------------------------------------------------------
 
-void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount)
+// REMOVE Tim. fluid. Changed.
+// void Organ::process(unsigned /*pos*/, float** ports, int offset, int sampleCount)
+void Organ::process(unsigned /*pos*/, float** ports, int /*numPorts*/, int offset, int sampleCount)
       {
       /*
       //

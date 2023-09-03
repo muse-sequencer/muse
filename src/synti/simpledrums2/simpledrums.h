@@ -145,7 +145,9 @@ public:
    virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
    virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
    virtual void processMessages();
-   virtual void process(unsigned pos, float** data, int offset, int len);
+// REMOVE Tim. fluid. Changed.
+//    virtual void process(unsigned pos, float** data, int offset, int len);
+   virtual void process(unsigned pos, float** out, int numPorts, int offset, int len);
    virtual void showNativeGui(bool arg1);
    virtual void guiHeartBeat();
    virtual void getInitData(int*, const unsigned char**);
