@@ -27,7 +27,8 @@
 
 // Make sure this number is unique among all the MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
 // 127 is reserved for special MusE system messages.
-#define VST_NATIVE_SYNTH_UNIQUE_ID 9
+// We don't use internal sysex with LV2 so this is not used, but if it was it would be this:
+#define LV2_SYNTH_UNIQUE_ID 10
 
 #ifdef LV2_SUPPORT
 
