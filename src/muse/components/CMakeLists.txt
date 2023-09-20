@@ -51,6 +51,7 @@ QT5_WRAP_CPP (components_mocs
       arrangercolumns.h 
 #       action.h
       audio_converter_settings.h
+      automation_mode_toolbar.h
       background_painter.h
       bigtime.h
       canvas.h  
@@ -215,6 +216,7 @@ file (GLOB components_source_files
       appearance.cpp
       arrangercolumns.cpp 
       audio_converter_settings.cpp
+      automation_mode_toolbar.cpp
       background_painter.cpp
       bigtime.cpp 
       canvas.cpp 

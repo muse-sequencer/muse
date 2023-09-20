@@ -1696,9 +1696,17 @@ static bool pluginScan(
 
       // Read the list of plugins found in the xml.
       // For now we don't supply a separate scanEnums flag in pluginScan(), so just use scanPorts instead.
-      if(readPluginScan(xml, list, scanPorts, scanPorts))
+      int numPlugins = 0;
+      if(readPluginScan(xml, list, scanPorts, scanPorts, &numPlugins))
       {
         std::fprintf(stderr, "\npluginScan FAILED: On readPluginScan(): file: %s\n\n", filename_ba.constData());
+        fail = true;
+      }
+
+      // No plugins found in this file?
+      if(numPlugins == 0)
+      {
+        std::fprintf(stderr, "\npluginScan: No plugins found in file:%s! Putting this file in 'unknown' cache.\n\n", filename_ba.constData());
         fail = true;
       }
 

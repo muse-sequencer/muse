@@ -392,8 +392,9 @@ bool readPluginScanInfo(MusECore::Xml& xml, PluginScanInfoStruct* info, bool rea
 //    return true on error
 //---------------------------------------------------------
 
-bool readPluginScan(MusECore::Xml& xml, PluginScanList* list, bool readPorts, bool readEnums)
+bool readPluginScan(MusECore::Xml& xml, PluginScanList* list, bool readPorts, bool readEnums, int *numPlugins)
       {
+      int plugins = 0;
       for (;;) {
             MusECore::Xml::Token token(xml.parse());
             const QString& tag(xml.s1());
@@ -412,6 +413,7 @@ bool readPluginScan(MusECore::Xml& xml, PluginScanList* list, bool readPorts, bo
                               {
                                 // We must include all plugins.
                                 list->add(new PluginScanInfo(info));
+                                ++plugins;
                               }
                               break;
                         }
@@ -428,6 +430,8 @@ bool readPluginScan(MusECore::Xml& xml, PluginScanList* list, bool readPorts, bo
                   case MusECore::Xml::TagEnd:
                         if (tag == "muse")
                         {
+                              if(numPlugins)
+                                *numPlugins = plugins;
                               return false;
                         }
                         return true;

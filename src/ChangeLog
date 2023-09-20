@@ -1,3 +1,10 @@
+20.09.2023
+    - Fixed issue 1243 Slow startup: Always rescanning when file contains no plugins. (Tim)
+      File ladspa_dsp.so was causing rescanning all the time because it is normally empty
+       until a configuration file is hand-entered by the user.
+    - Fixed missing simpledrums MESS synth: Moved files automation_mode_toolbar.h/.cpp
+       from widgets folder to components folder because it contains icons, and simpledrums
+       uses our widgets library and it is not supposed to contain icons.
 10.09.2023
     *** MusE 4.2 ***
 03.09.2023
