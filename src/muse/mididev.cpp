@@ -863,26 +863,26 @@ float MidiDevice::getWorstSelfLatencyMidi(bool capture)
   return tli->_worstSelfLatencyMidi;
 }
 
-inline bool MidiDevice::canDominateOutputLatencyMidi(bool capture) const
+/*inline*/ bool MidiDevice::canDominateOutputLatencyMidi(bool capture) const
 {
   if(capture)
     return true;
   return false;
 }
 
-inline bool MidiDevice::canDominateInputLatencyMidi(bool /*capture*/) const
+/*inline*/ bool MidiDevice::canDominateInputLatencyMidi(bool /*capture*/) const
 {
   return false;
 }
 
-inline bool MidiDevice::canDominateEndPointLatencyMidi(bool capture) const
+/*inline*/ bool MidiDevice::canDominateEndPointLatencyMidi(bool capture) const
 {
   if(capture)
     return false;
   return true;
 }
 
-inline bool MidiDevice::canPassThruLatencyMidi(bool /*capture*/) const
+/*inline*/ bool MidiDevice::canPassThruLatencyMidi(bool /*capture*/) const
 { 
   return true;
 }
@@ -1672,7 +1672,7 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
 //   latencyCompWriteOffset
 //---------------------------------------------------------
 
-inline unsigned long MidiDevice::latencyCompWriteOffsetMidi(bool capture) const
+/*inline*/ unsigned long MidiDevice::latencyCompWriteOffsetMidi(bool capture) const
 {
   return capture ? _captureLatencyInfo._compensatorWriteOffset : _playbackLatencyInfo._compensatorWriteOffset;
 }

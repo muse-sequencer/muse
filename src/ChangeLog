@@ -1,3 +1,6 @@
+23.09.2023
+    - Fix issue 1247: compilation only succeeds with MODULES_BUILD_STATIC=1 (Tim)
+      Five undefined symbols. Remove 'inline' from five functions in mididev.cpp
 20.09.2023
     - Fixed issue 1243 Slow startup: Always rescanning when file contains no plugins. (Tim)
       File ladspa_dsp.so was causing rescanning all the time because it is normally empty
