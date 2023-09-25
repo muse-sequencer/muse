@@ -568,6 +568,11 @@ endif (ENABLE_VST_VESTIGE)
 ## LV2 support
 ##
 
+# Whether to use a cache for LV2 plugins.
+# This shouldn't be required and should be pointless.
+# It is kept as a sort of placeholder for the code in case we ever need it.
+#SET (LV2_USE_PLUGIN_CACHE true)
+
 if (ENABLE_LV2)
 
     set (muse_serd_ver "0.30.0")

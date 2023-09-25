@@ -33,6 +33,7 @@
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
 #cmakedefine LV2_MAKE_PATH_SUPPORT
+#cmakedefine LV2_USE_PLUGIN_CACHE
 #cmakedefine PYTHON_SUPPORT
 #cmakedefine MIDNAM_SUPPORT
 #cmakedefine HAVE_INSTPATCH

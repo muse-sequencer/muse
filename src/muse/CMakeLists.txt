@@ -320,6 +320,10 @@ target_link_libraries(core
       dl
       )
 
+if(NOT LV2_USE_PLUGIN_CACHE)
+      target_link_libraries(core plugin_cache_reader_module)
+endif(NOT LV2_USE_PLUGIN_CACHE)
+
 if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB OR NOT HAVE_CXX_ATOMICS64_WITHOUT_LIB)
       message("Warning: HAVE_CXX_ATOMICS_WITHOUT_LIB or HAVE_CXX_ATOMICS64_WITHOUT_LIB are false. Linking core with required libatomic.")
       target_link_libraries(core atomic)

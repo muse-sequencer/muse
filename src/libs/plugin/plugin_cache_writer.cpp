@@ -51,6 +51,7 @@
 #endif // HAVE_LRDF
 
 
+#ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
 
 #include <set>
@@ -107,6 +108,7 @@
 //#include <sord/sord.h>
 
 #endif // LV2_SUPPORT
+#endif // LV2_USE_PLUGIN_CACHE
 
 // Forwards from header:
 #include "xml.h"
@@ -1846,6 +1848,7 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 }
 #endif // VST_NATIVE_SUPPORT
 
+#ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
 
 #define NS_EXT "http://lv2plug.in/ns/ext/"
@@ -2525,13 +2528,11 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   lilv_node_free(nameNode);
 }
 
-#endif // LV2_SUPPORT
 
 //---------------------------------------------------------
 //   scanLv2Plugins
 //---------------------------------------------------------
 
-#ifdef LV2_SUPPORT
 void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
   std::set<std::string> supportedFeatures;
@@ -2640,6 +2641,7 @@ void scanLv2Plugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugSt
 {
 }
 #endif // LV2_SUPPORT
+#endif // LV2_USE_PLUGIN_CACHE
 
 //---------------------------------------------------------
 //   scanAllPlugins
@@ -3208,10 +3210,12 @@ bool checkPluginCacheFiles(
       std::fprintf(stderr, "Error: Deleting obsolete LV2 plugin cache file failed!\n");
   }
 
-  // SPECIAL for LV2: No need for a cache file.
-  // Bring LV2 plugins directly into the list, after all the cache scanning and creation.
-  if(types & PluginScanInfoStruct::PluginTypeLV2)
-    scanLv2Plugins(list, writePorts, debugStdErr);
+// SPECIAL for LV2: No need for a cache file.
+// Bring LV2 plugins directly into the list, after all the cache scanning and creation.
+// #ifndef LV2_USE_PLUGIN_CACHE
+//   if(types & PluginScanInfoStruct::PluginTypeLV2)
+//     scanLv2Plugins(list, writePorts, debugStdErr);
+// #endif
 
   return res;
 }
