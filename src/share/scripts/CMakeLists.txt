@@ -23,6 +23,7 @@
 
 file(GLOB script_files
       ConstantLength
+      TK_ConstantLength
       ConstantVelocityForNote
       DoNothing 
       CreateBassline
