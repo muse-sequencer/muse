@@ -425,7 +425,18 @@ details.
          
         Run MusE in a terminal to see what it picks. -D option gives more info. 
 
-        
+
+        NOTICE ABOUT 'BAD TIMING' MESSAGE:
+        ----------------------------------
+        If a message appears at startup informing of 'bad timing' and that the
+         timing source frequency is too low, try manually loading the ALSA module
+         snd-hrtimer before starting MusE if you have not started Jack yet.
+        Like this:
+         "sudo modprobe snd-hrtimer"
+        That step should not be necessary if Jack has already been started.
+        ----------------------------------
+
+
         (The following is old information! But may work for those without udev.)
         Make sure you can access the realtime clock (RTC)
             chmod 660 /dev/rtc
