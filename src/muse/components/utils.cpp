@@ -759,13 +759,6 @@ QGradient getGradientFromColor(const QColor& c, const QPoint& start, const QPoin
     gradient.setColorAt(.5, c);
     gradient.setColorAt(1, c.darker(100 + strength/3*2));
 
-// REMOVE Tim. new. Changed.
-// /home/tim/Source/muse_20220930_master_add_mute_and_solo_ctrls/src/muse/components/utils.cpp:762:21: error: redundant move in return statement [-Werror=redundant-move]
-//   762 |     return std::move(gradient);
-//       |            ~~~~~~~~~^~~~~~~~~~
-// /home/tim/Source/muse_20220930_master_add_mute_and_solo_ctrls/src/muse/components/utils.cpp:762:21: note: remove ‘std::move’ call
-//
-    // return std::move(gradient);
     return gradient;
 }
 
