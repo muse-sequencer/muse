@@ -247,7 +247,13 @@ void initShortCuts()
       defShrt(SHRT_ZOOM_OUT,         Qt::CTRL + Qt::Key_PageDown, QT_TRANSLATE_NOOP("shortcuts", "View: Zoom out"), PROLL_SHRT + DEDIT_SHRT + ARRANG_SHRT + WAVE_SHRT, "zoom_out");
       defShrt(SHRT_GOTO_CPOS,        Qt::Key_I, QT_TRANSLATE_NOOP("shortcuts", "View: Goto Current Position"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "goto_cpos");
       defShrt(SHRT_SCROLL_LEFT,      Qt::Key_H, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_left");
-      defShrt(SHRT_SCROLL_RIGHT,     Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_right");
+      defShrt(SHRT_SCROLL_RIGHT,     Qt::Key_L, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll right"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_right");
+      defShrt(SHRT_SCROLL_LEFT_FAST,  0, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll left fast"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_left_fast");
+      defShrt(SHRT_SCROLL_RIGHT_FAST, 0, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll right fast"), PROLL_SHRT + DEDIT_SHRT + WAVE_SHRT, "scroll_right_fast");
+      defShrt(SHRT_SCROLL_UP,        Qt::Key_O, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll up"), PROLL_SHRT + DEDIT_SHRT, "scroll_up");
+      defShrt(SHRT_SCROLL_DOWN,      Qt::Key_K, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll down"), PROLL_SHRT + DEDIT_SHRT, "scroll_down");
+      defShrt(SHRT_SCROLL_UP_FAST,   Qt::SHIFT + Qt::Key_O, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll up fast"), PROLL_SHRT + DEDIT_SHRT, "scroll_up_fast");
+      defShrt(SHRT_SCROLL_DOWN_FAST, Qt::SHIFT + Qt::Key_K, QT_TRANSLATE_NOOP("shortcuts", "View: Scroll down fast"), PROLL_SHRT + DEDIT_SHRT, "scroll_down_fast");
 
       defShrt(SHRT_STEP_RECORD,      Qt::CTRL + Qt::Key_R, QT_TRANSLATE_NOOP("shortcuts", "Transport: Step record"), PROLL_SHRT + DEDIT_SHRT, "step_record");
       defShrt(SHRT_MIDI_INPUT,       Qt::CTRL + Qt::Key_U, QT_TRANSLATE_NOOP("shortcuts", "Transport: Midi input"), PROLL_SHRT + DEDIT_SHRT, "midi_input");

@@ -1,3 +1,5 @@
+11.12.2023
+    - Shortcuts: Forum request: Added editor scroll up/down, fast up/down + left/right. (Tim)
 25.09.2023
     - LV2: Streamline discovery. Eliminate duplicate load_world and load_all_plugins. (Tim)
       This might make only slightly faster startup time. But code is more proper now.
