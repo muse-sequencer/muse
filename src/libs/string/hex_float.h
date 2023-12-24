@@ -38,6 +38,8 @@ namespace MusELib {
 
 extern QString museStringFromDouble(double v);
 extern double museStringToDouble(const QString &s, bool *ok = nullptr);
+extern QString museStringFromFloat(float v);
+extern float museStringToFloat(const QString &s, bool *ok = nullptr);
 
 #ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
 extern QString hexfloatDecimalPoint;

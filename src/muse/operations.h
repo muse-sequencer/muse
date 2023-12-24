@@ -54,6 +54,8 @@ class MetroAccentsMap;
 class AudioConverterSettingsGroup;
 class AudioConverterPluginI;
 class MidiRemote;
+// REMOVE Tim. tmp. Added.
+class PluginI;
 
 typedef std::list < iMidiCtrlValList > MidiCtrlValListIterators_t;
 typedef MidiCtrlValListIterators_t::iterator iMidiCtrlValListIterators_t;
@@ -192,8 +194,10 @@ struct PendingOperationItem
     SwitchMetronomeSettings, ModifyMetronomeAccentMap,
     SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack,
     ModifyMarkerList,
-    SwitchMidiRemoteSettings, ModifyMidiRemote
-    }; 
+    SwitchMidiRemoteSettings, ModifyMidiRemote,
+// REMOVE Tim. tmp. Added.
+    SetRackEffectPlugin, ModifyMidiAudioCtrlMap
+    };
                               
   PendingOperationType _type;
 
@@ -203,6 +207,8 @@ struct PendingOperationItem
     void* _void_track_list;
     int* _audioSamplesLen;
     CtrlListList* _src_aud_ctrl_list_list;
+// REMOVE Tim. tmp. Added.
+    PluginI *_pluginI;
   };
   
   union {
@@ -273,6 +279,8 @@ struct PendingOperationItem
     int _address_client;
     int _rw_flags;
     int _newAudioSamplesLen;
+// REMOVE Tim. tmp. Added.
+    int _rackEffectPos;
     //DrumMapOperation* _drum_map_operation;
     DrumMapTrackOperation* _drum_map_track_operation;
     DrumMapTrackPatchOperation* _drum_map_track_patch_operation;
@@ -593,6 +601,10 @@ struct PendingOperationItem
   PendingOperationItem(MarkerList** orig_marker_l, MarkerList* new_marker_l, PendingOperationType type = ModifyMarkerList)
     { _type = type; _orig_marker_list = orig_marker_l; _marker_list = new_marker_l; }
     
+// REMOVE Tim. tmp. Added.
+  PendingOperationItem(Track* track, PluginI* pluginI, int rackPos, PendingOperationType type = SetRackEffectPlugin)
+    { _type = type; _track = track; _pluginI = pluginI; _rackEffectPos = rackPos; }
+
   PendingOperationItem()
     { _type = Uninitialized; }
     

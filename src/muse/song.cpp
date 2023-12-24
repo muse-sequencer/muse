@@ -76,6 +76,8 @@
 #include "midiport.h"
 #include "audiodev.h"
 #include "synthdialog.h"
+// REMOVE Tim. tmp. Added.
+#include "plugin.h"
 
 // For debugging output: Uncomment the fprintf section.
 #define ERROR_TIMESTRETCH(dev, format, args...)  fprintf(dev, format, ##args)
@@ -814,6 +816,75 @@ Event Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ct
     return p_res;
   
   return res;
+}
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   addPluginOperation
+//---------------------------------------------------------
+
+void Song::addPluginOperation(PluginI* plugin, int idx, PendingOperationList& ops)
+{
+  // // Some heavy lifting required here, not easily done
+  // //  in the realtime thread. Idle the audio processing.
+  // // Here any glitches in the audio would be acceptable.
+  // // Gain access to structures, and sync with audio.
+  // MusEGlobal::audio->msgIdle(true);
+
+  if (plugin == 0)
+  {
+    PluginI* oldPlugin = (*_efxPipe)[idx];
+    if (oldPlugin)
+    {
+      oldPlugin->setID(-1);
+      oldPlugin->setTrack(0);
+
+      int controller = oldPlugin->parameters();
+      for (int i = 0; i < controller; ++i)
+      {
+        int id = genACnum(idx, i);
+        removeController(id);
+      }
+    }
+  }
+  efxPipe()->insert(plugin, idx);
+  setupPlugin(plugin, idx);
+
+  // MusEGlobal::audio->msgIdle(false);
+
+  MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
+}
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   setupPlugin
+//---------------------------------------------------------
+
+void Song::setupPluginOperation(PluginI* plugin, int idx)
+{
+  if (plugin)
+  {
+    plugin->setID(idx);
+    plugin->setTrack(this);
+
+    int controller = plugin->parameters();
+    for (int i = 0; i < controller; ++i)
+    {
+      int id = genACnum(idx, i);
+      const char* name = plugin->paramName(i);
+      float min, max;
+      plugin->range(i, &min, &max);
+      CtrlList* cl = new CtrlList(id);
+      cl->setRange(min, max);
+      cl->setName(QString(name));
+      cl->setValueType(plugin->ctrlValueType(i));
+      cl->setMode(plugin->ctrlMode(i));
+      cl->setCurVal(plugin->param(i));
+      // Set the value units index.
+      cl->setValueUnit(plugin->valueUnit(i));
+      addController(cl);
+    }
+  }
 }
 
 //---------------------------------------------------------

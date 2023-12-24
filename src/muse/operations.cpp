@@ -36,6 +36,8 @@
 #include "audio_convert/audio_converter_plugin.h"
 #include "audio_convert/audio_converter_settings_group.h"
 #include "midiremote.h"
+// REMOVE Tim. tmp. Added.
+#include "plugin.h"
 
 // Enable for debugging:
 //#define _PENDING_OPS_DEBUG_
@@ -209,6 +211,9 @@ unsigned int PendingOperationItem::getIndex() const
     case UpdateAudioCtrlListGroups:
     case UpdateAudioCtrlGroups:
     case UpdateAudioCtrlPosGroups:
+// REMOVE Tim. tmp. Added.
+    case SetRackEffectPlugin:
+    case ModifyMidiAudioCtrlMap:
 
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
       return _type;
@@ -1641,6 +1646,37 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
       _tempo_list->setMasterFlag(0, _boolA);
       flags |= SC_MASTER;
     }
+    break;
+
+// REMOVE Tim. tmp. Added.
+    case SetRackEffectPlugin:
+    {
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetRackEffectPlugin: track:%p pluginI:%p rackPos:%d\n",
+              _track, _pluginI, _rackEffectPos);
+      // NOTE: Caller is responsible for removing any existing plugin at the position.
+      if(_track && !_track->isMidiTrack())
+      {
+        AudioTrack *at = static_cast<AudioTrack*>(_track);
+        Pipeline *pl = at->efxPipe();
+        if(pl && _rackEffectPos >= 0 && _rackEffectPos < (int)pl->size() && _rackEffectPos < MusECore::PipelineDepth)
+        {
+          _pluginI->setTrack(at);
+          pl->at(_rackEffectPos) = _pluginI;
+          flags |= SC_RACK;
+        }
+      }
+    }
+    break;
+
+// REMOVE Tim. tmp. Added.
+    case ModifyMidiAudioCtrlMap:
+      DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiAudioCtrlMap: old map:%p new map:%p\n", _iCtrlList->second, _aud_ctrl_list);
+      if(_iCtrlList->second && _aud_ctrl_list)
+      {
+        // Transfers the original list back to _aud_ctrl_list so it can be deleted in the non-RT stage.
+        _iCtrlList->second->swap(*_aud_ctrl_list);
+      }
+      flags |= SC_AUDIO_CONTROLLER_LIST;
     break;
 
     case Uninitialized:
@@ -3187,6 +3223,32 @@ bool PendingOperationList::add(PendingOperationItem op)
         }
       break;
       
+// REMOVE Tim. tmp. Added.
+      case PendingOperationItem::SetRackEffectPlugin:
+        if(poi._type == PendingOperationItem::SetRackEffectPlugin)
+        {
+          if(poi._track == op._track && poi._pluginI == op._pluginI && poi._rackEffectPos == op._rackEffectPos)
+          {
+              fprintf(stderr, "MusE error: PendingOperationList::add(): Double SetRackEffectPlugin. Ignoring.\n");
+              // No operation will take place.
+              return false;
+          }
+          else if(poi._track == op._track && poi._rackEffectPos == op._rackEffectPos)
+          {
+            // Simply replace the value.
+            poi._pluginI = op._pluginI;
+            // An operation will still take place.
+            return true;
+          }
+          // It's OK to set null to more than one slot.
+          else if(op._pluginI && poi._pluginI == op._pluginI)
+          {
+            fprintf(stderr,
+              "MusE error: PendingOperationList::add(): SetRackEffectPlugin: Cannot set same plugin to more than one slot. Ignoring.\n");
+          }
+        }
+      break;
+
       case PendingOperationItem::Uninitialized:
         ERROR_OPERATIONS(stderr, "MusE error: PendingOperationList::add(): Uninitialized item. Ignoring.\n");
         return false;  

@@ -432,7 +432,8 @@ bool DssiSynthIF::init(DssiSynth* s)
             float val;
             ladspaDefaultValue(ld, k, &val);
             _controls[cip].val    = val;
-            _controls[cip].tmpVal = val;
+// REMOVE Tim. tmp. Removed.
+            // _controls[cip].tmpVal = val;
             _controls[cip].enCtrl  = true;
             
             #ifdef DSSI_DEBUG 
@@ -529,7 +530,8 @@ bool DssiSynthIF::init(DssiSynth* s)
           {
             _controlsOut[cop].idx = k;
             _controlsOut[cop].val    = 0.0;
-            _controlsOut[cop].tmpVal = 0.0;
+// REMOVE Tim. tmp. Removed.
+            // _controlsOut[cop].tmpVal = 0.0;
             _controlsOut[cop].enCtrl  = false;
 
             #ifdef DSSI_DEBUG 

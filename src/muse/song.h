@@ -71,6 +71,9 @@ class MidiPart;
 class Undo;
 struct UndoOp;
 class UndoList;
+// REMOVE Tim. tmp. Added.
+struct PluginConfiguration;
+class PluginI;
 
 //---------------------------------------------------------
 //    Song
@@ -198,6 +201,8 @@ class Song : public QObject {
       Event changeEventOperation(const Event& oldEvent, const Event& newEvent,
                                 Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
+// REMOVE Tim. tmp. Added.
+      void addPluginOperation(PluginI* plugin, int idx, PendingOperationList& ops);
 
       void checkSongSampleRate();
       
@@ -555,6 +560,9 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
+// REMOVE Tim. tmp. Added.
+      // Returns nullptr if failure.
+      PluginI* createPluginI(const PluginConfiguration &config, int channels);
       SynthI* createSynthI(const QString& sclass, const QString& uri, const QString& label = QString(),
                            Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
       MidiRemote* midiRemote();

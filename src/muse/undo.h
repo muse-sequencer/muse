@@ -43,6 +43,9 @@ class MidiPort;
 class MidiInstrument;
 class Track;
 class Part;
+// REMOVE Tim. tmp. Added.
+struct PluginConfiguration;
+class PluginI;
 
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown
 //---------------------------------------------------------
@@ -72,6 +75,9 @@ struct UndoOp {
             SetMarkerPos,
             //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
             //ModifyMarkerList,
+// REMOVE Tim. tmp. Added.
+            AddRackEffectPlugin, RemoveRackEffectPlugin,
+
             ModifySongLen, // a = new len, b = old len
             SetInstrument,
             DoNothing,
@@ -134,6 +140,15 @@ struct UndoOp {
                   //  while in copy mode since they are the items that are actually being copied.
                   CtrlList* _doNotEraseCtrlList;
                 };
+// REMOVE Tim. tmp. Added.
+            struct {
+                  PluginI *_pluginI;
+                  PluginConfiguration *_pluginConfiguration;
+                  CtrlListList *_ctrlListList;
+                  MidiAudioCtrlMap *_midiAudioCtrlMap;
+                  int _effectRackPos;
+                };
+
             struct {
                   int _audioCtrlID;
                   unsigned int _audioCtrlFrame;
@@ -244,6 +259,16 @@ struct UndoOp {
       //  a constructor that takes a track pointer and a constructor that takes an integer !!!
       UndoOp(UndoType type, const Track* track, double a, double b, double c, double d = 0.0, double e = 0.0, bool noUndo = false);
 
+// REMOVE Tim. tmp. Added.
+      // To avoid potentially a lot of copying and double memory use, the pluginConfiguration
+      //  argument is allocated externally, and the undo system takes ownership of it.
+      UndoOp(UndoType type, const Track* track, PluginConfiguration *pluginConfiguration,
+             int effectRackPos, bool noUndo = false);
+      // This convenience version makes a copy of the pluginConfiguration for you.
+      UndoOp(UndoType type, const Track* track, const PluginConfiguration &pluginConfiguration,
+             int effectRackPos, bool noUndo = false);
+      // This one takes a pre-created PluginI.
+      UndoOp(UndoType type, const Track* track, PluginI *pluginI, int effectRackPos, bool noUndo = false);
 
       UndoOp(UndoType type, CtrlList* ctrlList, unsigned int frame, bool oldSelected, bool newSelected, bool noUndo = false);
       UndoOp(UndoType type, CtrlList::PasteEraseOptions newOpts, bool noUndo = false);

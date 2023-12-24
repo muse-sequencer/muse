@@ -815,7 +815,8 @@ bool VstNativeSynthIF::init(Synth* s)
         //ladspaDefaultValue(ld, k, &val);   // FIXME TODO
         float val = _plugin->getParameter(_plugin, i);  // TODO
         _controls[i].val    = val;
-        _controls[i].tmpVal = val;
+// REMOVE Tim. tmp. Removed.
+        // _controls[i].tmpVal = val;
         _controls[i].enCtrl  = true;
 
         // Support a special block for synth ladspa controllers.
@@ -886,19 +887,18 @@ bool VstNativeSynth::resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h
     return true;
 }
 
+// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
-//   vstconfWrite
+//   getCustomConfiguration
 //---------------------------------------------------------
 
-void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml)
+QString VstNativeSynth::getCustomConfiguration(AEffect *plugin)
 {
    if(hasChunks())
    {
       //---------------------------------------------
       // dump current state of synth
       //---------------------------------------------
-      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
-              name.toLatin1().constData(), vstVersion());
       unsigned long len = 0;
       void* p = 0;
       len = plugin->dispatcher(plugin, effGetChunk, 0, 0, &p, 0.0);
@@ -908,15 +908,67 @@ void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int leve
 
          // Weee! Compression!
          QByteArray outEnc64 = qCompress(arrOut).toBase64();
-         
+
          QString customData(outEnc64);
          for (int pos=0; pos < customData.size(); pos+=150)
          {
             customData.insert(pos++,'\n'); // add newlines for readability
          }
-         xml.strTag(level, "customData", customData);
+         return customData;
       }
    }
+   return QString();
+}
+
+//---------------------------------------------------------
+//   vstconfWrite
+//---------------------------------------------------------
+
+// REMOVE Tim. tmp. Changed.
+// void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml)
+// {
+//    if(hasChunks())
+//    {
+//       //---------------------------------------------
+//       // dump current state of synth
+//       //---------------------------------------------
+//       fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
+//               name.toLatin1().constData(), vstVersion());
+//       unsigned long len = 0;
+//       void* p = 0;
+//       len = plugin->dispatcher(plugin, effGetChunk, 0, 0, &p, 0.0);
+//       if (len)
+//       {
+//          QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
+//
+//          // Weee! Compression!
+//          QByteArray outEnc64 = qCompress(arrOut).toBase64();
+//
+//          QString customData(outEnc64);
+//          for (int pos=0; pos < customData.size(); pos+=150)
+//          {
+//             customData.insert(pos++,'\n'); // add newlines for readability
+//          }
+//          xml.strTag(level, "customData", customData);
+//       }
+//    }
+// }
+void VstNativeSynth::vstconfWrite(
+  AEffect *plugin,
+  const QString&
+#ifdef VST_NATIVE_DEBUG
+  name
+#endif
+  ,int level, Xml &xml)
+{
+#ifdef VST_NATIVE_DEBUG
+   if(hasChunks())
+     fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
+           name.toLatin1().constData(), vstVersion());
+#endif
+   const QString cd = getCustomConfiguration(plugin);
+   if(!cd.isEmpty())
+     xml.strTag(level, "customData", cd);
 }
 
 //---------------------------------------------------------
@@ -3378,7 +3430,9 @@ void VstNativePluginWrapper::activate(LADSPA_Handle handle)
    {
       for(size_t i = 0; i < _controlInPorts; i++)
       {
-         state->pluginI->controls [i].val = state->pluginI->controls [i].tmpVal = inControlDefaults [i];
+// REMOVE Tim. tmp. Changed.
+         // state->pluginI->controls [i].val = state->pluginI->controls [i].tmpVal = inControlDefaults [i];
+         state->pluginI->controls [i].val = inControlDefaults [i];
       }
    }
    state->active = true;
@@ -3582,6 +3636,13 @@ bool VstNativePluginWrapper::nativeGuiVisible(const PluginI *p) const
    assert(p->instances > 0);
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];
    return state->guiVisible;
+}
+
+// REMOVE Tim. tmp. Added.
+QString VstNativePluginWrapper::getCustomConfiguration(LADSPA_Handle handle)
+{
+  VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)handle;
+  return _synth->getCustomConfiguration(state->plugin);
 }
 
 void VstNativePluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)

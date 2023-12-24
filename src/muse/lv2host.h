@@ -454,6 +454,8 @@ public:
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);    
+// REMOVE Tim. tmp. Added.
+    static QString getCustomConfiguration(LV2PluginWrapper_State *state);
     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
@@ -562,8 +564,9 @@ public:
     virtual bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const override;
 
-    virtual void writeConfiguration ( int level, Xml &xml ) override;
-    virtual bool readConfiguration ( Xml &xml, bool readPreset=false ) override;
+// REMOVE Tim. tmp. Removed. Not required.
+    // virtual void writeConfiguration ( int level, Xml &xml ) override;
+    // virtual bool readConfiguration ( Xml &xml, bool readPreset=false ) override;
 
     virtual void setCustomData ( const std::vector<QString> & ) override;
 
@@ -797,6 +800,8 @@ public:
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
+// REMOVE Tim. tmp. Added.
+    virtual QString getCustomConfiguration(LADSPA_Handle handle);
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
     // Returns a value unit string for displaying unit symbols.

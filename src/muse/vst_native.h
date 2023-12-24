@@ -156,6 +156,8 @@ class VstNativeSynth : public Synth {
       static void guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
       static bool resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h);
 
+// REMOVE Tim. tmp. Added.
+      QString getCustomConfiguration(AEffect *plugin);
       void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
       void vstconfSet(AEffect *plugin, const std::vector<QString> & customParams);
 
@@ -377,6 +379,8 @@ public:
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
+// REMOVE Tim. tmp. Added.
+    virtual QString getCustomConfiguration(LADSPA_Handle handle);
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
 

@@ -2414,7 +2414,13 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
     return LV2_WORKER_SUCCESS;
 }
 
-void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   getCustomConfiguration
+//---------------------------------------------------------
+
+// Static.
+QString LV2Synth::getCustomConfiguration(LV2PluginWrapper_State *state)
 {
     state->iStateValues.clear();
     state->numStateValues = 0;
@@ -2451,7 +2457,52 @@ void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
     {
         customData.insert(pos++,'\n'); // add newlines for readability
     }
-    xml.strTag(level, "customData", customData);
+    return customData;
+}
+
+// REMOVE Tim. tmp. Changed.
+// void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
+// {
+//     state->iStateValues.clear();
+//     state->numStateValues = 0;
+//
+//     if(state->iState != nullptr)
+//     {
+//         state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore,
+//                             state, LV2_STATE_IS_POD, state->_ppifeatures);
+//     }
+//
+//     if(state->sif != nullptr) // write control ports values only for synths
+//     {
+//         for(size_t c = 0; c < state->sif->_inportsControl; c++)
+//         {
+//             state->iStateValues.insert(QString(state->sif->_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)state->sif->_controls[c].val)));
+//         }
+//     }
+//
+//     if(state->uiCurrent != nullptr)
+//     {
+//         const char *cUiUri = lilv_node_as_uri(lilv_ui_get_uri(state->uiCurrent));
+//         state->iStateValues.insert(QString(cUiUri), QPair<QString, QVariant>(QString(""), QVariant(QString(cUiUri))));
+//     }
+//
+//     QByteArray arrOut;
+//     QDataStream streamOut(&arrOut, QIODevice::WriteOnly);
+//     streamOut << state->iStateValues;
+//
+//     // Weee! Compression!
+//     QByteArray outEnc64 = qCompress(arrOut).toBase64();
+//
+//     QString customData(outEnc64);
+//     for (int pos=0; pos < customData.size(); pos+=150)
+//     {
+//         customData.insert(pos++,'\n'); // add newlines for readability
+//     }
+//     xml.strTag(level, "customData", customData);
+// }
+void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
+{
+    xml.strTag(level, "customData", getCustomConfiguration(state));
 }
 
 void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> &customParams)
@@ -2526,7 +2577,9 @@ void LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
                         if(iter != state->controlsNameMap.end())
                         {
                             size_t ctrlNum = iter->second;
-                            state->sif->_controls [ctrlNum].val = state->sif->_controls [ctrlNum].tmpVal = val;
+// REMOVE Tim. tmp. Changed.
+                            // state->sif->_controls [ctrlNum].val = state->sif->_controls [ctrlNum].tmpVal = val;
+                            state->sif->_controls [ctrlNum].val = val;
 
                         }
                     }
@@ -3919,7 +3972,9 @@ bool LV2SynthIF::init(LV2Synth *s)
     {
         uint32_t idx = _controlInPorts [i].index;
         _controls [i].idx = idx;
-        _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal;
+// REMOVE Tim. tmp. Changed.
+        // _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal;
+        _controls [i].val = _controlInPorts [i].defVal;
         if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == i)
             _controls [i].enCtrl = false;
         else
@@ -3981,7 +4036,9 @@ bool LV2SynthIF::init(LV2Synth *s)
         uint32_t idx = _controlOutPorts [i].index;
         _controlsOut[i].idx = idx;
         _controlsOut[i].enCtrl  = false;
-        _controlsOut [i].val = _controlsOut [i].tmpVal = _controlOutPorts [i].defVal;
+// REMOVE Tim. tmp. Changed.
+        // _controlsOut [i].val = _controlsOut [i].tmpVal = _controlOutPorts [i].defVal;
+        _controlsOut [i].val = _controlOutPorts [i].defVal;
         if(!_controlOutPorts [i].isCVPort)
             lilv_instance_connect_port(_handle, idx, &_controlsOut[i].val);
     }
@@ -6402,15 +6459,16 @@ void LV2SynthIF::applyPreset(void *preset)
 
 
 
-void LV2SynthIF::writeConfiguration(int level, Xml &xml)
-{
-    MusECore::SynthIF::writeConfiguration(level, xml);
-}
-
-bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
-{
-    return MusECore::SynthIF::readConfiguration(xml, readPreset);
-}
+// REMOVE Tim. tmp. Removed. Not required.
+// void LV2SynthIF::writeConfiguration(int level, Xml &xml)
+// {
+//     MusECore::SynthIF::writeConfiguration(level, xml);
+// }
+//
+// bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
+// {
+//     return MusECore::SynthIF::readConfiguration(xml, readPreset);
+// }
 
 int LV2SynthIF::id() const { return MusECore::MAX_PLUGINS; }
 
@@ -6979,7 +7037,9 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
     if(!state->plugInst->on() && state->synth->_pluginBypassType == PluginBypassTypeEnablePort)
     {
       const long unsigned int enableIdx = state->synth->_enableOrBypassPortIndex;
-      state->plugInst->controls[enableIdx].tmpVal = state->plugInst->controls[enableIdx].val = 0.0f;
+// REMOVE Tim. tmp. Changed.
+      // state->plugInst->controls[enableIdx].tmpVal = state->plugInst->controls[enableIdx].val = 0.0f;
+      state->plugInst->controls[enableIdx].val = 0.0f;
       // Inform the GUI.
       state->controlsMask[enableIdx] = true;
     }
@@ -7379,6 +7439,14 @@ void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, 
     if(bSetVal)
         state->lastControls [index] = fVal;
 
+}
+
+// REMOVE Tim. tmp. Added.
+QString LV2PluginWrapper::getCustomConfiguration(LADSPA_Handle handle)
+{
+  LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
+  assert(state != nullptr);
+  return LV2Synth::getCustomConfiguration(state);
 }
 
 void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
