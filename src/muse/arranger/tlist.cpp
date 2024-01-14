@@ -160,7 +160,9 @@ void TList::songChanged(MusECore::SongChangedStruct_t flags)
                  | SC_TRACK_MOVED
                  | SC_TRACK_SELECTION | SC_ROUTE | SC_CHANNELS
                  | SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED
-                 | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED ))
+                 | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED
+// REMOVE Tim. tmp. Added.
+                 | SC_RACK | SC_AUDIO_CONTROLLER_LIST))
         update();
     if (flags & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
         adjustScrollbar();

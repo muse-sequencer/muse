@@ -202,7 +202,11 @@ class Song : public QObject {
                                 Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
       Event deleteEventOperation(const Event&, Part*, bool do_port_ctrls = true, bool do_clone_port_ctrls = true);
 // REMOVE Tim. tmp. Added.
-      void addPluginOperation(PluginI* plugin, int idx, PendingOperationList& ops);
+      // Returns false on error.
+      bool addPluginOperation(UndoOp *i);
+      bool removePluginOperation(UndoOp *i);
+      bool swapPluginsOperation(UndoOp *i);
+      bool changePluginOperation(UndoOp *i);
 
       void checkSongSampleRate();
       

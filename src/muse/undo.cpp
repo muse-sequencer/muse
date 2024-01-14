@@ -347,7 +347,7 @@ const char* UndoOp::typeName()
             "MoveTrack",
             "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
 // REMOVE Tim. tmp. Added.
-            "AddRackEffectPlugin", "RemoveRackEffectPlugin",
+            "AddRackEffectPlugin", "RemoveRackEffectPlugin", "SwapRackEffectPlugins",
 
             "ModifySongLen", "SetInstrument", "DoNothing",
             "ModifyMidiDivision",
@@ -491,6 +491,21 @@ void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
           {
             delete op._pluginConfiguration;
             op._pluginConfiguration = nullptr;
+          }
+          if(op._pluginI)
+          {
+            delete op._pluginI;
+            op._pluginI = nullptr;
+          }
+          if(op._ctrlListList)
+          {
+            delete op._ctrlListList;
+            op._ctrlListList = nullptr;
+          }
+          if(op._midiAudioCtrlMap)
+          {
+            delete op._midiAudioCtrlMap;
+            op._midiAudioCtrlMap = nullptr;
           }
           break;
 
@@ -889,6 +904,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     break;
     case UndoOp::RemoveRackEffectPlugin:
       fprintf(stderr, "Undo::insert: RemoveRackEffectPlugin\n");
+    break;
+    case UndoOp::SwapRackEffectPlugins
+      fprintf(stderr, "Undo::insert: SwapRackEffectPlugins\n");
     break;
 
     case UndoOp::ModifySongLen:
@@ -2001,6 +2019,41 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
         
+// REMOVE Tim. tmp. Added.
+        case UndoOp::AddRackEffectPlugin:
+          if(uo.type == UndoOp::AddRackEffectPlugin)
+          {
+            if(((uo._pluginConfiguration && uo._pluginConfiguration == n_op._pluginConfiguration) ||
+                (uo._pluginI && uo._pluginI == n_op._pluginI)) &&
+               uo.track == n_op.track && uo._effectRackPos == n_op._effectRackPos)
+            {
+              fprintf(stderr, "MusE error: Undo::insert(): Double AddRackEffectPlugin. Ignoring.\n");
+              return;
+            }
+
+            // TODO: PluginConfiguration etc.
+            //
+            // else if(uo.track == n_op.track && uo._effectRackPos == n_op._effectRackPos)
+            // {
+            //   // Simply replace the plugin.
+            //   // To avoid memory leaks, delete the original plugin.
+            //   // TODO:
+            // }
+            // // It's OK to set null to more than one slot.
+            // else if(uo._pluginI && uo._pluginI == n_op._pluginI)
+            // {
+            //   fprintf(stderr,
+            //     "MusE error: Undo::insert(): AddRackEffectPlugin: Cannot set same plugin to more than one slot. Ignoring.\n");
+            //   return;
+            // }
+          }
+        break;
+
+// REMOVE Tim. tmp. Added.
+        case UndoOp::SwapRackEffectPlugins:
+          // TODO: Not much required here... It's OK if multiple swaps appear.
+        break;
+
         // NOTE Some other undo op types may need treatment as well !
         
         default:
@@ -2660,7 +2713,7 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
     type_ == SetTrackRecord || type_ == SetTrackMute || type_ == SetTrackSolo ||
     type_ == SetTrackRecMonitor || type_ == SetTrackOff || type_ == AddAudioCtrlVal || type_ == ModifyAudioCtrlVal ||
 // REMOVE Tim. tmp. Added.
-    type_ == RemoveRackEffectPlugin);
+    type_ == RemoveRackEffectPlugin || type_ == SwapRackEffectPlugins);
   assert(track_);
 
   type = type_;
@@ -2697,25 +2750,57 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
   else if(type_ == RemoveRackEffectPlugin)
   {
     _effectRackPos = a_;
+    _newEffectRackPos = 0;
     _pluginConfiguration = nullptr;
-    if(!track->isMidiTrack())
-    {
-      Track *t = const_cast<Track*>(track);
-      AudioTrack *at = static_cast<AudioTrack*>(t);
-      Pipeline *pl = at->efxPipe();
-      if(pl)
-      {
-        if(_effectRackPos >= 0 && _effectRackPos < (int)pl->size())
-        {
-          PluginI *pi = pl->at(_effectRackPos);
-          if(pi)
-          {
-            // Save the plugin's configuration.
-            _pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
-          }
-        }
-      }
-    }
+    _pluginI = nullptr;
+    _ctrlListList = nullptr;
+    _midiAudioCtrlMap = nullptr;
+    // if(!track->isMidiTrack())
+    // {
+    //   Track *t = const_cast<Track*>(track);
+    //   AudioTrack *at = static_cast<AudioTrack*>(t);
+    //   Pipeline *pl = at->efxPipe();
+    //   if(pl)
+    //   {
+    //     if(_effectRackPos >= 0 && _effectRackPos < (int)pl->size())
+    //     {
+    //       PluginI *pi = pl->at(_effectRackPos);
+    //       if(pi)
+    //       {
+    //         // Save the plugin's configuration.
+    //         _pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
+    //       }
+    //     }
+    //   }
+    // }
+  }
+// REMOVE Tim. tmp. Added.
+  else if(type_ == SwapRackEffectPlugins)
+  {
+    _effectRackPos = a_;
+    _newEffectRackPos = b_;
+    _pluginConfiguration = nullptr;
+    _pluginI = nullptr;
+    _ctrlListList = nullptr;
+    _midiAudioCtrlMap = nullptr;
+    // if(!track->isMidiTrack())
+    // {
+    //   Track *t = const_cast<Track*>(track);
+    //   AudioTrack *at = static_cast<AudioTrack*>(t);
+    //   Pipeline *pl = at->efxPipe();
+    //   if(pl)
+    //   {
+    //     if(_effectRackPos >= 0 && _effectRackPos < (int)pl->size())
+    //     {
+    //       PluginI *pi = pl->at(_effectRackPos);
+    //       if(pi)
+    //       {
+    //         // Save the plugin's configuration.
+    //         _pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
+    //       }
+    //     }
+    //   }
+    // }
   }
   else
     a = a_;
@@ -2737,6 +2822,7 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginConfiguration *pluginC
   _midiAudioCtrlMap = nullptr;
   _pluginConfiguration = pluginConfiguration_;
   _effectRackPos = effectRackPos_;
+  _newEffectRackPos = 0;
   _noUndo = noUndo_;
 }
 
@@ -2753,6 +2839,7 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &p
   _midiAudioCtrlMap = nullptr;
   _pluginConfiguration = new PluginConfiguration(pluginConfiguration_);
   _effectRackPos = effectRackPos_;
+  _newEffectRackPos = 0;
   _noUndo = noUndo_;
 }
 
@@ -2770,6 +2857,7 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_, int effec
 //  _pluginConfiguration = new PluginConfiguration(pluginI_->getConfiguration());
   _pluginConfiguration = nullptr;
   _effectRackPos = effectRackPos_;
+  _newEffectRackPos = 0;
   _noUndo = noUndo_;
 }
 
@@ -3829,6 +3917,32 @@ void Song::revertOperationGroup1(Undo& operations)
                             new_marker_list->add(*i->oldMarker);
                           updateFlags |= SC_MARKER_MODIFIED;
                         break;
+
+
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::AddRackEffectPlugin:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::revertOperationGroup1:AddRackEffectPlugin\n");
+#endif
+                            removePluginOperation(&(*i));
+                        break;
+
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::RemoveRackEffectPlugin:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::revertOperationGroup1:RemoveRackEffectPlugin\n");
+#endif
+                            addPluginOperation(&(*i));
+                        break;
+
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::SwapRackEffectPlugins:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::revertOperationGroup1:SwapRackEffectPlugins\n");
+#endif
+                            swapPluginsOperation(&(*i));
+                        break;
+
 
                   default:
                         break;
@@ -5168,196 +5282,28 @@ void Song::executeOperationGroup1(Undo& operations)
 
 // REMOVE Tim. tmp. Added.
                   case UndoOp::AddRackEffectPlugin:
-                          {
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::executeOperationGroup1:AddRackEffectPlugin\n");
 #endif
-                            if(!i->track || i->track->isMidiTrack())
-                              break;
-
-                            AudioTrack* at = static_cast<AudioTrack*>(editable_track);
-                            CtrlListList *track_cll = at->controller();
-                            Pipeline *pl = at->efxPipe();
-
-                            if(!track_cll || !pl || i->_effectRackPos < 0 || (unsigned long)i->_effectRackPos >= pl->size())
-                              break;
-
-                            // If no PluginI exists.
-                            if(!i->_pluginI)
-                            {
-                              // If no plugin configuration exists, we cannot proceed.
-                              if(!i->_pluginConfiguration)
-                              {
-                                fprintf(stderr,
-                                  "Song::executeOperationGroup1:AddRackEffectPlugin: Error: No pluginI or configuration, or no track!\n");
-                                break;
-                              }
-                              // Create a PluginI.
-                              i->_pluginI = createPluginI(*i->_pluginConfiguration, i->track->channels());
-                              if(!i->_pluginI)
-                              {
-                                fprintf(stderr,
-                                  "Song::executeOperationGroup1:AddRackEffectPlugin: Error: Could not create pluginI!\n");
-                                break;
-                              }
-                            }
-
-                            // Set the plugin's rack position id now.
-                            i->_pluginI->setID(i->_effectRackPos);
-
-                            // If the audio is idling, take advantage of relaxed timing and just directly
-                            //  set the plugin.
-                            if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
-                            {
-                              // Set the plugin's track now.
-                              i->_pluginI->setTrack(at);
-                              // NOTE: Caller is responsible for removing any existing plugin beforehand.
-                              pl->at(i->_effectRackPos) = i->_pluginI;
-                            }
-                            else
-                            {
-                              pendingOperations.add(PendingOperationItem(
-                                editable_track,
-                                i->_pluginI,
-                                i->_effectRackPos,
-                                PendingOperationItem::SetRackEffectPlugin));
-                            }
-
-                            // If a list of controllers is given.
-                            if(i->_ctrlListList)
-                            {
-                              for(CtrlListList::iterator j = i->_ctrlListList->begin(); j != i->_ctrlListList->end(); ++j)
-                              {
-                                CtrlList *cl = j->second;
-
-                                // If the audio is idling, take advantage of relaxed timing and just directly
-                                //  add the controller to the controller list. Saves potentially large memory usage.
-                                if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
-                                {
-                                  const bool res = track_cll->add(cl);
-                                  // Failed to add the controller? The controller is orphaned now. Delete it.
-                                  if(!res)
-                                  {
-                                    delete j->second;
-                                    j->second = nullptr;
-                                    fprintf(stderr,
-                                      "Song::executeOperationGroup1:AddRackEffectPlugin: Error: Could not add pluginI!\n");
-                                  }
-                                }
-                                else
-                                {
-                                  // TODO: Compose a new controller list list to swap using ModifyAudioCtrlValListList?
-                                  //       Can't use ModifyCtrlValList since there should not be an existing one.
-
-                                  // The list of controllers takes ownership of the given controller (via Track destructor).
-                                  const bool res = pendingOperations.add(PendingOperationItem(
-                                    track_cll,
-                                    cl,
-                                    PendingOperationItem::AddAudioCtrlValList));
-
-                                  // Failed to add the operation? The controller is orphaned now. Delete it.
-                                  if(!res)
-                                  {
-                                    delete j->second;
-                                    j->second = nullptr;
-                                  }
-                                }
-                              }
-
-                              // We are done with the given list of controllers. We can delete it now.
-                              // Note the list items are not deleted, only the list.
-                              delete i->_ctrlListList;
-                              i->_ctrlListList = nullptr;
-                            }
-                            // No list of controllers is given. Create them now.
-                            else
-                            {
-                              CtrlListList *new_cll = nullptr;
-                              if(MusEGlobal::audio && !MusEGlobal::audio->isIdle())
-                                new_cll = new CtrlListList(*track_cll);
-
-                              const int params = i->_pluginI->parameters();
-                              for (int j = 0; j < params; ++j)
-                              {
-                                const int id = genACnum(i->_effectRackPos, j);
-                                const char* name = i->_pluginI->paramName(j);
-                                float min, max;
-                                i->_pluginI->range(j, &min, &max);
-                                CtrlList* cl = new CtrlList(id);
-                                cl->setRange(min, max);
-                                cl->setName(QString(name));
-                                cl->setValueType(i->_pluginI->ctrlValueType(j));
-                                cl->setMode(i->_pluginI->ctrlMode(j));
-                                cl->setCurVal(i->_pluginI->param(j));
-                                // Set the value units index.
-                                cl->setValueUnit(i->_pluginI->valueUnit(j));
-
-                                bool res = false;
-                                // If the audio is idling, take advantage of relaxed timing and just directly
-                                //  add the controller to the controller list.
-                                if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
-                                {
-                                  res = track_cll->add(cl);
-                                }
-                                else
-                                {
-                                  // // The list of controllers takes ownership of the given controller (via Track destructor).
-                                  // res = pendingOperations.add(PendingOperationItem(
-                                  //   track_cll,
-                                  //   cl,
-                                  //   PendingOperationItem::AddAudioCtrlValList));
-
-                                  // TODO:
-
-                                  // The list of controllers takes ownership of the given controller (via Track destructor).
-                                  res = pendingOperations.add(PendingOperationItem(
-                                    track_cll,
-                                    cl, // TODO: Compose new list.
-                                    PendingOperationItem::ModifyAudioCtrlValListList));
-                                }
-                                // Failed to add the controller or operation? The controller is orphaned now. Delete it.
-                                if(!res)
-                                {
-                                  delete cl;
-                                  fprintf(stderr,
-                                    "Song::executeOperationGroup1:AddRackEffectPlugin: Error: Could not add controller!\n");
-                                }
-                              }
-                            }
-
-                            // If a list of midi to audio controller mappings is given.
-                            if(i->_midiAudioCtrlMap)
-                            {
-                              // for(MidiAudioCtrlMap::const_iterator j = i->_midiAudioCtrlMap->cbegin();
-                              //     j != i->_midiAudioCtrlMap->cend(); ++j)
-                              // {
-                              //
-                              // }
-
-
-                              // If the audio is idling, take advantage of relaxed timing and just directly
-                              //  add the mapping to the mapping list.
-                              if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
-                              {
-                                MusEGlobal::song->midiAssignments()->insert(i->_midiAudioCtrlMap->cbegin(), i->_midiAudioCtrlMap->cend());
-                                // AudioMidiCtrlStructMap amcs;
-                                // // Include NULL tracks in search.
-                                // MusEGlobal::song->midiAssignments()->find_audio_ctrl_structs(
-                                //   MidiAudioCtrlStruct::AudioControl, id, this, false, true, &amcs);
-                                // for(ciAudioMidiCtrlStructMap iamcs = amcs.begin(); iamcs != amcs.end(); ++ iamcs)
-                                //   MusEGlobal::song->midiAssignments()->erase(*iamcs);
-
-                              }
-                              else
-                              {
-                                // TODO: Undo operations...
-
-                              }
-                            }
-
-                            updateFlags |= SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER;
-                          }
+                            addPluginOperation(&(*i));
                         break;
+
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::RemoveRackEffectPlugin:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::executeOperationGroup1:RemoveRackEffectPlugin\n");
+#endif
+                            removePluginOperation(&(*i));
+                        break;
+
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::SwapRackEffectPlugins:
+#ifdef _UNDO_DEBUG_
+                            fprintf(stderr, "Song::executeOperationGroup1:SwapRackEffectPlugins\n");
+#endif
+                            swapPluginsOperation(&(*i));
+                        break;
+
 
                   default:
                         break;

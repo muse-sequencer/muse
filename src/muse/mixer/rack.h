@@ -71,7 +71,9 @@ class EffectRack : public QListWidget {
       void initPlugin(MusECore::Xml xml, int idx);
       QPoint dragPos;
       void savePreset(int idx);
-      void choosePlugin(QListWidgetItem* item, bool replace = false);
+// REMOVE Tim. tmp. Changed.
+      // void choosePlugin(QListWidgetItem* item, bool replace = false);
+      void choosePlugin(QListWidgetItem* item);
 
    private slots:
       void menuRequested(QListWidgetItem*);

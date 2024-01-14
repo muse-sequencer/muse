@@ -196,7 +196,7 @@ struct PendingOperationItem
     ModifyMarkerList,
     SwitchMidiRemoteSettings, ModifyMidiRemote,
 // REMOVE Tim. tmp. Added.
-    SetRackEffectPlugin, ModifyMidiAudioCtrlMap
+    SetRackEffectPlugin, SwapRackEffectPlugins, ModifyMidiAudioCtrlMap
     };
                               
   PendingOperationType _type;
@@ -209,6 +209,7 @@ struct PendingOperationItem
     CtrlListList* _src_aud_ctrl_list_list;
 // REMOVE Tim. tmp. Added.
     PluginI *_pluginI;
+    MidiAudioCtrlMap *_src_midi_audio_ctrl_map;
   };
   
   union {
@@ -230,6 +231,8 @@ struct PendingOperationItem
     float** _audioSamplesPointer;
     MetroAccentsMap** _metroAccentsMap;
     MidiRemote* _midiRemote;
+// REMOVE Tim. tmp. Added.
+    MidiAudioCtrlMap *_midi_audio_ctrl_map;
   };
             
   union {
@@ -301,6 +304,8 @@ struct PendingOperationItem
     int _address_port;
     int _open_flags;
     int _ctl_num;
+// REMOVE Tim. tmp. Added.
+    int _newRackEffectPos;
     CtrlVal::CtrlValueFlags _ctl_flags;
     int _stretch_type;
     AudioConverterPluginI* _audio_converter_ui;
@@ -602,8 +607,18 @@ struct PendingOperationItem
     { _type = type; _orig_marker_list = orig_marker_l; _marker_list = new_marker_l; }
     
 // REMOVE Tim. tmp. Added.
+  // pluginI can be null.
   PendingOperationItem(Track* track, PluginI* pluginI, int rackPos, PendingOperationType type = SetRackEffectPlugin)
     { _type = type; _track = track; _pluginI = pluginI; _rackEffectPos = rackPos; }
+
+// REMOVE Tim. tmp. Added.
+  // Dummy param is to avoid ambiguity with other constructors.
+  PendingOperationItem(Track* track, int rackPos, int newRackPos, int /*dummy*/, PendingOperationType type = SwapRackEffectPlugins)
+    { _type = type; _track = track; _rackEffectPos = rackPos; _newRackEffectPos = newRackPos; }
+
+// REMOVE Tim. tmp. Added.
+  PendingOperationItem(MidiAudioCtrlMap* dst, MidiAudioCtrlMap* src, PendingOperationType type = ModifyMidiAudioCtrlMap)
+    { _type = type; _midi_audio_ctrl_map = dst; _src_midi_audio_ctrl_map = src; }
 
   PendingOperationItem()
     { _type = Uninitialized; }

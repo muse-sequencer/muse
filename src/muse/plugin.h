@@ -690,9 +690,10 @@ class PluginI : public PluginIBase {
       #endif
 
 // REMOVE Tim. tmp. Added.
+      void setInitialConfiguration(const PluginConfiguration&);
       // NOTE: The PluginI's track must already have been added to the track lists,
       //        because for DSSI, OSC needs to find the plugin in the track lists.
-      void setConfiguration(const PluginConfiguration&);
+      void configure(const PluginConfiguration&);
       PluginConfiguration getConfiguration() const;
       void writeConfiguration(int level, Xml& xml);
       bool readConfiguration(Xml& xml, bool readPreset=false);

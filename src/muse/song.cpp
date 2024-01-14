@@ -823,69 +823,1696 @@ Event Song::deleteEventOperation(const Event& event, Part* part, bool do_port_ct
 //   addPluginOperation
 //---------------------------------------------------------
 
-void Song::addPluginOperation(PluginI* plugin, int idx, PendingOperationList& ops)
+bool Song::addPluginOperation(UndoOp *i)
 {
-  // // Some heavy lifting required here, not easily done
-  // //  in the realtime thread. Idle the audio processing.
-  // // Here any glitches in the audio would be acceptable.
-  // // Gain access to structures, and sync with audio.
-  // MusEGlobal::audio->msgIdle(true);
+  if(!i->track || i->track->isMidiTrack())
+    return false;
+  Track *track = const_cast<Track*>(i->track);
 
-  if (plugin == 0)
+  AudioTrack* at = static_cast<AudioTrack*>(track);
+  CtrlListList *track_cll = at->controller();
+  Pipeline *pl = at->efxPipe();
+
+  if(!track_cll || !pl ||
+      i->_effectRackPos < 0 || (unsigned long)i->_effectRackPos >= pl->size() ||
+      i->_effectRackPos >= MusECore::PipelineDepth)
+    return false;
+
+  const unsigned long epos = i->_effectRackPos;
+
+  // If no PluginI exists.
+  if(!i->_pluginI)
   {
-    PluginI* oldPlugin = (*_efxPipe)[idx];
-    if (oldPlugin)
+    // If no plugin configuration exists, we cannot proceed.
+    if(!i->_pluginConfiguration)
     {
-      oldPlugin->setID(-1);
-      oldPlugin->setTrack(0);
-
-      int controller = oldPlugin->parameters();
-      for (int i = 0; i < controller; ++i)
-      {
-        int id = genACnum(idx, i);
-        removeController(id);
-      }
+      fprintf(stderr,
+        "Song::addPluginOperation: Error: No pluginI or configuration, or no track!\n");
+      return false;
+    }
+    // Create a PluginI.
+    i->_pluginI = createPluginI(*i->_pluginConfiguration, i->track->channels());
+    if(!i->_pluginI)
+    {
+      fprintf(stderr,
+        "Song::addPluginOperation: Error: Could not create pluginI!\n");
+//      // Keep the configuration around in case we want to try again.
+      // The configuration is orphaned now. Delete it.
+      delete i->_pluginConfiguration;
+      i->_pluginConfiguration = nullptr;
+      return false;
     }
   }
-  efxPipe()->insert(plugin, idx);
-  setupPlugin(plugin, idx);
 
-  // MusEGlobal::audio->msgIdle(false);
+//  // If the plugin was found, we are done with the configuration. Delete it.
+//  // Otherwise keep the configuration around for persistent info.
+//  if(i->_pluginI->plugin())
+//  {
+//    delete i->_pluginConfiguration;
+//    i->_pluginConfiguration = nullptr;
+//  }
 
-  MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
+  // If a configuration was given.
+  if(i->_pluginConfiguration)
+  {
+    // If the plugin was not found, save the given configuration as the plugin's initial configuration,
+    //  much like we do when attempting to load a plugin, which is not found, from a song file.
+    if(!i->_pluginI->plugin())
+      i->_pluginI->setInitialConfiguration(*i->_pluginConfiguration);
+
+    // We are done with the plugin configuration. Delete it.
+    delete i->_pluginConfiguration;
+    i->_pluginConfiguration = nullptr;
+  }
+
+  // Set the plugin's rack position id now.
+  i->_pluginI->setID(epos);
+
+  // If the audio is idling, take advantage of relaxed timing and just directly
+  //  set the plugin.
+  if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+  {
+    // Set the plugin's track now.
+    i->_pluginI->setTrack(at);
+    // NOTE: Caller is responsible for removing any existing plugin beforehand.
+    pl->at(epos) = i->_pluginI;
+  }
+  else
+  {
+    if(!pendingOperations.add(PendingOperationItem(
+        track,
+        i->_pluginI,
+        epos,
+        PendingOperationItem::SetRackEffectPlugin)))
+    {
+      // Failed to add the plugin. The plugin is orphaned now. Delete it.
+      delete i->_pluginI;
+      i->_pluginI = nullptr;
+      fprintf(stderr,
+        "Song::addPluginOperation: Error: Could not add set rack plugin operation!\n");
+      // We cannot proceed.
+      return false;
+    }
+  }
+
+  // If a list of controllers is given.
+  if(i->_ctrlListList)
+  {
+    // If the audio is idling, take advantage of relaxed timing and just directly
+    //  add the controllers to the controller list. Saves potentially large memory usage.
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+    {
+      for(CtrlListList::iterator j = i->_ctrlListList->begin(); j != i->_ctrlListList->end(); )
+      {
+        // NOTE: The controllers must be pre-created and new or copies, not already belonging to a list.
+        //       We are simply adding them here, not copying them.
+        CtrlList *cl = j->second;
+        const bool res = track_cll->add(cl);
+        if(res)
+        {
+          // Added the given controller. Move on to the next one.
+          ++j;
+        }
+        else
+        {
+          // Failed to add the controller. The controller is orphaned now. Delete it.
+          delete j->second;
+          // Erase the iterator, which sets the iterator to the next item.
+          j = i->_ctrlListList->erase(j);
+
+          fprintf(stderr,
+            "Song::addPluginOperation: Error: Could not directly add controller!\n");
+        }
+      }
+    }
+    else
+    // Audio is not idling.
+    {
+      bool changed = false;
+
+      // Create a replacement list of controllers, to swap in real time.
+      CtrlListList *new_cll = new CtrlListList();
+
+      // Add copies of the original controllers.
+      for(CtrlListList::const_iterator j = track_cll->cbegin(); j != track_cll->cend(); ++j)
+        new_cll->add(new CtrlList(*j->second));
+
+      // Add the given controllers.
+      for(CtrlListList::iterator j = i->_ctrlListList->begin(); j != i->_ctrlListList->end(); )
+      {
+        // NOTE: The controllers must be pre-created and new or copies, not already belonging to a list.
+        //       We are simply adding them here, not copying them.
+        CtrlList *cl = j->second;
+        const bool res = new_cll->add(cl);
+        if(res)
+        {
+          // Added the given controller. Move on to the next one.
+          ++j;
+          changed = true;
+        }
+        else
+        {
+          // Failed to add the controller. The controller is orphaned now. Delete it.
+          delete cl;
+          // Erase the iterator, which sets the iterator to the next item.
+          j = i->_ctrlListList->erase(j);
+
+          fprintf(stderr,
+            "Song::addPluginOperation: Error: Could not add controller!\n");
+        }
+      }
+
+      // Nothing changed? Or adding the operation fails?
+      if(!changed ||
+          !pendingOperations.add(PendingOperationItem(
+          track_cll,
+          new_cll,
+          PendingOperationItem::ModifyAudioCtrlValListList)))
+      {
+        // // Delete the newer items added. Don't touch any others.
+        // for(CtrlListList::const_iterator j = i->_ctrlListList->cbegin(); j != i->_ctrlListList->cend(); ++j)
+        // {
+        //   const CtrlList *cl = j->second;
+        //   const int id = cl->id();
+        //   // Is there such a controller in the new list? Delete it.
+        //   CtrlListList::iterator icl = new_cll->find(id);
+        //   if(icl != new_cll->end())
+        //   {
+        //     if(icl->second)
+        //       delete icl->second;
+        //   }
+        // }
+
+        // Delete all the given items. They were added to the new list.
+        // When the list is deleted below, any pre-existing items are not deleted.
+        i->_ctrlListList->clearDelete();
+        // The new controller list is orphaned now. Delete it.
+        // Note the list items are not deleted, only the list.
+        delete new_cll;
+
+        // Only if adding the operation failed.
+        if(changed)
+          fprintf(stderr,
+            "Song::addPluginOperation: Error: Could not modify controller list operation!\n");
+
+        // We cannot proceed.
+        //break;
+      }
+
+      // // Anything changed?
+      // if(changed)
+      // {
+      //   if(!pendingOperations.add(PendingOperationItem(
+      //     track_cll,
+      //     new_cll,
+      //     PendingOperationItem::ModifyAudioCtrlValListList)))
+      //   {
+      //     // Failed to add the modify controller list operation. The new controller list is orphaned now. Delete it.
+      //     // Note the list items are not deleted, only the list.
+      //
+      //     // Delete only the newer items added!
+      //     for(CtrlListList::iterator j = i->_ctrlListList->begin(); j != i->_ctrlListList->end(); ++j)
+      //     {
+      //       // NOTE: The controllers must be pre-created and new or copies, not already belonging to a list.
+      //       //       We are simply adding them here, not copying them.
+      //       const CtrlList *cl = j->second;
+      //       const int id = cl->id();
+      //       // Is there such a controller in the new list? Delete it.
+      //       CtrlListList::iterator icl = new_cll->find(id);
+      //       if(icl != new_cll->end())
+      //       {
+      //         if(icl->second)
+      //           delete icl->second;
+      //       }
+      //     }
+      //
+      //     delete new_cll;
+      //     fprintf(stderr,
+      //       "Song::executeOperationGroup1:AddRackEffectPlugin: Error: Could not modify controller list operation!\n");
+      //     // We cannot proceed.
+      //     //break;
+      //   }
+      // }
+      // else
+      // {
+      //   // New list not used. Delete it.
+      //   // Note the list items are not deleted, only the list.
+      //
+      //   // Delete only the newer items added!
+      //   for(CtrlListList::iterator j = i->_ctrlListList->begin(); j != i->_ctrlListList->end(); ++j)
+      //   {
+      //     // NOTE: The controllers must be pre-created and new or copies, not already belonging to a list.
+      //     //       We are simply adding them here, not copying them.
+      //     const CtrlList *cl = j->second;
+      //     const int id = cl->id();
+      //     // Is there such a controller in the new list? Delete it.
+      //     CtrlListList::iterator icl = new_cll->find(id);
+      //     if(icl != new_cll->end())
+      //     {
+      //       if(icl->second)
+      //         delete icl->second;
+      //     }
+      //   }
+      //
+      //   delete new_cll;
+      // }
+    }
+
+    // We are done with the given list of controllers. We can delete it now.
+    // Note the list items are not deleted, only the list.
+    delete i->_ctrlListList;
+    i->_ctrlListList = nullptr;
+  }
+  // No list of controllers is given. Create them now.
+  else
+  {
+    CtrlListList *new_cll = nullptr;
+    // If the audio is not idling.
+    if(MusEGlobal::audio && !MusEGlobal::audio->isIdle())
+    {
+      // Create a complete replacement list of controllers, to swap in real time.
+      new_cll = new CtrlListList();
+      // Add copies of the original controllers.
+      for(CtrlListList::const_iterator j = track_cll->cbegin(); j != track_cll->cend(); ++j)
+        new_cll->add(new CtrlList(*j->second));
+    }
+
+    bool changed = false;
+    const unsigned long params = i->_pluginI->parameters();
+    for (unsigned long j = 0; j < params; ++j)
+    {
+      const unsigned long id = genACnum(epos, j);
+      const char* name = i->_pluginI->paramName(j);
+      float min, max;
+      i->_pluginI->range(j, &min, &max);
+      CtrlList* cl = new CtrlList((int)id);
+      cl->setRange(min, max);
+      cl->setName(QString(name));
+      cl->setValueType(i->_pluginI->ctrlValueType(j));
+      cl->setMode(i->_pluginI->ctrlMode(j));
+      cl->setCurVal(i->_pluginI->param(j));
+      // Set the value units index.
+      cl->setValueUnit(i->_pluginI->valueUnit(j));
+
+      bool res = false;
+      // If the audio is idling, take advantage of relaxed timing and just directly
+      //  add the controller to the controller list.
+      if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+        res = track_cll->add(cl);
+      else
+        res = new_cll->add(cl);
+
+      // Failed to add the controller? The controller is orphaned now. Delete it.
+      if(!res)
+      {
+        delete cl;
+        fprintf(stderr,
+          "Song::addPluginOperation: Error: Could not add new controller!\n");
+        continue;
+      }
+      changed = true;
+    }
+
+    if(new_cll)
+    {
+      // Nothing changed? Or adding the operation fails?
+      if(!changed ||
+          !pendingOperations.add(PendingOperationItem(
+            track_cll,
+            new_cll,
+            PendingOperationItem::ModifyAudioCtrlValListList)))
+      {
+        // Delete the newer items added to the replacement list. Don't touch any others.
+        for(CtrlListList::const_iterator icll = new_cll->cbegin(); icll != new_cll->cend(); ++icll)
+        {
+          const CtrlList *cl = icll->second;
+          const int id = cl->id();
+          // Is there such a controller already in the track's list?
+          CtrlListList::const_iterator track_icll = track_cll->find(id);
+          if(track_icll == track_cll->cend())
+          {
+            // No such controller found. Therefore it was a new one. Delete it.
+            if(icll->second)
+              delete icll->second;
+          }
+        }
+
+        // // Delete the newer items added. Don't touch any others.
+        // for (unsigned long j = 0; j < params; ++j)
+        // {
+        //   const unsigned long id = genACnum(epos, j);
+        //   // Is there such a controller in the new list? Delete it.
+        //   CtrlListList::iterator icl = new_cll->find(id);
+        //   if(icl != new_cll->end())
+        //   {
+        //     if(icl->second)
+        //       delete icl->second;
+        //   }
+        // }
+        //
+
+
+        // The new controller list is orphaned now. Delete it.
+        // Note the list items are not deleted, only the list.
+        delete new_cll;
+
+        // Only if adding the operation failed.
+        if(changed)
+          fprintf(stderr,
+            "Song::addPluginOperation: Error:"
+            " Could not modify new controller list operation!\n");
+
+          // We cannot proceed.
+          //break;
+      }
+
+
+    //   if(changed)
+    //   {
+    //     if(!pendingOperations.add(PendingOperationItem(
+    //       track_cll,
+    //       new_cll,
+    //       PendingOperationItem::ModifyAudioCtrlValListList)))
+    //     {
+    //       // Failed to add the modify controller list operation. The new controller list is orphaned now. Delete it.
+    //       // Note the list items are not deleted, only the list.
+    //       // TODO: FIXME: LEAK: How to delete only the newer items added?
+    //       delete new_cll;
+    //       fprintf(stderr,
+    //         "Song::executeOperationGroup1:AddRackEffectPlugin: Error:"
+    //         " Could not modify new controller list operation!\n");
+    //       // We cannot proceed.
+    //       //break;
+    //     }
+    //   }
+    //   else
+    //   {
+    //     // New list not used. Delete it.
+    //     // Note the list items are not deleted, only the list.
+    //     // TODO: FIXME: LEAK: How to delete only the newer items added?
+    //     delete new_cll;
+    //   }
+
+    }
+  }
+
+
+  // If a list of midi to audio controller mappings is given.
+  if(i->_midiAudioCtrlMap)
+  {
+    MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+    if(macm)
+    {
+      // If the audio is idling, take advantage of relaxed timing and just directly
+      //  add the mapping to the mapping list.
+      if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      {
+        macm->insert(i->_midiAudioCtrlMap->cbegin(), i->_midiAudioCtrlMap->cend());
+      }
+      else
+      {
+        // Create a complete replacement list of mappings, to swap in real time.
+        MidiAudioCtrlMap *new_macm = new MidiAudioCtrlMap(*macm);
+        new_macm->insert(i->_midiAudioCtrlMap->cbegin(), i->_midiAudioCtrlMap->cend());
+
+        // Anything changed?
+        if(new_macm->size() != macm->size())
+        {
+          if(!pendingOperations.add(PendingOperationItem(
+            macm,
+            new_macm,
+            PendingOperationItem::ModifyMidiAudioCtrlMap)))
+          {
+            // Failed to add the modify midi audio map operation. The new map is orphaned now. Delete it.
+            delete new_macm;
+            fprintf(stderr,
+              "Song::addPluginOperation: Error:"
+              " Could not add modify midi audio controller mapper operation!\n");
+            // We cannot proceed.
+            //break;
+          }
+        }
+        else
+        {
+          // New list not used. Delete it.
+          delete new_macm;
+        }
+      }
+    }
+
+    // We are done with the given map. We can delete it now.
+    delete i->_midiAudioCtrlMap;
+    i->_midiAudioCtrlMap = nullptr;
+
+    updateFlags |= SC_MIDI_AUDIO_CTRL_MAPPER;
+  }
+
+  // We are done with the given plugin pointer. Null it now.
+  i->_pluginI = nullptr;
+
+  updateFlags |= SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER;
+  return true;
 }
 
 // REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
-//   setupPlugin
+//   removePluginOperation
 //---------------------------------------------------------
 
-void Song::setupPluginOperation(PluginI* plugin, int idx)
+bool Song::removePluginOperation(UndoOp *i)
 {
-  if (plugin)
-  {
-    plugin->setID(idx);
-    plugin->setTrack(this);
+  if(!i->track || i->track->isMidiTrack())
+    return false;
+  Track *track = const_cast<Track*>(i->track);
 
-    int controller = plugin->parameters();
-    for (int i = 0; i < controller; ++i)
+  AudioTrack* at = static_cast<AudioTrack*>(track);
+  CtrlListList *track_cll = at->controller();
+  Pipeline *pl = at->efxPipe();
+
+  if(!track_cll || !pl ||
+      i->_effectRackPos < 0 || (unsigned long)i->_effectRackPos >= pl->size() ||
+      i->_effectRackPos >= MusECore::PipelineDepth)
+    return false;
+
+  const unsigned long epos = i->_effectRackPos;
+  PluginI *pi = pl->at(epos);
+  if(!pi)
+    return false;
+
+//  // If there is no plugin configuration, create and save one now.
+//  // The idea is to grab the very latest configuration (geometry, GUIs etc).
+//  // But if a configuration already exists, use it. For example with persistent info,
+//  //  in case a plugin could not be found when loading, the configuration is kept alive.
+//  if(!i->_pluginConfiguration)
+//    i->_pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
+
+  // If there is an existing plugin configuration, that's an error. Get rid of it.
+  if(i->_pluginConfiguration)
+  {
+    delete i->_pluginConfiguration;
+    fprintf(stderr,
+      "Song::removePluginOperation: Warning:"
+      " A configuration already existed.\n");
+  }
+  // Save the plugin's configuration.
+  i->_pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
+
+  // If there is an existing list of controllers, that's an error. Get rid of it.
+  if(i->_ctrlListList)
+  {
+    // Delete the items and the list.
+    i->_ctrlListList->clearDelete();
+    delete i->_ctrlListList;
+    fprintf(stderr,
+      "Song::removePluginOperation: Warning:"
+      " A controller list already existed.\n");
+  }
+  i->_ctrlListList = nullptr;
+
+  // If there is an existing list of controller mappings, that's an error. Get rid of it.
+  if(i->_midiAudioCtrlMap)
+  {
+    delete i->_midiAudioCtrlMap;
+    fprintf(stderr,
+      "Song::removePluginOperation: Warning:"
+      " A controller midi mapping list already existed.\n");
+  }
+  i->_midiAudioCtrlMap = nullptr;
+
+  // If the plugin has controller ports.
+//                            const unsigned long params = pi->parameters();
+//                            if(params > 0)
+  {
+    const unsigned long baseid = genACnum(epos, 0);
+//                              const unsigned long lastid = genACnum(epos, params - 1);
+    const unsigned long lastid = genACnum(epos + 1, 0) - 1;
+
+    //-----------------------------------------------------
+    // Save any relevant midi to audio controller mappings.
+    //-----------------------------------------------------
+
+    MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+    if(macm)
     {
-      int id = genACnum(idx, i);
-      const char* name = plugin->paramName(i);
-      float min, max;
-      plugin->range(i, &min, &max);
-      CtrlList* cl = new CtrlList(id);
-      cl->setRange(min, max);
-      cl->setName(QString(name));
-      cl->setValueType(plugin->ctrlValueType(i));
-      cl->setMode(plugin->ctrlMode(i));
-      cl->setCurVal(plugin->param(i));
-      // Set the value units index.
-      cl->setValueUnit(plugin->valueUnit(i));
-      addController(cl);
+      i->_midiAudioCtrlMap = new MidiAudioCtrlMap();
+
+      // If the audio is idling, take advantage of relaxed timing and just directly
+      //  manipulate the mapping lists.
+      if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      {
+        for(MidiAudioCtrlMap::iterator k = macm->begin(); k != macm->end(); )
+        {
+          const MidiAudioCtrlStruct &macs = k->second;
+          if(macs.id() >= 0 && macs.track() == i->track &&
+              macs.idType() == MidiAudioCtrlStruct::AudioControl)
+          {
+            const unsigned long id = macs.id();
+            // If the mapping is meant for this plugin,
+            //  save it but remove it from the list of mappings.
+            if(id >= baseid && id <= lastid)
+            {
+              i->_midiAudioCtrlMap->insert(
+                std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, k->second));
+              // Now erase the mapping from the main list.
+              // The iterator is set to the next item.
+              k = macm->erase(k);
+            }
+            else
+            {
+              ++k;
+            }
+          }
+        }
+
+        // Nothing added? Delete the list.
+        if(i->_midiAudioCtrlMap && i->_midiAudioCtrlMap->empty())
+        {
+          delete i->_midiAudioCtrlMap;
+          i->_midiAudioCtrlMap = nullptr;
+        }
+      }
+      else
+      {
+        MidiAudioCtrlMap *new_macm = new MidiAudioCtrlMap();
+
+        for(MidiAudioCtrlMap::const_iterator k = macm->cbegin(); k != macm->cend(); ++k)
+        {
+          const MidiAudioCtrlStruct &macs = k->second;
+
+          // If the mapping is meant for this plugin,
+          //  save it but remove it from the new list of mappings.
+          if(macs.id() >= 0 && macs.track() == i->track &&
+              macs.idType() == MidiAudioCtrlStruct::AudioControl &&
+              (unsigned long)macs.id() >= baseid && (unsigned long)macs.id() <= lastid)
+          {
+//                                      const unsigned long id = macs.id();
+//                                      // If the mapping is meant for this plugin,
+//                                      //  save it but remove it from the new list of mappings.
+//                                      if(id >= baseid && id <= lastid)
+//                                      {
+              i->_midiAudioCtrlMap->insert(
+                std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, macs));
+//                                      }
+//                                      // The mapping is not meant for this plugin.
+//                                      // Don't save it but keep it in the new list of mappings.
+//                                      else
+//                                      {
+//                                        new_macm->insert(
+//                                          std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, macs));
+//                                      }
+          }
+          // The mapping is not meant for this plugin.
+          // Don't save it but keep it in the new list of mappings.
+          else
+          {
+            new_macm->insert(
+              std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, macs));
+          }
+        }
+
+        // Nothing added? Delete the list.
+        if(i->_midiAudioCtrlMap && i->_midiAudioCtrlMap->empty())
+        {
+          delete i->_midiAudioCtrlMap;
+          i->_midiAudioCtrlMap = nullptr;
+        }
+
+        const bool changed = new_macm->size() != macm->size();
+
+        // Nothing changed? Or if changed, does adding the operation fail?
+        if(!changed || !pendingOperations.add(PendingOperationItem(
+          macm,
+          new_macm,
+          PendingOperationItem::ModifyMidiAudioCtrlMap)))
+        {
+          // The new list is orphaned now. Delete it.
+          delete new_macm;
+          // Delete any saved mapping.
+          if(i->_midiAudioCtrlMap)
+          {
+            delete i->_midiAudioCtrlMap;
+            i->_midiAudioCtrlMap = nullptr;
+          }
+
+          // If something changed, then this is an error.
+          if(changed)
+          {
+            fprintf(stderr,
+              "Song::removePluginOperation: Error:"
+              " Could not add modify midi audio controller mapper operation!\n");
+
+//            // We cannot proceed.
+//            return false;
+          }
+        }
+      }
+      updateFlags |= SC_MIDI_AUDIO_CTRL_MAPPER;
+    }
+
+    //----------------------------------------------
+    // Save the track's relevant plugin controllers.
+    //----------------------------------------------
+
+    i->_ctrlListList = new CtrlListList();
+
+    // If the audio is idling, take advantage of relaxed timing and just directly
+    //  manipulate the controller lists.
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+    {
+      // If a controller is meant for this plugin, save it
+      //  but remove it from the existing list of controllers.
+      // Kick-start the search by looking for the first
+      //  controller at or above the base id.
+      CtrlListList::const_iterator icl = track_cll->lower_bound(baseid);
+      for( ; icl != track_cll->cend(); )
+      {
+        // At the end of the id range? Done, break out.
+        if((unsigned long)icl->first > lastid)
+          break;
+
+        // No need to make a copy here. We'll just transfer the controller.
+        // Save the controller.
+        if(i->_ctrlListList->add(icl->second))
+        {
+          // Now erase it from the track's controller list.
+          // It is probably best not to remove it if adding failed,
+          //  otherwise the controller would be orphaned.
+          // The iterator will point to the next item.
+          icl = track_cll->erase(icl);
+        }
+        else
+        {
+          ++icl;
+          fprintf(stderr,
+            "Song::removePluginOperation: Error:"
+            " Could not add controller to save list!\n");
+        }
+      }
+
+
+
+
+      // for(unsigned long j = 0; j < params; ++j)
+      // {
+      //   const unsigned long id = genACnum(epos, j);
+      //   iCtrlList icl = track_cll->find(id);
+      //   if(icl != track_cll->end())
+      //   {
+      //     // No need to make a copy here. We'll just transfer the controller.
+      //     // Save the controller.
+      //     if(i->_ctrlListList->add(icl->second))
+      //     {
+      //       // Now erase it from the track's controller list.
+      //       // It is probably best not to remove it if adding failed,
+      //       //  otherwise the controller would be orphaned.
+      //       track_cll->erase(icl);
+      //     }
+      //     else
+      //     {
+      //       fprintf(stderr,
+      //         "Song::executeOperationGroup1:RemoveRackEffectPlugin: Error:"
+      //         " Could not add controller to save list!\n");
+      //     }
+      //   }
+      // }
+
+      // Nothing added? Delete the list.
+      if(i->_ctrlListList && i->_ctrlListList->empty())
+      {
+        delete i->_ctrlListList;
+        i->_ctrlListList = nullptr;
+      }
+    }
+    else
+    {
+      CtrlListList *new_cll = new CtrlListList();
+
+      // If a controller is meant for this plugin, save it
+      //  but remove it from the existing list of controllers.
+//                                // Kick-start the search by looking for the first
+//                                //  controller at or above the base id.
+//                                CtrlListList::const_iterator icl = track_cll->lower_bound(baseid);
+      for(CtrlListList::const_iterator icl = track_cll->cbegin(); icl != track_cll->cend(); ++icl)
+//                                for( ; icl != track_cll->cend(); ++icl)
+      {
+        CtrlList *cl = icl->second;
+
+        // Create a copy. The originals are about to be deleted in the operations.
+        CtrlList *new_cl = new CtrlList(*cl);
+
+//                                  if(cl->id() >= 0)
+//                                  {
+//                                    const unsigned long id = cl->id();
+
+          // Create a copy. The originals are about to be deleted in the operations.
+//                                    CtrlList *new_cl = new CtrlList(*cl);
+
+          // If the track's controller is meant for this plugin,
+          //  save it but remove it from the new list of track controllers.
+          if((unsigned long)cl->id() >= baseid && (unsigned long)cl->id() <= lastid)
+          {
+//                                      //if(!i->_ctrlListList->add(cl))
+//                                      // Create a copy. The originals are about to be deleted in the operations.
+//                                      //CtrlList *new_cl = new CtrlList(*cl);
+
+            if(!i->_ctrlListList->add(new_cl))
+            {
+              // Failed to add the controller. The controller copy is orphaned now. Delete it.
+              delete new_cl;
+
+              fprintf(stderr,
+                "Song::removePluginOperation: Error:"
+                " Could not add controller to save list!\n");
+            }
+          }
+          // The track's controller is not meant for this plugin.
+          // Don't save it but keep it in the track's controllers.
+          else
+          {
+            // Shouldn't be any need for error check here. They are the same items as before.
+            new_cll->add(new_cl);
+          }
+//                                  }
+      }
+
+      // Nothing added? Delete the list.
+      if(i->_ctrlListList->empty())
+      {
+        delete i->_ctrlListList;
+        i->_ctrlListList = nullptr;
+      }
+
+      const bool changed = new_cll->size() != track_cll->size();
+
+      // Nothing changed? Or if changed, does adding the operation fail?
+      if(!changed || !pendingOperations.add(PendingOperationItem(
+        track_cll,
+        new_cll,
+        PendingOperationItem::ModifyAudioCtrlValListList)))
+      {
+        // The new controller list is orphaned now. Delete it.
+//                                  // Note the list items are not deleted, only the list.
+//                                  // TODO: FIXME: LEAK? How to delete only the newer items added?
+//                                  // Hm, there ARE NO new controllers. Controllers were only removed.
+        new_cll->clearDelete();
+        delete new_cll;
+        // Delete any saved controllers.
+        if(i->_ctrlListList)
+        {
+          i->_ctrlListList->clearDelete();
+          delete i->_ctrlListList;
+          i->_ctrlListList = nullptr;
+        }
+
+        // TODO: What now? The mapping operation above might have already been registered! Cancel it somehow?
+
+        // If something changed, then this is an error.
+        if(changed)
+        {
+          fprintf(stderr,
+            "Song::removePluginOperation: Error:"
+            " Could not add modify controller list operation!\n");
+
+//          // We cannot proceed.
+//          return false;
+        }
+      }
+    }
+
+    updateFlags |= SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER;
+  }
+
+  //------------------------
+  // Now remove the plugin.
+  //------------------------
+
+  // If the audio is idling, take advantage of relaxed timing and just directly
+  //  remove and delete the plugin.
+  if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+  {
+    // Grab the plugin pointer.
+    PluginI *p = pl->at(epos);
+    // Set the given rack position to null.
+    pl->at(epos) = nullptr;
+    // Now delete the plugin pointer.
+    delete p;
+  }
+  else
+  {
+    // Set the given rack position to null.
+    // This will delete any existing plugin at that effect rack position.
+    if(!pendingOperations.add(PendingOperationItem(
+      track,
+      nullptr,
+      epos,
+      PendingOperationItem::SetRackEffectPlugin)))
+    {
+      // Failed to add the set rack plugin operation.
+
+      // TODO: What now? The other operations above might have already been registered! Cancel them somehow?
+
+      fprintf(stderr,
+        "Song::removePluginOperation: Error:"
+        " Could not add set rack plugin operation!\n");
+
+//      // We cannot proceed.
+//      return false;
     }
   }
+
+  updateFlags |= SC_RACK;
+  return true;
 }
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   swapPluginsOperation
+//---------------------------------------------------------
+
+bool Song::swapPluginsOperation(UndoOp *i)
+{
+  if(!i->track || i->track->isMidiTrack())
+    return false;
+  Track *track = const_cast<Track*>(i->track);
+
+  AudioTrack* at = static_cast<AudioTrack*>(track);
+  CtrlListList *track_cll = at->controller();
+  Pipeline *pl = at->efxPipe();
+
+  if(!track_cll || !pl ||
+      i->_effectRackPos < 0 || (unsigned long)i->_effectRackPos >= pl->size() ||
+      i->_effectRackPos >= MusECore::PipelineDepth ||
+      i->_newEffectRackPos < 0 || (unsigned long)i->_newEffectRackPos >= pl->size() ||
+      i->_newEffectRackPos >= MusECore::PipelineDepth)
+    return false;
+
+  const unsigned long epos = i->_effectRackPos;
+  const unsigned long new_epos = i->_newEffectRackPos;
+//                            PluginI *pi = pl->at(epos);
+//                            PluginI *new_pi = pl->at(new_epos);
+
+
+//                            // If the plugin has controller ports.
+//                            const unsigned long params = pi ? pi->parameters() : 0;
+//                            const unsigned long new_params = new_pi ? new_pi->parameters() : 0;
+
+  // const unsigned long baseid = genACnum(epos, 0);
+  // const unsigned long lastid = pi ? genACnum(epos, params - 1) : baseid;
+  // const unsigned long new_baseid = genACnum(new_epos, 0);
+  // const unsigned long new_lastid = new_pi ? genACnum(new_epos, new_params - 1) : new_baseid;
+
+  const unsigned long baseid = genACnum(epos, 0);
+  const unsigned long lastid = genACnum(epos + 1, 0) - 1;
+  const unsigned long new_baseid = genACnum(new_epos, 0);
+  const unsigned long new_lastid = genACnum(new_epos + 1, 0) - 1;
+
+
+  //----------------------------------------------------------
+  // Adjust any relevant midi to audio controller mapping IDs.
+  //----------------------------------------------------------
+
+  MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+  if(macm)
+  {
+    // If the audio is idling, take advantage of relaxed timing and just directly
+    //  manipulate the mapping lists.
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+    {
+      for(MidiAudioCtrlMap::iterator k = macm->begin(); k != macm->end(); ++k)
+      {
+        MidiAudioCtrlStruct &macs = k->second;
+        if(macs.id() >= 0 &&
+            macs.track() == i->track &&
+            macs.idType() == MidiAudioCtrlStruct::AudioControl)
+        {
+          const unsigned long id = macs.id();
+          // If the mapping is meant for the first given plugin slot,
+          //  adjust the id to match the other plugin slot.
+          if(id >= baseid && id <= lastid)
+          {
+            // Set the new id.
+            macs.setId((id - baseid) + new_baseid);
+          }
+          // If the mapping is meant for the other given plugin slot,
+          //  adjust the id to match the first given plugin slot.
+          else if(id >= new_baseid && id <= new_lastid)
+          {
+            // Set the new id.
+            macs.setId((id - new_baseid) + baseid);
+          }
+        }
+      }
+    }
+    else
+    {
+      MidiAudioCtrlMap *new_macm = new MidiAudioCtrlMap();
+
+      bool changed = false;
+      for(MidiAudioCtrlMap::const_iterator k = macm->cbegin(); k != macm->cend(); ++k)
+      {
+        MidiAudioCtrlStruct macs = k->second;
+        if(macs.id() >= 0 &&
+            macs.track() == i->track &&
+            macs.idType() == MidiAudioCtrlStruct::AudioControl)
+        {
+          const unsigned long id = macs.id();
+          // If the mapping is meant for the first given plugin slot,
+          //  adjust the id to match the other plugin slot.
+          if(id >= baseid && id <= lastid)
+          {
+            // Set the new id.
+            macs.setId((id - baseid) + new_baseid);
+            changed = true;
+          }
+          // If the mapping is meant for the other given plugin slot,
+          //  adjust the id to match the first given plugin slot.
+          else if(id >= new_baseid && id <= new_lastid)
+          {
+            macs.setId((id - new_baseid) + baseid);
+            changed = true;
+          }
+        }
+        new_macm->insert(
+          std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, macs));
+      }
+
+      // Nothing changed? Or if changed, does adding the operation fail?
+      if(!changed || !pendingOperations.add(PendingOperationItem(
+        macm,
+        new_macm,
+        PendingOperationItem::ModifyMidiAudioCtrlMap)))
+      {
+        // The new list is orphaned now. Delete it.
+        delete new_macm;
+
+        // If something changed, then this is an error.
+        if(changed)
+        {
+          fprintf(stderr,
+            "Song::swapPluginsOperation: Error:"
+            " Could not add modify midi audio controller mapper operation!\n");
+
+//          // We cannot proceed.
+//          return false;
+        }
+      }
+    }
+    updateFlags |= SC_MIDI_AUDIO_CTRL_MAPPER;
+  }
+
+  //---------------------------------------------------
+  // Adjust the track's relevant plugin controller IDs.
+  //---------------------------------------------------
+
+  CtrlListList *new_cll = new CtrlListList();
+
+  // If the audio is idling, take advantage of relaxed timing and just directly
+  //  manipulate the controller lists.
+  // Note that we cannot simply remove the item, adjust its id, then re-insert,
+  //  because that might place the modified items later and be re-iterated again.
+  if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+  {
+    bool changed = false;
+    for(CtrlListList::const_iterator j = track_cll->cbegin(); j != track_cll->cend(); )
+    {
+      CtrlList *cl = j->second;
+
+      const unsigned long id = cl->id();
+      // If the controller is meant for the first given plugin slot,
+      //  adjust the id to match the other plugin slot.
+      if(id >= baseid && id <= lastid)
+      {
+        // Erase the controller pointer from the main list.
+        // Iterator will point to the next item.
+        j = track_cll->erase(j);
+        // Set the new id.
+        cl->setId((id - baseid) + new_baseid);
+        // Add the controller to the new list.
+        new_cll->add(cl);
+        changed = true;
+      }
+      // If the controller is meant for the other given plugin slot,
+      //  adjust the id to match the first given plugin slot.
+      else if(id >= new_baseid && id <= new_lastid)
+      {
+        // Erase the controller pointer from the main list.
+        // Iterator will point to the next item.
+        j = track_cll->erase(j);
+        // Set the new id.
+        cl->setId((id - new_baseid) + baseid);
+        // Add the controller to the new list.
+        new_cll->add(cl);
+        changed = true;
+      }
+      else
+      {
+        // Just add the controller to the new list.
+        new_cll->add(cl);
+        ++j;
+      }
+    }
+
+    // Anything changed?
+    if(changed)
+      // Swap the existing list and the new list.
+      track_cll->swap(*new_cll);
+
+    // The new list now holds all the old controller items.
+    // Done with the new list. Delete it.
+    // Note this does not delete the items.
+    delete new_cll;
+  }
+  else
+  {
+    bool changed = false;
+    for(CtrlListList::const_iterator j = track_cll->cbegin(); j != track_cll->cend(); ++j)
+    {
+      CtrlList *cl = j->second;
+
+      const unsigned long id = cl->id();
+
+      // Create a copy. The originals are about to be deleted in the operations.
+      CtrlList *new_cl = new CtrlList(*cl);
+
+      // If the controller is meant for the first given plugin slot,
+      //  adjust the id to match the other plugin slot.
+      if(id >= baseid && id <= lastid)
+      {
+        new_cl->setId((id - baseid) + new_baseid);
+        changed = true;
+      }
+      // If the controller is meant for the other given plugin slot,
+      //  adjust the id to match the first given plugin slot.
+      else if(id >= new_baseid && id <= new_lastid)
+      {
+        new_cl->setId((id - new_baseid) + baseid);
+        changed = true;
+      }
+
+      // Add the controller to the new list.
+      if(!new_cll->add(new_cl))
+      {
+        // Failed to add the controller. The controller copy is orphaned now. Delete it.
+        delete new_cl;
+
+        fprintf(stderr,
+          "Song::swapPluginsOperation: Error:"
+          " Could not add new controller to new controller list!\n");
+      }
+    }
+
+    // Nothing changed? Or if changed, does adding the operation fail?
+    if(!changed || !pendingOperations.add(PendingOperationItem(
+      track_cll,
+      new_cll,
+      PendingOperationItem::ModifyAudioCtrlValListList)))
+    {
+      // The new controller list is orphaned now. Delete it.
+//                                  // Note the list items are not deleted, only the list.
+//                                  // TODO: FIXME: LEAK? How to delete only the newer items added?
+//                                  // Hm, there ARE NO new controllers. Controllers were only removed.
+      new_cll->clearDelete();
+      delete new_cll;
+
+      // TODO: What now? The mapping operation above might have already been registered! Cancel it somehow?
+
+      // If something changed, then this is an error.
+      if(changed)
+      {
+        fprintf(stderr,
+          "Song::swapPluginsOperation: Error:"
+          " Could not add modify controller list operation!\n");
+
+//        // We cannot proceed.
+//        return false;
+      }
+    }
+  }
+
+  updateFlags |= SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER;
+
+  //------------------------------------
+  // Now swap the rack plugin positions.
+  //------------------------------------
+
+  // If the audio is idling, take advantage of relaxed timing and just directly
+  //  swap the plugins.
+  if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+  {
+    PluginI *ptmp = pl->at(epos);
+    pl->at(epos) = pl->at(new_epos);
+    pl->at(new_epos) = ptmp;
+  }
+  else
+  {
+    // Swap the plugins.
+    if(!pendingOperations.add(PendingOperationItem(
+      track,
+      epos,
+      new_epos,
+      0, // Dummy to avoid ambiguity with other constructors.
+      PendingOperationItem::SwapRackEffectPlugins)))
+    {
+      // Failed to add the set rack plugin operation.
+
+      // TODO: What now? The other operations above might have already been registered! Cancel them somehow?
+
+      fprintf(stderr,
+        "Song::swapPluginsOperation: Error:"
+        " Could not add swap rack plugins operation!\n");
+
+//      // We cannot proceed.
+//      return false;
+    }
+  }
+
+  updateFlags |= SC_RACK;
+
+  return true;
+}
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   changePluginOperation
+//---------------------------------------------------------
+
+bool Song::changePluginOperation(UndoOp *i)
+{
+  if(!i->track || i->track->isMidiTrack())
+    return false;
+  Track *track = const_cast<Track*>(i->track);
+
+  AudioTrack* at = static_cast<AudioTrack*>(track);
+  CtrlListList *track_cll = at->controller();
+  Pipeline *pl = at->efxPipe();
+
+  if(!track_cll || !pl ||
+      i->_effectRackPos < 0 || (unsigned long)i->_effectRackPos >= pl->size() ||
+      i->_effectRackPos >= MusECore::PipelineDepth)
+    return false;
+
+  const unsigned long epos = i->_effectRackPos;
+  PluginI *pi = pl->at(epos);
+//  if(!pi)
+//    return false;
+
+//  // If there is no plugin configuration, create and save one now.
+//  // The idea is to grab the very latest configuration (geometry, GUIs etc).
+//  // But if a configuration already exists, use it. For example with persistent info,
+//  //  in case a plugin could not be found when loading, the configuration is kept alive.
+//  if(!i->_pluginConfiguration)
+//    i->_pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
+
+//  // If there is an existing plugin configuration, that's an error. Get rid of it.
+//  if(i->_pluginConfiguration)
+//  {
+//    delete i->_pluginConfiguration;
+//    fprintf(stderr,
+//      "Song::removePluginOperation: Warning:"
+//      " A configuration already existed.\n");
+//  }
+
+
+  // Keep a local copy of the given plugin pointer
+  PluginI *new_plugin = i->_pluginI;
+  // Done with the given plugin. Null the pointer.
+  i->_pluginI = nullptr;
+
+
+  // If no PluginI exists.
+  if(!new_plugin)
+  {
+//    // If no plugin configuration exists, we cannot proceed.
+//    if(!i->_pluginConfiguration)
+//    {
+//      fprintf(stderr,
+//        "Song::addPluginOperation: Error: No pluginI or configuration, or no track!\n");
+//      return false;
+//    }
+
+    // If a plugin configuration exists.
+    if(i->_pluginConfiguration)
+    {
+      // Create a PluginI.
+      new_plugin = createPluginI(*i->_pluginConfiguration, i->track->channels());
+      if(!new_plugin)
+      {
+        fprintf(stderr,
+          "Song::changePluginOperation: Error: Could not create pluginI!\n");
+  //      // Keep the configuration around in case we want to try again.
+        // The configuration is orphaned now. Delete it.
+        delete i->_pluginConfiguration;
+        i->_pluginConfiguration = nullptr;
+        return false;
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+  // Save the plugin's configuration.
+  if(pi)
+    i->_pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
+
+  // If there is an existing list of controllers, that's an error. Get rid of it.
+  if(i->_ctrlListList)
+  {
+    // Delete the items and the list.
+    i->_ctrlListList->clearDelete();
+    delete i->_ctrlListList;
+    fprintf(stderr,
+      "Song::removePluginOperation: Warning:"
+      " A controller list already existed.\n");
+  }
+  i->_ctrlListList = nullptr;
+
+  // If there is an existing list of controller mappings, that's an error. Get rid of it.
+  if(i->_midiAudioCtrlMap)
+  {
+    delete i->_midiAudioCtrlMap;
+    fprintf(stderr,
+      "Song::removePluginOperation: Warning:"
+      " A controller midi mapping list already existed.\n");
+  }
+  i->_midiAudioCtrlMap = nullptr;
+
+  // If the plugin has controller ports.
+//                            const unsigned long params = pi->parameters();
+//                            if(params > 0)
+  {
+    const unsigned long baseid = genACnum(epos, 0);
+//                              const unsigned long lastid = genACnum(epos, params - 1);
+    const unsigned long lastid = genACnum(epos + 1, 0) - 1;
+
+    //-----------------------------------------------------
+    // Save any relevant midi to audio controller mappings.
+    //-----------------------------------------------------
+
+    MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+    if(macm)
+    {
+      i->_midiAudioCtrlMap = new MidiAudioCtrlMap();
+
+      // If the audio is idling, take advantage of relaxed timing and just directly
+      //  manipulate the mapping lists.
+      if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      {
+        for(MidiAudioCtrlMap::iterator k = macm->begin(); k != macm->end(); )
+        {
+          const MidiAudioCtrlStruct &macs = k->second;
+          if(macs.id() >= 0 && macs.track() == i->track &&
+              macs.idType() == MidiAudioCtrlStruct::AudioControl)
+          {
+            const unsigned long id = macs.id();
+            // If the mapping is meant for this plugin,
+            //  save it but remove it from the list of mappings.
+            if(id >= baseid && id <= lastid)
+            {
+              i->_midiAudioCtrlMap->insert(
+                std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, k->second));
+              // Now erase the mapping from the main list.
+              // The iterator is set to the next item.
+              k = macm->erase(k);
+            }
+            else
+            {
+              ++k;
+            }
+          }
+        }
+
+        // Nothing added? Delete the list.
+        if(i->_midiAudioCtrlMap && i->_midiAudioCtrlMap->empty())
+        {
+          delete i->_midiAudioCtrlMap;
+          i->_midiAudioCtrlMap = nullptr;
+        }
+      }
+      else
+      {
+        MidiAudioCtrlMap *new_macm = new MidiAudioCtrlMap();
+
+        for(MidiAudioCtrlMap::const_iterator k = macm->cbegin(); k != macm->cend(); ++k)
+        {
+          const MidiAudioCtrlStruct &macs = k->second;
+
+          // If the mapping is meant for this plugin,
+          //  save it but remove it from the new list of mappings.
+          if(macs.id() >= 0 && macs.track() == i->track &&
+              macs.idType() == MidiAudioCtrlStruct::AudioControl &&
+              (unsigned long)macs.id() >= baseid && (unsigned long)macs.id() <= lastid)
+          {
+//                                      const unsigned long id = macs.id();
+//                                      // If the mapping is meant for this plugin,
+//                                      //  save it but remove it from the new list of mappings.
+//                                      if(id >= baseid && id <= lastid)
+//                                      {
+              i->_midiAudioCtrlMap->insert(
+                std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, macs));
+//                                      }
+//                                      // The mapping is not meant for this plugin.
+//                                      // Don't save it but keep it in the new list of mappings.
+//                                      else
+//                                      {
+//                                        new_macm->insert(
+//                                          std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, macs));
+//                                      }
+          }
+          // The mapping is not meant for this plugin.
+          // Don't save it but keep it in the new list of mappings.
+          else
+          {
+            new_macm->insert(
+              std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(k->first, macs));
+          }
+        }
+
+        // Nothing added? Delete the list.
+        if(i->_midiAudioCtrlMap && i->_midiAudioCtrlMap->empty())
+        {
+          delete i->_midiAudioCtrlMap;
+          i->_midiAudioCtrlMap = nullptr;
+        }
+
+        const bool changed = new_macm->size() != macm->size();
+
+        // Nothing changed? Or if changed, does adding the operation fail?
+        if(!changed || !pendingOperations.add(PendingOperationItem(
+          macm,
+          new_macm,
+          PendingOperationItem::ModifyMidiAudioCtrlMap)))
+        {
+          // The new list is orphaned now. Delete it.
+          delete new_macm;
+          // Delete any saved mapping.
+          if(i->_midiAudioCtrlMap)
+          {
+            delete i->_midiAudioCtrlMap;
+            i->_midiAudioCtrlMap = nullptr;
+          }
+
+          // If something changed, then this is an error.
+          if(changed)
+          {
+            fprintf(stderr,
+              "Song::removePluginOperation: Error:"
+              " Could not add modify midi audio controller mapper operation!\n");
+
+//            // We cannot proceed.
+//            return false;
+          }
+        }
+      }
+      updateFlags |= SC_MIDI_AUDIO_CTRL_MAPPER;
+    }
+
+    //----------------------------------------------
+    // Save the track's relevant plugin controllers.
+    //----------------------------------------------
+
+    i->_ctrlListList = new CtrlListList();
+
+    // If the audio is idling, take advantage of relaxed timing and just directly
+    //  manipulate the controller lists.
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+    {
+      // If a controller is meant for this plugin, save it
+      //  but remove it from the existing list of controllers.
+      // Kick-start the search by looking for the first
+      //  controller at or above the base id.
+      CtrlListList::const_iterator icl = track_cll->lower_bound(baseid);
+      for( ; icl != track_cll->cend(); )
+      {
+        // At the end of the id range? Done, break out.
+        if((unsigned long)icl->first > lastid)
+          break;
+
+        // No need to make a copy here. We'll just transfer the controller.
+        // Save the controller.
+        if(i->_ctrlListList->add(icl->second))
+        {
+          // Now erase it from the track's controller list.
+          // It is probably best not to remove it if adding failed,
+          //  otherwise the controller would be orphaned.
+          // The iterator will point to the next item.
+          icl = track_cll->erase(icl);
+        }
+        else
+        {
+          ++icl;
+          fprintf(stderr,
+            "Song::removePluginOperation: Error:"
+            " Could not add controller to save list!\n");
+        }
+      }
+
+
+
+
+      // for(unsigned long j = 0; j < params; ++j)
+      // {
+      //   const unsigned long id = genACnum(epos, j);
+      //   iCtrlList icl = track_cll->find(id);
+      //   if(icl != track_cll->end())
+      //   {
+      //     // No need to make a copy here. We'll just transfer the controller.
+      //     // Save the controller.
+      //     if(i->_ctrlListList->add(icl->second))
+      //     {
+      //       // Now erase it from the track's controller list.
+      //       // It is probably best not to remove it if adding failed,
+      //       //  otherwise the controller would be orphaned.
+      //       track_cll->erase(icl);
+      //     }
+      //     else
+      //     {
+      //       fprintf(stderr,
+      //         "Song::executeOperationGroup1:RemoveRackEffectPlugin: Error:"
+      //         " Could not add controller to save list!\n");
+      //     }
+      //   }
+      // }
+
+      // Nothing added? Delete the list.
+      if(i->_ctrlListList && i->_ctrlListList->empty())
+      {
+        delete i->_ctrlListList;
+        i->_ctrlListList = nullptr;
+      }
+    }
+    else
+    {
+      CtrlListList *new_cll = new CtrlListList();
+
+      // If a controller is meant for this plugin, save it
+      //  but remove it from the existing list of controllers.
+//                                // Kick-start the search by looking for the first
+//                                //  controller at or above the base id.
+//                                CtrlListList::const_iterator icl = track_cll->lower_bound(baseid);
+      for(CtrlListList::const_iterator icl = track_cll->cbegin(); icl != track_cll->cend(); ++icl)
+//                                for( ; icl != track_cll->cend(); ++icl)
+      {
+        CtrlList *cl = icl->second;
+
+        // Create a copy. The originals are about to be deleted in the operations.
+        CtrlList *new_cl = new CtrlList(*cl);
+
+//                                  if(cl->id() >= 0)
+//                                  {
+//                                    const unsigned long id = cl->id();
+
+          // Create a copy. The originals are about to be deleted in the operations.
+//                                    CtrlList *new_cl = new CtrlList(*cl);
+
+          // If the track's controller is meant for this plugin,
+          //  save it but remove it from the new list of track controllers.
+          if((unsigned long)cl->id() >= baseid && (unsigned long)cl->id() <= lastid)
+          {
+//                                      //if(!i->_ctrlListList->add(cl))
+//                                      // Create a copy. The originals are about to be deleted in the operations.
+//                                      //CtrlList *new_cl = new CtrlList(*cl);
+
+            if(!i->_ctrlListList->add(new_cl))
+            {
+              // Failed to add the controller. The controller copy is orphaned now. Delete it.
+              delete new_cl;
+
+              fprintf(stderr,
+                "Song::removePluginOperation: Error:"
+                " Could not add controller to save list!\n");
+            }
+          }
+          // The track's controller is not meant for this plugin.
+          // Don't save it but keep it in the track's controllers.
+          else
+          {
+            // Shouldn't be any need for error check here. They are the same items as before.
+            new_cll->add(new_cl);
+          }
+//                                  }
+      }
+
+      // Nothing added? Delete the list.
+      if(i->_ctrlListList->empty())
+      {
+        delete i->_ctrlListList;
+        i->_ctrlListList = nullptr;
+      }
+
+      const bool changed = new_cll->size() != track_cll->size();
+
+      // Nothing changed? Or if changed, does adding the operation fail?
+      if(!changed || !pendingOperations.add(PendingOperationItem(
+        track_cll,
+        new_cll,
+        PendingOperationItem::ModifyAudioCtrlValListList)))
+      {
+        // The new controller list is orphaned now. Delete it.
+//                                  // Note the list items are not deleted, only the list.
+//                                  // TODO: FIXME: LEAK? How to delete only the newer items added?
+//                                  // Hm, there ARE NO new controllers. Controllers were only removed.
+        new_cll->clearDelete();
+        delete new_cll;
+        // Delete any saved controllers.
+        if(i->_ctrlListList)
+        {
+          i->_ctrlListList->clearDelete();
+          delete i->_ctrlListList;
+          i->_ctrlListList = nullptr;
+        }
+
+        // TODO: What now? The mapping operation above might have already been registered! Cancel it somehow?
+
+        // If something changed, then this is an error.
+        if(changed)
+        {
+          fprintf(stderr,
+            "Song::removePluginOperation: Error:"
+            " Could not add modify controller list operation!\n");
+
+//          // We cannot proceed.
+//          return false;
+        }
+      }
+    }
+
+    updateFlags |= SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER;
+  }
+
+  //------------------------
+  // Now remove the plugin.
+  //------------------------
+
+  // If the audio is idling, take advantage of relaxed timing and just directly
+  //  remove and delete the plugin.
+  if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+  {
+    // Grab the plugin pointer.
+    PluginI *p = pl->at(epos);
+    // Set the given rack position to null.
+    pl->at(epos) = nullptr;
+    // Now delete the plugin pointer.
+    delete p;
+  }
+  else
+  {
+    // Set the given rack position to null.
+    // This will delete any existing plugin at that effect rack position.
+    if(!pendingOperations.add(PendingOperationItem(
+      track,
+      nullptr,
+      epos,
+      PendingOperationItem::SetRackEffectPlugin)))
+    {
+      // Failed to add the set rack plugin operation.
+
+      // TODO: What now? The other operations above might have already been registered! Cancel them somehow?
+
+      fprintf(stderr,
+        "Song::removePluginOperation: Error:"
+        " Could not add set rack plugin operation!\n");
+
+//      // We cannot proceed.
+//      return false;
+    }
+  }
+
+  updateFlags |= SC_RACK;
+  return true;
+}
+
+
+
+
+// REMOVE Tim. tmp. Added.
+// void Song::addPluginOperation(PluginI* plugin, int idx, PendingOperationList& ops)
+// {
+//   // // Some heavy lifting required here, not easily done
+//   // //  in the realtime thread. Idle the audio processing.
+//   // // Here any glitches in the audio would be acceptable.
+//   // // Gain access to structures, and sync with audio.
+//   // MusEGlobal::audio->msgIdle(true);
+//
+//   if (plugin == 0)
+//   {
+//     PluginI* oldPlugin = (*_efxPipe)[idx];
+//     if (oldPlugin)
+//     {
+//       oldPlugin->setID(-1);
+//       oldPlugin->setTrack(0);
+//
+//       int controller = oldPlugin->parameters();
+//       for (int i = 0; i < controller; ++i)
+//       {
+//         int id = genACnum(idx, i);
+//         removeController(id);
+//       }
+//     }
+//   }
+//   efxPipe()->insert(plugin, idx);
+//   setupPlugin(plugin, idx);
+//
+//   // MusEGlobal::audio->msgIdle(false);
+//
+//   MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
+// }
+//
+// // REMOVE Tim. tmp. Added.
+// //---------------------------------------------------------
+// //   setupPlugin
+// //---------------------------------------------------------
+//
+// void Song::setupPluginOperation(PluginI* plugin, int idx)
+// {
+//   if (plugin)
+//   {
+//     plugin->setID(idx);
+//     plugin->setTrack(this);
+//
+//     int controller = plugin->parameters();
+//     for (int i = 0; i < controller; ++i)
+//     {
+//       int id = genACnum(idx, i);
+//       const char* name = plugin->paramName(i);
+//       float min, max;
+//       plugin->range(i, &min, &max);
+//       CtrlList* cl = new CtrlList(id);
+//       cl->setRange(min, max);
+//       cl->setName(QString(name));
+//       cl->setValueType(plugin->ctrlValueType(i));
+//       cl->setMode(plugin->ctrlMode(i));
+//       cl->setCurVal(plugin->param(i));
+//       // Set the value units index.
+//       cl->setValueUnit(plugin->valueUnit(i));
+//       addController(cl);
+//     }
+//   }
+// }
 
 //---------------------------------------------------------
 //   selectEvent

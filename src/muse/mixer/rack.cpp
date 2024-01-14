@@ -50,6 +50,8 @@
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
 #endif
+// REMOVE Tim. tmp. Added.
+#include "undo.h"
 
 #include <QEvent>
 #include "track.h"
@@ -295,28 +297,62 @@ QSize EffectRack::sizeHint() const
       return minimumSizeHint();
       }
 
+// REMOVE Tim. tmp. Changed.
+// void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
+//       {
+//       if(!it || !track)
+//         return;
+//       MusECore::Plugin* plugin = PluginDialog::getPlugin(this);
+//       if (plugin) {
+//             MusECore::PluginI* plugi = new MusECore::PluginI();
+//             if (plugi->initPluginInstance(plugin, track->channels())) {
+//                   printf("cannot instantiate plugin <%s>\n",
+//                       plugin->name().toLatin1().constData());
+//                   delete plugi;
+//                   return;
+//                   }
+//             int idx = row(it);
+// 	    if (replace)
+//             track->addPlugin(nullptr, idx);
+//       track->addPlugin(plugi, idx);
+//
+//       updateContents();
+//             }
+//       }
+void EffectRack::choosePlugin(QListWidgetItem* it)
+{
+    if(!it || !track)
+          return;
+    MusECore::Plugin* plugin = PluginDialog::getPlugin(this);
+    if (!plugin)
+      return;
+    MusECore::PluginI* plugi = new MusECore::PluginI();
+    if (plugi->initPluginInstance(plugin, track->channels())) {
+          printf("cannot instantiate plugin <%s>\n",
+                plugin->name().toLatin1().constData());
+          delete plugi;
+          return;
+          }
+    int idx = row(it);
 
-void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
-      {
-      if(!it || !track)
-        return;
-      MusECore::Plugin* plugin = PluginDialog::getPlugin(this);
-      if (plugin) {
-            MusECore::PluginI* plugi = new MusECore::PluginI();
-            if (plugi->initPluginInstance(plugin, track->channels())) {
-                  printf("cannot instantiate plugin <%s>\n",
-                      plugin->name().toLatin1().constData());
-                  delete plugi;
-                  return;
-                  }
-            int idx = row(it);
-	    if (replace)
-            track->addPlugin(nullptr, idx);
-      track->addPlugin(plugi, idx);
+    MusECore::Undo operations;
 
-      updateContents();
-            }
-      }
+    // Some heavy lifting required here, not easily done
+    //  in the realtime thread. Idle the audio processing.
+    // Here any glitches in the audio would be acceptable.
+    // Gain access to structures, and sync with audio.
+    MusEGlobal::audio->msgIdle(true);
+
+    if(/*replace &&*/ track->efxPipe() && track->efxPipe()->at(idx))
+      operations.push_back(MusECore::UndoOp(
+        MusECore::UndoOp::RemoveRackEffectPlugin, track, double(idx), double(0), double(0), double(0), double(0)));
+
+    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddRackEffectPlugin, track, plugi, idx));
+
+    MusEGlobal::song->applyOperationGroup(operations);
+
+    MusEGlobal::audio->msgIdle(false);
+}
 
 //---------------------------------------------------------
 //   menuRequested
@@ -452,11 +488,26 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   }
             case CHANGE:
                   {
-                  choosePlugin(it, true);
+// REMOVE Tim. tmp. Changed.
+                  // choosePlugin(it, true);
+                  choosePlugin(it);
                   break;
                   }
             case REMOVE:
-                  track->addPlugin(nullptr, idx);
+// REMOVE Tim. tmp. Changed.
+                  // track->addPlugin(nullptr, idx);
+
+                  if(pipe && pipe->at(idx))
+                  {
+                    // Some heavy lifting required here, not easily done
+                    //  in the realtime thread. Idle the audio processing.
+                    // Here any glitches in the audio would be acceptable.
+                    // Gain access to structures, and sync with audio.
+                    MusEGlobal::audio->msgIdle(true);
+                    MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                      MusECore::UndoOp::RemoveRackEffectPlugin, track, double(idx), double(0), double(0), double(0), double(0)));
+                    MusEGlobal::audio->msgIdle(false);
+                  }
                   break;
             case ACTIVE:
                   {
@@ -484,20 +535,48 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   }
             case UP:
                   if (idx > 0) {
-                        setCurrentItem(item(idx-1));
-                        MusEGlobal::audio->msgSwapPlugins(track, idx, idx-1);
+// REMOVE Tim. tmp. Changed.
+//                        setCurrentItem(item(idx-1));
+//                        MusEGlobal::audio->msgSwapPlugins(track, idx, idx-1);
+                        if(pipe && pipe->at(idx))
+                        {
+                          setCurrentItem(item(idx-1));
+                          // Some heavy lifting required here, not easily done
+                          //  in the realtime thread. Idle the audio processing.
+                          // Here any glitches in the audio would be acceptable.
+                          // Gain access to structures, and sync with audio.
+                          MusEGlobal::audio->msgIdle(true);
+                          MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                            MusECore::UndoOp::SwapRackEffectPlugins, track, double(idx), double(idx-1), double(0), double(0), double(0)));
+                          MusEGlobal::audio->msgIdle(false);
+                        }
                         }
                   break;
             case DOWN:
                   if (idx < (MusECore::PipelineDepth-1)) {
-                        setCurrentItem(item(idx+1));
-                        MusEGlobal::audio->msgSwapPlugins(track, idx, idx+1);
+// REMOVE Tim. tmp. Changed.
+//                        setCurrentItem(item(idx+1));
+//                        MusEGlobal::audio->msgSwapPlugins(track, idx, idx+1);
+                        if(pipe && pipe->at(idx))
+                        {
+                          setCurrentItem(item(idx+1));
+                          // Some heavy lifting required here, not easily done
+                          //  in the realtime thread. Idle the audio processing.
+                          // Here any glitches in the audio would be acceptable.
+                          // Gain access to structures, and sync with audio.
+                          MusEGlobal::audio->msgIdle(true);
+                          MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                            MusECore::UndoOp::SwapRackEffectPlugins, track, double(idx), double(idx+1), double(0), double(0), double(0)));
+                          MusEGlobal::audio->msgIdle(false);
+                        }
                         }
                   break;
             case SAVE:
                   savePreset(idx);
                   break;
             }
+// REMOVE Tim. tmp. Added comment.
+// FIXME TODO Move these into the individual cases that use them, the others do it already with operations and songChanged().
       updateContents();
       MusEGlobal::song->update(SC_RACK);
       }

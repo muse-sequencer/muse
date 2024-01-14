@@ -76,7 +76,7 @@ struct UndoOp {
             //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
             //ModifyMarkerList,
 // REMOVE Tim. tmp. Added.
-            AddRackEffectPlugin, RemoveRackEffectPlugin,
+            AddRackEffectPlugin, RemoveRackEffectPlugin, SwapRackEffectPlugins,
 
             ModifySongLen, // a = new len, b = old len
             SetInstrument,
@@ -147,6 +147,7 @@ struct UndoOp {
                   CtrlListList *_ctrlListList;
                   MidiAudioCtrlMap *_midiAudioCtrlMap;
                   int _effectRackPos;
+                  int _newEffectRackPos;
                 };
 
             struct {

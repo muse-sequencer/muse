@@ -2694,7 +2694,7 @@ PluginI* Song::createPluginI(const PluginConfiguration &config, int channels)
     return nullptr;
   }
 
-  pi->setConfiguration(config);
+  pi->configure(config);
 
 //   pi->setActive(config._active);
 //   pi->setOn(config._on);
@@ -3223,6 +3223,10 @@ bool PluginI::setControl(const QString& s, double val)
       }
 
 // REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   getConfiguration
+//---------------------------------------------------------
+
 PluginConfiguration PluginI::getConfiguration() const
 {
   // If plugin is available, ask it for the values.
@@ -3284,57 +3288,71 @@ PluginConfiguration PluginI::getConfiguration() const
     // Plugin controls or parameters
     //==============================
 
-    //==============================================================================================
-    // Special for vst: If plugin is vst, ask the vst itself for the control values.
-    // This is because at least one plugin (U-He uhbik) was seen NOT calling back the app
-    //  pluginHostCallback() with audioMasterAutomate when patches were changed from the native gui.
-    // All the gui controls change with patch changes, but no response - nothing at all happened.
-    // So all of our local mirrored control arrays do not get updated when gui patch changes.
-    // Thus our generic gui also is not updated.
-    // Meanwhile other plugins DO call the callback with audioMasterAutomate when patches change
-    //  from the native gui. Like TAL etc.
-    //==============================================================================================
-#ifdef VST_NATIVE_SUPPORT
-    if(_plugin->isVstNativePlugin())
+    // (Other places refer to this text. Be careful if removing or modifying it.)
+    // Do not store controls or parameters if the plugin has custom configuration (vst chunks or lv2 etc).
+    // The assumption is that control or parameter values would be included in the custom data.
+    // This is in fact alluded to in the vst spec. It says chunks can store the whole state, but if chunks
+    //  are not used then an alternative is to store the parameter values. So it does not directly state
+    //  that these values ARE to be stored in the chunks, but it can be inferred although it is possible
+    //  some idiot plugins might not do it. Well too bad, we're going with this.
+    // One of the things this should fix is complaints that some plugins immediately show an indicator
+    //  that they have been 'modified'. It's because we were sending all these parameters along with
+    //  (after) the custom data.
+    // TODO: Watch out for DSSI though, its concept of custom data might not include controls if I recall. (DSSI-VST ???)
+    if(conf._accumulatedCustomParams.empty())
     {
-      //for multi-instance plugins write only first instance's state
-      if(instances > 0)
+      //==============================================================================================
+      // Special for vst: If plugin is vst, ask the vst itself for the control values.
+      // This is because at least one plugin (U-He uhbik) was seen NOT calling back the app
+      //  pluginHostCallback() with audioMasterAutomate when patches were changed from the native gui.
+      // All the gui controls change with patch changes, but no response - nothing at all happened.
+      // So all of our local mirrored control arrays do not get updated when gui patch changes.
+      // Thus our generic gui also is not updated.
+      // Meanwhile other plugins DO call the callback with audioMasterAutomate when patches change
+      //  from the native gui. Like TAL etc.
+      //==============================================================================================
+#ifdef VST_NATIVE_SUPPORT
+      if(_plugin->isVstNativePlugin())
       {
-        VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
-
-        // Is the getParameter() function available?
-        if(state->plugin->getParameter)
+        //for multi-instance plugins write only first instance's state
+        if(instances > 0)
         {
-          for (unsigned long i = 0; i < controlPorts; ++i)
+          VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
+
+          // Is the getParameter() function available?
+          if(state->plugin->getParameter)
           {
-            const unsigned long idx = controls[i].idx;
-            conf._initParams.push_back(PluginConfiguration::ControlConfig(
-              i,
-              QString(_plugin->portName(idx)),
-              state->plugin->getParameter(state->plugin, i)));
+            for (unsigned long i = 0; i < controlPorts; ++i)
+            {
+              const unsigned long idx = controls[i].idx;
+              conf._initParams.push_back(PluginConfiguration::ControlConfig(
+                i,
+                QString(_plugin->portName(idx)),
+                state->plugin->getParameter(state->plugin, i)));
+            }
+            ctls_handled = true;
           }
-          ctls_handled = true;
         }
       }
-    }
-    else
-#endif // VST_NATIVE_SUPPORT
+      else
+  #endif // VST_NATIVE_SUPPORT
 
-    {
-      for (unsigned long i = 0; i < controlPorts; ++i)
       {
-        const unsigned long idx = controls[i].idx;
-        conf._initParams.push_back(PluginConfiguration::ControlConfig(
-          i,
-          QString(_plugin->portName(idx)),
-          controls[i].val));
+        for (unsigned long i = 0; i < controlPorts; ++i)
+        {
+          const unsigned long idx = controls[i].idx;
+          conf._initParams.push_back(PluginConfiguration::ControlConfig(
+            i,
+            QString(_plugin->portName(idx)),
+            controls[i].val));
+        }
+        ctls_handled = true;
       }
-      ctls_handled = true;
-    }
 
-    // If instance or params are not available, use the persistent values.
-    if(!ctls_handled)
-      conf._initParams = _initConfig._initParams;
+      // If instance or params are not available, use the persistent values.
+      if(!ctls_handled)
+        conf._initParams = _initConfig._initParams;
+    }
 
     return conf;
   }
@@ -3347,10 +3365,20 @@ PluginConfiguration PluginI::getConfiguration() const
 
 // REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
-//   setConfiguration
+//   setInitialConfiguration
 //---------------------------------------------------------
 
-void PluginI::setConfiguration(const PluginConfiguration& config)
+void PluginI::setInitialConfiguration(const PluginConfiguration& config)
+{
+  _initConfig = config;
+}
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   configure
+//---------------------------------------------------------
+
+void PluginI::configure(const PluginConfiguration& config)
 {
   setActive(config._active);
   setOn(config._on);
@@ -3363,59 +3391,65 @@ void PluginI::setConfiguration(const PluginConfiguration& config)
   // Done with initial custom data. Clear them.
   //config._accumulatedCustomParams.clear();
 
-  unsigned long controlPorts = parameters();
-
-  const unsigned long sz = config._initParams.size();
-  for(unsigned long i = 0; i < sz; ++i)
+// REMOVE Tim. tmp. Added condition.
+  // Ignore parameters if there is custom data.
+  // The assumption is that control or parameter values would be included in the custom data.
+  // See getCustomConfiguration() for more info.
+  if(config._accumulatedCustomParams.empty())
   {
-    const PluginConfiguration::ControlConfig& cc = config._initParams[i];
-    // If a valid control number was stored, use it for faster lookup.
-    if(cc._ctlnum >= 0)
-    {
-      if((unsigned long)cc._ctlnum < controlPorts)
-      {
-        // TODO: Set vst params directly here, maybe even instead of controls array?
-        //       Maybe not. Process sets the vst params for us.
+    unsigned long controlPorts = parameters();
 
-// REMOVE Tim. tmp. Changed.
-        // controls[j].val = controls[j].tmpVal = cc._val;
-        //controls[cc._ctlnum].val = cc._val;
-        putParam(cc._ctlnum, cc._val);
-      }
-      else
-      {
-        fprintf(stderr, "PluginI::setConfiguration(%d %s, %f) controller number out of range\n",
-          cc._ctlnum, cc._name.toLatin1().constData(), cc._val);
-        // Don't return. Let it continue.
-        //return false;
-      }
-    }
-    else
-    // A valid control number was not stored, use the name for a slow lookup.
+    const unsigned long sz = config._initParams.size();
+    for(unsigned long i = 0; i < sz; ++i)
     {
-      bool found = false;
-//      pi->setControl();
-      for(unsigned long j = 0; j < controlPorts; ++j)
+      const PluginConfiguration::ControlConfig& cc = config._initParams[i];
+      // If a valid control number was stored, use it for faster lookup.
+      if(cc._ctlnum >= 0)
       {
-        if(QString(paramName(j)) == cc._name)
+        if((unsigned long)cc._ctlnum < controlPorts)
         {
-// REMOVE Tim. tmp. Changed.
+          // TODO: Set vst params directly here, maybe even instead of controls array?
+          //       Maybe not. Process sets the vst params for us.
+
+  // REMOVE Tim. tmp. Changed.
           // controls[j].val = controls[j].tmpVal = cc._val;
-          //controls[j].val = cc._val;
-          putParam(j, cc._val);
-          found = true;
-          break;
+          //controls[cc._ctlnum].val = cc._val;
+          putParam(cc._ctlnum, cc._val);
+        }
+        else
+        {
+          fprintf(stderr, "PluginI::setConfiguration(%d %s, %f) controller number out of range\n",
+            cc._ctlnum, cc._name.toLatin1().constData(), cc._val);
+          // Don't return. Let it continue.
+          //return false;
         }
       }
-      if(!found)
+      else
+      // A valid control number was not stored, use the name for a slow lookup.
       {
-        fprintf(stderr, "PluginI::setConfiguration(%s, %f) controller name not found\n",
-          cc._name.toLatin1().constData(), cc._val);
-        // Don't return. Let it continue.
-        //return false;
+        bool found = false;
+  //      pi->setControl();
+        for(unsigned long j = 0; j < controlPorts; ++j)
+        {
+          if(QString(paramName(j)) == cc._name)
+          {
+  // REMOVE Tim. tmp. Changed.
+            // controls[j].val = controls[j].tmpVal = cc._val;
+            //controls[j].val = cc._val;
+            putParam(j, cc._val);
+            found = true;
+            break;
+          }
+        }
+        if(!found)
+        {
+          fprintf(stderr, "PluginI::setConfiguration(%s, %f) controller name not found\n",
+            cc._name.toLatin1().constData(), cc._val);
+          // Don't return. Let it continue.
+          //return false;
+        }
       }
     }
-
   }
 
 // // REMOVE Tim. tmp. Removed.
@@ -3758,13 +3792,9 @@ void PluginI::writeConfiguration(int level, Xml& xml)
     }
   }
 
-  //==============================================================
+  //=====================
   // Save control values
-  //    Although custom data might already save this information,
-  //     we have no way of knowing if it does or what is saved.
-  //    Traditionally we used this with LADSPA and DSSI, which have
-  //     no control value state saving mechanism.
-  //==============================================================
+  //=====================
 
   if(!pc._initParams.empty())
   {
@@ -4336,7 +4366,8 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                     // if (initPluginInstance(_plugin, channel))
                                     if (initPluginInstance(_plugin, _track->channels()))
                                     {
-                                      // For persistence: If the error was because there was no plugin available,
+                                      // For persistence: Keep the custom data and parameters (don't clear them).
+                                      // If the error was because there was no plugin available,
                                       //  return no error to allow it to continue loading.
                                       if(!_plugin)
                                         return false;
@@ -4355,10 +4386,11 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                     }
                               }
 
-                              // In case of reading a preset but there's no plugin.
+                              // In case of reading a preset but there's no plugin,
+                              //  return OK to allow it to continue loading.
+                              // For persistence: Keep the custom data and parameters (don't clear them).
                               if(!_plugin)
-                                //return true;
-                                // Return OK to allow it to continue loading.
+//                                return true;
                                 return false;
 
                               // Don't bother setting these if reading a preset.
@@ -4373,65 +4405,69 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               //because it MUST be processed before plugin controls
                               //writeConfiguration places custom data before plugin controls values
                               setCustomData(_initConfig._accumulatedCustomParams);
-                              // Done with initial custom data. Clear them.
-                              _initConfig._accumulatedCustomParams.clear();
 
-
-                              const unsigned long sz = _initConfig._initParams.size();
-                              for(unsigned long i = 0; i < sz; ++i)
+                              // Ignore initial parameters if there is custom data.
+                              // The assumption is that control or parameter values would be included in the custom data.
+                              // See getCustomConfiguration() for more info.
+                              if(_initConfig._accumulatedCustomParams.empty())
                               {
-                                const PluginConfiguration::ControlConfig& cc = _initConfig._initParams[i];
-                                // If a valid control number was stored, use it for faster lookup.
-                                if(cc._ctlnum >= 0)
+                                const unsigned long sz = _initConfig._initParams.size();
+                                for(unsigned long i = 0; i < sz; ++i)
                                 {
-                                  if((unsigned long)cc._ctlnum < controlPorts)
+                                  const PluginConfiguration::ControlConfig& cc = _initConfig._initParams[i];
+                                  // If a valid control number was stored, use it for faster lookup.
+                                  if(cc._ctlnum >= 0)
                                   {
-                                    // TODO: Set vst params directly here, maybe even instead of controls array?
-                                    //       Maybe not. Process sets the vst params for us.
-
-  // REMOVE Tim. tmp. Changed.
-                                    // controls[j].val = controls[j].tmpVal = cc._val;
-                                    controls[cc._ctlnum].val = cc._val;
-                                  }
-                                  else
-                                  {
-                                    fprintf(stderr, "PluginI:readConfiguration(%d %s, %f) controller number out of range\n",
-                                      cc._ctlnum, cc._name.toLatin1().constData(), cc._val);
-                                    // Don't return. Let it continue.
-                                    //return false;
-                                  }
-                                }
-                                else
-                                // A valid control number was not stored, use the name for a slow lookup.
-                                {
-                                  bool found = false;
-                                  for(unsigned long j = 0; j < controlPorts; ++j)
-                                  {
-                                    if(_plugin->portName(controls[j].idx) == cc._name)
+                                    if((unsigned long)cc._ctlnum < controlPorts)
                                     {
-  // REMOVE Tim. tmp. Changed.
+                                      // TODO: Set vst params directly here, maybe even instead of controls array?
+                                      //       Maybe not. Process sets the vst params for us.
+
+    // REMOVE Tim. tmp. Changed.
                                       // controls[j].val = controls[j].tmpVal = cc._val;
-                                      controls[j].val = cc._val;
-                                      found = true;
-                                      break;
+                                      controls[cc._ctlnum].val = cc._val;
+                                    }
+                                    else
+                                    {
+                                      fprintf(stderr, "PluginI:readConfiguration(%d %s, %f) controller number out of range\n",
+                                        cc._ctlnum, cc._name.toLatin1().constData(), cc._val);
+                                      // Don't return. Let it continue.
+                                      //return false;
                                     }
                                   }
-                                  if(!found)
+                                  else
+                                  // A valid control number was not stored, use the name for a slow lookup.
                                   {
-                                    fprintf(stderr, "PluginI:readConfiguration(%s, %f) controller name not found\n",
-                                      cc._name.toLatin1().constData(), cc._val);
-                                    // Don't return. Let it continue.
-                                    //return false;
+                                    bool found = false;
+                                    for(unsigned long j = 0; j < controlPorts; ++j)
+                                    {
+                                      if(_plugin->portName(controls[j].idx) == cc._name)
+                                      {
+    // REMOVE Tim. tmp. Changed.
+                                        // controls[j].val = controls[j].tmpVal = cc._val;
+                                        controls[j].val = cc._val;
+                                        found = true;
+                                        break;
+                                      }
+                                    }
+                                    if(!found)
+                                    {
+                                      fprintf(stderr, "PluginI:readConfiguration(%s, %f) controller name not found\n",
+                                        cc._name.toLatin1().constData(), cc._val);
+                                      // Don't return. Let it continue.
+                                      //return false;
+                                    }
                                   }
                                 }
-
                               }
 
-// // REMOVE Tim. tmp. Removed.
+// REMOVE Tim. tmp. Removed.
 //                                 // initControlValues = true;
 
                               // Done with initial params. Clear them.
                               _initConfig._initParams.clear();
+                              // Done with initial custom data. Clear them.
+                              _initConfig._accumulatedCustomParams.clear();
 
                               // Don't bother setting these if reading a preset.
                               if (!readPreset)
