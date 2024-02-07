@@ -123,7 +123,7 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
                           MusEGlobal::config.rackItemBackgroundColor);
 
       QString name = tr->efxPipe() ? tr->efxPipe()->name(index.row()) : QString();
-  
+
       if (option.state & QStyle::State_MouseOver)
           painter->setPen(MusEGlobal::config.rackItemFontColorHover);
       else if (onrect.isNull())
@@ -335,7 +335,7 @@ void EffectRack::choosePlugin(QListWidgetItem* it)
           }
     int idx = row(it);
 
-    MusECore::Undo operations;
+//    MusECore::Undo operations;
 
     // Some heavy lifting required here, not easily done
     //  in the realtime thread. Idle the audio processing.
@@ -343,13 +343,15 @@ void EffectRack::choosePlugin(QListWidgetItem* it)
     // Gain access to structures, and sync with audio.
     MusEGlobal::audio->msgIdle(true);
 
-    if(/*replace &&*/ track->efxPipe() && track->efxPipe()->at(idx))
-      operations.push_back(MusECore::UndoOp(
-        MusECore::UndoOp::RemoveRackEffectPlugin, track, double(idx), double(0), double(0), double(0), double(0)));
+//    if(/*replace &&*/ track->efxPipe() && track->efxPipe()->at(idx))
+//      operations.push_back(MusECore::UndoOp(
+//        MusECore::UndoOp::RemoveRackEffectPlugin, track, double(idx), double(0), double(0), double(0), double(0)));
+//
+//    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddRackEffectPlugin, track, plugi, idx));
+//
+//    MusEGlobal::song->applyOperationGroup(operations);
 
-    operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddRackEffectPlugin, track, plugi, idx));
-
-    MusEGlobal::song->applyOperationGroup(operations);
+    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, track, plugi, idx));
 
     MusEGlobal::audio->msgIdle(false);
 }
@@ -367,10 +369,11 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       QString name;
       //bool mute;
       MusECore::Pipeline* pipe = track->efxPipe();
-      if (pipe) {
-            name  = pipe->name(idx);
-            //mute  = pipe->isOn(idx);
-            }
+// REMOVE Tim. tmp. Removed. Unused.
+//      if (pipe) {
+//            name  = pipe->name(idx);
+//            //mute  = pipe->isOn(idx);
+//            }
 
       enum { NEW, CHANGE, UP, DOWN, REMOVE, ACTIVE, BYPASS, SHOW, SHOW_NATIVE, SAVE };
       QMenu* menu = new QMenu;
@@ -499,13 +502,25 @@ void EffectRack::menuRequested(QListWidgetItem* it)
 
                   if(pipe && pipe->at(idx))
                   {
+                    // // Some heavy lifting required here, not easily done
+                    // //  in the realtime thread. Idle the audio processing.
+                    // // Here any glitches in the audio would be acceptable.
+                    // // Gain access to structures, and sync with audio.
+                    // MusEGlobal::audio->msgIdle(true);
+                    // MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                    //   MusECore::UndoOp::RemoveRackEffectPlugin, track, double(idx), double(0), double(0), double(0), double(0)));
+                    // MusEGlobal::audio->msgIdle(false);
+
+
                     // Some heavy lifting required here, not easily done
                     //  in the realtime thread. Idle the audio processing.
                     // Here any glitches in the audio would be acceptable.
                     // Gain access to structures, and sync with audio.
                     MusEGlobal::audio->msgIdle(true);
+
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(
-                      MusECore::UndoOp::RemoveRackEffectPlugin, track, double(idx), double(0), double(0), double(0), double(0)));
+                      MusECore::UndoOp::ChangeRackEffectPlugin, track, (MusECore::PluginI*)nullptr, idx));
+
                     MusEGlobal::audio->msgIdle(false);
                   }
                   break;
@@ -770,13 +785,19 @@ void EffectRack::dropEvent(QDropEvent *event)
                       return; 
                   }
                 }
+// REMOVE Tim. tmp. Changed.
+//                if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
+//                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+//                      {
+//                        track->addPlugin(nullptr, idx);
+//                        MusEGlobal::song->update(SC_RACK);
+//                      }
+//                else {
+//                      return;
+//                      }
                 if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
-                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
                       {
-                        track->addPlugin(nullptr, idx);
-                        MusEGlobal::song->update(SC_RACK);
-                      }
-                else {
                       return;
                       }
                 }
@@ -898,19 +919,53 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                   case MusECore::Xml::TagStart:
                         if (tag == "plugin") {
                               MusECore::PluginI* plugi = new MusECore::PluginI();
-                              if (plugi->readConfiguration(xml, false)) {
+// REMOVE Tim. tmp. Added.
+                              // Set the track and index now, in case anything needs them BEFORE the operations set them.
+                              plugi->setTrack(track);
+                              plugi->setID(idx);
+
+// REMOVE Tim. tmp. Changed.
+//                              if (plugi->readConfiguration(xml, false)) {
+                              if (plugi->readConfiguration(xml, false, track->channels())) {
                                   //QString d;
                                   //xml.dump(d);
                                   //printf("cannot instantiate plugin [%s]\n", d.toLatin1().data());
                                   delete plugi;
                                   }
                               else {
-                                  //printf("instantiated!\n");
-                                  track->addPlugin(plugi, idx);
-                                  MusEGlobal::song->update(SC_RACK);
-                                  if (plugi->guiVisible())
-                                    plugi->gui()->updateWindowTitle();
-                                  return;
+// REMOVE Tim. tmp. Added.
+//                                  // For persistence:
+//                                  // If the error was for some other reason than no plugin being available,
+//                                  //  delete the PluginI and return.
+//                                  // Otherwise allow it to continue loading.
+//                                  if(plugi->initPluginInstance(track->channels()) && plugi->plugin())
+//                                  {
+//                                    // The error was for some other reason.
+//                                    delete plugi;
+//                                    // TODO Hm... return??? Shouldn't it continue with reading the next tag?
+//                                    //return;
+//                                  }
+//                                  else
+                                  {
+                                    //printf("instantiated!\n");
+  // REMOVE Tim. tmp. Changed.
+  //                                  track->addPlugin(plugi, idx);
+  //                                  MusEGlobal::song->update(SC_RACK);
+
+                                    // Some heavy lifting required here, not easily done
+                                    //  in the realtime thread. Idle the audio processing.
+                                    // Here any glitches in the audio would be acceptable.
+                                    // Gain access to structures, and sync with audio.
+                                    MusEGlobal::audio->msgIdle(true);
+                                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, track, plugi, idx));
+                                    MusEGlobal::audio->msgIdle(false);
+
+                                    if (plugi->guiVisible())
+                                      plugi->gui()->updateWindowTitle();
+
+                                    // TODO Hm... return??? Shouldn't it continue with reading more plugins?
+                                    //return;
+                                    }
                                   }
                               }
                         else if (tag =="muse")

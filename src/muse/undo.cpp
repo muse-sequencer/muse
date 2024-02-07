@@ -347,7 +347,7 @@ const char* UndoOp::typeName()
             "MoveTrack",
             "ModifyClip", "AddMarker", "DeleteMarker", "ModifyMarker", "SetMarkerPos",
 // REMOVE Tim. tmp. Added.
-            "AddRackEffectPlugin", "RemoveRackEffectPlugin", "SwapRackEffectPlugins",
+            /*"AddRackEffectPlugin",*/ /*"RemoveRackEffectPlugin",*/ "ChangeRackEffectPlugin", "SwapRackEffectPlugins",
 
             "ModifySongLen", "SetInstrument", "DoNothing",
             "ModifyMidiDivision",
@@ -485,8 +485,9 @@ void deleteUndoOp(UndoOp& op, bool doUndos = true, bool doRedos = true)
           break;
 
 // REMOVE Tim. tmp. Added.
-    case UndoOp::AddRackEffectPlugin:
-    case UndoOp::RemoveRackEffectPlugin:
+//    case UndoOp::AddRackEffectPlugin:
+//    case UndoOp::RemoveRackEffectPlugin:
+    case UndoOp::ChangeRackEffectPlugin:
           if(op._pluginConfiguration)
           {
             delete op._pluginConfiguration;
@@ -899,11 +900,14 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     break;
 
 // REMOVE Tim. tmp. Added.
-    case UndoOp::AddRackEffectPlugin:
-      fprintf(stderr, "Undo::insert: AddRackEffectPlugin\n");
+//    case UndoOp::AddRackEffectPlugin:
+//      fprintf(stderr, "Undo::insert: AddRackEffectPlugin\n");
+//    break;
+//    case UndoOp::RemoveRackEffectPlugin:
+//      fprintf(stderr, "Undo::insert: RemoveRackEffectPlugin\n");
     break;
-    case UndoOp::RemoveRackEffectPlugin:
-      fprintf(stderr, "Undo::insert: RemoveRackEffectPlugin\n");
+    case UndoOp::ChangeRackEffectPlugin:
+      fprintf(stderr, "Undo::insert: ChangeRackEffectPlugin\n");
     break;
     case UndoOp::SwapRackEffectPlugins
       fprintf(stderr, "Undo::insert: SwapRackEffectPlugins\n");
@@ -2019,15 +2023,45 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
           }
         break;
         
+// // REMOVE Tim. tmp. Added.
+//         case UndoOp::AddRackEffectPlugin:
+//           if(uo.type == UndoOp::AddRackEffectPlugin)
+//           {
+//             if(((uo._pluginConfiguration && uo._pluginConfiguration == n_op._pluginConfiguration) ||
+//                 (uo._pluginI && uo._pluginI == n_op._pluginI)) &&
+//                uo.track == n_op.track && uo._effectRackPos == n_op._effectRackPos)
+//             {
+//               fprintf(stderr, "MusE error: Undo::insert(): Double AddRackEffectPlugin. Ignoring.\n");
+//               return;
+//             }
+//
+//             // TODO: PluginConfiguration etc.
+//             //
+//             // else if(uo.track == n_op.track && uo._effectRackPos == n_op._effectRackPos)
+//             // {
+//             //   // Simply replace the plugin.
+//             //   // To avoid memory leaks, delete the original plugin.
+//             //   // TODO:
+//             // }
+//             // // It's OK to set null to more than one slot.
+//             // else if(uo._pluginI && uo._pluginI == n_op._pluginI)
+//             // {
+//             //   fprintf(stderr,
+//             //     "MusE error: Undo::insert(): AddRackEffectPlugin: Cannot set same plugin to more than one slot. Ignoring.\n");
+//             //   return;
+//             // }
+//           }
+//         break;
+
 // REMOVE Tim. tmp. Added.
-        case UndoOp::AddRackEffectPlugin:
-          if(uo.type == UndoOp::AddRackEffectPlugin)
+        case UndoOp::ChangeRackEffectPlugin:
+          if(uo.type == UndoOp::ChangeRackEffectPlugin)
           {
             if(((uo._pluginConfiguration && uo._pluginConfiguration == n_op._pluginConfiguration) ||
                 (uo._pluginI && uo._pluginI == n_op._pluginI)) &&
                uo.track == n_op.track && uo._effectRackPos == n_op._effectRackPos)
             {
-              fprintf(stderr, "MusE error: Undo::insert(): Double AddRackEffectPlugin. Ignoring.\n");
+              fprintf(stderr, "MusE error: Undo::insert(): Double ChangeRackEffectPlugin. Ignoring.\n");
               return;
             }
 
@@ -2043,7 +2077,7 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             // else if(uo._pluginI && uo._pluginI == n_op._pluginI)
             // {
             //   fprintf(stderr,
-            //     "MusE error: Undo::insert(): AddRackEffectPlugin: Cannot set same plugin to more than one slot. Ignoring.\n");
+            //     "MusE error: Undo::insert(): ChangeRackEffectPlugin: Cannot set same plugin to more than one slot. Ignoring.\n");
             //   return;
             // }
           }
@@ -2713,7 +2747,7 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
     type_ == SetTrackRecord || type_ == SetTrackMute || type_ == SetTrackSolo ||
     type_ == SetTrackRecMonitor || type_ == SetTrackOff || type_ == AddAudioCtrlVal || type_ == ModifyAudioCtrlVal ||
 // REMOVE Tim. tmp. Added.
-    type_ == RemoveRackEffectPlugin || type_ == SwapRackEffectPlugins);
+    /*type_ == RemoveRackEffectPlugin ||*/ type_ == SwapRackEffectPlugins);
   assert(track_);
 
   type = type_;
@@ -2747,33 +2781,33 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
     _audioNewCtrlVal = e_;
   }
 // REMOVE Tim. tmp. Added.
-  else if(type_ == RemoveRackEffectPlugin)
-  {
-    _effectRackPos = a_;
-    _newEffectRackPos = 0;
-    _pluginConfiguration = nullptr;
-    _pluginI = nullptr;
-    _ctrlListList = nullptr;
-    _midiAudioCtrlMap = nullptr;
-    // if(!track->isMidiTrack())
-    // {
-    //   Track *t = const_cast<Track*>(track);
-    //   AudioTrack *at = static_cast<AudioTrack*>(t);
-    //   Pipeline *pl = at->efxPipe();
-    //   if(pl)
-    //   {
-    //     if(_effectRackPos >= 0 && _effectRackPos < (int)pl->size())
-    //     {
-    //       PluginI *pi = pl->at(_effectRackPos);
-    //       if(pi)
-    //       {
-    //         // Save the plugin's configuration.
-    //         _pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
-    //       }
-    //     }
-    //   }
-    // }
-  }
+  // else if(type_ == RemoveRackEffectPlugin)
+  // {
+  //   _effectRackPos = a_;
+  //   _newEffectRackPos = 0;
+  //   _pluginConfiguration = nullptr;
+  //   _pluginI = nullptr;
+  //   _ctrlListList = nullptr;
+  //   _midiAudioCtrlMap = nullptr;
+  //   // if(!track->isMidiTrack())
+  //   // {
+  //   //   Track *t = const_cast<Track*>(track);
+  //   //   AudioTrack *at = static_cast<AudioTrack*>(t);
+  //   //   Pipeline *pl = at->efxPipe();
+  //   //   if(pl)
+  //   //   {
+  //   //     if(_effectRackPos >= 0 && _effectRackPos < (int)pl->size())
+  //   //     {
+  //   //       PluginI *pi = pl->at(_effectRackPos);
+  //   //       if(pi)
+  //   //       {
+  //   //         // Save the plugin's configuration.
+  //   //         _pluginConfiguration = new PluginConfiguration(pi->getConfiguration());
+  //   //       }
+  //   //     }
+  //   //   }
+  //   // }
+  // }
 // REMOVE Tim. tmp. Added.
   else if(type_ == SwapRackEffectPlugins)
   {
@@ -2812,7 +2846,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
 UndoOp::UndoOp(UndoType type_, const Track* track_, PluginConfiguration *pluginConfiguration_,
              int effectRackPos_, bool noUndo_)
 {
-  assert(type_== AddRackEffectPlugin);
+//  assert(type_== AddRackEffectPlugin);
+  assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   assert(pluginConfiguration_);
   type = type_;
@@ -2830,7 +2865,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginConfiguration *pluginC
 UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &pluginConfiguration_,
              int effectRackPos_, bool noUndo_)
 {
-  assert(type_== AddRackEffectPlugin);
+//  assert(type_== AddRackEffectPlugin);
+  assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   type = type_;
   track = track_;
@@ -2846,9 +2882,10 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &p
 // REMOVE Tim. tmp. Added.
 UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_, int effectRackPos_, bool noUndo_)
 {
-  assert(type_== AddRackEffectPlugin);
+//  assert(type_== AddRackEffectPlugin);
+  assert(type_== ChangeRackEffectPlugin);
   assert(track_);
-  assert(pluginI_);
+//  assert(pluginI_);
   type = type_;
   track = track_;
   _pluginI = pluginI_;
@@ -3920,19 +3957,29 @@ void Song::revertOperationGroup1(Undo& operations)
 
 
 // REMOVE Tim. tmp. Added.
-                  case UndoOp::AddRackEffectPlugin:
-#ifdef _UNDO_DEBUG_
-                            fprintf(stderr, "Song::revertOperationGroup1:AddRackEffectPlugin\n");
-#endif
-                            removePluginOperation(&(*i));
-                        break;
+//                   case UndoOp::AddRackEffectPlugin:
+// #ifdef _UNDO_DEBUG_
+//                             fprintf(stderr, "Song::revertOperationGroup1:AddRackEffectPlugin\n");
+// #endif
+//                             //removePluginOperation(&(*i));
+//                             changePluginOperation(&(*i));
+//                         break;
 
 // REMOVE Tim. tmp. Added.
-                  case UndoOp::RemoveRackEffectPlugin:
+//                   case UndoOp::RemoveRackEffectPlugin:
+// #ifdef _UNDO_DEBUG_
+//                             fprintf(stderr, "Song::revertOperationGroup1:RemoveRackEffectPlugin\n");
+// #endif
+//                             //addPluginOperation(&(*i));
+//                             changePluginOperation(&(*i));
+//                         break;
+
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::ChangeRackEffectPlugin:
 #ifdef _UNDO_DEBUG_
-                            fprintf(stderr, "Song::revertOperationGroup1:RemoveRackEffectPlugin\n");
+                            fprintf(stderr, "Song::revertOperationGroup1:ChangeRackEffectPlugin\n");
 #endif
-                            addPluginOperation(&(*i));
+                            changePluginOperation(&(*i));
                         break;
 
 // REMOVE Tim. tmp. Added.
@@ -4119,6 +4166,17 @@ void Song::revertOperationGroup3(Undo& operations)
                         audio_track->enableController(i->_audioCtrlIdModify, true);
                     }
                   break;
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::ChangeRackEffectPlugin:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* at = static_cast<AudioTrack*>(editable_track);
+                      // Note that for DSSI (at least), the track at this point must already
+                      //  have been added to the song's track lists, so that OSC can find the track.
+                      at->showPendingPluginNativeGuis();
+                    }
+                  break;
+
 
                   default:
                         break;
@@ -5281,19 +5339,29 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
 
 // REMOVE Tim. tmp. Added.
-                  case UndoOp::AddRackEffectPlugin:
-#ifdef _UNDO_DEBUG_
-                            fprintf(stderr, "Song::executeOperationGroup1:AddRackEffectPlugin\n");
-#endif
-                            addPluginOperation(&(*i));
-                        break;
+//                   case UndoOp::AddRackEffectPlugin:
+// #ifdef _UNDO_DEBUG_
+//                             fprintf(stderr, "Song::executeOperationGroup1:AddRackEffectPlugin\n");
+// #endif
+//                             //addPluginOperation(&(*i));
+//                             changePluginOperation(&(*i));
+//                         break;
+
+// // REMOVE Tim. tmp. Added.
+//                   case UndoOp::RemoveRackEffectPlugin:
+// #ifdef _UNDO_DEBUG_
+//                             fprintf(stderr, "Song::executeOperationGroup1:RemoveRackEffectPlugin\n");
+// #endif
+//                             //removePluginOperation(&(*i));
+//                             changePluginOperation(&(*i));
+//                         break;
 
 // REMOVE Tim. tmp. Added.
-                  case UndoOp::RemoveRackEffectPlugin:
+                  case UndoOp::ChangeRackEffectPlugin:
 #ifdef _UNDO_DEBUG_
-                            fprintf(stderr, "Song::executeOperationGroup1:RemoveRackEffectPlugin\n");
+                            fprintf(stderr, "Song::executeOperationGroup1:ChangeRackEffectPlugin\n");
 #endif
-                            removePluginOperation(&(*i));
+                            changePluginOperation(&(*i));
                         break;
 
 // REMOVE Tim. tmp. Added.
@@ -5480,6 +5548,16 @@ void Song::executeOperationGroup3(Undo& operations)
                       const AutomationType automation_type = audio_track->automationType();
                       if(automation_type != AUTO_WRITE && automation_type != AUTO_LATCH)
                         audio_track->enableController(i->_audioCtrlIdModify, true);
+                    }
+                  break;
+// REMOVE Tim. tmp. Added.
+                  case UndoOp::ChangeRackEffectPlugin:
+                    if(editable_track && !editable_track->isMidiTrack())
+                    {
+                      AudioTrack* at = static_cast<AudioTrack*>(editable_track);
+                      // Note that for DSSI (at least), the track at this point must already
+                      //  have been added to the song's track lists, so that OSC can find the track.
+                      at->showPendingPluginNativeGuis();
                     }
                   break;
 

@@ -374,7 +374,7 @@ struct PluginConfiguration
 
   QString _file;
   QString _uri;
-  QString _label;
+  QString _pluginLabel;
   QString _name;
   QRect _geometry;
   QRect _nativeGeometry;
@@ -434,6 +434,33 @@ class MissingPluginList : public std::vector<MissingPluginStruct>
 
 class PluginIBase
 {
+// REMOVE Tim. tmp. Added.
+   public:
+      // Options when calling configure(). Can be OR'd together.
+      // Determines what exactly to configure from the configuration structure.
+      // Note that ConfigParams is ignored if ConfigCustomData is set and there is custom data.
+      // If ConfigNativeGui is set, then ConfigDeferNativeGui determines whether
+      //  the native gui attempts to open immediately or opening is deferred by setting
+      //  the _showNativeGuiPending flag so that the native gui is opened later.
+      enum ConfigureOption {
+        ConfigNone = 0x0,
+        ConfigActive = 0x1,
+        ConfigOn = 0x2,
+        ConfigQuirks = 0x4,
+        ConfigCustomData = 0x8,
+        ConfigParams = 0x10,
+        ConfigGui = 0x20,
+        ConfigNativeGui = 0x40,
+        ConfigDeferNativeGui = 0x80,
+        ConfigGeometry = 0x100,
+        ConfigNativeGeometry = 0x200,
+        ConfigPresetOnly = ConfigCustomData | ConfigParams,
+        ConfigAll = ConfigActive | ConfigOn | ConfigQuirks | ConfigCustomData | ConfigParams |
+          ConfigGui | ConfigNativeGui | ConfigGeometry | ConfigNativeGeometry
+      };
+      // Collection of ConfigureOptions.
+      typedef int ConfigureOptions_t;
+
    protected:
       ControlFifo _controlFifo;
       MusEGui::PluginGui* _gui;
@@ -460,8 +487,10 @@ class PluginIBase
       virtual void setOn(bool val) = 0;
       virtual unsigned long pluginID() const = 0;
       virtual int id() const = 0;
-      virtual QString pluginLabel() const = 0;
+// REMOVE Tim. tmp. Added.
       virtual QString name() const = 0;
+      virtual QString pluginLabel() const = 0;
+      virtual QString pluginName() const = 0;
       virtual QString uri() const = 0;
       virtual QString lib() const = 0;
       virtual QString dirPath() const = 0;
@@ -478,7 +507,11 @@ class PluginIBase
 // REMOVE Tim. tmp. Added.
       // virtual PluginConfiguration getConfiguration() const = 0;
       virtual void writeConfiguration(int level, Xml& xml) = 0;
-      virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
+// REMOVE Tim. tmp. Changed.
+//      virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
+      // If reading a preset, set readPreset true. Then it will read some things but not others. Channels not required.
+      // If not reading a preset (reading and creating a plugin), the number of channels to create is required.
+      virtual bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0) = 0;
 
       virtual bool addScheduledControlEvent(unsigned long i, double val, unsigned frame);    // returns true if event cannot be delivered
       virtual unsigned long parameters() const = 0;
@@ -606,9 +639,9 @@ class PluginI : public PluginIBase {
       bool _active;
       bool _on;
 // REMOVE Tim. tmp. Removed.
-      // bool initControlValues;
+//      bool initControlValues;
       QString _name;
-      QString _label;
+//      QString _label;
 
 // REMOVE Tim. tmp. Added.
       // Holds initial controller values, parameters, sysex, custom data etc. for plugins which use them.
@@ -628,6 +661,10 @@ class PluginI : public PluginIBase {
    public:
       PluginI();
       virtual ~PluginI();
+
+// REMOVE Tim. tmp. Added.
+      // Returns nullptr if failure.
+      static PluginI* createPluginI(const PluginConfiguration &config, int channels, ConfigureOptions_t opts);
 
       Plugin* plugin() const { return _plugin; }
 
@@ -652,7 +689,14 @@ class PluginI : public PluginIBase {
       int id() const                 { return _id; }
       void updateControllers();
 
-      bool initPluginInstance(Plugin*, int channels);
+      // This version takes a given Plugin to initialize this PluginI. The Plugin can be null.
+      // A desired plugin name can be supplied. Otherwise it picks one.
+      bool initPluginInstance(Plugin*, int channels, const QString& name = QString());
+// REMOVE Tim. tmp. Added.
+      // This version uses the built-in initial configuration member to both find and initialize this PluginI.
+      // The initial configuration member must already be filled.
+      // A desired plugin name can be supplied. Otherwise it picks one.
+      bool initPluginInstance(int channels, const QString& name = QString());
       void setChannels(int);
       void connect(unsigned long ports, bool connectAllToDummyPorts, unsigned long offset, float** src, float** dst);
       void apply(unsigned pos, unsigned long n,
@@ -673,8 +717,8 @@ class PluginI : public PluginIBase {
       // QString dirPath() const        { return _plugin->dirPath(); }
       // QString fileName() const       { return _plugin->fileName(); }
       QString pluginLabel() const;
-      QString label() const;
       QString name() const;
+      QString pluginName() const;
       QString lib() const;
       QString uri() const;
       QString dirPath() const;
@@ -691,12 +735,19 @@ class PluginI : public PluginIBase {
 
 // REMOVE Tim. tmp. Added.
       void setInitialConfiguration(const PluginConfiguration&);
+      // This version uses the supplied configuration.
       // NOTE: The PluginI's track must already have been added to the track lists,
       //        because for DSSI, OSC needs to find the plugin in the track lists.
-      void configure(const PluginConfiguration&);
+      void configure(const PluginConfiguration&, ConfigureOptions_t);
+      // This version uses the built-in initial configuration member, which must already be filled.
+      // NOTE: The PluginI's track must already have been added to the track lists,
+      //        because for DSSI, OSC needs to find the plugin in the track lists.
+      void configure(ConfigureOptions_t);
       PluginConfiguration getConfiguration() const;
       void writeConfiguration(int level, Xml& xml);
-      bool readConfiguration(Xml& xml, bool readPreset=false);
+// REMOVE Tim. tmp. Changed.
+//      bool readConfiguration(Xml& xml, bool readPreset=false);
+      bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0);
       bool loadControl(Xml& xml);
       bool setControl(const QString& s, double val);
       void showGui();

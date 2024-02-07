@@ -1980,12 +1980,27 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             if(rackpos < MusECore::PipelineDepth)
             {
               PluginI* pi = new PluginI();
+// REMOVE Tim. tmp. Added comment.
+              // Set the track and index now, in case anything needs them BEFORE the plugin is set, below.
               pi->setTrack(this);
               pi->setID(rackpos);
-              if(pi->readConfiguration(xml, false))
+// REMOVE Tim. tmp. Changed.
+//              if(pi->readConfiguration(xml, false))
+              if(pi->readConfiguration(xml, false, channels()))
                 delete pi;
               else
-                (*_efxPipe)[rackpos] = pi;
+              {
+// REMOVE Tim. tmp. Added.
+//                // For persistence:
+//                // If the error was for some other reason than no plugin being available,
+//                //  delete the PluginI and return.
+//                // Otherwise allow it to continue loading.
+//                if(pi->initPluginInstance(channels()) && pi->plugin())
+//                  // The error was for some other reason.
+//                  delete pi;
+//                else
+                  (*_efxPipe)[rackpos] = pi;
+              }
             }
             else
               printf("can't load plugin - plugin rack is already full\n");

@@ -158,7 +158,9 @@ class VstNativeSynth : public Synth {
 
 // REMOVE Tim. tmp. Added.
       QString getCustomConfiguration(AEffect *plugin);
-      void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
+// REMOVE Tim. tmp. Changed.
+//      void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
+      void vstconfWrite(AEffect *plugin, const QString& label, int level, Xml &xml);
       void vstconfSet(AEffect *plugin, const std::vector<QString> & customParams);
 
       // Enables or disables the plugin, if it has such as function.
@@ -261,7 +263,9 @@ class VstNativeSynthIF : public SynthIF
       //-------------------------
       unsigned long pluginID() const override;
       int id() const override;
+// REMOVE Tim. tmp. Changed.
       QString pluginLabel() const override;
+      QString pluginName() const override;
       QString lib() const override;
       QString uri() const override;
       QString dirPath() const override;

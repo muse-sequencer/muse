@@ -1654,7 +1654,8 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     {
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage SetRackEffectPlugin: track:%p pluginI:%p rackPos:%d\n",
               _track, _pluginI, _rackEffectPos);
-      // NOTE: Caller is responsible for removing any existing plugin at the position.
+      // NOTE: Caller is responsible for dealing with any existing plugin at the position, if desired.
+      //       Otherwise we delete it, below.
       if(_track && !_track->isMidiTrack())
       {
         AudioTrack *at = static_cast<AudioTrack*>(_track);
@@ -1663,7 +1664,11 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
         {
           // _pluginI can be null.
           if(_pluginI)
+          {
+            // Enforce the track and index, even if they might have already been set.
+            _pluginI->setID(_rackEffectPos);
             _pluginI->setTrack(at);
+          }
 
           PluginI *ptmp = pl->at(_rackEffectPos);
           pl->at(_rackEffectPos) = _pluginI;

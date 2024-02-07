@@ -131,8 +131,15 @@ SynthIF::SynthIF(SynthI* s) : PluginIBase()
 /*inline*/ void SynthIF::setOn(bool /*val*/)                        { }
 /*inline*/ unsigned long SynthIF::pluginID() const                  { return 0; }
 /*inline*/ int SynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
-/*inline*/ QString SynthIF::pluginLabel() const                     { return QString(); }
-/*inline*/ QString SynthIF::name() const                            { return synti->name(); }
+// REMOVE Tim. tmp. Added.
+/*inline*/ QString SynthIF::name() const                           { return synti->name(); }
+// REMOVE Tim. tmp. Changed.
+///*inline*/ QString SynthIF::pluginLabel() const                     { return QString(); }
+// TODO: There is no synth 'label'.
+/*inline*/ QString SynthIF::pluginLabel() const                     { return synti->synth() ? synti->synth()->name() : QString(); }
+// REMOVE Tim. tmp. Changed.
+///*inline*/ QString SynthIF::name() const                            { return synti->name(); }
+/*inline*/ QString SynthIF::pluginName() const                      { return synti->synth() ? synti->synth()->name() : QString(); }
 /*inline*/ QString SynthIF::lib() const                             { return QString(); }
 /*inline*/ QString SynthIF::uri() const                             { return synti->uri(); }
 /*inline*/ QString SynthIF::dirPath() const                         { return QString(); }
@@ -149,7 +156,9 @@ SynthIF::SynthIF(SynthI* s) : PluginIBase()
 }
 /*inline*/ void SynthIF::deactivate() { _curActiveState = false; }
 /*inline*/ void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
-/*inline*/ bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
+// REMOVE Tim. tmp. Changed.
+// /*inline*/ bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
+/*inline*/ bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/, int /*channels*/) { return false; }
 /*inline*/ unsigned long SynthIF::parameters() const                { return 0; }
 /*inline*/ unsigned long SynthIF::parametersOut() const             { return 0; }
 /*inline*/ void SynthIF::setParam(unsigned long, double)       { }

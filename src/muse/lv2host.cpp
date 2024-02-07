@@ -3095,7 +3095,9 @@ void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *pre
                                 + presetName + QString(".lv2/");
             QString presetFile = synthName + QString("_") + presetName
                                  + QString(".ttl");
-            QString plugName = (state->sif != nullptr) ? state->sif->name() : state->plugInst->name();
+// REMOVE Tim. tmp. Changed.
+//            QString plugName = (state->sif != nullptr) ? state->sif->name() : state->plugInst->name();
+            QString plugName = (state->sif != nullptr) ? state->sif->label() : state->plugInst->label();
 
             // TODO Do we need to change this to the new lv2state folder ???
             QString plugFileDirName = MusEGlobal::museProject + QString("/") + plugName;
@@ -6111,7 +6113,9 @@ void LV2SynthIF::showNativeGui(bool bShow)
             free(_state->human_id);
         }
 
-        _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
+// REMOVE Tim. tmp. Changed.
+//        _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
+        _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + label()).toUtf8().constData());
     }
 
     LV2Synth::lv2ui_ShowNativeGui(_state, bShow, cquirks().fixNativeUIScaling());

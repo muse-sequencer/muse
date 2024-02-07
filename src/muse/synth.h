@@ -214,8 +214,12 @@ class SynthIF : public PluginIBase {
       virtual void setOn(bool val);
       virtual unsigned long pluginID() const;
       virtual int id() const;
-      virtual QString pluginLabel() const;
+// REMOVE Tim. tmp. Added.
+      // Note that in this context label is the track name.
       virtual QString name() const;
+      virtual QString pluginLabel() const;
+      // Note that in this context name is the formal plugin name.
+      virtual QString pluginName() const;
       virtual QString lib() const;
       virtual QString uri() const;
       virtual QString dirPath() const;
@@ -230,7 +234,9 @@ class SynthIF : public PluginIBase {
       virtual void deactivate();
 
       virtual void writeConfiguration(int level, Xml& xml);
-      virtual bool readConfiguration(Xml& xml, bool readPreset=false);
+// REMOVE Tim. tmp. Changed.
+//      virtual bool readConfiguration(Xml& xml, bool readPreset=false);
+      virtual bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0);
 
       virtual unsigned long parameters() const;
       virtual unsigned long parametersOut() const;

@@ -1577,7 +1577,7 @@ QString Pipeline::label(int idx) const
       {
       PluginI* p = (*this)[idx];
       if (p)
-            return p->label();
+            return p->pluginLabel();
       return QString("");
       }
 
@@ -2241,6 +2241,9 @@ QString PluginIBase::dssi_ui_filename() const
 
   QStringList list = guiDir.entryList();
 
+  // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://...
+  // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+  // FIXME: Should we extract the last piece of label text after the last '/' ?
   QString plug(pluginLabel());
   QString lib_qt_ui;
   QString lib_any_ui;
@@ -2660,23 +2663,24 @@ LADSPA_Handle Plugin::instantiate(PluginI *)
 //   createPluginI
 //---------------------------------------------------------
 
-PluginI* Song::createPluginI(const PluginConfiguration &config, int channels)
+// Static.
+PluginI* PluginI::createPluginI(const PluginConfiguration &config, int channels, ConfigureOptions_t opts)
 {
-  Plugin *plugin = MusEGlobal::plugins.find(config._file, config._uri, config._label);
+  Plugin *plugin = MusEGlobal::plugins.find(config._file, config._uri, config._pluginLabel);
 
   if(!plugin)
   {
     fprintf(stderr, "createPluginI: Warning: Plugin not found (file:%s, uri:%s, label:%s)\n",
         config._file.toLatin1().constData(),
         config._uri.toLatin1().constData(),
-        config._label.toLatin1().constData());
+        config._pluginLabel.toLatin1().constData());
     // For persistence: Allow it to continue on. Initialization needs to do a few things.
   }
 
   PluginI *pi = new PluginI();
 
   // Returns true on error.
-  if (pi->initPluginInstance(plugin, channels))
+  if (pi->initPluginInstance(plugin, channels, config._name))
   {
     // For persistence: If the error was because there was no plugin available,
     //  return no error to allow it to continue loading.
@@ -2686,7 +2690,7 @@ PluginI* Song::createPluginI(const PluginConfiguration &config, int channels)
     fprintf(stderr, "createPluginI: Error initializing plugin instance (file:%s, uri:%s, label:%s)\n",
       config._file.toLatin1().constData(),
       config._uri.toLatin1().constData(),
-      config._label.toLatin1().constData());
+      config._pluginLabel.toLatin1().constData());
 
     // The error was for some other reason.
     delete pi;
@@ -2694,7 +2698,7 @@ PluginI* Song::createPluginI(const PluginConfiguration &config, int channels)
     return nullptr;
   }
 
-  pi->configure(config);
+  pi->configure(config, opts);
 
 //   pi->setActive(config._active);
 //   pi->setOn(config._on);
@@ -2789,7 +2793,7 @@ PluginI* Song::createPluginI(const PluginConfiguration &config, int channels)
 //    return true on error
 //---------------------------------------------------------
 
-bool PluginI::initPluginInstance(Plugin* plug, int c)
+bool PluginI::initPluginInstance(Plugin* plug, int c, const QString& name)
       {
 // REMOVE Tim. tmp. Removed.
       // channel = c;
@@ -2815,18 +2819,53 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
       // QString inst("-" + QString::number(_plugin->instNo()));
       // _name  = _plugin->name() + inst;
       // _label = _plugin->label() + inst;
+
+      // NOTE: _plugin and/or _initConfig must be valid at this point.
+      // We should never get here with both invalid.
       if(_plugin)
       {
         const QString inst("-" + QString::number(_plugin->instNo()));
-        _name  = _plugin->name() + inst;
-        _label = _plugin->label() + inst;
+        if(!name.isEmpty())
+          _name = name;
+        else
+          _name  = _plugin->name() + inst;
+//        if(!label.isEmpty())
+//          _label = label;
+//        else
+//          _label = _plugin->label() + inst;
       }
       else
       {
-        const int instno = MusEGlobal::missingPlugins.add(_initConfig._file, _initConfig._uri, _initConfig._label, false);
+        const int instno = MusEGlobal::missingPlugins.add(_initConfig._file, _initConfig._uri, _initConfig._pluginLabel, false);
         const QString inst("-" + QString::number(instno));
-        _name  = _initConfig._label + inst;
-        _label = _initConfig._label + inst;
+        if(!name.isEmpty())
+        {
+          _name = name;
+        }
+        else
+        {
+//          _name = _initConfig._name + inst;
+
+          if(_initConfig._name.isEmpty())
+          {
+            // The config name is empty. This will happen if an old song without the new plugin 'name' tag is loaded.
+            // No choice but to compose a name from the label, which must always exist.
+            // NOTE: Some ladspa plugins put a web address as the label (lsp ladpsa plugins).
+            // Strip away any unusual characters and everything before them, like slashes etc.
+            TODOOOO: Decide what to remove. Once ready, QString::section seems OK to use here.
+            _name = _initConfig._pluginLabel + inst;
+          }
+          else
+          {
+            // Persistence: The config name already contains the suffix.
+            _name = _initConfig._name;
+          }
+        }
+
+//        if(!label.isEmpty())
+//          _label = label;
+//        else
+//          _label = _initConfig._pluginLabel + inst;
       }
 
       if(!_plugin)
@@ -3001,6 +3040,30 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 
       return false;
       }
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   initPluginInstance
+//    return true on error
+//---------------------------------------------------------
+
+bool PluginI::initPluginInstance(int channels, const QString& name)
+{
+  Plugin *plugin = MusEGlobal::plugins.find(
+    _initConfig._file, _initConfig._uri, _initConfig._pluginLabel);
+
+  // True on error. For persistence: Plugin can be null.
+  if(initPluginInstance(plugin, channels, name))
+    // Return true for error. For persistence: Don't clear the initial configuration members.
+    return true;
+
+//  // We are done with the initial configuration. Clear members.
+//  _initConfig._accumulatedCustomParams.clear();
+//  _initConfig._initParams.clear();
+
+  // Return false for success.
+  return false;
+}
 
 //---------------------------------------------------------
 //   connect
@@ -3229,138 +3292,134 @@ bool PluginI::setControl(const QString& s, double val)
 
 PluginConfiguration PluginI::getConfiguration() const
 {
-  // If plugin is available, ask it for the values.
-  if(_plugin)
-  {
-    PluginConfiguration conf;
-    bool ctls_handled = false;
+  // If the plugin is not available, use the persistent values.
+  if(!_plugin)
+    return _initConfig;
 
-    //=============
-    // Basic info
-    //=============
+  // Plugin is available. Ask it for the values...
+  PluginConfiguration conf;
+  bool ctls_handled = false;
 
-    conf._file = _plugin->lib();
-    conf._uri = _plugin->uri();
-    conf._label = _plugin->label();
-    conf._name = _plugin->name();
-    conf._quirks = cquirks();
-    conf._on = on();
-    conf._active = active();
-    conf._guiVisible = guiVisible();
-    conf._nativeGuiVisible = nativeGuiVisible();
+  //=============
+  // Basic info
+  //=============
 
-    int x, y, w, h;
-    getGeometry(&x, &y, &w, &h);
-    conf._geometry = QRect(x, y, w, h);
+  conf._file = _plugin->lib();
+  conf._uri = _plugin->uri();
+  conf._pluginLabel = _plugin->label();
+  conf._name = name();
+  conf._quirks = cquirks();
+  conf._on = on();
+  conf._active = active();
+  conf._guiVisible = guiVisible();
+  conf._nativeGuiVisible = nativeGuiVisible();
 
-    getNativeGeometry(&x, &y, &w, &h);
-    conf._nativeGeometry = QRect(x, y, w, h);
+  int x, y, w, h;
+  getGeometry(&x, &y, &w, &h);
+  conf._geometry = QRect(x, y, w, h);
 
-    //=============
-    // Custom data
-    //=============
+  getNativeGeometry(&x, &y, &w, &h);
+  conf._nativeGeometry = QRect(x, y, w, h);
+
+  //=============
+  // Custom data
+  //=============
 
 #ifdef LV2_SUPPORT
-    if(_plugin->isLV2Plugin())
+  if(_plugin->isLV2Plugin())
+  {
+    //for multi-instance plugins write only first instance's state
+    if(instances > 0)
     {
-      //for multi-instance plugins write only first instance's state
-      if(instances > 0)
-      {
-          LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
-          conf._accumulatedCustomParams.push_back(lv2Plug->getCustomConfiguration(handle[0]));
-      }
+        LV2PluginWrapper *lv2Plug = static_cast<LV2PluginWrapper *>(_plugin);
+        conf._accumulatedCustomParams.push_back(lv2Plug->getCustomConfiguration(handle[0]));
     }
+  }
 #endif
 
+#ifdef VST_NATIVE_SUPPORT
+  if(_plugin->isVstNativePlugin())
+  {
+    //for multi-instance plugins write only first instance's state
+    if(instances > 0)
+    {
+        VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
+        conf._accumulatedCustomParams.push_back(vstPlug->getCustomConfiguration(handle[0]));
+    }
+  }
+#endif
+
+  //==============================
+  // Plugin controls or parameters
+  //==============================
+
+  // (Other places refer to this text. Be careful if removing or modifying it.)
+  // Do not store controls or parameters if the plugin has custom configuration (vst chunks or lv2 etc).
+  // The assumption is that control or parameter values would be included in the custom data.
+  // This is in fact alluded to in the vst spec. It says chunks can store the whole state, but if chunks
+  //  are not used then an alternative is to store the parameter values. So it does not directly state
+  //  that these values ARE to be stored in the chunks, but it can be inferred although it is possible
+  //  some idiot plugins might not do it. Well too bad, we're going with this.
+  // One of the things this should fix is complaints that some plugins immediately show an indicator
+  //  that they have been 'modified'. It's because we were sending all these parameters along with
+  //  (after) the custom data.
+  // TODO: Watch out for DSSI though, its concept of custom data might not include controls if I recall. (DSSI-VST ???)
+  if(conf._accumulatedCustomParams.empty())
+  {
+    //==============================================================================================
+    // Special for vst: If plugin is vst, ask the vst itself for the control values.
+    // This is because at least one plugin (U-He uhbik) was seen NOT calling back the app
+    //  pluginHostCallback() with audioMasterAutomate when patches were changed from the native gui.
+    // All the gui controls change with patch changes, but no response - nothing at all happened.
+    // So all of our local mirrored control arrays do not get updated when gui patch changes.
+    // Thus our generic gui also is not updated.
+    // Meanwhile other plugins DO call the callback with audioMasterAutomate when patches change
+    //  from the native gui. Like TAL etc.
+    //==============================================================================================
 #ifdef VST_NATIVE_SUPPORT
     if(_plugin->isVstNativePlugin())
     {
       //for multi-instance plugins write only first instance's state
       if(instances > 0)
       {
-          VstNativePluginWrapper *vstPlug = static_cast<VstNativePluginWrapper *>(_plugin);
-          conf._accumulatedCustomParams.push_back(vstPlug->getCustomConfiguration(handle[0]));
-      }
-    }
-#endif
+        VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
 
-    //==============================
-    // Plugin controls or parameters
-    //==============================
-
-    // (Other places refer to this text. Be careful if removing or modifying it.)
-    // Do not store controls or parameters if the plugin has custom configuration (vst chunks or lv2 etc).
-    // The assumption is that control or parameter values would be included in the custom data.
-    // This is in fact alluded to in the vst spec. It says chunks can store the whole state, but if chunks
-    //  are not used then an alternative is to store the parameter values. So it does not directly state
-    //  that these values ARE to be stored in the chunks, but it can be inferred although it is possible
-    //  some idiot plugins might not do it. Well too bad, we're going with this.
-    // One of the things this should fix is complaints that some plugins immediately show an indicator
-    //  that they have been 'modified'. It's because we were sending all these parameters along with
-    //  (after) the custom data.
-    // TODO: Watch out for DSSI though, its concept of custom data might not include controls if I recall. (DSSI-VST ???)
-    if(conf._accumulatedCustomParams.empty())
-    {
-      //==============================================================================================
-      // Special for vst: If plugin is vst, ask the vst itself for the control values.
-      // This is because at least one plugin (U-He uhbik) was seen NOT calling back the app
-      //  pluginHostCallback() with audioMasterAutomate when patches were changed from the native gui.
-      // All the gui controls change with patch changes, but no response - nothing at all happened.
-      // So all of our local mirrored control arrays do not get updated when gui patch changes.
-      // Thus our generic gui also is not updated.
-      // Meanwhile other plugins DO call the callback with audioMasterAutomate when patches change
-      //  from the native gui. Like TAL etc.
-      //==============================================================================================
-#ifdef VST_NATIVE_SUPPORT
-      if(_plugin->isVstNativePlugin())
-      {
-        //for multi-instance plugins write only first instance's state
-        if(instances > 0)
+        // Is the getParameter() function available?
+        if(state->plugin->getParameter)
         {
-          VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State*)handle[0];
-
-          // Is the getParameter() function available?
-          if(state->plugin->getParameter)
+          for (unsigned long i = 0; i < controlPorts; ++i)
           {
-            for (unsigned long i = 0; i < controlPorts; ++i)
-            {
-              const unsigned long idx = controls[i].idx;
-              conf._initParams.push_back(PluginConfiguration::ControlConfig(
-                i,
-                QString(_plugin->portName(idx)),
-                state->plugin->getParameter(state->plugin, i)));
-            }
-            ctls_handled = true;
+            const unsigned long idx = controls[i].idx;
+            conf._initParams.push_back(PluginConfiguration::ControlConfig(
+              i,
+              QString(_plugin->portName(idx)),
+              state->plugin->getParameter(state->plugin, i)));
           }
+          ctls_handled = true;
         }
       }
-      else
-  #endif // VST_NATIVE_SUPPORT
+    }
+    else
+#endif // VST_NATIVE_SUPPORT
 
+    {
+      for (unsigned long i = 0; i < controlPorts; ++i)
       {
-        for (unsigned long i = 0; i < controlPorts; ++i)
-        {
-          const unsigned long idx = controls[i].idx;
-          conf._initParams.push_back(PluginConfiguration::ControlConfig(
-            i,
-            QString(_plugin->portName(idx)),
-            controls[i].val));
-        }
-        ctls_handled = true;
+        const unsigned long idx = controls[i].idx;
+        conf._initParams.push_back(PluginConfiguration::ControlConfig(
+          i,
+          QString(_plugin->portName(idx)),
+          controls[i].val));
       }
-
-      // If instance or params are not available, use the persistent values.
-      if(!ctls_handled)
-        conf._initParams = _initConfig._initParams;
+      ctls_handled = true;
     }
 
-    return conf;
+    // If instance or params are not available, use the persistent values.
+    if(!ctls_handled)
+      conf._initParams = _initConfig._initParams;
   }
-  else
-  // Plugin is not available. Use the persistent values.
-  {
-    return _initConfig;
-  }
+
+  return conf;
 }
 
 // REMOVE Tim. tmp. Added.
@@ -3378,16 +3437,20 @@ void PluginI::setInitialConfiguration(const PluginConfiguration& config)
 //   configure
 //---------------------------------------------------------
 
-void PluginI::configure(const PluginConfiguration& config)
+void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t opts)
 {
-  setActive(config._active);
-  setOn(config._on);
-  setQuirks(config._quirks);
+  if(opts & ConfigActive)
+    setActive(config._active);
+  if(opts & ConfigOn)
+    setOn(config._on);
+  if(opts & ConfigQuirks)
+    setQuirks(config._quirks);
 
   //now process custom data immediately
   //because it MUST be processed before plugin controls
   //writeConfiguration places custom data before plugin controls values
-  setCustomData(config._accumulatedCustomParams);
+  if(opts & ConfigCustomData)
+    setCustomData(config._accumulatedCustomParams);
   // Done with initial custom data. Clear them.
   //config._accumulatedCustomParams.clear();
 
@@ -3395,7 +3458,7 @@ void PluginI::configure(const PluginConfiguration& config)
   // Ignore parameters if there is custom data.
   // The assumption is that control or parameter values would be included in the custom data.
   // See getCustomConfiguration() for more info.
-  if(config._accumulatedCustomParams.empty())
+  if(config._accumulatedCustomParams.empty() && (opts & ConfigParams))
   {
     unsigned long controlPorts = parameters();
 
@@ -3418,7 +3481,7 @@ void PluginI::configure(const PluginConfiguration& config)
         }
         else
         {
-          fprintf(stderr, "PluginI::setConfiguration(%d %s, %f) controller number out of range\n",
+          fprintf(stderr, "PluginI::configure(%d %s, %f) controller number out of range\n",
             cc._ctlnum, cc._name.toLatin1().constData(), cc._val);
           // Don't return. Let it continue.
           //return false;
@@ -3443,7 +3506,7 @@ void PluginI::configure(const PluginConfiguration& config)
         }
         if(!found)
         {
-          fprintf(stderr, "PluginI::setConfiguration(%s, %f) controller name not found\n",
+          fprintf(stderr, "PluginI::configure(%s, %f) controller name not found\n",
             cc._name.toLatin1().constData(), cc._val);
           // Don't return. Let it continue.
           //return false;
@@ -3458,18 +3521,36 @@ void PluginI::configure(const PluginConfiguration& config)
   // Done with initial params. Clear them.
 //  config._initParams.clear();
 
-  showGui(config._guiVisible);
+  if(opts & ConfigGeometry)
+    setGeometry(_initConfig._geometry.x(), _initConfig._geometry.y(),
+      _initConfig._geometry.width(), _initConfig._geometry.height());
 
-  // // We can't tell OSC to show the native plugin gui
-  // //  until the parent track is added to the lists.
-  // // OSC needs to find the plugin in the track lists.
-  // // Use this 'pending' flag so it gets done later.
-  // _showNativeGuiPending = config._nativeGuiVisible;
+  if(opts & ConfigNativeGeometry)
+    setNativeGeometry(_initConfig._nativeGeometry.x(), _initConfig._nativeGeometry.y(),
+      _initConfig._nativeGeometry.width(), _initConfig._nativeGeometry.height());
 
-  showNativeGui(config._nativeGuiVisible);
+  if(opts & ConfigGui)
+    showGui(config._guiVisible);
+
+  if(opts & ConfigNativeGui)
+  {
+    if(opts & ConfigDeferNativeGui)
+      // We can't tell OSC to show the native plugin gui
+      //  until the parent track is added to the lists.
+      // OSC needs to find the plugin in the track lists.
+      // Use this 'pending' flag so it gets done later.
+      _showNativeGuiPending = config._nativeGuiVisible;
+    else
+      showNativeGui(config._nativeGuiVisible);
+  }
 
   if(gui())
     gui()->updateValues();
+}
+
+void PluginI::configure(ConfigureOptions_t opts)
+{
+  return configure(_initConfig, opts);
 }
 
 // REMOVE Tim. tmp. Changed.
@@ -3765,16 +3846,16 @@ void PluginI::writeConfiguration(int level, Xml& xml)
 
   if(pc._uri.isEmpty())
   {
-    xml.tag(level++, "plugin file=\"%s\" label=\"%s\" name=\"%s\"",
+    xml.tag(level++, "plugin file=\"%s\" label=\"%s\" instLabel=\"%s\"",
       Xml::xmlString(pc._file).toLatin1().constData(),
-      Xml::xmlString(pc._label).toLatin1().constData(),
+      Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
       Xml::xmlString(pc._name).toLatin1().constData());
   }
   else
   {
-    xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" name=\"%s\"",
+    xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" instLabel=\"%s\"",
       Xml::xmlString(pc._uri).toLatin1().constData(),
-      Xml::xmlString(pc._label).toLatin1().constData(),
+      Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
       Xml::xmlString(pc._name).toLatin1().constData());
   }
 
@@ -4169,7 +4250,7 @@ bool PluginI::loadControl(Xml& xml)
 //       return true;
 //       }
 
-bool PluginI::readConfiguration(Xml& xml, bool readPreset)
+bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
       {
       // QString file;
       // QString label;
@@ -4212,23 +4293,23 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                         if (tag == "control")
                               loadControl(xml);
                         else if (tag == "active") {
-                              // const bool flag = xml.parseInt();
+                              const bool flag = xml.parseInt();
                               if (!readPreset)
                               //       _active = flag;
-                                _initConfig._active = xml.parseInt();
+                                _initConfig._active = flag;
                               }
                         else if (tag == "on") {
-                              // const bool flag = xml.parseInt();
+                              const bool flag = xml.parseInt();
                               if (!readPreset)
                               //       _on = flag;
-                                _initConfig._on = xml.parseInt();
+                                _initConfig._on = flag;
                               }
                         else if (tag == "quirks") {
-                              // PluginQuirks q;
-                              // q.read(xml);
-                              if (!readPreset)
-                              //   _quirks = q;
-                                _initConfig._quirks.read(xml);
+                              PluginQuirks q;
+                              //q.read(xml);
+                              //_quirks = q;
+                              if(!q.read(xml) && !readPreset)
+                                _initConfig._quirks = q;
                               }
                         else if (tag == "gui") {
                               const bool flag = xml.parseInt();
@@ -4238,26 +4319,29 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                 _initConfig._guiVisible = flag;
                               }
                         else if (tag == "nativegui") {
-                              // We can't tell OSC to show the native plugin gui
-                              //  until the parent track is added to the lists.
-                              // OSC needs to find the plugin in the track lists.
-                              // Use this 'pending' flag so it gets done later.
-                              // _showNativeGuiPending = xml.parseInt();
+                              const bool flag = xml.parseInt();
+//                              // We can't tell OSC to show the native plugin gui
+//                              //  until the parent track is added to the lists.
+//                              // OSC needs to find the plugin in the track lists.
+//                              // Use this 'pending' flag so it gets done later.
+//                              // _showNativeGuiPending = xml.parseInt();
                               if (!readPreset)
-                                _initConfig._nativeGuiVisible = xml.parseInt();
+                                _initConfig._nativeGuiVisible = flag;
                               }
                         else if (tag == "geometry") {
-                              //const QRect r(readGeometry(xml, tag));
+                              const QRect r(readGeometry(xml, tag));
                               //setGeometry(r.x(), r.y(), r.width(), r.height());
-                              _initConfig._geometry = readGeometry(xml, tag);
+                              if (!readPreset)
+                                _initConfig._geometry = r;
                               }
                         else if (tag == "nativeGeometry") {
-                              //const QRect r(readGeometry(xml, tag));
+                              const QRect r(readGeometry(xml, tag));
                               //setNativeGeometry(r.x(), r.y(), r.width(), r.height());
-                              _initConfig._nativeGeometry = readGeometry(xml, tag);
+                              if (!readPreset)
+                                _initConfig._nativeGeometry = r;
                               }
                         else if (tag == "customData") { //just place tag contents in accumulatedCustomParams
-                              QString customData = xml.parse1();
+                              const QString customData = xml.parse1();
                               if(!customData.isEmpty()){
                                  //accumulatedCustomParams.push_back(customData);
                                  //now process custom data immediately
@@ -4326,9 +4410,9 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               if (!readPreset)
 // REMOVE Tim. tmp. Changed.
                                     // label = xml.s2();
-                                    _initConfig._label = xml.s2();
+                                    _initConfig._pluginLabel = xml.s2();
                               }
-                        else if (tag == "name") {
+                        else if (tag == "instLabel") {
                               if (!readPreset)
                                     _initConfig._name = xml.s2();
                               }
@@ -4343,28 +4427,32 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                         {
                               if (!readPreset && _plugin == nullptr)
                               {
-                                    _plugin = MusEGlobal::plugins.find(
-                                      _initConfig._file, _initConfig._uri, _initConfig._label);
-
-                                    if (_plugin == nullptr)
-                                    {
-// REMOVE Tim. tmp. Removed.
-                                      // QMessageBox::warning(0,"Plugin not found!",
-                                      //   "Plugin: " + _initConfig._label + " not found. Settings are preserved if the project is saved.");
-                                      fprintf(stderr, "Warning: - Plugin not found (%s, %s, %s)\n",
-                                         _initConfig._file.toLatin1().constData(),
-                                         _initConfig._uri.toLatin1().constData(),
-                                         _initConfig._label.toLatin1().constData());
-                                      //return true;
-                                      // Return OK to allow it to continue loading.
-                                      //return false;
-
-                                      // For persistence: Allow it to continue on. Initialization needs to do a few things.
-                                    }
+//                                     _plugin = MusEGlobal::plugins.find(
+//                                       _initConfig._file, _initConfig._uri, _initConfig._label);
+//
+//                                     if (_plugin == nullptr)
+//                                     {
+// // REMOVE Tim. tmp. Removed.
+//                                       // QMessageBox::warning(0,"Plugin not found!",
+//                                       //   "Plugin: " + _initConfig._label + " not found. Settings are preserved if the project is saved.");
+//                                       fprintf(stderr, "Warning: - Plugin not found (%s, %s, %s)\n",
+//                                          _initConfig._file.toLatin1().constData(),
+//                                          _initConfig._uri.toLatin1().constData(),
+//                                          _initConfig._label.toLatin1().constData());
+//                                       //return true;
+//                                       // Return OK to allow it to continue loading.
+//                                       //return false;
+//
+//                                       // For persistence: Allow it to continue on. Initialization needs to do a few things.
+//                                     }
 
 // REMOVE Tim. tmp. Changed.
-                                    // if (initPluginInstance(_plugin, channel))
-                                    if (initPluginInstance(_plugin, _track->channels()))
+//                                    if (initPluginInstance(_plugin, channel))
+//                                    if (initPluginInstance(_plugin, _track->channels()))
+//                                    if (initPluginInstance(_initConfig, _track->channels()))
+//                                    if (initPluginInstance(_track->channels()))
+//                                    if (initPluginInstance(channels, _initConfig._label, _initConfig._name))
+                                    if (initPluginInstance(channels))
                                     {
                                       // For persistence: Keep the custom data and parameters (don't clear them).
                                       // If the error was because there was no plugin available,
@@ -4375,7 +4463,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                                       fprintf(stderr, "Error initializing plugin instance (%s, %s, %s)\n",
                                         _initConfig._file.toLatin1().constData(),
                                         _initConfig._uri.toLatin1().constData(),
-                                        _initConfig._label.toLatin1().constData());
+                                        _initConfig._pluginLabel.toLatin1().constData());
 
                                       // The error was for some other reason.
                                       // Hm, let's null that plugin pointer.
@@ -4393,73 +4481,90 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
 //                                return true;
                                 return false;
 
-                              // Don't bother setting these if reading a preset.
-                              if(!readPreset)
-                              {
-                                _active = _initConfig._active;
-                                _on = _initConfig._on;
-                                _quirks = _initConfig._quirks;
-                              }
+                              // Options for configuration.
+                              ConfigureOptions_t opts = readPreset ? ConfigPresetOnly : ConfigAll;
+                              // Special for DSSI: Defer opening the native gui.
+                              // We can't tell OSC to show the native plugin gui
+                              //  until the parent track is added to the lists.
+                              // OSC needs to find the plugin in the track lists.
+                              // TODO: Find a way to offload this to DSSI so we don't have to worry about it here.
+                              if(isDssiPlugin())
+                                opts |= ConfigDeferNativeGui;
 
-                              //now process custom data immediately
-                              //because it MUST be processed before plugin controls
-                              //writeConfiguration places custom data before plugin controls values
-                              setCustomData(_initConfig._accumulatedCustomParams);
+                              configure(opts);
 
-                              // Ignore initial parameters if there is custom data.
-                              // The assumption is that control or parameter values would be included in the custom data.
-                              // See getCustomConfiguration() for more info.
-                              if(_initConfig._accumulatedCustomParams.empty())
-                              {
-                                const unsigned long sz = _initConfig._initParams.size();
-                                for(unsigned long i = 0; i < sz; ++i)
-                                {
-                                  const PluginConfiguration::ControlConfig& cc = _initConfig._initParams[i];
-                                  // If a valid control number was stored, use it for faster lookup.
-                                  if(cc._ctlnum >= 0)
-                                  {
-                                    if((unsigned long)cc._ctlnum < controlPorts)
-                                    {
-                                      // TODO: Set vst params directly here, maybe even instead of controls array?
-                                      //       Maybe not. Process sets the vst params for us.
 
-    // REMOVE Tim. tmp. Changed.
-                                      // controls[j].val = controls[j].tmpVal = cc._val;
-                                      controls[cc._ctlnum].val = cc._val;
-                                    }
-                                    else
-                                    {
-                                      fprintf(stderr, "PluginI:readConfiguration(%d %s, %f) controller number out of range\n",
-                                        cc._ctlnum, cc._name.toLatin1().constData(), cc._val);
-                                      // Don't return. Let it continue.
-                                      //return false;
-                                    }
-                                  }
-                                  else
-                                  // A valid control number was not stored, use the name for a slow lookup.
-                                  {
-                                    bool found = false;
-                                    for(unsigned long j = 0; j < controlPorts; ++j)
-                                    {
-                                      if(_plugin->portName(controls[j].idx) == cc._name)
-                                      {
-    // REMOVE Tim. tmp. Changed.
-                                        // controls[j].val = controls[j].tmpVal = cc._val;
-                                        controls[j].val = cc._val;
-                                        found = true;
-                                        break;
-                                      }
-                                    }
-                                    if(!found)
-                                    {
-                                      fprintf(stderr, "PluginI:readConfiguration(%s, %f) controller name not found\n",
-                                        cc._name.toLatin1().constData(), cc._val);
-                                      // Don't return. Let it continue.
-                                      //return false;
-                                    }
-                                  }
-                                }
-                              }
+
+//                               // Don't bother setting these if reading a preset.
+//                               if(!readPreset)
+//                               {
+//                                 _active = _initConfig._active;
+//                                 _on = _initConfig._on;
+//                                 _quirks = _initConfig._quirks;
+//                               }
+//
+//                               //now process custom data immediately
+//                               //because it MUST be processed before plugin controls
+//                               //writeConfiguration places custom data before plugin controls values
+//                               setCustomData(_initConfig._accumulatedCustomParams);
+//
+//                               // Ignore initial parameters if there is custom data.
+//                               // The assumption is that control or parameter values would be included in the custom data.
+//                               // See getCustomConfiguration() for more info.
+//                               if(_initConfig._accumulatedCustomParams.empty())
+//                               {
+//                                 const unsigned long sz = _initConfig._initParams.size();
+//                                 for(unsigned long i = 0; i < sz; ++i)
+//                                 {
+//                                   const PluginConfiguration::ControlConfig& cc = _initConfig._initParams[i];
+//                                   // If a valid control number was stored, use it for faster lookup.
+//                                   if(cc._ctlnum >= 0)
+//                                   {
+//                                     if((unsigned long)cc._ctlnum < controlPorts)
+//                                     {
+//                                       // TODO: Set vst params directly here, maybe even instead of controls array?
+//                                       //       Maybe not. Process sets the vst params for us.
+//
+// // REMOVE Tim. tmp. Changed.
+// //                                      controls[j].val = controls[j].tmpVal = cc._val;
+// //                                      controls[cc._ctlnum].val = cc._val;
+//                                       putParam(cc._ctlnum, cc._val);
+//                                     }
+//                                     else
+//                                     {
+//                                       fprintf(stderr, "PluginI:readConfiguration(%d %s, %f) controller number out of range\n",
+//                                         cc._ctlnum, cc._name.toLatin1().constData(), cc._val);
+//                                       // Don't return. Let it continue.
+//                                       //return false;
+//                                     }
+//                                   }
+//                                   else
+//                                   // A valid control number was not stored, use the name for a slow lookup.
+//                                   {
+//                                     bool found = false;
+//                                     for(unsigned long j = 0; j < controlPorts; ++j)
+//                                     {
+// // REMOVE Tim. tmp. Changed.
+// //                                      if(_plugin->portName(controls[j].idx) == cc._name)
+//                                       if(QString(paramName(j)) == cc._name)
+//                                       {
+// // REMOVE Tim. tmp. Changed.
+//                                         // controls[j].val = controls[j].tmpVal = cc._val;
+//                                         controls[j].val = cc._val;
+//                                         found = true;
+//                                         break;
+//                                       }
+//                                     }
+//                                     if(!found)
+//                                     {
+//                                       fprintf(stderr, "PluginI:readConfiguration(%s, %f) controller name not found\n",
+//                                         cc._name.toLatin1().constData(), cc._val);
+//                                       // Don't return. Let it continue.
+//                                       //return false;
+//                                     }
+//                                   }
+//                                 }
+//                               }
 
 // REMOVE Tim. tmp. Removed.
 //                                 // initControlValues = true;
@@ -4469,19 +4574,25 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               // Done with initial custom data. Clear them.
                               _initConfig._accumulatedCustomParams.clear();
 
-                              // Don't bother setting these if reading a preset.
-                              if (!readPreset)
-                              {
-                                showGui(_initConfig._guiVisible);
-                                // We can't tell OSC to show the native plugin gui
-                                //  until the parent track is added to the lists.
-                                // OSC needs to find the plugin in the track lists.
-                                // Use this 'pending' flag so it gets done later.
-                                _showNativeGuiPending = _initConfig._nativeGuiVisible;
-                              }
-
-                              if (_gui)
-                                    _gui->updateValues();
+//                               // Don't bother setting these if reading a preset.
+//                               if (!readPreset)
+//                               {
+//                                 setGeometry(_initConfig._geometry.x(), _initConfig._geometry.y(),
+//                                   _initConfig._geometry.width(), _initConfig._geometry.height());
+//
+//                                 setNativeGeometry(_initConfig._nativeGeometry.x(), _initConfig._nativeGeometry.y(),
+//                                   _initConfig._nativeGeometry.width(), _initConfig._nativeGeometry.height());
+//
+//                                 showGui(_initConfig._guiVisible);
+//                                 // We can't tell OSC to show the native plugin gui
+//                                 //  until the parent track is added to the lists.
+//                                 // OSC needs to find the plugin in the track lists.
+//                                 // Use this 'pending' flag so it gets done later.
+//                                 _showNativeGuiPending = _initConfig._nativeGuiVisible;
+//                               }
+//
+//                               if (_gui)
+//                                     _gui->updateValues();
                               return false;
                         }
                         return true;
@@ -4659,12 +4770,21 @@ void PluginI::enableAllControllers(bool v)
 
 // TODO: Store the features in the file and the persistent settings, to use here?
 PluginFeatures_t PluginI::requiredFeatures() const { return _plugin ? _plugin->requiredFeatures() : PluginNoFeatures; }
+
 // TODO: Store the id in the file and the persistent settings, to use here?
 unsigned long PluginI::pluginID() const { return _plugin ? _plugin->id() : 0; }
-QString PluginI::pluginLabel() const    { return _plugin ? _plugin->label() : _initConfig._label; }
+
+QString PluginI::pluginLabel() const    { return _plugin ? _plugin->label() : _initConfig._pluginLabel; }
+
 // TODO: Use persistent settings here?
-QString PluginI::label() const          { return _label; }
+//QString PluginI::name() const          { return _label; }
+//QString PluginI::name() const          { return _plugin ? _label : _initConfig._name; }
+
+// TODO: Use persistent settings here?
 QString PluginI::name() const           { return _name; }
+
+QString PluginI::pluginName() const     { return _plugin ? _plugin->name() : QString(); }
+
 QString PluginI::lib() const            { return _plugin ? _plugin->lib() : QString(); }
 QString PluginI::uri() const            { return _plugin ? _plugin->uri() : _initConfig._uri; }
 QString PluginI::dirPath() const        { return _plugin ? _plugin->dirPath() : QString(); }
@@ -6278,6 +6398,10 @@ void PluginGui::comboChanged(unsigned long param)
 void PluginGui::load()
       {
       QString s("presets/plugins/");
+      // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
+      // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+      // But still, the file gets saved OK.
+      // FIXME: Should we extract the last piece of label text after the last '/' ?
       s += plugin->pluginLabel();
       s += "/";
 
@@ -6342,6 +6466,10 @@ ende:
 void PluginGui::save()
       {
       QString s("presets/plugins/");
+      // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
+      // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+      // But still, the file gets saved OK.
+      // FIXME: Should we extract the last piece of label text after the last '/' ?
       s += plugin->pluginLabel();
       s += "/";
 

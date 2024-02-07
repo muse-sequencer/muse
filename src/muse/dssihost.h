@@ -196,8 +196,10 @@ class DssiSynthIF : public SynthIF
       
       unsigned long pluginID() const;
       int id() const;
-      QString pluginLabel() const;  
-      QString lib() const;            
+// REMOVE Tim. tmp. Changed.
+      QString pluginLabel() const;
+      QString pluginName() const;
+      QString lib() const;
       QString uri() const;
       QString dirPath() const;
       QString fileName() const;

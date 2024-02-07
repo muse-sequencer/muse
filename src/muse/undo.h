@@ -76,7 +76,7 @@ struct UndoOp {
             //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
             //ModifyMarkerList,
 // REMOVE Tim. tmp. Added.
-            AddRackEffectPlugin, RemoveRackEffectPlugin, SwapRackEffectPlugins,
+            /*AddRackEffectPlugin,*/ /*RemoveRackEffectPlugin,*/ ChangeRackEffectPlugin, SwapRackEffectPlugins,
 
             ModifySongLen, // a = new len, b = old len
             SetInstrument,
@@ -268,7 +268,7 @@ struct UndoOp {
       // This convenience version makes a copy of the pluginConfiguration for you.
       UndoOp(UndoType type, const Track* track, const PluginConfiguration &pluginConfiguration,
              int effectRackPos, bool noUndo = false);
-      // This one takes a pre-created PluginI.
+      // This one takes a pre-created PluginI. It can also be null.
       UndoOp(UndoType type, const Track* track, PluginI *pluginI, int effectRackPos, bool noUndo = false);
 
       UndoOp(UndoType type, CtrlList* ctrlList, unsigned int frame, bool oldSelected, bool newSelected, bool noUndo = false);

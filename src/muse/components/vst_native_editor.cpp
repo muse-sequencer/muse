@@ -177,7 +177,9 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
   QString windowTitle = "VST plugin editor";
   if(_sif && _sif->track())
   {
-     windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
+// REMOVE Tim. tmp. Changed.
+//     windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
+     windowTitle = _sif->track()->name() + ":" + _sif->name();
   }
   else if(_pstate && _pstate->pluginI->track())
   {

@@ -957,14 +957,14 @@ void VstNativeSynth::vstconfWrite(
   AEffect *plugin,
   const QString&
 #ifdef VST_NATIVE_DEBUG
-  name
+  label
 #endif
   ,int level, Xml &xml)
 {
 #ifdef VST_NATIVE_DEBUG
    if(hasChunks())
      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
-           name.toLatin1().constData(), vstVersion());
+           label.toLatin1().constData(), vstVersion());
 #endif
    const QString cd = getCustomConfiguration(plugin);
    if(!cd.isEmpty())
@@ -2192,7 +2192,9 @@ int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned
 void VstNativeSynthIF::write(int level, Xml& xml) const
 {
 //#ifndef VST_VESTIGE_SUPPORT
-  _synth->vstconfWrite(_plugin, name(), level, xml);
+// REMOVE Tim. tmp. Changed.
+//  _synth->vstconfWrite(_plugin, name(), level, xml);
+  _synth->vstconfWrite(_plugin, label(), level, xml);
 //#else
 //  fprintf(stderr, "support for vst chunks not compiled in!\n");
 //#endif
@@ -2562,7 +2564,9 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                       fprintf(stderr, "chunk flags:%x compressed chunks not supported yet.\n", chunk_flags);
                     else
                     {
-                      fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
+// REMOVE Tim. tmp. Changed.
+//                      fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
+                      fprintf(stderr, "%s: loading chunk from sysex!\n", label().toLatin1().constData());
                       // 10 = 2 bytes header + "VSTSAVE" + 1 byte flags (compression etc)
                       dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }
@@ -3121,7 +3125,10 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 
 unsigned long VstNativeSynthIF::pluginID() const                  { return (_plugin) ? _plugin->uniqueID : 0; }
 int VstNativeSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
+// TODO: There is no synth 'label'
 QString VstNativeSynthIF::pluginLabel() const                     { return _synth ? QString(_synth->name()) : QString(); } // FIXME Maybe wrong
+// REMOVE Tim. tmp. Added.
+QString VstNativeSynthIF::pluginName() const                      { return _synth ? QString(_synth->name()) : QString(); }
 QString VstNativeSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
 QString VstNativeSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
 QString VstNativeSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }

@@ -2374,7 +2374,8 @@ void DssiSynthIF::deactivate3()
 
 unsigned long DssiSynthIF::pluginID() const                  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->UniqueID : 0; }
 int DssiSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth.
-QString DssiSynthIF::pluginLabel() const                     { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
+QString DssiSynthIF::pluginLabel() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
+QString DssiSynthIF::pluginName() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Name) : QString(); }
 QString DssiSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
 QString DssiSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
 QString DssiSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
