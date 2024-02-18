@@ -159,8 +159,8 @@ class VstNativeSynth : public Synth {
 // REMOVE Tim. tmp. Added.
       QString getCustomConfiguration(AEffect *plugin);
 // REMOVE Tim. tmp. Changed.
-//      void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
-      void vstconfWrite(AEffect *plugin, const QString& label, int level, Xml &xml);
+      void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
+      //void vstconfWrite(AEffect *plugin, const QString& label, int level, Xml &xml);
       void vstconfSet(AEffect *plugin, const std::vector<QString> & customParams);
 
       // Enables or disables the plugin, if it has such as function.

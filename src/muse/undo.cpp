@@ -3214,11 +3214,53 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyTrackName:
-                        pendingOperations.add(PendingOperationItem(editable_track, i->_oldName, PendingOperationItem::ModifyTrackName));
-                        updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
-                        // If it's an aux track, notify aux UI controls to reload, or change their names etc.
-                        if(editable_track->type() == Track::AUDIO_AUX)
-                          updateFlags |= SC_AUX;
+                        {
+                          pendingOperations.add(PendingOperationItem(editable_track, i->_oldName, PendingOperationItem::ModifyTrackName));
+                          updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
+                          // If it's an aux track, notify aux UI controls to reload, or change their names etc.
+                          if(editable_track->type() == Track::AUDIO_AUX)
+                            updateFlags |= SC_AUX;
+
+  // REMOVE Tim. tmp. Added.
+                          // --------------------------------------------------------------------------------
+                          // Special for DSSI: Quit and later reopen the native UI so that the 'user-friendly'
+                          //  title bar text contains the new track name.
+                          // There does not appear to be a mechanism to change it while the UI is open.
+                          // --------------------------------------------------------------------------------
+
+                          // If it's an audio track, modifying the track name will affect all
+                          //  rack effect UI title bar texts.
+                          if(!editable_track->isMidiTrack())
+                          {
+                            AudioTrack *at = static_cast<AudioTrack*>(editable_track);
+                            Pipeline *pl = at->efxPipe();
+                            if(pl)
+                            {
+                              const int sz = pl->size();
+                              for(int k = 0; k < sz; ++k)
+                              {
+                                PluginI *plugi = pl->at(k);
+                                // TODO: Others like LV2 and VST? If all of them, then for rack effects
+                                //        consider adding a Pipeline::closeAllNativeGuis().
+                                if(plugi && plugi->isDssiPlugin())
+                                  plugi->closeNativeGui();
+                              }
+                            }
+                          }
+                          // If it's a synth track.
+                          if(editable_track->type() == Track::AUDIO_SOFTSYNTH)
+                          {
+                            SynthI *synthi = static_cast<SynthI*>(editable_track);
+                            // TODO: Others like LV2 and VST?
+                            if(synthi->synth() && synthi->synth()->synthType() == Synth::DSSI_SYNTH)
+                            {
+#ifdef DSSI_SUPPORT
+                              if(synthi->sif())
+                                synthi->sif()->closeNativeGui();
+#endif
+                            }
+                          }
+                        }
                         break;
                         
                   case UndoOp::MoveTrack:
@@ -4480,11 +4522,53 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::ModifyTrackName:
-                        pendingOperations.add(PendingOperationItem(editable_track, i->_newName, PendingOperationItem::ModifyTrackName));
-                        updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
-                        // If it's an aux track, notify aux UI controls to reload, or change their names etc.
-                        if(editable_track->type() == Track::AUDIO_AUX)
-                          updateFlags |= SC_AUX;
+                        {
+                          pendingOperations.add(PendingOperationItem(editable_track, i->_newName, PendingOperationItem::ModifyTrackName));
+                          updateFlags |= (SC_TRACK_MODIFIED | SC_MIDI_TRACK_PROP);
+                          // If it's an aux track, notify aux UI controls to reload, or change their names etc.
+                          if(editable_track->type() == Track::AUDIO_AUX)
+                            updateFlags |= SC_AUX;
+
+  // REMOVE Tim. tmp. Added.
+                          // --------------------------------------------------------------------------------
+                          // Special for DSSI: Quit and later reopen the native UI so that the 'user-friendly'
+                          //  title bar text contains the new track name. There does not appear to be a way to
+                          //  change it while the UI is open.
+                          // --------------------------------------------------------------------------------
+
+                          // If it's an audio track, modifying the track name will affect all
+                          //  rack effect UI title bar texts.
+                          if(!editable_track->isMidiTrack())
+                          {
+                            AudioTrack *at = static_cast<AudioTrack*>(editable_track);
+                            Pipeline *pl = at->efxPipe();
+                            if(pl)
+                            {
+                              const int sz = pl->size();
+                              for(int k = 0; k < sz; ++k)
+                              {
+                                PluginI *plugi = pl->at(k);
+                                // TODO: Others like LV2 and VST? If all of them, then for rack effects
+                                //        consider adding a Pipeline::closeAllNativeGuis().
+                                if(plugi && plugi->isDssiPlugin())
+                                  plugi->closeNativeGui();
+                              }
+                            }
+                          }
+                          // If it's a synth track.
+                          if(editable_track->type() == Track::AUDIO_SOFTSYNTH)
+                          {
+                            SynthI *synthi = static_cast<SynthI*>(editable_track);
+                            // TODO: Others like LV2 and VST?
+                            if(synthi->synth() && synthi->synth()->synthType() == Synth::DSSI_SYNTH)
+                            {
+#ifdef DSSI_SUPPORT
+                              if(synthi->sif())
+                                synthi->sif()->closeNativeGui();
+#endif
+                            }
+                          }
+                        }
                         break;
                         
                   case UndoOp::MoveTrack:

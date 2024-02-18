@@ -64,17 +64,28 @@ class OscIF
       unsigned long maxDssiPort;
       const std::vector<unsigned long>* control_port_mapper;
       
-      virtual bool oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
-                       const QString& label, const QString& filePath, const QString& guiPath,
+// REMOVE Tim. tmp. Changed.
+//      virtual bool oscInitGui(const QString& typ, const QString& baseName, const QString& name,
+//                       const QString& label, const QString& filePath, const QString& guiPath,
+//                       const std::vector<unsigned long>* control_port_mapper_);
+      virtual bool oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
+                       const QString& name, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_);
-                       
+
+// REMOVE Tim. tmp. Added.
+      virtual bool oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
+                       int trackno, const QString& name, const QString& filePath, const QString& guiPath,
+                       const std::vector<unsigned long>* control_port_mapper_, int rackpos = -1);
    public:
       OscIF();
       virtual ~OscIF();
       
-      virtual int oscUpdate(lo_arg**);    
-      virtual int oscProgram(lo_arg**)   { return 0; }   
-      virtual int oscControl(lo_arg**)   { return 0; }    
+// REMOVE Tim. tmp. Added.
+      bool isRunning() const;
+
+      virtual int oscUpdate(lo_arg**);
+      virtual int oscProgram(lo_arg**);
+      virtual int oscControl(lo_arg**);
       virtual int oscExiting(lo_arg**);   
       virtual int oscMidi(lo_arg**)      { return 0; }      
       virtual int oscConfigure(lo_arg**) { return 0; } 
@@ -86,7 +97,9 @@ class OscIF
       virtual bool oscInitGui() { return false; }
       virtual void oscShowGui(bool);
       virtual bool oscGuiVisible() const;
-      
+// REMOVE Tim. tmp. Added.
+      virtual bool oscQuitGui();
+
       virtual QString titlePrefix() const { return QString(); }
 };
  

@@ -215,10 +215,12 @@ class SynthIF : public PluginIBase {
       virtual unsigned long pluginID() const;
       virtual int id() const;
 // REMOVE Tim. tmp. Added.
-      // Note that in this context label is the track name.
+      // Here the name is the track name.
       virtual QString name() const;
+      // The short formal plugin name.
+      // NOTE: Currently the same as pluginName().
       virtual QString pluginLabel() const;
-      // Note that in this context name is the formal plugin name.
+      // The full formal plugin name.
       virtual QString pluginName() const;
       virtual QString lib() const;
       virtual QString uri() const;

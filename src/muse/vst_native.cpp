@@ -925,51 +925,52 @@ QString VstNativeSynth::getCustomConfiguration(AEffect *plugin)
 //---------------------------------------------------------
 
 // REMOVE Tim. tmp. Changed.
-// void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml)
-// {
-//    if(hasChunks())
-//    {
-//       //---------------------------------------------
-//       // dump current state of synth
-//       //---------------------------------------------
-//       fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
-//               name.toLatin1().constData(), vstVersion());
-//       unsigned long len = 0;
-//       void* p = 0;
-//       len = plugin->dispatcher(plugin, effGetChunk, 0, 0, &p, 0.0);
-//       if (len)
-//       {
-//          QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
-//
-//          // Weee! Compression!
-//          QByteArray outEnc64 = qCompress(arrOut).toBase64();
-//
-//          QString customData(outEnc64);
-//          for (int pos=0; pos < customData.size(); pos+=150)
-//          {
-//             customData.insert(pos++,'\n'); // add newlines for readability
-//          }
-//          xml.strTag(level, "customData", customData);
-//       }
-//    }
-// }
-void VstNativeSynth::vstconfWrite(
-  AEffect *plugin,
-  const QString&
-#ifdef VST_NATIVE_DEBUG
-  label
-#endif
-  ,int level, Xml &xml)
+void VstNativeSynth::vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml)
 {
-#ifdef VST_NATIVE_DEBUG
    if(hasChunks())
-     fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
-           label.toLatin1().constData(), vstVersion());
-#endif
-   const QString cd = getCustomConfiguration(plugin);
-   if(!cd.isEmpty())
-     xml.strTag(level, "customData", cd);
+   {
+      //---------------------------------------------
+      // dump current state of synth
+      //---------------------------------------------
+      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
+              name.toLatin1().constData(), vstVersion());
+      unsigned long len = 0;
+      void* p = 0;
+      len = plugin->dispatcher(plugin, effGetChunk, 0, 0, &p, 0.0);
+      if (len)
+      {
+         QByteArray arrOut = QByteArray::fromRawData((char *)p, len);
+
+         // Weee! Compression!
+         QByteArray outEnc64 = qCompress(arrOut).toBase64();
+
+         QString customData(outEnc64);
+         for (int pos=0; pos < customData.size(); pos+=150)
+         {
+            customData.insert(pos++,'\n'); // add newlines for readability
+         }
+         xml.strTag(level, "customData", customData);
+      }
+   }
 }
+
+// void VstNativeSynth::vstconfWrite(
+//   AEffect *plugin,
+//   const QString&
+// #ifdef VST_NATIVE_DEBUG
+//   label
+// #endif
+//   ,int level, Xml &xml)
+// {
+// #ifdef VST_NATIVE_DEBUG
+//    if(hasChunks())
+//      fprintf(stderr, "%s: commencing chunk data dump, plugin api version=%d\n",
+//            label.toLatin1().constData(), vstVersion());
+// #endif
+//    const QString cd = getCustomConfiguration(plugin);
+//    if(!cd.isEmpty())
+//      xml.strTag(level, "customData", cd);
+// }
 
 //---------------------------------------------------------
 //   vstconfSet
@@ -1789,7 +1790,10 @@ void VstNativeSynthIF::deactivate3()
       {
       if(_editor)
       {
-        delete _editor;
+// REMOVE Tim. tmp. Changed.
+//        delete _editor;
+        // Don't delete the editor directly here. Call close.
+        _editor->close();
         _editor = nullptr;
         _guiVisible = false;
       }
@@ -2192,9 +2196,7 @@ int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned
 void VstNativeSynthIF::write(int level, Xml& xml) const
 {
 //#ifndef VST_VESTIGE_SUPPORT
-// REMOVE Tim. tmp. Changed.
-//  _synth->vstconfWrite(_plugin, name(), level, xml);
-  _synth->vstconfWrite(_plugin, label(), level, xml);
+ _synth->vstconfWrite(_plugin, name(), level, xml);
 //#else
 //  fprintf(stderr, "support for vst chunks not compiled in!\n");
 //#endif
@@ -2564,9 +2566,7 @@ bool VstNativeSynthIF::processEvent(const MidiPlayEvent& e, VstMidiEvent* event)
                       fprintf(stderr, "chunk flags:%x compressed chunks not supported yet.\n", chunk_flags);
                     else
                     {
-// REMOVE Tim. tmp. Changed.
-//                      fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
-                      fprintf(stderr, "%s: loading chunk from sysex!\n", label().toLatin1().constData());
+                     fprintf(stderr, "%s: loading chunk from sysex!\n", name().toLatin1().constData());
                       // 10 = 2 bytes header + "VSTSAVE" + 1 byte flags (compression etc)
                       dispatch(effSetChunk, 0, e.len()-10, (void*)(data+10), 0.0); // index 0: is bank 1: is program
                     }

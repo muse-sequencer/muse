@@ -89,7 +89,9 @@
 #include <QThread>
 #include <QTimer>
 #include <QWindow>
+#include <QMetaObject>
 
+#include "type_defs.h"
 #include "globaldefs.h"
 #include "midictrl.h"
 #include "synth.h"
@@ -753,6 +755,7 @@ private:
    bool _closing;
    QTimer updateTimer;
    void stopUpdateTimer();
+   QMetaObject::Connection _songChangedMetaConn;
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state, 
                                       QWidget *parent = Q_NULLPTR, 
@@ -768,6 +771,8 @@ public slots:
    void updateGui();
    void stopFromGuiThread();
    void startFromGuiThread();
+   void songChanged(MusECore::SongChangedStruct_t);
+   void updateWindowTitle();
 };
 
 

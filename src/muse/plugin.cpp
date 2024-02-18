@@ -628,9 +628,61 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
       }
 
 
+
+// REMOVE Tim. tmp. Added.
+// NOTE: Some ladspa plugins put a web address as the label (lsp ladpsa plugins).
+// Although legal, the slashes are not good for folder names, and the long label is not good for display.
+// This function strips away any unusual characters and everything before them, like slashes etc.
+static QString stripPluginLabel(const QString& s)
+{
+  // The config name is empty. This will happen if an old song without the new plugin 'name' tag is loaded.
+  // No choice but to compose a name from the label, which must always exist.
+  const int sz = s.size();
+  int last_char = -1;
+  int first_char = -1;
+  int i = sz;
+  while(i > 0)
+  {
+    --i;
+    const QChar c = s.at(i);
+    // TODO: Check for other unusual characters?
+    if(c == '/')
+    {
+      if(last_char != -1)
+        break;
+      continue;
+    }
+
+    if(last_char == -1)
+      last_char = i;
+
+    first_char = i;
+  }
+
+  QString res;
+
+  // Nothing found? (That's an error.)
+  if(last_char == -1)
+    res = QString("unknown");
+  else
+    res = s.mid(first_char, last_char - first_char + 1);
+
+  return res;
+}
+
+
 //==============================================================
 //   BEGIN PluginQuirks
 //==============================================================
+
+PluginQuirks::PluginQuirks() :
+  _fixedSpeed(false),
+  _transportAffectsAudioLatency(false),
+  _overrideReportedLatency(false),
+  _latencyOverrideValue(0),
+  _fixNativeUIScaling(NatUISCaling::GLOBAL)
+  { }
+
 
 //---------------------------------------------------------
 //   write
@@ -712,6 +764,10 @@ bool PluginQuirks::fixNativeUIScaling() const {
     return ((_fixNativeUIScaling == NatUISCaling::GLOBAL && MusEGlobal::config.noPluginScaling)
             || _fixNativeUIScaling == NatUISCaling::ON);
 }
+
+void PluginQuirks::setFixNativeUIScaling(NatUISCaling fixScaling) { _fixNativeUIScaling = fixScaling; };
+
+PluginQuirks::NatUISCaling PluginQuirks::getFixNativeUIScaling() const { return _fixNativeUIScaling; };
 
 //==============================================================
 //   END PluginQuirks
@@ -1057,6 +1113,64 @@ int Plugin::incReferences(int val)
   return _references;
 }
 
+PluginFeatures_t Plugin::requiredFeatures() const { return _requiredFeatures; }
+QString Plugin::uri() const                          { return _uri; }
+QString Plugin::label() const                        { return _label; }
+QString Plugin::name() const                         { return _name; }
+unsigned long Plugin::id() const                     { return _uniqueID; }
+QString Plugin::maker() const                        { return _maker; }
+QString Plugin::copyright() const                    { return _copyright; }
+QString Plugin::lib(bool complete) const             { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
+QString Plugin::dirPath(bool complete) const         { return complete ? fi.absolutePath() : fi.path(); }
+QString Plugin::filePath() const                     { return fi.filePath(); }
+QString Plugin::fileName() const                     { return fi.fileName(); }
+
+int Plugin::references() const                       { return _references; }
+int Plugin::instNo()                                 { return _instNo++;        }
+
+void Plugin::activate(LADSPA_Handle handle) {
+      if (plugin && plugin->activate)
+            plugin->activate(handle);
+      }
+void Plugin::deactivate(LADSPA_Handle handle) {
+      if (plugin && plugin->deactivate)
+            plugin->deactivate(handle);
+      }
+void Plugin::cleanup(LADSPA_Handle handle) {
+      if (plugin && plugin->cleanup)
+            plugin->cleanup(handle);
+      }
+void Plugin::connectPort(LADSPA_Handle handle, unsigned long port, float* value) {
+      if(plugin)
+        plugin->connect_port(handle, port, value);
+      }
+
+unsigned long Plugin::ports() { return _portCount; }
+
+LADSPA_PortDescriptor Plugin::portd(unsigned long k) const {
+      return plugin ? plugin->PortDescriptors[k] : 0;
+      }
+
+// This version of range does not apply any changes, such as sample rate, to the bounds.
+// The information returned is verbose. See the other range() which does apply changes.
+LADSPA_PortRangeHint Plugin::range(unsigned long i) const {
+      // FIXME:
+      //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
+      return plugin->PortRangeHints[i];
+      }
+
+const char* Plugin::portName(unsigned long i) const {
+      return plugin ? plugin->PortNames[i] : 0;
+      }
+
+unsigned long Plugin::inports() const         { return _inports; }
+unsigned long Plugin::outports() const        { return _outports; }
+unsigned long Plugin::controlInPorts() const  { return _controlInPorts; }
+unsigned long Plugin::controlOutPorts() const { return _controlOutPorts; }
+
+const std::vector<unsigned long>* Plugin::getRpIdx() { return &rpIdx; }
+
+
 //---------------------------------------------------------
 //   range
 //---------------------------------------------------------
@@ -1133,6 +1247,10 @@ void Plugin::apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/
 //---------------------------------------------------------
 //   PluginGroups
 //---------------------------------------------------------
+
+QSet<int>& PluginGroups::get(QString a, QString b) { return (*this)[(QPair<QString,QString>(a,b))]; }
+QSet<int>& PluginGroups::get(const Plugin *p)
+  { return (*this)[(QPair<QString,QString>(p->uri().isEmpty() ? p->lib() : p->uri(), p->label()))]; }
 
 void PluginGroups::shift_left(int first, int last)
 {
@@ -1255,6 +1373,11 @@ void initPlugins()
 //---------------------------------------------------------
 //   find
 //---------------------------------------------------------
+
+PluginList::PluginList() {}
+
+void PluginList::add(const MusEPlugin::PluginScanInfoStruct& scan_info)
+{ push_back(new Plugin(scan_info)); }
 
 Plugin* PluginList::find(const QString& file, const QString& uri, const QString& label) const
       {
@@ -2132,6 +2255,13 @@ void PluginIBase::savedNativeGeometry(int *x, int *y, int *w, int *h) const
 const PluginQuirks& PluginIBase::cquirks() const { return _quirks; }
 PluginQuirks& PluginIBase::quirks() { return _quirks; }
 void PluginIBase::setQuirks(const PluginQuirks& q) { _quirks = q; }
+void PluginIBase::setCustomData(const std::vector<QString> &) {/* Do nothing by default */}
+MusEGui::PluginGui* PluginIBase::gui() const { return _gui; }
+void PluginIBase::showNativeGui() { }
+void PluginIBase::showNativeGui(bool) { }
+// REMOVE Tim. tmp. Added.
+void PluginIBase::closeNativeGui() { }
+bool PluginIBase::nativeGuiVisible() const { return false; }
 
 //---------------------------------------------------------
 //   addScheduledControlEvent
@@ -2355,6 +2485,15 @@ PluginI::~PluginI()
       if (handle)
             delete[] handle;
       }
+
+Plugin* PluginI::plugin() const       { return _plugin; }
+bool PluginI::on() const              { return _on; }
+void PluginI::setOn(bool val)         { _on = val; }
+void PluginI::setTrack(AudioTrack* t) { _track = t; }
+AudioTrack* PluginI::track() const    { return _track; }
+int PluginI::id() const               { return _id; }
+void PluginI::enableController(unsigned long i, bool v) { controls[i].enCtrl = v; }
+bool PluginI::controllerEnabled(unsigned long i) const  { return controls[i].enCtrl; }
 
 //---------------------------------------------------------
 //   setID
@@ -2820,11 +2959,12 @@ bool PluginI::initPluginInstance(Plugin* plug, int c, const QString& name)
       // _name  = _plugin->name() + inst;
       // _label = _plugin->label() + inst;
 
-      // NOTE: _plugin and/or _initConfig must be valid at this point.
+      // NOTE: _plugin or _initConfig must be valid at this point.
       // We should never get here with both invalid.
       if(_plugin)
       {
         const QString inst("-" + QString::number(_plugin->instNo()));
+        // If a name was given.
         if(!name.isEmpty())
           _name = name;
         else
@@ -2838,22 +2978,20 @@ bool PluginI::initPluginInstance(Plugin* plug, int c, const QString& name)
       {
         const int instno = MusEGlobal::missingPlugins.add(_initConfig._file, _initConfig._uri, _initConfig._pluginLabel, false);
         const QString inst("-" + QString::number(instno));
+        // If a name was given.
         if(!name.isEmpty())
         {
           _name = name;
         }
         else
         {
-//          _name = _initConfig._name + inst;
-
           if(_initConfig._name.isEmpty())
           {
             // The config name is empty. This will happen if an old song without the new plugin 'name' tag is loaded.
             // No choice but to compose a name from the label, which must always exist.
             // NOTE: Some ladspa plugins put a web address as the label (lsp ladpsa plugins).
             // Strip away any unusual characters and everything before them, like slashes etc.
-            TODOOOO: Decide what to remove. Once ready, QString::section seems OK to use here.
-            _name = _initConfig._pluginLabel + inst;
+            _name = stripPluginLabel(_initConfig._pluginLabel) + inst;
           }
           else
           {
@@ -3846,14 +3984,14 @@ void PluginI::writeConfiguration(int level, Xml& xml)
 
   if(pc._uri.isEmpty())
   {
-    xml.tag(level++, "plugin file=\"%s\" label=\"%s\" instLabel=\"%s\"",
+    xml.tag(level++, "plugin file=\"%s\" label=\"%s\" name=\"%s\"",
       Xml::xmlString(pc._file).toLatin1().constData(),
       Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
       Xml::xmlString(pc._name).toLatin1().constData());
   }
   else
   {
-    xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" instLabel=\"%s\"",
+    xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" name=\"%s\"",
       Xml::xmlString(pc._uri).toLatin1().constData(),
       Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
       Xml::xmlString(pc._name).toLatin1().constData());
@@ -4412,7 +4550,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
                                     // label = xml.s2();
                                     _initConfig._pluginLabel = xml.s2();
                               }
-                        else if (tag == "instLabel") {
+                        else if (tag == "name") {
                               if (!readPreset)
                                     _initConfig._name = xml.s2();
                               }
@@ -4711,6 +4849,30 @@ bool PluginI::nativeGuiVisible() const
   return false;
 }
 
+bool PluginI::isShowNativeGuiPending() { return _showNativeGuiPending; }
+
+// REMOVE Tim. tmp. Added.
+void PluginI::closeNativeGui()
+{
+  #ifdef OSC_SUPPORT
+  if (_plugin)
+  {
+    if (_oscif.isRunning())
+      _oscif.oscQuitGui();
+  }
+  #endif
+  _showNativeGuiPending = false;
+}
+
+unsigned long PluginI::parameters() const           { return controlPorts; }
+unsigned long PluginI::parametersOut() const           { return controlOutPorts; }
+// REMOVE Tim. tmp. Changed.
+// void PluginI::putParam(unsigned long i, double val) { controls[i].val = controls[i].tmpVal = val; }
+void PluginI::putParam(unsigned long i, double val) { controls[i].val = val; }
+double PluginI::param(unsigned long i) const        { return controls[i].val; }
+double PluginI::paramOut(unsigned long i) const        { return controlsOut[i].val; }
+
+
 void PluginI::guiHeartBeat()
 {
   PluginIBase::guiHeartBeat();
@@ -4743,6 +4905,12 @@ void PluginIBase::deleteGui()
     delete _gui;
     _gui = 0;
   }
+}
+
+void PluginIBase::updateGuiWindowTitle()
+{
+  if(_gui)
+    _gui->updateWindowTitle();
 }
 
 void PluginIBase::guiHeartBeat()
@@ -5136,6 +5304,7 @@ void PluginI::apply(unsigned pos, unsigned long n,
 //---------------------------------------------------------
 
 #ifdef OSC_SUPPORT
+
 int Plugin::oscConfigure(
 LADSPA_Handle
 #if defined(DSSI_SUPPORT)
@@ -5188,6 +5357,12 @@ value
 
       return 0;
 }
+
+//---------------------------------------------------------
+//   oscIF
+//---------------------------------------------------------
+
+OscEffectIF& PluginI::oscIF() { return _oscif; }
 
 //---------------------------------------------------------
 //   oscConfigure
@@ -5451,6 +5626,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
           constructGUIFromPluginMetadata();
 
       _configChangedMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, [this]() { configChanged(); } );
+      _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
+                                     [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
       }
 
 //---------------------------------------------------------
@@ -5460,6 +5637,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 PluginGui::~PluginGui()
       {
       disconnect(_configChangedMetaConn);
+      disconnect(_songChangedMetaConn);
 
       if (gw)
             delete[] gw;
@@ -6186,6 +6364,17 @@ void PluginGui::configChanged()
 }
 
 //---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void PluginGui::songChanged(MusECore::SongChangedStruct_t type)
+{
+  // Catch when the track name changes.
+  if(type & SC_TRACK_MODIFIED)
+    updateWindowTitle();
+}
+
+//---------------------------------------------------------
 //   heartBeat
 //---------------------------------------------------------
 
@@ -6400,9 +6589,9 @@ void PluginGui::load()
       QString s("presets/plugins/");
       // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
       // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
-      // But still, the file gets saved OK.
-      // FIXME: Should we extract the last piece of label text after the last '/' ?
-      s += plugin->pluginLabel();
+      // (But still, the file gets saved OK.)
+      // Strip away any unusual characters and everything before them, like slashes etc.
+      s += MusECore::stripPluginLabel(plugin->pluginLabel());
       s += "/";
 
       QString fn = getOpenFileName(s, MusEGlobal::preset_file_pattern,
@@ -6468,9 +6657,9 @@ void PluginGui::save()
       QString s("presets/plugins/");
       // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
       // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
-      // But still, the file gets saved OK.
-      // FIXME: Should we extract the last piece of label text after the last '/' ?
-      s += plugin->pluginLabel();
+      // (But still, the file gets saved OK.)
+      // Strip away any unusual characters and everything before them, like slashes etc.
+      s += MusECore::stripPluginLabel(plugin->pluginLabel());
       s += "/";
 
       QString fn = getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
@@ -6971,6 +7160,9 @@ void PluginGui::guiContextMenuReq(unsigned long int idx)
 //---------------------------------------------------------
 //   PluginLoader
 //---------------------------------------------------------
+
+PluginLoader::PluginLoader(QObject * parent) : QUiLoader(parent) {}
+
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
   if(className == QString("MusEGui::DoubleLabel"))

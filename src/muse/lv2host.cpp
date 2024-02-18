@@ -3095,9 +3095,7 @@ void LV2Synth::lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *pre
                                 + presetName + QString(".lv2/");
             QString presetFile = synthName + QString("_") + presetName
                                  + QString(".ttl");
-// REMOVE Tim. tmp. Changed.
-//            QString plugName = (state->sif != nullptr) ? state->sif->name() : state->plugInst->name();
-            QString plugName = (state->sif != nullptr) ? state->sif->label() : state->plugInst->label();
+            QString plugName = (state->sif != nullptr) ? state->sif->name() : state->plugInst->name();
 
             // TODO Do we need to change this to the new lv2state folder ???
             QString plugFileDirName = MusEGlobal::museProject + QString("/") + plugName;
@@ -6114,8 +6112,8 @@ void LV2SynthIF::showNativeGui(bool bShow)
         }
 
 // REMOVE Tim. tmp. Changed.
-//        _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
-        _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + label()).toUtf8().constData());
+//       _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
+        _state->extHost.plugin_human_id = _state->human_id = strdup((name() + QString(": ") + pluginName()).toUtf8().constData());
     }
 
     LV2Synth::lv2ui_ShowNativeGui(_state, bShow, cquirks().fixNativeUIScaling());
@@ -6737,6 +6735,8 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state,
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
     connect(this, SIGNAL(makeStopFromGuiThread()), this, SLOT(stopFromGuiThread()));
     connect(this, SIGNAL(makeStartFromGuiThread()), this, SLOT(startFromGuiThread()));
+    _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
+                                   [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
 }
 
 LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
@@ -6744,6 +6744,7 @@ LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 #ifdef DEBUG_LV2
     std::cout << "LV2PluginWrapper_Window::~LV2PluginWrapper_Window()" << std::endl;
 #endif
+    disconnect(_songChangedMetaConn);
 }
 
 void LV2PluginWrapper_Window::startNextTime()
@@ -6833,6 +6834,41 @@ void LV2PluginWrapper_Window::startFromGuiThread()
     updateTimer.start(1000/30);
 }
 
+void LV2PluginWrapper_Window::updateWindowTitle()
+{
+// REMOVE Tim. tmp. Changed.
+//       _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
+//        _state->extHost.plugin_human_id = _state->human_id = strdup((name() + QString(": ") + pluginName()).toUtf8().constData());
+  if(_state)
+  {
+    if(_state->plugInst)
+    {
+      if(_state->human_id)
+        free(_state->human_id);
+      _state->extHost.plugin_human_id = _state->human_id =
+        strdup((_state->plugInst->track()->name() + QString(": ") + _state->plugInst->pluginLabel()).toUtf8().constData());
+    }
+    else if(_state->sif)
+    {
+      if(_state->human_id)
+        free(_state->human_id);
+      _state->extHost.plugin_human_id = _state->human_id =
+        strdup((_state->sif->name() + QString(": ") + _state->sif->pluginName()).toUtf8().constData());
+    }
+    else
+      return;
+
+    if(_state->pluginWindow)
+      _state->pluginWindow->setWindowTitle(_state->extHost.plugin_human_id);
+  }
+}
+
+void LV2PluginWrapper_Window::songChanged(MusECore::SongChangedStruct_t type)
+{
+  // Catch when the track name changes.
+  if(type & SC_TRACK_MODIFIED)
+    updateWindowTitle();
+}
 
 LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
  : Plugin()

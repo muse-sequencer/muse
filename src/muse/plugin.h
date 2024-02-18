@@ -46,6 +46,7 @@
 #include "config.h"
 // REMOVE Tim. tmp. Added.
 #include "stringparam.h"
+#include "type_defs.h"
 
 #ifdef OSC_SUPPORT
 #include "osc.h"
@@ -88,6 +89,7 @@ class AudioTrack;
 class Xml;
 
 class PluginI;
+struct SongChangedStruct_t;
 
 //---------------------------------------------------------
 //   Plugin
@@ -148,21 +150,21 @@ class Plugin {
       Plugin();
       Plugin(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Plugin();
-      virtual PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
-      QString uri() const                          { return _uri; }
-      virtual QString label() const                        { return _label; }
-      QString name() const                         { return _name; }
-      unsigned long id() const                     { return _uniqueID; }
-      QString maker() const                        { return _maker; }
-      QString copyright() const                    { return _copyright; }
-      QString lib(bool complete = true) const      { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
-      QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
-      QString filePath() const                     { return fi.filePath(); }
-      QString fileName() const                     { return fi.fileName(); }
+      virtual PluginFeatures_t requiredFeatures() const;
+      QString uri() const;
+      virtual QString label() const;
+      QString name() const;
+      unsigned long id() const;
+      QString maker() const;
+      QString copyright() const;
+      QString lib(bool complete = true) const;
+      QString dirPath(bool complete = true) const;
+      QString filePath() const;
+      QString fileName() const;
         
-      int references() const                       { return _references; }
+      int references() const;
       virtual int incReferences(int);
-      int instNo()                                 { return _instNo++;        }
+      int instNo();
 
       inline bool isDssiPlugin() const { return _isDssi; }
       inline bool isDssiSynth() const  { return _isDssiSynth; }
@@ -173,41 +175,23 @@ class Plugin {
       inline bool isVstNativeSynth() const { return _isVstNativeSynth; }
 
       virtual LADSPA_Handle instantiate(PluginI *);
-      virtual void activate(LADSPA_Handle handle) {
-            if (plugin && plugin->activate)
-                  plugin->activate(handle);
-            }
-      virtual void deactivate(LADSPA_Handle handle) {
-            if (plugin && plugin->deactivate)
-                  plugin->deactivate(handle);
-            }
-      virtual void cleanup(LADSPA_Handle handle) {
-            if (plugin && plugin->cleanup)
-                  plugin->cleanup(handle);
-            }
-      virtual void connectPort(LADSPA_Handle handle, unsigned long port, float* value) {
-            if(plugin)
-              plugin->connect_port(handle, port, value);
-            }
+      virtual void activate(LADSPA_Handle handle);
+      virtual void deactivate(LADSPA_Handle handle);
+      virtual void cleanup(LADSPA_Handle handle);
+      virtual void connectPort(LADSPA_Handle handle, unsigned long port, float* value);
       virtual void apply(LADSPA_Handle handle, unsigned long n, float /*latency_corr*/ = 0.0f);
 
       #ifdef OSC_SUPPORT
       int oscConfigure(LADSPA_Handle handle, const char* key, const char* value);
       #endif
 
-      unsigned long ports() { return _portCount; }
+      unsigned long ports();
 
-      virtual LADSPA_PortDescriptor portd(unsigned long k) const {
-            return plugin ? plugin->PortDescriptors[k] : 0;
-            }
+      virtual LADSPA_PortDescriptor portd(unsigned long k) const;
 
       // This version of range does not apply any changes, such as sample rate, to the bounds.
       // The information returned is verbose. See the other range() which does apply changes.
-      virtual LADSPA_PortRangeHint range(unsigned long i) const {
-            // FIXME:
-            //return plugin ? plugin->PortRangeHints[i] : 0; DELETETHIS
-            return plugin->PortRangeHints[i];
-            }
+      virtual LADSPA_PortRangeHint range(unsigned long i) const;
 
       virtual double defaultValue(unsigned long port) const;
       // This version of range applies any changes, such as sample rate, to the bounds.
@@ -222,9 +206,7 @@ class Plugin {
       // Can be -1 meaning no units.
       virtual int valueUnit ( unsigned long ) const;
 
-      virtual const char* portName(unsigned long i) const {
-            return plugin ? plugin->PortNames[i] : 0;
-            }
+      virtual const char* portName(unsigned long i) const;
 
       bool usesTimePosition() const;
       unsigned long freewheelPortIndex() const;
@@ -238,12 +220,12 @@ class Plugin {
       // NOTE: If the plugin has a latency controller out, use that instead.
       virtual float getPluginLatency(void* /*handle*/);
 
-      unsigned long inports() const         { return _inports; }
-      unsigned long outports() const        { return _outports; }
-      unsigned long controlInPorts() const  { return _controlInPorts; }
-      unsigned long controlOutPorts() const { return _controlOutPorts; }
+      unsigned long inports() const;
+      unsigned long outports() const;
+      unsigned long controlInPorts() const;
+      unsigned long controlOutPorts() const;
 
-      const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
+      const std::vector<unsigned long>* getRpIdx();
       };
 
 typedef std::list<Plugin *>::iterator iPlugin;
@@ -253,10 +235,8 @@ typedef std::list<Plugin *>::const_iterator ciPlugin;
 class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 {
   public:
-    QSet<int>& get(QString a, QString b) { return (*this)[(QPair<QString,QString>(a,b))]; }
-    QSet<int>& get(const Plugin *p)
-      { return (*this)[(QPair<QString,QString>(p->uri().isEmpty() ? p->lib() : p->uri(), p->label()))]; }
-
+    QSet<int>& get(QString a, QString b);
+    QSet<int>& get(const Plugin *p);
     void shift_left(int first, int last);
     void shift_right(int first, int last);
     void erase(int index);
@@ -272,13 +252,11 @@ class PluginGroups : public QMap< QPair<QString, QString>, QSet<int> >
 
 class PluginList : public std::list<Plugin *> {
    public:
-      void add(const MusEPlugin::PluginScanInfoStruct& scan_info)
-      { push_back(new Plugin(scan_info)); }
-
+      void add(const MusEPlugin::PluginScanInfoStruct& scan_info);
       // Each argument optional, can be empty.
       // If uri is not empty, the search is based solely on it, the other arguments are ignored.
       Plugin* find(const QString& file, const QString& uri, const QString& label) const;
-      PluginList() {}
+      PluginList();
       };
 
 //---------------------------------------------------------
@@ -332,20 +310,14 @@ public:
     // Value to override the reported latency.
     int _latencyOverrideValue;
 
-  PluginQuirks() :
-    _fixedSpeed(false),
-    _transportAffectsAudioLatency(false),
-    _overrideReportedLatency(false),
-    _latencyOverrideValue(0),
-    _fixNativeUIScaling(NatUISCaling::GLOBAL)
-    { }
+  PluginQuirks();
 
   void write(int level, Xml& xml) const;
   // Return true on error.
   bool read(Xml& xml);
   bool fixNativeUIScaling() const;
-  void setFixNativeUIScaling(NatUISCaling fixScaling) { _fixNativeUIScaling = fixScaling; };
-  NatUISCaling getFixNativeUIScaling() const { return _fixNativeUIScaling; };
+  void setFixNativeUIScaling(NatUISCaling fixScaling);
+  NatUISCaling getFixNativeUIScaling() const;
 
 private:
   // Reverse scaling of native UI windows on HiDPI
@@ -540,15 +512,12 @@ class PluginIBase
       virtual PluginBypassType pluginBypassType() const = 0;
       virtual PluginFreewheelType pluginFreewheelType() const = 0;
 
-// REMOVE Tim. tmp. Changed.
-      // const PluginQuirks& cquirks() const { return _quirks; }
-      // PluginQuirks& quirks() { return _quirks; }
       const PluginQuirks& cquirks() const;
       PluginQuirks& quirks();
 // REMOVE Tim. tmp. Added.
       void setQuirks(const PluginQuirks&);
 
-      virtual void setCustomData(const std::vector<QString> &) {/* Do nothing by default */}
+      virtual void setCustomData(const std::vector<QString> &);
       virtual CtrlValueType ctrlValueType(unsigned long i) const = 0;
       virtual CtrlList::Mode ctrlMode(unsigned long i) const = 0;
       virtual const CtrlVal::CtrlEnumValues *ctrlEnumValues(unsigned long i) const;
@@ -571,8 +540,9 @@ class PluginIBase
 
       QString dssi_ui_filename() const;
 
-      MusEGui::PluginGui* gui() const { return _gui; }
+      MusEGui::PluginGui* gui() const;
       void deleteGui();
+      void updateGuiWindowTitle();
       virtual void guiHeartBeat();
       virtual void showGui();
       virtual void showGui(bool);
@@ -587,9 +557,11 @@ class PluginIBase
       // Returns the saved gui geometry.
       virtual void savedGeometry(int *x, int *y, int *w, int *h) const;
 
-      virtual void showNativeGui() { }
-      virtual void showNativeGui(bool) { }
-      virtual bool nativeGuiVisible() const { return false; }
+      virtual void showNativeGui();
+      virtual void showNativeGui(bool);
+// REMOVE Tim. tmp. Added.
+      virtual void closeNativeGui();
+      virtual bool nativeGuiVisible() const;
       // Sets the gui's geometry. Also updates the saved geometry.
       virtual void setNativeGeometry(int x, int y, int w, int h);
       // Returns the current geometry of the gui, or if the gui does not exist, 
@@ -666,27 +638,23 @@ class PluginI : public PluginIBase {
       // Returns nullptr if failure.
       static PluginI* createPluginI(const PluginConfiguration &config, int channels, ConfigureOptions_t opts);
 
-      Plugin* plugin() const { return _plugin; }
+      Plugin* plugin() const;
 
-// REMOVE Tim. tmp. Changed.
-      // virtual PluginFeatures_t requiredFeatures() const { return _plugin->requiredFeatures(); }
       virtual PluginFeatures_t requiredFeatures() const;
 
       inline bool hasActiveButton() const { return true; }
       inline bool active() const { return _active; }
       inline void setActive(bool v) { _active = v; }
 
-      inline bool hasBypass() const  { return true; };
-      bool on() const        { return _on; }
-      void setOn(bool val)   { _on = val; }
+      inline bool hasBypass() const { return true; }
+      bool on() const;
+      void setOn(bool val);
 
-      void setTrack(AudioTrack* t)   { _track = t; }
-      AudioTrack* track() const      { return _track; }
-// REMOVE Tim. tmp. Changed.
-      // unsigned long pluginID() const { return _plugin->id(); }
+      void setTrack(AudioTrack* t);
+      AudioTrack* track() const;
       unsigned long pluginID() const;
       void setID(int i);
-      int id() const                 { return _id; }
+      int id() const;
       void updateControllers();
 
       // This version takes a given Plugin to initialize this PluginI. The Plugin can be null.
@@ -702,20 +670,12 @@ class PluginI : public PluginIBase {
       void apply(unsigned pos, unsigned long n,
                  unsigned long ports, bool wantActive, float** bufIn, float** bufOut, float latency_corr_offset = 0.0f);
 
-      void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }
-      bool controllerEnabled(unsigned long i) const           { return controls[i].enCtrl; }
+      void enableController(unsigned long i, bool v = true);
+      bool controllerEnabled(unsigned long i) const;
       void enableAllControllers(bool v = true);
 
       void cleanup();
 
-// REMOVE Tim. tmp. Changed.
-      // QString pluginLabel() const    { return _plugin->label(); }
-      // QString label() const          { return _label; }
-      // QString name() const           { return _name; }
-      // QString lib() const            { return _plugin->lib(); }
-      // QString uri() const            { return _plugin->uri(); }
-      // QString dirPath() const        { return _plugin->dirPath(); }
-      // QString fileName() const       { return _plugin->fileName(); }
       QString pluginLabel() const;
       QString name() const;
       QString pluginName() const;
@@ -726,8 +686,7 @@ class PluginI : public PluginIBase {
       QString titlePrefix() const;
 
       #ifdef OSC_SUPPORT
-      OscEffectIF& oscIF() { return _oscif; }
-
+      OscEffectIF& oscIF();
       int oscControl(unsigned long dssiPort, float val);
       int oscConfigure(const char *key, const char *val);
       int oscUpdate();
@@ -752,40 +711,25 @@ class PluginI : public PluginIBase {
       bool setControl(const QString& s, double val);
       void showGui();
       void showGui(bool);
-// REMOVE Tim. tmp. Changed.
-      // bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }
-      // bool isLV2Plugin() const { return _plugin->isLV2Plugin(); }
-      // bool isVstNativePlugin() const { return _plugin->isVstNativePlugin(); }
       bool isDssiPlugin() const;
       bool isLV2Plugin() const;
       bool isVstNativePlugin() const;
       void showNativeGui();
       void showNativeGui(bool);
-      bool isShowNativeGuiPending() { return _showNativeGuiPending; }
+      bool isShowNativeGuiPending();
       bool nativeGuiVisible() const;
+// REMOVE Tim. tmp. Added.
+      void closeNativeGui();
       void guiHeartBeat();
 
-      unsigned long parameters() const           { return controlPorts; }
-      unsigned long parametersOut() const           { return controlOutPorts; }
+      unsigned long parameters() const;
+      unsigned long parametersOut() const;
       void setParam(unsigned long i, double val);
-// REMOVE Tim. tmp. Changed.
-      // void putParam(unsigned long i, double val) { controls[i].val = controls[i].tmpVal = val; }
-      void putParam(unsigned long i, double val) { controls[i].val = val; }
-      double param(unsigned long i) const        { return controls[i].val; }
-      double paramOut(unsigned long i) const        { return controlsOut[i].val; }
+      void putParam(unsigned long i, double val);
+      double param(unsigned long i) const;
+      double paramOut(unsigned long i) const;
       double defaultValue(unsigned long param) const;
       double defaultOutValue(unsigned long param) const;
-// REMOVE Tim. tmp. Changed.
-      // const char* paramName(unsigned long i) const     { return _plugin->portName(controls[i].idx); }
-      // const char* paramOutName(unsigned long i) const     { return _plugin->portName(controlsOut[i].idx); }
-      // LADSPA_PortDescriptor portd(unsigned long i) const { return _plugin->portd(controls[i].idx); }
-      // LADSPA_PortDescriptor portdOut(unsigned long i) const { return _plugin->portd(controlsOut[i].idx); }
-      // void range(unsigned long i, float* min, float* max) const { _plugin->range(controls[i].idx, min, max); }
-      // void rangeOut(unsigned long i, float* min, float* max) const { _plugin->range(controlsOut[i].idx, min, max); }
-      // bool isAudioIn(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_IN) == IS_AUDIO_IN; }
-      // bool isAudioOut(unsigned long k) { return (_plugin->portd(k) & IS_AUDIO_OUT) == IS_AUDIO_OUT; }
-      // LADSPA_PortRangeHint range(unsigned long i) const { return _plugin->range(controls[i].idx); }
-      // LADSPA_PortRangeHint rangeOut(unsigned long i) const { return _plugin->range(controlsOut[i].idx); }
       const char* paramName(unsigned long i) const;
       const char* paramOutName(unsigned long i) const;
       LADSPA_PortDescriptor portd(unsigned long i) const;
@@ -805,21 +749,6 @@ class PluginI : public PluginIBase {
       PluginBypassType pluginBypassType() const;
       PluginFreewheelType pluginFreewheelType() const;
 
-// REMOVE Tim. tmp. Changed.
-      // CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
-      // const CtrlVal::CtrlEnumValues* ctrlEnumValues( unsigned long i) const { return _plugin->ctrlEnumValues(controls[i].idx); }
-      // CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); }
-      // void setCustomData(const std::vector<QString> &customParams);
-      // CtrlValueType ctrlOutValueType(unsigned long i) const { return _plugin->ctrlValueType(controlsOut[i].idx); }
-      // const CtrlVal::CtrlEnumValues* ctrlOutEnumValues( unsigned long i) const { return _plugin->ctrlEnumValues(controlsOut[i].idx); }
-      // CtrlList::Mode ctrlOutMode(unsigned long i) const { return _plugin->ctrlMode(controlsOut[i].idx); }
-      // // Returns a value unit string for displaying unit symbols.
-      // QString unitSymbol(long unsigned int i) const { return _plugin->unitSymbol(controls[i].idx); }
-      // QString unitSymbolOut(long unsigned int i) const { return _plugin->unitSymbol(controlsOut[i].idx); }
-      // // Returns index into the global value units for displaying unit symbols.
-      // // Can be -1 meaning no units.
-      // int valueUnit ( unsigned long i) const { return _plugin->valueUnit(controls[i].idx); }
-      // int valueUnitOut ( unsigned long i) const { return _plugin->valueUnit(controlsOut[i].idx); }
       CtrlValueType ctrlValueType(unsigned long i) const;
       const CtrlVal::CtrlEnumValues* ctrlEnumValues( unsigned long i) const;
       CtrlList::Mode ctrlMode(unsigned long i) const;
@@ -907,7 +836,7 @@ class PluginLoader : public QUiLoader
 {
    public:
       virtual QWidget* createWidget(const QString & className, QWidget * parent = 0, const QString & name = QString());
-      PluginLoader(QObject * parent = 0) : QUiLoader(parent) {}
+      PluginLoader(QObject * parent = 0);
 };
 
 //---------------------------------------------------------
@@ -965,6 +894,7 @@ class PluginGui : public QMainWindow {
       QScrollArea* view;
 
       QMetaObject::Connection _configChangedMetaConn;
+      QMetaObject::Connection _songChangedMetaConn;
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
@@ -1002,6 +932,7 @@ class PluginGui : public QMainWindow {
    public slots:
       void heartBeat();
       void configChanged();
+      void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       PluginGui(MusECore::PluginIBase*);

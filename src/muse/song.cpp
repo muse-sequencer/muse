@@ -2075,6 +2075,13 @@ bool Song::changePluginOperation(UndoOp *i)
     }
   }
 
+  // Enforce the plugin's track and index, even if they might have already been set.
+  if(new_plugin)
+  {
+    new_plugin->setTrack(at);
+    new_plugin->setID(epos);
+  }
+
   // If a configuration was given.
   if(i_conf)
   {

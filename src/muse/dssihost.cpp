@@ -308,6 +308,19 @@ v
       #endif // OSC_SUPPORT
       }
 
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   closeNativeGui
+//---------------------------------------------------------
+
+void DssiSynthIF::closeNativeGui()
+{
+  #ifdef OSC_SUPPORT
+  if (_oscif.isRunning())
+    _oscif.oscQuitGui();
+  #endif
+}
+
 //---------------------------------------------------------
 //   receiveEvent
 //---------------------------------------------------------

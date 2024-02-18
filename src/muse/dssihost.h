@@ -157,7 +157,9 @@ class DssiSynthIF : public SynthIF
       virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;                                        
       virtual void showNativeGui(bool);                                              
-      virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }    
+// REMOVE Tim. tmp. Added.
+      virtual void closeNativeGui();
+      virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}
       

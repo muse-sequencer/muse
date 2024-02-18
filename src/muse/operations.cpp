@@ -1665,7 +1665,7 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
           // _pluginI can be null.
           if(_pluginI)
           {
-            // Enforce the track and index, even if they might have already been set.
+            // Enforce the plugin's track and index, even if they might have already been set.
             _pluginI->setID(_rackEffectPos);
             _pluginI->setTrack(at);
           }
