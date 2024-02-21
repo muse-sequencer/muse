@@ -6670,6 +6670,13 @@ void LV2PluginWrapper_Window::showEvent(QShowEvent *e)
 void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 {
     assert(_state != nullptr);
+
+    // Disconnect before songChanged() has a chance to be called.
+    // The caller might destroy some things before calling close(),
+    //  and songChanged() might be called later which causes crashes.
+    // We also do this in the destructor just in case.
+    disconnect(_songChangedMetaConn);
+
     event->accept();
 
     stopUpdateTimer();
@@ -6744,7 +6751,8 @@ LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 #ifdef DEBUG_LV2
     std::cout << "LV2PluginWrapper_Window::~LV2PluginWrapper_Window()" << std::endl;
 #endif
-    disconnect(_songChangedMetaConn);
+    // In case closeEvent() wasn't already called, where we disconnect there as well.
+   disconnect(_songChangedMetaConn);
 }
 
 void LV2PluginWrapper_Window::startNextTime()
@@ -6865,8 +6873,8 @@ void LV2PluginWrapper_Window::updateWindowTitle()
 
 void LV2PluginWrapper_Window::songChanged(MusECore::SongChangedStruct_t type)
 {
-  // Catch when the track name changes.
-  if(type & SC_TRACK_MODIFIED)
+  // Catch when the track name changes or track is moved or the rack position changes.
+  if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
     updateWindowTitle();
 }
 

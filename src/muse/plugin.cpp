@@ -6369,8 +6369,8 @@ void PluginGui::configChanged()
 
 void PluginGui::songChanged(MusECore::SongChangedStruct_t type)
 {
-  // Catch when the track name changes.
-  if(type & SC_TRACK_MODIFIED)
+  // Catch when the track name changes or track is moved or the rack position changes.
+  if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
     updateWindowTitle();
 }
 

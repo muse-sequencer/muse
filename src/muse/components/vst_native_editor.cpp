@@ -112,6 +112,7 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
 
 VstNativeEditor::~VstNativeEditor()
 {
+   // In case closeEvent() wasn't already called, where we disconnect there as well.
    disconnect(_songChangedMetaConn);
 
 // REMOVE Tim. tmp. Removed.
@@ -132,8 +133,8 @@ VstNativeEditor::~VstNativeEditor()
 
 void VstNativeEditor::songChanged(MusECore::SongChangedStruct_t type)
 {
-  // Catch when the track name changes.
-  if(type & SC_TRACK_MODIFIED)
+  // Catch when the track name changes or track is moved or the rack position changes.
+  if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
     updateWindowTitle();
 }
 
@@ -295,12 +296,19 @@ void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
       resizeTimerId = 0;
    }*/
 
+   // Disconnect before songChanged() has a chance to be called.
+   // The caller might destroy some things before calling close(),
+   //  and songChanged() might be called later which causes crashes.
+   // We also do this in the destructor just in case.
+   disconnect(_songChangedMetaConn);
+
+   pCloseEvent->accept();
    QWidget::closeEvent(pCloseEvent);
 }
 
 void VstNativeEditor::close()
 {
-  // Note that we delete on close.
+   // Note that we delete on close, but that will happen later.
    QWidget::close();
    if(_sif)
    {

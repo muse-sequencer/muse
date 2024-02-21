@@ -1960,7 +1960,12 @@ bool Song::swapPluginsOperation(UndoOp *i)
   if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
   {
     PluginI *ptmp = pl->at(epos);
-    pl->at(epos) = pl->at(new_epos);
+    PluginI *newptmp = pl->at(new_epos);
+    if(ptmp)
+      ptmp->setID(new_epos);
+    if(newptmp)
+      newptmp->setID(epos);
+    pl->at(epos) = newptmp;
     pl->at(new_epos) = ptmp;
   }
   else
@@ -2464,11 +2469,11 @@ bool Song::changePluginOperation(UndoOp *i)
   //  change the plugin.
   if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
   {
+    // Set the given rack position to the new plugin pointer (may be null).
+    pl->at(epos) = new_plugin;
     // Delete the original plugin.
     if(pi)
       delete pi;
-    // Set the given rack position to the new plugin pointer (may be null).
-    pl->at(epos) = new_plugin;
   }
   else
   {
@@ -7567,6 +7572,36 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
 
   if(!operations)
     MusEGlobal::song->applyOperationGroup(ops);
+}
+
+void Song::closeDssiEditors(Track* track) const
+{
+  // If it's an audio track, close all rack effect UIs.
+  if(!track->isMidiTrack())
+  {
+    AudioTrack *at = static_cast<AudioTrack*>(track);
+    Pipeline *pl = at->efxPipe();
+    if(pl)
+    {
+      const int sz = pl->size();
+      for(int k = 0; k < sz; ++k)
+      {
+        PluginI *plugi = pl->at(k);
+        if(plugi && plugi->isDssiPlugin())
+          plugi->closeNativeGui();
+      }
+    }
+  }
+  // If it's a synth track, close the UI.
+  if(track->type() == Track::AUDIO_SOFTSYNTH)
+  {
+    SynthI *synthi = static_cast<SynthI*>(track);
+    if(synthi->synth() && synthi->synth()->synthType() == Synth::DSSI_SYNTH)
+    {
+      if(synthi->sif())
+        synthi->sif()->closeNativeGui();
+    }
+  }
 }
 
 void Song::setRecMode(int val) {

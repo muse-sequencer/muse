@@ -1694,7 +1694,12 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
            _newRackEffectPos >= 0 && _newRackEffectPos < (int)pl->size() && _newRackEffectPos < MusECore::PipelineDepth)
         {
           PluginI *ptmp = pl->at(_rackEffectPos);
-          pl->at(_rackEffectPos) = pl->at(_newRackEffectPos);
+          PluginI *newptmp = pl->at(_newRackEffectPos);
+          if(ptmp)
+            ptmp->setID(_newRackEffectPos);
+          if(newptmp)
+            newptmp->setID(_rackEffectPos);
+          pl->at(_rackEffectPos) = newptmp;
           pl->at(_newRackEffectPos) = ptmp;
           flags |= SC_RACK;
         }

@@ -212,6 +212,9 @@ class Song : public QObject {
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
 
+      // Closes a track's DSSI editor and all of its DSSI rack plugins.
+      void closeDssiEditors(Track*) const;
+
    protected:
       // Internal routine for preparing the operation that ends audio controller movement mode.
       // Called from the Undo system's stage 1 only.
