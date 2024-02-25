@@ -73,22 +73,27 @@ static char* url = 0;
 static bool oscServerRunning = false;
 
 // REMOVE Tim. tmp. Added.
+//----------------------------------------------------
+// From official OSC specs:
+// Printable ASCII characters not allowed in names of OSC Methods or OSC Containers:
+// character 	name 	ASCII code (decimal)
+// ’ ’ 	space
+// # 	number sign 	35
+// * 	asterisk 	42
+// , 	comma 	44
+// / 	forward slash 	47
+// ? 	question mark 	63
+// [ 	open bracket 	91
+// ] 	close bracket 	93
+// { 	open curly brace 	123
+// } 	close curly brace 	125
+//----------------------------------------------------
+// Some string helpers. Currently not used.
+// But hey, if text is needed in the url, they'll help.
+//----------------------------------------------------
+#if 0
 static void stringToOscUrl(QString &s)
 {
-  // From official OSC specs:
-  // Printable ASCII characters not allowed in names of OSC Methods or OSC Containers:
-  // character 	name 	ASCII code (decimal)
-  // ’ ’ 	space
-  // # 	number sign 	35
-  // * 	asterisk 	42
-  // , 	comma 	44
-  // / 	forward slash 	47
-  // ? 	question mark 	63
-  // [ 	open bracket 	91
-  // ] 	close bracket 	93
-  // { 	open curly brace 	123
-  // } 	close curly brace 	125
-
   // We also replace % since we use it.
   s.replace('%', "%37");
   s.replace(' ', "%20");
@@ -106,20 +111,6 @@ static void stringToOscUrl(QString &s)
 // REMOVE Tim. tmp. Added.
 static void oscUrlToString(QString &s)
 {
-  // From official OSC specs:
-  // Printable ASCII characters not allowed in names of OSC Methods or OSC Containers:
-  // character 	name 	ASCII code (decimal)
-  // ’ ’ 	space
-  // # 	number sign 	35
-  // * 	asterisk 	42
-  // , 	comma 	44
-  // / 	forward slash 	47
-  // ? 	question mark 	63
-  // [ 	open bracket 	91
-  // ] 	close bracket 	93
-  // { 	open curly brace 	123
-  // } 	close curly brace 	125
-
   s.replace("%20", " ");
   s.replace("%35", "#");
   s.replace("%42", "*");
@@ -133,6 +124,7 @@ static void oscUrlToString(QString &s)
   // We also restore % since we use it.
   s.replace("%37", "%");
 }
+#endif
 
 //---------------------------------------------------------
 //   oscError
@@ -392,7 +384,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
     isSynth = true;
   else
   #endif
-  if(sl.at(1) == "ladspa_efx")
+  if(sl.at(1) == "dssi_efx")
   {
   }
   else
@@ -408,12 +400,16 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
     fprintf(stderr, "oscMessageHandler: got message for ladspa effect...\n");
   #endif
 
-  QString urlpluglabel = sl.at(2);
-  oscUrlToString(urlpluglabel);
+//  QString urlpluglib = sl.at(2);
+//  oscUrlToString(urlpluglib);
+
+//  QString urlpluglabel = sl.at(3);
+//  oscUrlToString(urlpluglabel);
 
   bool ok;
 
-  const int urltrackno = sl.at(3).toInt(&ok);
+//  const int urltrackno = sl.at(4).toInt(&ok);
+  const int urltrackno = sl.at(2).toInt(&ok);
   if(!ok)
   {
     fprintf(stderr, "oscMessageHandler: error: Invalid track number text\n");
@@ -455,7 +451,8 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
 
     DssiSynthIF* instance = static_cast<DssiSynthIF*>(synti->sif());
 
-    const QString &urlcommand = sl.at(4);
+//    const QString &urlcommand = sl.at(5);
+    const QString &urlcommand = sl.at(3);
     // Shouldn't be required.
     //oscUrlToString(urlcommand);
 
@@ -484,7 +481,8 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
   else
   #endif //DSSI_SUPPORT
   {
-    const int urlrackpos = sl.at(4).toInt(&ok);
+//    const int urlrackpos = sl.at(5).toInt(&ok);
+    const int urlrackpos = sl.at(3).toInt(&ok);
     if(!ok)
     {
       fprintf(stderr, "oscMessageHandler: error: effect: Invalid rack position number text\n");
@@ -511,19 +509,26 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
       return oscDebugHandler(path, types, argv, argc, data, user_data);
     }
 
-    if(instance->pluginLabel() != urlpluglabel)
-    {
-      fprintf(stderr, "oscMessageHandler: error: effect: No matching plugin label at given rack position\n");
-      return oscDebugHandler(path, types, argv, argc, data, user_data);
-    }
-
     if(!instance->plugin())
     {
       fprintf(stderr, "oscMessageHandler: error: effect: Plugin instance has no plugin\n");
       return oscDebugHandler(path, types, argv, argc, data, user_data);
     }
 
-    const QString &urlcommand = sl.at(5);
+//     if(instance->lib() != urlpluglib)
+//     {
+//       fprintf(stderr, "oscMessageHandler: error: effect: No matching plugin label at given rack position\n");
+//       return oscDebugHandler(path, types, argv, argc, data, user_data);
+//     }
+//
+//     if(instance->pluginLabel() != urlpluglabel)
+//     {
+//       fprintf(stderr, "oscMessageHandler: error: effect: No matching plugin label at given rack position\n");
+//       return oscDebugHandler(path, types, argv, argc, data, user_data);
+//     }
+
+//    const QString &urlcommand = sl.at(6);
+    const QString &urlcommand = sl.at(4);
     // Shouldn't be required.
     //oscUrlToString(urlcommand);
 
@@ -1066,186 +1071,187 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 //---------------------------------------------------------
 
 // REMOVE Tim. tmp. Changed.
-//bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QString& name,
-//                       const QString& label, const QString& filePath, const QString& guiPath,
-//                       const std::vector<unsigned long>* control_port_mapper_)
-bool OscIF::oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
-                       const QString& name, const QString& filePath, const QString& guiPath,
-                       const std::vector<unsigned long>* control_port_mapper_)
-{
-      if (old_control==nullptr)
-      {
-        control_port_mapper=control_port_mapper_;
-        
-        unsigned long nDssiPorts=0;
-        for (unsigned i=0;i<control_port_mapper->size();i++)
-          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
-            nDssiPorts=control_port_mapper->at(i)+1;
-        
-        old_control=new float[nDssiPorts];
-        for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
-          old_control[i]=NAN;
+// //bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QString& name,
+// //                       const QString& label, const QString& filePath, const QString& guiPath,
+// //                       const std::vector<unsigned long>* control_port_mapper_)
+// bool OscIF::oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
+//                        const QString& name, const QString& filePath, const QString& guiPath,
+//                        const std::vector<unsigned long>* control_port_mapper_)
+// {
+//       if (old_control==nullptr)
+//       {
+//         control_port_mapper=control_port_mapper_;
+//
+//         unsigned long nDssiPorts=0;
+//         for (unsigned i=0;i<control_port_mapper->size();i++)
+//           if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+//             nDssiPorts=control_port_mapper->at(i)+1;
+//
+//         old_control=new float[nDssiPorts];
+//         for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
+//           old_control[i]=NAN;
+//
+//         maxDssiPort=nDssiPorts;
+//       }
+//       else
+//       {
+//         control_port_mapper=control_port_mapper_;
+//
+//         unsigned long nDssiPorts=0;
+//         for (unsigned i=0;i<control_port_mapper->size();i++)
+//           if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
+//             nDssiPorts=control_port_mapper->at(i)+1;
+//
+//         if (maxDssiPort!=nDssiPorts)
+//         {
+//           // this should never happen, right?
+//           fprintf(stderr, "STRANGE: nDssiPorts has changed (old=%lu, now=%lu)!\n", maxDssiPort, nDssiPorts);
+//           delete [] old_control;
+//           old_control=new float[nDssiPorts];
+//           for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
+//             old_control[i]=NAN;
+//           maxDssiPort=nDssiPorts;
+//         }
+//       }
+//
+//       // Are we already running? We don't want to allow another process do we...
+// #ifdef _USE_QPROCESS_FOR_GUI_
+//       if((_oscGuiQProc != 0) && (_oscGuiQProc->state() != QProcess::NotRunning))
+//         return false;
+// #else
+//       if(_guiPid != -1)
+//         return false;
+// #endif
+//
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "OscIF::oscInitGui\n");
+//       #endif
+//
+//       if(!url)
+//       {
+//         fprintf(stderr, "OscIF::oscInitGui no server url!\n");
+//         return false;
+//       }
+//
+//       if(guiPath.isEmpty())
+//       {
+//         fprintf(stderr, "OscIF::oscInitGui guiPath is empty\n");
+//         return false;
+//       }
+//
+//       // WARNING: It seems spaces are NOT allowed in the URL.
+//       //          This was verified by putting spaces in a track name before opening the UI.
+//       // From official OSC specs:
+//       // Printable ASCII characters not allowed in names of OSC Methods or OSC Containers:
+//       // character 	name 	ASCII code (decimal)
+//       // ’ ’ 	space
+//       // # 	number sign 	35
+//       // * 	asterisk 	42
+//       // , 	comma 	44
+//       // / 	forward slash 	47
+//       // ? 	question mark 	63
+//       // [ 	open bracket 	91
+//       // ] 	close bracket 	93
+//       // { 	open curly brace 	123
+//       // } 	close curly brace 	125
+//       // FIXME: TODO: Convert all of those to "%20" "%35" etc.
+//
+// // REMOVE Tim. tmp. Changed.
+// //      QString oscUrl;
+// //      oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(label);
+//
+//       stringToOscUrl(baseName);
+//       stringToOscUrl(pluginLabel);
+//       QString oscUrl;
+//       oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(pluginLabel);
+//
+//
+// #ifdef _USE_QPROCESS_FOR_GUI_
+//
+//       // fork + execlp cause the process to remain (zombie) after closing gui, requiring manual kill.
+//       // Using QProcess works OK.
+//       // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
+//       if(_oscGuiQProc == 0)
+//         _oscGuiQProc = new QProcess();
+//
+//       QString program(guiPath);
+//       QStringList arguments;
+//       arguments << oscUrl
+//                 << filePath
+//                 << pluginLabel
+//                 << (titlePrefix() + name);
+//
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
+//       #endif
+//
+//       _oscGuiQProc->start(program, arguments);
+//
+//       if(_oscGuiQProc->waitForStarted(10000)) // 10 secs.
+//       {
+//         #ifdef OSC_DEBUG
+//         fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
+//         fprintf(stderr, "guiPath:%s oscUrl:%s filePath:%s pluginLabel:%s\n",
+//                 guiPath.toLatin1().constData(),
+//                 oscUrl.toLatin1().constData(),
+//                 filePath.toLatin1().constData(),
+//                 pluginLabel.toLatin1().constData());
+//         #endif
+//       }
+//       else
+//       {
+//         fprintf(stderr, "exec %s %s %s %s failed: %s\n",
+//                 guiPath.toLatin1().constData(),
+//                 oscUrl.toLatin1().constData(),
+//                 filePath.toLatin1().constData(),
+//                 pluginLabel.toLatin1().constData(),
+//                 strerror(errno));
+//         return false;
+//       }
+//
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "OscIF::oscInitGui after QProcess\n");
+//       #endif
+//
+// #else  // NOT  _USE_QPROCESS_FOR_GUI_
+//
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "forking...\n");
+//       #endif
+//
+//       QString guiName = QFileInfo(guiPath).fileName();
+//       // Note: fork + execlp cause the process to remain (zombie) after closing gui, requiring manual kill. Use QProcess instead.
+//       if((_guiPid = fork()) == 0)
+//       {
+//          execlp(
+//                  guiPath.toLatin1().constData(),
+//                  guiName.toLatin1().constData(),
+//                  oscUrl.toLatin1().constData(),
+//                  filePath.toLatin1().constData(),
+//                  pluginLabel.toLatin1().constData(),
+//                  //"channel 1", (void*)0);
+//                  name.toLatin1().constData(), (void*)0);
+//
+//         // Should not return after execlp. If so it's an error.
+//         fprintf(stderr, "exec %s %s %s %s %s failed: %s\n",
+//                 guiPath.toLatin1().constData(),
+//                 guiName.toLatin1().constData(),
+//                 oscUrl.toLatin1().constData(),
+//                 filePath.toLatin1().constData(),
+//                 pluginLabel.toLatin1().constData(),
+//                 strerror(errno));
+//         //exit(1);
+//         return false;
+//       }
+//
+// #endif   // _USE_QPROCESS_FOR_GUI_
+//
+//   return true;
+// }
 
-        maxDssiPort=nDssiPorts;
-      }
-      else
-      {
-        control_port_mapper=control_port_mapper_;
-        
-        unsigned long nDssiPorts=0;
-        for (unsigned i=0;i<control_port_mapper->size();i++)
-          if (control_port_mapper->at(i)!=(unsigned long)-1 && control_port_mapper->at(i)+1 > nDssiPorts)
-            nDssiPorts=control_port_mapper->at(i)+1;
-        
-        if (maxDssiPort!=nDssiPorts)
-        {
-          // this should never happen, right?
-          fprintf(stderr, "STRANGE: nDssiPorts has changed (old=%lu, now=%lu)!\n", maxDssiPort, nDssiPorts);
-          delete [] old_control;
-          old_control=new float[nDssiPorts];
-          for (unsigned long i=0;i<nDssiPorts;i++) // init them all with "not a number"
-            old_control[i]=NAN;
-          maxDssiPort=nDssiPorts;
-        }
-      }
-      
-      // Are we already running? We don't want to allow another process do we...
-#ifdef _USE_QPROCESS_FOR_GUI_
-      if((_oscGuiQProc != 0) && (_oscGuiQProc->state() != QProcess::NotRunning))
-        return false;
-#else
-      if(_guiPid != -1)
-        return false;
-#endif
-        
-      #ifdef OSC_DEBUG 
-      fprintf(stderr, "OscIF::oscInitGui\n");
-      #endif
-
-      if(!url)
-      {  
-        fprintf(stderr, "OscIF::oscInitGui no server url!\n");
-        return false;
-      }
-            
-      if(guiPath.isEmpty())
-      {  
-        fprintf(stderr, "OscIF::oscInitGui guiPath is empty\n");
-        return false;
-      }
-
-      // WARNING: It seems spaces are NOT allowed in the URL.
-      //          This was verified by putting spaces in a track name before opening the UI.
-      // From official OSC specs:
-      // Printable ASCII characters not allowed in names of OSC Methods or OSC Containers:
-      // character 	name 	ASCII code (decimal)
-      // ’ ’ 	space
-      // # 	number sign 	35
-      // * 	asterisk 	42
-      // , 	comma 	44
-      // / 	forward slash 	47
-      // ? 	question mark 	63
-      // [ 	open bracket 	91
-      // ] 	close bracket 	93
-      // { 	open curly brace 	123
-      // } 	close curly brace 	125
-      // FIXME: TODO: Convert all of those to "%20" "%35" etc.
-
-// REMOVE Tim. tmp. Changed.
-//      QString oscUrl;
-//      oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(label);
-
-      stringToOscUrl(baseName);
-      stringToOscUrl(pluginLabel);
-      QString oscUrl;
-      oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(pluginLabel);
-
-                        
-#ifdef _USE_QPROCESS_FOR_GUI_
-      
-      // fork + execlp cause the process to remain (zombie) after closing gui, requiring manual kill.
-      // Using QProcess works OK. 
-      // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
-      if(_oscGuiQProc == 0)
-        _oscGuiQProc = new QProcess();                        
-      
-      QString program(guiPath);
-      QStringList arguments;
-      arguments << oscUrl
-                << filePath
-                << pluginLabel
-                << (titlePrefix() + name);
-
-      #ifdef OSC_DEBUG 
-      fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
-      #endif
-      
-      _oscGuiQProc->start(program, arguments);
-      
-      if(_oscGuiQProc->waitForStarted(10000)) // 10 secs.
-      {
-        #ifdef OSC_DEBUG 
-        fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
-        fprintf(stderr, "guiPath:%s oscUrl:%s filePath:%s pluginLabel:%s\n",
-                guiPath.toLatin1().constData(),
-                oscUrl.toLatin1().constData(),
-                filePath.toLatin1().constData(),
-                pluginLabel.toLatin1().constData());
-        #endif
-      }
-      else
-      {
-        fprintf(stderr, "exec %s %s %s %s failed: %s\n",
-                guiPath.toLatin1().constData(),
-                oscUrl.toLatin1().constData(),
-                filePath.toLatin1().constData(),
-                pluginLabel.toLatin1().constData(),
-                strerror(errno));
-        return false;
-      }
-      
-      #ifdef OSC_DEBUG 
-      fprintf(stderr, "OscIF::oscInitGui after QProcess\n");
-      #endif
-      
-#else  // NOT  _USE_QPROCESS_FOR_GUI_
-                                
-      #ifdef OSC_DEBUG 
-      fprintf(stderr, "forking...\n");
-      #endif
-
-      QString guiName = QFileInfo(guiPath).fileName();
-      // Note: fork + execlp cause the process to remain (zombie) after closing gui, requiring manual kill. Use QProcess instead.
-      if((_guiPid = fork()) == 0)  
-      {
-         execlp(
-                 guiPath.toLatin1().constData(),
-                 guiName.toLatin1().constData(),
-                 oscUrl.toLatin1().constData(),
-                 filePath.toLatin1().constData(),
-                 pluginLabel.toLatin1().constData(),
-                 //"channel 1", (void*)0);
-                 name.toLatin1().constData(), (void*)0);
-
-        // Should not return after execlp. If so it's an error.
-        fprintf(stderr, "exec %s %s %s %s %s failed: %s\n",
-                guiPath.toLatin1().constData(),
-                guiName.toLatin1().constData(),
-                oscUrl.toLatin1().constData(),
-                filePath.toLatin1().constData(),
-                pluginLabel.toLatin1().constData(),
-                strerror(errno));
-        //exit(1);
-        return false;
-      }
-      
-#endif   // _USE_QPROCESS_FOR_GUI_
-      
-  return true;          
-}
 
 // REMOVE Tim. tmp. Added.
-bool OscIF::oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
+bool OscIF::oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginLabel,
                        int trackno, const QString& name, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_, int rackpos)
 {
@@ -1326,12 +1332,23 @@ bool OscIF::oscInitGui(const QString& typ, QString baseName, QString pluginLabel
       // { 	open curly brace 	123
       // } 	close curly brace 	125
 
-      stringToOscUrl(baseName);
+//      QString oscpluglabel(pluginLabel);
+//      stringToOscUrl(oscpluglabel);
+
+//      stringToOscUrl(baseName);
       QString oscUrl;
+//      if(rackpos != -1)
+//        oscUrl = QString("%1%2/%3/%4/%5").arg(QString( url)).arg(typ).arg(baseName).arg(trackno).arg(rackpos);
+//      else
+//        oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(trackno);
+//      if(rackpos != -1)
+//        oscUrl = QString("%1%2/%3/%4/%5/%6").arg(QString( url)).arg(typ).arg(baseName).arg(oscpluglabel).arg(trackno).arg(rackpos);
+//      else
+//        oscUrl = QString("%1%2/%3/%4/%5").arg(QString( url)).arg(typ).arg(baseName).arg(oscpluglabel).arg(trackno);
       if(rackpos != -1)
-        oscUrl = QString("%1%2/%3/%4/%5").arg(QString( url)).arg(typ).arg(baseName).arg(trackno).arg(rackpos);
+        oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(trackno).arg(rackpos);
       else
-        oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(trackno);
+        oscUrl = QString("%1%2/%3").arg(QString( url)).arg(typ).arg(trackno);
 
 
 #ifdef _USE_QPROCESS_FOR_GUI_
@@ -1655,7 +1672,7 @@ bool OscDssiIF::oscInitGui()
     return false;
 
   return OscIF::oscInitGui("dssi_synth",
-                           _oscSynthIF->dssiSynth()->baseName(),
+//                           _oscSynthIF->dssiSynth()->baseName(),
                            _oscSynthIF->dssiSynth()->name(),
                            tidx,
                            _oscSynthIF->dssiSynthI()->name(),
@@ -1754,12 +1771,14 @@ bool OscEffectIF::oscInitGui()
   if(tidx == -1)
     return false;
 
-  return OscIF::oscInitGui("ladspa_efx",
-                           _oscPluginI->plugin()->lib(false),
+//  return OscIF::oscInitGui("ladspa_efx",
+  return OscIF::oscInitGui("dssi_efx",
+//                           _oscPluginI->plugin()->lib(false),
                            _oscPluginI->plugin()->label(),
                            tidx,
                            _oscPluginI->name(),
-                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename(),
+                           _oscPluginI->plugin()->fileName(),
+                           _oscPluginI->dssi_ui_filename(),
                            _oscPluginI->plugin()->getRpIdx(),
                            _oscPluginI->id());
 }

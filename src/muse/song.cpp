@@ -7574,19 +7574,21 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
     MusEGlobal::song->applyOperationGroup(ops);
 }
 
-void Song::closeDssiEditors(Track* track) const
+void Song::closeDssiEditors(Track *track) const
 {
+  if(!track)
+    return;
   // If it's an audio track, close all rack effect UIs.
   if(!track->isMidiTrack())
   {
     AudioTrack *at = static_cast<AudioTrack*>(track);
-    Pipeline *pl = at->efxPipe();
+    const Pipeline *pl = at->efxPipe();
     if(pl)
     {
       const int sz = pl->size();
-      for(int k = 0; k < sz; ++k)
+      for(int i = 0; i < sz; ++i)
       {
-        PluginI *plugi = pl->at(k);
+        PluginI *plugi = pl->at(i);
         if(plugi && plugi->isDssiPlugin())
           plugi->closeNativeGui();
       }
@@ -7595,12 +7597,50 @@ void Song::closeDssiEditors(Track* track) const
   // If it's a synth track, close the UI.
   if(track->type() == Track::AUDIO_SOFTSYNTH)
   {
-    SynthI *synthi = static_cast<SynthI*>(track);
+    const SynthI *synthi = static_cast<const SynthI*>(track);
     if(synthi->synth() && synthi->synth()->synthType() == Synth::DSSI_SYNTH)
     {
       if(synthi->sif())
         synthi->sif()->closeNativeGui();
     }
+  }
+}
+
+void Song::closeDssiEditors(int trackNumFrom, int trackNumTo) const
+{
+  // Range trackNumFrom - trackNumTo is inclusive. ([0, 0] = first.)
+  const int sz = (int)_tracks.size();
+  if(trackNumTo < 0 || trackNumTo >= sz)
+    trackNumTo = sz - 1;
+  if(trackNumFrom < 0 || trackNumFrom >= sz || trackNumFrom > trackNumTo)
+    return;
+  // Yes, that's <=.
+  for(int i = trackNumFrom; i <= trackNumTo; ++i)
+    closeDssiEditors(_tracks.at(i));
+}
+
+void Song::closeDssiEditors(Track* track, int effRackPosFrom, int effRackPosTo) const
+{
+  if(!track || track->isMidiTrack())
+    return;
+  AudioTrack *at = static_cast<AudioTrack*>(track);
+  const Pipeline *pl = at->efxPipe();
+  if(!pl)
+    return;
+
+  // Range effRackPosFrom - effRackPosTo is inclusive. ([0, 0] = first.)
+  const int sz = (int)pl->size();
+  if(effRackPosTo < 0 || effRackPosTo >= sz)
+    effRackPosTo = sz - 1;
+  if(effRackPosFrom < 0 || effRackPosFrom >= sz || effRackPosFrom > effRackPosTo)
+    return;
+
+  // Yes, that's <=.
+  for(int i = effRackPosFrom; i <= effRackPosTo; ++i)
+  {
+    PluginI *plugi = pl->at(i);
+    if(plugi && plugi->isDssiPlugin())
+      plugi->closeNativeGui();
   }
 }
 

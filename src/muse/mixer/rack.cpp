@@ -337,11 +337,11 @@ void EffectRack::choosePlugin(QListWidgetItem* it)
 
 //    MusECore::Undo operations;
 
-    // Some heavy lifting required here, not easily done
-    //  in the realtime thread. Idle the audio processing.
-    // Here any glitches in the audio would be acceptable.
-    // Gain access to structures, and sync with audio.
-    MusEGlobal::audio->msgIdle(true);
+    // // Some heavy lifting required here, not easily done
+    // //  in the realtime thread. Idle the audio processing.
+    // // Here any glitches in the audio would be acceptable.
+    // // Gain access to structures, and sync with audio.
+    // MusEGlobal::audio->msgIdle(true);
 
 //    if(/*replace &&*/ track->efxPipe() && track->efxPipe()->at(idx))
 //      operations.push_back(MusECore::UndoOp(
@@ -353,7 +353,7 @@ void EffectRack::choosePlugin(QListWidgetItem* it)
 
     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, track, plugi, idx));
 
-    MusEGlobal::audio->msgIdle(false);
+    // MusEGlobal::audio->msgIdle(false);
 }
 
 //---------------------------------------------------------
@@ -512,16 +512,16 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                     // MusEGlobal::audio->msgIdle(false);
 
 
-                    // Some heavy lifting required here, not easily done
-                    //  in the realtime thread. Idle the audio processing.
-                    // Here any glitches in the audio would be acceptable.
-                    // Gain access to structures, and sync with audio.
-                    MusEGlobal::audio->msgIdle(true);
+                    // // Some heavy lifting required here, not easily done
+                    // //  in the realtime thread. Idle the audio processing.
+                    // // Here any glitches in the audio would be acceptable.
+                    // // Gain access to structures, and sync with audio.
+                    // MusEGlobal::audio->msgIdle(true);
 
                     MusEGlobal::song->applyOperation(MusECore::UndoOp(
                       MusECore::UndoOp::ChangeRackEffectPlugin, track, (MusECore::PluginI*)nullptr, idx));
 
-                    MusEGlobal::audio->msgIdle(false);
+                    // MusEGlobal::audio->msgIdle(false);
                   }
                   break;
             case ACTIVE:
@@ -556,14 +556,14 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                         if(pipe && pipe->at(idx))
                         {
                           setCurrentItem(item(idx-1));
-                          // Some heavy lifting required here, not easily done
-                          //  in the realtime thread. Idle the audio processing.
-                          // Here any glitches in the audio would be acceptable.
-                          // Gain access to structures, and sync with audio.
-                          MusEGlobal::audio->msgIdle(true);
+                          // // Some heavy lifting required here, not easily done
+                          // //  in the realtime thread. Idle the audio processing.
+                          // // Here any glitches in the audio would be acceptable.
+                          // // Gain access to structures, and sync with audio.
+                          // MusEGlobal::audio->msgIdle(true);
                           MusEGlobal::song->applyOperation(MusECore::UndoOp(
                             MusECore::UndoOp::SwapRackEffectPlugins, track, double(idx), double(idx-1), double(0), double(0), double(0)));
-                          MusEGlobal::audio->msgIdle(false);
+                          // MusEGlobal::audio->msgIdle(false);
                         }
                         }
                   break;
@@ -575,14 +575,14 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                         if(pipe && pipe->at(idx))
                         {
                           setCurrentItem(item(idx+1));
-                          // Some heavy lifting required here, not easily done
-                          //  in the realtime thread. Idle the audio processing.
-                          // Here any glitches in the audio would be acceptable.
-                          // Gain access to structures, and sync with audio.
-                          MusEGlobal::audio->msgIdle(true);
+                          // // Some heavy lifting required here, not easily done
+                          // //  in the realtime thread. Idle the audio processing.
+                          // // Here any glitches in the audio would be acceptable.
+                          // // Gain access to structures, and sync with audio.
+                          // MusEGlobal::audio->msgIdle(true);
                           MusEGlobal::song->applyOperation(MusECore::UndoOp(
                             MusECore::UndoOp::SwapRackEffectPlugins, track, double(idx), double(idx+1), double(0), double(0), double(0)));
-                          MusEGlobal::audio->msgIdle(false);
+                          // MusEGlobal::audio->msgIdle(false);
                         }
                         }
                   break;
@@ -952,13 +952,13 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
   //                                  track->addPlugin(plugi, idx);
   //                                  MusEGlobal::song->update(SC_RACK);
 
-                                    // Some heavy lifting required here, not easily done
-                                    //  in the realtime thread. Idle the audio processing.
-                                    // Here any glitches in the audio would be acceptable.
-                                    // Gain access to structures, and sync with audio.
-                                    MusEGlobal::audio->msgIdle(true);
+                                    // // Some heavy lifting required here, not easily done
+                                    // //  in the realtime thread. Idle the audio processing.
+                                    // // Here any glitches in the audio would be acceptable.
+                                    // // Gain access to structures, and sync with audio.
+                                    // MusEGlobal::audio->msgIdle(true);
                                     MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, track, plugi, idx));
-                                    MusEGlobal::audio->msgIdle(false);
+                                    // MusEGlobal::audio->msgIdle(false);
 
                                     if (plugi->guiVisible())
                                       plugi->gui()->updateWindowTitle();

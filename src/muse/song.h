@@ -212,8 +212,21 @@ class Song : public QObject {
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
 
+      //--------------------------------------------------------
+      // Special helpers for closing DSSI editors.
+      // (Can't change UI's OSC url or window title while open.)
+      //--------------------------------------------------------
       // Closes a track's DSSI editor and all of its DSSI rack plugins.
       void closeDssiEditors(Track*) const;
+      // Closes an inclusive range of tracks' DSSI editors and ALL of
+      //  each track's DSSI rack plugins. ([0, 0] = first.)
+      // If trackNumTo less than 0, it means to the end of the list.
+      void closeDssiEditors(int trackNumFrom, int trackNumTo = -1) const;
+      // Closes an inclusive range of a track's effects rack DSSI plugin editors. ([0, 0] = first.)
+      // This does NOT close a DSSI track's editor, only a track's effect rack plugins.
+      // If effRackPosTo is less than 0, it means to the end of the list.
+      void closeDssiEditors(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
+      //--------------------------------------------------------
 
    protected:
       // Internal routine for preparing the operation that ends audio controller movement mode.

@@ -49,6 +49,12 @@
 // Enable for debugging:
 //#define _UNDO_DEBUG_
 
+// Choice of non-realtime idling or realtime synchronized changes for some operations.
+// Idling can be much more memory efficient.
+// But glitches in the audio would (must) be acceptable for these operations.
+// Define this to use idling for those operations.
+#define _UNDO_IDLE_AUDIO(idle) MusEGlobal::audio->msgIdle(idle);
+
 namespace MusECore {
 
 // iundo points to last Undo() in Undo-list
@@ -2989,6 +2995,18 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
+  // REMOVE Tim. tmp. Added.
+                        // --------------------------------------------------------------------------------
+                        // Special for DSSI: Quit and later reopen the range, from desired track number to the end,
+                        //  of track native UIs and all DSSI effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Since we are deleting a track, don't bother updating that one, it's going away anyway.
+                        // Note that i->trackno can be -1 meaning at the end.
+                        // --------------------------------------------------------------------------------
+                        if(i->trackno >= 0)
+                          closeDssiEditors(i->trackno + 1, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -3050,6 +3068,15 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::DeleteTrack:
+  // REMOVE Tim. tmp. Added.
+                        // --------------------------------------------------------------------------------
+                        // Special for DSSI: Quit and later reopen the range, from desired track number to the end,
+                        //  of track native UIs and all DSSI effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // --------------------------------------------------------------------------------
+                        closeDssiEditors(i->trackno, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -3216,9 +3243,10 @@ void Song::revertOperationGroup1(Undo& operations)
                   case UndoOp::ModifyTrackName:
   // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
-                        // Special for DSSI: Quit and later reopen the native UI so that editor URL and the
-                        //  'user-friendly' title bar text are updated next time it is opened.
-                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Special for DSSI: Quit and later reopen the native UI and all DSSI effect rack
+                        //  plugin native UIs so that all editor URLs and the 'user-friendly' title bar texts
+                        //  are updated next time they are opened. There does not appear to be a mechanism to
+                        //  change them while the UI is open.
                         // --------------------------------------------------------------------------------
                         closeDssiEditors(editable_track);
 
@@ -3232,11 +3260,12 @@ void Song::revertOperationGroup1(Undo& operations)
                   case UndoOp::MoveTrack:
   // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
-                        // Special for DSSI: Quit and later reopen the native UI so that editor URL and the
-                        //  'user-friendly' title bar text are updated next time it is opened.
+                        // Special for DSSI: Quit and later reopen the range of track native UIs and all the
+                        //  track DSSI effect rack plugin native UIs so that all editor URLs and the
+                        //  'user-friendly' title bar texts are updated next time they are opened.
                         // There does not appear to be a mechanism to change them while the UI is open.
                         // --------------------------------------------------------------------------------
-                        closeDssiEditors(_tracks.at(i->b));
+                        closeDssiEditors(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
 
                         pendingOperations.add(PendingOperationItem(&_tracks, i->b, i->a, PendingOperationItem::MoveTrack));
                         updateFlags |= SC_TRACK_MOVED;
@@ -3995,7 +4024,9 @@ void Song::revertOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::revertOperationGroup1:ChangeRackEffectPlugin\n");
 #endif
+                            _UNDO_IDLE_AUDIO(true);
                             changePluginOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
                         break;
 
 // REMOVE Tim. tmp. Added.
@@ -4005,15 +4036,18 @@ void Song::revertOperationGroup1(Undo& operations)
 #endif
   // REMOVE Tim. tmp. Added.
                             // --------------------------------------------------------------------------------
-                            // Special for DSSI: Quit and later reopen the native UI so that editor URL and the
-                            //  'user-friendly' title bar text are updated next time it is opened.
-                            // There does not appear to be a mechanism to change them while the UI is open.
+                            // Special for DSSI: Quit and later reopen the two effect rack native UIs
+                            //  so that editor URLs and the 'user-friendly' title bar texts are updated
+                            //  next time they are opened. There does not appear to be a mechanism to change
+                            //  them while the UI is open.
                             // --------------------------------------------------------------------------------
-                            closeDssiEditors(editable_track);
+                            closeDssiEditors(editable_track, i->_effectRackPos, i->_effectRackPos);
+                            closeDssiEditors(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
 
+                            _UNDO_IDLE_AUDIO(true);
                             swapPluginsOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
                         break;
-
 
                   default:
                         break;
@@ -4280,6 +4314,17 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::AddTrack:
+  // REMOVE Tim. tmp. Added.
+                        // --------------------------------------------------------------------------------
+                        // Special for DSSI: Quit and later reopen the range, from desired track number to the end,
+                        //  of track native UIs and all DSSI effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Note that i->trackno can be -1 meaning at the end.
+                        // --------------------------------------------------------------------------------
+                        if(i->trackno >= 0)
+                          closeDssiEditors(i->trackno, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -4361,6 +4406,16 @@ void Song::executeOperationGroup1(Undo& operations)
                         break;
                         
                   case UndoOp::DeleteTrack:
+  // REMOVE Tim. tmp. Added.
+                        // --------------------------------------------------------------------------------
+                        // Special for DSSI: Quit and later reopen the range, from desired track number to the end,
+                        //  of track native UIs and all DSSI effect rack plugin native UIs so that all editor URLs
+                        //  and the 'user-friendly' title bar texts are updated next time they are opened.
+                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Since we are deleting a track, don't bother updating that one, it's going away anyway.
+                        // --------------------------------------------------------------------------------
+                        closeDssiEditors(i->trackno + 1, -1);
+
                         switch(editable_track->type())
                         {
                           case Track::AUDIO_SOFTSYNTH:
@@ -4506,9 +4561,10 @@ void Song::executeOperationGroup1(Undo& operations)
                   case UndoOp::ModifyTrackName:
   // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
-                        // Special for DSSI: Quit and later reopen the native UI so that editor URL and the
-                        //  'user-friendly' title bar text are updated next time it is opened.
-                        // There does not appear to be a mechanism to change them while the UI is open.
+                        // Special for DSSI: Quit and later reopen the native UI and all DSSI effect rack
+                        //  plugin native UIs so that all editor URLs and the 'user-friendly' title bar texts
+                        //  are updated next time they are opened. There does not appear to be a mechanism to
+                        //  change them while the UI is open.
                         // --------------------------------------------------------------------------------
                         closeDssiEditors(editable_track);
 
@@ -4522,11 +4578,12 @@ void Song::executeOperationGroup1(Undo& operations)
                   case UndoOp::MoveTrack:
   // REMOVE Tim. tmp. Added.
                         // --------------------------------------------------------------------------------
-                        // Special for DSSI: Quit and later reopen the native UI so that editor URL and the
-                        //  'user-friendly' title bar text are updated next time it is opened.
+                        // Special for DSSI: Quit and later reopen the range of track native UIs and all the
+                        //  track DSSI effect rack plugin native UIs so that all editor URLs and the
+                        //  'user-friendly' title bar texts are updated next time they are opened.
                         // There does not appear to be a mechanism to change them while the UI is open.
                         // --------------------------------------------------------------------------------
-                        closeDssiEditors(_tracks.at(i->a));
+                        closeDssiEditors(i->b > i->a ? i->a : i->b, i->b > i->a ? i->b : i->a);
 
                         pendingOperations.add(PendingOperationItem(&_tracks, i->a, i->b, PendingOperationItem::MoveTrack));
                         updateFlags |= SC_TRACK_MOVED;
@@ -5401,7 +5458,9 @@ void Song::executeOperationGroup1(Undo& operations)
 #ifdef _UNDO_DEBUG_
                             fprintf(stderr, "Song::executeOperationGroup1:ChangeRackEffectPlugin\n");
 #endif
+                            _UNDO_IDLE_AUDIO(true);
                             changePluginOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
                         break;
 
 // REMOVE Tim. tmp. Added.
@@ -5411,13 +5470,17 @@ void Song::executeOperationGroup1(Undo& operations)
 #endif
   // REMOVE Tim. tmp. Added.
                             // --------------------------------------------------------------------------------
-                            // Special for DSSI: Quit and later reopen the native UI so that editor URL and the
-                            //  'user-friendly' title bar text are updated next time it is opened.
-                            // There does not appear to be a mechanism to change them while the UI is open.
+                            // Special for DSSI: Quit and later reopen the two effect rack native UIs
+                            //  so that editor URLs and the 'user-friendly' title bar texts are updated
+                            //  next time they are opened. There does not appear to be a mechanism to change
+                            //  them while the UI is open.
                             // --------------------------------------------------------------------------------
-                            closeDssiEditors(editable_track);
+                            closeDssiEditors(editable_track, i->_effectRackPos, i->_effectRackPos);
+                            closeDssiEditors(editable_track, i->_newEffectRackPos, i->_newEffectRackPos);
 
+                            _UNDO_IDLE_AUDIO(true);
                             swapPluginsOperation(&(*i));
+                            _UNDO_IDLE_AUDIO(false);
                         break;
 
 

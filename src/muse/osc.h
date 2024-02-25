@@ -68,12 +68,12 @@ class OscIF
 //      virtual bool oscInitGui(const QString& typ, const QString& baseName, const QString& name,
 //                       const QString& label, const QString& filePath, const QString& guiPath,
 //                       const std::vector<unsigned long>* control_port_mapper_);
-      virtual bool oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
-                       const QString& name, const QString& filePath, const QString& guiPath,
-                       const std::vector<unsigned long>* control_port_mapper_);
+//      virtual bool oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
+//                       const QString& name, const QString& filePath, const QString& guiPath,
+//                       const std::vector<unsigned long>* control_port_mapper_);
 
 // REMOVE Tim. tmp. Added.
-      virtual bool oscInitGui(const QString& typ, QString baseName, QString pluginLabel,
+      virtual bool oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginLabel,
                        int trackno, const QString& name, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_, int rackpos = -1);
    public:
