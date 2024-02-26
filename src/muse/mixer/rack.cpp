@@ -32,6 +32,9 @@
 #include <QStyledItemDelegate>
 #include <QUrl>
 #include <QScrollBar>
+// REMOVE Tim. tmp. Added.
+#include <QTemporaryFile>
+#include <QList>
 
 #include "popupmenu.h"
 
@@ -59,7 +62,7 @@
 
 namespace MusEGui {
 
-QString MUSE_MIME_TYPE = "text/x-muse-plugin";
+const QString MUSE_MIME_TYPE = "text/x-muse-plugin";
 
 //---------------------------------------------------------
 //   class EffectRackDelegate
@@ -528,24 +531,32 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   {
                   bool flag = !pipe->isActive(idx);
                   pipe->setActive(idx, flag);
+                  updateContents();
+                  MusEGlobal::song->update(SC_RACK);
                   break;
                   }
             case BYPASS:
                   {
                   bool flag = !pipe->isOn(idx);
                   pipe->setOn(idx, flag);
+                  updateContents();
+                  MusEGlobal::song->update(SC_RACK);
                   break;
                   }
             case SHOW:
                   {
                   bool flag = !pipe->guiVisible(idx);
                   pipe->showGui(idx, flag);
+                  updateContents();
+                  MusEGlobal::song->update(SC_RACK);
                   break;
                   }
             case SHOW_NATIVE:
                   {
                   bool flag = !pipe->nativeGuiVisible(idx);
                   pipe->showNativeGui(idx, flag);
+                  updateContents();
+                  MusEGlobal::song->update(SC_RACK);
                   break;
                   }
             case UP:
@@ -588,12 +599,14 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   break;
             case SAVE:
                   savePreset(idx);
+                  updateContents();
+                  MusEGlobal::song->update(SC_RACK);
                   break;
             }
 // REMOVE Tim. tmp. Added comment.
 // FIXME TODO Move these into the individual cases that use them, the others do it already with operations and songChanged().
-      updateContents();
-      MusEGlobal::song->update(SC_RACK);
+//       updateContents();
+//       MusEGlobal::song->update(SC_RACK);
       }
 
 //---------------------------------------------------------
@@ -686,6 +699,63 @@ void EffectRack::savePreset(int idx)
             fclose(presetFp);
       }
 
+// REMOVE Tim. tmp. Changed.
+// void EffectRack::startDragItem(int idx)
+//       {
+//       if(!track)
+//         return;
+//       if (idx < 0) {
+//           printf("illegal to drag index %d\n",idx);
+//           return;
+//       }
+//       FILE *tmp;
+//       if (MusEGlobal::debugMsg) {
+//           QString fileName;
+//           MusEGlobal::getUniqueTmpfileName("tmp","preset", fileName);
+//           tmp = fopen(fileName.toLatin1().data(), "w+");
+//       }
+//       else
+//           tmp = tmpfile();
+//       if (tmp == nullptr) {
+//             fprintf(stderr, "EffectRack::startDrag fopen failed: %s\n",
+//                strerror(errno));
+//             return;
+//             }
+//       MusECore::Xml xml(tmp);
+//       MusECore::Pipeline* pipe = track->efxPipe();
+//       if (pipe) {
+//             if ((*pipe)[idx] != nullptr) {
+//                 xml.header();
+//                 xml.tag(0, "muse version=\"1.0\"");
+//                 (*pipe)[idx]->writeConfiguration(1, xml);
+//                 xml.tag(0, "/muse");
+//                 }
+//             else {
+//                 //printf("no plugin!\n");
+//                 return;
+//                 }
+//             }
+//       else {
+//           //printf("no pipe!\n");
+//           return;
+//           }
+//
+//       QString xmlconf;
+//       xml.dump(xmlconf);
+//       QMimeData* md = new QMimeData();
+//       QByteArray data(xmlconf.toLatin1().constData());
+//
+//       if (MusEGlobal::debugMsg)
+//           printf("Sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
+//
+//       md->setData(MUSE_MIME_TYPE, data);
+//
+//       QDrag* drag = new QDrag(this);
+//       drag->setMimeData(md);
+//
+//       drag->exec(Qt::CopyAction);
+//       }
+
 void EffectRack::startDragItem(int idx)
       {
       if(!track)
@@ -694,20 +764,15 @@ void EffectRack::startDragItem(int idx)
           printf("illegal to drag index %d\n",idx);
           return;
       }
-      FILE *tmp;
-      if (MusEGlobal::debugMsg) {
-          QString fileName;
-          MusEGlobal::getUniqueTmpfileName("tmp","preset", fileName);
-          tmp = fopen(fileName.toLatin1().data(), "w+");
+
+      QTemporaryFile tmp;
+      if(!tmp.open())
+      {
+        fprintf(stderr, "EffectRack::startDrag QTemporaryFile.open() failed\n");
+        return;
       }
-      else
-          tmp = tmpfile();
-      if (tmp == nullptr) {
-            fprintf(stderr, "EffectRack::startDrag fopen failed: %s\n",
-               strerror(errno));
-            return;
-            }
-      MusECore::Xml xml(tmp);
+
+      MusECore::Xml xml(&tmp);
       MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
             if ((*pipe)[idx] != nullptr) {
@@ -725,7 +790,7 @@ void EffectRack::startDragItem(int idx)
           //printf("no pipe!\n");
           return;
           }
-      
+
       QString xmlconf;
       xml.dump(xmlconf);
       QMimeData* md = new QMimeData();
@@ -734,12 +799,20 @@ void EffectRack::startDragItem(int idx)
       if (MusEGlobal::debugMsg)
           printf("Sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
 
+      // FIXME: Drag to desktop? Tried, but no luck. Nothing happens.
+      //        Tried application/xml, text/xml. text/plain works but just
+      //         ends up us binary garbage in a desktop Sticky Note.
+      //        Tried passing the tmp filename as URL with setUrls(), the drop
+      //         just asks if we want to link to the file. No copy?
+      //        If Ctrl key is held for copying, drop says malformed URL. ???
+      //        Docs say we may need to register our type. See QMimeData::setData().
       md->setData(MUSE_MIME_TYPE, data);
-      
+
       QDrag* drag = new QDrag(this);
       drag->setMimeData(md);
-      
-      drag->exec(Qt::CopyAction);
+
+      drag->exec(Qt::CopyAction | Qt::MoveAction);
+      // NOTE: We don't get here until the drop ends. Exec will block execution until dropped.
       }
 
 Qt::DropActions EffectRack::supportedDropActions () const
@@ -755,6 +828,89 @@ QStringList EffectRack::mimeTypes() const
       return mTypes;
       }
 
+// REMOVE Tim. tmp. Changed.
+// void EffectRack::dropEvent(QDropEvent *event)
+// {
+//       if(!event || !track)
+//         return;
+//       QListWidgetItem *i = itemAt( event->pos() );
+//       if (!i)
+//             return;
+//       int idx = row(i);
+//
+//       MusECore::Pipeline* pipe = track->efxPipe();
+//       if (pipe)
+//       {
+//             if ((*pipe)[idx] != nullptr) {
+//                 QWidget *sw = static_cast<QWidget *>(event->source());
+//                 if(sw)
+//                 {
+//                   if(strcmp(sw->metaObject()->className(), "EffectRack") == 0)
+//                   {
+//                     EffectRack *ser = (EffectRack*)sw;
+//                     MusECore::Pipeline* spipe = ser->getTrack()->efxPipe();
+//                     if(!spipe)
+//                       return;
+//
+//                     QListWidgetItem *it = ser->itemAt(ser->getDragPos());
+//                     int idx0 = ser->row(it);
+//                     if (!(*spipe)[idx0] ||
+//                         (idx == idx0 && (ser == this || ser->getTrack()->name() == track->name())))
+//                       return;
+//                   }
+//                 }
+// // REMOVE Tim. tmp. Changed.
+// //                if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
+// //                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+// //                      {
+// //                        track->addPlugin(nullptr, idx);
+// //                        MusEGlobal::song->update(SC_RACK);
+// //                      }
+// //                else {
+// //                      return;
+// //                      }
+//                 if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
+//                       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
+//                       {
+//                       return;
+//                       }
+//                 }
+//
+//             if(event->mimeData()->hasFormat(MUSE_MIME_TYPE))
+//             {
+//               QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
+//               MusECore::Xml xml(mimeData.constData());
+//               if (MusEGlobal::debugMsg)
+//                   printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
+//
+//               initPlugin(xml, idx);
+//             }
+//             else if (event->mimeData()->hasUrls())
+//             {
+//               // Multiple urls not supported here. Grab the first one.
+//               QString text = event->mimeData()->urls()[0].path();
+//
+//               if (text.endsWith(".pre", Qt::CaseInsensitive) ||
+//                   text.endsWith(".pre.gz", Qt::CaseInsensitive) ||
+//                   text.endsWith(".pre.bz2", Qt::CaseInsensitive))
+//               {
+//                   bool popenFlag;
+//                   FILE* fp = MusEGui::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
+//                   if (fp)
+//                   {
+//                       MusECore::Xml xml(fp);
+//                       initPlugin(xml, idx);
+//
+//                       if (popenFlag)
+//                             pclose(fp);
+//                       else
+//                             fclose(fp);
+//                   }
+//               }
+//             }
+//       }
+// }
+
 void EffectRack::dropEvent(QDropEvent *event)
 {
       if(!event || !track)
@@ -763,45 +919,51 @@ void EffectRack::dropEvent(QDropEvent *event)
       if (!i)
             return;
       int idx = row(i);
-      
-      MusECore::Pipeline* pipe = track->efxPipe();
-      if (pipe) 
-      {
-            if ((*pipe)[idx] != nullptr) {
-                QWidget *sw = static_cast<QWidget *>(event->source());
-                if(sw)
-                {
-                  if(strcmp(sw->metaObject()->className(), "EffectRack") == 0) 
-                  { 
-                    EffectRack *ser = (EffectRack*)sw;
-                    MusECore::Pipeline* spipe = ser->getTrack()->efxPipe();
-                    if(!spipe)
-                      return;
 
-                    QListWidgetItem *it = ser->itemAt(ser->getDragPos());
-                    int idx0 = ser->row(it);
-                    if (!(*spipe)[idx0] || 
-                        (idx == idx0 && (ser == this || ser->getTrack()->name() == track->name())))
-                      return; 
-                  }
-                }
-// REMOVE Tim. tmp. Changed.
-//                if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
-//                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
-//                      {
-//                        track->addPlugin(nullptr, idx);
-//                        MusEGlobal::song->update(SC_RACK);
-//                      }
-//                else {
-//                      return;
-//                      }
-                if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
-                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
-                      {
-                      return;
-                      }
-                }
-            
+      const Qt::DropAction act = event->proposedAction();
+      EffectRack *ser = nullptr;
+      MusECore::AudioTrack *strack = nullptr;
+      MusECore::Pipeline* spipe = nullptr;
+      QListWidgetItem *sitem = nullptr;
+      MusECore::PluginI *splug = nullptr;
+      int sidx = -1;
+
+      QWidget *sw = static_cast<QWidget *>(event->source());
+      if(sw)
+      {
+        if(strcmp(sw->metaObject()->className(), "MusEGui::EffectRack") == 0)
+        {
+          ser = (EffectRack*)sw;
+          strack = ser->getTrack();
+          if(strack)
+          {
+            spipe = strack->efxPipe();
+            if(spipe)
+            {
+              sitem = ser->itemAt(ser->getDragPos());
+              sidx = ser->row(sitem);
+
+              // Ignore if dragging from/to the same item.
+              if(sidx == idx && ser == this)
+                return;
+
+              splug = (*spipe)[sidx];
+            }
+          }
+        }
+      }
+
+      MusECore::Pipeline* pipe = track->efxPipe();
+      if (pipe)
+      {
+            // Does a plugin already exist in the target slot?
+            if ((*pipe)[idx])
+            {
+              if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
+                  QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
+                return;
+            }
+
             if(event->mimeData()->hasFormat(MUSE_MIME_TYPE))
             {
               QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
@@ -809,24 +971,35 @@ void EffectRack::dropEvent(QDropEvent *event)
               if (MusEGlobal::debugMsg)
                   printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
 
-              initPlugin(xml, idx);
+              MusECore::PluginI *newplug = initPlugin(xml, idx);
+              if(newplug)
+              {
+                MusECore::Undo ops;
+                if(splug && act == Qt::MoveAction)
+                  ops.push_back(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, strack, (MusECore::PluginI*)nullptr, sidx));
+                ops.push_back(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx));
+                MusEGlobal::song->applyOperationGroup(ops);
+              }
             }
             else if (event->mimeData()->hasUrls())
             {
               // Multiple urls not supported here. Grab the first one.
               QString text = event->mimeData()->urls()[0].path();
-               
-              if (text.endsWith(".pre", Qt::CaseInsensitive) || 
-                  text.endsWith(".pre.gz", Qt::CaseInsensitive) || 
+
+              if (text.endsWith(".pre", Qt::CaseInsensitive) ||
+                  text.endsWith(".pre.gz", Qt::CaseInsensitive) ||
                   text.endsWith(".pre.bz2", Qt::CaseInsensitive))
               {
                   bool popenFlag;
                   FILE* fp = MusEGui::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
-                  if (fp) 
+                  if (fp)
                   {
                       MusECore::Xml xml(fp);
-                      initPlugin(xml, idx);
-                      
+                      MusECore::PluginI *newplug = initPlugin(xml, idx);
+                      if(newplug)
+                        MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                          MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx));
+
                       if (popenFlag)
                             pclose(fp);
                       else
@@ -866,6 +1039,35 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
       QListWidget::mousePressEvent(event);  
       }
 
+// REMOVE Tim. tmp. Changed.
+// void EffectRack::mouseMoveEvent(QMouseEvent *event)
+// {
+//       if(event && track)
+//       {
+//         if (event->buttons() & Qt::LeftButton) {
+//               MusECore::Pipeline* pipe = track->efxPipe();
+//               if(!pipe)
+//                 return;
+//
+//               QListWidgetItem *i = itemAt(dragPos);
+//               int idx0 = row(i);
+//               if (!(*pipe)[idx0])
+//                 return;
+//
+//               int distance = (dragPos-event->pos()).manhattanLength();
+//               if (distance > QApplication::startDragDistance())
+//               {
+//                 QListWidgetItem *it = itemAt(event->pos() );
+//                 if (it) {
+//                   int idx = row(it);
+//                   startDragItem(idx);
+//                 }
+//               }
+//         }
+//       }
+//       QListWidget::mouseMoveEvent(event);
+// }
+
 void EffectRack::mouseMoveEvent(QMouseEvent *event)
 {
       if(event && track)
@@ -878,16 +1080,18 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
               QListWidgetItem *i = itemAt(dragPos);
               int idx0 = row(i);
               if (!(*pipe)[idx0])
-                return; 
-              
-              int distance = (dragPos-event->pos()).manhattanLength();
-              if (distance > QApplication::startDragDistance()) {
-                    QListWidgetItem *it = itemAt(event->pos() );
-                    if (it) {
-                      int idx = row(it);
-                      startDragItem(idx);
-                  }
-              }
+                return;
+
+              const QPoint pos = event->pos();
+              const QRect itemrect = visualItemRect(i);
+
+              // NOTE: Tried comparing manhattan length distance with QApplication::startDragDistance(),
+              //        as per the examples and recommendations. But it does not work correctly here.
+              //       If clicked near the bottom and dragged downward for example, it thinks that the
+              //        space in the slot below is forbidden and shows the forbidden cursor.
+              //       This method seems to work much better.
+              if(!itemrect.contains(pos))
+                startDragItem(idx0);
         }
       }
       QListWidget::mouseMoveEvent(event);
@@ -905,20 +1109,25 @@ void EffectRack::leaveEvent(QEvent *event)
   QListWidget::leaveEvent(event);
 }
 
-void EffectRack::initPlugin(MusECore::Xml xml, int idx)
-      {      
+// REMOVE Tim. tmp. Changed.
+//void EffectRack::initPlugin(MusECore::Xml xml, int idx)
+MusECore::PluginI* EffectRack::initPlugin(MusECore::Xml xml, int idx)
+      {
       if(!track)
-        return;
+        return nullptr;
+      MusECore::PluginI* plugi = nullptr;
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
             QString tag = xml.s1();
             switch (token) {
                   case MusECore::Xml::Error:
                   case MusECore::Xml::End:
-                        return;
+                        if(plugi)
+                          delete plugi;
+                        return nullptr;
                   case MusECore::Xml::TagStart:
                         if (tag == "plugin") {
-                              MusECore::PluginI* plugi = new MusECore::PluginI();
+                              plugi = new MusECore::PluginI();
 // REMOVE Tim. tmp. Added.
                               // Set the track and index now, in case anything needs them BEFORE the operations set them.
                               plugi->setTrack(track);
@@ -931,6 +1140,7 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                                   //xml.dump(d);
                                   //printf("cannot instantiate plugin [%s]\n", d.toLatin1().data());
                                   delete plugi;
+                                  plugi = nullptr;
                                   }
                               else {
 // REMOVE Tim. tmp. Added.
@@ -957,11 +1167,12 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                                     // // Here any glitches in the audio would be acceptable.
                                     // // Gain access to structures, and sync with audio.
                                     // MusEGlobal::audio->msgIdle(true);
-                                    MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, track, plugi, idx));
+//                                     MusEGlobal::song->applyOperation(MusECore::UndoOp(
+//                                       MusECore::UndoOp::ChangeRackEffectPlugin, track, plugi, idx));
                                     // MusEGlobal::audio->msgIdle(false);
 
-                                    if (plugi->guiVisible())
-                                      plugi->gui()->updateWindowTitle();
+//                                     if (plugi->guiVisible())
+//                                       plugi->gui()->updateWindowTitle();
 
                                     // TODO Hm... return??? Shouldn't it continue with reading more plugins?
                                     //return;
@@ -977,7 +1188,7 @@ void EffectRack::initPlugin(MusECore::Xml xml, int idx)
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "muse")
-                              return;
+                              return plugi;
                   default:
                         break;
                   }

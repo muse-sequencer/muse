@@ -38,6 +38,7 @@ class QEvent;
 
 namespace MusECore {
 class AudioTrack;
+class PluginI;
 class Xml;
 }
 
@@ -68,7 +69,9 @@ class EffectRack : public QListWidget {
       virtual QSize sizeHint() const;
       
       void startDragItem(int idx);
-      void initPlugin(MusECore::Xml xml, int idx);
+// REMOVE Tim. tmp. Changed.
+//       void initPlugin(MusECore::Xml xml, int idx);
+      MusECore::PluginI* initPlugin(MusECore::Xml xml, int idx);
       QPoint dragPos;
       void savePreset(int idx);
 // REMOVE Tim. tmp. Changed.
