@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
 <muse version="1.0">
+  <!-- The full kit contains some extras the basic kit lacks: snare flam, roll, buzz and some others. -->
+  <!-- The e-drum keymap maps the 1/2, 3/4, and open hihats to a single OH key, controllable with a pedal (CC4). -->
+  <!-- To use the basic or full kit just load their respective .sfz's into Sfizz. -->
+  <!-- To use the e-drum variant, load the full kit, and replace the default keymaps with the relevant ones found -->
+  <!--  in the sfz instrument keymaps folder. Choose the relevant patch of the Virtuosity Drums Jazz Kit instrument. -->
   <MidiInstrument name="Virtuosity Drums Jazz Kit">
     <PatchGroup name="Jazz Kit">
        <Patch name="Basic Kit" prog="0" drum="1" />
