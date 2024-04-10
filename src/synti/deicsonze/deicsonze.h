@@ -611,7 +611,8 @@ class DeicsOnze : public Mess {
   virtual void showNativeGui(bool);
   virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
   virtual void setNativeGeometry(int, int, int, int);
-  
+  virtual void setNativeGuiWindowTitle(const char*) const;
+
   DeicsOnze();
   virtual ~DeicsOnze();
 };

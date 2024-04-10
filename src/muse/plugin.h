@@ -542,7 +542,7 @@ class PluginIBase
 
       MusEGui::PluginGui* gui() const;
       void deleteGui();
-      void updateGuiWindowTitle();
+      void updateGuiWindowTitle() const;
       virtual void guiHeartBeat();
       virtual void showGui();
       virtual void showGui(bool);
@@ -557,6 +557,8 @@ class PluginIBase
       // Returns the saved gui geometry.
       virtual void savedGeometry(int *x, int *y, int *w, int *h) const;
 
+// REMOVE Tim. tmp. Added.
+      virtual void updateNativeGuiWindowTitle();
       virtual void showNativeGui();
       virtual void showNativeGui(bool);
 // REMOVE Tim. tmp. Added.
@@ -720,6 +722,8 @@ class PluginI : public PluginIBase {
       bool nativeGuiVisible() const;
 // REMOVE Tim. tmp. Added.
       void closeNativeGui();
+// REMOVE Tim. tmp. Added.
+      void updateNativeGuiWindowTitle();
       void guiHeartBeat();
 
       unsigned long parameters() const;
@@ -894,7 +898,8 @@ class PluginGui : public QMainWindow {
       QScrollArea* view;
 
       QMetaObject::Connection _configChangedMetaConn;
-      QMetaObject::Connection _songChangedMetaConn;
+// REMOVE Tim. tmp. Added.
+      // QMetaObject::Connection _songChangedMetaConn;
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
@@ -932,7 +937,8 @@ class PluginGui : public QMainWindow {
    public slots:
       void heartBeat();
       void configChanged();
-      void songChanged(MusECore::SongChangedStruct_t);
+// REMOVE Tim. tmp. Added.
+      // void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       PluginGui(MusECore::PluginIBase*);
@@ -941,7 +947,8 @@ class PluginGui : public QMainWindow {
       void setActive(bool);
       void setOn(bool);
       void updateValues();
-      void updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+      void updateWindowTitle(const QString&);
       };
 
 

@@ -35,6 +35,7 @@
 // REMOVE Tim. tmp. Added.
 #include <QTemporaryFile>
 #include <QList>
+#include <QMessageBox>
 
 #include "popupmenu.h"
 
@@ -765,14 +766,19 @@ void EffectRack::startDragItem(int idx)
           return;
       }
 
-      QTemporaryFile tmp;
-      if(!tmp.open())
-      {
-        fprintf(stderr, "EffectRack::startDrag QTemporaryFile.open() failed\n");
-        return;
-      }
+//       QTemporaryFile tmp;
+//       if(!tmp.open())
+//       {
+//         fprintf(stderr, "EffectRack::startDrag QTemporaryFile.open() failed\n");
+//         return;
+//       }
+      QString xmlconf;
 
-      MusECore::Xml xml(&tmp);
+// REMOVE Tim. tmp. Added.
+//       fprintf(stderr, "EffectRack::startDrag QTemporaryFile name:%s\n", tmp.fileName().toUtf8().constData());
+
+//       MusECore::Xml xml(&tmp);
+      MusECore::Xml xml(&xmlconf);
       MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
             if ((*pipe)[idx] != nullptr) {
@@ -791,13 +797,22 @@ void EffectRack::startDragItem(int idx)
           return;
           }
 
-      QString xmlconf;
-      xml.dump(xmlconf);
+// REMOVE Tim. tmp. Added.
+// Hm, corruption without this?
+//       tmp.reset(); //seek the start of the file
+
+//       QString xmlconf;
+//       xml.dump(xmlconf);
       QMimeData* md = new QMimeData();
-      QByteArray data(xmlconf.toLatin1().constData());
+// REMOVE Tim. tmp. Changed.
+//       QByteArray data(xmlconf.toLatin1().constData());
+      const QByteArray data = xmlconf.toUtf8();
+// Hm, corruption without this?
+//       const QByteArray data = tmp.readAll();
 
       if (MusEGlobal::debugMsg)
-          printf("Sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
+//           printf("Sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
+          printf("Sending %d [%s]\n", data.length(), data.constData());
 
       // FIXME: Drag to desktop? Tried, but no luck. Nothing happens.
       //        Tried application/xml, text/xml. text/plain works but just
@@ -915,10 +930,10 @@ void EffectRack::dropEvent(QDropEvent *event)
 {
       if(!event || !track)
         return;
-      QListWidgetItem *i = itemAt( event->pos() );
+      const QListWidgetItem *i = itemAt( event->pos() );
       if (!i)
             return;
-      int idx = row(i);
+      const int idx = row(i);
 
       const Qt::DropAction act = event->proposedAction();
       EffectRack *ser = nullptr;
@@ -966,25 +981,73 @@ void EffectRack::dropEvent(QDropEvent *event)
 
             if(event->mimeData()->hasFormat(MUSE_MIME_TYPE))
             {
-              QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
+// REMOVE Tim. tmp. Changed.
+              // QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
+              const QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE);
               MusECore::Xml xml(mimeData.constData());
               if (MusEGlobal::debugMsg)
                   printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
 
-              MusECore::PluginI *newplug = initPlugin(xml, idx);
-              if(newplug)
+              if(act == Qt::MoveAction)
               {
-                MusECore::Undo ops;
-                if(splug && act == Qt::MoveAction)
-                  ops.push_back(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, strack, (MusECore::PluginI*)nullptr, sidx));
-                ops.push_back(MusECore::UndoOp(MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx));
-                MusEGlobal::song->applyOperationGroup(ops);
+                // If the source is available, it means the drag is from within this app.
+                if(splug)
+                {
+                  // Manipulate the plugins directly instead of using the XML.
+                  // The reason is that if we use the XML, then any open UIs will have to close
+                  //  and re-open upon re-creation of the plugin from the XML.
+                  // Bypassing the XML ensures a smooth move without closing any UIs,
+                  //  except for DSSI and external LV2, which cannot update their window titles
+                  //  and must be closed and re-opened to update their window titles.
+                  // This operation will move controller data and midi mappings as well as the plugin itself.
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                    MusECore::UndoOp::MoveRackEffectPlugin, strack, track, sidx, idx));
+                }
+                // The source is not available. It means the drag is from outside this app instance.
+                else
+                {
+                  // TODO: Investigate how each app instance responds to this. Figure out how to do it.
+                  //       The big problem is that to move a plugin from another instance,
+                  //        we cannot use direct pointer methods (like above) because there will be no
+                  //        event source - that is only given to us if the drag is from INSIDE the app.
+                  //       Therefore we must use the dropped XML. And that means if we really want to
+                  //        move the whole 'package' we would have to add controller lists and midi maps
+                  //        to the dragged XML, which currently is only just the same as preset XML.
+                  //       Although this can be done, controller lists introduce a problem: Time values.
+                  //       The other app's sample rate would need to be included so conversions could be done.
+                  //       And... Well, including controller lists and midi maps inside preset XML
+                  //        doesn't sound desirable. We could do it exclusively for drag and drop, not presets,
+                  //        but the problem is that the information must already be included in the XML
+                  //        at drag time, and if it is to be draggable to the desktop, then we have
+                  //        a preset XML file containing controllers and midi maps, sitting on the desktop.
+                  //       It is not clear how dragging such a file back into the app should work.
+                  //       Use the drop position as an offset for the start of the controller data?
+                  //       Or just add the data verbosely?
+                  //       Also, we must deal with erasing existing data. Use the global erase settings?
+                  //fprintf(stderr, "EffectRack::dropEvent: Drag-move from outside app not supported yet.\n");
+                  QMessageBox::information(this, tr("Drag and Drop Effect"),tr("Drag-move from outside app not supported yet"));
+                }
+              }
+              else if(act == Qt::CopyAction)
+              {
+                // TODO: Hm... As discussed above, should we copy controller data and midi mappings too?
+                //       This alone won't do it.
+                //       Work in progress for Song::CopyRackEffectPluginOperation() and UndoOp::CopyRackEffectPlugin.
+
+                MusECore::PluginI *newplug = initPlugin(xml, idx);
+                if(newplug)
+                  MusEGlobal::song->applyOperation(MusECore::UndoOp(
+                    MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx));
+              }
+              else
+              {
+                fprintf(stderr, "EffectRack::dropEvent: Unsupported action type:%d\n", act);
               }
             }
             else if (event->mimeData()->hasUrls())
             {
               // Multiple urls not supported here. Grab the first one.
-              QString text = event->mimeData()->urls()[0].path();
+              const QString text = event->mimeData()->urls()[0].path();
 
               if (text.endsWith(".pre", Qt::CaseInsensitive) ||
                   text.endsWith(".pre.gz", Qt::CaseInsensitive) ||

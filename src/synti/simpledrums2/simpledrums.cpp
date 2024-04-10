@@ -1005,6 +1005,12 @@ void SimpleSynth::guiHeartBeat()
     gui->heartBeat();
 };
 
+void SimpleSynth::setNativeGuiWindowTitle(const char* text) const
+{
+  if(gui)
+    gui->setWindowTitle(QString::fromUtf8(text));
+}
+
 //---------------------------------------------------------
 /*!
     \fn SimpleSynth::init

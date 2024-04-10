@@ -204,6 +204,9 @@ class Song : public QObject {
       //bool removePluginOperation(UndoOp *i);
       bool swapPluginsOperation(UndoOp *i);
       bool changePluginOperation(UndoOp *i);
+      bool movePluginOperation(UndoOp *i);
+      bool revertMovePluginOperation(UndoOp *i);
+      bool copyPluginOperation(UndoOp *i);
 
       void checkSongSampleRate();
       
@@ -226,6 +229,21 @@ class Song : public QObject {
       // This does NOT close a DSSI track's editor, only a track's effect rack plugins.
       // If effRackPosTo is less than 0, it means to the end of the list.
       void closeDssiEditors(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
+      //--------------------------------------------------------
+
+      //--------------------------------------------------------
+      // Update track and or plugin UI window titles.
+      //--------------------------------------------------------
+      // Updates a track's editor and all of its rack plugins.
+      void updateUiWindowTitles(Track*) const;
+      // Updates an inclusive range of tracks' editors and ALL of
+      //  each track's rack plugins. ([0, 0] = first.)
+      // If trackNumTo less than 0, it means to the end of the list.
+      void updateUiWindowTitles(int trackNumFrom, int trackNumTo = -1) const;
+      // Updates an inclusive range of a track's effects rack plugin editors. ([0, 0] = first.)
+      // This does NOT update a track's editor, only a track's effect rack plugins.
+      // If effRackPosTo is less than 0, it means to the end of the list.
+      void updateUiWindowTitles(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
       //--------------------------------------------------------
 
    protected:

@@ -89,7 +89,8 @@
 #include <QThread>
 #include <QTimer>
 #include <QWindow>
-#include <QMetaObject>
+// REMOVE Tim. tmp. Added.
+//#include <QMetaObject>
 
 #include "type_defs.h"
 #include "globaldefs.h"
@@ -479,6 +480,9 @@ public:
     static const void* lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type);
     static void lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset);
     static void lv2state_UnloadLoadPresets(LV2Synth *synth, bool load = false, bool update = false);
+// REMOVE Tim. tmp. Added.
+    static void lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state);
+
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
     friend class LV2SynthIF_Timer;
@@ -545,6 +549,8 @@ public:
     virtual bool hasNativeGui() const override;
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const override;
     virtual void setNativeGeometry (int x, int y, int w, int h) override;
+// REMOVE Tim. tmp. Added.
+    void updateNativeGuiWindowTitle() override;
     virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer ) override;
     virtual MidiPlayEvent receiveEvent() override;
     virtual int eventsPending() const override;
@@ -755,7 +761,8 @@ private:
    bool _closing;
    QTimer updateTimer;
    void stopUpdateTimer();
-   QMetaObject::Connection _songChangedMetaConn;
+// REMOVE Tim. tmp. Added.
+//    QMetaObject::Connection _songChangedMetaConn;
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state, 
                                       QWidget *parent = Q_NULLPTR, 
@@ -764,6 +771,8 @@ public:
    void startNextTime();
    void stopNextTime();
    void setClosing(bool closing);
+// REMOVE Tim. tmp. Added.
+   void updateWindowTitle(const QString&);
 signals:
    void makeStopFromGuiThread();
    void makeStartFromGuiThread();
@@ -771,8 +780,9 @@ public slots:
    void updateGui();
    void stopFromGuiThread();
    void startFromGuiThread();
-   void songChanged(MusECore::SongChangedStruct_t);
-   void updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//    void songChanged(MusECore::SongChangedStruct_t);
+//    void updateWindowTitle();
 };
 
 
@@ -804,6 +814,8 @@ public:
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
+// REMOVE Tim. tmp. Added.
+    void updateNativeGuiWindowTitle(const PluginI *p) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
 // REMOVE Tim. tmp. Added.
     virtual QString getCustomConfiguration(LADSPA_Handle handle);

@@ -155,6 +155,8 @@ class VstNativeSynth : public Synth {
       static void guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
       static void guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
       static bool resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h);
+// REMOVE Tim. tmp. Added.
+      static void guiUpdateWindowTitle(VstNativeSynthOrPlugin *userData);
 
 // REMOVE Tim. tmp. Added.
       QString getCustomConfiguration(AEffect *plugin);
@@ -244,6 +246,8 @@ class VstNativeSynthIF : public SynthIF
       virtual bool hasNativeGui() const override;
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const override;
       virtual void setNativeGeometry(int, int, int, int) override;
+// REMOVE Tim. tmp. Added.
+      void updateNativeGuiWindowTitle() override;
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned nframes, float** buffer) override;
       virtual MidiPlayEvent receiveEvent() override;
       virtual int eventsPending() const override { return 0; }
@@ -383,6 +387,8 @@ public:
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
+// REMOVE Tim. tmp. Added.
+    void updateNativeGuiWindowTitle(const PluginI *p) const;
 // REMOVE Tim. tmp. Added.
     virtual QString getCustomConfiguration(LADSPA_Handle handle);
     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);

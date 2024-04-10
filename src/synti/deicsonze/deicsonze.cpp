@@ -325,6 +325,12 @@ void DeicsOnze::setNativeGeometry(int x, int y, int w, int h) {
     _gui->move(QPoint(x, y));
 }
 
+void DeicsOnze::setNativeGuiWindowTitle(const char* text) const
+{
+  if(_gui)
+    _gui->setWindowTitle(QString::fromUtf8(text));
+}
+
 //---------------------------------------------------------
 // initCtrls
 //---------------------------------------------------------

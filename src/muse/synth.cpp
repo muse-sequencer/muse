@@ -144,7 +144,7 @@ SynthIF::SynthIF(SynthI* s) : PluginIBase()
 /*inline*/ QString SynthIF::uri() const                             { return synti->uri(); }
 /*inline*/ QString SynthIF::dirPath() const                         { return QString(); }
 /*inline*/ QString SynthIF::fileName() const                        { return QString(); }
-/*inline*/ QString SynthIF::titlePrefix() const                     { return QString(); }
+/*inline*/ QString SynthIF::titlePrefix() const                     { return synti->name() + QString(": "); }
 /*inline*/ MusECore::AudioTrack* SynthIF::track() const             { return static_cast < MusECore::AudioTrack* > (synti); }
 /*inline*/ void SynthIF::enableController(unsigned long, bool)  { }
 /*inline*/ bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
@@ -291,7 +291,12 @@ void MessSynthIF::guiHeartBeat()
   if(_mess)
     _mess->guiHeartBeat();
 }
-      
+void MessSynthIF::updateNativeGuiWindowTitle()
+{
+  if(_mess)
+    _mess->setNativeGuiWindowTitle((titlePrefix() + name()).toUtf8().constData());
+}
+
 MidiPlayEvent MessSynthIF::receiveEvent()
       {
       if (_mess)

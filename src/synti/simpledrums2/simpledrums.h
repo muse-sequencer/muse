@@ -147,6 +147,7 @@ public:
    virtual void processMessages();
    virtual void process(unsigned pos, float** out, int numPorts, int offset, int len);
    virtual void showNativeGui(bool arg1);
+   virtual void setNativeGuiWindowTitle(const char*) const;
    virtual void guiHeartBeat();
    virtual void getInitData(int*, const unsigned char**);
    // This is only a kludge required to support old songs' midistates. Do not use in any new synth.

@@ -28,7 +28,8 @@
 #include "vst_native_editor.h"
 #include "vst_native.h"
 //#include "gconfig.h"
-#include "song.h"
+// REMOVE Tim. tmp. Added.
+//#include "song.h"
 
 #include <QtGlobal>
 #if defined(Q_WS_X11)
@@ -97,8 +98,9 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
   setAttribute(Qt::WA_DeleteOnClose);
   m_fixScaling = false;
 
-  _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
-                                 [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
+// REMOVE Tim. tmp. Added.
+  // _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
+  //                                [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
 
   // TODO TEST Test if these might be helpful, especially opaque event.
             //setBackgroundRole(QPalette::NoRole);
@@ -112,8 +114,9 @@ VstNativeEditor::VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags)
 
 VstNativeEditor::~VstNativeEditor()
 {
-   // In case closeEvent() wasn't already called, where we disconnect there as well.
-   disconnect(_songChangedMetaConn);
+// REMOVE Tim. tmp. Added.
+   // // In case closeEvent() wasn't already called, where we disconnect there as well.
+   // disconnect(_songChangedMetaConn);
 
 // REMOVE Tim. tmp. Removed.
 // We delete on close already. Calling close() calls QWidget::close() causing recursive crash.
@@ -131,29 +134,36 @@ VstNativeEditor::~VstNativeEditor()
    }
 }
 
-void VstNativeEditor::songChanged(MusECore::SongChangedStruct_t type)
-{
-  // Catch when the track name changes or track is moved or the rack position changes.
-  if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
-    updateWindowTitle();
-}
+// REMOVE Tim. tmp. Added.
+// void VstNativeEditor::songChanged(MusECore::SongChangedStruct_t type)
+// {
+//   // Catch when the track name changes or track is moved or the rack position changes.
+//   if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
+//     updateWindowTitle();
+// }
 
-void VstNativeEditor::updateWindowTitle()
-{
-  QString windowTitle = "VST plugin editor";
-  if(_sif && _sif->track())
-  {
-// REMOVE Tim. tmp. Changed.
-     windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
-//     windowTitle = _sif->track()->name() + ":" + _sif->name();
-  }
-  else if(_pstate && _pstate->pluginI && _pstate->pluginI->track())
-  {
-//     windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginWrapper->_synth->name();
-     windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginI->pluginLabel();
-  }
+// REMOVE Tim. tmp. Added.
+// void VstNativeEditor::updateWindowTitle(const QString& title)
+// {
+//   QString windowTitle = "VST plugin editor";
+//   if(_sif && _sif->track())
+//   {
+// // REMOVE Tim. tmp. Changed.
+//      windowTitle = _sif->track()->name() + ":" + _sif->pluginLabel();
+// //     windowTitle = _sif->track()->name() + ":" + _sif->name();
+//   }
+//   else if(_pstate && _pstate->pluginI && _pstate->pluginI->track())
+//   {
+// //     windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginWrapper->_synth->name();
+//      windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginI->pluginLabel();
+//   }
+//
+//   setWindowTitle(windowTitle);
+// }
 
-  setWindowTitle(windowTitle);
+void VstNativeEditor::updateWindowTitle(const QString& title)
+{
+  setWindowTitle(title);
 }
 
 //---------------------------------------------------------------------
@@ -223,7 +233,7 @@ void VstNativeEditor::open(MusECore::VstNativeSynthIF* sif, MusECore::VstNativeP
 //   }
 //
 //   setWindowTitle(windowTitle);
-  updateWindowTitle();
+//   updateWindowTitle();
 
   //_sif->editorOpened();
   if(!isVisible())
@@ -296,11 +306,12 @@ void VstNativeEditor::closeEvent(QCloseEvent *pCloseEvent)
       resizeTimerId = 0;
    }*/
 
-   // Disconnect before songChanged() has a chance to be called.
-   // The caller might destroy some things before calling close(),
-   //  and songChanged() might be called later which causes crashes.
-   // We also do this in the destructor just in case.
-   disconnect(_songChangedMetaConn);
+// REMOVE Tim. tmp. Added.
+   // // Disconnect before songChanged() has a chance to be called.
+   // // The caller might destroy some things before calling close(),
+   // //  and songChanged() might be called later which causes crashes.
+   // // We also do this in the destructor just in case.
+   // disconnect(_songChangedMetaConn);
 
    pCloseEvent->accept();
    QWidget::closeEvent(pCloseEvent);

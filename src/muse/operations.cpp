@@ -214,6 +214,7 @@ unsigned int PendingOperationItem::getIndex() const
 // REMOVE Tim. tmp. Added.
     case SetRackEffectPlugin:
     case SwapRackEffectPlugins:
+    case MoveRackEffectPlugin:
     case ModifyMidiAudioCtrlMap:
 
       // To help speed up searches of these ops, let's (arbitrarily) set index = type instead of all of them being at index 0!
@@ -1708,6 +1709,47 @@ SongChangedStruct_t PendingOperationItem::executeRTStage()
     break;
 
 // REMOVE Tim. tmp. Added.
+    case MoveRackEffectPlugin:
+    {
+      DEBUG_OPERATIONS(stderr,
+        "PendingOperationItem::executeRTStage MoveRackEffectPlugin: srcTrack:%p dstTrack:%p srcRackPos:%d dstRackPos:%d\n",
+        _srcTrack, _track, _rackEffectPos, _newRackEffectPos);
+      if(_srcTrack && _track && !_srcTrack->isMidiTrack() && !_track->isMidiTrack())
+      {
+        AudioTrack *sat = static_cast<AudioTrack*>(_srcTrack);
+        AudioTrack *dat = static_cast<AudioTrack*>(_track);
+        Pipeline *spl = sat->efxPipe();
+        Pipeline *dpl = dat->efxPipe();
+        if(spl && dpl && _rackEffectPos >= 0 && _rackEffectPos < (int)spl->size() && _rackEffectPos < MusECore::PipelineDepth &&
+           _newRackEffectPos >= 0 && _newRackEffectPos < (int)dpl->size() && _newRackEffectPos < MusECore::PipelineDepth)
+        {
+          PluginI *sp = spl->at(_rackEffectPos);
+          if(sp)
+          {
+            PluginI *dp = dpl->at(_newRackEffectPos);
+
+            // Enforce the plugin's new track and index, even if they might have already been set.
+            sp->setID(_newRackEffectPos);
+            sp->setTrack(dat);
+
+//             spl->at(_rackEffectPos) = nullptr;
+            // Fill the source slot with the given pluginI, which is null by default.
+            spl->at(_rackEffectPos) = _pluginI;
+            // Fill the destination slot with the original source pluginI.
+            dpl->at(_newRackEffectPos) = sp;
+
+            // Transfer the original destination plugin pointer back to _pluginI
+            //  so it can be deleted (if valid) in the non-RT stage.
+            _pluginI = dp;
+
+            flags |= SC_RACK;
+          }
+        }
+      }
+    }
+    break;
+
+// REMOVE Tim. tmp. Added.
     case ModifyMidiAudioCtrlMap:
       DEBUG_OPERATIONS(stderr, "PendingOperationItem::executeRTStage ModifyMidiAudioCtrlMap: old map:%p new map:%p\n",
                        _midi_audio_ctrl_map, _src_midi_audio_ctrl_map);
@@ -1932,6 +1974,14 @@ SongChangedStruct_t PendingOperationItem::executeNonRTStage()
 
 // REMOVE Tim. tmp. Added.
     case SetRackEffectPlugin:
+      // At this point _pluginI might contain an original plugin that was replaced.
+      // Delete it now.
+      if(_pluginI)
+        delete _pluginI;
+    break;
+
+// REMOVE Tim. tmp. Added.
+    case MoveRackEffectPlugin:
       // At this point _pluginI might contain an original plugin that was replaced.
       // Delete it now.
       if(_pluginI)
@@ -3320,6 +3370,11 @@ bool PendingOperationList::add(PendingOperationItem op)
 // REMOVE Tim. tmp. Added.
       case PendingOperationItem::SwapRackEffectPlugins:
         // TODO: Not much required here... It's OK if multiple swaps appear.
+      break;
+
+// REMOVE Tim. tmp. Added.
+      case PendingOperationItem::MoveRackEffectPlugin:
+        // TODO:
       break;
 
 // REMOVE Tim. tmp. Added.

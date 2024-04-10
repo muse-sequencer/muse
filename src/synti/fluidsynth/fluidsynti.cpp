@@ -1307,6 +1307,12 @@ void FluidSynth::showNativeGui(bool val)
       gui->setVisible(val);
       }
 
+void FluidSynth::setNativeGuiWindowTitle(const char* text) const
+{
+  if(gui)
+    gui->setWindowTitle(QString::fromUtf8(text));
+}
+
 //---------------------------------------------------------
 //   setController
 //---------------------------------------------------------

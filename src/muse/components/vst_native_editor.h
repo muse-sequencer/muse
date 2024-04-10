@@ -25,13 +25,15 @@
 #define __VST_NATIVE_EDITOR_H__
 
 #include <QWidget>
+#include <QString>
 
 #include "config.h"
 
 #ifdef VST_NATIVE_SUPPORT
 
-#include <QMetaObject>
-#include "type_defs.h"
+// REMOVE Tim. tmp. Added.
+//#include <QMetaObject>
+//#include "type_defs.h"
 
 #if defined(Q_WS_X11)
 #include <QX11Info>
@@ -78,7 +80,8 @@ class VstNativeEditor : public QWidget
     MusECore::VstNativePluginWrapper_State* _pstate;
     int resizeTimerId;
     bool m_fixScaling;
-    QMetaObject::Connection _songChangedMetaConn;
+// REMOVE Tim. tmp. Added.
+//     QMetaObject::Connection _songChangedMetaConn;
 
 protected:
 
@@ -88,8 +91,9 @@ protected:
     virtual void resizeEvent(QResizeEvent *pResizeEvent);
     virtual void timerEvent(QTimerEvent * event);
 
-public slots:
-    void songChanged(MusECore::SongChangedStruct_t);
+// REMOVE Tim. tmp. Added.
+// public slots:
+//     void songChanged(MusECore::SongChangedStruct_t);
 
 public:
     VstNativeEditor(QWidget *parent, Qt::WindowFlags wflags = Qt::Widget);
@@ -99,7 +103,9 @@ public:
     void close();
 
     bool fixScaling() { return m_fixScaling; }
-    void updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//     void updateWindowTitle();
+    void updateWindowTitle(const QString&);
 
 #if defined(Q_WS_X11)
     // Local X11 event filter.

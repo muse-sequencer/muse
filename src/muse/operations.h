@@ -196,7 +196,7 @@ struct PendingOperationItem
     ModifyMarkerList,
     SwitchMidiRemoteSettings, ModifyMidiRemote,
 // REMOVE Tim. tmp. Added.
-    SetRackEffectPlugin, SwapRackEffectPlugins, ModifyMidiAudioCtrlMap
+    SetRackEffectPlugin, SwapRackEffectPlugins, MoveRackEffectPlugin, ModifyMidiAudioCtrlMap
     };
                               
   PendingOperationType _type;
@@ -208,7 +208,7 @@ struct PendingOperationItem
     int* _audioSamplesLen;
     CtrlListList* _src_aud_ctrl_list_list;
 // REMOVE Tim. tmp. Added.
-    PluginI *_pluginI;
+    Track* _srcTrack;
     MidiAudioCtrlMap *_src_midi_audio_ctrl_map;
   };
   
@@ -319,6 +319,8 @@ struct PendingOperationItem
     double _audio_converter_value;
     bool _marker_lock;
     CtrlVal* _audCtrlValStruct;
+// REMOVE Tim. tmp. Added.
+    PluginI *_pluginI;
   };
 
   //========================================================================
@@ -615,6 +617,14 @@ struct PendingOperationItem
   // Dummy param is to avoid ambiguity with other constructors.
   PendingOperationItem(Track* track, int rackPos, int newRackPos, int /*dummy*/, PendingOperationType type = SwapRackEffectPlugins)
     { _type = type; _track = track; _rackEffectPos = rackPos; _newRackEffectPos = newRackPos; }
+
+// REMOVE Tim. tmp. Added.
+  // After the plugin has moved from source slot to destination slot, srcReplPlugin fills the empty source slot.
+  PendingOperationItem(Track* srcTrack, Track* dstTrack,
+                       int srcRackPos, int dstRackPos, PluginI* srcReplPlugin = nullptr,
+                       PendingOperationType type = MoveRackEffectPlugin)
+    { _type = type; _srcTrack = srcTrack;  _track = dstTrack;
+      _rackEffectPos = srcRackPos; _newRackEffectPos = dstRackPos; _pluginI = srcReplPlugin; }
 
 // REMOVE Tim. tmp. Added.
   PendingOperationItem(MidiAudioCtrlMap* dst, MidiAudioCtrlMap* src, PendingOperationType type = ModifyMidiAudioCtrlMap)

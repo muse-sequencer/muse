@@ -76,7 +76,7 @@ struct UndoOp {
             //// For wholesale changes to the list. Preferred if multiple additions or deletions are required.
             //ModifyMarkerList,
 // REMOVE Tim. tmp. Added.
-            /*AddRackEffectPlugin,*/ /*RemoveRackEffectPlugin,*/ ChangeRackEffectPlugin, SwapRackEffectPlugins,
+            ChangeRackEffectPlugin, SwapRackEffectPlugins, MoveRackEffectPlugin,
 
             ModifySongLen, // a = new len, b = old len
             SetInstrument,
@@ -148,6 +148,22 @@ struct UndoOp {
                   MidiAudioCtrlMap *_midiAudioCtrlMap;
                   int _effectRackPos;
                   int _newEffectRackPos;
+                };
+
+// REMOVE Tim. tmp. Added.
+            struct {
+                  // Source track. Destination track is member 'track'.
+                  const Track* _plugMoveSrcTrack;
+                  // Holds any existing plugin configuration at the destination position, for recreation later.
+                  PluginConfiguration *_plugMoveDstConfiguration;
+                  // Holds any existing automation control lists for the plugin at the destination position, for recreation later.
+                  CtrlListList *_plugMoveDstCtrlListList;
+                  // Holds any existing midi to audio control mapping for the plugin at the destination position, for recreation later.
+                  MidiAudioCtrlMap *_plugMoveDstMidiAudioCtrlMap;
+                  // The source tracks's effect rack position.
+                  int _plugMoveSrcEffectRackPos;
+                  // The destination tracks's effect rack position.
+                  int _plugMoveDstEffectRackPos;
                 };
 
             struct {
@@ -270,6 +286,9 @@ struct UndoOp {
              int effectRackPos, bool noUndo = false);
       // This one takes a pre-created PluginI. It can also be null.
       UndoOp(UndoType type, const Track* track, PluginI *pluginI, int effectRackPos, bool noUndo = false);
+      // This is for moving a plugin from one rack position to another, even to a different track's rack.
+      UndoOp(UndoType type, const Track* srcTrack, const Track* dstTrack, int srcEffectRackPos,
+             int dstEffectRackPos, bool noUndo = false);
 
       UndoOp(UndoType type, CtrlList* ctrlList, unsigned int frame, bool oldSelected, bool newSelected, bool noUndo = false);
       UndoOp(UndoType type, CtrlList::PasteEraseOptions newOpts, bool noUndo = false);

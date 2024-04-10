@@ -2089,7 +2089,8 @@ void PluginIBase::showGui()
 {
   if(_gui == 0)
     makeGui();
-  _gui->updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//   _gui->updateWindowTitle();
   if(_gui->isVisible())
     _gui->hide();
   else
@@ -2262,6 +2263,7 @@ void PluginIBase::showNativeGui(bool) { }
 // REMOVE Tim. tmp. Added.
 void PluginIBase::closeNativeGui() { }
 bool PluginIBase::nativeGuiVisible() const { return false; }
+void PluginIBase::updateNativeGuiWindowTitle() { }
 
 //---------------------------------------------------------
 //   addScheduledControlEvent
@@ -4864,6 +4866,23 @@ void PluginI::closeNativeGui()
   _showNativeGuiPending = false;
 }
 
+// REMOVE Tim. tmp. Added.
+void PluginI::updateNativeGuiWindowTitle()
+{
+#ifdef LV2_SUPPORT
+    if(plugin() && plugin()->isLV2Plugin())
+      ((LV2PluginWrapper *)plugin())->updateNativeGuiWindowTitle(this);
+#endif
+#ifdef VST_NATIVE_SUPPORT
+    if(plugin() && plugin()->isVstNativePlugin())
+      ((VstNativePluginWrapper *)plugin())->updateNativeGuiWindowTitle(this);
+#endif
+
+  // NOTE DSSI UIs can't be updated once they have been created.
+  //      Instead, close them so that the next time they open, the text is correct.
+  //      Use PluginI::closeNativeGui() for example.
+}
+
 unsigned long PluginI::parameters() const           { return controlPorts; }
 unsigned long PluginI::parametersOut() const           { return controlOutPorts; }
 // REMOVE Tim. tmp. Changed.
@@ -4893,6 +4912,8 @@ void PluginI::guiHeartBeat()
 void PluginIBase::makeGui()
       {
       _gui = new MusEGui::PluginGui(this);
+// REMOVE Tim. tmp. Added.
+      updateGuiWindowTitle();
       }
 
 //---------------------------------------------------------
@@ -4907,10 +4928,17 @@ void PluginIBase::deleteGui()
   }
 }
 
-void PluginIBase::updateGuiWindowTitle()
+// REMOVE Tim. tmp. Added.
+void PluginIBase::updateGuiWindowTitle() const
 {
+//   if(_gui)
+//     _gui->updateWindowTitle();
+
   if(_gui)
-    _gui->updateWindowTitle();
+  {
+    _gui->updateWindowTitle(titlePrefix() + name() +
+      (uri().isEmpty() ? QString() : QString(" : ") + uri()));
+  }
 }
 
 void PluginIBase::guiHeartBeat()
@@ -5571,7 +5599,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       params = nullptr;
       paramsOut = nullptr;
       plugin = p;
-      updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//       updateWindowTitle();
       
       QToolBar* tools = addToolBar(tr("File Buttons"));
       tools->setIconSize(QSize(MusEGlobal::config.iconSize, MusEGlobal::config.iconSize));
@@ -5626,8 +5655,10 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
           constructGUIFromPluginMetadata();
 
       _configChangedMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, [this]() { configChanged(); } );
-      _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
-                                     [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
+// REMOVE Tim. tmp. Added.
+      // _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
+      //                                [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
+      // updateWindowTitle();
       }
 
 //---------------------------------------------------------
@@ -5637,7 +5668,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 PluginGui::~PluginGui()
       {
       disconnect(_configChangedMetaConn);
-      disconnect(_songChangedMetaConn);
+// REMOVE Tim. tmp. Added.
+      // disconnect(_songChangedMetaConn);
 
       if (gw)
             delete[] gw;
@@ -6100,11 +6132,13 @@ void PluginGui::constructGUIFromPluginMetadata() {
     mw->setLayout(vbox);
 }
 
-void PluginGui::updateWindowTitle()
+// REMOVE Tim. tmp. Added.
+void PluginGui::updateWindowTitle(const QString& title)
 {
-  if(plugin)
-    setWindowTitle(plugin->titlePrefix() + plugin->name() +
-      (plugin->uri().isEmpty() ? QString() : QString(" : ") + plugin->uri()));
+  // if(plugin)
+  //   setWindowTitle(plugin->titlePrefix() + plugin->name() +
+  //     (plugin->uri().isEmpty() ? QString() : QString(" : ") + plugin->uri()));
+  setWindowTitle(title);
 }
 
 void PluginGui::hideEvent(QHideEvent *e)
@@ -6363,16 +6397,17 @@ void PluginGui::configChanged()
     }
 }
 
-//---------------------------------------------------------
-//   songChanged
-//---------------------------------------------------------
-
-void PluginGui::songChanged(MusECore::SongChangedStruct_t type)
-{
-  // Catch when the track name changes or track is moved or the rack position changes.
-  if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
-    updateWindowTitle();
-}
+// REMOVE Tim. tmp. Added.
+// //---------------------------------------------------------
+// //   songChanged
+// //---------------------------------------------------------
+//
+// void PluginGui::songChanged(MusECore::SongChangedStruct_t type)
+// {
+//   // Catch when the track name changes or track is moved or the rack position changes.
+//   if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
+//     updateWindowTitle();
+// }
 
 //---------------------------------------------------------
 //   heartBeat
@@ -6688,7 +6723,8 @@ void PluginGui::save()
 
 void PluginGui::activeToggled(bool val)
       {
-      updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//       updateWindowTitle();
       plugin->setActive(!val);
       MusEGlobal::song->update(SC_ROUTE);
       }
@@ -6699,7 +6735,8 @@ void PluginGui::activeToggled(bool val)
 
 void PluginGui::bypassToggled(bool val)
       {
-      updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//       updateWindowTitle();
       plugin->setOn(!val);
       MusEGlobal::song->update(SC_ROUTE);
       }
@@ -6717,7 +6754,8 @@ void PluginGui::showSettings()
 
 void PluginGui::setActive(bool val)
 {
-      updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//       updateWindowTitle();
       activeButton->blockSignals(true);
       activeButton->setChecked(!val);
       activeButton->blockSignals(false);
@@ -6729,7 +6767,8 @@ void PluginGui::setActive(bool val)
 
 void PluginGui::setOn(bool val)
       {
-      updateWindowTitle();
+// REMOVE Tim. tmp. Added.
+//       updateWindowTitle();
       onOff->blockSignals(true);
       onOff->setChecked(!val);
       onOff->blockSignals(false);

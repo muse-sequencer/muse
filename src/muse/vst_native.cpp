@@ -888,6 +888,66 @@ bool VstNativeSynth::resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h
 }
 
 // REMOVE Tim. tmp. Added.
+// Static
+void VstNativeSynth::guiUpdateWindowTitle(VstNativeSynthOrPlugin *userData)
+{
+  // if(state->plugInst != nullptr)
+  // {
+  //     state->plugInst->updateNativeGuiWindowTitle();
+  //
+  // }
+  // else if(state->sif != nullptr)
+  // {
+  //     state->sif->updateNativeGuiWindowTitle();
+  // }
+
+
+
+
+
+  // if(state)
+  // {
+  //   if(state->plugInst)
+  //   {
+  //     if(state->human_id)
+  //       free(state->human_id);
+  //     state->extHost.plugin_human_id = state->human_id =
+  //       strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->pluginLabel()).toUtf8().constData());
+  //   }
+  //   else if(state->sif)
+  //   {
+  //     if(state->human_id)
+  //       free(state->human_id);
+  //     state->extHost.plugin_human_id = state->human_id =
+  //       strdup((state->sif->name() + QString(": ") + state->sif->pluginName()).toUtf8().constData());
+  //   }
+  //   else
+  //     return;
+  //
+  //   if(state->pluginWindow)
+  //     //state->pluginWindow->setWindowTitle(state->extHost.plugin_human_id);
+  //     state->pluginWindow->updateWindowTitle(state->extHost.plugin_human_id);
+  // }
+
+
+  if(userData)
+  {
+    if(userData->pstate && userData->pstate->pluginI && userData->pstate->pluginI->track() && userData->pstate->editor)
+    {
+//       const QString newtitle = userData->pstate->pluginI->track()->name() + QString(": ") + userData->pstate->pluginI->pluginLabel();
+      const QString newtitle = userData->pstate->pluginI->track()->name() + QString(": ") + userData->pstate->pluginI->name();
+      userData->pstate->editor->updateWindowTitle(newtitle);
+    }
+    else if(userData->sif && userData->sif->_editor)
+    {
+      const QString newtitle = userData->sif->name() + QString(": ") + userData->sif->pluginName();
+//       const QString newtitle = userData->sif->name() + QString(": ") + userData->sif->pluginLabel();
+      userData->sif->_editor->updateWindowTitle(newtitle);
+    }
+  }
+}
+
+// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   getCustomConfiguration
 //---------------------------------------------------------
@@ -1515,6 +1575,8 @@ void VstNativeSynthIF::showNativeGui(bool v)
           _editor = new MusEGui::VstNativeEditor(nullptr, wflags);
           _editor->open(this, nullptr);
         }
+// REMOVE Tim. tmp. Added.
+        updateNativeGuiWindowTitle();
       }
       else
       {
@@ -1555,6 +1617,31 @@ void VstNativeSynthIF::setNativeGeometry(int x, int y, int w, int h)
     return;
 
   _editor->setGeometry(x, y, w, h);
+}
+
+// REMOVE Tim. tmp. Added.
+void VstNativeSynthIF::updateNativeGuiWindowTitle()
+{
+//   if(!_editor)
+//     return;
+//
+//   QString windowTitle = "VST plugin editor";
+//   if(track())
+//   {
+// //     windowTitle = track()->name() + ":" + pluginLabel();
+// //     windowTitle = track()->name() + ":" + name();
+//      windowTitle = titlePrefix() + pluginLabel();
+//   }
+// //   else if(_pstate && _pstate->pluginI && _pstate->pluginI->track())
+// //   {
+// // //     windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginWrapper->_synth->name();
+// //      windowTitle = _pstate->pluginI->track()->name() + ":" + _pstate->pluginI->pluginLabel();
+// //   }
+//
+//   _editor->updateWindowTitle(windowTitle);
+
+  if(_synth)
+    _synth->guiUpdateWindowTitle(&userData);
 }
 
 //---------------------------------------------------------
@@ -3626,6 +3713,19 @@ void VstNativePluginWrapper::showNativeGui(PluginI *p, bool bShow)
          state->editor = new MusEGui::VstNativeEditor(nullptr, wflags);
          state->editor->open(0, state);
       }
+// REMOVE Tim. tmp. Added.
+      if(state->pluginI)
+      {
+      //   QString windowTitle = "VST plugin editor";
+      //   if(state->pluginI->track())
+      //   {
+      // //     windowTitle = track()->name() + ":" + pluginLabel();
+      // //     windowTitle = track()->name() + ":" + name();
+      //      windowTitle = state->pluginI->titlePrefix() + state->pluginI->pluginLabel();
+      //   }
+      //   state->editor->updateWindowTitle(windowTitle);
+        updateNativeGuiWindowTitle(state->pluginI);
+      }
    }
    else
    {
@@ -3643,6 +3743,17 @@ bool VstNativePluginWrapper::nativeGuiVisible(const PluginI *p) const
    assert(p->instances > 0);
    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];
    return state->guiVisible;
+}
+
+// REMOVE Tim. tmp. Added.
+void VstNativePluginWrapper::updateNativeGuiWindowTitle(const PluginI *p) const
+{
+  if(p->instances > 0)
+  {
+    VstNativePluginWrapper_State *state = (VstNativePluginWrapper_State *)p->handle [0];
+    if(_synth)
+      _synth->guiUpdateWindowTitle(&state->userData);
+  }
 }
 
 // REMOVE Tim. tmp. Added.

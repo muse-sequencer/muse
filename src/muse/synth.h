@@ -503,36 +503,37 @@ class MessSynthIF : public SynthIF {
       virtual ~MessSynthIF() { }
 
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
-      virtual int oldMidiStateHeader(const unsigned char** data) const;
+      int oldMidiStateHeader(const unsigned char** data) const;
 
-      virtual void guiHeartBeat();
-      inline virtual bool guiVisible() const { return false; }
-      inline virtual bool hasGui() const     { return false; }
-      virtual bool nativeGuiVisible() const;
-      virtual void showNativeGui(bool v);
-      virtual bool hasNativeGui() const;
-      virtual void getNativeGeometry(int*, int*, int*, int*) const;
-      virtual void setNativeGeometry(int, int, int, int);
-      virtual void preProcessAlways();
-      virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual MidiPlayEvent receiveEvent();
-      virtual int eventsPending() const;
+      void guiHeartBeat();
+      inline bool guiVisible() const { return false; }
+      inline bool hasGui() const     { return false; }
+      bool nativeGuiVisible() const;
+      void showNativeGui(bool v);
+      bool hasNativeGui() const;
+      void getNativeGeometry(int*, int*, int*, int*) const;
+      void setNativeGeometry(int, int, int, int);
+      void updateNativeGuiWindowTitle();
+      void preProcessAlways();
+      bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
+      MidiPlayEvent receiveEvent();
+      int eventsPending() const;
       bool init(Synth* s, SynthI* si);
 
-      virtual int channels() const;
-      virtual int totalOutChannels() const;
-      virtual int totalInChannels() const;
-      virtual void deactivate3();
-      virtual QString getPatchName(int, int, bool) const;
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
-      virtual void write(int level, Xml& xml) const;
-      inline virtual double getParameter(unsigned long) const { return 0.0; }
-      virtual void setParameter(unsigned long, double) {}
-      virtual int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval);
+      int channels() const;
+      int totalOutChannels() const;
+      int totalInChannels() const;
+      void deactivate3();
+      QString getPatchName(int, int, bool) const;
+      void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
+      void write(int level, Xml& xml) const;
+      inline double getParameter(unsigned long) const { return 0.0; }
+      void setParameter(unsigned long, double) {}
+      int getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval);
       // Returns true if a note name list is found for the given patch.
       // If true, name either contains the note name, or is blank if no note name was found.
       // drum = Want percussion names, not melodic.
-      virtual bool getNoteSampleName(
+      bool getNoteSampleName(
         bool drum, int channel, int patch, int note, QString* name) const;
       };
 

@@ -43,7 +43,6 @@
 
 #include <QDir>
 #include <QFileInfo>
-#include <QUrl>
 //#include <QX11EmbedWidget>
 #include <QApplication>
 #include <QtGui/QWindow>
@@ -2241,7 +2240,13 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                 }
 
                 win->show();
-                win->setWindowTitle(state->extHost.plugin_human_id);
+// REMOVE Tim. tmp. Changed.
+//                 win->setWindowTitle(state->extHost.plugin_human_id);
+                // if(state->sif)
+                //   state->sif->updateNativeGuiWindowTitle();
+                // else if(state->plugInst)
+                //   state->plugInst->updateNativeGuiWindowTitle();
+                lv2ui_UpdateWindowTitle(state);
             }
             else if(state->hasExternalGui)
             {
@@ -3227,6 +3232,50 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
     }
 }
 
+// REMOVE Tim. tmp. Added.
+// Static
+void LV2Synth::lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state)
+{
+  // if(state->plugInst != nullptr)
+  // {
+  //     state->plugInst->updateNativeGuiWindowTitle();
+  //
+  // }
+  // else if(state->sif != nullptr)
+  // {
+  //     state->sif->updateNativeGuiWindowTitle();
+  // }
+
+
+
+
+
+  if(state)
+  {
+    if(state->plugInst)
+    {
+      if(state->human_id)
+        free(state->human_id);
+      state->extHost.plugin_human_id = state->human_id =
+//         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->pluginLabel()).toUtf8().constData());
+//         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->pluginName()).toUtf8().constData());
+        strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->name()).toUtf8().constData());
+    }
+    else if(state->sif)
+    {
+      if(state->human_id)
+        free(state->human_id);
+      state->extHost.plugin_human_id = state->human_id =
+        strdup((state->sif->name() + QString(": ") + state->sif->pluginName()).toUtf8().constData());
+    }
+    else
+      return;
+
+    if(state->pluginWindow)
+      //state->pluginWindow->setWindowTitle(state->extHost.plugin_human_id);
+      state->pluginWindow->updateWindowTitle(state->extHost.plugin_human_id);
+  }
+}
 
 
 
@@ -6097,6 +6146,37 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
     }
 }
 
+// REMOVE Tim. tmp. Added.
+void LV2SynthIF::updateNativeGuiWindowTitle()
+{
+//   if(_state)
+//   {
+//     if(_state->plugInst)
+//     {
+//       if(_state->human_id)
+//         free(_state->human_id);
+//       _state->extHost.plugin_human_id = _state->human_id =
+//         strdup((_state->plugInst->track()->name() + QString(": ") + _state->plugInst->pluginLabel()).toUtf8().constData());
+//     }
+//     else if(_state->sif)
+//     {
+//       if(_state->human_id)
+//         free(_state->human_id);
+//       _state->extHost.plugin_human_id = _state->human_id =
+//         strdup((_state->sif->name() + QString(": ") + _state->sif->pluginName()).toUtf8().constData());
+//     }
+//     else
+//       return;
+//
+//     if(_state->pluginWindow)
+// //       _state->pluginWindow->setWindowTitle(_state->extHost.plugin_human_id);
+//       _state->pluginWindow->updateWindowTitle(_state->extHost.plugin_human_id);
+//   }
+
+  if(_synth)
+    _synth->lv2ui_UpdateWindowTitle(_state);
+}
+
 void LV2SynthIF::setParameter(long unsigned int idx, double value)
 {
     addScheduledControlEvent(idx, value, MusEGlobal::audio->curFrame());
@@ -6104,17 +6184,18 @@ void LV2SynthIF::setParameter(long unsigned int idx, double value)
 
 void LV2SynthIF::showNativeGui(bool bShow)
 {
-    if(track() != nullptr)
-    {
-        if(_state->human_id != nullptr)
-        {
-            free(_state->human_id);
-        }
-
-// REMOVE Tim. tmp. Changed.
-//       _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
-        _state->extHost.plugin_human_id = _state->human_id = strdup((name() + QString(": ") + pluginName()).toUtf8().constData());
-    }
+// REMOVE Tim. tmp. Removed. Moved into LV2Synth::lv2ui_ShowNativeGui.
+//     if(track() != nullptr)
+//     {
+//         if(_state->human_id != nullptr)
+//         {
+//             free(_state->human_id);
+//         }
+//
+// // REMOVE Tim. tmp. Changed.
+// //       _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
+//         _state->extHost.plugin_human_id = _state->human_id = strdup((name() + QString(": ") + pluginName()).toUtf8().constData());
+//     }
 
     LV2Synth::lv2ui_ShowNativeGui(_state, bShow, cquirks().fixNativeUIScaling());
 }
@@ -6671,11 +6752,12 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 {
     assert(_state != nullptr);
 
-    // Disconnect before songChanged() has a chance to be called.
-    // The caller might destroy some things before calling close(),
-    //  and songChanged() might be called later which causes crashes.
-    // We also do this in the destructor just in case.
-    disconnect(_songChangedMetaConn);
+// REMOVE Tim. tmp. Added.
+    // // Disconnect before songChanged() has a chance to be called.
+    // // The caller might destroy some things before calling close(),
+    // //  and songChanged() might be called later which causes crashes.
+    // // We also do this in the destructor just in case.
+    // disconnect(_songChangedMetaConn);
 
     event->accept();
 
@@ -6742,8 +6824,9 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state,
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
     connect(this, SIGNAL(makeStopFromGuiThread()), this, SLOT(stopFromGuiThread()));
     connect(this, SIGNAL(makeStartFromGuiThread()), this, SLOT(startFromGuiThread()));
-    _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
-                                   [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
+// REMOVE Tim. tmp. Added.
+//     _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
+//                                    [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
 }
 
 LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
@@ -6751,8 +6834,9 @@ LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 #ifdef DEBUG_LV2
     std::cout << "LV2PluginWrapper_Window::~LV2PluginWrapper_Window()" << std::endl;
 #endif
-    // In case closeEvent() wasn't already called, where we disconnect there as well.
-   disconnect(_songChangedMetaConn);
+// REMOVE Tim. tmp. Added.
+//    // In case closeEvent() wasn't already called, where we disconnect there as well.
+//    disconnect(_songChangedMetaConn);
 }
 
 void LV2PluginWrapper_Window::startNextTime()
@@ -6842,41 +6926,45 @@ void LV2PluginWrapper_Window::startFromGuiThread()
     updateTimer.start(1000/30);
 }
 
-void LV2PluginWrapper_Window::updateWindowTitle()
-{
-// REMOVE Tim. tmp. Changed.
-//       _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") + name()).toUtf8().constData());
-//        _state->extHost.plugin_human_id = _state->human_id = strdup((name() + QString(": ") + pluginName()).toUtf8().constData());
-  if(_state)
-  {
-    if(_state->plugInst)
-    {
-      if(_state->human_id)
-        free(_state->human_id);
-      _state->extHost.plugin_human_id = _state->human_id =
-        strdup((_state->plugInst->track()->name() + QString(": ") + _state->plugInst->pluginLabel()).toUtf8().constData());
-    }
-    else if(_state->sif)
-    {
-      if(_state->human_id)
-        free(_state->human_id);
-      _state->extHost.plugin_human_id = _state->human_id =
-        strdup((_state->sif->name() + QString(": ") + _state->sif->pluginName()).toUtf8().constData());
-    }
-    else
-      return;
+// REMOVE Tim. tmp. Added.
+// void LV2PluginWrapper_Window::updateWindowTitle()
+// {
+//   if(_state)
+//   {
+//     if(_state->plugInst)
+//     {
+//       if(_state->human_id)
+//         free(_state->human_id);
+//       _state->extHost.plugin_human_id = _state->human_id =
+//         strdup((_state->plugInst->track()->name() + QString(": ") + _state->plugInst->pluginLabel()).toUtf8().constData());
+//     }
+//     else if(_state->sif)
+//     {
+//       if(_state->human_id)
+//         free(_state->human_id);
+//       _state->extHost.plugin_human_id = _state->human_id =
+//         strdup((_state->sif->name() + QString(": ") + _state->sif->pluginName()).toUtf8().constData());
+//     }
+//     else
+//       return;
+//
+//     if(_state->pluginWindow)
+//       _state->pluginWindow->setWindowTitle(_state->extHost.plugin_human_id);
+//   }
+// }
 
-    if(_state->pluginWindow)
-      _state->pluginWindow->setWindowTitle(_state->extHost.plugin_human_id);
-  }
+void LV2PluginWrapper_Window::updateWindowTitle(const QString& title)
+{
+  setWindowTitle(title);
 }
 
-void LV2PluginWrapper_Window::songChanged(MusECore::SongChangedStruct_t type)
-{
-  // Catch when the track name changes or track is moved or the rack position changes.
-  if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
-    updateWindowTitle();
-}
+// REMOVE Tim. tmp. Added.
+// void LV2PluginWrapper_Window::songChanged(MusECore::SongChangedStruct_t type)
+// {
+//   // Catch when the track name changes or track is moved or the rack position changes.
+//   if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
+//     updateWindowTitle();
+// }
 
 LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, PluginFeatures_t reqFeatures)
  : Plugin()
@@ -7453,15 +7541,16 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
     assert(p->instances > 0);
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
 
-    if(p->track() != nullptr)
-    {
-        if(state->human_id != nullptr)
-        {
-            free(state->human_id);
-        }
-
-        state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") + label()).toUtf8().constData());
-    }
+// REMOVE Tim. tmp. Removed. Moved into LV2Synth::lv2ui_ShowNativeGui.
+//     if(p->track() != nullptr)
+//     {
+//         if(state->human_id != nullptr)
+//         {
+//             free(state->human_id);
+//         }
+//
+//         state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") + label()).toUtf8().constData());
+//     }
 
     LV2Synth::lv2ui_ShowNativeGui(state, bShow, p->cquirks().fixNativeUIScaling());
 }
@@ -7471,6 +7560,15 @@ bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
     assert(p->instances > 0);
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
     return (state->widget != nullptr);
+}
+
+// REMOVE Tim. tmp. Added.
+void LV2PluginWrapper::updateNativeGuiWindowTitle(const PluginI *p) const
+{
+  assert(p->instances > 0);
+  LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
+  if(state->synth)
+    state->synth->lv2ui_UpdateWindowTitle(state);
 }
 
 void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal)
