@@ -56,6 +56,7 @@
 #endif
 // REMOVE Tim. tmp. Added.
 #include "undo.h"
+#include "ctrl.h"
 
 #include <QEvent>
 #include "track.h"
@@ -781,10 +782,39 @@ void EffectRack::startDragItem(int idx)
       MusECore::Xml xml(&xmlconf);
       MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
-            if ((*pipe)[idx] != nullptr) {
+            MusECore::PluginI *pi = (*pipe)[idx];
+            if (pi != nullptr) {
                 xml.header();
                 xml.tag(0, "muse version=\"1.0\"");
-                (*pipe)[idx]->writeConfiguration(1, xml);
+                pi->writeConfiguration(1, xml);
+
+// REMOVE Tim. tmp. Added.
+                //----------------------------------
+                // Write the automation controllers.
+                //----------------------------------
+                const unsigned long baseid = MusECore::genACnum(idx, 0);
+                const unsigned long lastid = MusECore::genACnum(idx + 1, 0) - 1;
+                MusECore::CtrlListList *cll = track->controller();
+                // If a controller is meant for the plugin slot, save it.
+                // Kick-start the search by looking for the first controller at or above the base id.
+                MusECore::CtrlListList::const_iterator icl = cll->lower_bound(baseid);
+                for( ; icl != cll->cend(); )
+                {
+                  MusECore::CtrlList *cl = icl->second;
+                  const int id = cl->id();
+                  if(id < 0)
+                  {
+                    ++icl;
+                    continue;
+                  }
+                  // At the end of the id range? Done, break out.
+                  if((unsigned long)id > lastid)
+                    break;
+                  // Write the controller.
+                  cl->write(0, xml);
+                  ++icl;
+                }
+
                 xml.tag(0, "/muse");
                 }
             else {
@@ -1024,6 +1054,8 @@ void EffectRack::dropEvent(QDropEvent *event)
                   //       Use the drop position as an offset for the start of the controller data?
                   //       Or just add the data verbosely?
                   //       Also, we must deal with erasing existing data. Use the global erase settings?
+                  //       Another big problem is the undo system: When redo/undo is clicked in one instance,
+                  //        the other instance needs to redo/undo as well. Both of them need to sync.
                   //fprintf(stderr, "EffectRack::dropEvent: Drag-move from outside app not supported yet.\n");
                   QMessageBox::information(this, tr("Drag and Drop Effect"),tr("Drag-move from outside app not supported yet"));
                 }
@@ -1034,10 +1066,51 @@ void EffectRack::dropEvent(QDropEvent *event)
                 //       This alone won't do it.
                 //       Work in progress for Song::CopyRackEffectPluginOperation() and UndoOp::CopyRackEffectPlugin.
 
-                MusECore::PluginI *newplug = initPlugin(xml, idx);
-                if(newplug)
+                // A copy of the plugin's track automation controllers is provided in the XML.
+                // Prepare a new controller list to hold them.
+                MusECore::CtrlListList *cll = new MusECore::CtrlListList();
+                // Read the plugin and any controllers.
+                MusECore::PluginI *newplug = initPlugin(xml, idx, cll);
+                // No plugin or no controllers found? Delete the new controller list.
+                if(!newplug || cll->empty())
+                {
+                  cll->clearDelete();
+                  delete cll;
+                  cll = nullptr;
+                }
+
+                // Initalize the controller ranges, names, modes etc. with info gathered from the plugin.
+                if(newplug && cll)
+                {
+                  int j = newplug->parameters();
+                  for(int i = 0; i < j; i++)
+                  {
+                    int id = MusECore::genACnum(idx, i);
+
+                    // The new controller list should have the correct id numbers by now.
+                    MusECore::ciCtrlList icl = cll->find(id);
+                    if(icl == cll->end())
+                    {
+                      fprintf(stderr, "EffectRack::dropEvent: Error: Controller id not found:%d\n", id);
+                    }
+                    else
+                    {
+                      MusECore::CtrlList* cl = icl->second;
+                      float min, max;
+                      newplug->range(i, &min, &max);
+                      cl->setRange(min, max);
+                      cl->setName(QString(newplug->paramName(i)));
+                      cl->setValueType(newplug->ctrlValueType(i));
+                      cl->setMode(newplug->ctrlMode(i));
+                      cl->setCurVal(newplug->param(i));
+                      // Set the value units index.
+                      cl->setValueUnit(newplug->valueUnit(i));
+                    }
+                  }
+
                   MusEGlobal::song->applyOperation(MusECore::UndoOp(
-                    MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx));
+                    MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx, cll));
+                }
               }
               else
               {
@@ -1174,7 +1247,8 @@ void EffectRack::leaveEvent(QEvent *event)
 
 // REMOVE Tim. tmp. Changed.
 //void EffectRack::initPlugin(MusECore::Xml xml, int idx)
-MusECore::PluginI* EffectRack::initPlugin(MusECore::Xml xml, int idx)
+MusECore::PluginI* EffectRack::initPlugin(
+  MusECore::Xml xml, int idx, MusECore::CtrlListList *cll, MusECore::MidiAudioCtrlMap */*macm*/)
       {
       if(!track)
         return nullptr;
@@ -1237,11 +1311,45 @@ MusECore::PluginI* EffectRack::initPlugin(MusECore::Xml xml, int idx)
 //                                     if (plugi->guiVisible())
 //                                       plugi->gui()->updateWindowTitle();
 
-                                    // TODO Hm... return??? Shouldn't it continue with reading more plugins?
+                                    // TODO Hm... return? Shouldn't it continue with reading more plugins?
+                                    //      Well, actually this system is meant for one plugin only.
+                                    //      Dragging two or more plugins from source rack positions onto a
+                                    //       single destination rack position is a weird concept.
+                                    //      What would we do with all the other non-leading dragged plugins?
+                                    //      Hard to imagine how it would work. Where would they all be dropped?
+                                    //      But we'll leave out the return so that other elements (like automation)
+                                    //       could potentially be included and scanned in the xml.
                                     //return;
                                     }
                                   }
                               }
+
+                        else if (tag == "controller")
+                        {
+                          if(cll)
+                          {
+                            MusECore::CtrlList* l = new MusECore::CtrlList();
+                            if(l->read(xml) && l->id() >= 0)
+                            {
+                              // Strip away the original position bits.
+                              const int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
+                              // Generate the new id.
+                              const unsigned long new_id = MusECore::genACnum(idx, m);
+                              l->setId(new_id);
+                              const bool res = cll->add(l);
+                              if(!res)
+                              {
+                                delete l;
+                                fprintf(stderr, "EffectRack::initPlugin: Error: Could not add controller #%ld!\n", new_id);
+                              }
+                            }
+                          }
+                          else
+                          {
+                            xml.skip(tag);
+                          }
+                        }
+
                         else if (tag =="muse")
                               break;
                         else

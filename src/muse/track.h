@@ -790,8 +790,9 @@ class AudioTrack : public Track {
       void addPlugin(PluginI* plugin, int idx);
       // Assigns valid ID and track to plugin, and creates controllers for plugin.
       void setupPlugin(PluginI* plugin, int idx);
-      // Swaps plugins at slots idx1 and idx2, including empty slots.
-      void swapPlugins(int idx1, int idx2);
+// REMOVE Tim. tmp. Removed.
+//       // Swaps plugins at slots idx1 and idx2, including empty slots.
+//       void swapPlugins(int idx1, int idx2);
 
       double pluginCtrlVal(int ctlID) const;
       void setPluginCtrlVal(int param, double val);

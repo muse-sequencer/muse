@@ -783,117 +783,118 @@ void AudioTrack::removeController(int id)
       _controller.erase(i);
       }
 
-//---------------------------------------------------------
-//   swapPlugins
-//---------------------------------------------------------
-
-void AudioTrack::swapPlugins(int idx1, int idx2)
-{
-  if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= MusECore::PipelineDepth || idx2 >= MusECore::PipelineDepth)
-    return;
-
-  // Move the effects in the rack.
-  if(_efxPipe)
-    _efxPipe->move(idx1, idx2);
-
-  // Swap the indexes if required, to get lowest idx1 to highest idx2.
-  if(idx1 > idx2) {
-    const int i = idx1;
-    idx1 = idx2;
-    idx2 = i;
-  }
-
-  //--------------------------------------------------------------------------------------
-  // Swap the controller list control numbers. Using (should be) rt-safe C++17 features...
-  // Not as easy as it sounds. If a pair of swappable items are found they must both be
-  //  extracted / modified / re-inserted at the same time to avoid index collisions with
-  //  existing items - especially with map. We'll use arrays to make things easier, their
-  //  maximum required size is AC_PLUGIN_CTL_BASE (4096).
-  //--------------------------------------------------------------------------------------
-  CtrlList *cl;
-  int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
-  int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
-  int id_mask = ~((int)AC_PLUGIN_CTL_ID_MASK);
-  int i, j;
-  // Count the number of required array elements,
-  //  and find the first instances of each controller.
-  int count1 = 0, count2 = 0;
-  ciCtrlList icl1 = _controller.cend();
-  ciCtrlList icl2 = _controller.cend();
-  for(ciCtrlList icl = _controller.cbegin(); icl != _controller.cend(); ++icl)
-  {
-    cl = icl->second;
-    j = cl->id() & id_mask;
-    if(j > id2)
-      break;
-    if(j == id1) {
-      count1++;
-      if(icl1 == _controller.cend())
-        icl1 = icl;
-      }
-    else if(j == id2) {
-      count2++;
-      if(icl2 == _controller.cend())
-        icl2 = icl;
-      }
-  }
-  // Extract the node handles to the arrays...
-  ciCtrlList icl_tmp;
-  CtrlListList::node_type array1[count1];
-  CtrlListList::node_type array2[count2];
-  for(int k = 0; k < count1; ++k)
-  {
-    // Iterator is invalidated after extraction. Save it.
-    icl_tmp = icl1;
-    ++icl_tmp;
-    array1[k] = _controller.extract(icl1);
-    icl1 = icl_tmp;
-  }
-  for(int k = 0; k < count2; ++k)
-  {
-    // Iterator is invalidated after extraction. Save it.
-    icl_tmp = icl2;
-    ++icl_tmp;
-    array2[k] = _controller.extract(icl2);
-    icl2 = icl_tmp;
-  }
-  // Modify and re-insert the elements...
-  for(int k = 0; k < count1; ++k)
-  {
-    cl = array1[k].mapped();
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    cl->setId(i | id2);
-    array1[k].key() = i | id2;
-    _controller.insert(move(array1[k]));
-  }
-  for(int k = 0; k < count2; ++k)
-  {
-    cl = array2[k].mapped();
-    i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
-    cl->setId(i | id1);
-    array2[k].key() = i | id1;
-    _controller.insert(move(array2[k]));
-  }
-
-  // Remap midi to audio controls...
-  MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
-  for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
-  {
-    if(imacm->second.track() != this || imacm->second.idType() != MidiAudioCtrlStruct::AudioControl)
-      continue;
-
-    int actrl = imacm->second.id();
-    int id = actrl & id_mask;
-    actrl &= AC_PLUGIN_CTL_ID_MASK;
-    if(id == id1)
-      actrl |= id2;
-    else if(id == id2)
-      actrl |= id1;
-    else
-      continue;
-    imacm->second.setId(actrl);
-  }
-}
+// REMOVE Tim. tmp. Removed.
+// //---------------------------------------------------------
+// //   swapPlugins
+// //---------------------------------------------------------
+//
+// void AudioTrack::swapPlugins(int idx1, int idx2)
+// {
+//   if(idx1 == idx2 || idx1 < 0 || idx2 < 0 || idx1 >= MusECore::PipelineDepth || idx2 >= MusECore::PipelineDepth)
+//     return;
+//
+//   // Move the effects in the rack.
+//   if(_efxPipe)
+//     _efxPipe->move(idx1, idx2);
+//
+//   // Swap the indexes if required, to get lowest idx1 to highest idx2.
+//   if(idx1 > idx2) {
+//     const int i = idx1;
+//     idx1 = idx2;
+//     idx2 = i;
+//   }
+//
+//   //--------------------------------------------------------------------------------------
+//   // Swap the controller list control numbers. Using (should be) rt-safe C++17 features...
+//   // Not as easy as it sounds. If a pair of swappable items are found they must both be
+//   //  extracted / modified / re-inserted at the same time to avoid index collisions with
+//   //  existing items - especially with map. We'll use arrays to make things easier, their
+//   //  maximum required size is AC_PLUGIN_CTL_BASE (4096).
+//   //--------------------------------------------------------------------------------------
+//   CtrlList *cl;
+//   int id1 = (idx1 + 1) * AC_PLUGIN_CTL_BASE;
+//   int id2 = (idx2 + 1) * AC_PLUGIN_CTL_BASE;
+//   int id_mask = ~((int)AC_PLUGIN_CTL_ID_MASK);
+//   int i, j;
+//   // Count the number of required array elements,
+//   //  and find the first instances of each controller.
+//   int count1 = 0, count2 = 0;
+//   ciCtrlList icl1 = _controller.cend();
+//   ciCtrlList icl2 = _controller.cend();
+//   for(ciCtrlList icl = _controller.cbegin(); icl != _controller.cend(); ++icl)
+//   {
+//     cl = icl->second;
+//     j = cl->id() & id_mask;
+//     if(j > id2)
+//       break;
+//     if(j == id1) {
+//       count1++;
+//       if(icl1 == _controller.cend())
+//         icl1 = icl;
+//       }
+//     else if(j == id2) {
+//       count2++;
+//       if(icl2 == _controller.cend())
+//         icl2 = icl;
+//       }
+//   }
+//   // Extract the node handles to the arrays...
+//   ciCtrlList icl_tmp;
+//   CtrlListList::node_type array1[count1];
+//   CtrlListList::node_type array2[count2];
+//   for(int k = 0; k < count1; ++k)
+//   {
+//     // Iterator is invalidated after extraction. Save it.
+//     icl_tmp = icl1;
+//     ++icl_tmp;
+//     array1[k] = _controller.extract(icl1);
+//     icl1 = icl_tmp;
+//   }
+//   for(int k = 0; k < count2; ++k)
+//   {
+//     // Iterator is invalidated after extraction. Save it.
+//     icl_tmp = icl2;
+//     ++icl_tmp;
+//     array2[k] = _controller.extract(icl2);
+//     icl2 = icl_tmp;
+//   }
+//   // Modify and re-insert the elements...
+//   for(int k = 0; k < count1; ++k)
+//   {
+//     cl = array1[k].mapped();
+//     i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
+//     cl->setId(i | id2);
+//     array1[k].key() = i | id2;
+//     _controller.insert(move(array1[k]));
+//   }
+//   for(int k = 0; k < count2; ++k)
+//   {
+//     cl = array2[k].mapped();
+//     i = cl->id() & AC_PLUGIN_CTL_ID_MASK;
+//     cl->setId(i | id1);
+//     array2[k].key() = i | id1;
+//     _controller.insert(move(array2[k]));
+//   }
+//
+//   // Remap midi to audio controls...
+//   MidiAudioCtrlMap* macm = MusEGlobal::song->midiAssignments();
+//   for(iMidiAudioCtrlMap imacm = macm->begin(); imacm != macm->end(); ++imacm)
+//   {
+//     if(imacm->second.track() != this || imacm->second.idType() != MidiAudioCtrlStruct::AudioControl)
+//       continue;
+//
+//     int actrl = imacm->second.id();
+//     int id = actrl & id_mask;
+//     actrl &= AC_PLUGIN_CTL_ID_MASK;
+//     if(id == id1)
+//       actrl |= id2;
+//     else if(id == id2)
+//       actrl |= id1;
+//     else
+//       continue;
+//     imacm->second.setId(actrl);
+//   }
+// }
 
 //---------------------------------------------------------
 //   setAutomationType

@@ -2795,8 +2795,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, double a_, double b_,
 }
 
 // REMOVE Tim. tmp. Added.
-UndoOp::UndoOp(UndoType type_, const Track* track_, PluginConfiguration *pluginConfiguration_,
-             int effectRackPos_, bool noUndo_)
+UndoOp::UndoOp(UndoType type_, const Track *track_, PluginConfiguration *pluginConfiguration_,
+             int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
 {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
@@ -2804,8 +2804,8 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginConfiguration *pluginC
   type = type_;
   track = track_;
   _pluginI = nullptr;
-  _ctrlListList = nullptr;
-  _midiAudioCtrlMap = nullptr;
+  _ctrlListList = cll_;
+  _midiAudioCtrlMap = macm_;
   _pluginConfiguration = pluginConfiguration_;
   _effectRackPos = effectRackPos_;
   _newEffectRackPos = 0;
@@ -2814,15 +2814,15 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, PluginConfiguration *pluginC
 
 // REMOVE Tim. tmp. Added.
 UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &pluginConfiguration_,
-             int effectRackPos_, bool noUndo_)
+             int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
 {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   type = type_;
   track = track_;
   _pluginI = nullptr;
-  _ctrlListList = nullptr;
-  _midiAudioCtrlMap = nullptr;
+  _ctrlListList = cll_;
+  _midiAudioCtrlMap = macm_;
   _pluginConfiguration = new PluginConfiguration(pluginConfiguration_);
   _effectRackPos = effectRackPos_;
   _newEffectRackPos = 0;
@@ -2830,15 +2830,16 @@ UndoOp::UndoOp(UndoType type_, const Track* track_, const PluginConfiguration &p
 }
 
 // REMOVE Tim. tmp. Added.
-UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_, int effectRackPos_, bool noUndo_)
+UndoOp::UndoOp(UndoType type_, const Track* track_, PluginI *pluginI_,
+               int effectRackPos_, CtrlListList *cll_, MidiAudioCtrlMap *macm_, bool noUndo_)
 {
   assert(type_== ChangeRackEffectPlugin);
   assert(track_);
   type = type_;
   track = track_;
   _pluginI = pluginI_;
-  _ctrlListList = nullptr;
-  _midiAudioCtrlMap = nullptr;
+  _ctrlListList = cll_;
+  _midiAudioCtrlMap = macm_;
   _pluginConfiguration = nullptr;
   _effectRackPos = effectRackPos_;
   _newEffectRackPos = 0;

@@ -40,6 +40,9 @@ namespace MusECore {
 class AudioTrack;
 class PluginI;
 class Xml;
+// REMOVE Tim. tmp. Added.
+class CtrlListList;
+class MidiAudioCtrlMap;
 }
 
 namespace MusEGui {
@@ -71,7 +74,8 @@ class EffectRack : public QListWidget {
       void startDragItem(int idx);
 // REMOVE Tim. tmp. Changed.
 //       void initPlugin(MusECore::Xml xml, int idx);
-      MusECore::PluginI* initPlugin(MusECore::Xml xml, int idx);
+      MusECore::PluginI* initPlugin(MusECore::Xml xml, int idx,
+                                    MusECore::CtrlListList *cll = nullptr, MusECore::MidiAudioCtrlMap *macm = nullptr);
       QPoint dragPos;
       void savePreset(int idx);
 // REMOVE Tim. tmp. Changed.

@@ -1443,9 +1443,10 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_SET_CHANNELS:
                   msg->snode->setChannels(msg->ival);
                   break;
-            case AUDIO_SWAP_PLUGINS:
-                  msg->snode->swapPlugins(msg->a, msg->b);
-                  break;
+// REMOVE Tim. tmp. Removed.
+//             case AUDIO_SWAP_PLUGINS:
+//                   msg->snode->swapPlugins(msg->a, msg->b);
+//                   break;
             case AUDIO_SEEK_PREV_AC_EVENT:
                   msg->snode->seekPrevACEvent(msg->ival);
                   break;

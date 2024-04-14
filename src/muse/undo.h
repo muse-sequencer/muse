@@ -279,15 +279,16 @@ struct UndoOp {
 // REMOVE Tim. tmp. Added.
       // To avoid potentially a lot of copying and double memory use, the pluginConfiguration
       //  argument is allocated externally, and the undo system takes ownership of it.
-      UndoOp(UndoType type, const Track* track, PluginConfiguration *pluginConfiguration,
-             int effectRackPos, bool noUndo = false);
+      UndoOp(UndoType type, const Track *track, PluginConfiguration *pluginConfiguration, int effectRackPos,
+             CtrlListList *cll = nullptr, MidiAudioCtrlMap *macm = nullptr, bool noUndo = false);
       // This convenience version makes a copy of the pluginConfiguration for you.
-      UndoOp(UndoType type, const Track* track, const PluginConfiguration &pluginConfiguration,
-             int effectRackPos, bool noUndo = false);
+      UndoOp(UndoType type, const Track *track, const PluginConfiguration &pluginConfiguration, int effectRackPos,
+             CtrlListList *cll = nullptr, MidiAudioCtrlMap *macm = nullptr, bool noUndo = false);
       // This one takes a pre-created PluginI. It can also be null.
-      UndoOp(UndoType type, const Track* track, PluginI *pluginI, int effectRackPos, bool noUndo = false);
+      UndoOp(UndoType type, const Track *track, PluginI *pluginI, int effectRackPos,
+             CtrlListList *cll = nullptr, MidiAudioCtrlMap *macm = nullptr, bool noUndo = false);
       // This is for moving a plugin from one rack position to another, even to a different track's rack.
-      UndoOp(UndoType type, const Track* srcTrack, const Track* dstTrack, int srcEffectRackPos,
+      UndoOp(UndoType type, const Track *srcTrack, const Track *dstTrack, int srcEffectRackPos,
              int dstEffectRackPos, bool noUndo = false);
 
       UndoOp(UndoType type, CtrlList* ctrlList, unsigned int frame, bool oldSelected, bool newSelected, bool noUndo = false);

@@ -281,20 +281,21 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
       sendMsg(&msg);
       }
 
-//---------------------------------------------------------
-//   msgSwapPlugins
-//---------------------------------------------------------
-
-void Audio::msgSwapPlugins(AudioTrack* node, int idx1, int idx2)
-{
-      AudioMsg msg;
-      
-      msg.id     = AUDIO_SWAP_PLUGINS;
-      msg.snode  = node;
-      msg.a      = idx1;
-      msg.b      = idx2;
-      sendMsg(&msg);
-}
+// REMOVE Tim. tmp. Removed.
+// //---------------------------------------------------------
+// //   msgSwapPlugins
+// //---------------------------------------------------------
+//
+// void Audio::msgSwapPlugins(AudioTrack* node, int idx1, int idx2)
+// {
+//       AudioMsg msg;
+//
+//       msg.id     = AUDIO_SWAP_PLUGINS;
+//       msg.snode  = node;
+//       msg.a      = idx1;
+//       msg.b      = idx2;
+//       sendMsg(&msg);
+// }
 
 //---------------------------------------------------------
 //   msgClearControllerEvents
