@@ -1258,12 +1258,10 @@ bool Song::changePluginOperation(UndoOp *i)
             // Now erase the mapping from the main list.
             // The iterator is set to the next item.
             k = macm->erase(k);
-          }
-          else
-          {
-            ++k;
+            continue;
           }
         }
+        ++k;
       }
 
       // Add any given mappings.
@@ -1640,7 +1638,7 @@ bool Song::movePluginOperation(UndoOp *i)
 
   AudioTrack* src_at = static_cast<AudioTrack*>(src_track);
   AudioTrack* at = static_cast<AudioTrack*>(track);
-  CtrlListList *src_track_cll = at->controller();
+  CtrlListList *src_track_cll = src_at->controller();
   CtrlListList *track_cll = at->controller();
   Pipeline *src_pl = src_at->efxPipe();
   Pipeline *pl = at->efxPipe();
@@ -2169,7 +2167,7 @@ bool Song::revertMovePluginOperation(UndoOp *i)
 
   AudioTrack* src_at = static_cast<AudioTrack*>(src_track);
   AudioTrack* at = static_cast<AudioTrack*>(track);
-  CtrlListList *src_track_cll = at->controller();
+  CtrlListList *src_track_cll = src_at->controller();
   CtrlListList *track_cll = at->controller();
   Pipeline *src_pl = src_at->efxPipe();
   Pipeline *pl = at->efxPipe();
