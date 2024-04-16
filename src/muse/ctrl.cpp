@@ -368,6 +368,36 @@ MidiAudioCtrlStruct::MidiAudioCtrlStruct(
 { 
 };
 
+// REMOVE Tim. tmp. Added.
+// void MidiAudioCtrlStruct::write(int level, Xml& xml, const Track* trk) const
+// {
+//   //for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
+//   {
+//       // Write only the assignments for the given track pointer (which can be NULL).
+//       //if(imacm->second.track() != track)
+//       if(track() != trk)
+//         //continue;
+//         return;
+//       int port, chan, mctrl;
+//       hash_values(imacm->first, &port, &chan, &mctrl);
+//       const int id = imacm->second.id();
+//       const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
+//       QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
+//                           .arg(port)
+//                           .arg(chan)
+//                           .arg(mctrl)
+//                           .arg(type)
+//                           .arg(id);
+//       xml.tag(level++, s.toLatin1().constData());
+//
+//       // TODO
+//       //const MidiAudioCtrlStruct& macs = imacs->second;
+//       //xml.intTag(level, "macs ???", macs.);
+//
+//       xml.etag(level--, "midiAssign");
+//   }
+// }
+
 // Static.
 MidiAudioCtrlMap_idx_t MidiAudioCtrlMap::index_hash(int midi_port, int midi_chan, int midi_ctrl_num)
 { 
@@ -424,30 +454,65 @@ void MidiAudioCtrlMap::find_audio_ctrl_structs(
   }
 }
 
-void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track) const
+// REMOVE Tim. tmp. Changed.
+// void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track) const
+// {
+//   for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
+//   {
+//       // Write only the assignments for the given track pointer (which can be NULL).
+//       if(imacm->second.track() != track)
+//         continue;
+//       int port, chan, mctrl;
+//       hash_values(imacm->first, &port, &chan, &mctrl);
+//       const int id = imacm->second.id();
+//       const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
+//       QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
+//                           .arg(port)
+//                           .arg(chan)
+//                           .arg(mctrl)
+//                           .arg(type)
+//                           .arg(id);
+//       xml.tag(level++, s.toLatin1().constData());
+//
+//       // TODO
+//       //const MidiAudioCtrlStruct& macs = imacs->second;
+//       //xml.intTag(level, "macs ???", macs.);
+//
+//       xml.etag(level--, "midiAssign");
+//   }
+// }
+void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track, int effectRackPos) const
 {
+  const unsigned long baseid = effectRackPos >= 0 ? genACnum(effectRackPos, 0) : 0;
+  const unsigned long lastid = effectRackPos >= 0 ? (genACnum(effectRackPos + 1, 0) - 1) : 0;
+
   for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
   {
       // Write only the assignments for the given track pointer (which can be NULL).
       if(imacm->second.track() != track)
         continue;
-      int port, chan, mctrl;
-      hash_values(imacm->first, &port, &chan, &mctrl);
-      const int id = imacm->second.id();
       const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
-      QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
-                          .arg(port)
-                          .arg(chan)
-                          .arg(mctrl)
-                          .arg(type)
-                          .arg(id);
-      xml.tag(level++, s.toLatin1().constData());
+      const int id = imacm->second.id();
+      if((effectRackPos < 0) ||
+         (track && type == MidiAudioCtrlStruct::AudioControl &&
+          (unsigned long)id >= baseid && (unsigned long)id < lastid))
+      {
+        int port, chan, mctrl;
+        hash_values(imacm->first, &port, &chan, &mctrl);
+        QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
+                            .arg(port)
+                            .arg(chan)
+                            .arg(mctrl)
+                            .arg(type)
+                            .arg(id);
+        xml.tag(level++, s.toLatin1().constData());
 
-      // TODO
-      //const MidiAudioCtrlStruct& macs = imacs->second;
-      //xml.intTag(level, "macs ???", macs.);
+        // TODO
+        //const MidiAudioCtrlStruct& macs = imacs->second;
+        //xml.intTag(level, "macs ???", macs.);
 
-      xml.etag(level--, "midiAssign");
+        xml.etag(level--, "midiAssign");
+      }
   }
 }
 

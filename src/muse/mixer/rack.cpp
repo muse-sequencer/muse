@@ -815,6 +815,42 @@ void EffectRack::startDragItem(int idx)
                   ++icl;
                 }
 
+// TODO Initial copy from elsewhere. Finish this off
+                //-------------------------------------------------
+                // Write the midi to audio controlller assignments.
+                //-------------------------------------------------
+//                 MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+//                 if(macm)
+//                 {
+// //                   i->_plugMoveDstMidiAudioCtrlMap = new MidiAudioCtrlMap();
+//
+//                   // If the audio is idling, take advantage of relaxed timing and just directly
+//                   //  manipulate the mapping lists.
+//                   if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+//                   {
+//                     // Save existing mappings.
+//                     for(MusECore::MidiAudioCtrlMap::iterator k = macm->begin(); k != macm->end(); )
+//                     {
+//                       MusECore::MidiAudioCtrlStruct &macs = k->second;
+//
+//                       if(macs.id() >= 0 && macs.idType() == MusECore::MidiAudioCtrlStruct::AudioControl)
+//                       {
+//                         const unsigned long id = macs.id();
+//
+//                         // If the mapping is meant for the source plugin slot, remap it to the destination
+//                         //  track and slot. Just directly manipulate the map item.
+//                         if(macs.track() == src_track && id >= src_baseid && id <= src_lastid)
+//                         {
+//                           macs.setTrack(track);
+//                           macs.setId((id - src_baseid) + baseid);
+//                           // Move on to the next map item.
+//                           ++k;
+//                         }
+//                       }
+//                     }
+//                   }
+//                 }
+
                 xml.tag(0, "/muse");
                 }
             else {
@@ -1248,7 +1284,7 @@ void EffectRack::leaveEvent(QEvent *event)
 // REMOVE Tim. tmp. Changed.
 //void EffectRack::initPlugin(MusECore::Xml xml, int idx)
 MusECore::PluginI* EffectRack::initPlugin(
-  MusECore::Xml xml, int idx, MusECore::CtrlListList *cll, MusECore::MidiAudioCtrlMap */*macm*/)
+  MusECore::Xml xml, int idx, MusECore::CtrlListList *cll, MusECore::MidiAudioCtrlMap *macm)
       {
       if(!track)
         return nullptr;
@@ -1348,6 +1384,17 @@ MusECore::PluginI* EffectRack::initPlugin(
                           {
                             xml.skip(tag);
                           }
+                        }
+
+                        else if (tag == "midiAssign")
+                        {
+                          // Although track can be NULL, it must be valid in this case
+                          //  since 'global' assignments to a given rack position on
+                          //  any selected tracks is not supported.
+                          if(macm && track)
+                            macm->read(xml, track);
+                          else
+                            xml.skip(tag);
                         }
 
                         else if (tag =="muse")

@@ -199,6 +199,8 @@ class MidiAudioCtrlStruct {
         void setIdType(IdType idType);
         Track* track() const;
         void setTrack(Track* track);
+// REMOVE Tim. tmp. Added.
+        //void write(int level, Xml& xml, const Track* track /*= nullptr*/) const; // TODO Resinstate default after testing
       };
 
 typedef uint32_t MidiAudioCtrlMap_idx_t;
@@ -227,7 +229,14 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
         MidiAudioCtrlStruct::IdType type, int id,
         const Track* track, bool anyTracks, bool includeNullTracks, AudioMidiCtrlStructMap* amcs); // const;
       void erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, MidiAudioCtrlStruct::IdType type, int id);
-      void write(int level, Xml& xml, const Track* track /*= nullptr*/) const; // TODO Resinstate default after testing
+// REMOVE Tim. tmp. Changed.
+//       void write(int level, Xml& xml, const Track* track /*= nullptr*/) const; // TODO Resinstate default after testing
+      // Writes the assignment to XML. Track can be NULL. If track is valid and effectRackPos >= 0,
+      //  only AudioControl assignments for that specific track's rack position are saved.
+      // (Track must be valid in this case since 'global' assignments to a given rack position on
+      //  any selected tracks is not supported.)
+      // TODO Resinstate default after testing
+      void write(int level, Xml& xml, const Track* track /*= nullptr*/, int effectRackPos = -1) const;
       void read(Xml& xml, Track* track /*= nullptr*/); // TODO Resinstate default after testing
       };
 
