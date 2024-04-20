@@ -417,7 +417,7 @@ void MidiAudioCtrlMap::hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, 
     *midi_port     = (hash >> 24) & 0xff;
 }
 
-iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num,  
+iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num,
                                                     const MidiAudioCtrlStruct& macs)
 {
   MidiAudioCtrlMap_idx_t h = index_hash(midi_port, midi_chan, midi_ctrl_num);
@@ -426,6 +426,17 @@ iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(int midi_port, int midi_chan
     if(imacp->second.idType() == macs.idType() && imacp->second.id() == macs.id())
        return imacp;
   return insert(std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(h, macs));
+}
+
+// REMOVE Tim. tmp. Added.
+iMidiAudioCtrlMap MidiAudioCtrlMap::add_ctrl_struct(MidiAudioCtrlMap_idx_t indexHash,
+                                                    const MidiAudioCtrlStruct& macs)
+{
+  std::pair<iMidiAudioCtrlMap, iMidiAudioCtrlMap> range = equal_range(indexHash);
+  for(iMidiAudioCtrlMap imacp = range.first; imacp != range.second; ++imacp)
+    if(imacp->second.idType() == macs.idType() && imacp->second.id() == macs.id())
+       return imacp;
+  return insert(std::pair<MidiAudioCtrlMap_idx_t, MidiAudioCtrlStruct >(indexHash, macs));
 }
 
 void MidiAudioCtrlMap::erase_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, MidiAudioCtrlStruct::IdType type, int id)
@@ -492,11 +503,15 @@ void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track, int effect
       if(imacm->second.track() != track)
         continue;
       const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
-      const int id = imacm->second.id();
+      int id = imacm->second.id();
       if((effectRackPos < 0) ||
          (track && type == MidiAudioCtrlStruct::AudioControl &&
           (unsigned long)id >= baseid && (unsigned long)id < lastid))
       {
+        // If a rack position is given, strip away the position bits
+        //  leaving just the controller number.
+        if(effectRackPos >= 0)
+          id &= AC_PLUGIN_CTL_ID_MASK;
         int port, chan, mctrl;
         hash_values(imacm->first, &port, &chan, &mctrl);
         QString s= QString("midiAssign port=\"%1\" ch=\"%2\" mctrl=\"%3\" type=\"%4\" id=\"%5\"")
@@ -1687,10 +1702,15 @@ bool CtrlList::read(Xml& xml)
             return false;
       }
 
-void CtrlList::write(int level, Xml& xml, bool /*isCopy*/) const
+void CtrlList::write(int level, Xml& xml, bool isCopy) const
 {
+        int ctlid = id();
+        // If isCopy is true, strip away the each controller's rack position bits,
+        //  storing just the controller numbers.
+        if(isCopy)
+          ctlid &= AC_PLUGIN_CTL_ID_MASK;
         // Use hex value string when appropriate.
-        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(id()).arg(MusELib::museStringFromDouble(curVal()));
+        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(ctlid).arg(MusELib::museStringFromDouble(curVal()));
         s += QString(" color=\"%1\" visible=\"%2\"").arg(color().name()).arg(isVisible());
         xml.tag(level++, s.toLatin1().constData());
         int i = 0;

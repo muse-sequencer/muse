@@ -155,7 +155,7 @@ SynthIF::SynthIF(SynthI* s) : PluginIBase()
     _curActiveState = true;
 }
 /*inline*/ void SynthIF::deactivate() { _curActiveState = false; }
-/*inline*/ void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
+/*inline*/ void SynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/, bool /*isCopy*/)        { }
 // REMOVE Tim. tmp. Changed.
 // /*inline*/ bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
 /*inline*/ bool SynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/, int /*channels*/) { return false; }

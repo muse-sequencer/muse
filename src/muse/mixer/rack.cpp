@@ -786,70 +786,46 @@ void EffectRack::startDragItem(int idx)
             if (pi != nullptr) {
                 xml.header();
                 xml.tag(0, "muse version=\"1.0\"");
-                pi->writeConfiguration(1, xml);
+                // Write extra information including automation controllers and midi assignments.
+                pi->writeConfiguration(1, xml, true);
 
-// REMOVE Tim. tmp. Added.
-                //----------------------------------
-                // Write the automation controllers.
-                //----------------------------------
-                const unsigned long baseid = MusECore::genACnum(idx, 0);
-                const unsigned long lastid = MusECore::genACnum(idx + 1, 0) - 1;
-                MusECore::CtrlListList *cll = track->controller();
-                // If a controller is meant for the plugin slot, save it.
-                // Kick-start the search by looking for the first controller at or above the base id.
-                MusECore::CtrlListList::const_iterator icl = cll->lower_bound(baseid);
-                for( ; icl != cll->cend(); )
-                {
-                  MusECore::CtrlList *cl = icl->second;
-                  const int id = cl->id();
-                  if(id < 0)
-                  {
-                    ++icl;
-                    continue;
-                  }
-                  // At the end of the id range? Done, break out.
-                  if((unsigned long)id > lastid)
-                    break;
-                  // Write the controller.
-                  cl->write(0, xml);
-                  ++icl;
-                }
-
-// TODO Initial copy from elsewhere. Finish this off
-                //-------------------------------------------------
-                // Write the midi to audio controlller assignments.
-                //-------------------------------------------------
-//                 MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
-//                 if(macm)
+// // REMOVE Tim. tmp. Added.
+//                 //----------------------------------
+//                 // Write the automation controllers.
+//                 //----------------------------------
+//                 const unsigned long baseid = MusECore::genACnum(idx, 0);
+//                 const unsigned long lastid = MusECore::genACnum(idx + 1, 0) - 1;
+//                 MusECore::CtrlListList *cll = track->controller();
+//                 // If a controller is meant for the plugin slot, save it.
+//                 // Kick-start the search by looking for the first controller at or above the base id.
+//                 MusECore::CtrlListList::const_iterator icl = cll->lower_bound(baseid);
+//                 for( ; icl != cll->cend(); )
 //                 {
-// //                   i->_plugMoveDstMidiAudioCtrlMap = new MidiAudioCtrlMap();
-//
-//                   // If the audio is idling, take advantage of relaxed timing and just directly
-//                   //  manipulate the mapping lists.
-//                   if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+//                   MusECore::CtrlList *cl = icl->second;
+//                   const int id = cl->id();
+//                   if(id < 0)
 //                   {
-//                     // Save existing mappings.
-//                     for(MusECore::MidiAudioCtrlMap::iterator k = macm->begin(); k != macm->end(); )
-//                     {
-//                       MusECore::MidiAudioCtrlStruct &macs = k->second;
-//
-//                       if(macs.id() >= 0 && macs.idType() == MusECore::MidiAudioCtrlStruct::AudioControl)
-//                       {
-//                         const unsigned long id = macs.id();
-//
-//                         // If the mapping is meant for the source plugin slot, remap it to the destination
-//                         //  track and slot. Just directly manipulate the map item.
-//                         if(macs.track() == src_track && id >= src_baseid && id <= src_lastid)
-//                         {
-//                           macs.setTrack(track);
-//                           macs.setId((id - src_baseid) + baseid);
-//                           // Move on to the next map item.
-//                           ++k;
-//                         }
-//                       }
-//                     }
+//                     ++icl;
+//                     continue;
 //                   }
+//                   // At the end of the id range? Done, break out.
+//                   if((unsigned long)id > lastid)
+//                     break;
+//                   // Write the controller.
+//                   // Strip away each controller's rack position bits,
+//                   //  storing just the controller numbers.
+//                   cl->write(0, xml, true);
+//                   ++icl;
 //                 }
+//
+//                 //-------------------------------------------------
+//                 // Write the midi to audio controlller assignments.
+//                 //-------------------------------------------------
+//                 MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+//                 // Given a rack position, this strips away the position bits
+//                 //  from the controller IDs, storing just the controller numbers.
+//                 if(macm)
+//                   macm->write(0, xml, track, idx);
 
                 xml.tag(0, "/muse");
                 }
@@ -1098,21 +1074,31 @@ void EffectRack::dropEvent(QDropEvent *event)
               }
               else if(act == Qt::CopyAction)
               {
-                // TODO: Hm... As discussed above, should we copy controller data and midi mappings too?
-                //       This alone won't do it.
-                //       Work in progress for Song::CopyRackEffectPluginOperation() and UndoOp::CopyRackEffectPlugin.
+                // TODO TODO: Ask user if they want controllers and/or midi mapping copied.
 
                 // A copy of the plugin's track automation controllers is provided in the XML.
                 // Prepare a new controller list to hold them.
                 MusECore::CtrlListList *cll = new MusECore::CtrlListList();
-                // Read the plugin and any controllers.
-                MusECore::PluginI *newplug = initPlugin(xml, idx, cll);
+                // A copy of any midi assignments to the plugin's track automation controllers is provided in the XML.
+                // Prepare a new mapping list to hold them.
+                MusECore::MidiAudioCtrlMap *macm = new MusECore::MidiAudioCtrlMap();
+
+                // Read the plugin and any controllers and midi mappings.
+                MusECore::PluginI *newplug = initPlugin(xml, idx, cll, macm);
+
                 // No plugin or no controllers found? Delete the new controller list.
                 if(!newplug || cll->empty())
                 {
+                  // Be sure to delete all the allocated controller items.
                   cll->clearDelete();
                   delete cll;
                   cll = nullptr;
+                }
+                // No plugin or no midi mappings found? Delete the new mapping list.
+                if(!newplug || macm->empty())
+                {
+                  delete macm;
+                  macm = nullptr;
                 }
 
                 // Initalize the controller ranges, names, modes etc. with info gathered from the plugin.
@@ -1145,7 +1131,7 @@ void EffectRack::dropEvent(QDropEvent *event)
                   }
 
                   MusEGlobal::song->applyOperation(MusECore::UndoOp(
-                    MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx, cll));
+                    MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx, cll, macm));
                 }
               }
               else
@@ -1296,7 +1282,10 @@ MusECore::PluginI* EffectRack::initPlugin(
                   case MusECore::Xml::Error:
                   case MusECore::Xml::End:
                         if(plugi)
+                        {
+                          plugi->currentInitialConfiguration()._ctrlListList.clearDelete();
                           delete plugi;
+                        }
                         return nullptr;
                   case MusECore::Xml::TagStart:
                         if (tag == "plugin") {
@@ -1312,6 +1301,7 @@ MusECore::PluginI* EffectRack::initPlugin(
                                   //QString d;
                                   //xml.dump(d);
                                   //printf("cannot instantiate plugin [%s]\n", d.toLatin1().data());
+                                  plugi->currentInitialConfiguration()._ctrlListList.clearDelete();
                                   delete plugi;
                                   plugi = nullptr;
                                   }
@@ -1360,42 +1350,46 @@ MusECore::PluginI* EffectRack::initPlugin(
                                   }
                               }
 
-                        else if (tag == "controller")
-                        {
-                          if(cll)
-                          {
-                            MusECore::CtrlList* l = new MusECore::CtrlList();
-                            if(l->read(xml) && l->id() >= 0)
-                            {
-                              // Strip away the original position bits.
-                              const int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
-                              // Generate the new id.
-                              const unsigned long new_id = MusECore::genACnum(idx, m);
-                              l->setId(new_id);
-                              const bool res = cll->add(l);
-                              if(!res)
-                              {
-                                delete l;
-                                fprintf(stderr, "EffectRack::initPlugin: Error: Could not add controller #%ld!\n", new_id);
-                              }
-                            }
-                          }
-                          else
-                          {
-                            xml.skip(tag);
-                          }
-                        }
+//                         else if (tag == "controller")
+//                         {
+//                           if(cll)
+//                           {
+//                             MusECore::CtrlList* l = new MusECore::CtrlList();
+//                             if(l->read(xml) && l->id() >= 0)
+//                             {
+//                               // Strip away the original position bits.
+//                               const int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
+//                               // Generate the new id.
+//                               const unsigned long new_id = MusECore::genACnum(idx, m);
+//                               l->setId(new_id);
+//                               const bool res = cll->add(l);
+//                               if(!res)
+//                               {
+//                                 delete l;
+//                                 fprintf(stderr, "EffectRack::initPlugin: Error: Could not add controller #%ld!\n", new_id);
+//                               }
+//                             }
+//                             else
+//                             {
+//                               delete l;
+//                             }
+//                           }
+//                           else
+//                           {
+//                             xml.skip(tag);
+//                           }
+//                         }
 
-                        else if (tag == "midiAssign")
-                        {
-                          // Although track can be NULL, it must be valid in this case
-                          //  since 'global' assignments to a given rack position on
-                          //  any selected tracks is not supported.
-                          if(macm && track)
-                            macm->read(xml, track);
-                          else
-                            xml.skip(tag);
-                        }
+//                         else if (tag == "midiAssign")
+//                         {
+//                           // Although track can be NULL, it must be valid in this case
+//                           //  since 'global' assignments to a given rack position on
+//                           //  any selected tracks is not supported.
+//                           if(macm && track)
+//                             macm->read(xml, track);
+//                           else
+//                             xml.skip(tag);
+//                         }
 
                         else if (tag =="muse")
                               break;
@@ -1406,7 +1400,84 @@ MusECore::PluginI* EffectRack::initPlugin(
                         break;
                   case MusECore::Xml::TagEnd:
                         if (tag == "muse")
+                        {
+                              if(plugi)
+                              {
+                                //---------------------------------------------------------
+                                // If any automation controllers were included with in XML,
+                                //  convert controller IDs and transfer to given list.
+                                //---------------------------------------------------------
+                                MusECore::CtrlListList &conf_cll = plugi->currentInitialConfiguration()._ctrlListList;
+                                if(cll)
+                                {
+                                  for(MusECore::ciCtrlList icl = conf_cll.cbegin(); icl != conf_cll.cend(); )
+                                  {
+                                    MusECore::CtrlList *cl = icl->second;
+                                    if(cl->id() < 0)
+                                    {
+                                      // Controller is orphaned now. Delete it.
+                                      delete cl;
+                                    }
+                                    else
+                                    {
+                                      // Strip away the controller's rack position bits,
+                                      //  leaving just the controller numbers.
+                                      // Still, they should already be stripped by now.
+                                      const int m = cl->id() & AC_PLUGIN_CTL_ID_MASK;
+                                      // Generate the new id.
+                                      const unsigned long new_id = MusECore::genACnum(idx, m);
+                                      cl->setId(new_id);
+                                      const bool res = cll->add(cl);
+                                      if(!res)
+                                      {
+                                        // Controller is orphaned now. Delete it.
+                                        delete cl;
+                                        fprintf(stderr, "EffectRack::initPlugin: Error: Could not add controller #%ld!\n", new_id);
+                                      }
+                                    }
+                                    // Done with the item. Erase it. Iterator will point to the next item.
+                                    icl = conf_cll.erase(icl);
+                                  }
+                                  // All of the items should be erased by now.
+                                }
+                                else
+                                {
+                                  // Controllers were not transferred or deleted.
+                                  // Clear the list and delete the items.
+                                  conf_cll.clearDelete();
+                                }
+
+                                //---------------------------------------------------------
+                                // If any midi controller mappings were included with in XML,
+                                //  convert controller IDs and transfer to given list.
+                                //---------------------------------------------------------
+                                MusECore::MidiAudioCtrlMap &conf_macm = plugi->currentInitialConfiguration()._midiAudioCtrlMap;
+                                if(macm)
+                                {
+                                  for(MusECore::iMidiAudioCtrlMap imacm = conf_macm.begin(); imacm != conf_macm.end(); )
+                                  {
+                                    MusECore::MidiAudioCtrlStruct &macs = imacm->second;
+                                    // Strip away the controller ID's rack position bits,
+                                    //  leaving just the controller numbers.
+                                    // Still, they should already be stripped by now.
+                                    const int m = macs.id() & AC_PLUGIN_CTL_ID_MASK;
+                                    // Generate the new id.
+                                    const unsigned long new_id = MusECore::genACnum(idx, m);
+                                    macs.setId(new_id);
+                                    macm->add_ctrl_struct(imacm->first, macs);
+                                    // Done with the item. Erase it. Iterator will point to the next item.
+                                    imacm = conf_macm.erase(imacm);
+                                  }
+                                  // All of the items should be erased by now.
+                                }
+                                else
+                                {
+                                  // Mappings were not transferred. Clear the list.
+                                  conf_macm.clear();
+                                }
+                              }
                               return plugi;
+                        }
                   default:
                         break;
                   }

@@ -365,6 +365,12 @@ struct PluginConfiguration
   // Initial, and running, string parameters for plugins which use them, like dssi.
   StringParamMap _stringParamMap;
 
+  // Optional automation controller list. Used for drag-copy.
+  CtrlListList _ctrlListList;
+
+  // Optional midi assignment list. Used for drag-copy.
+  MidiAudioCtrlMap _midiAudioCtrlMap;
+
   PluginConfiguration();
 };
 
@@ -478,7 +484,8 @@ class PluginIBase
 
 // REMOVE Tim. tmp. Added.
       // virtual PluginConfiguration getConfiguration() const = 0;
-      virtual void writeConfiguration(int level, Xml& xml) = 0;
+      // If isCopy is true, writes additional info including automation controllers and midi assignments.
+      virtual void writeConfiguration(int level, Xml& xml, bool isCopy = false) = 0;
 // REMOVE Tim. tmp. Changed.
 //      virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
       // If reading a preset, set readPreset true. Then it will read some things but not others. Channels not required.
@@ -695,6 +702,10 @@ class PluginI : public PluginIBase {
       #endif
 
 // REMOVE Tim. tmp. Added.
+      // Returns the plugin's current initial configuration.
+      PluginConfiguration &currentInitialConfiguration();
+      // Returns the plugin's current initial configuration. Constant version.
+      const PluginConfiguration &currentInitialConfiguration() const;
       void setInitialConfiguration(const PluginConfiguration&);
       // This version uses the supplied configuration.
       // NOTE: The PluginI's track must already have been added to the track lists,
@@ -704,8 +715,10 @@ class PluginI : public PluginIBase {
       // NOTE: The PluginI's track must already have been added to the track lists,
       //        because for DSSI, OSC needs to find the plugin in the track lists.
       void configure(ConfigureOptions_t);
+      // Returns a plugin configuration structure filled with the current state of the plugin.
       PluginConfiguration getConfiguration() const;
-      void writeConfiguration(int level, Xml& xml);
+      // If isCopy is true, writes additional info including automation controllers and midi assignments.
+      void writeConfiguration(int level, Xml& xml, bool isCopy = false);
 // REMOVE Tim. tmp. Changed.
 //      bool readConfiguration(Xml& xml, bool readPreset=false);
       bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0);

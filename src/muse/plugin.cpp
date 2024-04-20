@@ -3563,6 +3563,10 @@ PluginConfiguration PluginI::getConfiguration() const
 }
 
 // REMOVE Tim. tmp. Added.
+PluginConfiguration &PluginI::currentInitialConfiguration() { return _initConfig; }
+const PluginConfiguration &PluginI::currentInitialConfiguration() const { return _initConfig; }
+
+// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   setInitialConfiguration
 //---------------------------------------------------------
@@ -3976,7 +3980,7 @@ void PluginI::configure(ConfigureOptions_t opts)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void PluginI::writeConfiguration(int level, Xml& xml)
+void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
 {
   PluginConfiguration pc = getConfiguration();
 
@@ -4049,6 +4053,52 @@ void PluginI::writeConfiguration(int level, Xml& xml)
   xml.intTag(level, "nativegui", pc._nativeGuiVisible);
 
   xml.qrectTag(level, "nativeGeometry", pc._nativeGeometry);
+
+
+// REMOVE Tim. tmp. Added.
+  if(isCopy && track())
+  {
+    const int idx = id();
+
+    //----------------------------------
+    // Write the automation controllers.
+    //----------------------------------
+    const unsigned long baseid = MusECore::genACnum(idx, 0);
+    const unsigned long lastid = MusECore::genACnum(idx + 1, 0) - 1;
+    MusECore::CtrlListList *cll = track()->controller();
+    // If a controller is meant for the plugin slot, save it.
+    // Kick-start the search by looking for the first controller at or above the base id.
+    MusECore::CtrlListList::const_iterator icl = cll->lower_bound(baseid);
+    for( ; icl != cll->cend(); )
+    {
+      MusECore::CtrlList *cl = icl->second;
+      const int id = cl->id();
+      if(id < 0)
+      {
+        ++icl;
+        continue;
+      }
+      // At the end of the id range? Done, break out.
+      if((unsigned long)id > lastid)
+        break;
+      // Write the controller.
+      // Strip away the controller's rack position bits,
+      //  storing just the controller numbers.
+      cl->write(0, xml, true);
+      ++icl;
+    }
+
+    //-------------------------------------------------
+    // Write the midi to audio controlller assignments.
+    //-------------------------------------------------
+    MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+    if(macm)
+      // Write the mapping.
+      // Given a rack position, this strips away the position bits
+      //  from the controller IDs, storing just the controller numbers.
+      macm->write(0, xml, track(), idx);
+  }
+
 
   xml.etag(--level, "plugin");
 }
@@ -4492,6 +4542,35 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
                                  _initConfig._accumulatedCustomParams.push_back(customData);
                               }
                         }
+// REMOVE Tim. tmp. Added.
+                        else if (tag == "controller") {
+                              MusECore::CtrlList* l = new MusECore::CtrlList();
+                              if(l->read(xml) && l->id() >= 0)
+                              {
+                                // The controller's rack position bits will have already been stripped away by the write.
+                                if(!_initConfig._ctrlListList.add(l))
+                                {
+                                  delete l;
+                                  fprintf(stderr, "PluginI::readConfiguration: Error: Could not add controller #%d!\n", l->id());
+                                }
+                              }
+                              else
+                              {
+                                delete l;
+                              }
+                        }
+                        else if (tag == "midiAssign")
+                        {
+                          // Although track can be NULL, it must be valid in this case
+                          //  since 'global' assignments to a given rack position on
+                          //  any selected tracks is not supported.
+                          // The mapping's controller rack position bits will have already been stripped away by the write.
+                          if(track())
+                            _initConfig._midiAudioCtrlMap.read(xml, track());
+                          else
+                            xml.skip(tag);
+                        }
+
                         else
                               xml.unknown("PluginI");
                         break;

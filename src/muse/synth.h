@@ -235,7 +235,8 @@ class SynthIF : public PluginIBase {
       virtual void activate();
       virtual void deactivate();
 
-      virtual void writeConfiguration(int level, Xml& xml);
+      // If isCopy is true, writes additional info including automation controllers and midi assignments.
+      virtual void writeConfiguration(int level, Xml& xml, bool isCopy = false);
 // REMOVE Tim. tmp. Changed.
 //      virtual bool readConfiguration(Xml& xml, bool readPreset=false);
       virtual bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0);

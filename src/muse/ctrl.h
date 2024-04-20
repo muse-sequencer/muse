@@ -222,8 +222,13 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
   public:
       static MidiAudioCtrlMap_idx_t index_hash(int midi_port, int midi_chan, int midi_ctrl_num);
       static void hash_values(MidiAudioCtrlMap_idx_t hash, int* midi_port, int* midi_chan, int* midi_ctrl_num);
-      // Add will not replace if found. TODO Decide, do we want to?
+      // Adds a mapping item given a control structure, port, channel, and control number.
+      // Add will not replace if found. Returns existing item if found. TODO Decide, do we want to?
       iMidiAudioCtrlMap add_ctrl_struct(int midi_port, int midi_chan, int midi_ctrl_num, const MidiAudioCtrlStruct& amcs); 
+// REMOVE Tim. tmp. Added.
+      // Adds a mapping item given a control structure and an index hash made up of port, channel, and control number.
+      // Add will not replace if found. Returns existing item if found. TODO Decide, do we want to?
+      iMidiAudioCtrlMap add_ctrl_struct(MidiAudioCtrlMap_idx_t indexHash, const MidiAudioCtrlStruct& macs);
       // Track can be NULL.
       void find_audio_ctrl_structs(
         MidiAudioCtrlStruct::IdType type, int id,
@@ -235,6 +240,8 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
       //  only AudioControl assignments for that specific track's rack position are saved.
       // (Track must be valid in this case since 'global' assignments to a given rack position on
       //  any selected tracks is not supported.)
+      // If a rack position is given, this strips away the position bits from the ID numbers,
+      //  storing just the controller numbers.
       // TODO Resinstate default after testing
       void write(int level, Xml& xml, const Track* track /*= nullptr*/, int effectRackPos = -1) const;
       void read(Xml& xml, Track* track /*= nullptr*/); // TODO Resinstate default after testing
@@ -374,6 +381,8 @@ class CtrlList : public CtrlList_t {
       // The samplerate of the complete controller graph is given. Graph times are converted.
       void readValues(const QString& tag, const int samplerate);
       bool read(Xml& xml);
+      // If isCopy is true, strip away the controller's rack position bits,
+      //  storing just the controller number.
       void write(int level, Xml& xml, bool isCopy = false) const;
 
       void initColor(int i);
