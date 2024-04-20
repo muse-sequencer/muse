@@ -4054,9 +4054,10 @@ void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
 
   xml.qrectTag(level, "nativeGeometry", pc._nativeGeometry);
 
-
 // REMOVE Tim. tmp. Added.
-  if(isCopy && track())
+  // If for example copying or drag-copying, include automation controllers and midi mappings
+  //  directly within the plugin XML so that the drop target can use them. Track is required.
+  if(isCopy && track() && id() >= 0)
   {
     const int idx = id();
 
@@ -4543,32 +4544,43 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
                               }
                         }
 // REMOVE Tim. tmp. Added.
+                        // Check if any automation controllers are included in the XML (copy, drag-copy etc.).
                         else if (tag == "controller") {
-                              MusECore::CtrlList* l = new MusECore::CtrlList();
-                              if(l->read(xml) && l->id() >= 0)
+                              // TODO: Do we want the ability for presets to hold this info?
+                              if(readPreset)
                               {
-                                // The controller's rack position bits will have already been stripped away by the write.
-                                if(!_initConfig._ctrlListList.add(l))
-                                {
-                                  delete l;
-                                  fprintf(stderr, "PluginI::readConfiguration: Error: Could not add controller #%d!\n", l->id());
-                                }
+                                xml.skip(tag);
                               }
                               else
                               {
-                                delete l;
+                                MusECore::CtrlList* l = new MusECore::CtrlList();
+                                if(l->read(xml) && l->id() >= 0)
+                                {
+                                  // The controller's rack position bits will have already been stripped away by the write.
+                                  if(!_initConfig._ctrlListList.add(l))
+                                  {
+                                    delete l;
+                                    fprintf(stderr, "PluginI::readConfiguration: Error: Could not add controller #%d!\n", l->id());
+                                  }
+                                }
+                                else
+                                {
+                                  delete l;
+                                }
                               }
                         }
+                        // Check if any midi controller assignments are included in the XML (copy, drag-copy etc.).
                         else if (tag == "midiAssign")
                         {
-                          // Although track can be NULL, it must be valid in this case
-                          //  since 'global' assignments to a given rack position on
-                          //  any selected tracks is not supported.
-                          // The mapping's controller rack position bits will have already been stripped away by the write.
-                          if(track())
-                            _initConfig._midiAudioCtrlMap.read(xml, track());
-                          else
-                            xml.skip(tag);
+                              // Although track can be NULL, it must be valid in this case
+                              //  since 'global' assignments to a given rack position on
+                              //  any selected tracks is not supported.
+                              // The mapping's controller rack position bits will have already been stripped away by the write.
+                              // TODO: Do we want the ability for presets to hold this info?
+                              if(!readPreset && track())
+                                _initConfig._midiAudioCtrlMap.read(xml, track());
+                              else
+                                xml.skip(tag);
                         }
 
                         else
