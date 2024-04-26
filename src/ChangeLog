@@ -1,3 +1,5 @@
+26.04.2024
+    - Fix issue 1104: Fixed update of UI element for globalPitchShift upon loading song (rj)
 11.12.2023
     - Shortcuts: Forum request: Added editor scroll up/down, fast up/down + left/right. (Tim)
 25.09.2023

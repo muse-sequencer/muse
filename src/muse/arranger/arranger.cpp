@@ -848,6 +848,12 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
         if (type & SC_TEMPO)
               setGlobalTempo(MusEGlobal::tempomap.globalTempo());
 
+        if (type & SC_KEY) {
+          // hijacking this update type as it's sort of related...
+          // when a song is loaded we need to update the pitch spinbox
+          globalPitchSpinBox->setValue(MusEGlobal::song->globalPitchShift());
+        }
+
         if (type & SC_DIVISION_CHANGED)
         {
           // The division has changed. The raster table and raster model will have been
@@ -871,6 +877,7 @@ void Arranger::songChanged(MusECore::SongChangedStruct_t type)
                    SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED |
                    SC_CLIP_MODIFIED | SC_MARKER_INSERTED | SC_MARKER_REMOVED | SC_MARKER_MODIFIED |
                    SC_AUDIO_CTRL_MOVE_MODE))
+
         canvas->redraw();
         
         // We must marshall song changed instead of connecting to the strip's song changed
