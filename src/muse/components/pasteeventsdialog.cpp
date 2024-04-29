@@ -225,7 +225,7 @@ void PasteEventsDialog::write_configuration(int level, MusECore::Xml& xml)
 	xml.intTag(level, "ctrl_erase", ctrl_erase);
 	xml.intTag(level, "ctrl_erase_wysiwyg", ctrl_erase_wysiwyg);
 	xml.intTag(level, "ctrl_erase_inclusive", ctrl_erase_inclusive);
-	xml.tag(level, "/pasteeventsdialog");
+	xml.etag(--level, "pasteeventsdialog");
 }
 
 } // namespace MusEGui

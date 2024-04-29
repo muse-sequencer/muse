@@ -227,7 +227,7 @@ void MidiTransformation::write(int level, Xml& xml)
             xml.intTag(level, "selRangeA", selRangeA);
             xml.intTag(level, "selRangeB", selRangeB);
             }
-      xml.etag(level, "midiTransform");
+      xml.etag(--level, "midiTransform");
       }
 
 //---------------------------------------------------------

@@ -164,7 +164,7 @@ void Preset::writeConfiguration(MusECore::Xml& xml, int level)
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
 		xml.tag(level, "control idx=\"%d\" val=\"%d\" /", i, ctrl[i]);
 	}
-	xml.tag(level--, "/preset");
+	xml.etag(--level, "preset");
 }
 
 //---------------------------------------------------------

@@ -423,7 +423,7 @@ void RubberBandAudioConverterOptions::write(int level, Xml& xml) const
       xml.intTag(level, "useSettings", _useSettings);
       xml.intTag(level, "options", _options);
       
-      xml.tag(--level, "/settings");
+      xml.etag(--level, "settings");
       
       }
 
@@ -546,7 +546,7 @@ void RubberBandAudioConverterSettings::write(int level, Xml& xml) const
       _guiOptions.write(level, xml);
     }
     
-    xml.tag(--level, "/audioConverterSetting");
+    xml.etag(--level, "audioConverterSetting");
   }
 }
 

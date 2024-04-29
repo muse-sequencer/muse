@@ -1337,37 +1337,38 @@ void AudioTrack::copyData(unsigned pos,
   }
 }
 
-//---------------------------------------------------------
-//   readVolume
-//---------------------------------------------------------
-
-void AudioTrack::readVolume(Xml& xml)
-      {
-      for (;;) {
-            Xml::Token token = xml.parse();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return;
-                  case Xml::TagStart:
-                        xml.unknown("readVolume");
-                        break;
-                  case Xml::Text:
-                        setVolume(xml.s1().toDouble());
-                        break;
-                  case Xml::Attribut:
-                        if (xml.s1() == "ch")
-                              //ch = xml.s2().toInt();
-                              xml.s2();
-                        break;
-                  case Xml::TagEnd:
-                        if (xml.s1() == "volume")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
+// REMOVE Tim. tmp. Removed.
+// //---------------------------------------------------------
+// //   readVolume
+// //---------------------------------------------------------
+//
+// void AudioTrack::readVolume(Xml& xml)
+//       {
+//       for (;;) {
+//             Xml::Token token = xml.parse();
+//             switch (token) {
+//                   case Xml::Error:
+//                   case Xml::End:
+//                         return;
+//                   case Xml::TagStart:
+//                         xml.unknown("readVolume");
+//                         break;
+//                   case Xml::Text:
+//                         setVolume(xml.s1().toDouble());
+//                         break;
+//                   case Xml::Attribut:
+//                         if (xml.s1() == "ch")
+//                               //ch = xml.s2().toInt();
+//                               xml.s2();
+//                         break;
+//                   case Xml::TagEnd:
+//                         if (xml.s1() == "volume")
+//                               return;
+//                   default:
+//                         break;
+//                   }
+//             }
+//       }
 
 //---------------------------------------------------------
 //   setChannels

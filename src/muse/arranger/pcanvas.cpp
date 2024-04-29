@@ -4241,12 +4241,12 @@ bool PartCanvas::copyAudioAutomation(
       {
         if(i)
           xml.put(level, "");
-        xml.etag(level--, "controller");
+        xml.etag(--level, "controller");
       }
 
     }
     if(clFound)
-      xml.etag(level--, "audioTrackAutomation");
+      xml.etag(--level, "audioTrackAutomation");
   }
 
   return haveData;

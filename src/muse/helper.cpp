@@ -691,11 +691,11 @@ void write_new_style_drummap(int level, Xml& xml, const char* tagname,
       if (full || dm->mute != idm->mute)   xml.intTag(level, "mute", dm->mute);
       if (full || dm->hide != idm->hide)   xml.intTag(level, "hide", dm->hide);
 
-      xml.tag(--level, "/entry");
+      xml.etag(--level, "entry");
     }
   }
 
-  xml.etag(level, tagname);
+  xml.etag(--level, tagname);
 }
 
 void read_new_style_drummap(Xml& xml, const char* tagname,

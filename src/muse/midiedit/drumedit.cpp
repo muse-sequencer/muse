@@ -1228,7 +1228,7 @@ void DrumEdit::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "ymag", vscroll->mag());
       xml.intTag(level, "ypos", vscroll->pos());
       xml.intTag(level, "ignore_hide", _ignore_hide);
-      xml.tag(level, "/drumedit");
+      xml.etag(--level, "drumedit");
       }
 
 //---------------------------------------------------------
@@ -1356,7 +1356,7 @@ void DrumEdit::writeConfiguration(int level, MusECore::Xml& xml)
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
       xml.intTag(level, "ignore_hide_init", _ignore_hide_init);
       TopWin::writeConfiguration(DRUM, level,xml);
-      xml.tag(level, "/drumedit");
+      xml.etag(--level, "drumedit");
       }
 
 //---------------------------------------------------------

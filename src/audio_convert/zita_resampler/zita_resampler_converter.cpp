@@ -290,7 +290,7 @@ void ZitaResamplerAudioConverterOptions::write(int level, Xml& xml) const
       
       xml.intTag(level, "useSettings", _useSettings);
       
-      xml.tag(--level, "/settings");
+      xml.etag(--level, "settings");
       
       }
 
@@ -411,7 +411,7 @@ void ZitaResamplerAudioConverterSettings::write(int level, Xml& xml) const
       _guiOptions.write(level, xml);
     }
     
-    xml.tag(--level, "/audioConverterSetting");
+    xml.etag(--level, "audioConverterSetting");
   }
 }
 

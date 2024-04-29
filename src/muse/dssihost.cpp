@@ -783,8 +783,8 @@ void DssiSynthIF::write(int level, Xml& xml) const
                       xml.nput("%02x ", ((char*)(p))[i] & 0xff);
                       }
                 xml.nput("\n");
-                xml.tag(level--, "/event");
-                xml.etag(level--, "midistate");
+                xml.etag(--level, "event");
+                xml.etag(--level, "midistate");
                 }
         }        
       }
@@ -882,8 +882,8 @@ void DssiSynthIF::write(int level, Xml& xml) const
             }  
           }
           xml.nput("\n");
-          xml.tag(level--, "/event");
-          xml.etag(level--, "midistate");
+          xml.etag(--level, "event");
+          xml.etag(--level, "midistate");
         }
       }
       */

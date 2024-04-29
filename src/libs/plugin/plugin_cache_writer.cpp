@@ -1521,7 +1521,7 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
             if((port_info._valueFlags & PluginPortInfo::HasStep) || port_info._largeStep != PluginPortInfo::defaultPortLargeStep)
               xml.floatTag(level, "largeStep", port_info._largeStep);
 
-            xml.tag(level--, "/port");
+            xml.etag(--level, "port");
     #endif
 
           }
@@ -1550,13 +1550,13 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
                 xml.tag(level, s.toLatin1().constData());
               }
 
-              xml.tag(level--, "/portEnumValMap");
+              xml.etag(--level, "portEnumValMap");
             }
           }
         }
       }
 
-      xml.tag(level--, "/plugin");
+      xml.etag(--level, "plugin");
       }
 
 //---------------------------------------------------------

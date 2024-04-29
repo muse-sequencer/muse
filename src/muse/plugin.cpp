@@ -782,6 +782,8 @@ PluginQuirks::NatUISCaling PluginQuirks::getFixNativeUIScaling() const { return 
 PluginConfiguration::PluginConfiguration()
 {
   /*_type = Synth::Type::METRO_SYNTH;*/
+  // Initialize with -1 = no id.
+  _id = -1;
   _guiVisible = false;
   _nativeGuiVisible = false;
   _on = false;
@@ -3448,6 +3450,7 @@ PluginConfiguration PluginI::getConfiguration() const
   conf._uri = _plugin->uri();
   conf._pluginLabel = _plugin->label();
   conf._name = name();
+  conf._id = id();
   conf._quirks = cquirks();
   conf._on = on();
   conf._active = active();
@@ -3988,19 +3991,42 @@ void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
   // Save file or uri, label, and name basic info
   //==============================================
 
-  if(pc._uri.isEmpty())
+  // Include the plugin id number if desired.
+  if(isCopy && pc._id >= 0)
   {
-    xml.tag(level++, "plugin file=\"%s\" label=\"%s\" name=\"%s\"",
-      Xml::xmlString(pc._file).toLatin1().constData(),
-      Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
-      Xml::xmlString(pc._name).toLatin1().constData());
+    if(pc._uri.isEmpty())
+    {
+      xml.tag(level++, "plugin file=\"%s\" label=\"%s\" name=\"%s\" id=\"%d\"",
+        Xml::xmlString(pc._file).toLatin1().constData(),
+        Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
+        Xml::xmlString(pc._name).toLatin1().constData(),
+        pc._id);
+    }
+    else
+    {
+      xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" name=\"%s\" id=\"%d\"",
+        Xml::xmlString(pc._uri).toLatin1().constData(),
+        Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
+        Xml::xmlString(pc._name).toLatin1().constData(),
+        pc._id);
+    }
   }
   else
   {
-    xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" name=\"%s\"",
-      Xml::xmlString(pc._uri).toLatin1().constData(),
-      Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
-      Xml::xmlString(pc._name).toLatin1().constData());
+    if(pc._uri.isEmpty())
+    {
+      xml.tag(level++, "plugin file=\"%s\" label=\"%s\" name=\"%s\"",
+        Xml::xmlString(pc._file).toLatin1().constData(),
+        Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
+        Xml::xmlString(pc._name).toLatin1().constData());
+    }
+    else
+    {
+      xml.tag(level++, "plugin uri=\"%s\" label=\"%s\" name=\"%s\"",
+        Xml::xmlString(pc._uri).toLatin1().constData(),
+        Xml::xmlString(pc._pluginLabel).toLatin1().constData(),
+        Xml::xmlString(pc._name).toLatin1().constData());
+    }
   }
 
   //=============================================================
@@ -4065,7 +4091,7 @@ void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
     // Write the automation controllers.
     //----------------------------------
     const unsigned long baseid = MusECore::genACnum(idx, 0);
-    const unsigned long lastid = MusECore::genACnum(idx + 1, 0) - 1;
+    const unsigned long nextid = MusECore::genACnum(idx + 1, 0);
     MusECore::CtrlListList *cll = track()->controller();
     // If a controller is meant for the plugin slot, save it.
     // Kick-start the search by looking for the first controller at or above the base id.
@@ -4080,12 +4106,12 @@ void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
         continue;
       }
       // At the end of the id range? Done, break out.
-      if((unsigned long)id > lastid)
+      if((unsigned long)id >= nextid)
         break;
       // Write the controller.
       // Strip away the controller's rack position bits,
       //  storing just the controller numbers.
-      cl->write(0, xml, true);
+      cl->write(level, xml, AC_PLUGIN_CTL_ID_MASK);
       ++icl;
     }
 
@@ -4094,10 +4120,11 @@ void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
     //-------------------------------------------------
     MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
     if(macm)
-      // Write the mapping.
-      // Given a rack position, this strips away the position bits
-      //  from the controller IDs, storing just the controller numbers.
-      macm->write(0, xml, track(), idx);
+      // Write the mapping. Write only assignments to this track and plugin controllers.
+      // The track handles writing assignments to other controllers on this track.
+      // Mask away the position bits from the controller IDs, storing just the controller numbers.
+      macm->write(
+        level, xml, track(), baseid, nextid, MidiAudioCtrlStruct::AudioControl, false, AC_PLUGIN_CTL_ID_MASK);
   }
 
 
@@ -4572,15 +4599,18 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
                         // Check if any midi controller assignments are included in the XML (copy, drag-copy etc.).
                         else if (tag == "midiAssign")
                         {
-                              // Although track can be NULL, it must be valid in this case
-                              //  since 'global' assignments to a given rack position on
-                              //  any selected tracks is not supported.
+//                               // Although track can be NULL, it must be valid in this case
+//                               //  since 'global' assignments to a given rack position on
+//                               //  any selected tracks is not supported.
+                              // Pass null for the track. It will be filled in later by the caller.
                               // The mapping's controller rack position bits will have already been stripped away by the write.
                               // TODO: Do we want the ability for presets to hold this info?
-                              if(!readPreset && track())
-                                _initConfig._midiAudioCtrlMap.read(xml, track());
-                              else
+//                               if(!readPreset && track())
+//                                 _initConfig._midiAudioCtrlMap.read(xml, track());
+                              if(readPreset)
                                 xml.skip(tag);
+                              else
+                                _initConfig._midiAudioCtrlMap.read(xml, nullptr);
                         }
 
                         else
@@ -4646,6 +4676,10 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
                         else if (tag == "name") {
                               if (!readPreset)
                                     _initConfig._name = xml.s2();
+                              }
+                        else if (tag == "id") {
+                              if (!readPreset)
+                                    _initConfig._id = xml.s2().toInt();
                               }
 // REMOVE Tim. tmp. Removed. Obsolete.
                         // else if (tag == "channel") {

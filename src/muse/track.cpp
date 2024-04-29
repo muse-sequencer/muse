@@ -39,6 +39,7 @@
 #include "drum_ordering.h"
 #include "globals.h"
 #include "config.h"
+#include "ctrl.h"
 
 // Forwards from header:
 #include "midiport.h"
@@ -425,6 +426,36 @@ void Track::internal_assign(const Track& t, int flags)
         _recMonitor   = t._recMonitor;
       }
 }
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void Track::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (readProperties(xml, tag))
+                              xml.unknown("Track");
+                        break;
+                  case Xml::Attribut:
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "Track") {
+                              return;
+                              }
+                  default:
+                        break;
+                  }
+            }
+      }
 
 //---------------------------------------------------------
 //   trackTypeIcon
@@ -2024,7 +2055,8 @@ void MidiTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
 
       xml.intTag(level, "device", outPort());
       xml.intTag(level, "channel", outChannel());
-      xml.intTag(level, "locked", _locked);
+// REMOVE Tim. tmp. Removed. Superfluous! Already saved in Track::writeProperties().
+//       xml.intTag(level, "locked", _locked);
 
       xml.intTag(level, "transposition", transposition);
       xml.intTag(level, "velocity", velocity);
@@ -2040,7 +2072,7 @@ void MidiTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
 
       writeOurDrumSettings(level, xml);
       
-      xml.etag(level, tag);
+      xml.etag(--level, tag);
       }
 
 void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
@@ -2048,7 +2080,7 @@ void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
   xml.tag(level++, "our_drum_settings");
   _workingDrumMapPatchList->write(level, xml);
   xml.intTag(level, "ordering_tied", _drummap_ordering_tied_to_patch);
-  xml.etag(level, "our_drum_settings");
+  xml.etag(--level, "our_drum_settings");
 }
 
 void MidiTrack::dumpMap()
@@ -2193,8 +2225,9 @@ void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
                               chanmask = xml.parseInt();            // Obsolete but support old files.
                               chanmask_found = true;
                         }
-                        else if (tag == "locked")
-                              _locked = xml.parseInt();
+// REMOVE Tim. tmp. Removed. Superfluous! Already read in Track::readProperties().
+//                         else if (tag == "locked")
+//                               _locked = xml.parseInt();
                         else if (tag == "echo")                     // Obsolete but support old files.
                               setRecMonitor(xml.parseInt());
                         else if (tag == "automation")
@@ -2203,12 +2236,31 @@ void MidiTrack::read(Xml& xml, XmlReadStatistics* stats)
                               clefType = (clefTypes)xml.parseInt();
                         else if (tag == "our_drum_settings")
                               readOurDrumSettings(xml);
-                        else if (Track::readProperties(xml, tag)) {
-                              // version 1.0 compatibility:
-                              if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
-                                    break;
-                              xml.unknown("MidiTrack");
-                              }
+// REMOVE Tim. tmp. Added.
+                        else if (tag == "Track")
+                              Track::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+// REMOVE Tim. tmp. Changed.
+//                         else if (Track::readProperties(xml, tag)) {
+//                               // version 1.0 compatibility:
+//                               if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
+//                                     break;
+//                               xml.unknown("MidiTrack");
+//                               }
+                        else if (xml.isVersionLessThan(4, 0))
+                        {
+                          if(Track::readProperties(xml, tag))
+                          {
+                            // version 1.0 compatibility:
+                            if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
+                                  break;
+                            xml.unknown("MidiTrack");
+                          }
+                        }
+                        else
+                          xml.unknown("MidiTrack");
+
                         break;
                   case Xml::Attribut:
                         break;
@@ -2320,6 +2372,7 @@ bool Track::selectEvents(bool select, unsigned long t0, unsigned long t1)
 
 void Track::writeProperties(int level, Xml& xml) const
 {
+      xml.tag(level++, "Track");
       xml.strTag(level, "name", _name);
       if (!_comment.isEmpty())
             xml.strTag(level, "comment", _comment);
@@ -2340,7 +2393,14 @@ void Track::writeProperties(int level, Xml& xml) const
           xml.strTag(level, "color", m_color.name());
 
       // Write only the assignments for this track.
-      MusEGlobal::song->midiAssignments()->write(level, xml, this);
+// REMOVE Tim. tmp. Changed.
+//       MusEGlobal::song->midiAssignments()->write(level, xml, this);
+      // Exclude any rack plugin controller assignments, they are written by the plugins.
+      unsigned long startId = genACnum(0, 0);
+      unsigned long endId = genACnum(PipelineDepth, 0);
+      MusEGlobal::song->midiAssignments()->write(
+        level, xml, this, startId, endId, MidiAudioCtrlStruct::AudioControl, true);
+      xml.etag(--level, "Track");
 }
 
 //---------------------------------------------------------
@@ -2423,7 +2483,7 @@ void Track::writeRouting(int level, Xml& xml) const
 
             xml.tag(level, "dest track=\"%d\"/", MusEGlobal::song->tracks()->index(this));
             
-            xml.etag(level--, "Route");
+            xml.etag(--level, "Route");
           }
         }
       }
@@ -2463,7 +2523,7 @@ void Track::writeRouting(int level, Xml& xml) const
             
           xml.tag(level, s.toLatin1().constData());
           
-          xml.etag(level--, "Route");
+          xml.etag(--level, "Route");
         }
       }
 }

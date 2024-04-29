@@ -655,16 +655,17 @@ void AudioTrack::deleteAllEfxGuis()
     _efxPipe->deleteAllGuis();
 }
 
-//---------------------------------------------------------
-//   clearEfxList
-//---------------------------------------------------------
-
-void AudioTrack::clearEfxList()
-{
-  if(_efxPipe)
-    for(int i = 0; i < MusECore::PipelineDepth; i++)
-      (*_efxPipe)[i] = 0;
-}
+// REMOVE Tim. tmp. Removed.
+// //---------------------------------------------------------
+// //   clearEfxList
+// //---------------------------------------------------------
+//
+// void AudioTrack::clearEfxList()
+// {
+//   if(_efxPipe)
+//     for(int i = 0; i < MusECore::PipelineDepth; i++)
+//       (*_efxPipe)[i] = 0;
+// }
 
 //---------------------------------------------------------
 //   newPart
@@ -675,42 +676,44 @@ Part* AudioTrack::newPart(Part*, bool /*clone*/)
       return 0;
       }
 
-//---------------------------------------------------------
-//   addPlugin
-//---------------------------------------------------------
+// REMOVE Tim. tmp. Removed.
+// //---------------------------------------------------------
+// //   addPlugin
+// //---------------------------------------------------------
+//
+// void AudioTrack::addPlugin(PluginI* plugin, int idx)
+// {
+//   // Some heavy lifting required here, not easily done
+//   //  in the realtime thread. Idle the audio processing.
+//   // Here any glitches in the audio would be acceptable.
+//   // Gain access to structures, and sync with audio.
+//   MusEGlobal::audio->msgIdle(true);
+//
+//   if (plugin == 0)
+//   {
+//     PluginI* oldPlugin = (*_efxPipe)[idx];
+//     if (oldPlugin)
+//     {
+//       oldPlugin->setID(-1);
+//       oldPlugin->setTrack(0);
+//
+//       int controller = oldPlugin->parameters();
+//       for (int i = 0; i < controller; ++i)
+//       {
+//         int id = genACnum(idx, i);
+//         removeController(id);
+//       }
+//     }
+//   }
+//   efxPipe()->insert(plugin, idx);
+//   setupPlugin(plugin, idx);
+//
+//   MusEGlobal::audio->msgIdle(false);
+//
+//   MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
+// }
 
-void AudioTrack::addPlugin(PluginI* plugin, int idx)
-{
-  // Some heavy lifting required here, not easily done
-  //  in the realtime thread. Idle the audio processing.
-  // Here any glitches in the audio would be acceptable.
-  // Gain access to structures, and sync with audio.
-  MusEGlobal::audio->msgIdle(true);
-
-  if (plugin == 0)
-  {
-    PluginI* oldPlugin = (*_efxPipe)[idx];
-    if (oldPlugin)
-    {
-      oldPlugin->setID(-1);
-      oldPlugin->setTrack(0);
-
-      int controller = oldPlugin->parameters();
-      for (int i = 0; i < controller; ++i)
-      {
-        int id = genACnum(idx, i);
-        removeController(id);
-      }
-    }
-  }
-  efxPipe()->insert(plugin, idx);
-  setupPlugin(plugin, idx);
-
-  MusEGlobal::audio->msgIdle(false);
-
-  MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
-}
-
+// REMOVE Tim. tmp. Removed.
 //---------------------------------------------------------
 //   setupPlugin
 //---------------------------------------------------------
@@ -1909,6 +1912,7 @@ void AudioTrack::stopAutoRecord(int n, double v)
 
 void AudioTrack::writeProperties(int level, Xml& xml) const
       {
+      xml.tag(level++, "AudioTrack");
       Track::writeProperties(level, xml);
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
@@ -1923,9 +1927,21 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             }
       for (ciPluginI ip = _efxPipe->begin(); ip != _efxPipe->end(); ++ip) {
             if (*ip)
-                  (*ip)->writeConfiguration(level, xml);
+// REMOVE Tim. tmp. Changed.
+//                   (*ip)->writeConfiguration(level, xml);
+                  // Write the plugin. Also write the automation controllers and midi mapping
+                  //  and strip away the rack position id bits.
+                  (*ip)->writeConfiguration(level, xml, true);
             }
-      _controller.write(level, xml);
+// REMOVE Tim. tmp. Changed.
+//       _controller.write(level, xml);
+      // Range of controllers. (track ctrls -> effect rack plugin ctrls -> synth plugin ctrls).
+      const int startId = 0;
+      const int   endId = genACnum(0, 0);
+      // Write the block of controllers.
+      controller()->write(level, xml, startId, endId);
+
+      xml.etag(--level, "AudioTrack");
       }
 
 //---------------------------------------------------------
@@ -1972,26 +1988,67 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       {
       if (tag == "plugin")
       {
-            int rackpos;
-            for(rackpos = 0; rackpos < MusECore::PipelineDepth; ++rackpos)
-            {
-              if(!(*_efxPipe)[rackpos])
-                break;
-            }
-            if(rackpos < MusECore::PipelineDepth)
-            {
+//             int rackpos;
+//             for(rackpos = 0; rackpos < MusECore::PipelineDepth; ++rackpos)
+//             {
+//               if(!(*_efxPipe)[rackpos])
+//                 break;
+//             }
+//             if(rackpos < MusECore::PipelineDepth)
+//             {
               PluginI* pi = new PluginI();
 // REMOVE Tim. tmp. Added comment.
-              // Set the track and index now, in case anything needs them BEFORE the plugin is set, below.
+//               // Set the track and index now, in case anything needs them BEFORE the plugin is set, below.
+              // Set the track now, in case anything needs it BEFORE the plugin is set, below.
               pi->setTrack(this);
-              pi->setID(rackpos);
+//               pi->setID(rackpos);
 // REMOVE Tim. tmp. Changed.
 //              if(pi->readConfiguration(xml, false))
               if(pi->readConfiguration(xml, false, channels()))
+              {
+                // Be sure to clear and delete the controller list.
+                pi->currentInitialConfiguration()._ctrlListList.clearDelete();
                 delete pi;
+                pi = nullptr;
+              }
               else
               {
+                // If a plugin id was read and there's no existing plugin at that rack slot.
+                const int conf_id = pi->currentInitialConfiguration()._id;
+                if(conf_id >= 0 && conf_id < MusECore::PipelineDepth &&
+                  (!(*_efxPipe)[conf_id]))
+                {
+                  pi->setID(conf_id);
+                }
+                else
+                // No plugin id was read or there's an existing plugin at that rack slot.
+                {
+                  int rackpos;
+                  // Look for an empty rack slot.
+                  for(rackpos = 0; rackpos < MusECore::PipelineDepth; ++rackpos)
+                  {
+                    if(!(*_efxPipe)[rackpos])
+                      break;
+                  }
+                  // Valid empty rack slot found?
+                  if(rackpos < MusECore::PipelineDepth)
+                  {
+                    pi->setID(rackpos);
+                  }
+                  else
+                  // No valid empty rack slot found.
+                  {
+                    // Be sure to clear and delete the controller list.
+                    pi->currentInitialConfiguration()._ctrlListList.clearDelete();
+                    delete pi;
+                    pi = nullptr;
+                    fprintf(stderr, "can't load plugin - plugin rack is already full\n");
+                  }
+                }
+
 // REMOVE Tim. tmp. Added.
+                if(pi)
+                {
 //                // For persistence:
 //                // If the error was for some other reason than no plugin being available,
 //                //  delete the PluginI and return.
@@ -2000,11 +2057,82 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
 //                  // The error was for some other reason.
 //                  delete pi;
 //                else
-                  (*_efxPipe)[rackpos] = pi;
+//                   (*_efxPipe)[rackpos] = pi;
+                  (*_efxPipe)[pi->id()] = pi;
+
+
+// REMOVE Tim. tmp. Added.
+                  //---------------------------------------------------------
+                  // If any automation controllers were included with in XML,
+                  //  convert controller IDs and transfer to given list.
+                  //---------------------------------------------------------
+                  CtrlListList &conf_cll = pi->currentInitialConfiguration()._ctrlListList;
+                  for(ciCtrlList icl = conf_cll.cbegin(); icl != conf_cll.cend(); )
+                  {
+                    CtrlList *cl = icl->second;
+                    if(cl->id() < 0)
+                    {
+                      // Controller is orphaned now. Delete it.
+                      delete cl;
+                    }
+                    else
+                    {
+                      // Strip away the controller's rack position bits,
+                      //  leaving just the controller numbers.
+                      // Still, they should already be stripped by now.
+                      const int m = cl->id() & AC_PLUGIN_CTL_ID_MASK;
+                      // Generate the new id.
+                      const unsigned long new_id = genACnum(pi->id(), m);
+                      cl->setId(new_id);
+                      const bool res = controller()->add(cl);
+                      if(!res)
+                      {
+                        // Controller is orphaned now. Delete it.
+                        delete cl;
+                        fprintf(stderr, "AudioTrack::readProperties: Error: Could not add controller #%ld!\n", new_id);
+                      }
+                    }
+                    // Done with the item. Erase it. Iterator will point to the next item.
+                    icl = conf_cll.erase(icl);
+                  }
+                  // All of the items should be erased by now.
+
+                  //---------------------------------------------------------
+                  // If any midi controller mappings were included with in XML,
+                  //  convert controller IDs and transfer to given list.
+                  //---------------------------------------------------------
+                  MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+                  MidiAudioCtrlMap &conf_macm = pi->currentInitialConfiguration()._midiAudioCtrlMap;
+                  if(macm)
+                  {
+                    for(iMidiAudioCtrlMap imacm = conf_macm.begin(); imacm != conf_macm.end(); )
+                    {
+                      MidiAudioCtrlStruct &macs = imacm->second;
+                      // Strip away the controller ID's rack position bits,
+                      //  leaving just the controller numbers.
+                      // Still, they should already be stripped by now.
+                      const int m = macs.id() & AC_PLUGIN_CTL_ID_MASK;
+                      // Generate the new id.
+                      const unsigned long new_id = genACnum(pi->id(), m);
+                      macs.setId(new_id);
+                      macs.setTrack(this);
+                      macm->add_ctrl_struct(imacm->first, macs);
+                      // Done with the item. Erase it. Iterator will point to the next item.
+                      imacm = conf_macm.erase(imacm);
+                    }
+                    // All of the items should be erased by now.
+                  }
+                  else
+                  {
+                    // Mappings were not transferred. Clear the list.
+                    conf_macm.clear();
+                  }
+
+
               }
             }
-            else
-              printf("can't load plugin - plugin rack is already full\n");
+//             else
+//               printf("can't load plugin - plugin rack is already full\n");
       }
       else if (tag == "auxSend")
             readAuxSend(xml);
@@ -2020,6 +2148,11 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             CtrlList* l = new CtrlList();
             if(l->read(xml) && l->id() >= 0)
             {
+
+// REMOVE Tim. tmp. Added comment.
+// TODO: All of this will be obsolete soon except for the track controllers.
+//       Keep it for compatibility with older song files.
+
               // Since (until now) muse wrote a 'zero' for plugin controller current value
               //  in the XML file, we can't use that value, now that plugin automation is added.
               // We must take the value from the plugin control value.
@@ -2079,9 +2212,46 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       else if (tag == "midiMapper")
             // Any assignments read go to this track.
             MusEGlobal::song->midiAssignments()->read(xml, this);
-      else
+
+// REMOVE Tim. tmp. Added.
+      else if (tag == "Track")
+            Track::read(xml);
+
+      // Obsolete. Keep for compatibility.
+      else if(xml.isVersionLessThan(4, 0))
             return Track::readProperties(xml, tag);
+
       return false;
+      }
+
+// REMOVE Tim. tmp. Added.
+//---------------------------------------------------------
+//   read
+//---------------------------------------------------------
+
+void AudioTrack::read(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (readProperties(xml, tag))
+                              xml.unknown("AudioTrack");
+                        break;
+                  case Xml::Attribut:
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "AudioTrack") {
+                              return;
+                              }
+                  default:
+                        break;
+                  }
+            }
       }
 
 //---------------------------------------------------------
@@ -2380,7 +2550,7 @@ void AudioInput::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioInput");
       AudioTrack::writeProperties(level, xml);
-      xml.etag(level, "AudioInput");
+      xml.etag(--level, "AudioInput");
       }
 
 //---------------------------------------------------------
@@ -2397,7 +2567,12 @@ void AudioInput::read(Xml& xml, XmlReadStatistics*)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+// REMOVE Tim. tmp. Added.
+                        if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioInput");
                         break;
                   case Xml::Attribut:
@@ -2644,7 +2819,7 @@ void AudioOutput::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioOutput");
       AudioTrack::writeProperties(level, xml);
-      xml.etag(level, "AudioOutput");
+      xml.etag(--level, "AudioOutput");
       }
 
 //---------------------------------------------------------
@@ -2661,7 +2836,12 @@ void AudioOutput::read(Xml& xml, XmlReadStatistics*)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+// REMOVE Tim. tmp. Added.
+                        if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioOutput");
                         break;
                   case Xml::Attribut:
@@ -2700,7 +2880,7 @@ void AudioGroup::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "AudioGroup");
       AudioTrack::writeProperties(level, xml);
-      xml.etag(level, "AudioGroup");
+      xml.etag(--level, "AudioGroup");
       }
 
 //---------------------------------------------------------
@@ -2717,7 +2897,12 @@ void AudioGroup::read(Xml& xml, XmlReadStatistics*)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+// REMOVE Tim. tmp. Added.
+                        if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioGroup");
                         break;
                   case Xml::Attribut:
@@ -2744,7 +2929,7 @@ void AudioAux::write(int level, Xml& xml, XmlWriteStatistics*) const
       xml.tag(level++, "AudioAux");
       AudioTrack::writeProperties(level, xml);
       xml.intTag(level, "index", _index);
-      xml.etag(level, "AudioAux");
+      xml.etag(--level, "AudioAux");
       }
 
 
@@ -2871,7 +3056,12 @@ void AudioAux::read(Xml& xml, XmlReadStatistics*)
                   case Xml::TagStart:
                       if (tag == "index")
                         _index = xml.parseInt();
-                      else if (AudioTrack::readProperties(xml, tag))
+// REMOVE Tim. tmp. Added.
+                      else if(tag == "AudioTrack")
+                        AudioTrack::read(xml);
+
+                      // Obsolete. Keep for compatibility.
+                      else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioAux");
                         break;
                   case Xml::Attribut:

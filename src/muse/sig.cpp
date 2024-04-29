@@ -495,7 +495,7 @@ void SigList::write(int level, MusECore::Xml& xml) const
       xml.tag(level++, "siglist");
       for (ciSigEvent i = begin(); i != end(); ++i)
             i->second->write(level, xml, i->first);
-      xml.tag(level, "/siglist");
+      xml.etag(--level, "siglist");
       }
 
 void SigList::read(MusECore::Xml& xml)
@@ -538,7 +538,7 @@ void SigEvent::write(int level, MusECore::Xml& xml, int at) const
       xml.intTag(level, "tick", tick);
       xml.intTag(level, "nom", sig.z);
       xml.intTag(level, "denom", sig.n);
-      xml.tag(level, "/sig");
+      xml.etag(--level, "sig");
       }
 
 int SigEvent::read(MusECore::Xml& xml)

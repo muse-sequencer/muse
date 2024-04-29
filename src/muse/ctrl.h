@@ -242,9 +242,32 @@ class MidiAudioCtrlMap : public std::multimap<MidiAudioCtrlMap_idx_t, MidiAudioC
       //  any selected tracks is not supported.)
       // If a rack position is given, this strips away the position bits from the ID numbers,
       //  storing just the controller numbers.
-      // TODO Resinstate default after testing
-      void write(int level, Xml& xml, const Track* track /*= nullptr*/, int effectRackPos = -1) const;
-      void read(Xml& xml, Track* track /*= nullptr*/); // TODO Resinstate default after testing
+      // TODO Reinstate default after testing
+
+      // Saves ONLY entries whose tracks match the given track, including null.
+      // If startId and/or endId are given, writes ONLY that range - except if
+      //  excludeIds is true it writes entries EXCLUDING the given id range,
+      //  and idType is the type of id to affect.
+      // Either startId or endId can be -1 meaning open-ended.
+      // Note that endId means one past the last id.
+      // If idMask is given, mask (bitwise AND) the entries' id bits when saving.
+//       void write(int level, Xml& xml, const Track* track /*= nullptr*/, int effectRackPos = -1) const;
+      void write(
+        int level, Xml& xml,
+        const Track* track = nullptr,
+        int startId = -1, int endId = -1,
+        MidiAudioCtrlStruct::IdType idType = MidiAudioCtrlStruct::AudioControl,
+        bool excludeIds = false, int idMask = -1) const;
+// REMOVE Tim. tmp. Changed.
+//       void read(Xml& xml, Track* track /*= nullptr*/); // TODO Resinstate default after testing
+      // Reads entries and applies track, which can be null, to them.
+      // If idUnmask is given, unmask (bitwise OR) the entries' id bits when reading,
+      //  and idType is the type of id to affect.
+      void read(
+        Xml& xml,
+        Track* track /*= nullptr*/,
+        int idUnmask = 0,
+        MidiAudioCtrlStruct::IdType idType = MidiAudioCtrlStruct::AudioControl);
       };
 
 
@@ -381,9 +404,8 @@ class CtrlList : public CtrlList_t {
       // The samplerate of the complete controller graph is given. Graph times are converted.
       void readValues(const QString& tag, const int samplerate);
       bool read(Xml& xml);
-      // If isCopy is true, strip away the controller's rack position bits,
-      //  storing just the controller number.
-      void write(int level, Xml& xml, bool isCopy = false) const;
+      // If idMask is given, mask the id bits when saving.
+      void write(int level, Xml& xml, int idMask = -1) const;
 
       void initColor(int i);
       void setColor( QColor c );
@@ -437,7 +459,12 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
                    unsigned int* nextFrame = nullptr, bool* nextFrameValid = nullptr) const;
       void updateCurValues(unsigned int frame);
       void clearAllAutomation();
-      void write(int level, Xml& xml) const;
+// REMOVE Tim. tmp. Changed.
+//       void write(int level, Xml& xml) const;
+      // If startId and/or endId are given, writes only that range.
+      // Either can be -1 meaning open-ended. Note that endId means one past the last id.
+      // If idMask is given, mask the id bits when saving.
+      void write(int level, Xml& xml, int startId = -1, int endId = -1, int idMask = -1) const;
       void initColors();
       };
 

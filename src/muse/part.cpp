@@ -107,7 +107,7 @@ void MidiPartViewState::write(int level, Xml& xml) const
               }
       }
 
-      xml.tag(level, "/viewState");
+      xml.etag(--level, "viewState");
       
       }
 

@@ -175,7 +175,7 @@ void write_function_dialog_config(int level, MusECore::Xml& xml)
 	paste_dialog->write_configuration(level, xml);
 	paste_events_dialog->write_configuration(level, xml);
 
-	xml.tag(level, "/dialogs");
+	xml.etag(--level, "dialogs");
 }
 
 }

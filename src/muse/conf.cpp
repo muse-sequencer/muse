@@ -1620,7 +1620,7 @@ static void writeMetronomeConfiguration(int level, Xml& xml, bool is_global)
       xml.strTag(level, "measSample", metro_settings->measSample);
       xml.strTag(level, "accent1Sample", metro_settings->accent1Sample);
       xml.strTag(level, "accent2Sample", metro_settings->accent2Sample);
-      xml.tag(level--, "/metronom");
+      xml.etag(--level, "metronom");
       }
       
 //---------------------------------------------------------
@@ -1669,7 +1669,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
               if(dev->deviceType() == MidiDevice::JACK_MIDI)
                 xml.intTag(level, "rwFlags", dev->rwFlags());   // Need this. Jack midi devs are created by app.   p4.0.41 
               
-              xml.etag(level--, "mididevice");
+              xml.etag(--level, "mididevice");
             }
         
             //
@@ -1766,16 +1766,16 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                                     xml.tag(level++, "controller id=\"%d\"", i->second->num());
                                     if (i->second->hwVal() != CTRL_VAL_UNKNOWN)
                                           xml.intTag(level, "val", i->second->hwVal());
-                                    xml.etag(level--, "controller");
+                                    xml.etag(--level, "controller");
                                     }
                               }
                         if(found)      
-                          xml.etag(level--, "channel");
+                          xml.etag(--level, "channel");
                         }
-                  xml.etag(level--, "midiport");
+                  xml.etag(--level, "midiport");
                   }
             }
-      xml.tag(level, "/sequencer");
+      xml.etag(--level, "sequencer");
       }
       
       
@@ -2211,7 +2211,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       MusEGui::write_function_dialog_config(level, xml);
 
       MusEGui::writeShortCuts(level, xml);
-      xml.etag(level, "configuration");
+      xml.etag(--level, "configuration");
       }
 
 //---------------------------------------------------------
@@ -2270,7 +2270,7 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 
       writeMidiTransforms(level, xml);
       writeMidiInputTransforms(level, xml);
-      xml.etag(level, "configuration");
+      xml.etag(--level, "configuration");
       }
 
 //---------------------------------------------------------
@@ -2476,7 +2476,7 @@ void StripConfig::write(int level, MusECore::Xml& xml) const
       //xml.put(">");
       //level++;
       // TODO: Anything else to add? ...
-      //xml.etag(level, "StripConfig");
+      //xml.etag(--level, "StripConfig");
       }
 
 //---------------------------------------------------------
@@ -2551,7 +2551,7 @@ void MixerConfig::write(int level, MusECore::Xml& xml, bool global) const
         }
       }
 
-      xml.etag(level, "Mixer");
+      xml.etag(--level, "Mixer");
       }
 
 //---------------------------------------------------------

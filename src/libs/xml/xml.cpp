@@ -29,9 +29,12 @@
 
 namespace MusECore {
 
-const int Xml::_latestMajorVersion = 3;   // Latest known songfile major version (as of this release)
-const int Xml::_latestMinorVersion = 4;   // Latest known songfile minor version (as of this release)
-  
+// REMOVE Tim. tmp. Changed. Major changes in song file warrant major bump up.
+// const int Xml::_latestMajorVersion = 3;   // Latest known songfile major version (as of this release)
+// const int Xml::_latestMinorVersion = 4;   // Latest known songfile minor version (as of this release)
+const int Xml::_latestMajorVersion = 4;   // Latest known songfile major version (as of this release)
+const int Xml::_latestMinorVersion = 0;   // Latest known songfile minor version (as of this release)
+
 //---------------------------------------------------------
 //  Note:
 //    this code is a Q/D hack for reading/parsing and

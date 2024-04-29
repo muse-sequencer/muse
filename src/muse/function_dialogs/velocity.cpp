@@ -163,7 +163,7 @@ void Velocity::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "parts", _parts);
   xml.intTag(level, "offset", offsetVal);
   xml.intTag(level, "rate", rateVal);
-  xml.tag(level, "/mod_velo");
+  xml.etag(--level, "mod_velo");
 }
 
 } // namespace MusEGui

@@ -42,7 +42,7 @@ void AudioConverterSettingsGroupOptions::write(int level, Xml& xml) const
       xml.intTag(level, "preferredResampler", _preferredResampler);
       xml.intTag(level, "preferredShifter", _preferredShifter);
       
-      xml.tag(--level, "/settings");
+      xml.etag(--level, "settings");
       
       }
 
@@ -253,7 +253,7 @@ void AudioConverterSettingsGroup::write(int level, Xml& xml, AudioConverterPlugi
       settings->write(level, xml);
   }
   
-  xml.tag(--level, "/audioConverterSettingsGroup");
+  xml.etag(--level, "audioConverterSettingsGroup");
 }
 
 bool AudioConverterSettingsGroup::useSettings(int mode) const

@@ -173,7 +173,7 @@ void Quantize::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "raster", raster_index);
   xml.intTag(level, "swing", swing);
   xml.intTag(level, "quant_len", quant_len);
-  xml.tag(level, "/quantize");
+  xml.etag(--level, "quantize");
 }
 
 } // namespace MusEGui

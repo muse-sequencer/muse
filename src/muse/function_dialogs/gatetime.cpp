@@ -165,7 +165,7 @@ void GateTime::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "parts", _parts);
   xml.intTag(level, "offset", offsetVal);
   xml.intTag(level, "rate", rateVal);
-  xml.tag(level, "/mod_len");
+  xml.etag(--level, "mod_len");
 }
 
 } // namespace MusEGui

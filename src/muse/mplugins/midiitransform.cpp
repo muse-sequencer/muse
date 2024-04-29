@@ -704,7 +704,7 @@ void MidiInputTransformation::write(int level, Xml& xml) const
             xml.intTag(level, "selChannela", selChannela);
             xml.intTag(level, "selChannelb", selChannelb);
             }
-      xml.etag(level, "midiInputTransform");
+      xml.etag(--level, "midiInputTransform");
       }
 
 //---------------------------------------------------------

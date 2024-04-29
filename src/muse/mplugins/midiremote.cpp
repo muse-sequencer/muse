@@ -272,7 +272,7 @@ void MidiRemote::write(int level, Xml& xml) const
   _forward.write("forward", level, xml);
   _backward.write("backward", level, xml);
 
-  xml.etag(level--, "midiRemote");
+  xml.etag(--level, "midiRemote");
 }
 
 bool MidiRemote::matchesStepRec(int port, int chan) const

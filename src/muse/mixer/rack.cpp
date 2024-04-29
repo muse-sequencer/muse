@@ -1301,6 +1301,7 @@ MusECore::PluginI* EffectRack::initPlugin(
                                   //QString d;
                                   //xml.dump(d);
                                   //printf("cannot instantiate plugin [%s]\n", d.toLatin1().data());
+                                  // Be sure to clear and delete the controller list.
                                   plugi->currentInitialConfiguration()._ctrlListList.clearDelete();
                                   delete plugi;
                                   plugi = nullptr;
@@ -1464,6 +1465,7 @@ MusECore::PluginI* EffectRack::initPlugin(
                                     // Generate the new id.
                                     const unsigned long new_id = MusECore::genACnum(idx, m);
                                     macs.setId(new_id);
+                                    macs.setTrack(track);
                                     macm->add_ctrl_struct(imacm->first, macs);
                                     // Done with the item. Erase it. Iterator will point to the next item.
                                     imacm = conf_macm.erase(imacm);

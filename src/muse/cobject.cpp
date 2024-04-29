@@ -411,7 +411,7 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
     else
         xml.strTag(level, "toolbars", saveState().toHex().data());
 
-    xml.tag(level, "/topwin");
+    xml.etag(--level, "topwin");
 }
 
 void TopWin::hide()
@@ -741,7 +741,7 @@ void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
     xml.strTag(level, "nonshared_toolbars", _toolbarNonsharedInit[t].toHex().data());
     xml.strTag(level, "shared_toolbars", _toolbarSharedInit[t].toHex().data());
     xml.intTag(level, "default_subwin", _openTabbed[t]);
-    xml.etag(level, "topwin");
+    xml.etag(--level, "topwin");
 }
 
 void TopWin::finalizeInit()

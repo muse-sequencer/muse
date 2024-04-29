@@ -480,7 +480,7 @@ void SRCAudioConverterOptions::write(int level, Xml& xml) const
       xml.intTag(level, "useSettings", _useSettings);
       xml.intTag(level, "converterType", _converterType);
       
-      xml.tag(--level, "/settings");
+      xml.etag(--level, "settings");
       
       }
 
@@ -595,7 +595,7 @@ void SRCAudioConverterSettings::write(int level, Xml& xml) const
       _guiOptions.write(level, xml);
     }
     
-    xml.tag(--level, "/audioConverterSetting");
+    xml.etag(--level, "audioConverterSetting");
   }
 }
 

@@ -57,7 +57,7 @@ void global_drum_ordering_t::write(int level, MusECore::Xml& xml)
   for (iterator it = begin(); it != end(); it++)
     write_single(level, xml, *it);
 
-  xml.etag(level, "drum_ordering");
+  xml.etag(--level, "drum_ordering");
 }
 
 void global_drum_ordering_t::write_single(int level, MusECore::Xml& xml, const entry_t& entry)

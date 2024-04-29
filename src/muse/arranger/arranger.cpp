@@ -919,7 +919,7 @@ void Arranger::writeStatus(int level, MusECore::Xml& xml)
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ypos", vscroll->value());
-      xml.etag(level, "arranger");
+      xml.etag(--level, "arranger");
       }
 
 void Arranger::writeConfiguration(int level, MusECore::Xml& xml)
@@ -927,7 +927,7 @@ void Arranger::writeConfiguration(int level, MusECore::Xml& xml)
       xml.tag(level++, "arranger");
       writeCustomColumns(level, xml);
       xml.strTag(level, "tlist_header", header->saveState().toHex().constData());
-      xml.etag(level, "arranger");
+      xml.etag(--level, "arranger");
       }
 
 //---------------------------------------------------------

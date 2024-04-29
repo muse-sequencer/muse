@@ -673,7 +673,7 @@ void WaveEdit::writeConfiguration(int level, MusECore::Xml& xml)
       xml.intTag(level, "canvaswidth", _canvasWidthInit);
       xml.intTag(level, "colormode", colorModeInit);
       TopWin::writeConfiguration(WAVE, level,xml);
-      xml.tag(level, "/waveedit");
+      xml.etag(--level, "waveedit");
       }
 
 //---------------------------------------------------------
@@ -689,7 +689,7 @@ void WaveEdit::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "ymag", ymag->value());
-      xml.tag(level, "/waveedit");
+      xml.etag(--level, "waveedit");
       }
 
 //---------------------------------------------------------

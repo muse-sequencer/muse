@@ -151,7 +151,7 @@ void PasteDialog::write_configuration(int level, MusECore::Xml& xml)
 	xml.intTag(level, "raster", raster);
 	xml.intTag(level, "clone", clone);
 	xml.intTag(level, "all_in_one_track", all_in_one_track);
-	xml.tag(level, "/pastedialog");
+	xml.etag(--level, "pastedialog");
 }
 
 } // namespace MusEGui

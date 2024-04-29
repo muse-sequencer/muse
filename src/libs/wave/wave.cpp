@@ -1621,7 +1621,7 @@ void ClipBase::write(int level, Xml& xml) const
       xml.strTag(level, "name", _name);
       xml.intTag(level, "tick", _spos);
       xml.intTag(level, "len", len);
-      xml.etag(level, "clip");
+      xml.etag(--level, "clip");
       }
 
 //---------------------------------------------------------

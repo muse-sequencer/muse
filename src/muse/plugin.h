@@ -348,6 +348,7 @@ struct PluginConfiguration
   QString _uri;
   QString _pluginLabel;
   QString _name;
+  int _id;
   QRect _geometry;
   QRect _nativeGeometry;
   bool _guiVisible;

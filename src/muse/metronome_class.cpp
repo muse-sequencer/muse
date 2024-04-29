@@ -361,7 +361,7 @@ void MetroAccentsPresets::write(int level, MusECore::Xml& xml,
       continue;
     i->write(level, xml);
   }
-  xml.tag(--level, "/metroAccPresets");
+  xml.etag(--level, "metroAccPresets");
 }
 
 void MetroAccentsStruct::write(int level, MusECore::Xml& xml) const
@@ -600,7 +600,7 @@ void MetroAccentsMap::write(int level, MusECore::Xml& xml) const
       continue;
     xml.tag(level, "metroAccMap beats=\"%d\"", i->first);
     i->second.write(level + 1, xml);
-    xml.tag(level, "/metroAccMap");
+    xml.etag(--level, "metroAccMap");
   }
 }
 

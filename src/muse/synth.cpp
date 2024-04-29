@@ -1216,6 +1216,20 @@ void SynthI::write(int level, Xml& xml, XmlWriteStatistics*) const
       {
       xml.tag(level++, "SynthI");
       AudioTrack::writeProperties(level, xml);
+
+      // Support a special block for synth controllers. (track ctrls -> effect rack plugin ctrls -> synth plugin ctrls).
+      const int startId = genACnum(MusECore::MAX_PLUGINS, 0);
+      const int   endId = genACnum(MusECore::MAX_PLUGINS + 1, 0);
+      // Write the block of controllers.
+      // Strip away the synth controller base id bits when writing.
+      AudioTrack::controller()->write(level, xml, startId, endId, AC_PLUGIN_CTL_ID_MASK);
+      // Write any midi assignments to this track's synth controllers.
+      // Strip away the synth controller base id bits when writing.
+      MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+      if(macm)
+        macm->write(
+          level, xml, this, startId, endId, MidiAudioCtrlStruct::AudioControl, false, AC_PLUGIN_CTL_ID_MASK);
+
       xml.strTag(level, "synthType",
         synthType2String(synth() ? synth()->synthType() : _initConfig._type));
 
@@ -1319,11 +1333,11 @@ void SynthI::write(int level, Xml& xml, XmlWriteStatistics*) const
           xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);
           for(ciEvent ie = msl->cbegin(); ie != msl->cend(); ++ie)
             ie->second.write(level, xml, 0);
-          xml.etag(level--, "midistate");
+          xml.etag(--level, "midistate");
         }
       }
 
-      xml.etag(level, "SynthI");
+      xml.etag(--level, "SynthI");
       }
 
 void MessSynthIF::write(int level, Xml& xml) const
@@ -1349,8 +1363,8 @@ void MessSynthIF::write(int level, Xml& xml) const
                   xml.nput("%02x ", p[i] & 0xff);
                   }
             xml.nput("\n");
-            xml.tag(level--, "/event");
-            xml.etag(level--, "midistate");
+            xml.etag(--level, "event");
+            xml.etag(--level, "midistate");
             }
       }
 
@@ -1410,7 +1424,73 @@ void SynthI::read(Xml& xml, XmlReadStatistics*)
                                  _initConfig.accumulatedCustomParams.push_back(customData);
                               }
                         }
-                        else if (AudioTrack::readProperties(xml, tag))
+// REMOVE Tim. tmp. Added.
+                        else if (tag == "controller")
+                        {
+                              CtrlList* l = new CtrlList();
+                              if(l->read(xml) && l->id() >= 0)
+                              {
+                                // Strip away any upper bits, just in case (shouldn't be there).
+                                const int ctlnum = l->id() & AC_PLUGIN_CTL_ID_MASK;
+                                // Support a special block for synth controllers.
+                                // (track ctrls -> effect rack plugin ctrls -> synth plugin ctrls).
+                                const int new_id = genACnum(MusECore::MAX_PLUGINS, 0) + ctlnum;
+                                l->setId(new_id);
+
+                                // TODO: Review this. Especially how current value is set -
+                                //        is it the right way around, plugin -> controller?
+                                const PluginIBase* p = nullptr;
+                                bool ctlfound = false;
+                                const SynthIF* track_sif = sif();
+                                if(track_sif)
+                                  p = static_cast < const PluginIBase* > (track_sif);
+
+                                if(p && (unsigned long)ctlnum < p->parameters())
+                                  ctlfound = true;
+
+                                CtrlListList *track_cll = AudioTrack::controller();
+                                iCtrlList icl = track_cll->find(l->id());
+                                if (icl == track_cll->end())
+                                      track_cll->add(l);
+                                else {
+                                      CtrlList* d = icl->second;
+                                      for (iCtrl i = l->begin(); i != l->end(); ++i)
+                                            d->insert(CtrlListInsertPair_t(i->first, i->second));
+
+                                      if(!ctlfound)
+                                            d->setCurVal(l->curVal());
+                                      d->setColor(l->color());
+                                      d->setVisible(l->isVisible());
+                                      d->setDefault(l->getDefault());
+                                      delete l;
+                                      l = d;
+                                      }
+
+                                  if(ctlfound)
+                                    {
+                                      l->setCurVal(p->param(ctlnum));
+                                      l->setValueType(p->ctrlValueType(ctlnum));
+                                      l->setMode(p->ctrlMode(ctlnum));
+                                    }
+                              }
+                              else
+                              {
+                                delete l;
+                              }
+                        }
+                        else if (tag == "midiAssign")
+                              // Any assignments read go to this track.
+//                               MusEGlobal::song->midiAssignments()->read(xml, this);
+                              // Support a special block for synth controllers.
+                              // (track ctrls -> effect rack plugin ctrls -> synth plugin ctrls).
+                              // Unmask (bitwise OR) the id bits with the special block id.
+                              MusEGlobal::song->midiAssignments()->read(
+                                xml, this, MusECore::genACnum(MAX_PLUGINS, 0), MidiAudioCtrlStruct::AudioControl);
+                        else if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("softSynth");
                         break;
                   case Xml::TagEnd:

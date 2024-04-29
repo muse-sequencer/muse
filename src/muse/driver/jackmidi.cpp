@@ -417,7 +417,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
               s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
             xml.tag(level, s.toUtf8().constData());
             xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toUtf8().constData());
-            xml.etag(level--, "Route");
+            xml.etag(--level, "Route");
           }
         }  
       } 
@@ -439,7 +439,7 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
           else
             s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toUtf8().constData());
-          xml.etag(level--, "Route");
+          xml.etag(--level, "Route");
         }
       }
 }

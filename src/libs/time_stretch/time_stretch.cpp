@@ -561,7 +561,7 @@ void StretchList::write(int level, Xml& xml) const
         }
   if (i)
         xml.put(level, "");
-  xml.etag(level--, "stretchlist");
+  xml.etag(--level, "stretchlist");
 }
 
 //---------------------------------------------------------

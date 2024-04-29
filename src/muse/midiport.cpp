@@ -1772,7 +1772,7 @@ void MidiPort::writeRouting(int level, Xml& xml) const
           s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
           xml.tag(level, s.toLatin1().constData());
           
-          xml.etag(level--, "Route");
+          xml.etag(--level, "Route");
         }
       }
 }

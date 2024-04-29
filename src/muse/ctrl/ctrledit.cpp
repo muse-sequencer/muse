@@ -128,7 +128,7 @@ void CtrlEdit::writeStatus(int level, MusECore::Xml& xml)
             xml.tag(level++, "ctrledit");
             xml.intTag(level, "ctrlnum", canvas->controller()->num());
             xml.intTag(level, "perNoteVeloMode", canvas->perNoteVeloMode());
-            xml.tag(level, "/ctrledit");
+            xml.etag(--level, "ctrledit");
             }
       }
 

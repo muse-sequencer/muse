@@ -476,7 +476,7 @@ void MidiEditor::writeStatus(int level, MusECore::Xml& xml) const
       xml.tag(level++, "midieditor");
       TopWin::writeStatus(level, xml);
       xml.intTag(level, "raster", _raster);
-      xml.tag(level, "/midieditor");
+      xml.etag(--level, "midieditor");
       }
 
 //---------------------------------------------------------

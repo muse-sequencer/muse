@@ -529,7 +529,7 @@ void Part::write(int level, Xml& xml, bool isCopy, bool forceWavePaths, XmlWrite
             for (ciEvent e = events().begin(); e != events().end(); ++e)
                   e->second.write(level, xml, *this, forceWavePaths);
             }
-      xml.etag(level, "part");
+      xml.etag(--level, "part");
       }
 
 //---------------------------------------------------------
@@ -838,7 +838,7 @@ void Song::write(int level, Xml& xml) const
 
       writeDrumMap(level, xml, false);
       MusEGlobal::global_drum_ordering.write(level, xml);
-      xml.tag(level, "/song");
+      xml.etag(--level, "song");
       }
 
 //--------------------------------
@@ -1320,7 +1320,7 @@ void MusE::write(MusECore::Xml& xml, bool writeTopwins) const
             if (i->isVisible())
                 i->writeStatus(level, xml);
         }
-        xml.tag(level--, "/toplevels");
+        xml.etag(--level, "toplevels");
     }
     else if (!writeTopwins)
     {
@@ -1328,7 +1328,7 @@ void MusE::write(MusECore::Xml& xml, bool writeTopwins) const
         xml.etag(level, "no_toplevels");
     }
 
-    xml.tag(level, "/muse");
+    xml.etag(--level, "muse");
 }
 
 } // namespace MusEGui

@@ -856,7 +856,7 @@ void SysEx::write(int level, Xml& xml)
             if(dataLen > 0 && data)
               xml.strTag(level, "data", sysex2string(dataLen, data));
 
-            xml.etag(level, "SysEx");
+            xml.etag(--level, "SysEx");
       }
 
 //---------------------------------------------------------
@@ -2335,7 +2335,7 @@ void WorkingDrumMapList::write(int level, Xml& xml) const
     if(wde._fields & WorkingDrumMapEntry::HideField)
       xml.intTag(level, "hide", wde._mapItem.hide);
 
-    xml.tag(--level, "/entry");
+    xml.etag(--level, "entry");
   }
 }
 

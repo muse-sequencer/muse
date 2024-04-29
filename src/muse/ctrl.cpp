@@ -394,7 +394,7 @@ MidiAudioCtrlStruct::MidiAudioCtrlStruct(
 //       //const MidiAudioCtrlStruct& macs = imacs->second;
 //       //xml.intTag(level, "macs ???", macs.);
 //
-//       xml.etag(level--, "midiAssign");
+//       xml.etag(--level, "midiAssign");
 //   }
 // }
 
@@ -489,13 +489,17 @@ void MidiAudioCtrlMap::find_audio_ctrl_structs(
 //       //const MidiAudioCtrlStruct& macs = imacs->second;
 //       //xml.intTag(level, "macs ???", macs.);
 //
-//       xml.etag(level--, "midiAssign");
+//       xml.etag(--level, "midiAssign");
 //   }
 // }
-void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track, int effectRackPos) const
+void MidiAudioCtrlMap::write(
+  int level, Xml& xml,
+  const Track* track, int startId, int endId,
+  MidiAudioCtrlStruct::IdType idType,
+  bool excludeIds, int idMask) const
 {
-  const unsigned long baseid = effectRackPos >= 0 ? genACnum(effectRackPos, 0) : 0;
-  const unsigned long lastid = effectRackPos >= 0 ? (genACnum(effectRackPos + 1, 0) - 1) : 0;
+  if(startId > endId)
+    return;
 
   for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
   {
@@ -504,13 +508,13 @@ void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track, int effect
         continue;
       const MidiAudioCtrlStruct::IdType type = imacm->second.idType();
       int id = imacm->second.id();
-      if((effectRackPos < 0) ||
-         (track && type == MidiAudioCtrlStruct::AudioControl &&
-          (unsigned long)id >= baseid && (unsigned long)id < lastid))
+      if((startId == -1 && endId == -1) ||
+         (type == idType &&
+           ((!excludeIds && (startId == -1 || id >= startId) && (endId == -1 || id < endId)) ||
+             (excludeIds && (startId == -1 || id <  startId) && (endId == -1 || id >= endId)))))
       {
-        // If a rack position is given, strip away the position bits
-        //  leaving just the controller number.
-        if(effectRackPos >= 0)
+        // If a mask is given, mask the id.
+        if(idMask >= 0)
           id &= AC_PLUGIN_CTL_ID_MASK;
         int port, chan, mctrl;
         hash_values(imacm->first, &port, &chan, &mctrl);
@@ -526,7 +530,7 @@ void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track, int effect
         //const MidiAudioCtrlStruct& macs = imacs->second;
         //xml.intTag(level, "macs ???", macs.);
 
-        xml.etag(level--, "midiAssign");
+        xml.etag(--level, "midiAssign");
       }
   }
 }
@@ -535,9 +539,101 @@ void MidiAudioCtrlMap::write(int level, Xml& xml, const Track* track, int effect
 //   read
 //---------------------------------------------------------
 
-void MidiAudioCtrlMap::read(Xml& xml, Track* track)
+// REMOVE Tim. tmp. Changed.
+// void MidiAudioCtrlMap::read(Xml& xml, Track* track)
+//       {
+//       int port = -1, chan = -1, midi_ctrl = -1;
+//       MidiAudioCtrlStruct macs(MidiAudioCtrlStruct::AudioControl, -1, track);
+//
+//       QLocale loc = QLocale::c();
+//       bool ok;
+//       int errcount = 0;
+//       for (;;) {
+//             Xml::Token token = xml.parse();
+//             const QString& tag = xml.s1();
+//             switch (token) {
+//                   case Xml::Error:
+//                   case Xml::End:
+//                         return;
+//                   case Xml::Attribut:
+//                         if (tag == "port")
+//                         {
+//                               port = loc.toInt(xml.s2(), &ok);
+//                               if(!ok)
+//                               {
+//                                 ++errcount;
+//                                 printf("MidiAudioCtrlMap::read failed reading port string: %s\n", xml.s2().toLatin1().constData());
+//                               }
+//                         }
+//                         else if (tag == "ch")
+//                         {
+//                               chan = loc.toInt(xml.s2(), &ok);
+//                               if(!ok)
+//                               {
+//                                 ++errcount;
+//                                 printf("MidiAudioCtrlMap::read failed reading ch string: %s\n", xml.s2().toLatin1().constData());
+//                               }
+//                         }
+//                         else if (tag == "mctrl")
+//                         {
+//                               midi_ctrl = loc.toInt(xml.s2(), &ok);
+//                               if(!ok)
+//                               {
+//                                 ++errcount;
+//                                 printf("MidiAudioCtrlMap::read failed reading mctrl string: %s\n", xml.s2().toLatin1().constData());
+//                               }
+//                         }
+//                         else if (tag == "type")
+//                         {
+//                               const int type = loc.toInt(xml.s2(), &ok);
+//                               if(ok)
+//                                 macs.setIdType(MidiAudioCtrlStruct::IdType(type));
+//                               else
+//                               {
+//                                 ++errcount;
+//                                 printf("MidiAudioCtrlPortMap::read failed reading type string: %s\n", xml.s2().toLatin1().constData());
+//                               }
+//                         }
+//                         // Tag actrl is obsolete, changed to id now.
+//                         else if (tag == "actrl" || tag == "id")
+//                         {
+//                               macs.setId(loc.toInt(xml.s2(), &ok));
+//                               if(!ok)
+//                               {
+//                                 ++errcount;
+//                                 printf("MidiAudioCtrlPortMap::read failed reading actrl string: %s\n", xml.s2().toLatin1().constData());
+//                               }
+//                         }
+//                         else
+//                               printf("unknown tag %s\n", tag.toLatin1().constData());
+//                         break;
+//                   case Xml::TagStart:
+//                         // TODO
+//                         //if (tag == "???") {
+//                         //      }
+//                         //else
+//                               xml.unknown("midiMapper");
+//                         break;
+//                   case Xml::TagEnd:
+//                         // Tag midiMapper is obsolete, changed to midiAssign now.
+//                         if (xml.s1() == "midiMapper" || xml.s1() == "midiAssign")
+//                         {
+//                               if(errcount == 0 && port != -1 && chan != -1 && midi_ctrl != -1 && macs.id() != -1)
+//                                   add_ctrl_struct(port, chan, midi_ctrl, macs);
+//                               return;
+//                         }
+//                   default:
+//                         break;
+//                   }
+//             }
+//       }
+void MidiAudioCtrlMap::read(
+  Xml& xml,
+  Track* track,
+  int idUnmask,
+  MidiAudioCtrlStruct::IdType idType)
       {
-      int port = -1, chan = -1, midi_ctrl = -1;
+      int port = -1, chan = -1, midi_ctrl = -1, id = -1;
       MidiAudioCtrlStruct macs(MidiAudioCtrlStruct::AudioControl, -1, track);
 
       QLocale loc = QLocale::c();
@@ -592,7 +688,7 @@ void MidiAudioCtrlMap::read(Xml& xml, Track* track)
                         // Tag actrl is obsolete, changed to id now.
                         else if (tag == "actrl" || tag == "id")
                         {
-                              macs.setId(loc.toInt(xml.s2(), &ok));
+                              id = loc.toInt(xml.s2(), &ok);
                               if(!ok)
                               {
                                 ++errcount;
@@ -613,8 +709,13 @@ void MidiAudioCtrlMap::read(Xml& xml, Track* track)
                         // Tag midiMapper is obsolete, changed to midiAssign now.
                         if (xml.s1() == "midiMapper" || xml.s1() == "midiAssign")
                         {
-                              if(errcount == 0 && port != -1 && chan != -1 && midi_ctrl != -1 && macs.id() != -1)
+                              if(errcount == 0 && port >= 0 && chan >= 0 && midi_ctrl >= 0 && id >= 0)
+                              {
+                                  if(macs.idType() == idType)
+                                    id |= idUnmask;
+                                  macs.setId(id);
                                   add_ctrl_struct(port, chan, midi_ctrl, macs);
+                              }
                               return;
                         }
                   default:
@@ -1702,13 +1803,12 @@ bool CtrlList::read(Xml& xml)
             return false;
       }
 
-void CtrlList::write(int level, Xml& xml, bool isCopy) const
+void CtrlList::write(int level, Xml& xml, int idMask) const
 {
         int ctlid = id();
-        // If isCopy is true, strip away the each controller's rack position bits,
-        //  storing just the controller numbers.
-        if(isCopy)
-          ctlid &= AC_PLUGIN_CTL_ID_MASK;
+        // If idMask is given, mask the id bits when saving.
+        if(idMask != -1)
+          ctlid &= idMask;
         // Use hex value string when appropriate.
         QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(ctlid).arg(MusELib::museStringFromDouble(curVal()));
         s += QString(" color=\"%1\" visible=\"%2\"").arg(color().name()).arg(isVisible());
@@ -1736,7 +1836,7 @@ void CtrlList::write(int level, Xml& xml, bool isCopy) const
               }
         if (i)
               xml.put(level, "");
-        xml.etag(level--, "controller");
+        xml.etag(--level, "controller");
 }
 
 //---------------------------------------------------------
@@ -1843,15 +1943,30 @@ void CtrlListList::updateCurValues(unsigned int frame)
     cl->second->updateCurValue(frame);
 }
 
+// REMOVE Tim. tmp. Changed.
+// //---------------------------------------------------------
+// //   value
+// //---------------------------------------------------------
+//
+// void CtrlListList::write(int level, Xml& xml) const
+// {
+//   for (ciCtrlList icl = begin(); icl != end(); ++icl) {
+//         const CtrlList* cl = icl->second;
+//         cl->write(level, xml);
+//         }
+// }
+
 //---------------------------------------------------------
-//   value
+//   write
 //---------------------------------------------------------
 
-void CtrlListList::write(int level, Xml& xml) const
+void CtrlListList::write(int level, Xml& xml, int startId, int endId, int idMask) const
 {
   for (ciCtrlList icl = begin(); icl != end(); ++icl) {
         const CtrlList* cl = icl->second;
-        cl->write(level, xml);
+        const int id = cl->id();
+        if((startId < 0 || id >= startId) && (endId < 0 || id < endId))
+          cl->write(level, xml, idMask);
         }
 }
 

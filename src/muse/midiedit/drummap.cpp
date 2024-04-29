@@ -401,9 +401,9 @@ void writeDrumMap(int level, Xml& xml, bool external)
                   if (dm->hide != idm->hide)
                         xml.intTag(level, "hide", dm->hide);
                   }
-            xml.tag(level--, "/entry");
+            xml.etag(--level, "entry");
             }
-      xml.tag(level--, "/drummap");
+      xml.etag(--level, "drummap");
       }
 
 //---------------------------------------------------------

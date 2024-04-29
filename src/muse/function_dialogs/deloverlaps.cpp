@@ -118,7 +118,7 @@ void DelOverlaps::write_configuration(int level, MusECore::Xml& xml)
   xml.intTag(level, "range", _range);
   xml.intTag(level, "parts", _parts);
   
-  xml.tag(level, "/del_overlaps");
+  xml.etag(--level, "del_overlaps");
 }
 
 } // namespace MusEGui

@@ -379,7 +379,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
           else
             s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
-          xml.etag(level--, "Route");
+          xml.etag(--level, "Route");
         }
       }
 }

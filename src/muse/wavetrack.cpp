@@ -264,7 +264,7 @@ void WaveTrack::write(int level, Xml& xml, XmlWriteStatistics* stats) const
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
             p->second->write(level, xml, false, false, stats);
-      xml.etag(level, "wavetrack");
+      xml.etag(--level, "wavetrack");
       }
 
 //---------------------------------------------------------
@@ -291,7 +291,12 @@ void WaveTrack::read(Xml& xml, XmlReadStatistics* stats)
                               if(p)
                                 parts()->add(p);
                               }
-                        else if (AudioTrack::readProperties(xml, tag))
+// REMOVE Tim. tmp. Added.
+                        else if(tag == "AudioTrack")
+                              AudioTrack::read(xml);
+
+                        // Obsolete. Keep for compatibility.
+                        else if (!xml.isVersionLessThan(4, 0) || AudioTrack::readProperties(xml, tag))
                               xml.unknown("WaveTrack");
                         break;
                   case Xml::Attribut:

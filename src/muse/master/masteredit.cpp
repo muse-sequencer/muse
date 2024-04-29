@@ -363,7 +363,7 @@ void MasterEdit::writeStatus(int level, MusECore::Xml& xml) const
       xml.intTag(level, "ymag", vscroll->mag());
       xml.intTag(level, "ypos", vscroll->pos());
       MidiEditor::writeStatus(level, xml);
-      xml.tag(level, "/master");
+      xml.etag(--level, "master");
       }
 
 //---------------------------------------------------------
@@ -405,7 +405,7 @@ void MasterEdit::writeConfiguration(int level, MusECore::Xml& xml)
       xml.tag(level++, "masteredit");
       xml.intTag(level, "raster", _rasterInit);
       TopWin::writeConfiguration(MASTER, level, xml);
-      xml.tag(level, "/masteredit");
+      xml.etag(--level, "masteredit");
       }
 
 //---------------------------------------------------------

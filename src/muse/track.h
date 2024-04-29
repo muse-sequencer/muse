@@ -239,6 +239,9 @@ class Track {
       // Returns true if anything changed.
       bool selectEvents(bool select, unsigned long t0 = 0, unsigned long t1 = 0);
       
+// REMOVE Tim. tmp. Added.
+      void read(Xml& xml);
+
       virtual void write(int, Xml&, XmlWriteStatistics* stats = nullptr) const = 0;
 
       virtual Track* clone(int flags) const    = 0;
@@ -723,6 +726,9 @@ class AudioTrack : public Track {
       bool readProperties(Xml&, const QString&);
       void writeProperties(int, Xml&) const;
 
+// REMOVE Tim. tmp. Added.
+      void read(Xml& xml);
+
       void mapRackPluginsToControllers();
       void showPendingPluginNativeGuis();
 
@@ -785,19 +791,20 @@ class AudioTrack : public Track {
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
       void deleteAllEfxGuis();
-      void clearEfxList();
-      // Removes any existing plugin and inserts plugin into effects rack, and calls setupPlugin.
-      void addPlugin(PluginI* plugin, int idx);
+// REMOVE Tim. tmp. Removed.
+//       void clearEfxList();
+//       // Removes any existing plugin and inserts plugin into effects rack, and calls setupPlugin.
+//       void addPlugin(PluginI* plugin, int idx);
       // Assigns valid ID and track to plugin, and creates controllers for plugin.
       void setupPlugin(PluginI* plugin, int idx);
-// REMOVE Tim. tmp. Removed.
 //       // Swaps plugins at slots idx1 and idx2, including empty slots.
 //       void swapPlugins(int idx1, int idx2);
 
       double pluginCtrlVal(int ctlID) const;
       void setPluginCtrlVal(int param, double val);
       
-      void readVolume(Xml& xml);
+// REMOVE Tim. tmp. Removed.
+//       void readVolume(Xml& xml);
 
       virtual void preProcessAlways();
 
