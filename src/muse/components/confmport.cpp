@@ -44,8 +44,6 @@
 #include "arranger.h"
 #include "midiport.h"
 #include "mididev.h"
-#include "midisyncimpl.h"
-#include "ctrlcombo.h"
 #include "minstrument.h"
 #include "synth.h"
 #include "audio.h"
