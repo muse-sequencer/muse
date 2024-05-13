@@ -1,3 +1,5 @@
+13.05.2024
+    - Added instrument file for the Roland INTEGRA-7 sound module, made by Cookston (rj)
 26.04.2024
     - Fix issue 1104: Fixed update of UI element for globalPitchShift upon loading song (rj)
 11.12.2023
