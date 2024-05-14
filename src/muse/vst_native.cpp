@@ -3211,7 +3211,8 @@ bool VstNativeSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsign
 //--------------------------------
 
 unsigned long VstNativeSynthIF::pluginID() const                  { return (_plugin) ? _plugin->uniqueID : 0; }
-int VstNativeSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
+// REMOVE Tim. tmp. Removed.
+// int VstNativeSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
 // TODO: There is no synth 'label'
 QString VstNativeSynthIF::pluginLabel() const                     { return _synth ? QString(_synth->name()) : QString(); } // FIXME Maybe wrong
 // REMOVE Tim. tmp. Added.
@@ -3220,11 +3221,18 @@ QString VstNativeSynthIF::lib() const                             { return _synt
 QString VstNativeSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
 QString VstNativeSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
 QString VstNativeSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
-void VstNativeSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
-bool VstNativeSynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl;}
+// REMOVE Tim. tmp. Changed.
+// void VstNativeSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
+// bool VstNativeSynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl;}
+void VstNativeSynthIF::enableController(unsigned long i, bool v)
+{ if(_controls) _controls[i].enCtrl = v; }
+bool VstNativeSynthIF::controllerEnabled(unsigned long i) const
+{ return _controls ? _controls[i].enCtrl : true;}
 void VstNativeSynthIF::enableAllControllers(bool v)
 {
-  if(!_synth)
+// REMOVE Tim. tmp. Changed.
+//   if(!_synth)
+  if(!_synth || !_controls)
     return;
   const unsigned long sic = _synth->inControls();
   for(unsigned long i = 0; i < sic; ++i)
@@ -3520,7 +3528,9 @@ void VstNativePluginWrapper::activate(LADSPA_Handle handle)
    dispatch(state, effMainsChanged, 0, 1, nullptr, 0.0f);
    dispatch(state, effStartProcess, 0, 0, nullptr, 0.0f);
 
-   if(state->plugin->getParameter)
+// REMOVE Tim. tmp. Changed.
+//    if(state->plugin->getParameter)
+   if(state->plugin && state->plugin->getParameter)
    {
       for(size_t i = 0; i < _controlInPorts; i++)
       {

@@ -266,7 +266,8 @@ class VstNativeSynthIF : public SynthIF
       // Methods for PluginIBase:
       //-------------------------
       unsigned long pluginID() const override;
-      int id() const override;
+// REMOVE Tim. tmp. Removed.
+//       int id() const override;
 // REMOVE Tim. tmp. Changed.
       QString pluginLabel() const override;
       QString pluginName() const override;

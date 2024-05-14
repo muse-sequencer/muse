@@ -71,6 +71,8 @@ class MidiPart;
 class Undo;
 struct UndoOp;
 class UndoList;
+// REMOVE Tim. tmp. Added.
+class PluginI;
 
 //---------------------------------------------------------
 //    Song
@@ -488,7 +490,16 @@ class Song : public QObject {
       GroupList* groups()       { return &_groups;  }
       AuxList* auxs()           { return &_auxs;    }
       SynthIList* syntis()      { return &_synthIs; }
-      
+// REMOVE Tim. tmp. Added const.
+      const TrackList* tracks() const       { return &_tracks;  }
+      const MidiTrackList* midis() const    { return &_midis;   }
+      const WaveTrackList* waves() const    { return &_waves;   }
+      const InputList* inputs() const       { return &_inputs;  }
+      const OutputList* outputs() const     { return &_outputs; }
+      const GroupList* groups() const       { return &_groups;  }
+      const AuxList* auxs() const           { return &_auxs;    }
+      const SynthIList* syntis() const      { return &_synthIs; }
+
       Track* findTrack(const Part* part) const;
       Track* findTrack(const QString& name) const;
       bool trackExists(const Track* t) const { return _tracks.find(t) != _tracks.cend(); }
@@ -508,6 +519,11 @@ class Song : public QObject {
         if(!select) // Not essential, but if unselecting ALL tracks, clear the static counter.
           Track::clearSelectionOrderCounter();
       }
+// REMOVE Tim. tmp. Added.
+      // Returns the first rack plugin instance with the given name found in any track.
+      PluginI* findRackPlugin(const QString &);
+      // Returns the first rack plugin instance with the given name found in any track. Const version.
+      const PluginI* findRackPlugin(const QString &) const;
 
       void readRoute(Xml& xml);
       void recordEvent(MidiTrack*, Event&);

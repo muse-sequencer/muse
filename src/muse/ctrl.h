@@ -454,7 +454,10 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
       void clearDelete();
       iCtrlList find(int id);
       ciCtrlList find(int id) const;
-            
+// REMOVE Tim. tmp. Added.
+      iCtrlList findName(const QString &);
+      ciCtrlList findName(const QString &) const;
+
       double value(int ctrlId, unsigned int frame, bool cur_val_only = false,
                    unsigned int* nextFrame = nullptr, bool* nextFrameValid = nullptr) const;
       void updateCurValues(unsigned int frame);

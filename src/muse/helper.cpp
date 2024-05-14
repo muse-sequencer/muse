@@ -868,7 +868,6 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 	}
 }
 
-
 } // namespace MusECore
 
 

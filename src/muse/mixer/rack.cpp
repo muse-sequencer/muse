@@ -819,7 +819,7 @@ void EffectRack::startDragItem(int idx)
 //                 }
 //
 //                 //-------------------------------------------------
-//                 // Write the midi to audio controlller assignments.
+//                 // Write the midi to audio controller assignments.
 //                 //-------------------------------------------------
 //                 MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
 //                 // Given a rack position, this strips away the position bits
@@ -1083,7 +1083,7 @@ void EffectRack::dropEvent(QDropEvent *event)
                 // Prepare a new mapping list to hold them.
                 MusECore::MidiAudioCtrlMap *macm = new MusECore::MidiAudioCtrlMap();
 
-                // Read the plugin and any controllers and midi mappings.
+                // Read the plugin and any controllers and midi mappings. The plugin's idx is also set here.
                 MusECore::PluginI *newplug = initPlugin(xml, idx, cll, macm);
 
                 // No plugin or no controllers found? Delete the new controller list.
@@ -1101,34 +1101,37 @@ void EffectRack::dropEvent(QDropEvent *event)
                   macm = nullptr;
                 }
 
-                // Initalize the controller ranges, names, modes etc. with info gathered from the plugin.
+                // Initialize the controller ranges, names, modes etc. with info gathered from the plugin.
                 if(newplug && cll)
                 {
-                  int j = newplug->parameters();
-                  for(int i = 0; i < j; i++)
-                  {
-                    int id = MusECore::genACnum(idx, i);
+// REMOVE Tim. tmp. Changed.
+//                   int j = newplug->parameters();
+//                   for(int i = 0; i < j; i++)
+//                   {
+//                     int id = MusECore::genACnum(idx, i);
+//
+//                     // The new controller list should have the correct id numbers by now.
+//                     MusECore::ciCtrlList icl = cll->find(id);
+//                     if(icl == cll->end())
+//                     {
+//                       fprintf(stderr, "EffectRack::dropEvent: Error: Controller id not found:%d\n", id);
+//                     }
+//                     else
+//                     {
+//                       MusECore::CtrlList* cl = icl->second;
+//                       float min, max;
+//                       newplug->range(i, &min, &max);
+//                       cl->setRange(min, max);
+//                       cl->setName(QString(newplug->paramName(i)));
+//                       cl->setValueType(newplug->ctrlValueType(i));
+//                       cl->setMode(newplug->ctrlMode(i));
+//                       cl->setCurVal(newplug->param(i));
+//                       // Set the value units index.
+//                       cl->setValueUnit(newplug->valueUnit(i));
+//                     }
+//                   }
 
-                    // The new controller list should have the correct id numbers by now.
-                    MusECore::ciCtrlList icl = cll->find(id);
-                    if(icl == cll->end())
-                    {
-                      fprintf(stderr, "EffectRack::dropEvent: Error: Controller id not found:%d\n", id);
-                    }
-                    else
-                    {
-                      MusECore::CtrlList* cl = icl->second;
-                      float min, max;
-                      newplug->range(i, &min, &max);
-                      cl->setRange(min, max);
-                      cl->setName(QString(newplug->paramName(i)));
-                      cl->setValueType(newplug->ctrlValueType(i));
-                      cl->setMode(newplug->ctrlMode(i));
-                      cl->setCurVal(newplug->param(i));
-                      // Set the value units index.
-                      cl->setValueUnit(newplug->valueUnit(i));
-                    }
-                  }
+                  newplug->setupControllers(cll);
 
                   MusEGlobal::song->applyOperation(MusECore::UndoOp(
                     MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx, cll, macm));

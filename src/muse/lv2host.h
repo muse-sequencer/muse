@@ -622,7 +622,8 @@ public:
     void populatePresetsMenu(MusEGui::PopupMenu *menu);
     void applyPreset(void *preset);
 
-    int id() const override;
+// REMOVE Tim. tmp. Removed.
+//     int id() const override;
 
     static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
 #ifdef MIDNAM_SUPPORT

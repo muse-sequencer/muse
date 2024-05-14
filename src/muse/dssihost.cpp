@@ -752,7 +752,9 @@ void DssiSynthIF::setParameter(unsigned long n, double v)
 void DssiSynthIF::write(int level, Xml& xml) const
 {
 #ifdef DSSI_VST_CHUNK_SUPPORT
-      if(_synth->dssi->getCustomData)
+// REMOVE Tim. tmp. Changed.
+//       if(_synth->dssi->getCustomData)
+      if(_synth && _synth->dssi && _synth->dssi->getCustomData)
       {
         //---------------------------------------------
         // dump current state of synth
@@ -889,8 +891,10 @@ void DssiSynthIF::write(int level, Xml& xml) const
       */
       
       // Store controls as parameters...
-      for(unsigned long c = 0; c < _synth->_controlInPorts; ++c)
-        xml.doubleTag(level, "param", _controls[c].val);
+// REMOVE Tim. tmp. Added. Added conditional.
+      if(_controls)
+        for(unsigned long c = 0; c < _synth->_controlInPorts; ++c)
+          xml.doubleTag(level, "param", _controls[c].val);
 }
 
 //---------------------------------------------------------
@@ -1877,10 +1881,13 @@ void DssiSynthIF::guiHeartBeat()
   _oscif.oscSendProgram(pr, (hb << 8) + lb);
   
   // Update the gui's controls if needed.
-  unsigned long ports = _synth->_controlInPorts;
-
-  for(unsigned long i = 0; i < ports; ++i)
-    _oscif.oscSendControl(_controls[i].idx, _controls[i].val);
+// REMOVE Tim. tmp. Added. Added conditional.
+  if(_synth && _controls)
+  {
+    unsigned long ports = _synth->_controlInPorts;
+    for(unsigned long i = 0; i < ports; ++i)
+      _oscif.oscSendControl(_controls[i].idx, _controls[i].val);
+  }
   #endif
 }
 
@@ -1918,13 +1925,17 @@ int DssiSynthIF::oscUpdate()
       _oscif.oscSendProgram(pr, (hb << 8) + lb, true /*force*/);
       
       // Send current control values.
-      unsigned long ports = _synth->_controlInPorts;
-      for(unsigned long i = 0; i < ports; ++i) 
+// REMOVE Tim. tmp. Added. Added conditional.
+      if(_synth && _controls)
       {
-        _oscif.oscSendControl(_controls[i].idx, _controls[i].val, true /*force*/);
-        // Avoid overloading the GUI if there are lots and lots of ports. 
-        if((i+1) % 50 == 0)
-          usleep(300000);
+        unsigned long ports = _synth->_controlInPorts;
+        for(unsigned long i = 0; i < ports; ++i)
+        {
+          _oscif.oscSendControl(_controls[i].idx, _controls[i].val, true /*force*/);
+          // Avoid overloading the GUI if there are lots and lots of ports.
+          if((i+1) % 50 == 0)
+            usleep(300000);
+        }
       }
       
       return 0;
@@ -2194,14 +2205,20 @@ void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bankH, int bankL, in
     
   const int bank = (bankH << 8) | bankL;
   
-  const DSSI_Descriptor* dssi = _synth->dssi;
-  dssi->select_program(handle, bank, prog);
+// REMOVE Tim. tmp. Added. Added conditional.
+  if(_synth)
+  {
+    const DSSI_Descriptor* dssi = _synth->dssi;
+    dssi->select_program(handle, bank, prog);
+  }
   
   // Need to update the automation value, otherwise it overwrites later with the last automation value.
   //   "A plugin is permitted to re-write the values of its input control ports when select_program is called.  
   //    The host should re-read the input control port values and update its own records appropriately.  
   //    (This is the only circumstance in which a DSSI plugin is allowed to modify its own input ports.)"   From dssi.h
-  if(id() != -1)
+// REMOVE Tim. tmp. Changed.
+//   if(id() != -1)
+  if(_synth && _controls && id() != -1)
   {
     for(unsigned long k = 0; k < _synth->_controlInPorts; ++k)
     {  
@@ -2273,6 +2290,10 @@ void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, bool 
 
 int DssiSynthIF::getControllerInfo(int id, QString* name, int* ctrl, int* min, int* max, int* initval)
 {
+// REMOVE Tim. tmp. Added.
+  if(!_synth || !_controls)
+     return 0;
+
   int controlPorts = _synth->_controlInPorts;
   if(id == controlPorts || id == controlPorts + 1)
   {
@@ -2386,18 +2407,26 @@ void DssiSynthIF::deactivate3()
 //--------------------------------
 
 unsigned long DssiSynthIF::pluginID() const                  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->UniqueID : 0; }
-int DssiSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth.
+// REMOVE Tim. tmp. Removed.
+// int DssiSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth.
 QString DssiSynthIF::pluginLabel() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
 QString DssiSynthIF::pluginName() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Name) : QString(); }
 QString DssiSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
 QString DssiSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
 QString DssiSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
 QString DssiSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
-void DssiSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
-bool DssiSynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl; }
-void DssiSynthIF::enableAllControllers(bool v)               
+// REMOVE Tim. tmp. Changed.
+// void DssiSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
+// bool DssiSynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl; }
+void DssiSynthIF::enableController(unsigned long i, bool v)
+{ if(_controls) _controls[i].enCtrl = v; }
+bool DssiSynthIF::controllerEnabled(unsigned long i) const
+{ return _controls ? _controls[i].enCtrl : true; }
+void DssiSynthIF::enableAllControllers(bool v)
 { 
-  if(!_synth)
+// REMOVE Tim. tmp. Changed.
+//   if(!_synth)
+  if(!_synth || !_controls)
     return;
   for(unsigned long i = 0; i < _synth->_controlInPorts; ++i)
     _controls[i].enCtrl = v;
@@ -2441,26 +2470,69 @@ unsigned long DssiSynthIF::parametersOut() const             { return _synth ? _
 void DssiSynthIF::setParam(unsigned long i, double val)      { setParameter(i, val); }
 double DssiSynthIF::param(unsigned long i) const             { return getParameter(i); }
 double DssiSynthIF::paramOut(unsigned long i) const          { return getParameterOut(i); }
+// REMOVE Tim. tmp. Changed.
+// const char* DssiSynthIF::paramName(unsigned long i) const
+//   { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controls[i].idx] : 0; }
+// const char* DssiSynthIF::paramOutName(unsigned long i) const
+//   { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controlsOut[i].idx] : 0; }
+// LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i) const
+//   { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controls[i].idx]; }
+// LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned long i) const
+//   { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controlsOut[i].idx]; }
+// void DssiSynthIF::range(unsigned long i, float* min, float* max) const
+//   { ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controls[i].idx, min, max); }
+// void DssiSynthIF::rangeOut(unsigned long i, float* min, float* max) const
+//   { ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx, min, max); }
+// CtrlValueType DssiSynthIF::ctrlValueType(unsigned long i) const
+//   { return ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controls[i].idx); }
+// CtrlList::Mode DssiSynthIF::ctrlMode(unsigned long i) const
+//   { return ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controls[i].idx); };
+// CtrlValueType DssiSynthIF::ctrlOutValueType(unsigned long i) const
+//   { return ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx); }
+// CtrlList::Mode DssiSynthIF::ctrlOutMode(unsigned long i) const
+//   { return ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx); };
 const char* DssiSynthIF::paramName(unsigned long i) const
-  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controls[i].idx] : 0; }
+  { return (_synth && _synth->dssi && _controls) ? _synth->dssi->LADSPA_Plugin->PortNames[_controls[i].idx] : 0; }
 const char* DssiSynthIF::paramOutName(unsigned long i) const
-  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->PortNames[_controlsOut[i].idx] : 0; }
+  { return (_synth && _synth->dssi && _controlsOut) ? _synth->dssi->LADSPA_Plugin->PortNames[_controlsOut[i].idx] : 0; }
 LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i) const
-  { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controls[i].idx]; }
+  {
+    return (_synth && _synth->dssi && _controls) ?
+      _synth->dssi->LADSPA_Plugin->PortRangeHints[_controls[i].idx] :
+      LADSPA_PortRangeHint {0, 0, 0};
+  }
 LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned long i) const
-  { return _synth->dssi->LADSPA_Plugin->PortRangeHints[_controlsOut[i].idx]; }
+  {
+    return (_synth && _synth->dssi && _controlsOut) ?
+      _synth->dssi->LADSPA_Plugin->PortRangeHints[_controlsOut[i].idx] :
+      LADSPA_PortRangeHint {0, 0, 0};
+  }
 void DssiSynthIF::range(unsigned long i, float* min, float* max) const
-  { ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controls[i].idx, min, max); }
+  {
+    if(_synth && _synth->dssi && _controls)
+      ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controls[i].idx, min, max);
+    else
+      *min = *max = 0.0;
+  }
 void DssiSynthIF::rangeOut(unsigned long i, float* min, float* max) const
-  { ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx, min, max); }
+  {
+    if(_synth && _synth->dssi && _controlsOut)
+      ladspaControlRange(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx, min, max);
+    else
+      *min = *max = 0.0;
+  }
 CtrlValueType DssiSynthIF::ctrlValueType(unsigned long i) const
-  { return ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controls[i].idx); }
+  { return (_synth && _synth->dssi && _controls) ?
+      ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controls[i].idx) : VAL_LINEAR; }
 CtrlList::Mode DssiSynthIF::ctrlMode(unsigned long i) const
-  { return ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controls[i].idx); };
+  { return (_synth && _synth->dssi && _controls) ?
+      ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controls[i].idx) : CtrlList::INTERPOLATE; };
 CtrlValueType DssiSynthIF::ctrlOutValueType(unsigned long i) const
-  { return ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx); }
+  { return (_synth && _synth->dssi && _controlsOut) ?
+      ladspaCtrlValueType(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx) : VAL_LINEAR; }
 CtrlList::Mode DssiSynthIF::ctrlOutMode(unsigned long i) const
-  { return ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx); };
+  { return (_synth && _synth->dssi && _controlsOut) ?
+      ladspaCtrlMode(_synth->dssi->LADSPA_Plugin, _controlsOut[i].idx) : CtrlList::INTERPOLATE; };
 
 } // namespace MusECore
 

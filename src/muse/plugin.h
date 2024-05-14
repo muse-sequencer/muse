@@ -338,10 +338,17 @@ struct PluginConfiguration
 {
   struct ControlConfig
   {
+    // Can be -1. The 'ctl' songfile xml tag attribute was added version 4.0. It defaults to -1 for older files.
     int _ctlnum;
     QString _name;
     float _val;
-    ControlConfig(int ctlnum, const QString& name, float val);
+    float _min, _max;
+    CtrlValueType _valueType;
+    CtrlList::Mode _ctlMode;
+    int _valueUnit;
+    ControlConfig(int ctlnum, const QString& name,
+      float val, float min, float max,
+      CtrlValueType valueType, CtrlList::Mode mode, int valueUnit);
   };
 
   QString _file;
@@ -388,10 +395,14 @@ struct MissingPluginStruct
   QString _file;
   QString _uri;
   QString _label;
+  int _effectInstCount;
+  int _synthInstCount;
   int _effectInstNo;
   int _synthInstNo;
 
   MissingPluginStruct();
+  int effectInstNo();
+  int synthInstNo();
 };
 
 class MissingPluginList : public std::vector<MissingPluginStruct>
@@ -401,7 +412,7 @@ class MissingPluginList : public std::vector<MissingPluginStruct>
     // If uri is not empty, the search is based solely on it, the other arguments are ignored.
     iterator find(const QString& file, const QString& uri, const QString& label);
     // Returns the fake instance number.
-    int add(const QString& file, const QString& uri, const QString& label, bool isSynth /* vs. rack effect */);
+    MissingPluginStruct& add(const QString& file, const QString& uri, const QString& label, bool isSynth /* vs. rack effect */);
 };
 //typedef std::vector<MissingPluginStruct>::iterator iMissingPluginList;
 //typedef std::vector<MissingPluginStruct>::const_iterator ciMissingPluginList;
@@ -624,6 +635,12 @@ class PluginI : public PluginIBase {
 //      bool initControlValues;
       QString _name;
 //      QString _label;
+// REMOVE Tim. tmp. Added.
+      // Internal flag. If no name was found, a fake name based on label, which is not ideal, will be used.
+      // This flag indicates a fake name was chosen. It is used when saving XML to leave out the fake name.
+      // NOTE: If we ever add a setName() function to allow the user to change the plugin name,
+      //        this should be reset to false upon setting a name.
+      bool _isFakeName;
 
 // REMOVE Tim. tmp. Added.
       // Holds initial controller values, parameters, sysex, custom data etc. for plugins which use them.
@@ -781,6 +798,12 @@ class PluginI : public PluginIBase {
       // Can be -1 meaning no units.
       int valueUnit ( unsigned long i) const;
       int valueUnitOut ( unsigned long i) const;
+
+// REMOVE Tim. tmp. Added.
+      // Sets up a list of existing controllers based on info gathered from either the plugin
+      //  or the plugin's persistent info if the plugin is missing.
+      // Sets various controller properties such as names, ranges, value types, and value units.
+      bool setupControllers(CtrlListList *cll) const;
       };
 
 //---------------------------------------------------------
@@ -827,6 +850,11 @@ class Pipeline : public std::vector<PluginI*> {
       void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id);
       float latency() const;
+// REMOVE Tim. tmp. Added.
+      // Returns the first plugin instance with the given name found in the rack.
+      PluginI* findPlugin(const QString &);
+      // Returns the first plugin instance with the given name found in the rack. Const version.
+      const PluginI* findPlugin(const QString &) const;
       };
 
 typedef Pipeline::iterator iPluginI;

@@ -1896,6 +1896,21 @@ iCtrlList CtrlListList::find(int id) {
 ciCtrlList CtrlListList::find(int id) const {
       return std::map<int, CtrlList*, std::less<int> >::find(id);
       }
+// REMOVE Tim. tmp. Added.
+iCtrlList CtrlListList::findName(const QString &s)
+{
+  for(iCtrlList icl = begin(); icl != end(); ++icl)
+    if(icl->second->name() == s)
+      return icl;
+  return end();
+}
+ciCtrlList CtrlListList::findName(const QString &s) const
+{
+  for(ciCtrlList icl = cbegin(); icl != cend(); ++icl)
+    if(icl->second->name() == s)
+      return icl;
+  return cend();
+}
 
 void CtrlListList::clearAllAutomation() {
       for(iCtrlList i = begin(); i != end(); ++i)

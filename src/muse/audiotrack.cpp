@@ -713,11 +713,37 @@ Part* AudioTrack::newPart(Part*, bool /*clone*/)
 //   MusEGlobal::song->update(SC_RACK | SC_AUDIO_CONTROLLER_LIST | SC_AUDIO_CONTROLLER);
 // }
 
-// REMOVE Tim. tmp. Removed.
 //---------------------------------------------------------
 //   setupPlugin
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// void AudioTrack::setupPlugin(PluginI* plugin, int idx)
+// {
+//   if (plugin)
+//   {
+//     plugin->setID(idx);
+//     plugin->setTrack(this);
+//
+//     int controller = plugin->parameters();
+//     for (int i = 0; i < controller; ++i)
+//     {
+//       int id = genACnum(idx, i);
+//       const char* name = plugin->paramName(i);
+//       float min, max;
+//       plugin->range(i, &min, &max);
+//       CtrlList* cl = new CtrlList(id);
+//       cl->setRange(min, max);
+//       cl->setName(QString(name));
+//       cl->setValueType(plugin->ctrlValueType(i));
+//       cl->setMode(plugin->ctrlMode(i));
+//       cl->setCurVal(plugin->param(i));
+//       // Set the value units index.
+//       cl->setValueUnit(plugin->valueUnit(i));
+//       addController(cl);
+//     }
+//   }
+// }
 void AudioTrack::setupPlugin(PluginI* plugin, int idx)
 {
   if (plugin)
@@ -725,23 +751,34 @@ void AudioTrack::setupPlugin(PluginI* plugin, int idx)
     plugin->setID(idx);
     plugin->setTrack(this);
 
-    int controller = plugin->parameters();
-    for (int i = 0; i < controller; ++i)
+    // Grab the information from the plugin if it exists.
+    if(plugin->plugin())
     {
-      int id = genACnum(idx, i);
-      const char* name = plugin->paramName(i);
-      float min, max;
-      plugin->range(i, &min, &max);
-      CtrlList* cl = new CtrlList(id);
-      cl->setRange(min, max);
-      cl->setName(QString(name));
-      cl->setValueType(plugin->ctrlValueType(i));
-      cl->setMode(plugin->ctrlMode(i));
-      cl->setCurVal(plugin->param(i));
-      // Set the value units index.
-      cl->setValueUnit(plugin->valueUnit(i));
-      addController(cl);
+      int params = plugin->parameters();
+      for (int i = 0; i < params; ++i)
+      {
+        int id = genACnum(idx, i);
+        CtrlList* cl = new CtrlList(id);
+        addController(cl);
+      }
     }
+    else
+    // Plugin is missing. Grab the information from the plugin's persistent properies.
+    {
+      const PluginConfiguration &pc = plugin->currentInitialConfiguration();
+      const int sz = pc._initParams.size();
+      for(int i = 0; i < sz; ++i)
+      {
+        const PluginConfiguration::ControlConfig &cc = pc._initParams.at(i);
+        // If a control number was given, use it. (Control number added in song file version 4.0).
+        // If no control number was given, use the actual sort order as an index.
+        const int cnum = cc._ctlnum >= 0 ? cc._ctlnum : i;
+        const int id = genACnum(idx, cnum);
+        CtrlList* cl = new CtrlList(id);
+        addController(cl);
+      }
+    }
+    plugin->setupControllers(controller());
   }
 }
 
@@ -2299,7 +2336,8 @@ void AudioTrack::mapRackPluginsToControllers()
         (*_efxPipe)[i] = 0;
         (*_efxPipe)[idx] = p;
       }
-      p->setID(idx);
+      if(p->id() != idx)
+        p->setID(idx);
 
       // It is now safe to update the controllers.
       p->updateControllers();
@@ -2324,32 +2362,43 @@ void AudioTrack::mapRackPluginsToControllers()
 
     int j = p->parameters();
 
+// REMOVE Tim. tmp. Changed.
+//     for(int i = 0; i < j; i++)
+//     {
+//       int id = genACnum(idx, i);
+//       CtrlList* l = 0;
+//
+//       ciCtrlList icl = _controller.find(id);
+//       if(icl == _controller.end())
+//       {
+//         l = new CtrlList(id);
+//         addController(l);
+//       }
+//       else
+//         l = icl->second;
+//
+//       // Force all of these now, even though they may have already been set. With a pre-
+//       //  0.9pre1 med file with broken controller sections they may not be set correct.
+//       float min, max;
+//       p->range(i, &min, &max);
+//       l->setRange(min, max);
+//       l->setName(QString(p->paramName(i)));
+//       l->setValueType(p->ctrlValueType(i));
+//       l->setMode(p->ctrlMode(i));
+//       l->setCurVal(p->param(i));
+//       // Set the value units index.
+//       l->setValueUnit(p->valueUnit(i));
+//     }
     for(int i = 0; i < j; i++)
     {
       int id = genACnum(idx, i);
-      CtrlList* l = 0;
-
-      ciCtrlList icl = _controller.find(id);
-      if(icl == _controller.end())
-      {
-        l = new CtrlList(id);
-        addController(l);
-      }
-      else
-        l = icl->second;
-
-      // Force all of these now, even though they may have already been set. With a pre-
-      //  0.9pre1 med file with broken controller sections they may not be set correct.
-      float min, max;
-      p->range(i, &min, &max);
-      l->setRange(min, max);
-      l->setName(QString(p->paramName(i)));
-      l->setValueType(p->ctrlValueType(i));
-      l->setMode(p->ctrlMode(i));
-      l->setCurVal(p->param(i));
-      // Set the value units index.
-      l->setValueUnit(p->valueUnit(i));
+      ciCtrlList icl = controller()->find(id);
+      if(icl == controller()->end())
+        addController(new CtrlList(id));
     }
+    // Force all of these now, even though they may have already been set. With a pre-
+    //  0.9pre1 med file with broken controller sections they may not be set correct.
+    p->setupControllers(controller());
   }
 
   // Delete non-existent controllers.
@@ -2368,11 +2417,15 @@ void AudioTrack::mapRackPluginsToControllers()
     int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
 
     bool do_remove = false;
-    const PluginIBase* p = 0;
+//     const PluginIBase* p = 0;
     if(idx >= 0 && idx < MusECore::PipelineDepth)
     {
-      p = (*_efxPipe)[idx];
-      if(!p || (param >= p->parameters()))
+      const PluginI *p = (*_efxPipe)[idx];
+// REMOVE Tim. tmp. Changed.
+//       if(!p || (param >= p->parameters()))
+      // If there is a PluginI at that slot but its plugin is missing,
+      //  do NOT remove the loaded controllers, to preserve data upon re-saving.
+      if(!p || (p->plugin() && param >= p->parameters()))
         do_remove = true;
     }
     // Support a special block for synth controllers.
@@ -2380,12 +2433,14 @@ void AudioTrack::mapRackPluginsToControllers()
     {
       const SynthI* synti = static_cast < const SynthI* > (this);
       SynthIF* sif = synti->sif();
-      // Special for synths: If no sif could be found or loaded (missing pplugin etc.),
-      //  do NOT remove the loaded controllers, to preserve data upon re-saving.
+//       // Special for synths: If no sif could be found or loaded (missing pplugin etc.),
+//       //  do NOT remove the loaded controllers, to preserve data upon re-saving.
+      // If the sif is missing, do NOT remove the loaded controllers, to preserve data upon re-saving.
       if(sif)
       {
-        p = static_cast < const PluginIBase* > (sif);
-        if(param >= p->parameters())
+//         p = static_cast < const PluginIBase* > (sif);
+//         if(param >= p->parameters())
+        if(param >= sif->parameters())
           do_remove = true;
       }
     }

@@ -790,6 +790,8 @@ class AudioTrack : public Track {
 
       void setPrefader(bool val);
       Pipeline* efxPipe()                { return _efxPipe;  }
+// REMOVE Tim. tmp. Added.
+      const Pipeline* efxPipe() const    { return _efxPipe;  }
       void deleteAllEfxGuis();
 // REMOVE Tim. tmp. Removed.
 //       void clearEfxList();

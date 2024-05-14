@@ -6515,15 +6515,24 @@ void LV2SynthIF::setParam(long unsigned int i, double val)
     setParameter(i, val);
 }
 
+// REMOVE Tim. tmp. Changed.
+// void LV2SynthIF::enableController(unsigned long i, bool v)  {
+//     _controls[i].enCtrl = v;
+// }
+// bool LV2SynthIF::controllerEnabled(unsigned long i) const   {
+//     return _controls[i].enCtrl;
+// }
 void LV2SynthIF::enableController(unsigned long i, bool v)  {
-    _controls[i].enCtrl = v;
+    if(_controls) _controls[i].enCtrl = v;
 }
 bool LV2SynthIF::controllerEnabled(unsigned long i) const   {
-    return _controls[i].enCtrl;
+    return _controls ? _controls[i].enCtrl : true;
 }
 void LV2SynthIF::enableAllControllers(bool v)
 {
-    if(!_synth)
+// REMOVE Tim. tmp. Changed.
+//     if(!_synth)
+    if(!_synth || !_controls)
         return;
     for(unsigned long i = 0; i < _inportsControl; ++i)
         _controls[i].enCtrl = v;
@@ -6553,7 +6562,8 @@ void LV2SynthIF::applyPreset(void *preset)
 //     return MusECore::SynthIF::readConfiguration(xml, readPreset);
 // }
 
-int LV2SynthIF::id() const { return MusECore::MAX_PLUGINS; }
+// REMOVE Tim. tmp. Removed.
+// int LV2SynthIF::id() const { return MusECore::MAX_PLUGINS; }
 
 
 //==========================================================

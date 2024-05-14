@@ -1518,17 +1518,18 @@ bool Song::changePluginOperation(UndoOp *i)
     for (unsigned long j = 0; j < params; ++j)
     {
       const unsigned long id = genACnum(epos, j);
-      const char* name = new_plugin->paramName(j);
-      float min, max;
-      new_plugin->range(j, &min, &max);
+// REMOVE Tim. tmp. Removed.
+//       const char* name = new_plugin->paramName(j);
+//       float min, max;
+//       new_plugin->range(j, &min, &max);
       CtrlList* cl = new CtrlList((int)id);
-      cl->setRange(min, max);
-      cl->setName(QString(name));
-      cl->setValueType(new_plugin->ctrlValueType(j));
-      cl->setMode(new_plugin->ctrlMode(j));
-      cl->setCurVal(new_plugin->param(j));
-      // Set the value units index.
-      cl->setValueUnit(new_plugin->valueUnit(j));
+//       cl->setRange(min, max);
+//       cl->setName(QString(name));
+//       cl->setValueType(new_plugin->ctrlValueType(j));
+//       cl->setMode(new_plugin->ctrlMode(j));
+//       cl->setCurVal(new_plugin->param(j));
+//       // Set the value units index.
+//       cl->setValueUnit(new_plugin->valueUnit(j));
 
       bool res = false;
       // If the audio is idling, take advantage of relaxed timing and just directly
@@ -1551,6 +1552,12 @@ bool Song::changePluginOperation(UndoOp *i)
         continue;
       }
     }
+    // If the audio is idling, take advantage of relaxed timing and just directly
+    //  setup the controller list.
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      new_plugin->setupControllers(track_cll);
+    else
+      new_plugin->setupControllers(new_cll);
   }
 
   if(new_cll)
@@ -2701,17 +2708,18 @@ bool Song::revertMovePluginOperation(UndoOp *i)
     for (unsigned long j = 0; j < params; ++j)
     {
       const unsigned long id = genACnum(epos, j);
-      const char* name = new_plugin->paramName(j);
-      float min, max;
-      new_plugin->range(j, &min, &max);
+// REMOVE Tim. tmp. Removed.
+//       const char* name = new_plugin->paramName(j);
+//       float min, max;
+//       new_plugin->range(j, &min, &max);
       CtrlList* cl = new CtrlList((int)id);
-      cl->setRange(min, max);
-      cl->setName(QString(name));
-      cl->setValueType(new_plugin->ctrlValueType(j));
-      cl->setMode(new_plugin->ctrlMode(j));
-      cl->setCurVal(new_plugin->param(j));
-      // Set the value units index.
-      cl->setValueUnit(new_plugin->valueUnit(j));
+//       cl->setRange(min, max);
+//       cl->setName(QString(name));
+//       cl->setValueType(new_plugin->ctrlValueType(j));
+//       cl->setMode(new_plugin->ctrlMode(j));
+//       cl->setCurVal(new_plugin->param(j));
+//       // Set the value units index.
+//       cl->setValueUnit(new_plugin->valueUnit(j));
 
       bool res = false;
       // If the audio is idling, take advantage of relaxed timing and just directly
@@ -2734,6 +2742,12 @@ bool Song::revertMovePluginOperation(UndoOp *i)
         continue;
       }
     }
+    // If the audio is idling, take advantage of relaxed timing and just directly
+    //  setup the destination controller list.
+    if(!MusEGlobal::audio || MusEGlobal::audio->isIdle())
+      new_plugin->setupControllers(track_cll);
+    else
+      new_plugin->setupControllers(new_cll);
   }
 
   // If there is a new source controller list.
@@ -7998,5 +8012,36 @@ void Song::setCycleMode(int val) {
 MidiAudioCtrlMap* Song::midiAssignments() { return &_midiAssignments; }
 
 MidiRemote* Song::midiRemote() { return &_midiRemote; }
+
+// REMOVE Tim. tmp. Added.
+PluginI* Song::findRackPlugin(const QString &name)
+{
+  const TrackList *tl = tracks();
+  for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it)
+  {
+    Track *t = *it;
+    if(t->isMidiTrack())
+      continue;
+    PluginI *pi = static_cast<AudioTrack*>(t)->efxPipe()->findPlugin(name);
+    if(pi)
+      return pi;
+  }
+  return nullptr;
+}
+
+const PluginI* Song::findRackPlugin(const QString &name) const
+{
+  const TrackList *tl = tracks();
+  for(ciTrack it = tl->cbegin(); it != tl->cend(); ++it)
+  {
+    const Track *t = *it;
+    if(t->isMidiTrack())
+      continue;
+    const PluginI *pi = static_cast<const AudioTrack*>(t)->efxPipe()->findPlugin(name);
+    if(pi)
+      return pi;
+  }
+  return nullptr;
+}
 
 } // namespace MusECore
