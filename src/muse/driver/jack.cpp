@@ -379,6 +379,39 @@ static int processSync(jack_transport_state_t state, jack_position_t* pos, void*
       }
 
 //---------------------------------------------------------
+//  pos_to_jack_position
+//---------------------------------------------------------
+
+static void pos_to_jack_position(const Pos& p, jack_position_t* pos) {
+
+      pos->valid = JackPositionBBT;
+      int bar, beat, tick;
+      p.mbt(&bar, &beat, &tick);
+      pos->bar = bar;
+      pos->beat = beat;
+      pos->tick = tick;
+
+      pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
+      pos->bar++;
+      pos->beat++;
+
+      int z, n;
+      MusEGlobal::sigmap.timesig(p.tick(), z, n);
+      pos->beats_per_bar = z;
+      pos->beat_type = n;
+      pos->ticks_per_beat = MusEGlobal::config.division;
+      //pos->ticks_per_beat = 24;
+
+      double tempo = MusEGlobal::tempomap.tempo(p.tick());
+      pos->beats_per_minute = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
+#if JACK_DEBUG
+      fprintf(stderr, "pos_to_jack_position new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
+              pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+#endif
+
+      }
+
+//---------------------------------------------------------
 //   timebase_callback
 //---------------------------------------------------------
 
@@ -423,34 +456,13 @@ static void timebase_callback(jack_transport_state_t,
       Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::audio->tickPos() : pos->frame, MusEGlobal::extSyncFlag ? true : false);
       // Can't use song pos - it is only updated every (slow) GUI heartbeat !
       //Pos p(MusEGlobal::extSyncFlag ? MusEGlobal::song->cpos() : pos->frame, MusEGlobal::extSyncFlag ? true : false);
-      
-      pos->valid = JackPositionBBT;
-      int bar, beat, tick;
-      p.mbt(&bar, &beat, &tick);
-      pos->bar = bar;
-      pos->beat = beat;
-      pos->tick = tick;
 
-      pos->bar_start_tick = Pos(pos->bar, 0, 0).tick();
-      pos->bar++;
-      pos->beat++;
-      
-      int z, n;
-      MusEGlobal::sigmap.timesig(p.tick(), z, n);
-      pos->beats_per_bar = z;
-      pos->beat_type = n;
-      pos->ticks_per_beat = MusEGlobal::config.division;
-      //pos->ticks_per_beat = 24;
-      
-      double tempo = MusEGlobal::tempomap.tempo(p.tick());
-      pos->beats_per_minute = ((double)MusEGlobal::tempomap.globalTempo() * 600000.0) / tempo;
+      pos_to_jack_position(p, pos);
+
 #if JACK_DEBUG
-      fprintf(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
-      fprintf(stderr, " new: bar:%d beat:%d tick:%d\n bar_start_tick:%f beats_per_bar:%f beat_type:%f ticks_per_beat:%f beats_per_minute:%f\n",
-              pos->bar, pos->beat, pos->tick, pos->bar_start_tick, pos->beats_per_bar, pos->beat_type, pos->ticks_per_beat, pos->beats_per_minute);
+      // fprintf(stderr, "timebase_callback is new_pos:%d nframes:%u frame:%u tickPos:%d cpos:%d\n", new_pos, nframes, pos->frame, MusEGlobal::audio->tickPos(), MusEGlobal::song->cpos());
 #endif
-      
-      }
+  }
 
 //---------------------------------------------------------
 //   processShutdown
