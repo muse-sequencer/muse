@@ -2273,7 +2273,21 @@ void JackAudioDevice::seekTransport(unsigned frame)
       
       if(!checkJackClient(_client)) return;
 //      fprintf(stderr, "JACK: seekTransport %d\n", frame);
-      jack_transport_locate(_client, frame);
+
+      if(MusEGlobal::timebaseMasterState)
+      {
+        // We are timebase master. Provide a BBT representation of the new
+        // position as well.
+        jack_position_t jp;
+        Pos p(frame, false);
+        jp.frame = frame;
+        pos_to_jack_position(p, &jp);
+        jack_transport_reposition(_client, &jp);
+      }
+      else
+      {
+        jack_transport_locate(_client, frame);
+      }
     }
 
 //---------------------------------------------------------
@@ -2293,29 +2307,19 @@ void JackAudioDevice::seekTransport(const Pos &p)
       
       if(!checkJackClient(_client)) return;
 
-// TODO: Be friendly to other apps... Sadly not many of us use jack_transport_reposition.
-//       This is actually required IF we want the extra position info to show up
-//        in the sync callback, otherwise we get just the frame only.
-//       This information is shared on the server, it is directly passed around. 
-//       jack_transport_locate blanks the info from sync until the timebase callback reads 
-//        it again right after, from some timebase master. See process in audio.cpp     
-
-//       jack_position_t jp;
-//       jp.frame = p.frame();
-//       
-//       jp.valid = JackPositionBBT;
-//       p.mbt(&jp.bar, &jp.beat, &jp.tick);
-//       jp.bar_start_tick = Pos(jp.bar, 0, 0).tick();
-//       jp.bar++;
-//       jp.beat++;
-//       jp.beats_per_bar = 5;  // TODO Make this correct !
-//       jp.beat_type = 8;      //
-//       jp.ticks_per_beat = MusEGlobal::config.division;
-//       int tempo = MusEGlobal::tempomap.tempo(p.tick());
-//       jp.beats_per_minute = (60000000.0 / tempo) * MusEGlobal::tempomap.globalTempo()/100.0;
-//       jack_transport_reposition(_client, &jp);
-      
-      jack_transport_locate(_client, p.frame());
+      if(MusEGlobal::timebaseMasterState)
+      {
+        // We are timebase master. Provide a BBT representation of the new
+        // position as well.
+        jack_position_t jp;
+        jp.frame = p.frame();
+        pos_to_jack_position(p, &jp);
+        jack_transport_reposition(_client, &jp);
+      }
+      else
+      {
+        jack_transport_locate(_client, p.frame());
+      }
       }
 
 //---------------------------------------------------------
