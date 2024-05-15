@@ -30,6 +30,8 @@
 
 #include <stdio.h>
 #include "muse_math.h"
+// REMOVE Tim. wave. Added.
+#include "muse_time.h"
 
 #include "prcanvas.h"
 #include "globals.h"
@@ -56,6 +58,9 @@
 #define CHORD_TIMEOUT 75
 
 namespace MusEGui {
+
+// Static. This is how thick our event borders are.
+int PianoCanvas::eventBorderWidth = 1;
 
 //---------------------------------------------------------
 //   NEvent
@@ -312,19 +317,57 @@ int PianoCanvas::y2pitch(int y) const
 void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
    const QRect& mr, const QRegion&)
       {
+      MusECore::MidiPart* part = (MusECore::MidiPart*)(item->part());
+
+// REMOVE Tim. wave. Added. Diagnostics.
+      fprintf(stderr, "PianoCanvas::drawItem part:%p part->track():%p\n", part, part ? part->track() : nullptr);
+
+      if(!part /*|| !part->track()*/)
+        return;
+
+      const MusECore::Pos::TType partTType = part->type();
+      const MusECore::Pos::TType canvasTType = MusECore::Pos::TICKS;
+
       QRect ur = mapDev(mr).adjusted(0, 0, 0, 1);
+
+// REMOVE Tim. wave. Added. Moved from below.
+      NEvent* nevent   = (NEvent*) item;
+      const MusECore::Event event = nevent->event();
+      if(event.empty())
+        return;
+      const MusECore::Pos::TType eTType = event.pos().type();
 
       // This is the update comparison rectangle. This would normally be the same as the item's bounding rectangle
       //  but in this case we have a one-pixel wide border. To accommodate for our border, expand the right edge right
       //  by one, and the bottom edge down by one. This way we catch the full
       //  necessary drawing rectangle when checking the requested update rectangle.
       // Note that this is units of ticks.
-      QRect ubbr = item->bbox().adjusted(0, 0, 0, -1);
-      if(!virt())
-        ubbr.moveCenter(map(item->pos()));
+// REMOVE Tim. wave. Changed.
+//       QRect ubbr = item->bbox().adjusted(0, 0, 0, -1);
+//       if(!virt())
+//         ubbr.moveCenter(map(item->pos()));
+      const int pPos = item->tmpPartPos();
+      const unsigned pPosEType = MusECore::Pos::convert(pPos, partTType, eTType);
+      const unsigned absEPos = pPosEType + item->tmpPos();
+      const unsigned eLen = item->tmpLen();
+      const unsigned absEEnd = absEPos + eLen;
+      const unsigned absEPosCTType = MusECore::Pos::convert(absEPos, eTType, canvasTType);
+      const unsigned absEEndCTType = MusECore::Pos::convert(absEEnd, eTType, canvasTType);
+      const QRect ubbr = QRect(absEPosCTType, item->bbox().y(), absEEndCTType - absEPosCTType, item->bbox().height()).adjusted(0, 0, 0, -1);
+
 
       const QRect mbbr = map(ubbr); // Use our own map instead.
       QRect ubr = ur & ubbr;
+
+      // REMOVE Tim. wave. Added. Diagnostics.
+      fprintf(stderr, "pPos:%d eLen:%d absEPos:%d absEEnd:%d absEPosCTType:%d absEEndCTType:%d\n",
+              pPos, eLen, absEPos, absEEnd, absEPosCTType, absEEndCTType);
+      fprintf(stderr, "bbox x:%d y:%d w:%d h:%d\n", item->bbox().x(), item->bbox().y(), item->bbox().width(), item->bbox().height());
+      fprintf(stderr, "mr x:%d y:%d w:%d h:%d\n", mr.x(), mr.y(), mr.width(), mr.height());
+      fprintf(stderr, "ur x:%d y:%d w:%d h:%d\n", ur.x(), ur.y(), ur.width(), ur.height());
+      fprintf(stderr, "ubbr x:%d y:%d w:%d h:%d\n", ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
+      fprintf(stderr, "ubr x:%d y:%d w:%d h:%d\n", ubr.x(), ubr.y(), ubr.width(), ubr.height());
+
       const int ux = ur.x();
       const int uy = ur.y();
       const int uw = ur.width();
@@ -364,8 +407,8 @@ void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
             };
 
       QColor color;
-      NEvent* nevent   = (NEvent*) item;
-      MusECore::Event event = nevent->event();
+//       NEvent* nevent   = (NEvent*) item;
+//       MusECore::Event event = nevent->event();
       if (nevent->part() != curPart){
           if(item->isMoving())
               color = Qt::gray;
@@ -929,10 +972,13 @@ MusECore::Undo PianoCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Dra
 
 bool PianoCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
+      // Events within an event list cannot be cloned, only copied or moved! Each must have a unique ID.
+      if (dtype == MOVE_CLONE)
+        return false;
+
       NEvent* nevent = (NEvent*) item;
       MusECore::Event event    = nevent->event();
       int npitch     = y2pitch(pos.y());
-      event.setSelected(false);
       MusECore::Event newEvent = (dtype == MOVE_COPY) ? event.duplicate() : event.clone();
       newEvent.setSelected(true);
       int x          = pos.x();
@@ -951,8 +997,11 @@ bool PianoCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint
       // at this place. with operation groups, the part isn't
       // resized yet. (flo93)
 
-      if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
+      if (dtype == MOVE_COPY)
+      {
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent, event, part, false, event.selected()));
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false));
+      }
       else
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
 
@@ -1037,75 +1086,546 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
         setLastEdited(event);
       }
       else // forbid action by not applying it
-          songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
-                                          //to remove "forbidden" events from the list again
+          //this forces an update of the itemlist, which is necessary
+          //to remove "forbidden" events from the list again
+          //otherwise, if a moving operation was forbidden,
+          //the canvas would still show the movement
+          songChanged(SC_EVENT_INSERTED);
+      }
+
+// REMOVE Tim. wave. Added.
+//---------------------------------------------------------
+//   adjustItemSize
+//---------------------------------------------------------
+
+//void PianoCanvas::adjustItemTempValues(CItem* item, int pos, bool noSnap, bool ctrl, bool /*alt*/)
+void PianoCanvas::adjustItemSize(CItem* item, int pos, bool left, bool noSnap, bool ctrl, bool /*alt*/, QRegion * region)
+      {
+//     Q_UNUSED(item)
+    Q_UNUSED(ctrl)
+
+//     if(resizeDirection != MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT &&
+//       resizeDirection != MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//       return;
+
+//     MusECore::Undo operations;
+    MusECore::MuseCount_t newPEnd = 0;
+
+//     NEvent* nevent = (NEvent*) item;
+
+//     MusECore::Part* part;
+    const MusECore::Part* itemPart = item->part();
+
+    const MusECore::Pos::TType itemPartTType = itemPart->type();
+
+    const MusECore::MuseCount_t itemPPos = MUSE_TIME_UINT_TO_INT64 itemPart->posValue();
+    const MusECore::MuseCount_t tmpItemPLen = item->tmpPartLen();
+    const MusECore::MuseCount_t tmpItemPEnd = itemPPos + tmpItemPLen;
+
+    //const MusECore::Pos::TType originalPartTType = resizeTType;
+    const MusECore::Pos::TType canvasTType = MusECore::Pos::TICKS;
+
+    if(!noSnap)
+      // Ignore the return y, which may be altered, we only want the x.
+      pos = raster(QPoint(pos, item->y())).x();
+
+//     for (auto &it: items)
+//     {
+//         if (!it.second->isSelected())
+//             continue;
+
+//         const MusECore::Part* part = it.second->part();
+        //const MusECore::Part* part = item->part();
+        //const MusECore::Pos::TType itemPartTType = itemPart->type();
+
+//         // REMOVE Tim. wave. Added. Diagnostics.
+//         fprintf(stderr, "pre nevent bbox x:%d y:%d w:%d h:%d\n",
+//                 it.second->bbox().x(), it.second->bbox().y(), it.second->bbox().width(), it.second->bbox().height());
+//         fprintf(stderr, "pre nevent pos x:%d y:%d\n", it.second->pos().x(), it.second->pos().y());
+
+// // REMOVE Tim. wave. Changed.
+// //         QPoint topLeft = QPoint(qMax((unsigned)it.second->x(), part->tick()), it.second->y());
+//         const QPoint topLeft = QPoint(editor->rasterVal(qMax((unsigned)it.second->x(), part->tick())), it.second->y());
+// //         fprintf(stderr, "pre-raster topLeft x:%d y:%d\n", topLeft.x(), topLeft.y());
+// // REMOVE Tim. wave. Changed. Diagnostics.
+// //         it.second->setTopLeft(raster(topLeft));
+// //         topLeft = raster(topLeft);
+//         fprintf(stderr, "post-raster topLeft x:%d y:%d\n", topLeft.x(), topLeft.y());
+//         it.second->setTopLeft(topLeft);
+
+//         NEvent* nevent = (NEvent*) it.second;
+//         NEvent* nevent = (NEvent*) item;
+
+//         // REMOVE Tim. wave. Added. Diagnostics.
+//         fprintf(stderr, "item bbox x:%d y:%d w:%d h:%d\n", item->bbox().x(), item->bbox().y(), item->bbox().width(), item->bbox().height());
+//         fprintf(stderr, "nevent pos x:%d y:%d\n", nevent->pos().x(), nevent->pos().y());
+//         fprintf(stderr, "nevent bbox x:%d y:%d w:%d h:%d\n", nevent->bbox().x(), nevent->bbox().y(), nevent->bbox().width(), nevent->bbox().height());
+//         fprintf(stderr, "mr x:%d y:%d w:%d h:%d\n", mr.x(), mr.y(), mr.width(), mr.height());
+//         fprintf(stderr, "ur x:%d y:%d w:%d h:%d\n", ur.x(), ur.y(), ur.width(), ur.height());
+//         fprintf(stderr, "ubbr x:%d y:%d w:%d h:%d\n", ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
+//         fprintf(stderr, "ubr x:%d y:%d w:%d h:%d\n", ubr.x(), ubr.y(), ubr.width(), ubr.height());
+
+        const MusECore::MuseCount_t ePos = item->tmpPos();
+        const MusECore::MuseCount_t eLen = item->tmpLen();
+
+        const MusECore::Event event = item->event();
+        const MusECore::Pos::TType ePosTType   = event.pos().type();
+        const MusECore::MuseCount_t PPosETType = MUSE_TIME_UINT_TO_INT64 itemPart->posValue(ePosTType);
+        const MusECore::MuseCount_t pPosCTType = MUSE_TIME_UINT_TO_INT64 itemPart->posValue(canvasTType);
+        //const MusECore::MuseCount_t PPosEType =
+        //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(nevent->tmpPartPos(), part->type(), ePosType);
+        //const MusECore::MuseCount_t PTick =
+        //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(nevent->tmpPartPos(), part->type(), canvasTType);
+
+        const MusECore::MuseCount_t absEPos       = PPosETType + ePos;
+        const MusECore::MuseCount_t absEPosCTType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEPos, ePosTType, canvasTType);
+        const MusECore::MuseCount_t absEEnd       = absEPos + eLen;
+        const MusECore::MuseCount_t absEEndCTType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEEnd, ePosTType, canvasTType);
+
+        MusECore::MuseCount_t newAbsEPos         = absEPos;
+        MusECore::MuseCount_t newAbsEPosCTType   = absEPosCTType;
+        MusECore::MuseCount_t newAbsEEnd         = absEEnd;
+        MusECore::MuseCount_t newAbsEEndCTType   = absEEndCTType;
+
+        MusECore::MuseCount_t newEPos;
+        MusECore::MuseCount_t newELen;
+
+//         newAbsETick = nevent->x();
+//         newAbsEEndTick = newAbsETick + nevent->width();
+
+        if (left)
+        {
+          newAbsEPosCTType = pos;
+
+          if(noSnap)
+          {
+            // Leave at least one pixel width (at current mag) so that the user can still hover and adjust it.
+            if(newAbsEEndCTType - newAbsEPosCTType < rmapxDev(1))
+              newAbsEPosCTType = newAbsEEndCTType - rmapxDev(1);
+            newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPosCTType, canvasTType, ePosTType);
+          }
+          else
+          {
+            MusECore::MuseCount_t newAbsEPosTick =
+              MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPosCTType, canvasTType, MusECore::Pos::TICKS);
+
+            const MusECore::MuseCount_t newAbsEEndTick =
+              MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosTType, MusECore::Pos::TICKS);
+
+            const MusECore::MuseCount_t rastStep = editor->rasterStep(newAbsEPosTick);
+
+//             if(newAbsEEndCTType - newAbsEPosCTType < rastStep)
+//               newAbsEPosCTType = newAbsEEndCTType - rastStep;
+//             newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPosCTType, canvasTType, ePosTType);
+
+            if(newAbsEEndTick - newAbsEPosTick < rastStep)
+              newAbsEPosTick = newAbsEEndTick - rastStep;
+
+            newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPosTick, MusECore::Pos::TICKS, ePosTType);
+          }
+          // Limit the left edge of the event to the left edge of the part.
+          if(newAbsEPos < PPosETType)
+            newAbsEPos = PPosETType;
+        }
+        else
+        {
+          newAbsEEndCTType = pos;
+
+          if(noSnap)
+          {
+            // Leave at least one pixel width (at currect mag) so that the user can still hover and adjust it.
+            if(newAbsEEndCTType - newAbsEPosCTType < rmapxDev(1))
+              newAbsEEndCTType = newAbsEPosCTType + rmapxDev(1);
+            newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndCTType, canvasTType, ePosTType);
+          }
+          else
+          {
+            const MusECore::MuseCount_t newAbsEPosTick =
+              MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, ePosTType, MusECore::Pos::TICKS);
+
+            MusECore::MuseCount_t newAbsEEndTick =
+              MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndCTType, canvasTType, MusECore::Pos::TICKS);
+
+            const MusECore::MuseCount_t rastStep = editor->rasterStep(newAbsEPosTick);
+
+//             if(newAbsEEndCTType - newAbsEPosCTType < rastStep)
+//               newAbsEEndCTType = newAbsEPosCTType + rastStep;
+//             newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndCTType, canvasTType, ePosTType);
+
+            if(newAbsEEndTick - newAbsEPosTick < rastStep)
+              newAbsEEndTick = newAbsEPosTick + rastStep;
+
+            newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, ePosTType);
+          }
+        }
+
+
+
+//         if (noSnap)
+        {
+            //newELen = nevent->width();
+//             newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPosCTType, canvasTType, ePosTType);
+//             newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndCTType, canvasTType, ePosTType);
+        }
+//         else
+//         {
+// // //             MusECore::MuseCount_t absEPos = event.tick() + part->tick();
+// //             const MusECore::MuseCount_t absEPosTicks =
+// //               MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEPos, event.pos().type(), canvasTType);
+// //
+// // //             newELen = editor->rasterVal(absEPos + nevent->width()) - absEPos;
+// //             //newELen = editor->rasterVal(absEPos + nevent->width()) - absEPos;
+// //             //newELen = editor->rasterVal(absEPosTicks + nevent->width()) - absEPosTicks;
+// //             const MusECore::MuseCount_t newAbsEPosTicks = editor->rasterVal(absEPosTicks);
+// //             const MusECore::MuseCount_t newAbsEPos =
+// //               MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPosTicks, canvasTType, event.pos().type());
+// //             newELen = editor->rasterVal(absEPosTicks + nevent->width());
+// //             if (newELen <= 0)
+// //                 newELen = editor->raster();
+//
+//
+//             // TODO: PianoCanvas items are currently in TICKS. If TICKS/FRAMES timeline is ever added, convert this.
+//             if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//             {
+//               newAbsETick = MUSE_TIME_UINT_TO_INT64 editor->rasterVal(newAbsETick);
+//               newAbsEPos  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, canvasTType, ePosType);
+//               newAbsEEnd  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, canvasTType, ePosType);
+//             }
+//             else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//             {
+//               newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, canvasTType, ePosType);
+//               newAbsEEndTick = MUSE_TIME_UINT_TO_INT64 editor->rasterVal(newAbsEEndTick);
+//               newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, canvasTType, ePosType);
+//             }
+//
+//         }
+
+        newEPos = newAbsEPos - PPosETType;
+        if(newEPos < 0)
+          newEPos = 0;
+
+//         // The Canvas limits the distance to 1 rather than 0, so let's catch that.
+//         if(newAbsEEnd - newAbsEPos <= 1)
+//         {
+//           if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//           {
+//             MusECore::MuseCount_t newAbsETick = newAbsEEndTick - editor->raster();
+//             if(newAbsETick < PTick)
+//             {
+//               newAbsETick = PTick;
+//               const MusECore::MuseCount_t newAbsEEndTick = newAbsETick + editor->raster();
+//               newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, canvasTType, ePosType);
+//             }
+//             newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, canvasTType, ePosType);
+//             if(newAbsEPos < PPosEType)
+//               newAbsEPos = PPosEType;
+//             newEPos = newAbsEPos - PPosEType;
+//           }
+//           else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//           {
+//             const MusECore::MuseCount_t newAbsEEndTick = newAbsETick + editor->raster();
+//             newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, canvasTType, ePosType);
+//           }
+//         }
+
+        newELen = newAbsEEnd - newAbsEPos;
+
+//         if(newELen < rmapxDev(1))
+//           newELen = rmapxDev(1);
+
+        const QRect curr_ud_rect(item->bbox());
+
+//         int diff = event.tick() + newELen - part->lenTick();
+
+        //const MusECore::MuseCount_t diff = event.tick() + newELen - part->lenTick();
+        //const MusECore::MuseCount_t diff = newAbsEEnd - part->endValue(ePosType);
+        const MusECore::MuseCount_t newAbsEEndPType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosTType, itemPartTType);
+        //const MusECore::MuseCount_t diff = newAbsEEndPType - part->endValue();
+        //const bool doExtendPart = newAbsEEnd > part->endValue(ePosType);
+        //const bool doExtendPart = newAbsEEndPType > part->endValue();
+
+        // While adjusting visually, only extend the part if it is the same as the given item's part.
+        //const bool doExtendPart = /*(part == itemPart) &&*/ newAbsEEnd > PEndETType;
+        const bool doExtendPart = /*(part == itemPart) &&*/ (newAbsEEndPType > tmpItemPEnd);
+
+//         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+// //             int x = qMax(0, nevent->x());
+//             int x = qMax(0, ePos);
+//             int ntick = qMax(0u, x - part->tick());
+//             newEvent.setTick(ntick);
+//         }
+
+//         if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+        if (! (doExtendPart && (itemPart->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+        {
+//             const MusECore::MuseCount_t newPartLen =
+// //             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosTType, itemPart->type()) - itemPart->posValue();
+//               MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosTType, itemPartTType) - itemPart->posValue();
+
+            if (doExtendPart) // part must be extended?
+//                 max_diff_len = qMax(event.tick() + newELen, max_diff_len);
+//                 newPEnd = qMax(newAbsEEndPType, newPEnd);
+                newPEnd = newAbsEEndPType;
+
+            // Update the canvas item's bounding box and position.
+            // NOTE: Some accuracy may be lost AT BOTH BORDERS if converting the
+            //        dimensions from frames to ticks here. Currently that
+            //        is the case with wave events on a tick-only based canvas.
+//             const MusECore::MuseCount_t newPosValCType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//               newEPos, ePosTType, canvasTType);
+//             const MusECore::MuseCount_t newLenValCType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//               newEPos + newELen, ePosTType, canvasTType) - newPosValCType;
+
+            const MusECore::MuseCount_t newPosValCType = newAbsEPosCTType - pPosCTType;
+            const MusECore::MuseCount_t newLenValCType = newAbsEEndCTType - newAbsEPosCTType;
+
+            item->setPos(QPoint(newPosValCType, item->y()));
+            item->setBBox(QRect(newPosValCType, item->y(), newLenValCType, item->height()));
+            //
+            // If we want to use more accurate temporary position and length values,
+            //  which are in the same time type as the item.
+            item->setTmpPos(newEPos);
+            item->setTmpLen(newELen);
+        }
+//     }
+
+//     if (max_diff_len > 0) {
+    if (newPEnd > 0) {
+//         schedule_resize_all_same_len_clone_parts(part, max_diff_len, operations);
+//         printf("resizeItem: extending\n");
+//         const MusECore::MuseCount_t newPartLen =
+//           MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type()) - part->posValue();
+        //item->setTmpPartLen(newAbsPEnd - part->posValue());
+        item->setTmpPartLen(newPEnd - itemPPos);
+    }
+
+    if(region)
+    {
+
+//       const QRect curr_ud_rect(item->bbox());
+
+      // Take the part position into account.
+      const QRect new_ud_rect((item->bbox() | curr_ud_rect).adjusted(pPosCTType, 0, pPosCTType, 0));
+      // Our border box is wider than the item box. Take that into account when updating.
+      const QRect new_ud_rect_m((map(new_ud_rect) & rect()).adjusted(
+        0, 0, eventBorderWidth, eventBorderWidth));
+
+      // REMOVE Tim. wave. Added. TESTING. Refine later.
+//       const QRect new_ud_rect_m(map(rect()));
+//       const QRect new_ud_rect_m(rect());
+
+// REMOVE Tim. wave. Added. Diagnostics.
+          fprintf(stderr, "PartCanvas::adjustItemSize curr_ud_rect x:%d y:%d w:%d h:%d\n",
+                  curr_ud_rect.x(), curr_ud_rect.y(), curr_ud_rect.width(), curr_ud_rect.height());
+          fprintf(stderr, "                            new_ud_rect x:%d y:%d w:%d h:%d\n",
+                  new_ud_rect.x(), new_ud_rect.y(), new_ud_rect.width(), new_ud_rect.height());
+          fprintf(stderr, "PianoCanvas::adjustItemSize new_ud_rect_m x:%d y:%d w:%d h:%d\n",
+                  new_ud_rect_m.x(), new_ud_rect_m.y(), new_ud_rect_m.width(), new_ud_rect_m.height());
+          fprintf(stderr, "                                     rect x:%d y:%d w:%d h:%d\n",
+                  rect().x(), rect().y(), rect().width(), rect().height());
+          fprintf(stderr, "                                  newPosVal:%ld newLenVal:%ld\n",
+                  newEPos, newELen);
+
+      *region += new_ud_rect_m;
+//       *region += new_ud_rect;
+    }
+
+//     if(operations.empty())
+//       //this forces an update of the itemlist, which is necessary
+//       //to remove "forbidden" events from the list again
+//       //otherwise, if a moving operation was forbidden,
+//       //the canvas would still show the movement
+//       songChanged(SC_EVENT_MODIFIED);
+//     else
+//       //else forbid action by not performing it
+//       MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
 //   resizeItem
 //---------------------------------------------------------
 
-void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         // experimental changes to try dynamically extending parts
+// REMOVE Tim. wave. Changed.
+// void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool rasterize)         // experimental changes to try dynamically extending parts
+// {
+//     Q_UNUSED(item)
+//     Q_UNUSED(rasterize)
+//
+//     MusECore::Undo operations;
+//     unsigned max_diff_len = 0;
+//     MusECore::Part* part;
+//
+//     for (auto &it: items) {
+//         if (!it.second->isSelected())
+//             continue;
+//
+//         part = it.second->part();
+//
+//         QPoint topLeft = QPoint(qMax((unsigned)it.second->x(), part->tick()), it.second->y());
+//         it.second->setTopLeft(raster(topLeft));
+//
+//         NEvent* nevent = (NEvent*) it.second;
+//         MusECore::Event event    = nevent->event();
+//         MusECore::Event newEvent = event.clone();
+//         int len;
+//
+//         if (noSnap)
+//             len = nevent->width();
+//         else {
+//             unsigned tick = event.tick() + part->tick();
+//             len = editor->rasterVal(tick + nevent->width()) - tick;
+//             if (len <= 0)
+//                 len = editor->raster();
+//         }
+//
+//         int diff = event.tick() + len - part->lenTick();
+//
+//         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+//             int x = qMax(0, nevent->x());
+//             int ntick = qMax(0u, x - part->tick());
+//             newEvent.setTick(ntick);
+//         }
+//
+//         if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+//         {
+//             newEvent.setLenTick(len);
+//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, nevent->part(), false, false));
+//
+//             if (diff > 0) // part must be extended?
+//                 max_diff_len = qMax(event.tick() + len, max_diff_len);
+//         }
+//
+//         setLastEdited(newEvent);
+//     }
+//
+//     if (max_diff_len > 0) {
+//         schedule_resize_all_same_len_clone_parts(part, max_diff_len, operations);
+//         printf("resizeItem: extending\n");
+//     }
+//
+//     if(operations.empty())
+//       //this forces an update of the itemlist, which is necessary
+//       //to remove "forbidden" events from the list again
+//       //otherwise, if a moving operation was forbidden,
+//       //the canvas would still show the movement
+//       songChanged(SC_EVENT_MODIFIED);
+//     else
+//       //else forbid action by not performing it
+//       MusEGlobal::song->applyOperationGroup(operations);
+// }
+
+void PianoCanvas::resizeItem(CItem* item, bool /*noSnap*/, bool /*rasterize*/)         // experimental changes to try dynamically extending parts
 {
-    Q_UNUSED(item)
-    Q_UNUSED(rasterize)
+//     Q_UNUSED(item)
+//     Q_UNUSED(rasterize)
 
     MusECore::Undo operations;
-    unsigned max_diff_len = 0;
-    MusECore::Part* part;
+//     unsigned max_diff_len = 0;
+    MusECore::MuseCount_t newPEnd = 0;
+//     MusECore::Part* part;
 
     for (auto &it: items) {
         if (!it.second->isSelected())
             continue;
 
-        part = it.second->part();
+        MusECore::Part* part = it.second->part();
 
-        QPoint topLeft = QPoint(qMax((unsigned)it.second->x(), part->tick()), it.second->y());
-        it.second->setTopLeft(raster(topLeft));
+//         QPoint topLeft = QPoint(qMax((unsigned)it.second->x(), part->tick()), it.second->y());
+//         it.second->setTopLeft(raster(topLeft));
 
         NEvent* nevent = (NEvent*) it.second;
         MusECore::Event event    = nevent->event();
-        MusECore::Event newEvent = event.clone();
-        int len;
 
-        if (noSnap)
-            len = nevent->width();
-        else {
-            unsigned tick = event.tick() + part->tick();
-            len = editor->rasterVal(tick + nevent->width()) - tick;
-            if (len <= 0)
-                len = editor->raster();
-        }
 
-        int diff = event.tick() + len - part->lenTick();
+        const MusECore::Pos::TType ePosType   = event.pos().type();
+        const MusECore::MuseCount_t PPosEType =
+          MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(nevent->tmpPartPos(), part->type(), ePosType);
+        //const MusECore::MuseCount_t PEndEType =
+        //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(nevent->tmpPartPos() + nevent->tmpPartLen(), part->type(), ePosType);
 
-        if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
-            int x = qMax(0, nevent->x());
-            int ntick = qMax(0u, x - part->tick());
-            newEvent.setTick(ntick);
-        }
+        MusECore::MuseCount_t newEPos    = nevent->tmpPos();
+        MusECore::MuseCount_t newELen    = nevent->tmpLen();
 
-        if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+        MusECore::MuseCount_t newAbsEPos = PPosEType + newEPos;
+        MusECore::MuseCount_t newAbsEEnd = newAbsEPos + newELen;
+
+        const MusECore::MuseCount_t newAbsEEndPType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type());
+        const bool doExtendPart = newAbsEEndPType > nevent->tmpPartPos() + nevent->tmpPartLen();
+
+        if (! (doExtendPart && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
         {
-            newEvent.setLenTick(len);
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, nevent->part(), false, false));
+            if (doExtendPart) // part must be extended?
+                newPEnd = qMax(newAbsEEndPType, newPEnd);
 
-            if (diff > 0) // part must be extended?
-                max_diff_len = qMax(event.tick() + len, max_diff_len);
-        }
+            // Anything changed?
+            const bool posChanged = event.posValue() != newEPos;
+            if(posChanged || event.lenValue() != newELen)
+            {
+              operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEventProperties,
+                part,
+                event,
+                newEPos,
+                newELen,
+                0,
+                // May be redundant, but force it to do the port cached controllers, per event.
+                // 'schedule_resize_all_same_len_clone_parts' above is currently hard-wired to
+                //  always handle the port cached controllers, BUT it may exclude some parts.
+                // Only if the event's position changed - Length and SPos have no meaning for controllers.
+                posChanged,
+                // Include all clone port cached controllers as well.
+                posChanged
+              ));
+            }
+       }
 
-        setLastEdited(newEvent);
+
+//         MusECore::Event newEvent = event.clone();
+//         int len;
+//
+//         if (noSnap)
+//             len = nevent->width();
+//         else {
+//             unsigned tick = event.tick() + part->tick();
+//             len = editor->rasterVal(tick + nevent->width()) - tick;
+//             if (len <= 0)
+//                 len = editor->raster();
+//         }
+//
+//         int diff = event.tick() + len - part->lenTick();
+//
+//         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+//             int x = qMax(0, nevent->x());
+//             int ntick = qMax(0u, x - part->tick());
+//             newEvent.setTick(ntick);
+//         }
+//
+//         if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+//         {
+//             newEvent.setLenTick(len);
+//             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, nevent->part(), false, false));
+//
+//             if (diff > 0) // part must be extended?
+//                 max_diff_len = qMax(event.tick() + len, max_diff_len);
+//         }
+//
+//         setLastEdited(newEvent);
     }
 
-    if (max_diff_len > 0) {
-        schedule_resize_all_same_len_clone_parts(part, max_diff_len, operations);
-        printf("resizeItem: extending\n");
+    if (newPEnd > 0) {
+//         schedule_resize_all_same_len_clone_parts(part, newAbsPEnd - item->tmpPartPos(), operations);
+        fprintf(stderr, "resizeItem: extending\n");
+        schedule_resize_all_same_len_clone_parts(item->part(), newPEnd - item->tmpPartPos(), operations);
     }
 
-    //else forbid action by not performing it
-    MusEGlobal::song->applyOperationGroup(operations);
-    songChanged(SC_EVENT_MODIFIED); // this forces an update of the itemlist, which is necessary
-                                    // to remove "forbidden" events from the list again
+    if(operations.empty())
+      //this forces an update of the itemlist, which is necessary
+      //to remove "forbidden" events from the list again
+      //otherwise, if a moving operation was forbidden,
+      //the canvas would still show the movement
+      songChanged(SC_EVENT_MODIFIED);
+    else
+      //else forbid action by not performing it
+      MusEGlobal::song->applyOperationGroup(operations);
 }
 
 //---------------------------------------------------------

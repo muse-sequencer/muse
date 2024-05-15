@@ -439,10 +439,10 @@ struct GlobalConfigValues {
       bool keepTransportWindowOnTop;
       bool showStatusBar;
       int recentListLength;
-
+      // Auto expand wave event borders to fill parts.
+      bool autoExpandPartWaves;
       bool mixerDockedA;
       bool mixerDockedB;
-
       bool audioAutomationDrawDiscrete;
       bool audioAutomationShowBoxes;
       bool audioAutomationOptimize;

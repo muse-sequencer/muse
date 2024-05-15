@@ -161,7 +161,7 @@ struct PendingOperationItem
     SetTrackRecord, SetTrackMute, SetTrackSolo, SetTrackRecMonitor, SetTrackOff,
     ModifyTrackDrumMapItem, ReplaceTrackDrumMapPatchList,         UpdateDrumMaps,
     AddPart,           DeletePart,   MovePart, SelectPart, ModifyPartStart, ModifyPartLength,  ModifyPartName,
-    AddEvent,          DeleteEvent,  SelectEvent,  ModifyEventList,
+    AddEvent,          DeleteEvent,  ModifyEventProperties, SelectEvent,  ModifyEventList,
     
     AddMidiCtrlVal,    DeleteMidiCtrlVal,     ModifyMidiCtrlVal,  AddMidiCtrlValList,
     ModifyMidiCtrlValList,
@@ -302,6 +302,7 @@ struct PendingOperationItem
     double _audio_converter_value;
     bool _marker_lock;
     CtrlVal* _audCtrlValStruct;
+    int _event_spos;
   };
 
   //========================================================================
@@ -437,19 +438,23 @@ struct PendingOperationItem
   PendingOperationItem(Part* part, bool v, PendingOperationType type = SelectPart)
     { _type = type; _part = part; _boolA = v; }
 
+  // This operation is for changing a part's position. Optionally the length can be set too.
+  // iPart is required to modify the part position, so we just gather the Part from it.
+  // If it is only desired to adjust the length without affecting the position, the simpler ModifyPartLength can be used.
   // new_pos and new_len must already be in the part's time domain (ticks or frames).
   // The new_event_list can be set to null, or if the part's events are to be dragged with the border
   //  it can be supplied to do a wholesale fast constant-time swap of the event lists.
-  PendingOperationItem(iPart ip, Part* part, unsigned int new_pos, unsigned int new_len,
+  PendingOperationItem(iPart ip, unsigned int new_pos, unsigned int new_len,
                        EventList* new_event_list, PendingOperationType type = ModifyPartStart)
-    { _type = type; _iPart = ip, _part = part; _event_list = new_event_list; _posLenVal = new_pos; _lenVal = new_len; }
+    { _type = type; _iPart = ip, _event_list = new_event_list; _posLenVal = new_pos; _lenVal = new_len; }
 
+  // This operation is for changing a part's length.
   // new_len must already be in the part's time domain (ticks or frames).
   // The new_event_list can be set to null, or if the part's events are to be dragged with the border
   //  it can be supplied to do a wholesale fast constant-time swap of the event lists.
-  PendingOperationItem(iPart ip, Part* part, unsigned int new_len, EventList* new_event_list, PendingOperationType type = ModifyPartLength)
-    { _type = type; _iPart = ip, _part = part; _event_list = new_event_list; _posLenVal = new_len; }
-  
+  PendingOperationItem(Part* part, unsigned int new_len, EventList* new_event_list, PendingOperationType type = ModifyPartLength)
+    { _type = type; _part = part; _event_list = new_event_list; _posLenVal = new_len; }
+
   // Erases ip from part->track()->parts(), then adds part to new_track. NOTE: ip may be part->track()->parts()->end().
   // new_pos must already be in the part's time domain (ticks or frames).
   PendingOperationItem(iPart ip, Part* part, unsigned int new_pos, PendingOperationType type = MovePart, Track* new_track = 0)
@@ -471,6 +476,9 @@ struct PendingOperationItem
   PendingOperationItem(Part* part, const iEvent& iev, PendingOperationType type = DeleteEvent)
     { _type = type; _part = part; _iev = iev; _ev = iev->second; }
 
+  PendingOperationItem(EventList* el, iEvent& iev, unsigned pos, unsigned len, int spos, PendingOperationType type = ModifyEventProperties)
+    { _type = type; _event_list = el; _iev = iev; _posLenVal = pos; _lenVal = len; _event_spos = spos; }
+    
   // Type is SelectEvent, or some (likely) future boolean operation.
   PendingOperationItem(Part* part, const Event& ev, int v, PendingOperationType type)
     { _type = type; _part = part; _ev = ev; _intA = v; }
@@ -492,8 +500,8 @@ struct PendingOperationItem
     { _type = type; _mcvl = mcvl; _imcv = imcv; }
     
   // NOTE: mcvl is supplied in case the operation needs to be merged, or transformed into an AddMidiCtrlVal.
-  PendingOperationItem(MidiCtrlValList* mcvl, const iMidiCtrlVal& imcv, int val, PendingOperationType type = ModifyMidiCtrlVal)
-    { _type = type; _mcvl = mcvl; _imcv = imcv; _intA = val; }
+  PendingOperationItem(MidiCtrlValList* mcvl, const iMidiCtrlVal& imcv, unsigned new_pos, int new_val, PendingOperationType type = ModifyMidiCtrlVal)
+    { _type = type; _mcvl = mcvl; _imcv = imcv; _posLenVal = new_pos; _intB = new_val; }
 
     
   PendingOperationItem(MidiCtrlValList* orig_mcvl, MidiCtrlValList* mcvl, PendingOperationType type = ModifyMidiCtrlValList)
@@ -646,12 +654,19 @@ class PendingOperationList : public std::list<PendingOperationItem>
     bool removePartPortCtrlEvents(const Event& event, Part* part, Track* track);
     void removePartPortCtrlEvents(Part* part, Track* track);
     void modifyPartPortCtrlEvents(const Event& old_event, const Event& event, Part* part);
+    void modifyPartPortCtrlEvents(const Event& event, unsigned newPosVal, int newVal, Part* part);
 
     void addPartOperation(PartList *partlist, Part* part); 
     void delPartOperation(PartList *partlist, Part* part);
     void movePartOperation(PartList *partlist, Part* part, unsigned int new_pos, Track* track = 0);
-    void modifyPartStartOperation(Part* part, unsigned int new_pos, unsigned int new_len, int64_t events_offset, Pos::TType events_offset_time_type);
-    void modifyPartLengthOperation(Part* part, unsigned int new_len, int64_t events_offset, Pos::TType events_offset_time_type);
+    void modifyPartStartOperation(Part* part, unsigned int new_pos, unsigned int new_len,
+      int64_t events_offset, /*int event_spos_offset, int event_len_offset,*/ Pos::TType events_offset_time_type);
+    void modifyPartLengthOperation(Part* part, unsigned int new_len, int64_t events_offset,
+      /*int event_spos_offset, int event_len_offset,*/ Pos::TType events_offset_time_type);
+
+    bool changeEventPropertiesOperation(
+      Part* part, /*const Event& ev,*/ EventID_t eventID, unsigned oldPos, unsigned pos, unsigned len, int spos,
+        bool doPortCtrls, bool doClonePortCtrls);
 
     void addTrackAuxSendOperation(AudioTrack *atrack, int n);
     

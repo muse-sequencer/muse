@@ -29,10 +29,12 @@
 #include "cobject.h"
 
 #include <QUuid>
-
 #ifdef MOVE_LISTEDIT_FROM_DOCK_TO_WINDOW_PULL1099
 class QMenu;
 #endif
+#include <QMetaObject>
+
+
 class QAction;
 class QActionGroup;
 class QCloseEvent;
@@ -70,6 +72,8 @@ class ListEdit : public QWidget {
       bool _isDeleting;
       std::set<QUuid> _pidSet;
       MusECore::PartList* _pl;
+
+      QMetaObject::Connection _configChangedConnection;
 
       enum { CMD_DELETE, CMD_INC, CMD_DEC };
 

@@ -53,7 +53,7 @@ class EditToolBar;
 
 class MasterEdit : public MidiEditor {
       Q_OBJECT
-    
+
       Master* canvas;
       MusEGui::MTScale* time1;
       MusEGui::MTScale* time2;
@@ -69,7 +69,6 @@ class MasterEdit : public MidiEditor {
       int editTools;
       
       QMetaObject::Connection _configChangedMetaConn;
-      QMetaObject::Connection _configChangedTools2MetaConn;
 
       static int _rasterInit;
       
@@ -98,7 +97,7 @@ class MasterEdit : public MidiEditor {
 
    public:
       MasterEdit(QWidget* parent = 0, const char* name = 0);
-      ~MasterEdit();
+      virtual ~MasterEdit();
       virtual void readStatus(MusECore::Xml&);
       virtual void writeStatus(int, MusECore::Xml&) const;
       static void readConfiguration(MusECore::Xml&);

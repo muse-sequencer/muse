@@ -399,13 +399,14 @@ GlobalConfigValues config = {
       true,                         // noPluginScaling
       true,                         // keepTransportWindowOnTop
       true,                         // showStatusBar
-      6,                             // recentListLength - number of files in recent menu
+      6,                            // recentListLength - number of files in recent menu
+      true,                         // autoExpandPartWaves Auto expand wave event borders to fill parts.
       false,
       false,
       true,                         // audioAutomationDrawDiscrete
       true,                         // audioAutomationShowBoxes
       true,                         // audioAutomationOptimize
       2                             // audioAutomationPointRadius
-};
+    };
 
 } // namespace MusEGlobal

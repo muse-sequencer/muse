@@ -126,7 +126,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(partColorToolBar, SIGNAL(partColorTriggered(int)), arranger->getCanvas(), SLOT(setPartColor(int)));
   connect(partColorToolBar, SIGNAL(partColorIndexChanged(int)), arranger->getCanvas(), SLOT(setCurrentColorIndex(int)));
   connect(arranger->getCanvas(), SIGNAL(curPartColorIndexChanged(int)), partColorToolBar, SLOT(setCurrentIndex(int)));
-  connect(MusEGlobal::muse, SIGNAL(configChanged()), partColorToolBar, SLOT(configChanged()));
+// REMOVE Tim. wave. Removed.
+//   connect(MusEGlobal::muse, SIGNAL(configChanged()), partColorToolBar, SLOT(configChanged()));
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
   connect(visTracks, SIGNAL(visibilityChanged()), MusEGlobal::song, SLOT(update()) );
@@ -135,9 +136,11 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(arranger, SIGNAL(dropMidiFile(const QString&)), MusEGlobal::muse, SLOT(importMidi(const QString&)));
   connect(arranger, SIGNAL(startEditor(MusECore::PartList*,int)),  MusEGlobal::muse, SLOT(startEditor(MusECore::PartList*,int)));
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
-  connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
+// REMOVE Tim. wave. Removed.
+//   connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
-  _configChangedEditToolsMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, editTools, &EditToolBar::configChanged);
+// REMOVE Tim. wave. Removed.
+//   _configChangedEditToolsMetaConn = connect(MusEGlobal::muse, &MusE::configChanged, editTools, &EditToolBar::configChanged);
   connect(automationModeToolBar, &AutomationModeToolBar::interpolateModeChanged, [this](int mode) { automationInterpolateModeChanged(mode); } );
   connect(automationModeToolBar, &AutomationModeToolBar::boxModeChanged, [this](int mode) { automationBoxModeChanged(mode); } );
   connect(automationModeToolBar, &AutomationModeToolBar::optimizeChanged, [this](bool v) { automationOptimizeChanged(v); } );
@@ -417,7 +420,11 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
   connect(insertTrack, SIGNAL(triggered(QAction *)), SLOT(insertNewTrack(QAction *)));
 
-  connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
+// REMOVE Tim. wave. Removed.
+//   connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
+
+// REMOVE Tim. wave. Added.
+  _configChangedConnection = connect(MusEGlobal::muse, &MusE::configChanged, this, &ArrangerView::configChanged);
 
 
   QClipboard* cb = QApplication::clipboard();
@@ -429,9 +436,21 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 ArrangerView::~ArrangerView()
 {
-  disconnect(_configChangedEditToolsMetaConn);
+// REMOVE Tim. wave. Removed.
+//   disconnect(_configChangedEditToolsMetaConn);
   disconnect(_deliveredScriptReceivedMetaConn);
   disconnect(_userScriptReceivedMetaConn);
+  // REMOVE Tim. wave. Added.
+  disconnect(_configChangedConnection);
+}
+
+// REMOVE Tim. wave. Added.
+void ArrangerView::configChanged()
+{
+  partColorToolBar->configChanged();
+  arranger->configChanged();
+  editTools->configChanged();
+  updateShortcuts();
 }
 
 void ArrangerView::closeEvent(QCloseEvent* e)

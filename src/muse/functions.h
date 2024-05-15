@@ -426,9 +426,10 @@ PartList* getSelectedMidiParts();
 PartList* getSelectedWaveParts();
 PartList* getSelectedParts();
 
-// called from GUI thread, calls applyOperationGroup.
-void resize_part(Track* t, Part* p, unsigned int newTickPosOrLen, MusECore::ResizeDirection resizeDirection,
-                   bool doClones = false, bool dragEvents = false);
+// REMOVE Tim. wave. Removed.
+// // called from GUI thread, calls applyOperationGroup.
+// void resize_part(Track* t, Part* p, unsigned int newTickPosOrLen, MusECore::ResizeDirection resizeDirection,
+//                    bool doClones = false, bool dragEvents = false, bool autoExpandWaves = false);
 
 //functions for controllers/parts
 bool readAudioAutomation(Xml& xml, PasteCtrlTrackMap* pctm);

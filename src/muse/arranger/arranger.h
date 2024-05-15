@@ -90,6 +90,7 @@ class Arranger : public QWidget {
       MTScale* time;
       SpinBox* lenEntry;
       QToolButton* gridOnButton;
+      QToolButton* autoExpandWavesButton;
       bool showTrackinfoFlag;
       TrackInfoWidget* trackInfoWidget;
       QScrollArea* tracklistScroll;
@@ -138,6 +139,7 @@ class Arranger : public QWidget {
       void setTempo100();
       void setTempo200();
       void gridOnChanged(bool v);
+      void autoExpandWavesChanged(bool v);
       void horizontalZoom(bool zoom_in, const QPoint& glob_pos);
       void horizontalZoom(int mag, const QPoint& glob_pos);
       void updateTracklist();

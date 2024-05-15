@@ -85,6 +85,9 @@ class PianoCanvas : public EventCanvas {
       virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true) override;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) override;
       virtual CItem* newItem(const QPoint&, int) override;
+      // REMOVE Tim. wave. Added.
+      //virtual void adjustItemTempValues(CItem*, int pos, bool noSnap, bool ctrl, bool alt) override;
+      virtual void adjustItemSize(CItem* item, int pos, bool left, bool noSnap=false, bool ctrl=false, bool alt = false, QRegion * = nullptr) override;
       virtual void resizeItem(CItem*, bool noSnap, bool) override;
       virtual void newItem(CItem*, bool noSnap) override;
       virtual bool deleteItem(CItem*) override;
@@ -144,6 +147,8 @@ class PianoCanvas : public EventCanvas {
       void cmd(int cmd);
       void setColorMode(MidiEventColorMode mode);
       virtual void modifySelected(NoteInfo::ValType type, int val, bool delta_mode = true) override;
+
+      static int eventBorderWidth;
       };
 
 } // namespace MusEGui

@@ -605,7 +605,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       canvas->setCanvasTools(drumeditTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
-      _configChangedTools2MetaConn = connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
       connect(canvas, SIGNAL(horizontalZoom(bool,const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
@@ -726,7 +725,12 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
 
       QClipboard* cb = QApplication::clipboard();
-      connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
+// REMOVE Tim. wave. Changed.
+//       connect(cb, &QClipboard::dataChanged, [this]() { clipboardChanged(); } );
+      _clipboardConnection = connect(cb, &QClipboard::dataChanged, [this]() { clipboardChanged(); } );
+
+// REMOVE Tim. wave. Added.
+      _configChangedConnection = connect(MusEGlobal::muse, &MusE::configChanged, this, &DrumEdit::configChanged);
 
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
@@ -780,7 +784,8 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 DrumEdit::~DrumEdit()
 {
-  disconnect(_configChangedTools2MetaConn);
+  disconnect(_configChangedConnection);
+  disconnect(_clipboardConnection);
   disconnect(_deliveredScriptReceivedMetaConn);
   disconnect(_userScriptReceivedMetaConn);
 }
@@ -1877,6 +1882,9 @@ void DrumEdit::newCanvasWidth(int w)
 
 void DrumEdit::configChanged()
       {
+// REMOVE Tim. wave. Added.
+      tools2->configChanged();
+
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
             canvas->setBg(MusEGlobal::config.midiCanvasBg);
             canvas->setBg(QPixmap());

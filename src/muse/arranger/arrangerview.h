@@ -118,9 +118,12 @@ private:
     MusECore::Scripts scripts;
     QMenu* menuScripts;
 
-    QMetaObject::Connection _configChangedEditToolsMetaConn;
+// REMOVE Tim. wave. Removed.
+//     QMetaObject::Connection _configChangedEditToolsMetaConn;
     QMetaObject::Connection _deliveredScriptReceivedMetaConn;
     QMetaObject::Connection _userScriptReceivedMetaConn;
+    // REMOVE Tim. wave. Added.
+    QMetaObject::Connection _configChangedConnection;
 
 private slots:
     void globalCut();
@@ -140,6 +143,8 @@ private slots:
     void automationInterpolateModeChanged(int);
     void automationBoxModeChanged(int);
     void automationOptimizeChanged(bool);
+    // REMOVE Tim. wave. Added.
+    void configChanged();
 
 signals:
     void isDeleting(MusEGui::TopWin*);
@@ -156,7 +161,7 @@ public slots:
 
 public:
     ArrangerView(QWidget* parent = nullptr);
-    ~ArrangerView() override;
+    virtual ~ArrangerView() override;
 
     QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
     QMenu* editorNewSubmenu;

@@ -1398,6 +1398,8 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                             MusEGlobal::config.keepTransportWindowOnTop = xml.parseInt();
                         else if (tag == "showStatusBar")
                             MusEGlobal::config.showStatusBar = xml.parseInt();
+                        else if (tag == "autoExpandPartWaves")
+                            MusEGlobal::config.autoExpandPartWaves = xml.parseInt();
                         else if (tag == "audioAutomationDrawDiscrete")
                             MusEGlobal::config.audioAutomationDrawDiscrete = xml.parseInt();
                         else if (tag == "audioAutomationShowBoxes")
@@ -2116,6 +2118,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
 //      xml.intTag(level, "openMDIWinMaximized", MusEGlobal::config.openMDIWinMaximized);
       xml.intTag(level, "keepTransportWindowOnTop", MusEGlobal::config.keepTransportWindowOnTop);
       xml.intTag(level, "showStatusBar", MusEGlobal::config.showStatusBar);
+      xml.intTag(level, "autoExpandPartWaves", MusEGlobal::config.autoExpandPartWaves);
       xml.intTag(level, "audioAutomationDrawDiscrete", MusEGlobal::config.audioAutomationDrawDiscrete);
       xml.intTag(level, "audioAutomationShowBoxes", MusEGlobal::config.audioAutomationShowBoxes);
       xml.intTag(level, "audioAutomationOptimize", MusEGlobal::config.audioAutomationOptimize);

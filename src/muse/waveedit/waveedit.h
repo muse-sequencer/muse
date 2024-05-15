@@ -71,6 +71,7 @@ class WaveEdit : public MidiEditor {
       QAction* copyAction;
       QAction* copyPartRegionAction;
       QAction* pasteAction;
+      QAction* deleteAction;
       QAction* selectPrevPartAction;
       QAction* selectNextPartAction;
       QAction* selectRangeToSelectionAction;
@@ -87,7 +88,8 @@ class WaveEdit : public MidiEditor {
 
       RasterLabelCombo* rasterLabel;
 
-      QMetaObject::Connection _configChangedTools2MetaConn;
+      QMetaObject::Connection _configChangedConnection;
+      QMetaObject::Connection _clipboardConnection;
 
       static int _rasterInit;
       static int _trackInfoWidthInit;
@@ -107,6 +109,9 @@ class WaveEdit : public MidiEditor {
       void setupHZoomRange();
 
    private slots:
+      void setSelection(int /*tick*/, MusECore::Event&, MusECore::Part*, bool /*update*/);
+      void selectionChanged(); // enable/disable "Copy" & "Paste"
+      void clipboardChanged(); // enable/disable "Paste"
       void cmd(int);
       void timeChanged(unsigned t);
       void setTime(unsigned t);

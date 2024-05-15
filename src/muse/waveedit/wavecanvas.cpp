@@ -44,6 +44,8 @@
 #include <QColor>
 #include <QPen>
 #include <QUuid>
+#include <QBrush>
+#include <QLinearGradient>
 
 #include <set>
 
@@ -106,6 +108,9 @@
 
 namespace MusEGui {
 
+// Static. This is how thick our event borders are.
+int WaveCanvas::eventBorderWidth = 1;
+
 const int WaveCanvas::_stretchAutomationPointDetectDist = 4;
 const int WaveCanvas::_stretchAutomationPointWidthUnsel = 2;
 const int WaveCanvas::_stretchAutomationPointWidthSel = 3;
@@ -124,7 +129,32 @@ WEvent::WEvent(const MusECore::Event& e, MusECore::Part* p, int height) : EItem(
       setBBox(QRect(frame, 0, len, height));    
       // Give the moving point an initial value.
       setMp(pos());
+// REMOVE Tim. wave. Added.
+      // (Done by PItem or EItem.)
+      //setTmpPartPos(p->posValue());
+      //setTmpPartLen(p->lenValue());
+      //setTmpOffset(0);
+      //setTmpPos(e.posValue());
+      //setTmpLen(e.lenValue());
+      //setTmpWaveSPos(e.spos());
+// REMOVE Tim. wave. Added.
+//       initItemTempValues();
       }
+
+// REMOVE Tim. wave. Added.
+// void WEvent::horizResize(int newPos, bool left)
+// {
+//   EItem::horizResize(newPos, left);
+//
+// }
+
+// REMOVE Tim. wave. Added.
+StretchSelectedItem::StretchSelectedItem(MusECore::StretchListItem::StretchEventType type,
+                      MusECore::SndFileR sndFile)
+  {
+    _type = type;
+    _sndFile = sndFile;
+  }
 
 //---------------------------------------------------------
 //   addItem
@@ -222,6 +252,9 @@ void WaveCanvas::updateItems()
 
               if (e.type() == MusECore::Wave) {
                     CItem* temp = addItem(part, e);
+
+                    if(temp)
+                      temp->setSelected(e.selected());
 
                     if (temp && curItemNeedsRestore && e==storedEvent && part->uuid()==partSn)
                     {
@@ -422,6 +455,9 @@ void WaveCanvas::keyPress(QKeyEvent* event)
           case StretchTool:
           case SamplerateTool:
           {
+            // REMOVE Tim. wave. Added.
+            event->accept();
+
             MusECore::PendingOperationList operations;
             StretchSelectedList_t& ssl = _stretchAutomation._stretchSelectedList;
             for(iStretchSelectedItem isi = ssl.begin(); isi != ssl.end(); ++isi)
@@ -671,17 +707,102 @@ void WaveCanvas::drawMarkers(QPainter& p, const QRect& mr, const QRegion&)
 //   drawWaveParts
 //---------------------------------------------------------
 
+// REMOVE Tim. wave. Changed.
+// void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const QRegion&)
+// {
+//       bool wmtxen = p.worldMatrixEnabled();
+//       p.setWorldMatrixEnabled(false);
+//
+//       if(do_cur_part)
+//       {
+//         // Draw current part:
+//         if(curPart)
+//         {
+// // REMOVE Tim. wave. Changed.
+// //               QRect mwpr  = map(QRect(curPart->frame(), 0, curPart->lenFrame(), height()));
+//               QRect mwpr;
+//               // If we are resizing borders (and the current item's part is the same as the current part)
+//               //  then use the temp values in the canvas item, to give a 'live' dynamic update.
+//               if(drag == DRAG_RESIZE && curItem && curItem->part() == curPart)
+//                 mwpr = map(QRect(curItem->tmpPartPos(), 0, curItem->tmpPartLen(), height()));
+//               else
+//                 mwpr = map(QRect(curPart->frame(), 0, curPart->lenFrame(), height()));
+//
+//               QRect mpbgr = mr & mwpr;
+//               if(!mpbgr.isNull())
+//               {
+//                 QColor c;
+//                 switch(colorMode)
+//                 {
+//                   default:
+//                   case 0:
+//                     if (curPart->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+//                         c = curPart->track()->color();
+//                     else
+//                         c = MusEGlobal::config.partColors[curPart->colorIndex()];
+//                     break;
+//                   case 1:
+//                     c = Qt::lightGray;
+//                     break;
+//                 }
+//                 c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//                 QBrush part_bg_brush(MusECore::gGradientFromQColor(c, mwpr.topLeft(), mwpr.bottomLeft()));
+//                 p.fillRect(mpbgr, part_bg_brush);
+//               }
+//         }
+//       }
+//       else
+//       {
+//         // Draw non-current parts:
+//         for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
+//         {
+//               MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
+//               if(wp == curPart)
+//                 continue;
+//
+//               QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
+//               QRect mpbgr = mr & mwpr;
+//               if(!mpbgr.isNull())
+//               {
+//                 QColor c(MusEGlobal::config.waveNonselectedPart);
+//                 c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//                 QBrush part_bg_brush(MusECore::gGradientFromQColor(c, mwpr.topLeft(), mwpr.bottomLeft()));
+//                 p.fillRect(mpbgr, part_bg_brush);
+//               }
+//         }
+//       }
+//
+//       p.setWorldMatrixEnabled(wmtxen);
+// }
+
 void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const QRegion&)
 {
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
 
+      const MusECore::Pos::TType canvasTType = MusECore::Pos::FRAMES;
       if(do_cur_part)
       {
         // Draw current part:
         if(curPart)
         {
-              QRect mwpr  = map(QRect(curPart->frame(), 0, curPart->lenFrame(), height()));
+              const MusECore::Pos::TType curPartTType = curPart->type();
+              const MusECore::MuseCount_t partPosCType = MUSE_TIME_UINT_TO_INT64 curPart->posValue(curPartTType);
+              const MusECore::MuseCount_t partEndCType =
+                MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(curPart->posValue() + curPart->lenValue(), curPartTType, canvasTType);
+              QRect mwpr;
+              // If we are resizing borders (and the current item's part is the same as the current part)
+              //  and the item end is greater than part end, then allow the part to expand to the item end,
+              //  to give a 'live' dynamic update.
+              if(drag == DRAG_RESIZE && curItem && curItem->part() == curPart)
+              {
+                const MusECore::MuseCount_t absItemEnd = partPosCType + curItem->x() + curItem->width();
+                const MusECore::MuseCount_t finEnd = absItemEnd > partEndCType ? absItemEnd : partEndCType;
+                mwpr = map(QRect(partPosCType, 0, finEnd - partPosCType, height()));
+              }
+              else
+                mwpr = map(QRect(partPosCType, 0, partEndCType - partPosCType, height()));
+
               QRect mpbgr = mr & mwpr;
               if(!mpbgr.isNull())
               {
@@ -703,18 +824,20 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
                 QBrush part_bg_brush(MusECore::gGradientFromQColor(c, mwpr.topLeft(), mwpr.bottomLeft()));
                 p.fillRect(mpbgr, part_bg_brush);
               }
-        }     
+        }
       }
       else
       {
         // Draw non-current parts:
-        for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) 
+        for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
         {
               MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
               if(wp == curPart)
                 continue;
-              
-              QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
+
+//               QRect mwpr  = map(QRect(wp->frame(), 0, wp->lenFrame(), height()));
+              QRect mwpr  = map(QRect(MUSE_TIME_UINT_TO_INT64 wp->posValue(canvasTType), 0,
+                MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wp->posValue() + wp->lenValue(), wp->type(), canvasTType), height()));
               QRect mpbgr = mr & mwpr;
               if(!mpbgr.isNull())
               {
@@ -723,9 +846,9 @@ void WaveCanvas::drawParts(QPainter& p, bool do_cur_part, const QRect& mr, const
                 QBrush part_bg_brush(MusECore::gGradientFromQColor(c, mwpr.topLeft(), mwpr.bottomLeft()));
                 p.fillRect(mpbgr, part_bg_brush);
               }
-        }     
+        }
       }
-      
+
       p.setWorldMatrixEnabled(wmtxen);
 }
 
@@ -1368,24 +1491,983 @@ int WaveCanvas::y2pitch(int) const
 //    draws a wave
 //---------------------------------------------------------
 
+// REMOVE Tim. wave. Changed.
+// void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
+// {
+//       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
+//       if(!wp || !wp->track())
+//         return;
+//
+//       MusECore::Event event  = item->event();
+//       if(event.empty())
+//         return;
+//
+//       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       const QRect ur = mapDev(mr);               // Use our own map instead.
+//       const int ux = ur.x();
+//       const int uw = ur.width();
+//       const int ux_2 = ux + uw;
+// // REMOVE Tim. wave. Changed.
+// //       QRect uwpr  = QRect(wp->frame(), 0, wp->lenFrame(), height());
+//       //const QRect uwpr = drag == DRAG_RESIZE ?
+//       //    QRect(item->tmpPartPos(), 0, item->tmpPartLen(), height()) :
+//       //    QRect(wp->frame(), 0, wp->lenFrame(), height());
+//       const QRect uwpr = QRect(item->tmpPartPos(), 0, item->tmpPartLen(), height());
+//       const QRect ubbr = item->bbox();
+//       const QRect ubbr_exp = item->bbox().adjusted(0, 0, rmapxDev(1), 0);
+//       const QRect mbbr = map(ubbr);
+//       const int ubbx = ubbr.x();
+//       const int ubbx_2 = ubbr.x() + ubbr.width();
+//       const int mbbx = mbbr.x();
+//       const int mbbx_2 = mapx(ubbr.x() + ubbr.width());
+//       const QRect ubr = ur & ubbr;
+//       const QRect ubr_exp = ur & ubbr_exp;
+//       const int uby_exp = ubr_exp.y();
+//       const int uby_2exp = ubr_exp.y() + ubr_exp.height();
+//       const int mby_exp = mapy(uby_exp);
+//       const int mby_2exp = mapy(uby_2exp);
+//       const QRect ubrwp = ubr & uwpr;
+//       const QRect mbrwp = map(ubrwp);
+//
+//       QPen pen;
+//       pen.setCosmetic(true);
+//       const QColor left_ch_color(0, 170, 255);
+//       const QColor right_ch_color(Qt::red);
+//
+//       int x1 = mapx(ubrwp.x());
+//       int x2 = mapx(ubrwp.x() + ubrwp.width());
+//       if (x1 < 0)
+//             x1 = 0;
+//       if (x2 > width())
+//             x2 = width();
+//       int hh = height();
+//       int y1 = mapy(ubrwp.y());
+//       int y2 = mapy(ubrwp.y() + ubrwp.height());
+//
+//       int xScale = xmag;
+//       if (xScale < 0)
+//             xScale = -xScale;
+//
+// // REMOVE Tim. wave. Changed.
+// //       int px = wp->frame();
+//       //const int px = drag == DRAG_RESIZE ? item->tmpPartPos() : wp->frame();
+//       const int px = item->tmpPartPos();
+//       const unsigned absEPos = px + item->tmpPos();
+//
+//       bool wmtxen = p.worldMatrixEnabled();
+//       p.setWorldMatrixEnabled(false);
+//
+//       int sx, ex;
+//
+//       // Changed. Possible BUG ? Why the half nudge?
+//       // sx = event.frame() + px + xScale/2;
+// // REMOVE Tim. wave. Changed.
+// //       sx = event.frame() + px;
+// //       ex = sx + event.lenFrame();
+//       sx = ubbx;
+//       ex = ubbx_2;
+//       sx = sx / xScale - xpos - xorg;
+//       ex = ex / xScale - xpos - xorg;
+//
+//       if(sx >= x2 || ex < x1)
+//         return;
+//
+//       if (sx < x1)
+//             sx = x1;
+//       if (ex > x2)
+//             ex = x2;
+//
+// // REMOVE Tim. wave. Changed.
+// //       const int ev_spos = event.spos();
+//       //int ev_spos = event.spos();
+//       //if(drag == DRAG_COPY)
+//       //{
+//       //  ev_spos += ubbx - (event.frame() + px);
+//       //  if(ev_spos < 0)
+//       //    ev_spos = 0;
+//       //}
+//       //const int ev_spos = drag == DRAG_RESIZE ? item->tmpWaveSPos() : event.spos();
+//       const int ev_spos = item->tmpWaveSPos();
+//
+// // REMOVE Tim. wave. Changed.
+// //       int pos = (xpos + xorg + sx) * xScale - event.frame() - px;
+//       //int pos = (xpos + xorg + sx) * xScale - ubbx;
+//       //int pos = drag == DRAG_RESIZE ? item->tmpPos() : (xpos + xorg + sx) * xScale - event.frame() - px;
+//       //int pos = (xpos + xorg + sx) * xScale - (drag == DRAG_RESIZE ? item->tmpPos() : event.frame()) - px;
+//       //int pos = (xpos + xorg + sx) * xScale - item->tmpPos() - px;
+//       int pos = (xpos + xorg + sx) * xScale - absEPos;
+//
+// //       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               mr.x(), mr.y(), mr.width(), mr.height());
+// //       fprintf(stderr, "\nur:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               ur.x(), ur.y(), ur.width(), ur.height());
+// //       fprintf(stderr, "\nubbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
+// //       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
+//
+//       QBrush brush;
+//       if (item->isMoving())
+//       {
+//             QColor c(Qt::gray);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
+//             gradient.setColorAt(0, c);
+//             gradient.setColorAt(1, c.darker());
+//             brush = QBrush(gradient);
+//             p.fillRect(sx, y1, ex - sx + 1, y2, brush);
+//       }
+//       else
+//       if (item->isSelected())
+//       {
+//           QColor c(Qt::black);
+//           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//           QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
+//           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
+//           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+//           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
+//           gradient.setColorAt(1, c);
+//           brush = QBrush(gradient);
+//           p.fillRect(sx, y1, ex - sx + 1, y2, brush);
+//       }
+//
+//       int ev_channels = 0;
+//       int wav_sx = 0;
+//       int wav_ex = 0;
+//       int wsx = 0;
+//       int wex = 0;
+//       bool wave_visible = false;
+//
+//       MusECore::SndFileR f = event.sndFile();
+//       if(!f.isNull())
+//       {
+//         ev_channels = f.channels();
+//         if (ev_channels > 0) {
+//
+//           int h   = hh / (ev_channels * 2);
+//           int cc  = hh % (ev_channels * 2) ? 0 : 1;
+//
+// // REMOVE Tim. wave. Changed.
+// //           unsigned peoffset = px + event.frame() - ev_spos;
+//           //const unsigned absEPos = px + (drag == DRAG_RESIZE ? item->tmpPos() : event.frame());
+//           //const unsigned eLen = drag == DRAG_RESIZE ? item->tmpLen() : event.lenFrame();
+//           //const unsigned absEPos = px + item->tmpPos();
+//           const unsigned eLen = item->tmpLen();
+//           const unsigned peoffset = absEPos - ev_spos;
+//
+//           const sf_count_t smps = f.samples();
+//
+//           if(-ev_spos < smps && ev_spos <= smps)
+//           {
+//             wave_visible = true;
+//             wav_sx = -ev_spos;
+//             wav_ex = smps - ev_spos;
+//             if(wav_sx < 0)
+//               wav_sx = 0;
+// // REMOVE Tim. wave. Changed.
+// //             wav_sx += event.frame() + wp->frame();
+//             wav_sx += absEPos;
+//
+//             wav_ex = f.unConvertPosition(wav_ex);
+// // REMOVE Tim. wave. Changed.
+// //             if(wav_ex >= (int)event.lenFrame())
+//             if(wav_ex >= (int)eLen)
+//             {
+// // REMOVE Tim. wave. Changed.
+// //               wav_ex = event.lenFrame();
+//               wav_ex = eLen;
+//               if(wav_ex > 0)
+//                 --wav_ex;
+//             }
+// // REMOVE Tim. wave. Changed.
+// //             wav_ex += event.frame() + wp->frame();
+//             wav_ex += absEPos;
+//
+//             wav_sx = wav_sx / xScale - xpos - xorg;
+//             wav_ex = wav_ex / xScale - xpos - xorg;
+//             wsx = wav_sx < x1 ? x1 : wav_sx;
+//             wex = wav_ex > x2 ? x2 : wav_ex;
+//           }
+//
+//   //         fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
+//   //                 rect.x(), rect.width(),
+//   //                 rr.x(), rr.width(),
+//   //                 mr.x(), mr.width(),
+//   //                 pos,
+//   //                 sx, ex);
+//
+//           for (int i = sx; i < ex; i++) {
+//                 int y = h;
+//                 MusECore::SampleV sa[f.channels()];
+//                 if((ev_spos + f.convertPosition(pos)) > smps)
+//                   break;
+//                 // Seek the file only once, not with every read!
+//                 if(i == sx)
+//                 {
+//                   if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, ev_spos) == -1)
+//                     break;
+//                 }
+//                 f.readConverted(sa, xScale, pos, ev_spos);
+//
+//                 pos += xScale;
+//                 if (pos < 0)
+//                       continue;
+//
+//                 int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
+//                 int selectionStopPos  = selectionStop  - peoffset;
+//
+//                 for (int k = 0; k < ev_channels; ++k) {
+//                       int kk = k % f.channels();
+//                       int peak = (sa[kk].peak * (h - 1)) / yScale;
+//                       int rms  = (sa[kk].rms  * (h - 1)) / yScale;
+//                       if (peak > h)
+//                             peak = h;
+//                       if (rms > h)
+//                             rms = h;
+//                       QColor peak_color = MusEGlobal::config.wavePeakColor;
+//                       QColor rms_color  = MusEGlobal::config.waveRmsColor;
+//
+//                       if ((ev_spos + pos) > selectionStartPos && (ev_spos + pos) <= selectionStopPos) {
+//                             peak_color = MusEGlobal::config.wavePeakColorSelected;
+//                             rms_color  = MusEGlobal::config.waveRmsColorSelected;
+//                             QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);
+//                             if(!l_inv.isNull())
+//                             {
+//                               // Draw inverted
+//                               pen.setColor(QColor(Qt::black));
+//                               p.setPen(pen);
+//                               p.drawLine(l_inv);
+//                             }
+//                           }
+//
+//                       QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mbrwp);
+//                       if(!l_peak.isNull())
+//                       {
+//                         pen.setColor(peak_color);
+//                         p.setPen(pen);
+//                         p.drawLine(l_peak);
+//                       }
+//
+//                       QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mbrwp);
+//                       if(!l_rms.isNull())
+//                       {
+//                         pen.setColor(rms_color);
+//                         p.setPen(pen);
+//                         p.drawLine(l_rms);
+//                       }
+//
+//                       y += 2 * h;
+//                     }
+//                 }
+//
+//             // Only if there's something to draw.
+//             if(wave_visible && wsx <= wex && wsx < x2 && wex >= x1)
+//             {
+//               const int hn = hh / ev_channels;
+//               const int hhn = hn / 2;
+//               for (int i = 0; i < ev_channels; ++i) {
+//                     const int h2     = hn * i;
+//                     const int center = hhn + h2;
+//                     if(center >= y1 && center < y2)
+//                     {
+//                       pen.setColor(QColor(i & 1 ? right_ch_color : left_ch_color));
+//                       p.setPen(pen);
+//                       p.drawLine(wsx, center, wex, center);
+//                     }
+//                   }
+//             }
+//           }
+//         }
+//
+//         const int h2 = hh / 2;
+//         if(h2 >= y1 && h2 < y2)
+//         {
+//           pen.setColor(QColor(Qt::black));
+//           p.setPen(pen);
+//           // Draw the complete line only if there are an even number of channels (space for the line in the middle).
+//           // Ensure a complete line is drawn even if there is no sound file or channels.
+//           if((ev_channels & 1) == 0)
+//             p.drawLine(sx, h2, ex, h2);
+//           else
+//           {
+//             // Draw only the required two segments of the line.
+//             if(wave_visible)
+//             {
+//               if(sx < wsx)
+//                 p.drawLine(sx, h2, wsx - 1, h2);
+//               if(wex < ex)
+//                 p.drawLine(wex + 1, h2, ex, h2);
+//             }
+//           }
+//         }
+//
+//         // REMOVE Tim. wave. Added.
+//         {
+//           // Draw remaining 'hidden events' decorations with 'jagged' edges...
+//           QColor partColor;
+//           if (wp->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+//               partColor = wp->track()->color();
+//           else
+//               partColor = MusEGlobal::config.partColors[wp->colorIndex()];
+//           int color_brightness;
+//           if (MusECore::isColorBright(partColor) && !item->isSelected())
+//               color_brightness=96; //0;    // too light: use dark color
+//           else
+//               color_brightness=180; //255;   // too dark: use lighter color
+//           QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+//           const int gradS = qBound(0, MusEGlobal::config.partGradientStrength, 200);
+//           p.setBrush(MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS));
+//
+//           const int h = mbbr.height();
+//           const double s = double(h) / 4.0;
+//
+//           const int xs_0 = mbbr.x();
+//           const int xe_0 = xs_0 + mbbr.width();
+//           int xs_1 = xs_0 + 1;
+//           if(xs_1 > xe_0)
+//             xs_1 = xe_0;
+//           int xs_j = xs_0 + 8;
+//           if(xs_j > xe_0)
+//             xs_j = xe_0;
+//
+//           int xe_1 = xe_0 - 1;
+//           if(xe_1 < xs_0)
+//             xe_1 = xs_0;
+//           int xe_j = xe_0 - 8;
+//           if(xe_j < xs_0)
+//             xe_j = xs_0;
+//
+//           const int ys_0 = mbbr.y();
+//
+//           const int y0 = ys_0;
+//           const int y2 = y0 + lrint(s * 2.0);
+//           const int y4 = y0 + h;
+//
+//           QPoint points[8];
+//           int pts;
+//
+//           //if(het & MusECore::Part::RightEventsHidden)
+//           {
+//             pts = 0;
+//             points[pts++] = QPoint(xe_0, y0);
+//             points[pts++] = QPoint(xe_0, y4);
+//             points[pts++] = QPoint(xe_j, y2);
+//
+//             p.drawConvexPolygon(points, pts);
+//           }
+//
+//   //         if(het & MusECore::Part::LeftEventsHidden)
+//           if(ev_spos > 0)
+//           {
+//             pts = 0;
+//             points[pts++] = QPoint(xs_0, y0);
+//             points[pts++] = QPoint(xs_j, y2);
+//             points[pts++] = QPoint(xs_0, y4);
+//
+//             p.drawConvexPolygon(points, pts);
+//           }
+//
+//         }
+//       //
+//       // Draw custom dashed borders around the wave event
+//       //
+//
+//       QColor color(item->isSelected() ? Qt::white : Qt::black);
+//       QPen penH(color);
+//       QPen penV(color);
+//       penH.setCosmetic(true);
+//       penV.setCosmetic(true);
+//       QVector<qreal> customDashPattern;
+//       customDashPattern << 4.0 << 6.0;
+//       penH.setDashPattern(customDashPattern);
+//       penV.setDashPattern(customDashPattern);
+//       penV.setDashOffset(2.0);
+//       // FIXME: Some shifting still going on. Values likely not quite right here.
+//       //int xdiff = sx - r.x();
+//       int xdiff = sx - mbbx;
+//       if(xdiff > 0)
+//       {
+//         int doff = xdiff % 10;
+//         penH.setDashOffset(doff);
+//       }
+//       // Tested OK. Each segment drawn only when necessary.
+//       if(y1 <= 0)
+//       {
+//         p.setPen(penH);
+//         p.drawLine(sx, 0, ex, 0);
+//       }
+//       if(y2 >= hh - 1)
+//       {
+//         p.setPen(penH);
+//         p.drawLine(sx, hh - 1, ex, hh - 1);
+//       }
+//
+//       //fprintf(stderr, "...Checking left edge: ubbx:%d ux:%d ux_2:%d\n", ubbx, ux, ux_2);
+//       if(ubbx >= ux && ubbx < ux_2)
+//       {
+//         //fprintf(stderr, "...Drawing left edge at mbbx:%d mby_exp:%d mby_2exp:%d\n", mbbx, mby_exp, mby_2exp);
+//
+//         p.setPen(penV);
+//         p.drawLine(mbbx, mby_exp, mbbx, mby_2exp);
+//       }
+//
+//
+//       //fprintf(stderr, "...Checking right edge: ubbx_2:%d ux:%d ux_2:%d\n", ubbx_2, ux, ux_2);
+//       if(ubbx_2 >= ux && ubbx_2 < ux_2)
+//       {
+//         //fprintf(stderr, "...Drawing right edge at mbbx_2:%d mby_exp:%d mby_2exp:%d\n", mbbx_2, mby_exp, mby_2exp);
+//
+//         p.setPen(penV);
+//         p.drawLine(mbbx_2, mby_exp, mbbx_2, mby_2exp);
+//       }
+//
+//       // Done. Restore and return.
+//       p.setWorldMatrixEnabled(wmtxen);
+// }
+
+// void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
+// {
+//       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
+//       if(!wp || !wp->track())
+//         return;
+//
+//       const MusECore::Event event  = item->event();
+//       if(event.empty())
+//         return;
+//
+// // REMOVE Tim. wave. Added.
+//       const MusECore::Pos::TType eType = event.pos().type();
+//
+//       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+//       const QRect ur = mapDev(mr);               // Use our own map instead.
+//       const int ux = ur.x();
+//       const int uw = ur.width();
+//       const int ux_2 = ux + uw;
+// // REMOVE Tim. wave. Changed.
+// //       QRect uwpr  = QRect(wp->frame(), 0, wp->lenFrame(), height());
+//       //const QRect uwpr = drag == DRAG_RESIZE ?
+//       //    QRect(item->tmpPartPos(), 0, item->tmpPartLen(), height()) :
+//       //    QRect(wp->frame(), 0, wp->lenFrame(), height());
+//       const QRect uwpr = QRect(item->tmpPartPos(), 0, item->tmpPartLen(), height());
+// //       const QRect ubbr = item->bbox();
+// //       const QRect ubbr_exp = item->bbox().adjusted(0, 0, rmapxDev(1), 0);
+//
+//       const int px = item->tmpPartPos();
+//       const unsigned pPosEType = MusECore::Pos::convert(px, wp->type(), eType);
+//       const unsigned absEPos = pPosEType + item->tmpPos();
+//       const unsigned eLen = item->tmpLen();
+//       const unsigned absEEnd = absEPos + eLen;
+//       const unsigned absEPosFrames = MusECore::Pos::convert(absEPos, eType, MusECore::Pos::FRAMES);
+//       const unsigned absEEndFrames = MusECore::Pos::convert(absEEnd, eType, MusECore::Pos::FRAMES);
+//
+//       const QRect ubbr = QRect(absEPosFrames, item->bbox().y(), absEEndFrames - absEPosFrames, item->bbox().height());
+//       const QRect ubbr_exp = ubbr.adjusted(0, 0, rmapxDev(1), 0);
+//
+//
+//       const QRect mbbr = map(ubbr);
+//       const int ubbx = ubbr.x();
+//       const int ubbx_2 = ubbr.x() + ubbr.width();
+//       const int mbbx = mbbr.x();
+//       const int mbbx_2 = mapx(ubbr.x() + ubbr.width());
+//       const QRect ubr = ur & ubbr;
+//       const QRect ubr_exp = ur & ubbr_exp;
+//       const int uby_exp = ubr_exp.y();
+//       const int uby_2exp = ubr_exp.y() + ubr_exp.height();
+//       const int mby_exp = mapy(uby_exp);
+//       const int mby_2exp = mapy(uby_2exp);
+//       const QRect ubrwp = ubr & uwpr;
+//       const QRect mbrwp = map(ubrwp);
+//
+//       QPen pen;
+//       pen.setCosmetic(true);
+//       const QColor left_ch_color(0, 170, 255);
+//       const QColor right_ch_color(Qt::red);
+//
+//       int x1 = mapx(ubrwp.x());
+//       int x2 = mapx(ubrwp.x() + ubrwp.width());
+//       if (x1 < 0)
+//             x1 = 0;
+//       if (x2 > width())
+//             x2 = width();
+//       int hh = height();
+//       int y1 = mapy(ubrwp.y());
+//       int y2 = mapy(ubrwp.y() + ubrwp.height());
+//
+//       int xScale = xmag;
+//       if (xScale < 0)
+//             xScale = -xScale;
+//
+// // REMOVE Tim. wave. Changed.
+// //       int px = wp->frame();
+//       //const int px = drag == DRAG_RESIZE ? item->tmpPartPos() : wp->frame();
+// //       const int px = item->tmpPartPos();
+// //       const unsigned pPosEType = MusECore::Pos::convert(px, wp->type(), eType);
+// //       const unsigned absEPos = pPosEType + item->tmpPos();
+// //       const unsigned eLen = item->tmpLen();
+// //       const unsigned absEEnd = absEPos + eLen;
+// //
+// //       const unsigned absEPosFrames = MusECore::Pos::convert(absEPos, eType, MusECore::Pos::FRAMES);
+// //       const unsigned absEEndFrames = MusECore::Pos::convert(absEEnd, eType, MusECore::Pos::FRAMES);
+//
+//       bool wmtxen = p.worldMatrixEnabled();
+//       p.setWorldMatrixEnabled(false);
+//
+//       int sx, ex;
+//
+//       // Changed. Possible BUG ? Why the half nudge?
+//       // sx = event.frame() + px + xScale/2;
+// // REMOVE Tim. wave. Changed.
+// //       sx = event.frame() + px;
+// //       ex = sx + event.lenFrame();
+//       sx = ubbx;
+//       ex = ubbx_2;
+//       sx = sx / xScale - xpos - xorg;
+//       ex = ex / xScale - xpos - xorg;
+//
+//       if(sx >= x2 || ex < x1)
+//         return;
+//
+//       if (sx < x1)
+//             sx = x1;
+//       if (ex > x2)
+//             ex = x2;
+//
+// // REMOVE Tim. wave. Changed.
+// //       const int ev_spos = event.spos();
+//       //int ev_spos = event.spos();
+//       //if(drag == DRAG_COPY)
+//       //{
+//       //  ev_spos += ubbx - (event.frame() + px);
+//       //  if(ev_spos < 0)
+//       //    ev_spos = 0;
+//       //}
+//       //const int ev_spos = drag == DRAG_RESIZE ? item->tmpWaveSPos() : event.spos();
+//       const int ev_spos = item->tmpWaveSPos();
+//
+// // REMOVE Tim. wave. Changed.
+// //       int pos = (xpos + xorg + sx) * xScale - event.frame() - px;
+//       //int pos = (xpos + xorg + sx) * xScale - ubbx;
+//       //int pos = drag == DRAG_RESIZE ? item->tmpPos() : (xpos + xorg + sx) * xScale - event.frame() - px;
+//       //int pos = (xpos + xorg + sx) * xScale - (drag == DRAG_RESIZE ? item->tmpPos() : event.frame()) - px;
+//       //int pos = (xpos + xorg + sx) * xScale - item->tmpPos() - px;
+//       int pos = (xpos + xorg + sx) * xScale - absEPos;
+//
+// //       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               mr.x(), mr.y(), mr.width(), mr.height());
+// //       fprintf(stderr, "\nur:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               ur.x(), ur.y(), ur.width(), ur.height());
+// //       fprintf(stderr, "\nubbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
+// //       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
+// //               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
+//
+//       QBrush brush;
+//       if (item->isMoving())
+//       {
+//             QColor c(Qt::gray);
+//             c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//             QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
+//             gradient.setColorAt(0, c);
+//             gradient.setColorAt(1, c.darker());
+//             brush = QBrush(gradient);
+//             p.fillRect(sx, y1, ex - sx + 1, y2, brush);
+//       }
+//       else
+//       if (item->isSelected())
+//       {
+//           QColor c(Qt::black);
+//           c.setAlpha(MusEGlobal::config.globalAlphaBlend);
+//           QLinearGradient gradient(ubbr.topLeft(), ubbr.bottomLeft());
+//           // Use a colour only about 20% lighter than black, rather than the 50% we use in MusECore::gGradientFromQColor
+//           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+//           gradient.setColorAt(0, QColor(51, 51, 51, MusEGlobal::config.globalAlphaBlend));
+//           gradient.setColorAt(1, c);
+//           brush = QBrush(gradient);
+//           p.fillRect(sx, y1, ex - sx + 1, y2, brush);
+//       }
+//
+//       int ev_channels = 0;
+//       int wav_sx = 0;
+//       int wav_ex = 0;
+//       int wsx = 0;
+//       int wex = 0;
+//       bool wave_visible = false;
+//
+//       MusECore::SndFileR f = event.sndFile();
+//       if(!f.isNull())
+//       {
+//         ev_channels = f.channels();
+//         if (ev_channels > 0) {
+//
+//           int h   = hh / (ev_channels * 2);
+//           int cc  = hh % (ev_channels * 2) ? 0 : 1;
+//
+// // REMOVE Tim. wave. Changed.
+// //           unsigned peoffset = px + event.frame() - ev_spos;
+//           //const unsigned absEPos = px + (drag == DRAG_RESIZE ? item->tmpPos() : event.frame());
+//           //const unsigned eLen = drag == DRAG_RESIZE ? item->tmpLen() : event.lenFrame();
+//           //const unsigned absEPos = px + item->tmpPos();
+//           const unsigned peoffset = absEPos - ev_spos;
+//
+//           const sf_count_t smps = f.samples();
+//           //const sf_count_t smpsConverted = f.samplesConverted();
+//
+//           if(-ev_spos < smps && ev_spos <= smps)
+//           {
+//             wave_visible = true;
+//             wav_sx = -ev_spos;
+//             wav_ex = smps - ev_spos;
+//             if(wav_sx < 0)
+//               wav_sx = 0;
+// // REMOVE Tim. wave. Changed.
+// //             wav_sx += event.frame() + wp->frame();
+//             wav_sx += absEPos;
+//
+//             wav_ex = f.unConvertPosition(wav_ex);
+// // REMOVE Tim. wave. Changed.
+// //             if(wav_ex >= (int)event.lenFrame())
+//             if(wav_ex >= (int)eLen)
+//             {
+// // REMOVE Tim. wave. Changed.
+// //               wav_ex = event.lenFrame();
+//               wav_ex = eLen;
+//               if(wav_ex > 0)
+//                 --wav_ex;
+//             }
+// // REMOVE Tim. wave. Changed.
+// //             wav_ex += event.frame() + wp->frame();
+//             wav_ex += absEPos;
+//
+//             wav_sx = wav_sx / xScale - xpos - xorg;
+//             wav_ex = wav_ex / xScale - xpos - xorg;
+//             wsx = wav_sx < x1 ? x1 : wav_sx;
+//             wex = wav_ex > x2 ? x2 : wav_ex;
+//           }
+//
+//   //         fprintf(stderr, "WaveCanvas::drawItem: rect x:%d w:%d rr x:%d w:%d mr x:%d w:%d pos:%d sx:%d ex:%d\n",
+//   //                 rect.x(), rect.width(),
+//   //                 rr.x(), rr.width(),
+//   //                 mr.x(), mr.width(),
+//   //                 pos,
+//   //                 sx, ex);
+//
+//           for (int i = sx; i < ex; i++) {
+//                 int y = h;
+//                 MusECore::SampleV sa[f.channels()];
+//                 if((ev_spos + f.convertPosition(pos)) > smps)
+//                   break;
+//                 // Seek the file only once, not with every read!
+//                 if(i == sx)
+//                 {
+//                   if(f.seekUIConverted(pos, SEEK_SET | SFM_READ, ev_spos) == -1)
+//                     break;
+//                 }
+//                 f.readConverted(sa, xScale, pos, ev_spos);
+//
+//                 pos += xScale;
+//                 if (pos < 0)
+//                       continue;
+//
+//                 int selectionStartPos = selectionStart - peoffset; // Offset transformed to event coords
+//                 int selectionStopPos  = selectionStop  - peoffset;
+//
+//                 for (int k = 0; k < ev_channels; ++k) {
+//                       int kk = k % f.channels();
+//                       int peak = (sa[kk].peak * (h - 1)) / yScale;
+//                       int rms  = (sa[kk].rms  * (h - 1)) / yScale;
+//                       if (peak > h)
+//                             peak = h;
+//                       if (rms > h)
+//                             rms = h;
+//                       QColor peak_color = MusEGlobal::config.wavePeakColor;
+//                       QColor rms_color  = MusEGlobal::config.waveRmsColor;
+//
+//                       if ((ev_spos + pos) > selectionStartPos && (ev_spos + pos) <= selectionStopPos) {
+//                             peak_color = MusEGlobal::config.wavePeakColorSelected;
+//                             rms_color  = MusEGlobal::config.waveRmsColorSelected;
+//                             QLine l_inv = clipQLine(i, y - h + cc, i, y + h - cc, mbrwp);
+//                             if(!l_inv.isNull())
+//                             {
+//                               // Draw inverted
+//                               pen.setColor(QColor(Qt::black));
+//                               p.setPen(pen);
+//                               p.drawLine(l_inv);
+//                             }
+//                           }
+//
+//                       QLine l_peak = clipQLine(i, y - peak - cc, i, y + peak, mbrwp);
+//                       if(!l_peak.isNull())
+//                       {
+//                         pen.setColor(peak_color);
+//                         p.setPen(pen);
+//                         p.drawLine(l_peak);
+//                       }
+//
+//                       QLine l_rms = clipQLine(i, y - rms - cc, i, y + rms, mbrwp);
+//                       if(!l_rms.isNull())
+//                       {
+//                         pen.setColor(rms_color);
+//                         p.setPen(pen);
+//                         p.drawLine(l_rms);
+//                       }
+//
+//                       y += 2 * h;
+//                     }
+//                 }
+//
+//             // Only if there's something to draw.
+//             if(wave_visible && wsx <= wex && wsx < x2 && wex >= x1)
+//             {
+//               const int hn = hh / ev_channels;
+//               const int hhn = hn / 2;
+//               for (int i = 0; i < ev_channels; ++i) {
+//                     const int h2     = hn * i;
+//                     const int center = hhn + h2;
+//                     if(center >= y1 && center < y2)
+//                     {
+//                       pen.setColor(QColor(i & 1 ? right_ch_color : left_ch_color));
+//                       p.setPen(pen);
+//                       p.drawLine(wsx, center, wex, center);
+//                     }
+//                   }
+//             }
+//
+//             // REMOVE Tim. wave. Added.
+//             {
+//               p.setPen(Qt::NoPen);
+//               // Draw remaining 'hidden events' decorations with 'jagged' edges...
+//               QColor partColor;
+//               if (wp->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+//                   partColor = wp->track()->color();
+//               else
+//                   partColor = MusEGlobal::config.partColors[wp->colorIndex()];
+//               int color_brightness;
+//               if (MusECore::isColorBright(partColor) && !item->isSelected())
+//                   color_brightness=96; //0;    // too light: use dark color
+//               else
+//                   color_brightness=180; //255;   // too dark: use lighter color
+//               QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+//               const int gradS = qBound(0, MusEGlobal::config.partGradientStrength, 200);
+//               p.setBrush(MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS));
+//
+//               const int h = mbbr.height();
+//               const double s = double(h) / 4.0;
+//
+//               const int xs_0 = mbbr.x();
+//               const int xe_0 = xs_0 + mbbr.width();
+//               int xs_1 = xs_0 + 1;
+//               if(xs_1 > xe_0)
+//                 xs_1 = xe_0;
+//               int xs_j = xs_0 + 8;
+//               if(xs_j > xe_0)
+//                 xs_j = xe_0;
+//
+//               int xe_1 = xe_0 - 1;
+//               if(xe_1 < xs_0)
+//                 xe_1 = xs_0;
+//               int xe_j = xe_0 - 8;
+//               if(xe_j < xs_0)
+//                 xe_j = xs_0;
+//
+//               const int ys_0 = mbbr.y();
+//
+//               const int y0 = ys_0;
+//               const int y2 = y0 + lrint(s * 2.0);
+//               const int y4 = y0 + h;
+//
+//               QPoint points[8];
+//               int pts;
+//
+//               //if(het & MusECore::Part::RightEventsHidden)
+//               //if(-ev_spos >= smps || (smps > ev_spos &&
+//               if(smps > ev_spos &&
+//                 absEPosFrames + f.unConvertPosition(smps - ev_spos) > absEEndFrames)
+//               {
+//                 pts = 0;
+//                 points[pts++] = QPoint(xe_0, y0);
+//                 points[pts++] = QPoint(xe_0, y4);
+//                 points[pts++] = QPoint(xe_j, y2);
+//
+//                 p.drawConvexPolygon(points, pts);
+//               }
+//
+//       //         if(het & MusECore::Part::LeftEventsHidden)
+//               if(ev_spos > 0)
+//               {
+//                 pts = 0;
+//                 points[pts++] = QPoint(xs_0, y0);
+//                 points[pts++] = QPoint(xs_j, y2);
+//                 points[pts++] = QPoint(xs_0, y4);
+//
+//                 p.drawConvexPolygon(points, pts);
+//               }
+//             }
+//
+//           }
+//         }
+//
+//         const int h2 = hh / 2;
+//         if(h2 >= y1 && h2 < y2)
+//         {
+//           pen.setColor(QColor(Qt::black));
+//           p.setPen(pen);
+//           // Draw the complete line only if there are an even number of channels (space for the line in the middle).
+//           // Ensure a complete line is drawn even if there is no sound file or channels.
+//           if((ev_channels & 1) == 0)
+//             p.drawLine(sx, h2, ex, h2);
+//           else
+//           {
+//             // Draw only the required two segments of the line.
+//             if(wave_visible)
+//             {
+//               if(sx < wsx)
+//                 p.drawLine(sx, h2, wsx - 1, h2);
+//               if(wex < ex)
+//                 p.drawLine(wex + 1, h2, ex, h2);
+//             }
+//           }
+//         }
+//
+//       //
+//       // Draw custom dashed borders around the wave event
+//       //
+//
+//       QColor color(item->isSelected() ? Qt::white : Qt::black);
+//       QPen penH(color);
+//       QPen penV(color);
+//       penH.setCosmetic(true);
+//       penV.setCosmetic(true);
+//       QVector<qreal> customDashPattern;
+//       customDashPattern << 4.0 << 6.0;
+//       penH.setDashPattern(customDashPattern);
+//       penV.setDashPattern(customDashPattern);
+//       penV.setDashOffset(2.0);
+//       // FIXME: Some shifting still going on. Values likely not quite right here.
+//       //int xdiff = sx - r.x();
+//       int xdiff = sx - mbbx;
+//       if(xdiff > 0)
+//       {
+//         int doff = xdiff % 10;
+//         penH.setDashOffset(doff);
+//       }
+//       // Tested OK. Each segment drawn only when necessary.
+//       if(y1 <= 0)
+//       {
+//         p.setPen(penH);
+//         p.drawLine(sx, 0, ex, 0);
+//       }
+//       if(y2 >= hh - 1)
+//       {
+//         p.setPen(penH);
+//         p.drawLine(sx, hh - 1, ex, hh - 1);
+//       }
+//
+//       //fprintf(stderr, "...Checking left edge: ubbx:%d ux:%d ux_2:%d\n", ubbx, ux, ux_2);
+//       if(ubbx >= ux && ubbx < ux_2)
+//       {
+//         //fprintf(stderr, "...Drawing left edge at mbbx:%d mby_exp:%d mby_2exp:%d\n", mbbx, mby_exp, mby_2exp);
+//
+//         p.setPen(penV);
+//         p.drawLine(mbbx, mby_exp, mbbx, mby_2exp);
+//       }
+//
+//
+//       //fprintf(stderr, "...Checking right edge: ubbx_2:%d ux:%d ux_2:%d\n", ubbx_2, ux, ux_2);
+//       if(ubbx_2 >= ux && ubbx_2 < ux_2)
+//       {
+//         //fprintf(stderr, "...Drawing right edge at mbbx_2:%d mby_exp:%d mby_2exp:%d\n", mbbx_2, mby_exp, mby_2exp);
+//
+//         p.setPen(penV);
+//         p.drawLine(mbbx_2, mby_exp, mbbx_2, mby_2exp);
+//       }
+//
+//       // Done. Restore and return.
+//       p.setWorldMatrixEnabled(wmtxen);
+// }
+
 void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const QRegion&)
 {
       MusECore::WavePart* wp = (MusECore::WavePart*)(item->part());
+
+// REMOVE Tim. wave. Added. Diagnostics.
+      fprintf(stderr, "WaveCanvas::drawItem part:%p part->track():%p\n", wp, wp ? wp->track() : nullptr);
+
       if(!wp || !wp->track())
         return;
 
-      MusECore::Event event  = item->event();
+      const MusECore::Event event  = item->event();
       if(event.empty())
         return;
-      
+
+// REMOVE Tim. wave. Added.
+//       const MusECore::Pos::TType eType = event.pos().type();
+      const MusECore::Pos::TType partTType = wp->type();
+      const MusECore::Pos::TType canvasTType = MusECore::Pos::FRAMES;
+
       //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
       const QRect ur = mapDev(mr);               // Use our own map instead.
       const int ux = ur.x();
       const int uw = ur.width();
       const int ux_2 = ux + uw;
-      QRect uwpr  = QRect(wp->frame(), 0, wp->lenFrame(), height());
-      const QRect ubbr = item->bbox();
-      const QRect ubbr_exp = item->bbox().adjusted(0, 0, rmapxDev(1), 0);
+// REMOVE Tim. wave. Changed.
+//       QRect uwpr  = QRect(wp->frame(), 0, wp->lenFrame(), height());
+      //const QRect uwpr = drag == DRAG_RESIZE ?
+      //    QRect(item->tmpPartPos(), 0, item->tmpPartLen(), height()) :
+      //    QRect(wp->frame(), 0, wp->lenFrame(), height());
+//       const QRect uwpr = QRect(item->tmpPartPos(), 0, item->tmpPartLen(), height());
+      //const QRect ubbr = item->bbox();
+      //const QRect ubbr_exp = item->bbox().adjusted(0, 0, rmapxDev(1), 0);
+
+
+      QRect uwpr;
+      const MusECore::MuseCount_t partPosCType = MUSE_TIME_UINT_TO_INT64 wp->posValue(canvasTType);
+      const MusECore::MuseCount_t partEndCType =
+        MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wp->posValue() + wp->lenValue(), partTType, canvasTType);
+      if(drag == DRAG_RESIZE && item == curItem && wp == curPart)
+      {
+        // If we are resizing borders (and the current item's part is the same as the current part)
+        //  and the item end is greater than part end, then allow the part to expand to the item end,
+        //  to give a 'live' dynamic update.
+        //if(drag == DRAG_RESIZE && curItem && curItem == item && curItem->part() == curPart)
+        {
+          const MusECore::MuseCount_t absItemEnd = partPosCType + item->x() + item->width();
+          const MusECore::MuseCount_t finEnd = absItemEnd > partEndCType ? absItemEnd : partEndCType;
+          uwpr = QRect(partPosCType, 0, finEnd - partPosCType, height());
+        }
+      }
+      else
+        uwpr = QRect(partPosCType, 0, partEndCType - partPosCType, height());
+
+
+
+
+
+//       const int px = item->tmpPartPos();
+//       const int px = partPosCType;
+//       const unsigned pPosEType = MusECore::Pos::convert(px, wp->type(), eType);
+//       const MusECore::MuseCount_t pPosEType = MUSE_TIME_UINT_TO_INT64 wp->posValue(eType);
+//       const unsigned absEPos = pPosEType + item->tmpPos();
+//       const unsigned absEPosCType = partPosCType + item->x();
+//       const unsigned eLen = item->tmpLen();
+      const MusECore::MuseCount_t absEPosCType = partPosCType + item->x();
+//       const MusECore::MuseCount_t eLen = item->tmpLen();
+//       const unsigned absEEnd = absEPos + eLen;
+//       const unsigned absEEndCType = partPosCType + item->x() + item->width();
+      const MusECore::MuseCount_t absEEndCType = partPosCType + item->x() + item->width();
+//       const unsigned absEPosFrames = MusECore::Pos::convert(absEPos, eType, MusECore::Pos::FRAMES);
+//       const unsigned absEEndFrames = MusECore::Pos::convert(absEEnd, eType, MusECore::Pos::FRAMES);
+//       const unsigned absEPosFrames = MusECore::Pos::convert(absEPosCType, canvasTType, MusECore::Pos::FRAMES);
+//       const unsigned absEEndFrames = MusECore::Pos::convert(absEEndCType, canvasTType, MusECore::Pos::FRAMES);
+//       const unsigned eLenFrames = absEEndFrames - absEPosFrames;
+      const MusECore::MuseCount_t absEPosFrames = MusECore::Pos::convert(absEPosCType, canvasTType, MusECore::Pos::FRAMES);
+      const MusECore::MuseCount_t absEEndFrames = MusECore::Pos::convert(absEEndCType, canvasTType, MusECore::Pos::FRAMES);
+      const MusECore::MuseCount_t eLenFrames = absEEndFrames - absEPosFrames;
+
+//       const QRect ubbr = QRect(absEPosFrames, item->bbox().y(), absEEndFrames - absEPosFrames, item->bbox().height());
+      const QRect ubbr = QRect(absEPosCType, item->y(), absEEndCType - absEPosCType, item->height());
+      const QRect ubbr_exp = ubbr.adjusted(0, 0, rmapxDev(1), 0);
+
+
       const QRect mbbr = map(ubbr);
       const int ubbx = ubbr.x();
       const int ubbx_2 = ubbr.x() + ubbr.width();
@@ -1399,12 +2481,12 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       const int mby_2exp = mapy(uby_2exp);
       const QRect ubrwp = ubr & uwpr;
       const QRect mbrwp = map(ubrwp);
-      
+
       QPen pen;
       pen.setCosmetic(true);
       const QColor left_ch_color(0, 170, 255);
       const QColor right_ch_color(Qt::red);
-      
+
       int x1 = mapx(ubrwp.x());
       int x2 = mapx(ubrwp.x() + ubrwp.width());
       if (x1 < 0)
@@ -1419,7 +2501,17 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       if (xScale < 0)
             xScale = -xScale;
 
-      int px = wp->frame();
+// REMOVE Tim. wave. Changed.
+//       int px = wp->frame();
+      //const int px = drag == DRAG_RESIZE ? item->tmpPartPos() : wp->frame();
+//       const int px = item->tmpPartPos();
+//       const unsigned pPosEType = MusECore::Pos::convert(px, wp->type(), eType);
+//       const unsigned absEPos = pPosEType + item->tmpPos();
+//       const unsigned eLen = item->tmpLen();
+//       const unsigned absEEnd = absEPos + eLen;
+//
+//       const unsigned absEPosFrames = MusECore::Pos::convert(absEPos, eType, MusECore::Pos::FRAMES);
+//       const unsigned absEEndFrames = MusECore::Pos::convert(absEEnd, eType, MusECore::Pos::FRAMES);
 
       bool wmtxen = p.worldMatrixEnabled();
       p.setWorldMatrixEnabled(false);
@@ -1428,11 +2520,14 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 
       // Changed. Possible BUG ? Why the half nudge?
       // sx = event.frame() + px + xScale/2;
-      sx = event.frame() + px;
-      ex = sx + event.lenFrame();
+// REMOVE Tim. wave. Changed.
+//       sx = event.frame() + px;
+//       ex = sx + event.lenFrame();
+      sx = ubbx;
+      ex = ubbx_2;
       sx = sx / xScale - xpos - xorg;
       ex = ex / xScale - xpos - xorg;
-      
+
       if(sx >= x2 || ex < x1)
         return;
 
@@ -1441,10 +2536,27 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
       if (ex > x2)
             ex = x2;
 
-      const int ev_spos = event.spos();
-      
-      int pos = (xpos + xorg + sx) * xScale - event.frame() - px;
-      
+// REMOVE Tim. wave. Changed.
+//       const int ev_spos = event.spos();
+      //int ev_spos = event.spos();
+      //if(drag == DRAG_COPY)
+      //{
+      //  ev_spos += ubbx - (event.frame() + px);
+      //  if(ev_spos < 0)
+      //    ev_spos = 0;
+      //}
+      //const int ev_spos = drag == DRAG_RESIZE ? item->tmpWaveSPos() : event.spos();
+      const int ev_spos = item->tmpWaveSPos();
+
+// REMOVE Tim. wave. Changed.
+//       int pos = (xpos + xorg + sx) * xScale - event.frame() - px;
+      //int pos = (xpos + xorg + sx) * xScale - ubbx;
+      //int pos = drag == DRAG_RESIZE ? item->tmpPos() : (xpos + xorg + sx) * xScale - event.frame() - px;
+      //int pos = (xpos + xorg + sx) * xScale - (drag == DRAG_RESIZE ? item->tmpPos() : event.frame()) - px;
+      //int pos = (xpos + xorg + sx) * xScale - item->tmpPos() - px;
+//       int pos = (xpos + xorg + sx) * xScale - absEPos;
+      int pos = (xpos + xorg + sx) * xScale - absEPosCType;
+
 //       fprintf(stderr, "\nWaveCanvas::drawItem:\nmr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
 //               mr.x(), mr.y(), mr.width(), mr.height());
 //       fprintf(stderr, "\nur:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
@@ -1453,7 +2565,7 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
 //               ubbr.x(), ubbr.y(), ubbr.width(), ubbr.height());
 //       fprintf(stderr, "\nmbbr:\nx:%8d\t\ty:%8d\t\tw:%8d\t\th:%8d\n\n",
 //               mbbr.x(), mbbr.y(), mbbr.width(), mbbr.height());
-      
+
       QBrush brush;
       if (item->isMoving())
       {
@@ -1495,9 +2607,16 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
           int h   = hh / (ev_channels * 2);
           int cc  = hh % (ev_channels * 2) ? 0 : 1;
 
-          unsigned peoffset = px + event.frame() - ev_spos;
+// REMOVE Tim. wave. Changed.
+//           unsigned peoffset = px + event.frame() - ev_spos;
+          //const unsigned absEPos = px + (drag == DRAG_RESIZE ? item->tmpPos() : event.frame());
+          //const unsigned eLen = drag == DRAG_RESIZE ? item->tmpLen() : event.lenFrame();
+          //const unsigned absEPos = px + item->tmpPos();
+//           const unsigned peoffset = absEPos - ev_spos;
+          const unsigned peoffset = absEPosFrames - ev_spos;
 
           const sf_count_t smps = f.samples();
+          //const sf_count_t smpsConverted = f.samplesConverted();
 
           if(-ev_spos < smps && ev_spos <= smps)
           {
@@ -1506,16 +2625,28 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
             wav_ex = smps - ev_spos;
             if(wav_sx < 0)
               wav_sx = 0;
-            wav_sx += event.frame() + wp->frame();
+// REMOVE Tim. wave. Changed.
+//             wav_sx += event.frame() + wp->frame();
+//             wav_sx += absEPos;
+            wav_sx += absEPosFrames;
 
             wav_ex = f.unConvertPosition(wav_ex);
-            if(wav_ex >= (int)event.lenFrame())
+// REMOVE Tim. wave. Changed.
+//             if(wav_ex >= (int)event.lenFrame())
+//             if(wav_ex >= (int)eLen)
+            if(wav_ex >= eLenFrames)
             {
-              wav_ex = event.lenFrame();
+// REMOVE Tim. wave. Changed.
+//               wav_ex = event.lenFrame();
+//               wav_ex = eLen;
+              wav_ex = eLenFrames;
               if(wav_ex > 0)
                 --wav_ex;
             }
-            wav_ex += event.frame() + wp->frame();
+// REMOVE Tim. wave. Changed.
+//             wav_ex += event.frame() + wp->frame();
+//             wav_ex += absEPos;
+            wav_ex += absEPosFrames;
 
             wav_sx = wav_sx / xScale - xpos - xorg;
             wav_ex = wav_ex / xScale - xpos - xorg;
@@ -1610,6 +2741,78 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
                     }
                   }
             }
+
+            // REMOVE Tim. wave. Added.
+            {
+              p.setPen(Qt::NoPen);
+              // Draw remaining 'hidden events' decorations with 'jagged' edges...
+              QColor partColor;
+              if (wp->colorIndex() == 0 && MusEGlobal::config.useTrackColorForParts)
+                  partColor = wp->track()->color();
+              else
+                  partColor = MusEGlobal::config.partColors[wp->colorIndex()];
+              int color_brightness;
+              if (MusECore::isColorBright(partColor) && !item->isSelected())
+                  color_brightness=96; //0;    // too light: use dark color
+              else
+                  color_brightness=180; //255;   // too dark: use lighter color
+              QColor c(color_brightness,color_brightness,color_brightness, MusEGlobal::config.globalAlphaBlend);
+              const int gradS = qBound(0, MusEGlobal::config.partGradientStrength, 200);
+              p.setBrush(MusECore::getGradientFromColor(c, mbbr.topLeft(), mbbr.bottomLeft(), gradS));
+
+              const int h = mbbr.height();
+              const double s = double(h) / 4.0;
+
+              const int xs_0 = mbbr.x();
+              const int xe_0 = xs_0 + mbbr.width();
+              int xs_1 = xs_0 + 1;
+              if(xs_1 > xe_0)
+                xs_1 = xe_0;
+              int xs_j = xs_0 + 8;
+              if(xs_j > xe_0)
+                xs_j = xe_0;
+
+              int xe_1 = xe_0 - 1;
+              if(xe_1 < xs_0)
+                xe_1 = xs_0;
+              int xe_j = xe_0 - 8;
+              if(xe_j < xs_0)
+                xe_j = xs_0;
+
+              const int ys_0 = mbbr.y();
+
+              const int y0 = ys_0;
+              const int y2 = y0 + lrint(s * 2.0);
+              const int y4 = y0 + h;
+
+              QPoint points[8];
+              int pts;
+
+              //if(het & MusECore::Part::RightEventsHidden)
+              //if(-ev_spos >= smps || (smps > ev_spos &&
+              if(smps > ev_spos &&
+                absEPosFrames + f.unConvertPosition(smps - ev_spos) > absEEndFrames)
+              {
+                pts = 0;
+                points[pts++] = QPoint(xe_0, y0);
+                points[pts++] = QPoint(xe_0, y4);
+                points[pts++] = QPoint(xe_j, y2);
+
+                p.drawConvexPolygon(points, pts);
+              }
+
+      //         if(het & MusECore::Part::LeftEventsHidden)
+              if(ev_spos > 0)
+              {
+                pts = 0;
+                points[pts++] = QPoint(xs_0, y0);
+                points[pts++] = QPoint(xs_j, y2);
+                points[pts++] = QPoint(xs_0, y4);
+
+                p.drawConvexPolygon(points, pts);
+              }
+            }
+
           }
         }
 
@@ -1668,22 +2871,22 @@ void WaveCanvas::drawItem(QPainter& p, const CItem* item, const QRect& mr, const
         p.setPen(penH);
         p.drawLine(sx, hh - 1, ex, hh - 1);
       }
-      
+
       //fprintf(stderr, "...Checking left edge: ubbx:%d ux:%d ux_2:%d\n", ubbx, ux, ux_2);
       if(ubbx >= ux && ubbx < ux_2)
       {
         //fprintf(stderr, "...Drawing left edge at mbbx:%d mby_exp:%d mby_2exp:%d\n", mbbx, mby_exp, mby_2exp);
-        
+
         p.setPen(penV);
         p.drawLine(mbbx, mby_exp, mbbx, mby_2exp);
       }
-      
-      
+
+
       //fprintf(stderr, "...Checking right edge: ubbx_2:%d ux:%d ux_2:%d\n", ubbx_2, ux, ux_2);
       if(ubbx_2 >= ux && ubbx_2 < ux_2)
       {
         //fprintf(stderr, "...Drawing right edge at mbbx_2:%d mby_exp:%d mby_2exp:%d\n", mbbx_2, mby_exp, mby_2exp);
-        
+
         p.setPen(penV);
         p.drawLine(mbbx_2, mby_exp, mbbx_2, mby_2exp);
       }
@@ -2084,33 +3287,77 @@ MusECore::Undo WaveCanvas::moveCanvasItems(CItemMap& items, int /*dp*/, int dx, 
 
 bool WaveCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
+      // Events within an event list cannot be cloned, only copied or moved! Each must have a unique ID.
+      if (dtype == MOVE_CLONE)
+        return false;
+
       WEvent* wevent = (WEvent*) item;
       MusECore::Event event    = wevent->event();
-      MusECore::Event newEvent = event.clone();
-      int x          = pos.x();
-      if (x < 0)
-            x = 0;
-      
       MusECore::Part* part = wevent->part();
-      // Normally frame to tick methods round down. But here we need it to 'snap'
-      //  the frame from either side of a tick to the tick. So round to nearest.
-      int nframe = 
-        (rasterize ? MusEGlobal::tempomap.tick2frame(
-                     editor->rasterVal(MusEGlobal::tempomap.frame2tick(x, 0, MusECore::LargeIntRoundNearest))) : x) - part->frame();
-      if (nframe < 0)
-            nframe = 0;
-      newEvent.setFrame(nframe);
-      newEvent.setLenFrame(event.lenFrame());
 
-      // don't check, whether the new event is within the part
-      // at this place. with operation groups, the part isn't
-      // resized yet. (flo93)
-      
-      if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false));
+      const MusECore::MuseCount_t PPosEType    = MUSE_TIME_UINT_TO_INT64 part->posValue(event.pos().type());
+      const MusECore::MuseCount_t PFrame       = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::FRAMES);
+
+      const MusECore::MuseCount_t ePos         = MUSE_TIME_UINT_TO_INT64 event.posValue();
+
+      const MusECore::MuseCount_t absEPos      = PPosEType + ePos;
+      const MusECore::MuseCount_t absEFrame    = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEPos, event.pos().type(), MusECore::Pos::FRAMES);
+
+      MusECore::MuseCount_t newEPos            = ePos;
+
+      MusECore::MuseCount_t newAbsEPos         = absEPos;
+      MusECore::MuseCount_t newAbsEFrame       = absEFrame;
+
+      // TODO: WaveCanvas items are currently in FRAMES. If TICKS/FRAMES timeline is ever added, convert this.
+      newAbsEFrame = pos.x();
+      // Limit the left edge of the event to the left edge of the part.
+      if(newAbsEFrame < PFrame)
+        newAbsEFrame = PFrame;
+      newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEFrame, MusECore::Pos::FRAMES, event.pos().type());
+      newEPos = newAbsEPos - PPosEType;
+      if(newEPos < 0)
+        newEPos = 0;
+
+      if(rasterize)
+      {
+        // Normally frame to tick methods round down. But here we need it to 'snap'
+        //  the frame from either side of a tick to the tick. So round to nearest.
+        const MusECore::MuseCount_t newAbsETick =
+          MUSE_TIME_UINT_TO_INT64 editor->rasterVal(
+            MusEGlobal::tempomap.frame2tick(newAbsEFrame, nullptr, MusECore::LargeIntRoundNearest));
+
+        newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, MusECore::Pos::TICKS, event.pos().type());
+        newEPos = newAbsEPos - PPosEType;
+        if(newEPos < 0)
+          newEPos = 0;
+      }
+
+      if(dtype == MOVE_COPY)
+      {
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent, event, part, false, event.selected()));
+        MusECore::Event newEvent = event.duplicate();
+        newEvent.setPosValue(newEPos);
+        newEvent.setLenValue(event.lenValue());
+        newEvent.setSelected(true);
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false));
+      }
       else
-            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
-      
+      {
+        if(event.posValue() != newEPos)
+        {
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEventProperties,
+            part,
+            event,
+            newEPos,
+            event.lenValue(),
+            event.spos(),
+            // Do the port cached controllers, per event.
+            true,
+            // Include all clone port cached controllers as well.
+            true
+          ));
+        }
+      }
       return true;
 }
 
@@ -2182,79 +3429,939 @@ void WaveCanvas::newItem(CItem* item, bool noSnap)
         MusEGlobal::song->applyOperationGroup(operations);
       }
       else // forbid action by not applying it   
-          songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
-                                          //to remove "forbidden" events from the list again
+          //this forces an update of the itemlist, which is necessary
+          //to remove "forbidden" events from the list again
+          //otherwise, if a moving operation was forbidden,
+          //the canvas would still show the movement
+          songChanged(SC_EVENT_INSERTED);
+      }
+
+// REMOVE Tim. wave. Added.
+// //---------------------------------------------------------
+// //   initItemTempValues
+// //---------------------------------------------------------
+//
+// void WaveCanvas::initItemTempValues(CItem* item)
+// {
+//   WEvent* wevent = (WEvent*) item;
+//   MusECore::Part* part = wevent->part();
+//   MusECore::Event event = wevent->event();
+//   wevent->setTmpOffset(0);
+//   wevent->setTmpPartPos(part ? part->posValue() : 0);
+//   wevent->setTmpPartLen(part ? part->lenValue() : 0);
+//   wevent->setTmpPos(event.posValue());
+//   wevent->setTmpLen(event.lenValue());
+//   wevent->setTmpWaveSPos(event.spos());
+// }
+
+// REMOVE Tim. wave. Added.
+// void WaveCanvas::adjustItemSize(CItem* item, int pos, bool /*left*/, bool noSnap, bool ctrl)
+// {
+// //   if(!noSnap)
+// //     // Ignore the return y, which may be altered, we only want the x.
+// //     pos = raster(QPoint(pos, item->y())).x();
+// //
+// //   const MusECore::Part* part = item->part();
+// //   if(part)
+// //   {
+// //     const unsigned ppos = part->frame();
+// //     if(pos < (int)ppos)
+// //       pos = ppos;
+// //   }
+// //   item->horizResize(pos, left);
+//
+//   adjustItemTempValues(item, pos, noSnap, ctrl);
+// }
+
+// REMOVE Tim. wave. Added.
+//---------------------------------------------------------
+//   adjustItemSize
+//---------------------------------------------------------
+
+//void WaveCanvas::adjustItemTempValues(CItem* item, int pos, bool noSnap, bool ctrl, bool /*alt*/)
+void WaveCanvas::adjustItemSize(CItem* item, int pos, bool left, bool noSnap, bool ctrl, bool /*alt*/, QRegion *region)
+      {
+//       if(resizeDirection != MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT &&
+//         resizeDirection != MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//         return;
+
+//       WEvent* wevent = (WEvent*) item;
+
+      MusECore::Part* itemPart = item->part();
+
+      const MusECore::Pos::TType itemPartTType = itemPart->type();
+
+//       const MusECore::MuseCount_t itemPPos = MUSE_TIME_UINT_TO_INT64 itemPart->posValue();
+//       const MusECore::MuseCount_t tmpItemPPos = item->tmpPartPos();
+//       const MusECore::MuseCount_t tmpItemPLen = item->tmpPartLen();
+//       const MusECore::MuseCount_t tmpItemPEnd = tmpItemPPos + tmpItemPLen;
+
+// Added
+//       const MusECore::Part::PartType originalPartType = originalPart->partType();
+//       const MusECore::Pos::TType originalPartTType = originalPart->type();
+//
+//       const MusECore::Pos::TType newPosOrLenType = MusECore::Pos::TType::FRAMES;
+      const MusECore::Pos::TType canvasTType = MusECore::Pos::FRAMES;
+
+      MusECore::Event event = item->event();
+      const MusECore::Pos::TType ePosTType     = event.pos().type();
+      const MusECore::MuseCount_t PPosETType   = MUSE_TIME_UINT_TO_INT64 itemPart->posValue(ePosTType);
+      const MusECore::MuseCount_t pPosCTType   = MUSE_TIME_UINT_TO_INT64 itemPart->posValue(canvasTType);
+      //const MusECore::MuseCount_t PPosEType =
+      //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wevent->tmpPartPos(), part->type(), ePosType);
+      //const MusECore::MuseCount_t PFrame =
+      //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wevent->tmpPartPos(), part->type(), MusECore::Pos::FRAMES);
+      //const MusECore::MuseCount_t PEndEType =
+      //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wevent->tmpPartPos() + wevent->tmpPartLen(), part->type(), ePosType);
+// Changed
+//       const MusECore::MuseCount_t PEndEType =
+//         MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(part->posValue() + wevent->tmpPartLen(), part->type(), ePosType);
+      const MusECore::MuseCount_t PEndETType =
+        MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(itemPart->posValue() + itemPart->lenValue(), itemPartTType, ePosTType);
+
+      if(!noSnap)
+        // Ignore the return y, which may be altered, we only want the x.
+        pos = raster(QPoint(pos, item->y())).x();
+
+// Added
+//       MusECore::MuseCount_t newPosOrigPartTType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//         pos, newPosOrLenType, originalPartTType);
+//
+//       MusECore::MuseCount_t newPosEType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//         pos, newPosOrLenType, ePosType);
+
+//       const MusECore::MuseCount_t ePos         = MUSE_TIME_UINT_TO_INT64 event.posValue();
+//       const MusECore::MuseCount_t eLen         = MUSE_TIME_UINT_TO_INT64 event.lenValue();
+//       const MusECore::MuseCount_t eSPos        = event.spos();
+      const MusECore::MuseCount_t ePos         = item->tmpPos();
+      const MusECore::MuseCount_t eLen         = item->tmpLen();
+      const MusECore::MuseCount_t eSPos        = item->tmpWaveSPos();
+
+
+//       const double ePos         = wevent->tmpPos();
+//       const double eLen         = wevent->tmpLen();
+//       const double eSPos        = wevent->tmpWaveSPos();
+
+      const MusECore::MuseCount_t absEPos       = PPosETType + ePos;
+      const MusECore::MuseCount_t absEPosCTType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEPos, ePosTType, canvasTType);
+      const MusECore::MuseCount_t absEEnd       = absEPos + eLen;
+      const MusECore::MuseCount_t absEEndCTType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEEnd, ePosTType, canvasTType);
+
+// Changed
+      MusECore::MuseCount_t newEPos            = ePos;
+      MusECore::MuseCount_t newELen            = eLen;
+      MusECore::MuseCount_t newESPos           = eSPos;
+//       double newEPos            = ePos;
+//       double newELen            = eLen;
+//       double newESPos           = eSPos;
+
+      MusECore::MuseCount_t newAbsEPos         = absEPos;
+      MusECore::MuseCount_t newAbsEPosCTType   = absEPosCTType;
+      MusECore::MuseCount_t newAbsEEnd         = absEEnd;
+      MusECore::MuseCount_t newAbsEEndCTType   = absEEndCTType;
+
+//       newAbsEFrame = wevent->x();
+//       newAbsEEndFrame = newAbsEFrame + wevent->width();
+
+//       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+      if (left)
+      {
+// Changed
+        newAbsEPosCTType = pos;
+//         newAbsEPos = newPosEType;
+      }
+//       else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+      else
+      {
+// Changed
+        newAbsEEndCTType = pos;
+//         newAbsEEnd = newPosEType;
+      }
+
+
+// Changed
+      // Limit the left edge of the event to the left edge of the part.
+      if(newAbsEPosCTType < pPosCTType)
+      {
+        // Adjust the end frame.
+        newAbsEPosCTType = pPosCTType;
+      }
+//       // Limit the left edge of the event to the left edge of the part.
+//       if(newAbsEPos < PPosEType)
+//       {
+//         // Adjust the end frame.
+//         newAbsEPos = PPosEType;
+//       }
+
+      //newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEFrame, MusECore::Pos::FRAMES, ePosType);
+
+//       if (noSnap)
+      {
+// Removed
+        newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPosCTType, canvasTType, ePosTType);
+        newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndCTType, canvasTType, ePosTType);
+      }
+//       else
+//       {
+//         // Normally frame to tick methods round down. But here we need it to 'snap'
+//         //  the frame from either side of a tick to the tick. So round to nearest.
+//         // TODO: WaveCanvas items are currently in FRAMES. If TICKS/FRAMES timeline is ever added, convert this.
+//         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//         {
+//           const MusECore::MuseCount_t newAbsETick =
+//             MUSE_TIME_UINT_TO_INT64 editor->rasterVal(
+//               MusEGlobal::tempomap.frame2tick(newAbsEFrame, nullptr, MusECore::LargeIntRoundNearest));
+//           newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, MusECore::Pos::TICKS, ePosType);
+//           newAbsEFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, ePosType, MusECore::Pos::FRAMES);
+//           newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndFrame, MusECore::Pos::FRAMES, ePosType);
+//         }
+//         else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//         {
+//           newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEFrame, MusECore::Pos::FRAMES, ePosType);
+//           const MusECore::MuseCount_t newAbsEEndTick =
+//             MUSE_TIME_UINT_TO_INT64 editor->rasterVal(
+//               MusEGlobal::tempomap.frame2tick(newAbsEEndFrame, nullptr, MusECore::LargeIntRoundNearest));
+//           newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, ePosType);
+//           newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, MusECore::Pos::FRAMES);
+//         }
+//       }
+
+      newEPos = newAbsEPos - PPosETType;
+      if(newEPos < 0)
+        newEPos = 0;
+
+//       if (noSnap)
+//       {
+//         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndFrame, MusECore::Pos::FRAMES, ePosType);
+//       }
+//       else
+//       {
+//         // Normally frame to tick methods round down. But here we need it to 'snap'
+//         //  the frame from either side of a tick to the tick. So round to nearest.
+//         // TODO: WaveCanvas items are currently in FRAMES. If TICKS/FRAMES timeline is ever added, convert this.
+//         const MusECore::MuseCount_t newAbsEEndTick =
+//           MUSE_TIME_UINT_TO_INT64 editor->rasterVal(
+//             MusEGlobal::tempomap.frame2tick(newAbsEEndFrame, nullptr, MusECore::LargeIntRoundNearest));
+//
+//         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, ePosType);
+//       }
+
+//       // The Canvas limits the distance to 1 rather than 0, so let's catch that.
+//       if(newAbsEEnd - newAbsEPos <= 1)
+//       {
+//         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//         {
+//           MusECore::MuseCount_t newAbsETick =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, MusECore::Pos::TICKS) -
+//               editor->raster();
+//           const MusECore::MuseCount_t PTick = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::TICKS);
+//           if(newAbsETick < PTick)
+//           {
+//             newAbsETick = PTick;
+//             const MusECore::MuseCount_t newAbsEEndTick = newAbsETick + editor->raster();
+//             newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, ePosType);
+//             newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, MusECore::Pos::FRAMES);
+//           }
+//           newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, MusECore::Pos::TICKS, ePosType);
+//           if(newAbsEPos < PPosEType)
+//             newAbsEPos = PPosEType;
+//           newEPos = newAbsEPos - PPosEType;
+//           newAbsEFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, ePosType, MusECore::Pos::FRAMES);
+//         }
+//         else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//         {
+//           const MusECore::MuseCount_t newAbsEEndTick =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, ePosType, MusECore::Pos::TICKS) +
+//               editor->raster();
+//           newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, ePosType);
+//           newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, MusECore::Pos::FRAMES);
+//         }
+//       }
+
+      newELen = newAbsEEnd - newAbsEPos;
+      if(newELen < 1)
+        newELen = 1;
+
+//       MusECore::Undo operations;
+
+//       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+      if (left) {
+          if(!ctrl) {
+//             newESPos = eSPos + (newAbsEFrame - absEFrame);
+            newESPos = event.sndFile().convertPosition(event.sndFile().unConvertPosition(eSPos) + (newAbsEPosCTType - absEPosCTType));
+            if(newESPos < 0)
+              newESPos = 0;
+          }
+      }
+      else {
+          if(ctrl) {
+//             newESPos = eSPos - (newAbsEEndFrame - absEEndFrame);
+            newESPos = event.sndFile().convertPosition(event.sndFile().unConvertPosition(eSPos) - (newAbsEEndCTType - absEEndCTType));
+            if(newESPos < 0)
+              newESPos = 0;
+          }
+      }
+
+      const QRect curr_ud_rect(item->bbox());
+//       const MusECore::MuseCount_t newAbsEEndPType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosTType, itemPartTType);
+
+//       const bool doExtendPart = newAbsEEnd > part->endValue(ePosType);
+
+      // While adjusting visually, only extend the part if it is the same as the given item's part.
+      const bool doExtendPart = /*(part == itemPart) &&*/ newAbsEEnd > PEndETType;
+//       const bool doExtendPart = /*(part == itemPart) &&*/ (newAbsEEndPType > tmpItemPEnd);
+
+      if (! (doExtendPart && (itemPart->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+      {
+        const MusECore::MuseCount_t newPartLen =
+//           MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosTType, itemPart->type()) - itemPart->posValue();
+          MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosTType, itemPartTType) - itemPart->posValue();
+
+        if (doExtendPart)// part must be extended?
+        {
+//           const MusECore::MuseCount_t newPartLen =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type()) - part->posValue();
+            //MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type()) - wevent->tmpPartPos();
+//           // This automatically takes care of port cached controllers.
+//           schedule_resize_all_same_len_clone_parts(part, newPartLen, operations);
+          //fprintf(stderr, "adjustItemTempValues: extending part\n");
+          item->setTmpPartLen(newPartLen);
+        }
+        else
+        {
+          // Limit it to the part's current length.
+          item->setTmpPartLen(qMax(newPartLen, MUSE_TIME_UINT_TO_INT64 itemPart->lenValue()));
+        }
+
+// Added
+        // Update the wave canvas item's bounding box and position.
+        // NOTE: Some accuracy may be lost AT BOTH BORDERS if converting the
+        //        event's dimensions from frames to ticks here. Currently that
+        //        is the case with wave events on a tick-only based canvas.
+        //       Currently that won't happen on the wave canvas, but some day
+        //        it might support ticks.
+//         const MusECore::MuseCount_t newEPosValCType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//           newEPos, ePosType, canvasTType);
+//         const MusECore::MuseCount_t newLenValCType = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//           newEPos + newELen, ePosType, canvasTType) - newEPosValCType;
+
+//         wevent->setPos(QPoint(newEPosValCType, wevent->y()));
+//         wevent->setBBox(QRect(newEPosValCType, wevent->y(), newLenValCType, wevent->height()));
+
+        const MusECore::MuseCount_t newPosValCType = newAbsEPosCTType - pPosCTType;
+        const MusECore::MuseCount_t newLenValCType = newAbsEEndCTType - newAbsEPosCTType;
+
+        item->setPos(QPoint(newPosValCType, item->y()));
+        item->setBBox(QRect(newPosValCType, item->y(), newLenValCType, item->height()));
+// Keep this remarked section:
+        // If we want to use more accurate temporary position and length values,
+        //  which are in the same time type as the event.
+        item->setTmpPos(newEPos);
+        item->setTmpLen(newELen);
+        item->setTmpWaveSPos(newESPos);
+      }
+
+    if(region)
+    {
+
+//       const QRect curr_ud_rect(item->bbox());
+
+      // Take the part position into account.
+      const QRect new_ud_rect((item->bbox() | curr_ud_rect).adjusted(pPosCTType, 0, pPosCTType, 0));
+      // Our border box is wider than the item box. Take that into account when updating.
+      const QRect new_ud_rect_m((map(new_ud_rect) & rect()).adjusted(
+        0, 0, eventBorderWidth, eventBorderWidth));
+
+      // REMOVE Tim. wave. Added. TESTING. Refine later.
+//       const QRect new_ud_rect_m(map(rect()));
+//       const QRect new_ud_rect_m(rect());
+
+// REMOVE Tim. wave. Added. Diagnostics.
+          fprintf(stderr, "WaveCanvas::adjustItemSize curr_ud_rect x:%d y:%d w:%d h:%d\n",
+                  curr_ud_rect.x(), curr_ud_rect.y(), curr_ud_rect.width(), curr_ud_rect.height());
+          fprintf(stderr, "                            new_ud_rect x:%d y:%d w:%d h:%d\n",
+                  new_ud_rect.x(), new_ud_rect.y(), new_ud_rect.width(), new_ud_rect.height());
+          fprintf(stderr, "WaveCanvas::adjustItemSize new_ud_rect_m x:%d y:%d w:%d h:%d\n",
+                  new_ud_rect_m.x(), new_ud_rect_m.y(), new_ud_rect_m.width(), new_ud_rect_m.height());
+          fprintf(stderr, "                                     rect x:%d y:%d w:%d h:%d\n",
+                  rect().x(), rect().y(), rect().width(), rect().height());
+          fprintf(stderr, "                                  newPosVal:%ld newLenVal:%ld\n",
+                  newEPos, newELen);
+
+      *region += new_ud_rect_m;
+//       *region += new_ud_rect;
+    }
+
       }
 
 //---------------------------------------------------------
 //   resizeItem
 //---------------------------------------------------------
 
-void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool ctrl)         // experimental changes to try dynamically extending parts
+// REMOVE Tim. wave. Changed.
+// void WaveCanvas::resizeItem(CItem* item, bool noSnap, bool ctrl)         // experimental changes to try dynamically extending parts
+//       {
+//       WEvent* wevent = (WEvent*) item;
+//       MusECore::Event event = wevent->event();
+//
+//       MusECore::Part* part = wevent->part();
+//
+//       const MusECore::MuseCount_t PPosEType    = MUSE_TIME_UINT_TO_INT64 part->posValue(event.pos().type());
+//       const MusECore::MuseCount_t PFrame       = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::FRAMES);
+//
+//       const MusECore::MuseCount_t ePos         = MUSE_TIME_UINT_TO_INT64 event.posValue();
+//       const MusECore::MuseCount_t eLen         = MUSE_TIME_UINT_TO_INT64 event.lenValue();
+//       const MusECore::MuseCount_t eSPos        = event.spos();
+//
+//       const MusECore::MuseCount_t absEPos      = PPosEType + ePos;
+//       const MusECore::MuseCount_t absEFrame    = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEPos, event.pos().type(), MusECore::Pos::FRAMES);
+//       const MusECore::MuseCount_t absEEnd      = absEPos + eLen;
+//       const MusECore::MuseCount_t absEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+//
+//       MusECore::MuseCount_t newEPos            = ePos;
+//       MusECore::MuseCount_t newELen            = eLen;
+//       MusECore::MuseCount_t newESPos           = eSPos;
+//
+//       MusECore::MuseCount_t newAbsEPos         = absEPos;
+//       MusECore::MuseCount_t newAbsEFrame       = absEFrame;
+//       MusECore::MuseCount_t newAbsEEnd         = absEEnd;
+//       MusECore::MuseCount_t newAbsEEndFrame    = absEEndFrame;
+//
+//       newAbsEFrame = wevent->x();
+//       newAbsEEndFrame = newAbsEFrame + wevent->width();
+//       // Limit the left edge of the event to the left edge of the part.
+//       if(newAbsEFrame < PFrame)
+//       {
+//         // Adjust the end frame.
+//         newAbsEFrame = PFrame;
+//       }
+//       newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEFrame, MusECore::Pos::FRAMES, event.pos().type());
+//       newEPos = newAbsEPos - PPosEType;
+//       if(newEPos < 0)
+//         newEPos = 0;
+//
+//       if (noSnap)
+//       {
+//         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndFrame, MusECore::Pos::FRAMES, event.pos().type());
+//       }
+//       else
+//       {
+//         // Normally frame to tick methods round down. But here we need it to 'snap'
+//         //  the frame from either side of a tick to the tick. So round to nearest.
+//         // TODO: WaveCanvas items are currently in FRAMES. If TICKS/FRAMES timeline is ever added, convert this.
+//         const MusECore::MuseCount_t newAbsEEndTick =
+//           MUSE_TIME_UINT_TO_INT64 editor->rasterVal(
+//             MusEGlobal::tempomap.frame2tick(newAbsEEndFrame, nullptr, MusECore::LargeIntRoundNearest));
+//
+//         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+//       }
+//
+//       // The Canvas limits the distance to 1 rather than 0, so let's catch that.
+//       if(newAbsEEnd - newAbsEPos <= 1)
+//       {
+//         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//         {
+//           MusECore::MuseCount_t newAbsETick =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::TICKS) -
+//               editor->raster();
+//           const MusECore::MuseCount_t PTick = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::TICKS);
+//           if(newAbsETick < PTick)
+//           {
+//             newAbsETick = PTick;
+//             const MusECore::MuseCount_t newAbsEEndTick = newAbsETick + editor->raster();
+//             newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+//             newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+//           }
+//           newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, MusECore::Pos::TICKS, event.pos().type());
+//           if(newAbsEPos < PPosEType)
+//             newAbsEPos = PPosEType;
+//           newEPos = newAbsEPos - PPosEType;
+//           newAbsEFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, event.pos().type(), MusECore::Pos::FRAMES);
+//         }
+//         else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//         {
+//           const MusECore::MuseCount_t newAbsEEndTick =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, event.pos().type(), MusECore::Pos::TICKS) +
+//               editor->raster();
+//           newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+//           newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+//         }
+//       }
+//
+//       newELen = newAbsEEnd - newAbsEPos;
+//       if(newELen < 1)
+//         newELen = 1;
+//
+//       MusECore::Undo operations;
+//
+//       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+//           if(!ctrl) {
+//             newESPos = event.spos() + (newAbsEFrame - absEFrame);
+//             if(newESPos < 0)
+//               newESPos = 0;
+//           }
+//       }
+//       else {
+//           if(ctrl) {
+//             newESPos = event.spos() - (newAbsEEndFrame - absEEndFrame);
+//             if(newESPos < 0)
+//               newESPos = 0;
+//           }
+//       }
+//
+//       const bool doExtendPart = newAbsEEnd > part->endValue(event.pos().type());
+//
+//       if (! ((doExtendPart) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+//       {
+//         if (doExtendPart)// part must be extended?
+//         {
+//           const MusECore::MuseCount_t newPartLen =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), part->type()) - part->posValue();
+//           // This automatically takes care of port cached controllers.
+//           schedule_resize_all_same_len_clone_parts(part, newPartLen, operations);
+//           fprintf(stderr, "resizeItem: extending\n");
+//         }
+//
+//         // Anything changed?
+//         const bool posChanged = event.posValue() != newEPos;
+//         if(posChanged || event.lenValue() != newELen || event.spos() != newESPos)
+//         {
+//           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEventProperties,
+//             part,
+//             event,
+//             newEPos,
+//             newELen,
+//             newESPos,
+//             // May be redundant, but force it to do the port cached controllers, per event.
+//             // 'schedule_resize_all_same_len_clone_parts' above is currently hard-wired to
+//             //  always handle the port cached controllers, BUT it may exclude some parts.
+//             // Only if the event's position changed - Length and SPos have no meaning for controllers.
+//             posChanged,
+//             // Include all clone port cached controllers as well.
+//             posChanged
+//           ));
+//         }
+//
+//       }
+//
+//       if(operations.empty())
+//         //this forces an update of the itemlist, which is necessary
+//         //to remove "forbidden" events from the list again
+//         //otherwise, if a moving operation was forbidden,
+//         //the canvas would still show the movement
+//         songChanged(SC_EVENT_MODIFIED);
+//       else
+//         MusEGlobal::song->applyOperationGroup(operations);
+//       }
+
+// void WaveCanvas::resizeItem(CItem* item, bool /*noSnap*/, bool /*ctrl*/)         // experimental changes to try dynamically extending parts
+//       {
+//       WEvent* wevent = (WEvent*) item;
+//       MusECore::Event event = wevent->event();
+//
+//       MusECore::Part* part = wevent->part();
+//
+// // Added
+//       const MusECore::Pos::TType canvasTType = MusECore::Pos::FRAMES;
+//
+//       MusECore::Pos::TType eventTType = event.pos().type();
+//       //const MusECore::MuseCount_t PPosEType    = MUSE_TIME_UINT_TO_INT64 part->posValue(ePosType);
+//       //const MusECore::MuseCount_t PPosEType =
+//       //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wevent->tmpPartPos(), part->type(), ePosType);
+// //       const MusECore::MuseCount_t PFrame       = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::FRAMES);
+//       //const MusECore::MuseCount_t PEndEType =
+//       //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wevent->tmpPartPos() + wevent->tmpPartLen(), part->type(), ePosType);
+//       const MusECore::MuseCount_t newPEnd = MUSE_TIME_UINT_TO_INT64 part->posValue() + wevent->tmpPartLen();
+//       //const MusECore::MuseCount_t newPEndEType =
+//       //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newPEnd, part->type(), ePosType);
+//
+// //       const MusECore::MuseCount_t ePos         = MUSE_TIME_UINT_TO_INT64 event.posValue();
+// //       const MusECore::MuseCount_t eLen         = MUSE_TIME_UINT_TO_INT64 event.lenValue();
+// //       const MusECore::MuseCount_t eSPos        = event.spos();
+//
+// //       const MusECore::MuseCount_t absEPos      = PPosEType + ePos;
+// //       const MusECore::MuseCount_t absEFrame    = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEPos, event.pos().type(), MusECore::Pos::FRAMES);
+// //       const MusECore::MuseCount_t absEEnd      = absEPos + eLen;
+// //       const MusECore::MuseCount_t absEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(absEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+//
+// //       MusECore::MuseCount_t newEPos            = ePos;
+// //       MusECore::MuseCount_t newELen            = eLen;
+// //       MusECore::MuseCount_t newESPos           = eSPos;
+//
+// // Changed
+// //       MusECore::MuseCount_t newEPos            = wevent->tmpPos();
+// //       MusECore::MuseCount_t newELen            = wevent->tmpLen();
+// //       MusECore::MuseCount_t newESPos           = wevent->tmpWaveSPos();
+//       MusECore::MuseCount_t newEPos  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//         wevent->x(), canvasTType, eventTType);
+//       MusECore::MuseCount_t newELen  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//         wevent->x() + wevent->width(), canvasTType, eventTType) - newEPos;
+//       MusECore::MuseCount_t newESPos = wevent->tmpWaveSPos();
+//
+//       //MusECore::MuseCount_t newAbsEPos         = PPosEType + newEPos;
+//       //MusECore::MuseCount_t newAbsEEnd         = newAbsEPos + newELen;
+//
+// //       newAbsEFrame = wevent->x();
+// //       newAbsEEndFrame = newAbsEFrame + wevent->width();
+// //       // Limit the left edge of the event to the left edge of the part.
+// //       if(newAbsEFrame < PFrame)
+// //       {
+// //         // Adjust the end frame.
+// //         newAbsEFrame = PFrame;
+// //       }
+// //       newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEFrame, MusECore::Pos::FRAMES, event.pos().type());
+// //       newEPos = newAbsEPos - PPosEType;
+// //       if(newEPos < 0)
+// //         newEPos = 0;
+// //
+// //       if (noSnap)
+// //       {
+// //         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndFrame, MusECore::Pos::FRAMES, event.pos().type());
+// //       }
+// //       else
+// //       {
+// //         // Normally frame to tick methods round down. But here we need it to 'snap'
+// //         //  the frame from either side of a tick to the tick. So round to nearest.
+// //         // TODO: WaveCanvas items are currently in FRAMES. If TICKS/FRAMES timeline is ever added, convert this.
+// //         const MusECore::MuseCount_t newAbsEEndTick =
+// //           MUSE_TIME_UINT_TO_INT64 editor->rasterVal(
+// //             MusEGlobal::tempomap.frame2tick(newAbsEEndFrame, nullptr, MusECore::LargeIntRoundNearest));
+// //
+// //         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+// //       }
+// //
+// //       // The Canvas limits the distance to 1 rather than 0, so let's catch that.
+// //       if(newAbsEEnd - newAbsEPos <= 1)
+// //       {
+// //         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+// //         {
+// //           MusECore::MuseCount_t newAbsETick =
+// //             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::TICKS) -
+// //               editor->raster();
+// //           const MusECore::MuseCount_t PTick = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::TICKS);
+// //           if(newAbsETick < PTick)
+// //           {
+// //             newAbsETick = PTick;
+// //             const MusECore::MuseCount_t newAbsEEndTick = newAbsETick + editor->raster();
+// //             newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+// //             newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+// //           }
+// //           newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, MusECore::Pos::TICKS, event.pos().type());
+// //           if(newAbsEPos < PPosEType)
+// //             newAbsEPos = PPosEType;
+// //           newEPos = newAbsEPos - PPosEType;
+// //           newAbsEFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, event.pos().type(), MusECore::Pos::FRAMES);
+// //         }
+// //         else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+// //         {
+// //           const MusECore::MuseCount_t newAbsEEndTick =
+// //             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, event.pos().type(), MusECore::Pos::TICKS) +
+// //               editor->raster();
+// //           newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+// //           newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+// //         }
+// //       }
+// //
+// //       newELen = newAbsEEnd - newAbsEPos;
+// //       if(newELen < 1)
+// //         newELen = 1;
+// //
+// //       MusECore::Undo operations;
+// //
+// //       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+// //           if(!ctrl) {
+// //             newESPos = event.spos() + (newAbsEFrame - absEFrame);
+// //             if(newESPos < 0)
+// //               newESPos = 0;
+// //           }
+// //       }
+// //       else {
+// //           if(ctrl) {
+// //             newESPos = event.spos() - (newAbsEEndFrame - absEEndFrame);
+// //             if(newESPos < 0)
+// //               newESPos = 0;
+// //           }
+// //       }
+//
+//       MusECore::Undo operations;
+//
+// //       const bool doExtendPart = newAbsEEnd > part->endValue(ePosType);
+//       //const bool doExtendPart = newAbsEEnd > PEndEType;
+//       const bool doExtendPart = newPEnd > part->endValue();
+//
+//       if (! ((doExtendPart) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+//       {
+//         if (doExtendPart)// part must be extended?
+//         {
+//           //const MusECore::MuseCount_t newPartLen =
+//           //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type()) - part->posValue();
+//             //MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type()) - wevent->tmpPartPos();
+// //           // This automatically takes care of port cached controllers.
+// //           schedule_resize_all_same_len_clone_parts(part, newPartLen, operations);
+//           fprintf(stderr, "resizeItem: extending\n");
+//           // This automatically takes care of port cached controllers.
+//           schedule_resize_all_same_len_clone_parts(part, newPEnd - part->posValue(), operations);
+//         }
+//
+//         // Anything changed?
+//         const bool posChanged = event.posValue() != newEPos;
+//         if(posChanged || event.lenValue() != newELen || event.spos() != newESPos)
+//         {
+//           operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEventProperties,
+//             part,
+//             event,
+//             newEPos,
+//             newELen,
+//             newESPos,
+//             // May be redundant, but force it to do the port cached controllers, per event.
+//             // 'schedule_resize_all_same_len_clone_parts' above is currently hard-wired to
+//             //  always handle the port cached controllers, BUT it may exclude some parts.
+//             // Only if the event's position changed - Length and SPos have no meaning for controllers.
+//             posChanged,
+//             // Include all clone port cached controllers as well.
+//             posChanged
+//           ));
+//         }
+//
+//       }
+//
+//       if(operations.empty())
+//         //this forces an update of the itemlist, which is necessary
+//         //to remove "forbidden" events from the list again
+//         //otherwise, if a moving operation was forbidden,
+//         //the canvas would still show the movement
+//         songChanged(SC_EVENT_MODIFIED);
+//       else
+//         MusEGlobal::song->applyOperationGroup(operations);
+//       }
+
+void WaveCanvas::resizeItem(CItem* item, bool /*noSnap*/, bool ctrl)         // experimental changes to try dynamically extending parts
       {
       WEvent* wevent = (WEvent*) item;
-      MusECore::Event event    = wevent->event();
-      MusECore::Event newEvent = event.clone();
-      int len;
+      MusECore::Event event = wevent->event();
 
       MusECore::Part* part = wevent->part();
 
-      if (noSnap)
-            len = wevent->width();
-      else
-      {
-            unsigned frame = event.frame() + part->frame();
+// Added
+      const MusECore::Pos::TType canvasTType = MusECore::Pos::FRAMES;
+      //const MusECore::Pos::TType partTType = part->type();
 
-            // Normally frame to tick methods round down. But here we need it to 'snap'
-            //  the frame from either side of a tick to the tick. So round to nearest.
-            len = MusEGlobal::tempomap.tick2frame(
-              editor->rasterVal(MusEGlobal::tempomap.frame2tick(
-                frame + wevent->width(), 0, MusECore::LargeIntRoundNearest))) - frame;
-            if (len <= 0)
-                  len = MusEGlobal::tempomap.tick2frame(editor->raster());
+      MusECore::Pos::TType eventTType = event.pos().type();
+      const MusECore::MuseCount_t PPosEType    = MUSE_TIME_UINT_TO_INT64 part->posValue(eventTType);
+      const MusECore::MuseCount_t PPosCType    = MUSE_TIME_UINT_TO_INT64 part->posValue(canvasTType);
+      //const MusECore::MuseCount_t PPosEType =
+      //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wevent->tmpPartPos(), partTType, eventTType);
+      const MusECore::MuseCount_t PFrame       = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::FRAMES);
+      //const MusECore::MuseCount_t PEndEType =
+      //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(wevent->tmpPartPos() + wevent->tmpPartLen(), part->type(), ePosType);
+      const MusECore::MuseCount_t newPEnd = MUSE_TIME_UINT_TO_INT64 part->posValue() + wevent->tmpPartLen();
+      //const MusECore::MuseCount_t newPEndEType =
+      //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newPEnd, part->type(), ePosType);
+
+      const MusECore::MuseCount_t ePos         = MUSE_TIME_UINT_TO_INT64 event.posValue();
+      const MusECore::MuseCount_t eLen         = MUSE_TIME_UINT_TO_INT64 event.lenValue();
+      const MusECore::MuseCount_t eSPos        = event.spos();
+
+      const MusECore::MuseCount_t absEPos      = PPosEType + ePos;
+      const MusECore::MuseCount_t absEFrame    = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+        absEPos, eventTType, MusECore::Pos::FRAMES);
+
+      const MusECore::MuseCount_t absEEnd      = absEPos + eLen;
+      const MusECore::MuseCount_t absEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+        absEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+
+//       MusECore::MuseCount_t newEPos            = ePos;
+//       MusECore::MuseCount_t newELen            = eLen;
+//       MusECore::MuseCount_t newESPos           = eSPos;
+
+// Changed
+//       MusECore::MuseCount_t newEPos            = wevent->tmpPos();
+//       MusECore::MuseCount_t newELen            = wevent->tmpLen();
+//       MusECore::MuseCount_t newESPos           = wevent->tmpWaveSPos();
+
+//       MusECore::MuseCount_t newEPos  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//         wevent->x(), canvasTType, eventTType);
+//       MusECore::MuseCount_t newELen  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+//         wevent->x() + wevent->width(), canvasTType, eventTType) - newEPos;
+//       MusECore::MuseCount_t newESPos = wevent->tmpWaveSPos();
+//
+//       MusECore::MuseCount_t newAbsEPos         = PPosEType + newEPos;
+//       MusECore::MuseCount_t newAbsEEnd         = newAbsEPos + newELen;
+      MusECore::MuseCount_t newEPos  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+        PPosCType + wevent->x(), canvasTType, eventTType);
+      MusECore::MuseCount_t newELen  = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+        wevent->x() + wevent->width(), canvasTType, eventTType) - newEPos;
+      //MusECore::MuseCount_t newESPos = wevent->tmpWaveSPos();
+      MusECore::MuseCount_t newESPos = eSPos;
+
+//       newAbsEFrame = wevent->x();
+//       newAbsEEndFrame = newAbsEFrame + wevent->width();
+//       const MusECore::MuseCount_t newAbsEFrame = wevent->x();
+//       const MusECore::MuseCount_t newAbsEEndFrame = newAbsEFrame + wevent->width();
+      MusECore::MuseCount_t newAbsEFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+        PPosCType + wevent->x(), canvasTType, MusECore::Pos::FRAMES);
+      MusECore::MuseCount_t newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(
+        PPosCType + wevent->x() + wevent->width(), canvasTType, MusECore::Pos::FRAMES);
+
+      // Limit the left edge of the event to the left edge of the part.
+      if(newAbsEFrame < PFrame + 1)
+      {
+        // Adjust the end frame.
+        newAbsEFrame = PFrame + 1;
       }
 
-      MusECore::Undo operations;
-      int diff = event.frame() + len - part->lenFrame();
-      
+//       newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEFrame, MusECore::Pos::FRAMES, event.pos().type());
+//       newEPos = newAbsEPos - PPosEType;
+//       if(newEPos < 0)
+//         newEPos = 0;
+//
+//       if (noSnap)
+//       {
+//         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndFrame, MusECore::Pos::FRAMES, event.pos().type());
+//       }
+//       else
+//       {
+//         // Normally frame to tick methods round down. But here we need it to 'snap'
+//         //  the frame from either side of a tick to the tick. So round to nearest.
+//         // TODO: WaveCanvas items are currently in FRAMES. If TICKS/FRAMES timeline is ever added, convert this.
+//         const MusECore::MuseCount_t newAbsEEndTick =
+//           MUSE_TIME_UINT_TO_INT64 editor->rasterVal(
+//             MusEGlobal::tempomap.frame2tick(newAbsEEndFrame, nullptr, MusECore::LargeIntRoundNearest));
+//
+//         newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+//       }
+//
+//       // The Canvas limits the distance to 1 rather than 0, so let's catch that.
+//       if(newAbsEEnd - newAbsEPos <= 1)
+//       {
+//         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//         {
+//           MusECore::MuseCount_t newAbsETick =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::TICKS) -
+//               editor->raster();
+//           const MusECore::MuseCount_t PTick = MUSE_TIME_UINT_TO_INT64 part->posValue(MusECore::Pos::TICKS);
+//           if(newAbsETick < PTick)
+//           {
+//             newAbsETick = PTick;
+//             const MusECore::MuseCount_t newAbsEEndTick = newAbsETick + editor->raster();
+//             newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+//             newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+//           }
+//           newAbsEPos = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsETick, MusECore::Pos::TICKS, event.pos().type());
+//           if(newAbsEPos < PPosEType)
+//             newAbsEPos = PPosEType;
+//           newEPos = newAbsEPos - PPosEType;
+//           newAbsEFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, event.pos().type(), MusECore::Pos::FRAMES);
+//         }
+//         else if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//         {
+//           const MusECore::MuseCount_t newAbsEEndTick =
+//             MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEPos, event.pos().type(), MusECore::Pos::TICKS) +
+//               editor->raster();
+//           newAbsEEnd = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEndTick, MusECore::Pos::TICKS, event.pos().type());
+//           newAbsEEndFrame = MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, event.pos().type(), MusECore::Pos::FRAMES);
+//         }
+//       }
+//
+//       newELen = newAbsEEnd - newAbsEPos;
+//       if(newELen < 1)
+//         newELen = 1;
+//
+//       MusECore::Undo operations;
+//
+//       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+//           if(!ctrl) {
+//             newESPos = event.spos() + (newAbsEFrame - absEFrame);
+//             if(newESPos < 0)
+//               newESPos = 0;
+//           }
+//       }
+//       else {
+//           if(ctrl) {
+//             newESPos = event.spos() - (newAbsEEndFrame - absEEndFrame);
+//             if(newESPos < 0)
+//               newESPos = 0;
+//           }
+//       }
+
+
+
+
+
+
       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
-          int x = qMax(0, wevent->x());
-          int nframe = qMax(0u, x - part->frame());
-          newEvent.setFrame(nframe);
           if(!ctrl) {
-            int new_spos = event.spos() + (nframe - event.frame());
-            if(new_spos < 0)
-              new_spos = 0;
-            newEvent.setSpos(new_spos);
+//             newESPos = eSPos + (newAbsEFrame - absEFrame);
+            newESPos = event.sndFile().convertPosition(event.sndFile().unConvertPosition(eSPos) + (newAbsEFrame - absEFrame));
+            if(newESPos < 0)
+              newESPos = 0;
           }
       }
       else {
           if(ctrl) {
-            int new_spos = event.spos() + (event.lenFrame() - len);
-            if(new_spos < 0)
-              new_spos = 0;
-            newEvent.setSpos(new_spos);
+//             newESPos = eSPos - (newAbsEEndFrame - absEEndFrame);
+            newESPos = event.sndFile().convertPosition(event.sndFile().unConvertPosition(eSPos) - (newAbsEEndFrame - absEEndFrame));
+            if(newESPos < 0)
+              newESPos = 0;
           }
       }
 
-      if (! ((diff > 0) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
+
+
+
+
+
+      MusECore::Undo operations;
+
+//       const bool doExtendPart = newAbsEEnd > part->endValue(ePosType);
+      //const bool doExtendPart = newAbsEEnd > PEndEType;
+      const bool doExtendPart = newPEnd > part->endValue();
+
+      if (! ((doExtendPart) && (part->hasHiddenEvents() & MusECore::Part::RightEventsHidden)) ) //operation is allowed
       {
-        newEvent.setLenFrame(len);
-        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,newEvent, event, wevent->part(), false, false));
-        
-        if (diff > 0)// part must be extended?
+        if (doExtendPart)// part must be extended?
         {
-              //schedule_resize_all_same_len_clone_parts(part, event.tick()+len, operations);
-              schedule_resize_all_same_len_clone_parts(part, event.frame() + len, operations);
-              printf("resizeItem: extending\n");
+          //const MusECore::MuseCount_t newPartLen =
+          //  MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type()) - part->posValue();
+            //MUSE_TIME_UINT_TO_INT64 MusECore::Pos::convert(newAbsEEnd, ePosType, part->type()) - wevent->tmpPartPos();
+//           // This automatically takes care of port cached controllers.
+//           schedule_resize_all_same_len_clone_parts(part, newPartLen, operations);
+          fprintf(stderr, "resizeItem: extending\n");
+          // This automatically takes care of port cached controllers.
+          schedule_resize_all_same_len_clone_parts(part, newPEnd - part->posValue(), operations);
         }
-      }
-      //else forbid action by not performing it
-      MusEGlobal::song->applyOperationGroup(operations);
-      songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is necessary
-                                      //to remove "forbidden" events from the list again
+
+        // Anything changed?
+        const bool posChanged = event.posValue() != newEPos;
+        if(posChanged || event.lenValue() != newELen || event.spos() != newESPos)
+        {
+          operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEventProperties,
+            part,
+            event,
+            newEPos,
+            newELen,
+            newESPos,
+            // May be redundant, but force it to do the port cached controllers, per event.
+            // 'schedule_resize_all_same_len_clone_parts' above is currently hard-wired to
+            //  always handle the port cached controllers, BUT it may exclude some parts.
+            // Only if the event's position changed - Length and SPos have no meaning for controllers.
+            posChanged,
+            // Include all clone port cached controllers as well.
+            posChanged
+          ));
+        }
+
       }
 
+      if(operations.empty())
+        //this forces an update of the itemlist, which is necessary
+        //to remove "forbidden" events from the list again
+        //otherwise, if a moving operation was forbidden,
+        //the canvas would still show the movement
+        songChanged(SC_EVENT_MODIFIED);
+      else
+        MusEGlobal::song->applyOperationGroup(operations);
+      }
 
 //---------------------------------------------------------
 //   deleteItem
@@ -2265,7 +4372,7 @@ bool WaveCanvas::deleteItem(CItem* item)
       WEvent* wevent = (WEvent*) item;
       if (wevent->part() == curPart) {
             MusECore::Event ev = wevent->event();
-            // Indicate do undo, and do not do port controller values and clone parts. 
+            // Indicate do undo, and do not do port controller values and clone parts.
             MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, curPart, false, false));
             return true;
             }
@@ -2658,10 +4765,10 @@ void WaveCanvas::cmd(int cmd)
                           // TODO: handle multiple events correctly,
                           // the math for subsequent events isn't correct
                           const MusECore::Event& ev = iWaveEvent->second;
-                          MusECore::Event *newEvent = new MusECore::Event(ev.clone());
-                          newEvent->setSpos(ev.spos() + frameDistance);
-                          newEvent->setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
-                          tempPart->addEvent(*newEvent);
+                          MusECore::Event newEvent = ev.duplicate();
+                          newEvent.setSpos(ev.spos() + frameDistance);
+                          newEvent.setLenTick(MusEGlobal::song->rpos() - MusEGlobal::song->lpos());
+                          tempPart->addEvent(newEvent);
                       }
                       std::set<const MusECore::Part*> partList;
                       partList.insert(tempPart);
@@ -3643,6 +5750,12 @@ void WaveCanvas::setRangeToSelection() {
             MusEGlobal::song->setPos(MusECore::Song::LPOS, p1);
         }
     }
+}
+
+// REMOVE Tim. wave. Added.
+void WaveCanvas::setColorMode(int mode) {
+  colorMode = mode;
+  redraw();
 }
 
 

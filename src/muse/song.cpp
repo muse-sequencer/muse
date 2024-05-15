@@ -667,7 +667,7 @@ void Song::duplicateTracks(Track *t)
 
 bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
-//   Event ev(event);
+  Event ev(event);
   bool added = false;
   Part* p = part;
   while(true)
@@ -675,10 +675,10 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
     // This will find the event even if it has been modified. As long as the IDs AND the position are the same, it's a match.
     // NOTE: Multiple events with the same event base pointer or the same id number, in one event list, are FORBIDDEN.
     //       This precludes using them for 'pattern groups' such as arpeggios or chords. Instead, create a new event type.
-    ciEvent ie = p->events().findWithId(event);
-    if(ie == p->events().cend()) 
+    ciEvent ie = p->events().findWithId(ev);
+    if(ie == p->events().cend())
     {
-      if(pendingOperations.add(PendingOperationItem(p, event, PendingOperationItem::AddEvent)))
+      if(pendingOperations.add(PendingOperationItem(p, ev, PendingOperationItem::AddEvent)))
       {
         added = true;
         // Include addition of any corresponding cached controller value.
@@ -686,8 +686,7 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
         //  at the same position the cache reader can quickly look at each part and if one
         //  is MUTED pick an event from a different unmuted part at that position.
         if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-  //         addPortCtrlEvents(ev, p, p->tick(), p->lenTick(), p->track(), pendingOperations);
-          pendingOperations.addPartPortCtrlEvents(event, p, p->tick(), p->lenTick(), p->track());
+          pendingOperations.addPartPortCtrlEvents(ev, p, p->tick(), p->lenTick(), p->track());
       }
     }
     
@@ -695,7 +694,7 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
     if(p == part)
       break;
     
-//     ev = event.clone(); // Makes a new copy with the same id.
+    ev = event.clone(); // Makes a new copy with the same id.
   }
   return added;
 }
@@ -703,10 +702,11 @@ bool Song::addEventOperation(const Event& event, Part* part, bool do_port_ctrls,
 Event Song::changeEventOperation(const Event& oldEvent, const Event& newEvent,
                                 Part* part, bool do_port_ctrls, bool do_clone_port_ctrls)
 {
+  Event ev(newEvent);
   Event p_res, res;
   // If position is changed we need to reinsert into the list, and all clone lists.
   Part* p = part;
-  do
+  while(true)
   {
     // This will find the event even if it has been modified.
     // As long as the IDs AND the position are the same, it's a match.
@@ -715,12 +715,12 @@ Event Song::changeEventOperation(const Event& oldEvent, const Event& newEvent,
     {
       // The old event was not found. Just go ahead and include the addition of the new event.
       // Make sure the new event doesn't already exist.
-      if(p->events().findWithId(newEvent) == p->events().cend())
+      if(p->events().findWithId(ev) == p->events().cend())
       {
-        if(pendingOperations.add(PendingOperationItem(p, newEvent, PendingOperationItem::AddEvent)))
+        if(pendingOperations.add(PendingOperationItem(p, ev, PendingOperationItem::AddEvent)))
         {
           if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-            pendingOperations.addPartPortCtrlEvents(newEvent, p, p->tick(), p->lenTick(), p->track());  // Port controller values.
+            pendingOperations.addPartPortCtrlEvents(ev, p, p->tick(), p->lenTick(), p->track());  // Port controller values.
         }
       }
     }
@@ -742,11 +742,11 @@ Event Song::changeEventOperation(const Event& oldEvent, const Event& newEvent,
         // This is safe since the event is deleted then added again.
         // But if the new and old event IDs are not the same we MUST make sure the
         //  new event does not already exist.
-        if((newEvent.id() == oldEvent.id() || p->events().findWithId(newEvent) == p->events().cend()) &&
-           pendingOperations.add(PendingOperationItem(p, newEvent, PendingOperationItem::AddEvent)))
+        if((ev.id() == oldEvent.id() || p->events().findWithId(ev) == p->events().cend()) &&
+           pendingOperations.add(PendingOperationItem(p, ev, PendingOperationItem::AddEvent)))
         {
           if(do_port_ctrls && (do_clone_port_ctrls || (!do_clone_port_ctrls && p == part)))
-            pendingOperations.modifyPartPortCtrlEvents(e, newEvent, p);  // Port controller values.
+            pendingOperations.modifyPartPortCtrlEvents(e, ev, p);  // Port controller values.
         }
         else
         {
@@ -759,8 +759,11 @@ Event Song::changeEventOperation(const Event& oldEvent, const Event& newEvent,
     }
     
     p = p->nextClone();
+    if(p == part)
+      break;
+
+    ev = newEvent.clone(); // Makes a new copy with the same id.
   }
-  while(p != part);
   
   // Prefer to return the event found in the given part's event list, not a clone part's.
   if(!p_res.empty())

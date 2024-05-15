@@ -675,6 +675,9 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
         }
     }
 
+// REMOVE Tim. wave. Added.
+    _configChangedConnection = connect(MusEGlobal::muse, &MusE::configChanged, this, &ListEdit::configChanged);
+
     songChanged(-1);
 
     initShortcuts();
@@ -696,6 +699,8 @@ ListEdit::ListEdit(MusECore::PartList* pl, QWidget* parent)
 
 ListEdit::~ListEdit()
 {
+// REMOVE Tim. wave. Added.
+  disconnect(_configChangedConnection);
 }
 
 //---------------------------------------------------------

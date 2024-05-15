@@ -114,6 +114,10 @@ private:
     QToolBar* tools;
     QComboBox *stepLenWidget;
 
+// REMOVE Tim. wave. Added.
+    QMetaObject::Connection _configChangedConnection;
+    QMetaObject::Connection _clipboardConnection;
+
     static int _rasterInit;
     static int _trackInfoWidthInit;
     static int _canvasWidthInit;
@@ -133,7 +137,6 @@ private:
     QAction *startListEditAction;
     QAction* selectRangeToSelectionAction;
 
-    QMetaObject::Connection _configChangedTools2MetaConn;
     QMetaObject::Connection _deliveredScriptReceivedMetaConn;
     QMetaObject::Connection _userScriptReceivedMetaConn;
 

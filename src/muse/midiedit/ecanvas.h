@@ -97,6 +97,8 @@ class EventCanvas : public Canvas {
       bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false);
       virtual CItem* addItem(MusECore::Part*, const MusECore::Event&) = 0;
       virtual QPoint raster(const QPoint&) const;
+// REMOVE Tim. wave. Added.
+//       virtual int curRaster() const;
       virtual MusECore::Undo moveCanvasItems(CItemMap&, int, int, DragType, bool rasterize = true) = 0;
       virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType, bool rasterize = true) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);

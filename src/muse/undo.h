@@ -33,6 +33,8 @@
 #include "route.h"
 #include "sig.h"
 #include "pos.h"
+#include "type_defs.h"
+
 #include <stdint.h>
 
 namespace MusECore {
@@ -54,7 +56,7 @@ struct UndoOp {
             AddRoute, DeleteRoute,
             AddTrack, DeleteTrack,
             AddPart,  DeletePart,  MovePart, ModifyPartStart, ModifyPartLength, ModifyPartName, SelectPart,
-            AddEvent, DeleteEvent, ModifyEvent, SelectEvent,
+            AddEvent, DeleteEvent, ModifyEvent, ModifyEventProperties, SelectEvent,
             AddAudioCtrlVal, AddAudioCtrlValStruct,
             DeleteAudioCtrlVal, ModifyAudioCtrlVal, ModifyAudioCtrlValList,
             SelectAudioCtrlVal, SetAudioCtrlPasteEraseMode, BeginAudioCtrlMoveMode, EndAudioCtrlMoveMode,
@@ -99,6 +101,12 @@ struct UndoOp {
                   unsigned new_partlen_or_pos;
                   unsigned old_partlen;
                   unsigned new_partlen;
+                  };
+            struct {
+                  unsigned _oldEventPos;
+                  unsigned _eventPos;
+                  unsigned _oldEventLen;
+                  unsigned _eventLen;
                   };
             struct {
                   int channel;
@@ -189,6 +197,9 @@ struct UndoOp {
                   int64_t events_offset;
                   Pos::TType events_offset_time_type;
                   bool _noEndAudioCtrlMoveMode;
+                  EventID_t _eventID;
+                  int _oldEventSpos;
+                  int _newEventSpos;
             };
       };
       Event oEvent;
@@ -218,12 +229,16 @@ struct UndoOp {
       UndoOp(UndoType type, const Part* part, unsigned int old_len_or_pos, unsigned int new_len_or_pos, Pos::TType new_time_type = Pos::TICKS,
              const Track* oTrack = 0, const Track* nTrack = 0, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, unsigned int old_pos, unsigned int new_pos,
-             unsigned int old_len, unsigned int new_len, int64_t events_offset,
-             Pos::TType new_time_type = Pos::TICKS, bool noUndo = false);
+             unsigned int old_len, unsigned int new_len, int64_t events_offset, Pos::TType new_time_type = Pos::TICKS, bool noUndo = false);
       UndoOp(UndoType type, const Part* part, unsigned int old_len, unsigned int new_len, int64_t events_offset,
              Pos::TType new_time_type = Pos::TICKS, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Event& oev, const Part* part, bool doCtrls, bool doClones, bool noUndo = false);
       UndoOp(UndoType type, const Event& nev, const Part* part, bool, bool, bool noUndo = false);
+      // This constructor is for ModifyEventProperties which does NOT do clone parts.
+      // Since different clone events might need different values, this undo cannot store a common set of them.
+      // Use the global function modify_event_properties() to handle clone parts and create a series of this undo type.
+      UndoOp(UndoType type, const Part* part, const Event& ev, unsigned pos,
+             unsigned len, int spos, bool doCtrls, bool doCloneCtrls, bool noUndo = false);
       UndoOp(UndoType type, const Event& changedEvent, const QString& changeData, int startframe, int endframe, bool noUndo = false);
       UndoOp(UndoType type, const Marker& oldMarker, const Marker& newMarker, bool noUndo = false);
       UndoOp(UndoType type, const Marker& marker, bool noUndo = false);

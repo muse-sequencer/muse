@@ -478,7 +478,6 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       canvas->setCanvasTools(pianorollTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
-      _configChangedTools2MetaConn = connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
       connect(canvas, SIGNAL(horizontalZoom(bool, const QPoint&)), SLOT(horizontalZoom(bool, const QPoint&)));
       connect(canvas, SIGNAL(horizontalZoom(int, const QPoint&)), SLOT(horizontalZoom(int, const QPoint&)));
       connect(canvas, SIGNAL(curPartHasChanged(MusECore::Part*)), SLOT(updateTrackInfo()));
@@ -560,11 +559,13 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       setEventColorMode(colorMode);
 
       QClipboard* cb = QApplication::clipboard();
-      connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
+//       connect(cb, &QClipboard::dataChanged, [this]() { clipboardChanged(); } );
+      _clipboardConnection = connect(cb, &QClipboard::dataChanged, [this]() { clipboardChanged(); } );
+
+      _configChangedConnection = connect(MusEGlobal::muse, &MusE::configChanged, this, &PianoRoll::configChanged);
 
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
-//       initShortcuts(); // initialize shortcuts
       configChanged();  // set configuration values, initialize shortcuts
 
       // Don't bother if not showing default stuff, since something else
@@ -617,7 +618,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
 PianoRoll::~PianoRoll()
 {
-  disconnect(_configChangedTools2MetaConn);
+  disconnect(_configChangedConnection);
+  disconnect(_clipboardConnection);
   disconnect(_deliveredScriptReceivedMetaConn);
   disconnect(_userScriptReceivedMetaConn);
 }
@@ -687,6 +689,8 @@ void PianoRoll::songChanged1(MusECore::SongChangedStruct_t bits)
 
 void PianoRoll::configChanged()
       {
+      tools2->configChanged();
+
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
             canvas->setBg(MusEGlobal::config.midiCanvasBg);
             canvas->setBg(QPixmap());

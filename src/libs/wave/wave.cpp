@@ -1114,7 +1114,9 @@ bool SndFile::isResampled() const
 //   convertPosition
 //---------------------------------------------------------
 
-sf_count_t SndFile::convertPosition(sf_count_t pos) const
+// REMOVE Tim. wave. Changed.
+// sf_count_t SndFile::convertPosition(sf_count_t pos) const
+double SndFile::convertPosition(double pos) const
 {
   double new_pos = pos;
   if(useConverter() && _staticAudioConverter && _stretchList)
@@ -1140,7 +1142,9 @@ sf_count_t SndFile::convertPosition(sf_count_t pos) const
 //   unConvertPosition
 //---------------------------------------------------------
 
-sf_count_t SndFile::unConvertPosition(sf_count_t pos) const
+// REMOVE Tim. wave. Changed.
+// sf_count_t SndFile::unConvertPosition(sf_count_t pos) const
+double SndFile::unConvertPosition(double pos) const
 {
   double new_pos = pos;
   if(useConverter() && _staticAudioConverter && _stretchList)
@@ -1183,11 +1187,13 @@ sf_count_t SndFile::samples() const
 //   samplesConverted
 //---------------------------------------------------------
 
-sf_count_t SndFile::samplesConverted() const
+// REMOVE Tim. wave. Changed.
+// sf_count_t SndFile::samplesConverted() const
+double SndFile::samplesConverted() const
       {
       if(sfinfo.samplerate == 0 || _systemSampleRate == 0)
         return 0;
-      return samples() / sampleRateRatio();
+      return (double)samples() / sampleRateRatio();
       }
 
 //---------------------------------------------------------
@@ -1833,7 +1839,9 @@ bool SndFileR::isPitchShifted() const { return sf ? sf->isPitchShifted() : false
 bool SndFileR::isResampled() const { return sf ? sf->isResampled() : false; }
 
 sf_count_t SndFileR::samples() const    { return sf ? sf->samples() : 0; }
-sf_count_t SndFileR::samplesConverted() const { return sf ? sf->samplesConverted() : 0; }
+// REMOVE Tim. wave. Changed.
+// sf_count_t SndFileR::samplesConverted() const { return sf ? sf->samplesConverted() : 0; }
+double SndFileR::samplesConverted() const { return sf ? sf->samplesConverted() : 0; }
 
 int SndFileR::channels() const   { return sf ? sf->channels() : 0; }
 int SndFileR::samplerate() const { return sf ? sf->samplerate() : 0; }

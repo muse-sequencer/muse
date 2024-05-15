@@ -145,6 +145,8 @@ class StretchList : public StretchList_t {
       
       void clear();
       void eraseRange(int types, MuseFrame_t sframe, MuseFrame_t eframe);
+      void trimLeft(int types, MuseFrame_t frame, bool do_normalize = true);
+      void trimRight(int types, MuseFrame_t frame, bool do_normalize = true);
 
       void read(Xml&);
       void write(int, Xml&) const;
@@ -187,9 +189,12 @@ class StretchList : public StretchList_t {
       double stretch(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
       double squish(MuseFrame_t frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
       double squish(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
-      MuseFrame_t unStretch(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
-      MuseFrame_t unSquish(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
-      
+// REMOVE Tim. wave. Changed.
+//       MuseFrame_t unStretch(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+//       MuseFrame_t unSquish(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+      double unStretch(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+      double unSquish(double frame, int type = StretchListItem::StretchEvent | StretchListItem::SamplerateEvent) const;
+
       // Whether deleting the item would cause isStretched, isResampled, or isPitchShifted
       //  to become false.
       StretchListInfo testDelListOperation(int types, MuseFrame_t frame) const;

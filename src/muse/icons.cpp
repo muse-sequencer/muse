@@ -227,6 +227,7 @@ QIcon* routeSelDestSVGIcon;
 QIcon* routeSourceSVGIcon;
 QIcon* routeDestSVGIcon;
 
+QIcon* autoExpandWavesSVGIcon;
 QIcon* gridOnSVGIcon;
 QIcon* rangeToSelectionSVGIcon;
 QIcon* quantizeSVGIcon;
@@ -609,6 +610,7 @@ void initIcons(int cursorSize, const QString& gpath, const QString& upath)
     routeSourceSVGIcon = icons.getSVG("route_sources.svg");
     routeDestSVGIcon = icons.getSVG("route_destinations.svg");
 
+    autoExpandWavesSVGIcon = icons.getSVG("auto_expand_waves.svg");
     gridOnSVGIcon = icons.getSVG("grid_on.svg");
     rangeToSelectionSVGIcon = icons.getSVG("range_to_selection.svg");
     quantizeSVGIcon = icons.getSVG("quantize.svg");
@@ -903,6 +905,7 @@ void deleteIcons()
     delete routeSourceSVGIcon;
     delete routeDestSVGIcon;
 
+    delete autoExpandWavesSVGIcon;
     delete gridOnSVGIcon;
     delete rangeToSelectionSVGIcon;
     delete quantizeSVGIcon;

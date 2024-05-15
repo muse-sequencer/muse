@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "muse_math.h"
+#include "muse_time.h"
 
 #include "part.h"
 #include "song.h"
@@ -653,6 +654,102 @@ void Song::removePart(Part* part)
 
 void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      MuseCount_t l1 = 0;       // len of first new part (ticks or samples)
+      MuseCount_t l2 = 0;       // len of second new part
+
+      const MuseCount_t partPosVal = MUSE_TIME_UINT_TO_INT64 posValue();
+      const MuseCount_t partEndVal = MUSE_TIME_UINT_TO_INT64 endValue();
+      const MuseCount_t partLenVal = MUSE_TIME_UINT_TO_INT64 lenValue();
+      const MuseCount_t posPType = MUSE_TIME_UINT_TO_INT64 Pos::convert(MUSE_TIME_UINT_TO_INT64 tickpos, Pos::TICKS, type());
+
+      if(posPType <= partPosVal || posPType >= partEndVal)
+        return;
+      l1 = posPType - partPosVal;
+      l2 = partLenVal - l1;
+
+      p1 = this->duplicateEmpty();   // new left part
+      p2 = this->duplicateEmpty();   // new right part
+
+      p1->setLenValue(l1);
+      p2->setPosValue(posPType);
+      p2->setLenValue(l2);
+
+      for (ciEvent ie = _events.cbegin(); ie != _events.cend(); ++ie) {
+            const Event event = ie->second;
+            const Pos::TType eType = event.pos().type();
+            const MuseCount_t partPosEType = MUSE_TIME_UINT_TO_INT64 Pos::convert(MUSE_TIME_UINT_TO_INT64 posValue(), type(), eType);
+            const MuseCount_t ePosVal = MUSE_TIME_UINT_TO_INT64 event.posValue();
+            const MuseCount_t absEPosVal = ePosVal + partPosEType;
+            const MuseCount_t absEEndVal = absEPosVal + MUSE_TIME_UINT_TO_INT64 event.lenValue();
+            switch(event.type())
+            {
+              case EventType::Wave:
+              {
+                  const MuseCount_t p1PosEType = MUSE_TIME_UINT_TO_INT64 p1->posValue(eType);
+                  const MuseCount_t p1EndEType = MUSE_TIME_UINT_TO_INT64 p1->endValue(eType);
+                  const MuseCount_t p2PosEType = MUSE_TIME_UINT_TO_INT64 p2->posValue(eType);
+                  const MuseCount_t p2EndEType = MUSE_TIME_UINT_TO_INT64 p2->endValue(eType);
+
+                  // Now that MusE has left part border resizing, let's use that instead of Event::mid().
+                  if ((absEEndVal > p1PosEType) && (absEPosVal < p1EndEType)) {
+                        Event new_event = event.duplicate();
+                        // Honour the global auto expand part waves setting.
+                        // Hm, actually do it all the time.
+                        if(/*MusEGlobal::config.autoExpandPartWaves &&*/ absEEndVal > p1EndEType)
+                          new_event.setLenValue(p1EndEType - absEPosVal);
+                        p1->addEvent(new_event);
+                        }
+                  if ((absEEndVal > p2PosEType) && (absEPosVal < p2EndEType)) {
+                        Event new_event = event.duplicate();
+                        // Honour the global auto expand part waves setting.
+                        // Hm, actually do it all the time.
+                        //if(MusEGlobal::config.autoExpandPartWaves)
+                        {
+                          MuseCount_t newAbsEPos = absEPosVal;
+                          if(newAbsEPos < p2PosEType)
+                          {
+                            new_event.setLenValue(new_event.lenValue() - (p2PosEType - newAbsEPos));
+                            const MuseCount_t newAbsEPosFrames = MUSE_TIME_UINT_TO_INT64 Pos::convert(newAbsEPos, eType, Pos::FRAMES);
+                            const MuseCount_t p2PosFrames = MUSE_TIME_UINT_TO_INT64 p2->posValue(Pos::FRAMES);
+                            // We must trim any 'stretch' list items.
+                            new_event.sndFile().stretchList()->trimLeft(
+                              StretchListItem::StretchEvent | StretchListItem::SamplerateEvent | StretchListItem::PitchEvent,
+                              new_event.sndFile().convertPosition(p2PosFrames - newAbsEPosFrames));
+                            // The new SPos, taking into account any stretching or resampling the wave may have.
+                            const int newSPos = new_event.sndFile().convertPosition(new_event.spos() + (p2PosFrames - newAbsEPosFrames));
+                            new_event.setSpos(newSPos);
+                            newAbsEPos = p2PosEType;
+                          }
+                          new_event.setPosValue(newAbsEPos - p2PosEType);
+                        }
+                        //else
+                        //  new_event.setPosValue(MUSE_TIME_UINT_TO_INT64 new_event.posValue() - (p2PosEType - p1PosEType));
+                        p2->addEvent(new_event);
+                        }
+              }
+              break;
+
+              case EventType::Note:
+              case EventType::Controller:
+              case EventType::Sysex:
+              case EventType::Meta:
+              {
+                const MuseCount_t posEType = MUSE_TIME_UINT_TO_INT64 Pos::convert(tickpos, Pos::TICKS, eType);
+                Event new_event = event.duplicate();
+                if (absEPosVal >= posEType) {
+                      new_event.setPosValue(absEPosVal - posEType);
+                      p2->addEvent(new_event);
+                      }
+                else
+                      p1->addEvent(new_event);
+              }
+              break;
+            }
+            }
+
+#else
+
       unsigned int l1 = 0;       // len of first new part (ticks or samples)
       unsigned int l2 = 0;       // len of second new part
 
@@ -705,7 +802,7 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
                   const Event& event = ie->second;
                   unsigned int s1 = event.frame() + ps;
                   unsigned int s2 = event.endFrame() + ps;
-                  
+
                  if ((s2 > d1p1) && (s1 < d2p1)) {
                         Event si = event.mid(d1p1 - ps, d2p1);
                         p1->addEvent(si);
@@ -728,6 +825,7 @@ void Part::splitPart(unsigned int tickpos, Part*& p1, Part*& p2) const
                         p1->addEvent(event);
                   }
             }
+#endif
       }
 
 //---------------------------------------------------------

@@ -43,6 +43,7 @@
 #include "marker/marker.h"
 #include "drummap.h"
 #include "gconfig.h"
+#include "muse_time.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -601,18 +602,17 @@ static void addEventList(const MusECore::EventList& evlist, MusECore::MPEventLis
   {
     const MusECore::Event& ev = i->second;
 
-    // TODO FIXME: Change these casts to MUSE_TIME_UINT_TO_INT64 when the branch containing that define is merged.
-    int64_t tick = (int64_t)(int) ev.tick();
-    int64_t newtick = tick;
-    int64_t ptick = 0;
+    MuseCount_t tick = MUSE_TIME_UINT_TO_INT64 ev.tick();
+    MuseCount_t newtick = tick;
+    MuseCount_t ptick = 0;
 
     if(part)
     {
-      const int64_t plentick = (int64_t)(int) part->lenTick();
+      const MuseCount_t plentick = MUSE_TIME_UINT_TO_INT64 part->lenTick();
       // Do not add events that are outside of the part borders.
       if(tick < 0 || tick >= plentick)
         continue;
-      ptick = (int64_t)(int) part->tick();
+      ptick = MUSE_TIME_UINT_TO_INT64 part->tick();
       tick += ptick;
       newtick = tick - startOffset;
     }

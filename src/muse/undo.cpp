@@ -333,7 +333,7 @@ const char* UndoOp::typeName()
             "AddRoute", "DeleteRoute", 
             "AddTrack", "DeleteTrack", 
             "AddPart",  "DeletePart", "MovePart", "ModifyPartStart", "ModifyPartLength", "ModifyPartName", "SelectPart",
-            "AddEvent", "DeleteEvent", "ModifyEvent", "SelectEvent",
+            "AddEvent", "DeleteEvent", "ModifyEvent", "ModifyEventProperties", "SelectEvent",
             "AddAudioCtrlVal", "AddAudioCtrlValStruct",
             "DeleteAudioCtrlVal", "ModifyAudioCtrlVal", "ModifyAudioCtrlValList",
             "SelectAudioCtrlVal", "SetAudioCtrlPasteEraseMode", "BeginAudioCtrlMoveMode", "EndAudioCtrlMoveMode", /*"SetAudioCtrlMoveMode",*/
@@ -776,6 +776,9 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
     break;
     case UndoOp::ModifyEvent:
       fprintf(stderr, "Undo::insert: ModifyEvent\n");
+    break;
+    case UndoOp::ModifyEventProperties:
+      fprintf(stderr, "Undo::insert: ModifyEventProperties\n");
     break;
     case UndoOp::SelectEvent:
       fprintf(stderr, "Undo::insert: SelectEvent\n");
@@ -1334,6 +1337,10 @@ void Undo::insert(Undo::iterator position, const UndoOp& op)
             }
           }
         break;
+
+        case UndoOp::ModifyEventProperties:
+        break;
+
 
         case UndoOp::AddAudioCtrlVal:
           if(uo.type == UndoOp::AddAudioCtrlVal && uo.track == n_op.track &&
@@ -2508,6 +2515,26 @@ UndoOp::UndoOp(UndoType type_, const Event& nev, const Event& oev, const Part* p
       _noUndo = noUndo;
       }
 
+UndoOp::UndoOp(UndoType type_, const Part* part_, const Event& ev_, unsigned pos_, unsigned len_, int spos_,
+             bool doCtrls_, bool doCloneCtrls_, bool noUndo)
+      {
+      assert(type_==ModifyEventProperties);
+      assert(part_);
+      
+      type   = type_;
+      part = part_;
+      _eventID = ev_.id();
+      _oldEventPos = ev_.posValue();
+      _eventPos = pos_;
+      _oldEventLen = ev_.lenValue();
+      _eventLen = len_;
+      _oldEventSpos = ev_.spos();
+      _newEventSpos = spos_;
+      doCtrls = doCtrls_;
+      doClones = doCloneCtrls_;
+      _noUndo = noUndo;
+      }
+
 UndoOp::UndoOp(UndoType type_, const Event& nev, const Part* part_, bool a_, bool b_, bool noUndo)
       {
       assert(type_==DeleteEvent || type_==AddEvent || type_==SelectEvent);
@@ -3114,6 +3141,16 @@ void Song::revertOperationGroup1(Undo& operations)
                         break;
 
                         
+                  case UndoOp::ModifyEventProperties:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::revertOperationGroup1:ModifyEventProperties ** calling changeEventProperties\n");
+#endif
+                        pendingOperations.changeEventPropertiesOperation(
+                          editable_part, /*i->oEvent,*/ i->_eventID, i->_eventPos,
+                          i->_oldEventPos, i->_oldEventLen, i->_oldEventSpos, i->doCtrls, i->doClones);
+                        updateFlags |= SC_EVENT_MODIFIED;
+                        break;
+
                   case UndoOp::AddAudioCtrlVal:
                   {
 #ifdef _UNDO_DEBUG_
@@ -4385,7 +4422,16 @@ void Song::executeOperationGroup1(Undo& operations)
                         updateFlags |= SC_EVENT_MODIFIED;
                         break;
 
-                        
+                  case UndoOp::ModifyEventProperties:
+#ifdef _UNDO_DEBUG_
+                        fprintf(stderr, "Song::executeOperationGroup1:ModifyEventProperties ** calling changeEventProperties\n");
+#endif                        
+                        pendingOperations.changeEventPropertiesOperation(
+                          editable_part, /*i->oEvent,*/ i->_eventID, i->_oldEventPos,
+                          i->_eventPos, i->_eventLen, i->_newEventSpos, i->doCtrls, i->doClones);
+                        updateFlags |= SC_EVENT_MODIFIED;
+                        break;
+
                   case UndoOp::AddAudioCtrlVal:
                   {
 #ifdef _UNDO_DEBUG_

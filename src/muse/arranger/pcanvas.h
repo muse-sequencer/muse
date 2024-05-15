@@ -29,17 +29,27 @@
 #include <map>
 #include <QElapsedTimer>
 #include <QList>
-#include <QMap>
+//#include <QMap>
 #include <QUuid>
+#include <QPoint>
+#include <QString>
 
 #include "type_defs.h"
 #include "canvas.h"
 #include "undo.h"
 #include "track.h"
 #include "ctrl.h"
-#include "citem.h"
+//#include "citem.h"
 #include "pos.h"
 #include "gconfig.h"
+// REMOVE Tim. wave. Added.
+#include "muse_time.h"
+#include "part.h"
+
+// REMOVE Tim. wave. Added.
+// Whether to use a canvas item's bounding box, which is in units of canvas time type,
+//  for things like resizing, versus using more accurate temporary item member values.
+//#define PCANVAS_USE_ITEM_BB
 
 
 // Forward declarations:
@@ -57,10 +67,15 @@ class Xml;
 class Track;
 class MidiTrack;
 class AudioTrack;
-class Part;
-class WavePart;
-class MidiPart;
-class PartList;
+// REMOVE Tim. wave. Removed.
+// class Part;
+// class WavePart;
+// class MidiPart;
+// class PartList;
+class CItem;
+// REMOVE Tim. wave. Added.
+//class PosLen;
+class Event;
 }
 
 namespace MusEGui {
@@ -78,13 +93,16 @@ class NPart : public PItem {
    
    public:
       NPart(MusECore::Part*);
-      NPart() { }
-      const QString name() const     { return part()->name(); }
-      void setName(const QString& s) { part()->setName(s); }
-      MusECore::Track* track() const           { return part()->track(); }
-      QUuid serial() { return _serial; }
-      
-      bool leftBorderTouches;  // Whether the borders touch other part borders. 
+      NPart();
+      const QString name() const;
+      // REMOVE Tim. wave. Unused. We have a real time operation for this.
+      //void setName(const QString& s) { part()->setName(s); }
+      MusECore::Track* track() const;
+      QUuid serial();
+// REMOVE Tim. wave. Added.
+      void initItemTempValues();
+
+      bool leftBorderTouches;  // Whether the borders touch other part borders.
       bool rightBorderTouches;
       };
 
@@ -185,6 +203,16 @@ class PartCanvas : public Canvas {
       virtual int y2height(int) const; 
       virtual inline int yItemOffset() const { return 0; }
       virtual CItem* newItem(const QPoint&, int);
+      // REMOVE Tim. wave. Added.
+      virtual bool calcPartResize(CItem*, int pos, bool noSnap,
+        MusECore::MuseCount_t *partPosResult, MusECore::MuseCount_t *partEndResult);
+      // REMOVE Tim. wave. Added.
+      virtual void startingResizeItems(CItem*, int pos, bool noSnap, bool ctrl, bool alt);
+      virtual void beforeResizeItems(CItem*, int pos, bool noSnap, bool ctrl, bool alt);
+      // REMOVE Tim. wave. Added.
+      //virtual void adjustItemTempValues(CItem*, int pos, bool noSnap, bool ctrl, bool alt);
+      virtual void adjustSelectedItemsSize(const int &dist, const bool left, const bool noSnap, const bool ctrl, const bool alt, QRegion * = nullptr);
+      virtual void adjustItemSize(CItem* item, int pos, bool /*left*/, bool noSnap, bool ctrl, bool alt, QRegion * = nullptr);
       virtual void resizeItem(CItem*,bool, bool ctrl);
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
@@ -228,11 +256,25 @@ class PartCanvas : public Canvas {
                              std::set<MusECore::Track*>* affected_tracks = nullptr);
       void drawWaveSndFile(QPainter &p, MusECore::SndFileR &f, int samplePos, unsigned rootFrame,
                            unsigned startFrame, unsigned lengthFrames, int startY, int startX, int endX, int rectHeight, bool selected);
-      void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&, bool selected);
-      void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events,
+// REMOVE Tim. wave. Changed.
+//       void drawWavePart(QPainter&, const QRect&, MusECore::WavePart*, const QRect&, bool selected);
+      void drawWavePart(const CItem* item, QPainter&, const QRect&, /*MusECore::WavePart*,*/ const QRect&, bool selected);
+// REMOVE Tim. wave. Changed.
+//       void drawMidiPart(QPainter&, const QRect& rect, const MusECore::EventList& events,
+      //void drawMidiPart(const CItem* item, QPainter&, const QRect& rect, const MusECore::EventList& events,
+      //                  MusECore::MidiTrack* mt, MusECore::MidiPart* midipart,
+      //                  const QRect& r, int pTick, int from, int to, bool selected);
+//       void drawMidiPart(const CItem* item, QPainter&, const QRect& rect, const MusECore::EventList& events,
+//                         MusECore::MidiTrack* mt, MusECore::MidiPart* midipart,
+//                         const QRect& r, const MusECore::PosLen& pPosLen, const MusECore::Pos& fromPos, const MusECore::Pos& toPos, bool selected);
+      void drawMidiPart(const CItem* item, QPainter&, const QRect& rect, const MusECore::EventList& events,
                         MusECore::MidiTrack* mt, MusECore::MidiPart* midipart,
-                        const QRect& r, int pTick, int from, int to, bool selected);
-	    void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
+                        const QRect& r, const unsigned int pTick, const int from, const int to, bool selected);
+// REMOVE Tim. wave. Changed.
+// 	    void drawMidiPart(QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
+	    //void drawMidiPart(const CItem* item, QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
+      //                  const QRect& r, int from, int to, bool selected);
+	    void drawMidiPart(const CItem* item, QPainter&, const QRect& rect, MusECore::MidiPart* midipart,
                         const QRect& r, int from, int to, bool selected);
       MusECore::Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& mr, const QRegion& vrg, const ViewRect& vbbox, MusECore::AudioTrack* track);
@@ -284,8 +326,33 @@ class PartCanvas : public Canvas {
       void showStatusTip(QMouseEvent *event) const;
       void setAutomationCurrentText(const MusECore::CtrlList *cl, double val);
 
+// REMOVE Tim. wave. Added.
+      // Returns true on success.
+      bool calcAutoWaveExpand(/*const MusECore::Part *originalPart,*/ const MusECore::Part *part,
+        MusECore::MuseCount_t newPartPos, MusECore::MuseCount_t newPartLen, const MusECore::Pos::TType newTType,
+        const MusECore::Event &e,
+        MusECore::MuseCount_t *newEPos, MusECore::MuseCount_t *newELen, int *newSPos,
+//         MusECore::ResizeDirection dir, bool noSnap, bool dragEventWithBorder, bool autoExpandWave, bool useEventsOffset);
+        MusECore::ResizeDirection dir, bool autoExpandWave);
+
 
    protected:
+      // REMOVE Tim. wave. Added.
+      MusECore::Pos::TType resizeTType;
+      MusECore::Part::PartType resizePartType;
+      MusECore::MuseCount_t firstResizePos;
+      MusECore::MuseCount_t firstResizeLen;
+      MusECore::MuseCount_t lastResizePos;
+      MusECore::MuseCount_t lastResizeLen;
+      MusECore::MuseCount_t curResizePos;
+      MusECore::MuseCount_t curResizeLen;
+      MusECore::MuseCount_t resizePosAccum;
+      MusECore::MuseCount_t resizeLenAccum;
+//       QPoint firstRasteredMousePos;
+//       QPoint lastRasteredMousePos;
+//       QPoint rasteredMousePos;
+//       QPoint _borderDragEventsAccum;
+
       virtual void drawCanvas(QPainter&, const QRect&, const QRegion& = QRegion());
       virtual void endMoveItems(const QPoint&, DragType, int dir, bool rasterize = true);
 
@@ -343,8 +410,36 @@ class PartCanvas : public Canvas {
       int automationPointRadius() const;
       void setAutomationPointRadius(int r);
 
+      // This is how thick our part borders are.
+      //        |       |       |
+      //        |       |       |
+      //        |       |       |
+      //        |       |       |
+      // ------++++++++++++++++++--------
+      //       ++++++++++++++++++
+      //       ++      ++      ++
+      //       ++      ++      ++
+      //       ++      ++      ++
+      //       ++      ++      ++
+      // ------++++++++++++++++++--------
+      //       ++++++++++++++++++
+      //       ++      ++      ++
+      //       ++      ++      ++
+      //       ++      ++      ++
+      //       ++      ++      ++
+      // ------++++++++++++++++++--------
+      //       ++++++++++++++++++
+      //        |       |       |
+      //        |       |       |
+      //        |       |       |
+      //        |       |       |
+
+      static int partBorderInnerWidth;
+      static int partBorderOuterWidth;
+      static int partBorderTotalWidth;
+
    public slots:
-      void redirKeypress(QKeyEvent* e) { keyPress(e); }
+      void redirKeypress(QKeyEvent* e);
       // Redraws the track. CtrlId (unused so far) would be ignored if -1.
       void controllerChanged(
         const MusECore::Track *t, int ctrlId = -1,

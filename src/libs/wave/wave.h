@@ -199,11 +199,16 @@ class SndFile {
       double sampleRateRatio() const;
       // Whether the sample rate ratio is exactly 1.
       bool sampleRateDiffers() const;
+// REMOVE Tim. wave. Changed.
+//       // Convert a frame position to its resampled or stretched position.
+//       sf_count_t convertPosition(sf_count_t pos) const;
+//       // Convert a resampled or stretched frame position to its unresampled or unstretched position.
+//       sf_count_t unConvertPosition(sf_count_t pos) const;
       // Convert a frame position to its resampled or stretched position.
-      sf_count_t convertPosition(sf_count_t pos) const;
+      double convertPosition(double pos) const;
       // Convert a resampled or stretched frame position to its unresampled or unstretched position.
-      sf_count_t unConvertPosition(sf_count_t pos) const;
-      // Returns whether ANY stretch event has a stretch ratio other than 1.0 
+      double unConvertPosition(double pos) const;
+      // Returns whether ANY stretch event has a stretch ratio other than 1.0
       //  ie. the map is stretched, a stretcher must be engaged.
       bool isStretched() const;
       // Returns whether ANY stretch event has a pitch ratio other than 1.0 
@@ -215,7 +220,9 @@ class SndFile {
       
       sf_count_t samples() const;
       // Returns number of samples, adjusted for file-to-system samplerate ratio.
-      sf_count_t samplesConverted() const;
+// REMOVE Tim. wave. Changed.
+//       sf_count_t samplesConverted() const;
+      double samplesConverted() const;
 
       int channels() const;
       int samplerate() const;
@@ -351,10 +358,15 @@ class SndFileR {
       inline double sampleRateRatio() const { return sf ? sf->sampleRateRatio() : 1.0; };
       // Whether the sample rate ratio is exactly 1.
       inline bool sampleRateDiffers() const { return sf ? sf->sampleRateDiffers() : false; };
+// REMOVE Tim. wave. Changed.
+//       // Convert a frame position to its resampled or stretched position.
+//       inline sf_count_t convertPosition(sf_count_t pos) const { return sf ? sf->convertPosition(pos) : pos; };
+//       // Convert a resampled or stretched frame position to its unresampled or unstretched position.
+//       inline sf_count_t unConvertPosition(sf_count_t pos) const { return sf ? sf->unConvertPosition(pos) : pos; };
       // Convert a frame position to its resampled or stretched position.
-      inline sf_count_t convertPosition(sf_count_t pos) const { return sf ? sf->convertPosition(pos) : pos; };
+      inline double convertPosition(double pos) const { return sf ? sf->convertPosition(pos) : pos; };
       // Convert a resampled or stretched frame position to its unresampled or unstretched position.
-      inline sf_count_t unConvertPosition(sf_count_t pos) const { return sf ? sf->unConvertPosition(pos) : pos; };
+      inline double unConvertPosition(double pos) const { return sf ? sf->unConvertPosition(pos) : pos; };
       // Returns whether ANY stretch event has a stretch ratio other than 1.0
       //  ie. the map is stretched, a stretcher must be engaged.
       bool isStretched() const;
@@ -367,7 +379,9 @@ class SndFileR {
 
       sf_count_t samples() const;
       // Returns number of samples, adjusted for file-to-system samplerate ratio.
-      sf_count_t samplesConverted() const;
+// REMOVE Tim. wave. Changed.
+//       sf_count_t samplesConverted() const;
+      double samplesConverted() const;
 
       int channels() const;
       int samplerate() const;

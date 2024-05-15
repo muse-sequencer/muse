@@ -29,6 +29,7 @@
 #include "globals.h"
 #include "gconfig.h"
 #include "xml.h"
+#include "config.h"
 
 #include <stdint.h>
 
@@ -87,6 +88,10 @@ void TempoList::copy(const TempoList& src)
 
 void TempoList::add(unsigned tick, int tempo, bool do_normalize)
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
       if (tick > MAX_TICK)
             tick = MAX_TICK;
       iTEvent e = upper_bound(tick);
@@ -107,6 +112,10 @@ void TempoList::add(unsigned tick, int tempo, bool do_normalize)
 
 void TempoList::add(unsigned tick, TEvent* e, bool do_normalize)
 {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
   int tempo = e->tempo;
   std::pair<iTEvent, bool> res = insert(std::pair<const unsigned, TEvent*> (tick, e));
   if(!res.second)
@@ -190,6 +199,12 @@ void TempoList::clear()
 
 void TempoList::eraseRange(unsigned stick, unsigned etick)
 {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)stick < 0)
+            stick = 0;
+      if ((int)etick < 0)
+            etick = 0;
+#endif
     if(stick >= etick || stick > MAX_TICK)
       return;
     if(etick > MAX_TICK)
@@ -216,6 +231,10 @@ void TempoList::eraseRange(unsigned stick, unsigned etick)
 
 int TempoList::tempo(unsigned tick) const
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
       if (useList) {
             ciTEvent i = upper_bound(tick);
             if (i == end()) {
@@ -230,11 +249,19 @@ int TempoList::tempo(unsigned tick) const
 
 float TempoList::bpm(unsigned tick) const
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
         return (float)globalTempo() * 600000.0f / (float)tempo(tick);
       }
 
 float TempoList::bpmAt(unsigned tick) const
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
         return (float)globalTempo() * 600000.0f / (float)tempoAt(tick);
       }
 
@@ -245,6 +272,10 @@ float TempoList::bpmAt(unsigned tick) const
 
 int TempoList::tempoAt(unsigned tick) const
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
             ciTEvent i = upper_bound(tick);
             if (i == end()) {
                   printf("tempoAt: no TEMPO at tick %d,0x%x\n", tick, tick);
@@ -259,6 +290,10 @@ int TempoList::tempoAt(unsigned tick) const
 
 void TempoList::del(unsigned tick, bool do_normalize)
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
       iTEvent e = find(tick);
       if (e == end()) {
             printf("TempoList::del(%d): not found\n", tick);
@@ -290,6 +325,10 @@ void TempoList::del(iTEvent e, bool do_normalize)
 
 void TempoList::setTempo(unsigned tick, int newTempo)
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
       if (useList)
             add(tick, newTempo, true);
       else
@@ -314,6 +353,10 @@ void TempoList::setGlobalTempo(int val)
 
 void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)t < 0)
+            t = 0;
+#endif
       add(t, tempo, do_normalize);
       }
 
@@ -323,6 +366,10 @@ void TempoList::addTempo(unsigned t, int tempo, bool do_normalize)
 
 void TempoList::delTempo(unsigned tick, bool do_normalize)
       {
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
       del(tick, do_normalize);
       }
 
@@ -390,13 +437,27 @@ unsigned TempoList::tick2frame(unsigned tick, unsigned frame, int* sn, LargeIntR
 
 unsigned TempoList::tick2frame(unsigned tick, int* sn, LargeIntRoundMode round_mode) const
       {
+// REMOVE Tim. wave. Changed.
+//       unsigned t = tick;
+// #ifdef ALLOW_LEFT_HIDDEN_EVENTS
+//       if ((int)t < 0)
+//             t = 0;
+// #endif
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick < 0)
+            tick = 0;
+#endif
       unsigned f;
       const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
       const uint64_t denom = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
       if (useList) {
+// REMOVE Tim. wave. Changed.
+//             ciTEvent i = upper_bound(t);
             ciTEvent i = upper_bound(tick);
             if (i == end()) {
-                  printf("tick2frame(%d,0x%x): not found\n", tick, tick);
+// REMOVE Tim. wave. Changed.
+//                   printf("tick2frame(%d,0x%x): not found\n", t, t);
+                  fprintf(stderr, "tick2frame(%d,0x%x): not found\n", tick, tick);
                   return 0;
                   }
             // Tick resolution is less than frame resolution. 
@@ -430,6 +491,16 @@ unsigned TempoList::frame2tick(unsigned frame, unsigned t, int* sn, LargeIntRoun
 
 unsigned TempoList::frame2tick(unsigned frame, int* sn, LargeIntRoundMode round_mode) const
       {
+// REMOVE Tim. wave. Changed.
+//       unsigned f = frame;
+// #ifdef ALLOW_LEFT_HIDDEN_EVENTS
+//       if ((int)f < 0)
+//             f = 0;
+// #endif
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)frame < 0)
+            frame = 0;
+#endif
       unsigned tick;
       const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
       const uint64_t denom = (uint64_t)MusEGlobal::sampleRate;
@@ -440,6 +511,8 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn, LargeIntRoundMode round_
                   ++ee;
                   if (ee == end())
                         break;
+// REMOVE Tim. wave. Changed.
+//                   if (f < ee->second->frame)
                   if (frame < ee->second->frame)
                         break;
                   e = ee;
@@ -462,13 +535,32 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn, LargeIntRoundMode round_
 
 unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn, LargeIntRoundMode round_mode) const
       {
+// REMOVE Tim. wave. Changed.
+//       unsigned t1 = tick1;
+//       unsigned t2 = tick2;
+// #ifdef ALLOW_LEFT_HIDDEN_EVENTS
+//       if ((int)t1 < 0)
+//             t1 = 0;
+//       if ((int)t2 < 0)
+//             t2 = 0;
+// #endif
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)tick1 < 0)
+            tick1 = 0;
+      if ((int)tick2 < 0)
+            tick2 = 0;
+#endif
       unsigned int f1, f2;
       const uint64_t numer = (uint64_t)MusEGlobal::sampleRate;
       const uint64_t denom = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
       if (useList) {
+// REMOVE Tim. wave. Changed.
+//             ciTEvent i = upper_bound(t1);
             ciTEvent i = upper_bound(tick1);
             if (i == end()) {
-                  printf("TempoList::deltaTick2frame: tick1:%d not found\n", tick1);
+// REMOVE Tim. wave. Changed.
+//                   printf("TempoList::deltaTick2frame: t1:%d not found\n", t1);
+                  fprintf(stderr, "TempoList::deltaTick2frame: tick1:%d not found\n", tick1);
                   // abort();
                   return 0;
                   }
@@ -477,8 +569,11 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn, Lar
             f1 = i->second->frame + muse_multiply_64_div_64_to_64(
               numer * (uint64_t)i->second->tempo, tick1 - i->second->tick, denom, round_mode);
 
+// REMOVE Tim. wave. Changed.
+//             i = upper_bound(t2);
             i = upper_bound(tick2);
             if (i == end()) {
+                  fprintf(stderr, "TempoList::deltaTick2frame: tick2:%d not found\n", tick2);
                   return 0;
                   }
             // Tick resolution is less than frame resolution. 
@@ -508,6 +603,21 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn, Lar
 
 unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn, LargeIntRoundMode round_mode) const
       {
+// REMOVE Tim. wave. Changed.
+//       unsigned f1 = frame1;
+//       unsigned f2 = frame2;
+// #ifdef ALLOW_LEFT_HIDDEN_EVENTS
+//       if ((int)f1 < 0)
+//             f1 = 0;
+//       if ((int)f2 < 0)
+//             f2 = 0;
+// #endif
+#ifdef ALLOW_LEFT_HIDDEN_EVENTS
+      if ((int)frame1 < 0)
+            frame1 = 0;
+      if ((int)frame2 < 0)
+            frame2 = 0;
+#endif
       unsigned tick1, tick2;
       const uint64_t numer = (uint64_t)MusEGlobal::config.division * (uint64_t)_globalTempo * 10000UL;
       const uint64_t denom = (uint64_t)MusEGlobal::sampleRate;
@@ -518,6 +628,8 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn, L
                   ++ee;
                   if (ee == end())
                         break;
+// REMOVE Tim. wave. Changed.
+//                   if (f1 < ee->second->frame)
                   if (frame1 < ee->second->frame)
                         break;
                   e = ee;
@@ -531,6 +643,8 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn, L
                   ++ee;
                   if (ee == end())
                         break;
+// REMOVE Tim. wave. Changed.
+//                   if (f2 < ee->second->frame)
                   if (frame2 < ee->second->frame)
                         break;
                   e = ee;

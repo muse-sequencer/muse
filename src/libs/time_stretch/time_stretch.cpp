@@ -364,6 +364,9 @@ void StretchList::clear()
 
 void StretchList::eraseRange(int types, MuseFrame_t sframe, MuseFrame_t eframe)
 {
+  // REMOVE Tim. wave. Added.
+  // FIXME TODO This routine is NOT correct. See trimLeft().
+
   if(sframe >= eframe)
     return;
   iStretchListItem se = lower_bound(sframe);
@@ -382,21 +385,109 @@ void StretchList::eraseRange(int types, MuseFrame_t sframe, MuseFrame_t eframe)
     
     ise->second._type &= ~types;
     if(ise->second._type == 0)
-    {
-      iStretchListItem ise_save = ise;
-      erase(ise);
-      ise = ise_save;
-    }
+      ise = erase(ise);
     else
       ++ise;
   }
-  
+
   // Mark as invalidated, normalization is required.
   _isNormalized = false;
   
   normalizeListFrames();
 }
       
+//---------------------------------------------------------
+//   trimLeft
+//---------------------------------------------------------
+
+void StretchList::trimLeft(int /*types*/, MuseFrame_t frame, bool do_normalize)
+{
+  // Not only must the list be trimmed, but the remaining items must have their
+  //  frames adjusted. Whether we use delete/insert or C++17 extract/insert,
+  //  another container is required. Here we will simply swap with a new list.
+
+  // REMOVE Tim. wave. Added.
+  //
+  // FIXME TODO This routine is NOT correct.
+  //            Special attention is needed for the first item, and subsequent items may need a forward offset.
+  //            If the given frame is at a different sample rate than the wave, it must be converted by either
+  //             the caller or us, from the caller's 'world' to this one. Since we are interested only in the
+  //             original positions of the items (the index value), that means we are NOT interested in the
+  //             stretching contribution to the conversion - only sample rate contribution.
+  //            Trimming (by part splitting etc.) does work OK with just sample rate changes, but not stretching.
+  //
+  //            To trim properly, some additions and changes will be needed to the behaviour of the stretch features:
+  //            1) A mode MUST be added to allow the user to alter the ORIGINAL positions of items (the index value),
+  //                not just the STRETCHED positions. Again, these positions are in THIS world WITHOUT stretching -
+  //                only sample rate
+  //            2) When the user moves a marker, instead of symetrically adjusting complimentary stretch values on the
+  //                left and right of a marker, use the Ctrl key to allow everything on the RIGHT of a stretch marker
+  //                to be 'dragged' with the marker - ie. the stretch value of THAT marker does not change but the
+  //                previous marker's still changes to stretch what is between the two markers but not affect what is
+  //                at the right of the moving marker.
+  //               NOTE: That means we NEED A ROUTINE that can 'move()' all the items at the RIGHT of a moving marker.
+  //               Similar to how this routine needs to move some items at the right.
+  //            3) Markers' original positions must be allowed to move to the very end of the wave (see 1), and must
+  //                be allowed to STRETCH PAST the end of the wave, to allow the user to stretch the entire wave by
+  //                placing a marker at the very end and moving it to the right (or left).
+
+  StretchList newList;
+  for(ciStretchListItem ise = cbegin(); ise != cend(); ++ise)
+  {
+    const StretchListItem& item = ise->second;
+    if(item._finSquishedFrame >= frame)
+    {
+      // A new list already contains one item at frame zero.
+      // Add will automatically assign that item rather than insert.
+      newList.add(ise->first - frame, item, false);
+    }
+  }
+  swap(newList);
+
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+
+  if(do_normalize)
+    normalizeListFrames();
+}
+
+//---------------------------------------------------------
+//   trimRight
+//---------------------------------------------------------
+
+void StretchList::trimRight(int types, MuseFrame_t frame, bool do_normalize)
+{
+  // REMOVE Tim. wave. Added.
+  // FIXME TODO This routine is NOT correct. See trimLeft().
+
+  iStretchListItem se = lower_bound(frame);
+  if(se == end())
+    return;
+  iStretchListItem ee = end();
+
+  for(iStretchListItem ise = se; ise != ee; )
+  {
+    // Do not delete the item at zeroth frame.
+    if(ise->first == 0)
+    {
+      ++ise;
+      continue;
+    }
+
+    ise->second._type &= ~types;
+    if(ise->second._type == 0)
+      ise = erase(ise);
+    else
+      ++ise;
+  }
+
+  // Mark as invalidated, normalization is required.
+  _isNormalized = false;
+
+  if(do_normalize)
+    normalizeListFrames();
+}
+
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
@@ -995,7 +1086,9 @@ double StretchList::squish(double frame, int type) const
 //   unStretch
 //---------------------------------------------------------
 
-MuseFrame_t StretchList::unStretch(double frame, int type) const
+// REMOVE Tim. wave. Changed.
+//MuseFrame_t StretchList::unStretch(double frame, int type) const
+double StretchList::unStretch(double frame, int type) const
 {
   if(empty())
     return frame;
@@ -1061,14 +1154,18 @@ MuseFrame_t StretchList::unStretch(double frame, int type) const
     factor = 1.0 / (_samplerateRatio * prevSamplerate);
   }
     
-  return prevFrame + lrint((frame - prevNewFrame) * factor);
+// REMOVE Tim. wave. Changed.
+//   return prevFrame + lrint((frame - prevNewFrame) * factor);
+  return prevFrame + ((frame - prevNewFrame) * factor);
 }
 
 //---------------------------------------------------------
 //   unStretch
 //---------------------------------------------------------
 
-MuseFrame_t StretchList::unSquish(double frame, int type) const
+// REMOVE Tim. wave. Changed.
+// MuseFrame_t StretchList::unSquish(double frame, int type) const
+double StretchList::unSquish(double frame, int type) const
 {
   if(empty())
     return frame;
@@ -1133,8 +1230,10 @@ MuseFrame_t StretchList::unSquish(double frame, int type) const
     factor = (_samplerateRatio * prevSamplerate);
   }
 
-  // FIXME: Hm, lrint? Try returning double.
-  return prevFrame + lrint((frame - prevNewUnFrame) * factor);
+// REMOVE Tim. wave. Changed.
+//   // FIXME: Hm, lrint? Try returning double.
+//   return prevFrame + lrint((frame - prevNewUnFrame) * factor);
+  return prevFrame + ((frame - prevNewUnFrame) * factor);
 }
 
 StretchListInfo StretchList::testDelListOperation(int types, MuseFrame_t frame) const

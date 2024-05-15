@@ -3274,7 +3274,8 @@ MusEGui::PianoRoll* MusE::startPianoroll(MusECore::PartList* pl, bool showDefaul
     pianoroll->setOpenInNewWin(newwin);
     pianoroll->show();
     connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+// REMOVE Tim. wave. Removed
+//     connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
     updateWindowMenu();
     if(createdNotFound)
       *createdNotFound = true;
@@ -3405,7 +3406,8 @@ void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
     dock->setAttribute(Qt::WA_DeleteOnClose);
 #endif
 
-    connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+// REMOVE Tim. wave. Removed.
+//     connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
 }
 
 MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
@@ -3518,7 +3520,8 @@ MusEGui::DrumEdit* MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaul
     drumEditor->setOpenInNewWin(newwin);
     drumEditor->show();
     connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+// REMOVE Tim. wave. Removed
+//     connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
     updateWindowMenu();
     if(createdNotFound)
       *createdNotFound = true;
@@ -3556,7 +3559,8 @@ MusEGui::WaveEdit* MusE::startWaveEditor(MusECore::PartList* pl, bool newwin, bo
     toplevels.push_back(waveEditor);
     waveEditor->show();
     waveEditor->setOpenInNewWin(newwin);
-    connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
+// REMOVE Tim. wave. Removed.
+//     connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
     connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
     updateWindowMenu();
     if(createdNotFound)

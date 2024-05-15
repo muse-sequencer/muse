@@ -759,7 +759,7 @@ QGradient getGradientFromColor(const QColor& c, const QPoint& start, const QPoin
     gradient.setColorAt(.5, c);
     gradient.setColorAt(1, c.darker(100 + strength/3*2));
 
-    return std::move(gradient);
+    return gradient;
 }
 
 bool isColorBright(const QColor& c)

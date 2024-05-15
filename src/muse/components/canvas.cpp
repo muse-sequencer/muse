@@ -38,7 +38,8 @@
 #include "event.h"
 #include "icons.h"
 #include "../marker/marker.h"
-#include "part.h"
+// REMOVE Tim. wave. Removed.
+// #include "part.h"
 #include "fastlog.h"
 #include "menutitleitem.h"
 #include "shortcuts.h"
@@ -54,6 +55,8 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include "undo.h"
+// REMOVE Tim. wave. Added.
+#include "part.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
@@ -832,8 +835,22 @@ void Canvas::viewKeyReleaseEvent(QKeyEvent* event)
 
 void Canvas::viewMousePressEvent(QMouseEvent* event)
       {
+// REMOVE Tim. wave. Removed. Moved from below.
       keyState = event->modifiers();
       button = event->button();
+
+      // REMOVE Tim. wave. Added.
+//       if(event->modifiers() & Qt::ShiftModifier)
+      if(keyState & Qt::ShiftModifier)
+        mousePosRastered = event->pos();
+      else
+        mousePosRastered = raster(event->pos());
+      lastMousePosRastered = mousePosRastered;
+      startMousePosRastered = mousePosRastered;
+
+// REMOVE Tim. wave. Removed. Moved above.
+//       keyState = event->modifiers();
+//       button = event->button();
       //printf("viewMousePressEvent buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
       
       // special events if right button is clicked while operations
@@ -879,8 +896,15 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       ev_pos          = start;
       global_start    = event->globalPos();
       ev_global_pos   = global_start;
-      
-      curItem = findCurrentItem(start);
+      // REMOVE Tim. wave. Added.
+//       if(shift)
+//         mousePosRastered = ev_pos;
+//       else
+//         mousePosRastered = raster(ev_pos);
+//       lastMousePosRastered = mousePosRastered;
+//       startMousePosRastered = mousePosRastered;
+
+      curItem = findCurrentItem(ev_pos);
 
       // Give a chance for the individual canvas types to process the event.
       if (!mousePress(event))
@@ -891,7 +915,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
 
       if (curItem && (button == Qt::MiddleButton)) {
           if (_tool == PointerTool || _tool == PencilTool || _tool == RubberTool) {
-            deleteItem(start); // changed from "start drag" to "delete" by flo93
+            deleteItem(ev_pos); // changed from "start drag" to "delete" by flo93
             drag = DRAG_DELETE;
             setCursor();
             }
@@ -901,13 +925,29 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                   if (ctrl && virt() && (_tool == PointerTool || _tool == PencilTool || _tool == RubberTool)) {       // Non-virt width is meaningless, such as drums.
                         drag = DRAG_OFF;
                         setCursor();
-                        int dx = start.x() - curItem->x();
-                        curItem->setWidth(dx);
+// REMOVE Tim. wave. Changed.
+//                         int dx = start.x() - curItem->x();
+//                         curItem->setWidth(dx);
+                        // Set up the values that will be used when altering the item graphically.
+                        startingResizeItems(curItem, ev_pos.x(), true, false, alt);
+                        curItem->initItemTempValues();
+                        adjustItemSize(curItem, ev_pos.x(), false, true, false, alt);
+
                         start.setX(curItem->x());
+                        // REMOVE Tim. wave. Added. Hm, check this - raster required?
+                        //mousePosRastered = raster(start);
+                        //if(shift)
+                          mousePosRastered = start;
+                        //else
+                        //  mousePosRastered = raster(start);
+                        lastMousePosRastered = mousePosRastered;
+                        startMousePosRastered = mousePosRastered;
                         deselectAll();
                         selectItem(curItem, true);
                         itemSelectionsChanged(nullptr, true);
+                        // REMOVE Tim. wave. Added comment. Hm, check this: adjustItemSize is called? Yeah maybe I think it is intentional
                         resizeItem(curItem, shift, false);
+                        // Just do a full update since item selections may hvae changed.
                         redraw();
                         }
                   else {
@@ -915,7 +955,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         if (itemPopupMenu) {
                               QAction *act = itemPopupMenu->exec(QCursor::pos());
                               if (act && act->data().isValid())
-                                    itemPopup(curItem, act->data().toInt(), start);
+                                    itemPopup(curItem, act->data().toInt(), ev_pos);
                               delete itemPopupMenu;
                               }
                         }
@@ -950,7 +990,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         break;
 
                   case RubberTool:
-                        deleteItem(start);
+                        deleteItem(ev_pos);
                         drag = DRAG_DELETE;
                         setCursor();
                         break;
@@ -985,8 +1025,16 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                   drag = DRAG_RESIZE;
                                   resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT;
                                   if(supportsResizeToTheLeft){
-                                     if(curItem->x() + (curItem->width() / 2) > ev_pos.x()){
-                                        resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_LEFT;
+// REMOVE Tim. wave. Changed.
+//                                      if(curItem->x() + (curItem->width() / 2) > ev_pos.x()){
+                                     // If the number of physical width pixels is too small to distinguish
+                                     //  between left or right half, then favour resizing to the right
+                                     //  over resizing to the left so that users can expand a very thin part
+                                     //  that is stuck at bar 0 for example.
+                                     if(rmapx(curItem->width()) >= 6) {
+                                         if(curItem->width() >= 6 && (curItem->x() + (curItem->width() / 2) > ev_pos.x())){
+                                            resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_LEFT;
+                                         }
                                      }
                                   }
                                   setCursor();
@@ -997,22 +1045,50 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                         deselect_all = true;
                                         selectItem(curItem, true);
                                       }
+// REMOVE Tim. wave. Added.
+                                      // Set up any values that will be used when altering the item graphically.
+                                      startingResizeItems(curItem, ev_pos.x(), shift, ctrl, alt);
+
                                       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
-                                          resizeSelected(start.x() - curItem->x() - curItem->width());
+// REMOVE Tim. wave. Changed.
+//                                           resizeSelected(start.x() - curItem->x() - curItem->width());
+                                          adjustSelectedItemsSize(ev_pos.x() - curItem->x() - curItem->width(), false, shift, ctrl, alt);
                                       else
-                                          resizeSelected(start.x() - curItem->x(), true);
+// REMOVE Tim. wave. Changed.
+//                                           resizeSelected(start.x() - curItem->x(), true);
+                                          adjustSelectedItemsSize(ev_pos.x() - curItem->x(), true, shift, ctrl, alt);
                                   } else {
+// REMOVE Tim. wave. Added.
+                                      // Set up any values that will be used when altering the item graphically.
+                                      startingResizeItems(curItem, ev_pos.x(), shift, ctrl, alt);
+
                                       if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT) {
-                                          int dx = start.x() - curItem->x();
-                                          curItem->setWidth(dx);
+// REMOVE Tim. wave. Changed.
+//                                           int dx = start.x() - curItem->x();
+//                                           curItem->setWidth(dx);
+                                          //curItem->horizResize(start.x(), false);
+                                          adjustItemSize(curItem, ev_pos.x(), false, shift, ctrl, alt);
                                       } else {
-                                          int endX = curItem->x() + curItem->width();
-                                          end = QPoint(endX, curItem->y());
-                                          resizeToTheLeft(ev_pos);
+// REMOVE Tim. wave. Changed.
+//                                           int endX = curItem->x() + curItem->width();
+//                                           end = QPoint(endX, curItem->y());
+//                                           resizeToTheLeft(ev_pos);
+                                          //curItem->horizResize(ev_pos.x(), true);
+                                          adjustItemSize(curItem, ev_pos.x(), true, shift, ctrl, alt);
                                       }
                                   }
 
                                   start = curItem->pos();
+                                  // REMOVE Tim. wave. Added. Hm, check this - raster required?
+                                  // And check that start above - should be curItem->x() + curItem->width() if resizing to right?
+                                  //
+                                  //mousePosRastered = raster(start);
+                                  //if(shift)
+                                    mousePosRastered = start;
+                                  //else
+                                  //  mousePosRastered = raster(start);
+                                  lastMousePosRastered = mousePosRastered;
+                                  startMousePosRastered = mousePosRastered;
 
                                   if (!supportsMultipleResize) {
                                     deselectAll();
@@ -1024,7 +1100,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         else {
                               drag = DRAG_NEW;
                               setCursor();
-                              curItem = newItem(start, keyState);
+                              curItem = newItem(ev_pos, keyState);
                               if (curItem)
                                     newCItem = curItem;
                               else {
@@ -1036,6 +1112,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                               // selectItem() will be called in viewMouseReleaseEvent().
                               }
                         itemSelectionsChanged(nullptr, deselect_all);
+                        // Just do a full update since item selections may hvae changed.
                         redraw();
                   }
                   break;
@@ -1103,6 +1180,7 @@ void Canvas::scrollTimerDone()
         //printf("Canvas::scrollTimerDone drag != DRAG_OFF && doScroll\n");
         int modifiers = QApplication::keyboardModifiers();
         bool ctrl  = modifiers & Qt::ControlModifier;
+        bool shift = modifiers & Qt::ShiftModifier;
         bool meta  = modifiers & Qt::MetaModifier;
         bool alt   = modifiers & Qt::AltModifier;
         bool right_button = QApplication::mouseButtons() & Qt::RightButton;
@@ -1295,18 +1373,34 @@ void Canvas::scrollTimerDone()
 
           case DRAG_RESIZE:
                 if (curItem && doHMove) {
+// REMOVE Tim. wave. Added.
+                    beforeResizeItems(curItem, ev_pos.x(), shift, ctrl, alt);
+                    QRegion upd_region;
                     if (supportsMultipleResize) {
                         if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
-                            resizeSelected(ev_pos.x() - curItem->x() - curItem->width());
+// REMOVE Tim. wave. Changed.
+//                             resizeSelected(ev_pos.x() - curItem->x() - curItem->width());
+                            adjustSelectedItemsSize(ev_pos.x() - (curItem->x() + curItem->width()), false, shift, ctrl, alt, &upd_region);
                         else
-                            resizeSelected(ev_pos.x() - curItem->x(), true);
+// REMOVE Tim. wave. Changed.
+//                             resizeSelected(ev_pos.x() - curItem->x(), true);
+                            adjustSelectedItemsSize(ev_pos.x() - curItem->x(), true, shift, ctrl, alt, &upd_region);
                     } else {
-                        int w = ev_pos.x() - curItem->x();
-                        if(w < 1)
-                            w = 1;
-                        curItem->setWidth(w);
+// REMOVE Tim. wave. Changed.
+//                         int w = ev_pos.x() - curItem->x();
+//                         if(w < 1)
+//                             w = 1;
+//                         curItem->setWidth(w);
+                        if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+                            //curItem->horizResize(ev_pos.x(), false);
+                            adjustItemSize(curItem, ev_pos.x(), false, shift, ctrl, alt, &upd_region);
+                        else
+                            //curItem->horizResize(ev_pos.x(), true);
+                            adjustItemSize(curItem, ev_pos.x(), true, shift, ctrl, alt, &upd_region);
                     }
-                    redraw();
+// REMOVE Tim. wave. Changed.
+//                     redraw();
+                    redraw(upd_region);
                 }
                 break;
           default:
@@ -1373,6 +1467,13 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
       bool meta  = modifiers & Qt::MetaModifier;
       bool alt   = modifiers & Qt::AltModifier;
       bool right_button = event->buttons() & Qt::RightButton;
+
+      // REMOVE Tim. wave. Added.
+      lastMousePosRastered = mousePosRastered;
+      if(shift)
+        mousePosRastered = event->pos();
+      else
+        mousePosRastered = raster(event->pos());
 
       // set scrolling variables: doScroll, scrollRight
       // No auto scroll in zoom mode or normal pan mode.
@@ -1593,20 +1694,44 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
 
             case DRAG_RESIZE:
+// REMOVE Tim. wave. Added. Diagnostics.
+                  fprintf(stderr, "Canvas::viewMouseMoveEvent: DRAG_RESIZE\n");
+
                   if (curItem && last_dist.x()) {
+// REMOVE Tim. wave. Added.
+                      beforeResizeItems(curItem, ev_pos.x(), shift, ctrl, alt);
+                      QRegion upd_region;
                       if (supportsMultipleResize) {
-                          resizeSelected(last_dist.x(), resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT);
+// REMOVE Tim. wave. Changed.
+//                           resizeSelected(last_dist.x(), resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT);
+                          if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//                               resizeSelected(last_dist.x(), false, shift, ctrl);
+                              adjustSelectedItemsSize(ev_pos.x() - (curItem->x() + curItem->width()), false, shift, ctrl, alt, &upd_region);
+                          else
+//                               resizeSelected(last_dist.x(), true, shift, ctrl);
+                              adjustSelectedItemsSize(ev_pos.x() - curItem->x(), true, shift, ctrl, alt, &upd_region);
                       } else {
-                          if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT) {
-                              int w = ev_pos.x() - curItem->x();
-                              if(w < 1)
-                                  w = 1;
-                              curItem->setWidth(w);
-                          } else {
-                              resizeToTheLeft(ev_pos);
-                          }
+                          if (resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+// REMOVE Tim. wave. Changed.
+//                               int w = ev_pos.x() - curItem->x();
+//                               if(w < 1)
+//                                   w = 1;
+//                               curItem->setWidth(w);
+                              //curItem->horizResize(ev_pos.x(), false);
+                              adjustItemSize(curItem, ev_pos.x(), false, shift, ctrl, alt, &upd_region);
+                          else
+// REMOVE Tim. wave. Changed.
+//                               resizeToTheLeft(ev_pos);
+                              //curItem->horizResize(ev_pos.x(), true);
+                              adjustItemSize(curItem, ev_pos.x(), true, shift, ctrl, alt, &upd_region);
                       }
-                      redraw();
+
+// REMOVE Tim. wave. Added. Diagnostics.
+                      fprintf(stderr, "Canvas::viewMouseMoveEvent: calling redraw\n");
+
+// REMOVE Tim. wave. Changed.
+//                       redraw();
+                      redraw(upd_region);
                   }
                   break;
 
@@ -1731,99 +1856,120 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                           itemReleased(curItem, curItem->pos());
                         itemsReleased();
                       }
-                      break;
-                case DRAG_COPY:
-                      endMoveItems(pos, MOVE_COPY, 0, !shift);
-                      break;
-                case DRAGX_COPY:
-                      endMoveItems(pos, MOVE_COPY, 1, !shift);
-                      break;
-                case DRAGY_COPY:
-                      endMoveItems(pos, MOVE_COPY, 2, !shift);
-                      break;
-                case DRAG_MOVE:
-                      endMoveItems(pos, MOVE_MOVE, 0, !shift);
-                      break;
-                case DRAGX_MOVE:
-                      endMoveItems(pos, MOVE_MOVE, 1, !shift);
-                      break;
-                case DRAGY_MOVE:
-                      endMoveItems(pos, MOVE_MOVE, 2, !shift);
-                      break;
-                case DRAG_CLONE:
-                      endMoveItems(pos, MOVE_CLONE, 0, !shift);
-                      break;
-                case DRAGX_CLONE:
-                      endMoveItems(pos, MOVE_CLONE, 1, !shift);
-                      break;
-                case DRAGY_CLONE:
-                      endMoveItems(pos, MOVE_CLONE, 2, !shift);
-                      break;
-                case DRAG_OFF:
-                      break;
-                case DRAG_RESIZE:
-                      if (curItem) {
-                          if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
-                              if (!supportsMultipleResize) {
-                                  QPoint rpos = QPoint(!shift ? raster(pos).x() : pos.x(), curItem->y());
-                                  resizeToTheLeft(rpos);
-                              }
-                          }
-                          resizeItem(curItem, shift, ctrl);
-                          itemSelectionsChanged();
-                          redraw();
-                          resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
-                      }
-                      break;
-                case DRAG_NEW:
-                      if(newCItem)
-                      {
-                        items.add(newCItem);
-                        curItem = newCItem;
-                        newCItem = nullptr;
-                        itemReleased(curItem, curItem->pos());
-                        itemsReleased();
-                        newItem(curItem, shift);
-                        redrawFlag = true;
-                      }
-                      break;
-                case DRAG_LASSO_START:
-                      // Set the new lasso rectangle and compute the new lasso region.
-                      setLasso(QRect(start.x(), start.y(), rmapxDev(1), rmapyDev(1)));
-                      //fallthrough
-                case DRAG_LASSO:
-                      if (!ctrl)
-                            deselectAll(&undo);
-                      // Set the new lasso rectangle and compute the new lasso region.
-                      selectLasso(ctrl, &undo);
-                      itemSelectionsChanged(&undo, !ctrl);
-                      redrawFlag = true;
-                      break;
+                  break;
+            case DRAG_COPY:
+                  endMoveItems(pos, MOVE_COPY, 0, !shift);
+                  break;
+            case DRAGX_COPY:
+                  endMoveItems(pos, MOVE_COPY, 1, !shift);
+                  break;
+            case DRAGY_COPY:
+                  endMoveItems(pos, MOVE_COPY, 2, !shift);
+                  break;
+            case DRAG_MOVE:
+                  endMoveItems(pos, MOVE_MOVE, 0, !shift);
+                  break;
+            case DRAGX_MOVE:
+                  endMoveItems(pos, MOVE_MOVE, 1, !shift);
+                  break;
+            case DRAGY_MOVE:
+                  endMoveItems(pos, MOVE_MOVE, 2, !shift);
+                  break;
+            case DRAG_CLONE:
+                  endMoveItems(pos, MOVE_CLONE, 0, !shift);
+                  break;
+            case DRAGX_CLONE:
+                  endMoveItems(pos, MOVE_CLONE, 1, !shift);
+                  break;
+            case DRAGY_CLONE:
+                  endMoveItems(pos, MOVE_CLONE, 2, !shift);
+                  break;
+            case DRAG_OFF:
+                  break;
+            case DRAG_RESIZE:
+                  if (curItem) {
+// REMOVE Tim. wave. Changed.
+//                       if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT) {
+//                           if (!supportsMultipleResize) {
+//                               QPoint rpos = QPoint(!shift ? raster(pos).x() : pos.x(), curItem->y());
+// // REMOVE Tim. wave. Changed.
+// //                               resizeToTheLeft(rpos);
+//                               //curItem->horizResize(rpos.x(), true);
+//                               adjustItemSize(curItem, rpos.x(), true, true, ctrl);
+//                           }
+//                       }
 
-                case DRAG_DELETE:
-                      break;
+//                       // Do one final adjustment with snap enabled, to make it snap.
+//                       // TODO: Currently while resizing there is no snap. If we decide to snap while resizing,
+//                       //        simply REMOVE the following block afterwards. (The snapped values would be already there.)
+//                       if (!supportsMultipleResize)
+//                       {
+//                           //const int newx = shift ? pos.x() : raster(pos).x();
+//                           if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_LEFT)
+//                             //adjustItemSize(curItem, newx, true, shift, ctrl);
+//                             adjustItemSize(curItem, pos.x(), true, shift, ctrl, alt);
+//                           else if(resizeDirection == MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT)
+//                             //adjustItemSize(curItem, newx, false, shift, ctrl);
+//                             adjustItemSize(curItem, pos.x(), false, shift, ctrl, alt);
+//                       }
 
-                case DRAG_PAN:
-                      if(MusEGlobal::config.borderlessMouse)
-                      {
-                        pos = global_start;
-                        ignore_mouse_move = true;      // Avoid recursion.
-                        QCursor::setPos(global_start);
-                        //ignore_mouse_move = false;
-                      } else
-                          QWidget::setCursor(*handCursor);
-                      break;
 
-                case DRAG_ZOOM:
-                      if(MusEGlobal::config.borderlessMouse)
-                      {
-                        pos = global_start;
-                        ignore_mouse_move = true;      // Avoid recursion.
-                        QCursor::setPos(global_start);
-                        //ignore_mouse_move = false;
-                      }
-                      break;
-                }
+
+                      resizeItem(curItem, shift, ctrl);
+                      itemSelectionsChanged();
+                      redraw();
+                      resizeDirection = MusECore::ResizeDirection::RESIZE_TO_THE_RIGHT; // reset to default state or ctrl+rightclick resize will cease to work
+                  }
+                  break;
+            case DRAG_NEW:
+                  if(newCItem)
+                  {
+                    items.add(newCItem);
+                    curItem = newCItem;
+                    newCItem = nullptr;
+                    itemReleased(curItem, curItem->pos());
+                    itemsReleased();
+                    newItem(curItem, shift);
+                    redrawFlag = true;
+                  }
+                  break;
+            case DRAG_LASSO_START:
+                  // Set the new lasso rectangle and compute the new lasso region.
+                  setLasso(QRect(start.x(), start.y(), rmapxDev(1), rmapyDev(1)));
+                  //fallthrough
+            case DRAG_LASSO:
+                  if (!ctrl)
+                        deselectAll(&undo);
+                  // Set the new lasso rectangle and compute the new lasso region.
+                  selectLasso(ctrl, &undo);
+                  itemSelectionsChanged(&undo, !ctrl);
+                  redrawFlag = true;
+                  break;
+
+            case DRAG_DELETE:
+                  break;
+
+            case DRAG_PAN:
+                  if(MusEGlobal::config.borderlessMouse)
+                  {
+                    pos = global_start;
+                    ignore_mouse_move = true;      // Avoid recursion.
+                    QCursor::setPos(global_start);
+                    //ignore_mouse_move = false;
+                  } else
+                      QWidget::setCursor(*handCursor);
+                  break;
+
+            case DRAG_ZOOM:
+                  if(MusEGlobal::config.borderlessMouse)
+                  {
+                    pos = global_start;
+                    ignore_mouse_move = true;      // Avoid recursion.
+                    QCursor::setPos(global_start);
+                    //ignore_mouse_move = false;
+                  }
+                  break;
+            }
           //printf("Canvas::viewMouseReleaseEvent setting drag to DRAG_OFF\n");
 
           MusEGlobal::song->applyOperationGroup(undo);
@@ -2000,33 +2146,73 @@ void Canvas::setLasso(const QRect& r)
   lassoToRegion(lasso, lassoRegion);
 }
 
-void Canvas::resizeSelected(const int &dist, const bool left)
+// REMOVE Tim. wave. Changed.
+// void Canvas::resizeSelected(const int &dist, const bool left)
+//void Canvas::resizeSelected(const int &dist, const bool left, const bool noSnap, const bool ctrl, const bool alt)
+void Canvas::adjustSelectedItemsSize(const int &dist, const bool left, const bool noSnap, const bool ctrl, const bool alt, QRegion * region)
 {
     for (auto &it: items) {
         if (!it.second->isSelected())
             continue;
 
+        CItem* item = it.second;
+
         if (left) {
-            QPoint mp(qMin(it.second->x() + it.second->width() - 2, it.second->x() + dist), it.second->y());
-            it.second->setTopLeft(mp);
+// REMOVE Tim. wave. Changed.
+//             QPoint mp(qMin(it.second->x() + it.second->width() - 2, it.second->x() + dist), it.second->y());
+//             it.second->setTopLeft(mp);
+            //item->horizResize(item->x() + dist, true);
+            adjustItemSize(item, item->x() + dist, true, noSnap, ctrl, alt, region);
 
         } else {
-            it.second->setWidth(qMax(1, it.second->width() + dist));
+// REMOVE Tim. wave. Changed.
+//             it.second->setWidth(qMax(1, it.second->width() + dist));
+            //item->horizResize(item->width() + dist, false);
+            adjustItemSize(item, item->x() + item->width() + dist, false, noSnap, ctrl, alt, region);
         }
     }
 }
 
-void Canvas::resizeToTheLeft(const QPoint &pos)
-{    
-   int newX = pos.x();
-   if(end.x() - newX < 1)
-      newX = end.x() - 1;
-   int dx = end.x() - newX;
-   curItem->setWidth(dx);
-   QPoint mp(newX, curItem->y());
-   curItem->move(mp);
-   //fprintf(stderr, "newX=%d, dx=%d\n", newX, dx);
+// REMOVE Tim. wave. Removed.
+// void Canvas::resizeToTheLeft(const QPoint &pos)
+// {
+//    int newX = pos.x();
+//    if(end.x() - newX < 1)
+//       newX = end.x() - 1;
+//    int dx = end.x() - newX;
+//    curItem->setWidth(dx);
+//    QPoint mp(newX, curItem->y());
+//    curItem->move(mp);
+//    //fprintf(stderr, "newX=%d, dx=%d\n", newX, dx);
+// }
+
+// REMOVE Tim. wave. Added.
+void Canvas::adjustItemSize(CItem* /*item*/, int /*pos*/, bool /*left*/, bool /*noSnap*/, bool /*ctrl*/, bool /*alt*/, QRegion * /*region*/)
+{
+//   // REMOVE Tim. wave. Added. Diagnostics.
+//   fprintf(stderr, "pre pos:%d\n", pos);
+//   if(!noSnap)
+//     // Ignore the return y, which may be altered, we only want the x.
+//     pos = raster(QPoint(pos, item->y())).x();
+//   // REMOVE Tim. wave. Added. Diagnostics.
+//   fprintf(stderr, "post pos:%d\n", pos);
+//
+//   const MusECore::Part* part = item->part();
+//   if(part)
+//   {
+//     const unsigned ppos = part->tick();
+//     if(pos < (int)ppos)
+//       pos = ppos;
+//   }
+//   item->horizResize(pos, left);
+
+  //adjustItemTempValues(item, pos, noSnap, ctrl, alt);
 }
+
+// REMOVE Tim. wave. Added.
+void Canvas::startingResizeItems(CItem*, int /*pos*/, bool /*noSnap*/, bool /*ctrl*/, bool /*alt*/) { }
+void Canvas::beforeResizeItems(CItem*, int /*pos*/, bool /*noSnap*/, bool /*ctrl*/, bool /*alt*/) { }
+//void Canvas::adjustItemTempValues(CItem* /*item*/, int /*pos*/, bool /*noSnap*/, bool /*ctrl*/, bool /*alt*/) { }
 
 void Canvas::setCursor()
 {

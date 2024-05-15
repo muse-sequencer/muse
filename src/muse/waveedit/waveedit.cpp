@@ -31,6 +31,9 @@
 #include <QSettings>
 #include <QCursor>
 //#include <QRect>
+#include <QApplication>
+#include <QClipboard>
+#include <QMimeData>
 
 #include "app.h"
 #include "waveedit.h"
@@ -47,6 +50,7 @@
 #include "cmd.h"
 #include "operations.h"
 #include "trackinfo_layout.h"
+#include "functions.h"
 
 // Forwards from header:
 #include <QMenu>
@@ -147,6 +151,11 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       pasteAction = menuEdit->addAction(*pasteSVGIcon, tr("&Paste"));
       connect(pasteAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_EDIT_PASTE); } );
+
+      menuEdit->addSeparator();
+
+      deleteAction = menuEdit->addAction(*deleteSVGIcon, tr("Delete &Events"));
+      connect(deleteAction, &QAction::triggered, [this]() { cmd(WaveCanvas::CMD_DEL); } );
 
       menuEdit->addSeparator();
 
@@ -252,8 +261,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       eventColor->addActions(actgrp->actions());
       
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
-
+      _configChangedConnection = connect(MusEGlobal::muse, &MusE::configChanged, this, &WaveEdit::configChanged);
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
@@ -317,7 +325,9 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       if (!parts()->empty()) { // Roughly match total size of part
             MusECore::Part* firstPart = parts()->begin()->second;
-            xscale = 0 - firstPart->lenFrame()/_widthInit[_type];
+// REMOVE Tim. wave. Changed. Causes crash in ScrollScale!
+//             xscale = 0 - firstPart->lenFrame()/_widthInit[_type];
+            xscale = -1 - firstPart->lenFrame()/_widthInit[_type];
             }
       else {
             xscale = -8000;
@@ -429,7 +439,6 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
-      _configChangedTools2MetaConn = connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
 
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setXMag(int)));
@@ -443,6 +452,8 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
 
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
+      connect(canvas, &EventCanvas::selectionChanged, [this](int t, MusECore::Event& e, MusECore::Part* p, bool upd)
+        { setSelection(t, e, p, upd); } );
       connect(canvas, SIGNAL(curPartHasChanged(MusECore::Part*)), SLOT(updateTrackInfo()));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
@@ -454,12 +465,15 @@ WaveEdit::WaveEdit(MusECore::PartList* pl, QWidget* parent, const char* name)
       canvas->setTool(MusEGui::RangeTool);
       tools2->set(MusEGui::RangeTool);
       
+      QClipboard* cb = QApplication::clipboard();
+      _clipboardConnection = connect(cb, &QClipboard::dataChanged, [this]() { clipboardChanged(); } );
+
       setEventColorMode(colorMode);
       
-      initShortcuts();
-      
       updateHScrollRange();
-      configChanged();
+      clipboardChanged(); // enable/disable "Paste"
+      selectionChanged(); // enable/disable "Copy" & "Paste"
+      configChanged();    // set configuration values, initialize shortcuts
       
       if(!parts()->empty())
       {
@@ -487,6 +501,7 @@ void WaveEdit::initShortcuts()
       cutAction->setShortcut(shortcuts[SHRT_CUT].key);
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);
       pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      deleteAction->setShortcut(shortcuts[SHRT_DELETE].key);
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       
@@ -513,6 +528,8 @@ void WaveEdit::initShortcuts()
 
 void WaveEdit::configChanged()
       {
+      tools2->configChanged();
+
       if (MusEGlobal::config.canvasBgPixmap.isEmpty()) {
             canvas->setBg(MusEGlobal::config.waveEditBackgroundColor);
             canvas->setBg(QPixmap());
@@ -605,7 +622,8 @@ void WaveEdit::setTime(unsigned samplepos)
 WaveEdit::~WaveEdit()
       {
       DEBUG_WAVEEDIT(stderr, "WaveEdit dtor\n");
-      disconnect(_configChangedTools2MetaConn);
+      disconnect(_configChangedConnection);
+      disconnect(_clipboardConnection);
       }
 
 //---------------------------------------------------------
@@ -619,7 +637,59 @@ void WaveEdit::cmd(int n)
       if(canvas->getCurrentDrag())
         return;
       
+      MusECore::TagEventList tag_list;
+
+      switch (n)
+            {
+            case WaveCanvas::CMD_DEL:
+              // REMOVE Tim. wave. Added.
+              // Do not delete events if the stretch or resample tool is active,
+              //  we redirect delete to the selected stretch and resample markers.
+              if(canvas->tool() != StretchTool && canvas->tool() != SamplerateTool) {
+
+                tagItems(&tag_list, MusECore::EventTagOptionsStruct(MusECore::TagSelected | MusECore::TagAllParts));
+                MusECore::erase_items(&tag_list);
+                return;
+              }
+              break;
+            default:
+              break;
+            }
       ((WaveCanvas*)canvas)->cmd(n);
+      }
+
+//---------------------------------------------------------
+//   setSelection
+//    update Info Line
+//---------------------------------------------------------
+
+void WaveEdit::setSelection(int /*tick*/, MusECore::Event& /*e*/, MusECore::Part* /*part*/, bool /*update*/)
+      {
+      selectionChanged();
+      }
+
+//---------------------------------------------------------
+//   selectionChanged
+//---------------------------------------------------------
+
+void WaveEdit::selectionChanged()
+      {
+      bool flag = itemsAreSelected();
+      cutAction->setEnabled(flag);
+      copyAction->setEnabled(flag);
+      deleteAction->setEnabled(flag);
+      }
+
+//---------------------------------------------------------
+//   clipboardChanged
+//---------------------------------------------------------
+
+void WaveEdit::clipboardChanged()
+      {
+      const bool has_gel = QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists"));
+      pasteAction->setEnabled(has_gel);
+      //pasteToCurPartAction->setEnabled(has_gel);
+      //pasteDialogAction->setEnabled(has_gel);
       }
 
 //---------------------------------------------------------

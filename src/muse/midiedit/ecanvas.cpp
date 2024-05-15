@@ -150,6 +150,16 @@ QPoint EventCanvas::raster(const QPoint& p) const
       return QPoint(x, y);
       }
 
+// REMOVE Tim. wave. Added.
+// //---------------------------------------------------------
+// //   curRaster
+// //---------------------------------------------------------
+//
+// int EventCanvas::curRaster() const
+// {
+//   return editor->raster();
+// }
+
 //---------------------------------------------------------
 //   mouseMove
 //---------------------------------------------------------

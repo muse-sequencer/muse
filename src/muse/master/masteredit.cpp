@@ -127,6 +127,9 @@ void MasterEdit::songChanged(MusECore::SongChangedStruct_t type)
 
 void MasterEdit::configChanged()
       {
+      // REMOVE Tim. wave. Added.
+      tools2->configChanged();
+
       gridOnButton->blockSignals(true);
       gridOnButton->setChecked(MusEGlobal::config.canvasShowGrid);
       gridOnButton->blockSignals(false);
@@ -265,7 +268,6 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
       canvas->setFocus();
 
       connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));
-      _configChangedTools2MetaConn = connect(MusEGlobal::muse, &MusE::configChanged, tools2, &EditToolBar::configChanged);
       connect(vscroll, SIGNAL(scrollChanged(int)),   canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)), canvas, SLOT(setYMag(int)));
 
@@ -309,7 +311,6 @@ MasterEdit::MasterEdit(QWidget* parent, const char* name)
 MasterEdit::~MasterEdit()
       {
         disconnect(_configChangedMetaConn);
-        disconnect(_configChangedTools2MetaConn);
       }
 
 //---------------------------------------------------------

@@ -304,6 +304,15 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       _rasterCombo->setFocusPolicy(Qt::TabFocus);
       toolbar->addWidget(_rasterCombo);
 
+      autoExpandWavesButton = new QToolButton();
+      autoExpandWavesButton->setIcon(*autoExpandWavesSVGIcon);
+      autoExpandWavesButton->setFocusPolicy(Qt::NoFocus);
+      autoExpandWavesButton->setCheckable(true);
+      autoExpandWavesButton->setToolTip(tr("Auto expand single waves in parts"));
+      autoExpandWavesButton->setWhatsThis(tr("Auto expand single waves in parts"));
+      toolbar->addWidget(autoExpandWavesButton);
+      connect(autoExpandWavesButton, &QToolButton::toggled, [this](bool v) { autoExpandWavesChanged(v); } );
+
       // Song len
       label = new QLabel(tr("Bars"));
       label->setIndent(3);
@@ -713,6 +722,10 @@ void Arranger::configChanged()
       gridOnButton->blockSignals(false);
 
       canvas->setAutomationPointRadius(MusEGlobal::config.audioAutomationPointRadius);
+
+      autoExpandWavesButton->blockSignals(true);
+      autoExpandWavesButton->setChecked(MusEGlobal::config.autoExpandPartWaves);
+      autoExpandWavesButton->blockSignals(false);
 
       canvas->redraw();
       }
@@ -1169,6 +1182,17 @@ void Arranger::setTempo200()
 void Arranger::gridOnChanged(bool v)
 {
   MusEGlobal::config.canvasShowGrid = v;
+  // We want the simple version, don't set the style or stylesheet yet.
+  MusEGlobal::muse->changeConfig(true);
+}
+
+//---------------------------------------------------------
+//   autoExpandWavesChanged
+//---------------------------------------------------------
+
+void Arranger::autoExpandWavesChanged(bool v)
+{
+  MusEGlobal::config.autoExpandPartWaves = v;
   // We want the simple version, don't set the style or stylesheet yet.
   MusEGlobal::muse->changeConfig(true);
 }

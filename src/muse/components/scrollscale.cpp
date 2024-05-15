@@ -66,7 +66,9 @@ void ScrollScale::setScale ( int val, int pos_offset )
 
 	int i = ( scroll->orientation() == Qt::Horizontal ) ? width() : height();
 	int pos, pmax;
-	if ( scaleVal < 1 )
+// REMOVE Tim. wave. Changed.
+// 	if ( scaleVal < 1 )
+	if ( scaleVal < 0 )
 	{
 		pos = ( off-scaleVal/2 ) / ( -scaleVal );
 		pmax = ( maxVal-scaleVal-1 ) / ( -scaleVal ) - i;
@@ -82,9 +84,13 @@ void ScrollScale::setScale ( int val, int pos_offset )
 	{
 		double oscale = old_scale_val;
 		double nscale = scaleVal;
-		if(old_scale_val < 1)
+// REMOVE Tim. wave. Changed.
+// 		if(old_scale_val < 1)
+		if(old_scale_val < 0)
 			oscale = 1.0 / -old_scale_val;
-		if(scaleVal < 1)
+// REMOVE Tim. wave. Changed.
+// 		if(scaleVal < 1)
+		if(scaleVal < 0)
 			nscale = 1.0 / -scaleVal;
 		double scale_fact = nscale / oscale;
 		int pos_diff = (int)((double)pos_offset * scale_fact - (double)pos_offset + 0.5);  // 0.5 for round-off
@@ -123,7 +129,9 @@ void ScrollScale::setRange ( int min, int max )
 
 	if ( !noScale )
 	{
-		if ( scaleVal < 1 )
+// REMOVE Tim. wave. Changed.
+// 		if ( scaleVal < 1 )
+		if ( scaleVal < 0 )
 		{
 			min = minVal / ( -scaleVal );
 			max = ( maxVal-scaleVal-1 ) / ( -scaleVal ) - i;
@@ -351,7 +359,9 @@ int ScrollScale::offset() const
 //---------------------------------------------------------
 int ScrollScale::pos2offset ( int pos ) const
 {
+// REMOVE Tim. wave. Changed.
 	if ( scaleVal < 1 )
+	//if ( scaleVal < 0 )
 		return pos * ( -scaleVal ) + scaleVal/2;
 	else
 		return pos / scaleVal;
@@ -363,7 +373,9 @@ int ScrollScale::pos2offset ( int pos ) const
 
 int ScrollScale::offset2pos ( int off ) const
 {
-	if ( scaleVal < 1 )
+// REMOVE Tim. wave. Changed.
+// 	if ( scaleVal < 1 )
+	if ( scaleVal < 0 )
 		return ( off-scaleVal/2 ) / ( -scaleVal );
 	else
 		return off * scaleVal;
@@ -420,7 +432,9 @@ int ScrollScale::mag2scale(int mag) const
 #endif
 
 	int scale_val;
+// REMOVE Tim. wave. Changed.
 	if ( scale < 1.0 )
+// 	if ( scale < 0.0 )
 		// Floor, rather than simply casting 1.0/scale as a negative int,
 		//  was required here due to the unique nature of our negative numbers,
 		//  so that the reciprocal scale2mag() matches this mag2scale().
@@ -475,7 +489,9 @@ void ScrollScale::setOffset ( int val )
 	int i = ( scroll->orientation() == Qt::Horizontal ) ? width() : height();
 	int pos, max;
 
-	if ( scaleVal < 1 )
+// REMOVE Tim. wave. Changed.
+// 	if ( scaleVal < 1 )
+	if ( scaleVal < 0 )
 	{
 		pos = ( val-scaleVal/2 ) / ( -scaleVal );
 		max = ( maxVal-scaleVal-1 ) / ( -scaleVal ) - i;
@@ -488,7 +504,9 @@ void ScrollScale::setOffset ( int val )
 	if ( pos > max )
 	{
 		int min;
-		if ( scaleVal < 1 )
+// REMOVE Tim. wave. Changed.
+// 		if ( scaleVal < 1 )
+		if ( scaleVal < 0 )
 		{
 			maxVal  = ( pos + width() ) * ( -scaleVal );
 			min = ( minVal-scaleVal/2 ) / ( -scaleVal );

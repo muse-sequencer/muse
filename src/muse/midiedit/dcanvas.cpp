@@ -337,6 +337,10 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemMap& items, int dp, int dx, Drag
 
 bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype, bool rasterize)
       {
+      // Events within an event list cannot be cloned, only copied or moved! Each must have a unique ID.
+      if (dtype == MOVE_CLONE)
+        return false;
+
       DEvent* nevent   = (DEvent*) item;
       
       MusECore::MidiPart* part   = (MusECore::MidiPart*)nevent->part();
@@ -367,8 +371,7 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       if (ntick < 0)
             ntick = 0;
 
-      event.setSelected(false);
-      MusECore::Event newEvent = (dtype == MOVE_COPY || dtype == MOVE_CLONE) ? event.duplicate() : event.clone();
+      MusECore::Event newEvent = (dtype == MOVE_COPY) ? event.duplicate() : event.clone();
       newEvent.setSelected(true);
 
       int ev_pitch = instrument_map[instrument].pitch;
@@ -379,8 +382,11 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       // at this place. with operation groups, the part isn't
       // resized yet. (flo93)
       
-      if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
+      if (dtype == MOVE_COPY)
+      {
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::SelectEvent, event, part, false, event.selected()));
             operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, dest_part, false, false));
+      }
       else
       {
             if (dest_part == part)
@@ -554,8 +560,11 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
     if(!operations.empty())
       MusEGlobal::song->applyOperationGroup(operations);
     else
-      songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is necessary
-                                      //to remove "forbidden" events from the list again
+      //this forces an update of the itemlist, which is necessary
+      //to remove "forbidden" events from the list again
+      //otherwise, if a moving operation was forbidden,
+      //the canvas would still show the movement
+      songChanged(SC_EVENT_INSERTED);
 }
 
 //---------------------------------------------------------

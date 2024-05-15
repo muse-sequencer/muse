@@ -47,6 +47,8 @@ class QKeyEvent;
 
 namespace MusECore {
 class Undo;
+// REMOVE Tim. wave. Added.
+class Part;
 }
 
 namespace MusEGui {
@@ -120,6 +122,10 @@ class Canvas : public View {
       QPoint start;
       QPoint end;
       QPoint global_start;
+      // REMOVE Tim. wave. Added.
+      QPoint startMousePosRastered;
+      QPoint lastMousePosRastered;
+      QPoint mousePosRastered;
       Tool _tool;
       unsigned pos[3];
       MusECore::ResizeDirection resizeDirection;
@@ -135,8 +141,35 @@ class Canvas : public View {
       bool supportsMultipleResize;
 
       void setLasso(const QRect& r);
-      void resizeToTheLeft(const QPoint &pos);
-      void resizeSelected(const int &dist, const bool left = false);
+// REMOVE Tim. wave. Removed.
+//       void resizeToTheLeft(const QPoint &pos);
+// REMOVE Tim. wave. Changed.
+//       void resizeSelected(const int &dist, const bool left = false);
+      // ctrl is used for 'drag events with border' for example.
+      // left is whether we are resizing the right or left border.
+      // If a QRegion pointer is passed, the necessary update areas are added to the region.
+//       void resizeSelected(const int &dist, const bool left, const bool noSnap, const bool ctrl, const bool alt);
+      virtual void adjustSelectedItemsSize(const int &dist, const bool left, const bool noSnap, const bool ctrl, const bool alt, QRegion * = nullptr);
+// REMOVE Tim. wave. Added.
+      // Adjusts the item's contents but does not commit it (via an undo operation).
+      // left is whether we are resizing the right or left border.
+      // If a QRegion pointer is passed, the necessary update area is added to the region.
+      virtual void adjustItemSize(CItem* item, int pos, bool left, bool noSnap=false, bool ctrl=false, bool alt = false, QRegion * = nullptr);
+// REMOVE Tim. wave. Added.
+//       // Initializes the temporary values in the item. Each Canvas type can implement this accordingly.
+//       // This would be called at mouse-down for example. After that, mouse-move would call adjustItemTempValues().
+//       virtual void initItemTempValues(CItem*);
+      // REMOVE Tim. wave. Added.
+      // When starting to resize a graphical item, initializes any temporary variables in the canvas and/or item.
+      // The item is the one actually being manipulated, other items such as clones may change too by proxy.
+      virtual void startingResizeItems(CItem*, int pos, bool noSnap, bool ctrl, bool alt);
+      // Called just before an item is resized. Only the graphical item is resized. The actual model
+      //  is resized later at mouse up for example.
+      // The item is the one actually being manipulated, other items such as clones may change too by proxy.
+      virtual void beforeResizeItems(CItem*, int pos, bool noSnap, bool ctrl, bool alt);
+      // REMOVE Tim. wave. Added.
+      // Adjusts the temporary values in the item. For example as an item's border is resizing.
+      //virtual void adjustItemTempValues(CItem*, int pos, bool noSnap, bool ctrl, bool alt);
       virtual void setCursor();
       virtual void setMouseOverItemCursor();
       virtual void viewKeyPressEvent(QKeyEvent* event);
@@ -163,6 +196,9 @@ class Canvas : public View {
       virtual void drawMoving(QPainter&, const CItem*, const QRect&, const QRegion& = QRegion()) = 0;
       virtual bool itemSelectionsChanged(MusECore::Undo* operations = 0, bool deselectAll = false) = 0;
       virtual QPoint raster(const QPoint&) const = 0;
+// REMOVE Tim. wave. Added.
+//       // Returns the current snap raster setting.
+//       virtual int curRaster() const = 0;
       virtual int y2pitch(int) const = 0; //CDW
       virtual int pitch2y(int) const = 0; //CDW
       virtual int y2height(int) const = 0; 

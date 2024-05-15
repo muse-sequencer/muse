@@ -30,7 +30,8 @@
 #include <QRect>
 
 #include "event.h"
-
+// REMOVE Tim. wave. Added.
+//#include "muse_time.h"
 
 // Forward declarations:
 namespace MusECore {
@@ -52,38 +53,59 @@ class CItem {
 
    public:
       CItem();
-      virtual ~CItem() {}
+      virtual ~CItem();
 
-      virtual bool isObjectInRange(const MusECore::Pos&, const MusECore::Pos&) const { return false; }
+      virtual bool isObjectInRange(const MusECore::Pos&, const MusECore::Pos&) const;
       
-      bool isMoving() const        { return _isMoving;  }
-      void setMoving(bool f)       { _isMoving = f;     }
-      bool isSelected() const { return _isSelected; }
-      void setSelected(bool f) { _isSelected = f; }
-      virtual bool objectIsSelected() const { return false; }
+      bool isMoving() const;
+      void setMoving(bool f);
+      bool isSelected() const;
+      void setSelected(bool f);
+      virtual bool objectIsSelected() const;
 
-      virtual int width() const            { return 0; }
-      virtual void setWidth(int)           { }
-      virtual void setHeight(int)          { }
-      virtual void setMp(const QPoint&)    { }
-      virtual const QPoint mp() const      { return QPoint(); }
-      virtual int x() const                { return 0; }
-      virtual int y() const                { return 0; }
-      virtual void setY(int)               { }
-      virtual QPoint pos() const           { return QPoint(); }
-      virtual void setPos(const QPoint&)   { }
-      virtual int height() const           { return 0; }
-      virtual QRect bbox() const           { return QRect(); }
-      virtual void setBBox(const QRect&)   { }
-      virtual void move(const QPoint&)     { }
-      virtual void setTopLeft(const QPoint&)     { }
-      virtual bool contains(const QPoint&) const  { return false; }
-      virtual bool intersects(const QRect&) const { return false; }
+      virtual int width() const;
+      virtual void setWidth(int);
+      virtual void setHeight(int);
+      virtual void setMp(const QPoint&);
+      virtual const QPoint mp() const;
+      virtual int x() const;
+      virtual int y() const;
+      virtual void setY(int);
+      virtual QPoint pos() const;
+      virtual void setPos(const QPoint&);
+      virtual int height() const;
+      virtual QRect bbox() const;
+      virtual void setBBox(const QRect&);
+      virtual void move(const QPoint&);
+      virtual void setTopLeft(const QPoint&);
+      virtual bool contains(const QPoint&) const;
+      virtual bool intersects(const QRect&) const;
+// REMOVE Tim. wave. Added.
+      // left is whether we are resizing the right or left border.
+      //virtual void horizResize(int pos, bool left);
+// REMOVE Tim. wave. Added.
+      // Initializes the temporary values in the item. Each canvas item type can implement this accordingly.
+      // For example call this at mouse-down. After that, call the canvas's adjustItemTempValues() at mouse-move.
+      virtual void initItemTempValues();
 
-      virtual MusECore::Event event() const   { return MusECore::Event();  }
-      virtual void setEvent(const MusECore::Event&) { }
-      virtual MusECore::Part* part() const    { return nullptr; }
-      virtual void setPart(MusECore::Part*)   { }
+// REMOVE Tim. wave. Added.
+      virtual double tmpPartPos() const;
+      virtual double tmpPartLen() const;
+      virtual double tmpOffset() const;
+      virtual double tmpPos() const;
+      virtual double tmpLen() const;
+      virtual double tmpWaveSPos() const;
+      virtual void setTmpPartPos(const double);
+      virtual void setTmpPartLen(const double);
+      virtual void setTmpOffset(const double);
+      virtual void setTmpPos(const double);
+      virtual void setTmpLen(const double);
+      virtual void setTmpWaveSPos(const double);
+
+      virtual MusECore::Event event() const;
+      virtual void setEvent(const MusECore::Event&);
+      virtual MusECore::Part* part() const;
+      virtual void setPart(MusECore::Part*);
       };
 
 
@@ -100,31 +122,28 @@ class BItem : public CItem {
 
    public:
       BItem(const QPoint& p, const QRect& r);
-      BItem() { }
+      BItem();
 
-      int width() const            { return _bbox.width(); }
-      void setWidth(int l)         { _bbox.setWidth(l); }
-      void setHeight(int l)        { _bbox.setHeight(l); }
-      void setMp(const QPoint&p)   { moving = p;    }
-      const QPoint mp() const      { return moving; }
-      int x() const                { return _pos.x(); }
-      int y() const                { return _pos.y(); }
-      void setY(int y)             { _bbox.setY(y); }
-      QPoint pos() const           { return _pos; }
-      void setPos(const QPoint& p) { _pos = p;    }
-      int height() const           { return _bbox.height(); }
-      QRect bbox() const           { return _bbox; }
-      void setBBox(const QRect& r) { _bbox = r; }
-      void move(const QPoint& tl)  {
-            _bbox.moveTopLeft(tl);
-            _pos = tl;
-            }
-      void setTopLeft(const QPoint &tl) {
-          _bbox.setTopLeft(tl);
-          _pos = tl;
-      }
-      bool contains(const QPoint& p) const  { return _bbox.contains(p); }
-      bool intersects(const QRect& r) const { return r.intersects(_bbox); }
+      int width() const;
+      void setWidth(int l);
+      void setHeight(int l);
+      void setMp(const QPoint&p);
+      const QPoint mp() const;
+      int x() const;
+      int y() const;
+      void setY(int y);
+      QPoint pos() const;
+      void setPos(const QPoint& p);
+      int height() const;
+      QRect bbox() const;
+      void setBBox(const QRect& r);
+      void move(const QPoint& tl);
+      void setTopLeft(const QPoint &tl);
+      bool contains(const QPoint& p) const;
+      bool intersects(const QRect& r) const;
+// REMOVE Tim. wave. Added.
+      // left is whether we are resizing the right or left border.
+      //virtual void horizResize(int newPos, bool left = false);
       };
 
 //---------------------------------------------------------
@@ -135,15 +154,57 @@ class BItem : public CItem {
 class PItem : public BItem {
    protected:
       MusECore::Part* _part;
-      
+// REMOVE Tim. wave. Added.
+      // These temp values can be used during graphical item resizing to draw
+      //  what the item WILL look like once the mouse button is released
+      //  and the actual underlying operation takes place. In other words
+      //  'live' redrawing as the user is resizing borders, for example.
+      // The values are 'double' because fractional values may be required
+      //  if sample rate or time stretch converters are active on the item.
+      // Ultimately, if we could guarantee that the temp values reflect
+      //  the object values even when the mouse is up, the temp values
+      //  could be directly used for drawing all the time.
+      // TODO: That requires some additional support in moveItem() and others.
+      // So during resizing, for now the painting methods look at these temp
+      //  values ONLY when the mouse is down (ie the drag mode is RESIZE),
+      //  and when the mouse is up it looks at the object values.
+      //
+      // New part position applied when drawing.
+      double _tmpPartPos;
+      // New part length applied when drawing.
+      double _tmpPartLen;
+      // Wholesale offset applied to things in this item, such as a part's events.
+      // The offset is in units of the part's time type (frames, ticks).
+      double _tmpOffset;
+      // New position applied when drawing a single wave event in a part for example.
+      double _tmpPos;
+      // New length applied when drawing a single wave event in a part for example.
+      double _tmpLen;
+      // New wave starting position applied when drawing a single wave event in a part for example.
+      double _tmpWaveSPos;
+
    public:
       PItem(const QPoint& p, const QRect& r);
       PItem();
       PItem(MusECore::Part* p);
 
       virtual bool objectIsSelected() const;
-      MusECore::Part* part() const          { return _part; }
-      void setPart(MusECore::Part* p)       { _part = p; }
+      MusECore::Part* part() const;
+      void setPart(MusECore::Part* p);
+
+// REMOVE Tim. wave. Added.
+      double tmpPartPos() const;
+      double tmpPartLen() const;
+      double tmpOffset() const;
+      double tmpPos() const;
+      double tmpLen() const;
+      double tmpWaveSPos() const;
+      void setTmpPartPos(const double v);
+      void setTmpPartLen(const double v);
+      void setTmpOffset(const double v);
+      void setTmpPos(const double v);
+      void setTmpLen(const double v);
+      void setTmpWaveSPos(const double v);
       };
       
 //---------------------------------------------------------
@@ -157,15 +218,15 @@ class EItem : public PItem {
 
    public:
       EItem(const QPoint& p, const QRect& r);
-      EItem() { }
+      EItem();
       EItem(const MusECore::Event& e, MusECore::Part* p);
 
       bool isObjectInRange(const MusECore::Pos&, const MusECore::Pos&) const;
       
-      bool objectIsSelected() const { return _event.selected(); }
+      bool objectIsSelected() const;
 
-      MusECore::Event event() const               { return _event;  }
-      void setEvent(const MusECore::Event& e)     { _event = e;     }
+      MusECore::Event event() const;
+      void setEvent(const MusECore::Event& e);
       };
 
       
@@ -183,11 +244,7 @@ class CItemMap: public std::multimap<int, CItem*, std::less<int> > {
    public:
       void add(CItem*);
       CItem* find(const QPoint& pos) const;
-      void clearDelete() {
-            for (iCItem i = begin(); i != end(); ++i)
-                  delete i->second;
-            clear();
-            }
+      void clearDelete();
       };
 
 //---------------------------------------------------------
@@ -200,29 +257,10 @@ typedef std::list<CItem*>::const_iterator ciCItemList;
 
 class CItemList: public std::list<CItem*> {
    public:
-      void add(CItem* item) { push_back(item); }
-      void clearDelete() {
-        for(ciCItemList i = begin(); i != end(); ++i) {
-          CItem* ce = *i;
-          if(ce)
-            delete ce;
-        }
-        clear();
-      }
-      iCItemList find(const CItem* item) {
-        for(iCItemList i = begin(); i != end(); ++i) {
-          if(*i == item)
-            return i;
-        }
-        return end();
-      }
-      ciCItemList cfind(const CItem* item) const {
-        for(ciCItemList i = cbegin(); i != cend(); ++i) {
-          if(*i == item)
-            return i;
-        }
-        return cend();
-      }
+      void add(CItem* item);
+      void clearDelete();
+      iCItemList find(const CItem* item);
+      ciCItemList cfind(const CItem* item) const;
 };
 
 //---------------------------------------------------------
@@ -235,15 +273,8 @@ typedef std::set<CItem*>::const_iterator ciCItemSet;
 
 class CItemSet: public std::set<CItem*> {
    public:
-      void add(CItem* item) { insert(item); }
-      void clearDelete() {
-        for(ciCItemSet i = begin(); i != end(); ++i) {
-          CItem* ce = *i;
-          if(ce)
-            delete ce;
-        }
-        clear();
-      }
+      void add(CItem* item);
+      void clearDelete();
 };
 
 } // namespace MusEGui

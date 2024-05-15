@@ -506,7 +506,16 @@ void MidiTransformerDialog::accept()
 void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::MidiPart* part, MusECore::MidiPart* newPart, MusECore::Undo& operations)
       {
       MusECore::MidiTransformation* cmt = data->cmt;
-      MusECore::Event newEvent = event.clone();
+      MusECore::Event newEvent;
+      switch(data->cmt->funcOp) {
+            case MusECore::Insert:
+            case MusECore::Copy:
+                  newEvent = event.duplicate();
+                  break;
+            default:
+                  newEvent = event.clone();
+                  break;
+            }
 
       if (cmt->procEvent != MusECore::Keep)
             newEvent.setType(cmt->eventType);

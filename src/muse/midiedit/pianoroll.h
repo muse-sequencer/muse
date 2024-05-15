@@ -146,6 +146,9 @@ class PianoRoll : public MidiEditor {
 
       MidiEventColorMode colorMode;
 
+      QMetaObject::Connection _configChangedConnection;
+      QMetaObject::Connection _clipboardConnection;
+
       static int _rasterInit;
       static int _trackInfoWidthInit;
       static int _canvasWidthInit;
@@ -158,7 +161,6 @@ class PianoRoll : public MidiEditor {
       bool _playEvents;
       EventCanvas::PlayEventsMode _playEventsMode;
 
-      QMetaObject::Connection _configChangedTools2MetaConn;
       QMetaObject::Connection _deliveredScriptReceivedMetaConn;
       QMetaObject::Connection _userScriptReceivedMetaConn;
 

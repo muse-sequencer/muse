@@ -247,9 +247,6 @@ int EventList::findSimilarType(const Event& event, EventList& list,
           compareA, compareB, compareC,
           compareWavePath, compareWavePos, compareWaveStartPos))
     {
-// REMOVE Tim. ctrl. Changed.
-//       ++cnt;
-//       list.add(e);
       if(list.add(e) != list.end())
         ++cnt;
     }
