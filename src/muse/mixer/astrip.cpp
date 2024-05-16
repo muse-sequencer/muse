@@ -1475,6 +1475,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
           //                                routingInputUnconnectedSVGIcon, routingInputUnconnectedSVGIcon, false, true);
           iR = new QPushButton(this);
           iR->setIcon(*routingInputSVGIcon);
+          iR->setObjectName("InputRouteButton");
           iR->setStatusTip(tr("Input routing. Hold CTRL to keep menu open. Press F1 for help."));
           iR->setFocusPolicy(Qt::NoFocus);
           iR->setCheckable(false);
@@ -1484,6 +1485,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at, bool hasHandle
       } else {
           QPushButton *iRx = new QPushButton(this);
           iRx->setIcon(*routingInputSVGIcon);
+          iRx->setObjectName("InputRouteButton");
           iRx->setEnabled(false);
           routeLayout->addWidget(iRx);
       }

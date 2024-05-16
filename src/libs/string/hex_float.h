@@ -23,13 +23,25 @@
 #ifndef __HEX_FLOAT_H__
 #define __HEX_FLOAT_H__
 
+#include "config.h"
+
 // Forward refs.
 class QString;
 
 namespace MusELib {
 
+//====================================================================================
+// NOTICE: These functions are for reading and writing decimal and hexfloat values.
+// We also ensure that the standard 'C' locale is used when reading and writing values.
+// We do NOT want localisation in song files, for maximum portability.
+//====================================================================================
+
 extern QString museStringFromDouble(double v);
 extern double museStringToDouble(const QString &s, bool *ok = nullptr);
+
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+extern QString hexfloatDecimalPoint;
+#endif
 
 } // namespace MusELib
 

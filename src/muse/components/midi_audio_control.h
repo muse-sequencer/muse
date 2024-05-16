@@ -25,6 +25,16 @@
 
 #include "ui_midi_audio_control_base.h"
 
+#include <QMetaObject>
+
+#include "mpevent.h"
+#include "type_defs.h"
+
+class QWidget;
+class QComboBox;
+class QSpinBox;
+class QCheckBox;
+
 namespace MusEGui {
 
 class MidiAudioControl : public QDialog, public Ui::MidiAudioControlBase
@@ -32,16 +42,20 @@ class MidiAudioControl : public QDialog, public Ui::MidiAudioControlBase
     Q_OBJECT
 
 private:
+    QMetaObject::Connection _configChangedConn;
+    QMetaObject::Connection _learnReceivedConn;
+
     int _port, _chan, _ctrl;
     bool _enableAssignType;
     bool _assignToSong;
-    bool _is_learning;
     void updateDialog();
     void resetLearn();
     void updateCtrlBoxes();
 
-private slots:
-    void heartbeat();
+    void selectPort(QComboBox *cb, int port);
+    void selectCtrl(QComboBox *typecb, QSpinBox *hisb, QSpinBox *losb, int ctrl);
+
+    void configChanged();
     void learnChanged(bool);
     void portChanged(int);
     void chanChanged();
@@ -50,10 +64,15 @@ private slots:
     void ctrlLChanged();
     void assignTrackTriggered();
     void assignSongTriggered();
-    void configChanged();
+
+    void midiLearnReceived(const MusECore::MidiRecordEvent&);
+    void assignLearnCC(const MusECore::MidiRecordEvent&,
+      QCheckBox *ccEn, QComboBox *ccPort, QComboBox *ccChan, QSpinBox *ccNum);
 
 public:
     MidiAudioControl(bool enableAssignType = false, bool assignToSong = false, int port = -1, int chan = 0, int ctrl = 0, QWidget* parent = 0);
+    ~MidiAudioControl();
+
     int port() const;
     int chan() const;
     int ctrl() const;

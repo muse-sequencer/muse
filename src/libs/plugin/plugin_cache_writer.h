@@ -39,10 +39,11 @@
 #include <dssi.h>
 #endif // DSSI_SUPPORT
 
+#ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
 #include "lilv/lilv.h"
 #endif // LV2_SUPPORT
-
+#endif // LV2_USE_PLUGIN_CACHE
 
 #ifdef VST_NATIVE_SUPPORT
 #ifdef VST_SDK_QUIRK_DEF
@@ -134,9 +135,11 @@ bool scanLinuxVstDescriptor(const char* filename, AEffect *plugin, long int id, 
 bool writeLinuxVstInfo(const char* filename, LinuxVST_Instance_Function lvst, bool do_ports, int level, MusECore::Xml& xml);
 #endif
 
+#ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
 void scanLv2Ports(const LilvPlugin *plugin, PluginScanInfoStruct* info, bool debugStdErr);
 #endif
+#endif //LV2_USE_PLUGIN_CACHE
 
 bool writeUnknownPluginInfo(const char* filename, int level, MusECore::Xml& xml);
 
@@ -147,7 +150,9 @@ void scanLadspaPlugins(const QString& museGlobalLib, PluginScanList* list, bool 
 void scanMessPlugins(const QString& museGlobalLib, PluginScanList* list, bool scanPorts, bool debugStdErr);
 void scanDssiPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr);
 void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr);
+#ifdef LV2_USE_PLUGIN_CACHE
 void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr);
+#endif
 
 void scanAllPlugins(const QString& museGlobalLib,
                     PluginScanList* list,

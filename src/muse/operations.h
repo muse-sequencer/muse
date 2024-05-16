@@ -53,6 +53,7 @@ class MidiPort;
 class MetroAccentsMap;
 class AudioConverterSettingsGroup;
 class AudioConverterPluginI;
+class MidiRemote;
 
 typedef std::list < iMidiCtrlValList > MidiCtrlValListIterators_t;
 typedef MidiCtrlValListIterators_t::iterator iMidiCtrlValListIterators_t;
@@ -190,7 +191,8 @@ struct PendingOperationItem
     ModifyAudioSamples,
     SwitchMetronomeSettings, ModifyMetronomeAccentMap,
     SetExternalSyncFlag, SetUseJackTransport, SetUseMasterTrack,
-    ModifyMarkerList
+    ModifyMarkerList,
+    SwitchMidiRemoteSettings, ModifyMidiRemote
     }; 
                               
   PendingOperationType _type;
@@ -221,6 +223,7 @@ struct PendingOperationItem
     MarkerList** _orig_marker_list;
     float** _audioSamplesPointer;
     MetroAccentsMap** _metroAccentsMap;
+    MidiRemote* _midiRemote;
   };
             
   union {
@@ -239,6 +242,7 @@ struct PendingOperationItem
     bool* _bool_pointer;
     MetroAccentsMap* _newMetroAccentsMap;
     AudioConverterSettingsGroup* _audio_converter_settings;
+    MidiRemote* _newMidiRemote;
   };
 
   iPart _iPart; 
@@ -254,7 +258,7 @@ struct PendingOperationItem
   iMarker _iMarker;
   Route _src_route;
   Route _dst_route;
-  // SndFileR is only 8 bytes but can't be in a union becuase of non-trivial destructor (?).
+  // SndFileR is only 8 bytes but can't be in a union because of non-trivial destructor (?).
   SndFileR _sndFileR;
   
   union {
@@ -309,8 +313,8 @@ struct PendingOperationItem
   //  NOTICE: Where these constructors take pointers to allocated objects,
   //           some of them we do NOT take ownership of, while some we do.
   //          It mostly depends on whether the undo system (which is by far
-  //           top user of this operations sytem) needs to keep them around
-  //           or whther the objects are temporary once-only things.
+  //           top user of this operations system) needs to keep them around
+  //           or whether the objects are temporary once-only things.
   //          For example strings created by the undo system are kept and
   //           put onto the undo stack so we don't take ownership of them,
   //           while swap-out lists created by the undo system are temporary
@@ -583,9 +587,12 @@ struct PendingOperationItem
   PendingOperationItem(MetroAccentsMap** old_map, MetroAccentsMap* new_map, PendingOperationType type = ModifyMetronomeAccentMap)
     { _type = type; _metroAccentsMap = old_map; _newMetroAccentsMap = new_map; }
 
-  // Type is SwitchMetronomeSettings, SetExternalSyncFlag, SetUseJackTransport.
+  // Type is SwitchMetronomeSettings, SetExternalSyncFlag, SetUseJackTransport, SwitchMidiRemoteSettings.
   PendingOperationItem(bool* bool_pointer, bool v, PendingOperationType type)
     { _type = type; _bool_pointer = bool_pointer; _boolA = v; }
+
+  PendingOperationItem(MidiRemote* old_remote, MidiRemote* new_remote, PendingOperationType type = ModifyMidiRemote)
+    { _type = type; _midiRemote = old_remote; _newMidiRemote = new_remote; }
 
   PendingOperationItem(PendingOperationType type) // type is EnableAllAudioControllers, UpdateAllAudioCtrlGroups.
     { _type = type; }

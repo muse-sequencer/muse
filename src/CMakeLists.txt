@@ -31,6 +31,27 @@ include (CheckCSourceCompiles)
 include(cmake/Summary.cmake)
 include(CheckCXXSymbolExists)
 
+
+# ==================================================================
+# Check if C++ istringstream supports hexfloat formatting.
+# As of summer 2023, only experimental clang versions support this.
+# And C++ is still in the process of adding support.
+# ==================================================================
+include(cmake/CheckIStringStreamHexfloat.cmake)
+# We don't want this variable cached, but the only mechanism for check_cxx_source_runs etc.
+#  to store in a normal variable (NO_CACHE) is only available in cmake >= 3.25.
+# So get rid of the cached variable now.
+unset(ISTRINGSTREAM_SUPPORTS_HEXFLOAT CACHE)
+check_istringstream_hexfloat(ISTRINGSTREAM_SUPPORTS_HEXFLOAT)
+if(ISTRINGSTREAM_SUPPORTS_HEXFLOAT EQUAL 1)
+    set(HAVE_ISTRINGSTREAM_HEXFLOAT ON)
+    message("C++ istringstream supports hexfloat.")
+else (ISTRINGSTREAM_SUPPORTS_HEXFLOAT EQUAL 1)
+    message("C++ istringstream does not support hexfloat. Using alternate hexfloat techniques instead.")
+endif(ISTRINGSTREAM_SUPPORTS_HEXFLOAT EQUAL 1)
+# =========================================================
+
+
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
 ## FIXME FIXME: For the github automatic build actions:
@@ -145,9 +166,9 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 SET(MusE_VERSION_MAJOR 4)
 SET(MusE_VERSION_MINOR 0)
 SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "4.1")
-SET(MusE_VERSION_FULL  "4.1")
-SET(MusE_INSTALL_NAME  "muse-4.1")
+SET(MusE_VERSION       "4.2.1")
+SET(MusE_VERSION_FULL  "4.2.1")
+SET(MusE_INSTALL_NAME  "muse-4.2")
 SET(MusE_EXEC_NAME     "muse4")
 
 SET(MusE_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
@@ -453,6 +474,10 @@ if (ENABLE_RTAUDIO)
       if (RTAUDIO_FOUND)
             include_directories(${RTAUDIO_INCLUDE_DIRS})
             set(HAVE_RTAUDIO ON)
+            # NOTE: RtAudio's package config (.pc) file contains api type flags
+            #        that probably should be used. The header file rtaudio.h needs this.
+            # set(CMAKE_CXX_FLAGS ${RTAUDIO_CFLAGS} ${CMAKE_CXX_FLAGS})
+            #add_compile_options(${RTAUDIO_CFLAGS})
       endif (RTAUDIO_FOUND)
 else (ENABLE_RTAUDIO)
       message("RTAUDIO disabled")
@@ -542,6 +567,11 @@ endif (ENABLE_VST_VESTIGE)
 ##
 ## LV2 support
 ##
+
+# Whether to use a cache for LV2 plugins.
+# This shouldn't be required and should be pointless.
+# It is kept as a sort of placeholder for the code in case we ever need it.
+#SET (LV2_USE_PLUGIN_CACHE true)
 
 if (ENABLE_LV2)
 
@@ -668,7 +698,7 @@ endif ( ENABLE_INSTPATCH )
 
 if ( ENABLE_MIDNAM )
   # Ain't much to do here... yet... Looking at you XSD and therefore Xerces,
-  #  to read the offical midnam DTD document.
+  #  to read the official midnam DTD document.
   # Can we get away with just generating the hxx/cxx and slapping only them into the project?
   # Or will we have to generate the hxx/cxx here for example (or in our midnam cmake file)
   #  for machine-specific differences?

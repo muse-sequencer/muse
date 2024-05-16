@@ -53,6 +53,7 @@
 #include "audio.h"
 #include "gui.h"
 #include "app.h"
+#include "config.h"
 
 // Forwards from header:
 #include <QMenu>
@@ -4104,7 +4105,7 @@ void EditInstrument::initListDeleteClicked()
 
 void EditInstrument::on_actionInfo_triggered()
 {
-    QString s("https://github.com/muse-sequencer/muse/wiki/instrument-definitions");
+    QString s(ORGANIZATION_HELP_URL "definitions");
     MusEGlobal::muse->launchBrowser(s);
 }
 

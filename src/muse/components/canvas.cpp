@@ -2464,7 +2464,7 @@ QMenu* Canvas::genCanvasPopup(QMenu* menu)
             if (!act0)
                   act0 = act;
             }
-      if(!menu)  // Don't interefere with supplied menu's current item
+      if(!menu)  // Don't interfere with supplied menu's current item
         r_menu->setActiveAction(act0);
       return r_menu;
       }

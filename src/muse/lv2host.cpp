@@ -66,6 +66,11 @@
 #include "minstrument.h"
 #include "operations.h"
 
+#ifndef LV2_USE_PLUGIN_CACHE
+#include "plugin_cache_reader.h"
+#include <set>
+#endif // LV2_USE_PLUGIN_CACHE
+
 #include "app.h"
 #include "globals.h"
 #include "gconfig.h"
@@ -97,6 +102,9 @@
 // For general debugging output: Uncomment the fprintf section.
 #define DEBUG_LV2_GENERAL(dev, format, args...)  // fprintf(dev, format, ##args);
 
+// For general error output: Uncomment the fprintf section.
+#define DEBUG_LV2_ERROR(dev, format, args...) fprintf(dev, format, ##args);
+
 #ifdef HAVE_GTK2
 #include "lv2Gtk2Support/lv2Gtk2Support.h"
 #endif
@@ -114,7 +122,7 @@
 // Some plugins send out lots of (small message) work requests in one run even before the worker can run them.
 // Using our custom non-splitting data FIFO, we might typically set a size higher than what a true 'wrap around'
 //  data FIFO would use. But that's still far better than using a very wasteful fixed-size item based FIFO.
-// Actually, to accomodate say, the LSP 48 channel samplers, we MUST set this fairly high - even if we were to
+// Actually, to accommodate say, the LSP 48 channel samplers, we MUST set this fairly high - even if we were to
 //  use true 'wrap around' FIFOs because LSP plugins try to schedule MANY work requests in one run.
 // (That's up to 8 wave files per channel x 48 channels = 384 requests x 16 bytes per message = 6,144 bytes!).
 #define LV2_WRK_FIFO_SIZE 8192
@@ -210,6 +218,11 @@ typedef struct
     LilvNode *lv2_TimePosition;
     LilvNode *lv2_FreeWheelPort;
     LilvNode *lv2_EnabledPort;
+#ifndef LV2_USE_PLUGIN_CACHE
+    LilvNode *lv2_isLive;
+    LilvNode *lv2_HardRealtimeCapable;
+    LilvNode *lv2_InPlaceBroken;
+#endif
     LilvNode *lv2_SampleRate;
     LilvNode *lv2_CVPort;
     LilvNode *lv2_psetPreset;
@@ -397,6 +410,248 @@ QVector<CtrlVal::CtrlEnumValues *> enumsToFree;
 //  composing LV2_Options_Option array in LV2Synth::LV2Synth().
 const unsigned LV2Synth::minBlockSize = 0U;
 
+#ifndef LV2_USE_PLUGIN_CACHE
+static void scanLv2Plugin(const LilvPlugin *plugin,
+                          MusEPlugin::PluginScanInfoStruct &info,
+                          const std::set<std::string>& supportedFeatures)
+{
+// LV2 does not use unique id numbers and frowns upon using anything but the uri.
+//   static unsigned long FakeLv2UniqueID = 1;
+
+  LilvNode *nameNode = lilv_plugin_get_name(plugin);
+  const LilvNode *uriNode = lilv_plugin_get_uri(plugin);
+
+  if(!nameNode)
+    return;
+
+  if(!lilv_node_is_string(nameNode))
+  {
+    lilv_node_free(nameNode);
+    return;
+  }
+
+  const char *pluginName = lilv_node_as_string(nameNode);
+  const char *lfp = lilv_file_uri_parse(lilv_node_as_string(lilv_plugin_get_library_uri(plugin)), nullptr);
+  LilvNodes *fts = lilv_plugin_get_required_features(plugin);
+  LilvIter *nit = lilv_nodes_begin(fts);
+  bool shouldLoad = true;
+  MusECore::PluginFeatures_t reqfeat = MusECore::PluginNoFeatures;
+  while(true)
+  {
+    if(lilv_nodes_is_end(fts, nit))
+      break;
+
+    const LilvNode *fnode = lilv_nodes_get(fts, nit);
+    const char *uri = lilv_node_as_uri(fnode);
+    bool isSupported = (supportedFeatures.find(uri) != supportedFeatures.end());
+
+    if(isSupported)
+    {
+      if(std::strcmp(uri, LV2_F_FIXED_BLOCK_LENGTH) == 0)
+        reqfeat |= MusECore::PluginFixedBlockSize;
+      else if(std::strcmp(uri, LV2_F_POWER_OF_2_BLOCK_LENGTH) == 0)
+        reqfeat |= MusECore::PluginPowerOf2BlockSize;
+      else if(std::strcmp(uri, LV2_F_COARSE_BLOCK_LENGTH) == 0)
+        reqfeat |= MusECore::PluginCoarseBlockSize;
+      else if(std::strcmp(uri, LV2_F_SUPPORTS_STRICT_BOUNDS) == 0)
+        reqfeat |= MusECore::PluginSupportStrictBounds;
+    }
+    else
+    {
+      shouldLoad = false;
+      DEBUG_LV2_ERROR(stderr, "Ignoring plugin: %s: requires unsupported feature: %s\n",
+                        pluginName, uri);
+    }
+
+    nit = lilv_nodes_next(fts, nit);
+  }
+  lilv_nodes_free(fts);
+
+  //if (!shouldLoad || !isSynth)
+  if(!shouldLoad)   //load all plugins for now, not only synths
+  {
+    lilv_free((void*)lfp); // Must free.
+    lilv_node_free(nameNode);
+    return;
+  }
+
+  const QString name = QString(pluginName) + QString(" LV2");
+
+  setPluginScanFileInfo(lfp, &info);
+  if(uriNode)
+    info._uri = PLUGIN_SET_CSTRING(lilv_node_as_string(uriNode));
+  info._type = MusEPlugin::PluginScanInfoStruct::PluginTypeLV2;
+  info._class = MusEPlugin::PluginScanInfoStruct::PluginClassEffect;
+  // Fake id for LV2PluginWrapper functionality.
+  // LV2 does not use unique id numbers and frowns upon using anything but the uri.
+  // info._uniqueID =  FakeLv2UniqueID++;
+  //info._label = MusEPlugin::setString(label);
+  info._label = PLUGIN_SET_QSTRING(name);
+  info._name = PLUGIN_SET_QSTRING(name);
+  //info._maker = MusEPlugin::setString(ladspa_descr->Maker);
+  //info._copyright = MusEPlugin::setString(ladspa_descr->Copyright);
+
+  info._requiredFeatures |= reqfeat;
+
+  const LilvPluginClass *cls = lilv_plugin_get_class(plugin);
+  const LilvNode *ncuri = lilv_plugin_class_get_uri(cls);
+  const char *clsname = lilv_node_as_uri(ncuri);
+  if(strcmp(clsname, LV2_INSTRUMENT_CLASS) == 0)
+  {
+    info._class |= MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+  }
+
+  if(LilvNode *nAuthor = lilv_plugin_get_author_name(plugin))
+  {
+    info._maker = PLUGIN_SET_CSTRING(lilv_node_as_string(nAuthor));
+    lilv_node_free(nAuthor);
+  }
+
+  bool hasEnable = false;
+  bool hasLatency = false;
+  bool hasFreewheel = false;
+  unsigned long int enableIdx = 0;
+  unsigned long int latencyIdx = 0;
+  unsigned long int freewheelIdx = 0;
+
+  // Does this plugin have a 'freewheel' port?
+  if(const LilvPort *lilvFreeWheelPort =
+    lilv_plugin_get_port_by_designation(
+      plugin, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_FreeWheelPort))
+  {
+    hasFreewheel = true;
+    freewheelIdx = lilv_port_get_index(plugin, lilvFreeWheelPort);
+  }
+
+  // Does this plugin have an 'enable' port?
+  if(const LilvPort *lilvEnablePort =
+    lilv_plugin_get_port_by_designation(
+      plugin, lv2CacheNodes.lv2_InputPort, lv2CacheNodes.lv2_EnabledPort))
+  {
+    hasEnable = true;
+    enableIdx = lilv_port_get_index(plugin, lilvEnablePort);
+  }
+
+  if(lilv_plugin_has_latency(plugin))
+  {
+    hasLatency = true;
+    latencyIdx = lilv_plugin_get_latency_port_index(plugin);
+  }
+
+  info._portCount = lilv_plugin_get_num_ports(plugin);
+  unsigned int aip = 0;
+  unsigned int aop = 0;
+  unsigned int cip = 0;
+  unsigned int cop = 0;
+  unsigned int eip = 0;
+  unsigned int eop = 0;
+  for(unsigned long k = 0; k < info._portCount; ++k)
+  {
+    const LilvPort *lilvPort = lilv_plugin_get_port_by_index(plugin, k);
+    const bool optional = lilv_port_has_property(plugin, lilvPort, lv2CacheNodes.lv2_connectionOptional);
+
+    bool is_output = false;
+    if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_OutputPort))
+    {
+      is_output = true;
+    }
+    else if(!lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_InputPort))
+    {
+      DEBUG_LV2_ERROR(stderr, "Ignoring plugin: %s: port: %ld with unknown direction\n",
+                        name.toLatin1().constData(), k);
+      continue;
+    }
+
+    bool isCVPort = lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_CVPort);
+
+    if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_ControlPort) || isCVPort)
+    {
+      if(is_output)
+      {
+        if(hasLatency && k == latencyIdx)
+        {
+          info._pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
+          info._latencyPortIdx = cop;
+        }
+        ++cop;
+      }
+      else
+      {
+        if(hasFreewheel && k == freewheelIdx)
+        {
+          info._pluginFreewheelType = MusECore::PluginFreewheelTypePort;
+          info._freewheelPortIdx = cip;
+
+        }
+        if(hasEnable && k == enableIdx)
+        {
+          info._pluginBypassType = MusECore::PluginBypassTypeEnablePort;
+          info._enableOrBypassPortIdx = cip;
+        }
+        ++cip;
+      }
+    }
+    else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.lv2_AudioPort))
+    {
+      if(is_output)
+        ++aop;
+      else
+        ++aip;
+    }
+#ifdef LV2_EVENT_BUFFER_SUPPORT
+    else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.ev_EventPort))
+    {
+      if(is_output)
+        ++eop;
+      else
+        ++eip;
+      if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+        info._pluginFlags |= PluginScanInfoStruct::SupportsTimePosition;
+    }
+#endif
+    else if(lilv_port_is_a(plugin, lilvPort, lv2CacheNodes.atom_AtomPort))
+    {
+      if(is_output)
+        ++eop;
+      else
+        ++eip;
+      if(lilv_port_supports_event(plugin, lilvPort, lv2CacheNodes.lv2_TimePosition))
+        info._pluginFlags |= MusEPlugin::PluginScanInfoStruct::SupportsTimePosition;
+    }
+    else if(!optional)
+    {
+      DEBUG_LV2_ERROR(stderr, "Ignoring plugin: %s port: %ld with unknown type\n",
+                        name.toLatin1().constData(), k);
+      lilv_free((void*)lfp); // Must free.
+      lilv_node_free(nameNode);
+      return;
+    }
+  }
+
+  info._inports = aip;
+  info._outports = aop;
+  info._controlInPorts = cip;
+  info._controlOutPorts = cop;
+  info._eventInPorts = eip;
+  info._eventOutPorts = eop;
+
+  // Look for optional features we support (now or later)...
+  if(lilv_plugin_has_feature(plugin, lv2CacheNodes.lv2_isLive))
+    info._pluginFlags |= MusEPlugin::PluginScanInfoStruct::Realtime;
+
+  if(lilv_plugin_has_feature(plugin, lv2CacheNodes.lv2_HardRealtimeCapable))
+    info._pluginFlags |= MusEPlugin::PluginScanInfoStruct::HardRealtimeCapable;
+
+  if((info._inports != info._outports) || lilv_plugin_has_feature(plugin, lv2CacheNodes.lv2_InPlaceBroken))
+    info._requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
+
+  lilv_free((void*)lfp); // Must free.
+  lilv_node_free(nameNode);
+}
+#endif
+
+
+
 void initLV2()
 {
 #ifdef HAVE_GTK2
@@ -411,13 +666,23 @@ void initLV2()
     if(MusEGlobal::debugMsg)
         std::cerr << "LV2: MusE supports these features:" << std::endl;
 
+#ifndef LV2_USE_PLUGIN_CACHE
+    std::set<std::string> supportedFeatures;
+#endif
+
     for(i = 0; i < SIZEOF_ARRAY(lv2Features); i++)
     {
         if(MusEGlobal::debugMsg)
             std::cerr << "\t" << lv2Features [i].URI << std::endl;
+
+#ifndef LV2_USE_PLUGIN_CACHE
+        supportedFeatures.insert(lv2Features [i].URI);
+#endif
     }
 
     lilvWorld = lilv_world_new();
+    if(!lilvWorld)
+      return;
 
     lv2CacheNodes.atom_AtomPort          = lilv_new_uri(lilvWorld, LV2_ATOM__AtomPort);
 #ifdef LV2_EVENT_BUFFER_SUPPORT
@@ -445,12 +710,17 @@ void initLV2()
     lv2CacheNodes.lv2_TimePosition       = lilv_new_uri(lilvWorld, LV2_TIME__Position);
     lv2CacheNodes.lv2_FreeWheelPort      = lilv_new_uri(lilvWorld, LV2_CORE__freeWheeling);
     lv2CacheNodes.lv2_EnabledPort        = lilv_new_uri(lilvWorld, LV2_CORE__enabled);
+#ifndef LV2_USE_PLUGIN_CACHE
+    lv2CacheNodes.lv2_isLive             = lilv_new_uri(lilvWorld, LV2_CORE__isLive);
+    lv2CacheNodes.lv2_HardRealtimeCapable= lilv_new_uri(lilvWorld, LV2_CORE__hardRTCapable);
+    lv2CacheNodes.lv2_InPlaceBroken      = lilv_new_uri(lilvWorld, LV2_CORE__inPlaceBroken);
+#endif
     lv2CacheNodes.lv2_SampleRate         = lilv_new_uri(lilvWorld, LV2_CORE__sampleRate);
     lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
     lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
     lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, LILV_NS_RDFS "label");
-    lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
-    lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
+    lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionSavePreset");
+    lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionUpdatePresets");
     lv2CacheNodes.lv2_portEnumeration    = lilv_new_uri(lilvWorld, LV2_CORE__enumeration);
     lv2CacheNodes.lv2_rdfsRange          = lilv_new_uri(lilvWorld, LILV_NS_RDFS "range");
     lv2CacheNodes.pg_group               = lilv_new_uri(lilvWorld, LV2_PORT_GROUPS__group);
@@ -476,6 +746,9 @@ void initLV2()
     const LilvPlugins *plugins = lilv_world_get_all_plugins(lilvWorld);
 
     const char* message = "initLV2: ";
+
+#ifdef LV2_USE_PLUGIN_CACHE
+
     const MusEPlugin::PluginScanList& scan_list = MusEPlugin::pluginList;
     for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
     {
@@ -584,6 +857,117 @@ void initLV2()
             break;
         }
     }
+
+#else // LV2_USE_PLUGIN_CACHE
+
+    LilvIter *pit = lilv_plugins_begin(plugins);
+    while(true)
+    {
+      if(lilv_plugins_is_end(plugins, pit))
+      {
+          break;
+      }
+
+      const LilvPlugin *plugin = lilv_plugins_get(plugins, pit);
+
+      if(lilv_plugin_is_replaced(plugin))
+      {
+          pit = lilv_plugins_next(plugins, pit);
+          continue;
+      }
+
+      // REMOVE Tim. lv2. Added.
+  //     // Test instantiating the plugin. TODO: Maybe try to pass the correct sample rate.
+  //     LilvInstance* handle = lilv_plugin_instantiate(plugin, 44100, feats);
+  //     if(!handle)
+  //     {
+  //         pit = lilv_plugins_next(plugins, pit);
+  //         continue;
+  //     }
+  //     //
+  //     // TODO: Maybe do some stuff with the plugin.
+  //     //
+  //     // No crash so far. Done with instance. Close it - free it.
+  //     lilv_instance_free(handle);
+
+      MusEPlugin::PluginScanInfoStruct info;
+
+      // Now go ahead and scan the textual descriptions of the plugin.
+      scanLv2Plugin(plugin, info, supportedFeatures);
+
+      const QString inf_cbname = PLUGIN_GET_QSTRING(info._completeBaseName);
+      const QString inf_name   = PLUGIN_GET_QSTRING(info._name);
+      const QString inf_uri    = PLUGIN_GET_QSTRING(info._uri);
+      const Plugin* plug_found = MusEGlobal::plugins.find(
+        inf_cbname,
+        inf_uri,
+        inf_name);
+      const Synth* synth_found = MusEGlobal::synthis.find(
+        inf_cbname,
+        inf_uri,
+        inf_name);
+
+      if(plug_found)
+      {
+          fprintf(stderr, "Ignoring LV2 effect name:%s uri:%s path:%s duplicate of path:%s\n",
+                  PLUGIN_GET_CSTRING(info._name),
+                  PLUGIN_GET_CSTRING(info._uri),
+                  PLUGIN_GET_CSTRING(info.filePath()),
+                  plug_found->filePath().toLatin1().constData());
+      }
+      if(synth_found)
+      {
+          fprintf(stderr, "Ignoring LV2 synth name:%s uri:%s path:%s duplicate of path:%s\n",
+                  PLUGIN_GET_CSTRING(info._name),
+                  PLUGIN_GET_CSTRING(info._uri),
+                  PLUGIN_GET_CSTRING(info.filePath()),
+                  synth_found->filePath().toLatin1().constData());
+      }
+
+      const bool is_effect = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect;
+      const bool is_synth  = info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument;
+
+      const bool add_plug  = (is_effect || is_synth) &&
+                              info._inports > 0 && info._outports > 0 &&
+                              !plug_found;
+
+      // For now we allow effects as a synth track. Until we allow programs (and midi) in the effect rack.
+      const bool add_synth = (is_synth || is_effect) && !synth_found;
+
+      if(add_plug || add_synth)
+      {
+          if(!inf_name.isEmpty())
+          {
+              LV2Synth *new_synth = new LV2Synth(info, plugin);
+              if(new_synth->isConstructed())
+              {
+                  if(add_synth)
+                  {
+                      MusEGlobal::synthis.push_back(new_synth);
+                  }
+                  else
+                  {
+                      synthsToFree.push_back(new_synth);
+                  }
+
+                  if(add_plug)
+                  {
+                      if(MusEGlobal::debugMsg)
+                          info.dump(message);
+                      MusEGlobal::plugins.push_back(new LV2PluginWrapper(new_synth, info._requiredFeatures));
+                  }
+              }
+              else
+              {
+                  delete new_synth;
+              }
+          }
+      }
+
+      pit = lilv_plugins_next(plugins, pit);
+    }
+
+#endif // LV2_USE_PLUGIN_CACHE
 }
 
 void deinitLV2()
@@ -4840,11 +5224,16 @@ bool LV2SynthIF::getData(MidiPort *, unsigned int pos, int ports, unsigned int n
 
             for(unsigned long k = 0; k < _inportsControl; ++k)
             {
+                CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
+
                 //don't process freewheel port
                 if(_synth->_pluginFreewheelType == PluginFreewheelTypePort && _synth->_freewheelPortIndex == k)
+                {
+                    if(cl && icl != cll->end())
+                       ++icl;
                     continue;
+                }
 
-                CtrlList *cl = (cll && plug_id != -1 && icl != cll->end()) ? icl->second : nullptr;
                 CtrlInterpolate &ci = _controls[k].interp;
 
                 // Always refresh the interpolate struct at first, since things may have changed.

@@ -1314,7 +1314,7 @@ sf_count_t SndFile::readConverted(sf_count_t pos, int srcChannels,
 //   write
 //
 //   A hardcoded limiter was added that limits the output at 0.99/-0.99
-//   libsndfile handles signal betwee -1.0/1.0 with current setting
+//   libsndfile handles signal between -1.0/1.0 with current setting
 //   outside these values there will be heavy distortion
 //
 //---------------------------------------------------------

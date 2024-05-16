@@ -1973,7 +1973,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       // NOTICE! Mixers may set their own maximum size according to their content, on SongChanged.
       //         Therefore if the mixer is ALREADY OPEN, it may have a maximum size imposed on it,
       //          which may be SMALLER than any new size we might try to set after this.
-      //         So we MUST RESET maximium size now, BEFORE attempts to set size. As per docs:
+      //         So we MUST RESET maximum size now, BEFORE attempts to set size. As per docs:
       if(mixer1)
       {
         mixer1->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
@@ -2270,7 +2270,7 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
       // NOTICE! Mixers may set their own maximum size according to their content, on SongChanged.
       //         Therefore if the mixer is ALREADY OPEN, it may have a maximum size imposed on it,
       //          which may be SMALLER than any new size we might try to set after this.
-      //         So we MUST RESET maximium size now, BEFORE attempts to set size. As per docs:
+      //         So we MUST RESET maximum size now, BEFORE attempts to set size. As per docs:
       if(mixer1)
       {
         mixer1->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);

@@ -3071,7 +3071,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               QString customData = xml.parse1();
                               if(!customData.isEmpty()){
                                  accumulatedCustomParams.push_back(customData);
-                                 //now process custom data immidiatly
+                                 //now process custom data immediately
                                  //because it MUST be processed before plugin controls
                                  //writeConfiguration places custom data before plugin controls values
                                  setCustomData(accumulatedCustomParams);
@@ -3797,7 +3797,7 @@ int PluginI::oscControl(unsigned long port, float value)
 
   if(port >= _plugin->rpIdx.size())
   {
-    fprintf(stderr, "PluginI::oscControl: port number:%lu is out of range of index list size:%zd\n", port, _plugin->rpIdx.size());
+    fprintf(stderr, "PluginI::oscControl: port number:%lu is out of range of index list size:%i\n", port, (int) _plugin->rpIdx.size());
     return 0;
   }
 
@@ -3830,7 +3830,7 @@ int PluginI::oscControl(unsigned long port, float value)
 ///  controls[cport].val = value;
   // DSSI-VST synths however, unlike DSSI synths, DO change their OWN sound in response to their gui controls.
   // AND this function is called !
-  // Despite the descrepancy we are STILL required to update the DSSI control port values here
+  // Despite the discrepancy we are STILL required to update the DSSI control port values here
   //  because dssi-vst is WAITING FOR A RESPONSE! (A CHANGE in the control port value).
   // It will output something like "...4 events expected..." and count that number down as 4 actual control port value CHANGES
   //  are done here in response. Normally it says "...0 events expected..." when MusE is the one doing the DSSI control changes.
@@ -3882,7 +3882,7 @@ namespace MusEGui {
 //const char* presetOpenText = "<img source=\"fileopen\"> "
 //      "Click this button to load a saved <em>preset</em>.";
 static const char* presetOpenText = "Click this button to load a saved <em>preset</em>.";
-static const char* presetSaveText = "Click this button to save curent parameter "
+static const char* presetSaveText = "Click this button to save current parameter "
       "settings as a <em>preset</em>.  You will be prompted for a file name.";
 static const char* presetBypassText = "Click this button to bypass effect unit";
 

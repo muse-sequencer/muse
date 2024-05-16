@@ -47,6 +47,7 @@
 #include <QElapsedTimer>
 
 //#include <iostream>
+#include <clocale>
 
 #include <time.h>
 #ifndef _WIN32
@@ -94,6 +95,11 @@
 #define GLIB_DISABLE_DEPRECATION_WARNINGS
 #endif
 #include <libinstpatch/libinstpatch.h>
+#endif
+
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+// Because we need to set a global variable there.
+#include <hex_float.h>
 #endif
 
 namespace MusECore {
@@ -375,7 +381,10 @@ CommandLineParseResult parseCommandLine(
 #endif
 
   QCommandLineOption option_l(QCommandLineOption("l", QCoreApplication::translate("main",
-    "Force locale to the given language/country code (xx = ") + localeList() + ")",  "xx"));
+    "Force locale to the given language/country code (xx = ") + localeList() + ")" +
+    "\nNote this only sets the Qt locale NOT the system locale.\nFor testing Qt translations ONLY - not for normal use.\n"
+    "May cause unexpected behaviour in non-Qt parts of the program."
+    ,  "xx"));
   parser.addOption(option_l);
   QCommandLineOption option_u("u", QCoreApplication::translate("main",
     "Ubuntu/unity workaround: don't allow sharing menus and mdi-subwins."));
@@ -1094,6 +1103,17 @@ int main(int argc, char* argv[])
         srand(time(nullptr));   // initialize random number generator
         //signal(SIGCHLD, catchSignal);  // interferes with initVST(). see also app.cpp, function catchSignal()
 
+        // Locale diagnostics.
+        if(MusEGlobal::debugMsg)
+        {
+          fprintf(stderr, "Qt system locale: %s\n",QLocale::system().name().toUtf8().constData());
+          fprintf(stderr, "Existing Qt locale: %s\n",QLocale().name().toUtf8().constData());
+          if(!locale_override.isEmpty())
+            fprintf(stderr, "User Qt locale override: %s\n",locale_override.toUtf8().constData());
+          const char* cur_c_locale = std::setlocale(LC_ALL, nullptr);
+          fprintf(stderr, "Existing std::locale: %s\n", cur_c_locale);
+        }
+
         static QTranslator translator(nullptr);
         {
           QString locale(QLocale::system().name());
@@ -1116,12 +1136,72 @@ int main(int argc, char* argv[])
           QLocale::setDefault(def_loc);
         }
 
-        fprintf(stderr, "LOCALE %s\n",QLocale().name().toLatin1().data());
+        // Locale diagnostics.
+        fprintf(stderr, "New Qt locale: %s\n",QLocale().name().toLatin1().data());
 
         if (QLocale().name() == "de" || locale_override == "de") {
           fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
           MusEGlobal::hIsB = false;
         }
+
+        // NOTICE About locales:
+        //
+        // From std::setlocale() help:
+        // "During program startup, the equivalent of std::setlocale(LC_ALL, "C"); is executed
+        //   before any user code is run."
+        //
+        // But... From QCoreApplication help:
+        // "On Unix/Linux Qt is configured to use the system locale settings by default. [It calls setlocale(LC_ALL, "").]
+        //  This can cause a conflict when using POSIX functions, for instance, when converting
+        //   between data types such as floats and strings, since the notation may differ between locales.
+        //  To get around this problem, call the POSIX function setlocale(LC_NUMERIC,"C") right after
+        //   initializing QApplication, QGuiApplication or QCoreApplication to reset the locale that is
+        //   used for number formatting to "C"-locale."
+        //
+        // This caused controversy and confusion in forums since devs are not expecting Qt to set the c locale.
+        // It is not clear why that was done, and why only on Unix/Linux.
+        //
+        // In this application there may sometimes be the (unavoidable) use of certain
+        //  locale-aware c functions, like using sscanf() for easy file parsing or
+        //  strtod() for its hexfloat support.
+        // The c locale is not the same thing as the Qt locale.
+        // Technically one should therefore set the c locale to whatever the Qt locale is,
+        //  so that they both use the same locale.
+        // But since c locale is not the same thing as the Qt locale, this makes it difficult
+        //  to compose a c locale from a Qt locale.
+        // And, in this case we do not want any locale considerations at all, for c functions.
+        // Here in this Qt app, no-one should be relying on locale considerations for c functions,
+        //  and should be letting Qt handle the locale stuff.
+        // Usually when someone uses a c function in this app, they are not expecting
+        //  (or are even aware of) any locale and usually expect the normal "C" locale.
+        // A check of virually all such calls in this app reveals that they are all used for simple
+        //  things which do not - or even must not - require locale.
+        // For project files for example, we NEVER want locale considerations because that would
+        //  break portability, sharing files with other machines in other locales.
+        // So instead of just the LC_NUMERIC as recommended by Qt (above), here we COULD turn off all locale:
+        // std::setlocale(LC_ALL, "C");
+        //
+        // But... the situation is complicated by the fact that this app also uses GTK if available, for some LV2 UIs.
+        // When gtk_init() is called later, it calls setlocale(LC_ALL, ""), unless gtk_disable_setlocale() is called first!
+        // So any attempts to enforce the locale here are thwarted by that.
+        // Therefore we cannot alter the c locale since it might change how gtk behaves.
+        // Although, gtk does seem to have its own locale system called 'gettext'.
+        //
+        // One way around all this is to call thread-safe per-thread functions uselocale() etc. but they aren't
+        //  found on some platforms (mingw).
+        //
+        // So we will leave the c locale alone.
+        // However, in case Qt did not call setlocale(LC_ALL, "") on non-Unix/Linux, do it now before gtk_init() does it:
+        std::setlocale(LC_ALL, "");
+
+#ifndef HAVE_ISTRINGSTREAM_HEXFLOAT
+        // If C++ istringstream does not support hexfloat, grab the locale decimal point for use later in a workaround.
+        const std::lconv *lc = std::localeconv();
+        MusELib::hexfloatDecimalPoint = QString(lc->decimal_point);
+        // Locale diagnostics.
+        if(MusEGlobal::debugMsg)
+          fprintf(stderr, "c locale decimal point: %s\n", MusELib::hexfloatDecimalPoint.toUtf8().constData());
+#endif
 
         QApplication::addLibraryPath(MusEGlobal::museGlobalLib + "/qtplugins");
         if (MusEGlobal::debugMsg) {

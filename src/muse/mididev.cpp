@@ -46,6 +46,7 @@
 #include "drummap.h"
 #include "helper.h"
 #include "ticksynth.h"
+#include "midiremote.h"
 
 // Forwards from header:
 //#include "xml.h"
@@ -222,10 +223,12 @@ bool filterEvent(const MEvent& event, int type, bool thru)
             case ME_CONTROLLER:
                   if (type & MIDI_FILTER_CTRL)
                         return true;
-                  if (!thru && (MusEGlobal::midiFilterCtrl1 == event.dataA()
-                     || MusEGlobal::midiFilterCtrl2 == event.dataA()
-                     || MusEGlobal::midiFilterCtrl3 == event.dataA()
-                     || MusEGlobal::midiFilterCtrl4 == event.dataA())) {
+                  if (!thru &&
+                     // Val 0 means no controller filtered. Val >= 1 means controller number (val - 1).
+                     ((MusEGlobal::midiFilterCtrl1 > 0 && (MusEGlobal::midiFilterCtrl1 - 1) == event.dataA()) ||
+                      (MusEGlobal::midiFilterCtrl2 > 0 && (MusEGlobal::midiFilterCtrl2 - 1) == event.dataA()) ||
+                      (MusEGlobal::midiFilterCtrl3 > 0 && (MusEGlobal::midiFilterCtrl3 - 1) == event.dataA()) ||
+                      (MusEGlobal::midiFilterCtrl4 > 0 && (MusEGlobal::midiFilterCtrl4 - 1) == event.dataA()))) {
                         return true;
                         }
                   break;
@@ -360,13 +363,20 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             }
 
       // transfer also to gui for realtime playback and remote control
-      if (typ == ME_NOTEON || typ == ME_NOTEOFF)
       {
+        const bool nt = typ == ME_NOTEON || typ == ME_NOTEOFF;
+        const bool cc = typ == ME_CONTROLLER;
+        const bool pbpg = typ == ME_PITCHBEND || typ == ME_PROGRAM;
+        const MidiRemote *curRem = MusEGlobal::midiRemoteUseSongSettings ? MusEGlobal::song->midiRemote() : &MusEGlobal::midiRemote;
+
+        // Try to put only what we need to avoid overloading.
+        if (((nt || cc) &&
+             (curRem->matches(event.port(), event.channel(), event.dataA(), nt, cc, nt) || MusEGlobal::midiRemoteIsLearning)) ||
+            ((cc || pbpg) &&
+              MusEGlobal::midiToAudioAssignIsLearning))
+        {
           MusEGlobal::song->putEvent(event);
-      }
-      else if (MusEGlobal::rcEnableCC && typ == ME_CONTROLLER)
-      {
-          MusEGlobal::song->putEvent(event);
+        }
       }
 
       // Do not bother recording if it is NOT actually being used by a port.
@@ -853,26 +863,26 @@ float MidiDevice::getWorstSelfLatencyMidi(bool capture)
   return tli->_worstSelfLatencyMidi;
 }
 
-inline bool MidiDevice::canDominateOutputLatencyMidi(bool capture) const
+/*inline*/ bool MidiDevice::canDominateOutputLatencyMidi(bool capture) const
 {
   if(capture)
     return true;
   return false;
 }
 
-inline bool MidiDevice::canDominateInputLatencyMidi(bool /*capture*/) const
+/*inline*/ bool MidiDevice::canDominateInputLatencyMidi(bool /*capture*/) const
 {
   return false;
 }
 
-inline bool MidiDevice::canDominateEndPointLatencyMidi(bool capture) const
+/*inline*/ bool MidiDevice::canDominateEndPointLatencyMidi(bool capture) const
 {
   if(capture)
     return false;
   return true;
 }
 
-inline bool MidiDevice::canPassThruLatencyMidi(bool /*capture*/) const
+/*inline*/ bool MidiDevice::canPassThruLatencyMidi(bool /*capture*/) const
 { 
   return true;
 }
@@ -1662,7 +1672,7 @@ TrackLatencyInfo& MidiDevice::getLatencyInfoMidi(bool capture, bool input)
 //   latencyCompWriteOffset
 //---------------------------------------------------------
 
-inline unsigned long MidiDevice::latencyCompWriteOffsetMidi(bool capture) const
+/*inline*/ unsigned long MidiDevice::latencyCompWriteOffsetMidi(bool capture) const
 {
   return capture ? _captureLatencyInfo._compensatorWriteOffset : _playbackLatencyInfo._compensatorWriteOffset;
 }

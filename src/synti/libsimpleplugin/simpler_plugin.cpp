@@ -46,7 +46,7 @@
 
 #define SP_TRACE_IN if (SP_TRACE_FUNC) fprintf (stderr, "->%s:%d\n", __PRETTY_FUNCTION__, __LINE__);
 #define SP_TRACE_OUT if (SP_TRACE_FUNC) fprintf (stderr, "<-%s:%d\n", __PRETTY_FUNCTION__, __LINE__);
-#define SP_ERROR(string) fprintf(stderr, "SimplePlugin error: %s\n", string)
+#define SIMPLEPLUGIN_ERROR(string) fprintf(stderr, "SimplePlugin error: %s\n", string)
 #define SP_DBG_LADSPA(string1) if (SP_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1);
 #define SP_DBG_LADSPA2(string1, string2) if (SP_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1, string2);
 

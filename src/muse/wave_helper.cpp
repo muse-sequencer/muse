@@ -263,7 +263,7 @@ SndFileR sndFileGetWave(const QString& inName, bool readOnlyFlag, bool openFlag,
               error = f->openRead();
         else {
               error = f->openWrite();
-              // if peak cache is older than wave file we reaquire the cache
+              // if peak cache is older than wave file we reacquire the cache
               QFileInfo wavinfo(name);
               QString cacheName = wavinfo.absolutePath() + QString("/") + wavinfo.completeBaseName() + QString(".wca");
               QFileInfo wcainfo(cacheName);

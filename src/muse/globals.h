@@ -40,6 +40,7 @@
 #include "audio_convert/audio_converter_settings_group.h"
 #include "rasterizer.h"
 #include "value_units.h"
+#include "mplugins/midiremote.h"
 
 #include <unistd.h>
 
@@ -201,27 +202,14 @@ extern MusECore::MetronomeSettings metroSongSettings;
 // Whether to use the global or song metronome settings.
 extern bool metroUseSongSettings;
 
-extern bool rcEnable;
-extern unsigned char rcStopNote;
-extern unsigned char rcRecordNote;
-extern unsigned char rcGotoLeftMarkNote;
-extern unsigned char rcPlayNote;
-extern unsigned char rcSteprecNote;
-extern unsigned char rcForwardNote;
-extern unsigned char rcBackwardNote;
+extern MusECore::MidiRemote midiRemote;
+// Whether the midi remote control dialog box is currently learning.
+extern bool midiRemoteIsLearning;
+// Whether to use the global or song metronome settings.
+extern bool midiRemoteUseSongSettings;
 
-extern bool rcEnableCC;
-extern unsigned char rcGotoLeftMarkCC;
-extern unsigned char rcBackwardCC;
-extern unsigned char rcForwardCC;
-extern unsigned char rcStopCC;
-extern unsigned char rcPlayCC;
-//extern unsigned char rcInsertPauseCC;
-extern unsigned char rcRecordCC;
-
-extern int midiLearnPort;
-extern int midiLearnChan;
-extern int midiLearnCtrl;
+// Whether the midi to audio assignment dialog box is currently learning.
+extern bool midiToAudioAssignIsLearning;
 
 extern bool midiSeqRunning;
 extern bool automation;

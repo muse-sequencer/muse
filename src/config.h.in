@@ -33,6 +33,7 @@
 #cmakedefine DSSI_SUPPORT
 #cmakedefine LV2_SUPPORT
 #cmakedefine LV2_MAKE_PATH_SUPPORT
+#cmakedefine LV2_USE_PLUGIN_CACHE
 #cmakedefine PYTHON_SUPPORT
 #cmakedefine MIDNAM_SUPPORT
 #cmakedefine HAVE_INSTPATCH
@@ -47,12 +48,16 @@
 #cmakedefine HAVE_EXP10F
 #cmakedefine HAVE_EXP10L
 #cmakedefine ALLOW_LEFT_HIDDEN_EVENTS
+#cmakedefine HAVE_ISTRINGSTREAM_HEXFLOAT
 // #cmakedefine HAVE_M_PI
 
 #define VERSION             "${MusE_VERSION_FULL}"
 #define GITSTRING           "${MusE_GITSTRING}"
 #define ORGANIZATION_NAME   "MusE"
-#define ORGANIZATION_DOMAIN "muse-sequencer.org"
+#define ORGANIZATION_DOMAIN "muse-sequencer.github.io"
+#define ORGANIZATION_URL    "https://muse-sequencer.github.io/"
+#define ORGANIZATION_HELP_URL "https://muse-sequencer.github.io/docs/"
+#define ORGANIZATION_CODE_REPO_URL "https://github.com/muse-sequencer/muse/"
 #define PACKAGE_NAME        "MusE"
 #define APP_DISPLAY_NAME    "MusE"
 #define APP_DESCRIPTION     "MusE: Linux Music Editor"
@@ -61,4 +66,9 @@
 #define LIBDIR              "${MusE_LIB_DIR}"
 #define BINDIR              "${MusE_BIN_DIR}"
 #define VST_SDK_QUIRK_DEF   "${VST_SDK_QUIRK}"
+#ifdef _WIN32 // in liblo windows code is in WIN32 definition
+  #ifndef WIN32
+  #define WIN32
+  #endif
+#endif
 #endif // _MUSE_CONFIG_H_

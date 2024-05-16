@@ -34,6 +34,9 @@
 ##  controls which are too dependent on other MusE modules or
 ##  controls and dialogs which are really only useful to the
 ##  main app or could never really be publicly exposed.
+## NOTE: Do not put any widgets here that use our icons since
+##  this might be shared with plugins for example. Instead,
+##  put such widgets in the components folder.
 ##
 ## As more of the 'components' might be stripped down and moved
 ##  into the 'widgets' folder, the original structure of the
@@ -49,7 +52,6 @@ QT5_WRAP_CPP (widget_mocs
 #       aboutbox_impl.h 
 #       arrangercolumns.h 
 #       action.h
-      automation_mode_toolbar.h
 #       bigtime.h
 #       canvas.h  
       checkbox.h
@@ -196,7 +198,6 @@ QT5_WRAP_CPP (widget_mocs
 file (GLOB widgets_source_files
 #       aboutbox_impl.cpp 
 #       arrangercolumns.cpp 
-      automation_mode_toolbar.cpp
 #       background_painter.cpp
 #       bigtime.cpp 
 #       canvas.cpp 

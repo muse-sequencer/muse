@@ -74,7 +74,6 @@ enum {
       AUDIO_SEEK_PREV_AC_EVENT,
       AUDIO_SEEK_NEXT_AC_EVENT,
       AUDIO_SET_SEND_METRONOME,
-      AUDIO_START_MIDI_LEARN,
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
       AUDIO_WAIT  // Do nothing. Just wait for an audio cycle to pass.
@@ -303,7 +302,6 @@ class Audio {
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);
       void msgSetTrackAutomationType(Track*, int);
       void msgSetSendMetronome(AudioTrack*, bool);
-      void msgStartMidiLearn();
       void msgPlayMidiEvent(const MidiPlayEvent* event);
       // If instrument is given it will be set, otherwise it won't touch the existing instrument.
       void msgSetMidiDevice(MidiPort* port, MidiDevice* device, MidiInstrument* instrument = nullptr);

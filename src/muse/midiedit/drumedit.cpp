@@ -861,6 +861,10 @@ void DrumEdit::midiNote(int pitch, int velo)
 
     //      *note = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
+    // Ignore invalid pitches such as rest notes.
+    if(pitch < 0)
+      return;
+
     if ((DrumCanvas*)(canvas)->midiin())
     {
         int index=0;
@@ -2013,15 +2017,75 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {
-            int pos = hscroll->pos() - MusEGlobal::config.division;
-            if (pos < 0)
-                  pos = 0;
-            hscroll->setPos(pos);
+            if(hscroll)
+            {
+              int pos = hscroll->pos() - MusEGlobal::config.division;
+              if (pos < 0)
+                    pos = 0;
+              hscroll->setPos(pos);
+            }
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_RIGHT].key) {
-            int pos = hscroll->pos() + MusEGlobal::config.division;
-            hscroll->setPos(pos);
+            if(hscroll)
+            {
+              int pos = hscroll->pos() + MusEGlobal::config.division;
+              hscroll->setPos(pos);
+            }
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_LEFT_FAST].key) {
+            if(hscroll)
+            {
+              int pos = hscroll->pos() - (MusEGlobal::config.division * 5);
+              if (pos < 0)
+                    pos = 0;
+              hscroll->setPos(pos);
+            }
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_RIGHT_FAST].key) {
+            if(hscroll)
+            {
+              int pos = hscroll->pos() + (MusEGlobal::config.division * 5);
+              hscroll->setPos(pos);
+            }
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_UP].key) {
+            if(vscroll)
+            {
+              int pos = vscroll->pos() - 20;
+              if (pos < 0)
+                    pos = 0;
+              vscroll->setPos(pos);
+            }
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_DOWN].key) {
+            if(vscroll)
+            {
+              int pos = vscroll->pos() + 20;
+              vscroll->setPos(pos);
+            }
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_UP_FAST].key) {
+            if(vscroll)
+            {
+              int pos = vscroll->pos() - (20 * 5);
+              if (pos < 0)
+                    pos = 0;
+              vscroll->setPos(pos);
+            }
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_DOWN_FAST].key) {
+            if(vscroll)
+            {
+              int pos = vscroll->pos() + (20 * 5);
+              vscroll->setPos(pos);
+            }
             return;
             }
       else if (key == shortcuts[SHRT_SET_QUANT_BAR].key)

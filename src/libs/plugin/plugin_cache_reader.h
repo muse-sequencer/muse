@@ -83,8 +83,8 @@ bool readPluginScanInfoPortEnum(MusECore::Xml& xml, PluginPortInfo* port_info);
 bool readPluginScanInfoPort(MusECore::Xml& xml, PluginScanInfoStruct* info);
 // Return true on error
 bool readPluginScanInfo(MusECore::Xml& xml, PluginScanInfoStruct* info, bool readPorts = false, bool readEnums = false);
-// Return true on error
-bool readPluginScan(MusECore::Xml& xml, PluginScanList* list, bool readPorts = false, bool readEnums = false);
+// Return true on error. If successful, numPlugins, if valid, is set to the number of plugins found.
+bool readPluginScan(MusECore::Xml& xml, PluginScanList* list, bool readPorts = false, bool readEnums = false, int *numPlugins = nullptr);
 
 // Read the plugin cache text file to a plugin list.
 bool readPluginCacheFile(

@@ -328,7 +328,7 @@ details.
         MusE is a realtime program which requires special rights to work properly.
 
       - Check if you are running a sufficiently new linux kernel > 2.6.x
-        A modern, standard destop kernel should suit virtually all needs.
+        A modern, standard desktop kernel should suit virtually all needs.
         For even stricter realtime performance a so-called 'low latency'
          or 'realtime' kernel may be available. Check your distro's packages
          for availability.
@@ -425,7 +425,18 @@ details.
          
         Run MusE in a terminal to see what it picks. -D option gives more info. 
 
-        
+
+        NOTICE ABOUT 'BAD TIMING' MESSAGE:
+        ----------------------------------
+        If a message appears at startup informing of 'bad timing' and that the
+         timing source frequency is too low, try manually loading the ALSA module
+         snd-hrtimer before starting MusE if you have not started Jack yet.
+        Like this:
+         "sudo modprobe snd-hrtimer"
+        That step should not be necessary if Jack has already been started.
+        ----------------------------------
+
+
         (The following is old information! But may work for those without udev.)
         Make sure you can access the realtime clock (RTC)
             chmod 660 /dev/rtc
@@ -439,7 +450,7 @@ details.
       Known bugs:
   =============================
 
-      The odd weirdness happens and some things may not be completely implemeneted
+      The odd weirdness happens and some things may not be completely implemented
       though we hope it is as stable for you as it is for us!
 
       If you differ in this opinion we are grateful for all reported issues.

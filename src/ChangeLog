@@ -1,3 +1,54 @@
+13.05.2024
+    - Added instrument file for the Roland INTEGRA-7 sound module, made by Cookston (rj)
+26.04.2024
+    - Fix issue 1104: Fixed update of UI element for globalPitchShift upon loading song (rj)
+11.12.2023
+    - Shortcuts: Forum request: Added editor scroll up/down, fast up/down + left/right. (Tim)
+25.09.2023
+    - LV2: Streamline discovery. Eliminate duplicate load_world and load_all_plugins. (Tim)
+      This might make only slightly faster startup time. But code is more proper now.
+24.09.2023
+    *** MusE 4.2.1 ***
+23.09.2023
+    - Fix issue 1247: compilation only succeeds with MODULES_BUILD_STATIC=1 (Tim)
+      Five undefined symbols. Remove 'inline' from five functions in mididev.cpp
+20.09.2023
+    - Fixed issue 1243 Slow startup: Always rescanning when file contains no plugins. (Tim)
+      File ladspa_dsp.so was causing rescanning all the time because it is normally empty
+       until a configuration file is hand-entered by the user.
+    - Fixed missing simpledrums MESS synth: Moved files automation_mode_toolbar.h/.cpp
+       from widgets folder to components folder because it contains icons, and simpledrums
+       uses our widgets library and it is not supposed to contain icons.
+10.09.2023
+    *** MusE 4.2 ***
+03.09.2023
+    - Fluidsynth MESS: Fixed deprecated function calls at version >= 2.2 (Tim)
+31.08.2023
+    - Fixed issue 1106: Running scripts in midi editors takes waaay too long. (Tim)
+      In Scripts::executeScript(): Changed from applyOperation for each event
+       which is very slow, to applyOperationGroup just once for the whole lot.
+30.08.2023
+    - Fixed issue 1238: Not responding to program MSB from inputs. (Tim)
+      Ancient bug, 20 years? Problem with Midi Filter and midiFilterCtrlxxx globals.
+28.08.2023
+    * New: Midi remote control feature redesigned. (Tim)
+      Now with learning, port, channel, value type trigger/toggle/momentary, global/song settings.
+    - Also rewrote midi-to-audio controller assignment learning code, to follow these changes.
+03.08.2023
+    - Fixed issue 1233: RtAudio 6 compatibility. (Tim)
+      Tested OK with RtAudio 6.0.1
+31.07.2023
+    - Fixed midi remote control: Don't accept note-offs. (Tim)
+      Symptoms were: Double step-record entries, transport record toggling, double play etc.
+    - Changed all references to the app's url, help url etc. (Website has changed).
+      Created ORGANIZATION_URL, ORGANIZATION_HELP_URL, ORGANIZATION_CODE_REPO_URL in config.h.in
+26.07.2023
+    - Fixed broken midi to logarithmic audio controller assignment, such as volume. (Tim)
+06.07.2023
+    - Hexfloat values: Rework code with help from donarturo11. (Tim)
+      Avoid per-thread thread-safe locale calls (uselocale etc). Not available on mingw for ex.
+17.06.2023
+    - Fixed: LV2 Synths like Odin-II not responding to automation since around 29.04.2023. (Tim)
 15.06.2023
     - Fixed issue 1121: Undefined symbol ipatch_close. (Tim)
       ipatch_close was introduced in libinstpatch 1.1.0

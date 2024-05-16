@@ -27,7 +27,8 @@
 
 // Make sure this number is unique among all the MESS synths (including ticksynth) and DSSI, VST, LV2 and other host synths.
 // 127 is reserved for special MusE system messages.
-#define VST_NATIVE_SYNTH_UNIQUE_ID 9
+// We don't use internal sysex with LV2 so this is not used, but if it was it would be this:
+#define LV2_SYNTH_UNIQUE_ID 10
 
 #ifdef LV2_SUPPORT
 
@@ -48,37 +49,37 @@
 // #    pragma GCC diagnostic pop
 // #endif
 
-#include "lv2/lv2plug.in/ns/ext/data-access/data-access.h"
-#include "lv2/lv2plug.in/ns/ext/state/state.h"
-#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
-#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
-#include "lv2/lv2plug.in/ns/ext/buf-size/buf-size.h"
+#include "lv2/data-access/data-access.h"
+#include "lv2/state/state.h"
+#include "lv2/atom/atom.h"
+#include "lv2/midi/midi.h"
+#include "lv2/buf-size/buf-size.h"
 #ifdef LV2_EVENT_BUFFER_SUPPORT
-#include "lv2/lv2plug.in/ns/ext/event/event.h"
+#include "lv2/event/event.h"
 #endif
-#include "lv2/lv2plug.in/ns/ext/options/options.h"
-#include "lv2/lv2plug.in/ns/ext/parameters/parameters.h"
-#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
-#include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
-#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-#include "lv2/lv2plug.in/ns/ext/time/time.h"
+#include "lv2/options/options.h"
+#include "lv2/parameters/parameters.h"
+#include "lv2/patch/patch.h"
+#include "lv2/port-groups/port-groups.h"
+#include "lv2/presets/presets.h"
+#include "lv2/time/time.h"
 #ifdef LV2_URI_MAP_SUPPORT
-#include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
+#include "lv2/uri-map/uri-map.h"
 #endif
-#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
-#include "lv2/lv2plug.in/ns/ext/worker/worker.h"
-#include "lv2/lv2plug.in/ns/ext/port-props/port-props.h"
-#include "lv2/lv2plug.in/ns/ext/atom/forge.h"
-#include "lv2/lv2plug.in/ns/ext/log/log.h"
-#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
-#include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
-#include "lv2/lv2plug.in/ns/ext/resize-port/resize-port.h"
+#include "lv2/urid/urid.h"
+#include "lv2/worker/worker.h"
+#include "lv2/port-props/port-props.h"
+#include "lv2/atom/forge.h"
+#include "lv2/log/log.h"
+#include "lv2/ui/ui.h"
+#include "lv2/dynmanifest/dynmanifest.h"
+#include "lv2/resize-port/resize-port.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
 #ifdef MIDNAM_SUPPORT
 #include "midnam_lv2.h"
 #endif
-#include "lv2/lv2plug.in/ns/extensions/units/units.h"
+#include "lv2/units/units.h"
 
 #include <vector>
 #include <map>

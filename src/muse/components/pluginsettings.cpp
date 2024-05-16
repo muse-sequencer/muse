@@ -5,6 +5,7 @@
 #include "icons.h"
 #include "app.h"
 #include "globals.h"
+#include "config.h"
 
 
 namespace MusEGui {
@@ -96,7 +97,7 @@ void PluginSettings::on_cbOverrideLatency_toggled(bool checked)
 
 void PluginSettings::on_pbInfo_clicked()
 {
-    QString s("https://github.com/muse-sequencer/muse/wiki/HiDPI");
+    QString s(ORGANIZATION_HELP_URL "configuration#hidpi");
     MusEGlobal::muse->launchBrowser(s);
 }
 

@@ -60,6 +60,7 @@ file (GLOB mplugins_source_files
       midifilterimpl.cpp
       miditransform.cpp
       midiitransform.cpp 
+      midiremote.cpp
       mitplugin.cpp
       mittranspose.cpp 
       mrconfig.cpp 
@@ -105,6 +106,7 @@ target_link_libraries( mplugins
       # midiplugin
       ${QT_LIBRARIES}
       widgets
+      xml_module
       )
 
 ##

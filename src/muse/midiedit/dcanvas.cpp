@@ -1107,7 +1107,14 @@ void DrumCanvas::keyPressed(int index, int velocity)
       if (_steprec) /* && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
       {
         if ( curPart && instrument_map[index].tracks.contains(curPart->track()) )
-            steprec->record(curPart,instrument_map[index].pitch,ourDrumMap[index].len,editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier, -1 /* invalid pitch as "really played" -> the "insert rest" feature is never triggered */);
+            steprec->record(
+              curPart,
+              instrument_map[index].pitch,
+              ourDrumMap[index].len,
+              editor->raster(),
+              velocity,
+              MusEGlobal::globalKeyState&Qt::ControlModifier,
+              MusEGlobal::globalKeyState&Qt::ShiftModifier);
         else
         {
           QSet<MusECore::Part*> parts = parts_at_tick(pos[0], instrument_map[index].tracks);
@@ -1115,8 +1122,13 @@ void DrumCanvas::keyPressed(int index, int velocity)
           if (parts.count() != 1)
             QMessageBox::warning(this, tr("Recording event failed"), tr("Couldn't record the event, because the currently selected part isn't the same track, and the instrument to be recorded could be either on no or on multiple parts, which is ambiguous.\nSelect the destination part, then try again."));
           else
-            steprec->record(*parts.begin(), instrument_map[index].pitch,ourDrumMap[index].len,editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier, -1 /* invalid pitch as "really played" -> the "insert rest" feature is never triggered */);
-          
+            steprec->record(
+              *parts.begin(),
+              instrument_map[index].pitch,ourDrumMap[index].len,
+              editor->raster(),
+              velocity,
+              MusEGlobal::globalKeyState&Qt::ControlModifier,
+              MusEGlobal::globalKeyState&Qt::ShiftModifier);
         }
       }            
 }
@@ -1556,10 +1568,17 @@ void DrumCanvas::midiNote(int pitch, int velo)
 
       if (_midiin && _steprec && !MusEGlobal::audio->isPlaying() && velo && !(MusEGlobal::globalKeyState & Qt::AltModifier) /* && pos[0] >= start_tick && pos[0] < end_tick [removed by flo93: this is handled in steprec->record()] */ )
       {
-         if (pitch == MusEGlobal::rcSteprecNote) // skip the fancy code below, simply record a rest
+         if (pitch == -1) // skip the fancy code below, simply record a rest
          {
            if (curPart)
-             steprec->record(curPart,0xdead,0xbeef,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier, pitch);
+             steprec->record(
+               curPart,
+               -1,
+               0,
+               editor->raster(),
+               velo,
+               MusEGlobal::globalKeyState&Qt::ControlModifier,
+               MusEGlobal::globalKeyState&Qt::ShiftModifier);
          }
          else
          {
@@ -1609,8 +1628,15 @@ void DrumCanvas::midiNote(int pitch, int velo)
             }
             
             if (rec_part != nullptr)
-              steprec->record(rec_part,instrument_map[rec_index].pitch,ourDrumMap[rec_index].len,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier, pitch);
-         }   
+              steprec->record(
+                rec_part,
+                instrument_map[rec_index].pitch,
+                ourDrumMap[rec_index].len,
+                editor->raster(),
+                velo,
+                MusEGlobal::globalKeyState&Qt::ControlModifier,
+                MusEGlobal::globalKeyState&Qt::ShiftModifier);
+         }
       }
 }
 

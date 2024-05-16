@@ -154,7 +154,7 @@ public:
       // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
       virtual int oldMidiStateHeader(const unsigned char** data) const;
       virtual void processMessages();
-      virtual void process(unsigned pos, float**, int, int);
+      virtual void process(unsigned pos, float** ports, int numPorts, int offset, int len);
       virtual bool playNote(int channel, int pitch, int velo);
       virtual bool sysex(int, const unsigned char*);
       virtual bool setController(int, int, int);

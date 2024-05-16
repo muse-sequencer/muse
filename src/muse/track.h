@@ -326,14 +326,14 @@ class Track {
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one.
       // If false, this branch will NOT disturb other parallel branches' compensation,
-      //  intead only allowing compensation UP TO the worst case in other branches.
+      //  instead only allowing compensation UP TO the worst case in other branches.
       virtual bool canDominateOutputLatency() const;
       virtual bool canDominateInputLatency() const;
       // Whether this track (and the branch it is in) can force other parallel branches to
       //  increase their latency compensation to match this one - IF this track is an end-point
       //  and the branch allows domination.
       // If false, this branch will NOT disturb other parallel branches' compensation,
-      //  intead only allowing compensation UP TO the worst case in other branches.
+      //  instead only allowing compensation UP TO the worst case in other branches.
       inline virtual bool canDominateEndPointLatency() const { return false; }
       // Whether this track and its branch can correct for latency, not just compensate.
       inline virtual bool canCorrectOutputLatency() const { return false; }
@@ -366,7 +366,7 @@ class Track {
       // Argument 'input': Whether we want the input side of the track. For example un-monitored wave tracks
       //  are considered two separate paths with a recording input side and a playback output side.
       virtual TrackLatencyInfo& getLatencyInfo(bool input) = 0;
-      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechanism is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
       virtual unsigned long latencyCompWriteOffset() const { return _latencyInfo._compensatorWriteOffset; }
@@ -509,7 +509,7 @@ class MidiTrack : public Track {
       //  in a branch of the graph.
       virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getLatencyInfo(bool input);
-      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechanism is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
       virtual void setLatencyCompWriteOffset(float worstCase);
@@ -843,7 +843,7 @@ class AudioTrack : public Track {
       //  in a branch of the graph.
       virtual TrackLatencyInfo& setCorrectionLatencyInfo(bool input, float finalWorstLatency, float callerBranchLatency = 0.0f);
       virtual TrackLatencyInfo& getLatencyInfo(bool input);
-      // Used during latency compensation processing. When analyzing in 'reverse' this mechansim is
+      // Used during latency compensation processing. When analyzing in 'reverse' this mechanism is
       //  needed only to equalize the timing of all the AudioOutput tracks.
       // It is applied as a direct offset in the latency delay compensator in getData().
       virtual void setLatencyCompWriteOffset(float worstCase);

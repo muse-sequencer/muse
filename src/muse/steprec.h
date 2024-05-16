@@ -37,8 +37,9 @@ class StepRec : public QObject
 	public:
 		StepRec(bool* note_held_down_array);
 		
-		void record(const Part* part,  int recorded_pitch, int len, int step, int velo=80, bool ctrl=false, bool shift=false, int incoming_pitch=1337);
-	
+		// The recorded_pitch can be -1 meaning record a rest (space).
+		void record(const Part* part, int recorded_pitch, int len, int step, int velo=80, bool ctrl=false, bool shift=false);
+
     public slots:
         void moveon(int step);
 

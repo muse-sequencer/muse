@@ -210,7 +210,7 @@ class VAM : public MessMono {
       virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
       virtual void setNativeGeometry(int x, int y, int w, int h);
       virtual void processMessages();
-      virtual void process(unsigned pos, float**, int, int);
+      virtual void process(unsigned pos, float** ports, int numPorts, int offset, int sampleCount);
       virtual void note(int channel, int pitch, int velo);
       virtual bool setController(int channel, int ctrl, int val);
       virtual bool sysex(int, const unsigned char*);
@@ -343,7 +343,7 @@ bool VAM::init(const char* name)
               lin2exp[i] = 1.5 * tmp * tmp * tmp - 0.69 * tmp * tmp + 0.16 * tmp;
               }
           int sr = sampleRate();
-          /* Build up denormalised oscilator wavetables, these are sample_rate
+          /* Build up denormalised oscillator wavetables, these are sample_rate
              long, costs more RAM to create them but makes frequency calcs much
              cheaper, and means that interpolation isn't that necessary, esp if
              you use integer frequencies */
@@ -475,7 +475,7 @@ void VAM::processMessages()
 //   Called from host, ONLY if output path is connected.
 //---------------------------------------------------------
 
-void VAM::process(unsigned /*pos*/, float** ports, int offset, int sampleCount)
+void VAM::process(unsigned /*pos*/, float** ports, int /*numPorts*/, int offset, int sampleCount)
       {
       /*
       //

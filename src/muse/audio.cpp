@@ -116,7 +116,6 @@ const char* seqMsgList[] = {
       "AUDIO_SEEK_PREV_AC_EVENT",
       "AUDIO_SEEK_NEXT_AC_EVENT",
       "AUDIO_SET_SEND_METRONOME", 
-      "AUDIO_START_MIDI_LEARN",
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
       "SEQM_IDLE", "SEQM_SEEK",
       "AUDIO_WAIT"
@@ -582,7 +581,7 @@ void Audio::reSyncAudio()
     //  either via changes to tempo map or the static tempo value. The actual transport frame is allowed
     //  to continue progressing naturally but our representation of it (_pos) jumps to a new value
     //  so that the relation between ticks and frames in all our tempo routines remains correct.
-    // But the relation betweeen actual transport frame and current tick will still be incorrect
+    // But the relation between actual transport frame and current tick will still be incorrect
     //  for the given new tempo value, that is why this adjustment to our _pos is needed.
     // Another solution would be to actually seek the transport to the correct frame.
     // In either solution any waves will jump to a new position but midi will continue on.
@@ -1458,13 +1457,6 @@ void Audio::processMsg(AudioMsg* msg)
                   msg->snode->setSendMetronome((bool)msg->ival);
                   break;
             
-            case AUDIO_START_MIDI_LEARN:
-                  // Reset the values. The engine will fill these from driver events.
-                  MusEGlobal::midiLearnPort = -1;
-                  MusEGlobal::midiLearnChan = -1;
-                  MusEGlobal::midiLearnCtrl = -1;
-                  break;
-
             case SEQM_RESET_DEVICES:
                   for (int i = 0; i < MusECore::MIDI_PORTS; ++i)                         
                   {      

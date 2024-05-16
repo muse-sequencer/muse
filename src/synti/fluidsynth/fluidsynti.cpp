@@ -119,6 +119,8 @@ QString projPathPtr;
 // Fluidsynth
 //
 FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoaderMutex(_GlobalSfLoaderMutex)
+// TODO
+// FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(32), _sfLoaderMutex(_GlobalSfLoaderMutex)
       {
 #ifdef HAVE_INSTPATCH
       /* initialize libInstPatch */
@@ -132,8 +134,16 @@ FluidSynth::FluidSynth(int sr, QMutex &_GlobalSfLoaderMutex) : Mess(2), _sfLoade
             printf("Error while creating fluidsynth settings!\n");
             return;
             }
+// TODO
+//       if(fluid_settings_setint(_settings, (char*) "synth.audio-channels", Mess::channels() / 2) != FLUID_OK) {
+//             fprintf(stderr, "Error setting fluidsynth synth.audio-channels!\n");
+//             return;
+//             }
+//       if(fluid_settings_setint(_settings, (char*) "synth.audio-groups", Mess::channels() / 2) != FLUID_OK)
+//             fprintf(stderr, "Warning: Error setting fluidsynth synth.audio-groups! Multi-channel output will be disabled.\n");
+
       if(fluid_settings_setnum(_settings, (char*) "synth.sample-rate", float(sampleRate())) != FLUID_OK)
-            printf("Warning: Error setting fluidsynth synth.sample-rate!\n");
+            fprintf(stderr, "Warning: Error setting fluidsynth synth.sample-rate!\n");
 
       fluidsynth = new_fluid_synth(_settings);
       if (!fluidsynth) {
@@ -291,7 +301,7 @@ void FluidSynth::processMessages()
 //   Called from host, ONLY if output path is connected.
 //---------------------------------------------------------
 
-void FluidSynth::process(unsigned /*pos*/, float** ports, int offset, int len)
+void FluidSynth::process(unsigned /*pos*/, float** ports, int /*numPorts*/, int offset, int len)
       {
       /*
       //Process messages from the gui
@@ -312,10 +322,68 @@ void FluidSynth::process(unsigned /*pos*/, float** ports, int offset, int len)
             }
       */
 
+// TODO Multichannel support in progress
+#if 0
+
+      if(numPorts <= 0)
+        return;
+
+// REMOVE Tim. fluid. Added. Diagnostics. Tested OK.
+      if(offset != 0)
+        fprintf(stderr, "FluidSynth::process: numPorts:%d offset:%d\n", numPorts, offset);
+
+      // Always 2 = stereo.
+      const int portsPerChan = 2;
+      const int messports = Mess::channels();
+      const int midichans = fluid_synth_count_midi_channels(fluidsynth);
+      const int midi_aports = midichans * portsPerChan;
+      const int achans = fluid_synth_count_audio_channels(fluidsynth);
+      const int aports = achans * portsPerChan;
+      const int agrps = fluid_synth_count_audio_groups(fluidsynth);
+      // "Number of effects per effects group. Currently this value can not be changed so there are
+      //   always two effects per group available (reverb and chorus)."
+      const int echans = fluid_synth_count_effects_channels(fluidsynth);
+      const int egrps = fluid_synth_count_effects_groups(fluidsynth);
+      const int eports = echans * egrps * portsPerChan;
+
+      const int extra_ports = aports > midi_aports ? aports - midi_aports : 0;
+
+      float *e_fa[eports];
+      for(int i = 0; i < eports; ++i)
+      {
+        if(i < extra_ports)
+        {
+          e_fa[i] = ports[midi_aports + i];
+
+        }
+        else
+        {
+          // Both reverb and chorus go to the one audio channel.
+          e_fa[i] = ports[i & 0xfffd];
+
+        }
+
+      }
+
+
+      // Add the offset to the buffer locations.
+      float *a_fa[numPorts];
+      for(int i = 0; i < numPorts; ++i)
+        a_fa[i] = ports[i] + offset;
+
+      if (fluid_synth_process(fluidsynth, len, eports, e_fa, numPorts, a_fa)) {
+            M_ERROR("Error writing from synth!");
+            return;
+            }
+
+#else
+
       if (fluid_synth_write_float(fluidsynth, len, ports[0], offset, 1, ports[1], offset, 1)) {
             M_ERROR("Error writing from synth!");
             return;
             }
+
+#endif
       }
 
 //---------------------------------------------------------
@@ -431,6 +499,10 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
       memcpy(chptr, &f, sizeof(float));
       chptr += sizeof(float);
 
+
+// Deprecated functions at version >= 2.2
+#if (FLUIDSYNTH_VERSION_MAJOR < 2) || (FLUIDSYNTH_VERSION_MAJOR == 2 && FLUIDSYNTH_VERSION_MINOR < 2)
+
       double d = fluid_synth_get_reverb_roomsize(fluidsynth);
       memcpy(chptr, &d, sizeof(double));
       chptr += sizeof(double);
@@ -472,6 +544,60 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
       memcpy(chptr, &d, sizeof(double));
 //      chptr += sizeof(double);
 
+#else // Version >= 2.2
+
+      double d;
+      int i;
+      int b;
+
+      d = 0.0;
+      fluid_synth_get_reverb_group_roomsize(fluidsynth, -1, &d);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+
+      d = 0.0;
+      fluid_synth_get_reverb_group_damp(fluidsynth, -1, &d);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+
+      d = 0.0;
+      fluid_synth_get_reverb_group_width(fluidsynth, -1, &d);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+
+      d = 0.0;
+      fluid_synth_get_reverb_group_level(fluidsynth, -1, &d);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+
+      i = 0;
+      fluid_synth_get_chorus_group_nr(fluidsynth, -1, &i);
+      b = i;
+      memcpy(chptr, &b, sizeof(byte));
+      chptr += sizeof(byte);
+
+      i = FLUID_CHORUS_MOD_SINE;
+      fluid_synth_get_chorus_group_type(fluidsynth, -1, &i);
+      b = i;
+      memcpy(chptr, &b, sizeof(byte));
+      chptr += sizeof(byte);
+
+      d = 0.0;
+      fluid_synth_get_chorus_group_level(fluidsynth, -1, &d);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+
+      d = 1.0;
+      fluid_synth_get_chorus_group_speed(fluidsynth, -1, &d);
+      memcpy(chptr, &d, sizeof(double));
+      chptr += sizeof(double);
+
+      d = 0.0;
+      fluid_synth_get_chorus_group_depth(fluidsynth, -1, &d);
+      memcpy(chptr, &d, sizeof(double));
+//      chptr += sizeof(double);
+
+#endif
 
       if (FS_DEBUG) {
             for (int i=0; i<len; i++)
@@ -616,7 +742,15 @@ void FluidSynth::parseInitData(int n, const byte* d)
             memcpy(&level, &d[arrayIndex], sizeof(double));
             arrayIndex += sizeof(double);
 
+// Deprecated functions at version >= 2.2
+#if (FLUIDSYNTH_VERSION_MAJOR < 2) || (FLUIDSYNTH_VERSION_MAJOR == 2 && FLUIDSYNTH_VERSION_MINOR < 2)
             fluid_synth_set_reverb(fluidsynth, size, damping, width, level);
+#else
+            fluid_synth_set_reverb_group_roomsize(fluidsynth, -1, size);
+            fluid_synth_set_reverb_group_damp(fluidsynth, -1, damping);
+            fluid_synth_set_reverb_group_width(fluidsynth, -1, width);
+            fluid_synth_set_reverb_group_level(fluidsynth, -1, level);
+#endif
 
             MusECore::MidiPlayEvent ev1(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_LEVEL, static_cast<int>(level * 16384/2));
             gui->writeEvent(ev1);
@@ -643,7 +777,16 @@ void FluidSynth::parseInitData(int n, const byte* d)
             memcpy(&depth, &d[arrayIndex], sizeof(double));
             //                arrayIndex += sizeof(double);
 
+// Deprecated functions at version >= 2.2
+#if (FLUIDSYNTH_VERSION_MAJOR < 2) || (FLUIDSYNTH_VERSION_MAJOR == 2 && FLUIDSYNTH_VERSION_MINOR < 2)
             fluid_synth_set_chorus(fluidsynth, num, level, speed, depth, type);
+#else
+            fluid_synth_set_chorus_group_nr(fluidsynth, -1, num);
+            fluid_synth_set_chorus_group_type(fluidsynth, -1, type);
+            fluid_synth_set_chorus_group_level(fluidsynth, -1, level);
+            fluid_synth_set_chorus_group_speed(fluidsynth, -1, speed);
+            fluid_synth_set_chorus_group_depth(fluidsynth, -1, depth);
+#endif
 
             MusECore::MidiPlayEvent ev1(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_NUM, num);
             gui->writeEvent(ev1);
@@ -1194,6 +1337,10 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                         }
                   break;
                   }
+
+// Deprecated functions at version >= 2.2
+#if (FLUIDSYNTH_VERSION_MAJOR < 2) || (FLUIDSYNTH_VERSION_MAJOR == 2 && FLUIDSYNTH_VERSION_MINOR < 2)
+
             case FS_REVERB_ON: {
                   rev_on = val;
                   fluid_synth_set_reverb_on(fluidsynth, val); // 0 or 1
@@ -1296,6 +1443,114 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                         }
                   break;
                   }
+
+#else // Version >= 2.2
+
+            case FS_REVERB_ON: {
+                  rev_on = val;
+                  fluid_synth_reverb_on(fluidsynth, -1, val); // 0 or 1
+                  //if (rev_on)
+                  //      fluid_synth_set_reverb(fluidsynth, rev_size, rev_damping, rev_width, rev_level);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_ON, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+                  }
+            case FS_REVERB_LEVEL:
+                  //Interval: 0-2
+                  rev_level = (double)2*val/16384; //[0,2]
+                  //if (rev_on)
+                        fluid_synth_set_reverb_group_level(fluidsynth, -1, rev_level);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_LEVEL, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+            case FS_REVERB_WIDTH: //
+                  rev_width = (double)val/164; //[0,100]
+                  //if (rev_on)
+                        fluid_synth_set_reverb_group_width(fluidsynth, -1, rev_width);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_WIDTH, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+            case FS_REVERB_DAMPING: //[0,1]
+                  rev_damping = (double)val/16384;
+                  //if (rev_on)
+                        fluid_synth_set_reverb_group_damp(fluidsynth, -1, rev_damping);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_DAMPING, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+            case FS_REVERB_ROOMSIZE: //[0,1]
+                  rev_size = (double)val/16384;
+                  //if (rev_on)
+                        fluid_synth_set_reverb_group_roomsize(fluidsynth, -1, rev_size);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_ROOMSIZE, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+            case FS_CHORUS_ON: {// 0 or 1
+                  cho_on = val;
+                  fluid_synth_chorus_on(fluidsynth, -1, val);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_ON, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+                  }
+            case FS_CHORUS_NUM: {//Number of delay lines
+                  cho_num = val;
+                  fluid_synth_set_chorus_group_nr(fluidsynth, -1, cho_num);
+                  if (!fromGui) {
+                      MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_NUM, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+                  }
+            case FS_CHORUS_TYPE: {//?
+                  cho_type = val;
+                  fluid_synth_set_chorus_group_type(fluidsynth, -1, cho_type);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_TYPE, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+                  }
+            case FS_CHORUS_SPEED: {//(0.291,5) Hz (0.29Hz acc.to API docu, changed to 0.1Hz in fs 2.1.0)
+                  cho_speed = (double)(chorus_speed_range_lower + (double)val/3479);
+                  fluid_synth_set_chorus_group_speed(fluidsynth, -1,  cho_speed);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_SPEED, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+                  }
+            case FS_CHORUS_DEPTH: { //[0,40]
+                  cho_depth = (double) val*40/16383;
+                  fluid_synth_set_chorus_group_depth(fluidsynth, -1,  cho_depth);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_DEPTH, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+                  }
+            case FS_CHORUS_LEVEL: { //[0,1]
+                  cho_level = (double) val/16383;
+                  fluid_synth_set_chorus_group_level(fluidsynth, -1,  cho_level);
+                  if (!fromGui) {
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_LEVEL, val);
+                        gui->writeEvent(ev);
+                        }
+                  break;
+                  }
+
+#endif
+
             //
             // Controllers that depend on channels
             //

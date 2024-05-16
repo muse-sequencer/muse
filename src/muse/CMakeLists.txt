@@ -248,6 +248,7 @@ set_target_properties( core
       PROPERTIES COMPILE_FLAGS "${VST_SDK_QUIRK}"
       OUTPUT_NAME muse_core
       )
+
 set_target_properties( muse
       PROPERTIES OUTPUT_NAME ${MusE_EXEC_NAME}
       )
@@ -318,6 +319,10 @@ target_link_libraries(core
       ${FST_LIB}
       dl
       )
+
+if(NOT LV2_USE_PLUGIN_CACHE)
+      target_link_libraries(core plugin_cache_reader_module)
+endif(NOT LV2_USE_PLUGIN_CACHE)
 
 if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB OR NOT HAVE_CXX_ATOMICS64_WITHOUT_LIB)
       message("Warning: HAVE_CXX_ATOMICS_WITHOUT_LIB or HAVE_CXX_ATOMICS64_WITHOUT_LIB are false. Linking core with required libatomic.")

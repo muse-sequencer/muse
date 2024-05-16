@@ -295,7 +295,7 @@ class PluginScanInfoStruct
       { };
 
     //~PluginScanInfoStruct();
-      
+
 #ifdef PLUGIN_INFO_USE_QT
       
 #if defined(_WIN64) || defined(_WIN32)

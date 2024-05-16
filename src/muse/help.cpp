@@ -35,6 +35,7 @@
 //#include "gconfig.h"
 //#include "icons.h"
 #include "aboutbox_impl.h"
+//#include "config.h" // Already in app.h
 
 // Whether to open the pdf or the html
 //#define MUSE_USE_PDF_HELP_FILE
@@ -60,31 +61,31 @@ void MusE::startHelpBrowser()
     QString museManual;
 
     if (w && w->objectName() == "PartCanvas")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+        museManual = QString(ORGANIZATION_HELP_URL "editoruse");
     else if (w && w->objectName() == "Pianoroll")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+        museManual = QString(ORGANIZATION_HELP_URL "editoruse");
     else if (w && w->objectName() == "DrumCanvas")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+        museManual = QString(ORGANIZATION_HELP_URL "editoruse");
     else if (w && w->objectName() == "WaveCanvas")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/usage-of-the-editors");
+        museManual = QString(ORGANIZATION_HELP_URL "editoruse");
     else if (w && w->objectName() == "TrackList")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#tracks-and-parts");
+        museManual = QString(ORGANIZATION_HELP_URL "tracks#tracks-and-parts");
     else if (w && w->objectName() == "EffectRack")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/understanding-the-effects-rack");
+        museManual = QString(ORGANIZATION_HELP_URL "plugins#the-audio-effects-rack");
     else if (w && w->objectName() == "SoloButton")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#track-soloing");
+        museManual = QString(ORGANIZATION_HELP_URL "trackssolo#track-soloing");
     else if (w && (w->objectName() == "InputRouteButton" || w->objectName() == "OutputRouteButton"))
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#routes");
+        museManual = QString(ORGANIZATION_HELP_URL "routes#routes");
     else if (w && (w->objectName() == "AudioAutoType"))
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#audio-automation");
+        museManual = QString(ORGANIZATION_HELP_URL "automation#audio-automation");
 
     else if (w && tb && tb->defaultAction()->objectName() == "PanicButton")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation#the-panic-toolbar");
+        museManual = QString(ORGANIZATION_HELP_URL "panic");
     else if (w && tb && tb->defaultAction()->objectName() == "MetronomeButton")
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/metronome");
+        museManual = QString(ORGANIZATION_HELP_URL "metronome");
 
     else
-        museManual = QString("https://github.com/muse-sequencer/muse/wiki/Documentation");
+        museManual = QString(ORGANIZATION_HELP_URL "intro");
 
     launchBrowser(museManual);
 }
@@ -95,7 +96,7 @@ void MusE::startHelpBrowser()
 
 void MusE::startHomepageBrowser()
       {
-      QString museHome = QString("https://muse-sequencer.github.io");
+      QString museHome = QString(ORGANIZATION_URL);
       launchBrowser(museHome);
       }
 
@@ -105,7 +106,7 @@ void MusE::startHomepageBrowser()
 
 void MusE::startBugBrowser()
       {
-      QString museBugPage("https://github.com/muse-sequencer/muse/issues");
+      QString museBugPage(ORGANIZATION_CODE_REPO_URL "issues");
       launchBrowser(museBugPage);
       }
 

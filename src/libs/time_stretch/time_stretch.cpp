@@ -69,7 +69,7 @@ StretchList::~StretchList()
 
 void StretchList::add(StretchListItem::StretchEventType type, MuseFrame_t frame, double value, bool do_normalize)
 {
-  // Some '1.0' values will be filled in if neccessary by normalize() below.
+  // Some '1.0' values will be filled in if necessary by normalize() below.
   double str = 1.0;
   double srr = 1.0;
   double psr = 1.0;
@@ -151,7 +151,7 @@ void StretchList::del(int types, MuseFrame_t frame, bool do_normalize)
   iStretchListItem e = find(frame);
   if(e == end()) 
   {
-    ERROR_TIMESTRETCH(stderr, "StretchList::del(%ld): not found\n", frame);
+    ERROR_TIMESTRETCH(stderr, "StretchList::del(%ld): not found\n", (long int) frame);
     return;
   }
 

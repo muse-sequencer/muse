@@ -209,7 +209,7 @@ class EventList : public EL {
       iEvent findSimilar(const Event&);
       
       // Looks for events with identical type, and identical note or controller number, or
-      //  sysex or meta length and identical data, or wave path and start postion and event position.
+      //  sysex or meta length and identical data, or wave path and start position and event position.
       // Adds found items to the given list. Does not clear the list first. Returns the number of items added.
       int findSimilarType(const Event&, EventList&,
                               bool compareTime = false,

@@ -999,18 +999,42 @@ void WaveEdit::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {
-            int pos = hscroll->pos() - MusEGlobal::config.division;
-            if (pos < 0)
-                  pos = 0;
-            hscroll->setPos(pos);
+            if(hscroll)
+            {
+              int pos = hscroll->pos() - MusEGlobal::config.division;
+              if (pos < 0)
+                    pos = 0;
+              hscroll->setPos(pos);
+            }
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_RIGHT].key) {
-            int pos = hscroll->pos() + MusEGlobal::config.division;
-            hscroll->setPos(pos);
+            if(hscroll)
+            {
+              int pos = hscroll->pos() + MusEGlobal::config.division;
+              hscroll->setPos(pos);
+            }
             return;
             }
-            
+      else if (key == shortcuts[SHRT_SCROLL_LEFT_FAST].key) {
+            if(hscroll)
+            {
+              int pos = hscroll->pos() - (MusEGlobal::config.division * 5);
+              if (pos < 0)
+                    pos = 0;
+              hscroll->setPos(pos);
+            }
+            return;
+            }
+      else if (key == shortcuts[SHRT_SCROLL_RIGHT_FAST].key) {
+            if(hscroll)
+            {
+              int pos = hscroll->pos() + (MusEGlobal::config.division * 5);
+              hscroll->setPos(pos);
+            }
+            return;
+            }
+
       else if (key == shortcuts[SHRT_SET_QUANT_BAR].key)
             rast_pick = RasterizerModel::GotoBar;
       else if (key == shortcuts[SHRT_SET_QUANT_OFF].key)

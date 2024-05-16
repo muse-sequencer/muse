@@ -399,7 +399,7 @@ int SRCAudioConverter::process(
   {
     ERROR_AUDIOCONVERT(stderr,
       "SRCAudioConverter::process handle:%p stretch list:%p Too may attempts to process! totalOutFrames:%ld frames:%d\n",
-      sf_handle, sf_stretch_list, totalOutFrames, frames);
+      sf_handle, sf_stretch_list, (long int) totalOutFrames, frames);
   }
 
   // If we didn't get the desired number of output frames.

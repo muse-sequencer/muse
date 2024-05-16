@@ -51,6 +51,7 @@
 #endif // HAVE_LRDF
 
 
+#ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
 
 #include <set>
@@ -73,30 +74,30 @@
 // #    pragma GCC diagnostic pop
 // #endif
 
-#include "lv2/lv2plug.in/ns/ext/data-access/data-access.h"
-#include "lv2/lv2plug.in/ns/ext/state/state.h"
-//#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
-//#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
-#include "lv2/lv2plug.in/ns/ext/buf-size/buf-size.h"
+#include "lv2/data-access/data-access.h"
+#include "lv2/state/state.h"
+//#include "lv2/atom/atom.h"
+//#include "lv2/midi/midi.h"
+#include "lv2/buf-size/buf-size.h"
 #ifdef LV2_EVENT_BUFFER_SUPPORT
-#include "lv2/lv2plug.in/ns/ext/event/event.h"
+#include "lv2/event/event.h"
 #endif
-#include "lv2/lv2plug.in/ns/ext/options/options.h"
-#include "lv2/lv2plug.in/ns/ext/parameters/parameters.h"
-//#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
-//#include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
-#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-#include "lv2/lv2plug.in/ns/ext/time/time.h"
+#include "lv2/options/options.h"
+#include "lv2/parameters/parameters.h"
+//#include "lv2/patch/patch.h"
+//#include "lv2/port-groups/port-groups.h"
+#include "lv2/presets/presets.h"
+#include "lv2/time/time.h"
 #ifdef LV2_URI_MAP_SUPPORT
-#include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
+#include "lv2/uri-map/uri-map.h"
 #endif
-#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
-#include "lv2/lv2plug.in/ns/ext/worker/worker.h"
-#include "lv2/lv2plug.in/ns/ext/port-props/port-props.h"
-#include "lv2/lv2plug.in/ns/ext/atom/forge.h"
-#include "lv2/lv2plug.in/ns/ext/log/log.h"
-#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
-//#include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
+#include "lv2/urid/urid.h"
+#include "lv2/worker/worker.h"
+#include "lv2/port-props/port-props.h"
+#include "lv2/atom/forge.h"
+#include "lv2/log/log.h"
+#include "lv2/ui/ui.h"
+//#include "lv2/dynmanifest/dynmanifest.h"
 #include "lv2extui.h"
 #include "lv2extprg.h"
 
@@ -107,6 +108,7 @@
 //#include <sord/sord.h>
 
 #endif // LV2_SUPPORT
+#endif // LV2_USE_PLUGIN_CACHE
 
 // Forwards from header:
 #include "xml.h"
@@ -1696,9 +1698,17 @@ static bool pluginScan(
 
       // Read the list of plugins found in the xml.
       // For now we don't supply a separate scanEnums flag in pluginScan(), so just use scanPorts instead.
-      if(readPluginScan(xml, list, scanPorts, scanPorts))
+      int numPlugins = 0;
+      if(readPluginScan(xml, list, scanPorts, scanPorts, &numPlugins))
       {
         std::fprintf(stderr, "\npluginScan FAILED: On readPluginScan(): file: %s\n\n", filename_ba.constData());
+        fail = true;
+      }
+
+      // No plugins found in this file?
+      if(numPlugins == 0)
+      {
+        std::fprintf(stderr, "\npluginScan: No plugins found in file:%s! Putting this file in 'unknown' cache.\n\n", filename_ba.constData());
         fail = true;
       }
 
@@ -1838,6 +1848,7 @@ void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*de
 }
 #endif // VST_NATIVE_SUPPORT
 
+#ifdef LV2_USE_PLUGIN_CACHE
 #ifdef LV2_SUPPORT
 
 #define NS_EXT "http://lv2plug.in/ns/ext/"
@@ -2517,13 +2528,11 @@ static void scanLv2Plugin(const LilvPlugin *plugin,
   lilv_node_free(nameNode);
 }
 
-#endif // LV2_SUPPORT
 
 //---------------------------------------------------------
 //   scanLv2Plugins
 //---------------------------------------------------------
 
-#ifdef LV2_SUPPORT
 void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
   std::set<std::string> supportedFeatures;
@@ -2577,8 +2586,8 @@ void scanLv2Plugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
   lv2CacheNodes.lv2_CVPort             = lilv_new_uri(lilvWorld, LV2_CORE__CVPort);
   lv2CacheNodes.lv2_psetPreset         = lilv_new_uri(lilvWorld, LV2_PRESETS__Preset);
   lv2CacheNodes.lv2_rdfsLabel          = lilv_new_uri(lilvWorld, "http://www.w3.org/2000/01/rdf-schema#label");
-  lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionSavePreset");
-  lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, "http://www.muse-sequencer.org/lv2host#lv2_actionUpdatePresets");
+  lv2CacheNodes.lv2_actionSavePreset   = lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionSavePreset");
+  lv2CacheNodes.lv2_actionUpdatePresets= lilv_new_uri(lilvWorld, ORGANIZATION_URL "lv2host#lv2_actionUpdatePresets");
   lv2CacheNodes.end                    = nullptr;
 
   lilv_world_load_all(lilvWorld);
@@ -2632,6 +2641,7 @@ void scanLv2Plugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugSt
 {
 }
 #endif // LV2_SUPPORT
+#endif // LV2_USE_PLUGIN_CACHE
 
 //---------------------------------------------------------
 //   scanAllPlugins
@@ -3143,8 +3153,8 @@ bool checkPluginCacheFiles(
             else
                 std::fprintf(stderr, "Modified plugin: %s (Cache ts: %ld / File ts: %ld)\n",
                              icfps->first.toLatin1().data(),
-                             icfps->second,
-                             ifpset->second);
+                             (long int) icfps->second,
+                             (long int) ifpset->second);
         }
 
         break;
@@ -3200,10 +3210,12 @@ bool checkPluginCacheFiles(
       std::fprintf(stderr, "Error: Deleting obsolete LV2 plugin cache file failed!\n");
   }
 
-  // SPECIAL for LV2: No need for a cache file.
-  // Bring LV2 plugins directly into the list, after all the cache scanning and creation.
-  if(types & PluginScanInfoStruct::PluginTypeLV2)
-    scanLv2Plugins(list, writePorts, debugStdErr);
+// SPECIAL for LV2: No need for a cache file.
+// Bring LV2 plugins directly into the list, after all the cache scanning and creation.
+// #ifndef LV2_USE_PLUGIN_CACHE
+//   if(types & PluginScanInfoStruct::PluginTypeLV2)
+//     scanLv2Plugins(list, writePorts, debugStdErr);
+// #endif
 
   return res;
 }

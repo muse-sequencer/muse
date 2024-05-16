@@ -336,6 +336,13 @@ enum {
     SHRT_GOTO_CPOS, // c
     SHRT_SCROLL_LEFT, // h
     SHRT_SCROLL_RIGHT, // l
+    SHRT_SCROLL_LEFT_FAST, //Default: undefined
+    SHRT_SCROLL_RIGHT_FAST, //Default: undefined
+    SHRT_SCROLL_UP, // o
+    SHRT_SCROLL_DOWN, // k
+    SHRT_SCROLL_UP_FAST, // Shift+o
+    SHRT_SCROLL_DOWN_FAST, // Shift+k
+
     SHRT_FIXED_LEN, //Alt+L, currently only drumeditor
     SHRT_QUANTIZE, //q
     SHRT_MODIFY_GATE_TIME, //Default: undefined

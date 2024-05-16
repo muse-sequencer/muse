@@ -64,24 +64,20 @@ void StepRec::moveon(int step)
     chord_timer->start();
 }
 
-void StepRec::record(const Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift, int incoming_pitch)
+void StepRec::record(const Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift)
 {
 	unsigned tick = MusEGlobal::song->cpos();
 	unsigned lasttick=0;
 	Undo operations;
-	
+
 	if (tick < part->tick()) //insert note before the part to insert?
 	{
 		if (MusEGlobal::debugMsg)
 		printf("StepRec::record(): tick (%i) is before part (begin tick is %i), ignoring...\n",tick, part->tick());
 		return;
 	}
-	
-	// if incoming_pitch wasn't specified, set it to pitch
-    if (incoming_pitch == 1337)
-        incoming_pitch=pitch;
-	
-    if (incoming_pitch != MusEGlobal::rcSteprecNote)
+
+	if (pitch != -1)
 	{
 		chord_timer->stop();
 
@@ -97,13 +93,13 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 					Event e = ev.clone();
 					e.setLenTick(ev.lenTick() + len);
 					operations.push_back(UndoOp(UndoOp::ModifyEvent, e,ev, part, false, false));
-					
+
 					if (!shift)
 					{
 						chord_timer_set_to_tick = tick + step;
 						chord_timer->start();
 					}
-					
+
 					lasttick=tick+len - part->tick();
 					goto steprec_record_foot;
 				}
@@ -129,13 +125,13 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 						chord_timer_set_to_tick = tick + step;
 						chord_timer->start();
 					}
-					
+
 					return;
 				}
 			}
 		}
-		
-				
+
+
 		Event e(Note);
 		e.setTick(tick - part->tick());
 		e.setPitch(pitch);
@@ -149,7 +145,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 			chord_timer_set_to_tick = tick + step;
 			chord_timer->start();
 		}
-		
+
 		goto steprec_record_foot; // this is actually unnecessary, but for clarity
 	}
 	else  // equals if (incoming_pitch==MusEGlobal::rcSteprecNote)
@@ -162,15 +158,15 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 		}
 		else
 			held_notes=false;
-			 
+
 
 		if (held_notes)
 		{
 			chord_timer->stop();
-			
+
 			// extend len of last note(s)
 			using std::set;
-			
+
 			set<const Event*> extend_set;
 			const EventList& events = part->events();
 			for (ciEvent i = events.begin(); i != events.end(); ++i)
@@ -179,7 +175,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 				if (ev.isNote() && note_held_down[ev.pitch()] && ((ev.tick() + ev.lenTick() + part->tick()) == tick))
 					extend_set.insert(&ev);
 			}
-			
+
 			for (set<const Event*>::iterator it=extend_set.begin(); it!=extend_set.end(); it++)
 			{
 				const Event& ev=**it;
@@ -193,7 +189,7 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 				chord_timer_set_to_tick = tick + step;
 				chord_timer->start();
 			}
-			
+
 			lasttick=tick+len - part->tick();
 			goto steprec_record_foot; // this is actually unnecessary, but for clarity
 		}
@@ -204,17 +200,17 @@ void StepRec::record(const Part* part, int pitch, int len, int step, int velo, b
 			// simply proceed, inserting a rest
 			Pos p(MusEGlobal::song->cpos() + step, true);
             MusEGlobal::song->setPos(MusECore::Song::CPOS, p, true, false, true);
-			
+
 			return;
 		}
 	}
-	
+
 	steprec_record_foot:
 	if (!((lasttick > part->lenTick()) && (part->hasHiddenEvents() & Part::RightEventsHidden))) // allowed?
 	{
 		if (lasttick > part->lenTick()) // we have to expand the part?
 			schedule_resize_all_same_len_clone_parts(part, lasttick, operations);
-		
+
 		MusEGlobal::song->applyOperationGroup(operations);
 	}
 }

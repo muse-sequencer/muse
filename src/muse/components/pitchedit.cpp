@@ -98,6 +98,10 @@ void PitchEdit::setDeltaMode(bool val)
 
 void PitchEdit::midiNote(int pitch, int velo)
 {
+  // Ignore invalid pitches such as rest notes.
+  if(pitch < 0)
+    return;
+
   if (hasFocus() && velo)
     setValue(pitch);
 }

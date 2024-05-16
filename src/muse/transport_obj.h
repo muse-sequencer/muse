@@ -43,14 +43,14 @@ public:
   // Whether this track (and the branch it is in) can force other parallel branches to
   //  increase their latency compensation to match this one.
   // If false, this branch will NOT disturb other parallel branches' compensation,
-  //  intead only allowing compensation UP TO the worst case in other branches.
+  //  instead only allowing compensation UP TO the worst case in other branches.
   bool canDominateOutputLatency() const { return false; }
   bool canDominateInputLatency() const { return false; }
   // Whether this track (and the branch it is in) can force other parallel branches to
   //  increase their latency compensation to match this one - IF this track is an end-point
   //  and the branch allows domination.
   // If false, this branch will NOT disturb other parallel branches' compensation,
-  //  intead only allowing compensation UP TO the worst case in other branches.
+  //  instead only allowing compensation UP TO the worst case in other branches.
   bool canDominateEndPointLatency() const { return false; }
   // Whether this track and its branch can correct for latency, not just compensate.
   // Special for transport source: Yes, it can correct its own latency, but without

@@ -668,7 +668,7 @@ ende:
 //---------------------------------------------------------
 void VAMGui::doSavePresets(const QString& fn, bool /*_showWarning*/)
 {
-    //_showWarning=_showWarning; // prevent of unsused variable warning
+    //_showWarning=_showWarning; // prevent of unused variable warning
 #if 1
 // 	bool popenFlag=false;
   if (fn=="") {

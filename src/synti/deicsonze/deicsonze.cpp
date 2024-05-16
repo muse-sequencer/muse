@@ -4092,7 +4092,7 @@ void DeicsOnze::processMessages()
 //   write
 //    synthesize n samples into buffer+offset
 //---------------------------------------------------------
-void DeicsOnze::process(unsigned pos, float** buffer, int offset, int n) {
+void DeicsOnze::process(unsigned pos, float** buffer, int /*numPorts*/, int offset, int n) {
   /*
   //Process messages from the gui
   while (_gui->fifoSize()) {
