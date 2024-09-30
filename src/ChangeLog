@@ -1,3 +1,6 @@
+30.09.2024
+    - Track list context menu audio controller 'midi assign': Fixed cannot assign to song.
+      Oops, broken at 10.07.2022
 13.05.2024
     - Added instrument file for the Roland INTEGRA-7 sound module, made by Cookston (rj)
 26.04.2024

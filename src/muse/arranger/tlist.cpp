@@ -1816,9 +1816,10 @@ void TList::changeAutomationColor(QAction* act)
             for(MusECore::iAudioMidiCtrlStructMap iamcs = amcs_full.begin(); iamcs != amcs_full.end(); ++iamcs)
               macm->erase(*iamcs);
 
-                // Add will not replace if found.
+            // Add will not replace if found.
             macm->add_ctrl_struct(port, chan, ctrl,
-              MusECore::MidiAudioCtrlStruct(MusECore::MidiAudioCtrlStruct::AudioControl, id, editAutomation));
+              MusECore::MidiAudioCtrlStruct(
+                MusECore::MidiAudioCtrlStruct::AudioControl, id, isSongAssign ? nullptr : editAutomation));
 
             MusEGlobal::audio->msgIdle(false);
           }
