@@ -2,7 +2,6 @@
 <muse version="2.1">
 	 <!--Richie Cookston version 1.02-->
   <MidiInstrument name="Roland INTEGRA-7">
-    </PatchGroup>
     <PatchGroup name="Studio Sets">
       <Patch name="Integra Preview" hbank="86" lbank="1" prog="0" />
       <Patch name="Full Orch Set" hbank="86" lbank="1" prog="1" />
@@ -6077,5 +6076,5 @@
     <Controller name="Program" type="Program" />
     <Controller name="PolyAftertouch" type="PolyAftertouch" />
     <Controller name="Aftertouch" type="Aftertouch" />
-      </MidiInstrument>
-<muse>
+  </MidiInstrument>
+</muse>

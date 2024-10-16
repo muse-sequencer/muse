@@ -3367,7 +3367,8 @@ void MusE::startListEditor(bool newwin)
 
 void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
 {
-    pl->erase(++pl->begin(), pl->end());
+// REMOVE Tim. list. Removed.
+//     pl->erase(++pl->begin(), pl->end());
 
     if (!newwin && findOpenListEditor(pl))
         return;
@@ -3421,8 +3422,25 @@ MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
         MusEGui::ListEdit* le = static_cast<MusEGui::ListEdit*>(d->widget());
         const MusECore::PartList* pl_tmp = le->parts();
 
-        if (pl->begin()->second->uuid() != pl_tmp->begin()->second->uuid())
-            continue;
+// REMOVE Tim. list. Changed.
+//         if (pl->begin()->second->uuid() != pl_tmp->begin()->second->uuid())
+//             continue;
+        bool found = false;
+        for(MusECore::ciPart ip_tmp = pl_tmp->cbegin(); ip_tmp != pl_tmp->cend(); ++ip_tmp)
+        {
+          for(MusECore::ciPart ip = pl->cbegin(); ip != pl->cend(); ++ip)
+          {
+            if(ip->second->uuid() == ip_tmp->second->uuid())
+            {
+              found = true;
+              break;
+            }
+          }
+          if(found)
+            break;
+        }
+        if(!found)
+          continue;
 
         if (!d->isVisible())
             toggleDocksAction->setChecked(true);

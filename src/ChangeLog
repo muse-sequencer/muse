@@ -1,3 +1,7 @@
+16.10.2024
+    - Event List Editor: Fixed cannot open multiple parts. (Tim)
+      Thanks to forum user 'enaiel' for spotting that.
+    - Fixed Roland INTEGRA-7.idf file XML errors (added 13.05.2024).
 30.09.2024
     - Track list context menu audio controller 'midi assign': Fixed cannot assign to song.
       Oops, broken at 10.07.2022
