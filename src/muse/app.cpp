@@ -3367,9 +3367,6 @@ void MusE::startListEditor(bool newwin)
 
 void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
 {
-// REMOVE Tim. list. Removed.
-//     pl->erase(++pl->begin(), pl->end());
-
     if (!newwin && findOpenListEditor(pl))
         return;
 
@@ -3422,9 +3419,6 @@ MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
         MusEGui::ListEdit* le = static_cast<MusEGui::ListEdit*>(d->widget());
         const MusECore::PartList* pl_tmp = le->parts();
 
-// REMOVE Tim. list. Changed.
-//         if (pl->begin()->second->uuid() != pl_tmp->begin()->second->uuid())
-//             continue;
         bool found = false;
         for(MusECore::ciPart ip_tmp = pl_tmp->cbegin(); ip_tmp != pl_tmp->cend(); ++ip_tmp)
         {
