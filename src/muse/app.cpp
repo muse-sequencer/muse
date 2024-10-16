@@ -3412,6 +3412,10 @@ MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
             && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
         return nullptr;
 
+    const unsigned int pl_sz = pl->size();
+    if(pl_sz == 0)
+        return nullptr;
+
     for (const auto& d : findChildren<QDockWidget*>()) {
         if (strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") != 0)
             continue;
@@ -3419,21 +3423,19 @@ MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
         MusEGui::ListEdit* le = static_cast<MusEGui::ListEdit*>(d->widget());
         const MusECore::PartList* pl_tmp = le->parts();
 
-        bool found = false;
-        for(MusECore::ciPart ip_tmp = pl_tmp->cbegin(); ip_tmp != pl_tmp->cend(); ++ip_tmp)
+        MusECore::ciPart ip = pl->cbegin();
+        for(; ip != pl->cend(); ++ip)
         {
-          for(MusECore::ciPart ip = pl->cbegin(); ip != pl->cend(); ++ip)
+          MusECore::ciPart ip_tmp = pl_tmp->cbegin();
+          for(; ip_tmp != pl_tmp->cend(); ++ip_tmp)
           {
-            if(ip->second->uuid() == ip_tmp->second->uuid())
-            {
-              found = true;
+            if(ip_tmp->second->uuid() == ip->second->uuid())
               break;
-            }
           }
-          if(found)
+          if(ip_tmp == pl_tmp->cend())
             break;
         }
-        if(!found)
+        if(ip != pl->cend())
           continue;
 
         if (!d->isVisible())
