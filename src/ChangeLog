@@ -1,3 +1,6 @@
+17.10.2024
+    - Fix issue 1287: Focus doesn't return to arranger window when pianoroll closed. (Tim)
+      In MusE::toplevelDeleting(), call TopWin::focusCanvas() to direct focus to the canvas.
 16.10.2024
     - Event List Editor: Fixed cannot open multiple parts. (Tim)
       Thanks to forum user 'enaiel' for spotting that.

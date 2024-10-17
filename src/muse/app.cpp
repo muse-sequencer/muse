@@ -3727,6 +3727,11 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
 
                         bringToFront((*lit)->widget());
 
+                        // If the TopWin has a canvas and a focusCanvas(), call it to focus the canvas.
+                        TopWin* tw = dynamic_cast<TopWin*>( (*lit)->widget());
+                        if(tw)
+                          tw->focusCanvas();
+
                         break;
                     }
             }
