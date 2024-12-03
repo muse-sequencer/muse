@@ -1,3 +1,7 @@
+02.12.2024
+    - Merge PR 1293: Force the use of in-window menu. (Tim)
+      Fixes usage of KDE Global Menu applet, possibly Mac/Unity as well, missing menus.
+      Simply set attribute Qt::AA_DontUseNativeMenuBar. Thanks to user Icenowy for the work.
 17.10.2024
     - Fix issue 1287: Focus doesn't return to arranger window when pianoroll closed. (Tim)
       In MusE::toplevelDeleting(), call TopWin::focusCanvas() to direct focus to the canvas.
