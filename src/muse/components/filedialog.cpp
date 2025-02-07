@@ -68,7 +68,7 @@ static bool createDir(const QString& s)
             if (!QDir(path + sl + *it).exists()) {
                   if (!dir.mkdir(*it)) {
                         printf("mkdir failed: %s %s\n",
-                           path.toLatin1().constData(), (*it).toLatin1().constData());
+                           path.toLocal8Bit().constData(), (*it).toLocal8Bit().constData());
                         return true;
                         }
                   }
@@ -317,7 +317,7 @@ void MFileDialog::directoryChanged(const QString&)
       {
       ViewType currentView = GLOBAL_VIEW;
       QDir ndir = directory();
-      ///QString newdir = ndir.absolutePath().toLatin1();
+      ///QString newdir = ndir.absolutePath().toLocal8Bit();
       QString newdir = ndir.absolutePath();
       if (buttons.projectButton->isChecked())
             currentView = PROJECT_VIEW;
@@ -578,6 +578,67 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
             }
       return fp;
       }
+
+// REMOVE Tim. tmp. Added.
+// QFile fileOpen(QWidget* parent, QString name, const QString& ext,
+//    QIODevice::OpenMode mode, bool noError, bool overwriteWarning)
+//       {
+//       QFileInfo info(name);
+//       QString zip;
+//
+//       if (info.completeSuffix() == "") {
+//             name += ext;
+//             info.setFile(name);
+//             }
+//       else if (info.suffix() == "gz") {
+//             popenFlag = true;
+//             zip = QString("gzip");
+//             }
+//       else if (info.suffix() == "bz2") {
+//             popenFlag = true;
+//             zip = QString("bzip2");
+//             }
+//
+//       if (strcmp(mode,"w") == 0 && overwriteWarning && info.exists()) {
+//             QString s(QWidget::tr("File\n%1\nexists. Overwrite?").arg(name));
+//             /*
+//             int rv = QMessageBox::warning(parent,
+//                QWidget::tr("MusE: write"),
+//                s,
+//                QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save);
+//             switch(rv) {
+//                   case 0:  // overwrite
+//                         break;
+//                   case 1:  // quit
+//                         return 0;
+//                   }
+//             */
+//             if(QMessageBox::warning(parent,
+//                QWidget::tr("MusE: write"), s,
+//                QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save)
+//                != QMessageBox::Save)
+//               return 0;
+//
+//             }
+//       FILE* fp = 0;
+//       if (popenFlag) {
+//             if (strcmp(mode, "r") == 0)
+//                   zip += QString(" -d < \"");
+//             else
+//                   zip += QString(" > \"");
+//             zip = zip + name + QString("\"");
+//             fp  = popen(zip.toLocal8Bit().constData(), mode);
+//             }
+//       else {
+//             fp = fopen(name.toLocal8Bit().constData(), mode);
+//             }
+//       if (fp == 0 && !noError) {
+//             QString s(QWidget::tr("Open File\n%1\nfailed: %2").arg(name).arg(strerror(errno)));
+//             QMessageBox::critical(parent, QWidget::tr("MusE: Open File"), s);
+//             return 0;
+//             }
+//       return fp;
+//       }
 
 //---------------------------------------------------------
 //   MFile

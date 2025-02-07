@@ -67,11 +67,12 @@ class MetronomeSynth : public Synth {
         Synth(infoStruct) {}
 
       virtual ~MetronomeSynth() {}
-      inline virtual Type synthType() const { return METRO_SYNTH; }
-      inline virtual void incInstances(int) {}
-      virtual void* instantiate();
+// REMOVE Tim. tmp. Removed.
+//       inline Type synthType() const { return METRO_SYNTH; }
+      inline int incReferences(int) { return 0; }
+      void* instantiate();
 
-      virtual SynthIF* createSIF(SynthI*);
+      SynthIF* createSIF(SynthI*);
       };
 
 //---------------------------------------------------------
@@ -134,7 +135,8 @@ class MetronomeSynthIF : public SynthIF
       inline virtual bool guiVisible() const { return false; }
       inline virtual bool hasGui() const { return false; }
       inline virtual bool nativeGuiVisible() const { return false; }
-      inline virtual void showNativeGui(bool) { }
+// REMOVE Tim. tmp. Removed.
+//       inline virtual void showNativeGui(bool) { }
       inline virtual bool hasNativeGui() const { return false; }
 
       inline virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
@@ -149,7 +151,8 @@ class MetronomeSynthIF : public SynthIF
       inline virtual void deactivate3() {}
       inline virtual QString getPatchName(int, int, bool) const { return ""; }
       inline virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool) {}
-      inline virtual void write(int, Xml&) const {}
+// REMOVE Tim. tmp. Removed.
+//       inline virtual void write(int, Xml&) const {}
       inline virtual double getParameter(unsigned long) const  { return 0.0; }
       inline virtual void setParameter(unsigned long, double) {}
       inline virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) { return 0; }
@@ -842,7 +845,9 @@ bool MetronomeSynthI::isLatencyOutputTerminalMidi(bool capture)
 void initMetronome()
       {
       MusEPlugin::PluginScanInfoStruct info;
-      info._name = info._description = QString("Metronome");
+      info._name = info._description = PLUGIN_SET_CSTRING("Metronome");
+      info._type = MusEPlugin::PluginTypeMETRONOME;
+      info._class = MusEPlugin::PluginClassInstrument;
       metronomeSynth = new MetronomeSynth(info);
       metronome = new MetronomeSynthI();
       // Returns false on success.

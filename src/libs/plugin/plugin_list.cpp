@@ -35,11 +35,11 @@ namespace MusEPlugin {
 PluginScanInfoRef PluginScanList::find(const PluginInfoString_t& file,
                                        const PluginInfoString_t& uri,
                                        const PluginInfoString_t& label,
-                                       PluginScanInfoStruct::PluginType_t types) const
+                                       MusEPlugin::PluginType_t types) const
 {
-  const bool f_empty = file.isEmpty();
-  const bool u_empty = uri.isEmpty();
-  const bool l_empty = label.isEmpty();
+  const bool f_empty = PLUGIN_STRING_EMPTY(file);
+  const bool u_empty = PLUGIN_STRING_EMPTY(uri);
+  const bool l_empty = PLUGIN_STRING_EMPTY(label);
   for(ciPluginScanList i = begin(); i != end(); ++i)
   {
     const PluginScanInfoRef& ref = *i;
@@ -56,10 +56,10 @@ PluginScanInfoRef PluginScanList::find(const PluginInfoString_t& file,
 
 PluginScanInfoRef PluginScanList::find(const PluginScanInfoStruct& info) const
 {
-  //const bool f_empty = info._completeBaseName.isEmpty();
-  const bool f_empty = info.filePath().isEmpty();
-  const bool u_empty = info._uri.isEmpty();
-  const bool l_empty = info._label.isEmpty();
+  //const bool f_empty = PLUGIN_STRING_EMPTY(info._completeBaseName);
+  const bool f_empty = PLUGIN_STRING_EMPTY(info.filePath());
+  const bool u_empty = PLUGIN_STRING_EMPTY(info._uri);
+  const bool l_empty = PLUGIN_STRING_EMPTY(info._label);
   for(ciPluginScanList i = begin(); i != end(); ++i)
   {
     const PluginScanInfoRef& ref = *i;

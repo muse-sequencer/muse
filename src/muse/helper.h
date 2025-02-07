@@ -46,10 +46,12 @@ namespace MusECore {
 class MEvent;
 class Track;
 class MidiTrack;
+class AudioTrack;
 class Part;
 class PartList;
 struct DrumMap;
 class Xml;
+class CtrlList;
 
 void enumerateJackMidiDevices();
 void populateMidiPorts();
@@ -79,6 +81,17 @@ QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks);
 bool parse_range(const QString& str, int* from, int* to); // returns true if successful, false on error
 
 void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int val, MidiTrack* mt);
+
+// REMOVE Tim. tmp. Added.
+// // These check if the plugin or synth doesn't exist and check the old song
+// //  file version in the initial Plugin/SynthConfiguration structure.
+// // If it's an old song file version, it never stored the necessary
+// //  control info (min, max, type, etc.) to properly scale and display
+// //  the controller's data. So we cannot let the user see or edit them if the
+// //  plugin or synth doesn't exist, they would be shown wrong.
+// bool canShowAudioCtrlNum(const AudioTrack *track, int ctlnum);
+// // This faster version conveniently takes an existing controller list.
+// bool canShowAudioCtrlList(const AudioTrack *track, const CtrlList *cl);
 }
 
 namespace MusEGui {

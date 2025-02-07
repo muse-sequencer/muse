@@ -31,7 +31,8 @@
 #include "midictrl.h"
 #include "helper.h"
 #include "limits.h"
-#include "dssihost.h"
+// REMOVE Tim. tmp. Removed.
+//#include "dssihost.h"
 #include "gconfig.h"
 #include "operations.h"
 #include "icons.h"
@@ -305,7 +306,7 @@ int Track::y() const
             }
       // FIXME Get this when loading a song with automation graphs showing. Benign. Likely song not fully loaded yet. p4.0.32
       if(MusEGlobal::debugMsg)
-        printf("Track::y(%s): track not in tracklist\n", name().toLatin1().constData());
+        printf("Track::y(%s): track not in tracklist\n", name().toLocal8Bit().constData());
       return -1;
       }
 
@@ -588,7 +589,7 @@ void Track::setSelected(bool f)
 void Track::dump() const
       {
       printf("Track <%s>: typ %d, parts %zd sel %d sel order%d\n",
-         _name.toLatin1().constData(), _type, _parts.size(), _selected, _selectionOrder);
+         _name.toLocal8Bit().constData(), _type, _parts.size(), _selected, _selectionOrder);
       }
 
 //---------------------------------------------------------
@@ -615,7 +616,7 @@ void Track::updateAuxRoute(int refInc, Track* dst)
   
   if(_nodeTraversed)
   {
-    fprintf(stderr, "Track::updateAuxRoute %s _auxRouteCount:%d refInc:%d :\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+    fprintf(stderr, "Track::updateAuxRoute %s _auxRouteCount:%d refInc:%d :\n", name().toLocal8Bit().constData(), _auxRouteCount, refInc);
     if(refInc >= 0)
       fprintf(stderr, "  MusE Warning: Please check your routes: Circular path found!\n"); 
     else
@@ -628,7 +629,7 @@ void Track::updateAuxRoute(int refInc, Track* dst)
   _auxRouteCount += refInc;
   if(_auxRouteCount < 0)
   {
-    fprintf(stderr, "Track::updateAuxRoute Ref underflow! %s _auxRouteCount:%d refInc:%d\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+    fprintf(stderr, "Track::updateAuxRoute Ref underflow! %s _auxRouteCount:%d refInc:%d\n", name().toLocal8Bit().constData(), _auxRouteCount, refInc);
   }
   
   for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) 
@@ -1584,7 +1585,7 @@ TrackLatencyInfo& MidiTrack::setCorrectionLatencyInfo(bool input, float finalWor
     }
 
     //fprintf(stderr, "MidiTrack::setCorrectionLatencyInfo() name:%s finalWorstLatency:%f branch_lat:%f corr:%f _sourceCorrectionValue:%f\n",
-    //        name().toLatin1().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
+    //        name().toLocal8Bit().constData(), finalWorstLatency, branch_lat, corr, _latencyInfo._sourceCorrectionValue);
   }
 
   return _latencyInfo;
@@ -1688,7 +1689,7 @@ void MidiTrack::setLatencyCompWriteOffset(float worstCase)
   {
     _latencyInfo._compensatorWriteOffset = 0;
     //fprintf(stderr, "MidiTrack::setLatencyCompWriteOffset() name:%s worstCase:%f _outputLatency:%f _compensatorWriteOffset:%lu\n",
-    //        name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._compensatorWriteOffset);
+    //        name().toLocal8Bit().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._compensatorWriteOffset);
     return;
   }
     
@@ -1710,7 +1711,7 @@ void MidiTrack::setLatencyCompWriteOffset(float worstCase)
   }
 
   //fprintf(stderr, "MidiTrack::setLatencyCompWriteOffset() name:%s worstCase:%f _outputLatency:%f _canDominateOutputLatency:%d _compensatorWriteOffset:%lu\n",
-  //        name().toLatin1().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._canDominateOutputLatency, _latencyInfo._compensatorWriteOffset);
+  //        name().toLocal8Bit().constData(), worstCase, _latencyInfo._outputLatency, _latencyInfo._canDominateOutputLatency, _latencyInfo._compensatorWriteOffset);
 }
 
 //---------------------------------------------------------
@@ -2396,10 +2397,12 @@ void Track::writeProperties(int level, Xml& xml) const
 // REMOVE Tim. tmp. Changed.
 //       MusEGlobal::song->midiAssignments()->write(level, xml, this);
       // Exclude any rack plugin controller assignments, they are written by the plugins.
-      unsigned long startId = genACnum(0, 0);
-      unsigned long endId = genACnum(PipelineDepth, 0);
+//       unsigned long startId = genACnum(0, 0);
+//       unsigned long endId = genACnum(PipelineDepth, 0);
+      const unsigned long startId = 0;
+      const unsigned long endId = genACnum(0, 0);
       MusEGlobal::song->midiAssignments()->write(
-        level, xml, this, startId, endId, MidiAudioCtrlStruct::AudioControl, true);
+        level, xml, this, startId, endId, MidiAudioCtrlStruct::AudioControl, false);
       xml.etag(--level, "Track");
 }
 
@@ -2445,6 +2448,7 @@ bool Track::readProperties(Xml& xml, const QString& tag)
           if (QColor::isValidColor(c))
               m_color.setNamedColor(c);
       }
+      // Added in song file version 4.
       else if (tag == "midiAssign")
             // Any assignments read go to this track.
             MusEGlobal::song->midiAssignments()->read(xml, this);
@@ -2471,7 +2475,7 @@ void Track::writeRouting(int level, Xml& xml) const
             if(r->channel != -1)
               s += QString(" channel=\"%1\"").arg(r->channel);
             
-            xml.tag(level++, s.toLatin1().constData());
+            xml.tag(level++, s.toUtf8().constData());
             
             // New routing scheme.
             s = "source";
@@ -2479,7 +2483,7 @@ void Track::writeRouting(int level, Xml& xml) const
               s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
             else
               s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
-            xml.tag(level, s.toLatin1().constData());
+            xml.tag(level, s.toUtf8().constData());
 
             xml.tag(level, "dest track=\"%d\"/", MusEGlobal::song->tracks()->index(this));
             
@@ -2504,7 +2508,7 @@ void Track::writeRouting(int level, Xml& xml) const
           if(r->remoteChannel != -1)
             s += QString(" remch=\"%1\"").arg(r->remoteChannel);
           
-          xml.tag(level++, s.toLatin1().constData());
+          xml.tag(level++, s.toUtf8().constData());
           
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
           xml.tag(level, "source track=\"%d\"/", MusEGlobal::song->tracks()->index(this));
@@ -2521,7 +2525,7 @@ void Track::writeRouting(int level, Xml& xml) const
           else  
             s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
             
-          xml.tag(level, s.toLatin1().constData());
+          xml.tag(level, s.toUtf8().constData());
           
           xml.etag(--level, "Route");
         }

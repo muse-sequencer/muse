@@ -287,9 +287,9 @@ bool readPluginScanInfo(MusECore::Xml& xml, PluginScanInfoStruct* info, bool rea
                         else if (tag == "fileIsBad")
                               info->_fileIsBad = xml.parseInt();
                         else if (tag == "type")
-                              info->_type = PluginScanInfoStruct::PluginType(xml.parseInt());
+                              info->_type = MusEPlugin::PluginType(xml.parseInt());
                         else if (tag == "class")
-                              info->_class = PluginScanInfoStruct::PluginClass(xml.parseInt());
+                              info->_class = MusEPlugin::PluginClass(xml.parseInt());
                         else if (tag == "uniqueID")
                               info->_uniqueID = xml.parseUInt();
                         else if (tag == "subID")
@@ -316,18 +316,18 @@ bool readPluginScanInfo(MusECore::Xml& xml, PluginScanInfoStruct* info, bool rea
                         {
                               info->_pluginFlags = xml.parseInt();
                               // Obsolete flag. Kept for backward compatibility.
-                              if(info->_pluginFlags & PluginScanInfoStruct::HasLatencyPort)
-                                info->_pluginLatencyReportingType = MusECore::PluginLatencyTypePort;
+                              if(info->_pluginFlags & MusEPlugin::PluginHasLatencyPort)
+                                info->_pluginLatencyReportingType = MusEPlugin::PluginLatencyTypePort;
                               // Obsolete flag. Kept for backward compatibility.
-                              if(info->_pluginFlags & PluginScanInfoStruct::HasFreewheelPort)
-                                info->_pluginFreewheelType = MusECore::PluginFreewheelTypePort;
+                              if(info->_pluginFlags & MusEPlugin::PluginHasFreewheelPort)
+                                info->_pluginFreewheelType = MusEPlugin::PluginFreewheelTypePort;
                         }
                         else if (tag == "latencyReportingType")
-                              info->_pluginLatencyReportingType = MusECore::PluginLatencyReportingType(xml.parseInt());
+                              info->_pluginLatencyReportingType = MusEPlugin::PluginLatencyReportingType(xml.parseInt());
                         else if (tag == "pluginFreewheelType")
-                              info->_pluginFreewheelType = MusECore::PluginFreewheelType(xml.parseInt());
+                              info->_pluginFreewheelType = MusEPlugin::PluginFreewheelType(xml.parseInt());
                         else if (tag == "pluginBypassType")
-                              info->_pluginBypassType = MusECore::PluginBypassType(xml.parseInt());
+                              info->_pluginBypassType = MusEPlugin::PluginBypassType(xml.parseInt());
                         else if (tag == "portCount")
                               info->_portCount = xml.parseUInt();
                         else if (tag == "inports")
@@ -680,38 +680,39 @@ QStringList pluginGetLv2Directories()
 //   pluginGetDirectories
 //---------------------------------------------------------
 
-QStringList pluginGetDirectories(const QString& museGlobalLib, PluginScanInfoStruct::PluginType type)
+QStringList pluginGetDirectories(const QString& museGlobalLib, MusEPlugin::PluginType type)
 {
   switch(type)
   {
-    case PluginScanInfoStruct::PluginTypeDSSI:
-    case PluginScanInfoStruct::PluginTypeDSSIVST:
+    case MusEPlugin::PluginTypeDSSI:
+    case MusEPlugin::PluginTypeDSSIVST:
       return pluginGetDssiDirectories();
     break;
 
-    case PluginScanInfoStruct::PluginTypeMESS:
+    case MusEPlugin::PluginTypeMESS:
       return pluginGetMessDirectories(museGlobalLib);
     break;
 
-    case PluginScanInfoStruct::PluginTypeLADSPA:
+    case MusEPlugin::PluginTypeLADSPA:
       return pluginGetLadspaDirectories(museGlobalLib);
     break;
 
-    case PluginScanInfoStruct::PluginTypeLinuxVST:
+    case MusEPlugin::PluginTypeLinuxVST:
       return pluginGetLinuxVstDirectories();
     break;
 
-    case PluginScanInfoStruct::PluginTypeLV2:
+    case MusEPlugin::PluginTypeLV2:
       return pluginGetLv2Directories();
     break;
 
-    case PluginScanInfoStruct::PluginTypeVST:
+    case MusEPlugin::PluginTypeVST:
       return pluginGetVstDirectories();
     break;
 
-    case PluginScanInfoStruct::PluginTypeUnknown:
-    case PluginScanInfoStruct::PluginTypeNone:
-    case PluginScanInfoStruct::PluginTypeAll:
+    case MusEPlugin::PluginTypeMETRONOME:
+    case MusEPlugin::PluginTypeUnknown:
+    case MusEPlugin::PluginTypeNone:
+    case MusEPlugin::PluginTypeAll:
     break;
   }
   
@@ -723,43 +724,44 @@ QStringList pluginGetDirectories(const QString& museGlobalLib, PluginScanInfoStr
 // Returns true if the cache file(s) for the given type(s) exist.
 //---------------------------------------------------------
 
-const char* pluginCacheFilename(PluginScanInfoStruct::PluginType type)
+const char* pluginCacheFilename(MusEPlugin::PluginType type)
 {
   switch(type)
   {
-    case PluginScanInfoStruct::PluginTypeDSSI:
-    case PluginScanInfoStruct::PluginTypeDSSIVST:
+    case MusEPlugin::PluginTypeDSSI:
+    case MusEPlugin::PluginTypeDSSIVST:
       return "dssi_plugins.scan";
     break;
 
-    case PluginScanInfoStruct::PluginTypeMESS:
+    case MusEPlugin::PluginTypeMESS:
       return "mess_plugins.scan";
     break;
 
-    case PluginScanInfoStruct::PluginTypeLADSPA:
+    case MusEPlugin::PluginTypeLADSPA:
       return "ladspa_plugins.scan";
     break;
 
-    case PluginScanInfoStruct::PluginTypeLinuxVST:
+    case MusEPlugin::PluginTypeLinuxVST:
       return "linux_vst_plugins.scan";
     break;
 
     // SPECIAL for LV2: Obsolete. Cache file not used any more.
     // Keep so we can delete old files.
-    case PluginScanInfoStruct::PluginTypeLV2:
+    case MusEPlugin::PluginTypeLV2:
       return "lv2_plugins.scan";
     break;
 
-    case PluginScanInfoStruct::PluginTypeVST:
+    case MusEPlugin::PluginTypeVST:
       return "vst_plugins.scan";
     break;
     
-    case PluginScanInfoStruct::PluginTypeUnknown:
+    case MusEPlugin::PluginTypeUnknown:
       return "unknown_plugins.scan";
     break;
     
-    case PluginScanInfoStruct::PluginTypeNone:
-    case PluginScanInfoStruct::PluginTypeAll:
+    case MusEPlugin::PluginTypeMETRONOME:
+    case MusEPlugin::PluginTypeNone:
+    case MusEPlugin::PluginTypeAll:
       return "";
     break;
   }
@@ -771,49 +773,49 @@ const char* pluginCacheFilename(PluginScanInfoStruct::PluginType type)
 //   pluginCacheFileExists
 //---------------------------------------------------------
 
-PluginScanInfoStruct::PluginType pluginCacheFileExists(
+MusEPlugin::PluginType pluginCacheFileExists(
   const QString& path,
-  PluginScanInfoStruct::PluginType type)
+  MusEPlugin::PluginType type)
 {
   const QFile targ_qfile(path + '/' + QString(pluginCacheFilename(type)));
   if(targ_qfile.exists())
     return type;
-  return PluginScanInfoStruct::PluginTypeNone;
+  return MusEPlugin::PluginTypeNone;
 }
 
 //---------------------------------------------------------
 //   pluginCacheFilesExist
 //---------------------------------------------------------
 
-PluginScanInfoStruct::PluginType_t pluginCacheFilesExist(
+MusEPlugin::PluginType_t pluginCacheFilesExist(
   const QString& path,
-  PluginScanInfoStruct::PluginType_t types)
+  MusEPlugin::PluginType_t types)
 {
-  PluginScanInfoStruct::PluginType_t res = PluginScanInfoStruct::PluginTypeNone;
+  MusEPlugin::PluginType_t res = MusEPlugin::PluginTypeNone;
   
-  if(types & (PluginScanInfoStruct::PluginTypeDSSI | PluginScanInfoStruct::PluginTypeDSSIVST))
+  if(types & (MusEPlugin::PluginTypeDSSI | MusEPlugin::PluginTypeDSSIVST))
   {
-    if(pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeDSSI) == PluginScanInfoStruct::PluginTypeDSSI)
-      res |= (PluginScanInfoStruct::PluginTypeDSSI | PluginScanInfoStruct::PluginTypeDSSIVST);
+    if(pluginCacheFileExists(path, MusEPlugin::PluginTypeDSSI) == MusEPlugin::PluginTypeDSSI)
+      res |= (MusEPlugin::PluginTypeDSSI | MusEPlugin::PluginTypeDSSIVST);
   }
 
-  if(types & PluginScanInfoStruct::PluginTypeMESS)
-    res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeMESS);
+  if(types & MusEPlugin::PluginTypeMESS)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeMESS);
 
-  if(types & PluginScanInfoStruct::PluginTypeLADSPA)
-    res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeLADSPA);
+  if(types & MusEPlugin::PluginTypeLADSPA)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeLADSPA);
 
-  if(types & PluginScanInfoStruct::PluginTypeLinuxVST)
-    res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeLinuxVST);
+  if(types & MusEPlugin::PluginTypeLinuxVST)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeLinuxVST);
 
-  if(types & PluginScanInfoStruct::PluginTypeLV2)
-    res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeLV2);
+  if(types & MusEPlugin::PluginTypeLV2)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeLV2);
 
-  if(types & PluginScanInfoStruct::PluginTypeVST)
-    res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeVST);
+  if(types & MusEPlugin::PluginTypeVST)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeVST);
 
-  if(types & PluginScanInfoStruct::PluginTypeUnknown)
-    res |= pluginCacheFileExists(path, PluginScanInfoStruct::PluginTypeUnknown);
+  if(types & MusEPlugin::PluginTypeUnknown)
+    res |= pluginCacheFileExists(path, MusEPlugin::PluginTypeUnknown);
 
   return res;
 }
@@ -827,7 +829,7 @@ bool readPluginCacheFile(
   PluginScanList* list,
   bool readPorts,
   bool readEnums,
-  PluginScanInfoStruct::PluginType type
+  MusEPlugin::PluginType type
 )
 {
   if(!pluginCacheFileExists(path, type))
@@ -842,7 +844,7 @@ bool readPluginCacheFile(
   if(!targ_qfile.open(QIODevice::ReadOnly | QIODevice::Text))
   {
     std::fprintf(stderr, "readPluginCacheFile: targ_qfile.open() failed: filename:%s\n",
-                     targ_filepath.toLatin1().constData());
+                     targ_filepath.toLocal8Bit().constData());
   }
   else
   {
@@ -852,11 +854,11 @@ bool readPluginCacheFile(
       if(readPluginScan(xml, list, readPorts, readEnums))
       {
         std::fprintf(stderr, "readPluginCacheFile: readPluginScan failed: filename:%s\n",
-                             targ_filepath.toLatin1().constData());
+                             targ_filepath.toLocal8Bit().constData());
       }
 
       DEBUG_PLUGIN_SCAN(stderr, "readPluginCacheFile: targ_qfile closing filename:%s\n",
-                      filename.toLatin1().constData());
+                      filename.toLocal8Bit().constData());
       targ_qfile.close();
       
       res = true;
@@ -874,50 +876,50 @@ bool readPluginCacheFiles(
   PluginScanList* list,
   bool readPorts,
   bool readEnums,
-  PluginScanInfoStruct::PluginType_t types)
+  MusEPlugin::PluginType_t types)
 {
   bool res = true;
   
-  if(types & (PluginScanInfoStruct::PluginTypeDSSI | PluginScanInfoStruct::PluginTypeDSSIVST))
+  if(types & (MusEPlugin::PluginTypeDSSI | MusEPlugin::PluginTypeDSSIVST))
   {
-    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeDSSI))
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeDSSI))
       res = false;
   }
 
-  if(types & PluginScanInfoStruct::PluginTypeMESS)
+  if(types & MusEPlugin::PluginTypeMESS)
   {
-    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeMESS))
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeMESS))
       res = false;
   }
 
-  if(types & PluginScanInfoStruct::PluginTypeLADSPA)
+  if(types & MusEPlugin::PluginTypeLADSPA)
   {
-    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeLADSPA))
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeLADSPA))
       res = false;
   }
 
-  if(types & PluginScanInfoStruct::PluginTypeLinuxVST)
+  if(types & MusEPlugin::PluginTypeLinuxVST)
   {
-    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeLinuxVST))
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeLinuxVST))
       res = false;
   }
 
   // SPECIAL for LV2: No need for a cache file. Do not read one here.
-  //if(types & PluginScanInfoStruct::PluginTypeLV2)
+  //if(types & MusEPlugin::PluginTypeLV2)
   //{
-  //  if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeLV2))
+  //  if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeLV2))
   //    res = false;
   //}
 
-  if(types & PluginScanInfoStruct::PluginTypeVST)
+  if(types & MusEPlugin::PluginTypeVST)
   {
-    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeVST))
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeVST))
       res = false;
   }
 
-  if(types & PluginScanInfoStruct::PluginTypeUnknown)
+  if(types & MusEPlugin::PluginTypeUnknown)
   {
-    if(!readPluginCacheFile(path, list, readPorts, readEnums, PluginScanInfoStruct::PluginTypeUnknown))
+    if(!readPluginCacheFile(path, list, readPorts, readEnums, MusEPlugin::PluginTypeUnknown))
       res = false;
   }
 

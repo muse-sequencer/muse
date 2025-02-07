@@ -79,27 +79,38 @@ void initDSSI()
     const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
     switch(info._type)
     {
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeDSSIVST:
       {
 #ifdef DSSI_SUPPORT
         if(MusEGlobal::loadDSSI)
         {
           // For now we allow effects as a synth track. Until we allow programs (and midi) in the effect rack.
-          if(info._class & MusEPlugin::PluginScanInfoStruct::PluginClassEffect ||
-            info._class & MusEPlugin::PluginScanInfoStruct::PluginClassInstrument)
+          if(info._class & MusEPlugin::PluginClassEffect ||
+            info._class & MusEPlugin::PluginClassInstrument)
           {
+            const QString inf_uri = PLUGIN_GET_QSTRING(info._uri);
+            const QString inf_label = PLUGIN_GET_QSTRING(info._label);
+
             // Make sure it doesn't already exist.
             if(const Synth* sy = MusEGlobal::synthis.find(
+// REMOVE Tim. tmp. Added.
+               info._type,
                PLUGIN_GET_QSTRING(info._completeBaseName),
-               PLUGIN_GET_QSTRING(info._uri),
-               PLUGIN_GET_QSTRING(info._label)))
+               inf_uri,
+               inf_label))
             {
+// REMOVE Tim. tmp. Changed.
+              // fprintf(stderr, "Ignoring DSSI synth label:%s uri:%s path:%s duplicate of path:%s\n",
+              //         PLUGIN_GET_CSTRING(info._label),
+              //         PLUGIN_GET_CSTRING(info._uri),
+              //         PLUGIN_GET_CSTRING(info.filePath()),
+              //         sy->filePath().toUtf8().constData());
               fprintf(stderr, "Ignoring DSSI synth label:%s uri:%s path:%s duplicate of path:%s\n",
-                      PLUGIN_GET_CSTRING(info._label),
-                      PLUGIN_GET_CSTRING(info._uri),
-                      PLUGIN_GET_CSTRING(info.filePath()),
-                      sy->filePath().toLatin1().constData());
+                      inf_label.toLocal8Bit().constData(),
+                      inf_uri.toLocal8Bit().constData(),
+                      PLUGIN_GET_QSTRING(info.filePath()).toLocal8Bit().constData(),
+                      sy->filePath().toLocal8Bit().constData());
             }
             else
             {
@@ -112,14 +123,15 @@ void initDSSI()
       }
       break;
       
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      case MusEPlugin::PluginTypeLADSPA:
+      case MusEPlugin::PluginTypeVST:
+      case MusEPlugin::PluginTypeLV2:
+      case MusEPlugin::PluginTypeLinuxVST:
+      case MusEPlugin::PluginTypeMESS:
+      case MusEPlugin::PluginTypeMETRONOME:
+      case MusEPlugin::PluginTypeUnknown:
+      case MusEPlugin::PluginTypeNone:
+      case MusEPlugin::PluginTypeAll:
       break;
     }
   }
@@ -137,9 +149,9 @@ DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info)
  : Synth(info), handle(nullptr), dssi(nullptr), df(nullptr)
 
 {
-  _isDssiVst = info._type == MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST;
+  _isDssiVst = info._type == MusEPlugin::PluginTypeDSSIVST;
   
-  _hasGui = info._pluginFlags & MusEPlugin::PluginScanInfoStruct::HasGui;
+  _hasGui = info._pluginFlags & MusEPlugin::PluginHasGui;
 
   _portCount = info._portCount;
   
@@ -150,7 +162,7 @@ DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info)
 
   // Hack: Blacklist vst plugins in-place, configurable for now. 
   if(_isDssiVst && !MusEGlobal::config.vstInPlace)
-    _requiredFeatures |= PluginNoInPlaceProcessing;
+    _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
 }
 
 DssiSynth::~DssiSynth() 
@@ -166,13 +178,13 @@ DssiSynth::~DssiSynth()
 
 SynthIF* DssiSynth::createSIF(SynthI* synti)
 {
-      if (_instances == 0) 
+      if (_references == 0)
       {
-        handle = dlopen(info.filePath().toLatin1().constData(), RTLD_NOW);
+        handle = dlopen(_fileInfo.filePath().toLocal8Bit().constData(), RTLD_NOW);
         if (handle == 0) 
         {
               fprintf(stderr, "DssiSynth::createSIF dlopen(%s) failed: %s\n",
-                info.filePath().toLatin1().constData(), dlerror());
+                _fileInfo.filePath().toLocal8Bit().constData(), dlerror());
               return 0;
         }
         df = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
@@ -183,7 +195,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
                   "Unable to find dssi_descriptor() function in plugin "
                   "library file \"%s\": %s.\n"
                   "Are you sure this is a DSSI plugin file?\n",
-                  info.filePath().toLatin1().constData(),
+                  _fileInfo.filePath().toLocal8Bit().constData(),
                   txt ? txt : "?");
               dlclose(handle);
               handle = 0;
@@ -195,7 +207,9 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           if (dssi == 0)
             break;
           QString label(dssi->LADSPA_Plugin->Label);
-          if (label == _name)
+// REMOVE Tim. tmp. Changed.
+//          if (label == _name)
+          if (label == _label)
             break;
         }
 
@@ -255,13 +269,13 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           
           // Hack: Blacklist vst plugins in-place, configurable for now. 
           if((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-            _requiredFeatures |= PluginNoInPlaceProcessing;
+            _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
         }  
       }  
       
       if (dssi == 0) 
       {
-        fprintf(stderr, "cannot find DSSI synti %s\n", _name.toLatin1().constData());
+        fprintf(stderr, "cannot find DSSI synti %s\n", _label.toLocal8Bit().constData());
         dlclose(handle);
         handle = 0;
         df     = 0;
@@ -269,7 +283,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       }
       
       DssiSynthIF* sif = new DssiSynthIF(synti);
-      ++_instances;
+      ++_references;
       sif->init(this);
 
       return sif;
@@ -291,20 +305,18 @@ bool DssiSynthIF::nativeGuiVisible() const
 //   showNativeGui
 //---------------------------------------------------------
 
-void DssiSynthIF::showNativeGui(bool
-#if defined(OSC_SUPPORT)
-v
-#endif
-)
+void DssiSynthIF::showNativeGui(bool v)
       {
+      PluginIBase::showNativeGui(v);
+
       #ifdef OSC_SUPPORT
-      
+
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::showNativeGui(): v:%d visible:%d\n", v, guiVisible());
       #endif
       
       _oscif.oscShowGui(v);
-      
+
       #endif // OSC_SUPPORT
       }
 
@@ -344,6 +356,9 @@ bool DssiSynthIF::init(DssiSynth* s)
       const DSSI_Descriptor* dssi = _synth->dssi;
       const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
       _handle = ld->instantiate(ld, MusEGlobal::sampleRate);
+
+      if(!_handle)
+        return false;
 
       #ifdef OSC_SUPPORT
       _oscif.oscSetSynthIF(this);
@@ -511,9 +526,10 @@ bool DssiSynthIF::init(DssiSynth* s)
             // Support a special block for dssi synth ladspa controllers. 
             // Put the ID at a special block after plugins (far after).
             int id = genACnum(MusECore::MAX_PLUGINS, cip);
-            const char* name = ld->PortNames[k];
-            float min, max;
-            ladspaControlRange(ld, k, &min, &max);
+// REMOVE Tim. tmp. Changed.
+//             const char* name = ld->PortNames[k];
+//             float min, max;
+//             ladspaControlRange(ld, k, &min, &max);
             CtrlList* cl;
             CtrlListList* cll = track()->controller();
             iCtrlList icl = cll->find(id);
@@ -528,12 +544,20 @@ bool DssiSynthIF::init(DssiSynth* s)
               cl = icl->second;
               _controls[cip].val = cl->curVal();
             }
-            cl->setRange(min, max);
-            cl->setName(QString(name));
-            cl->setValueType(ladspaCtrlValueType(ld, k));
-            cl->setMode(ladspaCtrlMode(ld, k));
-            // Set the value units index.
-            cl->setValueUnit(valueUnit(cip));
+
+// REMOVE Tim. tmp. Changed.
+//             float min, max;
+//             range(cip, &min, &max);
+//             cl->setRange(min, max);
+// //             cl->setName(QString(name));
+// //             cl->setValueType(ladspaCtrlValueType(ld, k));
+// //             cl->setMode(ladspaCtrlMode(ld, k));
+//             cl->setName(QString(paramName(cip)));
+//             cl->setValueType(ctrlValueType(cip));
+//             cl->setMode(ctrlMode(cip));
+//             // Set the value units index.
+//             cl->setValueUnit(valueUnit(cip));
+            setupController(cl);
 
             ld->connect_port(_handle, k, &_controls[cip].val);
             
@@ -565,7 +589,7 @@ bool DssiSynthIF::init(DssiSynth* s)
       if(dssi->configure) 
       {
         char *rv = dssi->configure(_handle, DSSI_PROJECT_DIRECTORY_KEY,
-            MusEGlobal::museProject.toLatin1().constData()); //MusEGlobal::song->projectPath()
+            MusEGlobal::museProject.toUtf8().constData()); //MusEGlobal::song->projectPath()
         
         if(rv)
         {
@@ -749,7 +773,17 @@ void DssiSynthIF::setParameter(unsigned long n, double v)
 //   write
 //---------------------------------------------------------
 
-void DssiSynthIF::write(int level, Xml& xml) const
+void DssiSynthIF::write(
+  int
+#ifdef DSSI_VST_CHUNK_SUPPORT
+  level
+#endif
+  ,
+  Xml&
+#ifdef DSSI_VST_CHUNK_SUPPORT
+  xml
+#endif
+) const
 {
 #ifdef DSSI_VST_CHUNK_SUPPORT
 // REMOVE Tim. tmp. Changed.
@@ -890,11 +924,12 @@ void DssiSynthIF::write(int level, Xml& xml) const
       }
       */
       
-      // Store controls as parameters...
-// REMOVE Tim. tmp. Added. Added conditional.
-      if(_controls)
-        for(unsigned long c = 0; c < _synth->_controlInPorts; ++c)
-          xml.doubleTag(level, "param", _controls[c].val);
+// REMOVE Tim. tmp. Removed.
+//       // Store controls as parameters...
+// // REMOVE Tim. tmp. Added. Added conditional.
+//       if(_controls)
+//         for(unsigned long c = 0; c < _synth->_controlInPorts; ++c)
+//           xml.doubleTag(level, "param", _controls[c].val);
 }
 
 //---------------------------------------------------------
@@ -1344,7 +1379,7 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   unsigned long sample = 0;
 
   const bool isOn = on();
-  const PluginBypassType bypassType = pluginBypassType();
+  const MusEPlugin::PluginBypassType bypassType = pluginBypassType();
 
   //  Normally if the plugin is inactive or off we tell it to connect to dummy audio ports.
   //  But this can change depending on detected bypass type, below.
@@ -1379,18 +1414,18 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   {
     switch(bypassType)
     {
-      case PluginBypassTypeEmulatedEnableController:
-      case PluginBypassTypeEmulatedEnableFunction:
+      case MusEPlugin::PluginBypassTypeEmulatedEnableController:
+      case MusEPlugin::PluginBypassTypeEmulatedEnableFunction:
       break;
 
-      case PluginBypassTypeEnablePort:
-      case PluginBypassTypeBypassPort:
+      case MusEPlugin::PluginBypassTypeEnablePort:
+      case MusEPlugin::PluginBypassTypeBypassPort:
           connectToDummyAudioPorts = false;
           usefixedrate = false;
       break;
 
-      case PluginBypassTypeEnableFunction:
-      case PluginBypassTypeBypassFunction:
+      case MusEPlugin::PluginBypassTypeEnableFunction:
+      case MusEPlugin::PluginBypassTypeBypassFunction:
           connectToDummyAudioPorts = false;
       break;
     }
@@ -1399,7 +1434,10 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   // See if the features require a fixed control period.
   // FIXME Better support for PluginPowerOf2BlockSize, by quantizing the control period times.
   //       For now we treat it like fixed control period.
-  if(requiredFeatures() & (PluginFixedBlockSize | PluginPowerOf2BlockSize | PluginCoarseBlockSize))
+  if(requiredFeatures() &
+     (MusEPlugin::PluginFixedBlockSize |
+      MusEPlugin::PluginPowerOf2BlockSize |
+      MusEPlugin::PluginCoarseBlockSize))
     usefixedrate = true;
 
   // Note for dssi-vst this MUST equal MusEGlobal::audio period. It doesn't like broken-up runs (it stutters),
@@ -1835,10 +1873,10 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
 //   incInstances
 //---------------------------------------------------------
 
-void DssiSynth::incInstances(int val)
+int DssiSynth::incReferences(int val)
 {
-      _instances += val;
-      if (_instances == 0) 
+      _references += val;
+      if (_references == 0)
       {
             if (handle)
             {
@@ -1857,6 +1895,7 @@ void DssiSynth::incInstances(int val)
             midiCtl2PortMap.clear();
             port2MidiCtlMap.clear();
       }
+      return _references;
 }
 
 //---------------------------------------------------------
@@ -1899,7 +1938,7 @@ void DssiSynthIF::guiHeartBeat()
 int DssiSynthIF::oscUpdate()
 {
       // Send project directory.
-      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
+      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toUtf8().constData());  // MusEGlobal::song->projectPath()
       
       // Send current string configuration parameters.
       int i = 0;
@@ -2122,7 +2161,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       // restore state without any input from a GUI." 
 
       #ifdef DSSI_DEBUG 
-      printf("DssiSynthIF::oscConfigure synth name:%s key:%s value:%s\n", synti->name().toLatin1().constData(), key, value);
+      printf("DssiSynthIF::oscConfigure synth name:%s key:%s value:%s\n", synti->name().toLocal8Bit().constData(), key, value);
       #endif
       
       // Add or modify the configuration map item.
@@ -2131,7 +2170,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       if (!strncmp(key, DSSI_RESERVED_CONFIGURE_PREFIX,
          strlen(DSSI_RESERVED_CONFIGURE_PREFIX))) {
             fprintf(stderr, "MusE: OSC: UI for plugin '%s' attempted to use reserved configure key \"%s\", ignoring\n",
-               synti->name().toLatin1().constData(), key);
+               synti->name().toLocal8Bit().constData(), key);
             return 0;
             }
 
@@ -2141,7 +2180,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       char* message = _synth->dssi->configure(_handle, key, value);
       if (message) {
             printf("MusE: on configure '%s' '%s', plugin '%s' returned error '%s'\n",
-               key, value, synti->name().toLatin1().constData(), message);
+               key, value, synti->name().toLocal8Bit().constData(), message);
             free(message);
             }
 
@@ -2409,12 +2448,13 @@ void DssiSynthIF::deactivate3()
 unsigned long DssiSynthIF::pluginID() const                  { return (_synth && _synth->dssi) ? _synth->dssi->LADSPA_Plugin->UniqueID : 0; }
 // REMOVE Tim. tmp. Removed.
 // int DssiSynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for dssi synth.
-QString DssiSynthIF::pluginLabel() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
-QString DssiSynthIF::pluginName() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Name) : QString(); }
-QString DssiSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
-QString DssiSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
-QString DssiSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
-QString DssiSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
+// REMOVE Tim. tmp. Removed.
+// QString DssiSynthIF::pluginLabel() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Label) : QString(); }
+// QString DssiSynthIF::pluginName() const { return (_synth && _synth->dssi) ? QString(_synth->dssi->LADSPA_Plugin->Name) : QString(); }
+// QString DssiSynthIF::lib() const                             { return _synth ? _synth->completeBaseName() : QString(); }
+// QString DssiSynthIF::uri() const                             { return _synth ? _synth->uri() : QString(); }
+// QString DssiSynthIF::dirPath() const                         { return _synth ? _synth->absolutePath() : QString(); }
+// QString DssiSynthIF::fileName() const                        { return _synth ? _synth->fileName() : QString(); }
 // REMOVE Tim. tmp. Changed.
 // void DssiSynthIF::enableController(unsigned long i, bool v)  { _controls[i].enCtrl = v; }
 // bool DssiSynthIF::controllerEnabled(unsigned long i) const   { return _controls[i].enCtrl; }

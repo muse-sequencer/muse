@@ -54,11 +54,7 @@ class MidiSyncLViewItem : public QTreeWidgetItem
    public:
       MidiSyncLViewItem(QTreeWidget* parent)
          : QTreeWidgetItem(parent) { _port = -1; _inDet = _curDet = _tickDet = false; }
-         //: QListViewItem(parent) { _device = 0; }
          
-      //MidiSyncLViewItem(QListView* parent, QListViewItem* after)
-      //   : QListViewItem(parent, after) { _port = -1; }
-      
       //virtual QString text(int column) const;
       //virtual unsigned tick() = 0;
       

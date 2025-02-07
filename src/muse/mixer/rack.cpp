@@ -251,7 +251,8 @@ void EffectRack::updateContents()
             const QString name = pipe->name(i);
             const QString uri = pipe->uri(i);
             item(i)->setText(name);
-            const QString ttname = name + (uri.isEmpty() ? QString() : QString(" \n") + uri);
+            const QString ttname = (name + (uri.isEmpty() ? QString() : QString(" \n") + uri)) +
+              (pipe->at(i) && !pipe->at(i)->plugin() ? QString(tr("\nPLUGIN IS UNAVAILABLE!")) : QString(""));
             item(i)->setToolTip(pipe->empty(i) ? tr("Effect rack\nDouble-click a slot to insert FX") : ttname );
             //item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             if(viewport())
@@ -312,7 +313,7 @@ QSize EffectRack::sizeHint() const
 //             MusECore::PluginI* plugi = new MusECore::PluginI();
 //             if (plugi->initPluginInstance(plugin, track->channels())) {
 //                   printf("cannot instantiate plugin <%s>\n",
-//                       plugin->name().toLatin1().constData());
+//                       plugin->name().toLocal8Bit().constData());
 //                   delete plugi;
 //                   return;
 //                   }
@@ -334,7 +335,7 @@ void EffectRack::choosePlugin(QListWidgetItem* it)
     MusECore::PluginI* plugi = new MusECore::PluginI();
     if (plugi->initPluginInstance(plugin, track->channels())) {
           printf("cannot instantiate plugin <%s>\n",
-                plugin->name().toLatin1().constData());
+                plugin->name().toLocal8Bit().constData());
           delete plugi;
           return;
           }
@@ -446,7 +447,10 @@ void EffectRack::menuRequested(QListWidgetItem* it)
             if(!pipe->hasNativeGui(idx))
                   showNativeGuiAction->setEnabled(false);
 #ifdef LV2_SUPPORT
-            if(pipe->isLV2Plugin(idx))
+// REMOVE Tim. tmp. Changed.
+//             if(pipe->isLV2Plugin(idx))
+            const MusEPlugin::PluginType ptype = pipe->pluginType(idx);
+            if(ptype == MusEPlugin::PluginTypeLV2)
             {
                //show presets submenu for lv2 plugins
                mSubPresets = new PopupMenu(tr("Presets"));
@@ -714,7 +718,7 @@ void EffectRack::savePreset(int idx)
 //       if (MusEGlobal::debugMsg) {
 //           QString fileName;
 //           MusEGlobal::getUniqueTmpfileName("tmp","preset", fileName);
-//           tmp = fopen(fileName.toLatin1().data(), "w+");
+//           tmp = fopen(fileName.toLocal8Bit().data(), "w+");
 //       }
 //       else
 //           tmp = tmpfile();
@@ -745,10 +749,10 @@ void EffectRack::savePreset(int idx)
 //       QString xmlconf;
 //       xml.dump(xmlconf);
 //       QMimeData* md = new QMimeData();
-//       QByteArray data(xmlconf.toLatin1().constData());
+//       QByteArray data(xmlconf.toUtf8().constData());
 //
 //       if (MusEGlobal::debugMsg)
-//           printf("Sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
+//           printf("Sending %d [%s]\n", data.length(), xmlconf.toLocal8Bit().constData());
 //
 //       md->setData(MUSE_MIME_TYPE, data);
 //
@@ -776,7 +780,7 @@ void EffectRack::startDragItem(int idx)
       QString xmlconf;
 
 // REMOVE Tim. tmp. Added.
-//       fprintf(stderr, "EffectRack::startDrag QTemporaryFile name:%s\n", tmp.fileName().toUtf8().constData());
+//       fprintf(stderr, "EffectRack::startDrag QTemporaryFile name:%s\n", tmp.fileName().toLocal8Bit().constData());
 
 //       MusECore::Xml xml(&tmp);
       MusECore::Xml xml(&xmlconf);
@@ -854,7 +858,7 @@ void EffectRack::startDragItem(int idx)
 
       if (MusEGlobal::debugMsg)
 //           printf("Sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
-          printf("Sending %d [%s]\n", data.length(), data.constData());
+          printf("Sending %d [%s]\n", data.length(), xmlconf.toLocal8Bit().constData());
 
       // FIXME: Drag to desktop? Tried, but no luck. Nothing happens.
       //        Tried application/xml, text/xml. text/plain works but just
@@ -1286,7 +1290,7 @@ MusECore::PluginI* EffectRack::initPlugin(
                   case MusECore::Xml::End:
                         if(plugi)
                         {
-                          plugi->currentInitialConfiguration()._ctrlListList.clearDelete();
+                          plugi->initialConfiguration()._ctrlListList.clearDelete();
                           delete plugi;
                         }
                         return nullptr;
@@ -1303,9 +1307,9 @@ MusECore::PluginI* EffectRack::initPlugin(
                               if (plugi->readConfiguration(xml, false, track->channels())) {
                                   //QString d;
                                   //xml.dump(d);
-                                  //printf("cannot instantiate plugin [%s]\n", d.toLatin1().data());
+                                  //printf("cannot instantiate plugin [%s]\n", d.toLocal8Bit().data());
                                   // Be sure to clear and delete the controller list.
-                                  plugi->currentInitialConfiguration()._ctrlListList.clearDelete();
+                                  plugi->initialConfiguration()._ctrlListList.clearDelete();
                                   delete plugi;
                                   plugi = nullptr;
                                   }
@@ -1411,7 +1415,7 @@ MusECore::PluginI* EffectRack::initPlugin(
                                 // If any automation controllers were included with in XML,
                                 //  convert controller IDs and transfer to given list.
                                 //---------------------------------------------------------
-                                MusECore::CtrlListList &conf_cll = plugi->currentInitialConfiguration()._ctrlListList;
+                                MusECore::CtrlListList &conf_cll = plugi->initialConfiguration()._ctrlListList;
                                 if(cll)
                                 {
                                   for(MusECore::ciCtrlList icl = conf_cll.cbegin(); icl != conf_cll.cend(); )
@@ -1455,7 +1459,7 @@ MusECore::PluginI* EffectRack::initPlugin(
                                 // If any midi controller mappings were included with in XML,
                                 //  convert controller IDs and transfer to given list.
                                 //---------------------------------------------------------
-                                MusECore::MidiAudioCtrlMap &conf_macm = plugi->currentInitialConfiguration()._midiAudioCtrlMap;
+                                MusECore::MidiAudioCtrlMap &conf_macm = plugi->initialConfiguration()._midiAudioCtrlMap;
                                 if(macm)
                                 {
                                   for(MusECore::iMidiAudioCtrlMap imacm = conf_macm.begin(); imacm != conf_macm.end(); )

@@ -52,7 +52,7 @@ class PluginScanList : public std::list<PluginScanInfoRef>
     PluginScanInfoRef find(const PluginInfoString_t& file,
                            const PluginInfoString_t& uri,
                            const PluginInfoString_t& label,
-                           PluginScanInfoStruct::PluginType_t types = PluginScanInfoStruct::PluginTypeAll) const;
+                           MusEPlugin::PluginType_t types = MusEPlugin::PluginTypeAll) const;
     // If uri is not empty, the search is based solely on it, the other info members are ignored.
     PluginScanInfoRef find(const PluginScanInfoStruct& info) const;
 };

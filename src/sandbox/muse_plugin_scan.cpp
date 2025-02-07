@@ -72,7 +72,7 @@ namespace MusEPluginScan {
 //    Returns true on success
 //---------------------------------------------------------
 
-static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
+static bool loadPluginLib(MusEPlugin::PluginType_t types,
                           const char* filename, const char* outfilename, bool do_ports)
 {
   DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: filename:%s\n", filename);
@@ -116,7 +116,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
     if(!found)
     {
       DSSI_Descriptor_Function dssi = nullptr;
-      if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI)
+      if(types & MusEPlugin::PluginTypeDSSI)
       {
         dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
         if(dssi)
@@ -146,7 +146,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
     if(!found)
     {
       MESS_Descriptor_Function msynth = nullptr;
-      if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeMESS)
+      if(types & MusEPlugin::PluginTypeMESS)
       {
         msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
         if(msynth)
@@ -173,7 +173,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
     if(!found)
     {
       LADSPA_Descriptor_Function ladspa = nullptr;
-      if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA)
+      if(types & MusEPlugin::PluginTypeLADSPA)
       {
         ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
         if(ladspa)
@@ -201,7 +201,7 @@ static bool loadPluginLib(MusEPlugin::PluginScanInfoStruct::PluginType_t types,
     if(!found)
     {
       LinuxVST_Instance_Function getInstance = nullptr;
-      if(types & MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST)
+      if(types & MusEPlugin::PluginTypeLinuxVST)
       {
         getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);
         if(getInstance)
@@ -299,13 +299,13 @@ int main(int argc, char* argv[])
       bool do_ports = false;
       const char* filename = 0;
       const char* outfilename = 0;
-      MusEPlugin::PluginScanInfoStruct::PluginType_t types = MusEPlugin::PluginScanInfoStruct::PluginTypeAll;
+      MusEPlugin::PluginType_t types = MusEPlugin::PluginTypeAll;
       int c;
       while ((c = getopt(argc, argv, "f:t:o:p")) != EOF) {
             switch (c) {
                   case 'f': filename = optarg; break;
                   case 'o': outfilename = optarg; break;
-                  case 't': types = MusEPlugin::PluginScanInfoStruct::PluginType_t(atoi(optarg)); break;
+                  case 't': types = MusEPlugin::PluginType_t(atoi(optarg)); break;
                   case 'p': do_ports = true; break;
                   default:  std::fprintf(stderr, "%s: -t <types flags> -f <filename> -o <output filename> -p (scan plugin ports)\n",
                               argv[0]);  return -1;

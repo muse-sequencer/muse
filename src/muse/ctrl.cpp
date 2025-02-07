@@ -388,7 +388,7 @@ MidiAudioCtrlStruct::MidiAudioCtrlStruct(
 //                           .arg(mctrl)
 //                           .arg(type)
 //                           .arg(id);
-//       xml.tag(level++, s.toLatin1().constData());
+//       xml.tag(level++, s.toUtf8().constData());
 //
 //       // TODO
 //       //const MidiAudioCtrlStruct& macs = imacs->second;
@@ -501,7 +501,7 @@ void MidiAudioCtrlMap::write(
   if(startId > endId)
     return;
 
-  for(ciMidiAudioCtrlMap imacm = begin(); imacm != end();  ++imacm)
+  for(ciMidiAudioCtrlMap imacm = cbegin(); imacm != cend();  ++imacm)
   {
       // Write only the assignments for the given track pointer (which can be NULL).
       if(imacm->second.track() != track)
@@ -524,13 +524,11 @@ void MidiAudioCtrlMap::write(
                             .arg(mctrl)
                             .arg(type)
                             .arg(id);
-        xml.tag(level++, s.toLatin1().constData());
+        xml.emptyTag(level, s);
 
         // TODO
         //const MidiAudioCtrlStruct& macs = imacs->second;
         //xml.intTag(level, "macs ???", macs.);
-
-        xml.etag(--level, "midiAssign");
       }
   }
 }
@@ -562,7 +560,7 @@ void MidiAudioCtrlMap::write(
 //                               if(!ok)
 //                               {
 //                                 ++errcount;
-//                                 printf("MidiAudioCtrlMap::read failed reading port string: %s\n", xml.s2().toLatin1().constData());
+//                                 printf("MidiAudioCtrlMap::read failed reading port string: %s\n", xml.s2().toUtf8().constData());
 //                               }
 //                         }
 //                         else if (tag == "ch")
@@ -571,7 +569,7 @@ void MidiAudioCtrlMap::write(
 //                               if(!ok)
 //                               {
 //                                 ++errcount;
-//                                 printf("MidiAudioCtrlMap::read failed reading ch string: %s\n", xml.s2().toLatin1().constData());
+//                                 printf("MidiAudioCtrlMap::read failed reading ch string: %s\n", xml.s2().toUtf8().constData());
 //                               }
 //                         }
 //                         else if (tag == "mctrl")
@@ -580,7 +578,7 @@ void MidiAudioCtrlMap::write(
 //                               if(!ok)
 //                               {
 //                                 ++errcount;
-//                                 printf("MidiAudioCtrlMap::read failed reading mctrl string: %s\n", xml.s2().toLatin1().constData());
+//                                 printf("MidiAudioCtrlMap::read failed reading mctrl string: %s\n", xml.s2().toUtf8().constData());
 //                               }
 //                         }
 //                         else if (tag == "type")
@@ -591,7 +589,7 @@ void MidiAudioCtrlMap::write(
 //                               else
 //                               {
 //                                 ++errcount;
-//                                 printf("MidiAudioCtrlPortMap::read failed reading type string: %s\n", xml.s2().toLatin1().constData());
+//                                 printf("MidiAudioCtrlPortMap::read failed reading type string: %s\n", xml.s2().toUtf8().constData());
 //                               }
 //                         }
 //                         // Tag actrl is obsolete, changed to id now.
@@ -601,11 +599,11 @@ void MidiAudioCtrlMap::write(
 //                               if(!ok)
 //                               {
 //                                 ++errcount;
-//                                 printf("MidiAudioCtrlPortMap::read failed reading actrl string: %s\n", xml.s2().toLatin1().constData());
+//                                 printf("MidiAudioCtrlPortMap::read failed reading actrl string: %s\n", xml.s2().toUtf8().constData());
 //                               }
 //                         }
 //                         else
-//                               printf("unknown tag %s\n", tag.toLatin1().constData());
+//                               printf("unknown tag %s\n", tag.toLocal8Bit().constData());
 //                         break;
 //                   case Xml::TagStart:
 //                         // TODO
@@ -653,7 +651,7 @@ void MidiAudioCtrlMap::read(
                               if(!ok)
                               {
                                 ++errcount;
-                                printf("MidiAudioCtrlMap::read failed reading port string: %s\n", xml.s2().toLatin1().constData());
+                                printf("MidiAudioCtrlMap::read failed reading port string: %s\n", xml.s2().toLocal8Bit().constData());
                               }
                         }
                         else if (tag == "ch")
@@ -662,7 +660,7 @@ void MidiAudioCtrlMap::read(
                               if(!ok)
                               {
                                 ++errcount;
-                                printf("MidiAudioCtrlMap::read failed reading ch string: %s\n", xml.s2().toLatin1().constData());
+                                printf("MidiAudioCtrlMap::read failed reading ch string: %s\n", xml.s2().toLocal8Bit().constData());
                               }
                         }
                         else if (tag == "mctrl")
@@ -671,7 +669,7 @@ void MidiAudioCtrlMap::read(
                               if(!ok)
                               {
                                 ++errcount;
-                                printf("MidiAudioCtrlMap::read failed reading mctrl string: %s\n", xml.s2().toLatin1().constData());
+                                printf("MidiAudioCtrlMap::read failed reading mctrl string: %s\n", xml.s2().toLocal8Bit().constData());
                               }
                         }
                         else if (tag == "type")
@@ -682,7 +680,7 @@ void MidiAudioCtrlMap::read(
                               else
                               {
                                 ++errcount;
-                                printf("MidiAudioCtrlPortMap::read failed reading type string: %s\n", xml.s2().toLatin1().constData());
+                                printf("MidiAudioCtrlPortMap::read failed reading type string: %s\n", xml.s2().toLocal8Bit().constData());
                               }
                         }
                         // Tag actrl is obsolete, changed to id now.
@@ -692,11 +690,11 @@ void MidiAudioCtrlMap::read(
                               if(!ok)
                               {
                                 ++errcount;
-                                printf("MidiAudioCtrlPortMap::read failed reading actrl string: %s\n", xml.s2().toLatin1().constData());
+                                printf("MidiAudioCtrlPortMap::read failed reading actrl string: %s\n", xml.s2().toLocal8Bit().constData());
                               }
                         }
                         else
-                              printf("unknown tag %s\n", tag.toLatin1().constData());
+                              printf("unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::TagStart:
                         // TODO
@@ -1173,6 +1171,7 @@ void CtrlList::setColor( QColor c ) { _displayColor = c;}
 QColor CtrlList::color() const { return _displayColor; }
 void CtrlList::setVisible(bool v) { _visible = v; }
 bool CtrlList::isVisible() const { return _visible; }
+void CtrlList::setDontShow(bool v) { _dontShow = v; }
 bool CtrlList::dontShow() const { return _dontShow; }
 int CtrlList::valueUnit() const { return _valueUnit; }
 void CtrlList::setValueUnit(int idx) { _valueUnit = idx; }
@@ -1602,7 +1601,7 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
     frame = loc.toUInt(fs, &ok);
     if(!ok)
     {
-      fprintf(stderr, "CtrlList::readValues failed reading frame string: %s\n", fs.toLatin1().constData());
+      fprintf(stderr, "CtrlList::readValues failed reading frame string: %s\n", fs.toLocal8Bit().constData());
       break;
     }
 
@@ -1622,7 +1621,7 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
     val = MusELib::museStringToDouble(vs, &ok);
     if(!ok)
     {
-      fprintf(stderr,"CtrlList::readValues failed reading value string: %s\n", vs.toLatin1().constData());
+      fprintf(stderr,"CtrlList::readValues failed reading value string: %s\n", vs.toLocal8Bit().constData());
       break;
     }
 
@@ -1661,7 +1660,8 @@ void CtrlList::readValues(const QString& tag, const int samplerate)
         flags = CtrlVal::CtrlValueFlags(os.toInt(&ok));
         if(!ok)
         {
-          fprintf(stderr, "CtrlList::readValues failed: unrecognized optional item string: %s\n", os.toLatin1().constData());
+          fprintf(stderr, "CtrlList::readValues failed: unrecognized optional item string: %s\n",
+                  os.toLocal8Bit().constData());
           optErr = true;
           break;
         }
@@ -1719,20 +1719,20 @@ bool CtrlList::read(Xml& xml)
                         {
                               id = loc.toInt(xml.s2(), &idOk);
                               if(!idOk)
-                                fprintf(stderr, "CtrlList::read failed reading _id string: %s\n", xml.s2().toLatin1().constData());
+                                fprintf(stderr, "CtrlList::read failed reading _id string: %s\n", xml.s2().toLocal8Bit().constData());
                         }
                         else if (tag == "cur")
                         {
                               // Accept either decimal or hex value strings.
                               _curVal = MusELib::museStringToDouble(xml.s2(), &ok);
                               if(!ok)
-                                fprintf(stderr, "CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLatin1().constData());
+                                fprintf(stderr, "CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLocal8Bit().constData());
                         }
                         else if (tag == "visible")
                         {
                               _visible = loc.toInt(xml.s2(), &ok);
                               if(!ok)
-                                fprintf(stderr, "CtrlList::read failed reading _visible string: %s\n", xml.s2().toLatin1().constData());
+                                fprintf(stderr, "CtrlList::read failed reading _visible string: %s\n", xml.s2().toLocal8Bit().constData());
                         }
                         else if (tag == "color")
                         {
@@ -1741,7 +1741,7 @@ bool CtrlList::read(Xml& xml)
                                 _displayColor.setNamedColor(xml.s2());
                               else
                               {
-                                fprintf(stderr, "CtrlList::read failed reading color string: %s\n", xml.s2().toLatin1().constData());
+                                fprintf(stderr, "CtrlList::read failed reading color string: %s\n", xml.s2().toLocal8Bit().constData());
                               }
                         }
 
@@ -1754,7 +1754,7 @@ bool CtrlList::read(Xml& xml)
                                 setValueType(MusECore::CtrlValueType(valType));
                               else
                                 fprintf(stderr, "CtrlList::read failed reading valueType string: %s\n",
-                                        xml.s2().toLatin1().constData());
+                                        xml.s2().toLocal8Bit().constData());
                         }
                         else if (tag == "min")
                         {
@@ -1762,7 +1762,7 @@ bool CtrlList::read(Xml& xml)
                               min = MusELib::museStringToDouble(xml.s2(), &minOk);
                               if(!minOk)
                                 fprintf(stderr, "CtrlList::read failed reading min string: %s\n",
-                                        xml.s2().toLatin1().constData());
+                                        xml.s2().toLocal8Bit().constData());
                         }
                         else if (tag == "max")
                         {
@@ -1770,17 +1770,17 @@ bool CtrlList::read(Xml& xml)
                               max = MusELib::museStringToDouble(xml.s2(), &maxOk);
                               if(!maxOk)
                                 fprintf(stderr, "CtrlList::read failed reading max string: %s\n",
-                                        xml.s2().toLatin1().constData());
+                                        xml.s2().toLocal8Bit().constData());
                         }
                         else if (tag == "samplerate")
                         {
                               samplerate = loc.toInt(xml.s2(), &ok);
                               if(!ok)
                                 fprintf(stderr, "CtrlList::read failed reading samplerate string: %s\n",
-                                        xml.s2().toLatin1().constData());
+                                        xml.s2().toLocal8Bit().constData());
                         }
                         else
-                              fprintf(stderr,"CtrlList::read unknown tag %s\n", tag.toLatin1().constData());
+                              fprintf(stderr,"CtrlList::read unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::Text:
                         {
@@ -1805,14 +1805,21 @@ bool CtrlList::read(Xml& xml)
 
 void CtrlList::write(int level, Xml& xml, int idMask) const
 {
+        const bool isempty = empty();
         int ctlid = id();
         // If idMask is given, mask the id bits when saving.
         if(idMask != -1)
           ctlid &= idMask;
         // Use hex value string when appropriate.
-        QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(ctlid).arg(MusELib::museStringFromDouble(curVal()));
-        s += QString(" color=\"%1\" visible=\"%2\"").arg(color().name()).arg(isVisible());
-        xml.tag(level++, s.toLatin1().constData());
+        QString s = QString("controller id=\"%1\" cur=\"%2\" color=\"%3\" visible=\"%4\"")
+          .arg(ctlid).arg(MusELib::museStringFromDouble(curVal())).arg(color().name()).arg(isVisible());
+
+        // List is empty? End the line now.
+        if(isempty)
+          xml.emptyTag(level, s);
+        else
+          xml.tag(level++, s);
+
         int i = 0;
         for (ciCtrl ic = cbegin(); ic != cend(); ++ic) {
               // Write the item's frame and value.
@@ -1826,7 +1833,13 @@ void CtrlList::write(int level, Xml& xml, int idMask) const
               if(flags != CtrlVal::VAL_NOFLAGS)
                 ss += QString(" %1").arg(flags);
               ss += ", ";
-              xml.nput(level, ss.toLatin1().constData());
+              const QByteArray ba = ss.toUtf8();
+
+              // Indent only if starting from left.
+              if(i)
+                xml.nput(ba.constData());
+              else
+                xml.nput(level, ba.constData());
 
               ++i;
               if (i >= 4) {
@@ -1836,7 +1849,10 @@ void CtrlList::write(int level, Xml& xml, int idMask) const
               }
         if (i)
               xml.put(level, "");
-        xml.etag(--level, "controller");
+
+        // List is not empty? End the block formally.
+        if(!isempty)
+          xml.etag(--level, "controller");
 }
 
 //---------------------------------------------------------
@@ -1971,17 +1987,37 @@ void CtrlListList::updateCurValues(unsigned int frame)
 //         }
 // }
 
+// //---------------------------------------------------------
+// //   write
+// //---------------------------------------------------------
+//
+// void CtrlListList::write(int level, Xml& xml, int startId, int endId, int idMask) const
+// {
+//   for (ciCtrlList icl = begin(); icl != end(); ++icl) {
+//         const CtrlList* cl = icl->second;
+//         const int id = cl->id();
+//         if((startId < 0 || id >= startId) && (endId < 0 || id < endId))
+//           cl->write(level, xml, idMask);
+//         }
+// }
+
 //---------------------------------------------------------
 //   write
 //---------------------------------------------------------
 
 void CtrlListList::write(int level, Xml& xml, int startId, int endId, int idMask) const
 {
-  for (ciCtrlList icl = begin(); icl != end(); ++icl) {
+  // Kick-start the search by looking for the first controller at or above the base id.
+  ciCtrlList icl = startId < 0 ? cbegin() : lower_bound(startId);
+  for ( ; icl != cend(); ++icl) {
         const CtrlList* cl = icl->second;
         const int id = cl->id();
-        if((startId < 0 || id >= startId) && (endId < 0 || id < endId))
-          cl->write(level, xml, idMask);
+        if(id < 0)
+          continue;
+        // At the end of the id range? Done, break out.
+        if(endId >= 0 && id >= endId)
+          break;
+        cl->write(level, xml, idMask);
         }
 }
 

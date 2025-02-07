@@ -96,14 +96,14 @@ void SS_initPlugins(const QString& hostCachePath)
                                   &scan_list,
                                   false,
                                   false,
-                                  MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA);
+                                  MusEPlugin::PluginTypeLADSPA);
   for(MusEPlugin::ciPluginScanList isl = scan_list.begin(); isl != scan_list.end(); ++isl)
   {
     const MusEPlugin::PluginScanInfoRef inforef = *isl;
     const MusEPlugin::PluginScanInfoStruct& info = inforef->info();
     switch(info._type)
     {
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA:
+      case MusEPlugin::PluginTypeLADSPA:
       {
         //if(MusEGlobal::loadPlugins)
         {
@@ -124,15 +124,16 @@ void SS_initPlugins(const QString& hostCachePath)
       }
       break;
       
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLV2:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeMESS:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeNone:
-      case MusEPlugin::PluginScanInfoStruct::PluginTypeAll:
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeDSSIVST:
+      case MusEPlugin::PluginTypeVST:
+      case MusEPlugin::PluginTypeLV2:
+      case MusEPlugin::PluginTypeLinuxVST:
+      case MusEPlugin::PluginTypeMESS:
+      case MusEPlugin::PluginTypeMETRONOME:
+      case MusEPlugin::PluginTypeUnknown:
+      case MusEPlugin::PluginTypeNone:
+      case MusEPlugin::PluginTypeAll:
       break;
     }
   }
@@ -255,7 +256,7 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
             }*/
 
       if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(d->Properties)))
-        _requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
+        _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
       
       SP_TRACE_OUT
       }
@@ -324,7 +325,7 @@ int LadspaPlugin::incReferences(int val)
     _poIdx.clear();
     _iIdx.clear();
     _oIdx.clear();
-    _requiredFeatures = MusECore::PluginNoFeatures;
+    _requiredFeatures = MusEPlugin::PluginNoFeatures;
 
     return 0;
   }
@@ -420,7 +421,7 @@ int LadspaPlugin::incReferences(int val)
   }
 
   if ((_inports != _outports) || (LADSPA_IS_INPLACE_BROKEN(_plugin->Properties)))
-    _requiredFeatures |= MusECore::PluginNoInPlaceProcessing;
+    _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
   
   _references = newref;
 

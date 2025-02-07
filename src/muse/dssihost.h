@@ -94,9 +94,10 @@ class DssiSynth : public Synth {
    public:
       DssiSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~DssiSynth();
-      virtual Type synthType() const { return DSSI_SYNTH; }
+// REMOVE Tim. tmp. Removed.
+//       virtual Type synthType() const { return DSSI_SYNTH; }
 
-      virtual void incInstances(int);
+      virtual int incReferences(int);
       virtual SynthIF* createSIF(SynthI*);
       
       friend class DssiSynthIF;
@@ -136,6 +137,8 @@ class DssiSynthIF : public SynthIF
       float** _audioOutBuffers;
       float*  _audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
 
+      bool init(DssiSynth* s);
+
    protected:
       void activate();
       void deactivate();
@@ -147,8 +150,6 @@ class DssiSynthIF : public SynthIF
       virtual int oldMidiStateHeader(const unsigned char** data) const;
       
       virtual ~DssiSynthIF();
-
-      bool init(DssiSynth* s);
 
       virtual DssiSynth* dssiSynth() { return _synth; }
       virtual SynthI* dssiSynthI()   { return synti; }
@@ -200,13 +201,14 @@ class DssiSynthIF : public SynthIF
 // REMOVE Tim. tmp. Removed.
 //       int id() const;
 // REMOVE Tim. tmp. Changed.
-      QString pluginLabel() const;
-      QString pluginName() const;
-      QString lib() const;
-      QString uri() const;
-      QString dirPath() const;
-      QString fileName() const;
-      void enableController(unsigned long i, bool v = true);      
+// REMOVE Tim. tmp. Removed.
+//       QString pluginLabel() const;
+//       QString pluginName() const;
+//       QString lib() const;
+//       QString uri() const;
+//       QString dirPath() const;
+//       QString fileName() const;
+      void enableController(unsigned long i, bool v = true);
       bool controllerEnabled(unsigned long i) const;          
       void enableAllControllers(bool v = true);
       void updateControllers();

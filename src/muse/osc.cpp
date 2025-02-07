@@ -223,10 +223,10 @@ static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
 //       SynthI* synti = *si;
 //
 //       #ifdef OSC_DEBUG
-//       fprintf(stderr, "oscMessageHandler: searching for:%s checking synth instance:%s\n", p, synti->name().toLatin1().constData());
+//       fprintf(stderr, "oscMessageHandler: searching for:%s checking synth instance:%s\n", p, synti->name().toLocal8Bit().constData());
 //       #endif
 //
-//       QByteArray ba = synti->name().toLatin1();
+//       QByteArray ba = synti->name().toUtf8();
 //       const char* sub = strstr(p, ba.constData());
 //       if(sub == nullptr)
 //         continue;
@@ -245,7 +245,7 @@ static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
 //       ++p;
 //
 //       #ifdef OSC_DEBUG
-//       fprintf(stderr, "oscMessageHandler: synth track:%s method:%s\n", synti->name().toLatin1().constData(), p);
+//       fprintf(stderr, "oscMessageHandler: synth track:%s method:%s\n", synti->name().toLocal8Bit().constData(), p);
 //       #endif
 //
 //       OscIF& oscif = instance->oscIF();
@@ -285,17 +285,17 @@ static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
 // // REMOVE Tim. tmp. Changed.
 // //        #ifdef OSC_DEBUG
 // //        fprintf(stderr, "oscMessageHandler: searching for:%s checking effect instance:%s label:%s lib:%s\n",
-// //                p, instance->name().toLatin1().constData(), instance->label().toLatin1().constData(), instance->lib().toLatin1().constData());
+// //                p, instance->name().toLocal8Bit().constData(), instance->label().toLocal8Bit().constData(), instance->lib().toLocal8Bit().constData());
 // //        #endif
 // //
-// //        QByteArray ba = instance->label().toLatin1();
+// //        QByteArray ba = instance->label().toUtf8();
 //
 //         #ifdef OSC_DEBUG
 //         fprintf(stderr, "oscMessageHandler: searching for:%s checking effect instance:%s name:%s lib:%s\n",
-//                 p, instance->name().toLatin1().constData(), instance->name().toLatin1().constData(), instance->lib().toLatin1().constData());
+//                 p, instance->name().toLocal8Bit().constData(), instance->name().toLocal8Bit().constData(), instance->lib().toLocal8Bit().constData());
 //         #endif
 //
-//         QByteArray ba = instance->name().toLatin1();
+//         QByteArray ba = instance->name().toUtf8();
 //         const char* sub = strstr(p, ba.constData());
 //         if(sub == nullptr)
 //           continue;
@@ -315,8 +315,8 @@ static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
 //
 //         #ifdef OSC_DEBUG
 // // REMOVE Tim. tmp. Changed.
-// //        fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n", instance->label().toLatin1().constData(), p);
-//         fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n", instance->name().toLatin1().constData(), p);
+// //        fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n", instance->label().toLocal8Bit().constData(), p);
+//         fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n", instance->name().toLocal8Bit().constData(), p);
 //         #endif
 //
 //         OscIF& oscif = instance->oscIF();
@@ -443,7 +443,9 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
 
     SynthI* synti = static_cast<SynthI*>(atrack);
 
-    if(!synti->sif() || !synti->synth() || synti->synth()->synthType() != MusECore::Synth::DSSI_SYNTH)
+    if(!synti->sif() || !synti->synth() ||
+       (synti->synth()->pluginType() != MusEPlugin::PluginTypeDSSI &&
+        synti->synth()->pluginType() != MusEPlugin::PluginTypeDSSIVST))
     {
       fprintf(stderr, "oscMessageHandler: error: synth: No sif or no synth or synth is not DSSI\n");
       return oscDebugHandler(path, types, argv, argc, data, user_data);
@@ -458,7 +460,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
 
     #ifdef OSC_DEBUG
     fprintf(stderr, "oscMessageHandler: synth track:%s method:%s\n",
-            synti->name().toLatin1().constData(), urlcommand.toLatin1().constData());
+            synti->name().toLocal8Bit().constData(), urlcommand.toLocal8Bit().constData());
     #endif
 
     OscIF& oscif = instance->oscIF();
@@ -535,7 +537,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
 
     #ifdef OSC_DEBUG
     fprintf(stderr, "oscMessageHandler: effect:%s method:%s\n",
-            instance->name().toLatin1().constData(), urlcommand.toLatin1().constData());
+            instance->name().toLocal8Bit().constData(), urlcommand.toLocal8Bit().constData());
     #endif
 
     OscIF& oscif = instance->oscIF();
@@ -800,7 +802,7 @@ int OscIF::oscUpdate(lo_arg **argv)
       fprintf(stderr, " _uiOscProgramPath:%s\n", _uiOscProgramPath);
       fprintf(stderr, " _uiOscControlPath:%s\n",_uiOscControlPath);
       fprintf(stderr, " _uiOscShowPath:%s\n", _uiOscShowPath);
-      fprintf(stderr, " museProject:%s\n", MusEGlobal::museProject.toLatin1().constData());
+      fprintf(stderr, " museProject:%s\n", MusEGlobal::museProject.toLocal8Bit().constData());
       #endif
       
       // Send sample rate.
@@ -809,15 +811,15 @@ int OscIF::oscUpdate(lo_arg **argv)
       // DELETETHIS 46
       // Send project directory.
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
+      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toUtf8().constData());  // MusEGlobal::song->projectPath()
       
       // Done in sub-classes.
       /*
       #ifdef DSSI_SUPPORT
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-         //DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::song->projectPath().toLatin1().data());
+         //DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::song->projectPath().toUtf8().data());
       lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-         DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());
+         DSSI_PROJECT_DIRECTORY_KEY, museProject.toUtf8().constData());
       
       if(_oscSynthIF)
       {
@@ -1192,19 +1194,19 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 //         #ifdef OSC_DEBUG
 //         fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
 //         fprintf(stderr, "guiPath:%s oscUrl:%s filePath:%s pluginLabel:%s\n",
-//                 guiPath.toLatin1().constData(),
-//                 oscUrl.toLatin1().constData(),
-//                 filePath.toLatin1().constData(),
-//                 pluginLabel.toLatin1().constData());
+//                 guiPath.toLocal8Bit().constData(),
+//                 oscUrl.toLocal8Bit().constData(),
+//                 filePath.toLocal8Bit().constData(),
+//                 pluginLabel.toLocal8Bit().constData());
 //         #endif
 //       }
 //       else
 //       {
 //         fprintf(stderr, "exec %s %s %s %s failed: %s\n",
-//                 guiPath.toLatin1().constData(),
-//                 oscUrl.toLatin1().constData(),
-//                 filePath.toLatin1().constData(),
-//                 pluginLabel.toLatin1().constData(),
+//                 guiPath.toLocal8Bit().constData(),
+//                 oscUrl.toLocal8Bit().constData(),
+//                 filePath.toLocal8Bit().constData(),
+//                 pluginLabel.toLocal8Bit().constData(),
 //                 strerror(errno));
 //         return false;
 //       }
@@ -1224,21 +1226,21 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 //       if((_guiPid = fork()) == 0)
 //       {
 //          execlp(
-//                  guiPath.toLatin1().constData(),
-//                  guiName.toLatin1().constData(),
-//                  oscUrl.toLatin1().constData(),
-//                  filePath.toLatin1().constData(),
-//                  pluginLabel.toLatin1().constData(),
+//                  guiPath.toUtf8().constData(),
+//                  guiName.toUtf8().constData(),
+//                  oscUrl.toUtf8().constData(),
+//                  filePath.toUtf8().constData(),
+//                  pluginLabel.toUtf8().constData(),
 //                  //"channel 1", (void*)0);
-//                  name.toLatin1().constData(), (void*)0);
+//                  name.toUtf8().constData(), (void*)0);
 //
 //         // Should not return after execlp. If so it's an error.
 //         fprintf(stderr, "exec %s %s %s %s %s failed: %s\n",
-//                 guiPath.toLatin1().constData(),
-//                 guiName.toLatin1().constData(),
-//                 oscUrl.toLatin1().constData(),
-//                 filePath.toLatin1().constData(),
-//                 pluginLabel.toLatin1().constData(),
+//                 guiPath.toLocal8Bit().constData(),
+//                 guiName.toLocal8Bit().constData(),
+//                 oscUrl.toLocal8Bit().constData(),
+//                 filePath.toLocal8Bit().constData(),
+//                 pluginLabel.toLocal8Bit().constData(),
 //                 strerror(errno));
 //         //exit(1);
 //         return false;
@@ -1377,19 +1379,19 @@ bool OscIF::oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginL
         #ifdef OSC_DEBUG
         fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
         fprintf(stderr, "guiPath:%s oscUrl:%s filePath:%s pluginLabel:%s\n",
-                guiPath.toLatin1().constData(),
-                oscUrl.toLatin1().constData(),
-                filePath.toLatin1().constData(),
-                pluginLabel.toLatin1().constData());
+                guiPath.toLocal8Bit().constData(),
+                oscUrl.toLocal8Bit().constData(),
+                filePath.toLocal8Bit().constData(),
+                pluginLabel.toLocal8Bit().constData());
         #endif
       }
       else
       {
         fprintf(stderr, "exec %s %s %s %s failed: %s\n",
-                guiPath.toLatin1().constData(),
-                oscUrl.toLatin1().constData(),
-                filePath.toLatin1().constData(),
-                pluginLabel.toLatin1().constData(),
+                guiPath.toLocal8Bit().constData(),
+                oscUrl.toLocal8Bit().constData(),
+                filePath.toLocal8Bit().constData(),
+                pluginLabel.toLocal8Bit().constData(),
                 strerror(errno));
         return false;
       }
@@ -1409,21 +1411,21 @@ bool OscIF::oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginL
       if((_guiPid = fork()) == 0)
       {
          execlp(
-                 guiPath.toLatin1().constData(),
-                 guiName.toLatin1().constData(),
-                 oscUrl.toLatin1().constData(),
-                 filePath.toLatin1().constData(),
-                 pluginLabel.toLatin1().constData(),
+                 guiPath.toLocal8Bit().constData(),
+                 guiName.toLocal8Bit().constData(),
+                 oscUrl.toLocal8Bit().constData(),
+                 filePath.toLocal8Bit().constData(),
+                 pluginLabel.toLocal8Bit().constData(),
                  //"channel 1", (void*)0);
-                 name.toLatin1().constData(), (void*)0);
+                 name.toLocal8Bit().constData(), (void*)0);
 
         // Should not return after execlp. If so it's an error.
         fprintf(stderr, "exec %s %s %s %s %s failed: %s\n",
-                guiPath.toLatin1().constData(),
-                guiName.toLatin1().constData(),
-                oscUrl.toLatin1().constData(),
-                filePath.toLatin1().constData(),
-                pluginLabel.toLatin1().constData(),
+                guiPath.toLocal8Bit().constData(),
+                guiName.toLocal8Bit().constData(),
+                oscUrl.toLocal8Bit().constData(),
+                filePath.toLocal8Bit().constData(),
+                pluginLabel.toLocal8Bit().constData(),
                 strerror(errno));
         //exit(1);
         return false;
@@ -1554,7 +1556,7 @@ int OscDssiIF::oscUpdate(lo_arg **argv)
       
       // Send project directory. No, done in DssiSynthIF.
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
+      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toUtf8().constData());  // MusEGlobal::song->projectPath()
       
       if(_oscSynthIF)
         _oscSynthIF->oscUpdate();
@@ -1673,7 +1675,9 @@ bool OscDssiIF::oscInitGui()
 
   return OscIF::oscInitGui("dssi_synth",
 //                           _oscSynthIF->dssiSynth()->baseName(),
-                           _oscSynthIF->dssiSynth()->name(),
+// REMOVE Tim. tmp. Changed.
+//                            _oscSynthIF->dssiSynth()->name(),
+                           _oscSynthIF->dssiSynth()->label(),
                            tidx,
                            _oscSynthIF->dssiSynthI()->name(),
                            _oscSynthIF->dssiSynth()->fileName(),

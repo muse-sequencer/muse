@@ -409,7 +409,8 @@ private:
     LV2_URID _uAtom_Sequence;
     LV2_URID _uAtom_StateChanged;
     LV2_URID _uAtom_Object;
-    bool _usesTimePosition;
+// REMOVE Tim. tmp. Removed.
+//     bool _usesTimePosition;
     bool _isConstructed;
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
@@ -417,7 +418,8 @@ private:
     std::map<QString, LilvNode *> _presets;
 
 public:
-    virtual Type synthType() const;
+// REMOVE Tim. tmp. Removed.
+//     virtual Type synthType() const;
     LV2Synth (const MusEPlugin::PluginScanInfoStruct&, const LilvPlugin*);
     virtual ~LV2Synth();
 
@@ -430,8 +432,9 @@ public:
     size_t inPorts();
     size_t outPorts();
     bool isConstructed();
-    // Returns true if ANY of the midi input ports uses time position (transport).
-    bool usesTimePosition() const;
+// REMOVE Tim. tmp. Removed.
+//     // Returns true if ANY of the midi input ports uses time position (transport).
+//     bool usesTimePosition() const;
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static LV2UI_Request_Value_Status lv2ui_Request_Value (
@@ -458,9 +461,14 @@ public:
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);    
 // REMOVE Tim. tmp. Added.
-    static QString getCustomConfiguration(LV2PluginWrapper_State *state);
-    static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
-    static void lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
+    static QString lv2conf_getCustomData(LV2PluginWrapper_State *state);
+// REMOVE Tim. tmp. Removed.
+//     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
+    // Returns true if, among other data, there was indeed custom data.
+    // This means there is, or likely is, parameter values stored with the data,
+    //  meaning we should not try to manually restore parameters since the data
+    //  already has them.
+    static bool lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> & customParams);
     static unsigned lv2ui_IsSupported (const char *, const char *ui_type_uri);
     static void lv2prg_updateProgram(LV2PluginWrapper_State *state, int idx);
     static void lv2prg_updatePrograms(LV2PluginWrapper_State *state);
@@ -561,7 +569,8 @@ public:
     virtual void deactivate3() override;
     virtual QString getPatchName (int, int, bool ) const override;
     virtual void populatePatchPopup ( MusEGui::PopupMenu *, int, bool ) override;
-    virtual void write ( int level, Xml &xml ) const override;
+// REMOVE Tim. tmp. Removed.
+//     virtual void write ( int level, Xml &xml ) const override;
     virtual double getParameter ( unsigned long idx ) const override;
     virtual double getParameterOut ( unsigned long n ) const;
     virtual void setParameter ( unsigned long idx, double value ) override;
@@ -576,7 +585,14 @@ public:
     // virtual void writeConfiguration ( int level, Xml &xml ) override;
     // virtual bool readConfiguration ( Xml &xml, bool readPreset=false ) override;
 
-    virtual void setCustomData ( const std::vector<QString> & ) override;
+// REMOVE Tim. tmp. Added.
+    // Returns a list of strings containing any custom configurations provided by the plugin.
+    virtual std::vector<QString> getCustomData() const override;
+    // Returns true if, among other data, there was indeed custom data.
+    // This means there is, or likely is, parameter values stored with the data,
+    //  meaning we should not try to manually restore parameters since the data
+    //  already has them.
+    virtual bool setCustomData ( const std::vector<QString> & ) override;
 
 
     unsigned long parameters() const override;
@@ -667,6 +683,10 @@ struct LV2PluginWrapper_State {
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
     size_t numStateValues;
+// REMOVE Tim. tmp. Added.
+    // Temporary during state restoration. Whether the custom data does actually
+    //  contain state data put there by the plugin, besides any data we put there.
+    bool tmpHasPluginState;
     LockFreeDataRingBuffer *wrkDataBuffer;
     LockFreeDataRingBuffer *wrkRespDataBuffer;
     LV2PluginWrapper_Worker *wrkThread;
@@ -794,7 +814,7 @@ private:
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;       
 public:
-    LV2PluginWrapper ( LV2Synth *s, PluginFeatures_t reqFeatures = PluginNoFeatures );
+    LV2PluginWrapper ( LV2Synth *s, MusEPlugin::PluginFeatures_t reqFeatures = MusEPlugin::PluginNoFeatures );
     LV2Synth *synth() const;
     virtual ~LV2PluginWrapper();
     virtual LADSPA_Handle instantiate ( PluginI * ) override;
@@ -820,8 +840,13 @@ public:
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
 // REMOVE Tim. tmp. Added.
     virtual QString getCustomConfiguration(LADSPA_Handle handle);
-    virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
-    virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
+// REMOVE Tim. tmp. Removed.
+//     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
+    // Returns true if, among other data, there was indeed custom data.
+    // This means there is, or likely is, parameter values stored with the data,
+    //  meaning we should not try to manually restore parameters since the data
+    //  already has them.
+    virtual bool setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
     // Returns a value unit string for displaying unit symbols.
     QString unitSymbol(unsigned long ) const override;
     // Returns index into the global value units for displaying unit symbols.

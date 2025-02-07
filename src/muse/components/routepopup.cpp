@@ -57,7 +57,7 @@
 #define DEBUG_PRST_ROUTES(dev, format, args...) // fprintf(dev, format, ##args);
 #define DEBUG_PRST_ROUTES_2(dev, format, args...) // fprintf(dev, format, ##args);
 
-#define _USE_CUSTOM_WIDGET_ACTIONS_ 
+#define _USE_CUSTOM_WIDGET_ACTIONS_
 
 // REMOVE Tim. Persistent routes. Added. Make this permanent later if it works OK and makes good sense.
 #define _USE_SIMPLIFIED_SOLO_CHAIN_
@@ -362,10 +362,10 @@ void RoutePopupMenu::addMidiTracks(MusECore::Track* t, PopupMenu* pup, bool isOu
 void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOutput, bool show_synths, bool want_writable)
 {
 
-#ifdef _USE_CUSTOM_WIDGET_ACTIONS_
-
   const MusECore::RouteList* const rl = isOutput ? t->outRoutes() : t->inRoutes();
   MusECore::MidiDevice* md;
+
+#ifdef _USE_CUSTOM_WIDGET_ACTIONS_
   
   bool is_first_pass = true;
   QActionGroup* act_group = nullptr;
@@ -622,14 +622,17 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
         ++row;
       }
     }
-        
+  }
+
 #else // _USE_CUSTOM_WIDGET_ACTIONS_
         
-    pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup)); 
-    for(int i = 0; i < MIDI_PORTS; ++i)
+  for(int dtype = 0; dtype <= MusECore::MidiDevice::SYNTH_MIDI; ++dtype)
+  {
+    pup->addAction(new MenuTitleItem(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Output port/device")), pup));
+    for(int i = 0; i < MusECore::MIDI_PORTS; ++i)
     {
       MusECore::MidiPort* mp = &MusEGlobal::midiPorts[i];
-      MusECore::MidiDevice* md = mp->device();
+      md = mp->device();
       
       // This is desirable, but could lead to 'hidden' routes unless we add more support
       //  such as removing the existing routes when user changes flags.
@@ -646,8 +649,6 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       if(md->deviceType() != dtype)
         continue;
             
-      MusECore::RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
-      
       int chanmask = 0;
       // To reduce number of routes required, from one per channel to just one containing a channel mask. 
       // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
@@ -684,10 +685,9 @@ void RoutePopupMenu::addMidiPorts(MusECore::Track* t, PopupMenu* pup, bool isOut
       act->setData(QVariant::fromValue(togRoute));   
       pup->addMenu(subp);
     }    
-  
-#endif // _USE_CUSTOM_WIDGET_ACTIONS_    
-
   }
+
+#endif // _USE_CUSTOM_WIDGET_ACTIONS_
   
   return;
 }
@@ -773,6 +773,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
     lb->addSeparator();
 #else
     QActionGroup* act_grp = new QActionGroup(this);
+    QAction *act;
     act_grp->setExclusive(true);
     act = act_grp->addAction(tr("Show names"));
     act->setCheckable(true);
@@ -860,7 +861,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
 
 #else
     
-    QAction* act = 0;
+    act = nullptr;
     if(channels == -1)
     {
       if(!MusEGlobal::checkAudioDevice())
@@ -885,7 +886,7 @@ void RoutePopupMenu::addJackPorts(const MusECore::Route& route, PopupMenu* lb)
         MusECore::Route dst(MusECore::Route::JACK_ROUTE, -1, nullptr, -1, -1, -1, port_name);
         
         act->setData(QVariant::fromValue(dst));   
-        if(rl->exists(r))
+        if(rl->contains(dst))
           act->setChecked(true);
       }      
     }
@@ -1021,7 +1022,6 @@ RoutePopupMenu::RoutePopupMenu(const MusECore::Route& route, QWidget* parent, bo
 }
 
 RoutePopupMenu::RoutePopupMenu(const MusECore::Route& route, const QString& title, QWidget* parent, bool isOutput, bool broadcastChanges)
-               //: PopupMenu(title, parent, true), _track(track), _isOutMenu(isOutput)
                : PopupMenu(title, parent, true), _route(route), _isOutMenu(isOutput), _broadcastChanges(broadcastChanges)
 {
   init();        
@@ -3758,7 +3758,7 @@ void RoutePopupMenu::prepare()
           }
           
     #ifndef _USE_CUSTOM_WIDGET_ACTIONS_
-          switch(_track->type()) 
+          switch(track->type())
           {
             case MusECore::Track::AUDIO_INPUT:
             case MusECore::Track::WAVE:
@@ -3861,7 +3861,7 @@ void RoutePopupMenu::prepare()
           }  
           
     #ifndef _USE_CUSTOM_WIDGET_ACTIONS_
-          switch(_track->type()) 
+          switch(track->type())
           {
             case MusECore::Track::AUDIO_OUTPUT:
             case MusECore::Track::WAVE:

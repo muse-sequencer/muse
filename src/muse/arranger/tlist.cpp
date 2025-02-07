@@ -230,11 +230,13 @@ bool TList::event(QEvent *event)
                 if (type == MusECore::Track::AUDIO_SOFTSYNTH) {
                     MusECore::SynthI *s = (MusECore::SynthI*)track;
                     QToolTip::showText(helpEvent->globalPos(),track->name() + QString(" : ") +
-                                       (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
+// REMOVE Tim. tmp. Changed.
+//                                        (s->synth() ? s->synth()->description() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
+                                       (s->synth() ? s->synth()->name() : QString(tr("SYNTH IS UNAVAILABLE!"))) +
                                        (s->synth() ? (s->synth()->uri().isEmpty() ? QString() :
                                                                                     QString(" \n") + s->synth()->uri()) :
-                                                     (s->initConfig()._uri.isEmpty() ? QString() :
-                                                                                       QString(" \n") + s->initConfig()._uri)));
+                                                     (s->initialConfiguration()._uri.isEmpty() ? QString() :
+                                                                                       QString(" \n") + s->initialConfiguration()._uri)));
                 }
                 else
                     QToolTip::showText(helpEvent->globalPos(),track->name());
@@ -517,8 +519,18 @@ void TList::paint(const QRect& r)
                         int y;
                         for(MusECore::CtrlListList::const_iterator icll =cll->cbegin();icll!=cll->cend();++icll) {
                             const MusECore::CtrlList *cl = icll->second;
-                            if (!cl->dontShow())
-                                countAll++;
+// REMOVE Tim. tmp. Added.
+//                             if (!MusECore::canShowAudioCtrlList((MusECore::AudioTrack*)track, cl))
+//                                 continue;
+
+// REMOVE Tim. tmp. Changed.
+//                             if (!cl->dontShow())
+//                                 countAll++;
+                            // Regardless of visible state, hidden controllers aren't considered at all.
+                            if (cl->dontShow())
+                              continue;
+                            countAll++;
+
                             if (cl->isVisible())
                             {
                                 countVisible++;
@@ -1303,7 +1315,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
 #ifdef LV2_SUPPORT
         PopupMenu *mSubPresets = nullptr;
         //show presets submenu for lv2 synths
-        if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
+        if(synth->synth() && synth->synth()->pluginType() == MusEPlugin::PluginTypeLV2)
         {
             mSubPresets = new PopupMenu(tr("Presets"));
             p->addMenu(mSubPresets);
@@ -1403,7 +1415,7 @@ void TList::showMidiClassPopupMenu(MusECore::Track* t, int x, int y)
             {
                 MusECore::SynthI* synth = static_cast<MusECore::SynthI*>(port->device());
                 //show presets submenu for lv2 synths
-                if(synth->synth() && synth->synth()->synthType() == MusECore::Synth::LV2_SYNTH)
+                if(synth->synth() && synth->synth()->pluginType() == MusEPlugin::PluginTypeLV2)
                 {
                     mSubPresets = new PopupMenu(tr("Presets"));
                     p->addMenu(mSubPresets);
@@ -1653,7 +1665,12 @@ void TList::changeAutomation(QAction* act)
         MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
         for (auto& it : *cll) {
             MusECore::CtrlList *cl = it.second;
-            if (!cl->dontShow() && !cl->isVisible() && cl->size() > 0) {
+// REMOVE Tim. tmp. Changed.
+//             if (!cl->dontShow() && !cl->isVisible() && cl->size() > 0) {
+//             if (!cl->dontShow() && !cl->isVisible() && !cl->empty() &&
+//                 MusECore::canShowAudioCtrlList(static_cast<MusECore::AudioTrack*>(editAutomation), cl))
+            if (!cl->dontShow() && !cl->isVisible() && !cl->empty())
+            {
                 cl->setVisible(true);
                 setRead = true;
             }
@@ -1691,10 +1708,24 @@ void TList::changeAutomation(QAction* act)
 
         const MusECore::CtrlListList* cll = static_cast<MusECore::AudioTrack*>(editAutomation)->controller();
         MusECore::ciCtrlList icl = cll->find(id);
+// REMOVE Tim. tmp. Changed.
         if(icl != cll->cend())
           icl->second->setVisible(act->isChecked());
-
         setRead = true;
+//         if(icl != cll->cend())
+//         {
+//           MusECore::CtrlList *cl = icl->second;
+//           if(act->isChecked() && !cl->dontShow() &&
+//             MusECore::canShowAudioCtrlList(static_cast<MusECore::AudioTrack*>(editAutomation), cl))
+//           {
+//             cl->setVisible(true);
+//             setRead = true;
+//           }
+//           else if(!act->isChecked())
+//           {
+//             cl->setVisible(false);
+//           }
+//         }
     }
 
     // if automation is OFF for the track we change it to READ as a convenience
@@ -2202,7 +2233,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                 for (const auto& icll : *cll) {
                     MusECore::CtrlList *cl = icll.second;
+// REMOVE Tim. tmp. Changed.
                     if (cl->dontShow())
+//                     if (cl->dontShow() || !MusECore::canShowAudioCtrlList(static_cast<MusECore::AudioTrack*>(t), cl))
                         continue;
 
                     int ctrl = cl->id();
@@ -2932,7 +2965,7 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
     FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
     if (f == 0)
     {
-        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLatin1().data());
+        printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLocal8Bit().data());
         return;
     }
 

@@ -36,7 +36,6 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 SpinBoxFP::SpinBoxFP(QWidget* parent)
-   //: QSpinBox(parent)
    : QDoubleSpinBox(parent)
       {
         //validator = new QDoubleValidator(this);
@@ -50,8 +49,6 @@ SpinBoxFP::SpinBoxFP(QWidget* parent)
       }
 
 SpinBoxFP::SpinBoxFP(int minValue, int maxValue, int step, QWidget* parent)
-//SpinBoxFP::SpinBoxFP(double minValue, double maxValue, double step, QWidget* parent)
-   //: QSpinBox(parent)
    : QDoubleSpinBox(parent)
       {
         //validator = new QDoubleValidator(this);

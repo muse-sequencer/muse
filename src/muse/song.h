@@ -608,8 +608,12 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
-      SynthI* createSynthI(const QString& sclass, const QString& uri, const QString& label = QString(),
-                           Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
+// REMOVE Tim. tmp. Changed.
+      // SynthI* createSynthI(const QString& sclass, const QString& uri, const QString& label = QString(),
+      //                      Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
+      SynthI* createSynthI(MusEPlugin::PluginType type, const QString& file,
+                           const QString& uri, const QString& label = QString(),
+                           Track* insertAt = 0);
       MidiRemote* midiRemote();
 
       //-----------------------------------------

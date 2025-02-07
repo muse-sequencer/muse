@@ -37,6 +37,7 @@
 #include <QStringList>
 #include <QPushButton>
 #include <QDir>
+#include <QFile>
 #include <QStatusBar>
 #if QT_VERSION >= 0x050b00
 #include <QScreen>
@@ -1465,7 +1466,7 @@ void MusE::setDirty()
 void MusE::loadDefaultSong(const QString& filename_override, bool use_template, bool load_config)
 {
   DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadDefaultSong: filename_override:%s use_template:%d load_config %d\n",
-              filename_override.toUtf8().constData(), use_template, load_config);
+              filename_override.toLocal8Bit().constData(), use_template, load_config);
 
   QString name;
   bool useTemplate = false;
@@ -1478,7 +1479,7 @@ void MusE::loadDefaultSong(const QString& filename_override, bool use_template, 
   }
   else if (MusEGlobal::config.startMode == 0) {
               name = !projectRecentList.isEmpty() ? projectRecentList.first() : MusEGui::getUniqueUntitledName();
-        fprintf(stderr, "starting with last song %s\n", name.toLatin1().constData());
+        fprintf(stderr, "starting with last song %s\n", name.toLocal8Bit().constData());
         }
   else if (MusEGlobal::config.startMode == 1) {
         if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
@@ -1494,7 +1495,7 @@ void MusE::loadDefaultSong(const QString& filename_override, bool use_template, 
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
         useTemplate = true;
-        fprintf(stderr, "starting with template %s\n", name.toLatin1().constData());
+        fprintf(stderr, "starting with template %s\n", name.toLocal8Bit().constData());
         }
   else if (MusEGlobal::config.startMode == 2) {
         if(MusEGlobal::config.startSong.isEmpty()) // Sanity check to avoid some errors later
@@ -1508,7 +1509,7 @@ void MusE::loadDefaultSong(const QString& filename_override, bool use_template, 
           name = MusEGlobal::config.startSong;
           loadConfig = MusEGlobal::config.startSongLoadConfig;
         }
-        fprintf(stderr, "starting with pre configured song %s\n", name.toLatin1().constData());
+        fprintf(stderr, "starting with pre configured song %s\n", name.toLocal8Bit().constData());
   }
   loadProjectFile(name, useTemplate, loadConfig);
 }
@@ -1553,7 +1554,7 @@ void MusE::localOff()
 // for drop:
 void MusE::loadProjectFile(const QString& name)
       {
-      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile(name:%s)\n", name.toUtf8().constData());
+      DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile(name:%s)\n", name.toLocal8Bit().constData());
 
       loadProjectFile(name, false, false);
       }
@@ -1630,7 +1631,7 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMidiPorts, bool *doRestartSequencer)
       {
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile: name:%s songTemplate:%d doReadMidiPorts:%d _busyWithLoading:%d\n",
-        name.toUtf8().constData(), songTemplate, doReadMidiPorts, _busyWithLoading);
+        name.toLocal8Bit().constData(), songTemplate, doReadMidiPorts, _busyWithLoading);
 
       // Are we already busy waiting for something while loading or closing another project?
       if(_busyWithLoading)
@@ -2024,7 +2025,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::loadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
-        name.toUtf8().constData(), songTemplate, doReadMidiPorts);
+        name.toLocal8Bit().constData(), songTemplate, doReadMidiPorts);
 
       const bool isOk = clearSong(doReadMidiPorts);  // Allow not touching things like midi ports.
       if(!isOk)
@@ -2054,7 +2055,7 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
-        name.toUtf8().constData(), songTemplate, doReadMidiPorts);
+        name.toLocal8Bit().constData(), songTemplate, doReadMidiPorts);
 
       MusEGlobal::recordAction->setChecked(false);
 
@@ -2663,15 +2664,15 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       QFile currentName(name);
       if (QFile::exists(name)) {
             currentName.copy(name+".backup");
-            //backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
+            //backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.toLocal8Bit().constData(), name.toLocal8Bit().constData());
             }
       else if (QFile::exists(name + QString(".med"))) {
             QString currentName2(name+".med");
             currentName.copy(name+".med.backup");
-            //backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.toLatin1().constData(), name.toLatin1().constData());
+            //backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.toLocal8Bit().constData(), name.toLocal8Bit().constData());
             }
 //      if (!backupCommand.isEmpty())
-//            system(backupCommand.toLatin1().constData());
+//            system(backupCommand.toLocal8Bit().constData());
 
       bool popenFlag;
       FILE* f = MusEGui::fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
@@ -2685,7 +2686,7 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
             QMessageBox::critical(this,
                tr("MusE: Write File failed"), s);
             popenFlag? pclose(f) : fclose(f);
-            unlink(name.toLatin1().constData());
+            unlink(name.toLocal8Bit().constData());
             return false;
             }
       else {
@@ -2910,7 +2911,7 @@ void MusE::showMarker(bool flag)
     //        if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
     //        {
     //          if (MusEGlobal::debugMsg)
-    //            fprintf(stderr, "bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+    //            fprintf(stderr, "bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toLocal8Bit().data());
 
     //          bringToFront((*lit)->widget());
 
@@ -3119,7 +3120,7 @@ void MusE::saveAsTemplate()
 {
   QString templatesDir = MusEGlobal::configPath + QString("/") + "templates";
 
-  printf ("templates dir %s\n", templatesDir.toLatin1().data());
+  printf ("templates dir %s\n", templatesDir.toLocal8Bit().data());
 
   QDir dirmanipulator;
   if (!dirmanipulator.mkpath(templatesDir)) {
@@ -3709,7 +3710,7 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                     if ((*lit)->isVisible() && (*lit)->widget() != tl)
                     {
                         if (MusEGlobal::debugMsg)
-                            fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLatin1().data());
+                            fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLocal8Bit().data());
 
                         bringToFront((*lit)->widget());
 
@@ -4348,15 +4349,15 @@ MusE::lash_idle_cb ()
         {
           /* save file */
           QString ss = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
-          int ok = save (ss.toLatin1(), false, true);
+          int ok = save (ss, false, true);
           if (ok) {
-            project.setFile(ss.toLatin1());
-            _lastProjectFilePath = ss.toLatin1();
+            project.setFile(ss);
+            _lastProjectFilePath = ss;
             _lastProjectWasTemplate = false;
             _lastProjectLoadedConfig = true;
             setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(project.absoluteFilePath())));
-            addProjectToRecentList(ss.toLatin1());
-            MusEGlobal::museProject = QFileInfo(ss.toLatin1()).absolutePath();
+            addProjectToRecentList(ss);
+            MusEGlobal::museProject = QFileInfo(ss).absolutePath();
             QDir::setCurrent(MusEGlobal::museProject);
           }
           lash_send_event (lash_client, event);
@@ -4367,7 +4368,7 @@ MusE::lash_idle_cb ()
         {
           /* load file */
           QString sr = QString(lash_event_get_string(event)) + QString("/lash-project-muse.med");
-          loadProjectFile(sr.toLatin1(), false, true);
+          loadProjectFile(sr, false, true);
           lash_send_event (lash_client, event);
         }
         break;
@@ -4599,13 +4600,13 @@ bool MusE::clearSong(bool clear_all)
             if(tl->isVisible())   // Don't keep trying to close, only if visible.
             {
                 DEBUG_LOADING_AND_CLEARING(stderr, "MusE::clearSong closing TopWin:%p <%s>\n",
-                  tl, TopWin::typeName(tl->type()).toUtf8().constData());
+                  tl, TopWin::typeName(tl->type()).toLocal8Bit().constData());
 
                 if(!tl->close())
                 {
                   // It is possible something held it up from closing.
                   fprintf(stderr, "MusE::clearSong TopWin:%p <%s> did not close! Waiting...\n",
-                    tl, TopWin::typeName(tl->type()).toUtf8().constData());
+                    tl, TopWin::typeName(tl->type()).toLocal8Bit().constData());
                   while(!tl->close())
                     qApp->processEvents();
                 }
@@ -4807,18 +4808,27 @@ void MusE::takeAutomationSnapshot()
                   continue;
             MusECore::AudioTrack* track = static_cast<MusECore::AudioTrack*>(*i);
             MusECore::CtrlListList* cll = track->controller();
-            // Need to update current 'manual' values from the automation values at this time.
-            if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
-              cll->updateCurValues(frame);
 
             for (MusECore::ciCtrlList icl = cll->cbegin(); icl != cll->cend(); ++icl) {
-                  const double val = icl->second->curVal();
+                  MusECore::CtrlList *cl = icl->second;
+                  // Do not include hidden controller lists.
+                  // It's OK if isVisible() is false - that's just whether it's being displayed.
+                  if(cl->dontShow() /*|| !cl->isVisible()*/ )
+// REMOVE Tim. tmp. Added.
+//                      !MusECore::canShowAudioCtrlList(track, cl))
+                    continue;
+
+                  // Need to update current 'manual' values from the automation values at this time.
+                  if(track->automationType() != MusECore::AUTO_OFF) // && track->automationType() != MusECore::AUTO_WRITE)
+                    cl->updateCurValue(frame);
+
+                  const double val = cl->curVal();
                   // Add will replace if found.
                   // Here is a tough decision regarding choice of discrete vs. interpolated:
                   // Do we obey the discrete/interpolated toolbar button?
                   // Given the (now) reduced role of interpolated graphs, maybe best to force these points to discrete. (Tim)
                   undo.push_back(MusECore::UndoOp(MusECore::UndoOp::AddAudioCtrlVal,
-                    track, double(icl->second->id()), double(frame), val, double(MusECore::CtrlVal::VAL_SELECTED)));
+                    track, double(cl->id()), double(frame), val, double(MusECore::CtrlVal::VAL_SELECTED)));
                     // The undo system automatically sets the VAL_DISCRETE flag if the controller mode is DISCRETE.
                     // | (MusEGlobal::config.audioAutomationDrawDiscrete ? MusECore::CtrlVal::VAL_DISCRETE : MusECore::CtrlVal::VAL_NOFLAGS)));
                   }
@@ -5225,7 +5235,8 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
 
 void MusE::activeTopWinChangedSlot(MusEGui::TopWin* win)
 {
-  if (MusEGlobal::debugMsg) fprintf(stderr, "ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
+  if (MusEGlobal::debugMsg) fprintf(stderr, "ACTIVE TOPWIN CHANGED to '%s' (%p)\n",
+    win ? win->windowTitle().toLocal8Bit().data() : "<None>", win);
 
 //  if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
 //       ( (mdiArea->currentSubWindow() != nullptr) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
@@ -5250,7 +5261,8 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
 {
   if (win && (win->sharesToolsAndMenu()==false))
   {
-    fprintf(stderr, "WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin() called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toLatin1().data());
+    fprintf(stderr, "WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin()"
+      " called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toLocal8Bit().data());
     return;
   }
 
@@ -5259,7 +5271,8 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
     MusEGui::TopWin* previousMenuSharingTopwin = currentMenuSharingTopwin;
     currentMenuSharingTopwin = nullptr;
 
-    if (MusEGlobal::debugMsg) fprintf(stderr, "MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toLatin1().data() : "<None>", win);
+    if (MusEGlobal::debugMsg) fprintf(stderr, "MENU SHARING TOPWIN CHANGED to '%s' (%p)\n",
+      win ? win->windowTitle().toLocal8Bit().data() : "<None>", win);
 
     
     list<QToolBar*> add_toolbars;
@@ -5287,7 +5300,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
-                  fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
+                  fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLocal8Bit().data());
 
                 found = true;
                 insertToolBar(tb, atb);
@@ -5304,13 +5317,13 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           if(!found && toolBarBreak(tb))
           {
             if(MusEGlobal::heavyDebugMsg)
-              fprintf(stderr, "  removing break before sharer's toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+              fprintf(stderr, "  removing break before sharer's toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());
             removeToolBarBreak(tb);
           }
           
           
           if(MusEGlobal::heavyDebugMsg) 
-            fprintf(stderr, "  removing sharer's toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+            fprintf(stderr, "  removing sharer's toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());
           removeToolBar(tb); // this does not delete *it, which is good
           tb->setParent(nullptr);
         }
@@ -5337,7 +5350,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
                 //tb->hide();
                 
                 if(MusEGlobal::heavyDebugMsg) 
-                  fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLatin1().data());
+                  fprintf(stderr, "  inserting toolbar '%s'\n", atb->windowTitle().toLocal8Bit().data());
 
                 insertToolBar(tb, atb);
                 foreignToolbars.push_back(atb);
@@ -5349,7 +5362,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
           }
           
           if (MusEGlobal::heavyDebugMsg) 
-            fprintf(stderr, "  removing optional toolbar '%s'\n", tb->windowTitle().toLatin1().data());
+            fprintf(stderr, "  removing optional toolbar '%s'\n", tb->windowTitle().toLocal8Bit().data());
           removeToolBar(tb); // this does not delete *it, which is good
           tb->setParent(nullptr);
         }
@@ -5367,7 +5380,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       const QList<QAction*>& actions=win->menuBar()->actions();
       for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
       {
-        if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding menu entry '%s'\n", (*it)->text().toLatin1().data());
+        if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding menu entry '%s'\n", (*it)->text().toLocal8Bit().data());
 
         menuBar()->addAction(*it);
       }
@@ -5375,7 +5388,7 @@ void MusE::setCurrentMenuSharingTopwin(MusEGui::TopWin* win)
       for (list<QToolBar*>::const_iterator it=add_toolbars.begin(); it!=add_toolbars.end(); ++it)
         if (*it)
         {
-          if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding toolbar '%s'\n", (*it)->windowTitle().toLatin1().data());
+          if (MusEGlobal::heavyDebugMsg) fprintf(stderr, "  adding toolbar '%s'\n", (*it)->windowTitle().toLocal8Bit().data());
 
           addToolBar(*it);
           foreignToolbars.push_back(*it);
@@ -5751,7 +5764,9 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
 
         //remove old peak-file to cut down on clutter. It will be recreated at the new wave location
         QString cacheName = fi.absolutePath() + QString("/") + fi.completeBaseName() + QString(".wca");
-        remove(cacheName.toLocal8Bit().constData());
+// REMOVE Tim. tmp. Changed.
+//         remove(cacheName.toLocal8Bit().constData());
+        QFile::remove(cacheName);
 
         if(MusEGlobal::museProject == MusEGlobal::museProjectInitPath)
         {
@@ -5791,7 +5806,7 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
         sfiNew.seekable = 1;
         sfiNew.sections = 0;
 
-        SNDFILE *sfNew = sf_open(fNewPath.toUtf8().constData(), SFM_RDWR, &sfiNew);
+        SNDFILE *sfNew = sf_open(fNewPath.toLocal8Bit().constData(), SFM_RDWR, &sfiNew);
         if(sfNew == nullptr)
         {
           QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
@@ -5806,7 +5821,9 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* trac
           QMessageBox::critical(MusEGlobal::muse, tr("Wave import error"),
                                 tr("Failed to initialize sample rate converter!"));
           sf_close(sfNew);
-          QFile(fNewPath).remove();
+// REMOVE Tim. tmp. Changed.
+//          QFile(fNewPath).remove();
+          QFile::remove(fNewPath);
           return true;
         }
 

@@ -1285,22 +1285,22 @@ int main(int argc, char* argv[])
 
         // Scan all known plugins from the cache file, or if it does not exist
         //  create the cache file by reading plugins in a safe 'sandbox'.
-        MusEPlugin::PluginScanInfoStruct::PluginType_t types = MusEPlugin::PluginScanInfoStruct::PluginTypeNone;
+        MusEPlugin::PluginType_t types = MusEPlugin::PluginTypeNone;
         if(MusEGlobal::loadPlugins)
-          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLADSPA;
+          types |= MusEPlugin::PluginTypeLADSPA;
         if(MusEGlobal::loadMESS)
-          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeMESS;
+          types |= MusEPlugin::PluginTypeMESS;
         if(MusEGlobal::loadVST)
-          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeVST;
+          types |= MusEPlugin::PluginTypeVST;
         if(MusEGlobal::loadNativeVST)
-          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLinuxVST;
+          types |= MusEPlugin::PluginTypeLinuxVST;
         if(MusEGlobal::loadDSSI)
-          types |= (MusEPlugin::PluginScanInfoStruct::PluginTypeDSSI |
-                    MusEPlugin::PluginScanInfoStruct::PluginTypeDSSIVST);
+          types |= (MusEPlugin::PluginTypeDSSI |
+                    MusEPlugin::PluginTypeDSSIVST);
         if(MusEGlobal::loadLV2)
-          types |= MusEPlugin::PluginScanInfoStruct::PluginTypeLV2;
+          types |= MusEPlugin::PluginTypeLV2;
 
-        types |= MusEPlugin::PluginScanInfoStruct::PluginTypeUnknown;
+        types |= MusEPlugin::PluginTypeUnknown;
         
         MusEPlugin::checkPluginCacheFiles(new_plugin_cache_path,
                                         // List of plugins to scan into and write to cache files from.

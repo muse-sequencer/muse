@@ -188,7 +188,9 @@ QString MidiDevice::deviceTypeString() const
     {
       const SynthI* s = dynamic_cast<const SynthI*>(this);
       if(s && s->synth())
-        return MusECore::synthType2String(s->synth()->synthType());
+// REMOVE Tim. tmp. Changed.
+//         return MusECore::synthType2String(s->synth()->synthType());
+        return QApplication::translate("MusEPlugin", MusEPlugin::pluginTypeToString(s->synth()->pluginType()));
       else
         return "SYNTH";
     }

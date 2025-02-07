@@ -2033,7 +2033,7 @@ unsigned int JackAudioDevice::portLatency(void* port, bool capture) const
     return 0;
 
   //QString s(jack_port_name((jack_port_t*)port));
-  //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLatin1().constData());  
+  //fprintf(stderr, "Jack::portName %p %s\n", port, s.toLocal8Bit().constData());
 
   
   // NOTICE: For at least the ALSA driver (tested), the input latency is

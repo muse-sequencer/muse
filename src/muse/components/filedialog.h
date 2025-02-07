@@ -25,6 +25,9 @@
 #define __FILEDIALOG_H__
 
 #include <QFileDialog>
+// REMOVE Tim. tmp. Added.
+#include <QFile>
+#include <QIODevice>
 
 #include "ui_fdialogbuttons.h"
 
@@ -85,6 +88,9 @@ QString getImageFileName(const QString& startWith, const char** filters,
 FILE* fileOpen(QWidget*, QString, const QString&,
    const char*, bool&, bool = false, bool = false);
 
+// REMOVE Tim. tmp. Added.
+// QFile fileOpen(QWidget*, QString, const QString&,
+//    QIODevice::OpenMode, bool = false, bool = false);
 
 //---------------------------------------------------------
 //   MFile

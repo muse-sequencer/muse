@@ -108,7 +108,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       lspacer = nullptr;
       rspacer = nullptr;
 
-      //: Select controller
+      // Select controller
       selCtrl = new CompactToolButton(this);
       selCtrl->setIcon(*midiControllerSelectSVGIcon);
       selCtrl->setIconSize(QSize(14, 14));
@@ -118,7 +118,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
       selCtrl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       selCtrl->setToolTip(tr("Select controller"));
       
-      //: Remove panel (destroy button)
+      // Remove panel (destroy button)
       CompactToolButton* destroy = new CompactToolButton(this);
       destroy->setIcon(*midiControllerRemoveSVGIcon);
       destroy->setIconSize(QSize(14, 14));

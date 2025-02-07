@@ -412,6 +412,7 @@ class CtrlList : public CtrlList_t {
       QColor color() const;
       void setVisible(bool v);
       bool isVisible() const;
+      void setDontShow(bool v);
       bool dontShow() const;
       // Returns index into the global value units for displaying unit symbols.
       // Can be -1 meaning no units.

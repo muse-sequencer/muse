@@ -62,6 +62,15 @@ add_library ( plugin_cache_writer_module SHARED
       )
 
 ##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${plugin_scan_source_files}
+      CACHE INTERNAL ""
+      )
+
+##
 ## Compilation flags and target name
 ##
 

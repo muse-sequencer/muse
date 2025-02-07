@@ -44,9 +44,6 @@
 #include "arranger.h"
 #include "midiport.h"
 #include "mididev.h"
-#include "midisyncimpl.h"
-#include "midifilterimpl.h"
-#include "ctrlcombo.h"
 #include "minstrument.h"
 #include "synth.h"
 #include "audio.h"
@@ -160,8 +157,8 @@ void MPConfig::changeDefInputRoutes(QAction* act)
   QTableWidgetItem* item = mdevView->currentItem();
   if(item == nullptr)
     return;
-  QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
-  int no = atoi(id.toLatin1().constData()) - 1;
+  const QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
+  int no = id.toInt() - 1;
   if(no < 0 || no >= MusECore::MIDI_PORTS)
     return;
   int actid = act->data().toInt();
@@ -266,8 +263,8 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
   QTableWidgetItem* item = mdevView->currentItem();
   if(item == 0)
     return;
-  QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
-  int no = atoi(id.toLatin1().constData()) - 1;
+  const QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
+  int no = id.toInt() - 1;
   if(no < 0 || no >= MusECore::MIDI_PORTS)
     return;
   int actid = act->data().toInt();
@@ -504,7 +501,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
       if (item == nullptr)
             return;
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
-      int no = atoi(id.toLatin1().constData()) - 1;
+      int no = id.toInt() - 1;
       if (no < 0 || no >= MusECore::MIDI_PORTS)
             return;
 
@@ -632,23 +629,24 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     {
                       if((*i)->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
                       {
-                        mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
+                        mapALSA.insert( std::pair<std::string, int> ((*i)->name().toStdString(), aix) );
                         ++aix;
                       }
                       else
                       if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
                       {  
-                        mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), jix) );
+                        mapJACK.insert( std::pair<std::string, int> ((*i)->name().toStdString(), jix) );
                         ++jix;
                       }
                       else
                       if((*i)->deviceType() == MusECore::MidiDevice::SYNTH_MIDI)
                       {
-                        mapSYNTH.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), six) );
+                        mapSYNTH.insert( std::pair<std::string, int> ((*i)->name().toStdString(), six) );
                         ++six;  
                       }
                       else
-                        fprintf(stderr, "MPConfig::rbClicked unknown midi device: %s\n", (*i)->name().toLatin1().constData());
+                        fprintf(stderr, "MPConfig::rbClicked unknown midi device: %s\n",
+                                (*i)->name().toLocal8Bit().constData());
                     }
                     
                     if(!mapALSA.empty())
@@ -659,7 +657,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                       {
                         int idx = i->second;
-                        QString s(i->first.c_str());
+                        const QString s = QString::fromStdString(i->first);
                         MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
                         if(md)
                         {
@@ -681,7 +679,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
                       {
                         int idx = i->second;
-                        QString s(i->first.c_str());
+                        const QString s = QString::fromStdString(i->first);
                         MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
                         if(md)
                         {
@@ -704,7 +702,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
                       {
                         int idx = i->second;
-                        QString s(i->first.c_str());
+                        const QString s = QString::fromStdString(i->first);
                         MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::SYNTH_MIDI);
                         if(md)
                         {
@@ -1058,7 +1056,7 @@ MPConfig::MPConfig(QWidget* parent)
 
       // number of instances should be right-aligned
       RightAlignDelegate *alignDelegate = new RightAlignDelegate(synthList);
-      synthList->setItemDelegateForColumn(2, alignDelegate);
+      synthList->setItemDelegateForColumn(SYNTHCOL_REFS, alignDelegate);
 
       RightIconDelegate *iconDelegate = new RightIconDelegate(mdevView);
       mdevView->setItemDelegate(iconDelegate);
@@ -1244,7 +1242,7 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       if(sitem)
       {
         QString id = sitem->tableWidget()->item(sitem->row(), DEVCOL_NO)->text();
-        no = atoi(id.toLatin1().constData()) - 1;
+        no = id.toInt() - 1;
         if(no < 0 || no >= MusECore::MIDI_PORTS)
           no = -1;
       }
@@ -1348,17 +1346,24 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
          i != MusEGlobal::synthis.end(); ++i) {
             SynthItem* item = new SynthItem(!(*i)->uri().isEmpty(), synthList);
             if((*i)->uri().isEmpty())
-              item->setText(0, QString((*i)->baseName()));
+// REMOVE Tim. tmp. Changed.
+//               item->setText(0, QString((*i)->baseName()));
+              item->setText(SYNTHCOL_FILE, QString((*i)->completeBaseName()));
             else
-              item->setText(0, QString((*i)->uri()));
+              item->setText(SYNTHCOL_FILE, QString((*i)->uri()));
 
-            item->setText(1, MusECore::synthType2String((*i)->synthType()));
-            s.setNum((*i)->instances());
-            item->setText(2, s);
-            item->setText(3, QString((*i)->name()));
+// REMOVE Tim. tmp. Changed.
+//             item->setText(1, MusECore::synthType2String((*i)->synthType()));
+            item->setText(SYNTHCOL_TYPE,
+              QApplication::translate("MusEPlugin", MusEPlugin::pluginTypeToString((*i)->pluginType())));
+            s.setNum((*i)->references());
+            item->setText(SYNTHCOL_REFS, s);
+            item->setText(SYNTHCOL_NAME, QString((*i)->name()));
             
-            item->setText(4, QString((*i)->version()));
-            item->setText(5, QString((*i)->description()));
+            item->setText(SYNTHCOL_VERSION, QString((*i)->version()));
+            item->setText(SYNTHCOL_DESCRIPTION, QString((*i)->description()));
+
+            item->setData(SYNTHCOL_TYPE, SYNTH_ROLE_TYPE, (*i)->pluginType());
             }
       synthList->blockSignals(false);
       instanceList->blockSignals(true);
@@ -1461,10 +1466,10 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       
       deviceSelectionChanged();
       
-      synthList->resizeColumnToContents(1);
-      synthList->resizeColumnToContents(2);
-      synthList->resizeColumnToContents(3);
-      synthList->resizeColumnToContents(4);
+      synthList->resizeColumnToContents(SYNTHCOL_TYPE);
+      synthList->resizeColumnToContents(SYNTHCOL_REFS);
+      synthList->resizeColumnToContents(SYNTHCOL_NAME);
+      synthList->resizeColumnToContents(SYNTHCOL_VERSION);
       mdevView->resizeColumnsToContents();
 
       selectionChanged();
@@ -1480,11 +1485,17 @@ void MPConfig::addInstanceClicked()
       if (item == nullptr)
             return;
       // Add at end of list.
+// REMOVE Tim. tmp. Changed.
+//       MusECore::SynthI *si = MusEGlobal::song->createSynthI(
+//         !item->hasUri() ? item->text(0) : QString(),
+//         item->hasUri() ? item->text(0) : QString(),
+//         item->text(3),
+//         MusECore::string2SynthType(item->text(1)));
       MusECore::SynthI *si = MusEGlobal::song->createSynthI(
-        !item->hasUri() ? item->text(0) : QString(), 
-        item->hasUri() ? item->text(0) : QString(), 
-        item->text(3), 
-        MusECore::string2SynthType(item->text(1))); 
+        MusEPlugin::PluginType(item->data(SYNTHCOL_TYPE, SYNTH_ROLE_TYPE).toInt()),
+        !item->hasUri() ? item->text(SYNTHCOL_FILE) : QString(),
+        item->hasUri() ? item->text(SYNTHCOL_FILE) : QString(),
+        item->text(SYNTHCOL_NAME));
       if(!si)
         return;
 
@@ -1783,7 +1794,7 @@ void MPConfig::beforeDeviceContextShow(PopupMenu* /*menu*/, QAction* /*menuActio
 
 void MPConfig::deviceContextTriggered(QAction* act)
 {
-  DEBUG_PRST_ROUTES(stderr, "MPConfig::deviceRemoveTriggered:%s\n", act->text().toLatin1().constData());
+  DEBUG_PRST_ROUTES(stderr, "MPConfig::deviceRemoveTriggered:%s\n", act->text().toLocal8Bit().constData());
   if(act)
   {
 // TODO: Work in progress.

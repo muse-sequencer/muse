@@ -116,11 +116,13 @@ struct VstNativeSynthOrPlugin
 
 class VstNativeSynth : public Synth {
    friend class VstNativePluginWrapper;
-      void* _handle;
+// REMOVE Tim. tmp. Removed.
+//       void* _handle;
       int _vst_version;
-      VstPluginFlags_t _flags;
+      MusEPlugin::VstPluginFlags_t _flags;
       VstIntPtr _id;
-      bool _isSynth;
+// REMOVE Tim. tmp. Removed.
+//       bool _isSynth;
       bool _usesTransportSource;
 
       unsigned long /*_portCount,*/ _inports, _outports, _controlInPorts; //, _controlOutPorts;
@@ -134,8 +136,9 @@ class VstNativeSynth : public Synth {
       VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~VstNativeSynth() {}
 
-      virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
-      virtual void incInstances(int val);
+// REMOVE Tim. tmp. Removed.
+//       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
+      virtual int incReferences(int val);
       virtual AEffect* instantiate(void *userData);
       // Opens a plugin instance, after instantiation.
       static bool openPlugin(AEffect* plugin);
@@ -147,7 +150,8 @@ class VstNativeSynth : public Synth {
       int vstVersion()  const { return _vst_version; }
       bool hasChunks()  const { return _hasChunks; }
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
-      bool isSynth() { return _isSynth; }
+// REMOVE Tim. tmp. Removed.
+//       bool isSynth() { return _isSynth; }
       bool usesTransportSource() const { return _usesTransportSource; }
 
       static VstIntPtr pluginHostCallback(VstNativeSynthOrPlugin *userData, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
@@ -159,11 +163,17 @@ class VstNativeSynth : public Synth {
       static void guiUpdateWindowTitle(VstNativeSynthOrPlugin *userData);
 
 // REMOVE Tim. tmp. Added.
-      QString getCustomConfiguration(AEffect *plugin);
-// REMOVE Tim. tmp. Changed.
-      void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
-      //void vstconfWrite(AEffect *plugin, const QString& label, int level, Xml &xml);
-      void vstconfSet(AEffect *plugin, const std::vector<QString> & customParams);
+      QString vstconfGetCustomData(AEffect *plugin);
+// REMOVE Tim. tmp. Removed.
+// // REMOVE Tim. tmp. Changed.
+//       void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
+//       //void vstconfWrite(AEffect *plugin, const QString& label, int level, Xml &xml);
+
+      // Returns true if, among other data, there was indeed custom data.
+      // This means there is, or likely is, parameter values stored with the data,
+      //  meaning we should not try to manually restore parameters since the data
+      //  already has them.
+      bool vstconfSet(AEffect *plugin, const std::vector<QString> & customParams);
 
       // Enables or disables the plugin, if it has such as function.
       void setPluginEnabled(AEffect *plugin, bool en);
@@ -224,6 +234,8 @@ class VstNativeSynthIF : public SynthIF
 
       void eventReceived(VstMidiEvent*);
 
+      bool init(VstNativeSynth*);
+
    protected:
       void activate() override;
       void deactivate() override;
@@ -231,8 +243,6 @@ class VstNativeSynthIF : public SynthIF
    public:
       VstNativeSynthIF(SynthI* s);
       virtual ~VstNativeSynthIF();
-
-      virtual bool init(Synth*);
 
       AEffect* plugin() const { return _plugin; }
       VstIntPtr dispatch(VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) const {
@@ -257,7 +267,8 @@ class VstNativeSynthIF : public SynthIF
       virtual void deactivate3() override;
       virtual QString getPatchName(int chan, int prog, bool drum) const override;
       virtual void populatePatchPopup(MusEGui::PopupMenu* menu, int chan, bool drum) override;
-      virtual void write(int level, Xml& xml) const override;
+// REMOVE Tim. tmp. Removed.
+//       virtual void write(int level, Xml& xml) const override;
       virtual double getParameter(unsigned long idx) const override;
       virtual void setParameter(unsigned long idx, double value) override;
       virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) override { return 0; }
@@ -268,13 +279,14 @@ class VstNativeSynthIF : public SynthIF
       unsigned long pluginID() const override;
 // REMOVE Tim. tmp. Removed.
 //       int id() const override;
-// REMOVE Tim. tmp. Changed.
-      QString pluginLabel() const override;
-      QString pluginName() const override;
-      QString lib() const override;
-      QString uri() const override;
-      QString dirPath() const override;
-      QString fileName() const override;
+// REMOVE Tim. tmp. Removed.
+// // REMOVE Tim. tmp. Changed.
+//       QString pluginLabel() const override;
+//       QString pluginName() const override;
+//       QString lib() const override;
+//       QString uri() const override;
+//       QString dirPath() const override;
+//       QString fileName() const override;
       void enableController(unsigned long i, bool v = true) override;
       bool controllerEnabled(unsigned long i) const override;
       void enableAllControllers(bool v = true) override;
@@ -294,7 +306,14 @@ class VstNativeSynthIF : public SynthIF
       CtrlList::Mode ctrlMode(unsigned long i) const override;
       CtrlValueType ctrlOutValueType(unsigned long i) const override;
       CtrlList::Mode ctrlOutMode(unsigned long i) const override;
-      void setCustomData ( const std::vector<QString> & ) override;
+// REMOVE Tim. tmp. Added.
+      // Returns a list of strings containing any custom configurations provided by the plugin.
+      std::vector<QString> getCustomData() const override;
+      // Returns true if, among other data, there was indeed custom data.
+      // This means there is, or likely is, parameter values stored with the data,
+      //  meaning we should not try to manually restore parameters since the data
+      //  already has them.
+      bool setCustomData ( const std::vector<QString> & ) override;
       // Returns true if ANY of the midi input ports uses transport source.
       bool usesTransportSource() const override;
       // Temporary variable holds value to be passed to the callback routine.
@@ -311,7 +330,8 @@ public:
    std::vector<float *> inPorts;
    std::vector<float *> outPorts;
    std::vector<float *> inControlPorts;
-   std::vector<float> inControlLastValues;
+// REMOVE Tim. tmp. Removed.
+//    std::vector<float> inControlLastValues;
    MusEGui::VstNativeEditor* editor;
    VstNativeSynthOrPlugin userData;
    bool guiVisible;
@@ -361,10 +381,14 @@ private:
     VstNativeSynth *_synth;
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;
-    std::vector<float> inControlDefaults;
+// REMOVE Tim. tmp. Removed.
+//     std::vector<float> inControlDefaults;
     std::vector<std::string> portNames;
 public:
-    VstNativePluginWrapper ( VstNativeSynth *s, PluginFeatures_t reqFeatures = PluginNoFeatures );
+    VstNativePluginWrapper (
+      VstNativeSynth *s, MusEPlugin::PluginFeatures_t reqFeatures = MusEPlugin::PluginNoFeatures );
+// REMOVE Tim. tmp. Added.
+//     VstNativePluginWrapper ( VstNativeSynth *s, const MusEPlugin::PluginScanInfoStruct &info );
     VstNativeSynth *synth() {
         return _synth;
     }
@@ -392,8 +416,13 @@ public:
     void updateNativeGuiWindowTitle(const PluginI *p) const;
 // REMOVE Tim. tmp. Added.
     virtual QString getCustomConfiguration(LADSPA_Handle handle);
-    virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
-    virtual void setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
+// REMOVE Tim. tmp. Removed.
+//     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
+    // Returns true if, among other data, there was indeed custom data.
+    // This means there is, or likely is, parameter values stored with the data,
+    //  meaning we should not try to manually restore parameters since the data
+    //  already has them.
+    virtual bool setCustomData (LADSPA_Handle handle, const std::vector<QString> & customParams);
 
     VstIntPtr dispatch(VstNativePluginWrapper_State *state, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt) const {
                 if(state->plugin) return state->plugin->dispatcher(state->plugin, opcode, index, value, ptr, opt); else return 0;  }

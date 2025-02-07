@@ -27,6 +27,7 @@
 //#include <iostream>
 
 #include <QDir>
+#include <QFile>
 #include <QMessageBox>
 #include <QPoint>
 #include <QString>
@@ -277,14 +278,36 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
                 return nullptr;
 
             if (MusEGlobal::debugMsg)
-                fprintf(stderr, "Song::addNewTrack synth: idx:%d class:%s label:%s\n", n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());
-//            fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());
+//                 fprintf(stderr, "Song::addNewTrack synth: idx:%d class:%s label:%s\n",
+//                         n,
+//                         MusEGlobal::synthis[n]->completeBaseName().toLocal8Bit().constData(),
+//                         MusEGlobal::synthis[n]->name().toLocal8Bit().constData());
+// //            fprintf(stderr, "Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n",
+// //                 ntype, n, MusEGlobal::synthis[n]->baseName().toLocal8Bit().constData(),
+// //                 MusEGlobal::synthis[n]->name().toLocal8Bit().constData());
+                fprintf(stderr, "Song::addNewTrack synth: idx:%d class:%s label:%s\n",
+                        n,
+                        MusEGlobal::synthis[n]->completeBaseName().toLocal8Bit().constData(),
+                        MusEGlobal::synthis[n]->label().toLocal8Bit().constData());
         }
 
-        SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
-                                  MusEGlobal::synthis[n]->name(), MusEGlobal::synthis[n]->synthType(), insertAt);
-        //      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
-        //                                MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
+// REMOVE Tim. tmp. Changed.
+//         SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
+//                                   MusEGlobal::synthis[n]->name(), MusEGlobal::synthis[n]->synthType(), insertAt);
+//         //      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->uri(),
+//         //                                MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
+//         SynthI* si = createSynthI(
+//           MusEGlobal::synthis[n]->pluginType(),
+//           MusEGlobal::synthis[n]->completeBaseName(),
+//           MusEGlobal::synthis[n]->uri(),
+//           MusEGlobal::synthis[n]->name(),
+//           insertAt);
+        SynthI* si = createSynthI(
+          MusEGlobal::synthis[n]->pluginType(),
+          MusEGlobal::synthis[n]->completeBaseName(),
+          MusEGlobal::synthis[n]->uri(),
+          MusEGlobal::synthis[n]->label(),
+          insertAt);
         if(!si)
             return nullptr;
 
@@ -474,7 +497,7 @@ Track* Song::createTrack(Track::TrackType type, bool setDefaults)
               switch(type) {
                     case Track::WAVE:
                     case Track::AUDIO_AUX:
-                          //fprintf(stderr, "Song::addTrack(): WAVE or AUDIO_AUX type:%d name:%s pushing default route to master\n", track->type(), track->name().toLatin1().constData());  
+                          //fprintf(stderr, "Song::addTrack(): WAVE or AUDIO_AUX type:%d name:%s pushing default route to master\n", track->type(), track->name().toLocal8Bit().constData());
                           track->outRoutes()->push_back(Route(ao));
                           break;
                     // It should actually never get here now, but just in case.
@@ -2866,7 +2889,8 @@ void Song::selectEvent(Event& event, Part* part, bool select)
     {
       // This can be normal for some (redundant) operations.
       if(MusEGlobal::debugMsg)
-	fprintf(stderr, "Song::selectEvent event not found in part:%s size:%ld\n", p->name().toLatin1().constData(), (long unsigned int) p->nonconst_events().size());
+        fprintf(stderr, "Song::selectEvent event not found in part:%s size:%ld\n",
+          p->name().toLocal8Bit().constData(), (long unsigned int) p->nonconst_events().size());
     }
     else
       ie->second.setSelected(select);
@@ -3204,11 +3228,11 @@ void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusEC
       // No part to be created? Delete the rec sound file.
       if(s.frame() >= e.frame())
       {
-        QString st = f->path();
+        const QString st = f->path();
         // The function which calls this function already does this immediately after. But do it here anyway.
         track->setRecFile(NULL); // upon "return", f is removed from the stack, the WaveTrack::_recFile's
                                  // counter has dropped by 2 and _recFile will probably deleted then
-        remove(st.toLocal8Bit().constData());
+        QFile::remove(st);
         if(MusEGlobal::debugMsg)
         {
           INFO_WAVE(stderr, "Song::cmdAddRecordedWave: remove file %s - startframe=%d endframe=%d\n",
@@ -7868,7 +7892,10 @@ void Song::closeDssiEditors(Track *track) const
       for(int i = 0; i < sz; ++i)
       {
         PluginI *plugi = pl->at(i);
-        if(plugi && plugi->isDssiPlugin())
+// REMOVE Tim. tmp. Changed.
+//         if(plugi && plugi->isDssiPlugin())
+        if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
+           plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
           plugi->closeNativeGui();
       }
     }
@@ -7877,7 +7904,9 @@ void Song::closeDssiEditors(Track *track) const
   if(track->type() == Track::AUDIO_SOFTSYNTH)
   {
     const SynthI *synthi = static_cast<const SynthI*>(track);
-    if(synthi->synth() && synthi->synth()->synthType() == Synth::DSSI_SYNTH)
+    if(synthi->synth() &&
+       (synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSI ||
+        synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSIVST))
     {
       if(synthi->sif())
         synthi->sif()->closeNativeGui();
@@ -7918,7 +7947,10 @@ void Song::closeDssiEditors(Track* track, int effRackPosFrom, int effRackPosTo) 
   for(int i = effRackPosFrom; i <= effRackPosTo; ++i)
   {
     PluginI *plugi = pl->at(i);
-    if(plugi && plugi->isDssiPlugin())
+// REMOVE Tim. tmp. Changed.
+//     if(plugi && plugi->isDssiPlugin())
+    if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
+       plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
       plugi->closeNativeGui();
   }
 }
@@ -8014,6 +8046,9 @@ MidiAudioCtrlMap* Song::midiAssignments() { return &_midiAssignments; }
 MidiRemote* Song::midiRemote() { return &_midiRemote; }
 
 // REMOVE Tim. tmp. Added.
+// TODO: Embellish these with more arguments.
+// Otherwise they are not very useful except for the one place calling them,
+//  and they should probably be called findFirstRackPluginByName.
 PluginI* Song::findRackPlugin(const QString &name)
 {
   const TrackList *tl = tracks();

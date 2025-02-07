@@ -195,7 +195,7 @@ static void readConfigMidiDevice(Xml& xml)
                                 if(type == MidiDevice::JACK_MIDI)
                                 {
                                   if(MusEGlobal::debugMsg)
-                                    fprintf(stderr, "readConfigMidiDevice: creating jack midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
+                                    fprintf(stderr, "readConfigMidiDevice: creating jack midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
                                   dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
                                 }
 #ifdef ALSA_SUPPORT
@@ -203,14 +203,14 @@ static void readConfigMidiDevice(Xml& xml)
                                 if(type == MidiDevice::ALSA_MIDI)
                                 {
                                   if(MusEGlobal::debugMsg)
-                                    fprintf(stderr, "readConfigMidiDevice: creating ALSA midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
+                                    fprintf(stderr, "readConfigMidiDevice: creating ALSA midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
                                   dev = MidiAlsaDevice::createAlsaMidiDevice(device, rwFlags);  
                                 }
 #endif
                               }                              
                               
                               if(MusEGlobal::debugMsg && !dev) 
-                                fprintf(stderr, "readConfigMidiDevice: device not found %s\n", device.toLatin1().constData());
+                                fprintf(stderr, "readConfigMidiDevice: device not found %s\n", device.toLocal8Bit().constData());
                               
                               if (dev) {
                                     dev->setOpenFlags(openFlags);
@@ -339,12 +339,12 @@ static void readConfigMidiPort(Xml& xml, bool onlyReadChannelState)
                               if(!dev && type == MidiDevice::JACK_MIDI)
                               {
                                 if(MusEGlobal::debugMsg)
-                                  fprintf(stderr, "readConfigMidiPort: creating jack midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
+                                  fprintf(stderr, "readConfigMidiPort: creating jack midi device %s with rwFlags:%d\n", device.toLocal8Bit().constData(), rwFlags);
                                 dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
                               }
                               
                               if(MusEGlobal::debugMsg && !dev)
-                                fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
+                                fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLocal8Bit().constData());
                               
                               MidiPort* mp = &MusEGlobal::midiPorts[idx];
 
@@ -713,7 +713,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               }
                         else if (tag == "mtcoffset") {
                               QString qs(xml.parse1());
-                              QByteArray ba = qs.toLatin1();
+                              QByteArray ba = qs.toUtf8();
                               const char* str = ba.constData();
                               int h, m, s, f, sf;
                               sscanf(str, "%d:%d:%d:%d:%d", &h, &m, &s, &f, &sf);
@@ -1470,7 +1470,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               xml.unknown("configuration");
                         break;
                   case Xml::Text:
-                        fprintf(stderr, "text <%s>\n", xml.s1().toLatin1().constData());
+                        fprintf(stderr, "text <%s>\n", xml.s1().toLocal8Bit().constData());
                         break;
                   case Xml::Attribut:
                         if (doReadMidiPortConfig==false)
@@ -1506,7 +1506,7 @@ bool readConfiguration(const char *configFile)
       QByteArray ba;
       if (configFile == nullptr)
       {
-        ba = MusEGlobal::configName.toLatin1();
+        ba = MusEGlobal::configName.toLocal8Bit();
         configFile = ba.constData();
       }
 
@@ -1917,10 +1917,10 @@ namespace MusEGui {
 
 void MusE::writeGlobalConfiguration() const
       {
-      FILE* f = fopen(MusEGlobal::configName.toLatin1().constData(), "w");
+      FILE* f = fopen(MusEGlobal::configName.toLocal8Bit().constData(), "w");
       if (f == nullptr) {
             fprintf(stderr, "save configuration to <%s> failed: %s\n",
-               MusEGlobal::configName.toLatin1().constData(), strerror(errno));
+               MusEGlobal::configName.toLocal8Bit().constData(), strerror(errno));
             return;
             }
       MusECore::Xml xml(f);
@@ -1948,7 +1948,7 @@ bool MusE::loadConfigurationColors(QWidget* parent)
     return false;
   
   // Read, and return if error.
-  if(MusECore::readConfiguration(file.toLatin1().constData()))   // True if error.
+  if(MusECore::readConfiguration(file.toLocal8Bit().constData()))   // True if error.
   {
     fprintf(stderr, "MusE::loadConfigurationColors failed\n");
     return false;
@@ -1978,11 +1978,11 @@ bool MusE::saveConfigurationColors(QWidget* parent)
 //      return false;
 //  }
 
-  FILE* f = fopen(file.toLatin1().constData(), "w");
+  FILE* f = fopen(file.toLocal8Bit().constData(), "w");
   if (f == nullptr)
   {
     fprintf(stderr, "save configuration colors to <%s> failed: %s\n",
-        file.toLatin1().constData(), strerror(errno));
+        file.toLocal8Bit().constData(), strerror(errno));
     return false;
   }
   MusECore::Xml xml(f);

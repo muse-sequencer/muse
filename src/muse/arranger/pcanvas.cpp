@@ -664,7 +664,9 @@ void PartCanvas::updateAudioAutomation()
     {
       const MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-      if(!cl->isVisible())
+// REMOVE Tim. tmp. Changed.
+//       if(!cl->isVisible())
+      if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
         continue;
       for(MusECore::ciCtrl ic = cl->cbegin(); ic != cl->cend(); ++ic)
       {
@@ -1836,7 +1838,9 @@ bool PartCanvas::selectLasso(bool toggle, MusECore::Undo* undo)
         {
           MusECore::CtrlList* cl = icll->second;
           // Do not include hidden controller lists.
-          if(!cl->isVisible())
+// REMOVE Tim. tmp. Changed.
+//           if(!cl->isVisible())
+          if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
             continue;
 
           if(lasso_SFrame >= lasso_EFrame)
@@ -4152,7 +4156,9 @@ bool PartCanvas::copyAudioAutomation(
     {
       MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-      if(!cl->isVisible())
+// REMOVE Tim. tmp. Changed.
+//       if(!cl->isVisible())
+      if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
         continue;
       int i = 0;
       bool itemFound = false;
@@ -4991,7 +4997,9 @@ void PartCanvas::drawAutomationFills(QPainter& p, const QRect& rr, MusECore::Aud
     }
 
     MusECore::CtrlList *cl = icll->second;
+// REMOVE Tim. tmp. Changed.
     if (cl->dontShow() || !cl->isVisible())
+//     if (cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(t, cl))
       continue;
 
     int newX = oldX;
@@ -5234,7 +5242,9 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
     }
 
     MusECore::CtrlList *cl = icll->second;
+// REMOVE Tim. tmp. Changed.
     if (cl->dontShow() || !cl->isVisible())
+//     if (cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(t, cl))
       continue;
 
     int newX = oldX;
@@ -5485,7 +5495,9 @@ void PartCanvas::drawAutomationPoints(QPainter& p, const QRect& rr, MusECore::Au
   for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)
   {
     MusECore::CtrlList *cl = icll->second;
+// REMOVE Tim. tmp. Changed.
     if(cl->dontShow() || !cl->isVisible())
+//     if(cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(ct, cl))
       continue;
 
     const QColor line_col(cl->color());
@@ -5876,7 +5888,9 @@ void PartCanvas::drawAutomationText(QPainter& p, const QRect& rr, MusECore::Audi
     for(MusECore::CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
     {
       MusECore::CtrlList *cl = icll->second;
+// REMOVE Tim. tmp. Changed.
       if (cl->dontShow() || !cl->isVisible())
+//       if (cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList(t, cl))
         continue;
 
       int xpixel = 0;
@@ -6021,7 +6035,9 @@ void PartCanvas::checkAutomation(const QPoint &pointer)
       for(MusECore::ciCtrlList icll = cll->begin(); icll != cll->end(); ++icll)
       {
         MusECore::CtrlList *cl = icll->second;
+// REMOVE Tim. tmp. Changed.
         if(cl->dontShow() || !cl->isVisible())
+//         if(cl->dontShow() || !cl->isVisible() || !MusECore::canShowAudioCtrlList((MusECore::AudioTrack*)t, cl))
           continue;
         MusECore::ciCtrl ic=cl->begin();
 
@@ -6261,7 +6277,9 @@ void PartCanvas::controllerChanged(
     MusECore::ciCtrlList icl = at->controller()->find(ctrlId);
     if(icl != at->controller()->cend())
     {
-      if(icl->second->isVisible())
+// REMOVE Tim. tmp. Changed.
+//       if(icl->second->isVisible())
+      if (!icl->second->dontShow() && icl->second->isVisible() /*&& MusECore::canShowAudioCtrlList(at, icl->second)*/ )
         track_cl = icl->second;
     }
   }
@@ -7153,7 +7171,9 @@ void PartCanvas::tagItems(MusECore::TagEventList* tag_list, const MusECore::Even
     {
       MusECore::CtrlList* cl = icll->second;
       // Do not include hidden controller lists.
-      if(!cl->isVisible())
+// REMOVE Tim. tmp. Changed.
+//       if(!cl->isVisible())
+      if (cl->dontShow() || !cl->isVisible() /*|| !MusECore::canShowAudioCtrlList(track, cl)*/ )
         continue;
       for(MusECore::ciCtrl ic = cl->cbegin(); ic != cl->cend(); ++ ic)
       {

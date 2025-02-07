@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>737</width>
+    <width>800</width>
     <height>537</height>
    </rect>
   </property>
@@ -79,6 +79,11 @@
        </column>
        <column>
         <property name="text">
+         <string>Label</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
          <string>Type</string>
         </property>
        </column>
@@ -100,6 +105,11 @@
        <column>
         <property name="text">
          <string>URI/Library</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Description</string>
         </property>
        </column>
       </widget>

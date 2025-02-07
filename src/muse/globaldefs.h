@@ -39,89 +39,123 @@ enum AutomationType {
       AUTO_LATCH
       };
 
-// Can be Or'd together.
-enum PluginFeature {
-  PluginNoFeatures = 0x00,
-  PluginFixedBlockSize = 0x01,
-  PluginPowerOf2BlockSize = 0x02,
-  PluginNoInPlaceProcessing = 0x04,
-  PluginCoarseBlockSize = 0x08,
-  PluginSupportStrictBounds = 0x10
-};
-typedef int PluginFeatures_t;
 
-enum PluginBypassType {
-  // The plugin has no bypass or enable feature.
-  // We emulate an enable function with no controller graph.
-  PluginBypassTypeEmulatedEnableFunction = 0,
-  // The plugin has no bypass or enable feature.
-  // We emulate an enable function with controller graph.
-  PluginBypassTypeEmulatedEnableController,
-  // The plugin has an enable function.
-  // We provide an enable function with no controller graph.
-  PluginBypassTypeEnableFunction,
-  // The plugin has an enable controller port.
-  // We provide an enable controller graph.
-  PluginBypassTypeEnablePort,
-  // The plugin has a bypass function.
-  // We provide an (inverted) enable function with no controller graph.
-  PluginBypassTypeBypassFunction,
-  // The plugin has a bypass controller port.
-  // We provide a bypass controller graph.
-  PluginBypassTypeBypassPort
-};
+// REMOVE Tim. tmp. Removed. Moved into plugin_scan.h
+// // Can be Or'd together.
+// enum PluginType { PluginTypeNone = 0x00,
+//   PluginTypeLADSPA   = 0x01,  PluginTypeDSSI    = 0x02,
+//   PluginTypeVST      = 0x04,  PluginTypeDSSIVST = 0x08,
+//   PluginTypeLinuxVST = 0x10,  PluginTypeLV2     = 0x20,
+//   PluginTypeMESS     = 0x40,
+//   // Built-in metronome is not actually a loadable plugin, but is a synth.
+//   PluginTypeMETRONOME = 0x80,
+//   PluginTypeUnknown = 0x8000,
+//   PluginTypeAll = PluginTypeLADSPA   | PluginTypeDSSI |
+//                   PluginTypeVST      | PluginTypeDSSIVST |
+//                   PluginTypeLinuxVST | PluginTypeLV2 |
+//                   PluginTypeMESS     | PluginTypeUnknown |
+//                   PluginTypeMETRONOME };
+// typedef int PluginType_t;
+//
+// // Can be Or'd together.
+// enum PluginClass { PluginClassNone = 0x00,
+//   PluginClassEffect = 0x01, PluginClassInstrument = 0x02,
+//   PluginClassAll = PluginClassEffect | PluginClassInstrument };
+// typedef int PluginClass_t;
 
-enum PluginLatencyReportingType {
-  // Plugin has no latency reporting mechanism.
-  PluginLatencyTypeNone = 0,
-  // Plugin has a latency reporting function but no controller port.
-  PluginLatencyTypeFunction,
-  // Plugin has a latency reporting controller port.
-  PluginLatencyTypePort
-};
+// // Can be Or'd together.
+// enum PluginFlags { PluginNoFlags = 0x00,
+//   PluginHasGui = 0x01, PluginHasChunks = 0x02, PluginIsRealtime = 0x04, PluginIsHardRealtimeCapable = 0x08,
+//   // Obsolete flag. Kept for backward compatibility.
+//   PluginHasFreewheelPort = 0x10,
+//   // Obsolete flag. Kept for backward compatibility.
+//   PluginHasLatencyPort = 0x20,
+//   PluginSupportsTimePosition = 0x40 };
+// typedef int PluginFlags_t;
 
-enum PluginFreewheelType {
-  // Plugin has no freewheel mechanism.
-  PluginFreewheelTypeNone = 0,
-  // Plugin has a freewheel function but no controller port.
-  PluginFreewheelTypeFunction,
-  // Plugin has a freewheel controller port.
-  PluginFreewheelTypePort
-};
+// // Can be Or'd together.
+// enum PluginFeature {
+//   PluginNoFeatures = 0x00,
+//   PluginFixedBlockSize = 0x01,
+//   PluginPowerOf2BlockSize = 0x02,
+//   PluginNoInPlaceProcessing = 0x04,
+//   PluginCoarseBlockSize = 0x08,
+//   PluginSupportStrictBounds = 0x10
+// };
+// typedef int PluginFeatures_t;
 
-enum VstPluginFlags
-{
-  vstPluginNoFlags          = 0,
-  canSendVstEvents          = 1 << 0,
-  canSendVstMidiEvents      = 1 << 1,
-  canReceiveVstEvents       = 1 << 3,
-  canReceiveVstMidiEvents   = 1 << 4,
-  canReceiveVstTimeInfo     = 1 << 5,
-  canProcessVstOffline      = 1 << 6,
-  canVstMidiProgramNames    = 1 << 10,
-  canVstBypass              = 1 << 11
-};
-typedef int VstPluginFlags_t;
+// enum PluginBypassType {
+//   // The plugin has no bypass or enable feature.
+//   // We emulate an enable function with no controller graph.
+//   PluginBypassTypeEmulatedEnableFunction = 0,
+//   // The plugin has no bypass or enable feature.
+//   // We emulate an enable function with controller graph.
+//   PluginBypassTypeEmulatedEnableController,
+//   // The plugin has an enable function.
+//   // We provide an enable function with no controller graph.
+//   PluginBypassTypeEnableFunction,
+//   // The plugin has an enable controller port.
+//   // We provide an enable controller graph.
+//   PluginBypassTypeEnablePort,
+//   // The plugin has a bypass function.
+//   // We provide an (inverted) enable function with no controller graph.
+//   PluginBypassTypeBypassFunction,
+//   // The plugin has a bypass controller port.
+//   // We provide a bypass controller graph.
+//   PluginBypassTypeBypassPort
+// };
 
-enum VstPluginToHostFlags
-{
-  vstHostNoFlags                          = 0,
-  canHostSendVstEvents                    = 1 << 0,
-  canHostSendVstMidiEvents                = 1 << 1,
-  canHostSendVstTimeInfo                  = 1 << 2,
-  canHostReceiveVstEvents                 = 1 << 3,
-  canHostReceiveVstMidiEvents             = 1 << 4,
-  canHostVstReportConnectionChanges       = 1 << 5,
-  canHostVstAcceptIOChanges               = 1 << 6,
-  canHostVstSizeWindow                    = 1 << 7,
-  canHostVstOffline                       = 1 << 8,
-  canHostVstOpenFileSelector              = 1 << 9,
-  canHostVstCloseFileSelector             = 1 << 10,
-  canHostVstStartStopProcess              = 1 << 11,
-  canHostVstShellCategory                 = 1 << 12,
-  canHostSendVstMidiEventFlagIsRealtime   = 1 << 13
-};
-typedef int VstPluginToHostFlags_t;
+// enum PluginLatencyReportingType {
+//   // Plugin has no latency reporting mechanism.
+//   PluginLatencyTypeNone = 0,
+//   // Plugin has a latency reporting function but no controller port.
+//   PluginLatencyTypeFunction,
+//   // Plugin has a latency reporting controller port.
+//   PluginLatencyTypePort
+// };
+
+// enum PluginFreewheelType {
+//   // Plugin has no freewheel mechanism.
+//   PluginFreewheelTypeNone = 0,
+//   // Plugin has a freewheel function but no controller port.
+//   PluginFreewheelTypeFunction,
+//   // Plugin has a freewheel controller port.
+//   PluginFreewheelTypePort
+// };
+
+// enum VstPluginFlags
+// {
+//   vstPluginNoFlags          = 0,
+//   canSendVstEvents          = 1 << 0,
+//   canSendVstMidiEvents      = 1 << 1,
+//   canReceiveVstEvents       = 1 << 3,
+//   canReceiveVstMidiEvents   = 1 << 4,
+//   canReceiveVstTimeInfo     = 1 << 5,
+//   canProcessVstOffline      = 1 << 6,
+//   canVstMidiProgramNames    = 1 << 10,
+//   canVstBypass              = 1 << 11
+// };
+// typedef int VstPluginFlags_t;
+
+// enum VstPluginToHostFlags
+// {
+//   vstHostNoFlags                          = 0,
+//   canHostSendVstEvents                    = 1 << 0,
+//   canHostSendVstMidiEvents                = 1 << 1,
+//   canHostSendVstTimeInfo                  = 1 << 2,
+//   canHostReceiveVstEvents                 = 1 << 3,
+//   canHostReceiveVstMidiEvents             = 1 << 4,
+//   canHostVstReportConnectionChanges       = 1 << 5,
+//   canHostVstAcceptIOChanges               = 1 << 6,
+//   canHostVstSizeWindow                    = 1 << 7,
+//   canHostVstOffline                       = 1 << 8,
+//   canHostVstOpenFileSelector              = 1 << 9,
+//   canHostVstCloseFileSelector             = 1 << 10,
+//   canHostVstStartStopProcess              = 1 << 11,
+//   canHostVstShellCategory                 = 1 << 12,
+//   canHostSendVstMidiEventFlagIsRealtime   = 1 << 13
+// };
+// typedef int VstPluginToHostFlags_t;
 
 
 // Record events ring buffer size

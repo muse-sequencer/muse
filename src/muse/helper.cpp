@@ -56,6 +56,9 @@
 #include "conf.h"
 #include "synthdialog.h"
 #include "shortcuts.h"
+// REMOVE Tim. tmp. Added.
+#include "plugin.h"
+#include "ctrl.h"
 
 #include <strings.h>
 
@@ -868,6 +871,110 @@ void record_controller_change_and_maybe_send(unsigned tick, int ctrl_num, int va
 	}
 }
 
+// REMOVE Tim. tmp. Added.
+// bool canShowAudioCtrlNum(const AudioTrack *track, int ctlnum)
+// {
+//   const CtrlListList *cll = track->controller();
+//   ciCtrlList icl = cll->find(ctlnum);
+//   if(icl == cll->cend())
+//     return false;
+//   const CtrlList *cl = icl->second;
+//
+//   return canShowAudioCtrlList(track, cl);
+// }
+
+// REMOVE Tim. tmp. Added.
+// bool canShowAudioCtrlList(const AudioTrack *track, const CtrlList *cl)
+// {
+//   const int ctlnum = cl->id();
+//
+//   // The beginning of the track's effects controllers block.
+//   const int effectsStartId = genACnum(0, 0);
+//   // The beginning of the special synth controller block (and end of the effects block).
+//   const int synthStartId = genACnum(MusECore::MAX_PLUGINS, 0);
+//   // The end of the special synth controller block.
+//   const int   synthEndId = genACnum(MusECore::MAX_PLUGINS + 1, 0);
+//
+//   // If the control is one of the track's own controllers,
+//   //  it can be shown.
+//   if(ctlnum < effectsStartId)
+//     return true;
+//
+//   // If the control is one of the track's rack effects plugin controllers.
+//   if(ctlnum >= effectsStartId && ctlnum < synthStartId)
+//   {
+//     const unsigned int rack_idx = (ctlnum - effectsStartId) >> AC_PLUGIN_CTL_BASE_POW;
+//     const Pipeline *pl = track->efxPipe();
+//     if(rack_idx >= pl->size())
+//       // Oops, it's out of range of the number of slots in the rack.
+//       // Still, it's valid so let the user see it.
+//       return true;
+//
+//     const PluginI *plugI = track->efxPipe()->at(rack_idx);
+//     if(!plugI)
+//       // Oops, there's no plugin in that slot.
+//       // Still, it's valid so let the user see it.
+//       return true;
+//
+//     if(!plugI->plugin())
+//     {
+//       // If _fileVerMaj (and _fileVerMin) are valid, it means while loading there was no plugin found
+//       //  and the file version is set to the original version. We need that info for the code below.
+//       // It is only when the plugins are finally found that the version maj and min are reset to -1.
+//       const int vm = plugI->initialConfiguration()._fileVerMaj;
+//       // The plugin doesn't exist. If it's an old song file version,
+//       //  it never stored the necessary control info (min, max, type, etc.)
+//       //  to properly scale and display the controller's data.
+//       // So we cannot let the user see or edit them if the plugin doesn't exist,
+//       //  they would be shown wrong.
+//       const bool isPersistentPre4 = vm >= 0 && vm < 4;
+//       if(isPersistentPre4)
+//         return false;
+//     }
+//     // The plugin exists, or the song file version is 4 or higher.
+//     // We can let the user see and edit this controller.
+//     return true;
+//   }
+//
+//   // If the control is in the special synth controller block.
+//   if(ctlnum >= synthStartId && ctlnum < synthEndId)
+//   {
+//     if(track->isSynthTrack())
+//     {
+//       const SynthI *si = static_cast<const SynthI*>(track);
+//       const Synth *syn = si->synth();
+//       const SynthIF *sif = si->sif();
+//
+//       if(!syn || !sif)
+//       {
+//         // If _fileVerMaj (and _fileVerMin) are valid, it means while loading there was no synth found
+//         //  and the file version is set to the original version. We need that info for the code below.
+//         // It is only when the synth is finally found that the version maj and min are reset to -1.
+//         const int vm = si->initialConfiguration()._fileVerMaj;
+//         const bool isPersistentPre4 = vm >= 0 && vm < 4;
+//         // The synth doesn't exist. If it's an old song file version,
+//         //  it never stored the necessary control info (min, max, type, etc.)
+//         //  to properly scale and display the controller's data.
+//         // So we cannot let the user see or edit them if the synth doesn't exist,
+//         //  they would be shown wrong.
+//         if(isPersistentPre4)
+//           return false;
+//       }
+//       // The synth exists, or the song file version is 4 or higher.
+//       // We can let the user see and edit this controller.
+//       return true;
+//     }
+//     // Oops, the control is in the special synth controller block but the track is not a synth.
+//     // Still, it's valid so let the user see it.
+//     return true;
+//   }
+//
+//   // Oops, the control is in an unkown block.
+//   // Still, it's valid so let the user see it.
+//   return true;
+// }
+
+
 } // namespace MusECore
 
 
@@ -1478,7 +1585,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
               synfav->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Favorites")));
 
               for (const auto it : favsIdx) {
-                  synfav->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
+// REMOVE Tim. tmp. Changed.
+//                   synfav->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);
+                  synfav->addAction(MusEGlobal::synthis[it]->name())->setData(MENU_ADD_SYNTH_ID_BASE + it);
               }
               addTrack->addMenu(synfav);
           }
@@ -1491,7 +1600,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll, bool insert, b
 
               int ik = 0;
               for (const auto it : recentsIdx) {
-                  QAction *a = new QAction("&" + QString::number(++ik) + " " + MusEGlobal::synthis[it]->description(), addTrack);
+// REMOVE Tim. tmp. Changed.
+//                  QAction *a = new QAction("&" + QString::number(++ik) + " " + MusEGlobal::synthis[it]->description(), addTrack);
+                  QAction *a = new QAction("&" + QString::number(++ik) + " " + MusEGlobal::synthis[it]->name(), addTrack);
                   a->setData(MENU_ADD_SYNTH_ID_BASE + it);
                   addTrack->addAction(a);
 //                  addTrack->addAction(MusEGlobal::synthis[it]->description())->setData(MENU_ADD_SYNTH_ID_BASE + it);

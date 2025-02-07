@@ -76,7 +76,7 @@ class Plugin
       unsigned long _controlInPorts;
       unsigned long _controlOutPorts;
 
-      MusECore::PluginFeatures_t _requiredFeatures;
+      MusEPlugin::PluginFeatures_t _requiredFeatures;
       
       std::vector<unsigned long> _pIdx; //control port numbers
       std::vector<unsigned long> _poIdx; //control out port numbers
@@ -88,7 +88,7 @@ class Plugin
         : _fi(*f), _libHandle(0), _references(0), _instNo(0), _uniqueID(0),
           _portCount(0),_inports(0), _outports(0),
           _controlInPorts(0),_controlOutPorts(0),
-          _requiredFeatures(MusECore::PluginNoFeatures) { }
+          _requiredFeatures(MusEPlugin::PluginNoFeatures) { }
       Plugin(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~Plugin() {}
       
@@ -99,7 +99,7 @@ class Plugin
       //----------------------------------------------------
       
       // Returns features required by the plugin.
-      MusECore::PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
+      MusEPlugin::PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
         
       // Create and initialize a plugin instance. Returns null if failure.
       // Equivalent to calling (new ***PlugI())->initPluginInstance(this, ...).
@@ -129,7 +129,8 @@ class Plugin
       unsigned long parameterOut() const    { return _controlOutPorts; }
       unsigned long inports() const         { return _inports;     }
       unsigned long outports() const        { return _outports;     }
-      bool inPlaceCapable() const           { return !(_requiredFeatures & MusECore::PluginNoInPlaceProcessing); }
+      bool inPlaceCapable() const
+      { return !(_requiredFeatures & MusEPlugin::PluginNoInPlaceProcessing); }
 
       
       //----------------------------------------------------
@@ -328,8 +329,8 @@ class PluginI {
 
       Plugin* plugin() const { return _plugin; }
 
-      MusECore::PluginFeatures_t requiredFeatures() const {
-        if(!_plugin) return MusECore::PluginNoFeatures; 
+      MusEPlugin::PluginFeatures_t requiredFeatures() const {
+        if(!_plugin) return MusEPlugin::PluginNoFeatures;
         return _plugin->requiredFeatures(); }
       
       bool on() const        { return _on; }
