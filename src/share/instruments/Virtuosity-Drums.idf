@@ -1,0 +1,1522 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <!-- The full kit contains some extras the basic kit lacks: snare flam, roll, buzz and some others. -->
+  <!-- The e-drum keymap maps the 1/2, 3/4, and open hihats to a single OH key, controllable with a pedal (CC4). -->
+  <!-- To use the basic or full kit just load their respective .sfz's into Sfizz. -->
+  <!-- To use the e-drum variant, load the full kit, and replace the default keymaps with the relevant ones found -->
+  <!--  in the sfz instrument keymaps folder. Choose the relevant patch of the Virtuosity Drums Jazz Kit instrument. -->
+  <MidiInstrument name="Virtuosity Drums Jazz Kit">
+    <PatchGroup name="Jazz Kit">
+       <Patch name="Basic Kit" prog="0" drum="1" />
+       <Patch name="Full Kit" prog="1" drum="1" />
+       <Patch name="Full Kit: E-drum" prog="2" drum="1" />
+    </PatchGroup>
+    <Drummaps>
+      <entry>
+        <patch_collection prog="1" />
+        <drummap>
+          <entry pitch="0">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="1">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="2">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="3">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="4">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="5">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="6">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="7">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="8">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="9">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="10">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="11">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="12">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="13">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="14">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="15">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="16">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="17">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="18">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="19">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="20">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="21">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="22">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="23">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="24">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="25">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="26">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="27">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="28">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="29">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="30">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="31">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="32">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="33">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="34">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="35">
+            <name>Kick Alternate</name>
+            <enote>35</enote>
+            <anote>35</anote>
+          </entry>
+          <entry pitch="36">
+            <name>Kick Primary</name>
+            <enote>36</enote>
+            <anote>36</anote>
+          </entry>
+          <entry pitch="37">
+            <name>Snare Stick</name>
+            <enote>37</enote>
+            <anote>37</anote>
+          </entry>
+          <entry pitch="38">
+            <name>Snare Stick Alternate</name>
+            <enote>85</enote>
+            <anote>85</anote>
+          </entry>
+          <entry pitch="39">
+            <name>Snare Cross Stick</name>
+            <enote>88</enote>
+            <anote>88</anote>
+          </entry>
+          <entry pitch="40">
+            <name>Snare Center</name>
+            <enote>38</enote>
+            <anote>38</anote>
+          </entry>
+          <entry pitch="41">
+            <name>Snare Off-center</name>
+            <enote>39</enote>
+            <anote>39</anote>
+          </entry>
+          <entry pitch="42">
+            <name>Snare Rimshot</name>
+            <enote>40</enote>
+            <anote>40</anote>
+          </entry>
+          <entry pitch="43">
+            <name>Snare Muted</name>
+            <enote>86</enote>
+            <anote>86</anote>
+          </entry>
+          <entry pitch="44">
+            <name>Snare Half Muted</name>
+            <enote>87</enote>
+            <anote>87</anote>
+          </entry>
+          <entry pitch="45">
+            <name>Snare Buzz</name>
+            <enote>93</enote>
+            <anote>93</anote>
+          </entry>
+          <entry pitch="46">
+            <name>Flam</name>
+            <enote>95</enote>
+            <anote>95</anote>
+          </entry>
+          <entry pitch="47">
+            <name>Snare Roll (CC1 Mod)</name>
+            <enote>96</enote>
+            <anote>96</anote>
+          </entry>
+          <entry pitch="48">
+            <name>Low Tom Center</name>
+            <enote>41</enote>
+            <anote>41</anote>
+          </entry>
+          <entry pitch="49">
+            <name>Low Tom Off-center</name>
+            <enote>43</enote>
+            <anote>43</anote>
+          </entry>
+          <entry pitch="50">
+            <name>Low Tom Rimshot</name>
+            <enote>45</enote>
+            <anote>45</anote>
+          </entry>
+          <entry pitch="51">
+            <name>Low Tom Cross Stick</name>
+            <enote>47</enote>
+            <anote>47</anote>
+          </entry>
+          <entry pitch="52">
+            <name>Low Tom Muted</name>
+            <enote>89</enote>
+            <anote>89</anote>
+          </entry>
+          <entry pitch="53">
+            <name>Low Tom Half Muted</name>
+            <enote>91</enote>
+            <anote>91</anote>
+          </entry>
+          <entry pitch="54">
+            <name>High Tom Center</name>
+            <enote>48</enote>
+            <anote>48</anote>
+          </entry>
+          <entry pitch="55">
+            <name>High Tom Off-center</name>
+            <enote>50</enote>
+            <anote>50</anote>
+          </entry>
+          <entry pitch="56">
+            <name>Hihat Closed</name>
+            <enote>42</enote>
+            <anote>42</anote>
+          </entry>
+          <entry pitch="57">
+            <name>Hihat Pedal</name>
+            <enote>44</enote>
+            <anote>44</anote>
+          </entry>
+          <entry pitch="58">
+            <name>Hihat Open</name>
+            <enote>46</enote>
+            <anote>46</anote>
+          </entry>
+          <entry pitch="59">
+            <name>Hihat Half Open</name>
+            <enote>90</enote>
+            <anote>90</anote>
+          </entry>
+          <entry pitch="60">
+            <name>Hihat Splash</name>
+            <enote>92</enote>
+            <anote>92</anote>
+          </entry>
+          <entry pitch="61">
+            <name>Hihat 3/4 Open</name>
+            <enote>94</enote>
+            <anote>94</anote>
+          </entry>
+          <entry pitch="62">
+            <name>Crash Normal</name>
+            <enote>49</enote>
+            <anote>49</anote>
+          </entry>
+          <entry pitch="63">
+            <name>Crash Sizzle</name>
+            <enote>57</enote>
+            <anote>57</anote>
+          </entry>
+          <entry pitch="64">
+            <name>Ride Normal</name>
+            <enote>51</enote>
+            <anote>51</anote>
+          </entry>
+          <entry pitch="65">
+            <name>Ride Bell</name>
+            <enote>53</enote>
+            <anote>53</anote>
+          </entry>
+          <entry pitch="66">
+            <name>Flat Ride Normal</name>
+            <enote>59</enote>
+            <anote>59</anote>
+          </entry>
+          <entry pitch="67">
+            <name>Flat Ride Crash</name>
+            <enote>55</enote>
+            <anote>55</anote>
+          </entry>
+          <entry pitch="68">
+            <name>Tambourine (VSCO2)</name>
+            <enote>54</enote>
+            <anote>54</anote>
+          </entry>
+          <entry pitch="69">
+            <name>Cowbell (VSCO2)</name>
+            <enote>56</enote>
+            <anote>56</anote>
+          </entry>
+          <entry pitch="70">
+            <name>Vibraslap (VSCO2)</name>
+            <enote>58</enote>
+            <anote>58</anote>
+          </entry>
+          <entry pitch="71">
+            <name>High Bongo (VSCO2)</name>
+            <enote>60</enote>
+            <anote>60</anote>
+          </entry>
+          <entry pitch="72">
+            <name>Low Bongo (VSCO2)</name>
+            <enote>61</enote>
+            <anote>61</anote>
+          </entry>
+          <entry pitch="73">
+            <name>Conga Muted (VSCO2)</name>
+            <enote>62</enote>
+            <anote>62</anote>
+          </entry>
+          <entry pitch="74">
+            <name>Conga Open (VSCO2)</name>
+            <enote>63</enote>
+            <anote>63</anote>
+          </entry>
+          <entry pitch="75">
+            <name>Tumba (VSCO2)</name>
+            <enote>64</enote>
+            <anote>64</anote>
+          </entry>
+          <entry pitch="76">
+            <name>High Timbale</name>
+            <enote>65</enote>
+            <anote>65</anote>
+          </entry>
+          <entry pitch="77">
+            <name>Low Timbale</name>
+            <enote>66</enote>
+            <anote>66</anote>
+          </entry>
+          <entry pitch="78">
+            <name>High Agogo Bell (VSCO2)</name>
+            <enote>67</enote>
+            <anote>67</anote>
+          </entry>
+          <entry pitch="79">
+            <name>Low Agogo Bell (VSCO2)</name>
+            <enote>68</enote>
+            <anote>68</anote>
+          </entry>
+          <entry pitch="80">
+            <name>Cabasa (VSCO2)</name>
+            <enote>69</enote>
+            <anote>69</anote>
+          </entry>
+          <entry pitch="81">
+            <name>Large Shaker</name>
+            <enote>70</enote>
+            <anote>70</anote>
+          </entry>
+          <entry pitch="82">
+            <name>Whistle Short (VSCO2)</name>
+            <enote>71</enote>
+            <anote>71</anote>
+          </entry>
+          <entry pitch="83">
+            <name>Whistle Long (VSCO2)</name>
+            <enote>72</enote>
+            <anote>72</anote>
+          </entry>
+          <entry pitch="84">
+            <name>Guiro Slow (VSCO2)</name>
+            <enote>73</enote>
+            <anote>73</anote>
+          </entry>
+          <entry pitch="85">
+            <name>Guiro Fast (VSCO2)</name>
+            <enote>74</enote>
+            <anote>74</anote>
+          </entry>
+          <entry pitch="86">
+            <name>Claves (VSCO2)</name>
+            <enote>75</enote>
+            <anote>75</anote>
+          </entry>
+          <entry pitch="87">
+            <name>High Woodblock</name>
+            <enote>76</enote>
+            <anote>76</anote>
+          </entry>
+          <entry pitch="88">
+            <name>Low Woodblock</name>
+            <enote>77</enote>
+            <anote>77</anote>
+          </entry>
+          <entry pitch="89">
+            <name>Mute Cuica</name>
+            <enote>78</enote>
+            <anote>78</anote>
+          </entry>
+          <entry pitch="90">
+            <name>open Cuica</name>
+            <enote>79</enote>
+            <anote>79</anote>
+          </entry>
+          <entry pitch="91">
+            <name>Mute Triangle (VSCO2)</name>
+            <enote>80</enote>
+            <anote>80</anote>
+          </entry>
+          <entry pitch="92">
+            <name>Open Triangle (VSCO2)</name>
+            <enote>81</enote>
+            <anote>81</anote>
+          </entry>
+          <entry pitch="93">
+            <name>Shaker (VSCO2)</name>
+            <enote>82</enote>
+            <anote>82</anote>
+          </entry>
+          <entry pitch="94">
+            <name>Sleigh Bell (VSCO2)</name>
+            <enote>83</enote>
+            <anote>83</anote>
+          </entry>
+          <entry pitch="95">
+            <name>Belltree (VSCO2)</name>
+            <enote>84</enote>
+            <anote>84</anote>
+          </entry>
+          <entry pitch="96">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="97">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="98">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="99">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="100">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="101">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="102">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="103">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="104">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="105">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="106">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="107">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="108">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="109">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="110">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="111">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="112">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="113">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="114">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="115">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="116">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="117">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="118">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="119">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="120">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="121">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="122">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="123">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="124">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="125">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="126">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="127">
+            <hide>1</hide>
+          </entry>
+          </drummap>
+      </entry>
+      <entry>
+        <patch_collection prog="0" />
+        <drummap>
+          <entry pitch="0">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="1">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="2">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="3">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="4">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="5">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="6">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="7">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="8">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="9">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="10">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="11">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="12">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="13">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="14">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="15">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="16">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="17">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="18">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="19">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="20">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="21">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="22">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="23">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="24">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="25">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="26">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="27">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="28">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="29">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="30">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="31">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="32">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="33">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="34">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="35">
+            <name>Kick Alternate</name>
+            <enote>35</enote>
+            <anote>35</anote>
+          </entry>
+          <entry pitch="36">
+            <name>Kick Primary</name>
+            <enote>36</enote>
+            <anote>36</anote>
+          </entry>
+          <entry pitch="37">
+            <name>Snare Stick</name>
+            <enote>37</enote>
+            <anote>37</anote>
+          </entry>
+          <entry pitch="38">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="39">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="40">
+            <name>Snare Center</name>
+            <enote>38</enote>
+            <anote>38</anote>
+          </entry>
+          <entry pitch="41">
+            <name>Snare Off-center</name>
+            <enote>39</enote>
+            <anote>39</anote>
+          </entry>
+          <entry pitch="42">
+            <name>Snare Rimshot</name>
+            <enote>40</enote>
+            <anote>40</anote>
+          </entry>
+          <entry pitch="43">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="44">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="45">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="46">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="47">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="48">
+            <name>Low Tom Center</name>
+            <enote>41</enote>
+            <anote>41</anote>
+          </entry>
+          <entry pitch="49">
+            <name>Low Tom Off-center</name>
+            <enote>43</enote>
+            <anote>43</anote>
+          </entry>
+          <entry pitch="50">
+            <name>Low Tom Rimshot</name>
+            <enote>45</enote>
+            <anote>45</anote>
+          </entry>
+          <entry pitch="51">
+            <name>Low Tom Cross Stick</name>
+            <enote>47</enote>
+            <anote>47</anote>
+          </entry>
+          <entry pitch="52">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="53">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="54">
+            <name>High Tom Center</name>
+            <enote>48</enote>
+            <anote>48</anote>
+          </entry>
+          <entry pitch="55">
+            <name>High Tom Off-center</name>
+            <enote>50</enote>
+            <anote>50</anote>
+          </entry>
+          <entry pitch="56">
+            <name>Hihat Closed</name>
+            <enote>42</enote>
+            <anote>42</anote>
+          </entry>
+          <entry pitch="57">
+            <name>Hihat Pedal</name>
+            <enote>44</enote>
+            <anote>44</anote>
+          </entry>
+          <entry pitch="58">
+            <name>Hihat Open</name>
+            <enote>46</enote>
+            <anote>46</anote>
+          </entry>
+          <entry pitch="59">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="60">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="61">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="62">
+            <name>Crash Normal</name>
+            <enote>49</enote>
+            <anote>49</anote>
+          </entry>
+          <entry pitch="63">
+            <name>Crash Sizzle</name>
+            <enote>57</enote>
+            <anote>57</anote>
+          </entry>
+          <entry pitch="64">
+            <name>Ride Normal</name>
+            <enote>51</enote>
+            <anote>51</anote>
+          </entry>
+          <entry pitch="65">
+            <name>Ride Bell</name>
+            <enote>53</enote>
+            <anote>53</anote>
+          </entry>
+          <entry pitch="66">
+            <name>Flat Ride Normal</name>
+            <enote>59</enote>
+            <anote>59</anote>
+          </entry>
+          <entry pitch="67">
+            <name>Flat Ride Crash</name>
+            <enote>55</enote>
+            <anote>55</anote>
+          </entry>
+          <entry pitch="68">
+            <name>Tambourine (VSCO2)</name>
+            <enote>54</enote>
+            <anote>54</anote>
+          </entry>
+          <entry pitch="69">
+            <name>Cowbell (VSCO2)</name>
+            <enote>56</enote>
+            <anote>56</anote>
+          </entry>
+          <entry pitch="70">
+            <name>Vibraslap (VSCO2)</name>
+            <enote>58</enote>
+            <anote>58</anote>
+          </entry>
+          <entry pitch="71">
+            <name>High Bongo (VSCO2)</name>
+            <enote>60</enote>
+            <anote>60</anote>
+          </entry>
+          <entry pitch="72">
+            <name>Low Bongo (VSCO2)</name>
+            <enote>61</enote>
+            <anote>61</anote>
+          </entry>
+          <entry pitch="73">
+            <name>Conga Muted (VSCO2)</name>
+            <enote>62</enote>
+            <anote>62</anote>
+          </entry>
+          <entry pitch="74">
+            <name>Conga Open (VSCO2)</name>
+            <enote>63</enote>
+            <anote>63</anote>
+          </entry>
+          <entry pitch="75">
+            <name>Tumba (VSCO2)</name>
+            <enote>64</enote>
+            <anote>64</anote>
+          </entry>
+          <entry pitch="76">
+            <name>High Timbale</name>
+            <enote>65</enote>
+            <anote>65</anote>
+          </entry>
+          <entry pitch="77">
+            <name>Low Timbale</name>
+            <enote>66</enote>
+            <anote>66</anote>
+          </entry>
+          <entry pitch="78">
+            <name>High Agogo Bell (VSCO2)</name>
+            <enote>67</enote>
+            <anote>67</anote>
+          </entry>
+          <entry pitch="79">
+            <name>Low Agogo Bell (VSCO2)</name>
+            <enote>68</enote>
+            <anote>68</anote>
+          </entry>
+          <entry pitch="80">
+            <name>Cabasa (VSCO2)</name>
+            <enote>69</enote>
+            <anote>69</anote>
+          </entry>
+          <entry pitch="81">
+            <name>Large Shaker</name>
+            <enote>70</enote>
+            <anote>70</anote>
+          </entry>
+          <entry pitch="82">
+            <name>Whistle Short (VSCO2)</name>
+            <enote>71</enote>
+            <anote>71</anote>
+          </entry>
+          <entry pitch="83">
+            <name>Whistle Long (VSCO2)</name>
+            <enote>72</enote>
+            <anote>72</anote>
+          </entry>
+          <entry pitch="84">
+            <name>Guiro Slow (VSCO2)</name>
+            <enote>73</enote>
+            <anote>73</anote>
+          </entry>
+          <entry pitch="85">
+            <name>Guiro Fast (VSCO2)</name>
+            <enote>74</enote>
+            <anote>74</anote>
+          </entry>
+          <entry pitch="86">
+            <name>Claves (VSCO2)</name>
+            <enote>75</enote>
+            <anote>75</anote>
+          </entry>
+          <entry pitch="87">
+            <name>High Woodblock</name>
+            <enote>76</enote>
+            <anote>76</anote>
+          </entry>
+          <entry pitch="88">
+            <name>Low Woodblock</name>
+            <enote>77</enote>
+            <anote>77</anote>
+          </entry>
+          <entry pitch="89">
+            <name>Mute Cuica</name>
+            <enote>78</enote>
+            <anote>78</anote>
+          </entry>
+          <entry pitch="90">
+            <name>open Cuica</name>
+            <enote>79</enote>
+            <anote>79</anote>
+          </entry>
+          <entry pitch="91">
+            <name>Mute Triangle (VSCO2)</name>
+            <enote>80</enote>
+            <anote>80</anote>
+          </entry>
+          <entry pitch="92">
+            <name>Open Triangle (VSCO2)</name>
+            <enote>81</enote>
+            <anote>81</anote>
+          </entry>
+          <entry pitch="93">
+            <name>Shaker (VSCO2)</name>
+            <enote>82</enote>
+            <anote>82</anote>
+          </entry>
+          <entry pitch="94">
+            <name>Sleigh Bell (VSCO2)</name>
+            <enote>83</enote>
+            <anote>83</anote>
+          </entry>
+          <entry pitch="95">
+            <name>Belltree (VSCO2)</name>
+            <enote>84</enote>
+            <anote>84</anote>
+          </entry>
+          <entry pitch="96">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="97">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="98">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="99">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="100">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="101">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="102">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="103">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="104">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="105">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="106">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="107">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="108">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="109">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="110">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="111">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="112">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="113">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="114">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="115">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="116">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="117">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="118">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="119">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="120">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="121">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="122">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="123">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="124">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="125">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="126">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="127">
+            <hide>1</hide>
+          </entry>
+          </drummap>
+       </entry>
+       <entry>
+        <patch_collection prog="2" />
+         <drummap>
+          <entry pitch="0">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="1">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="2">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="3">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="4">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="5">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="6">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="7">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="8">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="9">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="10">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="11">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="12">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="13">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="14">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="15">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="16">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="17">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="18">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="19">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="20">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="21">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="22">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="23">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="24">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="25">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="26">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="27">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="28">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="29">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="30">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="31">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="32">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="33">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="34">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="35">
+            <name>Kick Alternate</name>
+            <enote>35</enote>
+            <anote>35</anote>
+          </entry>
+          <entry pitch="36">
+            <name>Kick Primary</name>
+            <enote>36</enote>
+            <anote>36</anote>
+          </entry>
+          <entry pitch="37">
+            <name>Snare Stick</name>
+            <enote>37</enote>
+            <anote>37</anote>
+          </entry>
+          <entry pitch="38">
+            <name>Snare Stick Alternate</name>
+            <enote>85</enote>
+            <anote>85</anote>
+          </entry>
+          <entry pitch="39">
+            <name>Snare Cross Stick</name>
+            <enote>88</enote>
+            <anote>88</anote>
+          </entry>
+          <entry pitch="40">
+            <name>Snare Center</name>
+            <enote>38</enote>
+            <anote>38</anote>
+          </entry>
+          <entry pitch="41">
+            <name>Snare Off-center</name>
+            <enote>39</enote>
+            <anote>39</anote>
+          </entry>
+          <entry pitch="42">
+            <name>Snare Rimshot</name>
+            <enote>40</enote>
+            <anote>40</anote>
+          </entry>
+          <entry pitch="43">
+            <name>Snare Muted</name>
+            <enote>86</enote>
+            <anote>86</anote>
+          </entry>
+          <entry pitch="44">
+            <name>Snare Half Muted</name>
+            <enote>87</enote>
+            <anote>87</anote>
+          </entry>
+          <entry pitch="45">
+            <name>Snare Buzz</name>
+            <enote>93</enote>
+            <anote>93</anote>
+          </entry>
+          <entry pitch="46">
+            <name>Flam</name>
+            <enote>95</enote>
+            <anote>95</anote>
+          </entry>
+          <entry pitch="47">
+            <name>Snare Roll (CC1 Mod)</name>
+            <enote>96</enote>
+            <anote>96</anote>
+          </entry>
+          <entry pitch="48">
+            <name>Low Tom Center</name>
+            <enote>41</enote>
+            <anote>41</anote>
+          </entry>
+          <entry pitch="49">
+            <name>Low Tom Off-center</name>
+            <enote>43</enote>
+            <anote>43</anote>
+          </entry>
+          <entry pitch="50">
+            <name>Low Tom Rimshot</name>
+            <enote>45</enote>
+            <anote>45</anote>
+          </entry>
+          <entry pitch="51">
+            <name>Low Tom Cross Stick</name>
+            <enote>47</enote>
+            <anote>47</anote>
+          </entry>
+          <entry pitch="52">
+            <name>Low Tom Muted</name>
+            <enote>89</enote>
+            <anote>89</anote>
+          </entry>
+          <entry pitch="53">
+            <name>Low Tom Half Muted</name>
+            <enote>91</enote>
+            <anote>91</anote>
+          </entry>
+          <entry pitch="54">
+            <name>High Tom Center</name>
+            <enote>48</enote>
+            <anote>48</anote>
+          </entry>
+          <entry pitch="55">
+            <name>High Tom Off-center</name>
+            <enote>50</enote>
+            <anote>50</anote>
+          </entry>
+          <entry pitch="56">
+            <name>Hihat Closed</name>
+            <enote>42</enote>
+            <anote>42</anote>
+          </entry>
+          <entry pitch="57">
+            <name>Hihat Pedal</name>
+            <enote>44</enote>
+            <anote>44</anote>
+          </entry>
+          <entry pitch="58">
+            <name>Hihat Open (CC4)</name>
+            <enote>46</enote>
+            <anote>46</anote>
+          </entry>
+          <entry pitch="59">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="60">
+            <name>Hihat Splash</name>
+            <enote>92</enote>
+            <anote>92</anote>
+          </entry>
+          <entry pitch="61">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="62">
+            <name>Crash Normal</name>
+            <enote>49</enote>
+            <anote>49</anote>
+          </entry>
+          <entry pitch="63">
+            <name>Crash Sizzle</name>
+            <enote>57</enote>
+            <anote>57</anote>
+          </entry>
+          <entry pitch="64">
+            <name>Ride Normal</name>
+            <enote>51</enote>
+            <anote>51</anote>
+          </entry>
+          <entry pitch="65">
+            <name>Ride Bell</name>
+            <enote>53</enote>
+            <anote>53</anote>
+          </entry>
+          <entry pitch="66">
+            <name>Flat Ride Normal</name>
+            <enote>59</enote>
+            <anote>59</anote>
+          </entry>
+          <entry pitch="67">
+            <name>Flat Ride Crash</name>
+            <enote>55</enote>
+            <anote>55</anote>
+          </entry>
+          <entry pitch="68">
+            <name>Tambourine (VSCO2)</name>
+            <enote>54</enote>
+            <anote>54</anote>
+          </entry>
+          <entry pitch="69">
+            <name>Cowbell (VSCO2)</name>
+            <enote>56</enote>
+            <anote>56</anote>
+          </entry>
+          <entry pitch="70">
+            <name>Vibraslap (VSCO2)</name>
+            <enote>58</enote>
+            <anote>58</anote>
+          </entry>
+          <entry pitch="71">
+            <name>High Bongo (VSCO2)</name>
+            <enote>60</enote>
+            <anote>60</anote>
+          </entry>
+          <entry pitch="72">
+            <name>Low Bongo (VSCO2)</name>
+            <enote>61</enote>
+            <anote>61</anote>
+          </entry>
+          <entry pitch="73">
+            <name>Conga Muted (VSCO2)</name>
+            <enote>62</enote>
+            <anote>62</anote>
+          </entry>
+          <entry pitch="74">
+            <name>Conga Open (VSCO2)</name>
+            <enote>63</enote>
+            <anote>63</anote>
+          </entry>
+          <entry pitch="75">
+            <name>Tumba (VSCO2)</name>
+            <enote>64</enote>
+            <anote>64</anote>
+          </entry>
+          <entry pitch="76">
+            <name>High Timbale</name>
+            <enote>65</enote>
+            <anote>65</anote>
+          </entry>
+          <entry pitch="77">
+            <name>Low Timbale</name>
+            <enote>66</enote>
+            <anote>66</anote>
+          </entry>
+          <entry pitch="78">
+            <name>High Agogo Bell (VSCO2)</name>
+            <enote>67</enote>
+            <anote>67</anote>
+          </entry>
+          <entry pitch="79">
+            <name>Low Agogo Bell (VSCO2)</name>
+            <enote>68</enote>
+            <anote>68</anote>
+          </entry>
+          <entry pitch="80">
+            <name>Cabasa (VSCO2)</name>
+            <enote>69</enote>
+            <anote>69</anote>
+          </entry>
+          <entry pitch="81">
+            <name>Large Shaker</name>
+            <enote>70</enote>
+            <anote>70</anote>
+          </entry>
+          <entry pitch="82">
+            <name>Whistle Short (VSCO2)</name>
+            <enote>71</enote>
+            <anote>71</anote>
+          </entry>
+          <entry pitch="83">
+            <name>Whistle Long (VSCO2)</name>
+            <enote>72</enote>
+            <anote>72</anote>
+          </entry>
+          <entry pitch="84">
+            <name>Guiro Slow (VSCO2)</name>
+            <enote>73</enote>
+            <anote>73</anote>
+          </entry>
+          <entry pitch="85">
+            <name>Guiro Fast (VSCO2)</name>
+            <enote>74</enote>
+            <anote>74</anote>
+          </entry>
+          <entry pitch="86">
+            <name>Claves (VSCO2)</name>
+            <enote>75</enote>
+            <anote>75</anote>
+          </entry>
+          <entry pitch="87">
+            <name>High Woodblock</name>
+            <enote>76</enote>
+            <anote>76</anote>
+          </entry>
+          <entry pitch="88">
+            <name>Low Woodblock</name>
+            <enote>77</enote>
+            <anote>77</anote>
+          </entry>
+          <entry pitch="89">
+            <name>Mute Cuica</name>
+            <enote>78</enote>
+            <anote>78</anote>
+          </entry>
+          <entry pitch="90">
+            <name>open Cuica</name>
+            <enote>79</enote>
+            <anote>79</anote>
+          </entry>
+          <entry pitch="91">
+            <name>Mute Triangle (VSCO2)</name>
+            <enote>80</enote>
+            <anote>80</anote>
+          </entry>
+          <entry pitch="92">
+            <name>Open Triangle (VSCO2)</name>
+            <enote>81</enote>
+            <anote>81</anote>
+          </entry>
+          <entry pitch="93">
+            <name>Shaker (VSCO2)</name>
+            <enote>82</enote>
+            <anote>82</anote>
+          </entry>
+          <entry pitch="94">
+            <name>Sleigh Bell (VSCO2)</name>
+            <enote>83</enote>
+            <anote>83</anote>
+          </entry>
+          <entry pitch="95">
+            <name>Belltree (VSCO2)</name>
+            <enote>84</enote>
+            <anote>84</anote>
+          </entry>
+          <entry pitch="96">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="97">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="98">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="99">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="100">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="101">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="102">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="103">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="104">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="105">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="106">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="107">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="108">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="109">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="110">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="111">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="112">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="113">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="114">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="115">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="116">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="117">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="118">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="119">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="120">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="121">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="122">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="123">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="124">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="125">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="126">
+            <hide>1</hide>
+          </entry>
+          <entry pitch="127">
+            <hide>1</hide>
+          </entry>
+          </drummap>
+      </entry>
+    </Drummaps>
+  </MidiInstrument>
+</muse>

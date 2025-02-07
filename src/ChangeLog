@@ -1,3 +1,27 @@
+06.02.2025
+    - LV2: Fixed some plugins can't operate controls when there is automation, even in stop mode. (Tim)
+      Implemented missing LV2 UI Touch extension.
+      Also added missing lines to disable automation when control changed, in lv2state_PortWrite().
+02.12.2024
+    - Merge PR 1293: Force the use of in-window menu. (Tim)
+      Fixes usage of KDE Global Menu applet, possibly Mac/Unity as well, missing menus.
+      Simply set attribute Qt::AA_DontUseNativeMenuBar. Thanks to user Icenowy for the work.
+17.10.2024
+    - Fix issue 1287: Focus doesn't return to arranger window when pianoroll closed. (Tim)
+      In MusE::toplevelDeleting(), call TopWin::focusCanvas() to direct focus to the canvas.
+16.10.2024
+    - Event List Editor: Fixed cannot open multiple parts. (Tim)
+      Thanks to forum user 'enaiel' for spotting that.
+    - Fixed Roland INTEGRA-7.idf file XML errors (added 13.05.2024).
+30.09.2024
+    - Track list context menu audio controller 'midi assign': Fixed cannot assign to song.
+      Oops, broken at 10.07.2022
+13.05.2024
+    - Added instrument file for the Roland INTEGRA-7 sound module, made by Cookston (rj)
+26.04.2024
+    - Fix issue 1104: Fixed update of UI element for globalPitchShift upon loading song (rj)
+11.12.2023
+    - Shortcuts: Forum request: Added editor scroll up/down, fast up/down + left/right. (Tim)
 25.09.2023
     - LV2: Streamline discovery. Eliminate duplicate load_world and load_all_plugins. (Tim)
       This might make only slightly faster startup time. But code is more proper now.

@@ -836,6 +836,7 @@ int main(int argc, char* argv[])
           MusEGlobal::config.startSong = "";
         }
 
+	app.instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, true);
         app.instance()->setAttribute(Qt::AA_DontShowIconsInMenus, !MusEGlobal::config.showIconsInMenus);
         app.instance()->setAttribute(Qt::AA_DontUseNativeDialogs, !MusEGlobal::config.useNativeStandardDialogs);
 

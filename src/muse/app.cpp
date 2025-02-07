@@ -3368,8 +3368,6 @@ void MusE::startListEditor(bool newwin)
 
 void MusE::startListEditor(MusECore::PartList* pl, bool newwin)
 {
-    pl->erase(++pl->begin(), pl->end());
-
     if (!newwin && findOpenListEditor(pl))
         return;
 
@@ -3415,6 +3413,10 @@ MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
             && QGuiApplication::keyboardModifiers() & Qt::AltModifier)
         return nullptr;
 
+    const unsigned int pl_sz = pl->size();
+    if(pl_sz == 0)
+        return nullptr;
+
     for (const auto& d : findChildren<QDockWidget*>()) {
         if (strcmp(d->widget()->metaObject()->className(), "MusEGui::ListEdit") != 0)
             continue;
@@ -3422,8 +3424,20 @@ MusEGui::ListEdit* MusE::findOpenListEditor(MusECore::PartList* pl) {
         MusEGui::ListEdit* le = static_cast<MusEGui::ListEdit*>(d->widget());
         const MusECore::PartList* pl_tmp = le->parts();
 
-        if (pl->begin()->second->uuid() != pl_tmp->begin()->second->uuid())
-            continue;
+        MusECore::ciPart ip = pl->cbegin();
+        for(; ip != pl->cend(); ++ip)
+        {
+          MusECore::ciPart ip_tmp = pl_tmp->cbegin();
+          for(; ip_tmp != pl_tmp->cend(); ++ip_tmp)
+          {
+            if(ip_tmp->second->uuid() == ip->second->uuid())
+              break;
+          }
+          if(ip_tmp == pl_tmp->cend())
+            break;
+        }
+        if(ip != pl->cend())
+          continue;
 
         if (!d->isVisible())
             toggleDocksAction->setChecked(true);
@@ -3713,6 +3727,11 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                             fprintf(stderr, "bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toLocal8Bit().data());
 
                         bringToFront((*lit)->widget());
+
+                        // If the TopWin has a canvas and a focusCanvas(), call it to focus the canvas.
+                        TopWin* tw = dynamic_cast<TopWin*>( (*lit)->widget());
+                        if(tw)
+                          tw->focusCanvas();
 
                         break;
                     }

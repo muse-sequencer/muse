@@ -592,8 +592,17 @@
     <Controller name="AttackTime" l="73" />
     <Controller name="Brightness" l="74" />
     <Controller name="PortamentoControl" l="84" />
-    <Controller name="Effect1Depth" l="91" />
-    <Controller name="Effect3Depth" l="93" />
+    <Controller name="Effect1Depth (Reverb)" l="91" />
+    <Controller name="Effect3Depth (Chorus)" l="93" />
+    <Controller name="Data Increment" l="96" />
+    <Controller name="Data Decrement" l="97" />
+    <Controller name="All Sounds Off" l="120" />
+    <Controller name="Reset All Controllers" l="121" />
+    <Controller name="Reset Notes Off" l="123" />
+    <Controller name="Omni Off" l="124" />
+    <Controller name="Omni On" l="125" />
+    <Controller name="Mono On" l="126" />
+    <Controller name="Poly On" l="127" />
     <Controller name="VariationSend" l="94" init="0" />
     <Controller name="PitchBendSensitivity" type="RPN" h="0" l="0" max="24" init="2" />
     <Controller name="FineTuning" type="RPN" h="0" l="1" min="-64" max="63" init="0" />

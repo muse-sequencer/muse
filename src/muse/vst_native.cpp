@@ -2198,51 +2198,19 @@ void VstNativeSynthIF::setParameter(unsigned long idx, double value)
 
 void VstNativeSynth::guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx)
 {
-   //_gw[param_idx].pressed = true; //not used
    AudioTrack* t = userData->sif ? userData->sif->track() : userData->pstate->pluginI->track();
    int plug_id = userData->sif ? userData->sif->id() : userData->pstate->pluginI->id();
    if(t && plug_id != -1)
    {
       plug_id = genACnum(plug_id, param_idx);
-
-      //if(params[param].type == GuiParam::GUI_SLIDER)
-      //{
-      //double val = ((Slider*)params[param].actuator)->value();
       float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
-      // FIXME TODO:
-      //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-      //      val = pow(10.0, val/20.0);
-      //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-      //      val = rint(val);
-      //plugin->setParam(param, val);
-      //((DoubleLabel*)params[param].label)->setValue(val);
-
-      //if(t)
-      //{
       t->startAutoRecord(plug_id, val);
       t->setPluginCtrlVal(plug_id, val);
-      //}
-      //}
-      //   else if(params[param].type == GuiParam::GUI_SWITCH)
-      //   {
-      //     float val = (float)((CheckBox*)params[param].actuator)->isChecked();
-      //     plugin->setParam(param, val);
-      //
-      //     //if(t)
-      //     //{
-      //       t->startAutoRecord(plug_id, val);
-      //       t->setPluginCtrlVal(plug_id, val);
-      //     //}
-      //   }
    }
    if(userData->sif)
-   {
       userData->sif->enableController(param_idx, false);
-   }
    else
-   {
       userData->pstate->pluginI->enableController(param_idx, false);
-   }
 }
 
 //---------------------------------------------------------
@@ -2260,36 +2228,18 @@ void VstNativeSynth::guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned
    if(t && plug_id != -1)
    {
       plug_id = genACnum(plug_id, param_idx);
-
-      //if(params[param].type == GuiParam::GUI_SLIDER)
-      //{
-      //double val = ((Slider*)params[param].actuator)->value();
       float val = userData->sif ? userData->sif->param(param_idx) : userData->pstate->pluginI->param(param_idx);
-      // FIXME TODO:
-      //if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-      //      val = pow(10.0, val/20.0);
-      //else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
-      //      val = rint(val);
       t->stopAutoRecord(plug_id, val);
-      //}
    }
 
-   // Special for switch - don't enable controller until transport stopped.
-   if ((at == AUTO_OFF) ||
-       (at == AUTO_TOUCH)) // && (params[param].type != GuiParam::GUI_SWITCH ||  // FIXME TODO
-      //   !MusEGlobal::audio->isPlaying()) ) )
+   if ((at == AUTO_OFF) || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
+       (at == AUTO_TOUCH))
    {
       if(userData->sif)
-      {
          userData->sif->enableController(param_idx, true);
-      }
       else
-      {
          userData->pstate->pluginI->enableController(param_idx, true);
-      }
    }
-
-   //_gw[param_idx].pressed = false; //not used
 }
 
 //---------------------------------------------------------
@@ -2321,7 +2271,8 @@ int VstNativeSynth::guiControlChanged(VstNativeSynthOrPlugin *userData, unsigned
       }
       else
       {
-         userData->pstate->pluginI->track()->recordAutomation(pid, value);
+         if(userData->pstate->pluginI->track())
+           userData->pstate->pluginI->track()->recordAutomation(pid, value);
       }
    }
 
