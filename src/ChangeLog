@@ -1,3 +1,7 @@
+06.02.2025
+    - LV2: Fixed some plugins can't operate controls when there is automation, even in stop mode. (Tim)
+      Implemented missing LV2 UI Touch extension.
+      Also added missing lines to disable automation when control changed, in lv2state_PortWrite().
 02.12.2024
     - Merge PR 1293: Force the use of in-window menu. (Tim)
       Fixes usage of KDE Global Menu applet, possibly Mac/Unity as well, missing menus.

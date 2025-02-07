@@ -378,6 +378,7 @@ private:
     uint32_t _fWrkSchedule;
     uint32_t _fUiResize;
     uint32_t _fUiRequestValue;
+    uint32_t _fUiTouch;
     uint32_t _fPrgHost;
 #ifdef MIDNAM_SUPPORT
     uint32_t _fMidNamUpdate;
@@ -680,6 +681,7 @@ struct LV2PluginWrapper_State {
     const LilvUI *uiCurrent;    
     LV2UI_Resize uiResize;
     LV2UI_Request_Value uiRequestValue;
+    LV2UI_Touch uiTouch;
     QSize uiX11Size;
     LV2PluginWrapper_Window *pluginWindow;
     QWindow *pluginQWindow;

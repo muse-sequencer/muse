@@ -1959,6 +1959,7 @@ LV2_Feature lv2Features [] =
    {LV2_F_UI_IDLE, nullptr},
    {LV2_F_OPTIONS, nullptr},
    {LV2_UI__resize, nullptr},
+   {LV2_UI__touch, nullptr},
    {LV2_UI__requestValue, nullptr},
    {LV2_F_SUPPORTS_STRICT_BOUNDS, nullptr},
    {LV2_PROGRAMS__Host, nullptr},

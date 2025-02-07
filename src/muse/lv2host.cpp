@@ -385,6 +385,7 @@ LV2_Feature lv2Features [] =
     {LV2_F_OPTIONS, nullptr},
     {LV2_UI__resize, nullptr},
     {LV2_UI__requestValue, nullptr},
+    {LV2_UI__touch, nullptr},
     {LV2_F_SUPPORTS_STRICT_BOUNDS, nullptr},
     {LV2_PROGRAMS__Host, nullptr},
 #ifdef MIDNAM_SUPPORT
@@ -1092,14 +1093,61 @@ void LV2Synth::lv2ui_PortWrite(LV2UI_Controller controller, uint32_t port_index,
     LV2Synth::lv2state_PortWrite(controller, port_index, buffer_size, protocol, buffer, true);
 }
 
-void LV2Synth::lv2ui_Touch(LV2UI_Controller /*controller*/, uint32_t /*port_index*/, bool grabbed __attribute__ ((unused)))
+void LV2Synth::lv2ui_Touch(LV2UI_Controller controller, uint32_t port_index, bool grabbed)
 {
+    LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)controller;
+
+    assert(state != nullptr); //this shouldn't happen
+    assert(state->inst != nullptr || state->sif != nullptr); // this too
+
+    std::map<uint32_t, uint32_t>::iterator it = state->synth->_idxToControlMap.find(port_index);
+
+    if(it == state->synth->_idxToControlMap.end())
+    {
 #ifdef DEBUG_LV2
-    std::cerr << "LV2Synth::lv2ui_UiTouch: port: %u " << (grabbed ? "grabbed" : "released") << std::endl;
+        std::cerr << "LV2Synth::lv2ui_Touch: wrong port index (" << port_index << ")" << std::endl;
 #endif
+        return;
+    }
 
+    uint32_t cport = it->second;
+
+   AutomationType at = AUTO_OFF;
+   AudioTrack* t = state->sif ? state->sif->track() : state->plugInst->track();
+   int plug_id = state->sif ? state->sif->id() : state->plugInst->id();
+   if(t)
+      at = t->automationType();
+
+   if(t && plug_id != -1)
+   {
+      plug_id = genACnum(plug_id, cport);
+      float val = state->sif ? state->sif->param(cport) : state->plugInst->param(cport);
+      if(grabbed)
+      {
+        t->startAutoRecord(plug_id, val);
+        t->setPluginCtrlVal(plug_id, val);
+      }
+      else
+      {
+        t->stopAutoRecord(plug_id, val);
+      }
+   }
+
+   if (grabbed || (at == AUTO_OFF) || (at == MusECore::AUTO_READ && MusEGlobal::audio->isPlaying()) ||
+       (at == AUTO_TOUCH))
+   {
+      if(state->inst != nullptr)
+      {
+          state->plugInst->enableController(cport, !grabbed);
+      }
+      else if(state->sif != nullptr)
+      {
+          state->sif->enableController(cport, !grabbed);
+      }
+   }
+
+   //state->controlTimers [cport] = 1000 / 30; //  1 sec controllers will not be send to guis
 }
-
 
 
 
@@ -1159,6 +1207,10 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
         else if(i == synth->_fUiRequestValue)
         {
             _ifeatures [i].data = &state->uiRequestValue;
+        }
+        else if(i == synth->_fUiTouch)
+        {
+            _ifeatures [i].data = &state->uiTouch;
         }
         else if(i == synth->_fPrgHost)
         {
@@ -2914,7 +2966,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
                 //at = state->plugInst->_track->automationType();
             }
 
-            //state->plugInst->enableController(cport, false);
+            state->plugInst->enableController(cport, false);
         }
     }
     else if(state->sif != nullptr)
@@ -2934,7 +2986,7 @@ void LV2Synth::lv2state_PortWrite(LV2UI_Controller controller, uint32_t port_ind
                 state->sif->synthI()->recordAutomation(pid, value);
             }
 
-            //state->sif->enableController(cport, false);
+            state->sif->enableController(cport, false);
         }
     }
 
@@ -3329,6 +3381,10 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
         else if((std::string(LV2_UI__requestValue) == _features [i].URI))
         {
             _fUiRequestValue = i;
+        }
+        else if((std::string(LV2_UI__touch) == _features [i].URI))
+        {
+            _fUiTouch = i;
         }
         else if((std::string(LV2_PROGRAMS__Host) == _features [i].URI))
         {
@@ -6488,6 +6544,9 @@ LV2PluginWrapper_State::LV2PluginWrapper_State():
       uiResize.ui_resize = LV2Synth::lv2ui_Resize;
       uiRequestValue.handle = (LV2UI_Feature_Handle)this;
       uiRequestValue.request = LV2Synth::lv2ui_Request_Value;
+
+      uiTouch.handle = (LV2UI_Feature_Handle)this;
+      uiTouch.touch = LV2Synth::lv2ui_Touch;
 
       prgHost.handle = (LV2_Programs_Handle)this;
       prgHost.program_changed = LV2SynthIF::lv2prg_Changed;
