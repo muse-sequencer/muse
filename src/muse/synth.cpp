@@ -2242,7 +2242,10 @@ void SynthI::write(int level, Xml& xml, XmlWriteStatistics*) const
       AudioTrack::writeProperties(level, xml);
 
       PluginConfiguration pc = getConfiguration();
-      pc.writeProperties(level, xml, false, false, this);
+//       pc.writeProperties(level, xml, false, false, this);
+      // Write the plugin. Also write the automation controllers and midi mapping
+      //  and strip away the rack position id bits.
+      pc.writeProperties(level, xml, true, false, this);
 
       if(openFlags() != 1)
         xml.intTag(level, "openFlags", openFlags());
