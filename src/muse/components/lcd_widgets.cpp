@@ -48,6 +48,9 @@
 // For debugging output: Uncomment the fprintf section.
 #define DEBUG_LCD_WIDGETS(dev, format, args...) // fprintf(dev, format, ##args);
 
+#define WHEEL_PIXEL_DELTA   120
+#define WHEEL_ANGLE_DELTA   15
+
 namespace MusEGui {
 
 LCDPainter::LCDPainter()
@@ -1089,9 +1092,9 @@ void LCDPatchEdit::wheelEvent(QWheelEvent* e)
   const QPoint angleDegrees = e->angleDelta() / 8;
   int delta = 0;
   if(!pixelDelta.isNull())
-    delta = pixelDelta.y();
+    delta = pixelDelta.y() / WHEEL_PIXEL_DELTA;
   else if(!angleDegrees.isNull())
-    delta = angleDegrees.y() / 15;
+    delta = angleDegrees.y() / WHEEL_ANGLE_DELTA;
   else
   {
     e->accept();

@@ -1938,7 +1938,7 @@ void DList::wheelEvent(QWheelEvent* ev)
   const QPoint angleDegrees = ev->angleDelta() / 8;
   int delta = 0;
   if(!pixelDelta.isNull())
-    delta = pixelDelta.y();
+    delta = pixelDelta.y() / 120;
   else if(!angleDegrees.isNull())
     delta = angleDegrees.y() / 15;
   else
