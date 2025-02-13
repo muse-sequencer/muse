@@ -756,12 +756,6 @@
     <Patch name="700 SFX SET 2" lbank="0" hbank="120" prog="61"  drum="1" />
 </PatchGroup>
 
-  <Drummaps>
-      <entry>
-        <patch_collection lbank="126" prog="1" />
-        <drummap>
 
-
-    </Drummaps>
   </MidiInstrument>
 </muse>
