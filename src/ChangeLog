@@ -1,3 +1,6 @@
+13.02.2025
+    - Arranger: Fixed loading song with mixer strip disabled. Blank splitter was still appearing. (Tim)
+      Added showTrackInfo() to Arranger::readStatus(). Tested OK.
 10.02.2025
     - Fixed: Midi strip 'LCD' seven-segment patch number readouts not mouse-wheeling properly. (Tim)
       Somehow LCDPatchEdit::wheelEvent() got changed several years ago. Fixed.

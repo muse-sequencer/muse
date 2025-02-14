@@ -1008,6 +1008,7 @@ void Arranger::readStatus(MusECore::Xml& xml)
                   case MusECore::Xml::TagEnd:
                         if (tag == "arranger") {
                               setRasterVal(rast);
+                              showTrackInfo(showTrackinfoFlag);
                               return;
                               }
                   default:
