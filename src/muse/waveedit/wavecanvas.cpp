@@ -750,6 +750,8 @@ QPoint WaveCanvas::raster(const QPoint& p) const
 
 #define WHEEL_STEPSIZE 50
 #define WHEEL_DELTA   120
+#define WHEEL_ANGLE_DELTA   15
+
 //---------------------------------------------------------
 //   wheelEvent
 //---------------------------------------------------------
@@ -766,7 +768,7 @@ void WaveCanvas::wheelEvent(QWheelEvent* ev)
   if(!pixelDelta.isNull())
       delta = pixelDelta.y();
   else if(!angleDegrees.isNull())
-      delta = angleDegrees.y() / 15;
+      delta = angleDegrees.y() / WHEEL_ANGLE_DELTA;
   else
     return;
 
