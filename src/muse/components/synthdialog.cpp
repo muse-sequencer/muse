@@ -537,7 +537,6 @@ void SynthDialog::fillSynths()
           case MusEPlugin::PluginTypeMETRONOME:
           case MusEPlugin::PluginTypeNone:
           case MusEPlugin::PluginTypeUnknown:
-          case MusEPlugin::PluginTypeAll:
             continue;
           break;
         }

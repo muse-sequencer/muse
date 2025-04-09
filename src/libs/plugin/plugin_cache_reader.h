@@ -72,11 +72,11 @@ MusEPlugin::PluginType pluginCacheFileExists(
 );
 
 // Returns plugin type true if the cache file(s) for the given type(s) exist.
-MusEPlugin::PluginType_t pluginCacheFilesExist(
+MusEPlugin::PluginTypes_t pluginCacheFilesExist(
   // Path to the cache file directory (eg. config path + /scanner).
   const QString& path,
   // The types of plugin caches to check.
-  MusEPlugin::PluginType_t types = MusEPlugin::PluginTypeAll
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll
 );
 
 // Return true on error
@@ -113,7 +113,7 @@ bool readPluginCacheFiles(
   // Whether to read port value enumeration information.
   bool readEnums = false,
   // The types of plugin cache files to read.
-  MusEPlugin::PluginType_t types = MusEPlugin::PluginTypeAll);
+  MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll);
 
 
 } // namespace MusEPlugin

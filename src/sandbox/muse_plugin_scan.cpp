@@ -72,7 +72,7 @@ namespace MusEPluginScan {
 //    Returns true on success
 //---------------------------------------------------------
 
-static bool loadPluginLib(MusEPlugin::PluginType_t types,
+static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
                           const char* filename, const char* outfilename, bool do_ports)
 {
   DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: filename:%s\n", filename);
@@ -299,13 +299,13 @@ int main(int argc, char* argv[])
       bool do_ports = false;
       const char* filename = 0;
       const char* outfilename = 0;
-      MusEPlugin::PluginType_t types = MusEPlugin::PluginTypeAll;
+      MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypesAll;
       int c;
       while ((c = getopt(argc, argv, "f:t:o:p")) != EOF) {
             switch (c) {
                   case 'f': filename = optarg; break;
                   case 'o': outfilename = optarg; break;
-                  case 't': types = MusEPlugin::PluginType_t(atoi(optarg)); break;
+                  case 't': types = MusEPlugin::PluginTypes_t(atoi(optarg)); break;
                   case 'p': do_ports = true; break;
                   default:  std::fprintf(stderr, "%s: -t <types flags> -f <filename> -o <output filename> -p (scan plugin ports)\n",
                               argv[0]);  return -1;

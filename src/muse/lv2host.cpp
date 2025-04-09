@@ -858,7 +858,6 @@ void initLV2()
         case MusEPlugin::PluginTypeMESS:
         case MusEPlugin::PluginTypeUnknown:
         case MusEPlugin::PluginTypeNone:
-        case MusEPlugin::PluginTypeAll:
             break;
         }
     }

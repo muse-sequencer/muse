@@ -362,7 +362,7 @@ class PluginList : public std::list<Plugin *> {
 //       Plugin* find(const QString& file, const QString& uri, const QString& label) const;
       // If uri is not empty, file and label are ignored.
       Plugin* find(
-        MusEPlugin::PluginType type, const QString& file,
+        MusEPlugin::PluginTypes_t types, const QString& file,
         const QString& uri, const QString& label) const;
       PluginList();
       };
@@ -564,10 +564,10 @@ public:
   // Initial, and running, string parameters for plugins which use them, like dssi.
   StringParamMap _stringParamMap;
 
-  // Optional automation controller list. Used for drag-copy.
+  // Optional automation controller list.
   CtrlListList _ctrlListList;
 
-  // Optional midi assignment list. Used for drag-copy.
+  // Optional midi assignment list.
   MidiAudioCtrlMap _midiAudioCtrlMap;
 
   PluginConfiguration();
@@ -590,9 +590,10 @@ public:
   // // Returns true on error.
   // bool writeControls(int level, Xml& xml) const;
 
-  void writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName, const Track *track = nullptr) const;
+  void writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName) const;
+//   void writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName, const Track *track = nullptr) const;
 
-  // Handles tag values and attributes. Returns true if the tag was handled, false if not.
+  // Handles tag values and attributes. Returns true if the tag or attribute was handled, false if not.
   bool readProperties(Xml&, const Xml::Token& token);
 };
 
@@ -604,7 +605,7 @@ public:
 
 struct MissingPluginStruct
 {
-  //Synth::Type _type;
+  MusEPlugin::PluginType _type;
   //QString _class;
   QString _file;
   QString _uri;
@@ -624,9 +625,10 @@ class MissingPluginList : public std::vector<MissingPluginStruct>
   public:
     // Each argument optional, can be empty.
     // If uri is not empty, the search is based solely on it, the other arguments are ignored.
-    iterator find(const QString& file, const QString& uri, const QString& label);
+    iterator find(MusEPlugin::PluginTypes_t types, const QString& file, const QString& uri, const QString& label);
     // Returns the fake instance number.
-    MissingPluginStruct& add(const QString& file, const QString& uri, const QString& label, bool isSynth /* vs. rack effect */);
+    MissingPluginStruct& add(MusEPlugin::PluginType type,
+      const QString& file, const QString& uri, const QString& label, bool isSynth /* vs. rack effect */);
 };
 //typedef std::vector<MissingPluginStruct>::iterator iMissingPluginList;
 //typedef std::vector<MissingPluginStruct>::const_iterator ciMissingPluginList;
@@ -972,7 +974,14 @@ class PluginI : public PluginIBase {
       //        is supposed to be inside the custom data.
       void configure(ConfigureOptions_t);
       // Returns a plugin configuration structure filled with the current state of the plugin.
+      // Note this does NOT include the controllers or midi assignments members. They should
+      //  be obtained separately by the caller.
       PluginConfiguration getConfiguration() const;
+//       // Returns a plugin configuration structure filled with the current state of the plugin.
+//       // If addControllers is true, includes a list of pointers to existing relevant audio controllers.
+//       // If addMidiAssigns is true, includes a list of midi assignments to relevant audio controllers.
+//       // There are some situations where they might be unwanted here and perhaps handled separately.
+//       PluginConfiguration getConfiguration(bool addControllers = false, bool addMidiAssigns = false) const;
       // If isCopy is true, writes additional info including automation controllers and midi assignments.
       void writeConfiguration(int level, Xml& xml, bool isCopy = false);
 // REMOVE Tim. tmp. Changed.

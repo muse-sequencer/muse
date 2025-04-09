@@ -1049,13 +1049,25 @@ void Strip::changeTrackName()
   {
     if ((*i)->name() == newname)
     {
-      QMessageBox::critical(this,
-        tr("MusE: Bad Trackname"),
-        tr("Please choose a unique track name"),
-        QMessageBox::Ok,
-        Qt::NoButton,
-        Qt::NoButton);
-      return;
+// REMOVE Tim. tmp. Changed.
+//       QMessageBox::critical(this,
+//         tr("MusE: Bad Trackname"),
+//         tr("Please choose a unique track name"),
+//         QMessageBox::Ok,
+//         Qt::NoButton,
+//         Qt::NoButton);
+//       return;
+      // Strips can be embedded in the arranger, or part of the mixer. Choose the correct window parent.
+      QMessageBox msg(window());
+      msg.setWindowTitle(tr("MusE: bad trackname"));
+      msg.setText(tr("The track name is already used."));
+      msg.setInformativeText(tr("Do you really want to use the name again?"));
+      msg.setIcon(QMessageBox::Warning);
+      msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+      int ret = msg.exec();
+      if(ret != QMessageBox::Yes)
+        return;
+      break;
     }
   }
 

@@ -44,7 +44,7 @@ class MidiInstrument;
 class Track;
 class Part;
 // REMOVE Tim. tmp. Added.
-struct PluginConfiguration;
+class PluginConfiguration;
 class PluginI;
 
 extern std::list<QString> temporaryWavFiles; //!< Used for storing all tmp-files, for cleanup on shutdown

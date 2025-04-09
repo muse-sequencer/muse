@@ -447,7 +447,6 @@ void initVST_Native()
       case MusEPlugin::PluginTypeMETRONOME:
       case MusEPlugin::PluginTypeUnknown:
       case MusEPlugin::PluginTypeNone:
-      case MusEPlugin::PluginTypeAll:
       break;
     }
   }

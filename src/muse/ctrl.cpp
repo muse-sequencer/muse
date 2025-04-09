@@ -760,10 +760,10 @@ CtrlList::CtrlList(int id, bool dontShow)
       initColor(id);
       }
 
-CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow)
+CtrlList::CtrlList(int id, QString name, double min, double max, CtrlValueType v, double defaultVal, bool dontShow)
 {
       _id      = id;
-      _default = 0.0;
+      _default = defaultVal;
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
       _name    = name;

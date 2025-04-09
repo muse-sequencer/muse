@@ -306,13 +306,13 @@ AudioTrack::AudioTrack(TrackType t, int channels)
       _automationType = AUTO_OFF;
       setChannels(channels);
 
-      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG);
+      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG, 1.0);
       cl->setValueUnit(MusEGlobal::valueUnits.addSymbol("dB"));
       cl->setDisplayHint(CtrlList::DisplayLogDB);
       addController(cl);
 
-      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
-      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*don't show in arranger */));
+      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR, 0.0));
+      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, 0.0, true /*don't show in arranger */));
       _controlPorts = 3;
 
       _curVolume = 0.0;
@@ -348,13 +348,13 @@ AudioTrack::AudioTrack(const AudioTrack& t, int flags)
       _efxPipe        = new Pipeline();                 // Start off with a new pipeline.
       recFileNumber = 1;
 
-      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG);
+      CtrlList *cl = new CtrlList(AC_VOLUME,"Volume",0.0,3.16227766017 /* roughly 10 db */, VAL_LOG, 1.0);
       cl->setValueUnit(MusEGlobal::valueUnits.addSymbol("dB"));
       cl->setDisplayHint(CtrlList::DisplayLogDB);
       addController(cl);
 
-      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
-      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*don't show in arranger */));
+      addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR, 0.0));
+      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, 0.0, true /*don't show in arranger */));
       _controlPorts = 3;
 
       _curVolume = 0.0;
@@ -900,7 +900,9 @@ bool AudioTrack::addControllerFromXml(CtrlList* l)
         d->setDefault(l->getDefault());
         // Yes we want this one as well. The caller will either set it beforehand or will
         //  set it later in (or after) mapRackPluginsToControllers() for example.
-        d->setDontShow(l->dontShow());
+        // Special: If the destination controller's flag is already set, DO NOT upset it by resetting it.
+        if(l->dontShow())
+          d->setDontShow(true);
         // Done with the given controller. Delete it.
         delete l;
         l = d;
@@ -2303,6 +2305,13 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
 // REMOVE Tim. tmp. Added.
                 if(pi)
                 {
+                  PluginConfiguration &pic = pi->initialConfiguration();
+
+//                   // Is the plugin missing? Add it to the missing plugins list.
+//                   if(!pi->plugin())
+//                     MusEGlobal::missingPlugins.add(
+//                       pic._pluginType, pic._file, pic._uri, pic._pluginLabel, false);
+
 //                // For persistence:
 //                // If the error was for some other reason than no plugin being available,
 //                //  delete the PluginI and return.
@@ -2327,7 +2336,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                   //  convert controller IDs and transfer to given list.
                   // This is for song file versions >= 4
                   //---------------------------------------------------------
-                  CtrlListList &conf_cll = pi->initialConfiguration()._ctrlListList;
+                  CtrlListList &conf_cll = pic._ctrlListList;
                   for(ciCtrlList icl = conf_cll.cbegin(); icl != conf_cll.cend(); )
                   {
 //                     // Ignore controllers with IDs less than zero.
@@ -2373,7 +2382,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                   // This is for song file versions >= 4
                   //---------------------------------------------------------
                   MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
-                  MidiAudioCtrlMap &conf_macm = pi->initialConfiguration()._midiAudioCtrlMap;
+                  MidiAudioCtrlMap &conf_macm = pic._midiAudioCtrlMap;
                   if(macm)
                   {
                     for(iMidiAudioCtrlMap imacm = conf_macm.begin(); imacm != conf_macm.end(); )
@@ -2633,7 +2642,8 @@ void AudioTrack::mapRackPluginsToControllers()
     if(p->id() != idx)
       p->setID(idx);
 
-    int j = p->parameters();
+    // Get the number of parameters. If the plugin is missing, use the persistent information.
+    const int j = p->plugin() ? p->parameters() : p->initialConfiguration()._initParams.size();
 
 // REMOVE Tim. tmp. Changed.
 //     for(int i = 0; i < j; i++)

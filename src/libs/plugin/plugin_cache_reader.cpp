@@ -712,7 +712,6 @@ QStringList pluginGetDirectories(const QString& museGlobalLib, MusEPlugin::Plugi
     case MusEPlugin::PluginTypeMETRONOME:
     case MusEPlugin::PluginTypeUnknown:
     case MusEPlugin::PluginTypeNone:
-    case MusEPlugin::PluginTypeAll:
     break;
   }
   
@@ -761,7 +760,6 @@ const char* pluginCacheFilename(MusEPlugin::PluginType type)
     
     case MusEPlugin::PluginTypeMETRONOME:
     case MusEPlugin::PluginTypeNone:
-    case MusEPlugin::PluginTypeAll:
       return "";
     break;
   }
@@ -787,11 +785,11 @@ MusEPlugin::PluginType pluginCacheFileExists(
 //   pluginCacheFilesExist
 //---------------------------------------------------------
 
-MusEPlugin::PluginType_t pluginCacheFilesExist(
+MusEPlugin::PluginTypes_t pluginCacheFilesExist(
   const QString& path,
-  MusEPlugin::PluginType_t types)
+  MusEPlugin::PluginTypes_t types)
 {
-  MusEPlugin::PluginType_t res = MusEPlugin::PluginTypeNone;
+  MusEPlugin::PluginTypes_t res = MusEPlugin::PluginTypeNone;
   
   if(types & (MusEPlugin::PluginTypeDSSI | MusEPlugin::PluginTypeDSSIVST))
   {
@@ -876,7 +874,7 @@ bool readPluginCacheFiles(
   PluginScanList* list,
   bool readPorts,
   bool readEnums,
-  MusEPlugin::PluginType_t types)
+  MusEPlugin::PluginTypes_t types)
 {
   bool res = true;
   

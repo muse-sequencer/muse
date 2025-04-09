@@ -783,7 +783,6 @@ void PluginDialog::fillPlugs()
               case MusEPlugin::PluginTypeMESS:
               case MusEPlugin::PluginTypeMETRONOME:
               case MusEPlugin::PluginTypeVST:
-              case MusEPlugin::PluginTypeAll:
               case MusEPlugin::PluginTypeNone:
               case MusEPlugin::PluginTypeUnknown:
                 continue;

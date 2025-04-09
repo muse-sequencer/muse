@@ -6453,6 +6453,33 @@ None: Use only if high accuracy is needed for
     </message>
 </context>
 <context>
+    <name>MissingPluginsDialogBase</name>
+    <message>
+        <source>Missing plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The following plugins are required by the song but were not found on the system or could not load properly. They might need to be installed and the application restarted so they can be found.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation type="unfinished">Метка</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <source>File</source>
+        <translation type="unfinished">Файл</translation>
+    </message>
+    <message>
+        <source>URI</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MixdownFileDialogBase</name>
     <message>
         <source>MusE: Set Mixdown Wavefile</source>
@@ -8123,11 +8150,15 @@ To apply the changes, please restart MusE. Sorry.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>MusE: Bad Trackname</source>
+        <source>MusE: bad trackname</source>
+        <translation type="unfinished">MusE: неверное имя трека</translation>
+    </message>
+    <message>
+        <source>The track name is already used.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Please choose a unique track name</source>
+        <source>Do you really want to use the name again?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10191,6 +10222,11 @@ Double-click a slot to insert FX</source>
     </message>
     <message>
         <source>Drag-move from outside app not supported yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+PLUGIN IS UNAVAILABLE!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -14692,11 +14728,7 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>MusE: bad trackname</source>
-        <translation type="obsolete">MusE: неверное имя трека</translation>
-    </message>
-    <message>
-        <source>Please choose a unique track name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">MusE: неверное имя трека</translation>
     </message>
     <message>
         <source>Configuration</source>
@@ -14709,10 +14741,6 @@ the selected title is not unique</source>
     <message>
         <source>Track Name</source>
         <translation type="unfinished">Имя трека</translation>
-    </message>
-    <message>
-        <source>MusE: Bad Trackname</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Prefer Knobs, Not Sliders</source>
@@ -14748,6 +14776,14 @@ the selected title is not unique</source>
     </message>
     <message>
         <source>Hide Strip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The track name is already used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to use the name again?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -15002,10 +15038,6 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Please choose a unique track name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Clear automation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15151,6 +15183,14 @@ Flash: Waiting. Another client is master. Click to force.</source>
     </message>
     <message>
         <source>Operation not available while playing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The track name is already used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do you really want to use the name again?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -17899,6 +17939,10 @@ When open, may slow program slightly. This dialog is NOT shown.</source>
         <source>Description</source>
         <translation type="unfinished">Описание</translation>
     </message>
+    <message>
+        <source>Label</source>
+        <translation type="unfinished">Метка</translation>
+    </message>
 </context>
 <context>
     <name>TransposeBase</name>
@@ -19780,6 +19824,34 @@ Continue?</source>
     </message>
     <message>
         <source>Edit: Pull events from locator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Scroll right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Scroll left fast</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Scroll right fast</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Scroll up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Scroll down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Scroll up fast</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View: Scroll down fast</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

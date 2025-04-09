@@ -716,18 +716,36 @@ void TList::returnPressed()
                 MusECore::TrackList* tl = MusEGlobal::song->tracks();
                 for (MusECore::iTrack i = tl->begin(); i != tl->end(); ++i) {
                     if ((*i)->name() == editor->text()) {
-                        editTrack = nullptr;
+// REMOVE Tim. tmp. Changed.
+//                         editTrack = nullptr;
+//                         editor->blockSignals(true);
+//                         editor->hide();
+//                         editor->blockSignals(false);
+//                         QMessageBox::critical(this,
+//                                               tr("MusE: bad trackname"),
+//                                               tr("Please choose a unique track name"),
+//                                               QMessageBox::Ok,
+//                                               Qt::NoButton,
+//                                               Qt::NoButton);
+//                         setFocus();
+//                         return;
                         editor->blockSignals(true);
                         editor->hide();
                         editor->blockSignals(false);
-                        QMessageBox::critical(this,
-                                              tr("MusE: bad trackname"),
-                                              tr("Please choose a unique track name"),
-                                              QMessageBox::Ok,
-                                              Qt::NoButton,
-                                              Qt::NoButton);
-                        setFocus();
-                        return;
+                        QMessageBox msg(MusEGlobal::muse);
+                        msg.setWindowTitle(tr("MusE: bad trackname"));
+                        msg.setText(tr("The track name is already used."));
+                        msg.setInformativeText(tr("Do you really want to use the name again?"));
+                        msg.setIcon(QMessageBox::Warning);
+                        msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+                        int ret = msg.exec();
+                        if(ret != QMessageBox::Yes)
+                        {
+                          editTrack = nullptr;
+                          setFocus();
+                          return;
+                        }
+                        break;
                     }
                 }
 

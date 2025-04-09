@@ -1563,14 +1563,22 @@ void MusE::loadProjectFile(const QString& name)
 
 bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
-      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+// REMOVE Tim. tmp. Removed.
+//      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
       if(!progress)
-          progress = new QProgressDialog();
+          progress = new QProgressDialog(this);
 
       QString label = "Loading project " + QFileInfo(name).fileName();
       progress->setLabelText(label);
+// REMOVE Tim. tmp. Reinstated to test modailty.
+// REMOVE Tim. tmp. Changed.
 //       progress->setWindowModality(Qt::WindowModal); // REMOVE Tim. Persistent routes. Removed for version warning dialog to take priority. FIXME
+      // TESTED: ApplicationModal appears to be what we want.
+      //         The progress dialog always appears on top of all windows including mixers and plugin UIs.
+      //         And yet, when an incident dialog or message box appears during startup or song loading,
+      //          it appears on top of the progress dialog. Seems to be the solution.
+      progress->setWindowModality(Qt::ApplicationModal);
       progress->setCancelButton(nullptr);
       if (!songTemplate)
         progress->setMinimumDuration(0); // if we are loading a template it will probably be fast and we can wait before showing the dialog
@@ -1593,11 +1601,15 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
             }
       microSleep(100000);
       progress->setValue(10);
+// REMOVE Tim. tmp. Added raise.
+//      progress->raise();
       qApp->processEvents();
 
       bool loadOk = loadProjectFile1(name, songTemplate, doReadMidiPorts);
       microSleep(100000);
       progress->setValue(90);
+// REMOVE Tim. tmp. Added raise.
+//      progress->raise();
 
       qApp->processEvents();
 
@@ -1609,12 +1621,15 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 
       arrangerView->updateVisibleTracksButtons();
       progress->setValue(100);
+// REMOVE Tim. tmp. Added raise.
+//      progress->raise();
 
       qApp->processEvents();
       delete progress;
       progress = nullptr;
 
-      QApplication::restoreOverrideCursor();
+// REMOVE Tim. tmp. Removed.
+//      QApplication::restoreOverrideCursor();
 
       // Prompt and send init sequences.
       MusEGlobal::audio->msgInitMidiDevices(false);
@@ -1639,14 +1654,22 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
 
       _busyWithLoading = true;
 
-      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+// REMOVE Tim. tmp. Removed.
+//      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
       if(!progress)
-          progress = new QProgressDialog();
+          progress = new QProgressDialog(this);
 
       QString label = "Loading project " + QFileInfo(name).fileName();
       progress->setLabelText(label);
+// REMOVE Tim. tmp. Reinstated to test modality.
+// REMOVE Tim. tmp. Changed.
 //       progress->setWindowModality(Qt::WindowModal); // REMOVE Tim. Persistent routes. Removed for version warning dialog to take priority. FIXME
+      // TESTED: ApplicationModal appears to be what we want.
+      //         The progress dialog always appears on top of all windows including mixers and plugin UIs.
+      //         And yet, when an incident dialog or message box appears during startup or song loading,
+      //          it appears on top of the progress dialog. Seems to be the solution.
+      progress->setWindowModality(Qt::ApplicationModal);
       progress->setCancelButton(nullptr);
       if (!songTemplate)
         progress->setMinimumDuration(0); // if we are loading a template it will probably be fast and we can wait before showing the dialog
@@ -1671,6 +1694,8 @@ bool MusE::loadProjectFile(const QString& name, bool songTemplate, bool doReadMi
             }
       microSleep(100000);
       progress->setValue(10);
+// REMOVE Tim. tmp. Added raise.
+      // progress->raise();
       qApp->processEvents();
 
       const bool loadOk = loadProjectFile1(name, songTemplate, doReadMidiPorts);
@@ -1709,6 +1734,8 @@ bool MusE::finishLoadProjectFile(bool restartSequencer)
 
       microSleep(100000);
       progress->setValue(90);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
 
       qApp->processEvents();
 
@@ -1720,12 +1747,15 @@ bool MusE::finishLoadProjectFile(bool restartSequencer)
 
       arrangerView->updateVisibleTracksButtons();
       progress->setValue(100);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
 
       qApp->processEvents();
       delete progress;
       progress = nullptr;
 
-      QApplication::restoreOverrideCursor();
+// REMOVE Tim. tmp. Removed.
+//      QApplication::restoreOverrideCursor();
 
       // Prompt and send init sequences.
       MusEGlobal::audio->msgInitMidiDevices(false);
@@ -1766,6 +1796,8 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       MusEGlobal::recordAction->setChecked(false);
 
       progress->setValue(20);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       QFileInfo fi(name);
@@ -1774,7 +1806,8 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             if(!fi.isReadable()) {
                 QMessageBox::critical(this, QString("MusE"),
                     tr("Cannot read template"));
-                QApplication::restoreOverrideCursor();
+// REMOVE Tim. tmp. Removed.
+//                QApplication::restoreOverrideCursor();
                 return false;
                 }
             project.setFile(MusEGui::getUniqueUntitledName());
@@ -1957,6 +1990,8 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 
       MusEGlobal::song->dirty = false;
       progress->setValue(30);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       viewTransportAction->setChecked(MusEGlobal::config.transportVisible);
@@ -1997,6 +2032,8 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       showTransport(MusEGlobal::config.transportVisible);
 
       progress->setValue(40);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       transport->setMasterFlag(MusEGlobal::tempomap.masterFlag());
@@ -2011,6 +2048,8 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
       arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
       progress->setValue(50);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       // Moved here from above due to crash with a song loaded and then File->New.
@@ -2060,6 +2099,8 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
       MusEGlobal::recordAction->setChecked(false);
 
       progress->setValue(20);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       QFileInfo fi(name);
@@ -2068,7 +2109,8 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
             if(!fi.isReadable()) {
                 QMessageBox::critical(this, QString("MusE"),
                     tr("Cannot read template"));
-                QApplication::restoreOverrideCursor();
+// REMOVE Tim. tmp. Removed.
+//                QApplication::restoreOverrideCursor();
                 return false;
                 }
             project.setFile(MusEGui::getUniqueUntitledName());
@@ -2254,6 +2296,8 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
 
       MusEGlobal::song->dirty = false;
       progress->setValue(30);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       viewTransportAction->setChecked(MusEGlobal::config.transportVisible);
@@ -2294,6 +2338,8 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
       showTransport(MusEGlobal::config.transportVisible);
 
       progress->setValue(40);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       transport->setMasterFlag(MusEGlobal::tempomap.masterFlag());
@@ -2308,6 +2354,8 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
       arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
       progress->setValue(50);
+// REMOVE Tim. tmp. Added raise.
+//       progress->raise();
       qApp->processEvents();
 
       // Moved here from above due to crash with a song loaded and then File->New.
@@ -2714,7 +2762,8 @@ void MusE::quitDoc()
 
 void MusE::closeEvent(QCloseEvent* event)
 {
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+// REMOVE Tim. tmp. Removed.
+//    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     MusEGlobal::song->setStop(true);
     //
     // wait for sequencer
@@ -2733,7 +2782,8 @@ void MusE::closeEvent(QCloseEvent* event)
             {
                 setRestartingApp(false); // Cancel any restart.
                 event->ignore();
-                QApplication::restoreOverrideCursor();
+// REMOVE Tim. tmp. Removed.
+//                QApplication::restoreOverrideCursor();
                 return;
             }
         }
@@ -2741,7 +2791,8 @@ void MusE::closeEvent(QCloseEvent* event)
         {
             setRestartingApp(false); // Cancel any restart.
             event->ignore();
-            QApplication::restoreOverrideCursor();
+// REMOVE Tim. tmp. Removed.
+//            QApplication::restoreOverrideCursor();
             return;
         }
     }

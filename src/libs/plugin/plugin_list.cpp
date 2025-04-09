@@ -35,7 +35,7 @@ namespace MusEPlugin {
 PluginScanInfoRef PluginScanList::find(const PluginInfoString_t& file,
                                        const PluginInfoString_t& uri,
                                        const PluginInfoString_t& label,
-                                       MusEPlugin::PluginType_t types) const
+                                       MusEPlugin::PluginTypes_t types) const
 {
   const bool f_empty = PLUGIN_STRING_EMPTY(file);
   const bool u_empty = PLUGIN_STRING_EMPTY(uri);

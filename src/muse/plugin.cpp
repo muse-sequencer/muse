@@ -1170,10 +1170,12 @@ PluginConfiguration::PluginConfiguration()
   _fileVerMaj = _fileVerMin = -1;
   // Initialize with -1 = no id.
   _id = -1;
+  // The visible flags are false by default. Song file versions before 4 optimized this out.
   _guiVisible = false;
   _nativeGuiVisible = false;
-  _on = false;
-  _active = false;
+  // On and active are true by default. Song file versions before 4 optimized this out.
+  _on = true;
+  _active = true;
 }
 
 PluginConfiguration::~PluginConfiguration() { }
@@ -1529,7 +1531,8 @@ PluginConfiguration::~PluginConfiguration() { }
 //   xml.etag(--level, "plugin");
 // }
 
-void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName, const Track *track) const
+void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName) const
+// void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName, const Track *track) const
 {
   //==============================================
   // Save file or uri, label, and name basic info
@@ -1557,7 +1560,6 @@ void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool
 
     case MusEPlugin::PluginTypeNone:
     case MusEPlugin::PluginTypeUnknown:
-    case MusEPlugin::PluginTypeAll:
     break;
   }
 
@@ -1650,28 +1652,47 @@ void PluginConfiguration::writeProperties(int level, Xml& xml, bool isCopy, bool
 
   xml.qrectTag(level, "nativeGeometry", _nativeGeometry);
 
-  //----------------------------------
-  // Write the automation controllers.
-  //----------------------------------
-  // If for example copying or drag-copying, include automation controllers and midi mappings
-  //  directly within the plugin XML so that the drop target can use them. Track is required.
-  if(isCopy && _id >= 0)
-  {
-    const unsigned long baseid = MusECore::genACnum(_id, 0);
-    const unsigned long nextid = MusECore::genACnum(_id + 1, 0);
-    // Mask away the position bits from the controller IDs, storing just the controller numbers.
-    _ctrlListList.write(level, xml, baseid, nextid, AC_PLUGIN_CTL_ID_MASK);
+  // //----------------------------------
+  // // Write the automation controllers.
+  // //----------------------------------
+  // // If for example copying or drag-copying, include automation controllers and midi mappings
+  // //  directly within the plugin XML so that the drop target can use them. Track is required.
+  // if(isCopy && _id >= 0)
+  // {
+  //   const unsigned long baseid = MusECore::genACnum(_id, 0);
+  //   const unsigned long nextid = MusECore::genACnum(_id + 1, 0);
+  //   // Mask away the position bits from the controller IDs, storing just the controller numbers.
+  //   _ctrlListList.write(level, xml, baseid, nextid, AC_PLUGIN_CTL_ID_MASK);
+  //
+  //   //-------------------------------------------------
+  //   // Write the midi to audio controller assignments.
+  //   //-------------------------------------------------
+  //   // Write the mapping.
+  //   // The track handles writing assignments to other controllers on this track.
+  //   // Mask away the position bits from the controller IDs, storing just the controller numbers.
+  //   _midiAudioCtrlMap.write(
+  //     level, xml, track, baseid, nextid, MidiAudioCtrlStruct::AudioControl, false, AC_PLUGIN_CTL_ID_MASK);
+  // }
 
-    //-------------------------------------------------
-    // Write the midi to audio controller assignments.
-    //-------------------------------------------------
-    // Write the mapping.
-    // The track handles writing assignments to other controllers on this track.
-    // Mask away the position bits from the controller IDs, storing just the controller numbers.
-    _midiAudioCtrlMap.write(
-      level, xml, track, baseid, nextid, MidiAudioCtrlStruct::AudioControl, false, AC_PLUGIN_CTL_ID_MASK);
-  }
-
+//   if(isCopy)
+//   {
+//     //----------------------------------
+//     // Write the automation controllers.
+//     //----------------------------------
+//     // If for example copying or drag-copying, include automation controllers and midi mappings
+//     //  directly within the plugin XML so that the drop target can use them. Track is required.
+//     // Mask away the position bits from the controller IDs, storing just the controller numbers.
+//     _ctrlListList.write(level, xml, -1, -1, AC_PLUGIN_CTL_ID_MASK);
+//
+//     //-------------------------------------------------
+//     // Write the midi to audio controller assignments.
+//     //-------------------------------------------------
+//     // Write the mapping.
+//     // The track handles writing assignments to other controllers on this track.
+//     // Mask away the position bits from the controller IDs, storing just the controller numbers.
+//     _midiAudioCtrlMap.write(
+//       level, xml, track, -1, -1, MidiAudioCtrlStruct::AudioControl, false, AC_PLUGIN_CTL_ID_MASK);
+//   }
 
 
 // // REMOVE Tim. tmp. Added.
@@ -1969,13 +1990,15 @@ bool PluginConfiguration::readProperties(Xml& xml, const Xml::Token& token)
 //---------------------------------------------------------
 MissingPluginStruct::MissingPluginStruct()
 {
+  _type = MusEPlugin::PluginTypeNone;
   _effectInstCount = _synthInstCount = _effectInstNo = _synthInstNo = 0;
 }
 
 int MissingPluginStruct::effectInstNo() { return _effectInstNo++; }
 int MissingPluginStruct::synthInstNo() { return _synthInstNo++; }
 
-MissingPluginList::iterator MissingPluginList::find(const QString& file, const QString& uri, const QString& label)
+MissingPluginList::iterator MissingPluginList::find(
+  MusEPlugin::PluginTypes_t types, const QString& file, const QString& uri, const QString& label)
 {
   const bool f_empty = file.isEmpty();
   const bool u_empty = uri.isEmpty();
@@ -1984,18 +2007,21 @@ MissingPluginList::iterator MissingPluginList::find(const QString& file, const Q
   {
     if ( (!u_empty || f_empty || file == (*i)._file) &&
          (u_empty || uri == (*i)._uri) &&
-         (!u_empty || l_empty || label == (*i)._label))
+         (!u_empty || l_empty || label == (*i)._label) &&
+         (types & (*i)._type))
           return i;
   }
   return end();
 }
 
-MissingPluginStruct& MissingPluginList::add(const QString& file, const QString& uri, const QString& label, bool isSynth)
+MissingPluginStruct& MissingPluginList::add(
+  MusEPlugin::PluginType type, const QString& file, const QString& uri, const QString& label, bool isSynth)
 {
-  iterator i = find(file, uri, label);
+  iterator i = find(type, file, uri, label);
   if(i == end())
   {
     MissingPluginStruct mps;
+    mps._type = type;
     mps._file = file;
     mps._uri = uri;
     mps._label = label;
@@ -2562,7 +2588,6 @@ int Plugin::incReferences(int val)
     case MusEPlugin::PluginTypeMESS:
     case MusEPlugin::PluginTypeMETRONOME:
     case MusEPlugin::PluginTypeNone:
-    case MusEPlugin::PluginTypeAll:
     case MusEPlugin::PluginTypeUnknown:
       fprintf(stderr, "Error: Plugin::incReferences(): Plugin type:%d is not LADSPA or DSSI or DSSIVST. "
              "_references:%d val:%d\n", pluginType(), _references, val);
@@ -2993,7 +3018,6 @@ void initPlugins()
       case MusEPlugin::PluginTypeMETRONOME:
       case MusEPlugin::PluginTypeUnknown:
       case MusEPlugin::PluginTypeNone:
-      case MusEPlugin::PluginTypeAll:
       break;
     }
   }
@@ -3024,7 +3048,7 @@ void PluginList::add(const MusEPlugin::PluginScanInfoStruct& scan_info)
 //       return 0;
 //       }
 Plugin* PluginList::find(
-  MusEPlugin::PluginType type, const QString& file,
+  MusEPlugin::PluginTypes_t types, const QString& file,
   const QString& uri, const QString& label) const
       {
       const bool f_empty = file.isEmpty();
@@ -3035,7 +3059,7 @@ Plugin* PluginList::find(
             if ( (!u_empty || f_empty || file  == pi->lib()) &&
                  (u_empty  || uri   == pi->uri()) &&
                  (!u_empty || l_empty || label == pi->label()) &&
-                 (type == MusEPlugin::PluginTypeAll || type == pi->pluginType()))
+                 (types & pi->pluginType()))
                   return *i;
             }
 
@@ -4873,7 +4897,8 @@ bool PluginI::initPluginInstance(Plugin* plug, int c, const QString& name)
       else
       {
         MissingPluginStruct& mps =
-          MusEGlobal::missingPlugins.add(_initConfig._file, _initConfig._uri, _initConfig._pluginLabel, false);
+          MusEGlobal::missingPlugins.add(
+            _initConfig._pluginType, _initConfig._file, _initConfig._uri, _initConfig._pluginLabel, false);
 
 //         const QString inst("-" + QString::number(instno));
 
@@ -5149,7 +5174,15 @@ bool PluginI::initPluginInstance(int channels, const QString& name)
 // REMOVE Tim. tmp. Changed.
 //   Plugin *plugin = MusEGlobal::plugins.find(
 //     _initConfig._file, _initConfig._uri, _initConfig._pluginLabel);
-  Plugin *plugin = MusEGlobal::plugins.find(_initConfig._pluginType,
+
+//   // If no plugin type was given, search all types. Type tag was added in song file version 4.
+//   const MusEPlugin::PluginTypes_t types =
+//     _initConfig._pluginType == MusEPlugin::PluginTypeNone ? MusEPlugin::PluginTypesAll : _initConfig._pluginType;
+  // If no plugin type was given, search all types. Type tag was added in song file version 4.
+  MusEPlugin::PluginTypes_t types = _initConfig._pluginType;
+  if(_initConfig._pluginType == MusEPlugin::PluginTypeNone)
+    types = MusEPlugin::PluginTypesAll;
+  Plugin *plugin = MusEGlobal::plugins.find(types,
     _initConfig._file, _initConfig._uri, _initConfig._pluginLabel);
 
   // True on error. For persistence: Plugin can be null.
@@ -5453,6 +5486,7 @@ bool PluginI::setControl(const QString& s, double val)
 //---------------------------------------------------------
 
 PluginConfiguration PluginI::getConfiguration() const
+// PluginConfiguration PluginI::getConfiguration(bool addControllers, bool addMidiAssigns) const
 {
   // If the plugin is not available, use the persistent values.
   if(!_plugin)
@@ -5461,7 +5495,7 @@ PluginConfiguration PluginI::getConfiguration() const
   // Plugin is available. Ask it for the values...
   PluginConfiguration conf;
 //   bool ctls_handled = false;
-  const AudioTrack *trk = track();
+//   const AudioTrack *trk = track();
 
   //=============
   // Basic info
@@ -5600,43 +5634,52 @@ PluginConfiguration PluginI::getConfiguration() const
 //       conf._initParams = _initConfig._initParams;
 //   }
 
-  if(trk)
-  {
-    const int startId = MusECore::genACnum(0, 0);
-    const int endId = MusECore::genACnum(MusECore::MAX_PLUGINS, 0);
-
-    //-----------------------------------------------
-    // Include the automation controllers.
-    // Just use pointers to the existing controllers,
-    //  instead of copying the controllers.
-    //-----------------------------------------------
-    const CtrlListList *trk_cll = trk->controller();
-    for(ciCtrlList trk_icl = trk_cll->lower_bound(startId); trk_icl != trk_cll->cend(); ++trk_icl)
-    {
-      CtrlList *trk_cl = trk_icl->second;
-      const int id = trk_cl->id();
-      if(id >= endId)
-        break;
-      conf._ctrlListList.add(trk_cl);
-    }
-
-    //-----------------------------------------------
-    // Include midi to audio controller assignments.
-    //-----------------------------------------------
-    MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
-    if(macm)
-    {
-      for(ciMidiAudioCtrlMap imacm = macm->cbegin(); imacm != macm->cend(); ++imacm)
-      {
-        const MidiAudioCtrlStruct &macs = imacm->second;
-        // We only want audio controls, and only assignments to the track, and only controllers within range.
-        if(macs.idType() != MidiAudioCtrlStruct::AudioControl || macs.track() != trk ||
-           macs.id() < startId || macs.id() >= endId)
-          continue;
-        conf._midiAudioCtrlMap.insert(std::pair(imacm->first, macs));
-      }
-    }
-  }
+// //   if(trk)
+//   if(trk && conf._id >= 0)
+//   {
+// //     const int startId = MusECore::genACnum(0, 0);
+// //     const int endId = MusECore::genACnum(MusECore::MAX_PLUGINS, 0);
+//     const int startId = MusECore::genACnum(conf._id, 0);
+//     const int endId = MusECore::genACnum(conf._id + 1, 0);
+//
+//     //-----------------------------------------------
+//     // Include the automation controllers.
+//     // Just use pointers to the existing controllers,
+//     //  instead of copying the controllers.
+//     //-----------------------------------------------
+//     if(addControllers)
+//     {
+//       const CtrlListList *trk_cll = trk->controller();
+//       for(ciCtrlList trk_icl = trk_cll->lower_bound(startId); trk_icl != trk_cll->cend(); ++trk_icl)
+//       {
+//         CtrlList *trk_cl = trk_icl->second;
+//         const int id = trk_cl->id();
+//         if(id >= endId)
+//           break;
+//         conf._ctrlListList.add(trk_cl);
+//       }
+//     }
+//
+//     //-----------------------------------------------
+//     // Include midi to audio controller assignments.
+//     //-----------------------------------------------
+//     if(addMidiAssigns)
+//     {
+//       MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+//       if(macm)
+//       {
+//         for(ciMidiAudioCtrlMap imacm = macm->cbegin(); imacm != macm->cend(); ++imacm)
+//         {
+//           const MidiAudioCtrlStruct &macs = imacm->second;
+//           // We only want audio controls, and only assignments to the track, and only controllers within range.
+//           if(macs.idType() != MidiAudioCtrlStruct::AudioControl || macs.track() != trk ||
+//              macs.id() < startId || macs.id() >= endId)
+//             continue;
+//           conf._midiAudioCtrlMap.insert(std::pair(imacm->first, macs));
+//         }
+//       }
+//     }
+//   }
 
   return conf;
 }
@@ -6304,9 +6347,42 @@ void PluginI::configure(ConfigureOptions_t opts)
 
 void PluginI::writeConfiguration(int level, Xml& xml, bool isCopy)
 {
+  // Get the plugin configuration. Include the automation controllers and midi mapping if desired.
+//   PluginConfiguration pc = getConfiguration(isCopy, isCopy);
   PluginConfiguration pc = getConfiguration();
   xml.tag(level++, "plugin");
-  pc.writeProperties(level, xml, isCopy, _isFakeName, track());
+  // Write the plugin configuration.
+  pc.writeProperties(level, xml, isCopy, _isFakeName);
+//   // Write the plugin configuration. If there are automation controllers or midi mapping
+//   //  to write, strip away the rack position id bits.
+//   pc.writeProperties(level, xml, isCopy, _isFakeName, track());
+
+  // If for example copying or drag-copying, include automation controllers and midi mappings
+  //  directly within the plugin XML so that the drop target can use them. Track is required.
+  const int idx = id();
+  if(isCopy && track() && idx >= 0)
+  {
+    //----------------------------------
+    // Write the automation controllers.
+    //----------------------------------
+    const unsigned long baseid = MusECore::genACnum(idx, 0);
+    const unsigned long nextid = MusECore::genACnum(idx + 1, 0);
+    // Write the controllers. Write only controllers for this plugin.
+    // Mask away the position bits from the controller IDs, storing just the controller numbers.
+    track()->controller()->write(level, xml, baseid, nextid, AC_PLUGIN_CTL_ID_MASK);
+
+    //-------------------------------------------------
+    // Write the midi to audio controller assignments.
+    //-------------------------------------------------
+    MusECore::MidiAudioCtrlMap *macm = MusEGlobal::song->midiAssignments();
+    if(macm)
+      // Write the mapping. Write only assignments to this track and plugin controllers.
+      // The track handles writing assignments to other controllers on this track.
+      // Mask away the position bits from the controller IDs, storing just the controller numbers.
+      macm->write(
+        level, xml, track(), baseid, nextid, MidiAudioCtrlStruct::AudioControl, false, AC_PLUGIN_CTL_ID_MASK);
+  }
+
   xml.etag(--level, "plugin");
 }
 

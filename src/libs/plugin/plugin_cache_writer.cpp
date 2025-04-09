@@ -1600,7 +1600,7 @@ void writePluginScanInfo(int level, MusECore::Xml& xml, const PluginScanInfoStru
 
 static bool pluginScan(
   const QString& filename,
-  MusEPlugin::PluginType_t types,
+  MusEPlugin::PluginTypes_t types,
   PluginScanList* list,
   bool scanPorts,
   bool debugStdErr)
@@ -1774,7 +1774,7 @@ static bool pluginScan(
 
 static void scanPluginDir(
   const QString& dirname,
-  MusEPlugin::PluginType_t types,
+  MusEPlugin::PluginTypes_t types,
   PluginScanList* list,
   bool scanPorts,
   bool debugStdErr,
@@ -1824,7 +1824,7 @@ void scanLadspaPlugins(const QString& museGlobalLib, PluginScanList* list, bool 
 {
   QStringList sl = pluginGetLadspaDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    scanPluginDir(*it, MusEPlugin::PluginTypeAll, list, scanPorts, debugStdErr);
+    scanPluginDir(*it, MusEPlugin::PluginTypesAll, list, scanPorts, debugStdErr);
 }
 
 //---------------------------------------------------------
@@ -1835,7 +1835,7 @@ void scanMessPlugins(const QString& museGlobalLib, PluginScanList* list, bool sc
 {
   QStringList sl = pluginGetMessDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    scanPluginDir(*it, MusEPlugin::PluginTypeAll, list, scanPorts, debugStdErr);
+    scanPluginDir(*it, MusEPlugin::PluginTypesAll, list, scanPorts, debugStdErr);
 }
 
 //---------------------------------------------------------
@@ -1847,7 +1847,7 @@ void scanDssiPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 {
   QStringList sl = pluginGetDssiDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    scanPluginDir(*it, MusEPlugin::PluginTypeAll, list, scanPorts, debugStdErr);
+    scanPluginDir(*it, MusEPlugin::PluginTypesAll, list, scanPorts, debugStdErr);
 }
 #else // No DSSI_SUPPORT
 void scanDssiPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
@@ -1872,7 +1872,7 @@ void scanLinuxVSTPlugins(PluginScanList* list, bool scanPorts, bool debugStdErr)
 
   QStringList sl = pluginGetLinuxVstDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    scanPluginDir(*it, MusEPlugin::PluginTypeAll, list, scanPorts, debugStdErr);
+    scanPluginDir(*it, MusEPlugin::PluginTypesAll, list, scanPorts, debugStdErr);
 }
 #else
 void scanLinuxVSTPlugins(PluginScanList* /*list*/, bool /*scanPorts*/, bool /*debugStdErr*/)
@@ -2683,7 +2683,7 @@ void scanAllPlugins(
   PluginScanList* list,
   bool scanPorts,
   bool debugStdErr,
-  MusEPlugin::PluginType_t types)
+  MusEPlugin::PluginTypes_t types)
 {
   if(types & (MusEPlugin::PluginTypeDSSI | MusEPlugin::PluginTypeDSSIVST))
     // Take care of DSSI plugins first...
@@ -2717,7 +2717,7 @@ typedef std::pair<QString, std::int64_t> filepath_set_pair;
 
 static QString findPluginFilesDir(
   const QString& dirname,
-  MusEPlugin::PluginType_t types,
+  MusEPlugin::PluginTypes_t types,
   filepath_set& fplist,
   bool debugStdErr,
   // Only for recursions, original top caller should not touch!
@@ -2771,7 +2771,7 @@ static void findLadspaPluginFiles(const QString& museGlobalLib, filepath_set& fp
 {
   const QStringList sl = pluginGetLadspaDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    findPluginFilesDir(*it, MusEPlugin::PluginTypeAll, fplist, debugStdErr);
+    findPluginFilesDir(*it, MusEPlugin::PluginTypesAll, fplist, debugStdErr);
 }
 
 //---------------------------------------------------------
@@ -2782,7 +2782,7 @@ static void findMessPluginFiles(const QString& museGlobalLib, filepath_set& fpli
 {
   const QStringList sl = pluginGetMessDirectories(museGlobalLib);
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    findPluginFilesDir(*it, MusEPlugin::PluginTypeAll, fplist, debugStdErr);
+    findPluginFilesDir(*it, MusEPlugin::PluginTypesAll, fplist, debugStdErr);
 }
 
 //---------------------------------------------------------
@@ -2794,7 +2794,7 @@ static void findDssiPluginFiles(filepath_set& fplist, bool debugStdErr)
 {
   const QStringList sl = pluginGetDssiDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    findPluginFilesDir(*it, MusEPlugin::PluginTypeAll, fplist, debugStdErr);
+    findPluginFilesDir(*it, MusEPlugin::PluginTypesAll, fplist, debugStdErr);
 }
 #else // No DSSI_SUPPORT
 static void findDssiPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
@@ -2811,7 +2811,7 @@ static void findLinuxVSTPluginFiles(filepath_set& fplist, bool debugStdErr)
 {
   const QStringList sl = pluginGetLinuxVstDirectories();
   for(QStringList::const_iterator it = sl.cbegin(); it != sl.cend(); ++it)
-    findPluginFilesDir(*it, MusEPlugin::PluginTypeAll, fplist, debugStdErr);
+    findPluginFilesDir(*it, MusEPlugin::PluginTypesAll, fplist, debugStdErr);
 }
 #else // Not VST_NATIVE_SUPPORT
 static void findLinuxVSTPluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
@@ -2947,7 +2947,7 @@ static void findLv2PluginFiles(filepath_set& /*fplist*/, bool /*debugStdErr*/)
 static void findPluginFiles(const QString& museGlobalLib,
                     filepath_set& fplist,
                     bool debugStdErr,
-                    MusEPlugin::PluginType_t types)
+                    MusEPlugin::PluginTypes_t types)
 {
   if(types & (MusEPlugin::PluginTypeDSSI | MusEPlugin::PluginTypeDSSIVST))
   {
@@ -2994,7 +2994,7 @@ bool writePluginCacheFile(
   const QString& filename,
   const PluginScanList& list,
   bool writePorts,
-  MusEPlugin::PluginType_t types)
+  MusEPlugin::PluginTypes_t types)
 {
   bool res = false;
   const QString targ_filepath = scanOutPath + "/" + filename;
@@ -3052,7 +3052,7 @@ bool createPluginCacheFile(
   PluginScanList* list,
   bool writePorts,
   const QString& museGlobalLib,
-  MusEPlugin::PluginType_t types,
+  MusEPlugin::PluginTypes_t types,
   bool debugStdErr)
 {
   // Scan all plugins into the list.
@@ -3077,7 +3077,7 @@ bool createPluginCacheFiles(
   PluginScanList* list,
   bool writePorts,
   const QString& museGlobalLib,
-  MusEPlugin::PluginType_t types,
+  MusEPlugin::PluginTypes_t types,
   bool debugStdErr)
 {
   if(types & (MusEPlugin::PluginTypeDSSI | MusEPlugin::PluginTypeDSSIVST))
@@ -3127,7 +3127,7 @@ bool checkPluginCacheFiles(
   bool alwaysRecreate,
   bool dontRecreate,
   const QString& museGlobalLib,
-  MusEPlugin::PluginType_t types,
+  MusEPlugin::PluginTypes_t types,
   bool debugStdErr
 )
 {

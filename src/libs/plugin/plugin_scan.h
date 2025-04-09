@@ -72,31 +72,63 @@ const char* const VST_NEW_PLUGIN_ENTRY_POINT = "VSTPluginMain";
 //  these enumerations.
 //==============================================
 
-// Can be Or'd together.
-enum PluginType { PluginTypeNone = 0x00,
-  PluginTypeLADSPA   = 0x01,  PluginTypeDSSI    = 0x02,
-  PluginTypeVST      = 0x04,  PluginTypeDSSIVST = 0x08,
-  PluginTypeLinuxVST = 0x10,  PluginTypeLV2     = 0x20,
-  PluginTypeMESS     = 0x40,
-  // Built-in metronome is not actually a loadable plugin, but is a synth.
-  PluginTypeMETRONOME = 0x80,
-  PluginTypeUnknown = 0x8000,
-  PluginTypeAll = PluginTypeLADSPA   | PluginTypeDSSI |
-                  PluginTypeVST      | PluginTypeDSSIVST |
-                  PluginTypeLinuxVST | PluginTypeLV2 |
-                  PluginTypeMESS     | PluginTypeUnknown |
-                  PluginTypeMETRONOME };
-typedef int PluginType_t;
+// // Can be Or'd together.
+// enum PluginType {
+//   PluginTypeNone     = 0x00,
+//   PluginTypeLADSPA   = 0x01,
+//   PluginTypeDSSI     = 0x02,
+//   PluginTypeVST      = 0x04,
+//   PluginTypeDSSIVST  = 0x08,
+//   PluginTypeLinuxVST = 0x10,
+//   PluginTypeLV2      = 0x20,
+//   PluginTypeMESS     = 0x40,
+//   // Built-in metronome is not actually a loadable plugin, but is a synth.
+//   PluginTypeMETRONOME = 0x80,
+//   PluginTypeUnknown = 0x8000,
+//   PluginTypeAll = PluginTypeLADSPA   | PluginTypeDSSI |
+//                   PluginTypeVST      | PluginTypeDSSIVST |
+//                   PluginTypeLinuxVST | PluginTypeLV2 |
+//                   PluginTypeMESS     | PluginTypeUnknown |
+//                   PluginTypeMETRONOME };
+// typedef int PluginType_t;
 
 // Can be Or'd together.
-enum PluginClass { PluginClassNone = 0x00,
+enum PluginType {
+  PluginTypeNone      = 0x00,
+  PluginTypeLADSPA    = 0x01,
+  PluginTypeDSSI      = 0x02,
+  PluginTypeVST       = 0x04,
+  PluginTypeDSSIVST   = 0x08,
+  PluginTypeLinuxVST  = 0x10,
+  PluginTypeLV2       = 0x20,
+  PluginTypeMESS      = 0x40,
+  // Built-in metronome is not actually a loadable plugin, but is a synth.
+  PluginTypeMETRONOME = 0x80,
+  PluginTypeUnknown   = 0x8000 };
+
+// Can be Or'd together, along with PluginType.
+enum PluginTypes {
+  PluginTypesAll = PluginTypeLADSPA   | PluginTypeDSSI |
+                   PluginTypeVST      | PluginTypeDSSIVST |
+                   PluginTypeLinuxVST | PluginTypeLV2 |
+                   PluginTypeMESS     | PluginTypeUnknown |
+                   PluginTypeMETRONOME };
+typedef int PluginTypes_t;
+
+// Can be Or'd together.
+enum PluginClass {
+  PluginClassNone = 0x00,
   PluginClassEffect = 0x01, PluginClassInstrument = 0x02,
   PluginClassAll = PluginClassEffect | PluginClassInstrument };
 typedef int PluginClass_t;
 
 // Can be Or'd together.
-enum PluginFlags { PluginNoFlags = 0x00,
-  PluginHasGui = 0x01, PluginHasChunks = 0x02, PluginIsRealtime = 0x04, PluginIsHardRealtimeCapable = 0x08,
+enum PluginFlags {
+  PluginNoFlags = 0x00,
+  PluginHasGui = 0x01,
+  PluginHasChunks = 0x02,
+  PluginIsRealtime = 0x04,
+  PluginIsHardRealtimeCapable = 0x08,
   // Obsolete flag. Kept for backward compatibility.
   PluginHasFreewheelPort = 0x10,
   // Obsolete flag. Kept for backward compatibility.

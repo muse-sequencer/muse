@@ -419,8 +419,15 @@ class SynthI : public AudioTrack, public MidiDevice,
       //        is supposed to be inside the custom data.
       void configure(PluginIBase::ConfigureOptions_t);
       // Returns a synth configuration structure filled with the current state of the synth.
+      // Note this does NOT include the controllers or midi assignments members. They should
+      //  be obtained separately by the caller.
       PluginConfiguration getConfiguration() const;
-
+//       // Returns a synth configuration structure filled with the current state of the synth.
+//       // If addControllers is true, includes a list of pointers to existing relevant audio controllers.
+//       // If addMidiAssigns is true, includes a list of midi assignments to relevant audio controllers.
+//       // There are some situations where they might be unwanted here and perhaps handled separately.
+//       PluginConfiguration getConfiguration(bool addControllers = false, bool addMidiAssigns = false) const;
+//
       inline Synth* synth() const          { return synthesizer; }
       inline virtual bool isSynti() const  { return true; }
 
@@ -621,7 +628,7 @@ class SynthList : public std::vector<MusECore::Synth*>
     // If useFileBaseName is true, fileCompleteBaseName will be compared with the synth's base name instead of
     //  the complete base name. (For legacy song files earlier than version 4, which only stored the base name.)
     Synth* find(
-      MusEPlugin::PluginType pluginType,
+      MusEPlugin::PluginTypes_t pluginTypes,
       const QString& fileCompleteBaseName,
       const QString& pluginUri,
       const QString& pluginLabel,

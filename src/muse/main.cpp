@@ -1286,7 +1286,7 @@ int main(int argc, char* argv[])
 
         // Scan all known plugins from the cache file, or if it does not exist
         //  create the cache file by reading plugins in a safe 'sandbox'.
-        MusEPlugin::PluginType_t types = MusEPlugin::PluginTypeNone;
+        MusEPlugin::PluginTypes_t types = MusEPlugin::PluginTypeNone;
         if(MusEGlobal::loadPlugins)
           types |= MusEPlugin::PluginTypeLADSPA;
         if(MusEGlobal::loadMESS)

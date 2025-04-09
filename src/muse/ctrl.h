@@ -320,7 +320,7 @@ class CtrlList : public CtrlList_t {
    public:
       CtrlList(bool dontShow=false);
       CtrlList(int id, bool dontShow=false);
-      CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow=false);
+      CtrlList(int id, QString name, double min, double max, CtrlValueType v, double defaultVal=0.0, bool dontShow=false);
       CtrlList(const CtrlList& l, int flags);
       CtrlList(const CtrlList& cl);
 

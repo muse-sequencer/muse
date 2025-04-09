@@ -131,7 +131,6 @@ void initDSSI()
       case MusEPlugin::PluginTypeMETRONOME:
       case MusEPlugin::PluginTypeUnknown:
       case MusEPlugin::PluginTypeNone:
-      case MusEPlugin::PluginTypeAll:
       break;
     }
   }
