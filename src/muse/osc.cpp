@@ -1304,7 +1304,7 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 
 // REMOVE Tim. tmp. Added.
 bool OscIF::oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginLabel,
-                       int trackno, const QString& name, const QString& filePath, const QString& guiPath,
+                       int trackno, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_, int rackpos)
 {
       if (old_control==nullptr)
@@ -1416,7 +1416,9 @@ bool OscIF::oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginL
       arguments << oscUrl
                 << filePath
                 << pluginLabel
-                << (titlePrefix() + name);
+// REMOVE Tim. tmp. Changed.
+//                 << (titlePrefix() + name);
+                << displayName();
 
       #ifdef OSC_DEBUG
       fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
@@ -1672,9 +1674,9 @@ bool OscIF::oscQuitGui()
 
       if(_uiOscTarget && _uiOscQuitPath)
       {
-//        #ifdef OSC_DEBUG
+        #ifdef OSC_DEBUG
         fprintf(stderr, "OscIF::oscQuitGui(): Sending quit uiOscQuitPath:%s\n", _uiOscQuitPath);
-//        #endif
+        #endif
         lo_send(_uiOscTarget, _uiOscQuitPath, "");
       }
       else
@@ -1852,19 +1854,28 @@ bool OscDssiIF::oscInitGui()
 //                           _oscSynthIF->dssiSynth()->baseName(),
 // REMOVE Tim. tmp. Changed.
 //                            _oscSynthIF->dssiSynth()->name(),
-                           _oscSynthIF->dssiSynth()->label(),
+//                            _oscSynthIF->dssiSynth()->label(),
+                           _oscSynthIF->pluginLabel(),
                            tidx,
-                           _oscSynthIF->dssiSynthI()->name(),
+//                            _oscSynthIF->dssiSynthI()->name(),
+//                            _oscSynthIF->dssiSynth()->name(),
+//                            _oscSynthIF->pluginName(),
                            _oscSynthIF->dssiSynth()->fileName(),
                            _oscSynthIF->dssi_ui_filename(),
                            _oscSynthIF->dssiSynth()->getRpIdx());
 }
 
-QString OscDssiIF::titlePrefix() const
-{ 
-  return _oscSynthIF ? _oscSynthIF->titlePrefix() : QString(); 
-}
+// REMOVE Tim. tmp. Removed.
+// QString OscDssiIF::titlePrefix() const
+// {
+//   return _oscSynthIF ? _oscSynthIF->titlePrefix() : QString();
+// }
       
+QString OscDssiIF::displayName() const
+{
+  return _oscSynthIF ? _oscSynthIF->displayName() : QString();
+}
+
 #endif   // DSSI_SUPPORT
       
 //---------------------------------------------------------
@@ -1953,18 +1964,26 @@ bool OscEffectIF::oscInitGui()
 //  return OscIF::oscInitGui("ladspa_efx",
   return OscIF::oscInitGui("dssi_efx",
 //                           _oscPluginI->plugin()->lib(false),
-                           _oscPluginI->plugin()->label(),
+//                            _oscPluginI->plugin()->label(),
+                           _oscPluginI->pluginLabel(),
                            tidx,
-                           _oscPluginI->name(),
+//                            _oscPluginI->name(),
+//                            _oscPluginI->pluginName(),
                            _oscPluginI->plugin()->fileName(),
                            _oscPluginI->dssi_ui_filename(),
                            _oscPluginI->plugin()->getRpIdx(),
                            _oscPluginI->id());
 }
 
-QString OscEffectIF::titlePrefix() const
-{ 
-  return _oscPluginI ? _oscPluginI->titlePrefix() : QString(); 
+// REMOVE Tim. tmp. Removed.
+// QString OscEffectIF::titlePrefix() const
+// {
+//   return _oscPluginI ? _oscPluginI->titlePrefix() : QString();
+// }
+
+QString OscEffectIF::displayName() const
+{
+  return _oscPluginI ? _oscPluginI->displayName() : QString();
 }
 
 

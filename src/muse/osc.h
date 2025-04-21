@@ -76,7 +76,7 @@ class OscIF
 
 // REMOVE Tim. tmp. Added.
       virtual bool oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginLabel,
-                       int trackno, const QString& name, const QString& filePath, const QString& guiPath,
+                       int trackno, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_, int rackpos = -1);
       void oscCleanupGui();
 
@@ -104,7 +104,10 @@ class OscIF
 // REMOVE Tim. tmp. Added.
       virtual bool oscQuitGui();
 
-      virtual QString titlePrefix() const { return QString(); }
+// REMOVE Tim. tmp. Removed.
+//       virtual QString titlePrefix() const { return QString(); }
+// REMOVE Tim. tmp. Added.
+      virtual QString displayName() const { return QString(); }
 };
  
 class OscEffectIF : public OscIF
@@ -123,7 +126,9 @@ class OscEffectIF : public OscIF
       
       virtual bool oscInitGui();
       
-      virtual QString titlePrefix() const; 
+// REMOVE Tim. tmp. Removed.
+//       virtual QString titlePrefix() const;
+      virtual QString displayName() const;
 };
  
 #ifdef DSSI_SUPPORT
@@ -145,7 +150,9 @@ class OscDssiIF : public OscIF
       
       virtual bool oscInitGui();
       
-      virtual QString titlePrefix() const; 
+// REMOVE Tim. tmp. Removed.
+//       virtual QString titlePrefix() const;
+      virtual QString displayName() const;
 };
 #endif // DSSI_SUPPORT
 
