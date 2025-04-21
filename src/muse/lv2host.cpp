@@ -2381,7 +2381,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
         if(it.value().second.type() == QVariant::ByteArray)
         {
 // REMOVE Tim. tmp. Added. Diagnostics.
-            fprintf(stderr, "lv2state_stateRetreive: Is QVariant::ByteArray\n");
+//             fprintf(stderr, "lv2state_stateRetreive: Is QVariant::ByteArray\n");
 
             QString sType = it.value().first;
             QByteArray arrType = sType.toUtf8();
@@ -2398,7 +2398,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
             if(sType.compare(QString(LV2_ATOM__Path)) == 0) //prepend project folder to abstract path
             {
 // REMOVE Tim. tmp. Added. Diagnostics.
-                fprintf(stderr, "lv2state_stateRetreive: Type is LV2_ATOM__Path\n");
+//                 fprintf(stderr, "lv2state_stateRetreive: Type is LV2_ATOM__Path\n");
 
                 // Make everything relative to the plugin config folder.
                 QString cfg_path =
@@ -2473,12 +2473,12 @@ LV2_State_Status LV2Synth::lv2state_stateStore(LV2_State_Handle handle, uint32_t
         QString strKey = QString(uriKey);
 
 // REMOVE Tim. tmp. Added. Diagnostics.
-        {
-          QByteArray ba = QByteArray((const char *)value, size);
-          ba.append(char(0));
-          fprintf(stderr, "lv2state_stateStore: name:%s uriKey:%s uriType:%s value:%s\n",
-                  synth->name().toLocal8Bit().constData(), uriKey, uriType, ba.constData());
-        }
+        // {
+        //   QByteArray ba = QByteArray((const char *)value, size);
+        //   ba.append(char(0));
+        //   fprintf(stderr, "lv2state_stateStore: name:%s uriKey:%s uriType:%s value:%s\n",
+        //           synth->name().toLocal8Bit().constData(), uriKey, uriType, ba.constData());
+        // }
 
         QMap<QString, QPair<QString, QVariant> >::const_iterator it = state->iStateValues.find(strKey);
         if(it == state->iStateValues.end())
