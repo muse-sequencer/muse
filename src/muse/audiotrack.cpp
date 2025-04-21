@@ -2573,13 +2573,18 @@ void AudioTrack::read(Xml& xml)
             }
       }
 
+// REMOVE Tim. tmp. Changed.
+// //---------------------------------------------------------
+// //   showPendingPluginNativeGuis
+// // REMOVE Tim. tmp. Removed.
+// // //   This is needed because OSC needs all tracks with plugins to be already
+// // //    added to their track lists so it can find them and show their native guis.
+// //---------------------------------------------------------
 //---------------------------------------------------------
-//   showPendingPluginNativeGuis
-//   This is needed because OSC needs all tracks with plugins to be already
-//    added to their track lists so it can find them and show their native guis.
+//   showPendingPluginGuis
 //---------------------------------------------------------
 
-void AudioTrack::showPendingPluginNativeGuis()
+void AudioTrack::showPendingPluginGuis()
 {
   for(int idx = 0; idx < MusECore::PipelineDepth; ++idx)
   {
@@ -2587,8 +2592,26 @@ void AudioTrack::showPendingPluginNativeGuis()
     if(!p)
       continue;
 
+// REMOVE Tim. tmp. Added.
+    if(p->isShowGuiPending())
+      p->showGui(true);
+
     if(p->isShowNativeGuiPending())
       p->showNativeGui(true);
+  }
+}
+
+// REMOVE Tim. tmp. Added.
+void AudioTrack::updateUiWindowTitles()
+{
+  for(int idx = 0; idx < MusECore::PipelineDepth; ++idx)
+  {
+    PluginI* p = (*_efxPipe)[idx];
+    if(!p)
+      continue;
+
+    p->updateGuiWindowTitle();
+    p->updateNativeGuiWindowTitle();
   }
 }
 

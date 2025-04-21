@@ -713,6 +713,9 @@ class Strip : public QFrame {
       bool _selected;
       bool _highlight;
       bool _isDocked;
+      // An extra width to compensate for the addition of track index number prefix in the strip label.
+      // (Ironically after years of striving to keep the strips thin, we must relenquish a few pixels here.)
+      int _extraWidth;
 
    protected:
       static constexpr int cMinStripWidth = 52;
@@ -750,6 +753,7 @@ class Strip : public QFrame {
       virtual void paintEvent(QPaintEvent *);
 
       virtual void updateRouteButtons();
+      void computeExtraWidth();
 
    protected slots:
       virtual void componentChanged(int type, double val, bool off, int id, int scrollMode);

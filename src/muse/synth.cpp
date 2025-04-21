@@ -293,6 +293,9 @@ bool SynthIF::setupController(CtrlList *cl) const
 /*inline*/ int SynthIF::id() const                                  { return MusECore::MAX_PLUGINS; } // Set for special block reserved for synth.
 // REMOVE Tim. tmp. Added.
 /*inline*/ QString SynthIF::name() const                            { return synti->name(); }
+// REMOVE Tim. tmp. Added.
+QString SynthIF::displayName() const
+{ return titlePrefix() + pluginName(); }
 // REMOVE Tim. tmp. Changed.
 ///*inline*/ QString SynthIF::pluginLabel() const                     { return QString(); }
 // TODO: There is no synth 'label'. OK there is now, by virtue of the PluginBase member. Try it.
@@ -308,7 +311,8 @@ bool SynthIF::setupController(CtrlList *cl) const
 /*inline*/ QString SynthIF::dirPath() const      { return synti->synth() ? synti->synth()->absolutePath() : QString(); }
 // /*inline*/ QString SynthIF::fileName() const                        { return QString(); }
 /*inline*/ QString SynthIF::fileName() const     { return synti->synth() ? synti->synth()->fileName() : QString(); }
-/*inline*/ QString SynthIF::titlePrefix() const                     { return synti->name() + QString(": "); }
+// /*inline*/ QString SynthIF::titlePrefix() const                     { return synti->name() + QString(": "); }
+/*inline*/ QString SynthIF::titlePrefix() const                     { return synti->displayName() + QString(": "); }
 /*inline*/ MusECore::AudioTrack* SynthIF::track() const             { return static_cast < MusECore::AudioTrack* > (synti); }
 /*inline*/ void SynthIF::enableController(unsigned long, bool)  { }
 /*inline*/ bool SynthIF::controllerEnabled(unsigned long) const   { return true;}
@@ -462,7 +466,10 @@ void MessSynthIF::guiHeartBeat()
 void MessSynthIF::updateNativeGuiWindowTitle()
 {
   if(_mess)
-    _mess->setNativeGuiWindowTitle((titlePrefix() + name()).toUtf8().constData());
+// REMOVE Tim. tmp. Changed.
+//     _mess->setNativeGuiWindowTitle((titlePrefix() + pluginName()).toUtf8().constData());
+//     _mess->setNativeGuiWindowTitle((synti->displayName() + pluginName()).toUtf8().constData());
+    _mess->setNativeGuiWindowTitle(displayName().toUtf8().constData());
 }
 
 MidiPlayEvent MessSynthIF::receiveEvent()
@@ -633,7 +640,8 @@ Synth::Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct) : PluginBase(in
 
 Synth::~Synth() {}
 
-int Synth::incReferences(int val) { _references += val; return _references; }
+// REMOVE Tim. tmp. Removed.
+// int Synth::incReferences(int val) { _references += val; return _references; }
 
 bool Synth::midiToAudioCtrlMapped(unsigned long int midiCtrl, unsigned long int* audioCtrl) const
 {
@@ -1095,9 +1103,13 @@ float SynthI::getPluginLatency(void* h) { return synthesizer ? synthesizer->getP
 //   init
 //---------------------------------------------------------
 
-bool MessSynthIF::init(Synth* s, SynthI* si)
+bool MessSynthIF::init(Synth* s, SynthI* /*si*/)
       {
-      _mess = (Mess*)((MessSynth*)s)->instantiate(si->name());
+// REMOVE Tim. tmp. Changed.
+//       _mess = (Mess*)((MessSynth*)s)->instantiate(si->name());
+//       _mess = (Mess*)((MessSynth*)s)->instantiate(titlePrefix() + pluginName());
+//       _mess = (Mess*)((MessSynth*)s)->instantiate(si->displayName() + pluginName());
+      _mess = (Mess*)((MessSynth*)s)->instantiate(displayName());
 
       return (_mess != nullptr);
       }
@@ -1647,20 +1659,26 @@ void SynthI::configure(const PluginConfiguration& config, PluginIBase::Configure
     setNativeGeometry(_initConfig._nativeGeometry.x(), _initConfig._nativeGeometry.y(),
       _initConfig._nativeGeometry.width(), _initConfig._nativeGeometry.height());
 
+// REMOVE Tim. tmp. Changed.
+  // if(opts & PluginIBase::ConfigGui)
+  //   showGui(config._guiVisible);
   if(opts & PluginIBase::ConfigGui)
-    showGui(config._guiVisible);
+    showGuiPending(config._guiVisible);
 
+// REMOVE Tim. tmp. Changed.
+  // if(opts & PluginIBase::ConfigNativeGui)
+  // {
+  //   if(opts & PluginIBase::ConfigDeferNativeGui)
+  //     // We can't tell OSC to show the native plugin gui
+  //     //  until the parent track is added to the lists.
+  //     // OSC needs to find the plugin in the track lists.
+  //     // Use this 'pending' flag so it gets done later.
+  //     showNativeGuiPending(config._nativeGuiVisible);
+  //   else
+  //     showNativeGui(config._nativeGuiVisible);
+  // }
   if(opts & PluginIBase::ConfigNativeGui)
-  {
-    if(opts & PluginIBase::ConfigDeferNativeGui)
-      // We can't tell OSC to show the native plugin gui
-      //  until the parent track is added to the lists.
-      // OSC needs to find the plugin in the track lists.
-      // Use this 'pending' flag so it gets done later.
-      showNativeGuiPending(config._nativeGuiVisible);
-    else
-      showNativeGui(config._nativeGuiVisible);
-  }
+    showNativeGuiPending(config._nativeGuiVisible);
 
   //if(gui())
   //  gui()->updateValues();
@@ -3030,16 +3048,16 @@ void SynthI::read(Xml& xml, XmlReadStatistics*)
 
                                 // Options for configuration.
                                 PluginIBase::ConfigureOptions_t opts = PluginIBase::ConfigAll;
-                                // Special for DSSI: Defer opening the native gui.
-                                // We can't tell OSC to show the native plugin gui
-                                //  until the parent track is added to the lists.
-                                // OSC needs to find the plugin in the track lists.
-                                // TODO: Find a way to offload this to DSSI so we
-                                //        don't have to worry about it here.
-                                if(synthesizer->pluginType() == MusEPlugin::PluginTypeDSSI ||
-                                   synthesizer->pluginType() == MusEPlugin::PluginTypeDSSIVST)
-                                  opts |= PluginIBase::ConfigDeferNativeGui;
-
+//                                 // Special for DSSI: Defer opening the native gui.
+//                                 // We can't tell OSC to show the native plugin gui
+//                                 //  until the parent track is added to the lists.
+//                                 // OSC needs to find the plugin in the track lists.
+//                                 // TODO: Find a way to offload this to DSSI so we
+//                                 //        don't have to worry about it here.
+//                                 if(synthesizer->pluginType() == MusEPlugin::PluginTypeDSSI ||
+//                                    synthesizer->pluginType() == MusEPlugin::PluginTypeDSSIVST)
+//                                   opts |= PluginIBase::ConfigDeferNativeGui;
+//
                                 configure(opts);
 
                                 // Done with the initial parameters list and custom config. Clear them.
@@ -3194,12 +3212,24 @@ void SynthI::read(Xml& xml, XmlReadStatistics*)
 
                               mapRackPluginsToControllers();
 
+// REMOVE Tim. tmp. Changed.
+//                               // Now that the track has been added to the lists in insertTrack2(),
+//                               //  if it's a dssi synth OSC can find the track and its plugins,
+//                               //  and start their native guis if required...
+//                               if(isShowNativeGuiPending())
+//                                 showNativeGui(true);
                               // Now that the track has been added to the lists in insertTrack2(),
-                              //  if it's a dssi synth OSC can find the track and its plugins,
-                              //  and start their native guis if required...
+                              //  the plugin guis can find the track and its rack effects plugins.
+                              // Start the generic and native guis if required.
+                              if(isShowGuiPending())
+                                showGui(true);
                               if(isShowNativeGuiPending())
                                 showNativeGui(true);
-                              showPendingPluginNativeGuis();
+                              showPendingPluginGuis();
+                              // This is mainly for MESS synths since unlike other plugins they
+                              //  create their UIs when the synth is created (here via read for example),
+                              //  so their titles can't be correct until insertTrack0 above. So do it now.
+                              updateNativeGuiWindowTitle();
 
                               return;
                               }

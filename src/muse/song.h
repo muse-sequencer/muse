@@ -214,20 +214,36 @@ class Song : public QObject {
       // Fills operations if given, otherwise creates and executes its own operations list.
       void processTrackAutomationEvents(AudioTrack *atrack, Undo* operations = 0);
 
-      //--------------------------------------------------------
-      // Special helpers for closing DSSI editors.
-      // (Can't change UI's OSC url or window title while open.)
-      //--------------------------------------------------------
-      // Closes a track's DSSI editor and all of its DSSI rack plugins.
-      void closeDssiEditors(Track*) const;
-      // Closes an inclusive range of tracks' DSSI editors and ALL of
-      //  each track's DSSI rack plugins. ([0, 0] = first.)
+      //-----------------------------------------------------
+      // Helpers for informing tracks and their rack plugins
+      //  plugins that title bars are about to change.
+      //-----------------------------------------------------
+      // Informs a track's plugin UI and all of its rack plugins that the title bars are about to change.
+      void PluginGuiTitlesAboutToChange(Track*) const;
+      // Informs an inclusive range of tracks' UIs and ALL of
+      //  each track's rack plugins that the title bars are about to change. ([0, 0] = first.)
       // If trackNumTo less than 0, it means to the end of the list.
-      void closeDssiEditors(int trackNumFrom, int trackNumTo = -1) const;
-      // Closes an inclusive range of a track's effects rack DSSI plugin editors. ([0, 0] = first.)
-      // This does NOT close a DSSI track's editor, only a track's effect rack plugins.
+      void PluginGuiTitlesAboutToChange(int trackNumFrom, int trackNumTo = -1) const;
+      // Informs an inclusive range of a track's effects rack plugin UIs
+      //  that the title bars are about to change. ([0, 0] = first.)
+      // This does NOT inform a track's plugin UI, only a track's effect rack plugins.
       // If effRackPosTo is less than 0, it means to the end of the list.
-      void closeDssiEditors(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
+      void PluginGuiTitlesAboutToChange(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
+      //--------------------------------------------------------
+
+      //--------------------------------------------------------
+      // Show pending plugin UIs.
+      //--------------------------------------------------------
+      // Shows pending UIs for a track's editor and all of its rack plugins.
+      void showPendingPluginGuis(Track*) const;
+      // Shows pending UIs for an inclusive range of tracks' editors and ALL of
+      //  each track's rack plugins. ([0, 0] = first.)
+      // If trackNumTo less than 0, it means to the end of the list.
+      void showPendingPluginGuis(int trackNumFrom, int trackNumTo = -1) const;
+      // Shows pending UIs for an inclusive range of a track's effects rack plugin editors. ([0, 0] = first.)
+      // This does NOT show a pending UI for track's editor, only a track's effect rack plugins.
+      // If effRackPosTo is less than 0, it means to the end of the list.
+      void showPendingPluginGuis(Track*, int effRackPosFrom, int effRackPosTo = -1) const;
       //--------------------------------------------------------
 
       //--------------------------------------------------------

@@ -8686,7 +8686,7 @@ Aucun: A utiliser uniquement si une grande précision est requise pour
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+5075"/>
+        <location filename="../../muse/song.cpp" line="+5079"/>
         <source>Jack shutdown!</source>
         <translation>Arrêt de Jack!</translation>
     </message>
@@ -10428,7 +10428,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="vanished">gain de calibration</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="+1323"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="+1326"/>
         <source>1/2 channel</source>
         <translation>1/2 canal</translation>
     </message>
@@ -16127,7 +16127,7 @@ Voulez-vous quand même l&apos;importer?</translation>
         <translation type="vanished">&amp;Non</translation>
     </message>
     <message>
-        <location filename="../../muse/songfile.cpp" line="+1307"/>
+        <location filename="../../muse/songfile.cpp" line="+1308"/>
         <source>File version is %1.%2
 Current version is %3.%4
 Conversions may be applied if file is saved!</source>
@@ -17260,7 +17260,7 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+8929"/>
+        <location filename="../../muse/plugin.cpp" line="+8995"/>
         <source>File Buttons</source>
         <translation>Boutons Fichier</translation>
     </message>
@@ -18304,7 +18304,7 @@ le titre sélectionné n&apos;est pas unique</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+304"/>
+        <location line="+317"/>
         <source>Configuration</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20515,7 +20515,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/audiotrack.cpp" line="+3580"/>
+        <location filename="../../muse/audiotrack.cpp" line="+3603"/>
         <source>TRACK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20538,7 +20538,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="-6484"/>
+        <location filename="../../muse/plugin.cpp" line="-6548"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

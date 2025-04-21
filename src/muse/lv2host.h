@@ -424,7 +424,7 @@ public:
     LV2Synth (const MusEPlugin::PluginScanInfoStruct&, const LilvPlugin*);
     virtual ~LV2Synth();
 
-    virtual SynthIF *createSIF ( SynthI * );
+    SynthIF *createSIF ( SynthI * ) override;
     bool isSynth();
 
     //own public functions
@@ -491,6 +491,7 @@ public:
     static void lv2state_UnloadLoadPresets(LV2Synth *synth, bool load = false, bool update = false);
 // REMOVE Tim. tmp. Added.
     static void lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state);
+    static void lv2ui_TitleAboutToChange(LV2PluginWrapper_State *state);
 
     friend class LV2SynthIF;
     friend class LV2PluginWrapper;
@@ -559,6 +560,9 @@ public:
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const override;
     virtual void setNativeGeometry (int x, int y, int w, int h) override;
 // REMOVE Tim. tmp. Added.
+    // Informs the plugin that we are about to change the UI title bar text.
+    // Some UIs may need to close because their title bar text is not alterable after creation.
+    void nativeGuiTitleAboutToChange() override;
     void updateNativeGuiWindowTitle() override;
     virtual bool getData ( MidiPort *, unsigned pos, int ports, unsigned n, float **buffer ) override;
     virtual MidiPlayEvent receiveEvent() override;
@@ -838,6 +842,9 @@ public:
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
 // REMOVE Tim. tmp. Added.
+    // Informs the plugin that we are about to change the UI title bar text.
+    // Some UIs may need to close because their title bar text is not alterable after creation.
+    void nativeGuiTitleAboutToChange(const PluginI *p);
     void updateNativeGuiWindowTitle(const PluginI *p) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
 // REMOVE Tim. tmp. Added.

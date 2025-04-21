@@ -57,8 +57,10 @@ float DEI_denormalBias;
 //   DeicsOnze
 //---------------------------------------------------------
 
-DeicsOnze::DeicsOnze() : Mess(2) {
-  
+// REMOVE Tim. tmp. Changed.
+// DeicsOnze::DeicsOnze() : Mess(2) {
+DeicsOnze::DeicsOnze(const char *name) : Mess(2) {
+
   MusESimplePlugin::SS_initPlugins(DEI_hostCachePath);
 
   if (useCount++ == 0) {
@@ -143,7 +145,9 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   //initialization GUI
   _gui = new DeicsOnzeGui(this);
   _gui->hide();   // to avoid flicker during MusE startup
-  _gui->setWindowTitle(QString("DeicsOnze"));
+// REMOVE Tim. tmp. Changed.
+//   _gui->setWindowTitle(QString("DeicsOnze"));
+  _gui->setWindowTitle(name);
 
   //FX
   MusESimplePlugin::Plugin* p;
@@ -328,7 +332,7 @@ void DeicsOnze::setNativeGeometry(int x, int y, int w, int h) {
 void DeicsOnze::setNativeGuiWindowTitle(const char* text) const
 {
   if(_gui)
-    _gui->setWindowTitle(QString::fromUtf8(text));
+    _gui->setWindowTitle(text);
 }
 
 //---------------------------------------------------------
@@ -4499,7 +4503,7 @@ void DeicsOnze::process(unsigned pos, float** buffer, int /*numPorts*/, int offs
 
 class QWidget;
 
-static Mess* instantiate(unsigned long long /*parentWinId*/, const char* /*name*/, const MessConfig* config)
+static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
 {
     DEI_hostConfigPath = QString(config->_configPath);
     DEI_hostCachePath = QString(config->_cachePath);
@@ -4509,7 +4513,7 @@ static Mess* instantiate(unsigned long long /*parentWinId*/, const char* /*name*
     DEI_sampleRate = config->_sampleRate;
     DEI_useDenormalBias = config->_useDenormalBias;
     DEI_denormalBias = config->_denormalBias;
-    DeicsOnze* deicsonze = new DeicsOnze();
+    DeicsOnze* deicsonze = new DeicsOnze(name);
     deicsonze->setSampleRate(config->_sampleRate);
     return deicsonze;
 }

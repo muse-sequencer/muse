@@ -685,33 +685,34 @@ void Song::read(Xml& xml, bool /*isTemplate*/)
                               MusECore::WaveTrack* track = new MusECore::WaveTrack();
                               track->read(xml, &stats);
                               insertTrack0(track,-1);
-                              // Now that the track has been added to the lists in insertTrack2(),
-                              //  OSC can find the track and its plugins, and start their native guis if required...
-                              track->showPendingPluginNativeGuis();
+// REMOVE Tim. tmp. Removed.
+//                               // Now that the track has been added to the lists in insertTrack2(),
+//                               //  OSC can find the track and its plugins, and start their native guis if required...
+                              track->showPendingPluginGuis();
                               }
                         else if (tag == "AudioInput") {
                               AudioInput* track = new AudioInput();
                               track->read(xml, &stats);
                               insertTrack0(track,-1);
-                              track->showPendingPluginNativeGuis();
+                              track->showPendingPluginGuis();
                               }
                         else if (tag == "AudioOutput") {
                               AudioOutput* track = new AudioOutput();
                               track->read(xml, &stats);
                               insertTrack0(track,-1);
-                              track->showPendingPluginNativeGuis();
+                              track->showPendingPluginGuis();
                               }
                         else if (tag == "AudioGroup") {
                               AudioGroup* track = new AudioGroup();
                               track->read(xml, &stats);
                               insertTrack0(track,-1);
-                              track->showPendingPluginNativeGuis();
+                              track->showPendingPluginGuis();
                               }
                         else if (tag == "AudioAux") {
                               AudioAux* track = new AudioAux();
                               track->read(xml, &stats);
                               insertTrack0(track,-1);
-                              track->showPendingPluginNativeGuis();
+                              track->showPendingPluginGuis();
                               }
                         else if (tag == "SynthI") {
                               SynthI* track = new SynthI();

@@ -662,15 +662,17 @@ void stopOSC()
 
 OscIF::OscIF()
 {
-  _uiOscTarget = 0;
-  _uiOscSampleRatePath = 0;
-  _uiOscShowPath = 0;
-  _uiOscControlPath = 0;
-  _uiOscConfigurePath = 0;
-  _uiOscProgramPath = 0;
-  _uiOscPath = 0;
+  _uiOscTarget = nullptr;
+  _uiOscSampleRatePath = nullptr;
+  _uiOscShowPath = nullptr;
+  _uiOscHidePath = nullptr;
+  _uiOscQuitPath = nullptr;
+  _uiOscControlPath = nullptr;
+  _uiOscConfigurePath = nullptr;
+  _uiOscProgramPath = nullptr;
+  _uiOscPath = nullptr;
 #ifdef _USE_QPROCESS_FOR_GUI_
-  _oscGuiQProc = 0;
+  _oscGuiQProc = nullptr;
 #else  
   _guiPid = -1;
 #endif
@@ -714,6 +716,10 @@ OscIF::~OscIF()
     free(_uiOscSampleRatePath);
   if(_uiOscShowPath)
     free(_uiOscShowPath);
+  if(_uiOscHidePath)
+    free(_uiOscHidePath);
+  if(_uiOscQuitPath)
+    free(_uiOscQuitPath);
   if(_uiOscControlPath)
     free(_uiOscControlPath);
   if(_uiOscConfigurePath)
@@ -778,8 +784,20 @@ int OscIF::oscUpdate(lo_arg **argv)
 
       if (_uiOscShowPath)
             free(_uiOscShowPath);
-      _uiOscShowPath = (char *)malloc(pl + 10);
+// REMOVE Tim. tmp. Changed.
+//       _uiOscShowPath = (char *)malloc(pl + 10);
+      _uiOscShowPath = (char *)malloc(pl + 6);
       sprintf(_uiOscShowPath, "%s/show", _uiOscPath);
+
+      if (_uiOscHidePath)
+            free(_uiOscHidePath);
+      _uiOscHidePath = (char *)malloc(pl + 6);
+      sprintf(_uiOscHidePath, "%s/hide", _uiOscPath);
+
+      if (_uiOscQuitPath)
+            free(_uiOscQuitPath);
+      _uiOscQuitPath = (char *)malloc(pl + 6);
+      sprintf(_uiOscQuitPath, "%s/quit", _uiOscPath);
 
       /* At this point a more substantial host might also call
       * configure() on the UI to set any state that it had remembered
@@ -802,6 +820,8 @@ int OscIF::oscUpdate(lo_arg **argv)
       fprintf(stderr, " _uiOscProgramPath:%s\n", _uiOscProgramPath);
       fprintf(stderr, " _uiOscControlPath:%s\n",_uiOscControlPath);
       fprintf(stderr, " _uiOscShowPath:%s\n", _uiOscShowPath);
+      fprintf(stderr, " _uiOscHidePath:%s\n", _uiOscHidePath);
+      fprintf(stderr, " _uiOscQuitPath:%s\n", _uiOscQuitPath);
       fprintf(stderr, " museProject:%s\n", MusEGlobal::museProject.toLocal8Bit().constData());
       #endif
       
@@ -888,145 +908,175 @@ int OscIF::oscControl(lo_arg**)   { return 0; }
 //   oscExiting
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// int OscIF::oscExiting(lo_arg**)
+// {
+//       // The gui is gone now, right?
+//       _oscGuiVisible = false;
+//
+// // DELETETHIS 52
+// // Just an attempt to really kill the process, an attempt to fix dssi-vst gui
+// //  not re-showing after closing. Doesn't help. It's a design problem with dssi-vst.
+// /*
+// #ifdef _USE_QPROCESS_FOR_GUI_
+//       if(_oscGuiQProc)
+//       {
+//         if(_oscGuiQProc->state() != QProcess::NotRunning)
+//         {
+//           #ifdef OSC_DEBUG
+//           printf("OscIF::oscExiting terminating _oscGuiQProc\n");
+//           #endif
+//
+//           //_oscGuiQProc->kill();
+//           // "This tries to terminate the process the nice way. If the process is still running after 5 seconds,
+//           //  it terminates the process the hard way. The timeout should be chosen depending on the time the
+//           //  process needs to do all its cleanup: use a higher value if the process is likely to do a lot of
+//           //  computation or I/O on cleanup."
+//           _oscGuiQProc->terminate();
+//           // FIXME: In Qt4 this can only be used with threads started with QThread.
+//           // Kill is bad anyway, app should check at close if all these guis closed or not
+//           //  and ask user if they really want to close, possibly with kill.
+//           // Terminate might not terminate the thread. It is given a chance to prompt for saving etc.
+//           //  so kill is not desirable.
+//           // We could wait until terminate finished but don't think that's good here.
+//           ///QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );
+//           _oscGuiQProc->waitForFinished(3000);
+//         }
+//         //delete _oscGuiQProc;
+//         //_oscGuiQProc = 0;
+//       }
+//
+//
+// #else  // NOT  _USE_QPROCESS_FOR_GUI_
+//
+//       if(_guiPid != -1)
+//       {
+//         #ifdef OSC_DEBUG
+//         printf("OscIF::oscExiting hanging up _guiPid:%d\n", _guiPid);
+//         #endif
+//         //if(kill(_guiPid, SIGHUP) != -1)
+//         //if(kill(_guiPid, SIGTERM) != -1)
+//         if(kill(_guiPid, SIGKILL) != -1)
+//         {
+//           #ifdef OSC_DEBUG
+//           printf(" hang up sent\n");
+//           #endif
+//           _guiPid = -1;
+//         }
+//       }
+//
+// #endif // _USE_QPROCESS_FOR_GUI_
+// */
+//
+//       if(_uiOscTarget)
+//         lo_address_free(_uiOscTarget);
+//       _uiOscTarget = 0;
+//       if(_uiOscSampleRatePath)
+//         free(_uiOscSampleRatePath);
+//       _uiOscSampleRatePath = 0;
+//       if(_uiOscShowPath)
+//         free(_uiOscShowPath);
+//       _uiOscShowPath = 0;
+//       if(_uiOscControlPath)
+//         free(_uiOscControlPath);
+//       _uiOscControlPath = 0;
+//       if(_uiOscConfigurePath)
+//         free(_uiOscConfigurePath);
+//       _uiOscConfigurePath = 0;
+//       if(_uiOscProgramPath)
+//         free(_uiOscProgramPath);
+//       _uiOscProgramPath = 0;
+//       if(_uiOscPath)
+//         free(_uiOscPath);
+//       _uiOscPath = 0;
+//
+//       // DELETETHIS 20
+//       //const DSSI_Descriptor* dssi = synth->dssi;
+//       //const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
+//       //if(ld->deactivate)
+//       //  ld->deactivate(handle);
+//
+//       /*
+//       if (_uiOscPath == 0) {
+//             printf("OscIF::oscExiting(): no _uiOscPath\n");
+//             return 1;
+//             }
+//       char uiOscGuiPath[strlen(_uiOscPath)+6];
+//
+//       sprintf(uiOscGuiPath, "%s/%s", _uiOscPath, "quit");
+//       #ifdef OSC_DEBUG
+//       printf("OscIF::oscExiting(): sending quit to uiOscGuiPath:%s\n", uiOscGuiPath);
+//       #endif
+//
+//       lo_send(_uiOscTarget, uiOscGuiPath, "");
+//       */
+//
+// // DELETETHIS 37
+// #if 0
+//       int i;
+//
+//       if (verbose) {
+//             printf("MusE: OSC: got exiting notification for instance %d\n",
+//                instance->number);
+//             }
+//
+//       if (instance->plugin) {
+//
+//             /*!!! No, this isn't safe -- plugins deactivated in this way
+//               would still be included in a run_multiple_synths call unless
+//               we re-jigged the instance array at the same time -- leave it
+//               for now
+//             if (instance->plugin->descriptor->LADSPA_Plugin->deactivate) {
+//                   instance->plugin->descriptor->LADSPA_Plugin->deactivate
+//                      (instanceHandles[instance->number]);
+//                   }
+//             */
+//             /* Leave this flag though, as we need it to determine when to exit */
+//             instance->inactive = 1;
+//             }
+//
+//       /* Do we have any plugins left running? */
+//
+//       for (i = 0; i < instance_count; ++i) {
+//             if (!instances[i].inactive)
+//                   return 0;
+//             }
+//
+//       if (verbose) {
+//             printf("MusE: That was the last remaining plugin, exiting...\n");
+//             }
+//       exiting = 1;
+// #endif
+//       return 0;
+// }
+
+//---------------------------------------------------------
+//   oscExiting
+//---------------------------------------------------------
+
 int OscIF::oscExiting(lo_arg**)
 {
-      // The gui is gone now, right?
-      _oscGuiVisible = false;
-      
-// DELETETHIS 52
-// Just an attempt to really kill the process, an attempt to fix dssi-vst gui 
-//  not re-showing after closing. Doesn't help. It's a design problem with dssi-vst.
-/*
-#ifdef _USE_QPROCESS_FOR_GUI_
-      if(_oscGuiQProc)
-      {
-        if(_oscGuiQProc->state() != QProcess::NotRunning)
-        {
-          #ifdef OSC_DEBUG 
-          printf("OscIF::oscExiting terminating _oscGuiQProc\n");
-          #endif
-          
-          //_oscGuiQProc->kill();
-          // "This tries to terminate the process the nice way. If the process is still running after 5 seconds, 
-          //  it terminates the process the hard way. The timeout should be chosen depending on the time the 
-          //  process needs to do all its cleanup: use a higher value if the process is likely to do a lot of 
-          //  computation or I/O on cleanup."           
-          _oscGuiQProc->terminate();
-          // FIXME: In Qt4 this can only be used with threads started with QThread. 
-          // Kill is bad anyway, app should check at close if all these guis closed or not 
-          //  and ask user if they really want to close, possibly with kill.
-          // Terminate might not terminate the thread. It is given a chance to prompt for saving etc.
-          //  so kill is not desirable.
-          // We could wait until terminate finished but don't think that's good here.
-          ///QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
-          _oscGuiQProc->waitForFinished(3000);
-        }  
-        //delete _oscGuiQProc;
-        //_oscGuiQProc = 0;
-      }
-      
-     
-#else  // NOT  _USE_QPROCESS_FOR_GUI_        
+  // WARNING: According to the DSSI document RFC.txt:
+  //
+  // <base path>/exiting
+  //  Notifies the host that the UI is in the process of exiting, for
+  //   example if the user closed the GUI window using the window manager.
+  //  The UI should not send this if exiting in response to a quit
+  //   message (see below).  No arguments.  (required method)
+  //
+  // <base path>/quit
+  //  Exit the UI.  The UI should not send any more communication to the
+  //   host about this plugin after receiving a quit message.  It may save
+  //   any of its own state before exiting, but it should not retain state
+  //   that may be necessary for the host to restore the plugin instance
+  //   correctly.  (required method)
+  //
+  // But... some plugins were actually observed calling 'exiting' in response to quit.
+  // So be careful...
 
-      if(_guiPid != -1)
-      {  
-        #ifdef OSC_DEBUG 
-        printf("OscIF::oscExiting hanging up _guiPid:%d\n", _guiPid);
-        #endif
-        //if(kill(_guiPid, SIGHUP) != -1)
-        //if(kill(_guiPid, SIGTERM) != -1)
-        if(kill(_guiPid, SIGKILL) != -1)
-        {  
-          #ifdef OSC_DEBUG 
-          printf(" hang up sent\n");
-          #endif
-          _guiPid = -1;
-        }  
-      }  
-      
-#endif // _USE_QPROCESS_FOR_GUI_
-*/
-      
-      if(_uiOscTarget)
-        lo_address_free(_uiOscTarget);
-      _uiOscTarget = 0;  
-      if(_uiOscSampleRatePath)
-        free(_uiOscSampleRatePath);
-      _uiOscSampleRatePath = 0;  
-      if(_uiOscShowPath)
-        free(_uiOscShowPath);
-      _uiOscShowPath = 0;  
-      if(_uiOscControlPath)
-        free(_uiOscControlPath);
-      _uiOscControlPath = 0;  
-      if(_uiOscConfigurePath)
-        free(_uiOscConfigurePath);
-      _uiOscConfigurePath = 0;  
-      if(_uiOscProgramPath)
-        free(_uiOscProgramPath);
-      _uiOscProgramPath = 0;  
-      if(_uiOscPath)
-        free(_uiOscPath);
-      _uiOscPath = 0;  
-        
-      // DELETETHIS 20
-      //const DSSI_Descriptor* dssi = synth->dssi;
-      //const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
-      //if(ld->deactivate) 
-      //  ld->deactivate(handle);
-      
-      /*
-      if (_uiOscPath == 0) {
-            printf("OscIF::oscExiting(): no _uiOscPath\n");
-            return 1;
-            }
-      char uiOscGuiPath[strlen(_uiOscPath)+6];
-        
-      sprintf(uiOscGuiPath, "%s/%s", _uiOscPath, "quit");
-      #ifdef OSC_DEBUG 
-      printf("OscIF::oscExiting(): sending quit to uiOscGuiPath:%s\n", uiOscGuiPath);
-      #endif
-      
-      lo_send(_uiOscTarget, uiOscGuiPath, "");
-      */
-  
-// DELETETHIS 37
-#if 0
-      int i;
+  oscCleanupGui();
 
-      if (verbose) {
-            printf("MusE: OSC: got exiting notification for instance %d\n",
-               instance->number);
-            }
-
-      if (instance->plugin) {
-
-            /*!!! No, this isn't safe -- plugins deactivated in this way
-              would still be included in a run_multiple_synths call unless
-              we re-jigged the instance array at the same time -- leave it
-              for now
-            if (instance->plugin->descriptor->LADSPA_Plugin->deactivate) {
-                  instance->plugin->descriptor->LADSPA_Plugin->deactivate
-                     (instanceHandles[instance->number]);
-                  }
-            */
-            /* Leave this flag though, as we need it to determine when to exit */
-            instance->inactive = 1;
-            }
-
-      /* Do we have any plugins left running? */
-
-      for (i = 0; i < instance_count; ++i) {
-            if (!instances[i].inactive)
-                  return 0;
-            }
-
-      if (verbose) {
-            printf("MusE: That was the last remaining plugin, exiting...\n");
-            }
-      exiting = 1;
-#endif
-      return 0;
+  return 0;
 }
 
 //---------------------------------------------------------
@@ -1436,60 +1486,141 @@ bool OscIF::oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginL
   return true;
 }
 
+void OscIF::oscCleanupGui()
+{
+  // The gui is gone now, right?
+  _oscGuiVisible = false;
+
+  if(_uiOscTarget)
+    lo_address_free(_uiOscTarget);
+  _uiOscTarget = nullptr;
+  if(_uiOscSampleRatePath)
+    free(_uiOscSampleRatePath);
+  _uiOscSampleRatePath = nullptr;
+  if(_uiOscShowPath)
+    free(_uiOscShowPath);
+  _uiOscShowPath = nullptr;
+  if(_uiOscHidePath)
+    free(_uiOscHidePath);
+  _uiOscHidePath = nullptr;
+  if(_uiOscQuitPath)
+    free(_uiOscQuitPath);
+  _uiOscQuitPath = nullptr;
+  if(_uiOscControlPath)
+    free(_uiOscControlPath);
+  _uiOscControlPath = nullptr;
+  if(_uiOscConfigurePath)
+    free(_uiOscConfigurePath);
+  _uiOscConfigurePath = nullptr;
+  if(_uiOscProgramPath)
+    free(_uiOscProgramPath);
+  _uiOscProgramPath = nullptr;
+  if(_uiOscPath)
+    free(_uiOscPath);
+  _uiOscPath = nullptr;
+}
+
 //---------------------------------------------------------
 //   oscShowGui
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// void OscIF::oscShowGui(bool v)
+// {
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "OscIF::oscShowGui(): v:%d visible:%d\n", v, oscGuiVisible());
+//       #endif
+//
+//       if (v == oscGuiVisible())
+//             return;
+//
+// #ifdef _USE_QPROCESS_FOR_GUI_
+//       if((_oscGuiQProc == 0) || (_oscGuiQProc->state() == QProcess::NotRunning))
+// #else
+//       if(_guiPid == -1)
+// #endif
+//       {
+//         // We need an indicator that update was called - update must have been called to get new path etc...
+//         // If the process is not running this path is invalid, right?
+//         if(_uiOscPath)
+//           free(_uiOscPath);
+//         _uiOscPath = 0;
+//
+//         #ifdef OSC_DEBUG
+//         fprintf(stderr, "OscIF::oscShowGui(): No QProcess or process not running. Starting gui...\n");
+//         #endif
+//
+//         if(!oscInitGui())
+//         {
+//           fprintf(stderr, "OscIF::oscShowGui(): failed to initialize gui on oscInitGui()\n");
+//           return;
+//         }
+//       }
+//
+//       for (int i = 0; i < 10; ++i) {
+//             if (_uiOscPath)
+//                   break;
+//             sleep(1);
+//             }
+//       if (_uiOscPath == 0) {
+//             fprintf(stderr, "OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 10 seconds.\n");
+//             return;
+//             }
+//
+//       char uiOscGuiPath[strlen(_uiOscPath)+6];
+//       sprintf(uiOscGuiPath, "%s/%s", _uiOscPath, v ? "show" : "hide");
+//
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "OscIF::oscShowGui(): Sending show/hide uiOscGuiPath:%s\n", uiOscGuiPath);
+//       #endif
+//
+//       lo_send(_uiOscTarget, uiOscGuiPath, "");
+//       _oscGuiVisible = v;
+// }
+
 void OscIF::oscShowGui(bool v)
 {
-      #ifdef OSC_DEBUG 
+      #ifdef OSC_DEBUG
       fprintf(stderr, "OscIF::oscShowGui(): v:%d visible:%d\n", v, oscGuiVisible());
       #endif
-      
+
       if (v == oscGuiVisible())
             return;
-      
+
 #ifdef _USE_QPROCESS_FOR_GUI_
-      if((_oscGuiQProc == 0) || (_oscGuiQProc->state() == QProcess::NotRunning))
-#else        
+      if(!_oscGuiQProc || (_oscGuiQProc->state() == QProcess::NotRunning))
+#else
       if(_guiPid == -1)
-#endif        
+#endif
       {
         // We need an indicator that update was called - update must have been called to get new path etc...
         // If the process is not running this path is invalid, right?
         if(_uiOscPath)
           free(_uiOscPath);
-        _uiOscPath = 0;  
-          
+        _uiOscPath = nullptr;
+
         #ifdef OSC_DEBUG
         fprintf(stderr, "OscIF::oscShowGui(): No QProcess or process not running. Starting gui...\n");
         #endif
-        
+
         if(!oscInitGui())
         {
           fprintf(stderr, "OscIF::oscShowGui(): failed to initialize gui on oscInitGui()\n");
           return;
-        }  
-      }  
-      
+        }
+      }
+
       for (int i = 0; i < 10; ++i) {
             if (_uiOscPath)
                   break;
             sleep(1);
             }
-      if (_uiOscPath == 0) {
+      if (!_uiOscPath) {
             fprintf(stderr, "OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 10 seconds.\n");
             return;
             }
-      
-      char uiOscGuiPath[strlen(_uiOscPath)+6];
-      sprintf(uiOscGuiPath, "%s/%s", _uiOscPath, v ? "show" : "hide");
-      
-      #ifdef OSC_DEBUG 
-      fprintf(stderr, "OscIF::oscShowGui(): Sending show/hide uiOscGuiPath:%s\n", uiOscGuiPath);
-      #endif
-      
-      lo_send(_uiOscTarget, uiOscGuiPath, "");
+
+      lo_send(_uiOscTarget, v ? _uiOscShowPath : _uiOscHidePath, "");
       _oscGuiVisible = v;
 }
 
@@ -1507,26 +1638,70 @@ bool OscIF::oscGuiVisible() const
 //   oscQuitGui
 //---------------------------------------------------------
 
+// bool OscIF::oscQuitGui()
+// {
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "OscIF::oscQuitGui()\n");
+//       #endif
+//
+//       if (_uiOscPath == 0) {
+//             fprintf(stderr, "OscIF::oscQuitGui(): Error: no _uiOscPath.\n");
+//             return false;
+//             }
+//
+//       char uiOscQuitPath[strlen(_uiOscPath)+6];
+//       sprintf(uiOscQuitPath, "%s/%s", _uiOscPath, "quit");
+//
+//       #ifdef OSC_DEBUG
+//       fprintf(stderr, "OscIF::oscQuitGui(): Sending quit uiOscQuitPath:%s\n", uiOscQuitPath);
+//       #endif
+//
+//       lo_send(_uiOscTarget, uiOscQuitPath, "");
+//       _oscGuiVisible = false;
+//       return true;
+// }
+
 bool OscIF::oscQuitGui()
 {
       #ifdef OSC_DEBUG
       fprintf(stderr, "OscIF::oscQuitGui()\n");
       #endif
 
-      if (_uiOscPath == 0) {
-            fprintf(stderr, "OscIF::oscQuitGui(): Error: no _uiOscPath.\n");
-            return false;
-            }
+      if(!isRunning())
+        return true;
 
-      char uiOscQuitPath[strlen(_uiOscPath)+6];
-      sprintf(uiOscQuitPath, "%s/%s", _uiOscPath, "quit");
+      if(_uiOscTarget && _uiOscQuitPath)
+      {
+//        #ifdef OSC_DEBUG
+        fprintf(stderr, "OscIF::oscQuitGui(): Sending quit uiOscQuitPath:%s\n", _uiOscQuitPath);
+//        #endif
+        lo_send(_uiOscTarget, _uiOscQuitPath, "");
+      }
+      else
+        return false;
 
-      #ifdef OSC_DEBUG
-      fprintf(stderr, "OscIF::oscQuitGui(): Sending quit uiOscQuitPath:%s\n", uiOscQuitPath);
-      #endif
+      // for(int i = 0; i < 10; ++i)
+      // {
+      //   if(!isRunning())
+      //     break;
+      //   sleep(1);
+      // }
+      // if(isRunning())
+      // {
+      //   fprintf(stderr, "OscIF::oscQuitGui(): Error: Timeout - Gui process is still running after 10 seconds!\n");
+      //   return false;
+      // }
 
-      lo_send(_uiOscTarget, uiOscQuitPath, "");
-      _oscGuiVisible = false;
+      if(!_oscGuiQProc->waitForFinished(10000)) // 10 secs.
+      {
+        fprintf(stderr, "OscIF::oscQuitGui(): Error: Timeout - Gui process is still running after 10 seconds!\n");
+        return false;
+      }
+
+
+      // De-allocate all paths and stuff.
+      oscCleanupGui();
+
       return true;
 }
 

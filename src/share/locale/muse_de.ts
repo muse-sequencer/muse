@@ -8499,7 +8499,7 @@ bis zum Senden des ersten Clocks.</translation>
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+5075"/>
+        <location filename="../../muse/song.cpp" line="+5079"/>
         <source>Jack shutdown!</source>
         <translation>Jack heruntergefahren!</translation>
     </message>
@@ -10362,7 +10362,7 @@ Um Sie zu übernehmen, starten Sie MusE bitte neu.
         <translation type="obsolete">Pan</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="+1323"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="+1326"/>
         <source>1/2 channel</source>
         <translation>1/2 Kanäle</translation>
     </message>
@@ -16299,7 +16299,7 @@ Möchten Sie sie dennoch importieren?</translation>
         <translation type="vanished">&amp;Nein</translation>
     </message>
     <message>
-        <location filename="../../muse/songfile.cpp" line="+1307"/>
+        <location filename="../../muse/songfile.cpp" line="+1308"/>
         <source>File version is %1.%2
 Current version is %3.%4
 Conversions may be applied if file is saved!</source>
@@ -17459,7 +17459,7 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+8929"/>
+        <location filename="../../muse/plugin.cpp" line="+8995"/>
         <source>File Buttons</source>
         <translation>Datei-Knöpfe</translation>
     </message>
@@ -18551,7 +18551,7 @@ Titel ist nicht einzigartig</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+306"/>
+        <location line="+319"/>
         <source>Prefer Knobs, Not Sliders</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18596,7 +18596,7 @@ Titel ist nicht einzigartig</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-367"/>
+        <location line="-380"/>
         <source>MusE: bad trackname</source>
         <translation>MusE: ungeeigneter Spurname</translation>
     </message>
@@ -18609,7 +18609,7 @@ Titel ist nicht einzigartig</translation>
         <translation type="vanished">Konfiguration:</translation>
     </message>
     <message>
-        <location line="+306"/>
+        <location line="+319"/>
         <source>Configuration</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20793,7 +20793,7 @@ Only one is allowed.</source>
         <translation>Warnung: Keine Ausgangsgeräte! Zum Verbinden klicken...</translation>
     </message>
     <message>
-        <location filename="../../muse/audiotrack.cpp" line="+3580"/>
+        <location filename="../../muse/audiotrack.cpp" line="+3603"/>
         <source>TRACK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20816,7 +20816,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="-6484"/>
+        <location filename="../../muse/plugin.cpp" line="-6548"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

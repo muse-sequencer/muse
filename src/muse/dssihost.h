@@ -160,6 +160,10 @@ class DssiSynthIF : public SynthIF
       virtual void showNativeGui(bool);                                              
 // REMOVE Tim. tmp. Added.
       virtual void closeNativeGui();
+// REMOVE Tim. tmp. Added.
+      // Informs the plugin that we are about to change the UI title bar text.
+      // Some UIs may need to close because their title bar text is not alterable after creation.
+      void nativeGuiTitleAboutToChange();
       virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setNativeGeometry(int, int, int, int) {}

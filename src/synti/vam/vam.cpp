@@ -1099,7 +1099,7 @@ void VAM::setNativeGeometry(int x, int y, int w, int h)
 void VAM::setNativeGuiWindowTitle(const char* text) const
 {
   if(gui)
-    gui->setWindowTitle(QString::fromUtf8(text));
+    gui->setWindowTitle(text);
 }
 
 //---------------------------------------------------------

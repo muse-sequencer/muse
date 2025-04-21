@@ -106,7 +106,7 @@ class Synth : public PluginBase {
 
 //       inline virtual MusEPlugin::PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
 //       inline int references() const                            { return _references; }
-      virtual int incReferences(int val) override;
+//       virtual int incReferences(int val) override;
 //       inline QString uri() const                              { return _uri; }
 //       inline QString completeBaseName()                       { return _fileInfo.completeBaseName(); } // ddskrjo
 //       inline QString baseName()                               { return _fileInfo.baseName(); } // ddskrjo
@@ -237,6 +237,7 @@ class SynthIF : public PluginIBase {
 // REMOVE Tim. tmp. Added.
       // Here the name is the track name.
       virtual QString name() const;
+      virtual QString displayName() const;
       // The short formal plugin name.
 // REMOVE Tim. tmp. Added.
 //       // NOTE: Currently the same as pluginName().
@@ -472,11 +473,16 @@ class SynthI : public AudioTrack, public MidiDevice,
       bool guiVisible() const { if(!_sif) return false; else return _sif->guiVisible(); }
       void showGui(bool v)    { if(!_sif) return; else _sif->showGui(v); }
       bool hasGui() const     { if(!_sif) return false; else return _sif->hasGui(); }
+      void showGuiPending(bool v) { if(!_sif) return; else _sif->showGuiPending(v); }
+      bool isShowGuiPending() const { if(!_sif) return false; else return _sif->isShowGuiPending(); }
+      void updateGuiWindowTitle() const { if(!_sif) return; else _sif->updateGuiWindowTitle(); }
       bool nativeGuiVisible() const { if(!_sif) return false; else return _sif->nativeGuiVisible(); }
       void showNativeGui(bool v)    { if(!_sif) return; else _sif->showNativeGui(v); }
       void showNativeGuiPending(bool v) { if(!_sif) return; else _sif->showNativeGuiPending(v); }
       bool isShowNativeGuiPending() const { if(!_sif) return false; else return _sif->isShowNativeGuiPending(); }
+      void updateNativeGuiWindowTitle() const { if(!_sif) return; else _sif->updateNativeGuiWindowTitle(); }
       bool hasNativeGui() const     { if(!_sif) return false; else return _sif->hasNativeGui(); }
+      void nativeGuiTitleAboutToChange() const { if(!_sif) return; else _sif->nativeGuiTitleAboutToChange(); }
       void getGeometry(int* x, int* y, int* w, int* h) const {
             if(_sif)
               _sif->getGeometry(x, y, w, h);

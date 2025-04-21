@@ -963,13 +963,15 @@ void VstNativeSynth::guiUpdateWindowTitle(VstNativeSynthOrPlugin *userData)
     if(userData->pstate && userData->pstate->pluginI && userData->pstate->pluginI->track() && userData->pstate->editor)
     {
 //       const QString newtitle = userData->pstate->pluginI->track()->name() + QString(": ") + userData->pstate->pluginI->pluginLabel();
-      const QString newtitle = userData->pstate->pluginI->track()->name() + QString(": ") + userData->pstate->pluginI->name();
+//       const QString newtitle = userData->pstate->pluginI->track()->name() + QString(": ") + userData->pstate->pluginI->name();
+      const QString newtitle = userData->pstate->pluginI->track()->displayName() + userData->pstate->pluginI->pluginName();
       userData->pstate->editor->updateWindowTitle(newtitle);
     }
     else if(userData->sif && userData->sif->_editor)
     {
-      const QString newtitle = userData->sif->name() + QString(": ") + userData->sif->pluginName();
 //       const QString newtitle = userData->sif->name() + QString(": ") + userData->sif->pluginLabel();
+//       const QString newtitle = userData->sif->name() + QString(": ") + userData->sif->pluginName();
+      const QString newtitle = userData->sif->displayName();
       userData->sif->_editor->updateWindowTitle(newtitle);
     }
   }

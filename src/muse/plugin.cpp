@@ -2187,6 +2187,8 @@ QString PluginBase::fileName() const                  { return _fileInfo.fileNam
 
 unsigned long PluginBase::id() const                  { return _uniqueID; }
 int PluginBase::references() const                    { return _references; }
+// REMOVE Tim. tmp. Added
+int PluginBase::incReferences(int val)                { _references += val; return _references; }
 
 bool PluginBase::usesTimePosition() const            { return _usesTimePosition; }
 unsigned long PluginBase::freewheelPortIndex() const { return _freewheelPortIndex; }
@@ -3893,6 +3895,8 @@ PluginIBase::PluginIBase()
 {
   _gui = 0;
   _curActiveState = false;
+// REMOVE Tim. tmp. Added.
+  _showGuiPending = false;
   _showNativeGuiPending = false;
 }
 
@@ -3916,6 +3920,8 @@ void PluginIBase::showGui()
     _gui->hide();
   else
     _gui->show();
+// REMOVE Tim. tmp. Added.
+  _showGuiPending = false;
 }
 
 void PluginIBase::showGui(bool flag)
@@ -3931,6 +3937,8 @@ void PluginIBase::showGui(bool flag)
     if(_gui)
       _gui->hide();
   }
+// REMOVE Tim. tmp. Added.
+  _showGuiPending = false;
 }
 
 //---------------------------------------------------------
@@ -4082,9 +4090,12 @@ MusEGui::PluginGui* PluginIBase::gui() const { return _gui; }
 void PluginIBase::showNativeGui() { _showNativeGuiPending = false; }
 void PluginIBase::showNativeGui(bool) { _showNativeGuiPending = false; }
 // REMOVE Tim. tmp. Added.
+void PluginIBase::showGuiPending(bool v) { _showGuiPending = v; }
+bool PluginIBase::isShowGuiPending() const { return _showGuiPending; }
 void PluginIBase::showNativeGuiPending(bool v) { _showNativeGuiPending = v; }
 bool PluginIBase::isShowNativeGuiPending() const { return _showNativeGuiPending; }
 void PluginIBase::closeNativeGui() { }
+void PluginIBase::nativeGuiTitleAboutToChange() { }
 bool PluginIBase::nativeGuiVisible() const { return false; }
 void PluginIBase::updateNativeGuiWindowTitle() { }
 
@@ -4270,6 +4281,7 @@ void PluginI::init()
       _on               = true;
 // REMOVE Tim. tmp. Removed.
       // initControlValues = false;
+      _showGuiPending = false;
       _showNativeGuiPending = false;
 // REMOVE Tim. tmp. Added.
       _isFakeName = false;
@@ -5837,20 +5849,26 @@ void PluginI::configure(const PluginConfiguration& config, ConfigureOptions_t op
     setNativeGeometry(_initConfig._nativeGeometry.x(), _initConfig._nativeGeometry.y(),
       _initConfig._nativeGeometry.width(), _initConfig._nativeGeometry.height());
 
+// REMOVE Tim. tmp. Changed.
+//   if(opts & ConfigGui)
+//     showGui(config._guiVisible);
   if(opts & ConfigGui)
-    showGui(config._guiVisible);
+    showGuiPending(config._guiVisible);
 
+// REMOVE Tim. tmp. Changed.
+  // if(opts & ConfigNativeGui)
+  // {
+  //   if(opts & ConfigDeferNativeGui)
+  //     // We can't tell OSC to show the native plugin gui
+  //     //  until the parent track is added to the lists.
+  //     // OSC needs to find the plugin in the track lists.
+  //     // Use this 'pending' flag so it gets done later.
+  //     showNativeGuiPending(config._nativeGuiVisible);
+  //   else
+  //     showNativeGui(config._nativeGuiVisible);
+  // }
   if(opts & ConfigNativeGui)
-  {
-    if(opts & ConfigDeferNativeGui)
-      // We can't tell OSC to show the native plugin gui
-      //  until the parent track is added to the lists.
-      // OSC needs to find the plugin in the track lists.
-      // Use this 'pending' flag so it gets done later.
-      showNativeGuiPending(config._nativeGuiVisible);
-    else
-      showNativeGui(config._nativeGuiVisible);
-  }
+    showNativeGuiPending(config._nativeGuiVisible);
 
   if(gui())
     gui()->updateValues();
@@ -7847,16 +7865,16 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset, int channels)
 
                               // Options for configuration.
                               ConfigureOptions_t opts = readPreset ? ConfigPresetOnly : ConfigAll;
-                              // Special for DSSI: Defer opening the native gui.
-                              // We can't tell OSC to show the native plugin gui
-                              //  until the parent track is added to the lists.
-                              // OSC needs to find the plugin in the track lists.
-                              // TODO: Find a way to offload this to DSSI so we don't have to worry about it here.
+//                               // Special for DSSI: Defer opening the native gui.
+//                               // We can't tell OSC to show the native plugin gui
+//                               //  until the parent track is added to the lists.
+//                               // OSC needs to find the plugin in the track lists.
+//                               // TODO: Find a way to offload this to DSSI so we don't have to worry about it here.
 // REMOVE Tim. tmp. Changed.
-//                               if(isDssiPlugin())
-                              if(pluginType() == MusEPlugin::PluginTypeDSSI ||
-                                 pluginType() == MusEPlugin::PluginTypeDSSIVST)
-                                opts |= ConfigDeferNativeGui;
+// //                               if(isDssiPlugin())
+//                               if(pluginType() == MusEPlugin::PluginTypeDSSI ||
+//                                  pluginType() == MusEPlugin::PluginTypeDSSIVST)
+//                                 opts |= ConfigDeferNativeGui;
 
                               configure(opts);
 
@@ -7986,6 +8004,16 @@ void PluginI::showGui(bool flag)
     PluginIBase::showGui(flag);
 }
 
+// REMOVE Tim. tmp. Added.
+// void PluginI::updateGuiWindowTitle() const
+// {
+//   if(_gui)
+//   {
+//     _gui->updateWindowTitle(titlePrefix() + name() +
+//       (uri().isEmpty() ? QString() : QString(" : ") + uri()));
+//   }
+// }
+
 //---------------------------------------------------------
 //   showNativeGui
 //---------------------------------------------------------
@@ -8090,34 +8118,49 @@ bool PluginI::nativeGuiVisible() const
 void PluginI::closeNativeGui()
 {
   #ifdef OSC_SUPPORT
-  if (_plugin)
+  if (_plugin && (pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST))
   {
     if (_oscif.isRunning())
       _oscif.oscQuitGui();
   }
   #endif
-  _showNativeGuiPending = false;
+}
+
+// REMOVE Tim. tmp. Added.
+void PluginI::nativeGuiTitleAboutToChange()
+{
+  // Some UIs may need to close because their title bar text is not alterable after creation.
+  if (_plugin)
+  {
+#ifdef OSC_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeDSSI || pluginType() == MusEPlugin::PluginTypeDSSIVST)
+    {
+      // DSSI UI title bar text cannot be altered after creation. We must close the UI.
+      // Close it even if it exists but is not visible (hidden).
+      const bool v = nativeGuiVisible();
+      closeNativeGui();
+      // If the UI was visible, schedule it to open again after the title changes.
+      showNativeGuiPending(v);
+    }
+#endif
+#ifdef LV2_SUPPORT
+    if(pluginType() == MusEPlugin::PluginTypeLV2)
+      ((LV2PluginWrapper *)plugin())->nativeGuiTitleAboutToChange(this);
+#endif
+  }
 }
 
 // REMOVE Tim. tmp. Added.
 void PluginI::updateNativeGuiWindowTitle()
 {
 #ifdef LV2_SUPPORT
-// REMOVE Tim. tmp. Changed.
-//     if(plugin() && plugin()->isLV2Plugin())
     if(pluginType() == MusEPlugin::PluginTypeLV2)
       ((LV2PluginWrapper *)plugin())->updateNativeGuiWindowTitle(this);
 #endif
 #ifdef VST_NATIVE_SUPPORT
-// REMOVE Tim. tmp. Changed.
-//     if(plugin() && plugin()->isVstNativePlugin())
     if(pluginType() == MusEPlugin::PluginTypeLinuxVST)
       ((VstNativePluginWrapper *)plugin())->updateNativeGuiWindowTitle(this);
 #endif
-
-  // NOTE DSSI UIs can't be updated once they have been created.
-  //      Instead, close them so that the next time they open, the text is correct.
-  //      Use PluginI::closeNativeGui() for example.
 }
 
 unsigned long PluginI::parameters() const           { return controlPorts; }
@@ -8234,11 +8277,13 @@ void PluginIBase::updateGuiWindowTitle() const
 //   if(_gui)
 //     _gui->updateWindowTitle();
 
+//   if(_gui)
+//   {
+//     _gui->updateWindowTitle(titlePrefix() + name() +
+//       (uri().isEmpty() ? QString() : QString(" : ") + uri()));
+//   }
   if(_gui)
-  {
-    _gui->updateWindowTitle(titlePrefix() + name() +
-      (uri().isEmpty() ? QString() : QString(" : ") + uri()));
-  }
+    _gui->updateWindowTitle(displayName());
 }
 
 void PluginIBase::guiHeartBeat()
@@ -8279,6 +8324,15 @@ QString PluginI::pluginLabel() const    { return _plugin ? _plugin->label() : _i
 
 // TODO: Use persistent settings here?
 QString PluginI::name() const           { return _name; }
+// REMOVE Tim. tmp. Added.
+QString PluginI::displayName() const
+{
+  QString s(titlePrefix());
+  if(id() >= 0 && id() < MAX_PLUGINS)
+    s += QString::number(id()) + QString(":");
+  s += name();
+  return s;
+}
 
 QString PluginI::pluginName() const     { return _plugin ? _plugin->name() : QString(); }
 
@@ -8301,12 +8355,24 @@ MusEPlugin::PluginClass_t PluginI::pluginClass() const
 //   titlePrefix
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// QString PluginI::titlePrefix() const
+// {
+//   if (_track)
+//     return _track->name() + QString(": ");
+//   else return ":";
+// }
 QString PluginI::titlePrefix() const
 {
   if (_track)
-    return _track->name() + QString(": ");
-  else return ":";
+    return _track->displayName() + QString(": ");
+//   else return ":";
+  else return QString();
 }
+// QString PluginI::titlePrefix() const
+// {
+//   return QString::number(id()) + QString(":") + name();
+// }
 
 //---------------------------------------------------------
 //   apply

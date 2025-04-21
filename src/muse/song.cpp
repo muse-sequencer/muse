@@ -1185,11 +1185,13 @@ bool Song::changePluginOperation(UndoOp *i)
     // If a plugin configuration exists.
     if(i_conf)
     {
-      // Create a PluginI. Configure everything EXCEPT opening the native gui - defer that until the non-rt stage.
-      // Note that for DSSI (at least), the track must already have been added to the song's track lists,
-      //  so that OSC can find the track.
-      //new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll & ~PluginI::ConfigNativeGui);
-      new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll | PluginI::ConfigDeferNativeGui);
+// REMOVE Tim. tmp. Changed.
+//       // Create a PluginI. Configure everything EXCEPT opening the native gui - defer that until the non-rt stage.
+//       // Note that for DSSI (at least), the track must already have been added to the song's track lists,
+//       //  so that OSC can find the track.
+//       //new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll & ~PluginI::ConfigNativeGui);
+//       new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll | PluginI::ConfigDeferNativeGui);
+      new_plugin = PluginI::createPluginI(*i_conf, i->track->channels(), PluginI::ConfigAll);
       if(!new_plugin)
       {
         fprintf(stderr,
@@ -2253,10 +2255,12 @@ bool Song::revertMovePluginOperation(UndoOp *i)
   // If a plugin configuration exists.
   if(i_conf)
   {
-    // Create a PluginI. Configure everything EXCEPT opening the native gui - defer that until the non-rt stage.
-    // Note that for DSSI (at least), the track must already have been added to the song's track lists,
-    //  so that OSC can find the track.
-    new_plugin = PluginI::createPluginI(*i_conf, track->channels(), PluginI::ConfigAll | PluginI::ConfigDeferNativeGui);
+// REMOVE Tim. tmp. Changed.
+//     // Create a PluginI. Configure everything EXCEPT opening the native gui - defer that until the non-rt stage.
+//     // Note that for DSSI (at least), the track must already have been added to the song's track lists,
+//     //  so that OSC can find the track.
+//     new_plugin = PluginI::createPluginI(*i_conf, track->channels(), PluginI::ConfigAll | PluginI::ConfigDeferNativeGui);
+    new_plugin = PluginI::createPluginI(*i_conf, track->channels(), PluginI::ConfigAll);
     if(!new_plugin)
     {
       fprintf(stderr,
@@ -7877,11 +7881,125 @@ void Song::processTrackAutomationEvents(AudioTrack *atrack, Undo* operations)
     MusEGlobal::song->applyOperationGroup(ops);
 }
 
-void Song::closeDssiEditors(Track *track) const
+// REMOVE Tim. tmp. Added.
+// void Song::closeDssiEditors(Track *track) const
+// {
+//   if(!track)
+//     return;
+//   // If it's an audio track, close all rack effect UIs.
+//   if(!track->isMidiTrack())
+//   {
+//     AudioTrack *at = static_cast<AudioTrack*>(track);
+//     const Pipeline *pl = at->efxPipe();
+//     if(pl)
+//     {
+//       const int sz = pl->size();
+//       for(int i = 0; i < sz; ++i)
+//       {
+//         PluginI *plugi = pl->at(i);
+// // REMOVE Tim. tmp. Changed.
+// //         if(plugi && plugi->isDssiPlugin())
+//         if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
+//            plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
+//           plugi->closeNativeGui();
+//       }
+//     }
+//   }
+//   // If it's a synth track, close the UI.
+//   if(track->type() == Track::AUDIO_SOFTSYNTH)
+//   {
+//     const SynthI *synthi = static_cast<const SynthI*>(track);
+//     if(synthi->synth() &&
+//        (synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSI ||
+//         synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSIVST))
+//     {
+//       if(synthi->sif())
+//         synthi->sif()->closeNativeGui();
+//     }
+//   }
+// }
+//
+// void Song::closeDssiEditors(int trackNumFrom, int trackNumTo) const
+// {
+//   // Range trackNumFrom - trackNumTo is inclusive. ([0, 0] = first.)
+//   const int sz = (int)_tracks.size();
+//   if(trackNumTo < 0 || trackNumTo >= sz)
+//     trackNumTo = sz - 1;
+//   if(trackNumFrom < 0 || trackNumFrom >= sz || trackNumFrom > trackNumTo)
+//     return;
+//   // Yes, that's <=.
+//   for(int i = trackNumFrom; i <= trackNumTo; ++i)
+//     closeDssiEditors(_tracks.at(i));
+// }
+//
+// void Song::closeDssiEditors(Track* track, int effRackPosFrom, int effRackPosTo) const
+// {
+//   if(!track || track->isMidiTrack())
+//     return;
+//   AudioTrack *at = static_cast<AudioTrack*>(track);
+//   const Pipeline *pl = at->efxPipe();
+//   if(!pl)
+//     return;
+//
+//   // Range effRackPosFrom - effRackPosTo is inclusive. ([0, 0] = first.)
+//   const int sz = (int)pl->size();
+//   if(effRackPosTo < 0 || effRackPosTo >= sz)
+//     effRackPosTo = sz - 1;
+//   if(effRackPosFrom < 0 || effRackPosFrom >= sz || effRackPosFrom > effRackPosTo)
+//     return;
+//
+//   // Yes, that's <=.
+//   for(int i = effRackPosFrom; i <= effRackPosTo; ++i)
+//   {
+//     PluginI *plugi = pl->at(i);
+// // REMOVE Tim. tmp. Changed.
+// //     if(plugi && plugi->isDssiPlugin())
+//     if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
+//        plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
+//       plugi->closeNativeGui();
+//   }
+// }
+//
+// void Song::updateUiWindowTitles(Track* track) const
+// {
+//   if(!track)
+//     return;
+//   // If it's an audio track, update all rack effect UIs.
+//   if(!track->isMidiTrack())
+//   {
+//     AudioTrack *at = static_cast<AudioTrack*>(track);
+//     const Pipeline *pl = at->efxPipe();
+//     if(pl)
+//     {
+//       const int sz = pl->size();
+//       for(int i = 0; i < sz; ++i)
+//       {
+//         PluginI *plugi = pl->at(i);
+//         if(plugi)
+//         {
+//           plugi->updateNativeGuiWindowTitle();
+//           plugi->updateGuiWindowTitle();
+//         }
+//       }
+//     }
+//   }
+//   // If it's a synth track, close the UI.
+//   if(track->type() == Track::AUDIO_SOFTSYNTH)
+//   {
+//     const SynthI *synthi = static_cast<const SynthI*>(track);
+//     if(synthi->sif())
+//     {
+//       synthi->sif()->updateNativeGuiWindowTitle();
+//       synthi->sif()->updateGuiWindowTitle();
+//     }
+//   }
+// }
+
+void Song::PluginGuiTitlesAboutToChange(Track *track) const
 {
   if(!track)
     return;
-  // If it's an audio track, close all rack effect UIs.
+  // If it's an audio track, inform all relevant rack effect UIs.
   if(!track->isMidiTrack())
   {
     AudioTrack *at = static_cast<AudioTrack*>(track);
@@ -7892,29 +8010,20 @@ void Song::closeDssiEditors(Track *track) const
       for(int i = 0; i < sz; ++i)
       {
         PluginI *plugi = pl->at(i);
-// REMOVE Tim. tmp. Changed.
-//         if(plugi && plugi->isDssiPlugin())
-        if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
-           plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
-          plugi->closeNativeGui();
+        if(plugi)
+          plugi->nativeGuiTitleAboutToChange();
       }
     }
   }
-  // If it's a synth track, close the UI.
+  // If it's a synth track, inform the relevant UI.
   if(track->type() == Track::AUDIO_SOFTSYNTH)
   {
     const SynthI *synthi = static_cast<const SynthI*>(track);
-    if(synthi->synth() &&
-       (synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSI ||
-        synthi->synth()->pluginType() == MusEPlugin::PluginTypeDSSIVST))
-    {
-      if(synthi->sif())
-        synthi->sif()->closeNativeGui();
-    }
+    synthi->nativeGuiTitleAboutToChange();
   }
 }
 
-void Song::closeDssiEditors(int trackNumFrom, int trackNumTo) const
+void Song::PluginGuiTitlesAboutToChange(int trackNumFrom, int trackNumTo) const
 {
   // Range trackNumFrom - trackNumTo is inclusive. ([0, 0] = first.)
   const int sz = (int)_tracks.size();
@@ -7924,10 +8033,10 @@ void Song::closeDssiEditors(int trackNumFrom, int trackNumTo) const
     return;
   // Yes, that's <=.
   for(int i = trackNumFrom; i <= trackNumTo; ++i)
-    closeDssiEditors(_tracks.at(i));
+    PluginGuiTitlesAboutToChange(_tracks.at(i));
 }
 
-void Song::closeDssiEditors(Track* track, int effRackPosFrom, int effRackPosTo) const
+void Song::PluginGuiTitlesAboutToChange(Track* track, int effRackPosFrom, int effRackPosTo) const
 {
   if(!track || track->isMidiTrack())
     return;
@@ -7947,11 +8056,72 @@ void Song::closeDssiEditors(Track* track, int effRackPosFrom, int effRackPosTo) 
   for(int i = effRackPosFrom; i <= effRackPosTo; ++i)
   {
     PluginI *plugi = pl->at(i);
-// REMOVE Tim. tmp. Changed.
-//     if(plugi && plugi->isDssiPlugin())
-    if(plugi && (plugi->pluginType() == MusEPlugin::PluginTypeDSSI ||
-       plugi->pluginType() == MusEPlugin::PluginTypeDSSIVST))
-      plugi->closeNativeGui();
+    if(plugi)
+      plugi->nativeGuiTitleAboutToChange();
+  }
+}
+
+void Song::showPendingPluginGuis(Track* track) const
+{
+  if(!track)
+    return;
+  // If it's an audio track, update all rack effect UIs.
+  if(!track->isMidiTrack())
+  {
+    AudioTrack *at = static_cast<AudioTrack*>(track);
+    at->showPendingPluginGuis();
+  }
+  // If it's a synth track, close the UI.
+  if(track->type() == Track::AUDIO_SOFTSYNTH)
+  {
+    SynthI *synthi = static_cast<SynthI*>(track);
+    if(synthi->isShowGuiPending())
+      synthi->showGui(true);
+    if(synthi->isShowNativeGuiPending())
+      synthi->showNativeGui(true);
+  }
+}
+
+void Song::showPendingPluginGuis(int trackNumFrom, int trackNumTo) const
+{
+  // Range trackNumFrom - trackNumTo is inclusive. ([0, 0] = first.)
+  const int sz = (int)_tracks.size();
+  if(trackNumTo < 0 || trackNumTo >= sz)
+    trackNumTo = sz - 1;
+  if(trackNumFrom < 0 || trackNumFrom >= sz || trackNumFrom > trackNumTo)
+    return;
+  // Yes, that's <=.
+  for(int i = trackNumFrom; i <= trackNumTo; ++i)
+    showPendingPluginGuis(_tracks.at(i));
+}
+
+void Song::showPendingPluginGuis(Track* track, int effRackPosFrom, int effRackPosTo) const
+{
+  if(!track || track->isMidiTrack())
+    return;
+  AudioTrack *at = static_cast<AudioTrack*>(track);
+  const Pipeline *pl = at->efxPipe();
+  if(!pl)
+    return;
+
+  // Range effRackPosFrom - effRackPosTo is inclusive. ([0, 0] = first.)
+  const int sz = (int)pl->size();
+  if(effRackPosTo < 0 || effRackPosTo >= sz)
+    effRackPosTo = sz - 1;
+  if(effRackPosFrom < 0 || effRackPosFrom >= sz || effRackPosFrom > effRackPosTo)
+    return;
+
+  // Yes, that's <=.
+  for(int i = effRackPosFrom; i <= effRackPosTo; ++i)
+  {
+    PluginI *plugi = pl->at(i);
+    if(plugi)
+    {
+      if(plugi->isShowGuiPending())
+        plugi->showGui(true);
+      if(plugi->isShowNativeGuiPending())
+        plugi->showNativeGui(true);
+    }
   }
 }
 
@@ -7963,30 +8133,14 @@ void Song::updateUiWindowTitles(Track* track) const
   if(!track->isMidiTrack())
   {
     AudioTrack *at = static_cast<AudioTrack*>(track);
-    const Pipeline *pl = at->efxPipe();
-    if(pl)
-    {
-      const int sz = pl->size();
-      for(int i = 0; i < sz; ++i)
-      {
-        PluginI *plugi = pl->at(i);
-        if(plugi)
-        {
-          plugi->updateNativeGuiWindowTitle();
-          plugi->updateGuiWindowTitle();
-        }
-      }
-    }
+    at->updateUiWindowTitles();
   }
   // If it's a synth track, close the UI.
   if(track->type() == Track::AUDIO_SOFTSYNTH)
   {
     const SynthI *synthi = static_cast<const SynthI*>(track);
-    if(synthi->sif())
-    {
-      synthi->sif()->updateNativeGuiWindowTitle();
-      synthi->sif()->updateGuiWindowTitle();
-    }
+    synthi->updateNativeGuiWindowTitle();
+    synthi->updateGuiWindowTitle();
   }
 }
 

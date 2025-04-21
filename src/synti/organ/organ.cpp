@@ -727,7 +727,7 @@ void Organ::showNativeGui(bool val)
 void Organ::setNativeGuiWindowTitle(const char* text) const
 {
   if(gui)
-    gui->setWindowTitle(QString::fromUtf8(text));
+    gui->setWindowTitle(text);
 }
 
 //---------------------------------------------------------

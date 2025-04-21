@@ -2204,6 +2204,10 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
             return;
         }
 
+// REMOVE Tim. tmp. Added.
+        // It is important to set a non-null valid human id here because the plugin may try to strdup it.
+        lv2ui_UpdateWindowTitle(state);
+
         void *uiW = nullptr;
         // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
         const char* bundle_path = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_bundle_uri(selectedUi)), nullptr);
@@ -2332,7 +2336,8 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                 //   state->sif->updateNativeGuiWindowTitle();
                 // else if(state->plugInst)
                 //   state->plugInst->updateNativeGuiWindowTitle();
-                lv2ui_UpdateWindowTitle(state);
+// REMOVE Tim. tmp. Added. Moved above.
+//                 lv2ui_UpdateWindowTitle(state);
             }
             else if(state->hasExternalGui)
             {
@@ -3370,6 +3375,25 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
 
 // REMOVE Tim. tmp. Added.
 // Static
+void LV2Synth::lv2ui_TitleAboutToChange(LV2PluginWrapper_State *state)
+{
+  // If it's an external UI we cannot change the title bar text after creation.
+  // We must close it so that when it opens again it will have the correct text.
+  // Close it even if it exists but is not visible (hidden).
+  if(state->hasExternalGui)
+  {
+    const bool v = (state->plugInst && state->plugInst->nativeGuiVisible()) || (state->sif && state->sif->nativeGuiVisible());
+    lv2ui_ShowNativeGui(state, false, false);
+    // If the UI was visible, schedule it to open again after the title changes.
+    if(state->plugInst)
+      state->plugInst->showNativeGuiPending(v);
+    else if(state->sif)
+      state->sif->showNativeGuiPending(v);
+  }
+}
+
+// REMOVE Tim. tmp. Added.
+// Static
 void LV2Synth::lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state)
 {
   // if(state->plugInst != nullptr)
@@ -3395,14 +3419,16 @@ void LV2Synth::lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state)
       state->extHost.plugin_human_id = state->human_id =
 //         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->pluginLabel()).toUtf8().constData());
 //         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->pluginName()).toUtf8().constData());
-        strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->name()).toUtf8().constData());
+//         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->name()).toUtf8().constData());
+        strdup((state->plugInst->track()->displayName() + state->plugInst->name()).toUtf8().constData());
     }
     else if(state->sif)
     {
       if(state->human_id)
         free(state->human_id);
       state->extHost.plugin_human_id = state->human_id =
-        strdup((state->sif->name() + QString(": ") + state->sif->pluginName()).toUtf8().constData());
+//         strdup((state->sif->name() + QString(": ") + state->sif->pluginName()).toUtf8().constData());
+        strdup(state->sif->displayName().toUtf8().constData());
     }
     else
       return;
@@ -6298,6 +6324,13 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
 }
 
 // REMOVE Tim. tmp. Added.
+void LV2SynthIF::nativeGuiTitleAboutToChange()
+{
+  if(_synth)
+    _synth->lv2ui_TitleAboutToChange(_state);
+}
+
+// REMOVE Tim. tmp. Added.
 void LV2SynthIF::updateNativeGuiWindowTitle()
 {
 //   if(_state)
@@ -7752,6 +7785,15 @@ bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
     assert(p->instances > 0);
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
     return (state->widget != nullptr);
+}
+
+// REMOVE Tim. tmp. Added.
+void LV2PluginWrapper::nativeGuiTitleAboutToChange(const PluginI *p)
+{
+  assert(p->instances > 0);
+  LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
+  if(state->synth)
+    state->synth->lv2ui_TitleAboutToChange(state);
 }
 
 // REMOVE Tim. tmp. Added.

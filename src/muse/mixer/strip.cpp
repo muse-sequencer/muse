@@ -1175,24 +1175,37 @@ void Strip::setLabelText()
     if(!track)
         return;
 
+    // If it's embedded we don't need the track number prefix.
+    const QString title = isEmbedded() ? track->name() : track->displayName();
+
     QFont fnt(MusEGlobal::config.fonts[6]);
 
-    const bool fit = MusECore::autoAdjustFontSize(label, track->name(), fnt,
+// REMOVE Tim. tmp. Changed.
+//     const bool fit = MusECore::autoAdjustFontSize(label, track->name(), fnt,
+    const bool fit = MusECore::autoAdjustFontSize(label, title, fnt,
                                                   false, true, fnt.pointSize(), 7);
     if (fit) {
-        label->setText(track->name());
+// REMOVE Tim. tmp. Changed.
+//         label->setText(track->name());
+        label->setText(title);
         label->setToolTip(QString());
     } else {
         QFontMetrics fm = QFontMetrics(fnt);
-        QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width());
+// REMOVE Tim. tmp. Changed.
+//         QString elidedText = fm.elidedText(track->name(), Qt::ElideMiddle, label->width());
+        QString elidedText = fm.elidedText(title, Qt::ElideMiddle, label->width());
         label->setText(elidedText);
-        label->setToolTip(track->name());
+// REMOVE Tim. tmp. Changed.
+//         label->setToolTip(track->name());
+        label->setToolTip(title);
     }
 
     if (track->isSynthTrack()) {
         MusECore::SynthI *s = static_cast<MusECore::SynthI*>(track);
         if(!s->uri().isEmpty())
-            label->setToolTip(QString(track->name() + "\n") + s->uri());
+// REMOVE Tim. tmp. Changed.
+//             label->setToolTip(QString(track->name() + "\n") + s->uri());
+            label->setToolTip(QString(title + "\n") + s->uri());
     }
 
     QString stxt;
@@ -1546,6 +1559,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       _selected = false;
       _highlight = false;
       _isDocked = isDocked;
+      _extraWidth = 0;
 
       _curGridRow = 0;
       _userWidth = 0;
@@ -1612,6 +1626,7 @@ Strip::Strip(QWidget* parent, MusECore::Track* t, bool hasHandle, bool isEmbedde
       label->setHasExpandIcon(!_isEmbedded);
 
       setLabelText();
+      computeExtraWidth();
 
       grid->addWidget(label, _curGridRow++, 0, 1, 3);
 
@@ -1718,14 +1733,24 @@ void Strip::updateRouteButtons()
         }
     }
 }
- 
+
+void Strip::computeExtraWidth()
+{
+  if(isEmbedded())
+    _extraWidth = 0;
+  else
+    _extraWidth = QFontMetrics(MusEGlobal::config.fonts[6]).horizontalAdvance("W:");
+}
+
 QSize Strip::sizeHint() const
 {
   const QSize sz = QFrame::sizeHint();
 //  printf("*** Strip size hint width: %d ***\n", sz.width());
 //  const QSize szm = QFrame::minimumSizeHint();
 //  printf("*** Strip size minimum hint width: %d ***\n", szm.width());
-  return QSize(sz.width() + (_isExpanded ? _userWidth : 0), sz.height());
+// REMOVE Tim. tmp. Changed.
+//   return QSize(sz.width() + (_isExpanded ? _userWidth : 0), sz.height());
+  return QSize(sz.width() + _extraWidth + (_isExpanded ? _userWidth : 0), sz.height());
 //   return QSize(_isExpanded ? _userWidth : 0, sz.height());
 }
 

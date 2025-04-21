@@ -56,6 +56,8 @@ class OscIF
       char* _uiOscProgramPath;
       char* _uiOscControlPath;
       char* _uiOscShowPath;
+      char* _uiOscHidePath;
+      char* _uiOscQuitPath;
       bool _oscGuiVisible;
       
       unsigned long old_prog;
@@ -76,6 +78,8 @@ class OscIF
       virtual bool oscInitGui(const QString& typ, /*QString baseName,*/ QString pluginLabel,
                        int trackno, const QString& name, const QString& filePath, const QString& guiPath,
                        const std::vector<unsigned long>* control_port_mapper_, int rackpos = -1);
+      void oscCleanupGui();
+
    public:
       OscIF();
       virtual ~OscIF();

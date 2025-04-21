@@ -748,7 +748,9 @@ class AudioTrack : public Track {
       void read(Xml& xml);
 
       void mapRackPluginsToControllers();
-      void showPendingPluginNativeGuis();
+      // This shows any pending native and generic rack effect plugin guis.
+      void showPendingPluginGuis();
+      void updateUiWindowTitles();
 
       SndFileR recFile() const;
       void setRecFile(SndFileR sf);

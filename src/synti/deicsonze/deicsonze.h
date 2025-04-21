@@ -613,7 +613,9 @@ class DeicsOnze : public Mess {
   virtual void setNativeGeometry(int, int, int, int);
   virtual void setNativeGuiWindowTitle(const char*) const;
 
-  DeicsOnze();
+// REMOVE Tim. tmp. Changed.
+//   DeicsOnze();
+  DeicsOnze(const char *name);
   virtual ~DeicsOnze();
 };
 

@@ -332,6 +332,17 @@ void DssiSynthIF::closeNativeGui()
   #endif
 }
 
+// REMOVE Tim. tmp. Added.
+void DssiSynthIF::nativeGuiTitleAboutToChange()
+{
+  const bool v = nativeGuiVisible();
+  // DSSI UI title bar text cannot be altered after creation. We must close the UI.
+  // Close it even if it exists but is not visible (hidden).
+  closeNativeGui();
+  // If the UI was visible, schedule it to open again after the title changes.
+  showNativeGuiPending(v);
+}
+
 //---------------------------------------------------------
 //   receiveEvent
 //---------------------------------------------------------

@@ -105,7 +105,7 @@ class PluginBase {
    protected:
       MusEPlugin::PluginType _pluginType;
       MusEPlugin::PluginClass_t _pluginClass;
-// REMOVE Tim. tmp. Added
+// REMOVE Tim. tmp. Added.
    // public:
    //    //==============================================
    //    // These are original and translated strings
@@ -177,7 +177,9 @@ class PluginBase {
       unsigned long id() const;
 
       int references() const;
-      virtual int incReferences(int) = 0;
+// REMOVE Tim. tmp. Changed.
+//       virtual int incReferences(int) = 0;
+      virtual int incReferences(int);
 
       // Returns true if ANY of the midi input ports uses time position (transport).
       bool usesTimePosition() const;
@@ -657,7 +659,7 @@ class PluginIBase
         ConfigParams = 0x10,
         ConfigGui = 0x20,
         ConfigNativeGui = 0x40,
-        ConfigDeferNativeGui = 0x80,
+//         ConfigDeferNativeGui = 0x80,
         ConfigGeometry = 0x100,
         ConfigNativeGeometry = 0x200,
         ConfigPresetOnly = ConfigCustomData | ConfigParams,
@@ -675,6 +677,8 @@ class PluginIBase
       PluginQuirks _quirks;
       // True if activate has been called. False by default or if deactivate has been called.
       bool _curActiveState;
+// REMOVE Tim. tmp. Added.
+      bool _showGuiPending;
       bool _showNativeGuiPending;
 
       void makeGui();
@@ -696,6 +700,13 @@ class PluginIBase
       virtual int id() const = 0;
 // REMOVE Tim. tmp. Added.
       virtual QString name() const = 0;
+      // For synth tracks:
+      // Returns a name suitable for display like "1:Track 5" where the number is the track's index in the track list.
+      // This is useful because in the case of importing a midi file we allow duplicate, often blank, names.
+      // This display string will help identify them. Like "1:", "2:" etc.
+      // For rack effects:
+      // Returns a name suitable for display.
+      virtual QString displayName() const = 0;
       virtual QString pluginLabel() const = 0;
       virtual QString pluginName() const = 0;
       virtual QString uri() const = 0;
@@ -787,7 +798,7 @@ class PluginIBase
 
       MusEGui::PluginGui* gui() const;
       void deleteGui();
-      void updateGuiWindowTitle() const;
+      virtual void updateGuiWindowTitle() const;
       virtual void guiHeartBeat();
       virtual void showGui();
       virtual void showGui(bool);
@@ -807,6 +818,8 @@ class PluginIBase
       virtual void showNativeGui();
       virtual void showNativeGui(bool);
 // REMOVE Tim. tmp. Added.
+      virtual void showGuiPending(bool);
+      virtual bool isShowGuiPending() const;
       // Sets a flag that defers opening the native gui until a later time.
       // Until, for example, after a track has been added to a track list,
       //  in the case of OSC which needs to find a track in a list before
@@ -815,6 +828,9 @@ class PluginIBase
       virtual bool isShowNativeGuiPending() const;
 // REMOVE Tim. tmp. Added.
       virtual void closeNativeGui();
+      // Informs the plugin that we are about to change the UI title bar text.
+      // Some UIs may need to close because their title bar text is not alterable after creation.
+      virtual void nativeGuiTitleAboutToChange();
       virtual bool nativeGuiVisible() const;
       // Sets the gui's geometry. Also updates the saved geometry.
       virtual void setNativeGeometry(int x, int y, int w, int h);
@@ -939,6 +955,8 @@ class PluginI : public PluginIBase {
 
       QString pluginLabel() const;
       QString name() const;
+// REMOVE Tim. tmp. Added.
+      QString displayName() const;
       QString pluginName() const;
       QString lib() const;
       QString uri() const;
@@ -992,6 +1010,8 @@ class PluginI : public PluginIBase {
       bool setControl(const QString& s, double val);
       void showGui();
       void showGui(bool);
+// REMOVE Tim. tmp. Added.
+//       void updateGuiWindowTitle() const;
 // REMOVE Tim. tmp. Changed.
 //       bool isDssiPlugin() const;
 //       bool isLV2Plugin() const;
@@ -1002,7 +1022,11 @@ class PluginI : public PluginIBase {
       void showNativeGui(bool);
       bool nativeGuiVisible() const;
 // REMOVE Tim. tmp. Added.
+      // Some UIs have a close function as well as show and hide.
       void closeNativeGui();
+      // Informs the plugin that we are about to change the UI title bar text.
+      // Some UIs may need to close because their title bar text is not alterable after creation.
+      void nativeGuiTitleAboutToChange();
 // REMOVE Tim. tmp. Added.
       void updateNativeGuiWindowTitle();
       void guiHeartBeat();
