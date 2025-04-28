@@ -412,7 +412,7 @@ void StretchList::read(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::Attribut:
-                          ERROR_TIMESTRETCH(stderr, "stretchlist unknown tag %s\n", tag.toLatin1().constData());
+                          ERROR_TIMESTRETCH(stderr, "stretchlist unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::Text:
                         {
@@ -437,7 +437,7 @@ void StretchList::read(Xml& xml)
                                 MuseFrame_t frame = fs.toLong(&ok);
                                 if(!ok)
                                 {
-                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading frame string: %s\n", fs.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading frame string: %s\n", fs.toLocal8Bit().constData());
                                   break;
                                 }
 
@@ -455,7 +455,7 @@ void StretchList::read(Xml& xml)
                                 double stretchVal = stretchStr.toDouble(&ok);
                                 if(!ok)
                                 {
-                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading stretch ratio string: %s\n", stretchStr.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading stretch ratio string: %s\n", stretchStr.toLocal8Bit().constData());
                                   break;
                                 }
 
@@ -473,7 +473,7 @@ void StretchList::read(Xml& xml)
                                 double SRVal = SRStr.toDouble(&ok);
                                 if(!ok)
                                 {
-                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading samplerate ratio string: %s\n", SRStr.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading samplerate ratio string: %s\n", SRStr.toLocal8Bit().constData());
                                   break;
                                 }
                                 
@@ -490,7 +490,7 @@ void StretchList::read(Xml& xml)
                                 double pitchVal = pitchStr.toDouble(&ok);
                                 if(!ok)
                                 {
-                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading pitch ratio string: %s\n", pitchStr.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading pitch ratio string: %s\n", pitchStr.toLocal8Bit().constData());
                                   break;
                                 }
 
@@ -508,7 +508,7 @@ void StretchList::read(Xml& xml)
                                 int typeVal = typeStr.toInt(&ok);
                                 if(!ok)
                                 {
-                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading type string: %s\n", typeStr.toLatin1().constData());
+                                  ERROR_TIMESTRETCH(stderr, "StretchList::read failed reading type string: %s\n", typeStr.toLocal8Bit().constData());
                                   break;
                                 }
 
@@ -552,7 +552,7 @@ void StretchList::write(int level, Xml& xml) const
                       .arg(ise->second._samplerateRatio)
                       .arg(ise->second._pitchRatio)
                       .arg(ise->second._type)
-                      .toLatin1().constData());
+                      .toUtf8().constData());
         ++i;
         if (i >= 3) {
               xml.put(level, "");

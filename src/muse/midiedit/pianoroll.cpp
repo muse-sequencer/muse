@@ -1988,7 +1988,7 @@ void PianoRoll::initShortcuts()
 void PianoRoll::execDeliveredScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, true);
-      scripts.executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1997,7 +1997,7 @@ void PianoRoll::execDeliveredScript(int id)
 void PianoRoll::execUserScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, false);
-      scripts.executeScript(this, scriptfile.toLatin1().data(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 //---------------------------------------------------------

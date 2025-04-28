@@ -839,7 +839,7 @@ QWidget* MapperControlDelegate::createEditor(QWidget *parent,
         //if(!(md->rwFlags() & 1 || md->isSynti()) && (i != outPort))
         if(!(md && (md->rwFlags() & 2)) && (i != port))   // Only readable ports, or current one.
           continue;
-        //name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLatin1().constData());
+        //name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLocal8Bit().constData());
         QString name = QString("%1:%2").arg(i+1).arg(MusEGlobal::midiPorts[i].portname());
         combo->addItem(name, i);
       }
@@ -1661,7 +1661,7 @@ void ControlMapperDialog::doUpdate()
 //         if(!(md->rwFlags() & 2) && (i != _port))   // Only readable ports, or current one.
 //           continue;
 //         QString name;
-//         name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLatin1().constData());
+//         name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toUtf8().constData());
 //         portComboBox->insertItem(item_idx, name, i);
 //         if(_port == -1)
 //           _port = i;      // Initialize
@@ -1749,9 +1749,9 @@ void ControlMapperDialog::controlsItemChanged(QTreeWidgetItem* item, int col)
   fprintf(stderr, "ControlMapperDialog::controlsItemChanged col:%d checkstate:%d edit:%s display:%s deco:%x\n",
           col,
           item->data(col, Qt::CheckStateRole).toInt(),
-          item->data(col, Qt::EditRole).toString().toLatin1().constData(),
+          item->data(col, Qt::EditRole).toString().toLocal8Bit().constData(),
           //item->data(col, Qt::DisplayRole).toInt(),
-          item->data(col, Qt::DisplayRole).toString().toLatin1().constData(),
+          item->data(col, Qt::DisplayRole).toString().toLocal8Bit().constData(),
           item->data(col, Qt::DecorationRole).value<QColor>().rgb());
 
   

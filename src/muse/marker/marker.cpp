@@ -123,10 +123,10 @@ void MarkerList::write(int level, Xml& xml) const
             const Marker& m = i->second;
             if(m.type()==Pos::TICKS)
               xml.put(level, "<marker tick=\"%u\" name=\"%s\" />",
-                 m.tick(), Xml::xmlString(m.name()).toLatin1().constData());
+                 m.tick(), Xml::xmlString(m.name()).toUtf8().constData());
             else if(m.type()==Pos::FRAMES)
               xml.put(level, "<marker frame=\"%u\" name=\"%s\" />",
-                 m.frame(), Xml::xmlString(m.name()).toLatin1().constData());
+                 m.frame(), Xml::xmlString(m.name()).toUtf8().constData());
             }
       }
 

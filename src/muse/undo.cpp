@@ -376,7 +376,7 @@ void UndoOp::dump()
       switch(type) {
             case AddTrack:
             case DeleteTrack:
-                  printf("%d %s\n", trackno, track->name().toLatin1().constData());
+                  printf("%d %s\n", trackno, track->name().toLocal8Bit().constData());
                   break;
             case AddEvent:
             case DeleteEvent:
@@ -395,22 +395,22 @@ void UndoOp::dump()
                   printf("<%s>-<%s>\n", _oldName->toLocal8Bit().data(), _newName->toLocal8Bit().data());
                   break;
             case ModifyTrackChannel:
-                  printf("%s <%d>-<%d>\n", track->name().toLatin1().constData(), _oldPropValue, _newPropValue);
+                  printf("%s <%d>-<%d>\n", track->name().toLocal8Bit().constData(), _oldPropValue, _newPropValue);
                   break;
             case SetTrackRecord:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackMute:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackSolo:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackRecMonitor:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             case SetTrackOff:
-                  printf("%s %d\n", track->name().toLatin1().constData(), a);
+                  printf("%s %d\n", track->name().toLocal8Bit().constData(), a);
                   break;
             default:      
                   break;

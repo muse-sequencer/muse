@@ -1860,7 +1860,7 @@ void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_
               if(na >= 1)
               {
                 qname = QString(al[0]);
-                    //fprintf(stderr, "Checking port name for: %s\n", (QString("alsa_pcm:") + cname + QString("/")).toLatin1().constData());  
+                    //fprintf(stderr, "Checking port name for: %s\n", (QString("alsa_pcm:") + cname + QString("/")).toLocal8Bit().constData());
                 // Ignore our own ALSA client!
                 if(qname.startsWith(QString("alsa_pcm:") + cname + QString("/")))
                   continue;

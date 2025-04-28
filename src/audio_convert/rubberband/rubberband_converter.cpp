@@ -445,7 +445,7 @@ void RubberBandAudioConverterOptions::read(Xml& xml)
                               xml.unknown("settings");
                         break;
                   case Xml::Attribut:
-                              fprintf(stderr, "settings unknown tag %s\n", tag.toLatin1().constData());
+                              fprintf(stderr, "settings unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::TagEnd:
                         if (tag == "settings") {
@@ -529,7 +529,7 @@ void RubberBandAudioConverterSettings::write(int level, Xml& xml) const
 
   if(use_off | use_rt || use_gui)
   {
-    xml.tag(level++, "audioConverterSetting name=\"%s\"", Xml::xmlString(descriptor._name).toLatin1().constData());
+    xml.tag(level++, "audioConverterSetting name=\"%s\"", Xml::xmlString(descriptor._name).toUtf8().constData());
     
     if(use_off)
     {
@@ -596,7 +596,7 @@ void RubberBandAudioConverterSettings::read(Xml& xml)
                   if (tag == "mode")
                         mode = xml.s2().toInt();
                   else
-                        fprintf(stderr, "settings unknown tag %s\n", tag.toLatin1().constData());
+                        fprintf(stderr, "settings unknown tag %s\n", tag.toLocal8Bit().constData());
                   break;
             case Xml::TagEnd:
                   if (tag == "settings") {

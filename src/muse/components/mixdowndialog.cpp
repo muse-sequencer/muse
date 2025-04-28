@@ -121,7 +121,7 @@ void MixdownFileDialog::fdialog()
         oldpath = sf->path();
   }
   if (!MusEGlobal::config.mixdownPath.isEmpty()) {
-      printf("Setting oldpath to %s\n", MusEGlobal::config.mixdownPath.toLatin1().data());
+      printf("Setting oldpath to %s\n", MusEGlobal::config.mixdownPath.toLocal8Bit().data());
       oldpath = MusEGlobal::config.mixdownPath;
   }
   QString path = QFileDialog::getSaveFileName(this, 0, oldpath, tr("Wave Files (*.wav);;All Files (*)"));

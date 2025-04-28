@@ -178,7 +178,7 @@ DeicsOnze::DeicsOnze(const char *name) : Mess(2) {
   QString defaultConf = 
         DEI_hostConfigPath + QString("/" DEICSONZESTR ".dco");
   FILE* f;
-  f = fopen(defaultConf.toLatin1().data(), "r");
+  f = fopen(defaultConf.toLocal8Bit().data(), "r");
   if(f) {
     fclose(f);
     loadConfiguration(defaultConf);
@@ -1256,13 +1256,13 @@ void DeicsOnze::loadSet(QString fileName) {
     QFile deicsonzeFile(fileName);
     if(!deicsonzeFile.open(QIODevice::ReadOnly)) {
       printf("Critical Error Cannot open file %s\n", 
-	     fileName.toLatin1().data());
+	     fileName.toLocal8Bit().data());
       return;
     }
     QDomDocument domTree;
     if (!domTree.setContent(&deicsonzeFile )) {
       printf("Critical Error Parsing error for file %s\n",
-	     fileName.toLatin1().data());
+	     fileName.toLocal8Bit().data());
       deicsonzeFile.close();
       return;
     }
@@ -1289,10 +1289,10 @@ void DeicsOnze::loadSet(QString fileName) {
 	  _gui->writeEvent(evSysexUpdateGuiSet);
 	}
 	else printf("unsupported *.dei file version %s\n",
-		    version.toLatin1().constData());
+		    version.toLocal8Bit().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().constData());
+		  e.tagName().toLocal8Bit().constData());
       node = node.nextSibling();
     }
   }
@@ -1327,10 +1327,10 @@ void DeicsOnze::loadSutulaPresets()
 
     QString presetPath("/home/a-lin/sources/svnMusEDev/lmuse/muse/synti/deicsonze/ARCH_ALIN");
 
-    file = fopen (presetPath.toLatin1().constData(), "rt");
+    file = fopen (presetPath.toLocal8Bit().constData(), "rt");
     if (file == nullptr) {
 	printf("can't open ");
-	printf("%s", presetPath.toLatin1().constData());
+	printf("%s", presetPath.toLocal8Bit().constData());
 	printf("\n");
     }
     else
@@ -2166,7 +2166,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataInitSetPath = 
 	new unsigned char[1+MAXSTRLENGTHINITSETPATH];
       dataInitSetPath[0]=SYSEX_INITSETPATH;
-      strncpy((char*)&dataInitSetPath[1], _initSetPath.toLatin1().constData(), 
+      strncpy((char*)&dataInitSetPath[1], _initSetPath.toUtf8().constData(),
 	      MAXSTRLENGTHINITSETPATH);
       MusECore::MidiPlayEvent
 	evInitSetPath(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataInitSetPath,
@@ -2190,7 +2190,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
 	new unsigned char[1+MAXSTRLENGTHBACKGROUNDPIXPATH];
       dataBackgroundPixPath[0]=SYSEX_BACKGROUNDPIXPATH;
       strncpy((char*)&dataBackgroundPixPath[1],
-	      _backgroundPixPath.toLatin1().constData(), 
+	      _backgroundPixPath.toUtf8().constData(),
 	      MAXSTRLENGTHBACKGROUNDPIXPATH);
       MusECore::MidiPlayEvent
 	evBackgroundPixPath(0, 0, MusECore::ME_SYSEX,
@@ -2229,13 +2229,13 @@ void DeicsOnze::loadConfiguration(QString fileName) {
     QFile confFile(fileName);
     if(!confFile.open(QIODevice::ReadOnly)) {
       printf("Critical Error. Cannot open file %s\n",
-	     fileName.toLatin1().data());
+	     fileName.toLocal8Bit().data());
       return;
     }
     QDomDocument domTree;
     if (!domTree.setContent(&confFile )) {
 	printf("Critical Error. Parsing error for file %s\n",
-	       fileName.toLatin1().data());
+	       fileName.toLocal8Bit().data());
       confFile.close();
       return;
     }
@@ -2253,10 +2253,10 @@ void DeicsOnze::loadConfiguration(QString fileName) {
 	  readConfiguration(node.firstChild());
 	}
 	else printf("unsupported *.dco file version %s\n",
-		    version.toLatin1().constData());
+		    version.toLocal8Bit().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().constData());
+		  e.tagName().toLocal8Bit().constData());
       node = node.nextSibling();
     }
   }
@@ -2387,10 +2387,10 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
     initBuffer[NUM_BLUE_EDITBACKGROUND]=(unsigned char)_gui->ebColor->blue();
     initBuffer[NUM_ISINITSET]=(unsigned char)_isInitSet;
     strncpy((char*)&initBuffer[NUM_INITSETPATH],
-	    _initSetPath.toLatin1().constData(), MAXSTRLENGTHINITSETPATH);
+	    _initSetPath.toUtf8().constData(), MAXSTRLENGTHINITSETPATH);
     initBuffer[NUM_ISBACKGROUNDPIX]=(unsigned char)_isBackgroundPix;
     strncpy((char*)&initBuffer[NUM_BACKGROUNDPIXPATH],
-	    _backgroundPixPath.toLatin1().constData(),
+	    _backgroundPixPath.toUtf8().constData(),
 	    MAXSTRLENGTHBACKGROUNDPIXPATH);
   }
   //FX
@@ -2401,11 +2401,11 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
     (_pluginIReverb?(unsigned char)_pluginIReverb->plugin()->parameter() : 0);
   strncpy((char*)&initBuffer[NUM_REVERB_LIB],
 	  (_pluginIReverb?
-	   _pluginIReverb->plugin()->lib().toLatin1().constData() : "\0"),
+	   _pluginIReverb->plugin()->lib().toUtf8().constData() : "\0"),
 	  MAXSTRLENGTHFXLIB);
   strncpy((char*)&initBuffer[NUM_REVERB_LABEL],
 	  (_pluginIReverb?
-	   _pluginIReverb->plugin()->label().toLatin1().constData() : "\0"),
+	   _pluginIReverb->plugin()->label().toUtf8().constData() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //chorus
   initBuffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
@@ -2414,11 +2414,11 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) {
     (_pluginIChorus?(unsigned char)_pluginIChorus->plugin()->parameter() : 0);
   strncpy((char*)&initBuffer[NUM_CHORUS_LIB],
 	  (_pluginIChorus?
-	   _pluginIChorus->plugin()->lib().toLatin1().constData() : "\0"),
+	   _pluginIChorus->plugin()->lib().toUtf8().constData() : "\0"),
 	  MAXSTRLENGTHFXLIB);
   strncpy((char*)&initBuffer[NUM_CHORUS_LABEL],
 	  (_pluginIChorus?
-	   _pluginIChorus->plugin()->label().toLatin1().constData() : "\0"),
+	   _pluginIChorus->plugin()->label().toUtf8().constData() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //delay
   initBuffer[NUM_IS_DELAY_ON]=(unsigned char)_global.isDelayActivated;
@@ -2833,7 +2833,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
         //setSet();
       }
       else printf("Wrong set version : %s\n",
-                  version.toLatin1().constData());
+                  version.toLocal8Bit().constData());
     }
     node = node.nextSibling();
   }

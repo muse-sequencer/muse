@@ -76,12 +76,12 @@ static void loadPluginLib(QFileInfo* fi)
       {
       SS_TRACE_IN
       if (SS_DEBUG_LADSPA) {
-            printf("loadPluginLib: %s\n", fi->fileName().toLatin1().constData());
+            printf("loadPluginLib: %s\n", fi->fileName().toLocal8Bit().constData());
             }
-      void* handle = dlopen(fi->filePath().toLatin1().constData(), RTLD_NOW);
+      void* handle = dlopen(fi->filePath().toLocal8Bit().constData(), RTLD_NOW);
       if (handle == 0) {
             fprintf(stderr, "dlopen(%s) failed: %s\n",
-              fi->filePath().toLatin1().constData(), dlerror());
+              fi->filePath().toLocal8Bit().constData(), dlerror());
             return;
             }
       LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
@@ -93,7 +93,7 @@ static void loadPluginLib(QFileInfo* fi)
                         "Unable to find ladspa_descriptor() function in plugin "
                         "library file \"%s\": %s.\n"
                         "Are you sure this is a LADSPA plugin file?\n",
-                        fi->filePath().toLatin1().constData(),
+                        fi->filePath().toLocal8Bit().constData(),
                         txt);
                   return;//exit(1);
                   }
@@ -204,7 +204,7 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
             }
 
       /*if (SS_DEBUG_LADSPA) {
-            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLatin1().constData(), this->lib().toLatin1().constData(), plugin->PortCount);
+            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLocal8Bit().constData(), this->lib().toLocal8Bit().constData(), plugin->PortCount);
             printf("LADSPA_PORT_CONTROL|LADSPA_PORT_INPUT: %d\t", pIdx.size());
             printf("Input ports: %d\t", iIdx.size());
             printf("Output ports: %d\n\n", oIdx.size());
@@ -227,7 +227,7 @@ LadspaPlugin::~LadspaPlugin()
             stop();
             }
       if (handle) {
-         SS_DBG_LADSPA2("Cleaning up ", this->label().toLatin1().constData());
+         SS_DBG_LADSPA2("Cleaning up ", this->label().toLocal8Bit().constData());
          plugin->cleanup(handle);
          }
 
@@ -251,7 +251,7 @@ bool LadspaPlugin::instantiate()
       handle = plugin->instantiate(plugin, SS_samplerate);
       success = (handle != nullptr);
       if (success)
-            SS_DBG_LADSPA2("Plugin instantiated", label().toLatin1().constData());
+            SS_DBG_LADSPA2("Plugin instantiated", label().toLocal8Bit().constData());
       return success;
       }
 
@@ -300,9 +300,9 @@ void LadspaPlugin::stop()
       {
       SS_TRACE_IN
       if (handle) {
-            SS_DBG_LADSPA2("Trying to stop plugin", label().toLatin1().constData());
+            SS_DBG_LADSPA2("Trying to stop plugin", label().toLocal8Bit().constData());
             if (plugin->deactivate) {
-                  SS_DBG_LADSPA2("Deactivating ", label().toLatin1().constData());
+                  SS_DBG_LADSPA2("Deactivating ", label().toLocal8Bit().constData());
                   plugin->deactivate(handle);
                   active = false;
                   }
@@ -423,7 +423,7 @@ Plugin* PluginList::find(const QString& file, const QString& name)
                   return *i;
                   }
             }
-      printf("Plugin <%s> not found\n", name.toLatin1().constData());
+      printf("Plugin <%s> not found\n", name.toLocal8Bit().constData());
       SS_TRACE_OUT
       return 0;
       }

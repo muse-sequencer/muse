@@ -1107,10 +1107,10 @@ int main(int argc, char* argv[])
         // Locale diagnostics.
         if(MusEGlobal::debugMsg)
         {
-          fprintf(stderr, "Qt system locale: %s\n",QLocale::system().name().toUtf8().constData());
-          fprintf(stderr, "Existing Qt locale: %s\n",QLocale().name().toUtf8().constData());
+          fprintf(stderr, "Qt system locale: %s\n",QLocale::system().name().toLocal8Bit().constData());
+          fprintf(stderr, "Existing Qt locale: %s\n",QLocale().name().toLocal8Bit().constData());
           if(!locale_override.isEmpty())
-            fprintf(stderr, "User Qt locale override: %s\n",locale_override.toUtf8().constData());
+            fprintf(stderr, "User Qt locale override: %s\n",locale_override.toLocal8Bit().constData());
           const char* cur_c_locale = std::setlocale(LC_ALL, nullptr);
           fprintf(stderr, "Existing std::locale: %s\n", cur_c_locale);
         }
@@ -1127,7 +1127,7 @@ int main(int argc, char* argv[])
                     QString lp(MusEGlobal::museGlobalShare);
                     lp += QString("/locale");
                     if (!translator.load(loc, lp)) {
-                          fprintf(stderr, "no locale <%s>/<%s>\n", loc.toLatin1().constData(), lp.toLatin1().constData());
+                          fprintf(stderr, "no locale <%s>/<%s>\n", loc.toLocal8Bit().constData(), lp.toLocal8Bit().constData());
                     }
               }
               app.installTranslator(&translator);
@@ -1138,7 +1138,7 @@ int main(int argc, char* argv[])
         }
 
         // Locale diagnostics.
-        fprintf(stderr, "New Qt locale: %s\n",QLocale().name().toLatin1().data());
+        fprintf(stderr, "New Qt locale: %s\n",QLocale().name().toLocal8Bit().data());
 
         if (QLocale().name() == "de" || locale_override == "de") {
           fprintf(stderr, "locale de - setting 'note h is B' override parameter.\n");
@@ -1201,7 +1201,7 @@ int main(int argc, char* argv[])
         MusELib::hexfloatDecimalPoint = QString(lc->decimal_point);
         // Locale diagnostics.
         if(MusEGlobal::debugMsg)
-          fprintf(stderr, "c locale decimal point: %s\n", MusELib::hexfloatDecimalPoint.toUtf8().constData());
+          fprintf(stderr, "c locale decimal point: %s\n", MusELib::hexfloatDecimalPoint.toLocal8Bit().constData());
 #endif
 
         QApplication::addLibraryPath(MusEGlobal::museGlobalLib + "/qtplugins");
@@ -1210,7 +1210,7 @@ int main(int argc, char* argv[])
               QStringList::Iterator it = list.begin();
               fprintf(stderr, "QtLibraryPath:\n");
               while(it != list.end()) {
-                    fprintf(stderr, "  <%s>\n", (*it).toLatin1().constData());
+                    fprintf(stderr, "  <%s>\n", (*it).toLocal8Bit().constData());
                     ++it;
                     }
               }
@@ -1365,11 +1365,11 @@ int main(int argc, char* argv[])
             fprintf(stderr, "Denormal protection enabled.\n");
         }
         if (MusEGlobal::debugMsg) {
-            fprintf(stderr, "global lib:       <%s>\n", MusEGlobal::museGlobalLib.toLatin1().constData());
-            fprintf(stderr, "global share:     <%s>\n", MusEGlobal::museGlobalShare.toLatin1().constData());
-            fprintf(stderr, "muse home:        <%s>\n", MusEGlobal::museUser.toLatin1().constData());
-            fprintf(stderr, "project dir:      <%s>\n", MusEGlobal::museProject.toLatin1().constData());
-            fprintf(stderr, "user instruments: <%s>\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+            fprintf(stderr, "global lib:       <%s>\n", MusEGlobal::museGlobalLib.toLocal8Bit().constData());
+            fprintf(stderr, "global share:     <%s>\n", MusEGlobal::museGlobalShare.toLocal8Bit().constData());
+            fprintf(stderr, "muse home:        <%s>\n", MusEGlobal::museUser.toLocal8Bit().constData());
+            fprintf(stderr, "project dir:      <%s>\n", MusEGlobal::museProject.toLocal8Bit().constData());
+            fprintf(stderr, "user instruments: <%s>\n", MusEGlobal::museUserInstruments.toLocal8Bit().constData());
         }
 
         //rlimit lim; getrlimit(RLIMIT_RTPRIO, &lim);
@@ -1444,7 +1444,7 @@ int main(int argc, char* argv[])
                 else
                   fprintf(stderr, "%s",
                     MusEGlobal::selectableAudioBackendDevices[MusEGlobal::config.deviceAudioBackend].
-                      toLatin1().constData());
+                      toLocal8Bit().constData());
                 fprintf(stderr, "\n");
 
                 MusEGlobal::realTimeScheduling = true;

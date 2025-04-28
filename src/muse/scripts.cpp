@@ -25,7 +25,9 @@ Scripts::Scripts(QObject *parent) : QObject(parent) {}
 //---------------------------------------------------------
 //   executeScript
 //---------------------------------------------------------
-void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected)
+// REMOVE Tim. tmp. Changed.
+// void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected)
+void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList* parts, int quant, bool onlyIfSelected)
 {
     // a simple format for external processing
     // will be extended if there is a need
@@ -135,7 +137,7 @@ void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* p
             return;
         }
         if (errStr.size()> 0) {
-            fprintf(stderr, "script execution produced the following error:\n%s\n", QString(errStr).toLatin1().data());
+            fprintf(stderr, "script execution produced the following error:\n%s\n", QString(errStr).toLocal8Bit().data());
         }
         QFile file(tmp);
         if (MusEGlobal::debugMsg)

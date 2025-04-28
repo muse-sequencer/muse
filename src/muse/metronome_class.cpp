@@ -84,7 +84,7 @@ static void loadMDF(const QString& filepath, MetroAccentsPresetsMap* presetMap, 
   if(!f.open(QIODevice::ReadOnly /*| QIODevice::Text*/))
         return;
   if (debug)
-        fprintf(stderr, "READ MDF %s\n", filepath.toLatin1().constData());
+        fprintf(stderr, "READ MDF %s\n", filepath.toLocal8Bit().constData());
   Xml xml(&f);
 
   bool skipmode = true;
@@ -242,7 +242,7 @@ void MetroAccentsPresetsMap::read(MusECore::Xml& xml)
                           acctypes = fs.toInt(&ok);
                           if(!ok)
                           {
-                            fprintf(stderr, "MetroAccentsPresets::read failed reading accent types string: %s\n", fs.toLatin1().constData());
+                            fprintf(stderr, "MetroAccentsPresets::read failed reading accent types string: %s\n", fs.toLocal8Bit().constData());
                             break;
                           }
 
@@ -383,7 +383,7 @@ void MetroAccentsStruct::write(int level, MusECore::Xml& xml) const
     ++count2;
     if(count2 >= 16)
     {
-      xml.put(level + level_in, "%s", acc_s.toLatin1().constData());
+      xml.put(level + level_in, "%s", acc_s.toUtf8().constData());
       if(level_in == 0)
         level_in = 1;
       acc_s.clear();
@@ -391,7 +391,7 @@ void MetroAccentsStruct::write(int level, MusECore::Xml& xml) const
     }
   }
   if(count2)
-    xml.put(level + level_in, "%s", acc_s.toLatin1().constData());
+    xml.put(level + level_in, "%s", acc_s.toUtf8().constData());
 }
 
 void MetroAccentsStruct::read(MusECore::Xml& xml)
@@ -434,7 +434,7 @@ void MetroAccentsStruct::read(MusECore::Xml& xml)
                             acctypes = fs.toInt(&ok);
                             if(!ok)
                             {
-                              fprintf(stderr, "MetroAccentsStruct::read failed reading accent types string: %s\n", fs.toLatin1().constData());
+                              fprintf(stderr, "MetroAccentsStruct::read failed reading accent types string: %s\n", fs.toLocal8Bit().constData());
                               break;
                             }
 
@@ -556,7 +556,7 @@ int MetroAccentsMap::read(MusECore::Xml& xml)
                         acctypes = fs.toInt(&ok);
                         if(!ok)
                         {
-                          fprintf(stderr, "MetroAccentsMap::read failed reading accent types string: %s\n", fs.toLatin1().constData());
+                          fprintf(stderr, "MetroAccentsMap::read failed reading accent types string: %s\n", fs.toLocal8Bit().constData());
                           break;
                         }
 
@@ -612,12 +612,12 @@ void initMetronomePresets(const QString& dir, MetroAccentsPresetsMap* presetMap,
 {
   if(!QDir(dir).exists())
   {
-    fprintf(stderr, "Metronome directory not found: %s\n", dir.toLatin1().constData());
+    fprintf(stderr, "Metronome directory not found: %s\n", dir.toLocal8Bit().constData());
     return;
   }
     
   if (debug)
-    fprintf(stderr, "Load metronome presets from <%s>\n", dir.toLatin1().constData());
+    fprintf(stderr, "Load metronome presets from <%s>\n", dir.toLocal8Bit().constData());
   QDirIterator metro_di(dir, QStringList() << "*.mdf", QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
   while(metro_di.hasNext())
     loadMDF(metro_di.next(), presetMap, debug);

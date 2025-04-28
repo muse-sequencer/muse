@@ -1007,7 +1007,7 @@ MusECore::Part* MusE::readPart(MusECore::Xml& xml)
                   case MusECore::Xml::Text:
                         {
                         int trackIdx, partIdx;
-                        sscanf(tag.toUtf8().constData(), "%d:%d", &trackIdx, &partIdx);
+                        sscanf(tag.toLocal8Bit().constData(), "%d:%d", &trackIdx, &partIdx);
                         MusECore::Track* track = nullptr;
                         //check if track index is in bounds before getting it (danvd)
                         if(trackIdx < (int)MusEGlobal::song->tracks()->size())

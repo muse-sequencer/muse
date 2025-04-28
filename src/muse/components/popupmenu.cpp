@@ -321,7 +321,7 @@ void PopupMenu::timerHandler()
 
 void PopupMenu::popHovered(QAction* action)
 {  
-  DEBUG_PRST_ROUTES(stderr, "PopupMenu::popHovered action text:%s\n", action->text().toLatin1().constData());
+  DEBUG_PRST_ROUTES(stderr, "PopupMenu::popHovered action text:%s\n", action->text().toLocal8Bit().constData());
    _lastHoveredAction = action;
    hideContextMenu();  
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  

@@ -152,8 +152,8 @@ int SpinBoxFP::valueFromText(const QString& text) const
       {
       //QString qs = cleanText();
       if (_decimals) {
-            //const char* s = qs.toLatin1();
-            //const char* s = cleanText().toLatin1().data();
+            //const char* s = qs.toUtf8();
+            //const char* s = cleanText().toUtf8().data();
             
             //int a, b;
             bool ok;

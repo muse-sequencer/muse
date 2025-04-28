@@ -126,7 +126,7 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
 void MidiJackDevice::setName(const QString& s)
 { 
   #ifdef JACK_MIDI_DEBUG
-  printf("MidiJackDevice::setName %s new name:%s\n", name().toUtf8().constData(), s.toUtf8().constData());
+  printf("MidiJackDevice::setName %s new name:%s\n", name().toLocal8Bit().constData(), s.toLocal8Bit().constData());
   #endif  
   _name = s; 
   
@@ -145,7 +145,7 @@ QString MidiJackDevice::open()
   _openFlags &= _rwFlags; // restrict to available bits
   
   #ifdef JACK_MIDI_DEBUG
-  printf("MidiJackDevice::open %s\n", name().toUtf8().constData());
+  printf("MidiJackDevice::open %s\n", name().toLocal8Bit().constData());
   #endif  
   
   // Start by disabling for now.
@@ -324,10 +324,10 @@ QString MidiJackDevice::open()
 void MidiJackDevice::close()
 {
   #ifdef JACK_MIDI_DEBUG
-  printf("MidiJackDevice::close %s\n", name().toUtf8().constData());
+  printf("MidiJackDevice::close %s\n", name().toLocal8Bit().constData());
   #endif  
   
-  DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::close %s\n", name().toUtf8().constData());
+  DEBUG_PRST_ROUTES(stderr, "MidiJackDevice::close %s\n", name().toLocal8Bit().constData());
   // Disable immediately.
   _writeEnable = _readEnable = false;
   jack_port_t* i_jp = _in_client_jackport;
@@ -394,6 +394,57 @@ void MidiJackDevice::close()
 //   writeRouting
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// void MidiJackDevice::writeRouting(int level, Xml& xml) const
+// {
+//       // If this device is not actually in use by the song, do not write any routes.
+//       // This prevents bogus routes from being saved and propagated in the med file.
+//       // Removed. Need to let routes be saved.
+//       //if(midiPort() == -1)
+//       //  return;
+//
+//       QString s;
+//       if(rwFlags() & 2)  // Readable
+//       {
+//         for (ciRoute r = _inRoutes.begin(); r != _inRoutes.end(); ++r)
+//         {
+//           if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
+//           {
+//             xml.tag(level++, "Route");
+//             s = "source";
+//             if(r->type == Route::TRACK_ROUTE)
+//               s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
+//             else
+//               s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
+//             xml.tag(level, s.toUtf8().constData());
+//             xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toUtf8().constData());
+//             xml.etag(--level, "Route");
+//           }
+//         }
+//       }
+//
+//       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r)
+//       {
+//         if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
+//         {
+//           s = "Route";
+//           if(r->channel != -1)
+//             s += QString(" channel=\"%1\"").arg(r->channel);
+//           xml.tag(level++, s.toUtf8().constData());
+//           xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toUtf8().constData());
+//           s = "dest";
+//           if(r->type == Route::MIDI_DEVICE_ROUTE)
+//             s += QString(" devtype=\"%1\" name=\"%2\"/").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
+//           else if(r->type == Route::TRACK_ROUTE)
+//             s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
+//           else
+//             s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
+//           xml.tag(level, s.toUtf8().constData());
+//           xml.etag(--level, "Route");
+//         }
+//       }
+// }
+
 void MidiJackDevice::writeRouting(int level, Xml& xml) const
 {
       // If this device is not actually in use by the song, do not write any routes.
@@ -401,44 +452,50 @@ void MidiJackDevice::writeRouting(int level, Xml& xml) const
       // Removed. Need to let routes be saved.
       //if(midiPort() == -1)
       //  return;
-      
+
       QString s;
       if(rwFlags() & 2)  // Readable
       {
-        for (ciRoute r = _inRoutes.begin(); r != _inRoutes.end(); ++r) 
+        for (ciRoute r = _inRoutes.begin(); r != _inRoutes.end(); ++r)
         {
           if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
           {
             xml.tag(level++, "Route");
             s = "source";
             if(r->type == Route::TRACK_ROUTE)
-              s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
+              s += QString(" track=\"%1\"").arg(MusEGlobal::song->tracks()->index(r->track));
             else
-              s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
-            xml.tag(level, s.toUtf8().constData());
-            xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toUtf8().constData());
+              s += QString(" type=\"%1\" name=\"%2\"").arg(r->type).arg(Xml::xmlString(r->name()));
+            xml.emptyTag(level, s);
+
+            xml.emptyTag(level,
+              QString("dest devtype=\"%1\" name=\"%2\"").arg(MidiDevice::JACK_MIDI).arg(Xml::xmlString(name())));
+
             xml.etag(--level, "Route");
           }
-        }  
-      } 
-      
-      for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
+        }
+      }
+
+      for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r)
       {
         if((r->type == Route::TRACK_ROUTE && r->track) || (r->type != Route::TRACK_ROUTE && !r->name().isEmpty()))
         {
           s = "Route";
           if(r->channel != -1)
             s += QString(" channel=\"%1\"").arg(r->channel);
-          xml.tag(level++, s.toUtf8().constData());
-          xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::JACK_MIDI, Xml::xmlString(name()).toUtf8().constData());
+          xml.tag(level++, s);
+
+          xml.emptyTag(level, QString("source devtype=\"%1\" name=\"%2\"").arg(MidiDevice::JACK_MIDI).arg(Xml::xmlString(name())));
+
           s = "dest";
           if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(" devtype=\"%1\" name=\"%2\"/").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
+            s += QString(" devtype=\"%1\" name=\"%2\"").arg(r->device->deviceType()).arg(Xml::xmlString(r->name()));
           else if(r->type == Route::TRACK_ROUTE)
-            s += QString(" track=\"%1\"/").arg(MusEGlobal::song->tracks()->index(r->track));
+            s += QString(" track=\"%1\"").arg(MusEGlobal::song->tracks()->index(r->track));
           else
-            s += QString(" type=\"%1\" name=\"%2\"/").arg(r->type).arg(Xml::xmlString(r->name()));
-          xml.tag(level, s.toUtf8().constData());
+            s += QString(" type=\"%1\" name=\"%2\"").arg(r->type).arg(Xml::xmlString(r->name()));
+          xml.emptyTag(level, s);
+
           xml.etag(--level, "Route");
         }
       }
@@ -465,7 +522,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
         event.setLoopNum(MusEGlobal::audio->loopCount());
       
       if (MusEGlobal::midiInputTrace) {
-            fprintf(stderr, "MidiIn Jack: <%s>: ", name().toUtf8().constData());
+            fprintf(stderr, "MidiIn Jack: <%s>: ", name().toLocal8Bit().constData());
             dumpMPEvent(&event);
             }
             
@@ -772,7 +829,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e, void* evBuffer)
       #endif  
       
       if (MusEGlobal::midiOutputTrace) {
-            fprintf(stderr, "MidiOut: Jack: <%s>: ", name().toUtf8().constData());
+            fprintf(stderr, "MidiOut: Jack: <%s>: ", name().toLocal8Bit().constData());
             dumpMPEvent(&e);
             }
             

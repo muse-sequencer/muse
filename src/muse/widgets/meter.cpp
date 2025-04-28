@@ -983,7 +983,7 @@ void Meter::paintEvent(QPaintEvent* ev)
         if(!textDrawn && rr.intersects(_textRect))
         {
           textDrawn = true;
-          DEBUG_METER_PAINT(stderr, "   Drawing text:%s\n", _text.toLatin1().constData());
+          DEBUG_METER_PAINT(stderr, "   Drawing text:%s\n", _text.toLocal8Bit().constData());
           //p.setFont(_textFont);
           p.setPen(Qt::white);
 

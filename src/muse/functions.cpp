@@ -844,7 +844,7 @@ QMimeData* selected_events_to_mime(const set<const Part*>& parts, int range)
 
     for (set<const Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
     {
-        xml.tag(level++, "eventlist part_id=\"%s\"", (*part)->uuid().toString().toLatin1().constData());
+        xml.tag(level++, QString("eventlist part_id=\"%1\"").arg((*part)->uuid().toString()));
         for (ciEvent ev=(*part)->events().begin(); ev!=(*part)->events().end(); ev++)
             if (is_relevant(ev->second, *part, range, AllEventsRelevant))
                 ev->second.write(level, xml, -start_tick);
@@ -868,7 +868,7 @@ unsigned get_groupedevents_len(const QString& pt)
 {
 	unsigned maxlen=0;
 	
-	QByteArray pt_= pt.toLatin1();
+	QByteArray pt_= pt.toUtf8();
 	Xml xml(pt_.constData());
 	for (;;) 
 	{
@@ -1041,7 +1041,7 @@ bool read_eventlist_and_part(
 					}
 				}
 				else
-					printf("unknown attribute '%s' in read_eventlist_and_part(), ignoring it...\n", tag.toLatin1().data());
+					printf("unknown attribute '%s' in read_eventlist_and_part(), ignoring it...\n", tag.toLocal8Bit().data());
 				break;
 
 			case Xml::TagStart:
@@ -1173,7 +1173,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 	map<const Part*, unsigned> expand_map;
 	map<const Part*, set<const Part*> > new_part_map;
 	
-	QByteArray pt_= pt.toLatin1();
+	QByteArray pt_= pt.toUtf8();
 	Xml xml(pt_.constData());
 	for (;;) 
 	{
@@ -2533,7 +2533,7 @@ bool readAudioAutomation(MusECore::Xml& xml, MusECore::PasteCtrlTrackMap* pctm)
                     if (tag == "trackUuid")
                       trackUuid = QUuid(xml.s2());
                     else
-                      fprintf(stderr, "readAudioAutomation unknown tag %s\n", tag.toLatin1().constData());
+                      fprintf(stderr, "readAudioAutomation unknown tag %s\n", tag.toLocal8Bit().constData());
                     break;
               case MusECore::Xml::TagEnd:
                     if (tag == "audioTrackAutomation")
@@ -2557,7 +2557,7 @@ void parseArrangerPasteXml(
   MusECore::PasteCtrlTrackMap* pctm,
   unsigned int* minPos, bool* minPosValid)
 {
-      QByteArray ba = pt.toLatin1();
+      QByteArray ba = pt.toUtf8();
       const char* ptxt = ba.constData();
       MusECore::Xml xml(ptxt);
       unsigned int  minPartPos=0;
@@ -3098,7 +3098,7 @@ QMimeData* cut_or_copy_tagged_items_to_mime(TagEventList* tag_list, bool cut_mod
       if(el.empty())
         continue;
       
-      xml.tag(level++, "eventlist part_id=\"%s\"", part->uuid().toString().toLatin1().constData());
+      xml.tag(level++, QString("eventlist part_id=\"%1\"").arg(part->uuid().toString()));
       for(ciEvent ie = el.begin(); ie != el.end(); ie++)
       {
         const Event& e = ie->second;
@@ -3607,7 +3607,7 @@ void paste_items_at(const std::set<const Part*>& parts, const QString& pt, const
   map<const Part*, unsigned> expand_map;
   map<const Part*, set<const Part*> > new_part_map;
 
-  QByteArray pt_= pt.toLatin1();
+  QByteArray pt_= pt.toUtf8();
   Xml xml(pt_.constData());
   for (;;) 
   {

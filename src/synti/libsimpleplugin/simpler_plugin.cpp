@@ -112,9 +112,9 @@ void SS_initPlugins(const QString& hostCachePath)
              PLUGIN_GET_QSTRING(info._label)))
           {
             //fprintf(stderr, "Ignoring LADSPA effect label:%s path:%s duplicate of path:%s\n",
-            //        info._label.toLatin1().constData(),
-            //        info._fi.filePath().toLatin1().constData(),
-            //        pl->filePath().toLatin1().constData());
+            //        info._label.toLocal8Bit().constData(),
+            //        info._fi.filePath().toLocal8Bit().constData(),
+            //        pl->filePath().toLocal8Bit().constData());
           }
           else
           {
@@ -153,7 +153,7 @@ Plugin* PluginList::find(const QString& file, const QString& name)
                   return *i;
                   }
             }
-      //fprintf(stderr, "Plugin <%s> not found\n", name.toLatin1().constData());
+      //fprintf(stderr, "Plugin <%s> not found\n", name.toLocal8Bit().constData());
       SP_TRACE_OUT
       return 0;
       }
@@ -167,11 +167,11 @@ PluginList::~PluginList()
      if((*i)->references() != 0)
      {
        fprintf(stderr, "~PluginList: Plugin <%s> reference count not zero! Cannot delete.\n",
-              (*i)->name().toLatin1().constData());
+              (*i)->name().toLocal8Bit().constData());
        continue;
      }
      //fprintf(stderr, "~PluginList: deleting plugin <%s>\n",
-     //       (*i)->name().toLatin1().constData());
+     //       (*i)->name().toLocal8Bit().constData());
      delete (*i);
    }
 }
@@ -248,7 +248,7 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
       }
   
       /*if (SP_DEBUG_LADSPA) {
-            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLatin1().constData(), this->lib().toLatin1().constData(), plugin->PortCount);
+            printf("Label: %s\tLib: %s\tPortCount: %d\n", this->label().toLocal8Bit().constData(), this->lib().toLocal8Bit().constData(), plugin->PortCount);
             printf("LADSPA_PORT_CONTROL|LADSPA_PORT_INPUT: %d\t", pIdx.size());
             printf("Input ports: %d\t", iIdx.size());
             printf("Output ports: %d\n\n", oIdx.size());
@@ -285,7 +285,7 @@ PluginI* LadspaPlugin::createPluginI(int chans, float sampleRate, unsigned int s
       denormalBias))
    {
      fprintf(stderr, "LadspaPlugin::createPluginI: cannot instantiate plugin <%s>\n",
-       name().toLatin1().constData());
+       name().toLocal8Bit().constData());
      // Make sure to delete the PluginI.
      delete plug_i;
      return 0;
@@ -331,12 +331,12 @@ int LadspaPlugin::incReferences(int val)
 
   if(_libHandle == 0)
   {
-    _libHandle = dlopen(_fi.filePath().toLatin1().constData(), RTLD_NOW);
+    _libHandle = dlopen(_fi.filePath().toLocal8Bit().constData(), RTLD_NOW);
 
     if(_libHandle == 0)
     {
       fprintf(stderr, "LadspaPlugin::incReferences dlopen(%s) failed: %s\n",
-                    _fi.filePath().toLatin1().constData(), dlerror());
+                    _fi.filePath().toLocal8Bit().constData(), dlerror());
       return 0;
     }
 
@@ -415,7 +415,7 @@ int LadspaPlugin::incReferences(int val)
     dlclose(_libHandle);
     _libHandle = 0;
     _references = 0;
-    fprintf(stderr, "LadspaPlugin::incReferences Error: %s no plugin!\n", _fi.filePath().toLatin1().constData());
+    fprintf(stderr, "LadspaPlugin::incReferences Error: %s no plugin!\n", _fi.filePath().toLocal8Bit().constData());
     return 0;
   }
 
@@ -440,7 +440,7 @@ void* LadspaPlugin::instantiate(float sampleRate, void*)
   success = (h != nullptr);
   if(success)
   {
-    SP_DBG_LADSPA2("LadspaPlugin instantiated", label().toLatin1().constData());
+    SP_DBG_LADSPA2("LadspaPlugin instantiated", label().toLocal8Bit().constData());
   }
   return h;
 }
@@ -939,7 +939,7 @@ bool PluginI::setControl(const QString& s, float val)
                   }
             }
       fprintf(stderr, "PluginI:setControl(%s, %f) controller not found\n",
-         s.toLatin1().constData(), val);
+         s.toLocal8Bit().constData(), val);
       return true;
       }
 

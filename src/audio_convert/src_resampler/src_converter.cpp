@@ -406,7 +406,7 @@ int SRCAudioConverter::process(
   if(totalOutFrames != frames)
   {
     DEBUG_AUDIOCONVERT(stderr, "SRCAudioConverter::process %s totalOutFrames:%ld != frames:%d\n",
-                       sf->name().toLatin1().constData(), totalOutFrames, frames);
+                       sf->name().toLocal8Bit().constData(), totalOutFrames, frames);
 
     // Let's zero the rest of it.
     sf_count_t b = totalOutFrames * channels;
@@ -503,7 +503,7 @@ void SRCAudioConverterOptions::read(Xml& xml)
                               xml.unknown("settings");
                         break;
                   case Xml::Attribut:
-                              fprintf(stderr, "settings unknown tag %s\n", tag.toLatin1().constData());
+                              fprintf(stderr, "settings unknown tag %s\n", tag.toLocal8Bit().constData());
                         break;
                   case Xml::TagEnd:
                         if (tag == "settings") {
@@ -578,7 +578,7 @@ void SRCAudioConverterSettings::write(int level, Xml& xml) const
 
   if(use_off | use_rt || use_gui)
   {
-    xml.tag(level++, "audioConverterSetting name=\"%s\"", Xml::xmlString(descriptor._name).toLatin1().constData());
+    xml.tag(level++, "audioConverterSetting name=\"%s\"", Xml::xmlString(descriptor._name).toUtf8().constData());
     
     if(use_off)
     {
@@ -645,7 +645,7 @@ void SRCAudioConverterSettings::read(Xml& xml)
                     if (tag == "mode")
                       mode = xml.s2().toInt();
                   else
-                      fprintf(stderr, "settings unknown tag %s\n", tag.toLatin1().constData());
+                      fprintf(stderr, "settings unknown tag %s\n", tag.toLocal8Bit().constData());
                   break;
             case Xml::TagEnd:
                   if (tag == "settings") {

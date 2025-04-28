@@ -2205,7 +2205,7 @@ void DrumEdit::initShortcuts()
 void DrumEdit::execDeliveredScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, true);
-      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -2214,7 +2214,7 @@ void DrumEdit::execDeliveredScript(int id)
 void DrumEdit::execUserScript(int id)
 {
       QString scriptfile = scripts.getScriptPath(id, false);
-      scripts.executeScript(this, scriptfile.toLatin1().constData(), parts(), raster(), true);
+      scripts.executeScript(this, scriptfile, parts(), raster(), true);
 }
 
 void DrumEdit::setStep(QString v)

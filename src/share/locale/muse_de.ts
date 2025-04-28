@@ -8455,7 +8455,7 @@ bis zum Senden des ersten Clocks.</translation>
         <translation type="vanished">Alle oder nur ausgewählte Events bearbeiten?</translation>
     </message>
     <message>
-        <location filename="../../muse/scripts.cpp" line="+45"/>
+        <location filename="../../muse/scripts.cpp" line="+47"/>
         <source>Do you want to process all or only selected events?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9826,7 +9826,7 @@ Synth track: Right-click to show GUI.</source>
     </message>
     <message>
         <location line="+790"/>
-        <location line="+14"/>
+        <location line="+16"/>
         <source>Nothing to edit</source>
         <translation>Es gibt nichts zu editieren</translation>
     </message>
@@ -9839,7 +9839,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="vanished">Ein System pro Spur...</translation>
     </message>
     <message>
-        <location line="-961"/>
+        <location line="-963"/>
         <source>New Score Window...</source>
         <translation>Neues Partiturfenster...</translation>
     </message>
@@ -12029,7 +12029,7 @@ Select the destination part, then try again.</source>
 <context>
     <name>MusEGui::EditInstrument</name>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="+213"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="+215"/>
         <source>Use note offs</source>
         <translation>Note-off verwenden</translation>
     </message>
@@ -12270,18 +12270,16 @@ Select the destination part, then try again.</source>
         <translation type="unfinished">Ausgangskanal übersteuern (halten Sie CTRL, um alle Reihen zu beeinflussen)</translation>
     </message>
     <message>
-        <location line="+451"/>
-        <location line="+20"/>
+        <location line="+582"/>
         <source>MusE: Create file failed</source>
         <translation>MusE: Erzeugen der Datei schlug fehl</translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>MusE: Write File failed</source>
-        <translation>MusE: Datei schreiben schlug fehl</translation>
+        <translation type="vanished">MusE: Datei schreiben schlug fehl</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+104"/>
         <location line="+216"/>
         <source>MusE: Save Instrument Definition</source>
         <translation>MusE: Instrumentendefinition speichern</translation>
@@ -12364,7 +12362,7 @@ Clean up the instrument!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+170"/>
+        <location line="+210"/>
         <location line="+5"/>
         <source>&amp;Don&apos;t save</source>
         <translation type="unfinished"></translation>
@@ -20650,7 +20648,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="-3327"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="-3472"/>
         <source>Controller !</source>
         <translation>Kontroller !</translation>
     </message>
@@ -20718,7 +20716,7 @@ Only one is allowed.</source>
         <translation type="vanished">Instrumente:</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="+1159"/>
+        <location filename="../../muse/instruments/minstrument.cpp" line="+1244"/>
         <source>Instruments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20824,7 +20822,7 @@ sometimes requires write access to the file.</source>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="+2616"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="+2721"/>
         <location filename="../../muse/components/editevent.cpp" line="-271"/>
         <source>Cannot convert sysex string</source>
         <translation>Sysex Kette nicht umwandelbar</translation>
@@ -20965,7 +20963,7 @@ failed: %2</source>
         <translation>Velocity</translation>
     </message>
     <message>
-        <location filename="../../libs/wave/wave.cpp" line="+607"/>
+        <location filename="../../libs/wave/wave.cpp" line="+611"/>
         <source>Create peakfile for </source>
         <translation>Pegelspitzendatei erzeugen für </translation>
     </message>

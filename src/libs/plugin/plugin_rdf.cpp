@@ -58,7 +58,7 @@ void scanLrdfDir(const QString& dirname,
     return;
   }
       
-  DEBUG_PLUGIN_RDF(stderr, "scan lrdf dir <%s>\n", dirname.toLatin1().constData());
+  DEBUG_PLUGIN_RDF(stderr, "scan lrdf dir <%s>\n", dirname.toLocal8Bit().constData());
   
   QDir pluginDir;
   pluginDir.setPath(dirname);

@@ -799,7 +799,7 @@ void readMidiInputTransform(Xml& xml)
                   case Xml::TagEnd:
                         if (xml.s1() == "midiInputTransform") {
 // printf("midi Input transform <%s> apply %d\n",
-//   trans.name.toLatin1().constData(), apply);
+//   trans.name.toLocal8Bit().constData(), apply);
                               
                               // By T356. A previous bug caused some .med files to grow very large
                               //  with duplicate transforms. Here we can eliminate those duplicates.
@@ -1715,7 +1715,7 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item, QListWidgetI
       for (i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
                   if(MusEGlobal::debugMsg)
-                    printf("found %s\n", (*i)->name.toLatin1().constData());
+                    printf("found %s\n", (*i)->name.toLocal8Bit().constData());
                   cmt = *i;
                   if (cmodul != -1) {
                         MusECore::modules[cmodul].transform = *i;

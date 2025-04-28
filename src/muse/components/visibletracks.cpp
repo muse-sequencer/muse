@@ -65,7 +65,7 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
 
     int i = 0;
     for (const auto& t : visTrackList) {
-        QAction* a = new QAction(tr(t.tip).toLatin1().data(), actions);
+        QAction* a = new QAction(tr(t.tip), actions);
         a->setData(i++);
         a->setIcon(QIcon(**(t.icon)));
         a->setToolTip(tr(t.tip));

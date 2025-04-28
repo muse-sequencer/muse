@@ -232,7 +232,7 @@ bool Audio::start()
           if(initJackAudio() == true) {
                 InputList* itl = MusEGlobal::song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
-                      if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting input %s\n", (*i)->name().toLatin1().data());
+                      if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting input %s\n", (*i)->name().toLocal8Bit().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
                       (*i)->registerPorts();
@@ -240,10 +240,10 @@ bool Audio::start()
 
                 OutputList* otl = MusEGlobal::song->outputs();
                 for (iAudioOutput i = otl->begin(); i != otl->end(); ++i) {
-                      if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting output %s\n", (*i)->name().toLatin1().data());
+                      if (MusEGlobal::debugMsg) fprintf(stderr, "reconnecting output %s\n", (*i)->name().toLocal8Bit().data());
                       for (int x=0; x < (*i)->channels();x++)
                           (*i)->setJackPort(x,0);
-                      if (MusEGlobal::debugMsg) fprintf(stderr, "name=%s\n",(*i)->name().toLatin1().data());
+                      if (MusEGlobal::debugMsg) fprintf(stderr, "name=%s\n",(*i)->name().toLocal8Bit().data());
                       (*i)->registerPorts();
                       }
                }

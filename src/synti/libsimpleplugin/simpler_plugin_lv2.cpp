@@ -2785,7 +2785,7 @@ void* Lv2Plugin::instantiate(float sampleRate, void* data)
 //   LADSPA_Handle h = plugin->instantiate(plugin, _sampleRate);
 //   success = (h != nullptr);
 //   if (success)
-//         SP_DBG_LADSPA2("Plugin instantiated", label().toLatin1().constData());
+//         SP_DBG_LADSPA2("Plugin instantiated", label().toLocal8Bit().constData());
 //   return h;
   
   
@@ -2837,7 +2837,7 @@ void* Lv2Plugin::instantiate(float sampleRate, void* data)
 
    if(inst)
    {
-     SP_DBG_LV2_2("Plugin instantiated", label().toLatin1().constData());
+     SP_DBG_LV2_2("Plugin instantiated", label().toLocal8Bit().constData());
    }
    
    return inst;
@@ -3087,12 +3087,12 @@ int Lv2Plugin::incReferences(int val)
 
 //   if(_libHandle == 0)
 //   {
-//     _libHandle = dlopen(_fi.filePath().toLatin1().constData(), RTLD_NOW);
+//     _libHandle = dlopen(_fi.filePath().toLocal8Bit().constData(), RTLD_NOW);
 // 
 //     if(_libHandle == 0)
 //     {
 //       fprintf(stderr, "Lv2Plugin::incReferences dlopen(%s) failed: %s\n",
-//                     _fi.filePath().toLatin1().constData(), dlerror());
+//                     _fi.filePath().toLocal8Bit().constData(), dlerror());
 //       return 0;
 //     }
 // 
@@ -3170,7 +3170,7 @@ int Lv2Plugin::incReferences(int val)
 //     dlclose(_libHandle);
 //     _libHandle = 0;
 //     _references = 0;
-//     fprintf(stderr, "Lv2Plugin::incReferences Error: %s no plugin!\n", _fi.filePath().toLatin1().constData());
+//     fprintf(stderr, "Lv2Plugin::incReferences Error: %s no plugin!\n", _fi.filePath().toLocal8Bit().constData());
 //     return 0;
 //   }
 
@@ -6500,7 +6500,7 @@ bool Lv2PluginI::initPluginInstance(Plugin* plug, int chans,
 
    //if(_state->handle)
    //{
-     SP_DBG_LV2_2("Plugin instantiated", label().toLatin1().constData());
+     SP_DBG_LV2_2("Plugin instantiated", label().toLocal8Bit().constData());
    //}
    
    //return false;

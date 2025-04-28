@@ -130,7 +130,7 @@ EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
             continue;
         const ToolB* t = &toolList[static_cast<int>(i)];
 
-        QAction* a = new QAction(tr(t->tip).toLatin1().data(), actionGroup);
+        QAction* a = new QAction(tr(t->tip), actionGroup);
         a->setData(1 << i);
         a->setCheckable(true);
         a->setIcon(**(t->icon));

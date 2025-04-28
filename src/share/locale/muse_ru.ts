@@ -9523,7 +9523,7 @@ I&apos;ll only display the old-style drumtracks in this editor, dropping the oth
     </message>
     <message>
         <source>MusE: Write File failed</source>
-        <translation>MusE: Не удалось записать файл</translation>
+        <translation type="vanished">MusE: Не удалось записать файл</translation>
     </message>
     <message>
         <source>MusE: Save Instrument Definition</source>

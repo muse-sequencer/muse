@@ -261,7 +261,7 @@ void ShortcutConfig::textFileClicked()
       break;
     }
   }
-  if(!header.isEmpty() && qf.write(header.toLatin1().constData()) == -1)
+  if(!header.isEmpty() && qf.write(header.toUtf8().constData()) == -1)
     error = true;
 
   QString info;
@@ -276,7 +276,7 @@ void ShortcutConfig::textFileClicked()
     }
     info += "\n";
   }
-  if(!info.isEmpty() && qf.write(info.toLatin1().constData()) == -1)
+  if(!info.isEmpty() && qf.write(info.toUtf8().constData()) == -1)
     error = true;
   
   for(int i=0; i < SHRT_NUM_OF_ELEMENTS; i++)
@@ -302,7 +302,7 @@ void ShortcutConfig::textFileClicked()
           s.insert(pos, QKeySequence(shortcuts[i].key).toString());
           pos += 25;
           s.insert(pos, qApp->translate("shortcuts", shortcuts[i].descr) + "\n");
-          if(qf.write(s.toLatin1().constData()) == -1)
+          if(qf.write(s.toUtf8().constData()) == -1)
             error = true;
     }
   }

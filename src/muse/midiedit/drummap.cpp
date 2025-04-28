@@ -327,15 +327,15 @@ bool DrumMap::almost_equals(const DrumMap& map) const
 void DrumMap::dump()
 {
   fprintf(stderr, "%s\t\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d(%s)\t\t%d(%s)\t\t%d\t%d\t\n",
-      name.toLatin1().constData(),
+      name.toLocal8Bit().constData(),
       vol,
       quant,
       len,
       channel,
       port,
       lv1, lv2, lv3, lv4,
-      enote, pitch2string(enote).toLatin1().constData(),
-      anote, pitch2string(anote).toLatin1().constData(),
+      enote, pitch2string(enote).toLocal8Bit().constData(),
+      anote, pitch2string(anote).toLocal8Bit().constData(),
       mute,
       hide);
 }

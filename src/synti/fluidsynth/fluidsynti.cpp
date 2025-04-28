@@ -467,7 +467,7 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
                 offset= projPathPtr.length()+1;
             }
 
-            memcpy(chptr, it->file_name.toLatin1().constData()+offset, it->file_name.size()-offset+1);
+            memcpy(chptr, it->file_name.toUtf8().constData()+offset, it->file_name.size()-offset+1);
             //printf("path name stored=%s\n", it->filename.c_str()+offset);
             chptr = chptr + 1 + it->file_name.size()-offset;
             }
@@ -619,7 +619,7 @@ void FluidSynth::getInitData(int* n, const unsigned char** data)
 void FluidSynth::parseInitData(int n, const byte* d)
 {
     printf("projPathPtr ");
-    std::cout << projPathPtr.toLatin1().constData() << std::endl;
+    std::cout << projPathPtr.toLocal8Bit().constData() << std::endl;
 
     bool load_drumchannels = true; // Introduced in initdata ver 0.3
     bool handle_bankvalue  = true; // Introduced in initdata ver 0.4
@@ -673,15 +673,15 @@ void FluidSynth::parseInitData(int n, const byte* d)
     FluidSoundFont* fonts = new FluidSoundFont[nrOfSoundfonts]; //Just a temp one
     //Fonts:
     for (int i=0; i<nr_of_fonts; i++) {
-        fonts[i].file_name = QString::fromLatin1((char*)&d[arrayIndex]);
+        fonts[i].file_name = QString((char*)&d[arrayIndex]);
         arrayIndex+=fonts[i].file_name.size()+1;
-        QByteArray ba = projPathPtr.toLatin1();
+        QByteArray ba = projPathPtr.toUtf8();
 
         if (QFileInfo(fonts[i].file_name).isRelative()) {
             printf("path is relative, we append full path!\n");
             fonts[i].file_name = QString(ba) + "/"+ fonts[i].file_name;
         }
-        std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].file_name.toLatin1().constData() << std::endl;
+        std::cout << "SOUNDFONT FILENAME + PATH " << fonts[i].file_name.toLocal8Bit().constData() << std::endl;
     }
 
     if (d[arrayIndex] != FS_INIT_CHANNEL_SECTION) {
@@ -806,7 +806,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
 
 
     for (int i=0; i<nrOfSoundfonts; i++) {
-        pushSoundfont(fonts[i].file_name.toLatin1().constData(), fonts[i].extid);
+        pushSoundfont(fonts[i].file_name.toUtf8().constData(), fonts[i].extid);
     }
     delete[] fonts;
 }
@@ -938,7 +938,7 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
       FS_Helper *helper = new FS_Helper;
       helper->fptr = this;
       helper->id = extid;
-      QString fn = QString::fromLatin1(filename);
+      QString fn = QString(filename);
 
       if (QFile::exists(fn))
       {
@@ -947,7 +947,7 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
       else
       {
 
-          //printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLatin1().constData(), MusEGlobal::museProject.toLatin1().constData(), filename);
+          //printf("current path: %s \nmuseProject %s\nfilename %s\n",QDir::currentPath().toLocal8Bit().constData(), MusEGlobal::museProject.toLocal8Bit().constData(), filename);
           QFileInfo fi(fn);
           if (QFile::exists(fi.fileName())) // check if the file exists in current folder
               helper->file_name = QDir::currentPath() + "/" + fi.fileName();
@@ -962,7 +962,7 @@ bool FluidSynth::pushSoundfont (const char* filename, int extid)
 //                                      QString("Soundfonts (*.sf2);;All files (*)"));
 //              QMessageBox::warning(nullptr,"No sound font found.","Could not open soundfont: " + fn, QMessageBox::Ok);
 
-              fprintf(stderr, "Warning: Could not open soundfont: %s\n", fn.toLatin1().constData());
+              fprintf(stderr, "Warning: Could not open soundfont: %s\n", fn.toLocal8Bit().constData());
 
               return false;
           }
@@ -1111,7 +1111,7 @@ static void loadNoteSampleNames(FluidSoundFont& font)
   IpatchFileHandle *fhandle;
   IpatchSF2File *sffile;
   GError *err = nullptr;
-  const QByteArray ba = font.file_name.toLatin1();
+  const QByteArray ba = font.file_name.toLocal8Bit();
   const char* fname = ba.constData();
 
   sffile = ipatch_sf2_file_new ();
@@ -1217,7 +1217,7 @@ void FluidSynth::sendSoundFontData()
       for (std::list<FluidSoundFont>::iterator it = stack.begin(); it != stack.end();  ++it) {
             name_len = it->name.size() + 1;
             chunk_len = name_len + FS_SFDATALEN;
-            memcpy(chunk_start, it->name.toLatin1().constData(), name_len); //First, store the fontname
+            memcpy(chunk_start, it->name.toUtf8().constData(), name_len); //First, store the fontname
             *(chunk_start + name_len) = it->extid; //The GUI only needs to know about the external id, store that here
             chunk_start += chunk_len;
             }
@@ -1283,7 +1283,7 @@ void FluidSynth::dumpInfo()
 
       printf("\n");
       for (std::list<FluidSoundFont>::iterator it = stack.begin(); it != stack.end(); it++)
-            printf("Font: %s\tintid: %d\textid %d\tfilename:%s\n", it->name.toLatin1().constData(), it->intid, it->extid, it->file_name.toLatin1().constData());
+            printf("Font: %s\tintid: %d\textid %d\tfilename:%s\n", it->name.toLocal8Bit().constData(), it->intid, it->extid, it->file_name.toLocal8Bit().constData());
       printf("Reverb on: %d, width: %f, size: %f level: %f damp: %f\n",rev_on, rev_width, rev_size, rev_level, rev_damping);
       printf("-----------------------------------------------------\n");
       }
@@ -2106,7 +2106,7 @@ void LoadFontWorker::execLoadFont(void * t)
       FS_Helper *h = (FS_Helper*) t;
       FluidSynth* fptr = h->fptr;
 
-      QByteArray ba = h->file_name.toLocal8Bit();
+      QByteArray ba = h->file_name.toUtf8();
       const char* filename = ba.constData();
 
       if (FS_DEBUG)

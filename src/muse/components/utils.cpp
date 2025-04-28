@@ -179,7 +179,7 @@ QString bitmap2String(int bm)
                         }
                   }
             }
-//printf(" -> <%s>\n", s.toLatin1());
+//printf(" -> <%s>\n", s.toLocal8Bit());
       return s;
       }
 
@@ -226,7 +226,7 @@ QString u32bitmap2String(unsigned int bm)
                         }
                   }
             }
-//printf(" -> <%s>\n", s.toLatin1());
+//printf(" -> <%s>\n", s.toLocal8Bit());
       return s;
       }
 
@@ -246,10 +246,10 @@ int string2bitmap(const QString& str)
       if (ss == QString("none"))
             return 0;
       
-      QByteArray ba = ss.toLatin1();
+      QByteArray ba = ss.toUtf8();
       const char* s = ba.constData();
       
-// printf("str2bitmap: <%s> ", str.toLatin1);
+// printf("str2bitmap: <%s> ", str.toLocal8Bit);
       int tval   = 0;
       bool range = false;
       int sval   = 0;
@@ -305,10 +305,10 @@ unsigned int string2u32bitmap(const QString& str)
       if (ss == QString("none"))
             return 0;
       
-      QByteArray ba = ss.toLatin1();
+      QByteArray ba = ss.toUtf8();
       const char* s = ba.constData();
       
-// printf("str2bitmap: <%s> ", str.toLatin1);
+// printf("str2bitmap: <%s> ", str.toLocal8Bit);
       int tval   = 0;
       //unsigned int tval   = 0;
       bool range = false;
@@ -915,7 +915,7 @@ int get_paste_len()
             return 0;
 
 
-      QByteArray ba = txt.toLatin1();
+      QByteArray ba = txt.toUtf8();
       const char* ptxt = ba.constData();
       Xml xml(ptxt);
       bool end = false;
@@ -1000,7 +1000,7 @@ bool getUniqueFileName(const QString& origFilepath, QString& newAbsFilePath)
         }
       }
       
-      printf("Could not find a suitable filename (more than 100000 files based on %s - clean up!\n", origFilepath.toLatin1().constData());
+      printf("Could not find a suitable filename (more than 100000 files based on %s - clean up!\n", origFilepath.toLocal8Bit().constData());
       return false;
        }
 

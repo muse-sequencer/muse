@@ -4180,7 +4180,7 @@ bool PartCanvas::copyAudioAutomation(
           //  the paste side can have some kind of indexing and ordering to work with.
           // This way at least basic HORIZONTAL drag and drop or copy and paste should work.
           const QString s= QString("audioTrackAutomation trackUuid=\"%1\"").arg(track->uuid().toString());
-          xml.tag(level++, s.toLatin1().constData());
+          xml.tag(level++, s.toUtf8().constData());
           clFound = true;
         }
         if(!itemFound)
@@ -4206,7 +4206,7 @@ bool PartCanvas::copyAudioAutomation(
           const QString s= QString("controller id=\"%1\" valueType=\"%2\" min=\"%3\" max=\"%4\" samplerate=\"%5\"")
               .arg(cl->id()).arg(cl->valueType()).arg(MusELib::museStringFromDouble(cl->minVal())).
               arg(MusELib::museStringFromDouble(cl->maxVal())).arg(MusEGlobal::sampleRate);
-          xml.tag(level++, s.toLatin1().constData());
+          xml.tag(level++, s.toUtf8().constData());
 
           itemFound = true;
         }
@@ -4234,7 +4234,7 @@ bool PartCanvas::copyAudioAutomation(
 
         s += QString(", ");
 
-        xml.nput(level, s.toLatin1().constData());
+        xml.nput(level, s.toUtf8().constData());
         ++i;
         if (i >= 4) {
           xml.put(level, "");
@@ -4487,7 +4487,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       else
       {
         if(MusEGlobal::debugMsg && event->mimeData()->formats().size() != 0)
-          printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLatin1().constData());
+          printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLocal8Bit().constData());
         //event->ignore();                     // TODO CHECK Tim.
         return;
       }

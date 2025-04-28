@@ -172,11 +172,11 @@ void dumpMPEvent(const MEvent* ev)
       fprintf(stderr, "time:%d port:%d chan:%d ", ev->time(), ev->port(), ev->channel()+1);
       if (ev->type() == ME_NOTEON) {   
             QString s = pitch2string(ev->dataA());
-            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+            fprintf(stderr, "NoteOn %s(0x%x) %d\n", s.toLocal8Bit().constData(), ev->dataA(), ev->dataB());
            }
       else if (ev->type() == ME_NOTEOFF) {  
             QString s = pitch2string(ev->dataA());
-            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLatin1().constData(), ev->dataA(), ev->dataB());
+            fprintf(stderr, "NoteOff %s(0x%x) %d\n", s.toLocal8Bit().constData(), ev->dataA(), ev->dataB());
            }
       else if (ev->type() == ME_SYSEX) {
             fprintf(stderr, "SysEx len %d 0x%0x ...\n", ev->len(), ev->constData()[0]);
@@ -210,7 +210,7 @@ void enumerateJackMidiDevices()
     sl = MusEGlobal::audioDevice->inputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      QByteArray ba = (*i).toLatin1();
+      QByteArray ba = (*i).toUtf8();
       const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
@@ -241,7 +241,7 @@ void enumerateJackMidiDevices()
     sl = MusEGlobal::audioDevice->outputPorts(true);
     for(std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
     {
-      QByteArray ba = (*i).toLatin1();
+      QByteArray ba = (*i).toUtf8();
       const char* port_name = ba.constData();
       void* const port = MusEGlobal::audioDevice->findPort(port_name);
       if(port)
@@ -294,7 +294,7 @@ void enumerateJackMidiDevices()
 
     for(std::list<QString>::iterator wi = wsl.begin(); wi != wsl.end(); ++wi)
     {
-      QByteArray w_ba = (*wi).toLatin1();
+      QByteArray w_ba = (*wi).toUtf8();
       const char* w_port_name = w_ba.constData();
 
       bool match_found = false;
@@ -306,7 +306,7 @@ void enumerateJackMidiDevices()
           
         for(std::list<QString>::iterator ri = rsl.begin(); ri != rsl.end(); ++ri)
         {
-          QByteArray r_ba = (*ri).toLatin1();
+          QByteArray r_ba = (*ri).toUtf8();
           const char* r_port_name = r_ba.constData();
 
           void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
@@ -419,7 +419,7 @@ void enumerateJackMidiDevices()
       dev = MidiJackDevice::createJackMidiDevice(QString(), 2); // Let it pick the name
       if(dev)
       {
-        QByteArray r_ba = (*ri).toLatin1();
+        QByteArray r_ba = (*ri).toUtf8();
         const char* r_port_name = r_ba.constData();
 
         void* const r_port = MusEGlobal::audioDevice->findPort(r_port_name);
@@ -553,7 +553,7 @@ Part* partFromSerialNumber(const QUuid& serial)
 				return ip->second;
 	}
 
-	printf("ERROR: partFromSerialNumber(%s) wasn't able to find an appropriate part!\n",serial.toString().toLatin1().constData());
+	printf("ERROR: partFromSerialNumber(%s) wasn't able to find an appropriate part!\n",serial.toString().toLocal8Bit().constData());
 	return nullptr;
 }
 
@@ -2271,8 +2271,8 @@ QRect normalizeQRect(const QRect& rect)
 
 //            if (MusEGlobal::debugMsg)
 //            {
-//                fprintf(stderr, "loadQtStyle: Setting app style to default: %s\n", Appearance::getSetDefaultStyle().toLatin1().constData());
-//                fprintf(stderr, "   App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//                fprintf(stderr, "loadQtStyle: Setting app style to default: %s\n", Appearance::getSetDefaultStyle().toLocal8Bit().constData());
+//                fprintf(stderr, "   App style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //            }
 
 //            // No style object name? It will happen when a stylesheet is active.
@@ -2282,7 +2282,7 @@ QRect normalizeQRect(const QRect& rect)
 //            {
 //                qApp->style()->setObjectName(Appearance::getSetDefaultStyle().toLower());
 //                if (MusEGlobal::debugMsg)
-//                    fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//                    fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //            }
 //        }
 //    }
@@ -2293,8 +2293,8 @@ QRect normalizeQRect(const QRect& rect)
 
 //        if(MusEGlobal::debugMsg)
 //        {
-//            fprintf(stderr, "loadTheme setting app style to: %s\n", style.toLatin1().constData());
-//            fprintf(stderr, "   app style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//            fprintf(stderr, "loadTheme setting app style to: %s\n", style.toLocal8Bit().constData());
+//            fprintf(stderr, "   app style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //        }
 
 //        // No style object name? It will happen when a stylesheet is active.
@@ -2304,7 +2304,7 @@ QRect normalizeQRect(const QRect& rect)
 //        {
 //            qApp->style()->setObjectName(style.toLower());
 //            if(MusEGlobal::debugMsg)
-//                fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLatin1().constData());
+//                fprintf(stderr, "   Setting empty style object name. App style is now: %s\n", qApp->style()->objectName().toLocal8Bit().constData());
 //        }
 //    }
 //}
@@ -2319,7 +2319,7 @@ void loadTheme(const QString& theme)
         return;
 
     if(MusEGlobal::debugMsg)
-        fprintf(stderr, "loadTheme: %s\n", theme.toLatin1().constData());
+        fprintf(stderr, "loadTheme: %s\n", theme.toLocal8Bit().constData());
 
     QString stylePathUser = MusEGlobal::configPath + "/themes/" + theme + ".qss";
     QString stylePathDef = MusEGlobal::museGlobalShare + "/themes/" + theme + ".qss";
@@ -2385,7 +2385,7 @@ void loadTheme(const QString& theme)
 void loadThemeColors(const QString& theme)
 {
     if (MusEGlobal::debugMsg)
-        fprintf(stderr, "loadThemeColors: %s\n", theme.toLatin1().constData());
+        fprintf(stderr, "loadThemeColors: %s\n", theme.toLocal8Bit().constData());
 
     QString configColorPath = MusEGlobal::configPath + "/themes/" + theme + ".cfc";
     if (!QFile::exists(configColorPath)) {

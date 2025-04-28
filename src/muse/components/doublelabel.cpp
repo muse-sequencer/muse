@@ -384,7 +384,7 @@ void SuperDoubleValidator::clearCache() const
 QValidator::State SuperDoubleValidator::validate(QString &text, int &pos) const
 {
     DEBUG_DOUBLELABEL(stderr, "SuperDoubleValidator::validate: text:%s pos:%d modified:%d\n",
-          text.toLatin1().constData(), pos, _dl->isModified());
+          text.toLocal8Bit().constData(), pos, _dl->isModified());
 
     if(*_cachedText == text && !text.isEmpty())
       return *_cachedState;
@@ -397,14 +397,14 @@ QValidator::State SuperDoubleValidator::validate(QString &text, int &pos) const
     *_cachedValue = QVariant(num);
 
     DEBUG_DOUBLELABEL(stderr, "SuperDoubleValidator::validate: validated: text:%s pos:%d state:%d modified:%d\n",
-          text.toLatin1().constData(), pos, state, _dl->isModified());
+          text.toLocal8Bit().constData(), pos, state, _dl->isModified());
 
     return state;
 }
 
 void SuperDoubleValidator::fixup(QString &input) const
 {
-  DEBUG_DOUBLELABEL(stderr, "SuperDoubleValidator::fixup: input:%s\n", input.toLatin1().constData());
+  DEBUG_DOUBLELABEL(stderr, "SuperDoubleValidator::fixup: input:%s\n", input.toLocal8Bit().constData());
   input = _dl->textFromValue((_dl->valueFromText(input)));
 }
 
@@ -702,7 +702,7 @@ QString DoubleLabel::textFromValue(double v) const
 
 double DoubleLabel::valueFromText(const QString& s, bool *ok) const
 {
-  DEBUG_DOUBLELABEL(stderr, "DoubleLabel::valueFromText: s:%s\n", s.toLatin1().constData());
+  DEBUG_DOUBLELABEL(stderr, "DoubleLabel::valueFromText: s:%s\n", s.toLocal8Bit().constData());
 
   bool rok;
   // Strip any prefix or suffix.
@@ -765,7 +765,7 @@ void DoubleLabel::setString(double v)
 
 bool DoubleLabel::setSValue(const QString& s, bool *changed)
 {
-  DEBUG_DOUBLELABEL(stderr, "DoubleLabel::setSValue: s:%s\n", s.toLatin1().constData());
+  DEBUG_DOUBLELABEL(stderr, "DoubleLabel::setSValue: s:%s\n", s.toLocal8Bit().constData());
 
   bool ok, ret = false, ch = false;
   const double v = valueFromText(s, &ok);

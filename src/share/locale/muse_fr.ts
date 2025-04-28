@@ -8646,7 +8646,7 @@ Aucun: A utiliser uniquement si une grande précision est requise pour
 <context>
     <name>MusECore::Scripts</name>
     <message>
-        <location filename="../../muse/scripts.cpp" line="+45"/>
+        <location filename="../../muse/scripts.cpp" line="+47"/>
         <source>Do you want to process all or only selected events?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10005,7 +10005,7 @@ Synth track: Right-click to show GUI.</source>
     </message>
     <message>
         <location line="+246"/>
-        <location line="+14"/>
+        <location line="+16"/>
         <source>Nothing to edit</source>
         <translation type="unfinished">Rien à éditer</translation>
     </message>
@@ -10050,7 +10050,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="vanished">&amp;Transformation MIDI</translation>
     </message>
     <message>
-        <location line="-930"/>
+        <location line="-932"/>
         <source>Global Cut</source>
         <translation>Couper global</translation>
     </message>
@@ -12044,7 +12044,7 @@ Je n&apos;afficherai que la piste de batterie ancien style dans cet éditeur, en
 <context>
     <name>MusEGui::EditInstrument</name>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="+213"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="+215"/>
         <source>Use note offs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12285,18 +12285,16 @@ Je n&apos;afficherai que la piste de batterie ancien style dans cet éditeur, en
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+451"/>
-        <location line="+20"/>
+        <location line="+582"/>
         <source>MusE: Create file failed</source>
         <translation>MusE: Echec de la création du fichier</translation>
     </message>
     <message>
-        <location line="+58"/>
         <source>MusE: Write File failed</source>
-        <translation>MusE: Echec de l&apos;enregistrement du fichier</translation>
+        <translation type="vanished">MusE: Echec de l&apos;enregistrement du fichier</translation>
     </message>
     <message>
-        <location line="+52"/>
+        <location line="+104"/>
         <location line="+216"/>
         <source>MusE: Save Instrument Definition</source>
         <translation>MusE: Sauvegarder la définition de l&apos;instrument</translation>
@@ -12380,7 +12378,7 @@ Clean up the instrument!</source>
 Nettoyez l&apos;instrument!</translation>
     </message>
     <message>
-        <location line="+170"/>
+        <location line="+210"/>
         <location line="+5"/>
         <source>&amp;Don&apos;t save</source>
         <translation type="unfinished"></translation>
@@ -20380,7 +20378,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="-3327"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="-3472"/>
         <source>Controller !</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20444,7 +20442,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="+1159"/>
+        <location filename="../../muse/instruments/minstrument.cpp" line="+1244"/>
         <source>Instruments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20546,7 +20544,7 @@ sometimes requires write access to the file.</source>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="+2616"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="+2721"/>
         <location filename="../../muse/components/editevent.cpp" line="-271"/>
         <source>Cannot convert sysex string</source>
         <translation>Ne peut convertir le code sysex</translation>
@@ -20689,7 +20687,7 @@ a échoué: %2</translation>
         <translation>Vélocité</translation>
     </message>
     <message>
-        <location filename="../../libs/wave/wave.cpp" line="+607"/>
+        <location filename="../../libs/wave/wave.cpp" line="+611"/>
         <source>Create peakfile for </source>
         <translation type="unfinished"></translation>
     </message>

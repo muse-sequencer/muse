@@ -713,7 +713,7 @@ void readConfiguration(Xml& xml, bool doReadMidiPortConfig, bool doReadGlobalCon
                               }
                         else if (tag == "mtcoffset") {
                               QString qs(xml.parse1());
-                              QByteArray ba = qs.toUtf8();
+                              QByteArray ba = qs.toLocal8Bit();
                               const char* str = ba.constData();
                               int h, m, s, f, sf;
                               sscanf(str, "%d:%d:%d:%d:%d", &h, &m, &s, &f, &sf);

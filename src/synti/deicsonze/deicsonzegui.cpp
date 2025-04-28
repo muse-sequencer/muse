@@ -598,10 +598,10 @@ void DeicsOnzeGui::loadConfiguration(QString fileName) {
 	  _deicsOnze->readConfiguration(node.firstChild());
 	}
 	else printf("unsupported *.dco file version %s\n",
-		    version.toLatin1().constData());
+		    version.toLocal8Bit().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().constData());
+		  e.tagName().toLocal8Bit().constData());
       node = node.nextSibling();
     }
   }
@@ -1697,7 +1697,7 @@ void DeicsOnzeGui::processEvent(const MusECore::MidiPlayEvent& ev) {
       setSet();
       /*}
 	  else printf("Wrong set version : %s\n",
-		      version.toLatin1().constData());
+		      version.toLocal8Bit().constData());
 	}
 	node = node.nextSibling();
       }
@@ -1807,10 +1807,10 @@ void DeicsOnzeGui::loadSetDialog() {
 	  updatePresetName("INITVOICE", false);
 	}
 	else printf("unsupported *.dei file version %s\n",
-		    version.toLatin1().constData());
+		    version.toLocal8Bit().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().constData());
+		  e.tagName().toLocal8Bit().constData());
       node = node.nextSibling();
     }
   }
@@ -2045,10 +2045,10 @@ void DeicsOnzeGui::loadCategoryDialog() {
 	  setSet();
 	}
 	else printf("unsupported *.dec file version %s\n",
-		    version.toLatin1().constData());
+		    version.toLocal8Bit().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().constData());
+		  e.tagName().toLocal8Bit().constData());
       node = node.nextSibling();
     }
   }
@@ -2212,10 +2212,10 @@ void DeicsOnzeGui::loadSubcategoryDialog() {
 	  setCategory(cat);
 	}
 	else printf("unsupported *.des file version %s\n",
-		    version.toLatin1().constData());
+		    version.toLocal8Bit().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().constData());
+		  e.tagName().toLocal8Bit().constData());
       node = node.nextSibling();
     }
   }
@@ -2383,10 +2383,10 @@ void DeicsOnzeGui::loadPresetDialog() {
 	  setSubcategory(sub->_subcategory);
 	}
 	else printf("unsupported *.dep file version %s\n",
-		    version.toLatin1().constData());
+		    version.toLocal8Bit().constData());
       }
       else printf("DeicsOnze: %s not supported\n",
-		  e.tagName().toLatin1().constData());
+		  e.tagName().toLocal8Bit().constData());
       node = node.nextSibling();
     }
   }
@@ -2429,23 +2429,23 @@ void DeicsOnzeGui::setPresetName(const QString& n) {
   QTreeWidgetItem* pre = presetListView->currentItem();
   if(pre) {
     //TODO : must be changed with SysEx
-    _deicsOnze->_preset[_currentChannel]->name = n.toLatin1().data();
-    pre->setText(1,n.toLatin1().data());
+    _deicsOnze->_preset[_currentChannel]->name = n.toUtf8().data();
+    pre->setText(1,n.toUtf8().data());
   }
 }
 void DeicsOnzeGui::setSubcategoryName(const QString& s) {
   QTreeSubcategory* sub =
     (QTreeSubcategory*) subcategoryListView->currentItem();
   if(sub) {//must be changed with SysEx
-    sub->_subcategory->_subcategoryName=s.toLatin1().data();
-    sub->setText(1, s.toLatin1().data());
+    sub->_subcategory->_subcategoryName=s.toUtf8().data();
+    sub->setText(1, s.toUtf8().data());
   }
 }
 void DeicsOnzeGui::setCategoryName(const QString& c) {
   QTreeCategory* cat = (QTreeCategory*) categoryListView->currentItem();
   if(cat) {//must be changed with SysEx
-    cat->_category->_categoryName=c.toLatin1().data();
-    cat->setText(1, c.toLatin1().data());
+    cat->_category->_categoryName=c.toUtf8().data();
+    cat->setText(1, c.toUtf8().data());
   }
 }
 void DeicsOnzeGui::setHBank(int hb) {
@@ -2519,7 +2519,7 @@ void DeicsOnzeGui::setInitSetPath(const QString& s) {
   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_INITSETPATH;
-  strncpy((char*)&message[3], s.toLatin1().data(), MAXSTRLENGTHINITSETPATH);
+  strncpy((char*)&message[3], s.toUtf8().data(), MAXSTRLENGTHINITSETPATH);
   sendSysex(message, 3+MAXSTRLENGTHINITSETPATH);
 }
 void DeicsOnzeGui::setBrowseInitSetPath() {
@@ -2557,7 +2557,7 @@ void DeicsOnzeGui::setBackgroundPixPath(const QString& s) {
   message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
   message[1]=DEICSONZE_UNIQUE_ID;
   message[2]=SYSEX_BACKGROUNDPIXPATH;
-  strncpy((char*)&message[3], s.toLatin1().data(),
+  strncpy((char*)&message[3], s.toUtf8().data(),
 	  MAXSTRLENGTHBACKGROUNDPIXPATH);
   sendSysex(message, 3+MAXSTRLENGTHBACKGROUNDPIXPATH);
 }

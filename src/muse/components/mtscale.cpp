@@ -488,7 +488,7 @@ void MTScale::drawTickRaster(
 // For testing...
 //                           fprintf(stderr,
 //                           "is_small:%d Beat text: s:%s stick:%d ntick:%d bar1:%d bar2:%d bar:%d\n",
-//                           scale_info._isSmall, s.toLatin1().constData(), stick, ntick, bar1, bar2, bar);
+//                           scale_info._isSmall, s.toLocal8Bit().constData(), stick, ntick, bar1, bar2, bar);
 
                           p.drawText(asQRectMapped(br_txt), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextDontClip, s);
                         }
@@ -611,7 +611,7 @@ void MTScale::pdraw(QPainter& p, const QRect& mr, const QRegion& mrg)
               else
                     x2_time = xp + vw200;
               
-              //printf("MTScale::pdraw marker %s xp:%d y:%d h:%d r.x:%d r.w:%d\n", m->second.name().toLatin1(), xp, height(), y, r.x(), r.width());
+              //printf("MTScale::pdraw marker %s xp:%d y:%d h:%d r.x:%d r.w:%d\n", m->second.name().toLocal8Bit(), xp, height(), y, r.x(), r.width());
   
               // Must be reasonable about very low negative x values! With long songs > 15min
               //  and with high horizontal magnification, 'ghost' drawings appeared,

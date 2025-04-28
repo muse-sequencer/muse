@@ -47,7 +47,7 @@ void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debug
   QDir pluginDir(s, QString("*.so"));
   if(debugMsg)
   {
-    INFO_AUDIOCONVERT(stderr, "searching for audio converters in <%s>\n", s.toLatin1().constData());
+    INFO_AUDIOCONVERT(stderr, "searching for audio converters in <%s>\n", s.toLocal8Bit().constData());
   }
   if(pluginDir.exists())
   {
@@ -57,7 +57,7 @@ void AudioConverterPluginList::discover(const QString& museGlobalLib, bool debug
     {
       fi = &*it;
 
-      QByteArray ba = fi->filePath().toLatin1();
+      QByteArray ba = fi->filePath().toLocal8Bit();
       const char* path = ba.constData();
 
       void* handle = dlopen(path, RTLD_NOW);
@@ -150,7 +150,7 @@ AudioConverterPlugin* AudioConverterPluginList::find(const char* name, int ID, i
   for(const_iterator i = cbegin(); i != cend(); ++i)
   {
     AudioConverterPlugin* plugin = *i;
-    const bool name_match = (name && (strcmp(name, plugin->name().toLatin1().constData()) == 0));
+    const bool name_match = (name && (strcmp(name, plugin->name().toUtf8().constData()) == 0));
     const bool ID_match = (id_valid && ID == plugin->id());
     const bool caps_match = (caps_valid && (plugin->capabilities() & capabilities) == capabilities);
     if((name && id_valid && name_match && ID_match) || 
@@ -244,12 +244,12 @@ int AudioConverterPlugin::incReferences(int val)
 
   if(!_handle)
   {
-    _handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
+    _handle = dlopen(fi.filePath().toLocal8Bit().constData(), RTLD_NOW);
 
     if(!_handle)
     {
       ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::incReferences dlopen(%s) failed: %s\n",
-              fi.filePath().toLatin1().constData(), dlerror());
+              fi.filePath().toLocal8Bit().constData(), dlerror());
       return 0;
     }
 
@@ -285,7 +285,8 @@ int AudioConverterPlugin::incReferences(int val)
     dlclose(_handle);
     _handle = nullptr;
     _references = 0;
-    ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::incReferences Error: %s no plugin!\n", fi.filePath().toLatin1().constData());
+    ERROR_AUDIOCONVERT(stderr, "AudioConverterPlugin::incReferences Error: %s no plugin!\n",
+                       fi.filePath().toLocal8Bit().constData());
     return 0;
   }
 

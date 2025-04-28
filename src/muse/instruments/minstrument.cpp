@@ -176,14 +176,99 @@ static void readEventList(Xml& xml, EventList* el, const char* name)
 //   loadIDF
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// static void loadIDF(QFileInfo* fi)
+//       {
+//       FILE* f = fopen(fi->filePath().toLatin1().constData(), "r");
+//       if (f == 0)
+//             return;
+//       if (MusEGlobal::debugMsg)
+//             printf("READ IDF %s\n", fi->filePath().toLatin1().constData());
+//       Xml xml(f);
+//
+//       bool skipmode = true;
+//       for (;;) {
+//             Xml::Token token = xml.parse();
+//             const QString& tag = xml.s1();
+//             switch (token) {
+//                   case Xml::Error:
+//                   case Xml::End:
+//                         goto loadIDF_end;
+//                   case Xml::TagStart:
+//                         if (skipmode && tag == "muse")
+//                               skipmode = false;
+//                         else if (skipmode)
+//                               break;
+//                         else if (tag == "MidiInstrument") {
+//                               MidiInstrument* i = new MidiInstrument();
+//                               i->setFilePath(fi->filePath());
+//                               i->read(xml);
+//                               // Ignore duplicate named instruments.
+//                               iMidiInstrument ii = midiInstruments.begin();
+//                               for(; ii != midiInstruments.end(); ++ii)
+//                               {
+//                                 if((*ii)->iname() == i->iname())
+//                                   break;
+//                               }
+//                               if(ii == midiInstruments.end())
+//                               {
+//
+// #ifdef _USE_INSTRUMENT_OVERRIDES_
+//                                 // Add in the drum map overrides that were found in config.
+//                                 // They can only be added now that the instrument has been loaded.
+//                                 ciWorkingDrumMapInstrumentList_t iwdmil =
+//                                   MusEGlobal::workingDrumMapInstrumentList.find(i->iname().toStdString());
+//                                 if(iwdmil != MusEGlobal::workingDrumMapInstrumentList.end())
+//                                 {
+//                                   const WorkingDrumMapPatchList& wdmil = iwdmil->second;
+//                                   patch_drummap_mapping_list_t* pdml = i->get_patch_drummap_mapping();
+//                                   int patch;
+//                                   for(ciWorkingDrumMapPatchList_t iwdmpl = wdmil.begin(); iwdmpl != wdmil.end(); ++iwdmpl)
+//                                   {
+//                                     patch = iwdmpl->first;
+//                                     iPatchDrummapMapping_t ipdm = pdml->find(patch, false); // No default.
+//                                     if(ipdm != pdml->end())
+//                                     {
+//                                       patch_drummap_mapping_t& pdm = *ipdm;
+//                                       const WorkingDrumMapList& wdml = iwdmpl->second;
+//                                       pdm._workingDrumMapList = wdml;
+//                                     }
+//                                   }
+//                                   // TODO: Done with the config override, so erase it? Hm, maybe we might need it later...
+//                                   //MusEGlobal::workingDrumMapInstrumentList.erase(iwdmil);
+//                                 }
+// #endif
+//                                 midiInstruments.push_back(i);
+//                               }
+//                               else
+//                                 delete i;
+//                             }
+//                         else
+//                               xml.unknown("muse");
+//                         break;
+//                   case Xml::Attribut:
+//                         break;
+//                   case Xml::TagEnd:
+//                         if (!skipmode && tag == "muse") {
+//                               goto loadIDF_end;
+//                               }
+//                   default:
+//                         break;
+//                   }
+//             }
+//
+// loadIDF_end:
+//       fclose(f);
+//       }
+
 static void loadIDF(QFileInfo* fi)
       {
-      FILE* f = fopen(fi->filePath().toLatin1().constData(), "r");
-      if (f == 0)
+      QFile f(fi->filePath());
+      if(!f.open(QIODevice::ReadOnly | QIODevice::Text))
             return;
       if (MusEGlobal::debugMsg)
-            printf("READ IDF %s\n", fi->filePath().toLatin1().constData());
-      Xml xml(f);
+            printf("READ IDF %s\n", fi->filePath().toLocal8Bit().constData());
+      Xml xml(&f);
 
       bool skipmode = true;
       for (;;) {
@@ -257,7 +342,7 @@ static void loadIDF(QFileInfo* fi)
             }
 
 loadIDF_end:
-      fclose(f);
+      f.close();
       }
 
 //---------------------------------------------------------
@@ -299,7 +384,7 @@ void initMidiInstruments()
 #endif
 
       if (MusEGlobal::debugMsg)
-        printf("load user instrument definitions from <%s>\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+        printf("load user instrument definitions from <%s>\n", MusEGlobal::museUserInstruments.toLocal8Bit().constData());
       QDir usrInstrumentsDir(MusEGlobal::museUserInstruments, QString("*.idf"));
       if (usrInstrumentsDir.exists()) {
             QFileInfoList list = usrInstrumentsDir.entryInfoList();
@@ -311,7 +396,7 @@ void initMidiInstruments()
             }
 
       if (MusEGlobal::debugMsg)
-        printf("load instrument definitions from <%s>\n", MusEGlobal::museInstruments.toLatin1().constData());
+        printf("load instrument definitions from <%s>\n", MusEGlobal::museInstruments.toLocal8Bit().constData());
       QDir instrumentsDir(MusEGlobal::museInstruments, QString("*.idf"));
       if (instrumentsDir.exists()) {
             QFileInfoList list = instrumentsDir.entryInfoList();
@@ -322,7 +407,7 @@ void initMidiInstruments()
                   }
             }
       else
-        printf("Instrument directory not found: %s\n", MusEGlobal::museInstruments.toLatin1().constData());
+        printf("Instrument directory not found: %s\n", MusEGlobal::museInstruments.toLocal8Bit().constData());
 
       }
 
@@ -692,7 +777,7 @@ void Patch::read(Xml& xml)
 
 void Patch::write(int level, Xml& xml)
       {
-            xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).toLatin1().constData());
+            xml.nput(level, "<Patch name=\"%s\"", Xml::xmlString(name).toUtf8().constData());
 
             if(hbank != -1)
               xml.nput(" hbank=\"%d\"", hbank);
@@ -848,11 +933,11 @@ bool SysEx::read(Xml& xml)
 
 void SysEx::write(int level, Xml& xml)
       {
-            xml.nput(level, "<SysEx name=\"%s\">\n", Xml::xmlString(name).toLatin1().constData());
+            xml.nput(level, "<SysEx name=\"%s\">\n", Xml::xmlString(name).toUtf8().constData());
 
             level++;
             if(!comment.isEmpty())
-              xml.strTag(level, "comment", comment.toLatin1().constData());
+              xml.strTag(level, "comment", comment.toUtf8().constData());
             if(dataLen > 0 && data)
               xml.strTag(level, "data", sysex2string(dataLen, data));
 
@@ -1008,7 +1093,7 @@ void MidiInstrument::read(Xml& xml)
                         else if (tag == "InitScript") {
                               if (_initScript)
                                     delete _initScript;
-                              QByteArray ba = xml.parse1().toLatin1();
+                              QByteArray ba = xml.parse1().toUtf8();
                               const char* istr = ba.constData();
                               int len = ba.length() +1;
                               if (len > 1) {
@@ -1054,7 +1139,7 @@ void MidiInstrument::write(int level, Xml& xml)
       xml.header();
       xml.tag(level, "muse version=\"1.0\"");
       level++;
-      xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toLatin1().constData());
+      xml.nput(level, "<MidiInstrument name=\"%s\"", Xml::xmlString(iname()).toUtf8().constData());
 
       if(noteOffMode() != NoteOffAll) // Default is NoteOffAll.
         xml.nput(" NoteOffMode=\"%d\"", noteOffMode());
@@ -1064,7 +1149,7 @@ void MidiInstrument::write(int level, Xml& xml)
       for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) {
             PatchGroup* pgp = *g;
             const PatchList& pl = pgp->patches;
-            xml.tag(level, "PatchGroup name=\"%s\"", Xml::xmlString(pgp->name).toLatin1().constData());
+            xml.tag(level, QString("PatchGroup name=\"%1\"").arg(Xml::xmlString(pgp->name)));
             level++;
             for (ciPatch p = pl.begin(); p != pl.end(); ++p)
                   (*p)->write(level, xml);
@@ -1104,7 +1189,7 @@ void MidiInstrument::writeDrummapOverrides(int level, Xml& xml) const
   {
     if(!(*ipdm)._workingDrumMapList.empty())
     {
-      xml.tag(level++, "drummapOverrides instrument=\"%s\"", Xml::xmlString(iname()).toLatin1().constData());
+      xml.tag(level++, QString("drummapOverrides instrument=\"%1\"").arg(Xml::xmlString(iname())));
       patch_drummap_mapping.writeDrummapOverrides(level, xml);
       xml.etag(--level, "drummapOverrides");
       break;
@@ -2021,7 +2106,7 @@ void patch_drummap_mapping_list_t::write(int level, Xml& xml) const
 
       tmp+="/>\n";
 
-      xml.nput(level, tmp.toLatin1().data());
+      xml.nput(level, tmp.toUtf8().data());
     }
 
     write_new_style_drummap(level, xml, "drummap", it->drummap);
@@ -2249,7 +2334,7 @@ void WorkingDrumMapList::read(Xml& xml, bool fillUnused, int defaultIndex)
                           wdme._fields |= WorkingDrumMapEntry::HideField;
                     }
                     else
-                      xml.unknown(start_tag.toLatin1().constData());
+                      xml.unknown(start_tag.toUtf8().constData());
                     break;
               case Xml::Attribut:
                     if (tag == "idx" || tag == "pitch")
@@ -2361,7 +2446,7 @@ void WorkingDrumMapInstrumentList::read(Xml& xml)
                       // false = Do not fill in unused items.
                       wdmpl.read(xml, false);
                     else
-                      xml.unknown(start_tag.toLatin1().constData());
+                      xml.unknown(start_tag.toUtf8().constData());
                     break;
               case Xml::Attribut:
                     if (tag == "instrument")
@@ -2584,7 +2669,7 @@ void WorkingDrumMapPatchList::read(Xml& xml, bool fillUnused)
                     else if (tag == "comment")
                       xml.parse();
                     else
-                      xml.unknown(start_tag.toLatin1().constData());
+                      xml.unknown(start_tag.toUtf8().constData());
                     break;
               case Xml::Attribut:
                     if (tag == "patch")
@@ -2777,7 +2862,7 @@ void ChannelDrumMappingList::read(Xml& xml)
                     else if (tag == "comment")
                       xml.parse();
                     else
-                      xml.unknown(start_tag.toLatin1().constData());
+                      xml.unknown(start_tag.toUtf8().constData());
                     break;
               case Xml::Attribut:
                     if (tag == "channel")

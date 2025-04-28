@@ -1018,7 +1018,7 @@ MusECore::Part* read_part(MusECore::Xml& xml, QString tag_name="part")
                         part=nullptr;
                     else
                     {
-                        sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
+                        sscanf(tag.toLocal8Bit().constData(), "%d:%d", &trackIdx, &partIdx);
                         if (debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
                         MusECore::Track* track = MusEGlobal::song->tracks()->index(trackIdx);
                         if (track)

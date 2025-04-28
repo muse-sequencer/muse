@@ -50,7 +50,7 @@ PluginScanInfoRef PluginScanList::find(const PluginInfoString_t& file,
        (!u_empty || l_empty || label == ref->info()._label))
       return ref;
   }
-  //fprintf(stderr, "Plugin <%s> not found\n", name.toLatin1().constData());
+  //fprintf(stderr, "Plugin <%s> not found\n", name.toLocal8Bit().constData());
   return PluginScanInfoRef();
 }
 
@@ -70,7 +70,7 @@ PluginScanInfoRef PluginScanList::find(const PluginScanInfoStruct& info) const
        (!u_empty || l_empty || info._label == ref->info()._label))
           return ref;
   }
-  //fprintf(stderr, "Plugin <%s> not found\n", name.toLatin1().constData());
+  //fprintf(stderr, "Plugin <%s> not found\n", name.toLocal8Bit().constData());
   return PluginScanInfoRef();
 }
 
