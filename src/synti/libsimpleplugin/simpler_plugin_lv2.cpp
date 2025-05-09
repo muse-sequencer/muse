@@ -25,18 +25,17 @@
 // #include <stdlib.h>
 // #include <stdio.h>
 // #include <unistd.h>
+// TODO Switch dl stuff over to QLibrary.
 // #include <dlfcn.h>
 
 #include <string>
 #include <string.h>
 #include <signal.h>
-#include <dlfcn.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <iostream>
 #include <time.h>
-#include <dlfcn.h>
 #include <QMessageBox>
 #include <QDirIterator>
 #include <QInputDialog>

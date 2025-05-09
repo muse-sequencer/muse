@@ -61,10 +61,7 @@
         <bool>false</bool>
        </property>
        <property name="itemsExpandable">
-        <bool>false</bool>
-       </property>
-       <property name="sortingEnabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <attribute name="headerCascadingSectionResizes">
         <bool>false</bool>

@@ -31,7 +31,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#include <dlfcn.h>
+// REMOVE Tim. tmp. Removed.
+//#include <dlfcn.h>
 #include "muse_math.h"
 #include <set>
 #include <string>
@@ -62,7 +63,8 @@
 #define NEW_PLUGIN_ENTRY_POINT "VSTPluginMain"
 
 // Enable debugging messages
-//#define VST_NATIVE_DEBUG
+// REMOVE Tim. tmp. Enabled.
+#define VST_NATIVE_DEBUG
 //#define VST_NATIVE_DEBUG_PROCESS
 
 #ifdef VST_VESTIGE_SUPPORT
@@ -119,7 +121,7 @@ VstIntPtr VSTCALLBACK vstNativeHostCallback(AEffect* effect, VstInt32 opcode, Vs
       // No instance found. So we are just scanning for plugins...
     
 #ifdef VST_NATIVE_DEBUG      
-      fprintf(stderr, "vstNativeHostCallback eff:%p opcode:%ld\n", effect, opcode);
+      fprintf(stderr, "vstNativeHostCallback eff:%p opcode:%d\n", effect, opcode);
 #endif      
       
       switch (opcode) {
@@ -462,7 +464,9 @@ VstNativeSynth::VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info)
 //   : Synth(info), _handle(nullptr)
   : Synth(info)
 {
-  _id = info._subID;
+// REMOVE Tim. tmp. Changed.
+//   _id = info._subID;
+  _id = info._uniqueID;
   _hasGui = info._pluginFlags & MusEPlugin::PluginHasGui;
   _inports = info._inports;
   _outports = info._outports;
@@ -476,29 +480,79 @@ VstNativeSynth::VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info)
 }
 
 //---------------------------------------------------------
+//   reference
+//---------------------------------------------------------
+
+bool VstNativeSynth::reference()
+{
+  if(_references == 0)
+  {
+    _qlib.setFileName(filePath());
+    // Same as dlopen RTLD_NOW.
+    _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if(!_qlib.load())
+    {
+      fprintf(stderr, "VstNativeSynth::reference: load (%s) failed: %s\n",
+        _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+      return false;
+    }
+  }
+
+  ++_references;
+
+  return true;
+}
+
+//---------------------------------------------------------
 //   incInstances
 //---------------------------------------------------------
 
-int VstNativeSynth::incReferences(int val)
-{
-  _references += val;
-  if(_references == 0)
-  {
-    if(_handle && _id == 0)
-    {
-      #ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynth::incReferences no more instances, closing library\n");
-      #endif
+// REMOVE Tim. tmp. Changed.
+// int VstNativeSynth::incReferences(int val)
+// {
+//   _references += val;
+//   if(_references == 0)
+//   {
+//     if(_handle && _id == 0)
+//     {
+//       #ifdef VST_NATIVE_DEBUG
+//       fprintf(stderr, "VstNativeSynth::incReferences no more instances, closing library\n");
+//       #endif
+//
+//       dlclose(_handle);
+//       _handle = nullptr;
+//     }
+//     iIdx.clear();
+//     oIdx.clear();
+//     rpIdx.clear();
+//     midiCtl2PortMap.clear();
+//     port2MidiCtlMap.clear();
+//   }
+//   return _references;
+// }
 
-      dlclose(_handle);
-      _handle = nullptr;
-    }
+int VstNativeSynth::release()
+{
+  if(_references == 1)
+  {
+    // Attempt to unload the library.
+    // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+    const bool ulres = _qlib.unload();
+    // Dummy usage stops unused warnings.
+    (void)ulres;
+    #ifdef VST_NATIVE_DEBUG
+    fprintf(stderr, "VstNativeSynth::release(): No more instances. Result of unloading library %s: %d\n",
+      _qlib.fileName().toLocal8Bit().constData(), ulres);
+    #endif
+
     iIdx.clear();
     oIdx.clear();
     rpIdx.clear();
     midiCtl2PortMap.clear();
     port2MidiCtlMap.clear();
   }
+  if(_references > 0)
+    --_references;
   return _references;
 }
 
@@ -506,45 +560,146 @@ int VstNativeSynth::incReferences(int val)
 //   instantiate
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// AEffect* VstNativeSynth::instantiate(void* userData)
+// {
+//   int inst_num = _references;
+//   inst_num++;
+//   QString n;
+//   n.setNum(inst_num);
+// // REMOVE Tim. tmp. Removed.
+// //   QString instanceName = baseName() + "-" + n;
+//   QByteArray ba = _fileInfo.filePath().toLocal8Bit();
+//   const char* path = ba.constData();
+//   void* hnd = _handle;
+//   //int vst_version;
+//
+//   if(hnd == nullptr)
+//   {
+//     hnd = dlopen(path, RTLD_NOW);
+//     if(hnd == nullptr)
+//     {
+//       fprintf(stderr, "dlopen(%s) failed: %s\n", path, dlerror());
+//       return nullptr;
+//     }
+//   }
+//
+//   AEffect *(*getInstance)(audioMasterCallback);
+//   getInstance = (AEffect*(*)(audioMasterCallback))dlsym(hnd, NEW_PLUGIN_ENTRY_POINT);
+//   if(!getInstance)
+//   {
+//     if(MusEGlobal::debugMsg)
+//     {
+//       fprintf(stderr, "VST 2.4 entrypoint \"" NEW_PLUGIN_ENTRY_POINT "\" not found in library %s, looking for \""
+//                       OLD_PLUGIN_ENTRY_POINT "\"\n", path);
+//     }
+//
+//     getInstance = (AEffect*(*)(audioMasterCallback))dlsym(hnd, OLD_PLUGIN_ENTRY_POINT);
+//     if(!getInstance)
+//     {
+//       fprintf(stderr, "ERROR: VST entrypoints \"" NEW_PLUGIN_ENTRY_POINT "\" or \""
+//                       OLD_PLUGIN_ENTRY_POINT "\" not found in library\n");
+//       dlclose(hnd);
+//       return nullptr;
+//     }
+//     else if(MusEGlobal::debugMsg)
+//     {
+//       fprintf(stderr, "VST entrypoint \"" OLD_PLUGIN_ENTRY_POINT "\" found\n");
+//     }
+//   }
+//   else if(MusEGlobal::debugMsg)
+//   {
+//     fprintf(stderr, "VST entrypoint \"" NEW_PLUGIN_ENTRY_POINT "\" found\n");
+//   }
+//
+//
+//   sem_wait(&_vstIdLock);
+//
+//   currentPluginId = _id;
+//
+//   AEffect *plugin = getInstance(vstNativeHostCallback);
+//
+//   sem_post(&_vstIdLock);
+//   if(!plugin)
+//   {
+//     fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", path);
+//     if(_id == 0)
+//       dlclose(hnd);
+//     return nullptr;
+//   }
+//   else if(MusEGlobal::debugMsg)
+//     fprintf(stderr, "plugin instantiated\n");
+//
+//   if(plugin->magic != kEffectMagic)
+//   {
+//     fprintf(stderr, "Not a VST plugin in library \"%s\"\n", path);
+//     if(_id == 0)
+//       dlclose(hnd);
+//     return nullptr;
+//   }
+//   else if(MusEGlobal::debugMsg)
+//     fprintf(stderr, "plugin is a VST\n");
+//
+//   if(!(plugin->flags & effFlagsHasEditor))
+//   {
+//     if(MusEGlobal::debugMsg)
+//       fprintf(stderr, "Plugin has no GUI\n");
+//   }
+//   else if(MusEGlobal::debugMsg)
+//     fprintf(stderr, "Plugin has a GUI\n");
+//
+//   if(!(plugin->flags & effFlagsCanReplacing))
+//     fprintf(stderr, "Plugin does not support processReplacing\n");
+//   else if(MusEGlobal::debugMsg)
+//     fprintf(stderr, "Plugin supports processReplacing\n");
+//
+//   plugin->user = userData;
+//
+//   // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
+//   //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, nullptr, 0.0f);
+//   /*if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
+//   {
+//     if(MusEGlobal::debugMsg)
+//       fprintf(stderr, "Plugin is not a synth\n");
+//     goto _error;
+//   }*/
+//
+//
+//   ++_references;
+//   _handle = hnd;
+//
+//   return plugin;
+// /*
+// _error:
+//   //plugin->dispatcher(plugin, effMainsChanged, 0, 0, nullptr, 0);
+//   plugin->dispatcher(plugin, effClose, 0, 0, nullptr, 0);
+//   if(_id == 0)
+//     dlclose(hnd);
+//   return nullptr;
+//   */
+// }
+
 AEffect* VstNativeSynth::instantiate(void* userData)
 {
-  int inst_num = _references;
-  inst_num++;
-  QString n;
-  n.setNum(inst_num);
-// REMOVE Tim. tmp. Removed.
-//   QString instanceName = baseName() + "-" + n;
-  QByteArray ba = _fileInfo.filePath().toLocal8Bit();
-  const char* path = ba.constData();
-  void* hnd = _handle;
-  //int vst_version;
-
-  if(hnd == nullptr)
-  {
-    hnd = dlopen(path, RTLD_NOW);
-    if(hnd == nullptr)
-    {
-      fprintf(stderr, "dlopen(%s) failed: %s\n", path, dlerror());
-      return nullptr;
-    }
-  }
+  if(!reference())
+    return nullptr;
 
   AEffect *(*getInstance)(audioMasterCallback);
-  getInstance = (AEffect*(*)(audioMasterCallback))dlsym(hnd, NEW_PLUGIN_ENTRY_POINT);
+  getInstance = (AEffect*(*)(audioMasterCallback))_qlib.resolve(NEW_PLUGIN_ENTRY_POINT);
   if(!getInstance)
   {
     if(MusEGlobal::debugMsg)
     {
       fprintf(stderr, "VST 2.4 entrypoint \"" NEW_PLUGIN_ENTRY_POINT "\" not found in library %s, looking for \""
-                      OLD_PLUGIN_ENTRY_POINT "\"\n", path);
+                      OLD_PLUGIN_ENTRY_POINT "\"\n", _qlib.fileName().toLocal8Bit().constData());
     }
 
-    getInstance = (AEffect*(*)(audioMasterCallback))dlsym(hnd, OLD_PLUGIN_ENTRY_POINT);
+    getInstance = (AEffect*(*)(audioMasterCallback))_qlib.resolve(OLD_PLUGIN_ENTRY_POINT);
     if(!getInstance)
     {
       fprintf(stderr, "ERROR: VST entrypoints \"" NEW_PLUGIN_ENTRY_POINT "\" or \""
                       OLD_PLUGIN_ENTRY_POINT "\" not found in library\n");
-      dlclose(hnd);
+      release();
       return nullptr;
     }
     else if(MusEGlobal::debugMsg)
@@ -567,9 +722,8 @@ AEffect* VstNativeSynth::instantiate(void* userData)
   sem_post(&_vstIdLock);
   if(!plugin)
   {
-    fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", path);
-    if(_id == 0)
-      dlclose(hnd);
+    fprintf(stderr, "ERROR: Failed to instantiate plugin in VST library \"%s\"\n", _qlib.fileName().toLocal8Bit().constData());
+    release();
     return nullptr;
   }
   else if(MusEGlobal::debugMsg)
@@ -577,9 +731,8 @@ AEffect* VstNativeSynth::instantiate(void* userData)
 
   if(plugin->magic != kEffectMagic)
   {
-    fprintf(stderr, "Not a VST plugin in library \"%s\"\n", path);
-    if(_id == 0)
-      dlclose(hnd);
+    fprintf(stderr, "Not a VST plugin in library \"%s\"\n", _qlib.fileName().toLocal8Bit().constData());
+    release();
     return nullptr;
   }
   else if(MusEGlobal::debugMsg)
@@ -600,28 +753,7 @@ AEffect* VstNativeSynth::instantiate(void* userData)
 
   plugin->user = userData;
 
-  // "2 = VST2.x, older versions return 0". Observed 2400 on all the ones tested so far.
-  //vst_version = plugin->dispatcher(plugin, effGetVstVersion, 0, 0, nullptr, 0.0f);
-  /*if(!((plugin->flags & effFlagsIsSynth) || (vst_version >= 2 && plugin->dispatcher(plugin, effCanDo, 0, 0,(void*) "receiveVstEvents", 0.0f) > 0)))
-  {
-    if(MusEGlobal::debugMsg)
-      fprintf(stderr, "Plugin is not a synth\n");
-    goto _error;
-  }*/
-
-
-  ++_references;
-  _handle = hnd;
-
   return plugin;
-/*
-_error:
-  //plugin->dispatcher(plugin, effMainsChanged, 0, 0, nullptr, 0);
-  plugin->dispatcher(plugin, effClose, 0, 0, nullptr, 0);
-  if(_id == 0)
-    dlclose(hnd);
-  return nullptr;
-  */
 }
 
 //---------------------------------------------------------
@@ -1112,7 +1244,14 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
 
 #ifdef VST_NATIVE_DEBUG
    if(opcode != audioMasterGetTime)
-      fprintf(stderr, "VstNativeSynthIF::hostCallback %s opcode:%ld\n", name().toLocal8Bit().constData(), opcode);
+   {
+     QString name;
+     if(userData->sif)
+        name = userData->sif->pluginName();
+     else if(userData->pstate)
+        name = userData->pstate->pluginI->pluginName();
+     fprintf(stderr, "VstNativeSynth::hostCallback %s opcode:%d\n", name.toLocal8Bit().constData(), opcode);
+   }
 #endif
 
    switch (opcode) {
@@ -1162,8 +1301,8 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
       //              due to our multi-run slices. Some of the (costly) info will be redundant.
       //             So try to add some flag to try to only call some or all of this once per cycle.
 
-#ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",
+#ifdef VST_NATIVE_DEBUG_PROCESS
+      fprintf(stderr, "VstNativeSynth::hostCallback master time: valid: nanos:%d ppqpos:%d tempo:%d bars:%d cyclepos:%d sig:%d smpte:%d clock:%d\n",
               (bool)(value & kVstNanosValid),
               (bool)(value & kVstPpqPosValid),
               (bool)(value & kVstTempoValid),
@@ -1256,8 +1395,8 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
          _timeInfo.flags |= kVstTempoValid;
       }
 
-#ifdef VST_NATIVE_DEBUG
-      fprintf(stderr, "VstNativeSynthIF::hostCallback master time: sample pos:%f samplerate:%f sig num:%ld den:%ld tempo:%f\n",
+#ifdef VST_NATIVE_DEBUG_PROCESS
+      fprintf(stderr, "VstNativeSynth::hostCallback master time: sample pos:%f samplerate:%f sig num:%d den:%d tempo:%f\n",
               _timeInfo.samplePos, _timeInfo.sampleRate, _timeInfo.timeSigNumerator, _timeInfo.timeSigDenominator, _timeInfo.tempo);
 #endif
 
@@ -1280,7 +1419,7 @@ VstIntPtr VstNativeSynth::pluginHostCallback(VstNativeSynthOrPlugin *userData, V
      VstEvents* ve = (VstEvents*)ptr;
      int num_ev = ve->numEvents;
 #ifdef VST_NATIVE_DEBUG
-     fprintf(stderr, "VstNativeSynthIF::hostCallback audioMasterProcessEvents: numEvents:%d\n", num_ev);
+     fprintf(stderr, "VstNativeSynth::hostCallback audioMasterProcessEvents: numEvents:%d\n", num_ev);
 #endif
      for(int i = 0; i < num_ev; ++i)
      {
@@ -1559,7 +1698,7 @@ void VstNativeSynthIF::guiHeartBeat()
 {
   SynthIF::guiHeartBeat();
 
-#ifdef VST_NATIVE_DEBUG
+#ifdef VST_NATIVE_DEBUG_PROCESS
   fprintf(stderr, "VstNativeSynthIF::guiHeartBeat %p\n", this);
 #endif
 
@@ -3749,10 +3888,14 @@ LADSPA_Handle VstNativePluginWrapper::instantiate(PluginI *pluginI)
 
 }
 
-int VstNativePluginWrapper::incReferences(int ref)
+bool VstNativePluginWrapper::reference()
 {
-   _synth->incReferences(ref);
-   return _synth->references();
+   return _synth->reference();
+}
+
+int VstNativePluginWrapper::release()
+{
+   return _synth->release();
 }
 
 void VstNativePluginWrapper::activate(LADSPA_Handle handle)

@@ -32,6 +32,8 @@
 
 #include "globaldefs.h"
 #include "mpevent.h"
+// REMOVE Tim. tmp. Added.
+#include "libs/file/file.h"
 
 namespace MusECore {
 
@@ -102,13 +104,22 @@ class MidiFile {
       QString lastDeviceName;
       //MidiInstrument* def_instr;
       MidiFilePortMap* _usedPortMap;
-      FILE* fp;
+// REMOVE Tim. tmp. Changed.
+//      FILE* fp;
+      MusEFile::File *fp;
       int curPos;
 
-      bool read(void*, size_t);
-      bool write(const void*, size_t);
-      void put(unsigned char c) { write(&c, 1); }
-      bool skip(size_t);
+// REMOVE Tim. tmp. Changed.
+//       bool read(void*, size_t);
+//       bool write(const void*, size_t);
+//       void put(unsigned char c) { write(&c, 1); }
+//       bool skip(size_t);
+
+      bool read(char*, qint64);
+      bool write(const char*, qint64);
+      void put(char c);
+      bool skip(qint64);
+
       int readShort();
       bool writeShort(int);
       int readLong();
@@ -128,7 +139,9 @@ class MidiFile {
       void writeEvent(const MidiPlayEvent*);
 
    public:
-      MidiFile(FILE* f);
+// REMOVE Tim. tmp. Changed.
+//      MidiFile(FILE* f);
+      MidiFile(MusEFile::File* f);
       ~MidiFile();
       bool read();
       bool write();

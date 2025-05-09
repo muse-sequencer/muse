@@ -50,6 +50,8 @@
 #include "gconfig.h"
 #include "undo.h"
 #include "xml_statistics.h"
+// REMOVE Tim. tmp. Added.
+#include "libs/file/file.h"
 
 using std::set;
 using std::pair;
@@ -123,13 +125,22 @@ void MusE::importMidi(const QString &file)
 
 bool MusE::importMidi(const QString name, bool merge)
       {
-      bool popenFlag;
-      FILE* fp = MusEGui::fileOpen(this, name, QString(".mid"), "r", popenFlag);
-      if (fp == 0)
+// REMOVE Tim. tmp. Changed.
+//       bool popenFlag;
+//       FILE* fp = MusEGui::fileOpen(this, name, QString(".mid"), "r", popenFlag);
+//       if (fp == 0)
+//             return true;
+//       MusECore::MidiFile mf(fp);
+//       bool rv = mf.read();
+//       popenFlag ? pclose(fp) : fclose(fp);
+      MusEFile::File f(name, QString(".mid"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this);
+      if (res != MusEFile::File::NoError)
             return true;
-      MusECore::MidiFile mf(fp);
+      MusECore::MidiFile mf(&f);
       bool rv = mf.read();
-      popenFlag ? pclose(fp) : fclose(fp);
+      f.close();
+
       if (rv) {
             QString s(tr("Reading midifile\n  "));
             s += name;
@@ -634,14 +645,97 @@ void MusE::importPart()
 //---------------------------------------------------------
 //   importPartToTrack
 //---------------------------------------------------------
+// REMOVE Tim. tmp. Changed.
+// void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track)
+// {
+//       bool popenFlag = false;
+//       FILE* fp = MusEGui::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
+//
+//       if(fp)
+//       {
+//         MusECore::Xml xml = MusECore::Xml(fp);
+//         bool firstPart = true;
+//         int posOffset = 0;
+//         int  notDone = 0;
+//         int  done = 0;
+//         MusECore::XmlReadStatistics stats;
+//
+//         bool end = false;
+//         MusEGlobal::song->startUndo();
+//         for (;;)
+//         {
+//           MusECore::Xml::Token token = xml.parse();
+//           const QString& tag = xml.s1();
+//           switch (token)
+//           {
+//             case MusECore::Xml::Error:
+//             case MusECore::Xml::End:
+//                   end = true;
+//                   break;
+//             case MusECore::Xml::TagStart:
+//                   if (tag == "part") {
+//                         // Read the part.
+//                         MusECore::Part* p = 0;
+//                         p = MusECore::Part::readFromXml(xml, track, &stats);
+//                         // If it could not be created...
+//                         if(!p)
+//                         {
+//                           // Increment the number of parts not done and break.
+//                           ++notDone;
+//                           break;
+//                         }
+//
+//                         // Increment the number of parts done.
+//                         ++done;
+//
+//                         if(firstPart)
+//                         {
+//                           firstPart=false;
+//                           posOffset = tick - p->tick();
+//                         }
+//                         p->setTick(p->tick() + posOffset);
+//                         // Operation is undoable but do not start/end undo.
+//                         MusEGlobal::song->applyOperation(MusECore::UndoOp(MusECore::UndoOp::AddPart, p),
+//                                                          MusECore::Song::OperationUndoable);
+//                         }
+//                   else if (tag == "audioTrackAutomation") {
+//
+//                         }
+//                   else
+//                         xml.unknown("MusE::importPartToTrack");
+//                   break;
+//             case MusECore::Xml::TagEnd:
+//                   break;
+//             default:
+//                   end = true;
+//                   break;
+//           }
+//           if(end)
+//             break;
+//         }
+//         fclose(fp);
+//         MusEGlobal::song->endUndo(SC_PART_INSERTED);
+//
+//         if(notDone)
+//         {
+//           int tot = notDone + done;
+//           QMessageBox::critical(this, QString("MusE"),
+//             (tot > 1  ?  tr("%n part(s) out of %1 could not be imported.\nLikely the selected track is the wrong type.","",notDone).arg(tot)
+//                       :  tr("%n part(s) could not be imported.\nLikely the selected track is the wrong type.","",notDone)));
+//         }
+//
+//         return;
+//       }
+// }
+
 void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track)
 {
-      bool popenFlag = false;
-      FILE* fp = MusEGui::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
-
-      if(fp) 
+      MusEFile::File f(filename, QString(".mpt"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, false, false);
+      if (res == MusEFile::File::NoError)
       {
-        MusECore::Xml xml = MusECore::Xml(fp);
+        MusECore::Xml xml = MusECore::Xml(f.iodevice());
+
         bool firstPart = true;
         int posOffset = 0;
         int  notDone = 0;
@@ -650,11 +744,11 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
 
         bool end = false;
         MusEGlobal::song->startUndo();
-        for (;;) 
+        for (;;)
         {
           MusECore::Xml::Token token = xml.parse();
           const QString& tag = xml.s1();
-          switch (token) 
+          switch (token)
           {
             case MusECore::Xml::Error:
             case MusECore::Xml::End:
@@ -671,12 +765,12 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
                           // Increment the number of parts not done and break.
                           ++notDone;
                           break;
-                        } 
-                        
+                        }
+
                         // Increment the number of parts done.
                         ++done;
-                        
-                        if(firstPart) 
+
+                        if(firstPart)
                         {
                           firstPart=false;
                           posOffset = tick - p->tick();
@@ -701,9 +795,9 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
           if(end)
             break;
         }
-        fclose(fp);
+        f.close();
         MusEGlobal::song->endUndo(SC_PART_INSERTED);
-        
+
         if(notDone)
         {
           int tot = notDone + done;
@@ -711,7 +805,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, MusECore::Track* 
             (tot > 1  ?  tr("%n part(s) out of %1 could not be imported.\nLikely the selected track is the wrong type.","",notDone).arg(tot)
                       :  tr("%n part(s) could not be imported.\nLikely the selected track is the wrong type.","",notDone)));
         }
-        
+
         return;
       }
 }

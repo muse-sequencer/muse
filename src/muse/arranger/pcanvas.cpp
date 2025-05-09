@@ -79,6 +79,8 @@
 #include "song.h"
 #include "helper.h"
 #include "hex_float.h"
+// REMOVE Tim. tmp. Added.
+#include "libs/file/file.h"
 
 // Forwards from header:
 #include <QDropEvent>
@@ -1340,16 +1342,27 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
    case OP_SAVEPARTTODISK: // Export to file
    {
       const MusECore::Part* part = item->part();
-      bool popenFlag = false;
       QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: Save part"));
       if (!fn.isEmpty()) {
-         FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
-         if (fp) {
-            MusECore::Xml tmpXml = MusECore::Xml(fp);
+// REMOVE Tim. tmp. Changed.
+//          bool popenFlag = false;
+//          FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
+//          if (fp) {
+//             MusECore::Xml tmpXml = MusECore::Xml(fp);
+//             // Write the part. Indicate that it's a copy operation - to add special markers,
+//             //  and force full wave paths.
+//             part->write(0, tmpXml, true, true);
+//             fclose(fp);
+
+         MusEFile::File f(fn, QString(".mpt"), this);
+         MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, false);
+         if (res == MusEFile::File::NoError)
+         {
+            MusECore::Xml tmpXml = MusECore::Xml(f.iodevice());
             // Write the part. Indicate that it's a copy operation - to add special markers,
             //  and force full wave paths.
             part->write(0, tmpXml, true, true);
-            fclose(fp);
+            f.close();
          }
       }
       break;

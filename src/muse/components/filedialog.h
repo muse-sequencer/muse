@@ -26,8 +26,9 @@
 
 #include <QFileDialog>
 // REMOVE Tim. tmp. Added.
-#include <QFile>
+//#include <QFile>
 #include <QIODevice>
+#include "libs/file/file.h"
 
 #include "ui_fdialogbuttons.h"
 
@@ -85,30 +86,43 @@ QString getOpenFileName(const QString& startWith, const char** filters,
 QString getImageFileName(const QString& startWith, const char** filters, 
          QWidget* parent, const QString& name);
 
-FILE* fileOpen(QWidget*, QString, const QString&,
-   const char*, bool&, bool = false, bool = false);
-
-// REMOVE Tim. tmp. Added.
-// QFile fileOpen(QWidget*, QString, const QString&,
-//    QIODevice::OpenMode, bool = false, bool = false);
+// REMOVE Tim. tmp. Changed.
+// FILE* fileOpen(QWidget *parent, QString name, const QString &ext,
+//    const char *mode, bool &popenFlag, bool noError = false, bool overwriteWarning = false);
+MusEFile::File::ErrorCode fileOpen(
+  MusEFile::File &file, QIODevice::OpenMode mode, QWidget *parent = nullptr,
+  bool noError = false, bool overwriteWarning = false);
 
 //---------------------------------------------------------
 //   MFile
 //    "Muse" File
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// class MFile {
+//       bool isPopen;
+//       FILE* f;
+//       QString path;
+//       QString ext;
+//
+//    public:
+//       MFile(const QString& path, const QString& ext);
+//       ~MFile();
+//       FILE* open(const char* mode, const char** patterns,
+//          QWidget* parent, bool noError,
+//          bool warnIfOverwrite, const QString& caption);
+//       };
 class MFile {
       bool isPopen;
-      FILE* f;
+      MusEFile::File f;
       QString path;
       QString ext;
 
    public:
       MFile(const QString& path, const QString& ext);
       ~MFile();
-      FILE* open(const char* mode, const char** patterns,
-         QWidget* parent, bool noError,
-         bool warnIfOverwrite, const QString& caption);
+      MusEFile::File::ErrorCode open(MusEFile::File &file, QIODevice::OpenMode mode, const char** patterns_chararray,
+         QWidget* parent, bool noError, bool warnIfOverwrite, const QString& caption);
       };
 
 } // namespace MusEGui

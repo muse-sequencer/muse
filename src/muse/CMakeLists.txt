@@ -282,6 +282,7 @@ target_link_libraries(core
       ctrl
       driver
       evdata_module
+      file_module
       icons
       instruments
       latency_compensator_module

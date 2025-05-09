@@ -33,7 +33,6 @@
 #include <algorithm>
 
 #include <string.h>
-#include <dlfcn.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -1478,12 +1477,10 @@ void LV2Synth::lv2ui_FreeDescriptors(LV2PluginWrapper_State *state)
 
     state->gtk2Plug = nullptr;
 
-    if(state->uiDlHandle != nullptr)
-    {
-        dlclose(state->uiDlHandle);
-        state->uiDlHandle = nullptr;
-    }
-
+    if(state->uiReferences == 1)
+        state->uiQLib.unload();
+    if(state->uiReferences > 0)
+      --state->uiReferences;
 }
 
 void LV2Synth::lv2state_FreeState(LV2PluginWrapper_State *state)
@@ -2162,26 +2159,40 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
         //now open ui library file
 
         // lilv_uri_to_path is deprecated. Use lilv_file_uri_parse instead. Return value must be freed with lilv_free.
-        const  char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), nullptr);
-
-#ifdef _WIN32
-        state->uiDlHandle = dlopen(uiPath, RTLD_NOW | RTLD_DEFAULT);
-#else
-        state->uiDlHandle = dlopen(uiPath, RTLD_NOW);
-#endif
-
+        const char *uiPath = lilv_file_uri_parse(lilv_node_as_uri(lilv_ui_get_binary_uri(selectedUi)), nullptr);
+        const QString uiPathStr(uiPath);
         lilv_free((void*)uiPath); // Must free.
-        if(state->uiDlHandle == nullptr)
+
+        if(state->uiReferences == 0)
         {
+          state->uiQLib.setFileName(uiPathStr);
+          // Same as dlopen RTLD_NOW.
+          QLibrary::LoadHints hints = QLibrary::ResolveAllSymbolsHint;
+#ifdef _WIN32
+          // TODO: FIXME: Equivalent of dlopen's RTLD_DEFAULT? Someone added this flag for Windows.
+          //hints |= QLibrary::???;
+#endif
+          state->uiQLib.setLoadHints(hints);
+          if(!state->uiQLib.load())
+          {
+            fprintf(stderr, "LV2Synth::lv2ui_ShowNativeGui(): load (%s) failed: %s\n",
+              state->uiQLib.fileName().toLocal8Bit().constData(), state->uiQLib.errorString().toLocal8Bit().constData());
             win->stopNextTime();
             return;
+          }
         }
+
+        ++state->uiReferences;
 
         //find lv2 ui descriptor function and call it to get ui descriptor struct
         LV2UI_DescriptorFunction lv2fUiDesc;
-        *(void **)(&lv2fUiDesc) = dlsym(state->uiDlHandle, "lv2ui_descriptor");
+        lv2fUiDesc = (LV2UI_DescriptorFunction)state->uiQLib.resolve("lv2ui_descriptor");
         if(lv2fUiDesc == nullptr)
         {
+            if(state->uiReferences == 1)
+              state->uiQLib.unload();
+            if(state->uiReferences > 0)
+              --state->uiReferences;
             win->stopNextTime();
             return;
         }
@@ -2200,6 +2211,10 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
 
         if(state->uiDesc == nullptr)
         {
+            if(state->uiReferences == 1)
+              state->uiQLib.unload();
+            if(state->uiReferences > 0)
+              --state->uiReferences;
             win->stopNextTime();
             return;
         }
@@ -4008,6 +4023,9 @@ bool LV2Synth::isConstructed() {return _isConstructed; }
 // bool LV2Synth::usesTimePosition() const { return _usesTimePosition; }
 
 
+bool LV2Synth::reference() { return false; }
+
+int LV2Synth::release () { return _references; }
 
 SynthIF *LV2Synth::createSIF(SynthI *synthi)
 {
@@ -6770,7 +6788,7 @@ LV2PluginWrapper_State::LV2PluginWrapper_State():
       _ppifeatures(NULL),
       widget(NULL),
       handle(NULL),
-      uiDlHandle(NULL),
+      uiReferences(0),
       uiDesc(NULL),
       uiInst(NULL),
       inst(NULL),
@@ -7339,11 +7357,16 @@ void LV2PluginWrapper::connectPort(LADSPA_Handle handle, long unsigned int port,
     lilv_instance_connect_port((LilvInstance *)state->handle, port, (void *)value);
 }
 
-int LV2PluginWrapper::incReferences(int ref)
+bool LV2PluginWrapper::reference()
 {
-    _synth->incReferences(ref);
-    return _synth->references();
+    return _synth->reference();
 }
+
+int LV2PluginWrapper::release()
+{
+    return _synth->release();
+}
+
 void LV2PluginWrapper::activate(LADSPA_Handle handle)
 {
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;

@@ -30,6 +30,7 @@
 #include <vector>
 #include <QFileInfo>
 #include <QString>
+#include <QLibrary>
 
 #include <ladspa.h>
 #include "muse_math.h"
@@ -60,7 +61,9 @@ class Plugin
    {
    protected:
       QFileInfo _fi;
-      void* _libHandle;
+      MusEPlugin::PluginType _pluginType;
+      MusEPlugin::PluginClass_t _pluginClass;
+      QLibrary _qlib;
       int _references;
       int _instNo;
       unsigned long _uniqueID;
@@ -84,11 +87,7 @@ class Plugin
       std::vector<unsigned long> _oIdx; //output port numbers
       
    public:
-      Plugin(const QFileInfo* f) 
-        : _fi(*f), _libHandle(0), _references(0), _instNo(0), _uniqueID(0),
-          _portCount(0),_inports(0), _outports(0),
-          _controlInPorts(0),_controlOutPorts(0),
-          _requiredFeatures(MusEPlugin::PluginNoFeatures) { }
+      Plugin(const QFileInfo* f);
       Plugin(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~Plugin() {}
       
@@ -109,7 +108,13 @@ class Plugin
                              bool useDenormalBias, float denormalBias) = 0;
       
       int references() const            { return _references; }
-      virtual int incReferences(int)    { return _references; }
+      // Reference the library. Increases the reference count. Loads the library if required (ref 0 -> 1).
+      // Returns true on success.
+      virtual bool reference();
+      // Releases one reference and returns the resulting number of references.
+      // When the number of references reaches zero, the plugin library file, if any, tries to unload.
+      // The library will remain loaded until all usages reach zero references.
+      virtual int release();
       int instNo()                      { return _instNo++;   }
       virtual void* instantiate(float /*sampleRate*/, void* /*data*/) { return 0; }
 
@@ -193,8 +198,9 @@ class LadspaPlugin : public Plugin
       PluginI* createPluginI(int chans, float sampleRate, unsigned int segmentSize,
                              bool useDenormalBias, float denormalBias);
 
-      int incReferences(int);
-      
+      bool reference();
+      int release();
+
       bool isAudioIn(unsigned long k) const {
             if(!_plugin)
               return false;
@@ -322,6 +328,11 @@ class PluginI {
       bool _on;
       QString _name;
       QString _label;
+
+      // Releases all references to the plugin that this pluginI is holding, one for each of the 'instances'.
+      // When the plugin's number of references reaches zero, the plugin library file, if any, tries to unload.
+      // The library will remain loaded until all usages reach zero references.
+      virtual void release() const = 0;
 
    public:
       PluginI();
@@ -469,6 +480,9 @@ class LadspaPluginI : public PluginI {
       LADSPA_Handle* _handle; // per instance
       void init();
 
+   protected:
+      void release() const;
+
    public:
       LadspaPluginI();
       virtual ~LadspaPluginI();
@@ -496,6 +510,8 @@ class LadspaPluginI : public PluginI {
       bool activate();
       // Return true on success.
       bool deactivate();
+      // Return true on success.
+      bool cleanup();
       };
 
 static inline float fast_log2 (float val)

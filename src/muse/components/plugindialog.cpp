@@ -175,9 +175,9 @@ PluginDialog::PluginDialog(QWidget* parent)
       }
       ui.sortBox->addItems(sortItems);
 
+      // "In order to avoid performance issues, it is recommended that sorting is enabled after inserting the items into the tree."
+      ui.pList->setSortingEnabled(false);
       fillPlugs();
-
-      ui.pList->header()->setCascadingSectionResizes(true);
       ui.pList->setSortingEnabled(true);
       ui.pList->sortByColumn(COL_NAME, Qt::AscendingOrder);
 

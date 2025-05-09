@@ -29,7 +29,6 @@
 #include <QtWidgets>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dlfcn.h>
 #include <string>
 #include "ssplugin.h"
 #include "common.h"
@@ -38,6 +37,8 @@
 #define SS_LOG_MIN -10
 #define SS_LOG_OFFSET SS_LOG_MIN
 
+// Turn on debugging messages.
+//#define PLUGIN_DEBUGIN
 
 //
 // Map plugin parameter on domain [SS_PLUGIN_PARAM_MIN, SS_PLUGIN_PARAM_MAX] to domain [SS_LOG_MIN, SS_LOG_MAX] (log domain)
@@ -66,7 +67,21 @@ PluginList plugins;
 Plugin::Plugin(const QFileInfo* f)
    : fi(*f)
       {
+  _references = 0;
+  _uniqueID = 0;
       }
+
+bool Plugin::reference() { return false; }
+int Plugin::release() { return _references; }
+
+unsigned long Plugin::id() const                  { return _uniqueID; }
+QString Plugin::uri() const                       { return _uri; }
+QString Plugin::name() const                      { return _name; }
+QString Plugin::maker() const                     { return _maker; }
+QString Plugin::description() const               { return _description; }
+QString Plugin::version() const                   { return _version; }
+QString Plugin::label() const                     { return _label; }
+QString Plugin::copyright() const                 { return _copyright; }
 
 //---------------------------------------------------------
 //   loadPluginLib
@@ -78,26 +93,31 @@ static void loadPluginLib(QFileInfo* fi)
       if (SS_DEBUG_LADSPA) {
             printf("loadPluginLib: %s\n", fi->fileName().toLocal8Bit().constData());
             }
-      void* handle = dlopen(fi->filePath().toLocal8Bit().constData(), RTLD_NOW);
-      if (handle == 0) {
-            fprintf(stderr, "dlopen(%s) failed: %s\n",
-              fi->filePath().toLocal8Bit().constData(), dlerror());
-            return;
-            }
-      LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
 
+      QLibrary qlib;
+      qlib.setFileName(fi->filePath());
+      // Same as dlopen RTLD_NOW.
+      qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+      if(!qlib.load())
+      {
+        fprintf(stderr, "ssplugin: loadPluginLib: load (%s) failed: %s\n",
+          qlib.fileName().toLocal8Bit().constData(), qlib.errorString().toLocal8Bit().constData());
+        return;
+      }
+
+      LADSPA_Descriptor_Function ladspa = (LADSPA_Descriptor_Function)qlib.resolve("ladspa_descriptor");
       if (!ladspa) {
-            const char *txt = dlerror();
-            if (txt) {
+            qlib.unload();
+            QString txt = qlib.errorString();
                   fprintf(stderr,
                         "Unable to find ladspa_descriptor() function in plugin "
                         "library file \"%s\": %s.\n"
                         "Are you sure this is a LADSPA plugin file?\n",
                         fi->filePath().toLocal8Bit().constData(),
-                        txt);
+                        txt.toLocal8Bit().constData());
                   return;//exit(1);
-                  }
             }
+
       const LADSPA_Descriptor* descr;
       for (int i = 0;; ++i) {
             descr = ladspa(i);
@@ -105,6 +125,7 @@ static void loadPluginLib(QFileInfo* fi)
                   break;
             plugins.push_back(new LadspaPlugin(fi, ladspa, descr));
             }
+      qlib.unload();
       SS_TRACE_OUT
       }
 
@@ -115,12 +136,14 @@ static void loadPluginLib(QFileInfo* fi)
 static void loadPluginDir(const QString& s)
       {
       SS_TRACE_IN
-      QDir pluginDir(s, QString("*.so"), 0, QDir::Files);
+      QDir pluginDir(s, QString(), QDir::Name, QDir::Files);
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
             int n = list.size();
             for (int i = 0; i < n; ++i) {
                   QFileInfo fi = list.at(i);
+                  if(!QLibrary::isLibrary(fi.filePath()))
+                    continue;
                   loadPluginLib(&fi);
                   }
             }
@@ -172,9 +195,9 @@ void SS_initPlugins()
 //---------------------------------------------------------
 
 LadspaPlugin::LadspaPlugin(const QFileInfo* f,
-   const LADSPA_Descriptor_Function ldf,
+   const LADSPA_Descriptor_Function /*ldf*/,
    const LADSPA_Descriptor* d)
-   : Plugin(f), ladspa(ldf), plugin(d)
+   : Plugin(f)
       {
       SS_TRACE_IN
       _inports        = 0;
@@ -185,8 +208,16 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
       controls        = 0;
       inputs          = 0;
       outputs         = 0;
+      ladspa          = nullptr;
+      plugin          = nullptr;
 
-      for (unsigned k = 0; k < plugin->PortCount; ++k) {
+      _uniqueID = d->UniqueID;
+      _name = QString(d->Name);
+      _label = QString(d->Label);
+      _maker = QString(d->Maker);
+      _copyright = QString(d->Copyright);
+
+      for (unsigned k = 0; k < d->PortCount; ++k) {
             LADSPA_PortDescriptor pd = d->PortDescriptors[k];
             static const int CI = LADSPA_PORT_CONTROL | LADSPA_PORT_INPUT;
             if ((pd &  CI) == CI) {
@@ -210,7 +241,7 @@ LadspaPlugin::LadspaPlugin(const QFileInfo* f,
             printf("Output ports: %d\n\n", oIdx.size());
             }*/
 
-      LADSPA_Properties properties = plugin->Properties;
+      LADSPA_Properties properties = d->Properties;
       _inPlaceCapable = !LADSPA_IS_INPLACE_BROKEN(properties);
       if (_inports != _outports)
             _inPlaceCapable = false;
@@ -242,17 +273,106 @@ LadspaPlugin::~LadspaPlugin()
       }
 
 //---------------------------------------------------------
+//   reference
+//---------------------------------------------------------
+bool LadspaPlugin::reference()
+{
+      if (_references == 0)
+      {
+        _qlib.setFileName(fi.filePath());
+        // Same as dlopen RTLD_NOW.
+        _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+        if(!_qlib.load())
+        {
+          fprintf(stderr, "LadspaPlugin::reference(): load (%s) failed: %s\n",
+            _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+          return false;
+        }
+
+        LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)_qlib.resolve("ladspa_descriptor");
+        if(ladspadf)
+        {
+          const LADSPA_Descriptor* descr;
+          for(unsigned long i = 0;; ++i)
+          {
+            descr = ladspadf(i);
+            if(descr == nullptr)
+              break;
+
+            QString label(descr->Label);
+            if(label == _label)
+            {
+              ladspa = ladspadf;
+              plugin = descr;
+              break;
+            }
+          }
+        }
+      }
+
+      ++_references;
+
+      if(plugin == nullptr)
+      {
+        fprintf(stderr, "LadspaPlugin::reference() Error: cannot find LADSPA plugin %s\n", label().toLocal8Bit().constData());
+        release();
+        return false;
+      }
+
+      return true;
+}
+
+//---------------------------------------------------------
+//   release
+//---------------------------------------------------------
+int LadspaPlugin::release()
+{
+  #ifdef PLUGIN_DEBUGIN
+  fprintf(stderr, "LadspaPlugin::release() references:%d\n", _references);
+  #endif
+
+  if(_references == 1)
+  {
+    // Attempt to unload the library.
+    // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+    const bool ulres = _qlib.unload();
+    // Dummy usage stops unused warnings.
+    (void)ulres;
+    #ifdef PLUGIN_DEBUGIN
+    fprintf(stderr, "LadspaPlugin::release(): No more instances. Result of unloading library %s: %d\n",
+      _qlib.fileName().toLocal8Bit().constData(), ulres);
+    #endif
+
+    ladspa = nullptr;
+    plugin = nullptr;
+    //pIdx.clear();
+    //iIdx.clear();
+    //oIdx.clear();
+  }
+  if(_references > 0)
+    --_references;
+  return _references;
+}
+
+//---------------------------------------------------------
 //   instantiate
 //---------------------------------------------------------
 
 bool LadspaPlugin::instantiate()
       {
-      bool success = false;
+      if(!reference())
+        return false;
+
       handle = plugin->instantiate(plugin, SS_samplerate);
-      success = (handle != nullptr);
-      if (success)
-            SS_DBG_LADSPA2("Plugin instantiated", label().toLocal8Bit().constData());
-      return success;
+      if(handle == nullptr)
+      {
+        fprintf(stderr, "LadspaPlugin::instantiate() Error: plugin:%s instantiate failed!\n", label().toLocal8Bit().constData());
+        release();
+        return false;
+      }
+
+      SS_DBG_LADSPA2("Plugin instantiated", label().toLocal8Bit().constData());
+      return true;
       }
 
 //---------------------------------------------------------

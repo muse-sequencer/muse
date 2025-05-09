@@ -69,7 +69,8 @@ class MetronomeSynth : public Synth {
       virtual ~MetronomeSynth() {}
 // REMOVE Tim. tmp. Removed.
 //       inline Type synthType() const { return METRO_SYNTH; }
-      inline int incReferences(int) { return 0; }
+      inline bool reference() { return false; }
+      inline int release() { return 0; }
       void* instantiate();
 
       SynthIF* createSIF(SynthI*);

@@ -78,8 +78,9 @@ SynthDialog::SynthDialog(QWidget* parent)
 
     ui.filterBox->addItems(filterSavedItems);
 
+    // "In order to avoid performance issues, it is recommended that sorting is enabled after inserting the items into the tree."
+    ui.pList->setSortingEnabled(false);
     fillSynths();
-
     ui.pList->setSortingEnabled(true);
 
     if(listSave.isEmpty())

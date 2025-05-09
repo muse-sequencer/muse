@@ -24,7 +24,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
+// REMOVE Tim. tmp. Removed.
+//#include <dlfcn.h>
 #include <string>
 #include "muse_math.h"
 #include <sys/stat.h>
@@ -37,6 +38,8 @@
 #include <QByteArray>
 #include <QComboBox>
 #include <QGroupBox>
+// REMOVE Tim. tmp. Added.
+#include <QStringLiteral>
 
 #include "app.h"
 #include "globals.h"
@@ -56,6 +59,8 @@
 #include "pluginsettings.h"
 #include "switch.h"
 #include "hex_float.h"
+// REMOVE Tim. tmp. Added.
+#include "libs/file/file.h"
 
 #ifdef LV2_SUPPORT
 #include "lv2host.h"
@@ -85,7 +90,8 @@
 #endif
 
 // Turn on debugging messages.
-//#define PLUGIN_DEBUGIN
+// REMOVE Tim. tmp. Enabled.
+#define PLUGIN_DEBUGIN
 
 // Turn on constant stream of debugging messages.
 //#define PLUGIN_DEBUGIN_PROCESS
@@ -2119,7 +2125,8 @@ PluginBase::PluginBase()
   _pluginLatencyReportingType = MusEPlugin::PluginLatencyTypeNone;
   _pluginFreewheelType = MusEPlugin::PluginFreewheelTypeNone;
   _usesTimePosition = false;
-  _handle = nullptr;
+// REMOVE Tim. tmp. Removed.
+//   _handle = nullptr;
   _uniqueID   = 0;
   _references = 0;
 }
@@ -2136,7 +2143,8 @@ PluginBase::PluginBase(const MusEPlugin::PluginScanInfoStruct& info)
   _pluginBypassType = info._pluginBypassType;
   _pluginLatencyReportingType = info._pluginLatencyReportingType;
   _pluginFreewheelType = info._pluginFreewheelType;
-  _handle = nullptr;
+// REMOVE Tim. tmp. Removed.
+//   _handle = nullptr;
   _references = 0;
   _fileInfo = QFileInfo(PLUGIN_GET_QSTRING(info.filePath()));
   _uniqueID = info._uniqueID;
@@ -2187,8 +2195,6 @@ QString PluginBase::fileName() const                  { return _fileInfo.fileNam
 
 unsigned long PluginBase::id() const                  { return _uniqueID; }
 int PluginBase::references() const                    { return _references; }
-// REMOVE Tim. tmp. Added
-int PluginBase::incReferences(int val)                { _references += val; return _references; }
 
 bool PluginBase::usesTimePosition() const            { return _usesTimePosition; }
 unsigned long PluginBase::freewheelPortIndex() const { return _freewheelPortIndex; }
@@ -2408,6 +2414,141 @@ Plugin::~Plugin()
     printf("Plugin::~Plugin Error: plugin is not NULL\n");
 }
 
+bool Plugin::reference()
+{
+  if(_references == 0)
+  {
+    _qlib.setFileName(filePath());
+    // Same as dlopen RTLD_NOW.
+    _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+    if(!_qlib.load())
+    {
+      fprintf(stderr, "Plugin::reference(): load (%s) failed: %s\n",
+        _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+      return false;
+    }
+
+    switch(pluginType())
+    {
+      case MusEPlugin::PluginTypeLADSPA:
+      {
+        LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)_qlib.resolve("ladspa_descriptor");
+        if(ladspadf)
+        {
+          const LADSPA_Descriptor* descr;
+          for(unsigned long i = 0;; ++i)
+          {
+            descr = ladspadf(i);
+            if(descr == nullptr)
+              break;
+
+            QString label(descr->Label);
+            if(label == _label)
+            {
+              ladspa = ladspadf;
+              plugin = descr;
+
+              #ifdef DSSI_SUPPORT
+              dssi_descr = nullptr;
+              #endif
+
+              break;
+            }
+          }
+        }
+      }
+      break;
+
+      case MusEPlugin::PluginTypeDSSI:
+      case MusEPlugin::PluginTypeDSSIVST:
+      {
+        #ifdef DSSI_SUPPORT
+        DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)_qlib.resolve("dssi_descriptor");
+        if(dssi)
+        {
+          const DSSI_Descriptor* descr;
+          for(unsigned long i = 0;; ++i)
+          {
+            descr = dssi(i);
+            if(descr == nullptr)
+              break;
+
+            QString label(descr->LADSPA_Plugin->Label);
+            if(label == _label)
+            {
+              ladspa = nullptr;
+              dssi_descr = descr;
+              plugin = descr->LADSPA_Plugin;
+              break;
+            }
+          }
+        }
+        #endif
+      }
+      break;
+
+      default:
+        return false;
+      break;
+    }
+
+    if(plugin != nullptr)
+    {
+      _portCount = plugin->PortCount;
+
+      _inports = 0;
+      _outports = 0;
+      _controlInPorts = 0;
+      _controlOutPorts = 0;
+      for(unsigned long k = 0; k < _portCount; ++k)
+      {
+        LADSPA_PortDescriptor pd = plugin->PortDescriptors[k];
+        if(pd & LADSPA_PORT_AUDIO)
+        {
+          if(pd & LADSPA_PORT_INPUT)
+            ++_inports;
+          else
+          if(pd & LADSPA_PORT_OUTPUT)
+            ++_outports;
+
+          rpIdx.push_back((unsigned long)-1);
+        }
+        else
+        if(pd & LADSPA_PORT_CONTROL)
+        {
+          if(pd & LADSPA_PORT_INPUT)
+          {
+            rpIdx.push_back(_controlInPorts);
+            ++_controlInPorts;
+          }
+          else
+          if(pd & LADSPA_PORT_OUTPUT)
+          {
+            rpIdx.push_back((unsigned long)-1);
+            ++_controlOutPorts;
+          }
+        }
+      }
+
+      // Hack: Blacklist vst plugins in-place, configurable for now.
+      if ((_inports != _outports) ||
+          (pluginType() == MusEPlugin::PluginTypeDSSIVST && !MusEGlobal::config.vstInPlace))
+        _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
+    }
+  }
+
+  ++_references;
+
+  if(plugin == nullptr)
+  {
+    fprintf(stderr, "Plugin::reference(): Error: %s no plugin!\n", plugin->Label);
+    release();
+    return false;
+  }
+
+  return true;
+}
+
 //---------------------------------------------------------
 //   incReferences
 //---------------------------------------------------------
@@ -2570,10 +2711,10 @@ Plugin::~Plugin()
 //
 //   return _references;
 // }
-int Plugin::incReferences(int val)
+int Plugin::release()
 {
   #ifdef PLUGIN_DEBUGIN
-  fprintf(stderr, "Plugin::incReferences _references:%d val:%d\n", _references, val);
+  fprintf(stderr, "Plugin::release() references:%d\n", _references);
   #endif
 
   // Only LADSPA or DSSI or DSSIVST are handled here. Others override this function.
@@ -2591,27 +2732,24 @@ int Plugin::incReferences(int val)
     case MusEPlugin::PluginTypeMETRONOME:
     case MusEPlugin::PluginTypeNone:
     case MusEPlugin::PluginTypeUnknown:
-      fprintf(stderr, "Error: Plugin::incReferences(): Plugin type:%d is not LADSPA or DSSI or DSSIVST. "
-             "_references:%d val:%d\n", pluginType(), _references, val);
+      fprintf(stderr, "Error: Plugin::release(): Plugin type:%d is not LADSPA or DSSI or DSSIVST. "
+             "_references:%d\n", pluginType(), _references);
       return 0;
     break;
   }
 
-  int newref = _references + val;
-
-  if(newref <= 0)
+  if(_references == 1)
   {
-    _references = 0;
-    if(_handle)
-    {
-      #ifdef PLUGIN_DEBUGIN
-      fprintf(stderr, "Plugin::incReferences no more instances, closing library\n");
-      #endif
+    // Attempt to unload the library.
+    // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+    const bool ulres = _qlib.unload();
+    // Dummy usage stops unused warnings.
+    (void)ulres;
+    #ifdef PLUGIN_DEBUGIN
+    fprintf(stderr, "Plugin::release(): No more instances. Result of unloading library %s: %d\n",
+      _qlib.fileName().toLocal8Bit().constData(), ulres);
+    #endif
 
-      dlclose(_handle);
-    }
-
-    _handle = nullptr;
     ladspa = nullptr;
     plugin = nullptr;
     rpIdx.clear();
@@ -2619,140 +2757,9 @@ int Plugin::incReferences(int val)
     #ifdef DSSI_SUPPORT
     dssi_descr = nullptr;
     #endif
-
-    return 0;
   }
-
-  if(_handle == nullptr)
-  {
-    _handle = dlopen(_fileInfo.filePath().toLocal8Bit().constData(), RTLD_NOW);
-
-    if(_handle == nullptr)
-    {
-      fprintf(stderr, "Plugin::incReferences dlopen(%s) failed: %s\n",
-              _fileInfo.filePath().toLocal8Bit().constData(), dlerror());
-      return 0;
-    }
-
-
-    switch(pluginType())
-    {
-      case MusEPlugin::PluginTypeLADSPA:
-      {
-        LADSPA_Descriptor_Function ladspadf = (LADSPA_Descriptor_Function)dlsym(_handle, "ladspa_descriptor");
-        if(ladspadf)
-        {
-          const LADSPA_Descriptor* descr;
-          for(unsigned long i = 0;; ++i)
-          {
-            descr = ladspadf(i);
-            if(descr == nullptr)
-              break;
-
-            QString label(descr->Label);
-            if(label == _label)
-            {
-              ladspa = ladspadf;
-              plugin = descr;
-
-              #ifdef DSSI_SUPPORT
-              dssi_descr = nullptr;
-              #endif
-
-              break;
-            }
-          }
-        }
-      }
-      break;
-
-      case MusEPlugin::PluginTypeDSSI:
-      case MusEPlugin::PluginTypeDSSIVST:
-      {
-        DSSI_Descriptor_Function dssi = (DSSI_Descriptor_Function)dlsym(_handle, "dssi_descriptor");
-        if(dssi)
-        {
-          const DSSI_Descriptor* descr;
-          for(unsigned long i = 0;; ++i)
-          {
-            descr = dssi(i);
-            if(descr == nullptr)
-              break;
-
-            QString label(descr->LADSPA_Plugin->Label);
-            if(label == _label)
-            {
-              ladspa = nullptr;
-              dssi_descr = descr;
-              plugin = descr->LADSPA_Plugin;
-              break;
-            }
-          }
-        }
-      }
-      break;
-
-      default:
-        return 0;
-      break;
-    }
-
-    if(plugin != nullptr)
-    {
-      _portCount = plugin->PortCount;
-
-      _inports = 0;
-      _outports = 0;
-      _controlInPorts = 0;
-      _controlOutPorts = 0;
-      for(unsigned long k = 0; k < _portCount; ++k)
-      {
-        LADSPA_PortDescriptor pd = plugin->PortDescriptors[k];
-        if(pd & LADSPA_PORT_AUDIO)
-        {
-          if(pd & LADSPA_PORT_INPUT)
-            ++_inports;
-          else
-          if(pd & LADSPA_PORT_OUTPUT)
-            ++_outports;
-
-          rpIdx.push_back((unsigned long)-1);
-        }
-        else
-        if(pd & LADSPA_PORT_CONTROL)
-        {
-          if(pd & LADSPA_PORT_INPUT)
-          {
-            rpIdx.push_back(_controlInPorts);
-            ++_controlInPorts;
-          }
-          else
-          if(pd & LADSPA_PORT_OUTPUT)
-          {
-            rpIdx.push_back((unsigned long)-1);
-            ++_controlOutPorts;
-          }
-        }
-      }
-
-      // Hack: Blacklist vst plugins in-place, configurable for now.
-      if ((_inports != _outports) ||
-          (pluginType() == MusEPlugin::PluginTypeDSSIVST && !MusEGlobal::config.vstInPlace))
-        _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
-    }
-  }
-
-  if(plugin == nullptr)
-  {
-    dlclose(_handle);
-    _handle = 0;
-    _references = 0;
-    fprintf(stderr, "Plugin::incReferences Error: %s no plugin!\n", _fileInfo.filePath().toLocal8Bit().constData());
-    return 0;
-  }
-
-  _references = newref;
-
+  if(_references > 0)
+    --_references;
   return _references;
 }
 
@@ -4307,7 +4314,9 @@ PluginI::~PluginI()
       if (_plugin) {
             deactivate();
             cleanup();
-            _plugin->incReferences(-1);
+// REMOVE Tim. tmp. Changed.
+//             _plugin->incReferences(-1);
+            release();
             }
 
       if(_audioInSilenceBuf)
@@ -4438,6 +4447,8 @@ void PluginI::setChannels(int c)
             //  previously the native GUI would close when changing channels. Now it doesn't, which is good.
             _plugin->deactivate(handle[i]);
             _plugin->cleanup(handle[i]);
+// REMOVE Tim. tmp. Added.
+            _plugin->release();
           }
         }
       }
@@ -4680,10 +4691,14 @@ bool PluginI::setCustomData(const std::vector<QString>&
 
 LADSPA_Handle Plugin::instantiate(PluginI *)
 {
+  if(!reference())
+    return nullptr;
+
   LADSPA_Handle h = plugin->instantiate(plugin, MusEGlobal::sampleRate);
   if(h == nullptr)
   {
     fprintf(stderr, "Plugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->Label);
+    release();
     return nullptr;
   }
 
@@ -4959,8 +4974,9 @@ bool PluginI::initPluginInstance(Plugin* plug, int c, const QString& name)
         return true;
       }
 
-      if (_plugin->incReferences(1)==0)
-        return true;
+// REMOVE Tim. tmp. Removed.
+//       if (_plugin->incReferences(1)==0)
+//         return true;
 
       #ifdef OSC_SUPPORT
       _oscif.oscSetPluginI(this);
@@ -5270,6 +5286,9 @@ void PluginI::deactivate()
       if(_curActiveState)
       {
         _curActiveState = false;
+        // If plugin is not available just return.
+        if(!plugin())
+          return;
         for (int i = 0; i < instances; ++i) {
               _plugin->deactivate(handle[i]);
               }
@@ -5282,7 +5301,7 @@ void PluginI::deactivate()
 
 void PluginI::activate()
       {
-      if(_curActiveState)
+      if(!_plugin || _curActiveState)
         return;
 
       for (int i = 0; i < instances; ++i)
@@ -5301,6 +5320,20 @@ void PluginI::activate()
       //       }
       _curActiveState = true;
       }
+
+// REMOVE Tim. tmp. Added.
+void PluginI::release() const
+{
+  if(!_plugin)
+    return;
+  for(int i = 0; i < instances; ++i)
+  {
+    #ifdef PLUGIN_DEBUGIN
+    fprintf(stderr, "PluginI::release Releasing instance:%d\n", i);
+    #endif
+    _plugin->release();
+  }
+}
 
 //---------------------------------------------------------
 //   latency
@@ -8806,7 +8839,7 @@ value
 
       #ifdef PLUGIN_DEBUGIN
       printf("PluginI::oscConfigure effect plugin name:%s label:%s key:%s value:%s\n",
-             _name.toLocal8Bit().constData(), _label.toLocal8Bit().constData(), key, value);
+             _name.toLocal8Bit().constData(), pluginLabel().toLocal8Bit().constData(), key, value);
       #endif
 
       #ifdef DSSI_SUPPORT
@@ -10009,6 +10042,71 @@ void PluginGui::comboChanged(unsigned long param)
 //   load
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// void PluginGui::load()
+//       {
+//       QString s("presets/plugins/");
+//       // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
+//       // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+//       // (But still, the file gets saved OK.)
+//       // Strip away any unusual characters and everything before them, like slashes etc.
+//       s += MusECore::stripPluginLabel(plugin->pluginLabel());
+//       s += "/";
+//
+//       QString fn = getOpenFileName(s, MusEGlobal::preset_file_pattern,
+//          this, tr("MusE: load preset"), nullptr);
+//       if (fn.isEmpty())
+//             return;
+//       bool popenFlag;
+//       FILE* f = fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
+//       if (f == nullptr)
+//             return;
+//
+//       MusECore::Xml xml(f);
+//       int mode = 0;
+//       for (;;) {
+//             MusECore::Xml::Token token = xml.parse();
+//             QString tag = xml.s1();
+//             switch (token) {
+//                   case MusECore::Xml::Error:
+//                   case MusECore::Xml::End:
+//                         return;
+//                   case MusECore::Xml::TagStart:
+//                         if (mode == 0 && tag == "muse")
+//                               mode = 1;
+//                         else if (mode == 1 && tag == "plugin") {
+//
+//                               if(plugin->readConfiguration(xml, true))
+//                               {
+//                                 QMessageBox::critical(this, QString("MusE"),
+//                                   tr("Error reading preset. Might not be right type for this plugin"));
+//                                 goto ende;
+//                               }
+//
+//                               mode = 0;
+//                               }
+//                         else
+//                               xml.unknown("PluginGui");
+//                         break;
+//                   case MusECore::Xml::Attribut:
+//                         break;
+//                   case MusECore::Xml::TagEnd:
+//                         if (!mode && tag == "muse")
+//                         {
+//                               plugin->updateControllers();
+//                               goto ende;
+//                         }
+//                   default:
+//                         break;
+//                   }
+//             }
+// ende:
+//       if (popenFlag)
+//             pclose(f);
+//       else
+//             fclose(f);
+//       }
+
 void PluginGui::load()
       {
       QString s("presets/plugins/");
@@ -10023,12 +10121,12 @@ void PluginGui::load()
          this, tr("MusE: load preset"), nullptr);
       if (fn.isEmpty())
             return;
-      bool popenFlag;
-      FILE* f = fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
-      if (f == nullptr)
+      MusEFile::File f(fn, QString(".pre"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, true);
+      if (res != MusEFile::File::NoError)
             return;
 
-      MusECore::Xml xml(f);
+      MusECore::Xml xml(f.iodevice());
       int mode = 0;
       for (;;) {
             MusECore::Xml::Token token = xml.parse();
@@ -10067,15 +10165,43 @@ void PluginGui::load()
                   }
             }
 ende:
-      if (popenFlag)
-            pclose(f);
-      else
-            fclose(f);
+      f.close();
       }
 
 //---------------------------------------------------------
 //   save
 //---------------------------------------------------------
+
+// REMOVE Tim. tmp. Changed.
+// void PluginGui::save()
+//       {
+//       QString s("presets/plugins/");
+//       // Note: Some ladspa plugins (lsp for ex.) put a full ip address like http://... for the label.
+//       // This is not good for a directory name. It ends up getting split into multiple folders: http / ... / ... /
+//       // (But still, the file gets saved OK.)
+//       // Strip away any unusual characters and everything before them, like slashes etc.
+//       s += MusECore::stripPluginLabel(plugin->pluginLabel());
+//       s += "/";
+//
+//       QString fn = getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
+//         tr("MusE: Save preset"));
+//       if (fn.isEmpty())
+//             return;
+//       bool popenFlag;
+//       FILE* f = fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
+//       if (f == nullptr)
+//             return;
+//       MusECore::Xml xml(f);
+//       xml.header();
+//       xml.tag(0, "muse version=\"1.0\"");
+//       plugin->writeConfiguration(1, xml);
+//       xml.tag(1, "/muse");
+//
+//       if (popenFlag)
+//             pclose(f);
+//       else
+//             fclose(f);
+//       }
 
 void PluginGui::save()
       {
@@ -10091,20 +10217,18 @@ void PluginGui::save()
         tr("MusE: Save preset"));
       if (fn.isEmpty())
             return;
-      bool popenFlag;
-      FILE* f = fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
-      if (f == nullptr)
+      MusEFile::File f(fn, QString(".pre"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, true);
+      if (res != MusEFile::File::NoError)
             return;
-      MusECore::Xml xml(f);
+
+      MusECore::Xml xml(f.iodevice());
       xml.header();
       xml.tag(0, "muse version=\"1.0\"");
       plugin->writeConfiguration(1, xml);
       xml.tag(1, "/muse");
 
-      if (popenFlag)
-            pclose(f);
-      else
-            fclose(f);
+      f.close();
       }
 
 //---------------------------------------------------------

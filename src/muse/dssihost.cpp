@@ -25,7 +25,8 @@
 #ifdef DSSI_SUPPORT
 
 // Turn on debugging messages
-//#define DSSI_DEBUG 
+// REMOVE Tim. tmp. Enabled.
+#define DSSI_DEBUG
 // Turn on constant flow of process debugging messages
 //#define DSSI_DEBUG_PROCESS 
 
@@ -35,10 +36,12 @@
 #include <string>
 #include <string.h>
 #include <signal.h>
-#include <dlfcn.h>
+// REMOVE Tim. tmp. Removed.
+//#include <dlfcn.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/stat.h>
+// REMOVE Tim. tmp. Removed.
+//#include <sys/stat.h>
 
 #include <QDir>
 #include <QFileInfo>
@@ -144,9 +147,11 @@ void initDSSI()
 //   Synth.version =  nil (no such field in ladspa, maybe try copyright instead)
 //---------------------------------------------------------
 
-DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info) 
- : Synth(info), handle(nullptr), dssi(nullptr), df(nullptr)
-
+// REMOVE Tim. tmp. Changed.
+// DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info)
+//  : Synth(info), handle(nullptr), dssi(nullptr), df(nullptr)
+DssiSynth::DssiSynth(const MusEPlugin::PluginScanInfoStruct& info)
+ : Synth(info), dssi(nullptr)
 {
   _isDssiVst = info._type == MusEPlugin::PluginTypeDSSIVST;
   
@@ -175,115 +180,133 @@ DssiSynth::~DssiSynth()
 //   createSIF
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// SynthIF* DssiSynth::createSIF(SynthI* synti)
+// {
+//       if (_references == 0)
+//       {
+//         handle = dlopen(_fileInfo.filePath().toLocal8Bit().constData(), RTLD_NOW);
+//         if (handle == 0)
+//         {
+//               fprintf(stderr, "DssiSynth::createSIF dlopen(%s) failed: %s\n",
+//                 _fileInfo.filePath().toLocal8Bit().constData(), dlerror());
+//               return 0;
+//         }
+//         df = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
+//
+//         if (!df) {
+//               const char *txt = dlerror();
+//               fprintf(stderr,
+//                   "Unable to find dssi_descriptor() function in plugin "
+//                   "library file \"%s\": %s.\n"
+//                   "Are you sure this is a DSSI plugin file?\n",
+//                   _fileInfo.filePath().toLocal8Bit().constData(),
+//                   txt ? txt : "?");
+//               dlclose(handle);
+//               handle = 0;
+//               return 0;
+//               }
+//         for (int i = 0;; ++i)
+//         {
+//           dssi = df(i);
+//           if (dssi == 0)
+//             break;
+//           QString label(dssi->LADSPA_Plugin->Label);
+// // REMOVE Tim. tmp. Changed.
+// //          if (label == _name)
+//           if (label == _label)
+//             break;
+//         }
+//
+//         if(dssi != 0)
+//         {
+//           _inports    = 0;
+//           _outports   = 0;
+//           _controlInPorts = 0;
+//           _controlOutPorts = 0;
+//           iIdx.clear();
+//           oIdx.clear();
+//           rpIdx.clear();
+//           midiCtl2PortMap.clear();
+//           port2MidiCtlMap.clear();
+//
+//           const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
+//
+//           _portCount = descr->PortCount;
+//
+//           for (unsigned long k = 0; k < _portCount; ++k)
+//           {
+//             LADSPA_PortDescriptor pd = descr->PortDescriptors[k];
+//
+//             #ifdef DSSI_DEBUG
+//             printf("DssiSynth::createSIF ladspa plugin Port:%lu Name:%s descriptor:%x\n", k, descr->PortNames[k], pd);
+//             #endif
+//
+//             if (LADSPA_IS_PORT_AUDIO(pd))
+//             {
+//               if (LADSPA_IS_PORT_INPUT(pd))
+//               {
+//                 ++_inports;
+//                 iIdx.push_back(k);
+//               }
+//               else if (LADSPA_IS_PORT_OUTPUT(pd))
+//               {
+//                 ++_outports;
+//                 oIdx.push_back(k);
+//               }
+//
+//               rpIdx.push_back((unsigned long)-1);
+//             }
+//             else if (LADSPA_IS_PORT_CONTROL(pd))
+//             {
+//               if (LADSPA_IS_PORT_INPUT(pd))
+//               {
+//                 rpIdx.push_back(_controlInPorts);
+//                 ++_controlInPorts;
+//               }
+//               else if (LADSPA_IS_PORT_OUTPUT(pd))
+//               {
+//                 rpIdx.push_back((unsigned long)-1);
+//                 ++_controlOutPorts;
+//               }
+//             }
+//           }
+//
+//           // Hack: Blacklist vst plugins in-place, configurable for now.
+//           if((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
+//             _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
+//         }
+//       }
+//
+//       if (dssi == 0)
+//       {
+//         fprintf(stderr, "cannot find DSSI synti %s\n", _label.toLocal8Bit().constData());
+//         dlclose(handle);
+//         handle = 0;
+//         df     = 0;
+//         return 0;
+//       }
+//
+//       DssiSynthIF* sif = new DssiSynthIF(synti);
+//       ++_references;
+//       sif->init(this);
+//
+//       return sif;
+// }
+
 SynthIF* DssiSynth::createSIF(SynthI* synti)
 {
-      if (_references == 0)
-      {
-        handle = dlopen(_fileInfo.filePath().toLocal8Bit().constData(), RTLD_NOW);
-        if (handle == 0) 
-        {
-              fprintf(stderr, "DssiSynth::createSIF dlopen(%s) failed: %s\n",
-                _fileInfo.filePath().toLocal8Bit().constData(), dlerror());
-              return 0;
-        }
-        df = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
+      if(!reference())
+        return nullptr;
 
-        if (!df) {
-              const char *txt = dlerror();
-              fprintf(stderr,
-                  "Unable to find dssi_descriptor() function in plugin "
-                  "library file \"%s\": %s.\n"
-                  "Are you sure this is a DSSI plugin file?\n",
-                  _fileInfo.filePath().toLocal8Bit().constData(),
-                  txt ? txt : "?");
-              dlclose(handle);
-              handle = 0;
-              return 0;
-              }
-        for (int i = 0;; ++i) 
-        {
-          dssi = df(i);
-          if (dssi == 0)
-            break;
-          QString label(dssi->LADSPA_Plugin->Label);
-// REMOVE Tim. tmp. Changed.
-//          if (label == _name)
-          if (label == _label)
-            break;
-        }
-
-        if(dssi != 0)
-        {
-          _inports    = 0;
-          _outports   = 0;
-          _controlInPorts = 0;
-          _controlOutPorts = 0;
-          iIdx.clear(); 
-          oIdx.clear(); 
-          rpIdx.clear();
-          midiCtl2PortMap.clear();
-          port2MidiCtlMap.clear();
-          
-          const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
-          
-          _portCount = descr->PortCount;
-          
-          for (unsigned long k = 0; k < _portCount; ++k) 
-          {
-            LADSPA_PortDescriptor pd = descr->PortDescriptors[k];
-            
-            #ifdef DSSI_DEBUG 
-            printf("DssiSynth::createSIF ladspa plugin Port:%lu Name:%s descriptor:%x\n", k, descr->PortNames[k], pd);
-            #endif
-            
-            if (LADSPA_IS_PORT_AUDIO(pd)) 
-            {
-              if (LADSPA_IS_PORT_INPUT(pd)) 
-              {
-                ++_inports;
-                iIdx.push_back(k);
-              }
-              else if (LADSPA_IS_PORT_OUTPUT(pd)) 
-              {
-                ++_outports;
-                oIdx.push_back(k);
-              }
-              
-              rpIdx.push_back((unsigned long)-1);
-            }
-            else if (LADSPA_IS_PORT_CONTROL(pd)) 
-            {
-              if (LADSPA_IS_PORT_INPUT(pd)) 
-              {
-                rpIdx.push_back(_controlInPorts);
-                ++_controlInPorts;
-              }
-              else if (LADSPA_IS_PORT_OUTPUT(pd))
-              {
-                rpIdx.push_back((unsigned long)-1);
-                ++_controlOutPorts;
-              }
-            }
-          }
-          
-          // Hack: Blacklist vst plugins in-place, configurable for now. 
-          if((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
-            _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
-        }  
-      }  
-      
-      if (dssi == 0) 
-      {
-        fprintf(stderr, "cannot find DSSI synti %s\n", _label.toLocal8Bit().constData());
-        dlclose(handle);
-        handle = 0;
-        df     = 0;
-        return 0;
-      }
-      
       DssiSynthIF* sif = new DssiSynthIF(synti);
-      ++_references;
-      sif->init(this);
+      if(!sif->init(this))
+      {
+        fprintf(stderr, "DssiSynth::createSIF() Error: plugin:%s instantiate failed!\n", _label.toLocal8Bit().constData());
+        delete sif;
+        release();
+        return nullptr;
+      }
 
       return sif;
 }
@@ -475,7 +498,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             _controls[cip].enCtrl  = true;
             
             #ifdef DSSI_DEBUG 
-            printf("DssiSynthIF::init control port:%d port idx:%lu name:%s\n", cip, k, ld->PortNames[k]);
+            printf("DssiSynthIF::init control port:%lu port idx:%lu name:%s\n", cip, k, ld->PortNames[k]);
             #endif
             
             // This code is duplicated in ::getControllerInfo()
@@ -526,7 +549,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             }
             
             #ifdef DSSI_DEBUG 
-            printf("DssiSynthIF::init inserting to midiCtl2PortMap: ctlnum:%d k:%d\n", ctlnum, cip);
+            printf("DssiSynthIF::init inserting to midiCtl2PortMap: ctlnum:%d k:%lu\n", ctlnum, cip);
             #endif
             
             // We have a controller number! Insert it and the DSSI port number into both maps.
@@ -582,7 +605,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             _controlsOut[cop].enCtrl  = false;
 
             #ifdef DSSI_DEBUG 
-            printf("DssiSynthIF::init control output port:%d port idx:%lu name:%s\n", cop, k, ld->PortNames[k]);
+            printf("DssiSynthIF::init control output port:%lu port idx:%lu name:%s\n", cop, k, ld->PortNames[k]);
             #endif
             
             //  Control outs are not handled but still must be connected to something.
@@ -649,56 +672,129 @@ DssiSynthIF::DssiSynthIF(SynthI* s)
 //   ~DssiSynthIF
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// DssiSynthIF::~DssiSynthIF()
+// {
+//       #ifdef DSSI_DEBUG
+//       printf("DssiSynthIF::~DssiSynthIF\n");
+//       #endif
+//
+//       #ifdef OSC_SUPPORT
+//       _oscif.oscSetSynthIF(NULL);
+//       #endif
+//
+//       if(_synth)
+//       {
+//         #ifdef DSSI_DEBUG
+//         printf("DssiSynthIF::~DssiSynthIF synth:%p\n", synth);
+//         #endif
+//
+//         if(_synth->dssi)
+//         {
+//           #ifdef DSSI_DEBUG
+//           printf("DssiSynthIF::~DssiSynthIF synth->dssi:%p\n", synth->dssi);
+//           #endif
+//
+//           if(_synth->dssi->LADSPA_Plugin)
+//           {
+//             #ifdef DSSI_DEBUG
+//             printf("DssiSynthIF::~DssiSynthIFsynth->dssi->LADSPA_Plugin:%p\n", synth->dssi->LADSPA_Plugin);
+//             #endif
+//           }
+//         }
+//       }
+//
+//       if(_synth && _synth->dssi && _synth->dssi->LADSPA_Plugin)
+//       {
+//         const DSSI_Descriptor* dssi = _synth->dssi;
+//         const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
+//
+//         #ifdef DSSI_DEBUG
+//         printf("DssiSynthIF::~DssiSynthIF checking cleanup function exists\n");
+//         #endif
+//
+//         if(descr->cleanup)
+//         {
+//           #ifdef DSSI_DEBUG
+//           printf("DssiSynthIF::~DssiSynthIF calling cleanup function\n");
+//           #endif
+//
+//           descr->cleanup(_handle);
+//         }
+//       }
+//       if(_audioInBuffers)
+//       {
+//         for(unsigned long i = 0; i < _synth->_inports; ++i)
+//         {
+//           if(_audioInBuffers[i])
+//             free(_audioInBuffers[i]);
+//         }
+//         delete[] _audioInBuffers;
+//       }
+//
+//       if(_audioInSilenceBuf)
+//         free(_audioInSilenceBuf);
+//
+//       if(_audioOutBuffers)
+//       {
+//         for(unsigned long i = 0; i < _synth->_outports; ++i)
+//         {
+//           if(_audioOutBuffers[i])
+//             free(_audioOutBuffers[i]);
+//         }
+//         delete[] _audioOutBuffers;
+//       }
+//
+//       if(_controls)
+//         delete[] _controls;
+//
+//       if(_controlsOut)
+//         delete[] _controlsOut;
+// }
+
 DssiSynthIF::~DssiSynthIF()
 {
-      #ifdef DSSI_DEBUG 
+      #ifdef DSSI_DEBUG
       printf("DssiSynthIF::~DssiSynthIF\n");
       #endif
 
       #ifdef OSC_SUPPORT
       _oscif.oscSetSynthIF(NULL);
       #endif
-      
+
+      #ifdef DSSI_DEBUG
       if(_synth)
       {
-        #ifdef DSSI_DEBUG 
-        printf("DssiSynthIF::~DssiSynthIF synth:%p\n", synth);
-        #endif
-        
+        fprintf(stderr, "DssiSynthIF::~DssiSynthIF synth:%p\n", _synth);
         if(_synth->dssi)
         {
-          #ifdef DSSI_DEBUG 
-          printf("DssiSynthIF::~DssiSynthIF synth->dssi:%p\n", synth->dssi);
-          #endif
-       
+          fprintf(stderr, "DssiSynthIF::~DssiSynthIF synth->dssi:%p\n", _synth->dssi);
           if(_synth->dssi->LADSPA_Plugin)
-          {
-            #ifdef DSSI_DEBUG 
-            printf("DssiSynthIF::~DssiSynthIFsynth->dssi->LADSPA_Plugin:%p\n", synth->dssi->LADSPA_Plugin);
-            #endif
-          }
+            fprintf(stderr, "DssiSynthIF::~DssiSynthIFsynth->dssi->LADSPA_Plugin:%p\n", _synth->dssi->LADSPA_Plugin);
         }
       }
-      
-      if(_synth && _synth->dssi && _synth->dssi->LADSPA_Plugin)
+      #endif
+
+      if(_handle && _synth && _synth->dssi && _synth->dssi->LADSPA_Plugin)
       {
         const DSSI_Descriptor* dssi = _synth->dssi;
         const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
 
-        #ifdef DSSI_DEBUG 
+        #ifdef DSSI_DEBUG
         printf("DssiSynthIF::~DssiSynthIF checking cleanup function exists\n");
         #endif
-        
+
         if(descr->cleanup)
         {
-          #ifdef DSSI_DEBUG 
+          #ifdef DSSI_DEBUG
           printf("DssiSynthIF::~DssiSynthIF calling cleanup function\n");
           #endif
-            
+
           descr->cleanup(_handle);
-        }    
+        }
       }
-      if(_audioInBuffers)
+
+      if(_synth && _audioInBuffers)
       {
         for(unsigned long i = 0; i < _synth->_inports; ++i)
         {
@@ -706,12 +802,12 @@ DssiSynthIF::~DssiSynthIF()
             free(_audioInBuffers[i]);
         }
         delete[] _audioInBuffers;
-      }  
-      
+      }
+
       if(_audioInSilenceBuf)
         free(_audioInSilenceBuf);
-      
-      if(_audioOutBuffers)
+
+      if(_synth && _audioOutBuffers)
       {
         for(unsigned long i = 0; i < _synth->_outports; ++i)
         {
@@ -719,16 +815,16 @@ DssiSynthIF::~DssiSynthIF()
             free(_audioOutBuffers[i]);
         }
         delete[] _audioOutBuffers;
-      }  
-      
+      }
+
       if(_controls)
         delete[] _controls;
-        
+
       if(_controlsOut)
         delete[] _controlsOut;
 }
 
-int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const 
+int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const
 {
   static unsigned char const d[2] = {MUSE_SYNTH_SYSEX_MFG_ID, DSSI_SYNTH_UNIQUE_ID};
   *data = &d[0];
@@ -1879,32 +1975,164 @@ bool DssiSynthIF::getData(MidiPort* /*mp*/, unsigned pos, int ports, unsigned nf
   return true;
 }
 
-//---------------------------------------------------------
-//   incInstances
-//---------------------------------------------------------
-
-int DssiSynth::incReferences(int val)
+bool DssiSynth::reference()
 {
-      _references += val;
       if (_references == 0)
       {
-            if (handle)
+        _qlib.setFileName(filePath());
+        // Same as dlopen RTLD_NOW.
+        _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+        if(!_qlib.load())
+        {
+          fprintf(stderr, "DssiSynth::reference(): load (%s) failed: %s\n",
+            _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+          return false;
+        }
+
+        DSSI_Descriptor_Function df = (DSSI_Descriptor_Function)_qlib.resolve("dssi_descriptor");
+        if(df)
+        {
+          const DSSI_Descriptor* descr;
+          for (unsigned long i = 0;; ++i)
+          {
+            descr = df(i);
+            if (descr == nullptr)
+              break;
+            QString label(descr->LADSPA_Plugin->Label);
+            if (label == _label)
             {
-              #ifdef DSSI_DEBUG 
-              fprintf(stderr, "DssiSynth::incInstances no more instances, closing library\n");
-              #endif
-              
-              dlclose(handle);
+              dssi = descr;
+              break;
             }
-            handle = 0;
+          }
+        }
+
+        if(dssi != nullptr)
+        {
+          _inports    = 0;
+          _outports   = 0;
+          _controlInPorts = 0;
+          _controlOutPorts = 0;
+          iIdx.clear();
+          oIdx.clear();
+          rpIdx.clear();
+          midiCtl2PortMap.clear();
+          port2MidiCtlMap.clear();
+
+          const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
+
+          _portCount = descr->PortCount;
+
+          for (unsigned long k = 0; k < _portCount; ++k)
+          {
+            LADSPA_PortDescriptor pd = descr->PortDescriptors[k];
+
+            #ifdef DSSI_DEBUG
+            printf("DssiSynth::reference() ladspa plugin Port:%lu Name:%s descriptor:%x\n", k, descr->PortNames[k], pd);
+            #endif
+
+            if (LADSPA_IS_PORT_AUDIO(pd))
+            {
+              if (LADSPA_IS_PORT_INPUT(pd))
+              {
+                ++_inports;
+                iIdx.push_back(k);
+              }
+              else if (LADSPA_IS_PORT_OUTPUT(pd))
+              {
+                ++_outports;
+                oIdx.push_back(k);
+              }
+
+              rpIdx.push_back((unsigned long)-1);
+            }
+            else if (LADSPA_IS_PORT_CONTROL(pd))
+            {
+              if (LADSPA_IS_PORT_INPUT(pd))
+              {
+                rpIdx.push_back(_controlInPorts);
+                ++_controlInPorts;
+              }
+              else if (LADSPA_IS_PORT_OUTPUT(pd))
+              {
+                rpIdx.push_back((unsigned long)-1);
+                ++_controlOutPorts;
+              }
+            }
+          }
+
+          // Hack: Blacklist vst plugins in-place, configurable for now.
+          if((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
+            _requiredFeatures |= MusEPlugin::PluginNoInPlaceProcessing;
+        }
+      }
+
+      ++_references;
+
+      if(dssi == nullptr)
+      {
+        fprintf(stderr, "DssiSynth::reference() Error: cannot find DSSI synti %s\n", _label.toLocal8Bit().constData());
+        release();
+        return false;
+      }
+
+      return true;
+}
+
+//---------------------------------------------------------
+//   release
+//---------------------------------------------------------
+
+// REMOVE Tim. tmp. Changed.
+// int DssiSynth::release()
+// {
+//       --_references;
+//       if (_references <= 0)
+//       {
+//             _references = 0;
+//             if (handle)
+//             {
+//               #ifdef DSSI_DEBUG
+//               fprintf(stderr, "DssiSynth::release no more instances, closing library\n");
+//               #endif
+//
+//               dlclose(handle);
+//             }
+//             handle = 0;
+//             dssi = nullptr;
+//             df   = nullptr;
+//             iIdx.clear();
+//             oIdx.clear();
+//             rpIdx.clear();
+//             midiCtl2PortMap.clear();
+//             port2MidiCtlMap.clear();
+//       }
+//       return _references;
+// }
+
+int DssiSynth::release()
+{
+      if (_references == 1)
+      {
+            // Attempt to unload the library.
+            // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+            const bool ulres = _qlib.unload();
+            // Dummy usage stops unused warnings.
+            (void)ulres;
+            #ifdef DSSI_DEBUG
+            fprintf(stderr, "DssiSynth::release(): No more instances. Result of unloading library %s: %d\n",
+              _qlib.fileName().toLocal8Bit().constData(), ulres);
+            #endif
+
             dssi = nullptr;
-            df   = nullptr;
-            iIdx.clear(); 
-            oIdx.clear(); 
+            iIdx.clear();
+            oIdx.clear();
             rpIdx.clear();
             midiCtl2PortMap.clear();
             port2MidiCtlMap.clear();
       }
+      if(_references > 0)
+        --_references;
       return _references;
 }
 

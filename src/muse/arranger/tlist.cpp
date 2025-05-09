@@ -66,6 +66,8 @@
 #include "drumedit.h"
 #include "utils.h"
 #include "functions.h"
+// REMOVE Tim. tmp. Added.
+#include "libs/file/file.h"
 
 
 #ifdef DSSI_SUPPORT
@@ -2964,15 +2966,51 @@ void TList::setMute(MusECore::Undo& operations, MusECore::Track *t, bool turnOff
           MusECore::UndoOp::SetTrackMute, t, state, double(0), double(0), double(0), double(0)));
 }
 
-void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
+// REMOVE Tim. tmp. Changed.
+// void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
+// {
+//     QString fn;
+//
+//     if (fn_==nullptr)
+//         fn=MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
+//                                     this, tr("Muse: Load Track's Drum Map"), 0);
+//     else
+//         fn=QString(fn_);
+//
+//     if (fn.isEmpty())
+//     {
+//         printf("ERROR: TList::loadTrackDrummap(): empty filename\n");
+//         return;
+//     }
+//
+//     bool popenFlag;
+//     FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
+//     if (f == 0)
+//     {
+//         printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLocal8Bit().data());
+//         return;
+//     }
+//
+//     MusECore::Xml xml(f);
+//     loadTrackDrummapFromXML(t, xml);
+//
+//     if (popenFlag)
+//         pclose(f);
+//     else
+//         fclose(f);
+//
+//     MusEGlobal::song->update(SC_DRUMMAP);
+// }
+
+void TList::loadTrackDrummap(MusECore::MidiTrack* t, const QString &fn_)
 {
     QString fn;
 
-    if (fn_==nullptr)
+    if (fn_.isEmpty())
         fn=MusEGui::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
                                     this, tr("Muse: Load Track's Drum Map"), 0);
     else
-        fn=QString(fn_);
+        fn=fn_;
 
     if (fn.isEmpty())
     {
@@ -2980,21 +3018,18 @@ void TList::loadTrackDrummap(MusECore::MidiTrack* t, const char* fn_)
         return;
     }
 
-    bool popenFlag;
-    FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
-    if (f == 0)
+    MusEFile::File f(fn, QString(".map"), this);
+    MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, true);
+    if (res != MusEFile::File::NoError)
     {
         printf("ERROR: TList::loadTrackDrummap() could not open file %s!\n", fn.toLocal8Bit().data());
         return;
     }
 
-    MusECore::Xml xml(f);
+    MusECore::Xml xml(f.iodevice());
     loadTrackDrummapFromXML(t, xml);
 
-    if (popenFlag)
-        pclose(f);
-    else
-        fclose(f);
+    f.close();
 
     MusEGlobal::song->update(SC_DRUMMAP);
 }
@@ -3057,24 +3092,56 @@ ende:
     return;
 }
 
-void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* fn_)
+// REMOVE Tim. tmp. Changed.
+// void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* fn_)
+// {
+//     QString fn;
+//     if (fn_==nullptr)
+//         fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
+//                                       this, tr("MusE: Store Track's Drum Map"));
+//     else
+//         fn = QString(fn_);
+//
+//     if (fn.isEmpty())
+//         return;
+//
+//     bool popenFlag;
+//     FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
+//     if (f == 0)
+//         return;
+//
+//     MusECore::Xml xml(f);
+//     xml.header();
+//     xml.tag(0, "muse version=\"1.0\"");
+//
+//     t->workingDrumMap()->write(1, xml);
+//
+//     xml.tag(0, "/muse");
+//
+//     if (popenFlag)
+//         pclose(f);
+//     else
+//         fclose(f);
+// }
+
+void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const QString &fn_)
 {
     QString fn;
-    if (fn_==nullptr)
+    if (fn_.isEmpty())
         fn = MusEGui::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
                                       this, tr("MusE: Store Track's Drum Map"));
     else
-        fn = QString(fn_);
+        fn = fn_;
 
     if (fn.isEmpty())
         return;
 
-    bool popenFlag;
-    FILE* f = MusEGui::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
-    if (f == 0)
+    MusEFile::File f(fn, QString(".map"), this);
+    MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, true);
+    if (res != MusEFile::File::NoError)
         return;
 
-    MusECore::Xml xml(f);
+    MusECore::Xml xml(f.iodevice());
     xml.header();
     xml.tag(0, "muse version=\"1.0\"");
 
@@ -3082,10 +3149,7 @@ void TList::saveTrackDrummap(MusECore::MidiTrack* t, bool /*full*/, const char* 
 
     xml.tag(0, "/muse");
 
-    if (popenFlag)
-        pclose(f);
-    else
-        fclose(f);
+    f.close();
 }
 
 void TList::copyTrackDrummap(MusECore::MidiTrack* t, bool /*full*/)

@@ -153,9 +153,13 @@ class TList : public QWidget {
       void songChanged(MusECore::SongChangedStruct_t flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
-      void loadTrackDrummap(MusECore::MidiTrack*, const char* filename=nullptr);
+// REMOVE Tim. tmp. Changed.
+//       void loadTrackDrummap(MusECore::MidiTrack*, const char* filename=nullptr);
+      void loadTrackDrummap(MusECore::MidiTrack*, const QString &filename = QString());
       void loadTrackDrummapFromXML(MusECore::MidiTrack*t, MusECore::Xml &xml);
-      void saveTrackDrummap(MusECore::MidiTrack*, bool full, const char* filename=nullptr);
+// REMOVE Tim. tmp. Changed.
+//       void saveTrackDrummap(MusECore::MidiTrack*, bool full, const char* filename=nullptr);
+      void saveTrackDrummap(MusECore::MidiTrack*, bool full, const QString &filename = QString());
       void copyTrackDrummap(MusECore::MidiTrack*, bool full);
 
    signals:

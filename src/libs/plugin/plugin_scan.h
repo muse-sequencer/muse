@@ -43,7 +43,8 @@
   typedef std::string PluginInfoString_t;
 #endif // PLUGIN_INFO_USE_QT
 
-#include "config.h"
+// REMOVE Tim. tmp. Removed.
+// #include "config.h"
 // REMOVE Tim. tmp. Removed.
 //#include "globaldefs.h"
 

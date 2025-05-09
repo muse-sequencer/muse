@@ -23,6 +23,7 @@
 
 #include <QMessageBox>
 #include <QDir>
+#include <QLibrary>
 #include <QTemporaryFile>
 #include <QDateTime>
 #include <QFile>
@@ -1794,7 +1795,7 @@ static void scanPluginDir(
 
   QDir pluginDir(
     dirname,
-    QString("*.so"),
+    QString(),
     QDir::Name | QDir::IgnoreCase,
     QDir::Drives | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
 
@@ -1806,10 +1807,15 @@ static void scanPluginDir(
     {
       const QFileInfo& fi = *it;
       if(fi.isDir())
+      {
         // RECURSIVE!
         scanPluginDir(fi.filePath(), types, list, scanPorts, debugStdErr, recurseLevel + 1);
+      }
       else
-        pluginScan(fi.filePath(), types, list, scanPorts, debugStdErr);
+      {
+        if(QLibrary::isLibrary(fi.filePath()))
+          pluginScan(fi.filePath(), types, list, scanPorts, debugStdErr);
+      }
 
       ++it;
     }
@@ -2736,7 +2742,7 @@ static QString findPluginFilesDir(
 
   QDir pluginDir(
     dirname,
-    QString("*.so"),
+    QString(),
     QDir::Name | QDir::IgnoreCase,
     QDir::Drives | QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
 
@@ -2754,7 +2760,8 @@ static QString findPluginFilesDir(
       }
       else
       {
-        fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
+        if(QLibrary::isLibrary(fi.filePath()))
+          fplist.insert(filepath_set_pair(fi.filePath(), fi.lastModified().toMSecsSinceEpoch()));
       }
 
       ++it;

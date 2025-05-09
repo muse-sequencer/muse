@@ -152,10 +152,16 @@ class MessSynth : public Synth {
       MessSynth(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~MessSynth() {}
 
+// REMOVE Tim. tmp. Added.
+      friend class MessSynthIF;
+
 // REMOVE Tim. tmp. Removed.
 //       inline virtual Type synthType() const { return MESS_SYNTH; }
-      virtual void* instantiate(const QString&);
-      virtual SynthIF* createSIF(SynthI*);
+//       virtual void* instantiate(const QString&);
+      SynthIF* createSIF(SynthI*);
+// REMOVE Tim. tmp. Added.
+      bool reference();
+      int release();
       };
 
 
@@ -590,7 +596,9 @@ class MessSynthIF : public SynthIF {
       bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       MidiPlayEvent receiveEvent();
       int eventsPending() const;
-      bool init(Synth* s, SynthI* si);
+// REMOVE Tim. tmp. Changed.
+//       bool init(Synth* s, SynthI* si);
+      bool init(MessSynth* s);
 
       int channels() const;
       int totalOutChannels() const;

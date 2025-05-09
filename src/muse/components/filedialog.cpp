@@ -20,7 +20,8 @@
 //
 //=========================================================
 
-#include <errno.h>
+// REMOVE Tim. tmp. Removed.
+//#include <errno.h>
 
 //#include <QIcon>
 #include <QMessageBox>
@@ -28,6 +29,9 @@
 #include <QSplitter>
 #include <QStringList>
 //#include <QHeaderView>
+// REMOVE Tim. tmp. Removed.
+//#include <QFile>
+//#include <QProcess>
 
 #include "icons.h"
 #include "filedialog.h"
@@ -517,75 +521,15 @@ QString getImageFileName(const QString& startWith,
 //                warn in "w" mode, if file exists
 //---------------------------------------------------------
 
-FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
-   const char* mode, bool& popenFlag, bool noError,
-   bool overwriteWarning)
-      {
-      QFileInfo info(name);
-      QString zip;
-
-      popenFlag = false;
-      if (info.completeSuffix() == "") {
-            name += ext;
-            info.setFile(name);
-            }
-      else if (info.suffix() == "gz") {
-            popenFlag = true;
-            zip = QString("gzip");
-            }
-      else if (info.suffix() == "bz2") {
-            popenFlag = true;
-            zip = QString("bzip2");
-            }
-
-      if (strcmp(mode,"w") == 0 && overwriteWarning && info.exists()) {
-            QString s(QWidget::tr("File\n%1\nexists. Overwrite?").arg(name));
-            /*
-            int rv = QMessageBox::warning(parent,
-               QWidget::tr("MusE: write"),
-               s,
-               QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save);
-            switch(rv) {
-                  case 0:  // overwrite
-                        break;
-                  case 1:  // quit
-                        return 0;
-                  }
-            */
-            if(QMessageBox::warning(parent,
-               QWidget::tr("MusE: write"), s,
-               QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save)
-               != QMessageBox::Save)
-              return 0;
-
-            }
-      FILE* fp = 0;
-      if (popenFlag) {
-            if (strcmp(mode, "r") == 0)
-                  zip += QString(" -d < \"");
-            else
-                  zip += QString(" > \"");
-            zip = zip + name + QString("\"");
-            fp  = popen(zip.toLocal8Bit().constData(), mode);
-            }
-      else {
-            fp = fopen(name.toLocal8Bit().constData(), mode);
-            }
-      if (fp == 0 && !noError) {
-            QString s(QWidget::tr("Open File\n%1\nfailed: %2").arg(name).arg(strerror(errno)));
-            QMessageBox::critical(parent, QWidget::tr("MusE: Open File"), s);
-            return 0;
-            }
-      return fp;
-      }
-
-// REMOVE Tim. tmp. Added.
-// QFile fileOpen(QWidget* parent, QString name, const QString& ext,
-//    QIODevice::OpenMode mode, bool noError, bool overwriteWarning)
+// REMOVE Tim. tmp. Changed.
+// FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
+//    const char* mode, bool& popenFlag, bool noError,
+//    bool overwriteWarning)
 //       {
 //       QFileInfo info(name);
 //       QString zip;
 //
+//       popenFlag = false;
 //       if (info.completeSuffix() == "") {
 //             name += ext;
 //             info.setFile(name);
@@ -640,44 +584,98 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
 //       return fp;
 //       }
 
+MusEFile::File::ErrorCode fileOpen(
+  MusEFile::File &file, QIODevice::OpenMode mode,
+  QWidget *parent, bool noError, bool overwriteWarning)
+{
+  if (mode == QIODevice::WriteOnly && overwriteWarning && file.exists())
+  {
+        QString s(QWidget::tr("File\n%1\nexists. Overwrite?").arg(file.filePath()));
+        if(QMessageBox::warning(parent,
+           QWidget::tr("MusE: write"), s,
+           QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save)
+           != QMessageBox::Save)
+        {
+          return MusEFile::File::AbortError;
+        }
+  }
+
+  const bool res = file.open(mode);
+  if(!res && !noError)
+  {
+    QString s(QWidget::tr("Open File\n%1\nfailed: %2").arg(file.filePath()).arg(file.errorString()));
+    QMessageBox::critical(parent, QWidget::tr("MusE: Open File"), s);
+  }
+
+  return file.error();
+}
+
 //---------------------------------------------------------
 //   MFile
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// MFile::MFile(const QString& _path, const QString& _ext)
+//    : path(_path), ext(_ext)
+//       {
+//       f = 0;
+//       isPopen = false;
+//       }
+//
+// MFile::~MFile()
+//       {
+//       if (f) {
+//             if (isPopen)
+//                   pclose(f);
+//             else
+//                   fclose(f);
+//             }
+//       }
+
 MFile::MFile(const QString& _path, const QString& _ext)
    : path(_path), ext(_ext)
       {
-      f = 0;
-      isPopen = false;
       }
 
 MFile::~MFile()
       {
-      if (f) {
-            if (isPopen)
-                  pclose(f);
-            else
-                  fclose(f);
-            }
+      f.close();
       }
 
 //---------------------------------------------------------
 //   open
 //---------------------------------------------------------
 
-FILE* MFile::open(const char* mode, const char** patterns_chararray,
+// REMOVE Tim. tmp. Removed.
+// FILE* MFile::open(const char* mode, const char** patterns_chararray,
+//    QWidget* parent, bool noError, bool warnIfOverwrite, const QString& caption)
+//       {
+//       QString name;
+//       if (strcmp(mode, "r") == 0)
+//            name = getOpenFileName(path, patterns_chararray, parent, caption, 0);
+//       else
+//            name = getSaveFileName(path, patterns_chararray, parent, caption);
+//       if (name.isEmpty())
+//             return 0;
+//       f = fileOpen(parent, name, ext, mode, isPopen, noError,
+//          warnIfOverwrite);
+//       return f;
+//       }
+
+// REMOVE Tim. tmp. Added.
+MusEFile::File::ErrorCode MFile::open(MusEFile::File &file, QIODevice::OpenMode mode, const char** patterns_chararray,
    QWidget* parent, bool noError, bool warnIfOverwrite, const QString& caption)
       {
       QString name;
-      if (strcmp(mode, "r") == 0)
+      if (mode == QIODevice::ReadOnly)
            name = getOpenFileName(path, patterns_chararray, parent, caption, 0);
       else
            name = getSaveFileName(path, patterns_chararray, parent, caption);
       if (name.isEmpty())
-            return 0;
-      f = fileOpen(parent, name, ext, mode, isPopen, noError,
-         warnIfOverwrite);
-      return f;
+            return MusEFile::File::GeneralError;
+      file.setParent(parent);
+      file.setFile(name, QString());
+      return fileOpen(file, mode, parent, noError, warnIfOverwrite);
       }
 
 } // namespace MusEGui

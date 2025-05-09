@@ -43,6 +43,8 @@
 #include "marker/marker.h"
 #include "drummap.h"
 #include "gconfig.h"
+// REMOVE Tim. tmp. Added.
+#include "libs/file/file.h"
 
 // Undefine if and when multiple output routes are added to midi tracks.
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
@@ -989,11 +991,23 @@ void MusE::exportMidi(bool selectedVisibleTracksOnly, bool selectedPartsOnly, bo
       
       MusEGui::MFile file(QString("midis"), QString(".mid"));
 
-      FILE* fp = file.open("w", MusEGlobal::midi_file_save_pattern, this, false, true,
-         tr("MusE: Export Midi"));
-      if (fp == 0)
+
+
+// REMOVE Tim. tmp. Changed.
+//       FILE* fp = file.open("w", MusEGlobal::midi_file_save_pattern, this, false, true,
+//          tr("MusE: Export Midi"));
+//       if (fp == 0)
+//             return;
+//       MusECore::MidiFile mf(fp);
+
+      // File will close when MFile goes out of scope at the end of this function.
+      MusEFile::File f;
+      MusEFile::File::ErrorCode res =
+        file.open(f, QIODevice::WriteOnly, MusEGlobal::midi_file_save_pattern, this, false, true, tr("MusE: Export Midi"));
+      if (res != MusEFile::File::NoError)
             return;
-      MusECore::MidiFile mf(fp);
+
+      MusECore::MidiFile mf(&f);
 
       MusECore::TrackList* tl = MusEGlobal::song->tracks();       // Changed to full track list so user can rearrange tracks.
       MusECore::MidiFileTrackList* mtl = new MusECore::MidiFileTrackList;

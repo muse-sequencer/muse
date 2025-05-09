@@ -138,8 +138,9 @@ class VstNativeSynth : public Synth {
 
 // REMOVE Tim. tmp. Removed.
 //       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
-      virtual int incReferences(int val);
-      virtual AEffect* instantiate(void *userData);
+      bool reference();
+      int release();
+      AEffect* instantiate(void *userData);
       // Opens a plugin instance, after instantiation.
       static bool openPlugin(AEffect* plugin);
       virtual SynthIF* createSIF(SynthI*);
@@ -394,7 +395,8 @@ public:
     }
     virtual ~VstNativePluginWrapper();
     virtual LADSPA_Handle instantiate ( PluginI * );
-    virtual int incReferences ( int ref );
+    bool reference();
+    int release ();
     virtual void activate ( LADSPA_Handle handle );
     virtual void deactivate ( LADSPA_Handle handle );
     virtual void cleanup ( LADSPA_Handle handle );

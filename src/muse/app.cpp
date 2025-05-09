@@ -38,6 +38,8 @@
 #include <QPushButton>
 #include <QDir>
 #include <QFile>
+#include <QIODevice>
+#include <QProcess>
 #include <QStatusBar>
 #if QT_VERSION >= 0x050b00
 #include <QScreen>
@@ -45,7 +47,9 @@
 
 #include <samplerate.h>
 
+// REMOVE Tim. tmp. Remove later.
 #include <errno.h>
+
 #include <iostream>
 #include <algorithm>
 //#include <typeinfo>
@@ -101,6 +105,8 @@
 #include "rectoolbar.h"
 #include "postoolbar.h"
 #include "synctoolbar.h"
+// REMOVE Tim. tmp. Added.
+#include "libs/file/file.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -2091,6 +2097,282 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
 #endif
 
 #ifndef USE_SENDPOSTEDEVENTS_FOR_TOPWIN_CLOSE
+
+// REMOVE Tim. tmp. Changed.
+// bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
+//       {
+//       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
+//         name.toLocal8Bit().constData(), songTemplate, doReadMidiPorts);
+//
+//       MusEGlobal::recordAction->setChecked(false);
+//
+//       progress->setValue(20);
+// // REMOVE Tim. tmp. Added raise.
+// //       progress->raise();
+//       qApp->processEvents();
+//
+//       QFileInfo fi(name);
+//       if (songTemplate)
+//       {
+//             if(!fi.isReadable()) {
+//                 QMessageBox::critical(this, QString("MusE"),
+//                     tr("Cannot read template"));
+// // REMOVE Tim. tmp. Removed.
+// //                QApplication::restoreOverrideCursor();
+//                 return false;
+//                 }
+//             project.setFile(MusEGui::getUniqueUntitledName());
+//             MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
+//             QDir::setCurrent(QDir::homePath());
+//             }
+//       else {
+//             fprintf(stderr, "Setting project path to %s\n", fi.absolutePath().toLocal8Bit().constData());
+//             MusEGlobal::museProject = fi.absolutePath();
+//             project.setFile(name);
+//             QDir::setCurrent(MusEGlobal::museProject);
+//             }
+//
+//       _lastProjectFilePath = name;
+//       _lastProjectWasTemplate = songTemplate;
+//       _lastProjectLoadedConfig = doReadMidiPorts;
+//
+//       QString ex = fi.completeSuffix().toLower();
+//       QString mex = ex.section('.', -1, -1);
+//       if((mex == "gz") || (mex == "bz2"))
+//         mex = ex.section('.', -2, -2);
+//
+//       if (ex.isEmpty() || mex == "med") {
+//             //
+//             //  read *.med file
+//             //
+//             bool popenFlag;
+//             FILE* f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
+//             if (f == nullptr) {
+//                   if (errno != ENOENT) {
+//                         QMessageBox::critical(this, QString("MusE"),
+//                            tr("File open error"));
+//                         setUntitledProject();
+//                         _lastProjectFilePath = QString();
+//                         }
+//                   else
+//                         setConfigDefaults();
+//                   }
+//             else {
+//
+//                   if(songTemplate)
+//                   {
+//                     // The project is a template. Set the project's sample rate
+//                     //  to the system rate.
+//                     // NOTE: A template should never contain anything 'frame' related
+//                     //        like wave parts and events, or even audio automation graphs !
+//                     //       That is more under the category of say, 'demo songs'.
+//                     //       And here is the reason why:
+//                     MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
+//                   }
+//                   else
+//                   {
+//                     MusECore::Xml d_xml(f);
+//                     MusECore::SongfileDiscovery d_list(MusEGlobal::museProject);
+//                     d_list.readSongfile(d_xml);
+//
+//                     // If it is a compressed file we cannot seek the stream, we must reopen it.
+//                     if(popenFlag)
+//                     {
+//                       pclose(f);
+//                       f = nullptr;
+//                       f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
+//                       if (f == nullptr) {
+//                             if (errno != ENOENT) {
+//                                   QMessageBox::critical(this, QString("MusE"),
+//                                     tr("File open error"));
+//                                   setUntitledProject();
+//                                   _lastProjectFilePath = QString();
+//                                   }
+//                             else
+//                                   setConfigDefaults();
+//                             }
+//                     }
+//                     else
+//                     {
+//                       // Be kind. Rewind.
+//                       fseek(f, 0, SEEK_SET);
+//                     }
+//
+//                     // Is there a project sample rate setting in the song? (Setting added circa 2011).
+//                     if(d_list._waveList._projectSampleRateValid)
+//                     {
+//                       MusEGlobal::projectSampleRate = d_list._waveList._projectSampleRate;
+//                     }
+//                     else
+//                     {
+//                       int sugg_val;
+//                       QString sugg_phrase;
+//                       if(d_list._waveList.empty())
+//                       {
+//                         // Suggest the current system sample rate.
+//                         sugg_val = MusEGlobal::sampleRate;
+//                         sugg_phrase =
+//                         tr("The project has no project sample rate (added 2011).\n"
+//                            "Please enter a rate. The current system rate (%1Hz)\n"
+//                            " is suggested, and cancelling uses it:").arg(MusEGlobal::sampleRate);
+//                       }
+//                       else
+//                       {
+//                         // Suggest the most common sample rate used in the song.
+//                         sugg_val = d_list._waveList.getMostCommonSamplerate();
+//                         sugg_phrase =
+//                         tr("The project has audio waves, but no project sample rate (added 2011).\n"
+//                            "Please enter a rate. The most common wave rate found is suggested,\n"
+//                            " the project was probably made with it. Cancelling uses the\n"
+//                            " current system rate (%1Hz):").arg(MusEGlobal::sampleRate);
+//                       }
+//
+//                       bool ok;
+//                       const int res = QInputDialog::getInt(
+//                         this, tr("Project sample rate"),
+//                         sugg_phrase, sugg_val,
+//                         0, (10 * 1000 * 1000), 1, &ok);
+//
+//                       if(ok)
+//                         MusEGlobal::projectSampleRate = res;
+//                       else
+//                         MusEGlobal::projectSampleRate = MusEGlobal::sampleRate;
+//                     }
+//
+//                     if (!songTemplate &&
+//                         //MusEGlobal::audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO &&  // Why exclude dummy?
+//                         MusEGlobal::projectSampleRate != MusEGlobal::sampleRate)
+//                     {
+//                       QString msg = QString("The sample rate in this project (%1Hz) and the\n"
+//                         " current system setting (%2Hz) differ.\n"
+//                         "Project timing will be scaled to match the new sample rate.\n"
+//                         "Caution: Accuracy and sound quality may vary with rate and settings.\n\n"
+//                         "Live realtime audio sample rate converters will be enabled\n"
+//                         " on audio files where required.\n"
+//                         "The files can be permanently converted to the new sample rate.\n\n"
+//                         "Save this song if you are sure you didn't mean to open it\n"
+//                         " at the original sample rate.").arg(MusEGlobal::projectSampleRate).arg(MusEGlobal::sampleRate);
+//                       QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", msg);
+//                       // Automatically convert the project.
+//                       // No: Try to keep the rate until user tells it to change.
+//                       //convertProjectSampleRate();
+//                     }
+//                   }
+//
+//                   if(f) {
+//                         MusECore::Xml xml(f);
+//                         // NOTE: During loading, new items may be added to _pendingObjectDestructions.
+//                         //       They will be marked as not waiting for deletion so that they do not
+//                         //        interfere with items marked as waiting for deletion, during closing/loading.
+//                         read(xml, doReadMidiPorts, songTemplate);
+//                         bool fileError = ferror(f);
+//                         popenFlag ? pclose(f) : fclose(f);
+//                         if (fileError) {
+//                               QMessageBox::critical(this, QString("MusE"),
+//                                 tr("File read error"));
+//                               setUntitledProject();
+//                               _lastProjectFilePath = QString();
+//                               }
+//                         }
+//                   }
+//             }
+//       else if (mex == "mid" || mex == "kar") {
+//             setConfigDefaults();
+//             if (!importMidi(name, false))
+//             {
+//                   setUntitledProject();
+//                   _lastProjectFilePath = QString();
+//             }
+//             }
+//       else {
+//             QMessageBox::critical(this, QString("MusE"),
+//                tr("Unknown File Format: %1").arg(ex));
+//             setUntitledProject();
+//             _lastProjectFilePath = QString();
+//             }
+//       if (!songTemplate) {
+//             addProjectToRecentList(project.absoluteFilePath());
+//             setWindowTitle(projectTitle(project.absoluteFilePath()));
+//             }
+//
+//       for (const auto& it : toplevels) {
+//           if (it->isMdiWin() && it->type() == TopWin::ARRANGER) {
+//               mdiArea->setActiveSubWindow(it->getMdiWin());
+//               break;
+//           }
+//       }
+//
+//       MusEGlobal::song->dirty = false;
+//       progress->setValue(30);
+// // REMOVE Tim. tmp. Added raise.
+// //       progress->raise();
+//       qApp->processEvents();
+//
+//       viewTransportAction->setChecked(MusEGlobal::config.transportVisible);
+//       viewBigtimeAction->setChecked(MusEGlobal::config.bigTimeVisible);
+//       viewMarkerAction->setChecked(MusEGlobal::config.markerVisible);
+// //      viewArrangerAction->setChecked(MusEGlobal::config.arrangerVisible);
+//
+// // REMOVE Tim. automation. Removed.
+// // Deprecated. MusEGlobal::automation is now fixed TRUE
+// //   for now until we decide what to do with it.
+// //       autoMixerAction->setChecked(MusEGlobal::automation);
+//
+//       showBigtime(MusEGlobal::config.bigTimeVisible);
+//
+//       // NOTICE! Mixers may set their own maximum size according to their content, on SongChanged.
+//       //         Therefore if the mixer is ALREADY OPEN, it may have a maximum size imposed on it,
+//       //          which may be SMALLER than any new size we might try to set after this.
+//       //         So we MUST RESET maximum size now, BEFORE attempts to set size. As per docs:
+//       if(mixer1)
+//       {
+//         mixer1->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+//         mixer1->setGeometry(MusEGlobal::config.mixer1.geometry);
+//       }
+//       if(mixer2)
+//       {
+//         mixer2->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+//         mixer2->setGeometry(MusEGlobal::config.mixer2.geometry);
+//       }
+//
+//       showMixer1(MusEGlobal::config.mixer1Visible);
+//       showMixer2(MusEGlobal::config.mixer2Visible);
+//
+// // Loading a file should not manipulate the geometry of the main window (kybos)
+// //      resize(MusEGlobal::config.geometryMain.size());
+// //      move(MusEGlobal::config.geometryMain.topLeft());
+//
+//       transport->move(MusEGlobal::config.geometryTransport.topLeft());
+//       showTransport(MusEGlobal::config.transportVisible);
+//
+//       progress->setValue(40);
+// // REMOVE Tim. tmp. Added raise.
+// //       progress->raise();
+//       qApp->processEvents();
+//
+//       transport->setMasterFlag(MusEGlobal::tempomap.masterFlag());
+//       MusEGlobal::punchinAction->setChecked(MusEGlobal::song->punchin());
+//       MusEGlobal::punchoutAction->setChecked(MusEGlobal::song->punchout());
+//       MusEGlobal::loopAction->setChecked(MusEGlobal::song->loop());
+//       // Inform the rest of the app the song changed, with all flags MINUS
+//       //  these flags which are already sent in the call to MusE::read() above:
+//       MusEGlobal::song->update(~SC_TRACK_INSERTED);
+//       MusEGlobal::song->updatePos();
+//       arrangerView->clipboardChanged(); // enable/disable "Paste"
+//       arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+//       arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
+//       progress->setValue(50);
+// // REMOVE Tim. tmp. Added raise.
+// //       progress->raise();
+//       qApp->processEvents();
+//
+//       // Moved here from above due to crash with a song loaded and then File->New.
+//       // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
+//       showMarker(MusEGlobal::config.markerVisible);
+//
+//       return true;
+//       }
+
 bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool doReadMidiPorts)
       {
       DEBUG_LOADING_AND_CLEARING(stderr, "MusE::finishLoadProjectFile1: name:%s songTemplate:%d doReadMidiPorts:%d\n",
@@ -2099,8 +2381,6 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
       MusEGlobal::recordAction->setChecked(false);
 
       progress->setValue(20);
-// REMOVE Tim. tmp. Added raise.
-//       progress->raise();
       qApp->processEvents();
 
       QFileInfo fi(name);
@@ -2109,8 +2389,6 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
             if(!fi.isReadable()) {
                 QMessageBox::critical(this, QString("MusE"),
                     tr("Cannot read template"));
-// REMOVE Tim. tmp. Removed.
-//                QApplication::restoreOverrideCursor();
                 return false;
                 }
             project.setFile(MusEGui::getUniqueUntitledName());
@@ -2137,18 +2415,30 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
             //
             //  read *.med file
             //
-            bool popenFlag;
-            FILE* f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
-            if (f == nullptr) {
-                  if (errno != ENOENT) {
-                        QMessageBox::critical(this, QString("MusE"),
-                           tr("File open error"));
-                        setUntitledProject();
-                        _lastProjectFilePath = QString();
-                        }
-                  else
-                        setConfigDefaults();
-                  }
+            MusEFile::File f(fi.filePath(), QString(".med"), this);
+            const bool isCompressed = f.isCompressed();
+
+            const MusEFile::File::ErrorCode ecode = fileOpen(f, QIODevice::ReadOnly, this, true);
+            if(ecode != MusEFile::File::NoError)
+            {
+              switch(ecode)
+              {
+                case MusEFile::File::NoError:
+                break;
+
+                case MusEFile::File::GeneralError:
+                  // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno == ENOENT)" ?
+                  setConfigDefaults();
+                break;
+
+                default:
+                  // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno != ENOENT)" ?
+                  QMessageBox::critical(this, QString("MusE"), tr("File open error"));
+                  setUntitledProject();
+                  _lastProjectFilePath = QString();
+                break;
+              }
+            }
             else {
 
                   if(songTemplate)
@@ -2163,31 +2453,40 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
                   }
                   else
                   {
-                    MusECore::Xml d_xml(f);
+                    MusECore::Xml d_xml(f.iodevice());
                     MusECore::SongfileDiscovery d_list(MusEGlobal::museProject);
                     d_list.readSongfile(d_xml);
 
                     // If it is a compressed file we cannot seek the stream, we must reopen it.
-                    if(popenFlag)
+                    if(isCompressed)
                     {
-                      pclose(f);
-                      f = nullptr;
-                      f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
-                      if (f == nullptr) {
-                            if (errno != ENOENT) {
-                                  QMessageBox::critical(this, QString("MusE"),
-                                    tr("File open error"));
-                                  setUntitledProject();
-                                  _lastProjectFilePath = QString();
-                                  }
-                            else
-                                  setConfigDefaults();
-                            }
+                      f.close();
+                      const MusEFile::File::ErrorCode ecode = fileOpen(f, QIODevice::ReadOnly, this, true);
+                      if(ecode != MusEFile::File::NoError)
+                      {
+                        switch(ecode)
+                        {
+                          case MusEFile::File::NoError:
+                          break;
+
+                          case MusEFile::File::GeneralError:
+                            // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno == ENOENT)" ?
+                            setConfigDefaults();
+                          break;
+
+                          default:
+                            // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno != ENOENT)" ?
+                            QMessageBox::critical(this, QString("MusE"), tr("File open error"));
+                            setUntitledProject();
+                            _lastProjectFilePath = QString();
+                          break;
+                        }
+                      }
                     }
                     else
                     {
                       // Be kind. Rewind.
-                      fseek(f, 0, SEEK_SET);
+                      f.reset();
                     }
 
                     // Is there a project sample rate setting in the song? (Setting added circa 2011).
@@ -2251,20 +2550,21 @@ bool MusE::finishLoadProjectFile1(const QString& name, bool songTemplate, bool d
                     }
                   }
 
-                  if(f) {
-                        MusECore::Xml xml(f);
-                        // NOTE: During loading, new items may be added to _pendingObjectDestructions.
-                        //       They will be marked as not waiting for deletion so that they do not
-                        //        interfere with items marked as waiting for deletion, during closing/loading.
-                        read(xml, doReadMidiPorts, songTemplate);
-                        bool fileError = ferror(f);
-                        popenFlag ? pclose(f) : fclose(f);
-                        if (fileError) {
-                              QMessageBox::critical(this, QString("MusE"),
-                                tr("File read error"));
-                              setUntitledProject();
-                              _lastProjectFilePath = QString();
-                              }
+                  MusECore::Xml xml(f.iodevice());
+                  // NOTE: During loading, new items may be added to _pendingObjectDestructions.
+                  //       They will be marked as not waiting for deletion so that they do not
+                  //        interfere with items marked as waiting for deletion, during closing/loading.
+                  read(xml, doReadMidiPorts, songTemplate);
+
+                  // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for "ferror(f)" ?
+                  const MusEFile::File::ErrorCode ecode = f.error();
+                  const QString etxt = f.errorString();
+                  f.close();
+                  if (ecode != MusEFile::File::NoError) {
+                        QMessageBox::critical(this, QString("MusE"),
+                          tr("File read error") + QString(": ") + etxt);
+                        setUntitledProject();
+                        _lastProjectFilePath = QString();
                         }
                   }
             }
@@ -2705,6 +3005,49 @@ bool MusE::save()
 //   save
 //---------------------------------------------------------
 
+// REMOVE Tim. tmp. Changed.
+// bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
+//       {
+// //       QString backupCommand;
+//
+//       QFile currentName(name);
+//       if (QFile::exists(name)) {
+//             currentName.copy(name+".backup");
+//             //backupCommand.sprintf("cp \"%s\" \"%s.backup\"", name.toLocal8Bit().constData(), name.toLocal8Bit().constData());
+//             }
+//       else if (QFile::exists(name + QString(".med"))) {
+//             QString currentName2(name+".med");
+//             currentName.copy(name+".med.backup");
+//             //backupCommand.sprintf("cp \"%s.med\" \"%s.med.backup\"", name.toLocal8Bit().constData(), name.toLocal8Bit().constData());
+//             }
+// //      if (!backupCommand.isEmpty())
+// //            system(backupCommand.toLocal8Bit().constData());
+//
+//       bool popenFlag;
+//       FILE* f = MusEGui::fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
+//       if (f == nullptr)
+//             return false;
+//       MusECore::Xml xml(f);
+//       write(xml, writeTopwins);
+//       if (ferror(f)) {
+//             QString s = "Write File\n" + name + "\nfailed: "
+//                + QString(strerror(errno));
+//             QMessageBox::critical(this,
+//                tr("MusE: Write File failed"), s);
+//             popenFlag? pclose(f) : fclose(f);
+//             unlink(name.toLocal8Bit().constData());
+//             return false;
+//             }
+//       else {
+//             popenFlag? pclose(f) : fclose(f);
+//             MusEGlobal::song->dirty = false;
+//             setWindowTitle(projectTitle(project.absoluteFilePath()));
+//             saveIncrement = 0;
+//             setStatusBarText(tr("Project saved."), 600);
+//             return true;
+//             }
+//       }
+
 bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
       {
 //       QString backupCommand;
@@ -2722,23 +3065,23 @@ bool MusE::save(const QString& name, bool overwriteWarn, bool writeTopwins)
 //      if (!backupCommand.isEmpty())
 //            system(backupCommand.toLocal8Bit().constData());
 
-      bool popenFlag;
-      FILE* f = MusEGui::fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
-      if (f == nullptr)
+      MusEFile::File f(name, QString(".med"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, overwriteWarn);
+      if (res != MusEFile::File::NoError)
             return false;
-      MusECore::Xml xml(f);
+      MusECore::Xml xml(f.iodevice());
       write(xml, writeTopwins);
-      if (ferror(f)) {
+      if (f.error() != MusEFile::File::NoError) {
             QString s = "Write File\n" + name + "\nfailed: "
                + QString(strerror(errno));
             QMessageBox::critical(this,
                tr("MusE: Write File failed"), s);
-            popenFlag? pclose(f) : fclose(f);
+            f.close();
             unlink(name.toLocal8Bit().constData());
             return false;
             }
       else {
-            popenFlag? pclose(f) : fclose(f);
+            f.close();
             MusEGlobal::song->dirty = false;
             setWindowTitle(projectTitle(project.absoluteFilePath()));
             saveIncrement = 0;

@@ -1342,6 +1342,8 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       QString s;
       synthList->blockSignals(true);
       synthList->clear();
+      // "In order to avoid performance issues, it is recommended that sorting is enabled after inserting the items into the tree."
+      synthList->setSortingEnabled(false);
       for (std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin();
          i != MusEGlobal::synthis.end(); ++i) {
             SynthItem* item = new SynthItem(!(*i)->uri().isEmpty(), synthList);
@@ -1470,6 +1472,9 @@ void MPConfig::songChanged(MusECore::SongChangedStruct_t flags)
       synthList->resizeColumnToContents(SYNTHCOL_REFS);
       synthList->resizeColumnToContents(SYNTHCOL_NAME);
       synthList->resizeColumnToContents(SYNTHCOL_VERSION);
+      synthList->setSortingEnabled(true);
+      synthList->sortByColumn(SYNTHCOL_FILE, Qt::AscendingOrder);
+
       mdevView->resizeColumnsToContents();
 
       selectionChanged();

@@ -2,8 +2,8 @@
 #  MusE
 #  Linux Music Editor
 #
-#  CMakeLists.txt
-#  (C) Copyright 2014 Tim E. Real (terminator356 on users dot sourceforge dot net)
+#  file/CMakeLists.txt
+#  (C) Copyright 2025 Tim E. Real (terminator356 on users dot sourceforge dot net)
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License
@@ -21,15 +21,57 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #=============================================================================
 
-ADD_SUBDIRECTORY(evdata)
-ADD_SUBDIRECTORY(memory)
-ADD_SUBDIRECTORY(midi_controller)
-ADD_SUBDIRECTORY(midnam)
-ADD_SUBDIRECTORY(mpevent) 
-ADD_SUBDIRECTORY(string)
-ADD_SUBDIRECTORY(sysex_helper) 
-ADD_SUBDIRECTORY(xml) 
-ADD_SUBDIRECTORY(time_stretch) 
-ADD_SUBDIRECTORY(wave)
-ADD_SUBDIRECTORY(plugin)
-ADD_SUBDIRECTORY(file)
+##
+## Expand Qt macros in source files
+##
+
+QT5_WRAP_CPP (file_mocs
+file.h
+)
+
+##
+## List of source files to compile
+##
+
+file (GLOB file_source_files
+      file.cpp
+      )
+
+##
+## Define target
+##
+
+add_library ( file_module SHARED
+      ${file_mocs}
+      ${file_source_files}
+      )
+
+##
+## Append to the list of translations
+##
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${file_source_files}
+      CACHE INTERNAL ""
+      )
+
+##
+## Compilation flags and target name
+##
+
+set_target_properties( file_module
+      PROPERTIES OUTPUT_NAME muse_file_module
+      )
+
+target_link_libraries(file_module
+      ${QT_LIBRARIES}
+      )
+
+##
+## Install location
+##
+
+install(TARGETS
+        file_module
+      DESTINATION ${MusE_MODULES_DIR}
+      )

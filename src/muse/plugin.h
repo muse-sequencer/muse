@@ -38,6 +38,8 @@
 #include <QRect>
 #include <QList>
 #include <QMetaObject>
+// REMOVE Tim. tmp. Added.
+#include <QLibrary>
 
 #include <ladspa.h>
 
@@ -125,7 +127,10 @@ class PluginBase {
 
    protected:
       unsigned long _uniqueID;
-      void* _handle;
+// REMOVE Tim. tmp. Removed.
+//       void* _handle;
+// REMOVE Tim. tmp. Added.
+      QLibrary _qlib;
       int _references;
       QFileInfo _fileInfo;
       // Universal resource identifier, for plugins that use it (LV2).
@@ -179,7 +184,13 @@ class PluginBase {
       int references() const;
 // REMOVE Tim. tmp. Changed.
 //       virtual int incReferences(int) = 0;
-      virtual int incReferences(int);
+      // Reference the library. Increases the reference count. Loads the library if required (ref 0 -> 1).
+      // Returns true on success.
+      virtual bool reference() = 0;
+      // Releases one reference and returns the resulting number of references.
+      // When the number of references reaches zero, the plugin library file, if any, tries to unload.
+      // The library will remain loaded until all usages reach zero references.
+      virtual int release() = 0;
 
       // Returns true if ANY of the midi input ports uses time position (transport).
       bool usesTimePosition() const;
@@ -267,7 +278,8 @@ class Plugin : public PluginBase {
 //       QString fileName() const;
         
 //       int references() const;
-      virtual int incReferences(int val) override;
+      virtual bool reference() override;
+      virtual int release() override;
       int instNo();
 
 // REMOVE Tim. tmp. Removed.
@@ -906,6 +918,11 @@ class PluginI : public PluginIBase {
    protected:
       void activate();
       void deactivate();
+// REMOVE Tim. tmp. Added.
+      // Releases all references to the plugin that this pluginI is holding, one for each of the 'instances'.
+      // When the plugin's number of references reaches zero, the plugin library file, if any, tries to unload.
+      // The library will remain loaded until all usages reach zero references.
+      void release() const;
 
    public:
       PluginI();

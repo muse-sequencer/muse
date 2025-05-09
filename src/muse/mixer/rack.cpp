@@ -57,6 +57,7 @@
 // REMOVE Tim. tmp. Added.
 #include "undo.h"
 #include "ctrl.h"
+#include "libs/file/file.h"
 
 #include <QEvent>
 #include "track.h"
@@ -651,26 +652,79 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
       }
       }
 
+// REMOVE Tim. tmp. Changed.
+// void EffectRack::savePreset(int idx)
+//       {
+//       if(!track)
+//         return;
+//       //QString name = MusEGui::getSaveFileName(QString(""), plug_file_pattern, this,
+//       QString name = MusEGui::getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
+//          tr("MusE: Save Preset"));
+//
+//       if(name.isEmpty())
+//         return;
+//
+//       //FILE* presetFp = fopen(name.ascii(),"w+");
+//       bool popenFlag;
+//       FILE* presetFp = MusEGui::fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
+//       if (presetFp == nullptr) {
+//             //fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n",
+//             //   strerror(errno));
+//             return;
+//             }
+//       MusECore::Xml xml(presetFp);
+//       MusECore::Pipeline* pipe = track->efxPipe();
+//       if (pipe) {
+//             if ((*pipe)[idx] != nullptr) {
+//                 xml.header();
+//                 xml.tag(0, "muse version=\"1.0\"");
+//                 (*pipe)[idx]->writeConfiguration(1, xml);
+//                 xml.tag(0, "/muse");
+//                 }
+//             else {
+//                 printf("no plugin!\n");
+//                 //fclose(presetFp);
+//                 if (popenFlag)
+//                       pclose(presetFp);
+//                 else
+//                       fclose(presetFp);
+//                 return;
+//                 }
+//             }
+//       else {
+//           printf("no pipe!\n");
+//           //fclose(presetFp);
+//           if (popenFlag)
+//                 pclose(presetFp);
+//           else
+//                 fclose(presetFp);
+//           return;
+//           }
+//       //fclose(presetFp);
+//       if (popenFlag)
+//             pclose(presetFp);
+//       else
+//             fclose(presetFp);
+//       }
+
 void EffectRack::savePreset(int idx)
       {
       if(!track)
         return;
-      //QString name = MusEGui::getSaveFileName(QString(""), plug_file_pattern, this,
       QString name = MusEGui::getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
-      
+
       if(name.isEmpty())
         return;
-        
-      //FILE* presetFp = fopen(name.ascii(),"w+");
-      bool popenFlag;
-      FILE* presetFp = MusEGui::fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
-      if (presetFp == nullptr) {
-            //fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n",
-            //   strerror(errno));
-            return;
-            }
-      MusECore::Xml xml(presetFp);
+
+      MusEFile::File f(name, QString(".pre"), this);
+      MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::WriteOnly, this, false, true);
+      if (res != MusEFile::File::NoError)
+      {
+        //fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n", f.errorString().toLocal8Bit().constData());
+        return;
+      }
+      MusECore::Xml xml(f.iodevice());
       MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
             if ((*pipe)[idx] != nullptr) {
@@ -681,28 +735,16 @@ void EffectRack::savePreset(int idx)
                 }
             else {
                 printf("no plugin!\n");
-                //fclose(presetFp);
-                if (popenFlag)
-                      pclose(presetFp);
-                else
-                      fclose(presetFp);
+                f.close();
                 return;
                 }
             }
       else {
           printf("no pipe!\n");
-          //fclose(presetFp);
-          if (popenFlag)
-                pclose(presetFp);
-          else
-                fclose(presetFp);
+          f.close();
           return;
           }
-      //fclose(presetFp);
-      if (popenFlag)
-            pclose(presetFp);
-      else
-            fclose(presetFp);
+      f.close();
       }
 
 // REMOVE Tim. tmp. Changed.
@@ -972,6 +1014,210 @@ QStringList EffectRack::mimeTypes() const
 //       }
 // }
 
+// REMOVE Tim. tmp. Changed.
+// void EffectRack::dropEvent(QDropEvent *event)
+// {
+//       if(!event || !track)
+//         return;
+//       const QListWidgetItem *i = itemAt( event->pos() );
+//       if (!i)
+//             return;
+//       const int idx = row(i);
+//
+//       const Qt::DropAction act = event->proposedAction();
+//       EffectRack *ser = nullptr;
+//       MusECore::AudioTrack *strack = nullptr;
+//       MusECore::Pipeline* spipe = nullptr;
+//       QListWidgetItem *sitem = nullptr;
+//       MusECore::PluginI *splug = nullptr;
+//       int sidx = -1;
+//
+//       QWidget *sw = static_cast<QWidget *>(event->source());
+//       if(sw)
+//       {
+//         if(strcmp(sw->metaObject()->className(), "MusEGui::EffectRack") == 0)
+//         {
+//           ser = (EffectRack*)sw;
+//           strack = ser->getTrack();
+//           if(strack)
+//           {
+//             spipe = strack->efxPipe();
+//             if(spipe)
+//             {
+//               sitem = ser->itemAt(ser->getDragPos());
+//               sidx = ser->row(sitem);
+//
+//               // Ignore if dragging from/to the same item.
+//               if(sidx == idx && ser == this)
+//                 return;
+//
+//               splug = (*spipe)[sidx];
+//             }
+//           }
+//         }
+//       }
+//
+//       MusECore::Pipeline* pipe = track->efxPipe();
+//       if (pipe)
+//       {
+//             // Does a plugin already exist in the target slot?
+//             if ((*pipe)[idx])
+//             {
+//               if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
+//                   QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
+//                 return;
+//             }
+//
+//             if(event->mimeData()->hasFormat(MUSE_MIME_TYPE))
+//             {
+// // REMOVE Tim. tmp. Changed.
+//               // QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
+//               const QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE);
+//               MusECore::Xml xml(mimeData.constData());
+//               if (MusEGlobal::debugMsg)
+//                   printf("received %d [%s]\n", mimeData.size(), mimeData.constData());
+//
+//               if(act == Qt::MoveAction)
+//               {
+//                 // If the source is available, it means the drag is from within this app.
+//                 if(splug)
+//                 {
+//                   // Manipulate the plugins directly instead of using the XML.
+//                   // The reason is that if we use the XML, then any open UIs will have to close
+//                   //  and re-open upon re-creation of the plugin from the XML.
+//                   // Bypassing the XML ensures a smooth move without closing any UIs,
+//                   //  except for DSSI and external LV2, which cannot update their window titles
+//                   //  and must be closed and re-opened to update their window titles.
+//                   // This operation will move controller data and midi mappings as well as the plugin itself.
+//                   MusEGlobal::song->applyOperation(MusECore::UndoOp(
+//                     MusECore::UndoOp::MoveRackEffectPlugin, strack, track, sidx, idx));
+//                 }
+//                 // The source is not available. It means the drag is from outside this app instance.
+//                 else
+//                 {
+//                   // TODO: Investigate how each app instance responds to this. Figure out how to do it.
+//                   //       The big problem is that to move a plugin from another instance,
+//                   //        we cannot use direct pointer methods (like above) because there will be no
+//                   //        event source - that is only given to us if the drag is from INSIDE the app.
+//                   //       Therefore we must use the dropped XML. And that means if we really want to
+//                   //        move the whole 'package' we would have to add controller lists and midi maps
+//                   //        to the dragged XML, which currently is only just the same as preset XML.
+//                   //       Although this can be done, controller lists introduce a problem: Time values.
+//                   //       The other app's sample rate would need to be included so conversions could be done.
+//                   //       And... Well, including controller lists and midi maps inside preset XML
+//                   //        doesn't sound desirable. We could do it exclusively for drag and drop, not presets,
+//                   //        but the problem is that the information must already be included in the XML
+//                   //        at drag time, and if it is to be draggable to the desktop, then we have
+//                   //        a preset XML file containing controllers and midi maps, sitting on the desktop.
+//                   //       It is not clear how dragging such a file back into the app should work.
+//                   //       Use the drop position as an offset for the start of the controller data?
+//                   //       Or just add the data verbosely?
+//                   //       Also, we must deal with erasing existing data. Use the global erase settings?
+//                   //       Another big problem is the undo system: When redo/undo is clicked in one instance,
+//                   //        the other instance needs to redo/undo as well. Both of them need to sync.
+//                   //fprintf(stderr, "EffectRack::dropEvent: Drag-move from outside app not supported yet.\n");
+//                   QMessageBox::information(this, tr("Drag and Drop Effect"),tr("Drag-move from outside app not supported yet"));
+//                 }
+//               }
+//               else if(act == Qt::CopyAction)
+//               {
+//                 // TODO TODO: Ask user if they want controllers and/or midi mapping copied.
+//
+//                 // A copy of the plugin's track automation controllers is provided in the XML.
+//                 // Prepare a new controller list to hold them.
+//                 MusECore::CtrlListList *cll = new MusECore::CtrlListList();
+//                 // A copy of any midi assignments to the plugin's track automation controllers is provided in the XML.
+//                 // Prepare a new mapping list to hold them.
+//                 MusECore::MidiAudioCtrlMap *macm = new MusECore::MidiAudioCtrlMap();
+//
+//                 // Read the plugin and any controllers and midi mappings. The plugin's idx is also set here.
+//                 MusECore::PluginI *newplug = initPlugin(xml, idx, cll, macm);
+//
+//                 // No plugin or no controllers found? Delete the new controller list.
+//                 if(!newplug || cll->empty())
+//                 {
+//                   // Be sure to delete all the allocated controller items.
+//                   cll->clearDelete();
+//                   delete cll;
+//                   cll = nullptr;
+//                 }
+//                 // No plugin or no midi mappings found? Delete the new mapping list.
+//                 if(!newplug || macm->empty())
+//                 {
+//                   delete macm;
+//                   macm = nullptr;
+//                 }
+//
+//                 // Initialize the controller ranges, names, modes etc. with info gathered from the plugin.
+//                 if(newplug && cll)
+//                 {
+// // REMOVE Tim. tmp. Changed.
+// //                   int j = newplug->parameters();
+// //                   for(int i = 0; i < j; i++)
+// //                   {
+// //                     int id = MusECore::genACnum(idx, i);
+// //
+// //                     // The new controller list should have the correct id numbers by now.
+// //                     MusECore::ciCtrlList icl = cll->find(id);
+// //                     if(icl == cll->end())
+// //                     {
+// //                       fprintf(stderr, "EffectRack::dropEvent: Error: Controller id not found:%d\n", id);
+// //                     }
+// //                     else
+// //                     {
+// //                       MusECore::CtrlList* cl = icl->second;
+// //                       float min, max;
+// //                       newplug->range(i, &min, &max);
+// //                       cl->setRange(min, max);
+// //                       cl->setName(QString(newplug->paramName(i)));
+// //                       cl->setValueType(newplug->ctrlValueType(i));
+// //                       cl->setMode(newplug->ctrlMode(i));
+// //                       cl->setCurVal(newplug->param(i));
+// //                       // Set the value units index.
+// //                       cl->setValueUnit(newplug->valueUnit(i));
+// //                     }
+// //                   }
+//
+//                   newplug->setupControllers(cll);
+//
+//                   MusEGlobal::song->applyOperation(MusECore::UndoOp(
+//                     MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx, cll, macm));
+//                 }
+//               }
+//               else
+//               {
+//                 fprintf(stderr, "EffectRack::dropEvent: Unsupported action type:%d\n", act);
+//               }
+//             }
+//             else if (event->mimeData()->hasUrls())
+//             {
+//               // Multiple urls not supported here. Grab the first one.
+//               const QString text = event->mimeData()->urls()[0].path();
+//
+//               if (text.endsWith(".pre", Qt::CaseInsensitive) ||
+//                   text.endsWith(".pre.gz", Qt::CaseInsensitive) ||
+//                   text.endsWith(".pre.bz2", Qt::CaseInsensitive))
+//               {
+//                   bool popenFlag;
+//                   FILE* fp = MusEGui::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
+//                   if (fp)
+//                   {
+//                       MusECore::Xml xml(fp);
+//                       MusECore::PluginI *newplug = initPlugin(xml, idx);
+//                       if(newplug)
+//                         MusEGlobal::song->applyOperation(MusECore::UndoOp(
+//                           MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx));
+//
+//                       if (popenFlag)
+//                             pclose(fp);
+//                       else
+//                             fclose(fp);
+//                   }
+//               }
+//             }
+//       }
+// }
+
 void EffectRack::dropEvent(QDropEvent *event)
 {
       if(!event || !track)
@@ -1027,8 +1273,6 @@ void EffectRack::dropEvent(QDropEvent *event)
 
             if(event->mimeData()->hasFormat(MUSE_MIME_TYPE))
             {
-// REMOVE Tim. tmp. Changed.
-              // QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE).constData();
               const QByteArray mimeData = event->mimeData()->data(MUSE_MIME_TYPE);
               MusECore::Xml xml(mimeData.constData());
               if (MusEGlobal::debugMsg)
@@ -1108,33 +1352,6 @@ void EffectRack::dropEvent(QDropEvent *event)
                 // Initialize the controller ranges, names, modes etc. with info gathered from the plugin.
                 if(newplug && cll)
                 {
-// REMOVE Tim. tmp. Changed.
-//                   int j = newplug->parameters();
-//                   for(int i = 0; i < j; i++)
-//                   {
-//                     int id = MusECore::genACnum(idx, i);
-//
-//                     // The new controller list should have the correct id numbers by now.
-//                     MusECore::ciCtrlList icl = cll->find(id);
-//                     if(icl == cll->end())
-//                     {
-//                       fprintf(stderr, "EffectRack::dropEvent: Error: Controller id not found:%d\n", id);
-//                     }
-//                     else
-//                     {
-//                       MusECore::CtrlList* cl = icl->second;
-//                       float min, max;
-//                       newplug->range(i, &min, &max);
-//                       cl->setRange(min, max);
-//                       cl->setName(QString(newplug->paramName(i)));
-//                       cl->setValueType(newplug->ctrlValueType(i));
-//                       cl->setMode(newplug->ctrlMode(i));
-//                       cl->setCurVal(newplug->param(i));
-//                       // Set the value units index.
-//                       cl->setValueUnit(newplug->valueUnit(i));
-//                     }
-//                   }
-
                   newplug->setupControllers(cll);
 
                   MusEGlobal::song->applyOperation(MusECore::UndoOp(
@@ -1155,20 +1372,16 @@ void EffectRack::dropEvent(QDropEvent *event)
                   text.endsWith(".pre.gz", Qt::CaseInsensitive) ||
                   text.endsWith(".pre.bz2", Qt::CaseInsensitive))
               {
-                  bool popenFlag;
-                  FILE* fp = MusEGui::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
-                  if (fp)
+                  MusEFile::File f(text, QString(".pre"), this);
+                  MusEFile::File::ErrorCode res = MusEGui::fileOpen(f, QIODevice::ReadOnly, this, false, false);
+                  if (res == MusEFile::File::NoError)
                   {
-                      MusECore::Xml xml(fp);
+                      MusECore::Xml xml(f.iodevice());
                       MusECore::PluginI *newplug = initPlugin(xml, idx);
                       if(newplug)
                         MusEGlobal::song->applyOperation(MusECore::UndoOp(
                           MusECore::UndoOp::ChangeRackEffectPlugin, track, newplug, idx));
-
-                      if (popenFlag)
-                            pclose(fp);
-                      else
-                            fclose(fp);
+                      f.close();
                   }
               }
             }

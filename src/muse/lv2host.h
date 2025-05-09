@@ -89,8 +89,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QWindow>
-// REMOVE Tim. tmp. Added.
-//#include <QMetaObject>
+#include <QLibrary>
 
 #include "type_defs.h"
 #include "globaldefs.h"
@@ -424,6 +423,9 @@ public:
     LV2Synth (const MusEPlugin::PluginScanInfoStruct&, const LilvPlugin*);
     virtual ~LV2Synth();
 
+    bool reference() override;
+    int release () override;
+
     SynthIF *createSIF ( SynthI * ) override;
     bool isSynth();
 
@@ -673,7 +675,8 @@ struct LV2PluginWrapper_State {
 #endif
     LV2_State_Map_Path mapPath;
     LilvInstance *handle;
-    void *uiDlHandle;
+    QLibrary uiQLib;
+    int uiReferences;
     const LV2UI_Descriptor *uiDesc;
     LV2UI_Handle uiInst;
     LV2PluginWrapper *inst;
@@ -824,7 +827,8 @@ public:
     LV2Synth *synth() const;
     virtual ~LV2PluginWrapper();
     virtual LADSPA_Handle instantiate ( PluginI * ) override;
-    virtual int incReferences ( int ref ) override;
+    bool reference() override;
+    int release () override;
     virtual void activate ( LADSPA_Handle handle ) override;
     virtual void deactivate ( LADSPA_Handle handle ) override;
     virtual void cleanup ( LADSPA_Handle handle ) override;

@@ -24,7 +24,8 @@
 #include <QMessageBox>
 
 #include <vector>
-#include <dlfcn.h>
+// REMOVE Tim. tmp. Removed.
+//#include <dlfcn.h>
 #include <stdio.h>
 
 #include <QDir>
@@ -65,7 +66,8 @@
 #define _USE_MIDI_TRACK_SINGLE_OUT_PORT_CHAN_
 
 // For debugging output: Uncomment the fprintf section.
-#define DEBUG_SYNTH(dev, format, args...)  //fprintf(dev, format, ##args);
+// REMOVE Tim. tmp. Enabled.
+#define DEBUG_SYNTH(dev, format, args...) fprintf(dev, format, ##args);
 
 namespace MusEGlobal {
   MusECore::SynthList synthis;  // array of available MusEGlobal::synthis
@@ -685,66 +687,128 @@ bool Synth::hasMappedMidiToAudioCtrls() const
 //   instantiate
 //---------------------------------------------------------
 
-void* MessSynth::instantiate(const QString& instanceName)
-      {
-      ++_references;
+// REMOVE Tim. tmp. Changed.
+// void* MessSynth::instantiate(const QString& instanceName)
+//       {
+//       ++_references;
+//
+//       MusEGlobal::doSetuid();
+//       QByteArray ba = _fileInfo.filePath().toLocal8Bit();
+//       const char* path = ba.constData();
+//
+//       // load Synti dll
+//       void* handle = dlopen(path, RTLD_NOW);
+//       if (handle == nullptr) {
+//             fprintf(stderr, "Synth::instantiate: dlopen(%s) failed: %s\n",
+//                path, dlerror());
+//             MusEGlobal::undoSetuid();
+//             return nullptr;
+//             }
+//
+//       MESS_Descriptor_Function msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
+//       if (!msynth) {
+//             const char *txt = dlerror();
+//             if (txt) {
+//                   fprintf(stderr,
+//                      "Unable to find msynth_descriptor() function in plugin "
+//                      "library file \"%s\": %s.\n"
+//                      "Are you sure this is a MESS plugin file?\n",
+//                      _fileInfo.filePath().toLocal8Bit().constData(), txt);
+//                   MusEGlobal::undoSetuid();
+//                   return nullptr;
+//                   }
+//             }
+//       _descr = msynth();
+//       if (_descr == nullptr) {
+//             fprintf(stderr, "Synth::instantiate: no MESS descr found\n");
+//             MusEGlobal::undoSetuid();
+//             return nullptr;
+//             }
+//       QByteArray configPathBA      = MusEGlobal::configPath.toUtf8();
+//       QByteArray cachePathBA       = MusEGlobal::cachePath.toUtf8();
+//       QByteArray museGlobalLibBA   = MusEGlobal::museGlobalLib.toUtf8();
+//       QByteArray museGlobalShareBA = MusEGlobal::museGlobalShare.toUtf8();
+//       QByteArray museUserBA        = MusEGlobal::museUser.toUtf8();
+//       QByteArray museProjectBA     = MusEGlobal::museProject.toUtf8();
+//       MessConfig mcfg(MusEGlobal::segmentSize,
+//                       MusEGlobal::sampleRate,
+//                       MusEGlobal::config.minMeter,
+//                       MusEGlobal::config.useDenormalBias,
+//                       MusEGlobal::denormalBias,
+//                       MusEGlobal::config.leftMouseButtonCanDecrease,
+//                       configPathBA.constData(),
+//                       cachePathBA.constData(),
+//                       museGlobalLibBA.constData(),
+//                       museGlobalShareBA.constData(),
+//                       museUserBA.constData(),
+//                       museProjectBA.constData());
+//       Mess* mess = _descr->instantiate((unsigned long long)MusEGlobal::muse->winId(),
+//                                        instanceName.toUtf8().constData(), &mcfg);
+//
+//       MusEGlobal::undoSetuid();
+//       return mess;
+//       }
 
-      MusEGlobal::doSetuid();
-      QByteArray ba = _fileInfo.filePath().toLocal8Bit();
-      const char* path = ba.constData();
-
-      // load Synti dll
-      void* handle = dlopen(path, RTLD_NOW);
-      if (handle == nullptr) {
-            fprintf(stderr, "Synth::instantiate: dlopen(%s) failed: %s\n",
-               path, dlerror());
-            MusEGlobal::undoSetuid();
-            return nullptr;
-            }
-            
-      MESS_Descriptor_Function msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
-      if (!msynth) {
-            const char *txt = dlerror();
-            if (txt) {
-                  fprintf(stderr,
-                     "Unable to find msynth_descriptor() function in plugin "
-                     "library file \"%s\": %s.\n"
-                     "Are you sure this is a MESS plugin file?\n",
-                     _fileInfo.filePath().toLocal8Bit().constData(), txt);
-                  MusEGlobal::undoSetuid();
-                  return nullptr;
-                  }
-            }
-      _descr = msynth();
-      if (_descr == nullptr) {
-            fprintf(stderr, "Synth::instantiate: no MESS descr found\n");
-            MusEGlobal::undoSetuid();
-            return nullptr;
-            }
-      QByteArray configPathBA      = MusEGlobal::configPath.toUtf8();
-      QByteArray cachePathBA       = MusEGlobal::cachePath.toUtf8();
-      QByteArray museGlobalLibBA   = MusEGlobal::museGlobalLib.toUtf8();
-      QByteArray museGlobalShareBA = MusEGlobal::museGlobalShare.toUtf8();
-      QByteArray museUserBA        = MusEGlobal::museUser.toUtf8();
-      QByteArray museProjectBA     = MusEGlobal::museProject.toUtf8();
-      MessConfig mcfg(MusEGlobal::segmentSize,
-                      MusEGlobal::sampleRate,
-                      MusEGlobal::config.minMeter,
-                      MusEGlobal::config.useDenormalBias,
-                      MusEGlobal::denormalBias,
-                      MusEGlobal::config.leftMouseButtonCanDecrease,
-                      configPathBA.constData(),
-                      cachePathBA.constData(),
-                      museGlobalLibBA.constData(),
-                      museGlobalShareBA.constData(),
-                      museUserBA.constData(),
-                      museProjectBA.constData());
-      Mess* mess = _descr->instantiate((unsigned long long)MusEGlobal::muse->winId(),
-                                       instanceName.toUtf8().constData(), &mcfg);
-      
-      MusEGlobal::undoSetuid();
-      return mess;
-      }
+// void* MessSynth::instantiate(const QString& instanceName)
+//       {
+//       ++_references;
+//
+//       MusEGlobal::doSetuid();
+//       QByteArray ba = _fileInfo.filePath().toLocal8Bit();
+//       const char* path = ba.constData();
+//
+//       // load Synti dll
+//       void* handle = dlopen(path, RTLD_NOW);
+//       if (handle == nullptr) {
+//             fprintf(stderr, "Synth::instantiate: dlopen(%s) failed: %s\n",
+//                path, dlerror());
+//             MusEGlobal::undoSetuid();
+//             return nullptr;
+//             }
+//
+//       MESS_Descriptor_Function msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
+//       if (!msynth) {
+//             const char *txt = dlerror();
+//             if (txt) {
+//                   fprintf(stderr,
+//                      "Unable to find msynth_descriptor() function in plugin "
+//                      "library file \"%s\": %s.\n"
+//                      "Are you sure this is a MESS plugin file?\n",
+//                      _fileInfo.filePath().toLocal8Bit().constData(), txt);
+//                   MusEGlobal::undoSetuid();
+//                   return nullptr;
+//                   }
+//             }
+//       _descr = msynth();
+//       if (_descr == nullptr) {
+//             fprintf(stderr, "Synth::instantiate: no MESS descr found\n");
+//             MusEGlobal::undoSetuid();
+//             return nullptr;
+//             }
+//       QByteArray configPathBA      = MusEGlobal::configPath.toUtf8();
+//       QByteArray cachePathBA       = MusEGlobal::cachePath.toUtf8();
+//       QByteArray museGlobalLibBA   = MusEGlobal::museGlobalLib.toUtf8();
+//       QByteArray museGlobalShareBA = MusEGlobal::museGlobalShare.toUtf8();
+//       QByteArray museUserBA        = MusEGlobal::museUser.toUtf8();
+//       QByteArray museProjectBA     = MusEGlobal::museProject.toUtf8();
+//       MessConfig mcfg(MusEGlobal::segmentSize,
+//                       MusEGlobal::sampleRate,
+//                       MusEGlobal::config.minMeter,
+//                       MusEGlobal::config.useDenormalBias,
+//                       MusEGlobal::denormalBias,
+//                       MusEGlobal::config.leftMouseButtonCanDecrease,
+//                       configPathBA.constData(),
+//                       cachePathBA.constData(),
+//                       museGlobalLibBA.constData(),
+//                       museGlobalShareBA.constData(),
+//                       museUserBA.constData(),
+//                       museProjectBA.constData());
+//       Mess* mess = _descr->instantiate((unsigned long long)MusEGlobal::muse->winId(),
+//                                        instanceName.toUtf8().constData(), &mcfg);
+//
+//       MusEGlobal::undoSetuid();
+//       return mess;
+//       }
 
 MessSynth::MessSynth(const MusEPlugin::PluginScanInfoStruct& info)
  : Synth(info), _descr(nullptr)
@@ -1103,13 +1167,40 @@ float SynthI::getPluginLatency(void* h) { return synthesizer ? synthesizer->getP
 //   init
 //---------------------------------------------------------
 
-bool MessSynthIF::init(Synth* s, SynthI* /*si*/)
-      {
 // REMOVE Tim. tmp. Changed.
-//       _mess = (Mess*)((MessSynth*)s)->instantiate(si->name());
-//       _mess = (Mess*)((MessSynth*)s)->instantiate(titlePrefix() + pluginName());
-//       _mess = (Mess*)((MessSynth*)s)->instantiate(si->displayName() + pluginName());
-      _mess = (Mess*)((MessSynth*)s)->instantiate(displayName());
+// bool MessSynthIF::init(Synth* s, SynthI* /*si*/)
+//       {
+// // REMOVE Tim. tmp. Changed.
+// //       _mess = (Mess*)((MessSynth*)s)->instantiate(si->name());
+// //       _mess = (Mess*)((MessSynth*)s)->instantiate(titlePrefix() + pluginName());
+// //       _mess = (Mess*)((MessSynth*)s)->instantiate(si->displayName() + pluginName());
+//       _mess = (Mess*)((MessSynth*)s)->instantiate(displayName());
+//
+//       return (_mess != nullptr);
+//       }
+
+bool MessSynthIF::init(MessSynth* s)
+      {
+      QByteArray configPathBA      = MusEGlobal::configPath.toUtf8();
+      QByteArray cachePathBA       = MusEGlobal::cachePath.toUtf8();
+      QByteArray museGlobalLibBA   = MusEGlobal::museGlobalLib.toUtf8();
+      QByteArray museGlobalShareBA = MusEGlobal::museGlobalShare.toUtf8();
+      QByteArray museUserBA        = MusEGlobal::museUser.toUtf8();
+      QByteArray museProjectBA     = MusEGlobal::museProject.toUtf8();
+      MessConfig mcfg(MusEGlobal::segmentSize,
+                      MusEGlobal::sampleRate,
+                      MusEGlobal::config.minMeter,
+                      MusEGlobal::config.useDenormalBias,
+                      MusEGlobal::denormalBias,
+                      MusEGlobal::config.leftMouseButtonCanDecrease,
+                      configPathBA.constData(),
+                      cachePathBA.constData(),
+                      museGlobalLibBA.constData(),
+                      museGlobalShareBA.constData(),
+                      museUserBA.constData(),
+                      museProjectBA.constData());
+      _mess = s->_descr->instantiate((unsigned long long)MusEGlobal::muse->winId(),
+                                       displayName().toUtf8().constData(), &mcfg);
 
       return (_mess != nullptr);
       }
@@ -1129,12 +1220,81 @@ int MessSynthIF::totalInChannels() const
       return 0;
       }
 
+bool MessSynth::reference()
+{
+    if (_references == 0)
+    {
+      _qlib.setFileName(filePath());
+      // Same as dlopen RTLD_NOW.
+      _qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+      if(!_qlib.load())
+      {
+        fprintf(stderr, "MessSynth::reference(): load (%s) failed: %s\n",
+          _qlib.fileName().toLocal8Bit().constData(), _qlib.errorString().toLocal8Bit().constData());
+        return false;
+      }
+
+      MESS_Descriptor_Function msynth = (MESS_Descriptor_Function)_qlib.resolve("mess_descriptor");
+      if(msynth)
+        _descr = msynth();
+    }
+
+    ++_references;
+
+    if(_descr == nullptr)
+    {
+      fprintf(stderr, "MessSynth::reference() Error: cannot find MESS synti %s\n", _label.toLocal8Bit().constData());
+      release();
+      return false;
+    }
+
+    return true;
+}
+
+int MessSynth::release()
+{
+  if (_references == 1)
+  {
+        // Attempt to unload the library.
+        // It will remain loaded if the plugin has shell plugins still in use or there are other references.
+        const bool ulres = _qlib.unload();
+        // Dummy usage stops unused warnings.
+        (void)ulres;
+        DEBUG_SYNTH(stderr, "MessSynth::release(): No more instances. Result of unloading library %s: %d\n",
+          _qlib.fileName().toLocal8Bit().constData(), ulres);
+
+        _descr = nullptr;
+        midiCtl2PortMap.clear();
+        port2MidiCtlMap.clear();
+  }
+  if(_references > 0)
+    --_references;
+  return _references;
+}
+
+// REMOVE Tim. tmp. Changed.
+// SynthIF* MessSynth::createSIF(SynthI* si)
+// {
+//     MessSynthIF* sif = new MessSynthIF(si);
+//     if (!sif->init(this, si)) {
+//         delete sif;
+//         sif = nullptr;
+//     }
+//     return sif;
+// }
+
 SynthIF* MessSynth::createSIF(SynthI* si)
 {
+    if(!reference())
+      return nullptr;
+
     MessSynthIF* sif = new MessSynthIF(si);
-    if (!sif->init(this, si)) {
-        delete sif;
-        sif = nullptr;
+    if(!sif->init(this))
+    {
+      fprintf(stderr, "DssiSynth::createSIF() Error: plugin:%s instantiate failed!\n", _label.toLocal8Bit().constData());
+      delete sif;
+      release();
+      return nullptr;
     }
     return sif;
 }
@@ -1486,7 +1646,7 @@ void SynthI::deactivate3()
         fprintf(stderr, "SynthI::deactivate3 decrementing synth instances...\n");
 
       if(synthesizer)
-         synthesizer->incReferences(-1);
+         synthesizer->release();
 
       }
 
@@ -1494,7 +1654,7 @@ void MessSynthIF::deactivate3()
       {
       if (_mess) {
             delete _mess;
-            _mess = 0;
+            _mess = nullptr;
             }
       }
 

@@ -28,6 +28,7 @@
 #include <QString>
 #include <QFileInfo>
 #include <QWidget>
+#include <QLibrary>
 
 #include "lib_audio_convert/audioconvert.h"
 #include "xml.h"
@@ -44,7 +45,7 @@ class AudioConverterPlugin {
    protected:
    friend class AudioConverterPluginI;
 
-      void* _handle;
+      QLibrary _qlib;
       int _references;
       int _instNo;
       QFileInfo fi;
@@ -87,7 +88,13 @@ class AudioConverterPlugin {
       QString fileName() const                     { return fi.fileName(); }
         
       int references() const                       { return _references; }
-      virtual int incReferences(int);
+      // Reference the library. Increases the reference count. Loads the library if required (ref 0 -> 1).
+      // Returns true on success.
+      virtual bool reference();
+      // Releases one reference and returns the resulting number of references.
+      // When the number of references reaches zero, the plugin library file, if any, tries to unload.
+      // The library will remain loaded until all usages reach zero references.
+      virtual int release();
       int instNo()                                 { return _instNo++;        }
 
       // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
@@ -178,7 +185,7 @@ class AudioConverterPluginI {
       double maxPitchShiftRatio() const
       { return _plugin ? _plugin->maxPitchShiftRatio() : 1.0; }
 
-      // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use.
+      // Mode is an AudioConverterSettings::ModeType selecting which of the settings to use. Returns true on error.
       bool initPluginInstance(AudioConverterPlugin* plug,
                               int systemSampleRate,
                               int channels,

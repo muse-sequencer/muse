@@ -80,9 +80,10 @@ struct Port;
 
 class DssiSynth : public Synth {
    protected:
-      void* handle;
+// REMOVE Tim. tmp. Removed.
+//       void* handle;
       const DSSI_Descriptor* dssi;
-      DSSI_Descriptor_Function df;
+//       DSSI_Descriptor_Function df;
       unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
@@ -97,7 +98,8 @@ class DssiSynth : public Synth {
 // REMOVE Tim. tmp. Removed.
 //       virtual Type synthType() const { return DSSI_SYNTH; }
 
-      virtual int incReferences(int);
+      bool reference();
+      int release();
       virtual SynthIF* createSIF(SynthI*);
       
       friend class DssiSynthIF;

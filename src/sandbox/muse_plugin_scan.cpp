@@ -22,11 +22,10 @@
 //=========================================================
 
 #include <QFile>
+#include <QLibrary>
 
 #include <cstdio>
 #include <unistd.h>
-
-#include <dlfcn.h>
 
 #include "config.h"
 //#include "globaldefs.h"
@@ -103,11 +102,15 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
   }
 
   // Open the library...
-  void* handle = dlopen(filename, RTLD_NOW);
-  if (handle == 0)
+  QLibrary qlib;
+  qlib.setFileName(QString(filename));
+  // Same as dlopen RTLD_NOW.
+  qlib.setLoadHints(QLibrary::ResolveAllSymbolsHint);
+  const bool loaded = qlib.load();
+  if(!loaded)
   {
-    std::fprintf(stderr, "muse_plugin_scan: dlopen(%s) failed: %s\n",
-      filename, dlerror());
+    std::fprintf(stderr, "muse_plugin_scan: Library loading (%s) failed: %s\n",
+      qlib.fileName().toLocal8Bit().constData(), qlib.errorString().toLocal8Bit().constData());
   }
   else
   {
@@ -118,7 +121,7 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
       DSSI_Descriptor_Function dssi = nullptr;
       if(types & MusEPlugin::PluginTypeDSSI)
       {
-        dssi = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
+        dssi = (DSSI_Descriptor_Function)qlib.resolve("dssi_descriptor");
         if(dssi)
         {
           DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a DSSI library\n");
@@ -148,7 +151,7 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
       MESS_Descriptor_Function msynth = nullptr;
       if(types & MusEPlugin::PluginTypeMESS)
       {
-        msynth = (MESS_Descriptor_Function)dlsym(handle, "mess_descriptor");
+        msynth = (MESS_Descriptor_Function)qlib.resolve("mess_descriptor");
         if(msynth)
         {
           DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a MESS library\n");
@@ -175,7 +178,7 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
       LADSPA_Descriptor_Function ladspa = nullptr;
       if(types & MusEPlugin::PluginTypeLADSPA)
       {
-        ladspa = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
+        ladspa = (LADSPA_Descriptor_Function)qlib.resolve("ladspa_descriptor");
         if(ladspa)
         {
           DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LADSPA library\n");
@@ -203,7 +206,7 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
       LinuxVST_Instance_Function getInstance = nullptr;
       if(types & MusEPlugin::PluginTypeLinuxVST)
       {
-        getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);
+        getInstance = (LinuxVST_Instance_Function)qlib.resolve(MusEPlugin::VST_NEW_PLUGIN_ENTRY_POINT);
         if(getInstance)
         {
           DEBUG_PLUGIN_SCAN(stderr, "loadPluginLib: Is a LinuxVST library: New entrypoint found:%s\n",
@@ -211,7 +214,7 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
         }
         else  
         {
-          getInstance = (LinuxVST_Instance_Function)dlsym(handle, MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
+          getInstance = (LinuxVST_Instance_Function)qlib.resolve(MusEPlugin::VST_OLD_PLUGIN_ENTRY_POINT);
           
           if(getInstance)
           {
@@ -275,8 +278,8 @@ static bool loadPluginLib(MusEPlugin::PluginTypes_t types,
     
   // Close the library for now. It will be opened 
   //  again when an instance is created.
-  if(handle)
-    dlclose(handle);
+  if(loaded)
+    qlib.unload();
   
 //#ifdef VST_NATIVE_SUPPORT
 //       sem_post(&_vstIdLock);
