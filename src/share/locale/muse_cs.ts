@@ -17218,49 +17218,49 @@ Klepnutí pravým tlačítkem myši na přídavné moduly pro přidání/odstran
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="9028"/>
+        <location filename="../../muse/plugin.cpp" line="5231"/>
         <source>File Buttons</source>
         <translation>Tlačítka pro soubor</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="9031"/>
+        <location filename="../../muse/plugin.cpp" line="5234"/>
         <source>Load Preset</source>
         <translation>Nahrát přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="9035"/>
+        <location filename="../../muse/plugin.cpp" line="5238"/>
         <source>Save Preset</source>
         <translation>Uložit přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="9045"/>
-        <location filename="../../muse/plugin.cpp" line="9049"/>
+        <location filename="../../muse/plugin.cpp" line="5248"/>
+        <location filename="../../muse/plugin.cpp" line="5252"/>
         <source>Deactivate plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="9053"/>
-        <location filename="../../muse/plugin.cpp" line="9057"/>
+        <location filename="../../muse/plugin.cpp" line="5256"/>
+        <location filename="../../muse/plugin.cpp" line="5260"/>
         <source>Bypass plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="9063"/>
+        <location filename="../../muse/plugin.cpp" line="5266"/>
         <source>Plugin settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="9484"/>
+        <location filename="../../muse/plugin.cpp" line="5681"/>
         <source>Output controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="10217"/>
+        <location filename="../../muse/plugin.cpp" line="6302"/>
         <source>MusE: Save preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="10261"/>
+        <location filename="../../muse/plugin.cpp" line="6342"/>
         <source>Plugin Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17269,12 +17269,12 @@ Klepnutí pravým tlačítkem myši na přídavné moduly pro přidání/odstran
         <translation type="vanished">Přeskočit přídavný modul pro tok signálu</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="10121"/>
+        <location filename="../../muse/plugin.cpp" line="6237"/>
         <source>MusE: load preset</source>
         <translation>MusE: Nahrát přednastavení</translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="10146"/>
+        <location filename="../../muse/plugin.cpp" line="6262"/>
         <source>Error reading preset. Might not be right type for this plugin</source>
         <translation>Chyba při čtení přednastavení. Nemusí to být správný typ pro tento přídavný modul</translation>
     </message>
@@ -20551,7 +20551,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3507"/>
+        <location filename="../../muse/plugin.cpp" line="2304"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

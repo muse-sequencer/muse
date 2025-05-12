@@ -116,13 +116,9 @@ struct VstNativeSynthOrPlugin
 
 class VstNativeSynth : public Synth {
    friend class VstNativePluginWrapper;
-// REMOVE Tim. tmp. Removed.
-//       void* _handle;
       int _vst_version;
       MusEPlugin::VstPluginFlags_t _flags;
       VstIntPtr _id;
-// REMOVE Tim. tmp. Removed.
-//       bool _isSynth;
       bool _usesTransportSource;
 
       unsigned long /*_portCount,*/ _inports, _outports, _controlInPorts; //, _controlOutPorts;
@@ -136,8 +132,6 @@ class VstNativeSynth : public Synth {
       VstNativeSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~VstNativeSynth() {}
 
-// REMOVE Tim. tmp. Removed.
-//       virtual Type synthType() const { return _isSynth ? VST_NATIVE_SYNTH : VST_NATIVE_EFFECT; }
       bool reference();
       int release();
       AEffect* instantiate(void *userData);
@@ -151,8 +145,6 @@ class VstNativeSynth : public Synth {
       int vstVersion()  const { return _vst_version; }
       bool hasChunks()  const { return _hasChunks; }
       const std::vector<unsigned long>* getRpIdx() { return &rpIdx; }
-// REMOVE Tim. tmp. Removed.
-//       bool isSynth() { return _isSynth; }
       bool usesTransportSource() const { return _usesTransportSource; }
 
       static VstIntPtr pluginHostCallback(VstNativeSynthOrPlugin *userData, VstInt32 opcode, VstInt32 index, VstIntPtr value, void* ptr, float opt);
@@ -160,15 +152,9 @@ class VstNativeSynth : public Synth {
       static void guiAutomationBegin(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
       static void guiAutomationEnd(VstNativeSynthOrPlugin *userData, unsigned long param_idx);
       static bool resizeEditor(MusEGui::VstNativeEditor *editor, int w, int h);
-// REMOVE Tim. tmp. Added.
       static void guiUpdateWindowTitle(VstNativeSynthOrPlugin *userData);
 
-// REMOVE Tim. tmp. Added.
       QString vstconfGetCustomData(AEffect *plugin);
-// REMOVE Tim. tmp. Removed.
-// // REMOVE Tim. tmp. Changed.
-//       void vstconfWrite(AEffect *plugin, const QString& name, int level, Xml &xml);
-//       //void vstconfWrite(AEffect *plugin, const QString& label, int level, Xml &xml);
 
       // Returns true if, among other data, there was indeed custom data.
       // This means there is, or likely is, parameter values stored with the data,
@@ -257,7 +243,6 @@ class VstNativeSynthIF : public SynthIF
       virtual bool hasNativeGui() const override;
       virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const override;
       virtual void setNativeGeometry(int, int, int, int) override;
-// REMOVE Tim. tmp. Added.
       void updateNativeGuiWindowTitle() override;
       virtual bool getData(MidiPort*, unsigned pos, int ports, unsigned nframes, float** buffer) override;
       virtual MidiPlayEvent receiveEvent() override;
@@ -268,8 +253,6 @@ class VstNativeSynthIF : public SynthIF
       virtual void deactivate3() override;
       virtual QString getPatchName(int chan, int prog, bool drum) const override;
       virtual void populatePatchPopup(MusEGui::PopupMenu* menu, int chan, bool drum) override;
-// REMOVE Tim. tmp. Removed.
-//       virtual void write(int level, Xml& xml) const override;
       virtual double getParameter(unsigned long idx) const override;
       virtual void setParameter(unsigned long idx, double value) override;
       virtual int getControllerInfo(int, QString*, int*, int*, int*, int*) override { return 0; }
@@ -278,16 +261,6 @@ class VstNativeSynthIF : public SynthIF
       // Methods for PluginIBase:
       //-------------------------
       unsigned long pluginID() const override;
-// REMOVE Tim. tmp. Removed.
-//       int id() const override;
-// REMOVE Tim. tmp. Removed.
-// // REMOVE Tim. tmp. Changed.
-//       QString pluginLabel() const override;
-//       QString pluginName() const override;
-//       QString lib() const override;
-//       QString uri() const override;
-//       QString dirPath() const override;
-//       QString fileName() const override;
       void enableController(unsigned long i, bool v = true) override;
       bool controllerEnabled(unsigned long i) const override;
       void enableAllControllers(bool v = true) override;
@@ -307,7 +280,6 @@ class VstNativeSynthIF : public SynthIF
       CtrlList::Mode ctrlMode(unsigned long i) const override;
       CtrlValueType ctrlOutValueType(unsigned long i) const override;
       CtrlList::Mode ctrlOutMode(unsigned long i) const override;
-// REMOVE Tim. tmp. Added.
       // Returns a list of strings containing any custom configurations provided by the plugin.
       std::vector<QString> getCustomData() const override;
       // Returns true if, among other data, there was indeed custom data.
@@ -331,8 +303,6 @@ public:
    std::vector<float *> inPorts;
    std::vector<float *> outPorts;
    std::vector<float *> inControlPorts;
-// REMOVE Tim. tmp. Removed.
-//    std::vector<float> inControlLastValues;
    MusEGui::VstNativeEditor* editor;
    VstNativeSynthOrPlugin userData;
    bool guiVisible;
@@ -382,14 +352,10 @@ private:
     VstNativeSynth *_synth;
     LADSPA_Descriptor _fakeLd;
     LADSPA_PortDescriptor *_fakePds;
-// REMOVE Tim. tmp. Removed.
-//     std::vector<float> inControlDefaults;
     std::vector<std::string> portNames;
 public:
     VstNativePluginWrapper (
       VstNativeSynth *s, MusEPlugin::PluginFeatures_t reqFeatures = MusEPlugin::PluginNoFeatures );
-// REMOVE Tim. tmp. Added.
-//     VstNativePluginWrapper ( VstNativeSynth *s, const MusEPlugin::PluginScanInfoStruct &info );
     VstNativeSynth *synth() {
         return _synth;
     }
@@ -414,12 +380,8 @@ public:
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
-// REMOVE Tim. tmp. Added.
     void updateNativeGuiWindowTitle(const PluginI *p) const;
-// REMOVE Tim. tmp. Added.
     virtual QString getCustomConfiguration(LADSPA_Handle handle);
-// REMOVE Tim. tmp. Removed.
-//     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     // Returns true if, among other data, there was indeed custom data.
     // This means there is, or likely is, parameter values stored with the data,
     //  meaning we should not try to manually restore parameters since the data

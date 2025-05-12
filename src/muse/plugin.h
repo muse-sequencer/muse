@@ -38,7 +38,6 @@
 #include <QRect>
 #include <QList>
 #include <QMetaObject>
-// REMOVE Tim. tmp. Added.
 #include <QLibrary>
 
 #include <ladspa.h>
@@ -47,11 +46,9 @@
 #include "ctrl.h"
 #include "controlfifo.h"
 #include "config.h"
-// REMOVE Tim. tmp. Added.
 #include "stringparam.h"
 #include "type_defs.h"
 #include "xml.h"
-// REMOVE Tim. tmp. Added. Moved from cpp file.
 #include "plugin_scan.h"
 
 #ifdef OSC_SUPPORT
@@ -86,11 +83,6 @@ class DoubleLabel;
 class DoubleText;
 }
 
-// REMOVE Tim. tmp. Removed.
-// namespace MusEPlugin {
-// class PluginScanInfoStruct;
-// }
-
 namespace MusECore {
 class AudioTrack;
 // class Xml;
@@ -98,7 +90,6 @@ class AudioTrack;
 class PluginI;
 struct SongChangedStruct_t;
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   PluginBase
 //---------------------------------------------------------
@@ -107,29 +98,9 @@ class PluginBase {
    protected:
       MusEPlugin::PluginType _pluginType;
       MusEPlugin::PluginClass_t _pluginClass;
-// REMOVE Tim. tmp. Added.
-   // public:
-   //    //==============================================
-   //    // These are original and translated strings
-   //    //  representing the plugin types and classes.
-   //    // The translated strings can be used for display.
-   //    // Do NOT use them for storage in song files.
-   //    // For that, use the original untranslated strings.
-   //    // NOTE: Please ensure synchronization between them
-   //    //  and the enumerations.
-   //    //==============================================
-   //    static const std::map<int, const char*> PluginTypeStrings;
-   //    static MusEPlugin::PluginType pluginStringToType(const char *s);
-   //    static QString pluginTypeToTranslatedString(const MusEPlugin::PluginType type);
-   //
-   //    static const std::map<int, const char*> PluginClassStrings;
-   //    static QString pluginClassToTranslatedString(const MusEPlugin::PluginClass_t c);
 
    protected:
       unsigned long _uniqueID;
-// REMOVE Tim. tmp. Removed.
-//       void* _handle;
-// REMOVE Tim. tmp. Added.
       QLibrary _qlib;
       int _references;
       QFileInfo _fileInfo;
@@ -182,8 +153,6 @@ class PluginBase {
       unsigned long id() const;
 
       int references() const;
-// REMOVE Tim. tmp. Changed.
-//       virtual int incReferences(int) = 0;
       // Reference the library. Increases the reference count. Loads the library if required (ref 0 -> 1).
       // Returns true on success.
       virtual bool reference() = 0;
@@ -215,30 +184,9 @@ class Plugin : public PluginBase {
    protected:
    friend class PluginI;
 
-//       void* _handle;
-//       int _references;
       int _instNo;
-//       QFileInfo _fileInfo;
-//       // Universal resource identifier, for plugins that use it (LV2).
-//       // If this exists, it should be used INSTEAD of file info, for comparison etc.
-//       // Never rely on the file info if a uri exists.
-//       QString _uri;
       LADSPA_Descriptor_Function ladspa;
       const LADSPA_Descriptor *plugin;
-//       unsigned long _uniqueID;
-//       QString _label;
-//       QString _name;
-//       QString _maker;
-//       QString _copyright;
-
-//       bool _isDssiSynth;
-//       bool _isDssi;
-//       bool _isLV2Synth;
-//       bool _isLV2Plugin;
-//       // Hack: Special flag required.
-//       bool _isDssiVst;
-//       bool _isVstNativeSynth;
-//       bool _isVstNativePlugin;
 
       #ifdef DSSI_SUPPORT
       const DSSI_Descriptor* dssi_descr;
@@ -251,45 +199,17 @@ class Plugin : public PluginBase {
       unsigned long _controlOutPorts;
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
 
-//       bool _usesTimePosition;
-//       unsigned long _freewheelPortIndex;
-//       unsigned long _latencyPortIndex;
-//       unsigned long _enableOrBypassPortIndex;
-//       MusEPlugin::PluginLatencyReportingType _pluginLatencyReportingType;
-//       MusEPlugin::PluginBypassType _pluginBypassType;
-//       MusEPlugin::PluginFreewheelType _pluginFreewheelType;
-
-//       MusEPlugin::PluginFeatures_t _requiredFeatures;
-
    public:
       Plugin();
       Plugin(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Plugin();
-//      virtual MusEPlugin::PluginFeatures_t requiredFeatures() const;
-//       QString uri() const;
-//       virtual QString label() const;
-//       QString name() const;
-//       unsigned long id() const;
-//       QString maker() const;
-//       QString copyright() const;
+
       QString lib(bool complete = true) const;
       QString dirPath(bool complete = true) const;
-//       QString filePath() const;
-//       QString fileName() const;
         
-//       int references() const;
       virtual bool reference() override;
       virtual int release() override;
       int instNo();
-
-// REMOVE Tim. tmp. Removed.
-//       inline bool isDssiPlugin() const { return _isDssi; }
-//       inline bool isDssiSynth() const  { return _isDssiSynth; }
-//       inline bool isDssiVst() const  { return _isDssiVst; }
-//       inline bool isLV2Plugin() const { return _isLV2Plugin; } //inline it to use in RT audio thread
-//       inline bool isLV2Synth() const { return _isLV2Synth; }
-//       inline bool isVstNativePlugin() const { return _isVstNativePlugin; } //inline it to use in RT audio thread
-//       inline bool isVstNativeSynth() const { return _isVstNativeSynth; }
 
       virtual LADSPA_Handle instantiate(PluginI *);
       virtual void activate(LADSPA_Handle handle);
@@ -325,18 +245,6 @@ class Plugin : public PluginBase {
 
       virtual const char* portName(unsigned long i) const;
 
-//       bool usesTimePosition() const;
-//       unsigned long freewheelPortIndex() const;
-//       unsigned long latencyPortIndex() const;
-//       unsigned long enableOrBypassPortIndex() const;
-//       MusEPlugin::PluginLatencyReportingType pluginLatencyReportingType() const;
-//       MusEPlugin::PluginBypassType pluginBypassType() const;
-//       MusEPlugin::PluginFreewheelType pluginFreewheelType() const;
-
-//       // Returns the plugin latency, if it has such as function.
-//       // NOTE: If the plugin has a latency controller out, use that instead.
-//       virtual float getPluginLatency(void* /*handle*/);
-
       unsigned long inports() const;
       unsigned long outports() const;
       unsigned long controlInPorts() const;
@@ -371,9 +279,6 @@ class PluginList : public std::list<Plugin *> {
    public:
       void add(const MusEPlugin::PluginScanInfoStruct& scan_info);
       // Each argument optional, can be empty.
-// REMOVE Tim. tmp. Changed.
-//       // If uri is not empty, the search is based solely on it, the other arguments are ignored.
-//       Plugin* find(const QString& file, const QString& uri, const QString& label) const;
       // If uri is not empty, file and label are ignored.
       Plugin* find(
         MusEPlugin::PluginTypes_t types, const QString& file,
@@ -400,11 +305,6 @@ struct Port {
         float val;
         double dval;
         };
-// REMOVE Tim. tmp. Removed.
-      // union {
-        // float tmpVal; // TODO Try once again and for all to remove this, was it really required?
-        //double dtmpVal; // Not used, should not be required.
-        // };
       
       bool enCtrl;  // Enable controller stream.
       CtrlInterpolate interp;
@@ -451,16 +351,8 @@ typedef enum {
 } PropType;
 
 
-// REMOVE Tim. tmp. Added.
 struct PluginControlConfig
 {
-//   enum WriteOption
-//   {
-//     WriteSongVer4 = 0,
-//     WriteSongVerPre4MissingEffect,
-//     WriteSongVerPre4MissingSynth
-//   };
-
   // Valid members. Can be OR'd together.
   enum ValidMember
   {
@@ -478,7 +370,6 @@ struct PluginControlConfig
 
   ValidMembers _validMembers;
 
-//   // Can be -1. The 'ctl' songfile xml tag attribute was added version 4.0. It defaults to -1 for older files.
   // Must be >= 0, because the container is a map. The 'ctl' songfile xml tag attribute was added version 4.0.
   int _ctlnum;
   QString _name;
@@ -495,23 +386,15 @@ struct PluginControlConfig
     MusECore::CtrlValueType valueType, CtrlList::Mode mode, int valueUnit,
     ValidMembers validMembers);
 
-//   // Returns true on error.
-//   // If no 'ctl' attribute is found (song file versions < 4), give it defaultCtlNum if not -1.
-//   // In that case we know that when the song was saved, ALL controls were stored and they were ALL
-//   //  stored in order starting at control 0. Hand-constructed out-of-order entries are not supported.
-//   bool read(Xml& xml, int defaultCtlNum = -1);
-
   // Returns true on error.
   // If fileVerMaj (and fileVerMin) are valid, it means while loading there was no plugin found
   //  and the file version is set to the original version. We need that info for the saving code
   //  to determine what exactly to save, for persistence.
   // It is only when the plugin is finally found that the plugin configuration structure's
   //  version maj and min are reset to -1.
-//   bool write(int level, Xml& xml, WriteOption option = WriteSongVer4) const;
   bool write(int level, Xml& xml) const;
 };
 
-// REMOVE Tim. tmp. Added.
 // Plugin control (parameter) properties.
 class PluginControlList : public std::map<int, PluginControlConfig>
 {
@@ -527,7 +410,6 @@ class PluginControlList : public std::map<int, PluginControlConfig>
     //  to determine what exactly to save, for persistence.
     // It is only when the plugin is finally found that the plugin configuration structure's
     //  version maj and min are reset to -1.
-//     bool write(int level, Xml& xml, PluginControlConfig::WriteOption = PluginControlConfig::WriteSongVer4) const;
     bool write(int level, Xml& xml) const;
 };
 typedef PluginControlList::iterator iPluginControlList;
@@ -535,7 +417,6 @@ typedef PluginControlList::const_iterator ciPluginControlList;
 typedef std::pair<PluginControlList::iterator, bool> PluginControlListInsertResult;
 
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   PluginConfiguration
 //---------------------------------------------------------
@@ -544,7 +425,6 @@ class PluginConfiguration
 {
 public:
   MusEPlugin::PluginType _pluginType;
-  //MusEPlugin::PluginClass_t _pluginClass;
 
   // The major and minor version of the song file that a plugin was created in - even if
   //  that file has been re-saved and now has a later version.
@@ -569,7 +449,6 @@ public:
   PluginQuirks _quirks;
 
   // List of initial floating point parameters, for plugins which use them.
-//   std::vector<ControlConfig> _initParams;
   PluginControlList _initParams;
 
   // Custom params in xml song file.
@@ -587,31 +466,12 @@ public:
   PluginConfiguration();
   virtual ~PluginConfiguration();
 
-  // // Returns true on error.
-  // // In case no 'ctl' tag was found, give it defaultCtlNum if not -1.
-  // // Tag 'ctl' was added in song file version 4.
-  // // Class Plugin did not have the tag, and class Synth had even less info, storing only
-  // //  the 'param=value' tag. That has now been changed to a full 'control' tag.
-  // // Previously we looked up the control by name only.
-  // // This would be flawed if two or more control names were the same, like blank or 'unused' etc.
-  // //  which HAS been observed in some plugins.
-  // // So we assume, as has always been the case, that when the app saved a song, ALL controls were
-  // //  stored and they were ALL stored in order starting at control 0.
-  // // However it is possible that a song file could have been hand-constructed and the controls were
-  // //  stored out of order, which would still work, but it should have been known that the controls
-  // //  were to be stored in order.
-  // bool loadControl(Xml& xml, int defaultCtlNum = -1);
-  // // Returns true on error.
-  // bool writeControls(int level, Xml& xml) const;
-
   void writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName) const;
-//   void writeProperties(int level, Xml& xml, bool isCopy, bool isFakeName, const Track *track = nullptr) const;
 
   // Handles tag values and attributes. Returns true if the tag or attribute was handled, false if not.
   bool readProperties(Xml&, const Xml::Token& token);
 };
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   MissingPluginStruct
 //   Structure and list to hold plugins not found during loading
@@ -620,7 +480,6 @@ public:
 struct MissingPluginStruct
 {
   MusEPlugin::PluginType _type;
-  //QString _class;
   QString _file;
   QString _uri;
   QString _label;
@@ -654,7 +513,6 @@ class MissingPluginList : public std::vector<MissingPluginStruct>
 
 class PluginIBase
 {
-// REMOVE Tim. tmp. Added.
    public:
       // Options when calling configure(). Can be OR'd together.
       // Determines what exactly to configure from the configuration structure.
@@ -671,7 +529,6 @@ class PluginIBase
         ConfigParams = 0x10,
         ConfigGui = 0x20,
         ConfigNativeGui = 0x40,
-//         ConfigDeferNativeGui = 0x80,
         ConfigGeometry = 0x100,
         ConfigNativeGeometry = 0x200,
         ConfigPresetOnly = ConfigCustomData | ConfigParams,
@@ -689,7 +546,6 @@ class PluginIBase
       PluginQuirks _quirks;
       // True if activate has been called. False by default or if deactivate has been called.
       bool _curActiveState;
-// REMOVE Tim. tmp. Added.
       bool _showGuiPending;
       bool _showNativeGuiPending;
 
@@ -710,7 +566,6 @@ class PluginIBase
       virtual void setOn(bool val) = 0;
       virtual unsigned long pluginID() const = 0;
       virtual int id() const = 0;
-// REMOVE Tim. tmp. Added.
       virtual QString name() const = 0;
       // For synth tracks:
       // Returns a name suitable for display like "1:Track 5" where the number is the track's index in the track list.
@@ -734,12 +589,8 @@ class PluginIBase
       virtual void enableAllControllers(bool v = true) = 0;
       virtual void updateControllers() = 0;
 
-// REMOVE Tim. tmp. Added.
-      // virtual PluginConfiguration getConfiguration() const = 0;
       // If isCopy is true, writes additional info including automation controllers and midi assignments.
       virtual void writeConfiguration(int level, Xml& xml, bool isCopy = false) = 0;
-// REMOVE Tim. tmp. Changed.
-//      virtual bool readConfiguration(Xml& xml, bool readPreset=false) = 0;
       // If reading a preset, set readPreset true. Then it will read some things but not others. Channels not required.
       // If not reading a preset (reading and creating a plugin), the number of channels to create is required.
       virtual bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0) = 0;
@@ -773,7 +624,6 @@ class PluginIBase
 
       const PluginQuirks& cquirks() const;
       PluginQuirks& quirks();
-// REMOVE Tim. tmp. Added.
       void setQuirks(const PluginQuirks&);
 
       // Returns true if, among other data, there was indeed custom data.
@@ -800,11 +650,6 @@ class PluginIBase
       // Can be -1 meaning no units.
       virtual int valueUnit ( unsigned long i) const;
       virtual int valueUnitOut ( unsigned long i) const;
-// REMOVE Tim. tmp. Added.
-      // Sets up a list of existing controllers based on info gathered from either the plugin
-      //  or the plugin's persistent info if the plugin is missing.
-      // Sets various controller properties such as names, ranges, value types, and value units.
-//       virtual bool setupControllers(CtrlListList *cll) const = 0;
 
       QString dssi_ui_filename() const;
 
@@ -825,11 +670,9 @@ class PluginIBase
       // Returns the saved gui geometry.
       virtual void savedGeometry(int *x, int *y, int *w, int *h) const;
 
-// REMOVE Tim. tmp. Added.
       virtual void updateNativeGuiWindowTitle();
       virtual void showNativeGui();
       virtual void showNativeGui(bool);
-// REMOVE Tim. tmp. Added.
       virtual void showGuiPending(bool);
       virtual bool isShowGuiPending() const;
       // Sets a flag that defers opening the native gui until a later time.
@@ -838,7 +681,6 @@ class PluginIBase
       //  it can open a UI.
       virtual void showNativeGuiPending(bool);
       virtual bool isShowNativeGuiPending() const;
-// REMOVE Tim. tmp. Added.
       virtual void closeNativeGui();
       // Informs the plugin that we are about to change the UI title bar text.
       // Some UIs may need to close because their title bar text is not alterable after creation.
@@ -873,8 +715,6 @@ class PluginI : public PluginIBase {
     friend class VstNativePluginWrapper;
 #endif
       Plugin* _plugin;
-// REMOVE Tim. tmp. Removed.
-      // int channel;
       int instances;
       AudioTrack* _track;
       int _id;
@@ -892,33 +732,25 @@ class PluginI : public PluginIBase {
       
       bool _active;
       bool _on;
-// REMOVE Tim. tmp. Removed.
-//      bool initControlValues;
       QString _name;
-//      QString _label;
-// REMOVE Tim. tmp. Added.
       // Internal flag. If no name was found, a fake name based on label, which is not ideal, will be used.
       // This flag indicates a fake name was chosen. It is used when saving XML to leave out the fake name.
       // NOTE: If we ever add a setName() function to allow the user to change the plugin name,
       //        this should be reset to false upon setting a name.
       bool _isFakeName;
 
-// REMOVE Tim. tmp. Added.
       // Holds initial controller values, parameters, sysex, custom data etc. for plugins which use them.
       PluginConfiguration _initConfig;
 
       #ifdef OSC_SUPPORT
       OscEffectIF _oscif;
       #endif
-// REMOVE Tim. tmp. Removed.
-//       bool _showNativeGuiPending;
 
       void init();
 
    protected:
       void activate();
       void deactivate();
-// REMOVE Tim. tmp. Added.
       // Releases all references to the plugin that this pluginI is holding, one for each of the 'instances'.
       // When the plugin's number of references reaches zero, the plugin library file, if any, tries to unload.
       // The library will remain loaded until all usages reach zero references.
@@ -928,7 +760,6 @@ class PluginI : public PluginIBase {
       PluginI();
       virtual ~PluginI();
 
-// REMOVE Tim. tmp. Added.
       // Returns nullptr if failure.
       static PluginI* createPluginI(const PluginConfiguration &config, int channels, ConfigureOptions_t opts);
 
@@ -954,7 +785,6 @@ class PluginI : public PluginIBase {
       // This version takes a given Plugin to initialize this PluginI. The Plugin can be null.
       // A desired plugin name can be supplied. Otherwise it picks one.
       bool initPluginInstance(Plugin*, int channels, const QString& name = QString());
-// REMOVE Tim. tmp. Added.
       // This version uses the built-in initial configuration member to both find and initialize this PluginI.
       // The initial configuration member must already be filled.
       // A desired plugin name can be supplied. Otherwise it picks one.
@@ -972,7 +802,6 @@ class PluginI : public PluginIBase {
 
       QString pluginLabel() const;
       QString name() const;
-// REMOVE Tim. tmp. Added.
       QString displayName() const;
       QString pluginName() const;
       QString lib() const;
@@ -988,7 +817,6 @@ class PluginI : public PluginIBase {
       int oscUpdate();
       #endif
 
-// REMOVE Tim. tmp. Added.
       // Returns the plugin's current initial configuration.
       PluginConfiguration &initialConfiguration();
       // Returns the plugin's current initial configuration. Constant version.
@@ -1012,39 +840,22 @@ class PluginI : public PluginIBase {
       // Note this does NOT include the controllers or midi assignments members. They should
       //  be obtained separately by the caller.
       PluginConfiguration getConfiguration() const;
-//       // Returns a plugin configuration structure filled with the current state of the plugin.
-//       // If addControllers is true, includes a list of pointers to existing relevant audio controllers.
-//       // If addMidiAssigns is true, includes a list of midi assignments to relevant audio controllers.
-//       // There are some situations where they might be unwanted here and perhaps handled separately.
-//       PluginConfiguration getConfiguration(bool addControllers = false, bool addMidiAssigns = false) const;
       // If isCopy is true, writes additional info including automation controllers and midi assignments.
       void writeConfiguration(int level, Xml& xml, bool isCopy = false);
-// REMOVE Tim. tmp. Changed.
-//       bool readConfiguration(Xml& xml, bool readPreset=false);
       bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0);
-// REMOVE Tim. tmp. Removed. Moved into PluginConfiguration.
-//       bool loadControl(Xml& xml);
       bool setControl(const QString& s, double val);
       void showGui();
       void showGui(bool);
-// REMOVE Tim. tmp. Added.
-//       void updateGuiWindowTitle() const;
-// REMOVE Tim. tmp. Changed.
-//       bool isDssiPlugin() const;
-//       bool isLV2Plugin() const;
-//       bool isVstNativePlugin() const;
       MusEPlugin::PluginType pluginType() const;
       MusEPlugin::PluginClass_t pluginClass() const;
       void showNativeGui();
       void showNativeGui(bool);
       bool nativeGuiVisible() const;
-// REMOVE Tim. tmp. Added.
       // Some UIs have a close function as well as show and hide.
       void closeNativeGui();
       // Informs the plugin that we are about to change the UI title bar text.
       // Some UIs may need to close because their title bar text is not alterable after creation.
       void nativeGuiTitleAboutToChange();
-// REMOVE Tim. tmp. Added.
       void updateNativeGuiWindowTitle();
       void guiHeartBeat();
 
@@ -1094,7 +905,6 @@ class PluginI : public PluginIBase {
       int valueUnit ( unsigned long i) const;
       int valueUnitOut ( unsigned long i) const;
 
-// REMOVE Tim. tmp. Added.
       // Sets up a list of existing controllers based on info gathered from either the plugin
       //  or the plugin's persistent info if the plugin is missing.
       // Sets various controller properties such as names, ranges, value types, and value units.
@@ -1125,10 +935,6 @@ class Pipeline : public std::vector<PluginI*> {
       QString name(int idx) const;
       QString uri(int idx) const;
       void showGui(int, bool);
-// REMOVE Tim. tmp. Changed.
-//       bool isDssiPlugin(int) const;
-//       bool isLV2Plugin(int idx) const;
-//       bool isVstNativePlugin(int idx) const;
       MusEPlugin::PluginType pluginType(int idx) const;
       MusEPlugin::PluginClass_t pluginClass(int idx) const;
       bool hasNativeGui(int idx) const;
@@ -1148,7 +954,6 @@ class Pipeline : public std::vector<PluginI*> {
       void enableController(int track_ctrl_id, bool en);
       bool controllerEnabled(int track_ctrl_id);
       float latency() const;
-// REMOVE Tim. tmp. Added.
       // Returns the first plugin instance with the given name found in the rack.
       PluginI* findPlugin(const QString &);
       // Returns the first plugin instance with the given name found in the rack. Const version.
@@ -1238,8 +1043,6 @@ class PluginGui : public QMainWindow {
       QScrollArea* view;
 
       QMetaObject::Connection _configChangedMetaConn;
-// REMOVE Tim. tmp. Added.
-      // QMetaObject::Connection _songChangedMetaConn;
 
       void updateControls();
       void getPluginConvertedValues(LADSPA_PortRangeHint range,
@@ -1277,8 +1080,6 @@ class PluginGui : public QMainWindow {
    public slots:
       void heartBeat();
       void configChanged();
-// REMOVE Tim. tmp. Added.
-      // void songChanged(MusECore::SongChangedStruct_t);
 
    public:
       PluginGui(MusECore::PluginIBase*);
@@ -1287,7 +1088,6 @@ class PluginGui : public QMainWindow {
       void setActive(bool);
       void setOn(bool);
       void updateValues();
-// REMOVE Tim. tmp. Added.
       void updateWindowTitle(const QString&);
       };
 

@@ -69,55 +69,12 @@ class CtrlListList;
 
 class Synth : public PluginBase {
    protected:
-// REMOVE Tim. tmp. Removed.
-//       QFileInfo _fileInfo;
-//       // Universal resource identifier, for plugins that use it (LV2).
-//       // If this exists, it should be used INSTEAD of file info, for comparison etc.
-//       // Never rely on the file info if a uri exists.
-//       QString _uri;
-//       int _references;
-//       QString _name;
-//       QString _description;
-//       QString _maker;
-//       QString _version;
-//       MusEPlugin::PluginFeatures_t _requiredFeatures;
-
-//       unsigned long _freewheelPortIndex;
-//       unsigned long _latencyPortIndex;
-//       unsigned long _enableOrBypassPortIndex;
-//       MusEPlugin::PluginFreewheelType _pluginFreewheelType;
-//       MusEPlugin::PluginLatencyReportingType _pluginLatencyReportingType;
-//       MusEPlugin::PluginBypassType _pluginBypassType;
-
       MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to audio port numbers.
       MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps audio port numbers to midi controller numbers.
 
    public:
-// REMOVE Tim. tmp. Removed.
-//       enum Type {
-//        METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH,
-//        VST_SYNTH, VST_NATIVE_SYNTH, VST_NATIVE_EFFECT, LV2_SYNTH, LV2_EFFECT, SYNTH_TYPE_END };
-
       Synth(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~Synth();
-
-// REMOVE Tim. tmp. Removed.
-//       virtual Type synthType() const = 0;
-
-//       inline virtual MusEPlugin::PluginFeatures_t requiredFeatures() const { return _requiredFeatures; }
-//       inline int references() const                            { return _references; }
-//       virtual int incReferences(int val) override;
-//       inline QString uri() const                              { return _uri; }
-//       inline QString completeBaseName()                       { return _fileInfo.completeBaseName(); } // ddskrjo
-//       inline QString baseName()                               { return _fileInfo.baseName(); } // ddskrjo
-//       inline QString name() const                             { return _name; }
-//       inline QString absolutePath() const                     { return _fileInfo.absolutePath(); }
-//       inline QString path() const                             { return _fileInfo.path(); }
-//       inline QString filePath() const                         { return _fileInfo.filePath(); }
-//       inline QString fileName() const                         { return _fileInfo.fileName(); }
-//       inline QString description() const                      { return _description; }
-//       inline QString version() const                          { return _version; }
-//       inline QString maker() const                            { return _maker; }
 
       // Returns true if the midi controller number is mapped to an audio controller,
       //  and returns the audio controller number in audioCtrl (if valid). Returns false if not mapped.
@@ -127,16 +84,6 @@ class Synth : public PluginBase {
       bool audioToMidiCtrlMapped(unsigned long int audioCtrl, unsigned long int* midiCtrl) const;
       // Returns true if there are any mapped midi to audio controllers.
       bool hasMappedMidiToAudioCtrls() const;
-
-//       unsigned long freewheelPortIndex() const;
-//       unsigned long latencyPortIndex() const;
-//       unsigned long enableOrBypassPortIndex() const;
-//       MusEPlugin::PluginLatencyReportingType pluginLatencyReportingType() const;
-//       MusEPlugin::PluginBypassType pluginBypassType() const;
-//       MusEPlugin::PluginFreewheelType pluginFreewheelType() const;
-//       // Returns the plugin latency, if it has such as function.
-//       // NOTE: If the plugin has a latency controller out, use that instead.
-//       virtual float getPluginLatency(void* /*handle*/);
 
       virtual SynthIF* createSIF(SynthI*) = 0;
       };
@@ -152,14 +99,9 @@ class MessSynth : public Synth {
       MessSynth(const MusEPlugin::PluginScanInfoStruct&);
       virtual ~MessSynth() {}
 
-// REMOVE Tim. tmp. Added.
       friend class MessSynthIF;
 
-// REMOVE Tim. tmp. Removed.
-//       inline virtual Type synthType() const { return MESS_SYNTH; }
-//       virtual void* instantiate(const QString&);
       SynthIF* createSIF(SynthI*);
-// REMOVE Tim. tmp. Added.
       bool reference();
       int release();
       };
@@ -179,11 +121,6 @@ class SynthIF : public PluginIBase {
    protected:
       SynthI* synti;
 
-// REMOVE Tim. tmp. Added.
-//       // Sets up a list of existing controllers based on info gathered from either the plugin
-//       //  or the plugin's persistent info if the plugin is missing.
-//       // Sets various controller properties such as names, ranges, value types, and value units.
-//       bool setupControllers(CtrlListList *cl) const;
       // Sets up an existing controller based on info gathered from either the plugin
       //  or the plugin's persistent info if the plugin is missing.
       // Sets various controller properties such as names, ranges, value types, and value units.
@@ -214,8 +151,6 @@ class SynthIF : public PluginIBase {
       virtual void deactivate3() = 0;
       virtual QString getPatchName(int, int, bool) const = 0;
       virtual void populatePatchPopup(MusEGui::PopupMenu*, int /*channel*/, bool /*drum*/) = 0;
-// REMOVE Tim. tmp. Changed.
-//       virtual void write(int level, Xml& xml) const = 0;
       virtual void write(int level, Xml& xml) const;
       virtual double getParameter(unsigned long idx) const = 0;
       virtual void setParameter(unsigned long idx, double value) = 0;
@@ -240,13 +175,10 @@ class SynthIF : public PluginIBase {
       virtual void setOn(bool val);
       virtual unsigned long pluginID() const;
       virtual int id() const;
-// REMOVE Tim. tmp. Added.
       // Here the name is the track name.
       virtual QString name() const;
       virtual QString displayName() const;
       // The short formal plugin name.
-// REMOVE Tim. tmp. Added.
-//       // NOTE: Currently the same as pluginName().
       virtual QString pluginLabel() const;
       // The full formal plugin name.
       virtual QString pluginName() const;
@@ -265,10 +197,7 @@ class SynthIF : public PluginIBase {
 
       // If isCopy is true, writes additional info including automation controllers and midi assignments.
       virtual void writeConfiguration(int level, Xml& xml, bool isCopy = false);
-// REMOVE Tim. tmp. Changed.
-//      virtual bool readConfiguration(Xml& xml, bool readPreset=false);
       virtual bool readConfiguration(Xml& xml, bool readPreset=false, int channels=0);
-// REMOVE Tim. tmp. Added.
       // Returns a list of strings containing any custom configurations provided by the plugin.
       virtual std::vector<QString> getCustomData() const;
 
@@ -302,47 +231,6 @@ class SynthIF : public PluginIBase {
       };
 
 //---------------------------------------------------------
-//   SynthConfiguration
-//---------------------------------------------------------
-
-// REMOVE Tim. tmp. Changed.
-// struct SynthConfiguration
-// {
-//   Synth::Type _type;
-//   QString _class;
-//   QString _uri;
-//   QString _label;
-//   QRect _geometry;
-//   QRect _nativeGeometry;
-//   bool _guiVisible;
-//   bool _nativeGuiVisible;
-//
-//   // List of initial floating point parameters, for synths which use them.
-//   // Used once upon song reload, then discarded.
-//   std::vector<double> initParams;
-//   //custom params in xml song file , synth tag, that will be passed to new SynthIF:setCustomData(Xml &) method
-//   //now only lv2host uses them, others simply ignore
-//   std::vector<QString> accumulatedCustomParams;
-//
-//   // Initial, and running, string parameters for synths which use them, like dssi.
-//   StringParamMap _stringParamMap;
-//
-//   SynthConfiguration()
-//   { _type = Synth::Type::METRO_SYNTH; _guiVisible = false; _nativeGuiVisible = false; }
-// };
-// REMOVE Tim. tmp. Removed.
-// class SynthConfiguration : public PluginConfiguration
-// {
-// public:
-//   Synth::Type _type;
-//   QString _class;
-//
-//   SynthConfiguration();
-//   ~SynthConfiguration();
-// };
-
-
-//---------------------------------------------------------
 //   SynthI
 //    software synthesizer instance
 //    Track
@@ -363,8 +251,6 @@ class SynthI : public AudioTrack, public MidiDevice,
       MPEventList _outUserEvents;
   
       // Holds initial controller values, parameters, sysex, custom data etc. for synths which use them.
-// REMOVE Tim. tmp. Changed.
-//       SynthConfiguration _initConfig;
       PluginConfiguration _initConfig;
 
       bool getData(unsigned a, int b, unsigned c, float** data);
@@ -407,10 +293,7 @@ class SynthI : public AudioTrack, public MidiDevice,
 
       inline QString uri() const           { return synthesizer ? synthesizer->uri() : QString(); }
 
-// REMOVE Tim. tmp. Changed.
-//       inline const SynthConfiguration& initialConfiguration() const { return _initConfig; }
       const PluginConfiguration& initialConfiguration() const;
-// REMOVE Tim. tmp. Added.
       // This version uses the supplied configuration.
       // NOTE: The track must already have been added to the track lists,
       //        because for DSSI, OSC needs to find the plugin in the track lists.
@@ -429,12 +312,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       // Note this does NOT include the controllers or midi assignments members. They should
       //  be obtained separately by the caller.
       PluginConfiguration getConfiguration() const;
-//       // Returns a synth configuration structure filled with the current state of the synth.
-//       // If addControllers is true, includes a list of pointers to existing relevant audio controllers.
-//       // If addMidiAssigns is true, includes a list of midi assignments to relevant audio controllers.
-//       // There are some situations where they might be unwanted here and perhaps handled separately.
-//       PluginConfiguration getConfiguration(bool addControllers = false, bool addMidiAssigns = false) const;
-//
+
       inline Synth* synth() const          { return synthesizer; }
       inline virtual bool isSynti() const  { return true; }
 
@@ -596,8 +474,6 @@ class MessSynthIF : public SynthIF {
       bool getData(MidiPort*, unsigned pos, int ports, unsigned n, float** buffer);
       MidiPlayEvent receiveEvent();
       int eventsPending() const;
-// REMOVE Tim. tmp. Changed.
-//       bool init(Synth* s, SynthI* si);
       bool init(MessSynth* s);
 
       int channels() const;
@@ -629,15 +505,6 @@ class SynthList : public std::vector<MusECore::Synth*>
   public:
     SynthList() { }
     // Each argument optional, can be empty.
-// REMOVE Tim. tmp. Changed.
-// //     // If uri is not empty, the search is based solely on it, the other arguments are ignored.
-// //     Synth* find(const QString& fileCompleteBaseName, const QString& pluginUri, const QString& pluginName) const;
-//     // If uri is not empty, file and name are ignored.
-//     Synth* find(
-//       MusEPlugin::PluginType pluginType,
-//       const QString& fileCompleteBaseName,
-//       const QString& pluginUri,
-//       const QString& pluginName) const;
     // If uri is not empty, file and label are ignored.
     // If useFileBaseName is true, fileCompleteBaseName will be compared with the synth's base name instead of
     //  the complete base name. (For legacy song files earlier than version 4, which only stored the base name.)
@@ -648,14 +515,6 @@ class SynthList : public std::vector<MusECore::Synth*>
       const QString& pluginLabel,
       bool useFileBaseName = false) const;
 };
-
-
-// REMOVE Tim. tmp. Removed.
-// extern QString synthType2String(Synth::Type);
-// REMOVE Tim. tmp. Changed.
-// extern Synth::Type string2SynthType(const QString&);
-// // OBSOLETE. Keep for compatibility.
-// extern MusEPlugin::PluginType string2SynthType(const QString&);
 
 } // namespace MusECore
 

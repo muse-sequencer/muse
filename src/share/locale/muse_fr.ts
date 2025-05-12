@@ -17262,7 +17262,7 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+9028"/>
+        <location filename="../../muse/plugin.cpp" line="+5231"/>
         <source>File Buttons</source>
         <translation>Boutons Fichier</translation>
     </message>
@@ -17294,17 +17294,17 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+421"/>
+        <location line="+415"/>
         <source>Output controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+733"/>
+        <location line="+621"/>
         <source>MusE: Save preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+40"/>
         <source>Plugin Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17313,7 +17313,7 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
         <translation type="vanished">Greffon bypassé</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-105"/>
         <source>MusE: load preset</source>
         <translation>MusE: charger les pré-réglages</translation>
     </message>
@@ -20540,7 +20540,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="-6639"/>
+        <location filename="../../muse/plugin.cpp" line="-3958"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

@@ -763,13 +763,11 @@ void initLV2()
                 const QString inf_label    = PLUGIN_GET_QSTRING(info._label);
                 const QString inf_filepath = PLUGIN_GET_QSTRING(info.filePath());
                 const Plugin* plug_found = MusEGlobal::plugins.find(
-// REMOVE Tim. tmp. Added.
                   info._type,
                   inf_cbname,
                   inf_uri,
                   inf_name);
                 const Synth* synth_found = MusEGlobal::synthis.find(
-// REMOVE Tim. tmp. Added.
                   info._type,
                   inf_cbname,
                   inf_uri,
@@ -899,42 +897,21 @@ void initLV2()
       scanLv2Plugin(plugin, info, supportedFeatures);
 
       const QString inf_cbname   = PLUGIN_GET_QSTRING(info._completeBaseName);
-// REMOVE Tim. tmp. Changed.
       const QString inf_name     = PLUGIN_GET_QSTRING(info._name);
       const QString inf_filepath = PLUGIN_GET_QSTRING(info.filePath());
       const QString inf_label    = PLUGIN_GET_QSTRING(info._label);
       const QString inf_uri      = PLUGIN_GET_QSTRING(info._uri);
       const Plugin* plug_found = MusEGlobal::plugins.find(
-// REMOVE Tim. tmp. Added.
         info._type,
         inf_cbname,
         inf_uri,
-//         inf_name);
         inf_label);
       const Synth* synth_found = MusEGlobal::synthis.find(
-// REMOVE Tim. tmp. Added.
         info._type,
         inf_cbname,
         inf_uri,
-//         inf_name);
         inf_label);
 
-      // if(plug_found)
-      // {
-      //     fprintf(stderr, "Ignoring LV2 effect name:%s uri:%s path:%s duplicate of path:%s\n",
-      //             PLUGIN_GET_CSTRING(info._name),
-      //             PLUGIN_GET_CSTRING(info._uri),
-      //             PLUGIN_GET_CSTRING(info.filePath()),
-      //             plug_found->filePath().toUtf8().constData());
-      // }
-      // if(synth_found)
-      // {
-      //     fprintf(stderr, "Ignoring LV2 synth name:%s uri:%s path:%s duplicate of path:%s\n",
-      //             PLUGIN_GET_CSTRING(info._name),
-      //             PLUGIN_GET_CSTRING(info._uri),
-      //             PLUGIN_GET_CSTRING(info.filePath()),
-      //             synth_found->filePath().toUtf8().constData());
-      // }
       if(plug_found)
       {
           fprintf(stderr, "Ignoring LV2 effect name:%s uri:%s path:%s duplicate of path:%s\n",
@@ -964,7 +941,6 @@ void initLV2()
 
       if(add_plug || add_synth)
       {
-//           if(!inf_name.isEmpty())
           // FIXME: Hm. Could name or label be empty? Keep the synth and remove this line?
           //        Still, the plugin scanner should never give us an empty label.
           //        Even if the plugin has no label the scanner should sub something else like the filename.
@@ -1273,13 +1249,6 @@ void LV2Synth::lv2state_FillFeatures(LV2PluginWrapper_State *state)
     }
 
     _ppifeatures [i] = nullptr;
-
-    // REMOVE Tim. lv2. Removed.
-    // No need to fill all these (there are several more now) as they start with zero
-    //  and the next time the send transport routine is called it will update all of them.
-//     state->curBpm = 0.0;//double(60000000.0/MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
-//     state->curIsPlaying = MusEGlobal::audio->isPlaying();
-//     state->curFrame = MusEGlobal::audio->pos().frame();
 
     lv2_atom_forge_init(&state->atomForge, &synth->_lv2_urid_map);
 
@@ -2219,7 +2188,6 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
             return;
         }
 
-// REMOVE Tim. tmp. Added.
         // It is important to set a non-null valid human id here because the plugin may try to strdup it.
         lv2ui_UpdateWindowTitle(state);
 
@@ -2345,14 +2313,6 @@ void LV2Synth::lv2ui_ShowNativeGui(LV2PluginWrapper_State *state, bool bShow, bo
                 }
 
                 win->show();
-// REMOVE Tim. tmp. Changed.
-//                 win->setWindowTitle(state->extHost.plugin_human_id);
-                // if(state->sif)
-                //   state->sif->updateNativeGuiWindowTitle();
-                // else if(state->plugInst)
-                //   state->plugInst->updateNativeGuiWindowTitle();
-// REMOVE Tim. tmp. Added. Moved above.
-//                 lv2ui_UpdateWindowTitle(state);
             }
             else if(state->hasExternalGui)
             {
@@ -2395,8 +2355,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
     {
         if(it.value().second.type() == QVariant::ByteArray)
         {
-// REMOVE Tim. tmp. Added. Diagnostics.
-//             fprintf(stderr, "lv2state_stateRetreive: Is QVariant::ByteArray\n");
+            // fprintf(stderr, "lv2state_stateRetreive: Is QVariant::ByteArray\n");
 
             QString sType = it.value().first;
             QByteArray arrType = sType.toUtf8();
@@ -2412,8 +2371,7 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
 
             if(sType.compare(QString(LV2_ATOM__Path)) == 0) //prepend project folder to abstract path
             {
-// REMOVE Tim. tmp. Added. Diagnostics.
-//                 fprintf(stderr, "lv2state_stateRetreive: Type is LV2_ATOM__Path\n");
+                // fprintf(stderr, "lv2state_stateRetreive: Type is LV2_ATOM__Path\n");
 
                 // Make everything relative to the plugin config folder.
                 QString cfg_path =
@@ -2442,7 +2400,6 @@ const void *LV2Synth::lv2state_stateRetreive(LV2_State_Handle handle, uint32_t k
                     valArr [len] = 0;
                 }
             }
-// REMOVE Tim. tmp. Added.
             else
             // It's not a path. Assume it's actual state data.
             {
@@ -2487,7 +2444,6 @@ LV2_State_Status LV2Synth::lv2state_stateStore(LV2_State_Handle handle, uint32_t
         assert(uriType != nullptr && uriKey != nullptr); //FIXME: buggy plugin or uridBiMap realization?
         QString strKey = QString(uriKey);
 
-// REMOVE Tim. tmp. Added. Diagnostics.
         // {
         //   QByteArray ba = QByteArray((const char *)value, size);
         //   ba.append(char(0));
@@ -2551,7 +2507,6 @@ LV2_Worker_Status LV2Synth::lv2wrk_respond(LV2_Worker_Respond_Handle handle, uin
     return LV2_WORKER_SUCCESS;
 }
 
-// REMOVE Tim. tmp. Added.
 //---------------------------------------------------------
 //   lv2conf_getCustomData
 //---------------------------------------------------------
@@ -2567,15 +2522,6 @@ QString LV2Synth::lv2conf_getCustomData(LV2PluginWrapper_State *state)
         state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore,
                             state, LV2_STATE_IS_POD, state->_ppifeatures);
     }
-
-// REMOVE Tim. tmp. Removed. Controls are written uncompressed and with more info now.
-//     if(state->sif != nullptr) // write control ports values only for synths
-//     {
-//         for(size_t c = 0; c < state->sif->_inportsControl; c++)
-//         {
-//             state->iStateValues.insert(QString(state->sif->_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)state->sif->_controls[c].val)));
-//         }
-//     }
 
     if(state->uiCurrent != nullptr)
     {
@@ -2597,53 +2543,6 @@ QString LV2Synth::lv2conf_getCustomData(LV2PluginWrapper_State *state)
     }
     return customData;
 }
-
-// REMOVE Tim. tmp. Changed.
-// void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
-// {
-//     state->iStateValues.clear();
-//     state->numStateValues = 0;
-//
-//     if(state->iState != nullptr)
-//     {
-//         state->iState->save(lilv_instance_get_handle(state->handle), LV2Synth::lv2state_stateStore,
-//                             state, LV2_STATE_IS_POD, state->_ppifeatures);
-//     }
-//
-//     if(state->sif != nullptr) // write control ports values only for synths
-//     {
-//         for(size_t c = 0; c < state->sif->_inportsControl; c++)
-//         {
-//             state->iStateValues.insert(QString(state->sif->_controlInPorts [c].cName), QPair<QString, QVariant>(QString(""), QVariant((double)state->sif->_controls[c].val)));
-//         }
-//     }
-//
-//     if(state->uiCurrent != nullptr)
-//     {
-//         const char *cUiUri = lilv_node_as_uri(lilv_ui_get_uri(state->uiCurrent));
-//         state->iStateValues.insert(QString(cUiUri), QPair<QString, QVariant>(QString(""), QVariant(QString(cUiUri))));
-//     }
-//
-//     QByteArray arrOut;
-//     QDataStream streamOut(&arrOut, QIODevice::WriteOnly);
-//     streamOut << state->iStateValues;
-//
-//     // Weee! Compression!
-//     QByteArray outEnc64 = qCompress(arrOut).toBase64();
-//
-//     QString customData(outEnc64);
-//     for (int pos=0; pos < customData.size(); pos+=150)
-//     {
-//         customData.insert(pos++,'\n'); // add newlines for readability
-//     }
-//     xml.strTag(level, "customData", customData);
-// }
-
-// REMOVE Tim. tmp. Removed.
-// void LV2Synth::lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml)
-// {
-//     xml.strTag(level, "customData", lv2conf_getCustomData(state));
-// }
 
 bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QString> &customParams)
 {
@@ -2739,8 +2638,6 @@ bool LV2Synth::lv2conf_set(LV2PluginWrapper_State *state, const std::vector<QStr
                           if(iter != state->controlsNameMap.end())
                           {
                               size_t ctrlNum = iter->second;
-  // REMOVE Tim. tmp. Changed.
-                              // state->sif->_controls [ctrlNum].val = state->sif->_controls [ctrlNum].tmpVal = val;
                               state->sif->_controls [ctrlNum].val = val;
                           }
                       }
@@ -3388,7 +3285,6 @@ void LV2Synth::lv2state_UnloadLoadPresets(LV2Synth *synth, bool load, bool updat
     }
 }
 
-// REMOVE Tim. tmp. Added.
 // Static
 void LV2Synth::lv2ui_TitleAboutToChange(LV2PluginWrapper_State *state)
 {
@@ -3407,24 +3303,9 @@ void LV2Synth::lv2ui_TitleAboutToChange(LV2PluginWrapper_State *state)
   }
 }
 
-// REMOVE Tim. tmp. Added.
 // Static
 void LV2Synth::lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state)
 {
-  // if(state->plugInst != nullptr)
-  // {
-  //     state->plugInst->updateNativeGuiWindowTitle();
-  //
-  // }
-  // else if(state->sif != nullptr)
-  // {
-  //     state->sif->updateNativeGuiWindowTitle();
-  // }
-
-
-
-
-
   if(state)
   {
     if(state->plugInst)
@@ -3432,9 +3313,6 @@ void LV2Synth::lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state)
       if(state->human_id)
         free(state->human_id);
       state->extHost.plugin_human_id = state->human_id =
-//         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->pluginLabel()).toUtf8().constData());
-//         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->pluginName()).toUtf8().constData());
-//         strdup((state->plugInst->track()->name() + QString(": ") + state->plugInst->name()).toUtf8().constData());
         strdup((state->plugInst->track()->displayName() + state->plugInst->name()).toUtf8().constData());
     }
     else if(state->sif)
@@ -3442,14 +3320,12 @@ void LV2Synth::lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state)
       if(state->human_id)
         free(state->human_id);
       state->extHost.plugin_human_id = state->human_id =
-//         strdup((state->sif->name() + QString(": ") + state->sif->pluginName()).toUtf8().constData());
         strdup(state->sif->displayName().toUtf8().constData());
     }
     else
       return;
 
     if(state->pluginWindow)
-      //state->pluginWindow->setWindowTitle(state->extHost.plugin_human_id);
       state->pluginWindow->updateWindowTitle(state->extHost.plugin_human_id);
   }
 }
@@ -3487,8 +3363,6 @@ LV2Synth::LV2Synth(const MusEPlugin::PluginScanInfoStruct& infoStruct, const Lil
   _options(nullptr),
   _isSynth(false),
   _uis(nullptr),
-// REMOVE Tim. tmp. Removed.
-//   _usesTimePosition(false),
   _isConstructed(false),
   _pluginControlsDefault(nullptr),
   _pluginControlsMin(nullptr),
@@ -4010,31 +3884,36 @@ LV2Synth::~LV2Synth()
     }
 }
 
-// REMOVE Tim. tmp. Removed.
-// Synth::Type LV2Synth::synthType() const {
-//         return _isSynth ? Synth::LV2_SYNTH : Synth::LV2_EFFECT;
-// }
-
 bool LV2Synth::isSynth() { return _isSynth; }
 size_t LV2Synth::inPorts() { return _audioInPorts.size(); }
 size_t LV2Synth::outPorts() { return _audioOutPorts.size(); }
 bool LV2Synth::isConstructed() {return _isConstructed; }
-// REMOVE Tim. tmp. Removed.
-// bool LV2Synth::usesTimePosition() const { return _usesTimePosition; }
 
+bool LV2Synth::reference()
+{
+  ++_references;
+  return true;
+}
 
-bool LV2Synth::reference() { return false; }
-
-int LV2Synth::release () { return _references; }
+int LV2Synth::release ()
+{
+  if(_references > 0)
+    --_references;
+  return _references;
+}
 
 SynthIF *LV2Synth::createSIF(SynthI *synthi)
 {
-    ++_references;
+    if(!reference())
+      return nullptr;
+
     LV2SynthIF *sif = new LV2SynthIF(synthi);
 
     if(!sif->init(this))
     {
+        fprintf(stderr, "LV2Synth::createSIF() Error: plugin:%s instantiate failed!\n", _label.toLocal8Bit().constData());
         delete sif;
+        release();
         sif = nullptr;
     }
 
@@ -4209,8 +4088,6 @@ bool LV2SynthIF::init(LV2Synth *s)
     {
         uint32_t idx = _controlInPorts [i].index;
         _controls [i].idx = idx;
-// REMOVE Tim. tmp. Changed.
-        // _controls [i].val = _controls [i].tmpVal = _controlInPorts [i].defVal;
         _controls [i].val = _controlInPorts [i].defVal;
         if(_synth->_pluginFreewheelType == MusEPlugin::PluginFreewheelTypePort && _synth->_freewheelPortIndex == i)
             _controls [i].enCtrl = false;
@@ -4240,32 +4117,6 @@ bool LV2SynthIF::init(LV2Synth *s)
             _controls[i].val = cl->curVal();
         }
 
-// REMOVE Tim. tmp. Changed.
-//         float mn, mx;
-//         range(i, &mn, &mx);
-//         cl->setRange(mn, mx);
-// //         cl->setName(QString(_controlInPorts [i].cName));
-// //         CtrlValueType vt = VAL_LINEAR;
-// //         const LV2ControlPortType_t ct = _controlInPorts[i].cType;
-// //         if(ct & LV2_PORT_ENUMERATION)
-// //             vt = VAL_ENUM;
-// //         else if(ct & LV2_PORT_INTEGER)
-// //             vt = VAL_INT;
-// //         else if(ct & LV2_PORT_LOGARITHMIC)
-// //             vt = VAL_LOG;
-// //         else if(ct & LV2_PORT_TOGGLE)
-// //             vt = VAL_BOOL;
-// //         cl->setValueType(vt);
-// //         // For now we do not allow interpolation of integer or enum controllers.
-// //         // TODO: It would require custom line drawing and corresponding hit detection.
-// //         cl->setMode(!_controlInPorts [i].isDiscrete && !(ct & LV2_PORT_NON_CONTINUOUS) ?
-// //                       CtrlList::INTERPOLATE : CtrlList::DISCRETE);
-//
-//         cl->setName(QString(paramName(i)));
-//         cl->setValueType(ctrlValueType(i));
-//         cl->setMode(ctrlMode(i));
-//         // Set the value units index.
-//         cl->setValueUnit(valueUnit(i));
         setupController(cl);
 
         if(!_controlInPorts [i].isCVPort)
@@ -4277,8 +4128,6 @@ bool LV2SynthIF::init(LV2Synth *s)
         uint32_t idx = _controlOutPorts [i].index;
         _controlsOut[i].idx = idx;
         _controlsOut[i].enCtrl  = false;
-// REMOVE Tim. tmp. Changed.
-        // _controlsOut [i].val = _controlsOut [i].tmpVal = _controlOutPorts [i].defVal;
         _controlsOut [i].val = _controlOutPorts [i].defVal;
         if(!_controlOutPorts [i].isCVPort)
             lilv_instance_connect_port(_handle, idx, &_controlsOut[i].val);
@@ -6341,40 +6190,14 @@ void LV2SynthIF::setNativeGeometry(int x, int y, int w, int h)
     }
 }
 
-// REMOVE Tim. tmp. Added.
 void LV2SynthIF::nativeGuiTitleAboutToChange()
 {
   if(_synth)
     _synth->lv2ui_TitleAboutToChange(_state);
 }
 
-// REMOVE Tim. tmp. Added.
 void LV2SynthIF::updateNativeGuiWindowTitle()
 {
-//   if(_state)
-//   {
-//     if(_state->plugInst)
-//     {
-//       if(_state->human_id)
-//         free(_state->human_id);
-//       _state->extHost.plugin_human_id = _state->human_id =
-//         strdup((_state->plugInst->track()->name() + QString(": ") + _state->plugInst->pluginLabel()).toUtf8().constData());
-//     }
-//     else if(_state->sif)
-//     {
-//       if(_state->human_id)
-//         free(_state->human_id);
-//       _state->extHost.plugin_human_id = _state->human_id =
-//         strdup((_state->sif->name() + QString(": ") + _state->sif->pluginName()).toUtf8().constData());
-//     }
-//     else
-//       return;
-//
-//     if(_state->pluginWindow)
-// //       _state->pluginWindow->setWindowTitle(_state->extHost.plugin_human_id);
-//       _state->pluginWindow->updateWindowTitle(_state->extHost.plugin_human_id);
-//   }
-
   if(_synth)
     _synth->lv2ui_UpdateWindowTitle(_state);
 }
@@ -6386,32 +6209,11 @@ void LV2SynthIF::setParameter(long unsigned int idx, double value)
 
 void LV2SynthIF::showNativeGui(bool bShow)
 {
-// REMOVE Tim. tmp. Removed. Moved into LV2Synth::lv2ui_ShowNativeGui.
-//     if(track() != nullptr)
-//     {
-//         if(_state->human_id != nullptr)
-//         {
-//             free(_state->human_id);
-//         }
-//
-// // REMOVE Tim. tmp. Changed.
-// //       _state->extHost.plugin_human_id = _state->human_id = strdup((track()->name() + QString(": ") +
-// //   name()).toUtf8().constData());
-//         _state->extHost.plugin_human_id = _state->human_id = strdup((name() + QString(": ") +
-//   pluginName()).toUtf8().constData());
-//     }
     PluginIBase::showNativeGui(bShow);
 
     LV2Synth::lv2ui_ShowNativeGui(_state, bShow, cquirks().fixNativeUIScaling());
 }
 
-// REMOVE Tim. tmp. Removed.
-// void LV2SynthIF::write(int level, Xml &xml) const
-// {
-//     LV2Synth::lv2conf_write(_state, level, xml);
-// }
-
-// REMOVE Tim. tmp. Added.
 std::vector<QString> LV2SynthIF::getCustomData() const
 {
     std::vector<QString> v;
@@ -6729,13 +6531,6 @@ void LV2SynthIF::setParam(long unsigned int i, double val)
     setParameter(i, val);
 }
 
-// REMOVE Tim. tmp. Changed.
-// void LV2SynthIF::enableController(unsigned long i, bool v)  {
-//     _controls[i].enCtrl = v;
-// }
-// bool LV2SynthIF::controllerEnabled(unsigned long i) const   {
-//     return _controls[i].enCtrl;
-// }
 void LV2SynthIF::enableController(unsigned long i, bool v)  {
     if(_controls) _controls[i].enCtrl = v;
 }
@@ -6744,8 +6539,6 @@ bool LV2SynthIF::controllerEnabled(unsigned long i) const   {
 }
 void LV2SynthIF::enableAllControllers(bool v)
 {
-// REMOVE Tim. tmp. Changed.
-//     if(!_synth)
     if(!_synth || !_controls)
         return;
     for(unsigned long i = 0; i < _inportsControl; ++i)
@@ -6762,22 +6555,6 @@ void LV2SynthIF::applyPreset(void *preset)
 {
     LV2Synth::lv2state_applyPreset(_state, static_cast<LilvNode *>(preset));
 }
-
-
-
-// REMOVE Tim. tmp. Removed. Not required.
-// void LV2SynthIF::writeConfiguration(int level, Xml &xml)
-// {
-//     MusECore::SynthIF::writeConfiguration(level, xml);
-// }
-//
-// bool LV2SynthIF::readConfiguration(Xml &xml, bool readPreset)
-// {
-//     return MusECore::SynthIF::readConfiguration(xml, readPreset);
-// }
-
-// REMOVE Tim. tmp. Removed.
-// int LV2SynthIF::id() const { return MusECore::MAX_PLUGINS; }
 
 
 //==========================================================
@@ -6979,13 +6756,6 @@ void LV2PluginWrapper_Window::closeEvent(QCloseEvent *event)
 {
     assert(_state != nullptr);
 
-// REMOVE Tim. tmp. Added.
-    // // Disconnect before songChanged() has a chance to be called.
-    // // The caller might destroy some things before calling close(),
-    // //  and songChanged() might be called later which causes crashes.
-    // // We also do this in the destructor just in case.
-    // disconnect(_songChangedMetaConn);
-
     event->accept();
 
     stopUpdateTimer();
@@ -7051,9 +6821,6 @@ LV2PluginWrapper_Window::LV2PluginWrapper_Window(LV2PluginWrapper_State *state,
     connect(&updateTimer, SIGNAL(timeout()), this, SLOT(updateGui()));
     connect(this, SIGNAL(makeStopFromGuiThread()), this, SLOT(stopFromGuiThread()));
     connect(this, SIGNAL(makeStartFromGuiThread()), this, SLOT(startFromGuiThread()));
-// REMOVE Tim. tmp. Added.
-//     _songChangedMetaConn = connect(MusEGlobal::song, &MusECore::Song::songChanged,
-//                                    [this](MusECore::SongChangedStruct_t type) { songChanged(type); } );
 }
 
 LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
@@ -7061,9 +6828,6 @@ LV2PluginWrapper_Window::~LV2PluginWrapper_Window()
 #ifdef DEBUG_LV2
     std::cout << "LV2PluginWrapper_Window::~LV2PluginWrapper_Window()" << std::endl;
 #endif
-// REMOVE Tim. tmp. Added.
-//    // In case closeEvent() wasn't already called, where we disconnect there as well.
-//    disconnect(_songChangedMetaConn);
 }
 
 void LV2PluginWrapper_Window::startNextTime()
@@ -7153,45 +6917,10 @@ void LV2PluginWrapper_Window::startFromGuiThread()
     updateTimer.start(1000/30);
 }
 
-// REMOVE Tim. tmp. Added.
-// void LV2PluginWrapper_Window::updateWindowTitle()
-// {
-//   if(_state)
-//   {
-//     if(_state->plugInst)
-//     {
-//       if(_state->human_id)
-//         free(_state->human_id);
-//       _state->extHost.plugin_human_id = _state->human_id =
-//         strdup((_state->plugInst->track()->name() + QString(": ") + _state->plugInst->pluginLabel()).toUtf8().constData());
-//     }
-//     else if(_state->sif)
-//     {
-//       if(_state->human_id)
-//         free(_state->human_id);
-//       _state->extHost.plugin_human_id = _state->human_id =
-//         strdup((_state->sif->name() + QString(": ") + _state->sif->pluginName()).toUtf8().constData());
-//     }
-//     else
-//       return;
-//
-//     if(_state->pluginWindow)
-//       _state->pluginWindow->setWindowTitle(_state->extHost.plugin_human_id);
-//   }
-// }
-
 void LV2PluginWrapper_Window::updateWindowTitle(const QString& title)
 {
   setWindowTitle(title);
 }
-
-// REMOVE Tim. tmp. Added.
-// void LV2PluginWrapper_Window::songChanged(MusECore::SongChangedStruct_t type)
-// {
-//   // Catch when the track name changes or track is moved or the rack position changes.
-//   if(type & (SC_TRACK_MODIFIED | SC_TRACK_MOVED | SC_RACK))
-//     updateWindowTitle();
-// }
 
 LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, MusEPlugin::PluginFeatures_t reqFeatures)
  : Plugin()
@@ -7200,8 +6929,6 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, MusEPlugin::PluginFeatures_t req
 
     _requiredFeatures = reqFeatures;
 
-// REMOVE Tim. tmp. Changed.
-//     _fakeLd.Label      = strdup(_synth->name().toUtf8().constData());
     _fakeLd.Label      = strdup(_synth->label().toUtf8().constData());
     _fakeLd.Name       = strdup(_synth->name().toUtf8().constData());
 // LV2 does not use unique id numbers and frowns upon using anything but the uri.
@@ -7209,15 +6936,8 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, MusEPlugin::PluginFeatures_t req
     _fakeLd.UniqueID   = 0;
     _fakeLd.Maker      = strdup(_synth->maker().toUtf8().constData());
     _fakeLd.Copyright  = strdup(_synth->version().toUtf8().constData());
-// REMOVE Tim. tmp. Removed.
-//     _isLV2Plugin = true;
-//     _isLV2Synth = s->_isSynth;
 
     _pluginType = MusEPlugin::PluginTypeLV2;
-// REMOVE Tim. tmp. Changed.
-//     _pluginClass = s->isSynth() ?
-//       MusEPlugin::PluginClassInstrument :
-//       MusEPlugin::PluginClassEffect;
     _pluginClass = s->pluginClass();
 
     int numPorts = _synth->_audioInPorts.size()
@@ -7258,9 +6978,6 @@ LV2PluginWrapper::LV2PluginWrapper(LV2Synth *s, MusEPlugin::PluginFeatures_t req
 
     _fileInfo = _synth->_fileInfo;
     _uri = _synth->uri();
-// REMOVE Tim. tmp. Changed.
-//     _label = _synth->name();
-//     _name = _synth->description();
     _label = _synth->label();
     _name = _synth->name();
     _description = _synth->description();
@@ -7420,8 +7137,6 @@ void LV2PluginWrapper::apply(LADSPA_Handle handle, unsigned long n, float latenc
     if(!state->plugInst->on() && state->synth->_pluginBypassType == MusEPlugin::PluginBypassTypeEnablePort)
     {
       const long unsigned int enableIdx = state->synth->_enableOrBypassPortIndex;
-// REMOVE Tim. tmp. Changed.
-      // state->plugInst->controls[enableIdx].tmpVal = state->plugInst->controls[enableIdx].val = 0.0f;
       state->plugInst->controls[enableIdx].val = 0.0f;
       // Inform the GUI.
       state->controlsMask[enableIdx] = true;
@@ -7788,18 +7503,6 @@ void LV2PluginWrapper::showNativeGui(PluginI *p, bool bShow)
     assert(p->instances > 0);
     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)p->handle [0];
 
-// REMOVE Tim. tmp. Removed. Moved into LV2Synth::lv2ui_ShowNativeGui.
-//     if(p->track() != nullptr)
-//     {
-//         if(state->human_id != nullptr)
-//         {
-//             free(state->human_id);
-//         }
-//
-//         state->extHost.plugin_human_id = state->human_id = strdup((p->track()->name() + QString(": ") +
-//           label()).toUtf8().constData());
-//     }
-
     LV2Synth::lv2ui_ShowNativeGui(state, bShow, p->cquirks().fixNativeUIScaling());
 }
 
@@ -7810,7 +7513,6 @@ bool LV2PluginWrapper::nativeGuiVisible(const PluginI *p) const
     return (state->widget != nullptr);
 }
 
-// REMOVE Tim. tmp. Added.
 void LV2PluginWrapper::nativeGuiTitleAboutToChange(const PluginI *p)
 {
   assert(p->instances > 0);
@@ -7819,7 +7521,6 @@ void LV2PluginWrapper::nativeGuiTitleAboutToChange(const PluginI *p)
     state->synth->lv2ui_TitleAboutToChange(state);
 }
 
-// REMOVE Tim. tmp. Added.
 void LV2PluginWrapper::updateNativeGuiWindowTitle(const PluginI *p) const
 {
   assert(p->instances > 0);
@@ -7844,22 +7545,12 @@ void LV2PluginWrapper::setLastStateControls(LADSPA_Handle handle, size_t index, 
 
 }
 
-// REMOVE Tim. tmp. Added.
 QString LV2PluginWrapper::getCustomConfiguration(LADSPA_Handle handle)
 {
   LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
   assert(state != nullptr);
   return LV2Synth::lv2conf_getCustomData(state);
 }
-
-// REMOVE Tim. tmp. Removed.
-// void LV2PluginWrapper::writeConfiguration(LADSPA_Handle handle, int level, Xml &xml)
-// {
-//     LV2PluginWrapper_State *state = (LV2PluginWrapper_State *)handle;
-//     assert(state != nullptr);
-//
-//     LV2Synth::lv2conf_write(state, level, xml);
-// }
 
 bool LV2PluginWrapper::setCustomData(LADSPA_Handle handle, const std::vector<QString> &customParams)
 {

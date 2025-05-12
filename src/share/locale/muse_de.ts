@@ -17461,7 +17461,7 @@ Right-click on plugins to add/remove from a category.</source>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+9028"/>
+        <location filename="../../muse/plugin.cpp" line="+5231"/>
         <source>File Buttons</source>
         <translation>Datei-Knöpfe</translation>
     </message>
@@ -17493,17 +17493,17 @@ Right-click on plugins to add/remove from a category.</source>
         <translation>Plugin-Einstellungen</translation>
     </message>
     <message>
-        <location line="+421"/>
+        <location line="+415"/>
         <source>Output controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+733"/>
+        <location line="+621"/>
         <source>MusE: Save preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+40"/>
         <source>Plugin Settings</source>
         <translation>Plugin-Einstellungen</translation>
     </message>
@@ -17536,7 +17536,7 @@ Right-click on plugins to add/remove from a category.</source>
         <translation type="vanished">Signalfluss PlugIn überspringen</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-105"/>
         <source>MusE: load preset</source>
         <translation>MusE: Vorlage laden</translation>
     </message>
@@ -20818,7 +20818,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="-6639"/>
+        <location filename="../../muse/plugin.cpp" line="-3958"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

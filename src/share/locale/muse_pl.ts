@@ -17049,7 +17049,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+9028"/>
+        <location filename="../../muse/plugin.cpp" line="+5231"/>
         <source>File Buttons</source>
         <translation>Przyciski Menu Plik</translation>
     </message>
@@ -17081,17 +17081,17 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+421"/>
+        <location line="+415"/>
         <source>Output controls</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+733"/>
+        <location line="+621"/>
         <source>MusE: Save preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+40"/>
         <source>Plugin Settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17100,7 +17100,7 @@ Kliknij prawym klawiszem na wtyczkach, aby dodać/usunąć
         <translation type="vanished">omiń wtyczkę (bypass)</translation>
     </message>
     <message>
-        <location line="-140"/>
+        <location line="-105"/>
         <source>MusE: load preset</source>
         <translation>MusE: załaduj ustawienie</translation>
     </message>
@@ -20353,7 +20353,7 @@ sometimes requires write access to the file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="-6639"/>
+        <location filename="../../muse/plugin.cpp" line="-3958"/>
         <source>FX slot</source>
         <translation type="unfinished"></translation>
     </message>

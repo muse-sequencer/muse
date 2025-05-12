@@ -80,10 +80,7 @@ struct Port;
 
 class DssiSynth : public Synth {
    protected:
-// REMOVE Tim. tmp. Removed.
-//       void* handle;
       const DSSI_Descriptor* dssi;
-//       DSSI_Descriptor_Function df;
       unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
@@ -95,8 +92,6 @@ class DssiSynth : public Synth {
    public:
       DssiSynth(const MusEPlugin::PluginScanInfoStruct& info);
       virtual ~DssiSynth();
-// REMOVE Tim. tmp. Removed.
-//       virtual Type synthType() const { return DSSI_SYNTH; }
 
       bool reference();
       int release();
@@ -160,9 +155,7 @@ class DssiSynthIF : public SynthIF
       virtual bool hasGui() const { return true; }
       virtual bool nativeGuiVisible() const;                                        
       virtual void showNativeGui(bool);                                              
-// REMOVE Tim. tmp. Added.
       virtual void closeNativeGui();
-// REMOVE Tim. tmp. Added.
       // Informs the plugin that we are about to change the UI title bar text.
       // Some UIs may need to close because their title bar text is not alterable after creation.
       void nativeGuiTitleAboutToChange();
@@ -204,16 +197,6 @@ class DssiSynthIF : public SynthIF
       //-------------------------
       
       unsigned long pluginID() const;
-// REMOVE Tim. tmp. Removed.
-//       int id() const;
-// REMOVE Tim. tmp. Changed.
-// REMOVE Tim. tmp. Removed.
-//       QString pluginLabel() const;
-//       QString pluginName() const;
-//       QString lib() const;
-//       QString uri() const;
-//       QString dirPath() const;
-//       QString fileName() const;
       void enableController(unsigned long i, bool v = true);
       bool controllerEnabled(unsigned long i) const;          
       void enableAllControllers(bool v = true);

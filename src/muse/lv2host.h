@@ -409,8 +409,6 @@ private:
     LV2_URID _uAtom_Sequence;
     LV2_URID _uAtom_StateChanged;
     LV2_URID _uAtom_Object;
-// REMOVE Tim. tmp. Removed.
-//     bool _usesTimePosition;
     bool _isConstructed;
     float *_pluginControlsDefault;
     float *_pluginControlsMin;
@@ -418,8 +416,6 @@ private:
     std::map<QString, LilvNode *> _presets;
 
 public:
-// REMOVE Tim. tmp. Removed.
-//     virtual Type synthType() const;
     LV2Synth (const MusEPlugin::PluginScanInfoStruct&, const LilvPlugin*);
     virtual ~LV2Synth();
 
@@ -435,9 +431,6 @@ public:
     size_t inPorts();
     size_t outPorts();
     bool isConstructed();
-// REMOVE Tim. tmp. Removed.
-//     // Returns true if ANY of the midi input ports uses time position (transport).
-//     bool usesTimePosition() const;
     static void lv2ui_PostShow ( LV2PluginWrapper_State *state );
     static int lv2ui_Resize ( LV2UI_Feature_Handle handle, int width, int height );
     static LV2UI_Request_Value_Status lv2ui_Request_Value (
@@ -463,10 +456,7 @@ public:
     static LV2_State_Status lv2state_stateStore ( LV2_State_Handle handle, uint32_t key, const void *value, size_t size, uint32_t type, uint32_t flags );
     static LV2_Worker_Status lv2wrk_scheduleWork(LV2_Worker_Schedule_Handle handle, uint32_t size, const void *data);
     static LV2_Worker_Status lv2wrk_respond(LV2_Worker_Respond_Handle handle, uint32_t size, const void* data);    
-// REMOVE Tim. tmp. Added.
     static QString lv2conf_getCustomData(LV2PluginWrapper_State *state);
-// REMOVE Tim. tmp. Removed.
-//     static void lv2conf_write(LV2PluginWrapper_State *state, int level, Xml &xml);
     // Returns true if, among other data, there was indeed custom data.
     // This means there is, or likely is, parameter values stored with the data,
     //  meaning we should not try to manually restore parameters since the data
@@ -491,7 +481,6 @@ public:
     static const void* lv2state_getPortValue(const char *port_symbol, void *user_data, uint32_t *size, uint32_t *type);
     static void lv2state_applyPreset(LV2PluginWrapper_State *state, LilvNode *preset);
     static void lv2state_UnloadLoadPresets(LV2Synth *synth, bool load = false, bool update = false);
-// REMOVE Tim. tmp. Added.
     static void lv2ui_UpdateWindowTitle(LV2PluginWrapper_State *state);
     static void lv2ui_TitleAboutToChange(LV2PluginWrapper_State *state);
 
@@ -561,7 +550,6 @@ public:
     virtual bool hasNativeGui() const override;
     virtual void getNativeGeometry ( int *, int *, int *, int * ) const override;
     virtual void setNativeGeometry (int x, int y, int w, int h) override;
-// REMOVE Tim. tmp. Added.
     // Informs the plugin that we are about to change the UI title bar text.
     // Some UIs may need to close because their title bar text is not alterable after creation.
     void nativeGuiTitleAboutToChange() override;
@@ -576,8 +564,6 @@ public:
     virtual void deactivate3() override;
     virtual QString getPatchName (int, int, bool ) const override;
     virtual void populatePatchPopup ( MusEGui::PopupMenu *, int, bool ) override;
-// REMOVE Tim. tmp. Removed.
-//     virtual void write ( int level, Xml &xml ) const override;
     virtual double getParameter ( unsigned long idx ) const override;
     virtual double getParameterOut ( unsigned long n ) const;
     virtual void setParameter ( unsigned long idx, double value ) override;
@@ -588,11 +574,6 @@ public:
     virtual bool getNoteSampleName(
       bool drum, int channel, int patch, int note, QString* name) const override;
 
-// REMOVE Tim. tmp. Removed. Not required.
-    // virtual void writeConfiguration ( int level, Xml &xml ) override;
-    // virtual bool readConfiguration ( Xml &xml, bool readPreset=false ) override;
-
-// REMOVE Tim. tmp. Added.
     // Returns a list of strings containing any custom configurations provided by the plugin.
     virtual std::vector<QString> getCustomData() const override;
     // Returns true if, among other data, there was indeed custom data.
@@ -600,7 +581,6 @@ public:
     //  meaning we should not try to manually restore parameters since the data
     //  already has them.
     virtual bool setCustomData ( const std::vector<QString> & ) override;
-
 
     unsigned long parameters() const override;
     unsigned long parametersOut() const override;
@@ -645,9 +625,6 @@ public:
     void populatePresetsMenu(MusEGui::PopupMenu *menu);
     void applyPreset(void *preset);
 
-// REMOVE Tim. tmp. Removed.
-//     int id() const override;
-
     static void lv2prg_Changed(LV2_Programs_Handle handle, int32_t index);
 #ifdef MIDNAM_SUPPORT
     static void lv2midnam_Changed(LV2_Midnam_Handle handle);
@@ -691,7 +668,6 @@ struct LV2PluginWrapper_State {
     QMap<QString, QPair<QString, QVariant> > iStateValues;
     char **tmpValues;
     size_t numStateValues;
-// REMOVE Tim. tmp. Added.
     // Temporary during state restoration. Whether the custom data does actually
     //  contain state data put there by the plugin, besides any data we put there.
     bool tmpHasPluginState;
@@ -791,8 +767,6 @@ private:
    bool _closing;
    QTimer updateTimer;
    void stopUpdateTimer();
-// REMOVE Tim. tmp. Added.
-//    QMetaObject::Connection _songChangedMetaConn;
 public:
    explicit LV2PluginWrapper_Window ( LV2PluginWrapper_State *state, 
                                       QWidget *parent = Q_NULLPTR, 
@@ -801,7 +775,6 @@ public:
    void startNextTime();
    void stopNextTime();
    void setClosing(bool closing);
-// REMOVE Tim. tmp. Added.
    void updateWindowTitle(const QString&);
 signals:
    void makeStopFromGuiThread();
@@ -810,9 +783,6 @@ public slots:
    void updateGui();
    void stopFromGuiThread();
    void startFromGuiThread();
-// REMOVE Tim. tmp. Added.
-//    void songChanged(MusECore::SongChangedStruct_t);
-//    void updateWindowTitle();
 };
 
 
@@ -845,16 +815,12 @@ public:
     virtual bool hasNativeGui() const;
     virtual void showNativeGui ( PluginI *p, bool bShow );
     virtual bool nativeGuiVisible (const PluginI *p ) const;
-// REMOVE Tim. tmp. Added.
     // Informs the plugin that we are about to change the UI title bar text.
     // Some UIs may need to close because their title bar text is not alterable after creation.
     void nativeGuiTitleAboutToChange(const PluginI *p);
     void updateNativeGuiWindowTitle(const PluginI *p) const;
     virtual void setLastStateControls(LADSPA_Handle handle, size_t index, bool bSetMask, bool bSetVal, bool bMask, float fVal);
-// REMOVE Tim. tmp. Added.
     virtual QString getCustomConfiguration(LADSPA_Handle handle);
-// REMOVE Tim. tmp. Removed.
-//     virtual void writeConfiguration(LADSPA_Handle handle, int level, Xml& xml);
     // Returns true if, among other data, there was indeed custom data.
     // This means there is, or likely is, parameter values stored with the data,
     //  meaning we should not try to manually restore parameters since the data
