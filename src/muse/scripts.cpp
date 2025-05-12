@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <iostream>
 
 #include "scripts.h"
@@ -15,6 +14,7 @@
 #include <QMenu>
 #include <QDir>
 #include <QTextStream>
+#include <QTemporaryFile>
 
 
 namespace MusECore {
@@ -25,8 +25,7 @@ Scripts::Scripts(QObject *parent) : QObject(parent) {}
 //---------------------------------------------------------
 //   executeScript
 //---------------------------------------------------------
-// REMOVE Tim. tmp. Changed.
-// void Scripts::executeScript(QWidget *parent, const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected)
+
 void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList* parts, int quant, bool onlyIfSelected)
 {
     // a simple format for external processing
@@ -63,40 +62,40 @@ void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList
 
     Undo ops;
 
-    for (const auto& i : *parts) {
-        //const char* tmp = tmpnam(NULL);
-        char tmp[16] = "muse-tmp-XXXXXX";
-        char tempStr[200];
-        int fd = mkstemp(tmp);
-        if (MusEGlobal::debugMsg)
-            fprintf(stderr, "executeScript: script input filename=%s\n",tmp);
+    for (const auto& i : *parts)
+    {
+        QTemporaryFile tmpfile;
+        if(!tmpfile.open())
+          continue;
 
-        FILE *fp = fdopen(fd , "w");
+        const QString tmpfname = tmpfile.fileName();
+        if (MusEGlobal::debugMsg)
+            std::cerr << QString("executeScript: script input filename=%1").arg(tmpfname).toStdString() << std::endl;
+
         MidiPart *part = (MidiPart*)(i.second);
         if (MusEGlobal::debugMsg)
-            fprintf(stderr, "SENDING TO SCRIPT, part start: %d\n", part->tick());
+            std::cerr << "SENDING TO SCRIPT, part start: " << part->tick() << std::endl;
 
         int z, n;
         MusEGlobal::sigmap.timesig(part->tick(), z, n);
-        sprintf(tempStr, "TIMESIG %d %d\n", z, n);
-        writeStringToFile(fp,tempStr);
-        sprintf(tempStr, "PART %d %d\n", part->tick(), part->lenTick());
-        writeStringToFile(fp,tempStr);
-        sprintf(tempStr, "BEATLEN %d\n", MusEGlobal::sigmap.ticksBeat(part->tick()));
-        writeStringToFile(fp,tempStr);
-        sprintf(tempStr, "QUANTLEN %d\n", quant);
-        writeStringToFile(fp,tempStr);
+        writeStringToFile(&tmpfile, QString("TIMESIG %1 %2\n").arg(z).arg(n));
+
+        writeStringToFile(&tmpfile, QString("PART %1 %2\n").arg(part->tick()).arg(part->lenTick()));
+
+        writeStringToFile(&tmpfile, QString("BEATLEN %1\n").arg(MusEGlobal::sigmap.ticksBeat(part->tick())));
+
+        writeStringToFile(&tmpfile, QString("QUANTLEN %1\n").arg(quant));
+
         MidiTrack *track = part->track();
         if (track->type() == Track::MIDI)
         {
-	        sprintf(tempStr, "TYPE MIDI\n");
+          writeStringToFile(&tmpfile, QString("TYPE MIDI\n"));
         } else if (track->type() == Track::DRUM) {
-	        sprintf(tempStr, "TYPE DRUM\n");
+          writeStringToFile(&tmpfile, QString("TYPE DRUM\n"));
         }
-        writeStringToFile(fp,tempStr);
 
         if (MusEGlobal::debugMsg)
-            std::cout << "Events in part " << part->events().size() << std::endl;
+            std::cerr << "Events in part " << part->events().size() << std::endl;
 
         EventList elist = part->events();
         for (const auto& e : elist)
@@ -108,23 +107,23 @@ void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList
                 if (onlyIfSelected && ev.selected() == false)
                     continue;
 
-                sprintf(tempStr,"NOTE %d %d %d %d\n", ev.tick(), ev.dataA(),  ev.lenTick(), ev.dataB());
-                writeStringToFile(fp,tempStr);
+                writeStringToFile(&tmpfile, QString("NOTE %1 %2 %3 %4\n")
+                  .arg(ev.tick()).arg(ev.dataA()).arg(ev.lenTick()).arg(ev.dataB()));
 
                 // Indicate do not do port controller values and clone parts.
                 ops.push_back(UndoOp(UndoOp::DeleteEvent, ev, part, false, false));
 
             } else if (ev.type()==Controller) {
-                sprintf(tempStr,"CONTROLLER %d %d %d %d\n", ev.tick(), ev.dataA(), ev.dataB(), ev.dataC());
-                writeStringToFile(fp,tempStr);
+                writeStringToFile(&tmpfile, QString("CONTROLLER %1 %2 %3 %4\n")
+                  .arg(ev.tick()).arg(ev.dataA()).arg(ev.dataB()).arg(ev.dataC()));
                 // Indicate do not do port controller values and clone parts.
                 ops.push_back(UndoOp(UndoOp::DeleteEvent, ev, part, false, false));
             }
         }
-        fclose(fp);
+        tmpfile.close();
 
         QStringList arguments;
-        arguments << tmp;
+        arguments << tmpfname;
 
         QProcess *myProcess = new QProcess(parent);
         myProcess->start(scriptfile, arguments);
@@ -133,13 +132,14 @@ void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList
 
         if (myProcess->exitCode()) {
             QMessageBox::warning(parent, tr("MusE - external script failed"),
-                                 tr("MusE was unable to launch the script, error message:\n%1").arg(QString(errStr)));
+                                 tr("MusE was unable to launch the script, error message:") + (QString(errStr)));
             return;
         }
         if (errStr.size()> 0) {
-            fprintf(stderr, "script execution produced the following error:\n%s\n", QString(errStr).toLocal8Bit().data());
+            std::cerr << "script execution produced the following error:"
+              << std::endl << QString(errStr).toStdString() << std::endl;
         }
-        QFile file(tmp);
+        QFile file(tmpfname);
         if (MusEGlobal::debugMsg)
             file.copy(file.fileName() + "_input");
 
@@ -148,12 +148,12 @@ void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList
             QTextStream stream( &file );
             QString line;
             if (MusEGlobal::debugMsg)
-                fprintf(stderr, "RECEIVED FROM SCRIPT:\n");
+                std::cerr << "RECEIVED FROM SCRIPT:" << std::endl;
             while ( !stream.atEnd() )
             {
                 line = stream.readLine(); // line of text excluding '\n'
                 if (MusEGlobal::debugMsg) {
-                    std::cout << line.toStdString() << std::endl;
+                    std::cerr << line.toStdString() << std::endl;
                 }
 
                 if (line.startsWith("NOTE"))
@@ -165,7 +165,8 @@ void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList
                     int pitch = sl[2].toInt();
                     int len = sl[3].toInt();
                     int velo = sl[4].toInt();
-                    fprintf(stderr, "extracted %d %d %d %d\n", tick, pitch, len, velo);
+                    std::cerr << QString("extracted %1 %2 %3 %4")
+                      .arg(tick).arg(pitch).arg(len).arg(velo).toStdString() << std::endl;
                     e.setTick(tick);
                     e.setPitch(pitch);
                     e.setVelo(velo);
@@ -193,8 +194,10 @@ void Scripts::executeScript(QWidget *parent, const QString &scriptfile, PartList
             file.close();
         }
 
-        if (!MusEGlobal::debugMsg) // if we are writing debug info we also keep the script data
-            remove(tmp);
+        // This seems to already be handled in the 'file.copy(file.fileName() + "_input")' line above. Tim.
+        // if (!MusEGlobal::debugMsg) // if we are writing debug info we also keep the script data
+        //     tmpfile.setAutoRemove(false);
+
         progress.setValue(progress.value()+1);
     } // for
 
@@ -259,11 +262,11 @@ QString Scripts::getScriptPath(int id, bool isdelivered)
     return path;
 }
 
-void Scripts::writeStringToFile(FILE *filePointer, const char *writeString)
+void Scripts::writeStringToFile(QIODevice *dev, const QString &writeString)
 {
     if (MusEGlobal::debugMsg)
-        std::cout << writeString;
-    fputs(writeString, filePointer);
+        std::cerr << writeString.toLocal8Bit().constData();
+    dev->write(writeString.toUtf8());
 }
 
 void Scripts::receiveExecDeliveredScript(int id)

@@ -25,6 +25,7 @@
 #ifndef __MIDIFILE_H__
 #define __MIDIFILE_H__
 
+#include <QtGlobal>
 #include <QString>
 
 #include <stdio.h>
@@ -159,7 +160,7 @@ class MidiFile {
 } // namespace MusECore
 
 #define XCHG_SHORT(x) ((((x)&0xFF)<<8) | (((x)>>8)&0xFF))
-#ifdef __i486__
+#ifdef Q_PROCESSOR_X86
 #define XCHG_LONG(x) \
      ({ int __value; \
         asm ("bswap %1; movl %1,%0" : "=g" (__value) : "r" (x)); \
@@ -171,7 +172,7 @@ class MidiFile {
 		      (((x)>>24)&0xFF))
 #endif
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 #define BE_SHORT(x) XCHG_SHORT(x)
 #define BE_LONG(x) XCHG_LONG(x)
 #else

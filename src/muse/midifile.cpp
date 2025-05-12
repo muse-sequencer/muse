@@ -189,9 +189,9 @@ bool MidiFile::read(char* p, qint64 len)
             //  However, reading past the end of the stream is considered an error, so this function returns -1
             //   in those cases (that is, reading on a closed socket or after a process has died)."
             qint64 rv = fp->iodevice()->read(p, len);
-            if (rv == len || rv == 0)
+            if (rv == len)
                   return false;
-            if (rv == -1) {
+            if (fp->iodevice()->atEnd()) {
                   _error = MF_EOF;
                   return true;
                   }

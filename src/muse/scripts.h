@@ -2,6 +2,8 @@
 #define SCRIPTS_H
 
 #include <QObject>
+#include <QIODevice>
+#include <QString>
 
 
 class QMenu;
@@ -18,7 +20,7 @@ class Scripts : public QObject
     QStringList deliveredScriptNames;
     QStringList userScriptNames;
 
-    void writeStringToFile(FILE *filePointer, const char *writeString);
+    void writeStringToFile(QIODevice *dev, const QString &writeString);
 
     void receiveExecDeliveredScript(int id);
     void receiveExecUserScript(int id);

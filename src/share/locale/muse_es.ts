@@ -8096,7 +8096,7 @@ None: Use only if high accuracy is needed for
 <context>
     <name>MusECore::Scripts</name>
     <message>
-        <location filename="../../muse/scripts.cpp" line="+47"/>
+        <location filename="../../muse/scripts.cpp" line="+46"/>
         <source>Do you want to process all or only selected events?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8122,12 +8122,11 @@ None: Use only if high accuracy is needed for
     </message>
     <message>
         <location line="+1"/>
-        <source>MusE was unable to launch the script, error message:
-%1</source>
+        <source>MusE was unable to launch the script, error message:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+106"/>
+        <location line="+110"/>
         <source>Reload Script Names from Disc</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14062,7 +14061,7 @@ Comprobar si Jack está en ejecución</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+2354"/>
+        <location line="+2376"/>
         <location line="+1705"/>
         <location line="+119"/>
         <source>&amp;Save</source>
@@ -14100,7 +14099,7 @@ Puedes seleccionar también el comando Guardar del men de Archivo.</translation>
         <translation type="vanished">Buscar archivos de audio sin uso</translation>
     </message>
     <message>
-        <location line="-5316"/>
+        <location line="-5338"/>
         <source>&amp;Quit</source>
         <translation>&amp;Salir</translation>
     </message>
@@ -14391,21 +14390,21 @@ Puedes seleccionar también el comando Guardar del men de Archivo.</translation>
     </message>
     <message>
         <location line="+584"/>
-        <location line="+577"/>
+        <location line="+599"/>
         <source>Cannot read template</source>
         <translation>No se puede leer la plantilla</translation>
     </message>
     <message>
-        <location line="-543"/>
-        <location line="+34"/>
+        <location line="-552"/>
+        <location line="+43"/>
         <location line="+554"/>
         <location line="+43"/>
         <source>File open error</source>
         <translation>Error al abrir el archivo</translation>
     </message>
     <message>
-        <location line="-515"/>
-        <location line="+601"/>
+        <location line="-514"/>
+        <location line="+600"/>
         <source>File read error</source>
         <translation>Error al leer el archivo</translation>
     </message>
@@ -14463,7 +14462,7 @@ Puedes seleccionar también el comando Guardar del men de Archivo.</translation>
         <translation>MusE: Carga sesión</translation>
     </message>
     <message>
-        <location line="-2474"/>
+        <location line="-2496"/>
         <source>Timeout waiting for audio to run. Check if jack is running or try another driver.
 </source>
         <translation type="unfinished"></translation>
@@ -14634,7 +14633,7 @@ Puedes seleccionar también el comando Guardar del men de Archivo.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4048"/>
+        <location line="+4070"/>
         <location line="+119"/>
         <source>The current project contains unsaved data.
 Save current project before continuing?</source>
@@ -14651,7 +14650,7 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-5314"/>
+        <location line="-5336"/>
         <source>Import Part...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14735,16 +14734,16 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+666"/>
-        <location line="+596"/>
+        <location line="+687"/>
+        <location line="+597"/>
         <source>The project has no project sample rate (added 2011).
 Please enter a rate. The current system rate (%1Hz)
  is suggested, and cancelling uses it:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-587"/>
-        <location line="+596"/>
+        <location line="-588"/>
+        <location line="+597"/>
         <source>The project has audio waves, but no project sample rate (added 2011).
 Please enter a rate. The most common wave rate found is suggested,
  the project was probably made with it. Cancelling uses the
@@ -14752,8 +14751,8 @@ Please enter a rate. The most common wave rate found is suggested,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-588"/>
-        <location line="+596"/>
+        <location line="-589"/>
+        <location line="+597"/>
         <source>Project sample rate</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15065,7 +15064,7 @@ Can not continue.</source>
         <translation type="unfinished">Cancelar</translation>
     </message>
     <message>
-        <location line="-5899"/>
+        <location line="-5921"/>
         <source>Failed to start audio disk prefetch!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15196,7 +15195,7 @@ Can not continue.</source>
         <translation type="unfinished">Posición</translation>
     </message>
     <message>
-        <location line="+2071"/>
+        <location line="+2093"/>
         <source>The current project contains unsaved data.
 Save current project?</source>
         <translation type="unfinished"></translation>
@@ -22197,6 +22196,17 @@ Robert Jonsson
     <message>
         <location line="+3"/>
         <source>Pyro communication timeout in seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../grepmidi_qt/grepmidi.cpp" line="+378"/>
+        <source>MIDI files to examine.</source>
+        <comment>[files...]</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Print filename along with messages.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

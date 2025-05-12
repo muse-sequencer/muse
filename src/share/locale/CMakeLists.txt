@@ -61,6 +61,7 @@ if (UPDATE_TRANSLATIONS)
             vam
             components
             plugin_scan_module
+            grepmidi
             )
 endif (UPDATE_TRANSLATIONS)
 

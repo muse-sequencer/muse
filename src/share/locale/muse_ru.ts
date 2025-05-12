@@ -6636,7 +6636,7 @@ None: Use only if high accuracy is needed for
     <message>
         <source>MusE was unable to launch the script, error message:
 %1</source>
-        <translation type="unfinished">MusE не смог запустить скрипт, ошибка:
+        <translation type="obsolete">MusE не смог запустить скрипт, ошибка:
 %1</translation>
     </message>
     <message>
@@ -6649,6 +6649,10 @@ None: Use only if high accuracy is needed for
     </message>
     <message>
         <source>Reload Script Names from Disc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MusE was unable to launch the script, error message:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -18786,6 +18790,15 @@ Robert Jonsson
     </message>
     <message>
         <source>Don&apos;t load LinuxVST plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Print filename along with messages.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MIDI files to examine.</source>
+        <comment>[files...]</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>

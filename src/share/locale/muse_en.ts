@@ -7143,38 +7143,37 @@ None: Use only if high accuracy is needed for
 <context>
     <name>MusECore::Scripts</name>
     <message>
-        <location filename="../../muse/scripts.cpp" line="47"/>
+        <location filename="../../muse/scripts.cpp" line="46"/>
         <source>Do you want to process all or only selected events?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/scripts.cpp" line="48"/>
+        <location filename="../../muse/scripts.cpp" line="47"/>
         <source>&amp;Selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/scripts.cpp" line="49"/>
+        <location filename="../../muse/scripts.cpp" line="48"/>
         <source>&amp;All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/scripts.cpp" line="50"/>
+        <location filename="../../muse/scripts.cpp" line="49"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/scripts.cpp" line="135"/>
+        <location filename="../../muse/scripts.cpp" line="134"/>
         <source>MusE - external script failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/scripts.cpp" line="136"/>
-        <source>MusE was unable to launch the script, error message:
-%1</source>
+        <location filename="../../muse/scripts.cpp" line="135"/>
+        <source>MusE was unable to launch the script, error message:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/scripts.cpp" line="242"/>
+        <location filename="../../muse/scripts.cpp" line="245"/>
         <source>Reload Script Names from Disc</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11573,9 +11572,9 @@ Apply sync settings?</source>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="768"/>
-        <location filename="../../muse/app.cpp" line="3122"/>
-        <location filename="../../muse/app.cpp" line="4827"/>
-        <location filename="../../muse/app.cpp" line="4946"/>
+        <location filename="../../muse/app.cpp" line="3144"/>
+        <location filename="../../muse/app.cpp" line="4849"/>
+        <location filename="../../muse/app.cpp" line="4968"/>
         <source>&amp;Save</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11695,18 +11694,18 @@ Apply sync settings?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="3120"/>
+        <location filename="../../muse/app.cpp" line="3142"/>
         <source>The current project contains unsaved data.
 Save current project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="3690"/>
+        <location filename="../../muse/app.cpp" line="3712"/>
         <source>No valid parts selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6104"/>
+        <location filename="../../muse/app.cpp" line="6126"/>
         <source>Import Audio File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11848,74 +11847,74 @@ Save current project?</source>
     </message>
     <message>
         <location filename="../../muse/app.cpp" line="1814"/>
-        <location filename="../../muse/app.cpp" line="2391"/>
+        <location filename="../../muse/app.cpp" line="2413"/>
         <source>Cannot read template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1848"/>
-        <location filename="../../muse/app.cpp" line="1882"/>
-        <location filename="../../muse/app.cpp" line="2436"/>
-        <location filename="../../muse/app.cpp" line="2479"/>
+        <location filename="../../muse/app.cpp" line="1861"/>
+        <location filename="../../muse/app.cpp" line="1904"/>
+        <location filename="../../muse/app.cpp" line="2458"/>
+        <location filename="../../muse/app.cpp" line="2501"/>
         <source>File open error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1964"/>
-        <location filename="../../muse/app.cpp" line="2565"/>
+        <location filename="../../muse/app.cpp" line="1987"/>
+        <location filename="../../muse/app.cpp" line="2587"/>
         <source>File read error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1981"/>
-        <location filename="../../muse/app.cpp" line="2581"/>
+        <location filename="../../muse/app.cpp" line="2003"/>
+        <location filename="../../muse/app.cpp" line="2603"/>
         <source>Unknown File Format: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="3088"/>
+        <location filename="../../muse/app.cpp" line="3110"/>
         <source>Project saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="3122"/>
-        <location filename="../../muse/app.cpp" line="4827"/>
-        <location filename="../../muse/app.cpp" line="4946"/>
+        <location filename="../../muse/app.cpp" line="3144"/>
+        <location filename="../../muse/app.cpp" line="4849"/>
+        <location filename="../../muse/app.cpp" line="4968"/>
         <source>&amp;Discard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4548"/>
-        <location filename="../../muse/app.cpp" line="4558"/>
-        <location filename="../../muse/app.cpp" line="4591"/>
-        <location filename="../../muse/app.cpp" line="4625"/>
-        <location filename="../../muse/app.cpp" line="4633"/>
+        <location filename="../../muse/app.cpp" line="4570"/>
+        <location filename="../../muse/app.cpp" line="4580"/>
+        <location filename="../../muse/app.cpp" line="4613"/>
+        <location filename="../../muse/app.cpp" line="4647"/>
+        <location filename="../../muse/app.cpp" line="4655"/>
         <source>MusE: Record Downmix to Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4669"/>
-        <location filename="../../muse/app.cpp" line="4694"/>
+        <location filename="../../muse/app.cpp" line="4691"/>
+        <location filename="../../muse/app.cpp" line="4716"/>
         <source>MusE: Record Downmix to File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4736"/>
+        <location filename="../../muse/app.cpp" line="4758"/>
         <source>Render Downmix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4737"/>
+        <location filename="../../muse/app.cpp" line="4759"/>
         <source>Set left and right markers for downmix range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4771"/>
+        <location filename="../../muse/app.cpp" line="4793"/>
         <source>MusE: Song: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2866"/>
+        <location filename="../../muse/app.cpp" line="2888"/>
         <source>MusE: load project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12171,16 +12170,16 @@ Save current project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1910"/>
-        <location filename="../../muse/app.cpp" line="2506"/>
+        <location filename="../../muse/app.cpp" line="1931"/>
+        <location filename="../../muse/app.cpp" line="2528"/>
         <source>The project has no project sample rate (added 2011).
 Please enter a rate. The current system rate (%1Hz)
  is suggested, and cancelling uses it:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1919"/>
-        <location filename="../../muse/app.cpp" line="2515"/>
+        <location filename="../../muse/app.cpp" line="1940"/>
+        <location filename="../../muse/app.cpp" line="2537"/>
         <source>The project has audio waves, but no project sample rate (added 2011).
 Please enter a rate. The most common wave rate found is suggested,
  the project was probably made with it. Cancelling uses the
@@ -12188,19 +12187,19 @@ Please enter a rate. The most common wave rate found is suggested,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1927"/>
-        <location filename="../../muse/app.cpp" line="2523"/>
+        <location filename="../../muse/app.cpp" line="1948"/>
+        <location filename="../../muse/app.cpp" line="2545"/>
         <source>Project sample rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2884"/>
-        <location filename="../../muse/app.cpp" line="2903"/>
+        <location filename="../../muse/app.cpp" line="2906"/>
+        <location filename="../../muse/app.cpp" line="2925"/>
         <source>MusE: load template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="3078"/>
+        <location filename="../../muse/app.cpp" line="3100"/>
         <source>MusE: Write File failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12211,9 +12210,9 @@ Please enter a rate. The most common wave rate found is suggested,
     </message>
     <message>
         <location filename="../../muse/conf.cpp" line="1946"/>
-        <location filename="../../muse/app.cpp" line="3122"/>
-        <location filename="../../muse/app.cpp" line="4827"/>
-        <location filename="../../muse/app.cpp" line="4946"/>
+        <location filename="../../muse/app.cpp" line="3144"/>
+        <location filename="../../muse/app.cpp" line="4849"/>
+        <location filename="../../muse/app.cpp" line="4968"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12234,47 +12233,47 @@ Are you sure you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="3476"/>
-        <location filename="../../muse/app.cpp" line="3525"/>
+        <location filename="../../muse/app.cpp" line="3498"/>
+        <location filename="../../muse/app.cpp" line="3547"/>
         <source>MusE: Save As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="3577"/>
-        <location filename="../../muse/app.cpp" line="3945"/>
+        <location filename="../../muse/app.cpp" line="3599"/>
+        <location filename="../../muse/app.cpp" line="3967"/>
         <source>Nothing to edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4549"/>
+        <location filename="../../muse/app.cpp" line="4571"/>
         <source>No wave tracks found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4559"/>
-        <location filename="../../muse/app.cpp" line="4670"/>
+        <location filename="../../muse/app.cpp" line="4581"/>
+        <location filename="../../muse/app.cpp" line="4692"/>
         <source>No audio output tracks found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4592"/>
+        <location filename="../../muse/app.cpp" line="4614"/>
         <source>Select one audio output track,
 and one target wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4626"/>
+        <location filename="../../muse/app.cpp" line="4648"/>
         <source>Select one target wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4634"/>
+        <location filename="../../muse/app.cpp" line="4656"/>
         <source>Select one target wave track,
 and one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4695"/>
+        <location filename="../../muse/app.cpp" line="4717"/>
         <source>Select one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12284,14 +12283,14 @@ and one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5182"/>
+        <location filename="../../muse/app.cpp" line="5204"/>
         <source>This will clear all automation data on
  all audio tracks!
 Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5208"/>
+        <location filename="../../muse/app.cpp" line="5230"/>
         <source>This takes an automation snapshot of
  all controllers on all audio tracks,
  at the current position.
@@ -12402,38 +12401,38 @@ Likely the selected track is the wrong type.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6146"/>
+        <location filename="../../muse/app.cpp" line="6168"/>
         <source>Import Wavefile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6207"/>
-        <location filename="../../muse/app.cpp" line="6225"/>
-        <location filename="../../muse/app.cpp" line="6234"/>
+        <location filename="../../muse/app.cpp" line="6229"/>
+        <location filename="../../muse/app.cpp" line="6247"/>
+        <location filename="../../muse/app.cpp" line="6256"/>
         <source>Wave import error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6208"/>
+        <location filename="../../muse/app.cpp" line="6230"/>
         <source>There are too many wave files
 of the same base name as imported wave file
 Can not continue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6226"/>
+        <location filename="../../muse/app.cpp" line="6248"/>
         <source>Can&apos;t create new wav file in project folder!
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6235"/>
+        <location filename="../../muse/app.cpp" line="6257"/>
         <source>Failed to initialize sample rate converter!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6156"/>
-        <location filename="../../muse/app.cpp" line="6255"/>
+        <location filename="../../muse/app.cpp" line="6178"/>
+        <location filename="../../muse/app.cpp" line="6277"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12479,24 +12478,24 @@ Can not continue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="4825"/>
-        <location filename="../../muse/app.cpp" line="4944"/>
+        <location filename="../../muse/app.cpp" line="4847"/>
+        <location filename="../../muse/app.cpp" line="4966"/>
         <source>The current project contains unsaved data.
 Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="5998"/>
+        <location filename="../../muse/app.cpp" line="6020"/>
         <source>MusE Project: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6096"/>
+        <location filename="../../muse/app.cpp" line="6118"/>
         <source>Failed to import wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6147"/>
+        <location filename="../../muse/app.cpp" line="6169"/>
         <source>This wave file has a samplerate of %1 Hz,
  as opposed to current setting %2 Hz.
 A live, real-time samplerate converter can be used on this file.
@@ -12504,29 +12503,29 @@ Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6152"/>
+        <location filename="../../muse/app.cpp" line="6174"/>
         <source>Do you want to use a converter or resample the file now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6154"/>
+        <location filename="../../muse/app.cpp" line="6176"/>
         <source>Use live converter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6155"/>
+        <location filename="../../muse/app.cpp" line="6177"/>
         <source>Resample now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6258"/>
+        <location filename="../../muse/app.cpp" line="6280"/>
         <source>Resampling wave file
 &quot;%1&quot;
 from %2 to %3 Hz...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="6265"/>
+        <location filename="../../muse/app.cpp" line="6287"/>
         <source>Output has clipped
 Resampling again and normalizing wave file
 &quot;%1&quot;
@@ -18644,6 +18643,17 @@ Robert Jonsson
     <message>
         <location filename="../../muse/main.cpp" line="420"/>
         <source>Pyro communication timeout in seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../grepmidi_qt/grepmidi.cpp" line="378"/>
+        <source>MIDI files to examine.</source>
+        <comment>[files...]</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../grepmidi_qt/grepmidi.cpp" line="381"/>
+        <source>Print filename along with messages.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

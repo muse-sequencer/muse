@@ -1840,18 +1840,30 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
             //
             //  read *.med file
             //
-            bool popenFlag;
-            FILE* f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
-            if (f == nullptr) {
-                  if (errno != ENOENT) {
-                        QMessageBox::critical(this, QString("MusE"),
-                           tr("File open error"));
-                        setUntitledProject();
-                        _lastProjectFilePath = QString();
-                        }
-                  else
-                        setConfigDefaults();
-                  }
+            MusEFile::File f(fi.filePath(), QString(".med"), this);
+            const bool isCompressed = f.isCompressed();
+
+            const MusEFile::File::ErrorCode ecode = fileOpen(f, QIODevice::ReadOnly, this, true);
+            if(ecode != MusEFile::File::NoError)
+            {
+              switch(ecode)
+              {
+                case MusEFile::File::NoError:
+                break;
+
+                case MusEFile::File::GeneralError:
+                  // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno == ENOENT)" ?
+                  setConfigDefaults();
+                break;
+
+                default:
+                  // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno != ENOENT)" ?
+                  QMessageBox::critical(this, QString("MusE"), tr("File open error"));
+                  setUntitledProject();
+                  _lastProjectFilePath = QString();
+                break;
+              }
+            }
             else {
 
                   if(songTemplate)
@@ -1871,26 +1883,35 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                     d_list.readSongfile(d_xml);
 
                     // If it is a compressed file we cannot seek the stream, we must reopen it.
-                    if(popenFlag)
+                    if(isCompressed)
                     {
-                      pclose(f);
-                      f = nullptr;
-                      f = MusEGui::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
-                      if (f == nullptr) {
-                            if (errno != ENOENT) {
-                                  QMessageBox::critical(this, QString("MusE"),
-                                    tr("File open error"));
-                                  setUntitledProject();
-                                  _lastProjectFilePath = QString();
-                                  }
-                            else
-                                  setConfigDefaults();
-                            }
+                      f.close();
+                      const MusEFile::File::ErrorCode ecode = fileOpen(f, QIODevice::ReadOnly, this, true);
+                      if(ecode != MusEFile::File::NoError)
+                      {
+                        switch(ecode)
+                        {
+                          case MusEFile::File::NoError:
+                          break;
+
+                          case MusEFile::File::GeneralError:
+                            // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno == ENOENT)" ?
+                            setConfigDefaults();
+                          break;
+
+                          default:
+                            // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for previous "if (errno != ENOENT)" ?
+                            QMessageBox::critical(this, QString("MusE"), tr("File open error"));
+                            setUntitledProject();
+                            _lastProjectFilePath = QString();
+                          break;
+                        }
+                      }
                     }
                     else
                     {
                       // Be kind. Rewind.
-                      fseek(f, 0, SEEK_SET);
+                      f.reset();
                     }
 
                     // Is there a project sample rate setting in the song? (Setting added circa 2011).
@@ -1954,17 +1975,18 @@ bool MusE::loadProjectFile1(const QString& name, bool songTemplate, bool doReadM
                     }
                   }
 
-                  if(f) {
-                        MusECore::Xml xml(f);
-                        read(xml, doReadMidiPorts, songTemplate);
-                        bool fileError = ferror(f);
-                        popenFlag ? pclose(f) : fclose(f);
-                        if (fileError) {
-                              QMessageBox::critical(this, QString("MusE"),
-                                tr("File read error"));
-                              setUntitledProject();
-                              _lastProjectFilePath = QString();
-                              }
+                  MusECore::Xml xml(f.iodevice());
+                  read(xml, doReadMidiPorts, songTemplate);
+
+                  // REMOVE Tim. tmp. FIXME: TODO: Correct replacement for "ferror(f)" ?
+                  const MusEFile::File::ErrorCode ecode = f.error();
+                  const QString etxt = f.errorString();
+                  f.close();
+                  if (ecode != MusEFile::File::NoError) {
+                        QMessageBox::critical(this, QString("MusE"),
+                          tr("File read error") + QString(": ") + etxt);
+                        setUntitledProject();
+                        _lastProjectFilePath = QString();
                         }
                   }
             }

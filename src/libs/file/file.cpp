@@ -99,15 +99,6 @@ bool File::open(QIODevice::OpenMode mode)
     _qproc.setParent(this);
     QStringList args;
 
-    // Tested: Piping didn't work. It did with the old popen() version of this code.
-    //if (mode == QIODevice::ReadOnly)
-    //  args << "-d" << "<";
-    //else
-    //  args << ">";
-    //args << _fi.filePath();
-    //_qproc.start(zipName(zipType()), args, mode);
-    //if(!_qproc.waitForStarted(5000)) // 5 secs.
-
     if (mode == QIODevice::ReadOnly)
       args << "-d";
     args << "-c" << _fi.filePath();
@@ -115,7 +106,15 @@ bool File::open(QIODevice::OpenMode mode)
     _qproc.start(zipName(zipType()), args, mode);
 
     // TESTING: Hm. Program must finish before we can read? What if the file is very large?
-    // All that data goes into the stdout before we can actually read it? Worried about buffer limits...
+    // All that data goes into the stdout before we can actually read it? Worried about buffer limits.
+    // QProcess seems to use internal dynamic (growable) buffers called QRingBuffer. Good.
+    // But are there any stdout buffers as well?
+    // Some solutions say to use unbuffered stdout if possible.
+    // This involves the setbuf and setvbuf system commands.
+    // And QIODevice has a flag:
+    //   "QIODevice::Unbuffered  0x0020  Any buffer in the device is bypassed."
+    // Wondering if that flag affects stdout or just the internal buffers.
+
     if(!_qproc.waitForFinished(5000)) // 5 secs.
     {
       isErr = true;

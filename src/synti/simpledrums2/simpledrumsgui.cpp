@@ -985,15 +985,13 @@ void SimpleSynthGui::loadSetup()
       QFile theFile(filename);
       if (theFile.open(QIODevice::ReadOnly)) {
          unsigned initdata_len = 0;
-         if (theFile.read((char*)&initdata_len, sizeof(initdata_len)) == -1)
+         if (theFile.read((char*)&initdata_len, sizeof(initdata_len)) != sizeof(initdata_len))
             success = false;
 
-         ///byte* init_data = new byte[initdata_len];
          byte* init_data = new byte[initdata_len + 2];   // 2 for MFG ID and synth ID.
          init_data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
          init_data[1] = SIMPLEDRUMS_UNIQUE_ID;
-         //if (theFile.read((char*)(init_data), initdata_len) == -1)
-         if (theFile.read((char*)(init_data + 2), initdata_len) == -1)
+         if (theFile.read((char*)(init_data + 2), initdata_len) != initdata_len)
             success = false;
 
          if (!success) {
@@ -1003,7 +1001,6 @@ void SimpleSynthGui::loadSetup()
             delete msgBox;
          }
          else {
-            ///sendSysex(init_data, initdata_len);
             sendSysex(init_data, initdata_len + 2);
          }
 

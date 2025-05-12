@@ -1,9 +1,9 @@
 #=============================================================================
 #  MusE
 #  Linux Music Editor
+#  $Id:$
 #
-#  file/CMakeLists.txt
-#  (C) Copyright 2025 Tim E. Real (terminator356 on users dot sourceforge dot net)
+#  Copyright (C) 1999-2011 by Werner Schweer and others
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License
@@ -22,58 +22,36 @@
 #=============================================================================
 
 ##
-## Expand Qt macros in source files
-##
-
-QT5_WRAP_CPP (file_mocs
-file.h
-)
-
-##
 ## List of source files to compile
 ##
-
-file (GLOB file_source_files
-      file.cpp
+file (GLOB grepmidi_source_files
+      grepmidi.cpp
       )
 
 ##
 ## Define target
 ##
-
-add_library ( file_module SHARED
-      ${file_mocs}
-      ${file_source_files}
+add_executable ( grepmidi
+      ${grepmidi_source_files}
       )
 
 ##
 ## Append to the list of translations
 ##
-
-# None required so far.
-# set (FILES_TO_TRANSLATE
-      # ${FILES_TO_TRANSLATE}
-      # ${file_source_files}
-      # CACHE INTERNAL ""
-      # )
-
-##
-## Compilation flags and target name
-##
-
-set_target_properties( file_module
-      PROPERTIES OUTPUT_NAME muse_file_module
+set (FILES_TO_TRANSLATE
+      ${FILES_TO_TRANSLATE}
+      ${grepmidi_source_files}
+      CACHE INTERNAL ""
       )
 
-target_link_libraries(file_module
+target_link_libraries(grepmidi
       ${QT_LIBRARIES}
+      file_module
       )
 
 ##
 ## Install location
 ##
-
-install(TARGETS
-        file_module
-      DESTINATION ${MusE_MODULES_DIR}
+install(TARGETS grepmidi 
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
       )
