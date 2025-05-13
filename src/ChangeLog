@@ -1,3 +1,6 @@
+20.02.2025
+    - Python: Removed one dependency on 'six' library found in utils/muse-find-unused-wavs. (Tim)
+      By request from Arch packagers. 'Six' is old and will be unsupported soon. Tested the file OK.
 13.02.2025
     - Arranger: Fixed loading song with mixer strip disabled. Blank splitter was still appearing. (Tim)
       Added showTrackInfo() to Arranger::readStatus(). Tested OK.

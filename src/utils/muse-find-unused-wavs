@@ -28,7 +28,6 @@ from __future__ import print_function
 import os
 import string
 import shutil
-from six.moves import input
 import sys
 
 dirlist = os.listdir(".")
