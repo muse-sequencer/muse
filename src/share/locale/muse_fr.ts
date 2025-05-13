@@ -8690,7 +8690,7 @@ Aucun: A utiliser uniquement si une grande précision est requise pour
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+5079"/>
+        <location filename="../../muse/song.cpp" line="+5028"/>
         <source>Jack shutdown!</source>
         <translation>Arrêt de Jack!</translation>
     </message>
@@ -8783,7 +8783,7 @@ click on the Restart button.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+248"/>
+        <location line="+239"/>
         <location line="+317"/>
         <source>Automation</source>
         <translation type="unfinished">Automation</translation>
@@ -8904,7 +8904,7 @@ Les transférer vers la liste principale de tempo?</translation>
 %1</translation>
     </message>
     <message>
-        <location filename="../../muse/undo.cpp" line="+701"/>
+        <location filename="../../muse/undo.cpp" line="+697"/>
         <source>Und&amp;o</source>
         <translation>&amp;Annuler</translation>
     </message>
@@ -10009,7 +10009,7 @@ Synth track: Right-click to show GUI.</source>
     </message>
     <message>
         <location line="+246"/>
-        <location line="+16"/>
+        <location line="+14"/>
         <source>Nothing to edit</source>
         <translation type="unfinished">Rien à éditer</translation>
     </message>
@@ -10054,7 +10054,7 @@ Synth track: Right-click to show GUI.</source>
         <translation type="vanished">&amp;Transformation MIDI</translation>
     </message>
     <message>
-        <location line="-932"/>
+        <location line="-930"/>
         <source>Global Cut</source>
         <translation>Couper global</translation>
     </message>
@@ -10353,7 +10353,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+71"/>
+        <location line="+70"/>
         <source>Traditional Order</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10393,7 +10393,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+20"/>
         <source>MusE: bad trackname</source>
         <translation type="unfinished">MusE: mauvais nom de piste</translation>
     </message>
@@ -10408,7 +10408,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1238"/>
+        <location line="-1230"/>
         <source>(no hidden strips)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10432,7 +10432,7 @@ Pour appliquer ces changements, veuillez redémarrer MusE. Désolé.
         <translation type="vanished">gain de calibration</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="+1326"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="+1324"/>
         <source>1/2 channel</source>
         <translation>1/2 canal</translation>
     </message>
@@ -11364,7 +11364,7 @@ Sélectionnez la partie de destination, et essayez à nouveau.</translation>
         <translation type="vanished">Réinitialiser la Carte GM</translation>
     </message>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="+270"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="+269"/>
         <source>&amp;Edit</source>
         <translation>&amp;Editer</translation>
     </message>
@@ -11987,12 +11987,12 @@ Sélectionnez la partie de destination, et essayez à nouveau.</translation>
         <translation>LV4</translation>
     </message>
     <message>
-        <location line="+775"/>
+        <location line="+717"/>
         <source>Muse: Load Drum Map</source>
         <translation>MusE: Charger la Carte de Batterie</translation>
     </message>
     <message>
-        <location line="+81"/>
+        <location line="+58"/>
         <source>MusE: Store Drum Map</source>
         <translation>MusE: Enregistrer la Carte de Batterie</translation>
     </message>
@@ -12048,7 +12048,7 @@ Je n&apos;afficherai que la piste de batterie ancien style dans cet éditeur, en
 <context>
     <name>MusEGui::EditInstrument</name>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="+215"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="+214"/>
         <source>Use note offs</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12289,7 +12289,7 @@ Je n&apos;afficherai que la piste de batterie ancien style dans cet éditeur, en
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+582"/>
+        <location line="+465"/>
         <source>MusE: Create file failed</source>
         <translation>MusE: Echec de la création du fichier</translation>
     </message>
@@ -12382,7 +12382,7 @@ Clean up the instrument!</source>
 Nettoyez l&apos;instrument!</translation>
     </message>
     <message>
-        <location line="+210"/>
+        <location line="+170"/>
         <location line="+5"/>
         <source>&amp;Don&apos;t save</source>
         <translation type="unfinished"></translation>
@@ -12835,7 +12835,7 @@ avec l&apos;outil curseur, vous pouvez:
         <translation type="vanished">sauvegarder les pré-réglages</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="+190"/>
+        <location filename="../../muse/mixer/rack.cpp" line="+186"/>
         <source>Effect rack: Double-click a slot to insert/edit effect. RMB to open context menu. Press F1 for help.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12852,7 +12852,7 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+132"/>
+        <location line="+86"/>
         <source>New</source>
         <translation type="unfinished">Nouveau</translation>
     </message>
@@ -12887,7 +12887,7 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished">Sauvegarder le pré-réglage</translation>
     </message>
     <message>
-        <location line="+912"/>
+        <location line="+408"/>
         <source>Drag and Drop Effect</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12897,7 +12897,7 @@ Double-click a slot to insert FX</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-921"/>
+        <location line="-417"/>
         <source>Remove</source>
         <translation type="unfinished">Supprimer</translation>
     </message>
@@ -12916,17 +12916,17 @@ Double-click a slot to insert FX</source>
         <translation type="obsolete">Sauvegarde le pré-réglage</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+53"/>
         <source>Presets</source>
         <translation type="unfinished">Pré-réglages</translation>
     </message>
     <message>
-        <location line="+258"/>
+        <location line="+157"/>
         <source>MusE: Save Preset</source>
         <translation>MusE: Sauvegarder les pré-réglages</translation>
     </message>
     <message>
-        <location line="+554"/>
+        <location line="+153"/>
         <source>Replace effect</source>
         <translation>Remplacer l&apos;effet</translation>
     </message>
@@ -14754,7 +14754,7 @@ Appliquer les réglages de synchro?</translation>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+391"/>
+        <location filename="../../muse/app.cpp" line="+387"/>
         <location line="+6"/>
         <source>Failed to start audio!</source>
         <translation>Echec du démarrage de l&apos;audio!</translation>
@@ -14908,8 +14908,8 @@ droit</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+2376"/>
-        <location line="+1705"/>
+        <location line="+2011"/>
+        <location line="+1643"/>
         <location line="+119"/>
         <source>&amp;Save</source>
         <translation>&amp;Sauvegarder</translation>
@@ -14937,7 +14937,7 @@ Vous pouvez aussi sélectionner la commande Sauvegarder du menu fichier.</transl
         <translation type="vanished">Importer une Partie</translation>
     </message>
     <message>
-        <location line="+1158"/>
+        <location line="+1109"/>
         <source>Import Audio File</source>
         <translation>Importer fichier Audio</translation>
     </message>
@@ -14946,7 +14946,7 @@ Vous pouvez aussi sélectionner la commande Sauvegarder du menu fichier.</transl
         <translation type="vanished">Trouver les fichiers wave non utilisés</translation>
     </message>
     <message>
-        <location line="-5338"/>
+        <location line="-4862"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quitter</translation>
     </message>
@@ -15248,33 +15248,33 @@ Vous pouvez aussi sélectionner la commande Sauvegarder du menu fichier.</transl
         <translation type="vanished">A propos de &amp;Qt</translation>
     </message>
     <message>
-        <location line="+584"/>
-        <location line="+599"/>
+        <location line="+552"/>
+        <location line="+316"/>
         <source>Cannot read template</source>
         <translation>Impossible de lire le modèle</translation>
     </message>
     <message>
-        <location line="-552"/>
+        <location line="-271"/>
         <location line="+43"/>
-        <location line="+554"/>
+        <location line="+273"/>
         <location line="+43"/>
         <source>File open error</source>
         <translation>Erreur d&apos;ouverture de fichier</translation>
     </message>
     <message>
-        <location line="-514"/>
-        <location line="+600"/>
+        <location line="-233"/>
+        <location line="+319"/>
         <source>File read error</source>
         <translation>Erreur de lecture de fichier</translation>
     </message>
     <message>
-        <location line="-584"/>
-        <location line="+600"/>
+        <location line="-303"/>
+        <location line="+319"/>
         <source>Unknown File Format: %1</source>
         <translation>Format de fichier inconnu: %1</translation>
     </message>
     <message>
-        <location line="+1967"/>
+        <location line="+1855"/>
         <location line="+10"/>
         <location line="+33"/>
         <location line="+34"/>
@@ -15304,12 +15304,12 @@ Vous pouvez aussi sélectionner la commande Sauvegarder du menu fichier.</transl
         <translation>MusE: Chanson: %1</translation>
     </message>
     <message>
-        <location line="-1905"/>
+        <location line="-1799"/>
         <source>MusE: load project</source>
         <translation>MusE: charger le projet</translation>
     </message>
     <message>
-        <location line="-2496"/>
+        <location line="-2175"/>
         <source>Timeout waiting for audio to run. Check if jack is running or try another driver.
 </source>
         <translation type="unfinished"></translation>
@@ -15480,14 +15480,14 @@ Vous pouvez aussi sélectionner la commande Sauvegarder du menu fichier.</transl
         <translation type="unfinished">&amp;Fermer</translation>
     </message>
     <message>
-        <location line="+4070"/>
+        <location line="+3643"/>
         <location line="+119"/>
         <source>The current project contains unsaved data.
 Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+1054"/>
+        <location line="+1005"/>
         <source>MusE Project: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -15497,7 +15497,7 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-5336"/>
+        <location line="-4860"/>
         <source>Import Part...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15581,16 +15581,16 @@ Save current project before continuing?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+687"/>
-        <location line="+597"/>
+        <location line="+653"/>
+        <location line="+316"/>
         <source>The project has no project sample rate (added 2011).
 Please enter a rate. The current system rate (%1Hz)
  is suggested, and cancelling uses it:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-588"/>
-        <location line="+597"/>
+        <location line="-307"/>
+        <location line="+316"/>
         <source>The project has audio waves, but no project sample rate (added 2011).
 Please enter a rate. The most common wave rate found is suggested,
  the project was probably made with it. Cancelling uses the
@@ -15598,19 +15598,19 @@ Please enter a rate. The most common wave rate found is suggested,
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-589"/>
-        <location line="+597"/>
+        <location line="-308"/>
+        <location line="+316"/>
         <source>Project sample rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+361"/>
+        <location line="+355"/>
         <location line="+19"/>
         <source>MusE: load template</source>
         <translation>MusE: charger le modèle</translation>
     </message>
     <message>
-        <location line="+175"/>
+        <location line="+132"/>
         <source>MusE: Write File failed</source>
         <translation>MusE: échec de l&apos;écriture du fichier</translation>
     </message>
@@ -15631,8 +15631,8 @@ Sauvegarder le Projet Courant?</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location filename="../../muse/app.cpp" line="+44"/>
-        <location line="+1705"/>
+        <location filename="../../muse/app.cpp" line="+43"/>
+        <location line="+1643"/>
         <location line="+119"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Annuler</translation>
@@ -15725,7 +15725,7 @@ Le chargement va écraser le Projet courant:
 Sauvegarder le Projet Courant?</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="+93"/>
+        <location filename="../../muse/importmidi.cpp" line="+92"/>
         <source>&amp;Abort</source>
         <translation>&amp;Annuler</translation>
     </message>
@@ -15750,7 +15750,7 @@ Proceed?</source>
 Continuer?</translation>
     </message>
     <message>
-        <location filename="../../muse/exportmidi.cpp" line="+928"/>
+        <location filename="../../muse/exportmidi.cpp" line="+927"/>
         <location line="+8"/>
         <location line="+43"/>
         <source>MusE: Warning</source>
@@ -15782,7 +15782,7 @@ Annuler et régler un format d&apos;exportation différent serait mieux.
 Continuer?</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+17"/>
         <source>MusE: Export Midi</source>
         <translation>MusE: Export Midi</translation>
     </message>
@@ -15833,7 +15833,7 @@ par défaut de votre machine.</translation>
  </translation>
     </message>
     <message>
-        <location line="+53"/>
+        <location line="+45"/>
         <source>Reading midifile
   </source>
         <translation type="unfinished"></translation>
@@ -15861,7 +15861,7 @@ failed: </source>
         <translation>Pas de piste sélectionnée pour l&apos;importation</translation>
     </message>
     <message numerus="yes">
-        <location line="+164"/>
+        <location line="+82"/>
         <source>%n part(s) out of %1 could not be imported.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -15885,12 +15885,12 @@ Probablement parce que la piste sélectionnée est du mauvais type.</numerusform
         <translation type="vanished">pour importer un fichier audio, vous devez d&apos;abord sélectionner une piste wave</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+938"/>
+        <location filename="../../muse/app.cpp" line="+889"/>
         <source>Import Wavefile</source>
         <translation>Importer un fichier Wave</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+59"/>
         <location line="+18"/>
         <location line="+9"/>
         <source>Wave import error</source>
@@ -15915,13 +15915,13 @@ Can not continue.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-79"/>
-        <location line="+99"/>
+        <location line="-77"/>
+        <location line="+95"/>
         <source>Cancel</source>
         <translation type="unfinished">Annuler</translation>
     </message>
     <message>
-        <location line="-5921"/>
+        <location line="-5441"/>
         <source>Failed to start audio disk prefetch!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16052,19 +16052,19 @@ Can not continue.</source>
         <translation type="unfinished">Position</translation>
     </message>
     <message>
-        <location line="+2061"/>
+        <location line="+1698"/>
         <source>Project saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+30"/>
         <source>The current project contains unsaved data.
 Save current project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1705"/>
+        <location line="+1643"/>
         <location line="+119"/>
         <source>&amp;Discard</source>
         <translation type="unfinished"></translation>
@@ -16075,7 +16075,7 @@ Save current project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2457"/>
+        <location line="+2408"/>
         <source>This wave file has a samplerate of %1 Hz,
  as opposed to current setting %2 Hz.
 A live, real-time samplerate converter can be used on this file.
@@ -16098,7 +16098,7 @@ Or, a copy of the file can be resampled now from %1 Hz to %2 Hz.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+103"/>
+        <location line="+99"/>
         <source>Resampling wave file
 &quot;%1&quot;
 from %2 to %3 Hz...</source>
@@ -16129,7 +16129,7 @@ Voulez-vous quand même l&apos;importer?</translation>
         <translation type="vanished">&amp;Non</translation>
     </message>
     <message>
-        <location filename="../../muse/songfile.cpp" line="+1308"/>
+        <location filename="../../muse/songfile.cpp" line="+1278"/>
         <source>File version is %1.%2
 Current version is %3.%4
 Conversions may be applied if file is saved!</source>
@@ -16214,7 +16214,7 @@ Conversions may be applied if file is saved!</source>
 <context>
     <name>MusEGui::PartCanvas</name>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="+571"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="+570"/>
         <source>Cannot copy/move/clone to different Track-Type</source>
         <translation>Ne peut copier/déplacer vers une type de Piste
 différent</translation>
@@ -16224,7 +16224,7 @@ différent</translation>
         <translation type="vanished">Partie:</translation>
     </message>
     <message>
-        <location line="+449"/>
+        <location line="+447"/>
         <source>C&amp;ut</source>
         <translation>Co&amp;uper</translation>
     </message>
@@ -16363,12 +16363,12 @@ différent</translation>
         <translation type="unfinished">Automation</translation>
     </message>
     <message>
-        <location line="-1004"/>
+        <location line="-1002"/>
         <source>Part canvas: Use Pencil tool to draw parts, or double-click to create a new MIDI/drum part between the range markers. Press F1 for help.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+903"/>
+        <location line="+901"/>
         <source>Super Glue (Merge Selection)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16394,7 +16394,7 @@ différent</translation>
         <translation type="vanished">MusE: sauvegarder une partie</translation>
     </message>
     <message>
-        <location line="+278"/>
+        <location line="+268"/>
         <source>Part name: %1
 Files:</source>
         <translation>Nom de partie: %1
@@ -16405,7 +16405,7 @@ Fichiers:</translation>
         <translation type="vanished">Automation:</translation>
     </message>
     <message>
-        <location line="-199"/>
+        <location line="-189"/>
         <source>Remove selected</source>
         <translation>Supprimer les sélectionnés</translation>
     </message>
@@ -16450,7 +16450,7 @@ Fichiers:</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+699"/>
+        <location line="+687"/>
         <source>LMB: Select/Move/Dblclick to edit | CTRL+LMB: Multi select/Move&amp;Copy | CTRL+ALT+LMB: Dblclick to edit in new window | SHIFT+LMB: Select track | MMB: Delete</source>
         <translation type="unfinished"></translation>
     </message>
@@ -16503,7 +16503,7 @@ Probablement parce que la piste sélectionnée est du mauvais type.</numerusform
         </translation>
     </message>
     <message>
-        <location line="+2376"/>
+        <location line="+2374"/>
         <source>Cannot paste: multiple tracks selected</source>
         <translation>Ne peut coller: plusieurs pistes sélectionnées</translation>
     </message>
@@ -17154,7 +17154,7 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+92"/>
+        <location line="+90"/>
         <source>[You need to define some categories first]</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17165,7 +17165,7 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
         <translation type="unfinished">Nouveau groupe</translation>
     </message>
     <message>
-        <location line="+522"/>
+        <location line="+242"/>
         <location line="+2"/>
         <location line="+2"/>
         <source>Yes</source>
@@ -17219,12 +17219,12 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
         <translation type="vanished">re&amp;nommer le groupe actuellement sélectionné</translation>
     </message>
     <message>
-        <location line="-661"/>
+        <location line="-379"/>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallel.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that may not be useful in an effect rack.</source>
         <translation>Selectionnez les types de greffons qui devraient être visible dans la liste.&lt;br&gt;Notez qu&apos;utiliser des greffons mono sur des pistes mono n&apos;est pas un problème, deux seront utilisés en parallèle.&lt;br&gt;Attention aussi car l&apos;alternative &apos;tout&apos; inclues des greffons qui peuvent ne pas être utiles dans un rack d&apos;effets.</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+73"/>
         <source>Associated categories</source>
         <translation>Catégories associées</translation>
     </message>
@@ -17262,7 +17262,7 @@ Clic-droit sur les gréffons pour ajouter/supprimer d&apos;une catégorie.</tran
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+5231"/>
+        <location filename="../../muse/plugin.cpp" line="+5230"/>
         <source>File Buttons</source>
         <translation>Boutons Fichier</translation>
     </message>
@@ -18286,17 +18286,17 @@ le titre sélectionné n&apos;est pas unique</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+21"/>
         <source>MusE: bad trackname</source>
         <translation type="unfinished">MusE: mauvais nom de piste</translation>
     </message>
     <message>
-        <location line="-30"/>
+        <location line="-22"/>
         <source>Track Name</source>
         <translation type="unfinished">Nom de Piste</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+23"/>
         <source>The track name is already used.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18306,7 +18306,7 @@ le titre sélectionné n&apos;est pas unique</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+317"/>
+        <location line="+307"/>
         <source>Configuration</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18408,18 +18408,18 @@ Flash: Waiting. Another client is master. Click to force.</source>
 <context>
     <name>MusEGui::TList</name>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="+237"/>
-        <location line="+1086"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="+233"/>
+        <location line="+1065"/>
         <source>SYNTH IS UNAVAILABLE!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-834"/>
+        <location line="-813"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;rien&gt;</translation>
     </message>
     <message>
-        <location line="+68"/>
+        <location line="+60"/>
         <source>visible</source>
         <translation>visible</translation>
     </message>
@@ -18444,22 +18444,22 @@ Flash: Waiting. Another client is master. Click to force.</source>
     </message>
     <message>
         <location line="+38"/>
-        <location line="+668"/>
+        <location line="+655"/>
         <source>off</source>
         <translation>off</translation>
     </message>
     <message>
-        <location line="-659"/>
+        <location line="-646"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;inconnu&gt;</translation>
     </message>
     <message>
-        <location line="+109"/>
+        <location line="+96"/>
         <source>MusE: bad trackname</source>
         <translation>MusE: mauvais nom de piste</translation>
     </message>
     <message>
-        <location line="+1298"/>
+        <location line="+1279"/>
         <source>Clear automation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18496,29 +18496,29 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="vanished">afficher l&apos;interface native</translation>
     </message>
     <message>
-        <location line="-696"/>
+        <location line="-677"/>
         <location line="+100"/>
         <source>Presets</source>
         <translation type="unfinished">Pré-réglages</translation>
     </message>
     <message>
-        <location line="+344"/>
+        <location line="+325"/>
         <source>Clear all controller events?</source>
         <translation>Nettoyer tous les contrôleurs d&apos;évènements?</translation>
     </message>
     <message>
-        <location line="-75"/>
-        <location line="+75"/>
+        <location line="-60"/>
+        <location line="+60"/>
         <source>&amp;Ok</source>
         <translation>&amp;Ok</translation>
     </message>
     <message>
-        <location line="-1660"/>
+        <location line="-1617"/>
         <source>Track list: LMB to select track, CTRL+LMB to add to selection, SHIFT+LMB for range select. Insert or RMB to create tracks. Press F1 for help.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+615"/>
+        <location line="+591"/>
         <source>The track name is already used.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18565,18 +18565,18 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+211"/>
-        <location line="+75"/>
+        <location line="+207"/>
+        <location line="+60"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Annuler</translation>
     </message>
     <message>
-        <location line="-75"/>
+        <location line="-60"/>
         <source>Reset all controller colors to defaults?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+238"/>
+        <location line="+223"/>
         <source>Change color</source>
         <translation>Changer la couleur</translation>
     </message>
@@ -18626,7 +18626,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished">Coller</translation>
     </message>
     <message>
-        <location line="+559"/>
+        <location line="+557"/>
         <source>Duplicate Selected</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18696,7 +18696,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+630"/>
+        <location line="+562"/>
         <source>Draw to change the track height. Hold CTRL for all tracks, SHIFT for selected tracks.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18710,7 +18710,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="vanished">nettoyer l&apos;automation</translation>
     </message>
     <message>
-        <location line="-1147"/>
+        <location line="-1077"/>
         <source>Treble clef</source>
         <translation>Clef aigue</translation>
     </message>
@@ -18750,7 +18750,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+15"/>
         <source>Internal</source>
         <translation>Interne</translation>
     </message>
@@ -18827,7 +18827,7 @@ Flash: Waiting. Another client is master. Click to force.</source>
         <translation>Réinitialiser l&apos;organisation de la carte de batterie de la piste?</translation>
     </message>
     <message>
-        <location line="+276"/>
+        <location line="+240"/>
         <source>Muse: Load Track&apos;s Drum Map</source>
         <translation>MusE: Charger la Carte de Batterie de la Piste</translation>
     </message>
@@ -18844,7 +18844,7 @@ elle sera lue mais le format a légèrement changé donc quelques
 ajustement seront nécessaires.</translation>
     </message>
     <message>
-        <location line="+121"/>
+        <location line="+89"/>
         <source>MusE: Store Track&apos;s Drum Map</source>
         <translation>MusE: Stocker la Carte de Batterie de la Piste</translation>
     </message>
@@ -19697,7 +19697,7 @@ Les données manquante sont rendues muettes</translation>
 <context>
     <name>MusEPlugin</name>
     <message>
-        <location filename="../../libs/plugin/plugin_scan.cpp" line="+49"/>
+        <location filename="../../libs/plugin/plugin_scan.cpp" line="+48"/>
         <source>&lt;No Type&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20351,7 +20351,7 @@ projets audio)</translation>
         <translation>Veuillez sélectionner une plage pour le crescendo avec les marqueurs de boucle.</translation>
     </message>
     <message numerus="yes">
-        <location line="+2575"/>
+        <location line="+2573"/>
         <source>%n part(s) out of %1 could not be pasted.
 Likely the selected track is the wrong type.</source>
         <translation type="unfinished">
@@ -20382,7 +20382,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="-3472"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="-3315"/>
         <source>Controller !</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20446,7 +20446,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="+1244"/>
+        <location filename="../../muse/instruments/minstrument.cpp" line="+1159"/>
         <source>Instruments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20517,7 +20517,7 @@ Only one is allowed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/audiotrack.cpp" line="+3603"/>
+        <location filename="../../muse/audiotrack.cpp" line="+3107"/>
         <source>TRACK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20548,7 +20548,7 @@ sometimes requires write access to the file.</source>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../../muse/components/editinstrument.cpp" line="+2721"/>
+        <location filename="../../muse/components/editinstrument.cpp" line="+2604"/>
         <location filename="../../muse/components/editevent.cpp" line="-271"/>
         <source>Cannot convert sysex string</source>
         <translation>Ne peut convertir le code sysex</translation>
@@ -20571,7 +20571,7 @@ sometimes requires write access to the file.</source>
         <translation type="vanished">créer fichier de crêtes pour</translation>
     </message>
     <message>
-        <location filename="../../muse/components/filedialog.cpp" line="+96"/>
+        <location filename="../../muse/components/filedialog.cpp" line="+85"/>
         <source>MusE: get file name</source>
         <translation>MusE: avoir le nom du fichier</translation>
     </message>
@@ -20596,7 +20596,7 @@ Le créer?</translation>
         <translation type="vanished">échec de la création du répertoire</translation>
     </message>
     <message>
-        <location line="+488"/>
+        <location line="+425"/>
         <source>File
 %1
 exists. Overwrite?</source>
@@ -20619,12 +20619,12 @@ a échoué: %2</translation>
         <translation>MusE: écriture</translation>
     </message>
     <message>
-        <location line="-489"/>
+        <location line="-426"/>
         <source>Creating dir failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+501"/>
+        <location line="+438"/>
         <source>MusE: Open File</source>
         <translation>MusE: Ouvrir un Fichier</translation>
     </message>
@@ -20646,7 +20646,7 @@ a échoué: %2</translation>
         <translation>Pas de sélection. On ignore</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+1871"/>
+        <location filename="../../muse/helper.cpp" line="+1661"/>
         <source>Instrument-defined</source>
         <translation>Instrument-défini</translation>
     </message>
@@ -20691,7 +20691,7 @@ a échoué: %2</translation>
         <translation>Vélocité</translation>
     </message>
     <message>
-        <location filename="../../libs/wave/wave.cpp" line="+611"/>
+        <location filename="../../libs/wave/wave.cpp" line="+608"/>
         <source>Create peakfile for </source>
         <translation type="unfinished"></translation>
     </message>
